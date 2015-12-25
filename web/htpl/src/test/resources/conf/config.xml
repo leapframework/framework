@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config" xmlns:el="http://www.leapframework.org/schema/el/config">
+
+	<properties>
+		<property name="debug-enabled" value="true"/>
+	</properties>
+	
+	<el:functions prefix="json" class="app.function.JsonFuncs">
+		<el:function method="test(java.lang.String)"/>	
+	</el:functions>		
+	
+</config>

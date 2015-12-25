@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config" xmlns:web="http://www.leapframework.org/schema/web/config">
+    
+    <properties>
+        <property name="jdbc.driverClassName">org.h2.Driver</property>
+        <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="jdbc.username">sa</property>
+    </properties>    
+    
+    <import resource="config.local.xml" check-existence="false" default-override="true"/>
+
+	<web:config>
+		<errors>
+			<error-view exception="app.controllers.ErrorTestController$CustomeException" view="errors/custom"/>
+		</errors>
+	</web:config>
+    
+</config>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+	<!-- Default web asset naming strategy -->
+	<bean type="leap.web.assets.AssetNamingStrategy" class="leap.web.assets.DefaultAssetNamingStrategy"/>
+	
+	<!-- Default web asset manager-->
+	<bean type="leap.web.assets.AssetManager" class="leap.web.assets.DefaultAssetManager"/>
+
+	<!-- Coffee Script Compiler -->
+	<bean type="leap.web.assets.AssetCompiler" class="leap.web.assets.compiler.CoffeeScriptCompiler">
+		<property name="compiledAssetType" ref="webassets.jsAssetType"/>
+		<property name="fileExtensions" value=".coffee"/>
+	</bean>
+	
+	<bean type="leap.web.assets.AssetCompiler" class="leap.web.assets.compiler.LessCssCompiler">
+		<property name="compiledAssetType" ref="webassets.cssAssetType"/>
+		<property name="fileExtensions" value=".less"/>
+	</bean>
+	
+	<!-- Asset Types -->
+	<bean id="webassets.jsAssetType" type="leap.web.assets.AssetType" class="leap.web.assets.DefaultAssetType">
+		<property name="name" 			value="js"/>
+		<property name="fileExtensions" value=".js"/>	
+	</bean>
+	
+	<bean id="webassets.cssAssetType" type="leap.web.assets.AssetType" class="leap.web.assets.DefaultAssetType">
+		<property name="name" 			value="css"/>
+		<property name="fileExtensions" value=".css"/>	
+	</bean>
+	
+	<!-- Processors -->
+	<bean-list type="leap.web.assets.AssetProcessor" qualifier="js">
+		<bean class="leap.web.assets.processor.minify.JSMinProcessor"/>
+		<bean class="leap.web.assets.processor.gzip.GzipProcessor"/>
+	</bean-list>
+	
+	<bean-list type="leap.web.assets.AssetProcessor" qualifier="css">
+		<bean class="leap.web.assets.processor.minify.CSSMinProcessor"/>
+		<bean class="leap.web.assets.processor.gzip.GzipProcessor"/>
+	</bean-list>
+	
+	<!-- Application Listener -->
+	<bean type="leap.web.AppListener" class="leap.web.assets.AssetListener"/>
+</beans>

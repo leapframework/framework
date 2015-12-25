@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <title>PetClinic :: a Leap Framework demonstration</title>
+    <link href="/webjars/bootstrap/2.3.0/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/css/petclinic.css" rel="stylesheet"/>
+    <script src="/webjars/jquery/1.9.0/jquery.js"></script>
+    <script src="/webjars/jquery-ui/1.9.2/js/jquery-ui-1.9.2.custom.js"></script>
+    <link href="/webjars/jquery-ui/1.9.2/css/smoothness/jquery-ui-1.9.2.custom.css" rel="stylesheet"></link>
+</head>
+<body>
+<div class="container">
+	<img src="/static/images/banner-graphic.png"/>
+	
+	<div class="navbar" style="width: 601px;">
+	    <div class="navbar-inner">
+	        <ul class="nav">
+	            <li style="width: 100px;"><a href="../welcome.html" ht-href="/"><i class="icon-home"></i>Home</a></li>
+	            <li style="width: 130px;"><a href="../owners/findOwners.html" ht-href="/owners/find.html"><i class="icon-search"></i>Find owners</a></li>
+	            <li style="width: 140px;"><a href="../vets/vetList.html" ht-href="/vets.html"><i class="icon-th-list"></i>Veterinarians</a></li>
+	            <li style="width: 90px;"><a href="../exception.html" ht-href="/oups.html" title="trigger a RuntimeException to see how it is handled"><i class="icon-warning-sign"></i>Error</a></li>
+	            <li style="width: 80px;"><a href="#" title="not available yet. Work in progress!!"><i class=" icon-question-sign"></i>Help</a></li>
+	        </ul>
+	    </div>
+	</div>
+	
+	<div ht-render-fragment="content">
+	Insert content here.
+	</div>
+	
+	<table class="footer">
+	    <tr>
+	        <td></td>
+	        <td align="right">
+	           <img src="/static/images/springsource-logo.png" alt="Sponsored by SpringSource" />
+	        </td>
+	    </tr>
+	</table>
+</div>
+</body>
+</html>

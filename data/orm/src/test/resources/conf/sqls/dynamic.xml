@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+    
+    <command key="test.sql.dynamic.clause.simple">
+        select * from owners where 1=1 {?and last_name like #lastName#}
+    </command>
+
+    <command key="test.sql.dynamic.clause.simple_1">
+        select * from owners where 1=1 {?and last_name like '%$lastName$%'}
+    </command>
+
+</sqls>

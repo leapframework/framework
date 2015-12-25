@@ -1,0 +1,63 @@
+[
+	{
+	    
+		name : "db2-jcc",
+		
+		title : "DB2 Universal JDBC driver",
+		
+		driverClassName : "com.ibm.db2.jcc.DB2Driver",
+		
+		urlTemplate : "jdbc:db2://$host$:$port$/$database$",
+		
+		urlParameters : [
+			{
+				name : "host",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "localhost",
+			},
+			
+			{
+				name : "port",
+				
+				type : "integer",
+				
+				required : true,
+				
+				defaultValue : "3306"    
+			},
+			
+			{
+				name : "database",
+				
+				dataType : "string",
+				
+				required : true,
+
+			},
+			
+			{
+				name : "username",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "root"
+			},
+			
+			{
+				name : "password",
+				
+				secret : true,
+				
+				type : "string",
+				
+				required : true
+			}
+		]	
+	}
+]

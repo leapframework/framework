@@ -1,0 +1,1 @@
+custom:<%=((leap.web.error.ErrorInfo)request.getAttribute("error")).getMessage()%>

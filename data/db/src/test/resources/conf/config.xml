@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <datasource name="h2" default="true">
+    	<driverClassName>${h2.driverClassName}</driverClassName>
+    	<jdbcUrl>${h2.jdbcUrl}</jdbcUrl>
+    	<username>sa</username>
+    	<maxActive>2</maxActive>
+    </datasource>
+    
+    <import resource="config.local.xml" check-existence="false" default-override="true"/>
+</config>

@@ -1,0 +1,70 @@
+<!--@ layout=layouts/master  -->
+<div ht-fragment="content" class="container">
+    <h2>Owner Information</h2>
+
+    <table class="table table-striped" style="width:600px;">
+        <tr>
+            <th>Name</th>
+            <td><b ht-text="${owner.firstName} ${owner.lastName}">[firstname lastname]</b></td>
+        </tr>
+        <tr>
+            <th>Address</th>
+            <td ht-text="${owner.address}">[address]</td>
+        </tr>
+        <tr>
+            <th>City</th>
+            <td ht-text="${owner.city}">[city]</td>
+        </tr>
+        <tr>
+            <th>Telephone</th>
+            <td ht-text="${owner.telephone}">[telephone]</td>
+        </tr>
+         <tr>
+            <td> 
+            	<a ht-href="../${owner.id}/edit" href="newOrEdit.html" class="btn btn-info">Edit Owner</a></td>
+            <td>
+            	<a ht-href="../${owner.id}/pets/new" href="../pets/newOrEdit.html"  class="btn btn-success">Add New Pet</a></td>
+        </tr>
+    </table>
+
+    <h2>Pets and Visits</h2>
+
+    <table class="table" style="width:600px;" ht-foreach="pet : owner.pets">
+        <tr>
+            <td valign="top" style="width: 120px;">
+                <dl class="dl-horizontal">
+                    <dt>Name</dt>
+                    <dd ht-text="${pet.name}">[name]</dd>
+                    <dt>Birth Date</dt>
+                    <dd ht-text="${pet.birthDate}">[birthdate yyyy-MM-dd]</dd>
+                    <dt>Type</dt>
+                    <dd ht-text="${pet.type.name}">[type]</dd>
+                </dl>
+            </td>
+            <td valign="top">
+                <table class="table-condensed">
+                    <thead>
+                    <tr>
+                        <th>Visit Date</th>
+                        <th>Description</th>
+                    </tr>
+                    </thead>
+                        <tr ht-foreach="visit : pet.visits">
+                            <td ht-text="${visit.date}">[date yyyy-MM-dd</td>
+                            <td ht-text="${visit.description}">[description]</td>
+                        </tr>
+                    	<tr>
+	                        <td> 
+	                  		 	<a ht-href="/owners/${owner.id}/pets/${pet.id}/edit" 
+	                  		 	   href="../pets/createOrUpdatePetForm.html">Edit Pet</a>
+	              			</td>
+	                        <td>
+	                   			<a ht-href="/owners/${owner.id}/pets/${pet.id}/visits/new" 
+	                   			   href="../pets/createOrUpdateVisitForm.html">Add Visit</a>
+	                        </td>
+                   		</tr>
+                </table>
+            </td>
+        </tr>
+    </table> 
+</div>

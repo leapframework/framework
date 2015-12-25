@@ -1,0 +1,28 @@
+-
+    name:       a
+    children:
+    -
+        name:   a-1
+        children:
+            -
+                name: a-1-1
+    -
+        name:   a-2
+
+    -
+        name:   a-3
+        children:
+            -
+                name: a-3-1
+                children:
+                    -
+                        name:   a-3-1-1
+        
+-
+    name:       b
+    children:
+    -
+        name:   b-1
+        children:
+            -
+                name: b-1-1

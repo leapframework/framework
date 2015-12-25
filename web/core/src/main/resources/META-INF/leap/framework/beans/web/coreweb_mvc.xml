@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+	<!-- Config -->
+	<bean type="leap.web.config.WebInterceptors" class="leap.web.config.DefaultWebInterceptors" primary="true"/>
+
+	<bean type="leap.web.config.WebConfig" class="leap.web.config.DefaultWebConfig" primary="true">
+        <additional-type-def type="leap.web.config.WebConfigurator" primary="true"/>
+    </bean>
+		  
+	<!-- cors -->
+	<bean type="leap.web.cors.CorsConfig" class="leap.web.cors.DefaultCorsConfig" primary="true">
+        <additional-type-def type="leap.web.cors.CorsConfigurator" primary="true"/>
+    </bean>
+		  
+	<!-- error views -->
+	<bean type="leap.web.error.ErrorViews" class="leap.web.error.DefaultErrorViews" primary="true"/>
+	
+	<!-- error codes -->
+	<bean type="leap.web.error.ErrorCodes" class="leap.web.error.DefaultErrorCodes" primary="true"/>
+
+	<!-- Routes -->
+	<bean type="leap.web.route.Routes" class="leap.web.route.DefaultRoutes" primary="true"/>
+	<bean type="leap.web.route.RoutesPrinter" class="leap.web.route.DefaultRoutesPrinter" primary="true"/>
+	
+	<!-- Action Strategy -->
+	<bean type="leap.web.action.ActionStrategy" class="leap.web.action.DefaultActionStrategy" primary="true"/>
+	
+	<!-- Action Manager -->
+	<bean type="leap.web.action.ActionManager" class="leap.web.action.DefaultActionManager" primary="true">
+        <additional-type-def type="leap.web.AppListener"/>
+    </bean>
+	
+	<!-- View Strategy -->
+	<bean type="leap.web.view.ViewStrategy" class="leap.web.view.DefaultViewStrategy" primary="true"/>
+
+	<!-- default view resolver to wrapps all the beans of type ServletResourceViewResolver -->
+	<bean type="leap.web.view.ViewResolver" class="leap.web.view.DefaultViewResolver" primary="true"/>
+	
+	<!-- View cache -->
+	<bean name="views" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache"/>
+	
+	<!-- View Source bean -->
+	<bean type="leap.web.view.ViewSource" class="leap.web.view.DefaultViewSource" primary="true"/>
+
+	<!-- jsp view resolver -->
+	<bean name="jsp" type="leap.web.view.ServletResourceViewResolver" class="leap.web.view.RequestDispatchViewResolver" sort-order="0">
+		<property name="suffix" value=".jsp"/>
+	</bean>
+	
+	<!-- captcha -->
+	<bean type="leap.web.captcha.CaptchaConfig" class="leap.web.captcha.DefaultCaptchaConfig" primary="true">
+        <additional-type-def type="leap.web.captcha.CaptchaConfigurator" primary="true"/>
+    </bean>
+		  
+	<bean type="leap.web.captcha.CaptchaManager"   class="leap.web.captcha.DefaultCaptchaManager"   primary="true"/>
+	<bean type="leap.web.captcha.CaptchaStore"     class="leap.web.captcha.CookieCaptchaStore"      primary="true"/>
+	<bean type="leap.web.captcha.CaptchaGenerator" class="leap.web.captcha.DefaultCaptchaGenerator" primary="true"/>
+	
+	<bean name="default" type="leap.web.captcha.CaptchaHandler" class="leap.web.captcha.CageCaptchaHandler"/>
+</beans>

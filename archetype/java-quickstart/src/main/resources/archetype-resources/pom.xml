@@ -1,0 +1,62 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.leapframework</groupId>
+		<artifactId>leap-pom</artifactId>
+		<version>0.1.0</version>
+	</parent>
+	<groupId>${groupId}</groupId>
+	<artifactId>${artifactId}</artifactId>
+	<version>${version}</version>
+	
+	<properties>
+		<leap.version>0.1.0-SNAPSHOT</leap.version>
+		<h2.version>1.3.172</h2.version>
+        <slf4j.version>1.7.5</slf4j.version>
+        <logback.version>1.0.13</logback.version>		
+	</properties>
+
+	<dependencies>
+	    <dependency>
+	        <groupId>org.leapframework</groupId>
+	        <artifactId>leap-fw</artifactId>
+	        <version>${leap.version}</version>
+	    </dependency>
+	    
+		<dependency>
+			<groupId>org.leapframework</groupId>
+			<artifactId>leap-junit</artifactId>
+			<version>${leap.version}</version>
+			<scope>test</scope>
+		</dependency>	    
+	    
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+            <version>${slf4j.version}</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <type>jar</type>
+        </dependency>        
+	</dependencies>
+</project>

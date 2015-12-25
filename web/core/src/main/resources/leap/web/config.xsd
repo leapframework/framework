@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/web/config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.leapframework.org/schema/web/config"
+	elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:element name="config">
+		<xsd:annotation>
+			<xsd:documentation>
+				Web application configuration
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:restriction base="xsd:anyType">
+					<xsd:sequence>
+						<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+					</xsd:sequence>
+					<xsd:attribute name="views-location" type="xsd:string" use="optional" />
+					<xsd:attribute name="default-theme" type="xsd:string" use="optional" />
+					<xsd:attribute name="themes-location" type="xsd:string" use="optional" />
+					<xsd:attribute name="default-format" type="xsd:string" use="optional" />
+					<xsd:attribute name="format-parameter" type="xsd:string" use="optional" />
+					<xsd:attribute name="trim-parameters" type="xsd:boolean">
+					</xsd:attribute>
+					<xsd:attribute name="allow-format-extension" type="xsd:boolean">
+					</xsd:attribute>
+					<xsd:attribute name="allow-format-parameter" type="xsd:boolean">
+					</xsd:attribute>
+					<xsd:attribute name="allow-action-extension" type="xsd:boolean">
+					</xsd:attribute>
+					<xsd:attribute name="action-extensions" type="xsd:string">
+					</xsd:attribute>
+					<xsd:attribute name="cors-enabled" type="xsd:boolean">
+					</xsd:attribute>					
+				</xsd:restriction>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+
+</xsd:schema>

@@ -1,0 +1,61 @@
+[
+	{
+	    
+		name : "thin",
+		
+		title : "Oracle JDBC Thin driver",
+    
+		driverClassName : "oracle.jdbc.OracleDriver",
+		
+		urlTemplate : "jdbc:oracle:thin:@$host$:$port$:$SID$",
+	
+		urlParameters : [
+			{
+				name : "host",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "localhost",
+			},
+			
+			{
+				name : "port",
+				
+				type : "integer",
+				
+				required : true,
+				
+				defaultValue : "1521"    
+			},
+			
+			{
+				name : "SID",
+				
+				type : "string",
+				
+				required : true,
+
+			},
+			
+			{
+				name : "username",
+				
+				type : "string",
+				
+				required : true
+			},
+			
+			{
+				name : "password",
+				
+				secret : true,
+				
+				type : "string",
+				
+				required : true
+			}			
+		]		
+	}
+]

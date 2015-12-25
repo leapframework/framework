@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+	<bean name="h2" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" primary="true" >
+        <property name="driverClassName" value="${h2.driverClassName}" />
+        <property name="jdbcUrl"         value="${h2.url}" />
+        <property name="username"        value="${h2.username}" />
+        <property name="password"        value="${h2.password}" />
+        <property name="maxActive" 		 value="10"/> 
+        <property name="maxWait" 		 value="10000"/>
+    </bean>    
+    
+    <bean name="derby" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
+        <property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
+        <property name="jdbcUrl"         value="jdbc:derby:target/derby/test;create=true" />
+    </bean>
+    
+	<bean name="ds1" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
+        <property name="driverClassName" value="${h2.driverClassName}" />
+        <property name="jdbcUrl"         value="jdbc:h2:./target/leap1;DB_CLOSE_ON_EXIT=FALSE" />
+        <property name="username"        value="${h2.username}" />
+        <property name="password"        value="${h2.password}" />
+        <property name="maxActive" 		 value="10"/> 
+        <property name="maxWait" 		 value="10000"/>
+    </bean>
+    
+    <import resource="beans_local.xml" check-existence="false"/>
+    
+</beans>

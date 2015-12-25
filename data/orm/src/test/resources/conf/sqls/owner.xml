@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+    
+    <command key="findOwnerByLastName" entity-name="Owner" name="findByLastName">
+        select * from owners where last_name like :lastName
+    </command>
+    
+    <command key="findOwnerByLastNameSimple" entity-name="Owner" name="findByLastNameSimple" lang="dynamic:simple">
+        select * from owners where last_name like :lastName
+    </command>    
+    
+    <command key="simpleInsertOwner">
+    	insert into owners(first_name,last_name,created_at,updated_at) values(?,?,?,?)
+    </command>
+    
+    <command key="simpleInsertOwner1">
+    	insert into owners(first_name,last_name,created_at,updated_at) values(:firstName,:lastName,:now,:now)
+    </command>    
+
+</sqls>

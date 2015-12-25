@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <!-- validations -->
+    <bean type="leap.core.validation.ValidationManager" class="leap.core.validation.DefaultValidationManager" primary="true"/>
+    <bean type="leap.core.validation.BeanValidator" 	class="leap.core.validation.DefaultBeanValidator" primary="true"/>
+
+</beans>

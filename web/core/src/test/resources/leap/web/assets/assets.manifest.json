@@ -1,0 +1,21 @@
+{
+	"js/bundle.js": 
+	{
+		"paths" : 
+		{
+			"production": "bunlde.min.js",
+			"debug": "bundle.js"	
+		},
+		
+		"bundle": 
+		{
+			"paths":
+			[
+				"bundle_1.js",
+				"bundle_2.js",
+				"bundle_3.js"			
+			]
+		}
+		
+	}
+}

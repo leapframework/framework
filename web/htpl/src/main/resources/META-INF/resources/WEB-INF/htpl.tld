@@ -1,0 +1,39 @@
+<taglib xmlns="http://java.sun.com/xml/ns/javaee" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd" 
+		version="2.1">
+
+	<description>Htpl JSP Tag Library</description>
+	<tlib-version>0.6</tlib-version>
+	<short-name>htpl</short-name>
+	<uri>http://www.leapframework.org/htpl/tags</uri>
+
+	<tag>
+		<name>include</name>
+		<tag-class>leap.htpl.jsp.IncludeTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>file</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+
+	<!-- 
+	<tag>
+		<name>render</name>
+		<tag-class>leap.htpl.jsp.RenderTag</tag-class>
+		<body-content>empty</body-content>
+		<attribute>
+			<name>name</name>
+			<required>true</required>
+			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+	</tag>
+	<tag>
+		<name>html</name>
+		<tag-class>leap.htpl.jsp.HtmlTag</tag-class>
+		<body-content>tagdependent</body-content>
+	</tag>
+	 -->
+</taglib>

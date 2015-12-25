@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+
+	<!-- Db init -->
+	<bean type="leap.core.AppContextInitializable" class="leap.db.DbInit"/>
+
+	<!--  Platforms -->
+	<bean name="Derby" type="leap.db.DbPlatform" class="leap.db.platform.derby.DerbyPlatform"/>
+	<bean name="H2" type="leap.db.DbPlatform" class="leap.db.platform.h2.H2Platform"/>
+	<bean name="MariaDB" type="leap.db.DbPlatform" class="leap.db.platform.mariadb.MariaDBPlatform"/>
+	<bean name="MySql" type="leap.db.DbPlatform" class="leap.db.platform.mysql.MySqlPlatform"/>
+	<bean name="Oracle" type="leap.db.DbPlatform" class="leap.db.platform.oracle.OraclePlatform"/>
+	<bean name="PostgreSQL" type="leap.db.DbPlatform" class="leap.db.platform.postgresql.PostgreSQLPlatform"/>
+	
+	<!-- DataSource -->
+	<bean name="leap-cp" type="leap.core.ds.DataSourceFactory" class="leap.db.cp.PooledDataSourceFactory" primary="true"/>
+    
+</beans>

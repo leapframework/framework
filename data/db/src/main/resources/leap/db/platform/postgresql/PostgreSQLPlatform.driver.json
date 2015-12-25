@@ -1,0 +1,61 @@
+[
+	{
+		name : "offical-jdbc",
+		
+		title : "PostgreSQL Offical JDBC driver",
+		    
+		driverClassName : "org.postgresql.Driver",
+		
+		urlTemplate : "jdbc:postgresql://$host$:$port$/$database$",
+		
+		urlParameters : [
+			{
+				name : "host",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "localhost",
+			},
+			
+			{
+				name : "port",
+				
+				type : "integer",
+				
+				required : true,
+				
+				defaultValue : "5432"    
+			},
+			
+			{
+				name : "database",
+				
+				type : "string",
+				
+				required : true,
+
+			},
+			
+			{
+				name : "username",
+				
+				type : "string",
+				
+				required : true
+			},
+			
+			{
+				name : "password",
+				
+				secret : true,
+				
+				type : "string",
+				
+				required : true
+			}			
+		]			
+	
+	}
+]

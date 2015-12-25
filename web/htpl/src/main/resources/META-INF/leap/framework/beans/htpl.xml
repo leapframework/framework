@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+	<!-- Default HtplConfig  -->
+	<bean type="leap.htpl.HtplConfig" class="leap.htpl.DefaultHtplConfig" primary="true"/>
+
+    <!-- Default HtplParser -->
+    <bean type="leap.htpl.HtplParser" class="leap.htpl.DefaultHtplParser" primary="true"/>
+    
+   	<!-- Default HtplExpressionManager -->
+    <bean type="leap.htpl.HtplExpressionManager" class="leap.htpl.DefaultHtplExpressionManager" primary="true"/>
+    
+    <!-- Default HtplEngine -->
+    <bean type="leap.htpl.HtplEngine" class="leap.htpl.DefaultHtplEngine" primary="true"/>
+    
+    <bean type="leap.htpl.HtplTemplateSource" class="leap.htpl.DefaultHtplTemplateSource" primary="true"/>
+    
+    <!-- Default htpl expression language -->
+    <alias type="leap.core.el.ExpressionLanguage" name="spel" alias="htpl"/>
+    
+    <!-- Default htpl template cache -->
+    <bean name="htpl" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache">
+        <constructor-arg value="1024"/>
+    </bean>
+    
+    <!-- Global Processor Library -->
+    <bean type="leap.htpl.HtplProcessors" class="leap.htpl.DefaultHtplProcessors"/>
+
+    <!-- Standard Processor Library -->
+    <bean type="leap.htpl.HtplProcessors" class="leap.htpl.DefaultHtplProcessors">
+        <property name="prefix" value="${htpl.prefix}"/>
+    </bean>
+    
+    <!-- Escapers -->
+    <bean name="html" type="leap.htpl.escaping.HtplEscaper" class="leap.htpl.escaping.DefaultHtmlEscaper"/>
+    <bean name="js"   type="leap.htpl.escaping.HtplEscaper" class="leap.htpl.escaping.DefaultJavascriptEscaper"/>
+    <bean name="attr" type="leap.htpl.escaping.HtplEscaper" class="leap.htpl.escaping.DefaultAttributeEscaper"/>
+    <bean name="none" type="leap.htpl.escaping.HtplEscaper" class="leap.htpl.escaping.NoneEscaper"/>
+    
+    <!-- Core Processors -->
+    <bean class="leap.htpl.processor.ProcessorRegistration">
+    	<property name="prefix" value="${htpl.prefix}"/>
+    	<property name="processors">
+    		<list>
+	    	    <bean class="leap.htpl.processor.core.LayoutAttrProcessor"/>
+			    <bean class="leap.htpl.processor.core.IfAttrProcessor"/>
+			    <bean class="leap.htpl.processor.core.SetVariablesAttrProcessor"/>
+			    <bean class="leap.htpl.processor.core.ForAttrProcessor"/> <!-- for -->
+			    <bean class="leap.htpl.processor.core.IncludeAttrProcessor"/>
+			    <bean class="leap.htpl.processor.core.FragmentAttrProcessor"/>
+			    <bean class="leap.htpl.processor.core.RenderAttrProcessor"/>
+				<bean class="leap.htpl.processor.core.ErrorsAttrProcessor"/>
+				<bean class="leap.htpl.processor.core.ModelAttrProcessor"/>
+    		</list>
+    	</property>
+    </bean>
+    
+    <!-- Html processors -->
+    <bean class="leap.htpl.processor.ProcessorRegistration">
+    	<property name="prefix" value="${htpl.prefix}"/>
+    	<property name="processors">
+    		<list>
+	    		<bean class="leap.htpl.processor.html.ClassAppendAttrProcessor"/>
+				<bean class="leap.htpl.processor.html.TextAttrProcessor"/>
+				<bean class="leap.htpl.processor.html.HtmlAttrProcessor"/>
+				<bean class="leap.htpl.processor.html.AnyAttrProcessor"/>	
+    		</list>
+    	</property>
+    </bean>    
+    
+    <!-- Form processors -->
+    <bean class="leap.htpl.processor.ProcessorRegistration">
+    	<property name="prefix" value="${htpl.prefix}"/>
+    	<property name="processors">
+    		<list>
+				<bean class="leap.htpl.processor.form.InputFieldAttrProcessor"/>    		
+    		</list>
+    	</property>
+    </bean>
+    
+    <!-- Global processors -->
+    <bean class="leap.htpl.processor.ProcessorRegistration">
+    	<property name="processors">
+    		<list>
+    			<bean class="leap.htpl.processor.html.MinimizedAttrProcessor"/>
+    			<bean class="leap.htpl.processor.assets.AssetsUrlAttrProcessor" if="classes:isPresent('leap.web.App')"/>
+				<bean class="leap.htpl.processor.html.UrlAttrProcessor" if="!classes:isPresent('leap.web.App')"/>    		
+    		</list>
+    	</property>
+    </bean>
+    
+    <!-- for mvc -->
+    <beans if-class-present="leap.web.App">
+	    <!-- Assets processors -->
+	    <bean type="leap.htpl.HtplProcessors" class="leap.htpl.DefaultHtplProcessors">
+	        <property name="prefix" value="assets"/>
+	        <invoke method="addAll">
+	            <method-arg>
+					<list>
+						<bean class="leap.htpl.processor.assets.AssetsAnyAttrProcessor"/>
+					</list>                
+	            </method-arg>
+	        </invoke>
+	    </bean>
+    
+		<bean name="htpl" type="leap.web.view.ServletResourceViewResolver" 
+						  class="leap.htpl.web.WebHtplViewResolver">
+						  
+			<additional-type-def type="leap.htpl.HtplTemplateResolver"/>						  
+						  
+		    <property name="suffix" value=".html"/>
+		</bean>
+    </beans>
+</beans>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/orm/config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+			targetNamespace="http://www.leapframework.org/schema/orm/config"
+			elementFormDefault="qualified" attributeFormDefault="unqualified">
+
+	<xsd:element name="config">
+		<xsd:annotation>
+			<xsd:documentation>
+				Orm base configuration
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:restriction base="xsd:anyType">
+					<xsd:sequence>
+						<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
+					</xsd:sequence>
+					<xsd:attribute name="default-max-results" type="xsd:int" use="optional" />					
+				</xsd:restriction>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:element name="models">
+		<xsd:annotation>
+			<xsd:documentation>
+				Orm models configuration
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="package" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:attribute name="name" type="xsd:string" use="required"/>					
+					</xsd:complexType>
+				</xsd:element>
+				<xsd:element name="class" minOccurs="0" maxOccurs="unbounded">
+					<xsd:complexType>
+						<xsd:attribute name="name" type="xsd:string" use="required"/>					
+					</xsd:complexType>
+				</xsd:element>
+			</xsd:sequence>
+			<xsd:attribute name="datasource" type="xsd:string" use="required"/>
+		</xsd:complexType>
+	</xsd:element>
+</xsd:schema>

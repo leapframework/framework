@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+
+    <!-- config -->
+    <bean type="leap.oauth2.as.OAuth2ServerConfig" 
+    	  class="leap.oauth2.as.DefaultOAuth2ServerConfig" primary="true">
+    
+        <additional-type-def type="leap.oauth2.as.OAuth2ServerConfigurator" primary="true"/>
+          
+    </bean>
+    
+    <!-- store -->
+    <bean type="leap.oauth2.as.store.AuthzInMemoryStore"
+          class="leap.oauth2.as.store.DefaultAuthzInMemoryStore" primary="true"/>
+          
+    <bean name="jdbc"
+          type="leap.oauth2.as.client.AuthzClientStore"
+          class="leap.oauth2.as.store.DefaultJdbcClientStore"/>
+          
+    <bean name="jdbc"
+          type="leap.oauth2.as.token.AuthzTokenStore"
+          class="leap.oauth2.as.store.DefaultJdbcTokenStore"/>          
+
+    <bean name="jdbc"
+          type="leap.oauth2.as.code.AuthzCodeStore"
+          class="leap.oauth2.as.store.DefaultJdbcCodeStore"/>          
+    
+    <!-- client -->    	  
+   	<bean type="leap.oauth2.as.client.AuthzClientManager"
+   		  class="leap.oauth2.as.client.DefaultAuthzClientManager" primary="true"/>
+          
+    <bean type="leap.oauth2.as.client.AuthzClientValidator"
+          class="leap.oauth2.as.client.DefaultAuthzClientValidator" primary="true"/>
+          
+    <bean type="leap.oauth2.as.client.AuthzClientAuthenticator"
+          class="leap.oauth2.as.client.DefaultAuthzClientAuthenticator" primary="true"/>              
+          
+    <!-- authorization code -->
+   	<bean type="leap.oauth2.as.code.AuthzCodeManager"
+   		  class="leap.oauth2.as.code.DefaultAuthzCodeManager" primary="true"/>
+   		  
+   	<bean type="leap.oauth2.as.code.AuthzCodeGenerator"
+   		  class="leap.oauth2.as.code.UUIDAuthzCodeGenerator" primary="true"/>
+          
+    <!-- token -->
+    <bean type="leap.oauth2.as.token.AuthzTokenManager"
+          class="leap.oauth2.as.token.DefaultAuthzTokenManager" primary="true"/>     
+          
+    <bean type="leap.oauth2.as.OAuth2ServerErrorHandler"
+          class="leap.oauth2.as.DefaultOAuth2ServerErrorHandler" primary="true"/>     
+          
+    <bean name="uuid" 
+          type="leap.oauth2.as.token.AuthzAccessTokenGenerator" 
+          class="leap.oauth2.as.token.UUIDAuthzTokenGenerator" primary="true">
+    
+        <additional-type-def type="leap.oauth2.as.token.AuthzRefreshTokenGenerator" name="uuid" primary="true"/>
+        
+    </bean>
+    
+    <!-- endpoints -->
+	<bean type="leap.web.Endpoint"
+		  class="leap.oauth2.as.endpoint.TokenEndpoint"/>
+
+	<bean type="leap.web.Endpoint"
+		  class="leap.oauth2.as.endpoint.AuthorizationEndpoint"/>
+		  
+	<bean type="leap.web.Endpoint"
+		  class="leap.oauth2.as.endpoint.TokenInfoEndpoint"/>
+          
+    <!-- authorize endpoint : response types -->
+    <bean name="code"
+          type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
+          class="leap.oauth2.as.endpoint.authorize.CodeResponseTypeHandler"/>
+          
+    <bean name="token"
+          type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
+          class="leap.oauth2.as.endpoint.authorize.TokenResponseTypeHandler"/>          
+	
+    <!-- token endpoint : grant types -->	  
+	<bean name="refresh_token"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.RefreshTokenGrantTypeHandler"/>	  
+		  
+	<bean name="password"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.PasswordGrantTypeHandler"/>	  
+		  
+	<bean name="client_credentials"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.ClientGrantTypeHandler"/>	  
+
+	<bean name="authorization_code"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.CodeGrantTypeHandler"/>
+          
+    <!-- tokeninfo endpoint : handlers -->
+    <bean type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler" 
+          class="leap.oauth2.as.endpoint.tokeninfo.AccessTokenInfoHandler"/>
+          
+    <!-- openid connect : common -->
+    <bean type="leap.oauth2.as.openid.IdTokenGenerator"
+          class="leap.oauth2.as.openid.JwtIdTokenGenerator" primary="true"/>
+          
+    <!-- open id connect : logout endpoint -->
+    <bean type="leap.web.Endpoint"
+          class="leap.oauth2.as.endpoint.LogoutEndpoint"/>          
+
+    <!-- open id connect : authorization endpoint extension -->
+    <bean name="id_token"
+          type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
+          class="leap.oauth2.as.endpoint.authorize.IdTokenResponseTypeHandler"/>
+          
+    <bean name="code id_token"
+          type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
+          class="leap.oauth2.as.endpoint.authorize.CodeIdTokenResponseTypeHandler"/>
+
+	<!-- sso -->
+	<bean type="leap.oauth2.as.sso.SSOManager" class="leap.oauth2.as.sso.DefaultSSOManager" primary="true"/>
+
+</beans>

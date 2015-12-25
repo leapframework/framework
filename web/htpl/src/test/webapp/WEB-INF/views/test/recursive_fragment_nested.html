@@ -1,0 +1,9 @@
+<!-- #load file=recursive_data.yaml variable=treeNodes-->
+<div ht-fragment="content">
+<ul ht-fragment="tree" ht-for="node : treeNodes">
+    <i>${node.name}</i>
+    <li ht-if="node.children" ht-set="treeNodes:node.children">
+        <!--#render-fragment tree-->
+    </li>
+</ul>
+</div>

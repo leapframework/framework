@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/sqls" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            targetNamespace="http://www.leapframework.org/schema/sqls">
+
+	<xsd:element name="sqls">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:element ref="import" />
+					<xsd:element ref="command" />
+					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:choice>
+			</xsd:sequence>
+			<xsd:anyAttribute namespace="##other" processContents="lax" />
+		</xsd:complexType>
+	</xsd:element>
+    
+    <xsd:element name="import">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies an XML config definition resource to import.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:attribute name="resource" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                The relative resource location of the XML (sqls definition) file to import,
+                                for example "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="check-existence" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                default value is true, set the value to false will skip this importing if resource not exists.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                    
+                    </xsd:attribute>
+                    <xsd:attribute name="default-override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                set the default override attribute value defined in <command override="true|false" ../> element.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="command">
+        <xsd:complexType>
+        	<xsd:simpleContent>
+        		<xsd:extension base="xsd:string">
+        			<xsd:attribute name="key" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="entity-class" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="entity-name" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="lang" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="override" type="xsd:boolean">
+        				<xsd:annotation>
+        					<xsd:documentation><![CDATA[
+                                if set to true this command value will override the exists command with same key or name. 
+                            ]]></xsd:documentation>
+        				</xsd:annotation>
+        			</xsd:attribute>
+        		</xsd:extension>
+        	</xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+</xsd:schema>

@@ -1,0 +1,24 @@
+<!-- #load file=recursive_data.yaml variable=treeNodes-->
+
+<ul ht-fragment="tree" ht-for="node : treeNodes">
+    <i>${node.name}</i>
+    <li ht-if="node.children" ht-set="treeNodes:node.children">
+        <!--#render-fragment tree-->
+    </li>
+</ul>
+
+<div ht-fragment="content">
+<ul ht-fragment="tree1" ht-for="node : treeNodes">
+    <i>${node.name}</i>
+    <li ht-if="node.children" ht-set="treeNodes:node.children">
+        <!--#render-fragment tree1-->
+    </li>
+</ul>
+</div>
+
+<ul ht-fragment="tree2" ht-for="node : treeNodes">
+    <i>${node.name}</i>
+    <li ht-if="node.children" ht-set="treeNodes:node.children">
+        <!--#render-fragment tree2-->
+    </li>
+</ul>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+
+	<command key="testOrderByQuery.testSimpleOrderByWithParam">
+		select * from Owner owner where lastName = :lastName
+	</command>
+	
+	<command key="testOrderByQuery.testSimpleOrderByWithParam.orderById">
+		select * from Owner owner where lastName = :lastName order by id asc
+	</command>	
+
+</sqls>

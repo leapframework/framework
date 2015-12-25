@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="leap.web.json.JsonConfig" class="leap.web.json.DefaultJsonConfig" primary="true">
+
+        <additional-type-def type="leap.web.json.JsonConfigurator" primary="true" />
+
+    </bean>
+
+    <bean name="json" type="leap.web.format.ResponseFormat" class="leap.web.format.JsonFormat">
+    
+        <additional-type-def type="leap.web.format.RequestFormat" name="json"/>
+    
+    </bean>
+
+    <bean name="json" type="leap.web.format.FormatWriter" class="leap.web.format.JsonFormatWriter">
+    
+        <!-- type of self, required by TextFormat -->
+        <additional-type-def type="leap.web.format.JsonFormatWriter" primary="true"/>
+    
+    </bean>
+</beans>

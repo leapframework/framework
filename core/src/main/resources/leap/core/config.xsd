@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/config" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            targetNamespace="http://www.leapframework.org/schema/config" elementFormDefault="qualified">
+
+	<xsd:element name="config">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element ref="debug" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="base-package" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="additional-packages" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="default-charset" minOccurs="0" maxOccurs="1"/>
+			    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="resources"/>
+                    <xsd:element ref="import"/>
+                    <xsd:element ref="properties"/>
+                    <xsd:element ref="datasource"/>
+                    <xsd:element ref="permissions"/>
+                    <xsd:element ref="config"/>
+			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+			    </xsd:choice>
+			</xsd:sequence>    
+			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+			<xsd:anyAttribute namespace="##other" processContents="lax"/>
+		</xsd:complexType>
+	</xsd:element>
+    
+    <xsd:element name="base-package">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's base package
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                Specifies the base package name, i.e. com.example
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="additional-packages">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's additional base packages.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                Specifies the additional base package names, i.e. com.example,com.company
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>    
+    
+    <xsd:element name="debug">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's debug mode
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                Specifies the debug mode, the value is 'true' or 'false'
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="default-locale">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's default locale
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                Specifies the locale name, i.e. zh, zh_CN, en, en_US
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="default-charset">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's default charset, default is UTF-8
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                Specifies the charset name, i.e. UTF-8
+                            ]]></xsd:documentation>
+                        </xsd:annotation>     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="datasource" type="DataSourceConfig"/>
+    
+    <xsd:complexType name="DataSourceConfig">
+        <xsd:sequence>
+            <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="dataSourceJndiName" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="dataSourceJndiResourceRef" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="driverClassName" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="jdbcUrl" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="username" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="password" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="defaultAutoCommit" type="xsd:boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="defaultTransactionIsolation" minOccurs="0" maxOccurs="1">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="NONE"></xsd:enumeration>
+                        <xsd:enumeration value="READ_COMMITTED"></xsd:enumeration>
+                        <xsd:enumeration value="READ_UNCOMMITTED"></xsd:enumeration>
+                        <xsd:enumeration value="REPEATABLE_READ"></xsd:enumeration>
+                        <xsd:enumeration value="SERIALIZABLE"></xsd:enumeration>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="defaultReadOnly" type="xsd:boolean" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="defaultCatalog" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="maxWait" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="maxActive" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="maxIdle" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element name="minIdle" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
+            <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="optional" />
+        <xsd:attribute name="type" type="xsd:string"></xsd:attribute>
+        <xsd:attribute name="default" type="xsd:boolean" use="optional" default="false"/>
+        <xsd:attribute name="if-profile" use="optional" />
+    </xsd:complexType>
+
+    <xsd:element name="resources">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies an location to scan resources.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:attribute name="location" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                The absolute resources location, for example "classpath:/foo/**/*"
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="profile" use="optional"/>
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="import">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies an XML config definition resource to import.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:attribute name="resource" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                The relative resource location of the XML (config definition) file to import,
+                                for example "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="check-existence" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                default value is true, set the value to false will skip this importing if resource not exists.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                    
+                    </xsd:attribute>
+                    <xsd:attribute name="default-override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                set the default override attribute value defined in <property override="true|false" ../> element.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="profile" use="optional"/>
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="properties">
+        <xsd:complexType>
+        	<xsd:sequence>
+        		<xsd:element ref="property" minOccurs="0"
+        			maxOccurs="unbounded">
+        		</xsd:element>
+        	</xsd:sequence>
+        	<xsd:attribute name="profile" use="optional" type="xsd:string"/>
+        	<xsd:attribute name="prefix" type="xsd:string" use="optional"></xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="property">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+                    <xsd:attribute name="value" type="xsd:string" use="optional"></xsd:attribute>
+                    <xsd:attribute name="override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                if set to true this property value will override the exists property with same name. 
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                     
+                    </xsd:attribute>
+                    <xsd:attribute name="profile" use="optional"/>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="assets-prefix">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the webapp assets prefix.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>        
+    
+    <xsd:element name="permissions">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="grant"/>
+                    <xsd:element ref="deny"/>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="profile" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+    
+    <xsd:element name="grant" type="PermissionDefinition"/>
+    <xsd:element name="deny" type="PermissionDefinition"/>
+
+    <xsd:complexType name="PermissionDefinition">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type"    type="xsd:string" use="optional"></xsd:attribute>
+                <xsd:attribute name="class"   type="xsd:string" use="required"></xsd:attribute>
+                <xsd:attribute name="name"    type="xsd:string" use="required"></xsd:attribute>
+                <xsd:attribute name="actions" type="xsd:string" use="required"></xsd:attribute>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+</xsd:schema>

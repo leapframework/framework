@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-auto-inject="true">
+
+	<!-- home bean -->
+	<bean type="leap.core.AppHome" class="leap.core.DefaultAppHome" primary="true"/>
+	
+	<!-- File monitor -->
+	<bean class="leap.core.AppFileMonitor" primary="true" lazy-init="false"/>
+
+	<!-- message beans -->
+	<bean type="leap.core.i18n.MessageSource" class="leap.core.i18n.ClasspathMessageSource" primary="true"/>
+	<bean type="leap.core.i18n.MessageReader" class="leap.core.i18n.XmlMessageReader"/>
+	<bean type="leap.core.i18n.MessageReader" class="leap.core.i18n.PropertiesMessageReader"/>
+	<bean type="leap.core.i18n.MessageReader" class="leap.core.i18n.YamlMessageReader"/>
+
+    <!-- transaction beans-->
+    <bean type="leap.core.transaction.TransactionManagerFactory" 
+          class="leap.core.transaction.DefaultTransactionManagerFactory" primary="true"/>
+
+    <!-- event beans -->
+    <bean type="leap.core.event.EventManager" class="leap.core.event.DefaultEventManager" primary="true"/>
+    <bean type="leap.core.AppContextInitializable" class="leap.core.event.DefaultEventRegister"/>
+    
+    <!-- datasource beans -->
+    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true"/>
+    
+    <!-- parameter beans -->
+    <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
+    
+    <!-- variables beans -->
+    <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
+    
+    <!-- variables -->
+    <bean name="now"  		type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
+    <bean name="timestamp"  type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
+    <bean name="uuid" 		type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
+    <bean name="user" 		type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
+    
+    <!-- caches -->
+    <bean type="leap.core.cache.CacheManager" class="leap.core.cache.DefaultCacheManager" primary="true">
+		<register-bean-factory target-type="leap.core.cache.Cache"/>
+	</bean>
+    
+    <!-- schedule -->
+    <bean type="leap.core.schedule.SchedulerManager"
+          class="leap.core.schedule.DefaultSchedulerManager" primary="true"/>
+</beans>

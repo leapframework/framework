@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domains xmlns="http://www.leapframework.org/schema/domains">
+
+	<field-domain name="createdAt" type="timestamp" nullable="false" insert="true" update="false" 
+					 insert-value="${env.timestamp}" auto-mapping="true"/>
+					 
+	<field-domain name="updatedAt" type="timestamp" nullable="false" insert="true" update="true"  
+					 insert-value="${env.timestamp}" update-value="${env.timestamp}" auto-mapping="true"/>
+	
+	<field-domain name="lockVersion" type="integer" nullable="false" default-value="0" auto-mapping="true"/>
+
+</domains>

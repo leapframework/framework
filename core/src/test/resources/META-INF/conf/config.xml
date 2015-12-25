@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties>
+        <property name="sys.prop1" value="sys.val1"/>
+    </properties>
+    
+    <properties>
+        <property name="test.prop1" value="sys.val"/>
+    </properties>
+    
+</config>

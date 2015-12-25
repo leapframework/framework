@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+	<bean type="leap.core.el.ElConfig" class="leap.core.el.DefaultElConfig" primary="true"/>	
+
+	<bean name="spel" type="leap.core.el.ExpressionLanguage" class="leap.core.el.DefaultExpressionLanguage" primary="true"/>
+
+</beans>

@@ -1,0 +1,27 @@
+[
+	{
+	    
+		name : "file",
+		
+		title : "H2 File JDBC driver",
+		
+		type : "FILE",
+		
+		driverClassName : "org.h2.Driver",
+		
+		urlTemplate : "jdbc:h2:file:$file$",
+		
+		urlParameters: [
+			{
+				name : "file",
+				
+				title : "Database File path",
+				
+				type : "String", 
+				
+				required : true
+			}		    
+		    
+		]
+	}
+]

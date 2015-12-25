@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+    
+    <bean type="leap.core.ioc.BeanProcessor" class="leap.web.AppBootstrap$AppBeanProcessor"/>
+    
+    <bean type="leap.web.AppInitializer" class="leap.web.DefaultAppInitializer"/>
+    
+	<bean type="leap.web.AppHandler" class="leap.web.DefaultAppHandler" primary="true"/>
+    
+    <bean type="leap.web.UrlHandler" class="leap.web.DefaultUrlHandler" primary="true"/>
+	
+	<bean type="leap.web.FilterMappings" class="leap.web.DefaultFilterMappings" primary="true"/>
+
+	<bean type="leap.core.web.RequestIgnore" class="leap.core.web.DefaultRequestIgnore">
+	    <property name="prefixes">
+	        <value>
+				/static/
+	        </value>
+	    </property>
+	    <property name="suffixes">
+	        <value>
+		        .css
+		        .js
+		        .jpg | .jpeg | .png | .bmp | .ico | .gif         
+	        </value>
+	    </property>
+	</bean>
+	
+	<bean type="leap.web.ajax.AjaxDetector" class="leap.web.ajax.DefaultAjaxDetector" primary="true"/>
+	<bean type="leap.web.ajax.AjaxHandler"  class="leap.web.ajax.DefaultAjaxHandler"  primary="true"/>
+	<bean type="leap.web.debug.DebugDetector" class="leap.web.debug.DefaultDebugDetector" primary="true"/>
+	<bean type="leap.web.pjax.PjaxDetector" class="leap.web.pjax.DefaultPjaxDetector" primary="true"/>
+	
+	<!-- theme manager -->
+	<bean type="leap.web.theme.ThemeManager" class="leap.web.theme.DefaultThemeManager" primary="true"/>	
+	
+	<!-- format manager -->
+	<bean type="leap.web.format.FormatManager" class="leap.web.format.DefaultFormatManager" primary="true"/>
+	
+	<!-- html format -->
+	<bean name="html" type="leap.web.format.ResponseFormat" class="leap.web.format.HtmlFormat"/>
+	
+	<!-- text format -->
+	<bean name="text" type="leap.web.format.ResponseFormat" class="leap.web.format.TextFormat"/>
+	
+	<!-- request body readers -->
+	<bean type="leap.web.body.RequestBodyReader" class="leap.web.body.StringRequestBodyReader"/>
+	<bean type="leap.web.body.RequestBodyReader" class="leap.web.body.BytesRequestBodyReader"/>
+	
+	<!-- multipart -->
+	<bean type="leap.web.AppServletContainerInitializer" class="leap.web.multipart.MultipartInitializer"/>
+	
+	<!-- cors -->
+	<bean type="leap.web.cors.CorsHandler" class="leap.web.cors.DefaultCorsHandler" primary="true"/>
+</beans>

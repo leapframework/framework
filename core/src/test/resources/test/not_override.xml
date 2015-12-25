@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties>
+        <property name="p1" value="v1"></property>
+        <property name="p2" value="v2"></property>
+    </properties>
+    
+    <properties>
+        <property name="p1" value="v1_"></property>
+    </properties>    
+    
+</config>

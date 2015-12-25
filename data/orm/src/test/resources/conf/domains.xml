@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domains xmlns="http://www.leapframework.org/schema/domains">
+
+	<entity-domain-alias domain="Person" alias="Owner"/>
+
+    <field-domain name="test" type="varchar" length="100" auto-mapping="true" alias="string1"/>
+    
+</domains>

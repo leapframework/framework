@@ -1,0 +1,11 @@
+<!-- 
+	#set list = json:parse('[1,2,3,4,5]')
+-->
+
+<!-- #if true -->
+	<select>
+	  	<!--#for (i : list)  -->
+	    <option value="${i}" selected="${loop.index == 1}">${i}</option>
+	    <!--#endfor-->
+	</select>
+<!-- #endif -->

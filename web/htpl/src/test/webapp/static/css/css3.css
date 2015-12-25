@@ -1,0 +1,14 @@
+@import css1.css
+@import url(css2.css)
+
+a {
+    background-image : url(../img/line.png)
+}
+
+div {
+    background-image : url(../img/1.jpg)
+}
+
+b {
+    background-image : url(../../img/1.jpg)
+}

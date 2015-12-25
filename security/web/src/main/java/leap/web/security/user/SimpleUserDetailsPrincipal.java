@@ -1,0 +1,102 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package leap.web.security.user;
+
+import leap.core.security.UserPrincipal;
+import leap.lang.Args;
+
+/**
+ * An {@link UserPrincipal} wraps an {@link UserDetails} object.
+ */
+public class SimpleUserDetailsPrincipal implements UserDetailsPrincipal {
+	
+	private static final long serialVersionUID = 5389733146613038468L;
+	
+	protected UserAccount account;
+	protected UserDetails details;
+	protected boolean	  authenticated;
+	protected boolean	  rememberMe;
+	protected boolean     enabled;
+	
+    public SimpleUserDetailsPrincipal(UserDetails details) {
+        this(null, details,true);
+    }
+	
+	public SimpleUserDetailsPrincipal(UserAccount account, UserDetails details) {
+		this(account, details,true);
+	}
+	
+	public SimpleUserDetailsPrincipal(UserAccount account, UserDetails details,boolean authenticated) {
+		Args.notNull(details,"details");
+		this.account       = account;
+		this.details 	   = details;
+		this.authenticated = authenticated;
+		this.enabled       = null != account ? account.isEnabled() : true;
+	}
+
+	@Override
+    public Object getId() {
+		return details.getId();
+	}
+	
+	@Override
+    public String getLoginName() {
+	    return details.getLoginName();
+    }
+	
+	@Override
+    public String getName() {
+	    return details.getName();
+    }
+
+	@Override
+    public boolean isAnonymous() {
+	    return false;
+    }
+
+	@Override
+    public boolean isRememberMe() {
+	    return rememberMe;
+    }
+	
+	public void setRememberMe(boolean rememberMe) {
+		this.rememberMe = rememberMe;
+	}
+
+	@Override
+    public boolean isAuthenticated() {
+	    return authenticated;
+    }
+	
+	public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public UserAccount getAccount() {
+		return account;
+	}
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getDetails() {
+	    return (T)details;
+    }
+}

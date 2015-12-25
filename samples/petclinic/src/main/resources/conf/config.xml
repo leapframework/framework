@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+    
+    <base-package>leap.samples.petclinic</base-package>
+    
+    <properties>
+        <property name="jdbc.driverClassName">org.h2.Driver</property>
+        <property name="jdbc.url">jdbc:h2:./target/petclinic;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="jdbc.username">sa</property>
+    </properties>
+    
+</config>

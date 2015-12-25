@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/el/config"
+		xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+		targetNamespace="http://www.leapframework.org/schema/el/config"
+		elementFormDefault="qualified"
+		attributeFormDefault="unqualified">
+
+	<xsd:element name="functions">
+		<xsd:annotation>
+			<xsd:documentation>
+				EL functions configuration
+			</xsd:documentation>
+		</xsd:annotation>
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:restriction base="xsd:anyType">
+					<xsd:sequence>
+						<xsd:element name="function" type="Function" minOccurs="0" maxOccurs="unbounded"></xsd:element>
+					</xsd:sequence>
+					<xsd:attribute name="class" type="xsd:string" use="required" />
+					<xsd:attribute name="prefix" type="xsd:string" use="optional" />
+				</xsd:restriction>
+			</xsd:complexContent>
+		</xsd:complexType>
+	</xsd:element>
+	
+	<xsd:complexType name="Function">
+		<xsd:complexContent>
+			<xsd:restriction base="xsd:anyType">
+				<xsd:attribute name="method"  type="xsd:string" use="required" />
+				<xsd:attribute name="name"    type="xsd:string" use="optional" />
+			</xsd:restriction>
+		</xsd:complexContent>
+	</xsd:complexType>
+</xsd:schema>

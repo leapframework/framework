@@ -1,0 +1,10 @@
+-- copy from druid test resources, see https://github.com/alibaba/druid
+UPDATE AVATAR_CASE SET GMT_MODIFIED=sysdate,STATUS = ?,SYS_DECISION = ?,MANUAL_DECISION = ?,OPERATOR=? , MEMO = ? where id in ( ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? , ? )
+;
+UPDATE AVATAR_CASE
+SET GMT_MODIFIED = sysdate, STATUS = ?, SYS_DECISION = ?, MANUAL_DECISION = ?, OPERATOR = ?, MEMO = ?
+WHERE id IN (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+;
+UPDATE AVATAR_CASE
+SET GMT_MODIFIED = sysdate, STATUS = ?, SYS_DECISION = ?, MANUAL_DECISION = ?, OPERATOR = ?, MEMO = ?
+WHERE id IN (?)

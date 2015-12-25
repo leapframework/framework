@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <!-- Core -->
+    <bean type="leap.core.web.assets.AssetSource"   class="leap.web.assets.DefaultAssetSource"   primary="true"/>
+    <bean type="leap.core.web.assets.AssetManager"  class="leap.web.assets.DefaultAssetManager"  primary="true"/>
+	<bean type="leap.core.web.assets.AssetConfig"   class="leap.web.assets.DefaultAssetConfig"   primary="true"/>
+	<bean type="leap.core.web.assets.AssetStrategy" class="leap.web.assets.DefaultAssetStrategy" primary="true"/>	
+	
+	<!-- Assets cache -->
+	<bean name="assets" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache"/>
+
+	<!-- Asset Resolvers -->
+	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.ServletAssetResolver"/>
+	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.ServletAssetResolver">
+		<property name="prefix" value="/"/>
+	</bean>
+	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.WebjarsAssetResolver"/>
+	
+    <!-- Handler -->
+	<bean type="leap.web.assets.AssetHandler" class="leap.web.assets.DefaultAssetHandler" primary="true"/>
+    
+    <!-- Bundlers -->
+    <bean type="leap.web.assets.AssetBundler" class="leap.web.assets.css.CssAssetBundler"/>
+    <bean type="leap.web.assets.AssetBundler" class="leap.web.assets.js.JsAssetBundler"/>
+    
+</beans>

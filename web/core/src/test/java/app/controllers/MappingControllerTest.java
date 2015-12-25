@@ -1,0 +1,52 @@
+/*
+ * Copyright 2014 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package app.controllers;
+
+import leap.web.WebTestCase;
+
+import org.junit.Test;
+
+public class MappingControllerTest extends WebTestCase {
+
+	@Test
+	public void testJsessionId() {
+		get("/mapping/").assertOk();
+		get("/mapping/;jsessionid=4324C6BCA4948D80CEE84405B80759BC").assertOk();
+		get("/mapping;jsessionid=4324C6BCA4948D80CEE84405B80759BC").assertOk();
+	}
+	
+	@Test
+	public void testParamAction() {
+		get("/mapping/param_action");
+		assertTrue(response.isOk());
+		
+		get("/mapping/param_action?action=action1");
+		response.assertOk().assertContentEquals("action1");
+		
+		get("/mapping/param_action?action=action2");
+		response.assertOk().assertContentEquals("action2");
+		
+		get("/mapping/param_action?action=action3").assertOk().assertContentEquals("otherAction");
+		
+		get("/mapping/param_action0").assertContentEquals("get");
+		post("/mapping/param_action0").assertStatusEquals(404);
+		post("/mapping/param_action0?do=1").assertContentEquals("post");
+		
+		get("/mapping/upload").assertContentEquals("get");
+		post("/mapping/upload").assertStatusEquals(404);
+		post("/mapping/upload?do=1").assertContentEquals("post");
+	}
+}

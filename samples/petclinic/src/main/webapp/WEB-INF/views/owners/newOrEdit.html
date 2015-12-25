@@ -1,0 +1,54 @@
+<!--@ layout=layouts/master  -->
+<div ht-fragment="content" class="container">
+    <h2>
+        <span ht-if="owner.isNew()">New </span> Owner
+    </h2>
+    <form ht-model="owner" ht-method="post" action="./ownerDetails.html" ht-action="${owner.isNew() ? 'create' : 'update'}"
+    	  class="form-horizontal" id="add-owner-form">
+    	  
+        <div class="control-group" ht-class-append="${errors.contains('owner.firstName') ? 'error' : ''}">
+            <label class="control-label">First Name</label>
+            <div class="controls">
+                <input type="text" ht-field="firstName" />
+                <span class="help-inline" ht-errors="owner.firstName">[error]</span>
+            </div>
+        </div>
+    
+        <div class="control-group" ht-class-append="${errors.contains('owner.lastName') ? 'error' : ''}">
+            <label class="control-label">Last Name</label>
+            <div class="controls">
+                <input type="text" ht-field="lastName" />
+                <span class="help-inline" ht-errors="owner.lastName">[error]</span>
+            </div>
+        </div>
+    
+        <div class="control-group" ht-class-append="${errors.contains('owner.address') ? 'error' : ''}">
+            <label class="control-label">Address</label>
+            <div class="controls">
+                <input type="text" ht-field="address" />
+                <span class="help-inline" ht-errors="owner.address">[error]</span>
+            </div>
+        </div>
+    
+        <div class="control-group" ht-class-append="${errors.contains('owner.city') ? 'error' : ''}">
+            <label class="control-label">City</label>
+            <div class="controls">
+                <input type="text" ht-field="city" />
+                <span class="help-inline" ht-errors="owner.city">[error]</span>
+            </div>
+        </div>
+    
+        <div class="control-group" ht-class-append="${errors.contains('owner.telephone') ? 'error' : ''}">
+            <label class="control-label">Telephone</label>
+            <div class="controls">
+                <input type="text" ht-field="telephone" />                
+                <span class="help-inline" ht-errors="owner.telephone">[error]</span>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button ht-if="owner.isNew()" type="submit">Add Owner</button>
+            <button ht-if="!owner.isNew()" type="submit">Update Owner</button>
+        </div>
+    </form>
+</div>

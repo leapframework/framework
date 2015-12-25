@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/domains" 
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
+            targetNamespace="http://www.leapframework.org/schema/domains">
+
+	<xsd:element name="domains">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:element ref="import" />
+					<xsd:element ref="entity-domain" />
+					<xsd:element ref="field-domain" />
+					<xsd:element ref="entity-domain-alias" />
+					<xsd:element ref="field-domain-alias" />
+					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+				</xsd:choice>
+			</xsd:sequence>
+			<xsd:attribute name="default-override" type="xsd:boolean"></xsd:attribute>
+			<xsd:anyAttribute namespace="##other" processContents="lax" />
+		</xsd:complexType>
+	</xsd:element>
+    
+    <xsd:element name="import">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies an XML config definition resource to import.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:attribute name="resource" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                The relative resource location of the XML (sqls definition) file to import,
+                                for example "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="check-existence" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                default value is true, set the value to false will skip this importing if resource not exists.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>                    
+                    </xsd:attribute>
+                    <xsd:attribute name="default-override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                set the default override attribute value defined in <command override="true|false" ../> element.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+    
+	<xsd:element name="entity-domain">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:choice minOccurs="0" maxOccurs="unbounded">
+					<xsd:element ref="field-domain"/>
+				</xsd:choice>						
+			</xsd:sequence>
+			<xsd:attribute name="name" type="xsd:string" use="required"/>
+			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
+		</xsd:complexType>
+	</xsd:element>
+	
+    <xsd:element name="entity-domain-alias">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                	<xsd:attribute name="domain" type="xsd:string" use="required"></xsd:attribute>
+                	<xsd:attribute name="alias"  type="xsd:string" use="optional"></xsd:attribute>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+	<xsd:element name="field-domain">
+		<xsd:complexType>
+			<xsd:attribute name="entity-domain" type="xsd:string"></xsd:attribute>
+			<xsd:attribute name="name" type="xsd:string" use="required" />
+			<xsd:attribute name="type" type="JdbcType" use="optional" />
+			<xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
+			<xsd:attribute name="length" type="xsd:int" use="optional" />
+			<xsd:attribute name="precision" type="xsd:int" use="optional" />
+			<xsd:attribute name="scale" type="xsd:int" use="optional" />
+			<xsd:attribute name="default-value" type="xsd:string" use="optional" />
+			<xsd:attribute name="insert" type="xsd:boolean"></xsd:attribute>
+			<xsd:attribute name="update" type="xsd:boolean"></xsd:attribute>
+			<xsd:attribute name="insert-value" type="xsd:string"></xsd:attribute>
+			<xsd:attribute name="update-value" type="xsd:string"></xsd:attribute>
+			<xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
+			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
+			<xsd:attribute name="override" type="xsd:boolean">
+				<xsd:annotation>
+					<xsd:documentation><![CDATA[
+                              if set to true this domain value will override the exists domain with same code. 
+                          ]]></xsd:documentation>
+				</xsd:annotation>
+			</xsd:attribute>
+		</xsd:complexType>
+	</xsd:element>
+    
+    <xsd:element name="field-domain-alias">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                	<xsd:attribute name="domain" type="xsd:string" use="required"></xsd:attribute>
+                	<xsd:attribute name="alias"  type="xsd:string" use="optional"></xsd:attribute>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:simpleType name="JdbcType">
+    	<xsd:restriction base="xsd:string">
+    		<xsd:enumeration value="varchar"></xsd:enumeration>  
+    		<xsd:enumeration value="bigint"></xsd:enumeration>
+    		<xsd:enumeration value="binary"></xsd:enumeration>
+    		<xsd:enumeration value="bit"></xsd:enumeration>
+    		<xsd:enumeration value="blob"></xsd:enumeration>
+    		<xsd:enumeration value="boolean"></xsd:enumeration>
+    		<xsd:enumeration value="char"></xsd:enumeration>
+    		<xsd:enumeration value="clob"></xsd:enumeration>
+    		<xsd:enumeration value="date"></xsd:enumeration>
+    		<xsd:enumeration value="decimal"></xsd:enumeration>
+    		<xsd:enumeration value="double"></xsd:enumeration>
+    		<xsd:enumeration value="float"></xsd:enumeration>
+    		<xsd:enumeration value="integer"></xsd:enumeration>    		
+    		<xsd:enumeration value="longvarbinary"></xsd:enumeration>
+    		<xsd:enumeration value="longvarchar"></xsd:enumeration>
+    		<xsd:enumeration value="numeric"></xsd:enumeration>
+    		<xsd:enumeration value="real"></xsd:enumeration>
+    		<xsd:enumeration value="smallint"></xsd:enumeration>
+    		<xsd:enumeration value="time"></xsd:enumeration>
+    		<xsd:enumeration value="timestamp"></xsd:enumeration>
+    		<xsd:enumeration value="tinyint"></xsd:enumeration>
+    		<xsd:enumeration value="varbinary"></xsd:enumeration>
+    		<xsd:enumeration value="nchar"></xsd:enumeration>
+    		<xsd:enumeration value="nvarchar"></xsd:enumeration>
+    		<xsd:enumeration value="longnvarchar"></xsd:enumeration> 
+    		<xsd:enumeration value="nclob"></xsd:enumeration>		  		    		    		    		    		
+    	</xsd:restriction>
+    </xsd:simpleType>
+</xsd:schema>

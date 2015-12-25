@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config" xmlns:orm="http://www.leapframework.org/schema/orm/config">
+
+	<additional-packages>
+		tested.models
+	</additional-packages>
+
+    <properties>
+        <property name="jdbc.driverClassName">org.h2.Driver</property>
+        <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="jdbc.username">sa</property>
+    </properties>
+    
+</config>

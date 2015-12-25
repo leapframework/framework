@@ -1,0 +1,65 @@
+[
+	{
+	    
+		name : "java-client",
+		
+		title : "MariaDB Java Client JDBC driver",
+    
+		driverClassName : "org.mariadb.jdbc.Driver",
+		
+		urlTemplate : "jdbc:mariadb://$host$:$port$/$database$",
+		
+		urlParameters : [
+			{
+				name : "host",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "localhost",
+			},
+			
+			{
+				name : "port",
+				
+				type : "integer",
+				
+				required : true,
+				
+				defaultValue : "3306"    
+			},
+			
+			{
+				name : "database",
+				
+				type : "string",
+				
+				required : true
+
+			},
+			
+			{
+				name : "username",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "root"
+			},
+			
+			{
+				name : "password",
+				
+				secret : true,
+				
+				type : "string",
+				
+				required : true
+			}
+		]
+	
+	}
+	
+]

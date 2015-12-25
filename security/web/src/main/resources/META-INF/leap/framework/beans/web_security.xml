@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+    
+    <!-- Base -->
+    <bean type="leap.web.RequestInterceptor" class="leap.web.security.SecurityRequestInterceptor">
+        <additional-type-def type="leap.web.AppListener"/>
+    </bean>
+    
+    <bean type="leap.web.security.SecurityConfig" class="leap.web.security.DefaultSecurityConfig" primary="true">
+        <additional-type-def type="leap.web.security.SecurityConfigurator"/>
+    </bean>
+    	  
+   	<bean type="leap.web.security.SecuredPathSource" class="leap.web.security.DefaultSecuredPathSource" primary="true"/>
+    	  
+    <bean type="leap.web.security.SecurityHandler" class="leap.web.security.DefaultSecurityHandler" primary="true"/>
+    
+    <!-- Authentication -->
+    <bean type="leap.web.security.authc.AuthenticationManager"      
+    	  class="leap.web.security.authc.DefaultAuthenticationManager" primary="true"/>
+    	  
+	<bean type="leap.web.security.authc.RememberMeManager"          
+		  class="leap.web.security.authc.DefaultRememberMeManager" primary="true"/>
+		  
+	<bean type="leap.web.security.authc.TokenAuthenticationManager" 
+		  class="leap.web.security.authc.DefaultTokenAuthenticationManager" primary="true"/>
+	
+    <!-- Authorization -->
+    <bean type="leap.web.security.authz.AuthorizationManager" 
+    	  class="leap.web.security.authz.DefaultAuthorizationManager" primary="true"/>
+    	  
+    <bean type="leap.web.security.authz.Authorizer" 
+    	  class="leap.web.security.authz.DefaultAuthorizer" primary="true"/>
+    
+   	<!-- session -->
+	<bean type="leap.web.security.SecuritySessionManager" 
+		  class="leap.web.security.DefaultSecuritySessionManager" primary="true"/>
+    
+    <!-- Credentials Resolvers -->
+    <bean type="leap.web.security.authc.credentials.CredentialsResolver" 
+          class="leap.web.security.user.UsernamePasswordResolver"/>
+	
+    <!-- Credentials Authenticators -->
+    <bean type="leap.web.security.authc.credentials.CredentialsAuthenticator"
+          class="leap.web.security.user.UsernamePasswordAuthenticator"/>
+          
+    <!-- User beans -->
+    <bean type="leap.web.security.user.UserStore"   class="leap.web.security.user.DefaultUserStore"   primary="true"/>
+    <bean type="leap.web.security.user.UserManager" class="leap.web.security.user.DefaultUserManager" primary="true"/>
+    
+    <!-- Login -->
+    <bean type="leap.web.security.login.LoginManager" 
+    	  class="leap.web.security.login.DefaultLoginManager" primary="true"/>
+    	  
+    <bean type="leap.web.security.login.LoginViewHandler" 
+          class="leap.web.security.login.DefaultLoginViewHandler" primary="true">
+    
+    	<additional-type-def type="leap.web.AppListener"/>
+    
+    </bean>
+    	  
+    <bean type="leap.web.security.login.LoginAjaxHandler"
+    	  class="leap.web.security.login.DefaultLoginAjaxHandler" primary="true"/>
+
+    <bean-list type="leap.web.security.login.LoginHandler">
+        <!-- resolve credentials -->
+		<bean class="leap.web.security.login.CredentialsResolvingHandler"/>
+		
+		<!-- authenticates the resolved credentials -->
+		<bean class="leap.web.security.login.CredentialsAuthenticationHandler"/>
+    </bean-list>
+    
+    <!-- Logout -->
+    <bean type="leap.web.security.logout.LogoutManager" 
+    	  class="leap.web.security.logout.DefaultLogoutManager" primary="true"/>
+          
+    <bean type="leap.web.security.logout.LogoutViewHandler"
+          class="leap.web.security.logout.DefaultLogoutViewHandler" primary="true"/>
+          
+    <bean type="leap.web.security.logout.LogoutAjaxHandler"
+          class="leap.web.security.logout.DefaultLogoutAjaxHandler" primary="true"/>
+    
+    <!-- csrf -->
+    <bean type="leap.web.security.csrf.CsrfManager" class="leap.web.security.csrf.DefaultCsrfManager" primary="true"/>
+    <bean type="leap.web.security.csrf.CsrfStore"   class="leap.web.security.csrf.SessionCsrfStore" primary="true"/>
+    <bean type="leap.web.security.csrf.CsrfHandler" class="leap.web.security.csrf.DefaultCsrfHandler" primary="true"/>
+    <bean type="leap.web.action.ActionInterceptor"  class="leap.web.security.csrf.CsrfActionInterceptor"/>
+    
+    <!--  token -->
+    <bean name="jwt" type="leap.web.security.authc.TokenAuthenticator" class="leap.web.security.user.JwtTokenAuthenticator"/>
+    
+	<beans if-class-present="leap.htpl.HtplContext">
+		<bean type="leap.htpl.interceptor.NodeInterceptor" class="leap.web.security.csrf.CsrfFormInterceptor"/>
+	</beans>
+
+</beans>

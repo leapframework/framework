@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config" xmlns:el="http://www.leapframework.org/schema/el/config">
+
+	<el:functions prefix="classes" class="leap.lang.Classes">
+		<el:function method="isPresent(java.lang.String)"/>	
+	</el:functions>
+	
+	<el:functions prefix="json" class="leap.lang.json.JSON">
+		<el:function method="decode(java.lang.String)"/>
+		<el:function method="encode(java.lang.Object)"/>
+		<el:function method="parse(java.lang.String)"/>
+		<el:function method="stringify(java.lang.Object)"/>	
+	</el:functions>	
+	
+	<el:functions prefix="arrays" class="leap.core.el.function.ArrayFuncs">
+		<el:function method="contains(java.lang.Object,java.lang.Object)"/>
+	</el:functions>
+	
+	<el:functions prefix="times" class="leap.core.el.function.TimeFuncs">
+		<el:function name="fmt"  method="format(java.lang.Object,java.lang.String)"/>
+		<el:function name="hour" method="hour(java.lang.Object)"/>
+	</el:functions>	
+	
+</config>

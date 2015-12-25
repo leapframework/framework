@@ -1,0 +1,27 @@
+[
+	{
+	    
+		name : "embedded",
+		
+		title : "Derby Embedded Jdbc Driver",
+		
+		type : "FILE",
+		
+		driverClassName : "org.apache.derby.jdbc.EmbeddedDriver",
+		
+		urlTemplate : "jdbc:derby:$file$",
+		
+		urlParameters: [
+			{
+				name : "file",
+				
+				title : "Database File path",
+				
+				type : "String", 
+				
+				required : true
+			}		    
+		    
+		]
+	}
+]

@@ -1,0 +1,64 @@
+[
+	{
+	    
+		name : "mysql-connector",
+		
+		title : "MySQL Connector/J JDBC driver",
+    
+		driverClassName : "com.mysql.jdbc.Driver",
+		
+		urlTemplate : "jdbc:mysql://$host$:$port$/$database$?useUnicode=true&characterEncoding=utf-8",
+		
+		urlParameters : [
+			{
+				name : "host",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "localhost",
+			},
+			
+			{
+				name : "port",
+				
+				type : "integer",
+				
+				required : true,
+				
+				defaultValue : "3306"    
+			},
+			
+			{
+				name : "database",
+				
+				type : "string",
+				
+				required : true,
+
+			},
+			
+			{
+				name : "username",
+				
+				type : "string",
+				
+				required : true,
+				
+				defaultValue : "root"
+			},
+			
+			{
+				name : "password",
+				
+				secret : true,
+				
+				type : "string",
+				
+				required : true
+			}
+		]		
+	
+	}
+]

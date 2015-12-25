@@ -1,0 +1,214 @@
+/*
+ * Copyright 2013 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package leap.orm.sql.parser;
+
+import java.util.List;
+
+import leap.junit.contexual.Contextual;
+import leap.junit.contexual.ContextualIgnore;
+import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
+import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resources;
+import leap.orm.sql.Sql;
+import leap.orm.sql.Sql.ParseLevel;
+import leap.orm.sql.Sql.Scope;
+import leap.orm.sql.ast.AstUtils;
+import leap.orm.sql.ast.SqlAllColumns;
+import leap.orm.sql.ast.SqlObjectName;
+import leap.orm.sql.ast.SqlSelect;
+import leap.orm.sql.ast.SqlTableName;
+import leap.orm.sql.ast.SqlTop;
+
+import org.junit.Before;
+import org.junit.Test;
+
+
+@ContextualIgnore
+public class SqlParserMoreTest extends SqlParserTestCase {
+	
+	private static final Log log = LogFactory.get(SqlParserMoreTest.class);
+
+	@Override
+	@Before
+	public void setup(){
+		if(null == level){
+			level = ParseLevel.MORE;
+		}
+	}
+	
+	@Test
+	public void testSimpleSubQuery() {
+		Sql sql = sql("select * from t where id = (select id from t1");
+		
+		SqlSelect select = (SqlSelect)sql.nodes()[0];
+
+		SqlSelect subQuery = select.findLastNode(SqlSelect.class);
+		assertNotNull(subQuery);
+	}
+	
+	@Test
+	public void testSimpleJoin() {
+		assertParse("select * from t join t1 on t.id = t1.id");
+	}
+	
+	@Test
+	public void testSimpleUpdate() {
+		assertParse("update person set firstName = ?");
+		
+		assertParse("update person set firstName = ? where id = ?");
+		
+		assertParse("update person set firstName = #firstName# where id=#id#");
+	}
+	
+	@Test
+	public void testSimpleDynamic() {
+	    assertParse("select * from t {?limit :count}");
+	    
+	    split("select * from t {?limit :count}");
+	}
+	
+    @Test
+    public void testDyanmicWithParams() {
+        assertParse("select * from t {?limit :count;nullable:true}");
+        
+        split("select * from t {?limit :count; nullable:true}");
+    }
+	
+	@Test
+	@Contextual
+	public void testBug(){
+		String text = Strings.trim(Resources.getContent("classpath:/test/sqls/parse/bug.sql"));
+		if(!Strings.isEmpty(text)){
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s)", sqls.size());
+
+            for (int i = 0; i < sqls.size(); i++) {
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}", (i + 1), sql);
+                assertParse(sql);
+            }
+		}
+	}
+	
+	@Test
+	@Contextual
+	public void testFromResources() throws Exception{
+		for(Resource res : Resources.scan("classpath:/test/sqls/parse/**/*.sql")){
+			String text = res.getContent();
+			
+			log.info("Split sqls in '{}'",res.getFilename());
+			
+			List<String> sqls = split(text);
+			
+			log.info("Test {} sql statement(s) in '{}'",sqls.size(),res.getFilename());
+			
+			for(int i=0;i<sqls.size();i++){
+				String sql = Strings.trim(sqls.get(i));
+				log.debug("  Sql {} \n {}",(i+1),sql);
+				assertParse(sql);
+			}
+		}
+	}
+	
+	@Test
+	@Contextual
+	public void testFromDruidSqls() {
+	    ResourceSet rs1 = Resources.scan("classpath:/test/sqls/druid/**/*.sql");
+	    ResourceSet rs2 = Resources.scan("classpath:/test/sqls/druid/**/*.txt");
+	    
+	    for(Resource res : rs1.concat(rs2)){
+	        
+            String text = res.getContent();
+
+            String[] sqls = Strings.split(text,"---------------------------");
+
+            log.info("Test {} sql statement(s) in '{}'", sqls.length, res.getFilename());
+
+            for (int i = 0; i < sqls.length; i++) {
+                String sql = Strings.trim(sqls[i]);
+                
+                if(sql.endsWith(";")) {
+                    sql = sql.substring(0, sql.length() - 1).trim();
+                }
+                
+                log.debug("  Sql {} \n {}", (i + 1), sql);
+                assertParse(sql);
+            }
+	    }
+	}
+
+	/*
+	@Test
+	public void testParse(){
+		String sql = "SELECT d.department_id" + 
+					 " FROM departments d FULL OUTER JOIN employees e " + 
+					 " ON d.department_id = e.department_id";
+		assertParse(sql);
+	}
+	*/
+	
+	@Test
+	public void testTop(){
+		SqlTop top = assertParse("select top 10 * from t").findFirstNode(SqlTop.class);
+		assertNotNull(top);
+		assertEquals(10, top.getNumber());
+		
+		top = assertParse("select distinct top 10 * from t").findFirstNode(SqlTop.class);
+		assertNotNull(top);
+		assertEquals(10, top.getNumber());
+		
+		top = assertParse("select all top 10 * from t").findFirstNode(SqlTop.class);
+		assertNotNull(top);
+		assertEquals(10, top.getNumber());
+	}
+	
+	@Test
+	public void testDotName(){
+		assertParse("select p.col1 from s1.s2.t p");
+		assertParse("select t.* from t where t.id = ?");
+	}
+	
+	@Test
+	public void testSelectItems(){
+		SqlAllColumns allColumns = assertParse("select * from t").findFirstNode(SqlAllColumns.class);
+		assertNotNull(allColumns);
+		
+		assertParse("select c1 c1 from t");
+		
+		sql = assertParse("select c1,c2,c3,t1.c5,t2.*,c5+1 from table1 t1, table 2 t2 where t1.id = t2.id");
+		allColumns = sql.findFirstNode(SqlAllColumns.class);
+		assertNotNull(allColumns);
+		assertEquals("t2",allColumns.getTableAlias());
+		
+		SqlObjectName c5 = AstUtils.findFirstObjectName(sql.nodes(), "c5");
+		assertNotNull(c5);
+		assertEquals(Scope.SELECT_LIST,c5.getScope());
+	}
+	
+	@Test
+	public void testFromItems(){
+		SqlTableName t = AstUtils.findFirstTableName(assertParse("select * from t").nodes(),"t");
+		assertNotNull(t);
+		
+		t = AstUtils.findFirstTableName(assertParse("select * from t join t1 on t.id = t1.id").nodes(),"t");
+		assertNotNull(t);
+		assertNull(t.getAlias());
+	}
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+
+    <!-- init bean -->
+    <bean type="leap.core.AppContextInitializable" class="leap.orm.OrmInit"/>
+    
+    <!-- config -->
+    <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>
+    
+    <!-- factory -->
+    <bean type="leap.orm.OrmFactory" class="leap.orm.DefaultOrmFactory" primary="true"/>
+    
+    <!-- domains -->
+    <bean type="leap.orm.domain.Domains"       class="leap.orm.domain.DefaultDomains" primary="true"/>
+    <bean type="leap.orm.domain.DomainCreator" class="leap.orm.domain.DefaultDomainCreator" primary="true"/>
+	<bean type="leap.orm.domain.DomainSource"  class="leap.orm.domain.XmlDomainSource"/>
+	<bean type="leap.orm.domain.DomainSource"  class="leap.orm.domain.ClassDomainSource"/>
+
+    <!-- metadata & mapping -->
+    <bean type="leap.orm.metadata.OrmMetadataManager" class="leap.orm.metadata.DefaultMetadataManager" primary="true"/>
+    <bean type="leap.lang.meta.MTypeFactory"       class="leap.orm.metadata.OrmMTypeFactory"/>
+    
+    
+    <!-- cannot change the order of following beans for type : MappingLoader -->
+    <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.ClassMapper"/>
+    <bean type="leap.orm.mapping.Mapper" class="leap.orm.model.ModelMapper">
+    	<additional-type-def type="leap.orm.OrmContextInitializable"/>
+    </bean>
+    <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.RelationMapper"/>
+    
+    <bean type="leap.orm.mapping.MappingProcessor" class="leap.orm.mapping.ClassMappingProcessor"/>
+    <bean type="leap.orm.mapping.MappingProcessor" class="leap.orm.mapping.SchemaMappingProcessor"/>
+    <bean type="leap.orm.mapping.MappingProcessor" class="leap.orm.validation.ValidationMappingProcessor"/>
+    
+    <!-- strategy beans -->
+    <bean type="leap.orm.naming.NamingStrategy" class="leap.orm.naming.DefaultNamingStrategy" primary="true"/>
+    <bean type="leap.orm.mapping.MappingStrategy" class="leap.orm.mapping.DefaultMappingStrategy" primary="true"/>
+    <bean type="leap.orm.parameter.ParameterStrategy" class="leap.orm.parameter.DefaultParameterStrategy" primary="true"/>
+  
+    <!-- sql -->
+    <bean type="leap.orm.sql.SqlFactory" class="leap.orm.sql.DefaultSqlFactory" primary="true"/>
+	<bean type="leap.orm.sql.SqlSource"  class="leap.orm.sql.ClasspathSqlSource"/>
+	<bean type="leap.orm.sql.SqlReader"  class="leap.orm.sql.XmlSqlReader"/>
+
+    <!-- sql languages -->
+    <bean name="dynamic" type="leap.orm.sql.SqlLanguage"  class="leap.orm.sql.DynamicSqlLanguage" primary="true"/>
+    
+    <bean name="dynamic:smart" type="leap.orm.sql.SqlLanguage" class="leap.orm.sql.DynamicSqlLanguage">
+        <property name="mode" value="smart"/>
+    </bean>    
+    
+    <bean name="dynamic:simple" type="leap.orm.sql.SqlLanguage" class="leap.orm.sql.DynamicSqlLanguage">
+        <property name="mode" value="simple"/>
+    </bean>
+    
+    <bean name="jdbc" type="leap.orm.sql.SqlLanguage" class="leap.orm.sql.JdbcSqlLanguage"/>
+	
+    <!-- jdbc executor factory -->
+    <bean type="leap.orm.jdbc.JdbcExecutorFactory" class="leap.orm.jdbc.DefaultJdbcExecutorFactory" primary="true"/>
+    
+    <!-- resultset readers -->
+	<bean type="leap.orm.reader.EntityReader" class="leap.orm.reader.DefaultEntityReader" primary="true"/>
+	<bean type="leap.orm.reader.RowReader"    class="leap.orm.reader.DefaultRowReader"    primary="true"/>
+
+	<!-- command -->
+    <bean type="leap.orm.command.CommandFactory" class="leap.orm.command.DefaultCommandFactory"	primary="true"/>
+    
+    <!-- query -->
+    <bean type="leap.orm.query.QueryFactory" class="leap.orm.query.DefaultQueryFactory" primary="true"/>
+	
+    <!-- id generators -->
+    <bean name="auto" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.AutoIdGenerator" primary="true"/>
+    <bean name="none" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.NoneIdGenerator"/>
+    <bean name="uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.UUIDGenerator">
+    	<additional-type-def type="leap.orm.generator.ValueGenerator" name="uuid"/>
+    </bean>
+    
+    <!-- data factory beans -->
+    <bean type="leap.orm.df.DataGenerator" class="leap.orm.df.RandomDataGenerator" primary="true"/>
+    <bean type="leap.orm.df.DomainDatas"   class="leap.orm.df.DefaultDomainDatas"  primary="true"/>
+    <bean name="domain" type="leap.orm.df.DataGenerator" class="leap.orm.df.DomainDataGenerator"/>
+    
+    <!-- validation -->
+    <bean type="leap.orm.validation.EntityValidator" class="leap.orm.validation.DefaultEntityValidator" primary="true"/>
+    
+    <!-- linq -->
+    <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
+</beans>

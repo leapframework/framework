@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+    <init class="test.beans.InitClass"/>
+    
+    <bean id="simpleBean" class="test.beans.SimpleBean"/>
+    
+    <import resource="../imp/imp.beans.xml"/>
+    
+    <bean id="testBean" class="test.beans.TestBean">
+        <property name="string" value="string1"/>
+        
+        <property name="int1" value="${notExistsConfigProperty}" default-value="100"/>
+        
+        <property name="int2" value="${notExistsConfigProperty:1000}"/>
+        
+        <property name="simpleBean" ref="simpleBean"/>
+        
+        <property name="listString">
+            <list>
+                <value>${placeholder1}</value>
+                <value>str2</value>
+            </list>
+        </property>
+        
+        <property name="listObject">
+            <list>
+                <value type="java.lang.Integer">1</value>
+                <ref bean="simpleBean"/>
+            </list>
+        </property>
+        
+        <property name="properties">
+            <props>
+                <prop key="p1">s1</prop>
+                <prop key="p2">s2</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="testBean1" class="test.beans.TestBean">
+        <property name="simpleBean">
+            <bean class="test.beans.SimpleBean"/>
+		</property>
+		<property name="string" value="string1"/>
+		<property name="map">
+			<map>
+				<entry key="a" value="1"/>
+				<entry key="b" value="2"/>
+				<entry key="c">
+					<map>
+						<entry key="d" value="3"/>
+					</map>
+				</entry>
+				<entry key="f">
+					<map>
+						<entry key="g" value="4"/>
+					</map>
+				</entry>				
+			</map>
+		</property>
+    </bean>
+    
+    <alias id="testBean" alias="testBeanAlias1"/>
+    
+    <bean id="testBeanWithConstructor" class="test.beans.TestBean">
+        <constructor-arg value="string1"/>
+        <property name="string" value="string1"/>
+    </bean>
+    
+    <bean id="testBeanWithCollectionConstructor" class="test.beans.TestBean">
+        <constructor-arg>
+        	<list>
+        		<value>string1</value>
+        		<value>string2</value>
+        	</list>
+        </constructor-arg>
+        <constructor-arg>
+        	<map>
+        		<entry key="bean1" value-ref="testBean1">
+        		</entry>
+        		<entry key="bean2" value-ref="testBeanWithConstructor">
+        		</entry>
+        	</map>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="testBeanWithConstructorArgRefConstructor" class="test.beans.TestBean">
+    	<constructor-arg ref="testBeanWithCollectionConstructor" type="test.beans.TestBean"></constructor-arg>
+    	<constructor-arg ref="testBeanWithConstructor"></constructor-arg>
+    </bean>
+    
+    <bean id="testBeanWithConstructorArgRefConstructor1" class="test.beans.TestBean">
+    	<constructor-arg ref="listBean" type="java.util.List"></constructor-arg>
+    	<constructor-arg ref="mapMap" type="java.util.Map"></constructor-arg>
+    </bean>
+    
+    <bean id="testBeanWithDefinedBeanConstructor" class="test.beans.TestBean">
+    	<constructor-arg>
+        	<bean class="test.beans.TestBean">
+        		<property name="string" value="testBeanWithDefinedBeanConstructor"></property>
+        	</bean>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="testBeanWithLoadOverConstructor" class="test.beans.TestBean">
+        <constructor-arg>
+        	<map>
+        		<entry key="bean1" value-ref="testBean1">
+        		</entry>
+        		<entry key="bean2" value-ref="testBeanWithConstructor">
+        		</entry>
+        	</map>
+        </constructor-arg>
+    </bean>
+    
+    <util-list id="listBean" value-type="java.lang.Integer">
+        <value>1</value>
+        <value>2</value>
+    </util-list>
+    
+    <util-set id="setBean" value-type="java.lang.Integer">
+        <value>1</value>
+        <value>2</value>
+    </util-set>
+    
+    <util-map id="mapBean">
+        <entry key="k1" value="v1"/>
+        <entry key="k2">
+            <value>v2</value>
+        </entry>
+    </util-map>    
+    
+    <util-map id="mapMap">
+        <entry key="k1" value="v1"/>
+        <entry key="k2">
+            <value>v2</value>
+        </entry>
+    </util-map>     
+</beans>

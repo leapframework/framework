@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config" 
+		xmlns:el="http://www.leapframework.org/schema/el/config"
+		xmlns:orm="http://www.leapframework.org/schema/orm/config">
+    
+    <base-package>leap.orm.tested</base-package>
+    
+    <properties>
+        <property name="h2.driverClassName">org.h2.Driver</property>
+        <property name="h2.url">jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="h2.username">sa</property>
+    </properties>
+    
+    <properties prefix="orm">
+    	<property name="tableNamingStyle" value="lower_underscore_"/>
+    	<property name="columnNamingStyle" value="lower_underscore_"/>
+    </properties>
+     
+    <el:functions prefix="orm_test" class="leap.orm.tested.model.Model1Ref">
+    	<el:function method="test()"/>
+    </el:functions>
+    
+    <orm:models datasource="ds1">
+		<orm:package name="tested.model"/>
+		<orm:class   name="leap.orm.tested.model.Model3"/>
+    </orm:models>
+      
+    <import resource="config.local.xml" check-existence="false" default-override="true"/>
+</config>   

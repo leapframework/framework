@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <!-- crypto -->
+    <bean name="standard" type="leap.core.security.crypto.PasswordEncoder" class="leap.core.security.crypto.StandardPasswordEncoder">
+        <constructor-arg value="${secret}"/>
+    </bean>
+    
+    <bean name="bcrypt" type="leap.core.security.crypto.PasswordEncoder" class="leap.core.security.crypto.bcrypt.BCryptPasswordEncoder" primary="true"/>
+</beans>

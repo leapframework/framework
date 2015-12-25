@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<domains xmlns="http://www.leapframework.org/schema/domains">
+
+	<!-- simple field-domain domains -->
+	<field-domain name="code"   type="varchar" length="38"  auto-mapping="true"/>
+	<field-domain name="name"   type="varchar" length="150" auto-mapping="true"/>
+	<field-domain name="title"  type="varchar" length="300" auto-mapping="true"/>
+	<field-domain name="email"  type="varchar" length="50"  auto-mapping="true" alias="emailAddress"/>
+	
+	<!-- entity domain : person -->
+	<entity-domain name="Person" alias="User, People, Employee">
+		<field-domain name="name"      type="varchar" length="100" auto-mapping="true"/>
+		<field-domain name="firstName" type="varchar" length="50"  auto-mapping="true"/>
+		<field-domain name="lastName"  type="varchar" length="50"  auto-mapping="true"/>
+		<field-domain name="address"   type="varchar" length="500" auto-mapping="true"/>
+		<field-domain name="city"      type="varchar" length="100" auto-mapping="true"/>
+		<field-domain name="telephone" type="varchar" length="20"  auto-mapping="true"/>
+	</entity-domain>
+</domains>

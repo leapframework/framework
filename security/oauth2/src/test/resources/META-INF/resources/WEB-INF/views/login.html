@@ -1,0 +1,15 @@
+<div>
+	<h1>Login with your Account</h1>
+	<form action="" method="post">
+		<input type="hidden" name="return_url" value="${return_url}"/>
+		User name : <input type="text" id="username" name="username" value="${param.username}"/>
+				    <span style="color:red" ht-errors="username">[error]</span>
+		<p/>
+		Password  : <input type="password" name="password"/><span style="color:red" ht-errors="password">[error]</span>
+		<p/>
+		<input type="submit" value="Login"/>
+	</form>
+	<script type="text/javascript">
+		document.getElementById('username').focus();
+	</script>
+</div>
