@@ -27,7 +27,7 @@ public interface Authentication {
 	boolean isAuthenticated();
 	
 	/**
-	 * Returns <code>true</code> if this authentication is remember-me. 
+	 * Returns <code>true</code> if the authentication is authenticated from remember-me store.
 	 */
 	boolean isRememberMe();
 	
@@ -45,6 +45,18 @@ public interface Authentication {
 	 * Optional. Returns the authentication client.
 	 */
 	ClientPrincipal getClientPrincipal();
+
+	/**
+	 * Optional. Returns the authentication token if exists.
+     */
+	String getToken();
+
+	/**
+	 * Sets the authentication token.
+	 *
+	 * @throws IllegalStateException if the authentication token already exists.
+     */
+	void setToken(String token) throws IllegalStateException;
 
 	/**
 	 * Returns <code>true</code> if the authentication includes client.

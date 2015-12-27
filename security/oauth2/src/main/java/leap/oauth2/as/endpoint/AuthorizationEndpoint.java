@@ -52,7 +52,6 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     public static final String STATE_ATTRIBUTE   = "oauth2.state";
     public static final String PARAMS_ATTRIBUTE  = "oauth2.params";
 	
-    protected @Inject WebConfig   webConfig;
     protected @Inject ViewSource  viewSource;
     protected @Inject UserManager um;
     

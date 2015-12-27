@@ -127,9 +127,9 @@ public class DefaultLoginManager implements LoginManager {
             handleLoginSuccessView(request, response, context);
         }else{
             if(request.isAjax()) {
-                ajaxHandler.handleLoginFailed(request, response, context);
+                ajaxHandler.handleLoginFailure(request, response, context);
             }else{
-                viewHandler.handleLoginFailed(request, response, context);
+                viewHandler.handleLoginFailure(request, response, context);
             }
         }
     }

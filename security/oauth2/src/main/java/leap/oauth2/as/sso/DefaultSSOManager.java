@@ -42,8 +42,6 @@ public class DefaultSSOManager implements SSOManager,AppInitializable,SecurityIn
     @Override
     public void onAuthenticated(Request request, Response response, AuthzAuthentication authc) throws Throwable {
 
-
-
     }
 
 }

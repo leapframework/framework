@@ -19,7 +19,7 @@ import leap.core.security.ClientPrincipal;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 
-public class SimpleAuthentication implements Authentication {
+public class SimpleAuthentication extends AbstractAuthentication implements Authentication {
 	
 	protected Credentials     credentials;
 	protected UserPrincipal   userPrincipal;
