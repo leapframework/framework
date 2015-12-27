@@ -48,7 +48,7 @@ public class DmoTest extends OrmTestCase {
 	public void testCreateTable() {
 	    EntityMapping em = metadata.tryGetEntityMapping(CreationEntity.class);
 	    if(null == em) {
-	        dmo.cmdCreateEntity(CreationEntity.class).setDropTableIfExists(true).execute(false);
+	        dmo.cmdCreateEntity(CreationEntity.class).execute();
 	        em = metadata.getEntityMapping(CreationEntity.class);
 	    }
 	    if(db.checkTableExists(em.getTable())) {

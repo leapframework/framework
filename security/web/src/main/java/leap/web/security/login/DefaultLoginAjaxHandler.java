@@ -33,7 +33,7 @@ public class DefaultLoginAjaxHandler implements LoginAjaxHandler {
     }
 
     @Override
-    public void handleLoginFailed(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
         response.setStatus(HTTP.SC_UNAUTHORIZED);
         
         //TODO : error message

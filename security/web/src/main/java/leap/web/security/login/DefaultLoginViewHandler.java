@@ -53,7 +53,7 @@ public class DefaultLoginViewHandler implements LoginViewHandler,AppListener {
     }
 	
     @Override
-    public void handleLoginFailed(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
         goLoginUrl(request, response, context);
     }
 	

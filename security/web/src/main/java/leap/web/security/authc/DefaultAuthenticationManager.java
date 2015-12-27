@@ -89,16 +89,16 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     public void loginImmediately(Request request, Response response, Authentication authc) {
 		saveAuthentication(request, response, authc);
 		
-		for(AuthenticationHandler h : handlers) {
-			h.onLoginSuccess(request, response, authc);
-		}
-		
 		if(securityConfig.isAuthenticationTokenEnabled()) {
 			tokenAuthenticationManager.onLoginSuccess(request, response, authc);
 		}
 		
 		if(securityConfig.isRememberMeEnabled() && !authc.isRememberMe()) {
 			rememberMeManager.onLoginSuccess(request, response, authc);	
+		}
+
+		for(AuthenticationHandler h : handlers) {
+			h.onLoginSuccess(request, response, authc);
 		}
 	}
 

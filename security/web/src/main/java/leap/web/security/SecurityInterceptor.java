@@ -15,12 +15,13 @@
  */
 package leap.web.security;
 
+import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.Authentication;
 
-public interface SecurityInterceptor {
+public interface SecurityInterceptor extends Interceptor{
 
 	default State preResolveAuthentication(Request request,Response response, SecurityContextHolder context) throws Throwable {
 		return State.CONTINUE;

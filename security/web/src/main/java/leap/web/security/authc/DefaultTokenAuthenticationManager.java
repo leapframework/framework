@@ -15,15 +15,11 @@
  */
 package leap.web.security.authc;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
+import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.SimpleTokenCredentials;
 import leap.core.security.token.TokenCredentials;
@@ -39,14 +35,17 @@ import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecuritySessionManager;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import java.io.IOException;
+
 public class DefaultTokenAuthenticationManager extends CookieBasedAuthenticationHandler implements TokenAuthenticationManager,PostCreateBean {
 	
 	private static final Log log = LogFactory.get(DefaultTokenAuthenticationManager.class);
 	
     protected @Inject SecurityConfig         securityConfig;
     protected @Inject SecuritySessionManager sessionManager;
-	protected @Inject AuthenticationManager  authcManager;
-	
+
 	protected TokenAuthenticator tokenAuthenticator;
 	protected String  			 logoutToken;
 	
@@ -63,7 +62,10 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 
 	@Override
 	public State resolveAuthentication(Request request, Response response, AuthenticationContext context) throws ServletException, IOException {
-		
+		if(!securityConfig.isAuthenticationTokenEnabled()) {
+            return State.CONTINUE;
+        }
+
 		String token = getToken(request);
 		if(Strings.isEmpty(token)) {
 			return State.CONTINUE;
@@ -110,13 +112,23 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 			sessionManager.removeAuthentication(request);
 		}
 
-		context.setAuthentication(new SimpleAuthentication(principal,credentials));
+        authc = new TokenAuthentication(principal, credentials);
+        authc.setToken(token);
+		context.setAuthentication(authc);
+
 		return State.INTERCEPTED;
 	}
 
 	@Override
 	public void onLoginSuccess(Request request, Response response, Authentication authc) {
+        if(authc instanceof TokenAuthentication) {
+            return;
+        }
+
 		String token = tokenAuthenticator.generateAuthenticationToken(request, response, authc);
+
+		authc.setToken(token);
+
 		setCookie(request, response, token);
 	}
 
@@ -164,5 +176,10 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 	    	throw new AppConfigException("Bean of type '" + TokenAuthenticator.class.getSimpleName() + "' and named '" + tokenType + "' does not exists");
 	    }
     }
-	
+
+    protected static final class TokenAuthentication extends SimpleAuthentication {
+        public TokenAuthentication(UserPrincipal user, Credentials credentials) {
+            super(user, credentials);
+        }
+    }
 }
