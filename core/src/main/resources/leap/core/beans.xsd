@@ -39,7 +39,8 @@
 			<xsd:attribute name="if-class-present" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-servlet-environment" use="optional" type="xsd:boolean"/>
 			<xsd:attribute name="default-lazy-init" default="true" type="xsd:boolean"/>
-
+			<xsd:attribute name="default-auto-inject" default="false" type="xsd:boolean"/>
+			
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -78,8 +79,8 @@
 		<xsd:sequence>
 			<xsd:element ref="description" minOccurs="0"/>
 			<xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="additional-type-def" type="typeDefType"/>
-                <xsd:element name="register-bean-factory" type="factoryDefType"/>
+                <xsd:element ref="additional-type-def"/>
+                <xsd:element ref="register-bean-factory"/>
 				<xsd:element ref="constructor-arg"/>
 				<xsd:element ref="property"/>
 				<xsd:element ref="qualifier"/>
@@ -131,6 +132,8 @@
 	</xsd:element>
 
 	<xsd:element name="constructor-arg" type="argumentType"/>
+	<xsd:element name="additional-type-def" type="typeDefType"/>
+	<xsd:element name="register-bean-factory" type="factoryDefType"/>
 	
 	<xsd:element name="method-arg" type="argumentType"/>
 	
