@@ -17,7 +17,7 @@ package leap.core;
 
 public class Version {
 
-    private static final String buildtime = "2015-12-25T04:43:20Z";
+    private static final String buildtime = "2015-12-29T08:59:25Z";
     private static final String version   = "0.1.0-SNAPSHOT";
     
     public static String name(){
