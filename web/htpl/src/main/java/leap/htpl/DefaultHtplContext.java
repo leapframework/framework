@@ -22,7 +22,7 @@ import leap.core.i18n.MessageSource;
 import leap.core.web.RequestBase;
 import leap.core.web.assets.AssetSource;
 
-public class DefaultHtplContext extends AbstractHtplContext implements HtplContext {
+public class DefaultHtplContext extends AbstractHtplContext{
 
 	protected String	    	 contextPath;
 	protected RequestBase   	 request;

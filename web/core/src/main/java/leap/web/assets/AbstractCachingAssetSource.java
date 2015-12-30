@@ -107,7 +107,13 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
             } catch (Throwable e) {
                 throw new AssetException("Error loading asset '" + path + "'", e);
             }
-
+			
+			//check default locale cacheKey
+			if(asset == null){
+				cacheKey = getAssetCacheKey(path, defaultLocale);
+				asset = cache.get(cacheKey);
+			}
+			
 			if (asset == null) {
 				asset = UNRESOLVED_ASSET;
 			}
