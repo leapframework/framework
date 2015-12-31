@@ -17,32 +17,30 @@ package leap.oauth2.as;
 
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.client.AuthzClient;
+import leap.web.security.authc.Authentication;
 import leap.web.security.user.UserDetails;
 
 public class SimpleAuthzAuthentication implements AuthzAuthentication {
 
-    protected AuthzClient client;
-    protected UserDetails user;
-    protected OAuth2Params params;
-    
-    public SimpleAuthzAuthentication() {
-        super();
-    }
+    protected AuthzClient    client;
+    protected UserDetails    user;
+    protected OAuth2Params   params;
+    protected Authentication authc;
     
     public SimpleAuthzAuthentication(OAuth2Params params, AuthzClient client){
         this.params = params;
         this.client = client;
     }
-    
-    public SimpleAuthzAuthentication(OAuth2Params params, UserDetails user){
-        this.params = params;
-        this.user   = user;
-    }
 
     public SimpleAuthzAuthentication(OAuth2Params params, AuthzClient client, UserDetails user){
+        this(params, client, user, null);
+    }
+
+    public SimpleAuthzAuthentication(OAuth2Params params, AuthzClient client, UserDetails user, Authentication authc){
         this.params = params;
         this.client = client;
-        this.user   = user;
+        this.user = user;
+        this.authc = authc;
     }
 
     @Override
@@ -60,4 +58,8 @@ public class SimpleAuthzAuthentication implements AuthzAuthentication {
         return params;
     }
 
+    @Override
+    public Authentication getAuthentication() {
+        return authc;
+    }
 }

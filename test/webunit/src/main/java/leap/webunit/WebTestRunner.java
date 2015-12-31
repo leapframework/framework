@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,10 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.junit;
+package leap.webunit;
 
-import leap.core.AppContext;
-import leap.core.BeanFactory;
 import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
@@ -25,36 +23,23 @@ import org.junit.runners.model.InitializationError;
 
 import java.util.List;
 
-public class AppTestRunner extends BlockJUnit4ClassRunner {
-    
-    final static BeanFactory factory;
-	
-	static {
-		factory = AppContext.initStandalone().getBeanFactory();
-	}
+public class WebTestRunner extends BlockJUnit4ClassRunner {
+    public WebTestRunner(Class<?> klass) throws InitializationError {
+        super(klass);
 
-	public AppTestRunner(Class<?> klass) throws InitializationError {
-	    super(klass);
-
-		DEV.setCurrentTestClass(klass);
+        DEV.setCurrentTestClass(klass);
     }
 
-	@Override
-    protected void validateInstanceMethods(List<Throwable> errors) {        
-		validatePublicVoidNoArgMethods(After.class, false, errors);
-		validatePublicVoidNoArgMethods(Before.class, false, errors);
-		validateTestMethods(errors);
+    @Override
+    protected void validateInstanceMethods(List<Throwable> errors) {
+        validatePublicVoidNoArgMethods(After.class, false, errors);
+        validatePublicVoidNoArgMethods(Before.class, false, errors);
+        validateTestMethods(errors);
 
 		/* do not throw error is no test cases in this class.
         if (computeTestMethods().size() == 0) {
             errors.add(new Exception("No runnable methods"));
         }
         */
-	}
-
-	@Override
-	protected Object createTest() throws Exception {
-        return factory.inject(super.createTest());
     }
-	
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core;
+package leap.lang.tools;
 
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -22,14 +22,39 @@ import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 
-class Maven {
-	private static final Log log = LogFactory.get(Maven.class);
-	
-	static boolean isMavenProject(Object externalContext) {
-		return getMavenProjectHome(externalContext) != null;
+/**
+ * Development environment tools.
+ */
+public class DEV {
+	private static final Log log = LogFactory.get(DEV.class);
+
+    private static final ThreadLocal<Class<?>> testClass = new ThreadLocal<>();
+
+    /**
+     * Sets current running test class.
+     */
+    public static void setCurrentTestClass(Class<?> cls) {
+        testClass.set(cls);
+    }
+
+    /**
+     * Returns current running test class or <code>null</code>.
+     */
+    public static Class<?> getCurrentTestClass() {
+        return testClass.get();
+    }
+
+	/**
+	 * Returns <code>true</code> if running in development project.
+     */
+	public static boolean isDevProject(Object externalContext) {
+		return getProjectHome(externalContext) != null;
 	}
 
-	static FileResource getMavenProjectHome(Object externalContext) {
+	/**
+	 * Returns the development project's home.
+     */
+	public static FileResource getProjectHome(Object externalContext) {
 		if(isServletContext(externalContext)){
 			return getWebAppMavenProjectHome(externalContext);
 		}else{

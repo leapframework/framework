@@ -27,7 +27,9 @@ import leap.webunit.client.THttpResponse;
 import leap.webunit.server.TWebServer;
 
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 
+@RunWith(WebTestRunner.class)
 public abstract class WebTestBase extends TestBase {
 	
     private static THttpClient httpClient;
@@ -35,7 +37,7 @@ public abstract class WebTestBase extends TestBase {
 
     protected static int            httpPort  = TWebServer.DEFAULT_HTTP_PORT;
     protected static int            httpsPort = TWebServer.DEFAULT_HTTPS_PORT;
-    protected static TWebServer    server;
+    protected static TWebServer     server;
     protected static ServletContext rootServletContext;
 	protected static boolean        defaultHttps;
 	protected static boolean        duplicateRootContext;

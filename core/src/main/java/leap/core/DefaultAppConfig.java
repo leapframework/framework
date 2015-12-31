@@ -62,6 +62,7 @@ import leap.lang.security.RSA;
 import leap.lang.security.RSA.RsaKeyPair;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
+import leap.lang.tools.DEV;
 
 /**
  * a default implementation of {@link AppConfig}
@@ -375,7 +376,7 @@ public class DefaultAppConfig implements AppConfig {
 	
 	protected String autoDetectProfileName(){
 		//Auto detect development environment (maven environment)
-		if(Maven.isMavenProject(externalContext)){
+		if(DEV.isDevProject(externalContext)){
 			return AppProfile.DEVELOPMENT.getName();
 		}else{
 			return DEFAULT_PROFILE;

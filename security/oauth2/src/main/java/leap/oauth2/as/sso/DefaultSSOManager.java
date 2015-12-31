@@ -26,6 +26,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfigurator;
 import leap.web.security.SecurityInterceptor;
+import leap.web.security.authc.Authentication;
 
 public class DefaultSSOManager implements SSOManager,AppInitializable,SecurityInterceptor {
 
@@ -42,6 +43,6 @@ public class DefaultSSOManager implements SSOManager,AppInitializable,SecurityIn
     @Override
     public void onAuthenticated(Request request, Response response, AuthzAuthentication authc) throws Throwable {
 
-    }
 
+    }
 }
