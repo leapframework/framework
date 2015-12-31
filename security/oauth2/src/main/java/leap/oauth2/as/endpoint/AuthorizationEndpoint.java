@@ -114,7 +114,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         //Handle authentication.
         handleAuthenticated(request, response, 
-                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())),
+                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc),
                             handler);
         
         //Intercepted.
@@ -183,7 +183,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
         
         //Handle authentication.
-        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())), handler);
+        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc), handler);
         
         //Intercepted.
         return State.INTERCEPTED;

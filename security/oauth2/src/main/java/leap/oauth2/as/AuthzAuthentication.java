@@ -17,16 +17,22 @@ package leap.oauth2.as;
 
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.client.AuthzClient;
+import leap.web.security.authc.Authentication;
 import leap.web.security.user.UserDetails;
 
 public interface AuthzAuthentication {
-    
+
     AuthzClient getClient();
     
     UserDetails getUser();
     
     OAuth2Params getParams();
-    
+
+    /**
+     * Optional.
+     */
+    Authentication getAuthentication();
+
     default String getScope() {
         return getParams().getScope();
     }

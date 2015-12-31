@@ -10,6 +10,11 @@
 	<artifactId>leap-core</artifactId>
 	<packaging>jar</packaging>
 
+	<properties>
+		<jacoco.dataFileDir>${project.basedir}/../target</jacoco.dataFileDir>
+		<jacoco.dataFilePath>${jacoco.dataFileDir}/jacoco-it.exec</jacoco.dataFilePath>
+	</properties>
+
 	<build>
 		<plugins>
 			<plugin>
@@ -38,7 +43,7 @@
 						</replacement>						
 					</replacements>
 				</configuration>
-			</plugin>		
+			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>
@@ -82,12 +87,6 @@
 			<artifactId>leap-junit</artifactId>
 			<version>${project.version}</version>
 			<scope>provided</scope>
-		</dependency>		
-		<dependency>
-			<groupId>org.leapframework</groupId>
-			<artifactId>leap-webunit</artifactId>
-			<version>${project.version}</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>javax.servlet</groupId>
