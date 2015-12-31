@@ -20,7 +20,7 @@
 	<dependencies>
 	    <dependency>
 	        <groupId>org.leapframework</groupId>
-	        <artifactId>leap-fw</artifactId>
+	        <artifactId>leap</artifactId>
 	        <version>${leap.version}</version>
 	    </dependency>
 	    
