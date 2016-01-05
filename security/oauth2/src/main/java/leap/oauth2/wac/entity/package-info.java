@@ -13,15 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.auth;
-
-import leap.lang.intercepting.State;
-import leap.oauth2.OAuth2Params;
-import leap.web.Request;
-import leap.web.Response;
-
-public interface WebResponseHandler {
-
-    State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable;
-
-}
+/**
+ *
+ */
+package leap.oauth2.wac.entity;

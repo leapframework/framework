@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 /**
- *
+ * <code>wac</code> means web app client in oauth2.0.
  */
-package leap.oauth2.wa.entity;
+package leap.oauth2.wac;

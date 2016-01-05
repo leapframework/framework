@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.auth;
 
+import leap.lang.intercepting.State;
+import leap.oauth2.OAuth2Params;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.web.Response;
 
-public interface WebAccessTokenManager {
-    
-    WebAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code);
-    
-    WebAccessToken refreshAndSaveAccessToken(Request request);
-    
-    WebAccessToken refreshAndSaveAccessToken(Request request, WebAccessToken old);
-    
-    default WebAccessToken currentAccessToken(Request request) {
-        return currentAccessToken(request, true);
-    }
-    
-    WebAccessToken currentAccessToken(Request request, boolean refreshExpired);
+public interface WebResponseHandler {
+
+    State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable;
 
 }

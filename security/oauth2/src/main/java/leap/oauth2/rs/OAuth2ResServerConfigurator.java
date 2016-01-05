@@ -21,6 +21,15 @@ package leap.oauth2.rs;
 public interface OAuth2ResServerConfigurator {
 
 	/**
+	 * The mode of authorization server that the resource server will obtain token details from it.
+	 */
+	enum AuthzServerMode {
+		NONE,
+		LOCAL,
+		REMOTE
+	}
+
+	/**
 	 * Returns the configuration.
      */
 	OAuth2ResServerConfig config();
@@ -38,13 +47,40 @@ public interface OAuth2ResServerConfigurator {
 	OAuth2ResServerConfigurator setEnabled(boolean enabled);
 
 	/**
-	 * Sets the oauth2 authorization server's url.
+	 * Use local authz server.
+	 *
+	 * @see {@link OAuth2ResServerConfig#isUseLocalAuthzServer()}.
      */
-	OAuth2ResServerConfigurator setRemoteServerUrl(String url);
+	OAuth2ResServerConfigurator useLocalAuthzServer();
+
+	/**
+	 * Use remote authz server.
+	 *
+	 * <p/>
+	 * The {@link #setTokenInfoEndpointUrl(String)} must be invoked later.
+     */
+	OAuth2ResServerConfigurator useRemoteAuthzServer();
+
+	/**
+	 * Use remote authz server and sets the token info endpoint url.
+	 *
+	 * @see {@link OAuth2ResServerConfig#isUseRemoteAuthzServer()}.
+	 *
+	 * @param tokenInfoEndpointUrl the token info endpoint url or remote authorization server.
+     */
+	OAuth2ResServerConfigurator useRemoteAuthzServer(String tokenInfoEndpointUrl);
+
+	/**
+	 * Sets the mode of authz server.
+     */
+	OAuth2ResServerConfigurator setAuthzServerMode(AuthzServerMode mode);
 
 	/**
 	 * Sets the url of token info endpoint in oauth2 authorization server.
+	 *
+	 * <p/>
+	 * Valid when use remote authz server.
      */
-	OAuth2ResServerConfigurator setRemoteTokenInfoUrl(String url);
+	OAuth2ResServerConfigurator setTokenInfoEndpointUrl(String url);
 	
 }

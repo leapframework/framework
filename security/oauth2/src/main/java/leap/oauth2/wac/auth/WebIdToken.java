@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.auth;
+package leap.oauth2.wac.auth;
 
 import leap.core.security.Credentials;
 

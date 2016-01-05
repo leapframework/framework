@@ -31,19 +31,18 @@ import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
-@Configurable(prefix="oauth2.resource")
+@Configurable(prefix="oauth2.rs")
 public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAuth2ResServerConfigurator, PostCreateBean, AppInitializable {
 
-    protected @Inject SecurityConfigurator sc;
+	protected @Inject SecurityConfigurator sc;
     protected @Inject CacheManager         cm;
-    
-    protected boolean                    enabled;
-    protected boolean                    interceptAnyRequests;
-    protected String                     remoteServerUrl;
-    protected String                     remoteTokenInfoUrl;
-    protected Cache<String, Object>      cachedInterceptUrls;
-    protected Map<String, ResScope> scopes        = new HashMap<>();
-    protected List<ResPath>         interceptUrls = new CopyOnWriteArrayList<ResPath>();
+
+	protected boolean               enabled;
+	protected AuthzServerMode		authzServerMode = AuthzServerMode.NONE;
+	protected String                tokenInfoEndpointUrl;
+	protected Cache<String, Object> cachedInterceptUrls;
+	protected Map<String, ResScope> scopes        = new HashMap<>();
+	protected List<ResPath>         interceptUrls = new CopyOnWriteArrayList<>();
 	
 	@Override
 	public OAuth2ResServerConfig config() {
@@ -59,31 +58,49 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 		this.enabled = enabled;
 	    return this;
     }
-	
-	public boolean isInterceptAnyRequests() {
-		return interceptAnyRequests;
+
+	@Override
+	public boolean isUseLocalAuthzServer() {
+		return authzServerMode == AuthzServerMode.LOCAL;
 	}
 
-	public OAuth2ResServerConfigurator setInterceptAnyRequests(boolean interceptAnyRequests) {
-		this.interceptAnyRequests = interceptAnyRequests;
+	@Override
+	public boolean isUseRemoteAuthzServer() {
+		return authzServerMode == AuthzServerMode.REMOTE;
+	}
+
+	@Override
+	public OAuth2ResServerConfigurator useLocalAuthzServer() {
+		authzServerMode = AuthzServerMode.LOCAL;
 		return this;
 	}
 
 	@Override
-    public String getRemoteTokenInfoUrl() {
-        return remoteTokenInfoUrl;
+	public OAuth2ResServerConfigurator useRemoteAuthzServer() {
+		authzServerMode = AuthzServerMode.REMOTE;
+		return this;
+	}
+
+	@Override
+	public OAuth2ResServerConfigurator useRemoteAuthzServer(String tokenInfoEndpointUrl) {
+		authzServerMode = AuthzServerMode.REMOTE;
+		this.setTokenInfoEndpointUrl(tokenInfoEndpointUrl);
+		return this;
+	}
+
+	@Configurable.Property
+	public OAuth2ResServerConfigurator setAuthzServerMode(AuthzServerMode mode) {
+		return this;
+	}
+
+	@Override
+    public String getTokenInfoEndpointUrl() {
+        return tokenInfoEndpointUrl;
     }
 	
-	@Configurable.Property
-    public OAuth2ResServerConfigurator setRemoteServerUrl(String url) {
-	    this.remoteServerUrl = url;
-	    this.remoteTokenInfoUrl = Paths.suffixWithoutSlash(url) + "/oauth2/tokeninfo";
-        return this;
-    }
-
     @Configurable.Property
-	public OAuth2ResServerConfigurator setRemoteTokenInfoUrl(String url) {
-	    this.remoteTokenInfoUrl = url;
+	public OAuth2ResServerConfigurator setTokenInfoEndpointUrl(String url) {
+	    this.tokenInfoEndpointUrl = url;
 	    return this;
 	}
 
@@ -93,7 +110,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	}
 
 	@Override
-    public ResScope getScope(String path) {
+    public ResScope resolveScope(String path) {
 	    return scopes.get(path);
     }
 
@@ -105,7 +122,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     }
 
 	@Override
-    public ResPath getResourcePath(String path) {
+    public ResPath resolvePath(String path) {
 		Object cachedUrl = cachedInterceptUrls.get(path);
 		if(null != cachedUrl) {
 			return cachedUrl instanceof ResPath ? (ResPath)cachedUrl : null;

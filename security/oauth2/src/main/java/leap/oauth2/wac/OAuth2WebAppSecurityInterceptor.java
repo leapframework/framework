@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa;
+package leap.oauth2.wac;
 
 import java.io.PrintWriter;
 
@@ -25,7 +25,7 @@ import leap.lang.net.Urls;
 import leap.lang.servlet.Servlets;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.wa.auth.WebResponseHandler;
+import leap.oauth2.wac.auth.WebResponseHandler;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.Request;

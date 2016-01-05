@@ -19,7 +19,7 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
-import leap.oauth2.wa.OAuth2WebAppConfig;
+import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.web.App;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;

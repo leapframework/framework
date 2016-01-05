@@ -15,26 +15,26 @@
  */
 package leap.oauth2;
 
-public class OAuth2InvalidTokenExcepiton extends OAuth2Exception {
+public class OAuth2InvalidTokenException extends OAuth2Exception {
 
     private static final long serialVersionUID = 3709244650746287434L;
 
-    public OAuth2InvalidTokenExcepiton() {
+    public OAuth2InvalidTokenException() {
     }
 
-    public OAuth2InvalidTokenExcepiton(String message) {
+    public OAuth2InvalidTokenException(String message) {
         super(message);
     }
 
-    public OAuth2InvalidTokenExcepiton(Throwable cause) {
+    public OAuth2InvalidTokenException(Throwable cause) {
         super(cause);
     }
 
-    public OAuth2InvalidTokenExcepiton(String message, Throwable cause) {
+    public OAuth2InvalidTokenException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public OAuth2InvalidTokenExcepiton(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+    public OAuth2InvalidTokenException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

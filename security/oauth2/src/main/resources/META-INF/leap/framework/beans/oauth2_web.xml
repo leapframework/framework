@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
 
-    <bean type="leap.oauth2.wa.OAuth2WebAppConfig"
-          class="leap.oauth2.wa.DefaultOAuth2WebAppConfig" primary="true">
+    <bean type="leap.oauth2.wac.OAuth2WebAppConfig"
+          class="leap.oauth2.wac.DefaultOAuth2WebAppConfig" primary="true">
           
-          <additional-type-def type="leap.oauth2.wa.OAuth2WebAppConfigurator" primary="true"/>
+          <additional-type-def type="leap.oauth2.wac.OAuth2WebAppConfigurator" primary="true"/>
           
     </bean>          
     
-    <bean type="leap.oauth2.wa.token.WebAccessTokenManager"
-          class="leap.oauth2.wa.token.DefaultWebAccessTokenManager" primary="true"/>
+    <bean type="leap.oauth2.wac.token.WebAccessTokenManager"
+          class="leap.oauth2.wac.token.DefaultWebAccessTokenManager" primary="true"/>
     
-    <bean type="leap.oauth2.wa.auth.WebResponseHandler"
-          class="leap.oauth2.wa.auth.DefaultWebResponseHandler" primary="true"/>
+    <bean type="leap.oauth2.wac.auth.WebResponseHandler"
+          class="leap.oauth2.wac.auth.DefaultWebResponseHandler" primary="true"/>
           
     <bean name="jdbc"
-          type="leap.oauth2.wa.token.WebAccessTokenStore"
-          class="leap.oauth2.wa.token.JdbcWebAccessTokenStore"/>
+          type="leap.oauth2.wac.token.WebAccessTokenStore"
+          class="leap.oauth2.wac.token.JdbcWebAccessTokenStore"/>
           
-    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.wa.OAuth2WebAppSecurityInterceptor"/>
+    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.wac.OAuth2WebAppSecurityInterceptor"/>
 </beans>

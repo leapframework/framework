@@ -30,49 +30,41 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.oauth2.rs.token.ResAccessTokenDetails;
-import leap.oauth2.rs.token.ResAccessTokenManager;
+import leap.oauth2.rs.token.ResTokenManager;
 import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
-public class DefaultResAuthenticationManager implements ResAuthenticationManager, PostCreateBean {
-    private static final Log log = LogFactory.get(DefaultResAuthenticationManager.class);
-    
+/**
+ * Default implementation of {@link ResAuthenticationResolver}.
+ */
+public class DefaultResAuthenticationResolver implements ResAuthenticationResolver, PostCreateBean {
+    private static final Log log = LogFactory.get(DefaultResAuthenticationResolver.class);
+
     protected @Inject BeanFactory           factory;
     protected @Inject OAuth2ResServerConfig config;
-    protected @Inject ResAccessTokenManager tokenManager;
+    protected @Inject ResTokenManager       tokenManager;
     protected @Inject UserManager           userManager;
     protected @Inject CacheManager          cacheManager;
-    
+
     protected Cache<String, CachedAuthentication> authcCache;
-    protected int                                 cacheSize = 2048; //caches max {cacheSize} access tokens.
+    protected int                                 cacheSize = 2048;              //caches max {cacheSize} access tokens.
     protected int                                 cacheExpiresInMs = 120 * 1000; //2 minutes
-    
-    public int getCacheSize() {
-        return cacheSize;
-    }
-
-    public void setCacheSize(int cacheSize) {
-        this.cacheSize = cacheSize;
-    }
-
-    public int getCacheExpiresInMs() {
-        return cacheExpiresInMs;
-    }
-
-    public void setCacheExpiresInMs(int cacheExpiresInMs) {
-        this.cacheExpiresInMs = cacheExpiresInMs;
-    }
 
     @Override
-    public Result<ResAuthentication> authenticate(ResAccessToken at) {
+    public Result<ResAuthentication> resolveAuthentication(ResAccessToken at) {
+        //Resolve from cache.
         CachedAuthentication cached = getCachedAuthentication(at);
         if(null != cached) {
+
+            //Check expiration of token.
             if(cached.isTokenExpired()) {
                 log.debug("Access token '{}' was expired", at.getToken());
                 removeCachedAuthentication(at, cached);
                 return Result.empty();
             }
+
+            //Check expiration of the cached item.
             if(cached.isCacheExpired()) {
                 log.debug("Cached authentication expired, remove it from cache only");
                 removeCachedAuthentication(at, cached);
@@ -81,8 +73,8 @@ public class DefaultResAuthenticationManager implements ResAuthenticationManager
                 return Result.of(cached.authentication);
             }
         }
-        
-        Result<ResAccessTokenDetails> result = tokenManager.getAccessTokenDetails(at);
+
+        Result<ResAccessTokenDetails> result = tokenManager.loadAccessTokenDetails(at);
         if(!result.isPresent()) {
             log.debug("Access token '{}' not found", at.getToken());
             return Result.empty();
@@ -121,6 +113,22 @@ public class DefaultResAuthenticationManager implements ResAuthenticationManager
         cacheAuthentication(at, details, authc);
 
         return Result.of(authc);
+    }
+
+    public int getCacheSize() {
+        return cacheSize;
+    }
+
+    public void setCacheSize(int cacheSize) {
+        this.cacheSize = cacheSize;
+    }
+
+    public int getCacheExpiresInMs() {
+        return cacheExpiresInMs;
+    }
+
+    public void setCacheExpiresInMs(int cacheExpiresInMs) {
+        this.cacheExpiresInMs = cacheExpiresInMs;
     }
     
     @Override

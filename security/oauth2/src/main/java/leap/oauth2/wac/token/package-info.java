@@ -13,13 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs.auth;
-
-import leap.lang.Result;
-import leap.oauth2.rs.token.ResAccessToken;
-
-public interface ResAuthenticationManager {
-    
-    Result<ResAuthentication> authenticate(ResAccessToken credentials);
-
-}
+/**
+ *
+ */
+package leap.oauth2.wac.token;

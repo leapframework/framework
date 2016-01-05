@@ -32,38 +32,24 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 
-public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore, PostCreateBean {
+public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore {
     
     private static final Log log = LogFactory.get(RemoteBearerResAccessTokenStore.class);;
 
     protected @Inject OAuth2ResServerConfig config;
     protected @Inject HttpClient            httpClient;
-    protected         String                remoteTokenInfoUrl;
-    
+
     public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;
-    }
-    
-    public String getRemoteTokenInfoUrl() {
-        return remoteTokenInfoUrl;
-    }
-
-    public void setRemoteTokenInfoUrl(String remoteTokenInfoUrl) {
-        this.remoteTokenInfoUrl = remoteTokenInfoUrl;
-    }
-    
-    @Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-        this.remoteTokenInfoUrl = Strings.trimToNull(config.getRemoteTokenInfoUrl());
     }
 
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken credentials) {
-        if(null == remoteTokenInfoUrl) {
-            throw new IllegalStateException("The tokenInfoEndpoint must not be empty when using RemoteAccessTokenStore");
+        if(null == config.getTokenInfoEndpointUrl()) {
+            throw new IllegalStateException("The tokenInfoEndpointUrl must not be configured when use remote authz server");
         }
         
-        HttpRequest request =  httpClient.request(remoteTokenInfoUrl)
+        HttpRequest request = httpClient.request(config.getTokenInfoEndpointUrl())
                                          .addQueryParam("access_token", credentials.getToken());
 
         HttpResponse response = request.get();
@@ -71,7 +57,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
             String content = response.getString();
             
-            log.debug("Recevied response : {}", content);
+            log.debug("Received response : {}", content);
             
             try {
                 JsonValue json = JSON.decodeToJsonValue(content);
@@ -84,7 +70,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
                     if(Strings.isEmpty(error)) {
                         return Result.of(createAccessTokenDetails(map));
                     }else{
-                        return Result.err(error + " : " + (String)map.get("error_description"));
+                        return Result.err(error + " : " + map.get("error_description"));
                     }
                 }
             } catch (Exception e) {

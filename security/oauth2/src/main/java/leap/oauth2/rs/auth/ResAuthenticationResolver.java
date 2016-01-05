@@ -13,20 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.rs.auth;
 
-import leap.web.Request;
-import leap.web.Response;
+import leap.lang.Result;
+import leap.oauth2.rs.token.ResAccessToken;
 
-/**
- * Persist the access token.
- */
-public interface WebAccessTokenStore {
-
-    void saveAccessToken(Request request, Response response, WebAccessToken at);
+public interface ResAuthenticationResolver {
     
-    WebAccessToken loadAccessToken(Request request);
-    
-    void removeAccessToken(Request request, WebAccessToken at);
+    Result<ResAuthentication> resolveAuthentication(ResAccessToken credentials);
 
 }
