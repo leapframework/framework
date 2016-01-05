@@ -16,7 +16,7 @@
 package app3;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.wa.OAuth2WebAppConfigurator;
+import leap.oauth2.wac.OAuth2WebAppConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
 

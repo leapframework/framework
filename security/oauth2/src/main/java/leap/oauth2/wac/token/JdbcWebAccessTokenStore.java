@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.token;
 
 import javax.servlet.http.Cookie;
 
@@ -21,8 +21,8 @@ import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.store.JdbcStore;
 import leap.oauth2.as.store.AbstractJdbcAuthzStore;
-import leap.oauth2.wa.OAuth2WebAppConfig;
-import leap.oauth2.wa.entity.WebAccessTokenEntity;
+import leap.oauth2.wac.OAuth2WebAppConfig;
+import leap.oauth2.wac.entity.WebAccessTokenEntity;
 import leap.orm.OrmMetadata;
 import leap.orm.command.CreateEntityCommand;
 import leap.orm.dao.Dao;

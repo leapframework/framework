@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.token;
 
 import java.util.Map;
 import java.util.UUID;
@@ -29,7 +29,7 @@ import leap.oauth2.AuthorizationCodeInvalidException;
 import leap.oauth2.ObtainAccessTokenFailedException;
 import leap.oauth2.RefreshAccessTokenFailedException;
 import leap.oauth2.RefreshTokenInvalidException;
-import leap.oauth2.wa.OAuth2WebAppConfig;
+import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 

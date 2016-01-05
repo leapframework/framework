@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.entity;
+package leap.oauth2.wac.entity;
 
 import leap.oauth2.OAuth2ExpirableEntity;
 import leap.orm.annotation.Column;

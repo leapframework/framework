@@ -16,7 +16,7 @@
 package app3.controllers;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.wa.token.WebAccessTokenManager;
+import leap.oauth2.wac.token.WebAccessTokenManager;
 import leap.web.Request;
 import leap.web.Results;
 import leap.web.view.ViewData;

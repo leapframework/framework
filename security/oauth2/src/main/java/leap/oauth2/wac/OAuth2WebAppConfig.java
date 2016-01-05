@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa;
+package leap.oauth2.wac;
 
-import leap.oauth2.wa.token.WebAccessTokenStore;
+import leap.oauth2.wac.token.WebAccessTokenStore;
 
 public interface OAuth2WebAppConfig {
     

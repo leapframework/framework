@@ -13,7 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- * <code>wa</code> means web app (client) in oauth2.0.
- */
-package leap.oauth2.wa;
+package leap.oauth2.wac.auth;
+
+import leap.core.security.Credentials;
+
+public class WebIdToken implements Credentials {
+
+    protected String clientId;
+    protected String userId;
+
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+}

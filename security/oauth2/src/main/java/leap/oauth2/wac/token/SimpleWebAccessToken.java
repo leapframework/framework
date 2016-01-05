@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.token;
 
 import leap.lang.expirable.TimeExpirableSeconds;
 

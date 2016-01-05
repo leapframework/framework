@@ -27,7 +27,7 @@ import server.models.Client;
 import tested.models.User;
 
 /**
- * server app : OAuth2 authorization server.
+ * server : OAuth2 authorization server.
  */
 public class Global extends App implements OAuth2TestData {
     

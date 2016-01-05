@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.token;
 
-import leap.lang.expirable.TimeExpirable;
+import leap.web.Request;
+import leap.web.Response;
 
-public interface WebAccessToken extends TimeExpirable {
+/**
+ * Persist the access token.
+ */
+public interface WebAccessTokenStore {
 
-    String getToken();
+    void saveAccessToken(Request request, Response response, WebAccessToken at);
     
-    String getRefreshToken();
+    WebAccessToken loadAccessToken(Request request);
+    
+    void removeAccessToken(Request request, WebAccessToken at);
 
-    String getUserId();
 }

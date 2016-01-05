@@ -13,29 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.auth;
+package leap.oauth2.wac.token;
 
-import leap.core.security.Credentials;
+import leap.lang.expirable.TimeExpirable;
 
-public class WebIdToken implements Credentials {
+public interface WebAccessToken extends TimeExpirable {
 
-    protected String clientId;
-    protected String userId;
+    String getToken();
+    
+    String getRefreshToken();
 
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
+    String getUserId();
 }

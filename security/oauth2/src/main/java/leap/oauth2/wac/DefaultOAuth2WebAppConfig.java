@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa;
+package leap.oauth2.wac;
 
 import leap.core.AppConfigException;
 import leap.core.annotation.Configurable;
@@ -22,7 +22,7 @@ import leap.core.ds.DataSourceManager;
 import leap.core.store.JdbcStore;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
-import leap.oauth2.wa.token.WebAccessTokenStore;
+import leap.oauth2.wac.token.WebAccessTokenStore;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;

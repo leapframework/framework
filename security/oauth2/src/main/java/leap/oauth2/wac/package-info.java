@@ -13,20 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.token;
-
-import leap.web.Request;
-import leap.web.Response;
-
 /**
- * Persist the access token.
+ * <code>wac</code> means web app client in oauth2.0.
  */
-public interface WebAccessTokenStore {
-
-    void saveAccessToken(Request request, Response response, WebAccessToken at);
-    
-    WebAccessToken loadAccessToken(Request request);
-    
-    void removeAccessToken(Request request, WebAccessToken at);
-
-}
+package leap.oauth2.wac;

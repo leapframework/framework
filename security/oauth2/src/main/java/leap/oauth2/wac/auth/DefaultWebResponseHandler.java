@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wa.auth;
+package leap.oauth2.wac.auth;
 
 import java.util.Map;
 
@@ -27,8 +27,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.rs.auth.ResClientPrincipal;
-import leap.oauth2.wa.OAuth2WebAppConfig;
-import leap.oauth2.wa.token.WebAccessTokenManager;
+import leap.oauth2.wac.OAuth2WebAppConfig;
+import leap.oauth2.wac.token.WebAccessTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.Authentication;

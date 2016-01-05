@@ -16,4 +16,4 @@
 /**
  *
  */
-package leap.oauth2.wa.token;
+package leap.oauth2.wac.token;
