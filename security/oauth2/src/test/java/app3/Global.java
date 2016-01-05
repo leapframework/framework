@@ -20,6 +20,9 @@ import leap.oauth2.web.OAuth2WebConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
 
+/**
+ * app3 : oauth2 web app.
+ */
 public class Global extends App {
     
     protected @Inject OAuth2WebConfigurator owc;

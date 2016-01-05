@@ -68,7 +68,7 @@ public interface OAuth2WebConfigurator {
      * Sets enable or disable access token management for login user.
      * 
      * <p>
-     * See oauth2.0 sepcification.
+     * See oauth2.0 specification.
      */
     OAuth2WebConfigurator setUserAccessTokenEnabled(boolean enabled);
     
@@ -88,7 +88,7 @@ public interface OAuth2WebConfigurator {
     OAuth2WebConfigurator setClientRedirectUri(String uri);
     
     /**
-     * Sets the authorization server's url, such as <code>https://example.com</code>
+     * Sets the oauth2 server's url, such as <code>https://example.com</code>
      * 
      * <p>
      * Optional if remote urls configured by {@link #setRemoteAuthzEndpointUrl(String)} and {@link #setRemoteTokenEndpointUrl(String)}. 
@@ -96,10 +96,10 @@ public interface OAuth2WebConfigurator {
     OAuth2WebConfigurator setRemoteServerUrl(String url);
 
     /**
-     * Sets the token endpoint url of authorization server.
+     * Sets the token endpoint url of oauth2 server.
      * 
      * <p>
-     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}. 
+     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}.
      */
     OAuth2WebConfigurator setRemoteTokenEndpointUrl(String url);
     
@@ -107,7 +107,7 @@ public interface OAuth2WebConfigurator {
      * Sets the authorization endpoint url of authorization server.
      * 
      * <p>
-     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}. 
+     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}.
      */
     OAuth2WebConfigurator setRemoteAuthzEndpointUrl(String url);
     

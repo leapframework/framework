@@ -17,7 +17,7 @@ package auth;
 
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
-import leap.oauth2.as.OAuth2ServerConfigurator;
+import leap.oauth2.server.OAuth2ServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;
 import leap.web.config.WebConfigurator;

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+
+    <!-- common -->
+    <bean type="leap.web.security.SecurityInterceptor" 
+          class="leap.oauth2.resource.OAuth2ResourceSecurityInterceptor"/>
+              
+    <bean type="leap.oauth2.resource.OAuth2ResourceConfig"
+          class="leap.oauth2.resource.DefaultOAuth2ResourceConfig" primary="true">
+          
+          <additional-type-def type="leap.oauth2.resource.OAuth2ResourceConfigurator" primary="true"/>
+          
+    </bean>          
+    	  
+	<bean type="leap.oauth2.resource.OAuth2ResourceErrorHandler"
+          class="leap.oauth2.resource.DefaultOAuth2ResourceErrorHandler" primary="true"/>
+          
+    <!-- auth -->
+    <bean type="leap.oauth2.resource.auth.ResAuthenticationManager"
+          class="leap.oauth2.resource.auth.DefaultResAuthenticationManager" primary="true"/>
+          
+    <!-- token -->    
+    <bean type="leap.oauth2.resource.token.ResAccessTokenManager"
+          class="leap.oauth2.resource.token.DefaultResAccessTokenManager" primary="true"/>
+                
+	<bean name="bearer"
+          type="leap.oauth2.resource.token.ResAccessTokenExtractor"
+          class="leap.oauth2.resource.token.ResBearerAccessTokenExtractor" primary="true"/>
+          
+    <bean name="remote"
+          type="leap.oauth2.resource.token.ResBearerAccessTokenStore"
+          class="leap.oauth2.resource.token.RemoteBearerResAccessTokenStore"/>
+
+    <bean name="local"
+          type="leap.oauth2.resource.token.ResBearerAccessTokenStore"
+          class="leap.oauth2.resource.token.LocalBearerResAccessTokenStore"/>
+
+</beans>

@@ -18,5 +18,5 @@
           type="leap.oauth2.web.token.WebAccessTokenStore"
           class="leap.oauth2.web.token.JdbcWebAccessTokenStore"/>          
           
-    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.web.auth.OAuth2WebSecurityInterceptor"/>
+    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.web.OAuth2WebSecurityInterceptor"/>
 </beans>

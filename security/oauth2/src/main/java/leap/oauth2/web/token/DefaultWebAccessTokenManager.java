@@ -56,7 +56,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
                 at.setToken((String)map.get("access_token"));
                 at.setRefreshToken((String)map.get("refresh_token"));
                 at.setExpiresIn((Integer)map.get("expires_in"));
-                at.setUserId(authc.getUserPrincipal().getId().toString());
+                at.setUserId(authc.getUserPrincipal().getIdAsString());
                 
                 saveAccessToken(request, at);
                 
@@ -139,7 +139,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
 
         if(null != at){
             UserPrincipal user = request.getUser();
-            if(null != user && !user.getId().toString().equals(at.getUserId())) {
+            if(null != user && !user.getIdAsString().equals(at.getUserId())) {
                 removeAccessToken(request);
                 if(null != config.getAccessTokenStore()) {
                     config.getAccessTokenStore().removeAccessToken(request, at);

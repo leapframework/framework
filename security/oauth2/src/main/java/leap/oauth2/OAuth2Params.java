@@ -16,13 +16,13 @@
 package leap.oauth2;
 
 import leap.lang.Strings;
-import leap.oauth2.as.client.AuthzClientCredentials;
+import leap.oauth2.server.client.OAuth2ClientCredentials;
 import leap.web.security.user.UsernamePasswordCredentials;
 
 /**
  * OAuth2.0 parameters.
  */
-public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCredentials {
+public interface OAuth2Params extends OAuth2ClientCredentials, UsernamePasswordCredentials {
 	
 	String CLIENT_ID     = "client_id";
 	String CLIENT_SECRET = "client_secret";

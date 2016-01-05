@@ -17,7 +17,7 @@ package app;
 
 import leap.core.annotation.Inject;
 import leap.lang.naming.NamingStyles;
-import leap.oauth2.rs.ResourceServerConfigurator;
+import leap.oauth2.resource.OAuth2ResourceConfigurator;
 import leap.web.App;
 import leap.web.api.Apis;
 import leap.web.config.WebConfigurator;
@@ -25,7 +25,7 @@ import leap.web.config.WebConfigurator;
 public class Global extends App {
 	
     protected @Inject Apis                       apis;
-    protected @Inject ResourceServerConfigurator rsc;
+    protected @Inject OAuth2ResourceConfigurator rsc;
 	
 	@Override
     protected void configure(WebConfigurator c) {

@@ -26,7 +26,7 @@ import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.rs.auth.OAuth2ClientPrincipal;
+import leap.oauth2.resource.auth.ResClientPrincipal;
 import leap.oauth2.web.OAuth2WebConfig;
 import leap.oauth2.web.token.WebAccessTokenManager;
 import leap.web.Request;
@@ -105,7 +105,7 @@ public class DefaultOAuth2WebResponseHandler implements OAuth2WebResponseHandler
         }
         
         if(!Strings.isEmpty(clientId)) {
-            client = new OAuth2ClientPrincipal(clientId);
+            client = new ResClientPrincipal(clientId);
         }
         
         SimpleAuthentication authc = new SimpleAuthentication(user, details);

@@ -15,13 +15,13 @@
  */
 package leap.oauth2.web.entity;
 
-import leap.oauth2.as.entity.ExpirableEntity;
+import leap.oauth2.server.entity.OAuth2ExpirableEntity;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
 @Table("web_access_token")
-public class WebAccessTokenEntity extends ExpirableEntity {
+public class WebAccessTokenEntity extends OAuth2ExpirableEntity {
 
     @Id
     protected String id;

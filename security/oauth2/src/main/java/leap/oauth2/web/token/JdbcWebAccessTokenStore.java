@@ -20,7 +20,7 @@ import javax.servlet.http.Cookie;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.store.JdbcStore;
-import leap.oauth2.as.store.AbstractJdbcAuthzStore;
+import leap.oauth2.server.store.AbstractJdbcOAuth2Store;
 import leap.oauth2.web.OAuth2WebConfig;
 import leap.oauth2.web.entity.WebAccessTokenEntity;
 import leap.orm.OrmMetadata;
@@ -33,7 +33,7 @@ import leap.web.config.WebConfig;
 import leap.web.cookie.AbstractCookieBean;
 
 //TODO : cleanup when refresh token expired.
-public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements WebAccessTokenStore, JdbcStore {
+public class JdbcWebAccessTokenStore extends AbstractJdbcOAuth2Store implements WebAccessTokenStore, JdbcStore {
     
     protected @Inject WebConfig       wc;
     protected @Inject OAuth2WebConfig config;
