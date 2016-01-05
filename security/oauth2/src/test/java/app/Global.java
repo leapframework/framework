@@ -91,6 +91,6 @@ public class Global extends App {
 	}
 	
     protected void configureResourceServer(OAuth2ResServerConfigurator c) {
-
+		c.useLocalAuthzServer();
     }
 }

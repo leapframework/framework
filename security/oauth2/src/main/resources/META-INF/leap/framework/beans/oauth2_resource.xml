@@ -16,12 +16,12 @@
           class="leap.oauth2.rs.DefaultOAuth2ResServerErrorHandler" primary="true"/>
           
     <!-- auth -->
-    <bean type="leap.oauth2.rs.auth.ResAuthenticationManager"
-          class="leap.oauth2.rs.auth.DefaultResAuthenticationManager" primary="true"/>
+    <bean type="leap.oauth2.rs.auth.ResAuthenticationResolver"
+          class="leap.oauth2.rs.auth.DefaultResAuthenticationResolver" primary="true"/>
           
     <!-- token -->    
-    <bean type="leap.oauth2.rs.token.ResAccessTokenManager"
-          class="leap.oauth2.rs.token.DefaultResAccessTokenManager" primary="true"/>
+    <bean type="leap.oauth2.rs.token.ResTokenManager"
+          class="leap.oauth2.rs.token.DefaultResTokenManager" primary="true"/>
                 
 	<bean name="bearer"
           type="leap.oauth2.rs.token.ResAccessTokenExtractor"

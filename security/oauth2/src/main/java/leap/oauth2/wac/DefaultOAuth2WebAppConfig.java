@@ -27,7 +27,7 @@ import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
-@Configurable(prefix="oauth2.web")
+@Configurable(prefix="oauth2.webapp")
 public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebAppConfigurator, AppInitializable {
 
     protected @Inject              SecurityConfigurator sc;

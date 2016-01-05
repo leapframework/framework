@@ -22,11 +22,11 @@ import leap.oauth2.as.token.AuthzTokenManager;
 
 public class LocalBearerResAccessTokenStore implements ResBearerAccessTokenStore {
     
-    protected @Inject AuthzTokenManager authzServerTokenManager;
+    protected @Inject AuthzTokenManager authzTokenManager;
 
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {
-        AuthzAccessToken at = authzServerTokenManager.loadAccessToken(token.getToken());
+        AuthzAccessToken at = authzTokenManager.loadAccessToken(token.getToken());
         if(null == at) {
             return Result.empty();
         }

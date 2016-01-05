@@ -15,31 +15,50 @@
  */
 package leap.oauth2.rs;
 
+/**
+ * The configuration of oauth2 resource server in web app.
+ *
+ * @see OAuth2ResServerConfigurator
+ */
 public interface OAuth2ResServerConfig {
 
 	/**
-	 * Returns <code>true</code> if oauth2.0 resource server is enabled.
+	 * Returns <code>true</code> if oauth2.0 resource server is enabled in current web app.
 	 */
 	boolean isEnabled();
+
+    /**
+     * Returns <code>true</code> if use local authorization server.
+     *
+     * <p/>
+     * Local authz server means that authz server and resource server are in the same web app.
+     */
+    boolean isUseLocalAuthzServer();
+
+    /**
+     * Returns <code>true</code> if use remote authorization server.
+     *
+     * <p/>
+     * Remote authz server means that authz server and resource server are not in the same web app.
+     */
+	boolean isUseRemoteAuthzServer();
+
+	/**
+	 * Returns the url of token info endpoint in oauth2 authorization server.
+     *
+     * <p/>
+     * Required if use remote authz server.
+	 */
+	String getTokenInfoEndpointUrl();
 	
 	/**
-	 * Returns <code>true</code> if any requests will be intercepted as protected resource.  
+	 * Optional. Resolves the {@link ResScope} of the given path, returns <code>null</code> if cannot resolved.
 	 */
-	boolean isInterceptAnyRequests();
+	ResScope resolveScope(String path);
 	
 	/**
-	 * Returns the url of token info endpoing.
+	 * Optional. Resolves {@link ResPath} if the given path, returns <code>null</code> if cannot resolved.
 	 */
-	String getRemoteTokenInfoUrl();
-	
-	/**
-	 * Returns the {@link ResScope} for the given path or <code>null</code>.
-	 */
-	ResScope getScope(String path);
-	
-	/**
-	 * Returns {@link ResPath} for the given path or <code>null</code>.
-	 */
-	ResPath getResourcePath(String path);
+	ResPath resolvePath(String path);
 
 }

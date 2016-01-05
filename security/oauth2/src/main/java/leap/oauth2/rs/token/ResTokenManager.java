@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs.auth;
+package leap.oauth2.rs.token;
 
 import leap.lang.Result;
-import leap.oauth2.rs.token.ResAccessToken;
 
-public interface ResAuthenticationManager {
+/**
+ * The access token manager used by oauth2 resource server.
+ */
+public interface ResTokenManager {
     
-    Result<ResAuthentication> authenticate(ResAccessToken credentials);
+    /**
+     * Returns the result of {@link ResAccessTokenDetails}
+     */
+    Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token);
+
+    /**
+     * Removes the {@link ResAccessToken} when expired or invalid.
+     */
+    void removeAccessToken(ResAccessToken token);
 
 }

@@ -24,19 +24,20 @@ import leap.core.ioc.PostCreateBean;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.oauth2.rs.OAuth2ResServerConfig;
-import leap.oauth2.as.OAuth2AuthzServerConfig;
 
-public class DefaultResAccessTokenManager implements ResAccessTokenManager, PostCreateBean {
+/**
+ * The default implementation of {@link ResTokenManager}.
+ */
+public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
     
-    protected @Inject BeanFactory             factory;
-    protected @Inject OAuth2AuthzServerConfig asConfig;
-    protected @Inject OAuth2ResServerConfig   rsConfig;
+    protected @Inject BeanFactory           factory;
+    protected @Inject OAuth2ResServerConfig config;
     
-    protected Map<String, ResAccessTokenStore> typedTokenStores = new HashMap<String, ResAccessTokenStore>();
+    protected Map<String, ResAccessTokenStore> typedTokenStores = new HashMap<>();
     protected ResAccessTokenStore              bearerTokenStore = null;
     
     @Override
-    public Result<ResAccessTokenDetails> getAccessTokenDetails(ResAccessToken token) {
+    public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {
         return getAccessTokenStore(token).loadAccessTokenDetails(token);
     }
 
@@ -53,30 +54,26 @@ public class DefaultResAccessTokenManager implements ResAccessTokenManager, Post
     protected ResAccessTokenStore getAccessTokenStore(ResAccessToken token) {
         ResAccessTokenStore store;
         
-        if(!token.isBearer()) {
-            store = typedTokenStores.get(token.getType());
-            
-            if(null == store) {
-                throw new IllegalStateException("No ResAccessTokenStore for token type '" + token.getType() + "'");
-            }
-        }else{
+        if(token.isBearer()) {
             if(null == bearerTokenStore) {
                 this.bearerTokenStore = factory.tryGetBean(ResBearerAccessTokenStore.class);
-                
                 if(null == bearerTokenStore) {
-                    if(!Strings.isEmpty(rsConfig.getRemoteTokenInfoUrl())) {
+                    if(config.isUseRemoteAuthzServer()) {
                         this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "remote");
-                    }else if(asConfig.isEnabled()){
+                    }else if(config.isUseLocalAuthzServer()){
                         this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "local");
                     }else {
-                        throw new IllegalStateException("ResBearerAccessTokenStore must be specified");
+                        throw new IllegalStateException("The mode 'local' or 'remote' of authz server must be configured in oauth2 resource server.");
                     }
                 }
             }
-            
             store = bearerTokenStore;
+        }else{
+            store = typedTokenStores.get(token.getType());
+            if(null == store) {
+                throw new IllegalStateException("No ResAccessTokenStore for token type '" + token.getType() + "'");
+            }
         }
-        
         return store;
     }
     
