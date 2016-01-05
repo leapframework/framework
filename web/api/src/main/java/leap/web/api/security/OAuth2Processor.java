@@ -17,9 +17,9 @@ package leap.web.api.security;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
-import leap.oauth2.resource.OAuth2ResourceConfig;
-import leap.oauth2.server.OAuth2ServerConfig;
-import leap.oauth2.web.OAuth2WebConfig;
+import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.wa.OAuth2WebAppConfig;
 import leap.web.App;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
@@ -27,10 +27,10 @@ import leap.web.api.config.ApiConfigurator;
 
 public class OAuth2Processor implements ApiConfigProcessor {
     
-    protected @Inject App                  app;
-    protected @Inject OAuth2ServerConfig   asc;
-    protected @Inject OAuth2ResourceConfig rsc;
-    protected @Inject OAuth2WebConfig      owc;
+    protected @Inject App                     app;
+    protected @Inject OAuth2AuthzServerConfig asc;
+    protected @Inject OAuth2ResServerConfig   rsc;
+    protected @Inject OAuth2WebAppConfig      owc;
     
     @Override
     public void preProcess(ApiConfigurator c) {
