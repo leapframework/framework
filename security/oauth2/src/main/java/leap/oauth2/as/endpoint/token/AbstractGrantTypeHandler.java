@@ -19,7 +19,7 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.web.Request;
@@ -27,8 +27,8 @@ import leap.web.Response;
 
 public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     
-    protected @Inject OAuth2ServerConfig  config;
-    protected @Inject AuthzClientManager clientManager;
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject AuthzClientManager      clientManager;
     
     protected AuthzClient validateClient(Request request, Response response, OAuth2Params params) throws Throwable {
         String clientId = params.getClientId();

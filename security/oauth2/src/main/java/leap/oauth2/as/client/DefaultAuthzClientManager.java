@@ -18,11 +18,11 @@ package leap.oauth2.as.client;
 import leap.core.annotation.Inject;
 import leap.lang.Out;
 import leap.lang.Result;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 
 public class DefaultAuthzClientManager implements AuthzClientManager {
 
-    protected @Inject OAuth2ServerConfig          config;
+    protected @Inject OAuth2AuthzServerConfig    config;
     protected @Inject AuthzClientAuthenticator[] authenticators;
     
     @Override

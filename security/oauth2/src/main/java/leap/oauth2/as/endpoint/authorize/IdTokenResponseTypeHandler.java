@@ -17,20 +17,20 @@ package leap.oauth2.as.endpoint.authorize;
 
 import leap.core.annotation.Inject;
 import leap.lang.http.QueryStringBuilder;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
-import leap.oauth2.as.OAuth2ServerErrorHandler;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.OAuth2AuthzServerErrorHandler;
 import leap.oauth2.as.openid.IdTokenGenerator;
-import leap.oauth2.as.sso.SSOManager;
+import leap.oauth2.as.sso.AuthzSSOManager;
 import leap.web.Request;
 import leap.web.Response;
 
 public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler implements ResponseTypeHandler {
 
-    protected @Inject OAuth2ServerConfig       config;
-    protected @Inject OAuth2ServerErrorHandler errorHandler;
-    protected @Inject IdTokenGenerator         idTokenGenerator;
-    protected @Inject SSOManager               ssoManager;
+    protected @Inject OAuth2AuthzServerConfig       config;
+    protected @Inject OAuth2AuthzServerErrorHandler errorHandler;
+    protected @Inject IdTokenGenerator              idTokenGenerator;
+    protected @Inject AuthzSSOManager               ssoManager;
     
     @Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {

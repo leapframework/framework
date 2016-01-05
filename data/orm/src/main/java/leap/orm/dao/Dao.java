@@ -474,7 +474,7 @@ public abstract class Dao implements JdbcExecutor {
 	
 	//----------------------------query--------------------------------
 	/**
-	 * Creates a new {@link Query} for executin the given sql command.
+	 * Creates a new {@link Query} for executing the given sql command.
 	 */
 	public abstract <T> Query<T> createQuery(Class<T> resultClass, SqlCommand command);
 	

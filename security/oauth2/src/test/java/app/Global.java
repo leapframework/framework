@@ -22,10 +22,10 @@ import javax.servlet.ServletException;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.net.Urls;
-import leap.oauth2.as.OAuth2ServerConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.oauth2.as.client.AuthzClientBuilder;
 import leap.oauth2.as.store.AuthzInMemoryStore;
-import leap.oauth2.rs.ResourceServerConfigurator;
+import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.Filter;
 import leap.web.FilterChain;
@@ -36,15 +36,18 @@ import leap.web.config.WebConfigurator;
 import leap.web.security.SecurityConfigurator;
 import leap.web.security.csrf.CSRF;
 
+/**
+ * App : in-memory oauth2 authorization server test
+ */
 public class Global extends App {
-    public static final String             TEST_CLIENT_ID                   = "test";
-    public static final String             TEST_CLIENT_SECRET               = "test_secret";
-    public static final String             TEST_CLIENT_REDIRECT_URI         = "/oauth2/recirect_uri";
-    public static final String             TEST_CLIENT_REDIRECT_URI_ENCODED = Urls.encode(TEST_CLIENT_REDIRECT_URI);
-    
-    protected @Inject SecurityConfigurator       sc;
-    protected @Inject OAuth2ServerConfigurator    ac;
-    protected @Inject ResourceServerConfigurator rc;
+	public static final String TEST_CLIENT_ID                   = "test";
+	public static final String TEST_CLIENT_SECRET               = "test_secret";
+	public static final String TEST_CLIENT_REDIRECT_URI         = "/oauth2/redirect_uri";
+	public static final String TEST_CLIENT_REDIRECT_URI_ENCODED = Urls.encode(TEST_CLIENT_REDIRECT_URI);
+
+	protected @Inject SecurityConfigurator          sc;
+    protected @Inject OAuth2AuthzServerConfigurator ac;
+    protected @Inject OAuth2ResServerConfigurator   rc;
 	
 	@Override
     protected void filtering(FilterMappings filters) {
@@ -71,11 +74,11 @@ public class Global extends App {
     protected void configure(WebConfigurator c) {
 		sc.enable(true);
 		
-		configureAuthorizationServer(ac.enable());
+		configureAuthzServer(ac.enable());
 		configureResourceServer(rc.enable());
 	}
 	
-	protected void configureAuthorizationServer(OAuth2ServerConfigurator c) {
+	protected void configureAuthzServer(OAuth2AuthzServerConfigurator c) {
 	    c.useInMemoryStore();
 	    
 	    //Enables in-memory store for testing.
@@ -87,7 +90,7 @@ public class Global extends App {
 	    ms.addClient(new AuthzClientBuilder("app3", "app3_secret").setRedirectUriPattern("http*://*/app3/auth_redirect").build());
 	}
 	
-    protected void configureResourceServer(ResourceServerConfigurator c) {
+    protected void configureResourceServer(OAuth2ResServerConfigurator c) {
 
     }
 }

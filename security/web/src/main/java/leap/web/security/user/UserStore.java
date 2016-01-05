@@ -22,12 +22,22 @@ import leap.lang.annotation.Nullable;
 
 public interface UserStore {
 
+	/**
+	 * Returns the id as {@link Object} type from string type.
+     */
+	default Object idFromString(String idString) {
+		return idString;
+	}
+
+	/**
+	 * Optional. Returns the {@link UserAccount} by searching the given username.
+     */
 	default UserAccount findUserAccount(String username){
 		return findUserAccount(username,null);
 	}
 	
 	/**
-	 * Returns <code>null</code> if the given user name not found.
+	 * Optional. Returns the {@link UserAccount} by searching the given username.
 	 */
 	UserAccount findUserAccount(String username,@Nullable Map<String, Object> parameters);
 	
@@ -35,7 +45,14 @@ public interface UserStore {
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 */
 	UserDetails findUserDetails(Object userId);
-	
+
+	/**
+	 * @see {@link #findUserDetails(Object)}
+	 */
+	default UserDetails findUserDetailsByIdString(String idString) {
+		return findUserDetails(idFromString(idString));
+	}
+
 	/**
 	 * Finds the {@link UserDetails} by the login name of user.
 	 */
@@ -62,4 +79,10 @@ public interface UserStore {
 		return ud;
 	}
 
+	/**
+	 * @see {@link #findAndCheckUserDetails(Object)}
+     */
+	default UserDetails findAndCheckUserDetailsByIdString(String idString) throws IllegalStateException {
+		return findAndCheckUserDetails(idFromString(idString));
+	}
 }

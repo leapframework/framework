@@ -24,14 +24,14 @@ import leap.core.security.token.jwt.JwtSigner;
 import leap.core.security.token.jwt.MacSigner;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.web.security.user.UserDetails;
 
 public class JwtIdTokenGenerator implements IdTokenGenerator {
 
-    protected @Inject OAuth2ServerConfig config;
+    protected @Inject OAuth2AuthzServerConfig config;
     
     @Override
     public String generateIdToken(AuthzAuthentication authc) {
@@ -47,15 +47,15 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
     }
     
     protected JwtSigner getJwtSigner(AuthzAuthentication authc, int expires) {
-        AuthzClient client  = authc.getClient();
+        AuthzClient client  = authc.getClientDetails();
         
         return new MacSigner(client.getSecret(), expires);
     }
     
     protected Map<String, Object> getJwtClaims(AuthzAuthentication authc, int expires) {
         OAuth2Params params = authc.getParams();
-        AuthzClient client = authc.getClient();
-        UserDetails user   = authc.getUser();
+        AuthzClient client = authc.getClientDetails();
+        UserDetails user   = authc.getUserDetails();
         
         Map<String, Object> claims = new LinkedHashMap<String, Object>();
         

@@ -17,7 +17,7 @@ package leap.oauth2.as.endpoint.authorize;
 
 import leap.lang.Result;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.web.Request;
 import leap.web.Response;

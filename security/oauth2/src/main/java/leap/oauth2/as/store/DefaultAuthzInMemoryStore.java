@@ -15,6 +15,8 @@
  */
 package leap.oauth2.as.store;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,6 +27,8 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.SimpleAuthzClient;
 import leap.oauth2.as.code.AuthzCode;
+import leap.oauth2.as.sso.AuthzSSOLogin;
+import leap.oauth2.as.sso.AuthzSSOSession;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzRefreshToken;
 
@@ -33,10 +37,12 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     private static final Log log = LogFactory.get(DefaultAuthzInMemoryStore.class);
     
     protected boolean                        enabled;
-    protected Map<String, AuthzClient>       clients       = new ConcurrentHashMap<>();
-    protected Map<String, AuthzCode>         codes         = new ConcurrentHashMap<>();
-    protected Map<String, AuthzAccessToken>  accessTokens  = new ConcurrentHashMap<>();
-    protected Map<String, AuthzRefreshToken> refreshTokens = new ConcurrentHashMap<>();
+    protected Map<String, AuthzClient>         clients       = new ConcurrentHashMap<>();
+    protected Map<String, AuthzCode>           codes         = new ConcurrentHashMap<>();
+    protected Map<String, AuthzAccessToken>    accessTokens  = new ConcurrentHashMap<>();
+    protected Map<String, AuthzRefreshToken>   refreshTokens = new ConcurrentHashMap<>();
+    protected Map<String, AuthzSSOSession>     ssoSessions   = new ConcurrentHashMap<>();
+    protected Map<String, List<AuthzSSOLogin>> ssoLogins     = new ConcurrentHashMap<>();
 
     @Override
     public AuthzClient loadClient(String clientId) {
@@ -150,5 +156,54 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
             }
         }
     }
-    
+
+    @Override
+    public AuthzSSOSession loadSessionByToken(String username, String token) {
+        return ssoSessions.get(token);
+    }
+
+    @Override
+    public List<AuthzSSOLogin> loadLoginsInSession(AuthzSSOSession session) {
+        List<AuthzSSOLogin> logins = ssoLogins.get(session.getId());
+        if(null == logins) {
+            return new ArrayList<>();
+        }else{
+            return logins;
+        }
+    }
+
+    @Override
+    public void saveSession(AuthzSSOSession session, AuthzSSOLogin initialLogin) {
+        if(ssoSessions.containsKey(session.getToken())) {
+            throw new IllegalStateException("Duplicated sso token '" + session.getToken() + "'");
+        }
+        ssoSessions.put(session.getToken(), session);
+
+        List<AuthzSSOLogin> logins = new ArrayList<>();
+        logins.add(initialLogin);
+        ssoLogins.put(session.getId(), logins);
+    }
+
+    @Override
+    public void saveLogin(AuthzSSOSession session, AuthzSSOLogin newlogin) {
+        List<AuthzSSOLogin> logins = ssoLogins.get(session.getId());
+        if(null == logins) {
+            throw new IllegalStateException("Session not exists, cannot save new login");
+        }
+        logins.add(newlogin);
+    }
+
+    @Override
+    public void cleanupSSO() {
+        for(Entry<String, AuthzSSOSession> entry : ssoSessions.entrySet()) {
+            AuthzSSOSession session = entry.getValue();
+            if(session.isExpired()) {
+                log.debug("Removing the expired sso session of user '{}", session.getUsername(), session.getUsername());
+                ssoSessions.remove(entry.getKey());
+                ssoLogins.remove(session.getId());
+            }
+        }
+    }
+
+
 }

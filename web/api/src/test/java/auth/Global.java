@@ -17,7 +17,7 @@ package auth;
 
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
-import leap.oauth2.as.OAuth2ServerConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
@@ -26,7 +26,7 @@ import auth.models.Client;
 
 public class Global extends App implements AuthTestData {
     
-    protected @Inject OAuth2ServerConfigurator asc;
+    protected @Inject OAuth2AuthzServerConfigurator asc;
 
     @Override
     protected void configure(WebConfigurator c) {

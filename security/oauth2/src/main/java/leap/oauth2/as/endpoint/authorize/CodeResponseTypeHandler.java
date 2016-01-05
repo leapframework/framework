@@ -18,8 +18,8 @@ package leap.oauth2.as.endpoint.authorize;
 import leap.core.annotation.Inject;
 import leap.lang.http.QueryStringBuilder;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
 import leap.web.Request;
@@ -27,8 +27,8 @@ import leap.web.Response;
 
 public class CodeResponseTypeHandler extends AbstractResponseTypeHandler implements ResponseTypeHandler {
 	
-	protected @Inject OAuth2ServerConfig config;
-	protected @Inject AuthzCodeManager  codeManager;
+	protected @Inject OAuth2AuthzServerConfig config;
+	protected @Inject AuthzCodeManager        codeManager;
 	
 	@Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
