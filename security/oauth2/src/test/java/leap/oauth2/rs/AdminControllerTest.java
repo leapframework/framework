@@ -13,12 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.server.openid;
+package leap.oauth2.rs;
 
-class IdTokenInfo {
+import leap.oauth2.OAuth2TestBase;
+import leap.oauth2.TokenResponse;
 
-    String clientId;
-    String userId;
-    String userName;
-    String loginName;
+import org.junit.Test;
+
+public class AdminControllerTest extends OAuth2TestBase {
+
+    @Test
+    public void testClientOnlyAccessToken() {
+        serverContextPath = "/server";
+        
+        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
+        
+        withAccessToken(forGet("/app1/book"), token.accessToken).send().assertNotOk();
+        withAccessToken(forGet("/app1/admin/hello"), token.accessToken).send().assertOk();
+    }
+    
 }

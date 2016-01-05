@@ -18,7 +18,7 @@ package server;
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
 import leap.oauth2.OAuth2TestData;
-import leap.oauth2.server.OAuth2ServerConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
@@ -31,8 +31,8 @@ import tested.models.User;
  */
 public class Global extends App implements OAuth2TestData {
     
-    protected @Inject SecurityConfigurator     sc;
-    protected @Inject OAuth2ServerConfigurator oc;
+    protected @Inject SecurityConfigurator          sc;
+    protected @Inject OAuth2AuthzServerConfigurator oc;
 
     @Override
     protected void configure(WebConfigurator c) {

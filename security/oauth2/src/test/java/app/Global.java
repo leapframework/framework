@@ -22,10 +22,10 @@ import javax.servlet.ServletException;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.net.Urls;
-import leap.oauth2.server.OAuth2ServerConfigurator;
-import leap.oauth2.server.client.OAuth2ClientBuilder;
-import leap.oauth2.server.store.OAuth2InMemoryStore;
-import leap.oauth2.resource.OAuth2ResourceConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
+import leap.oauth2.as.client.AuthzClientBuilder;
+import leap.oauth2.as.store.AuthzInMemoryStore;
+import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.Filter;
 import leap.web.FilterChain;
@@ -45,9 +45,9 @@ public class Global extends App {
 	public static final String TEST_CLIENT_REDIRECT_URI         = "/oauth2/redirect_uri";
 	public static final String TEST_CLIENT_REDIRECT_URI_ENCODED = Urls.encode(TEST_CLIENT_REDIRECT_URI);
 
-	protected @Inject SecurityConfigurator       sc;
-    protected @Inject OAuth2ServerConfigurator   ac;
-    protected @Inject OAuth2ResourceConfigurator rc;
+	protected @Inject SecurityConfigurator          sc;
+    protected @Inject OAuth2AuthzServerConfigurator ac;
+    protected @Inject OAuth2ResServerConfigurator   rc;
 	
 	@Override
     protected void filtering(FilterMappings filters) {
@@ -78,19 +78,19 @@ public class Global extends App {
 		configureResourceServer(rc.enable());
 	}
 	
-	protected void configureAuthzServer(OAuth2ServerConfigurator c) {
+	protected void configureAuthzServer(OAuth2AuthzServerConfigurator c) {
 	    c.useInMemoryStore();
 	    
 	    //Enables in-memory store for testing.
-	    OAuth2InMemoryStore ms = c.inMemoryStore();
+	    AuthzInMemoryStore ms = c.inMemoryStore();
 	    
 	    ms.addClient(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_CLIENT_REDIRECT_URI);
 	    
-	    ms.addClient(new OAuth2ClientBuilder("app2", "app2_secret").setRedirectUriPattern("http*://*/app2/oauth2_redirect").build());
-	    ms.addClient(new OAuth2ClientBuilder("app3", "app3_secret").setRedirectUriPattern("http*://*/app3/auth_redirect").build());
+	    ms.addClient(new AuthzClientBuilder("app2", "app2_secret").setRedirectUriPattern("http*://*/app2/oauth2_redirect").build());
+	    ms.addClient(new AuthzClientBuilder("app3", "app3_secret").setRedirectUriPattern("http*://*/app3/auth_redirect").build());
 	}
 	
-    protected void configureResourceServer(OAuth2ResourceConfigurator c) {
+    protected void configureResourceServer(OAuth2ResServerConfigurator c) {
 
     }
 }

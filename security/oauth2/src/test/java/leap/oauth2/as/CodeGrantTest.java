@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.server;
+package leap.oauth2.as;
 
 import leap.oauth2.TokenResponse;
 import leap.oauth2.OAuth2TestBase;
@@ -22,11 +22,22 @@ import org.junit.Test;
 
 import app.Global;
 
-public class ImplicitGrantTest extends OAuth2TestBase {
+public class CodeGrantTest extends OAuth2TestBase {
     
 	@Test
+	public void testInvalidAuthorizationRequest() {
+		get(AUTHZ_ENDPOINT).assertContentContains("invalid_request");
+		
+		get(AUTHZ_ENDPOINT + "?client_id=1").assertContentContains("invalid_request");
+		
+		get(AUTHZ_ENDPOINT + "?redirect_uri=/auth_return").assertContentContains("invalid_request");
+		
+		get(AUTHZ_ENDPOINT + "?client_id=1&redirect_uri=/auth_return").assertContentContains("invalid_request");
+	}
+	
+	@Test
 	public void testSuccessAuthorizationRequest() {
-	    String uri = AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
+	    String uri = AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
 
 	    logout();
 	    get(uri).assertOk().assertContentContains("Login with your Account");
@@ -39,7 +50,13 @@ public class ImplicitGrantTest extends OAuth2TestBase {
 	
 	@Test
 	public void testSuccessAccessTokenRequest() {
-	    TokenResponse token = obtainAccessTokenImplicit();
+	    String code = obtainAuthorizationCode();
+	    assertNotEmpty(code);
+	    
+	    TokenResponse token = obtainAccessTokenByCode(code);
+	    assertNotEmpty(token.accessToken);
+	    assertNotEmpty(token.refreshToken);
+	    assertEquals(new Integer(3600), token.expiresIn);
 	    
 	    testAccessTokenInfo(token);
 	}

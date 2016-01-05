@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.server;
+package leap.oauth2.as;
 
 import leap.oauth2.TokenResponse;
 import leap.oauth2.OAuth2TestBase;

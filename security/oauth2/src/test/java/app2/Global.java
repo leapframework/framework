@@ -16,13 +16,13 @@
 package app2;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.web.OAuth2WebConfigurator;
+import leap.oauth2.wa.OAuth2WebAppConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
 
 public class Global extends App {
     
-    protected @Inject OAuth2WebConfigurator owc;
+    protected @Inject OAuth2WebAppConfigurator owc;
 
     @Override
     protected void configure(WebConfigurator c) {

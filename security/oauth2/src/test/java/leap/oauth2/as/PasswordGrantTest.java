@@ -13,24 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.server;
+package leap.oauth2.as;
 
 import leap.oauth2.TokenResponse;
 import leap.oauth2.OAuth2TestBase;
 
 import org.junit.Test;
 
-import app.Global;
-
-public class ClientGrantTest extends OAuth2TestBase {
+public class PasswordGrantTest extends OAuth2TestBase {
     
     @Test
-    public void testInvalidClientIdSecret() {
-        TokenResponse token = obtainAccessTokenByClient("bad clientId", "bad clientSecret");
+    public void testInvalidUsernamePassword() {
+        TokenResponse token = obtainAccessTokenByPassword("bad username", "bad password");
         assertTrue(token.isError());
         assertNotEmpty(token.error);
         
-        token = obtainAccessTokenByClient(Global.TEST_CLIENT_ID, "bad clientSecret");
+        token = obtainAccessTokenByPassword(USERNAME, "bad password");
         assertTrue(token.isError());
         assertNotEmpty(token.error);
     }
@@ -39,10 +37,10 @@ public class ClientGrantTest extends OAuth2TestBase {
 	public void testSuccessAccessTokenRequest() {
 	    logout();
 	    
-	    TokenResponse token = obtainAccessTokenByClient(Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET);
+	    TokenResponse token = obtainAccessTokenByPassword(USERNAME1, PASSWORD1);
 	    assertFalse(token.isError());
 	    
-	    testClientOnlyAccessTokenInfo(token);
+	    testAccessTokenInfo(token);
 	}
 	
 }
