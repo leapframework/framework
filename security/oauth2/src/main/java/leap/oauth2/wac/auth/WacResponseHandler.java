@@ -15,27 +15,13 @@
  */
 package leap.oauth2.wac.auth;
 
-import leap.core.security.Credentials;
+import leap.lang.intercepting.State;
+import leap.oauth2.OAuth2Params;
+import leap.web.Request;
+import leap.web.Response;
 
-public class WebIdToken implements Credentials {
+public interface WacResponseHandler {
 
-    protected String clientId;
-    protected String userId;
-
-    public String getClientId() {
-        return clientId;
-    }
-
-    public void setClientId(String clientId) {
-        this.clientId = clientId;
-    }
-
-    public String getUserId() {
-        return userId;
-    }
-
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
+    State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable;
 
 }

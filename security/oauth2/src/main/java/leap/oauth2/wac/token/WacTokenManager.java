@@ -15,13 +15,21 @@
  */
 package leap.oauth2.wac.token;
 
-import leap.lang.expirable.TimeExpirable;
+import leap.web.Request;
+import leap.web.security.authc.Authentication;
 
-public interface WebAccessToken extends TimeExpirable {
-
-    String getToken();
+public interface WacTokenManager {
     
-    String getRefreshToken();
+    WacAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code);
+    
+    WacAccessToken refreshAndSaveAccessToken(Request request);
+    
+    WacAccessToken refreshAndSaveAccessToken(Request request, WacAccessToken old);
+    
+    default WacAccessToken currentAccessToken(Request request) {
+        return currentAccessToken(request, true);
+    }
+    
+    WacAccessToken currentAccessToken(Request request, boolean refreshExpired);
 
-    String getUserId();
 }

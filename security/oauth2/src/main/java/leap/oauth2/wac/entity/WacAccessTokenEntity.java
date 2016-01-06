@@ -20,8 +20,8 @@ import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("web_access_token")
-public class WebAccessTokenEntity extends OAuth2ExpirableEntity {
+@Table("wac_access_token")
+public class WacAccessTokenEntity extends OAuth2ExpirableEntity {
 
     @Id
     protected String id;

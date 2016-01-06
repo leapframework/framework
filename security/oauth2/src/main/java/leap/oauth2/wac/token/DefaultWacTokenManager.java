@@ -33,7 +33,7 @@ import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 
-public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
+public class DefaultWacTokenManager implements WacTokenManager {
     
     private static final String KEY = "AccessToken_" + UUID.randomUUID().toString();
     
@@ -41,7 +41,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
     protected @Inject HttpClient         hc;
     
     @Override
-    public WebAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
+    public WacAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
         HttpRequest req = 
                 hc.request(config.getRemoteTokenEndpointUrl())
                   .addQueryParam("grant_type", "authorization_code")
@@ -54,7 +54,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
             Map<String, Object> map = JSON.decodeToMap(resp.getString());
             
             if(!map.containsKey("error")) {
-                SimpleWebAccessToken at = new SimpleWebAccessToken();
+                SimpleWacAccessToken at = new SimpleWacAccessToken();
                 
                 at.setCreated(System.currentTimeMillis());
                 at.setToken((String)map.get("access_token"));
@@ -75,8 +75,8 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
     }
     
     @Override
-    public WebAccessToken refreshAndSaveAccessToken(Request request) {
-        WebAccessToken old = currentAccessToken(request, false);
+    public WacAccessToken refreshAndSaveAccessToken(Request request) {
+        WacAccessToken old = currentAccessToken(request, false);
         
         if(null == old) {
             throw new IllegalStateException("No current access token, cannot refresh");
@@ -86,7 +86,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
     }
 
     @Override
-    public WebAccessToken refreshAndSaveAccessToken(Request request, WebAccessToken old) {
+    public WacAccessToken refreshAndSaveAccessToken(Request request, WacAccessToken old) {
         if(null != config.getAccessTokenStore()) {
             config.getAccessTokenStore().removeAccessToken(request, old);
         }
@@ -101,7 +101,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
             Map<String, Object> map = JSON.decodeToMap(resp.getString());
             
             if(!map.containsKey("error")) {
-                SimpleWebAccessToken at = new SimpleWebAccessToken();
+                SimpleWacAccessToken at = new SimpleWacAccessToken();
                 
                 at.setCreated(System.currentTimeMillis());
                 at.setToken((String)map.get("access_token"));
@@ -124,13 +124,13 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
     }
     
     @Override
-    public WebAccessToken currentAccessToken(Request request, boolean refreshIfExpired) {
+    public WacAccessToken currentAccessToken(Request request, boolean refreshIfExpired) {
         Session session = request.getSession(false);
         if(null == session) {
             return null;
         }
         
-        WebAccessToken at = (WebAccessToken)session.getAttribute(KEY);
+        WacAccessToken at = (WacAccessToken)session.getAttribute(KEY);
 
         if(null == at) {
             if(config.getAccessTokenStore() != null) {
@@ -159,7 +159,7 @@ public class DefaultWebAccessTokenManager implements WebAccessTokenManager {
         return at;
     }
 
-    public void saveAccessToken(Request request, WebAccessToken at) {
+    public void saveAccessToken(Request request, WacAccessToken at) {
         if(null != config.getAccessTokenStore()) {
             config.getAccessTokenStore().saveAccessToken(request, request.response(), at);
         }

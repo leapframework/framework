@@ -16,20 +16,17 @@
 package leap.oauth2.wac.token;
 
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.web.Response;
 
-public interface WebAccessTokenManager {
+/**
+ * Persist the access token.
+ */
+public interface WacTokenStore {
+
+    void saveAccessToken(Request request, Response response, WacAccessToken at);
     
-    WebAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code);
+    WacAccessToken loadAccessToken(Request request);
     
-    WebAccessToken refreshAndSaveAccessToken(Request request);
-    
-    WebAccessToken refreshAndSaveAccessToken(Request request, WebAccessToken old);
-    
-    default WebAccessToken currentAccessToken(Request request) {
-        return currentAccessToken(request, true);
-    }
-    
-    WebAccessToken currentAccessToken(Request request, boolean refreshExpired);
+    void removeAccessToken(Request request, WacAccessToken at);
 
 }

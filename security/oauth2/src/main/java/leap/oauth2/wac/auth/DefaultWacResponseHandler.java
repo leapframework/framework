@@ -28,7 +28,7 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.rs.auth.ResClientPrincipal;
 import leap.oauth2.wac.OAuth2WebAppConfig;
-import leap.oauth2.wac.token.WebAccessTokenManager;
+import leap.oauth2.wac.token.WacTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.Authentication;
@@ -39,21 +39,21 @@ import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
-public class DefaultWebResponseHandler implements WebResponseHandler {
+public class DefaultWacResponseHandler implements WacResponseHandler {
     
-    private static final Log log = LogFactory.get(DefaultWebResponseHandler.class);
+    private static final Log log = LogFactory.get(DefaultWacResponseHandler.class);
     
     protected @Inject OAuth2WebAppConfig    config;
     protected @Inject AuthenticationManager am;
     protected @Inject UserManager           um;
     protected @Inject LoginManager          sm;
-    protected @Inject WebAccessTokenManager atm;
+    protected @Inject WacTokenManager       atm;
 
     @Override
     public State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable {
         String idToken = params.getIdToken();
         if(!Strings.isEmpty(idToken)) {
-            WebIdToken details = verifyIdToken(params, idToken);
+            WacIdToken details = verifyIdToken(params, idToken);
             
             Authentication authc = authentcate(request, response, params, idToken, details);
             if(null == authc) {
@@ -73,12 +73,12 @@ public class DefaultWebResponseHandler implements WebResponseHandler {
         return State.CONTINUE;
     }
     
-    protected WebIdToken verifyIdToken(OAuth2Params params, String idToken) throws Throwable {
+    protected WacIdToken verifyIdToken(OAuth2Params params, String idToken) throws Throwable {
         
         MacSigner signer = new MacSigner(config.getClientSecret());
         
         Map<String, Object> claims = signer.verify(idToken);
-        WebIdToken details = new WebIdToken();
+        WacIdToken details = new WacIdToken();
 
         details.clientId = (String)claims.remove("aud");
         details.userId   = (String)claims.remove("sub");
@@ -86,7 +86,7 @@ public class DefaultWebResponseHandler implements WebResponseHandler {
         return details;
     }
     
-    protected Authentication authentcate(Request request, Response response, OAuth2Params params, String idToken, WebIdToken details) throws Throwable {
+    protected Authentication authentcate(Request request, Response response, OAuth2Params params, String idToken, WacIdToken details) throws Throwable {
         String clientId = details.getClientId();
         String userId   = details.getUserId();
         

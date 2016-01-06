@@ -13,15 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wac.auth;
+package leap.oauth2.wac.token;
 
-import leap.lang.intercepting.State;
-import leap.oauth2.OAuth2Params;
-import leap.web.Request;
-import leap.web.Response;
+import leap.lang.expirable.TimeExpirable;
 
-public interface WebResponseHandler {
+public interface WacAccessToken extends TimeExpirable {
 
-    State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable;
+    String getToken();
+    
+    String getRefreshToken();
 
+    String getUserId();
 }

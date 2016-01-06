@@ -19,10 +19,10 @@ public interface OAuth2WebAppConfigurator {
     
     String DEFAULT_REDIRECT_PATH            = "/oauth2_redirect";
     String DEFAULT_ERROR_VIEW               = "/oauth2_error";
-    String DEFAULT_ACCESS_TOKEN_COOKIE_NAME = "web_at";
+    String DEFAULT_ACCESS_TOKEN_COOKIE_NAME = "wac_at";
     
     /**
-     * Enables oauth2 client web app.
+     * Enables oauth2 web app client.
      */
     default OAuth2WebAppConfigurator enable() {
         return enable(true);
@@ -36,7 +36,7 @@ public interface OAuth2WebAppConfigurator {
     }
     
     /**
-     * Enables remote logout (remote login must be enabeld).
+     * Enables remote logout (remote login must be enabled).
      */
     default OAuth2WebAppConfigurator enabledRemoteLogout() {
         return setRemoteLogoutEnabled(true);

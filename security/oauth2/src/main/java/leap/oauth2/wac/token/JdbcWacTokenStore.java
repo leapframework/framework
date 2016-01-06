@@ -22,7 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.store.JdbcStore;
 import leap.oauth2.as.store.AbstractJdbcAuthzStore;
 import leap.oauth2.wac.OAuth2WebAppConfig;
-import leap.oauth2.wac.entity.WebAccessTokenEntity;
+import leap.oauth2.wac.entity.WacAccessTokenEntity;
 import leap.orm.OrmMetadata;
 import leap.orm.command.CreateEntityCommand;
 import leap.orm.dao.Dao;
@@ -33,7 +33,7 @@ import leap.web.config.WebConfig;
 import leap.web.cookie.AbstractCookieBean;
 
 //TODO : cleanup when refresh token expired.
-public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements WebAccessTokenStore, JdbcStore {
+public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacTokenStore, JdbcStore {
     
     protected @Inject WebConfig          wc;
     protected @Inject OAuth2WebAppConfig config;
@@ -48,8 +48,8 @@ public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements W
     }
     
     @Override
-    public void saveAccessToken(Request request, Response response, WebAccessToken at) {
-        WebAccessTokenEntity entity = createEntityFromAccesstoken(at);
+    public void saveAccessToken(Request request, Response response, WacAccessToken at) {
+        WacAccessTokenEntity entity = createEntityFromAccesstoken(at);
         
         dao.insert(entity);
             
@@ -57,13 +57,13 @@ public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements W
     }
 
     @Override
-    public WebAccessToken loadAccessToken(Request request) {
+    public WacAccessToken loadAccessToken(Request request) {
         Cookie cookie = getCookieBean().getCookie(request);
         if(null == cookie) {
             return null;
         }
         
-        WebAccessTokenEntity entity = dao.find(WebAccessTokenEntity.class, cookie.getValue());
+        WacAccessTokenEntity entity = dao.find(WacAccessTokenEntity.class, cookie.getValue());
         if(null == entity) {
             return null;
         }
@@ -72,12 +72,12 @@ public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements W
     }
     
     @Override
-    public void removeAccessToken(Request request, WebAccessToken at) {
-        dao.createCriteriaQuery(WebAccessTokenEntity.class).where("token = ?",at.getToken()).delete();
+    public void removeAccessToken(Request request, WacAccessToken at) {
+        dao.createCriteriaQuery(WacAccessTokenEntity.class).where("token = ?",at.getToken()).delete();
     }
 
-    protected WebAccessToken createAccessTokenFromEntity(WebAccessTokenEntity entity) {
-        SimpleWebAccessToken token = new SimpleWebAccessToken();
+    protected WacAccessToken createAccessTokenFromEntity(WacAccessTokenEntity entity) {
+        SimpleWacAccessToken token = new SimpleWacAccessToken();
 
         token.setToken(entity.getToken());
         token.setUserId(entity.getUserId());
@@ -88,8 +88,8 @@ public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements W
         return token;
     }
     
-    protected WebAccessTokenEntity createEntityFromAccesstoken(WebAccessToken token) {
-        WebAccessTokenEntity entity = new WebAccessTokenEntity();
+    protected WacAccessTokenEntity createEntityFromAccesstoken(WacAccessToken token) {
+        WacAccessTokenEntity entity = new WacAccessTokenEntity();
         
         entity.setToken(token.getToken());
         entity.setUserId(token.getUserId());
@@ -106,7 +106,7 @@ public class JdbcWebAccessTokenStore extends AbstractJdbcAuthzStore implements W
     }
     
     protected void createEntityMapping(Dmo dmo, boolean debug) {
-        CreateEntityCommand cmd = dmo.cmdCreateEntity(WebAccessTokenEntity.class);
+        CreateEntityCommand cmd = dmo.cmdCreateEntity(WacAccessTokenEntity.class);
 
         if(debug) {
             cmd.setUpgradeTable(true);

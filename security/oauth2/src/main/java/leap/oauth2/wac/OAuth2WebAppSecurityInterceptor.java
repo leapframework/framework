@@ -25,7 +25,7 @@ import leap.lang.net.Urls;
 import leap.lang.servlet.Servlets;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.wac.auth.WebResponseHandler;
+import leap.oauth2.wac.auth.WacResponseHandler;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.Request;
@@ -47,7 +47,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected @Inject AuthenticationManager am;
     protected @Inject LoginManager          sim;
     protected @Inject LogoutManager         som;
-    protected @Inject WebResponseHandler[]  handlers;
+    protected @Inject WacResponseHandler[]  handlers;
     
     protected String redirectPath;
     protected View   defaultErrorView;
@@ -144,7 +144,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected void handleOAuth2ServerSuccess(Request request, Response response, OAuth2Params params) throws Throwable {
         boolean processed = false;
         
-        for (WebResponseHandler handler : handlers) {
+        for (WacResponseHandler handler : handlers) {
             State state = handler.handleSuccessResponse(request, response, params);
             if (State.isProcessed(state)) {
                 processed = true;

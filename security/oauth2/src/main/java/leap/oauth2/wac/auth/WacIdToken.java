@@ -13,30 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.wac.token;
+package leap.oauth2.wac.auth;
 
-import leap.lang.expirable.TimeExpirableSeconds;
+import leap.core.security.Credentials;
 
-public class SimpleWebAccessToken extends TimeExpirableSeconds implements WebAccessToken {
-    
-    protected String token;
-    protected String refreshToken;
+public class WacIdToken implements Credentials {
+
+    protected String clientId;
     protected String userId;
 
-    public String getToken() {
-        return token;
+    public String getClientId() {
+        return clientId;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-    }
-
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
     }
 
     public String getUserId() {
@@ -46,4 +37,5 @@ public class SimpleWebAccessToken extends TimeExpirableSeconds implements WebAcc
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
 }

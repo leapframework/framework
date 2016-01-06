@@ -15,7 +15,7 @@
  */
 package leap.oauth2.wac;
 
-import leap.oauth2.wac.token.WebAccessTokenStore;
+import leap.oauth2.wac.token.WacTokenStore;
 
 public interface OAuth2WebAppConfig {
     
@@ -68,7 +68,7 @@ public interface OAuth2WebAppConfig {
      * Optional. Returns the logout endpoint url or remote oauth server.
      * 
      * <p>
-     * Required if remoute logout enabled.
+     * Required if remote logout enabled.
      */
     String getRemoteLogoutEndpointUrl();
     
@@ -83,7 +83,7 @@ public interface OAuth2WebAppConfig {
     String getAccessTokenCookieName();
     
     /**
-     * Returns the {@link WebAccessTokenStore} or <code>null</code> if not enabled.
+     * Returns the {@link WacTokenStore} or <code>null</code> if not enabled.
      */
-    WebAccessTokenStore getAccessTokenStore();
+    WacTokenStore getAccessTokenStore();
 }

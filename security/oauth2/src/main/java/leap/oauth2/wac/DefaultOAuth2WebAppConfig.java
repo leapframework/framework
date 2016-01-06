@@ -22,7 +22,7 @@ import leap.core.ds.DataSourceManager;
 import leap.core.store.JdbcStore;
 import leap.lang.Strings;
 import leap.lang.path.Paths;
-import leap.oauth2.wac.token.WebAccessTokenStore;
+import leap.oauth2.wac.token.WacTokenStore;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
@@ -31,8 +31,8 @@ import leap.web.security.SecurityConfigurator;
 public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebAppConfigurator, AppInitializable {
 
     protected @Inject              SecurityConfigurator sc;
-    protected @Inject(false)       WebAccessTokenStore  accessTokenStore;
-    protected @Inject(name="jdbc") WebAccessTokenStore  jdbcAccessTokenStore;
+    protected @Inject(false)       WacTokenStore        accessTokenStore;
+    protected @Inject(name="jdbc") WacTokenStore        jdbcAccessTokenStore;
     
     protected boolean          enabled;
     protected boolean          remoteLogoutEnabled;
@@ -174,11 +174,11 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return this;
     }
 
-    public WebAccessTokenStore getAccessTokenStore() {
+    public WacTokenStore getAccessTokenStore() {
         return accessTokenStore;
     }
 
-    public OAuth2WebAppConfigurator setAccessTokenStore(WebAccessTokenStore accessTokenStore) {
+    public OAuth2WebAppConfigurator setAccessTokenStore(WacTokenStore accessTokenStore) {
         this.accessTokenStore = accessTokenStore;
         return this;
     }
