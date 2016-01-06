@@ -32,7 +32,7 @@ public class Global extends App {
         owc.enable()
            .setClientId("app2")
            .setClientSecret("app2_secret")
-           .setRemoteServerUrl("http://localhost:8080/server");
+           .setServerUrl("http://localhost:8080/server");
     }
     
 }

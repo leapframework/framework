@@ -27,29 +27,30 @@ import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
-@Configurable(prefix="oauth2.webapp")
+@Configurable(prefix="oauth2.wac")
 public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebAppConfigurator, AppInitializable {
 
     protected @Inject              SecurityConfigurator sc;
-    protected @Inject(false)       WacTokenStore        accessTokenStore;
-    protected @Inject(name="jdbc") WacTokenStore        jdbcAccessTokenStore;
-    
-    protected boolean          enabled;
-    protected boolean          remoteLogoutEnabled;
-    protected boolean          userAccessTokenEnabled;
-    protected String           clientId;
-    protected String           clientSecret;
-    protected String           clientRedirectUri = DEFAULT_REDIRECT_PATH;
-    protected String           remoteServerUrl;
-    protected String           remoteTokenEndpointUrl;
-    protected String           remoteAuthzEndpointUrl;
-    protected String           remoteLogoutEndpointUrl;
-    protected String           errorView             = DEFAULT_ERROR_VIEW;
-    protected String           accessTokenCookieName = DEFAULT_ACCESS_TOKEN_COOKIE_NAME;
+    protected @Inject(false)       WacTokenStore        tokenStore;
+    protected @Inject(name="jdbc") WacTokenStore        jdbcTokenStore;
+
+    protected boolean enabled;
+    protected boolean oauth2LoginEnabled;
+    protected boolean oauth2LogoutEnabled;
+    protected boolean accessTokenEnabled;
+    protected String  clientId;
+    protected String  clientSecret;
+    protected String  clientRedirectUri = DEFAULT_REDIRECT_PATH;
+    protected String  serverUrl;
+    protected String  serverTokenEndpointUrl;
+    protected String  serverAuthorizationEndpointUrl;
+    protected String  serverLogoutEndpointUrl;
+    protected String  errorView             = DEFAULT_ERROR_VIEW;
+    protected String  accessTokenCookieName = DEFAULT_ACCESS_TOKEN_COOKIE_NAME;
     
     @Override
-    public OAuth2WebAppConfigurator useJdbcAccessTokenStore() {
-        this.accessTokenStore = jdbcAccessTokenStore;
+    public OAuth2WebAppConfigurator useJdbcTokenStore() {
+        this.tokenStore = jdbcTokenStore;
         return this;
     }
 
@@ -61,25 +62,27 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
     @Configurable.Property
     public OAuth2WebAppConfigurator setEnabled(boolean enabled) {
         this.enabled = enabled;
+        this.oauth2LoginEnabled = enabled;
+        this.oauth2LogoutEnabled = enabled;
         return this;
     }
-    
+
     @Override
-    public boolean isRemoteLogoutEnabled() {
-        return remoteLogoutEnabled;
+    public boolean isOAuth2LoginEnabled() {
+        return oauth2LoginEnabled;
     }
 
-    public OAuth2WebAppConfigurator setRemoteLogoutEnabled(boolean enabled) {
-        this.remoteLogoutEnabled = enabled;
-        return this;
-    }
-    
-    public boolean isUserAccessTokenEnabled() {
-        return userAccessTokenEnabled;
+    @Override
+    public boolean isOAuth2LogoutEnabled() {
+        return oauth2LogoutEnabled;
     }
 
-    public OAuth2WebAppConfigurator setUserAccessTokenEnabled(boolean userAccessTokenEnabled) {
-        this.userAccessTokenEnabled = userAccessTokenEnabled;
+    public boolean isAccessTokenEnabled() {
+        return accessTokenEnabled;
+    }
+
+    public OAuth2WebAppConfigurator setAccessTokenEnabled(boolean userAccessTokenEnabled) {
+        this.accessTokenEnabled = userAccessTokenEnabled;
         return this;
     }
 
@@ -114,43 +117,43 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
     }
 
     @Configurable.Property
-    public OAuth2WebAppConfigurator setRemoteServerUrl(String url) {
-        this.remoteServerUrl = Paths.suffixWithoutSlash(url);
-        this.remoteAuthzEndpointUrl = this.remoteServerUrl + "/oauth2/authorize";
-        this.remoteTokenEndpointUrl = this.remoteServerUrl + "/oauth2/token";
-        this.remoteLogoutEndpointUrl = this.remoteServerUrl + "/oauth2/logout";
+    public OAuth2WebAppConfigurator setServerUrl(String url) {
+        this.serverUrl = Paths.suffixWithoutSlash(url);
+        this.serverAuthorizationEndpointUrl = this.serverUrl + "/oauth2/authorize";
+        this.serverTokenEndpointUrl = this.serverUrl + "/oauth2/token";
+        this.serverLogoutEndpointUrl = this.serverUrl + "/oauth2/logout";
         return this;
     }
 
-    public String getRemoteTokenEndpointUrl() {
-        return remoteTokenEndpointUrl;
+    public String getServerTokenEndpointUrl() {
+        return serverTokenEndpointUrl;
     }
 
     @Configurable.Property
-    public OAuth2WebAppConfigurator setRemoteTokenEndpointUrl(String url) {
-        this.remoteTokenEndpointUrl = url;
-        return this;
-    }
-    
-    @Override
-    public String getRemoteAuthzEndpointUrl() {
-        return remoteAuthzEndpointUrl;
-    }
-    
-    @Configurable.Property
-    public OAuth2WebAppConfigurator setRemoteAuthzEndpointUrl(String url) {
-        this.remoteAuthzEndpointUrl = url;
+    public OAuth2WebAppConfigurator setServerTokenEndpointUrl(String url) {
+        this.serverTokenEndpointUrl = url;
         return this;
     }
     
     @Override
-    public String getRemoteLogoutEndpointUrl() {
-        return remoteLogoutEndpointUrl;
+    public String getServerAuthorizationEndpointUrl() {
+        return serverAuthorizationEndpointUrl;
+    }
+    
+    @Configurable.Property
+    public OAuth2WebAppConfigurator setServerAuthorizationEndpointUrl(String url) {
+        this.serverAuthorizationEndpointUrl = url;
+        return this;
+    }
+    
+    @Override
+    public String getServerLogoutEndpointUrl() {
+        return serverLogoutEndpointUrl;
     }
 
     @Configurable.Property
-    public OAuth2WebAppConfigurator setRemoteLogoutEndpointUrl(String url) {
-        this.remoteLogoutEndpointUrl = url;
+    public OAuth2WebAppConfigurator setServerLogoutEndpointUrl(String url) {
+        this.serverLogoutEndpointUrl = url;
         return this;
     }
 
@@ -174,12 +177,12 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return this;
     }
 
-    public WacTokenStore getAccessTokenStore() {
-        return accessTokenStore;
+    public WacTokenStore getTokenStore() {
+        return tokenStore;
     }
 
     public OAuth2WebAppConfigurator setAccessTokenStore(WacTokenStore accessTokenStore) {
-        this.accessTokenStore = accessTokenStore;
+        this.tokenStore = accessTokenStore;
         return this;
     }
 
@@ -197,19 +200,19 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
                 throw new AppConfigException("clientRedirectUri must not be empty.");
             }
             
-            if(Strings.isEmpty(getRemoteAuthzEndpointUrl())) {
-                throw new AppConfigException("remoteAuthzEndpointUrl must not be empty.");
+            if(Strings.isEmpty(getServerAuthorizationEndpointUrl())) {
+                throw new AppConfigException("serverAuthorizationEndpointUrl must not be empty.");
             }
             
-            if(userAccessTokenEnabled) {
-                if(Strings.isEmpty(remoteTokenEndpointUrl)) {
-                    throw new AppConfigException("remoteTokenEndpointUrl must not be empty.");
+            if(accessTokenEnabled) {
+                if(Strings.isEmpty(serverTokenEndpointUrl)) {
+                    throw new AppConfigException("serverTokenEndpointUrl must not be empty.");
                 }
             }
             
-            if(remoteLogoutEnabled) {
-                if(Strings.isEmpty(remoteLogoutEndpointUrl)) {
-                    throw new AppConfigException("remoteLogoutEndpointUrl must not be empty.");
+            if(oauth2LogoutEnabled) {
+                if(Strings.isEmpty(serverLogoutEndpointUrl)) {
+                    throw new AppConfigException("serverLogoutEndpointUrl must not be empty.");
                 }
             }
         }
@@ -225,10 +228,10 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
             }
         }
 
-        if(userAccessTokenEnabled) {
+        if(accessTokenEnabled) {
             
-            if(accessTokenStore instanceof JdbcStore) {
-                ((JdbcStore) accessTokenStore).setDataSourceName(DataSourceManager.DEFAULT_DATASOURCE_NAME);
+            if(tokenStore instanceof JdbcStore) {
+                ((JdbcStore) tokenStore).setDataSourceName(DataSourceManager.DEFAULT_DATASOURCE_NAME);
             }
             
         }

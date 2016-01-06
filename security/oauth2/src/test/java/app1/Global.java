@@ -29,7 +29,7 @@ public class Global extends App {
 
     @Override
     protected void configure(WebConfigurator c) {
-        rsc.enable().useRemoteAuthzServer("https://localhost:8443/server/oauth2/tokeninfo");
+        rsc.enable().useRemoteAuthorizationServer("https://localhost:8443/server/oauth2/tokeninfo");
     }
 
 }

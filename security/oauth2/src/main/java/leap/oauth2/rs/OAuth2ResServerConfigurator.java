@@ -49,31 +49,31 @@ public interface OAuth2ResServerConfigurator {
 	/**
 	 * Use local authz server.
 	 *
-	 * @see {@link OAuth2ResServerConfig#isUseLocalAuthzServer()}.
+	 * @see {@link OAuth2ResServerConfig#isUseLocalAuthorizationServer()}.
      */
-	OAuth2ResServerConfigurator useLocalAuthzServer();
+	OAuth2ResServerConfigurator useLocalAuthorizationServer();
 
 	/**
 	 * Use remote authz server.
 	 *
 	 * <p/>
-	 * The {@link #setTokenInfoEndpointUrl(String)} must be invoked later.
+	 * The {@link #setRemoteTokenInfoEndpointUrl(String)} must be invoked later.
      */
-	OAuth2ResServerConfigurator useRemoteAuthzServer();
+	OAuth2ResServerConfigurator useRemoteAuthorizationServer();
 
 	/**
 	 * Use remote authz server and sets the token info endpoint url.
 	 *
-	 * @see {@link OAuth2ResServerConfig#isUseRemoteAuthzServer()}.
+	 * @see {@link OAuth2ResServerConfig#isUseRemoteAuthorizationServer()}.
 	 *
 	 * @param tokenInfoEndpointUrl the token info endpoint url or remote authorization server.
      */
-	OAuth2ResServerConfigurator useRemoteAuthzServer(String tokenInfoEndpointUrl);
+	OAuth2ResServerConfigurator useRemoteAuthorizationServer(String tokenInfoEndpointUrl);
 
 	/**
 	 * Sets the mode of authz server.
      */
-	OAuth2ResServerConfigurator setAuthzServerMode(AuthzServerMode mode);
+	OAuth2ResServerConfigurator setAuthorizationServerMode(AuthzServerMode mode);
 
 	/**
 	 * Sets the url of token info endpoint in oauth2 authorization server.
@@ -81,6 +81,6 @@ public interface OAuth2ResServerConfigurator {
 	 * <p/>
 	 * Valid when use remote authz server.
      */
-	OAuth2ResServerConfigurator setTokenInfoEndpointUrl(String url);
+	OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url);
 	
 }

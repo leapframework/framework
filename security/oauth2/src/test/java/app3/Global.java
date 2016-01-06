@@ -30,12 +30,12 @@ public class Global extends App {
     @Override
     protected void configure(WebConfigurator c) {
         owc.enable()
-           .enableUserAccessToken()
-           .useJdbcAccessTokenStore()
            .setClientId("app3")
            .setClientSecret("app3_secret")
            .setClientRedirectUri("http://localhost:8080/app3/auth_redirect?1=1")
-           .setRemoteServerUrl("http://localhost:8080/server");
+           .setServerUrl("http://localhost:8080/server")
+           .enableAccessToken()
+           .useJdbcTokenStore();
     }
     
 }

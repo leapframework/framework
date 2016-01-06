@@ -43,7 +43,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
     @Override
     public WacAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
         HttpRequest req = 
-                hc.request(config.getRemoteTokenEndpointUrl())
+                hc.request(config.getServerTokenEndpointUrl())
                   .addQueryParam("grant_type", "authorization_code")
                   .addQueryParam("code", code)
                   .addQueryParam("client_id", config.getClientId())
@@ -87,12 +87,12 @@ public class DefaultWacTokenManager implements WacTokenManager {
 
     @Override
     public WacAccessToken refreshAndSaveAccessToken(Request request, WacAccessToken old) {
-        if(null != config.getAccessTokenStore()) {
-            config.getAccessTokenStore().removeAccessToken(request, old);
+        if(null != config.getTokenStore()) {
+            config.getTokenStore().removeAccessToken(request, old);
         }
         
         HttpRequest req = 
-                hc.request(config.getRemoteTokenEndpointUrl())
+                hc.request(config.getServerTokenEndpointUrl())
                   .addQueryParam("grant_type", "refresh_token")
                   .addQueryParam("refresh_token", old.getRefreshToken());
         
@@ -113,8 +113,8 @@ public class DefaultWacTokenManager implements WacTokenManager {
                 
                 return at;
             }else{
-                if(config.getAccessTokenStore() != null) {
-                    config.getAccessTokenStore().removeAccessToken(request, old);
+                if(config.getTokenStore() != null) {
+                    config.getTokenStore().removeAccessToken(request, old);
                 }
                 throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
             }
@@ -133,8 +133,8 @@ public class DefaultWacTokenManager implements WacTokenManager {
         WacAccessToken at = (WacAccessToken)session.getAttribute(KEY);
 
         if(null == at) {
-            if(config.getAccessTokenStore() != null) {
-                at = config.getAccessTokenStore().loadAccessToken(request);
+            if(config.getTokenStore() != null) {
+                at = config.getTokenStore().loadAccessToken(request);
                 if(null != at) {
                     session.setAttribute(KEY, at);
                 }
@@ -145,8 +145,8 @@ public class DefaultWacTokenManager implements WacTokenManager {
             UserPrincipal user = request.getUser();
             if(null != user && !user.getIdAsString().equals(at.getUserId())) {
                 removeAccessToken(request);
-                if(null != config.getAccessTokenStore()) {
-                    config.getAccessTokenStore().removeAccessToken(request, at);
+                if(null != config.getTokenStore()) {
+                    config.getTokenStore().removeAccessToken(request, at);
                 }
                 return null;
             }
@@ -160,8 +160,8 @@ public class DefaultWacTokenManager implements WacTokenManager {
     }
 
     public void saveAccessToken(Request request, WacAccessToken at) {
-        if(null != config.getAccessTokenStore()) {
-            config.getAccessTokenStore().saveAccessToken(request, request.response(), at);
+        if(null != config.getTokenStore()) {
+            config.getTokenStore().saveAccessToken(request, request.response(), at);
         }
         request.getSession(true).setAttribute(KEY, at);
     }

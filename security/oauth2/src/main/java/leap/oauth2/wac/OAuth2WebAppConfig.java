@@ -17,27 +17,41 @@ package leap.oauth2.wac;
 
 import leap.oauth2.wac.token.WacTokenStore;
 
+/**
+ * The configuration of oauth2 web app client.
+ */
 public interface OAuth2WebAppConfig {
     
     /**
-     * Returns <code>true</code> if login from remote oauth server is enabled.
+     * Returns <code>true</code> if current web app was enabled as oauth2 web app client.
      */
     boolean isEnabled();
+
+    /**
+     * Returns <code>true</code> if login from remote oauth2 authorization server is enabled.
+     *
+     * <p/>
+     * If enabled, the oauth2 interceptor will redirect the user to the login page in oauth2 authorization server.
+     */
+    boolean isOAuth2LoginEnabled();
     
     /**
-     * Returns <code>true</code> if logout from remote oauth server is enabled.
+     * Returns <code>true</code> if logout from remote oauth2 authorization server is enabled.
      * 
      * <p>
-     * If eanbled, the oauth2 interceptor will logout from remote oauth server first, 
+     * If enabled, the oauth2 interceptor will logout from remote oauth server first,
      * 
      * and then logout from local web app.
      */
-    boolean isRemoteLogoutEnabled();
+    boolean isOAuth2LogoutEnabled();
     
     /**
-     * Returns <code>true</code> if user access token enabled.
+     * Returns <code>true</code> if the web app use user's access token to request another oauth2 protected resource.
+     *
+     * <p/>
+     * Default is <code>false</code>.
      */
-    boolean isUserAccessTokenEnabled();
+    boolean isAccessTokenEnabled();
     
     /**
      * Required. Returns the client id.
@@ -57,12 +71,12 @@ public interface OAuth2WebAppConfig {
     /**
      * Required. Returns the token endpoint url of remote oauth server.
      */
-    String getRemoteTokenEndpointUrl();
+    String getServerTokenEndpointUrl();
     
     /**
      * Required. Returns the authorization endpoint url of remote oauth server.
      */
-    String getRemoteAuthzEndpointUrl();
+    String getServerAuthorizationEndpointUrl();
     
     /**
      * Optional. Returns the logout endpoint url or remote oauth server.
@@ -70,7 +84,7 @@ public interface OAuth2WebAppConfig {
      * <p>
      * Required if remote logout enabled.
      */
-    String getRemoteLogoutEndpointUrl();
+    String getServerLogoutEndpointUrl();
     
     /**
      * Returns the error view for rendering error info returned by oauth server.
@@ -85,5 +99,5 @@ public interface OAuth2WebAppConfig {
     /**
      * Returns the {@link WacTokenStore} or <code>null</code> if not enabled.
      */
-    WacTokenStore getAccessTokenStore();
+    WacTokenStore getTokenStore();
 }
