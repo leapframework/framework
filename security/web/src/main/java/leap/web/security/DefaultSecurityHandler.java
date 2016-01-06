@@ -17,6 +17,8 @@ package leap.web.security;
 
 import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.Authentication;
@@ -27,7 +29,9 @@ import leap.web.security.login.LoginManager;
 import leap.web.security.logout.LogoutManager;
 
 public class DefaultSecurityHandler implements SecurityHandler {
-	
+
+    private static final Log log = LogFactory.get(DefaultSecurityHandler.class);
+
     protected @Inject AuthenticationManager authcManager;
     protected @Inject AuthorizationManager  authzManager;
     protected @Inject LoginManager          loginManager;

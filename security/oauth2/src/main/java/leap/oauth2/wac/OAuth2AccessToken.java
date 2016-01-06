@@ -13,12 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.openid;
+package leap.oauth2.wac;
 
-class IdTokenInfo {
+import leap.lang.expirable.TimeExpirable;
 
-    String clientId;
-    String userId;
-    String userName;
-    String loginName;
+public interface OAuth2AccessToken extends TimeExpirable {
+
+    /**
+     * The value of access token.
+     */
+    String getToken();
+
+    /**
+     * The value of refresh token.
+     */
+    String getRefreshToken();
+
+    /**
+     * The id of user (resource owner) who granted the access token.
+     */
+    String getUserId();
+
 }

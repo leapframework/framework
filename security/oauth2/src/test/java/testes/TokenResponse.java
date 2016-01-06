@@ -13,10 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.client;
+package testes;
 
-public class AuthorizationCodeGrantTest {
+import java.util.Map;
 
-    
-    
+public class TokenResponse extends AuthzResponse {
+
+    public String              accessToken;
+    public String              refreshToken;
+    public String              code;
+    public String              idToken;
+    public Integer             expiresIn;
+    public Map<String, Object> externalParams;
+
 }

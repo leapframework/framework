@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2;
+package leap.oauth2.wac;
 
-public interface OAuth2TestData {
-    
-    String USER_ADMIN    = "admin";
-    String PASS_ADMIN    = "1";
-    String USER_XIAOMING = "xiaoming";
-    String PASS_XIAOMING = "123";
+/**
+ * The context class of oauth2 web app client.
+ */
+public class OAuth2WebAppContext {
+
+    protected OAuth2WebAppContext(){
+
+    }
 
 }

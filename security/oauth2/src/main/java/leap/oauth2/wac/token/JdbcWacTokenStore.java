@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.store.JdbcStore;
 import leap.oauth2.as.store.AbstractJdbcAuthzStore;
 import leap.oauth2.wac.OAuth2WebAppConfig;
+import leap.oauth2.wac.OAuth2AccessToken;
 import leap.oauth2.wac.entity.WacAccessTokenEntity;
 import leap.orm.OrmMetadata;
 import leap.orm.command.CreateEntityCommand;
@@ -48,7 +49,7 @@ public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacToke
     }
     
     @Override
-    public void saveAccessToken(Request request, Response response, WacAccessToken at) {
+    public void saveAccessToken(Request request, Response response, OAuth2AccessToken at) {
         WacAccessTokenEntity entity = createEntityFromAccesstoken(at);
         
         dao.insert(entity);
@@ -57,7 +58,7 @@ public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacToke
     }
 
     @Override
-    public WacAccessToken loadAccessToken(Request request) {
+    public OAuth2AccessToken loadAccessToken(Request request) {
         Cookie cookie = getCookieBean().getCookie(request);
         if(null == cookie) {
             return null;
@@ -72,11 +73,11 @@ public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacToke
     }
     
     @Override
-    public void removeAccessToken(Request request, WacAccessToken at) {
+    public void removeAccessToken(Request request, OAuth2AccessToken at) {
         dao.createCriteriaQuery(WacAccessTokenEntity.class).where("token = ?",at.getToken()).delete();
     }
 
-    protected WacAccessToken createAccessTokenFromEntity(WacAccessTokenEntity entity) {
+    protected OAuth2AccessToken createAccessTokenFromEntity(WacAccessTokenEntity entity) {
         SimpleWacAccessToken token = new SimpleWacAccessToken();
 
         token.setToken(entity.getToken());
@@ -88,7 +89,7 @@ public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacToke
         return token;
     }
     
-    protected WacAccessTokenEntity createEntityFromAccesstoken(WacAccessToken token) {
+    protected WacAccessTokenEntity createEntityFromAccesstoken(OAuth2AccessToken token) {
         WacAccessTokenEntity entity = new WacAccessTokenEntity();
         
         entity.setToken(token.getToken());

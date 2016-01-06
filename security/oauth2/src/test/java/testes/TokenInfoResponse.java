@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2;
+package testes;
 
-public class AuthzResponse {
+public class TokenInfoResponse extends AuthzResponse {
     
-    public String error;
-    public String errorDescription;
+    public String  clientId;
+    public String  userId;
+    public Integer expiresIn;
+    public String  scope;
 
-    public boolean isError() {
-        return null != error;
-    }
-    
 }

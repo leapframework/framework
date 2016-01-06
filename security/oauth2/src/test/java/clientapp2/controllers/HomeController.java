@@ -23,15 +23,15 @@ import leap.web.view.ViewData;
 
 public class HomeController {
     
-    protected @Inject WacTokenManager atm;
+    protected @Inject WacTokenManager tm;
 
     public void index(Request request, ViewData vd) {
-        vd.put("at", atm.currentAccessToken(request));
+        vd.put("at", tm.resolveAccessToken(request));
     }
     
     public void refreshToken(Request request, ViewData vd) {
-        atm.refreshAndSaveAccessToken(request);
-        vd.put("at", atm.currentAccessToken(request));
+        tm.refreshAndSaveAccessToken(request);
+        vd.put("at", tm.resolveAccessToken(request));
         Results.renderView("/index");
     }
     

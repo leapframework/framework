@@ -15,6 +15,7 @@
  */
 package leap.oauth2.wac.token;
 
+import leap.oauth2.wac.OAuth2AccessToken;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -23,10 +24,10 @@ import leap.web.Response;
  */
 public interface WacTokenStore {
 
-    void saveAccessToken(Request request, Response response, WacAccessToken at);
+    void saveAccessToken(Request request, Response response, OAuth2AccessToken at);
     
-    WacAccessToken loadAccessToken(Request request);
+    OAuth2AccessToken loadAccessToken(Request request);
     
-    void removeAccessToken(Request request, WacAccessToken at);
+    void removeAccessToken(Request request, OAuth2AccessToken at);
 
 }

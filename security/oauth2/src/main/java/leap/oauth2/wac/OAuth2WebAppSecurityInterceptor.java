@@ -70,7 +70,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
             }
         }
     }
-    
+
     @Override
     public State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
         if(config.isOAuth2LoginEnabled()) {

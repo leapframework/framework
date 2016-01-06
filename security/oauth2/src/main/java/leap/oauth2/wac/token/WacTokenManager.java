@@ -15,21 +15,31 @@
  */
 package leap.oauth2.wac.token;
 
+import leap.oauth2.wac.OAuth2AccessToken;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 
+/**
+ * The token manager used by web app client.
+ */
 public interface WacTokenManager {
-    
-    WacAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code);
-    
-    WacAccessToken refreshAndSaveAccessToken(Request request);
-    
-    WacAccessToken refreshAndSaveAccessToken(Request request, WacAccessToken old);
-    
-    default WacAccessToken currentAccessToken(Request request) {
-        return currentAccessToken(request, true);
+
+    /**
+     * Optional. Resolves the access token from request.
+     */
+    default OAuth2AccessToken resolveAccessToken(Request request) {
+        return resolveAccessToken(request, true);
     }
+
+    /**
+     * Optional. Resolves the access token from request and refresh it automatically if expired.
+     */
+    OAuth2AccessToken resolveAccessToken(Request request, boolean refreshExpired);
+
+    OAuth2AccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code);
     
-    WacAccessToken currentAccessToken(Request request, boolean refreshExpired);
+    OAuth2AccessToken refreshAndSaveAccessToken(Request request);
+    
+    OAuth2AccessToken refreshAndSaveAccessToken(Request request, OAuth2AccessToken old);
 
 }

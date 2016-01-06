@@ -30,6 +30,7 @@ import leap.oauth2.ObtainAccessTokenFailedException;
 import leap.oauth2.RefreshAccessTokenFailedException;
 import leap.oauth2.RefreshTokenInvalidException;
 import leap.oauth2.wac.OAuth2WebAppConfig;
+import leap.oauth2.wac.OAuth2AccessToken;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 
@@ -41,7 +42,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
     protected @Inject HttpClient         hc;
     
     @Override
-    public WacAccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
+    public OAuth2AccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
         HttpRequest req = 
                 hc.request(config.getServerTokenEndpointUrl())
                   .addQueryParam("grant_type", "authorization_code")
@@ -75,8 +76,8 @@ public class DefaultWacTokenManager implements WacTokenManager {
     }
     
     @Override
-    public WacAccessToken refreshAndSaveAccessToken(Request request) {
-        WacAccessToken old = currentAccessToken(request, false);
+    public OAuth2AccessToken refreshAndSaveAccessToken(Request request) {
+        OAuth2AccessToken old = resolveAccessToken(request, false);
         
         if(null == old) {
             throw new IllegalStateException("No current access token, cannot refresh");
@@ -86,7 +87,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
     }
 
     @Override
-    public WacAccessToken refreshAndSaveAccessToken(Request request, WacAccessToken old) {
+    public OAuth2AccessToken refreshAndSaveAccessToken(Request request, OAuth2AccessToken old) {
         if(null != config.getTokenStore()) {
             config.getTokenStore().removeAccessToken(request, old);
         }
@@ -124,13 +125,13 @@ public class DefaultWacTokenManager implements WacTokenManager {
     }
     
     @Override
-    public WacAccessToken currentAccessToken(Request request, boolean refreshIfExpired) {
+    public OAuth2AccessToken resolveAccessToken(Request request, boolean refreshIfExpired) {
         Session session = request.getSession(false);
         if(null == session) {
             return null;
         }
         
-        WacAccessToken at = (WacAccessToken)session.getAttribute(KEY);
+        OAuth2AccessToken at = (OAuth2AccessToken)session.getAttribute(KEY);
 
         if(null == at) {
             if(config.getTokenStore() != null) {
@@ -159,7 +160,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
         return at;
     }
 
-    public void saveAccessToken(Request request, WacAccessToken at) {
+    public void saveAccessToken(Request request, OAuth2AccessToken at) {
         if(null != config.getTokenStore()) {
             config.getTokenStore().saveAccessToken(request, request.response(), at);
         }

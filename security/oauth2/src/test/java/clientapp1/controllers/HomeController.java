@@ -17,6 +17,9 @@ package clientapp1.controllers;
 
 
 public class HomeController {
-    
+
+    public String index() {
+        return "It works!";
+    }
     
 }

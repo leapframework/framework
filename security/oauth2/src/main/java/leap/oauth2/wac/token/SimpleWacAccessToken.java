@@ -16,8 +16,9 @@
 package leap.oauth2.wac.token;
 
 import leap.lang.expirable.TimeExpirableSeconds;
+import leap.oauth2.wac.OAuth2AccessToken;
 
-public class SimpleWacAccessToken extends TimeExpirableSeconds implements WacAccessToken {
+public class SimpleWacAccessToken extends TimeExpirableSeconds implements OAuth2AccessToken {
     
     protected String token;
     protected String refreshToken;
