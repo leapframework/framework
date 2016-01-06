@@ -28,7 +28,7 @@ public class PasswordGrantTest extends OAuth2TestBase {
         assertTrue(token.isError());
         assertNotEmpty(token.error);
         
-        token = obtainAccessTokenByPassword(USERNAME, "bad password");
+        token = obtainAccessTokenByPassword(USER_ADMIN, "bad password");
         assertTrue(token.isError());
         assertNotEmpty(token.error);
     }
@@ -37,7 +37,7 @@ public class PasswordGrantTest extends OAuth2TestBase {
 	public void testSuccessAccessTokenRequest() {
 	    logout();
 	    
-	    TokenResponse token = obtainAccessTokenByPassword(USERNAME1, PASSWORD1);
+	    TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
 	    assertFalse(token.isError());
 	    
 	    testAccessTokenInfo(token);

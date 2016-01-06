@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app1.controllers;
+package resapp.controllers;
 
-import tested.models.Book;
-import leap.web.annotation.Path;
-import leap.web.annotation.http.GET;
+import leap.web.security.annotation.AllowClientOnly;
 
-public class BookController {
+@AllowClientOnly
+public class AdminController {
 
-	@GET
-	@Path("")
-	public Book get(String id) {
-		if("1".equals(id)) {
-			return new Book(id, "Test Book");
-		}
-		return null;
-	}
-	
+    public void hello() {
+        
+    }
+    
 }

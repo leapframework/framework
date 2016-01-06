@@ -10,7 +10,7 @@
         <filter-class>leap.web.AppFilter</filter-class>
         <init-param>
             <param-name>base-package</param-name>
-            <param-value>app2</param-value>
+            <param-value>clientapp1</param-value>
         </init-param>
     </filter>
     

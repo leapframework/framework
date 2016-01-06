@@ -28,8 +28,8 @@ public class AdminControllerTest extends OAuth2TestBase {
         
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
         
-        withAccessToken(forGet("/app1/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/app1/admin/hello"), token.accessToken).send().assertOk();
+        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
+        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
     }
     
 }

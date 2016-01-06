@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,26 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app2;
+package clientapp1.controllers;
 
-import leap.core.annotation.Inject;
-import leap.oauth2.wac.OAuth2WebAppConfigurator;
-import leap.web.App;
-import leap.web.config.WebConfigurator;
 
-/**
- * app2 : oauth2 web app client.
- */
-public class Global extends App {
+public class HomeController {
     
-    protected @Inject OAuth2WebAppConfigurator owc;
-
-    @Override
-    protected void configure(WebConfigurator c) {
-        owc.enable()
-           .setClientId("app2")
-           .setClientSecret("app2_secret")
-           .setServerUrl("http://localhost:8080/server");
-    }
     
 }

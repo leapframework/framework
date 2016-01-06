@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app1;
-
-import leap.core.annotation.Inject;
-import leap.oauth2.rs.OAuth2ResServerConfigurator;
-import leap.web.App;
-import leap.web.config.WebConfigurator;
-
 /**
- * app1 : resource server only.
+ *
  */
-public class Global extends App {
-    
-    protected @Inject OAuth2ResServerConfigurator rsc;
-
-    @Override
-    protected void configure(WebConfigurator c) {
-        rsc.enable().useRemoteAuthorizationServer("https://localhost:8443/server/oauth2/tokeninfo");
-    }
-
-}
+package clientapp1;

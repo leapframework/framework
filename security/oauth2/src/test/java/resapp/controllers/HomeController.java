@@ -13,15 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app1.controllers;
+package resapp.controllers;
 
-import leap.web.security.annotation.AllowClientOnly;
-
-@AllowClientOnly
-public class AdminController {
-
-    public void hello() {
-        
-    }
+public class HomeController extends app.controllers.HomeController{
     
+
 }

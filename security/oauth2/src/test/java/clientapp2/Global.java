@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app3;
+package clientapp2;
 
 import leap.core.annotation.Inject;
 import leap.oauth2.wac.OAuth2WebAppConfigurator;
@@ -21,7 +21,7 @@ import leap.web.App;
 import leap.web.config.WebConfigurator;
 
 /**
- * app3 : oauth2 web app.
+ * oauth2 web app (use access token).
  */
 public class Global extends App {
     
@@ -30,9 +30,9 @@ public class Global extends App {
     @Override
     protected void configure(WebConfigurator c) {
         owc.enable()
-           .setClientId("app3")
-           .setClientSecret("app3_secret")
-           .setClientRedirectUri("http://localhost:8080/app3/auth_redirect?1=1")
+           .setClientId("app2")
+           .setClientSecret("app2_secret")
+           .setClientRedirectUri("http://localhost:8080/clientapp2/auth_redirect?1=1") //set the redirect uri for testing
            .setServerUrl("http://localhost:8080/server")
            .enableAccessToken()
            .useJdbcTokenStore();

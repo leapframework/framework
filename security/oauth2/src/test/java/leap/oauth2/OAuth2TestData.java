@@ -17,9 +17,9 @@ package leap.oauth2;
 
 public interface OAuth2TestData {
     
-    public static final String USERNAME  = "admin";
-    public static final String PASSWORD  = "1";
-    public static final String USERNAME1 = "xiaoming";
-    public static final String PASSWORD1 = "123";
+    String USER_ADMIN    = "admin";
+    String PASS_ADMIN    = "1";
+    String USER_XIAOMING = "xiaoming";
+    String PASS_XIAOMING = "123";
 
 }

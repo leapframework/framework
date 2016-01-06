@@ -33,7 +33,7 @@ public class RefreshTokenTest extends OAuth2TestBase {
 	public void testSuccessRequest() {
 	    logout();
 	    
-	    TokenResponse token = obtainAccessTokenByPassword(USERNAME1, PASSWORD1);
+	    TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
 	    assertFalse(token.isError());
 	    
 	    TokenResponse newToken = obtainAccessTokenByRefreshToken(token.refreshToken);
