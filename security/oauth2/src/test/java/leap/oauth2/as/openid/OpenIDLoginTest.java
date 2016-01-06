@@ -40,8 +40,8 @@ public class OpenIDLoginTest extends OAuth2TestBase {
         Map<String, Object> claims = signer.verify(idToken);
         
         assertEquals(Global.TEST_CLIENT_ID, claims.get("aud"));
-        assertEquals(USERNAME, claims.get("name"));
-        assertEquals(USERNAME, claims.get("login_name"));
+        assertEquals(USER_ADMIN, claims.get("name"));
+        assertEquals(USER_ADMIN, claims.get("login_name"));
     }
     
     @Test

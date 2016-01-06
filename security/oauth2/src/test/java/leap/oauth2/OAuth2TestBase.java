@@ -235,11 +235,11 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
 	protected void login() {
-		login(serverContextPath,USERNAME, PASSWORD);
+		login(serverContextPath, USER_ADMIN, PASS_ADMIN);
 	}
 	
 	protected void login(String contextPath) {
-		login(contextPath, USERNAME, PASSWORD);
+		login(contextPath, USER_ADMIN, PASS_ADMIN);
 	}
 	
 	protected void assertLogin() {
@@ -255,11 +255,11 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	}
 	
 	protected THttpRequest forLogin() {
-		return forLogin(contextPath, USERNAME, PASSWORD);
+		return forLogin(contextPath, USER_ADMIN, PASS_ADMIN);
 	}
 	
 	protected THttpRequest forLogin(String contextPath) {
-		return forLogin(contextPath, USERNAME, PASSWORD);
+		return forLogin(contextPath, USER_ADMIN, PASS_ADMIN);
 	}
 
 	protected void login(String contextPath, String username,String password) {

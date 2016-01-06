@@ -13,23 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package resapp.controllers;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import tested.models.Book;
+import leap.web.annotation.Path;
+import leap.web.annotation.http.GET;
 
-import org.junit.Test;
+public class BookController {
 
-public class AdminControllerTest extends OAuth2TestBase {
-
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
-    }
-    
+	@GET
+	@Path("")
+	public Book get(String id) {
+		if("1".equals(id)) {
+			return new Book(id, "Test Book");
+		}
+		return null;
+	}
+	
 }

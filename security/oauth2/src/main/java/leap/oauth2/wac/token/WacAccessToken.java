@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package leap.oauth2.wac.token;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import leap.lang.expirable.TimeExpirable;
 
-import org.junit.Test;
+public interface WacAccessToken extends TimeExpirable {
 
-public class AdminControllerTest extends OAuth2TestBase {
-
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
-    }
+    String getToken();
     
+    String getRefreshToken();
+
+    String getUserId();
 }

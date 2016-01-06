@@ -13,23 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package leap.oauth2.wac.token;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import leap.web.Request;
+import leap.web.Response;
 
-import org.junit.Test;
+/**
+ * Persist the access token.
+ */
+public interface WacTokenStore {
 
-public class AdminControllerTest extends OAuth2TestBase {
-
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
-    }
+    void saveAccessToken(Request request, Response response, WacAccessToken at);
     
+    WacAccessToken loadAccessToken(Request request);
+    
+    void removeAccessToken(Request request, WacAccessToken at);
+
 }

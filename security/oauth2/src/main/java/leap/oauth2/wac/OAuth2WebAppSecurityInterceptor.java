@@ -25,7 +25,7 @@ import leap.lang.net.Urls;
 import leap.lang.servlet.Servlets;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.wac.auth.WebResponseHandler;
+import leap.oauth2.wac.auth.WacResponseHandler;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.Request;
@@ -45,9 +45,9 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected @Inject SecurityConfigurator  sc;
     protected @Inject ViewSource            vs;
     protected @Inject AuthenticationManager am;
-    protected @Inject LoginManager          sim;
-    protected @Inject LogoutManager         som;
-    protected @Inject WebResponseHandler[]  handlers;
+    protected @Inject LoginManager          lim;
+    protected @Inject LogoutManager         lom;
+    protected @Inject WacResponseHandler[]  handlers;
     
     protected String redirectPath;
     protected View   defaultErrorView;
@@ -73,12 +73,12 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     
     @Override
     public State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        if(config.isEnabled()) {
+        if(config.isOAuth2LoginEnabled()) {
             //Check cyclic redirect.
             if(!Strings.isEmpty(request.getParameter("oauth2_redirect"))) {
-                throw new IllegalStateException("Cannot promote sigin for oauth2 redirect request : " + request.getUri());
+                throw new IllegalStateException("Cannot promote login for oauth2 redirect request : " + request.getUri());
             }else{
-                context.getLoginContext().setLoginUrl(getRemoteAuthzUrl(request));    
+                context.getLoginContext().setLoginUrl(buildRemoteLoginUrl(request));
             }
         }
         return State.CONTINUE;
@@ -86,7 +86,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     
     @Override
     public State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        if(config.isEnabled() && config.isRemoteLogoutEnabled()) {
+        if(config.isEnabled() && config.isOAuth2LogoutEnabled()) {
             Boolean reqeustedLogout = (Boolean)request.getAttribute("oauth2_logout");
             if(null != reqeustedLogout) {
                 return State.CONTINUE;
@@ -96,7 +96,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
             if("0".equals(remoteLogoutParam)) {
                 return State.CONTINUE;
             }else{
-                response.sendRedirect(getRemoteLogoutUrl(request));
+                response.sendRedirect(buildRemoteLogoutUrl(request));
                 return State.INTERCEPTED;
             }
         }
@@ -107,7 +107,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         String logoutParam = request.getParameter("oauth2_logout");
         if(!Strings.isEmpty(logoutParam)) {
             request.setAttribute("oauth2_logout", Boolean.TRUE);
-            som.logout(request, response);
+            lom.logout(request, response);
         }else{
             OAuth2Params params = new RequestOAuth2Params(request);
             if(params.isError()) {
@@ -144,7 +144,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected void handleOAuth2ServerSuccess(Request request, Response response, OAuth2Params params) throws Throwable {
         boolean processed = false;
         
-        for (WebResponseHandler handler : handlers) {
+        for (WacResponseHandler handler : handlers) {
             State state = handler.handleSuccessResponse(request, response, params);
             if (State.isProcessed(state)) {
                 processed = true;
@@ -159,17 +159,17 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         }
     }
     
-    protected String getRemoteAuthzUrl(Request request){
+    protected String buildRemoteLoginUrl(Request request){
         QueryStringBuilder qs = new QueryStringBuilder();
         
-        qs.add(OAuth2Params.RESPONSE_TYPE, config.isUserAccessTokenEnabled() ? "code id_token" : "id_token");
+        qs.add(OAuth2Params.RESPONSE_TYPE, config.isAccessTokenEnabled() ? "code id_token" : "id_token");
         qs.add(OAuth2Params.CLIENT_ID,     config.getClientId());
-        qs.add(OAuth2Params.REDIRECT_URI,  getAuthzRedirectUri(request));
+        qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
         
-        return "redirect:" + Urls.appendQueryString(config.getRemoteAuthzEndpointUrl(), qs.build());
+        return "redirect:" + Urls.appendQueryString(config.getServerAuthorizationEndpointUrl(), qs.build());
     }
     
-    protected String getAuthzRedirectUri(Request request) {
+    protected String buildClientRedirectUri(Request request) {
         String url = null;
         
         if(!config.getClientRedirectUri().startsWith("/")) {
@@ -183,16 +183,16 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         return url;
     }
     
-    protected String getRemoteLogoutUrl(Request request) {
+    protected String buildRemoteLogoutUrl(Request request) {
         QueryStringBuilder qs = new QueryStringBuilder();
         
         qs.add(OAuth2Params.CLIENT_ID,               config.getClientId());
-        qs.add(OAuth2Params.POST_LOGOUT_REDIRECT_URI,getLogoutRedirectUri(request));
+        qs.add(OAuth2Params.POST_LOGOUT_REDIRECT_URI, buildLogoutRedirectUri(request));
         
-        return Urls.appendQueryString(config.getRemoteLogoutEndpointUrl(), qs.build());
+        return Urls.appendQueryString(config.getServerLogoutEndpointUrl(), qs.build());
     }
     
-    protected String getLogoutRedirectUri(Request request) {
+    protected String buildLogoutRedirectUri(Request request) {
         String url = null;
         
         if(!config.getClientRedirectUri().startsWith("/")) {

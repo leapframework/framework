@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,22 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core;
+package clientapp1;
 
-public class Version {
+import leap.core.annotation.Inject;
+import leap.oauth2.wac.OAuth2WebAppConfigurator;
+import leap.web.App;
+import leap.web.config.WebConfigurator;
 
-    private static final String buildtime = "2015-12-31T07:33:23Z";
-    private static final String version   = "0.1.0-SNAPSHOT";
+/**
+ * oauth2 web app (login only).
+ */
+public class Global extends App {
     
-    public static String name(){
-        return version;
+    protected @Inject OAuth2WebAppConfigurator owc;
+
+    @Override
+    protected void configure(WebConfigurator c) {
+        owc.enable()
+           .setClientId("app1")
+           .setClientSecret("app1_secret")
+           .setServerUrl("https://localhost:8443/server");
     }
     
-    public static String buildTime(){
-        return buildtime;
-    }
-    
-    public static String nameWithBuildTime(){
-    	return version + "(" + buildtime + ")"; 
-    } 
 }

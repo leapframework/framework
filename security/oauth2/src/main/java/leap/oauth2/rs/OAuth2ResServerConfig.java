@@ -33,7 +33,7 @@ public interface OAuth2ResServerConfig {
      * <p/>
      * Local authz server means that authz server and resource server are in the same web app.
      */
-    boolean isUseLocalAuthzServer();
+    boolean isUseLocalAuthorizationServer();
 
     /**
      * Returns <code>true</code> if use remote authorization server.
@@ -41,24 +41,24 @@ public interface OAuth2ResServerConfig {
      * <p/>
      * Remote authz server means that authz server and resource server are not in the same web app.
      */
-	boolean isUseRemoteAuthzServer();
+	boolean isUseRemoteAuthorizationServer();
 
 	/**
 	 * Returns the url of token info endpoint in oauth2 authorization server.
      *
      * <p/>
-     * Required if use remote authz server.
+     * Required if use remote authorization server.
 	 */
-	String getTokenInfoEndpointUrl();
+	String getRemoteTokenInfoEndpointUrl();
 	
 	/**
 	 * Optional. Resolves the {@link ResScope} of the given path, returns <code>null</code> if cannot resolved.
 	 */
-	ResScope resolveScope(String path);
+	ResScope resolveResourceScope(String path);
 	
 	/**
 	 * Optional. Resolves {@link ResPath} if the given path, returns <code>null</code> if cannot resolved.
 	 */
-	ResPath resolvePath(String path);
+	ResPath resolveResourcePath(String path);
 
 }

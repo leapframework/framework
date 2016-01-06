@@ -17,9 +17,7 @@ package leap.oauth2.rs.token;
 
 import java.util.Map;
 
-import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.core.ioc.PostCreateBean;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -45,11 +43,11 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
 
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken credentials) {
-        if(null == config.getTokenInfoEndpointUrl()) {
+        if(null == config.getRemoteTokenInfoEndpointUrl()) {
             throw new IllegalStateException("The tokenInfoEndpointUrl must not be configured when use remote authz server");
         }
         
-        HttpRequest request = httpClient.request(config.getTokenInfoEndpointUrl())
+        HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
                                          .addQueryParam("access_token", credentials.getToken());
 
         HttpResponse response = request.get();

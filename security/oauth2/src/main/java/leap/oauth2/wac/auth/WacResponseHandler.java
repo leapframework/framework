@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package leap.oauth2.wac.auth;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import leap.lang.intercepting.State;
+import leap.oauth2.OAuth2Params;
+import leap.web.Request;
+import leap.web.Response;
 
-import org.junit.Test;
+public interface WacResponseHandler {
 
-public class AdminControllerTest extends OAuth2TestBase {
+    State handleSuccessResponse(Request request, Response response, OAuth2Params params) throws Throwable;
 
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
-    }
-    
 }

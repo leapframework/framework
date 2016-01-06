@@ -15,62 +15,46 @@
  */
 package leap.oauth2.wac;
 
+/**
+ * The configurator of {@link OAuth2WebAppConfig}
+ */
 public interface OAuth2WebAppConfigurator {
     
     String DEFAULT_REDIRECT_PATH            = "/oauth2_redirect";
     String DEFAULT_ERROR_VIEW               = "/oauth2_error";
-    String DEFAULT_ACCESS_TOKEN_COOKIE_NAME = "web_at";
+    String DEFAULT_ACCESS_TOKEN_COOKIE_NAME = "wac_at";
     
     /**
-     * Enables oauth2 client web app.
+     * Enables current web app as oauth2 web app client.
      */
     default OAuth2WebAppConfigurator enable() {
-        return enable(true);
+        return setEnabled(true);
     }
     
     /**
-     * Enables oauth2 client web app.
+     * Enables access token.
      */
-    default OAuth2WebAppConfigurator enable(boolean remoteLogout) {
-        return setEnabled(true).setRemoteLogoutEnabled(remoteLogout);
-    }
-    
-    /**
-     * Enables remote logout (remote login must be enabeld).
-     */
-    default OAuth2WebAppConfigurator enabledRemoteLogout() {
-        return setRemoteLogoutEnabled(true);
-    }
-    
-    /**
-     * Enables user's access token. 
-     */
-    default OAuth2WebAppConfigurator enableUserAccessToken() {
-        return setUserAccessTokenEnabled(true);
+    default OAuth2WebAppConfigurator enableAccessToken() {
+        return setAccessTokenEnabled(true);
     }
     
     /**
      * Use jdbc as access token store to persist the user's access token.
      */
-    OAuth2WebAppConfigurator useJdbcAccessTokenStore();
+    OAuth2WebAppConfigurator useJdbcTokenStore();
     
     /**
-     * Sets enable or disable for remote login.
+     * Sets enable or disable the web app as oauth2 web app client.
      */
     OAuth2WebAppConfigurator setEnabled(boolean enabled);
     
     /**
-     * Sets enable or disable for remote logout;
-     */
-    OAuth2WebAppConfigurator setRemoteLogoutEnabled(boolean enabled);
-    
-    /**
-     * Sets enable or disable access token management for login user.
+     * Sets enable or disable access token for login user.
      * 
      * <p>
      * See oauth2.0 specification.
      */
-    OAuth2WebAppConfigurator setUserAccessTokenEnabled(boolean enabled);
+    OAuth2WebAppConfigurator setAccessTokenEnabled(boolean enabled);
     
     /**
      * Sets the required client id of this webapp.
@@ -91,25 +75,33 @@ public interface OAuth2WebAppConfigurator {
      * Sets the oauth2 server's url, such as <code>https://example.com</code>
      * 
      * <p>
-     * Optional if remote urls configured by {@link #setRemoteAuthzEndpointUrl(String)} and {@link #setRemoteTokenEndpointUrl(String)}. 
+     * Optional if remote urls configured by {@link #setServerAuthorizationEndpointUrl(String)} and {@link #setServerTokenEndpointUrl(String)}.
      */
-    OAuth2WebAppConfigurator setRemoteServerUrl(String url);
+    OAuth2WebAppConfigurator setServerUrl(String url);
 
     /**
      * Sets the token endpoint url of oauth2 server.
      * 
      * <p>
-     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}.
+     * Optional if the authorization server url was configured by {@link #setServerUrl(String)}.
      */
-    OAuth2WebAppConfigurator setRemoteTokenEndpointUrl(String url);
+    OAuth2WebAppConfigurator setServerTokenEndpointUrl(String url);
     
     /**
      * Sets the authorization endpoint url of authorization server.
      * 
      * <p>
-     * Optional if the authorization server url was configured by {@link #setRemoteServerUrl(String)}.
+     * Optional if the authorization server url was configured by {@link #setServerUrl(String)}.
      */
-    OAuth2WebAppConfigurator setRemoteAuthzEndpointUrl(String url);
+    OAuth2WebAppConfigurator setServerAuthorizationEndpointUrl(String url);
+
+    /**
+     * Sets the logout endpoint url of authorization server.
+     *
+     * <p/>
+     * Optional if the authorization server url was configured by {@link #setServerUrl(String)}
+     */
+    OAuth2WebAppConfigurator setServerLogoutEndpointUrl(String url);
     
     /**
      * Sets the error view name.

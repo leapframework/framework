@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package leap.oauth2.wac.auth;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import leap.core.security.Credentials;
 
-import org.junit.Test;
+public class WacIdToken implements Credentials {
 
-public class AdminControllerTest extends OAuth2TestBase {
+    protected String clientId;
+    protected String userId;
 
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
+    public String getClientId() {
+        return clientId;
     }
-    
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
 }

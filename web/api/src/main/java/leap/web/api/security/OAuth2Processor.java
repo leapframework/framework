@@ -48,8 +48,8 @@ public class OAuth2Processor implements ApiConfigProcessor {
             
             //auto set endpoint url if oauth2 client app is enabled locally.
             if(null != owc && owc.isEnabled()) {
-                c.setOAuthAuthorizationUrl(owc.getRemoteAuthzEndpointUrl());
-                c.setOAuthTokenUrl(owc.getRemoteTokenEndpointUrl());
+                c.setOAuthAuthorizationUrl(owc.getServerAuthorizationEndpointUrl());
+                c.setOAuthTokenUrl(owc.getServerTokenEndpointUrl());
                 return;
             }
 
