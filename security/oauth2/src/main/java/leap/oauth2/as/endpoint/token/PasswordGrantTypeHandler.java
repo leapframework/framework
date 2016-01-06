@@ -21,9 +21,9 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.oauth2.as.client.AuthzClientValidator;
@@ -40,12 +40,12 @@ import leap.web.security.user.UserManager;
  */
 public class PasswordGrantTypeHandler implements GrantTypeHandler {
 	
-    protected @Inject OAuth2ServerConfig     config;
-    protected @Inject AuthzTokenManager     tokenManager;
-    protected @Inject AuthzClientManager    clientManager;
-    protected @Inject AuthenticationManager authenticationManager;
-    protected @Inject AuthzClientValidator  clientValidator;
-    protected @Inject UserManager           userManager;
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject AuthzTokenManager       tokenManager;
+    protected @Inject AuthzClientManager      clientManager;
+    protected @Inject AuthenticationManager   authenticationManager;
+    protected @Inject AuthzClientValidator    clientValidator;
+    protected @Inject UserManager             userManager;
 	
 	protected boolean validateClient = true;
 	

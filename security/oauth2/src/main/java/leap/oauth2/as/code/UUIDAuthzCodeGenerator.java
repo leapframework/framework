@@ -18,7 +18,7 @@ package leap.oauth2.as.code;
 import java.util.UUID;
 
 import leap.lang.Strings;
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
 
 public class UUIDAuthzCodeGenerator implements AuthzCodeGenerator {
 

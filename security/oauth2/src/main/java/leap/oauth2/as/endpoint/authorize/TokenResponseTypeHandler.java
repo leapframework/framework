@@ -20,8 +20,8 @@ import leap.lang.Strings;
 import leap.lang.net.Urls;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.code.AuthzCodeManager;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
@@ -33,9 +33,9 @@ import leap.web.Response;
  */
 public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implements ResponseTypeHandler {
     
-    protected @Inject OAuth2ServerConfig config;
-    protected @Inject AuthzCodeManager  codeManager;
-    protected @Inject AuthzTokenManager tokenManager;
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject AuthzCodeManager        codeManager;
+    protected @Inject AuthzTokenManager       tokenManager;
 
     @Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {

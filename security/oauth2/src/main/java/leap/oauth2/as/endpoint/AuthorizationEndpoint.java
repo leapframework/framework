@@ -29,13 +29,12 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.QueryOAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.config.WebConfig;
 import leap.web.exception.ResponseException;
 import leap.web.route.Routes;
 import leap.web.security.SecurityContextHolder;
@@ -114,7 +113,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         //Handle authentication.
         handleAuthenticated(request, response, 
-                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())),
+                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc),
                             handler);
         
         //Intercepted.
@@ -183,7 +182,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
         
         //Handle authentication.
-        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())), handler);
+        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc), handler);
         
         //Intercepted.
         return State.INTERCEPTED;

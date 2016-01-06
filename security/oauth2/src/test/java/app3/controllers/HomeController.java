@@ -16,14 +16,14 @@
 package app3.controllers;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.web.token.WebAccessTokenManager;
+import leap.oauth2.wac.token.WacTokenManager;
 import leap.web.Request;
 import leap.web.Results;
 import leap.web.view.ViewData;
 
 public class HomeController {
     
-    protected @Inject WebAccessTokenManager atm;
+    protected @Inject WacTokenManager atm;
 
     public void index(Request request, ViewData vd) {
         vd.put("at", atm.currentAccessToken(request));

@@ -19,7 +19,7 @@ package leap.oauth2.as.token;
 public interface AuthzTokenStore {
     
     /**
-     * Saves the {@link AuthzAccessToken} in store. 
+     * Saves the {@link AuthzAccessToken} in store.
      */
     void saveAccessToken(AuthzAccessToken token);
     

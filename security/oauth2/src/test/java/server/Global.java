@@ -18,7 +18,7 @@ package server;
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
 import leap.oauth2.OAuth2TestData;
-import leap.oauth2.as.OAuth2ServerConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
@@ -26,16 +26,19 @@ import leap.web.security.SecurityConfigurator;
 import server.models.Client;
 import tested.models.User;
 
+/**
+ * server : OAuth2 authorization server.
+ */
 public class Global extends App implements OAuth2TestData {
     
-    protected @Inject SecurityConfigurator    sc;
-    protected @Inject OAuth2ServerConfigurator asc;
+    protected @Inject SecurityConfigurator          sc;
+    protected @Inject OAuth2AuthzServerConfigurator oc;
 
     @Override
     protected void configure(WebConfigurator c) {
         sc.enable(true);
         
-        asc.enable()
+        oc.enable()
            .useJdbcStore();
     }
     
@@ -58,13 +61,13 @@ public class Global extends App implements OAuth2TestData {
         Client app2 = new Client();
         app2.setId("app2");
         app2.setSecret("app2_secret");
-        app2.setRedirectPattern("http*://*/app2/oauth2_redirect");
+        app2.setRedirectUriPattern("http*://*/app2/oauth2_redirect");
         app2.create();
         
         Client app3 = new Client();
         app3.setId("app3");
         app3.setSecret("app3_secret");
-        app3.setRedirectPattern("http*://*/app3/auth_redirect");
+        app3.setRedirectUriPattern("http*://*/app3/auth_redirect");
         app3.create();
         
         Client testClient = new Client();

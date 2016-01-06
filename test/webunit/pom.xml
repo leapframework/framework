@@ -38,7 +38,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
-			<artifactId>leap-lang</artifactId>
+			<artifactId>leap-core</artifactId>
 			<version>${project.version}</version>
 			<scope>compile</scope>
 		</dependency>

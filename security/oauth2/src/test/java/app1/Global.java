@@ -16,20 +16,20 @@
 package app1;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.rs.ResourceServerConfigurator;
+import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
 
+/**
+ * app1 : resource server only.
+ */
 public class Global extends App {
     
-    protected @Inject ResourceServerConfigurator rc;
+    protected @Inject OAuth2ResServerConfigurator rsc;
 
     @Override
     protected void configure(WebConfigurator c) {
-        configure(rc.enable());
+        rsc.enable().useRemoteAuthorizationServer("https://localhost:8443/server/oauth2/tokeninfo");
     }
 
-    private void configure(ResourceServerConfigurator c) {
-        c.setRemoteServerUrl("https://127.0.0.1:8443/server");
-    }
 }

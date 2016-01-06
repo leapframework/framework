@@ -18,9 +18,10 @@ package leap.oauth2.as.store;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientStore;
 import leap.oauth2.as.code.AuthzCodeStore;
+import leap.oauth2.as.sso.AuthzSSOStore;
 import leap.oauth2.as.token.AuthzTokenStore;
 
-public interface AuthzInMemoryStore extends AuthzClientStore, AuthzCodeStore, AuthzTokenStore {
+public interface AuthzInMemoryStore extends AuthzClientStore, AuthzCodeStore, AuthzTokenStore, AuthzSSOStore {
     
     /**
      * Adds a client.

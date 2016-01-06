@@ -25,7 +25,7 @@ import leap.lang.http.QueryString;
 import leap.lang.http.QueryStringParser;
 import leap.lang.naming.NamingStyles;
 import leap.lang.net.Urls;
-import leap.oauth2.as.OAuth2ServerConfigurator;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.webunit.WebTestBaseContextual;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;
@@ -33,10 +33,10 @@ import app.Global;
 
 public abstract class OAuth2TestBase extends WebTestBaseContextual implements OAuth2TestData {
 	
-    public static final String AUTHZ_ENDPOINT     = OAuth2ServerConfigurator.DEFAULT_AUTHZ_ENDPOINT_PATH;
-    public static final String TOKEN_ENDPOINT     = OAuth2ServerConfigurator.DEFAULT_TOKEN_ENDPOINT_PATH;
-    public static final String TOKENINFO_ENDPOINT = OAuth2ServerConfigurator.DEFAULT_TOKENINFO_ENDPOINT_PATH;
-    public static final String LOGOUT_ENDPOINT    = OAuth2ServerConfigurator.DEFAULT_LOGOUT_ENDPOINT_PATH;
+    public static final String AUTHZ_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_AUTHZ_ENDPOINT_PATH;
+    public static final String TOKEN_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_TOKEN_ENDPOINT_PATH;
+    public static final String TOKENINFO_ENDPOINT = OAuth2AuthzServerConfigurator.DEFAULT_TOKENINFO_ENDPOINT_PATH;
+    public static final String LOGOUT_ENDPOINT    = OAuth2AuthzServerConfigurator.DEFAULT_LOGOUT_ENDPOINT_PATH;
     
     static {
         defaultHttps = true;

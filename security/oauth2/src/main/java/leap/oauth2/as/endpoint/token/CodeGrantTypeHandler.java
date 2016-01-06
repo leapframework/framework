@@ -21,8 +21,8 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
@@ -32,15 +32,16 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
+import leap.web.security.user.UserStore;
 
 /**
  * grant_type=authorization_code
  */
 public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements GrantTypeHandler {
 	
-    protected @Inject SecurityConfig     sc;
-    protected @Inject AuthzCodeManager   codeManager;
-    protected @Inject AuthzTokenManager  tokenManager;
+    protected @Inject SecurityConfig    sc;
+    protected @Inject AuthzCodeManager  codeManager;
+    protected @Inject AuthzTokenManager tokenManager;
 
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
@@ -78,7 +79,8 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
         }
 		
 		//Load user details.
-		UserDetails userDetails = sc.getUserStore().findUserDetails(authzCode.getUserId());
+		UserStore us = sc.getUserStore();
+		UserDetails userDetails = us.findUserDetailsByIdString(authzCode.getUserId());
 		if(null == userDetails) {
             OAuth2Errors.invalidGrant(response, "user id '" + authzCode.getUserId() + "' not found");
             return;

@@ -15,7 +15,7 @@
  */
 package leap.oauth2.as.code;
 
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
 
 public interface AuthzCodeGenerator {
     

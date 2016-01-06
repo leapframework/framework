@@ -16,23 +16,26 @@
 package app3;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.web.OAuth2WebConfigurator;
+import leap.oauth2.wac.OAuth2WebAppConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
 
+/**
+ * app3 : oauth2 web app.
+ */
 public class Global extends App {
     
-    protected @Inject OAuth2WebConfigurator owc;
+    protected @Inject OAuth2WebAppConfigurator owc;
 
     @Override
     protected void configure(WebConfigurator c) {
         owc.enable()
-           .enableUserAccessToken()
-           .useJdbcAccessTokenStore()
            .setClientId("app3")
            .setClientSecret("app3_secret")
            .setClientRedirectUri("http://localhost:8080/app3/auth_redirect?1=1")
-           .setRemoteServerUrl("http://localhost:8080/server");
+           .setServerUrl("http://localhost:8080/server")
+           .enableAccessToken()
+           .useJdbcTokenStore();
     }
     
 }

@@ -15,7 +15,7 @@
  */
 package leap.oauth2.as.token;
 
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
 
 public interface AuthzRefreshTokenGenerator {
 

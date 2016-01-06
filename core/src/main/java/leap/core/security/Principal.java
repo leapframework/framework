@@ -15,6 +15,8 @@
  */
 package leap.core.security;
 
+import leap.lang.convert.Converts;
+
 import java.io.Serializable;
 
 public interface Principal extends Serializable {
@@ -23,6 +25,14 @@ public interface Principal extends Serializable {
 	 * Returns the id of current principal.
 	 */
 	Object getId();
+
+	/**
+	 * Returns the id as {@link String} type.
+     */
+	default String getIdAsString() {
+		Object id = getId();
+		return null == id ? null : Converts.toString(id);
+	}
 	
 	/**
 	 * Returns <code>true</code> if the current principal is anonymous.

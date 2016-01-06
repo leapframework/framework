@@ -25,7 +25,7 @@ import leap.lang.Strings;
 import leap.lang.net.Urls;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.oauth2.as.token.AuthzAccessToken;
@@ -37,11 +37,11 @@ import leap.web.security.SecurityConfigurator;
 
 public abstract class AbstractAuthzEndpoint implements Endpoint {
     
-    protected @Inject SecurityConfigurator sc;
-    protected @Inject OAuth2ServerConfig    config;
-    protected @Inject AuthzClientManager   clientManager;
-    protected @Inject AuthzTokenManager    tokenManager;
-    protected @Inject BeanFactory          factory;
+    protected @Inject SecurityConfigurator    sc;
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject AuthzClientManager      clientManager;
+    protected @Inject AuthzTokenManager       tokenManager;
+    protected @Inject BeanFactory             factory;
 
     protected AuthzClient validateClient(Request request, Response response, OAuth2Params params) throws Throwable {
         Validation validation = request.getValidation();
