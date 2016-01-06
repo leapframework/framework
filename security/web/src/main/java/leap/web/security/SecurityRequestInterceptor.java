@@ -22,6 +22,8 @@ import leap.core.web.RequestIgnore;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
@@ -34,6 +36,8 @@ import leap.web.security.authz.Authorization;
 import leap.web.security.csrf.CsrfHandler;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
+
+	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
 	
     protected @Inject @M SecurityConfig       config;
     protected @Inject @M SecurityConfigurator configurator;
@@ -95,6 +99,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     public State preHandleRequest(Request request, Response response) throws Throwable {
 		//Web security do not enabled.
 		if(!config.isEnabled()){
+			log.debug("Web security not enabled, ignore the interceptor");
 			return State.CONTINUE;
 		}
 		
@@ -154,17 +159,27 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	    SecurityInterceptor[] interceptors = config.getInterceptors();
 		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.preResolveAuthentication(request, response, context).isIntercepted()){
+				log.debug("Intercepted by interceptor : {}", interceptor.getClass());
 				return State.INTERCEPTED;
 			}
 		}
 		
         Authentication authentication = context.getAuthentication();
         if (null == authentication) {
+			log.debug("Resolving authentication...");
             authentication = handler.resolveAuthentication(request, response, context);
             Assert.notNull(authentication,"'Authentication' must not be null");
             context.setAuthentication(authentication);
         }
-        
+
+		if(log.isDebugEnabled()) {
+			if(authentication.isAuthenticated()) {
+				log.debug("Request authenticated to : {}", authentication);
+			}else{
+				log.debug("Request not authenticated!");
+			}
+		}
+
         context.setUser(authentication.getUserPrincipal());
 		request.setUser(authentication.getUserPrincipal());
 		

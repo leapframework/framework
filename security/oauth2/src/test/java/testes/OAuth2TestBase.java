@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2;
+package testes;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
@@ -281,4 +281,12 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	protected THttpRequest withAccessToken(THttpRequest request, String token) {
 	    return request.setHeader(Headers.AUTHORIZATION, "Bearer " + token).ajax();
 	}
+
+    protected void loginAuthzServer() {
+        login("/server");
+    }
+
+    protected void logoutAuthzServer() {
+        logout("/server");
+    }
 }

@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package testes.rs;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import testes.OAuth2TestBase;
+import testes.TokenResponse;
 import leap.webunit.client.THttpResponse;
 
 import org.junit.Test;

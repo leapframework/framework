@@ -17,7 +17,7 @@ package server;
 
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
-import leap.oauth2.OAuth2TestData;
+import testes.OAuth2TestData;
 import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;

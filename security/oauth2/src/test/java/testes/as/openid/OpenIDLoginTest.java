@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.openid;
+package testes.as.openid;
 
 import java.util.Map;
 
 import leap.core.security.token.jwt.MacSigner;
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+import testes.OAuth2TestBase;
+import testes.TokenResponse;
 
 import org.junit.Test;
 
@@ -53,7 +53,5 @@ public class OpenIDLoginTest extends OAuth2TestBase {
         
         assertLogout();
     }
-
-
 
 }

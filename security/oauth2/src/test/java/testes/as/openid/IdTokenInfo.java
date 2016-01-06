@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2;
+package testes.as.openid;
 
-import java.util.Map;
+class IdTokenInfo {
 
-public class TokenResponse extends AuthzResponse {
-
-    public String              accessToken;
-    public String              refreshToken;
-    public String              code;
-    public String              idToken;
-    public Integer             expiresIn;
-    public Map<String, Object> externalParams;
-
+    String clientId;
+    String userId;
+    String userName;
+    String loginName;
 }

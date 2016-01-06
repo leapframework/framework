@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as;
+package testes.as;
 
-import leap.oauth2.TokenResponse;
-import leap.oauth2.OAuth2TestBase;
+import testes.TokenResponse;
+import testes.OAuth2TestBase;
 
 import org.junit.Test;
 
-import app.Global;
-
-public class ImplicitGrantTest extends OAuth2TestBase {
+public class PasswordGrantTest extends OAuth2TestBase {
+    
+    @Test
+    public void testInvalidUsernamePassword() {
+        TokenResponse token = obtainAccessTokenByPassword("bad username", "bad password");
+        assertTrue(token.isError());
+        assertNotEmpty(token.error);
+        
+        token = obtainAccessTokenByPassword(USER_ADMIN, "bad password");
+        assertTrue(token.isError());
+        assertNotEmpty(token.error);
+    }
     
 	@Test
-	public void testSuccessAuthorizationRequest() {
-	    String uri = AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
-
-	    logout();
-	    get(uri).assertOk().assertContentContains("Login with your Account");
-	    
-	    login();
-	    String redirectUrl = get(uri).assertRecirect().getRedirectUrl();
-	    
-	    assertTrue(redirectUrl.contains(Global.TEST_CLIENT_REDIRECT_URI));
-	}
-	
-	@Test
 	public void testSuccessAccessTokenRequest() {
-	    TokenResponse token = obtainAccessTokenImplicit();
+	    logout();
+	    
+	    TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
+	    assertFalse(token.isError());
 	    
 	    testAccessTokenInfo(token);
 	}
+	
 }

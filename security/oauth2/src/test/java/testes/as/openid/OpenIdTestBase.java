@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.openid;
+package testes.as.openid;
 
 import java.util.Map;
 
 import app.Global;
 import leap.core.security.token.jwt.MacSigner;
-import leap.oauth2.OAuth2TestBase;
+import testes.OAuth2TestBase;
 
 public abstract class OpenIdTestBase extends OAuth2TestBase {
     

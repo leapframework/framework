@@ -13,12 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.openid;
+package testes.as.openid;
 
 import leap.lang.http.QueryString;
 import leap.lang.http.QueryStringParser;
 import leap.lang.net.Urls;
-import leap.oauth2.TokenResponse;
+import testes.TokenResponse;
 
 import org.junit.Test;
 

@@ -33,7 +33,7 @@ public class Global extends App {
            .setClientId("app2")
            .setClientSecret("app2_secret")
            .setClientRedirectUri("http://localhost:8080/clientapp2/auth_redirect?1=1") //set the redirect uri for testing
-           .setServerUrl("http://localhost:8080/server")
+           .setServerUrl("https://localhost:8443/server")
            .enableAccessToken()
            .useJdbcTokenStore();
     }

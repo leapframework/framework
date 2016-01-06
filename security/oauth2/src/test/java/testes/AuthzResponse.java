@@ -13,23 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs;
+package testes;
 
-import leap.oauth2.OAuth2TestBase;
-import leap.oauth2.TokenResponse;
+public class AuthzResponse {
+    
+    public String error;
+    public String errorDescription;
 
-import org.junit.Test;
-
-public class AdminControllerTest extends OAuth2TestBase {
-
-    @Test
-    public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
-        TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
-        
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
+    public boolean isError() {
+        return null != error;
     }
     
 }

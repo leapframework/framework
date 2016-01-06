@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2;
+package testes;
 
-public class TokenInfoResponse extends AuthzResponse {
+public interface OAuth2TestData {
     
-    public String  clientId;
-    public String  userId;
-    public Integer expiresIn;
-    public String  scope;
+    String USER_ADMIN    = "admin";
+    String PASS_ADMIN    = "1";
+    String USER_XIAOMING = "xiaoming";
+    String PASS_XIAOMING = "123";
 
 }
