@@ -19,41 +19,38 @@ package leap.oauth2.as.sso;
 
 import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
-import leap.web.App;
-import leap.web.AppInitializable;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityConfigurator;
-import leap.web.security.SecurityInterceptor;
+import leap.web.security.SecurityContextHolder;
 import leap.web.security.authc.Authentication;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
-public class DefaultAuthzSSOManager implements AuthzSSOManager,AppInitializable,SecurityInterceptor {
+public class DefaultAuthzSSOManager implements AuthzSSOManager {
 
-    protected @Inject OAuth2AuthzServerConfig ac;
-    protected @Inject SecurityConfigurator    sc;
+    protected @Inject OAuth2AuthzServerConfig config;
 
     @Override
-    public void postAppInit(App app) throws Throwable {
-        if(ac.isSingleLogoutEnabled()) {
-            sc.interceptors().add(this);
+    public void onOAuth2LoginSuccess(Request request, Response response, AuthzAuthentication authc) throws Throwable {
+        if(!config.isSingleLoginEnabled()) {
+            return;
         }
-    }
 
-    @Override
-    public void onAuthenticated(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         Authentication secAuthc = authc.getAuthentication();
         String token = secAuthc.getToken();
         if(null == token) {
             throw new IllegalStateException("The authentication token must be exists");
         }
 
-        AuthzSSOStore ss = ac.getSSOStore();
+        AuthzSSOStore ss = config.getSSOStore();
 
         AuthzSSOSession session = ss.loadSessionByToken(authc.getUserDetails().getLoginName(), token);
         if(null == session) {
@@ -69,6 +66,35 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager,AppInitializable,
         }
     }
 
+    @Override
+    public String[] resolveLogoutUrls(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        Authentication authc = context.getAuthentication();
+        if(null == authc) {
+            return Arrays2.EMPTY_STRING_ARRAY;
+        }
+
+        String token = context.getAuthenticationToken();
+        if(Strings.isEmpty(token)) {
+            throw new IllegalStateException("The authentication token must be exists.");
+        }
+
+        AuthzSSOStore ss = config.getSSOStore();
+        AuthzSSOSession session = ss.loadSessionByToken(authc.getUserPrincipal().getLoginName(), token);
+        if(null == session) {
+            return Arrays2.EMPTY_STRING_ARRAY;
+        }
+
+        List<AuthzSSOLogin> logins = ss.loadLoginsInSession(session);
+
+        Set<String> urls = new HashSet<>();
+        for(AuthzSSOLogin login : logins){
+            if(!Strings.isEmpty(login.getLogoutUri())) {
+                urls.add(login.getLogoutUri());
+            }
+        }
+        return urls.toArray(new String[urls.size()]);
+    }
+
     protected AuthzSSOSession newSession(Request request, Response response, AuthzAuthentication authc) {
         SimpleAuthzSSOSession session = new SimpleAuthzSSOSession();
 
@@ -78,7 +104,7 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager,AppInitializable,
         session.setUserId(user.getIdAsString());
         session.setUsername(user.getLoginName());
         session.setToken(authc.getAuthentication().getToken());
-        session.setExpiresIn(ac.getDefaultLoginSessionExpires());
+        session.setExpiresIn(config.getDefaultLoginSessionExpires());
         session.setCreated(System.currentTimeMillis());
 
         return session;

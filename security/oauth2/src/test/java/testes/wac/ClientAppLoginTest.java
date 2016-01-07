@@ -27,13 +27,15 @@ public class ClientAppLoginTest extends OAuth2TestBase {
         String redirectUrl1 = get("/clientapp1").assertRecirect().getLocation();
         assertEquals(redirectUrl1, "https://localhost:8443/server/oauth2/authorize?" +
                                   "response_type=id_token&client_id=app1" +
-                                  "&redirect_uri=https%3A%2F%2Flocalhost%3A8443%2Fclientapp1%2Foauth2_redirect%3Foauth2_redirect%3D1");
+                                  "&redirect_uri=https%3A%2F%2Flocalhost%3A8443%2Fclientapp1%2Foauth2_redirect%3Foauth2_redirect%3D1" +
+                                  "&logout_uri=https%3A%2F%2Flocalhost%3A8443%2Fclientapp1%2Foauth2_logout");
 
 
         String redirectUrl2 = get("/clientapp2").assertRecirect().getLocation();
         assertEquals(redirectUrl2, "https://localhost:8443/server/oauth2/authorize?" +
                                   "response_type=code+id_token&client_id=app2" +
-                                  "&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fclientapp2%2Fauth_redirect%3F1%3D1%26oauth2_redirect%3D1");
+                                  "&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fclientapp2%2Fauth_redirect%3F1%3D1%26oauth2_redirect%3D1" +
+                                  "&logout_uri=https%3A%2F%2Flocalhost%3A8443%2Fclientapp2%2Foauth2_logout");
 
         loginAuthzServer();
 
@@ -47,6 +49,5 @@ public class ClientAppLoginTest extends OAuth2TestBase {
         get(redirectBackUrl2);
         get("/clientapp2/").assertOk();
     }
-
 
 }

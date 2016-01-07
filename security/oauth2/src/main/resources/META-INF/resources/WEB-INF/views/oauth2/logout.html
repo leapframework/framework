@@ -1,1 +1,27 @@
-logout success
+<html>
+
+<body>
+Waiting...
+<br/>
+
+<!--notify all app(s) to logout-->
+<div style="display:none">
+    <!--#for(logout_url : logout_urls)-->
+    <img src="${logout_url}"/>
+    <!--#endfor-->
+</div>
+
+<!--#if(redirect_uri)-->
+
+<script type="text/javascript">
+    window.location.href = '${redirect_uri;escape:off}';
+</script>
+
+<!--#else-->
+
+<b>Logout success!</b>
+
+<!--#endif-->
+</body>
+</html>
+

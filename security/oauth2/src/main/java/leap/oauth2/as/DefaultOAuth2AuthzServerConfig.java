@@ -58,6 +58,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    cleanupEnabled                  = true;
     protected int        cleanupInterval                 = 60 * 5; //5 minute
     protected boolean    openIDConnectEnabled            = true;
+    protected boolean    singleLoginEnabled              = true;
     protected boolean    singleLogoutEnabled             = true;
     protected boolean    tokenEndpointEnabled            = true;
     protected boolean    authzEndpointEnabled            = true;
@@ -118,7 +119,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		return enabled;
 	}
 
-    @Override
+    @Configurable.Property
+    public OAuth2AuthzServerConfigurator setSingleLoginEnabled(boolean enabled) {
+        this.singleLoginEnabled = enabled;
+        return this;
+    }
+
+    @Configurable.Property
     public OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled) {
         this.singleLogoutEnabled = enabled;
         return this;
@@ -154,6 +161,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     @Override
     public boolean isOpenIDConnectEnabled() {
         return openIDConnectEnabled;
+    }
+
+    @Override
+    public boolean isSingleLoginEnabled() {
+        return singleLoginEnabled;
     }
 
     @Override

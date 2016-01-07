@@ -78,6 +78,8 @@ public interface OAuth2AuthzServerConfigurator {
 	
 	OAuth2AuthzServerConfigurator setOpenIDConnectEnabled(boolean enabled);
 
+	OAuth2AuthzServerConfigurator setSingleLoginEnabled(boolean enabled);
+
 	OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled);
 	
 	OAuth2AuthzServerConfigurator setAuthzEndpointEnabled(boolean enabled);

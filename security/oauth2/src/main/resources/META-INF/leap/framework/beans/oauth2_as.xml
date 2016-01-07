@@ -100,6 +100,10 @@
     <!-- token info endpoint : handlers -->
     <bean type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler"
           class="leap.oauth2.as.endpoint.tokeninfo.AccessTokenInfoHandler"/>
+
+	<!-- logout endpoint : handlers -->
+	<bean type="leap.oauth2.as.endpoint.logout.PostLogoutHandler"
+		  class="leap.oauth2.as.endpoint.logout.DefaultPostLogoutHandler" primary="true"/>
           
     <!-- openid connect : common -->
     <bean type="leap.oauth2.as.openid.IdTokenGenerator"
@@ -120,5 +124,4 @@
 
 	<!-- sso -->
 	<bean type="leap.oauth2.as.sso.AuthzSSOManager" class="leap.oauth2.as.sso.DefaultAuthzSSOManager" primary="true"/>
-
 </beans>

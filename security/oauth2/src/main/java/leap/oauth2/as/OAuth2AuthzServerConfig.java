@@ -66,7 +66,15 @@ public interface OAuth2AuthzServerConfig {
 	boolean isOpenIDConnectEnabled();
 
 	/**
-	 * Returns <code>true</code> if single logout (single signout) enabled.
+	 * Returns <code></code> if single login enabled.
+	 *
+	 * <p/>
+	 * Default is <code>true</code>.
+     */
+	boolean isSingleLoginEnabled();
+
+	/**
+	 * Returns <code>true</code> if single logout enabled.
 	 *
 	 * <p/>
 	 * Default is <code>true</code>.

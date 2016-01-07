@@ -21,6 +21,8 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.net.Urls;
 import leap.lang.servlet.Servlets;
 import leap.oauth2.OAuth2Params;
@@ -41,6 +43,8 @@ import leap.web.view.ViewSource;
 
 public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, AppInitializable {
 
+    private static final Log log = LogFactory.get(OAuth2WebAppSecurityInterceptor.class);
+
     protected @Inject OAuth2WebAppConfig    config;
     protected @Inject SecurityConfigurator  sc;
     protected @Inject ViewSource            vs;
@@ -50,6 +54,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected @Inject WacResponseHandler[]  handlers;
     
     protected String redirectPath;
+    protected String logoutPath;
     protected View   defaultErrorView;
     
     @Override
@@ -61,9 +66,19 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
             }else{
                 redirectPath = Servlets.getRequestPathFromUri(redirectUri, app.getContextPath());
             }
-            
             sc.ignore(redirectPath);
-            app.routes().get(redirectPath, (req, resp) -> handleOAuth2ServerResponse(req, resp));
+            app.routes().get(redirectPath, (req, resp) -> handleAuthzServerLoginResponse(req, resp));
+
+            String logoutUri = config.getClientLogoutUri();
+            if(!Strings.isEmpty(logoutUri)) {
+                if(logoutUri.startsWith("/")){
+                    logoutPath = Servlets.getRequestPathFromUri(logoutUri);
+                }else{
+                    logoutPath = Servlets.getRequestPathFromUri(logoutUri, app.getContextPath());
+                }
+                sc.ignore(logoutPath);
+                app.routes().get(logoutPath,(req,resp) -> handleAuthzServerLogoutNotification(req, resp));
+            }
 
             if(!Strings.isEmpty(config.getErrorView())) {
                 defaultErrorView = vs.getView(config.getErrorView());
@@ -83,7 +98,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         }
         return State.CONTINUE;
     }
-    
+
     @Override
     public State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
         if(config.isEnabled() && config.isOAuth2LogoutEnabled()) {
@@ -91,7 +106,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
             if(null != reqeustedLogout) {
                 return State.CONTINUE;
             }
-            
+
             String remoteLogoutParam = request.getParameter("remote_logout");
             if("0".equals(remoteLogoutParam)) {
                 return State.CONTINUE;
@@ -103,7 +118,12 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         return State.CONTINUE;
     }
 
-    protected void handleOAuth2ServerResponse(Request request, Response response) throws Throwable {
+    protected void handleAuthzServerLogoutNotification(Request request, Response response) throws Throwable {
+        log.debug("Logout by oauth2 authorization server");
+        am.logoutImmediately(request, response);
+    }
+
+    protected void handleAuthzServerLoginResponse(Request request, Response response) throws Throwable {
         String logoutParam = request.getParameter("oauth2_logout");
         if(!Strings.isEmpty(logoutParam)) {
             request.setAttribute("oauth2_logout", Boolean.TRUE);
@@ -165,6 +185,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         qs.add(OAuth2Params.RESPONSE_TYPE, config.isAccessTokenEnabled() ? "code id_token" : "id_token");
         qs.add(OAuth2Params.CLIENT_ID,     config.getClientId());
         qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
+        qs.add(OAuth2Params.LOGOUT_URI,    buildClientLogoutUri(request));
         
         return "redirect:" + Urls.appendQueryString(config.getServerAuthorizationEndpointUrl(), qs.build());
     }
@@ -182,7 +203,18 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         
         return url;
     }
-    
+
+    protected String buildClientLogoutUri(Request request) {
+        String url = config.getClientLogoutUri();
+
+        if(Strings.isEmpty(url)) {
+            return request.getContextUrl() + "/logout";
+        }else if(url.startsWith("/")) {
+            url = request.getContextUrl() + url;
+        }
+        return url;
+    }
+
     protected String buildRemoteLogoutUrl(Request request) {
         QueryStringBuilder qs = new QueryStringBuilder();
         
