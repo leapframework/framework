@@ -15,6 +15,7 @@
  */
 package leap.webunit.client;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.io.SessionOutputBuffer;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.HeaderGroup;
@@ -179,7 +181,21 @@ class THttpRequestImpl implements THttpRequest {
         if(!queryString.isEmpty()) {
             url = Urls.appendQueryString(url, queryString.build());
         }
-        
+
+        URI uri = URI.create(url);
+        String path = uri.getPath();
+        if(!"".equals(path)) {
+            for(String contextPath : tclient.getContextPaths()) {
+                if(path.equals(contextPath)) {
+                    url = uri.getScheme() + ":" + uri.getSchemeSpecificPart() + path + "/";
+                    if(null != uri.getQuery()) {
+                        url = url + "?" + uri.getRawQuery();
+                    }
+                    break;
+                }
+            }
+        }
+
         return url;
     }
     

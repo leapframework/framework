@@ -16,6 +16,7 @@
 package leap.webunit.client;
 
 import java.nio.charset.Charset;
+import java.util.Set;
 
 import leap.lang.http.Cookie;
 import leap.lang.http.HTTP.Method;
@@ -57,6 +58,16 @@ public interface THttpClient {
 	 * Adds a host name mapping to 127.0.0.1 (dns).
 	 */
 	THttpClient addHostName(String hostName);
+
+	/**
+	 * Returns the registered context paths.
+     */
+	Set<String> getContextPaths();
+
+	/**
+	 * Adds the context paths.
+     */
+	THttpClient addContextPaths(String... contextPaths);
 
 	/**
      * Creates a new http request.

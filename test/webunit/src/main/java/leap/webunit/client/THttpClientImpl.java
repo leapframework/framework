@@ -21,11 +21,7 @@ import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -36,9 +32,12 @@ import javax.net.ssl.X509TrustManager;
 
 import leap.lang.Args;
 import leap.lang.Charsets;
+import leap.lang.Collections2;
 import leap.lang.http.Cookie;
 import leap.lang.http.HTTP.Method;
 
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolException;
@@ -59,7 +58,9 @@ import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.protocol.HttpContext;
 
 public class THttpClientImpl implements THttpClient {
-    
+
+    private static final Log log = LogFactory.get(THttpClientImpl.class);
+
     private static SSLContext sslContext;
     
     static {
@@ -83,13 +84,14 @@ public class THttpClientImpl implements THttpClient {
         } 
     }
 	
-	public static final String LOCAL_HTTP_BASE_URL_PREFIX  = "http://127.0.0.1";
-	public static final String LOCAL_HTTPS_BASE_URL_PREFIX = "https://127.0.0.1";
+	public static final String LOCAL_HTTP_BASE_URL_PREFIX  = "http://localhost";
+	public static final String LOCAL_HTTPS_BASE_URL_PREFIX = "https://localhost";
 	
 	private final String     	  baseUrl;
 	private final DnsResolverImpl dnsResolver;
 	private final CookieStoreImpl cookieStore;
 	private final HttpClient 	  httpClient;
+    private final Set<String>     contextPaths = new HashSet<>();
 	
 	private boolean autoRedirect   = false;
 	private Charset defaultCharset = Charsets.UTF_8;
@@ -123,8 +125,19 @@ public class THttpClientImpl implements THttpClient {
     public HttpClient getHttpClient(){
 		return httpClient;
 	}
-	
-	@Override
+
+    @Override
+    public Set<String> getContextPaths() {
+        return contextPaths;
+    }
+
+    @Override
+    public THttpClient addContextPaths(String... contextPaths) {
+        Collections2.addAll(this.contextPaths, contextPaths);
+        return this;
+    }
+
+    @Override
     public Cookie getCookie(String name) {
 		for(org.apache.http.cookie.Cookie cookie : cookieStore.getCookies()) {
 			if(cookie.getName().equals(name)) {
@@ -226,7 +239,7 @@ public class THttpClientImpl implements THttpClient {
 		private final TreeSet<org.apache.http.cookie.Cookie> cookies;
 
         public CookieStoreImpl() {
-            this.cookies = new TreeSet<org.apache.http.cookie.Cookie>(new CookieIdentityComparator());
+            this.cookies = new TreeSet<>(new CookieIdentityComparator());
         }
         
         public synchronized org.apache.http.cookie.Cookie removeCookie(String name) {
@@ -247,6 +260,7 @@ public class THttpClientImpl implements THttpClient {
 
         public synchronized void addCookie(final org.apache.http.cookie.Cookie cookie) {
             if (cookie != null) {
+                log.debug("Add cookie : name={}, path={}, value={},", cookie.getName(), cookie.getPath(), cookie.getValue());
                 // first remove any old cookie that is equivalent
                 cookies.remove(cookie);
                 if (!cookie.isExpired(new Date())) {
@@ -265,7 +279,7 @@ public class THttpClientImpl implements THttpClient {
 
         public synchronized List<org.apache.http.cookie.Cookie> getCookies() {
             //create defensive copy so it won't be concurrently modified
-            return new ArrayList<org.apache.http.cookie.Cookie>(cookies);
+            return new ArrayList<>(cookies);
         }
 
         public synchronized boolean clearExpired(final Date date) {

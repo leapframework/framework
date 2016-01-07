@@ -15,7 +15,12 @@
  */
 package leap.web.security.authc;
 
+import leap.lang.intercepting.State;
+import leap.web.Request;
+import leap.web.Response;
+
 public interface TokenAuthenticationManager extends AuthenticationHandler {
 
-	
+    State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
+
 }

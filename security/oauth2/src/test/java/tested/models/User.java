@@ -18,7 +18,7 @@ package tested.models;
 import leap.orm.annotation.Table;
 import leap.orm.model.Model;
 
-@Table("auth_user")
+@Table("oauth2_user")
 public class User extends Model {
 	
 	private String	id;

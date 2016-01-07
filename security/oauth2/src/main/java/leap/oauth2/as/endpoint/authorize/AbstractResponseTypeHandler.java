@@ -77,7 +77,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
         }
 
         if(!client.acceptsRedirectUri(redirectUri)) {
-            log.debug("error : mismatch redirect_uri of client '{}'", clientId);
+            log.debug("error : mismatch redirect_uri '{}' of client '{}'", redirectUri, clientId);
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "invalid redirect_uri");
             request.forwardToView(config.getErrorView());
             return result.err();         

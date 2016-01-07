@@ -35,7 +35,7 @@ public class Client extends Model {
     @Column(name="redirect_uri", length=1000)
     protected String redirectUri;
     
-    @Column(name="redirect_pattern", length=300)
+    @Column(name="redirect_uri_pattern", length=300)
     protected String redirectUriPattern;
 
     @Column(name="logout_uri", length = 1000)

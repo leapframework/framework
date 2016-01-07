@@ -128,6 +128,10 @@ public class TWebServer {
 	public boolean isStarted(){
 		return server.isStarted();
 	}
+
+	public String[] getContextPaths() {
+		return contexts.keySet().toArray(new String[]{});
+	}
 	
 	/**
 	 * Starts this server.

@@ -55,11 +55,15 @@ public abstract class WebTestBase extends TestBase {
             
             if (null == server) {
                 server = new TWebServer(httpPort, httpsPort, true);
+
                 if(duplicateRootContext) {
                     server.duplicateContext("", "/root");
                 }
                 
                 server.start();
+
+                httpClient.addContextPaths(server.getContextPaths());
+                httpsClient.addContextPaths(server.getContextPaths());
             }
         }
         

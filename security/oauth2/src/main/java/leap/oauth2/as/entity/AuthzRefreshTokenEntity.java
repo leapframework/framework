@@ -20,7 +20,7 @@ import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("auth_refresh_token")
+@Table("oauth2_refresh_token")
 public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
     
     @Id
