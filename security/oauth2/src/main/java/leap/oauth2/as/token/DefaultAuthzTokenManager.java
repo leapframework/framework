@@ -27,6 +27,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	protected @Inject OAuth2AuthzServerConfig    config;
 	protected @Inject AuthzAccessTokenGenerator  defaultAccessTokenGenerator;
 	protected @Inject AuthzRefreshTokenGenerator defaultRefreshTokenGenerator;
+    protected @Inject AuthzLoginTokenGenerator   defaultLoginTokenGenerator;
 	protected @Inject BeanFactory                factory;
 	
     @Override
@@ -96,7 +97,32 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         return at;
     }
 
-	@Override
+    @Override
+    public AuthzLoginToken createLoginToken(AuthzAuthentication authc) {
+        AuthzClient              client    = authc.getClientDetails();
+        UserDetails              user      = authc.getUserDetails();
+        AuthzLoginTokenGenerator generator = getLoginTokenGenerator(authc);
+
+        //Creates the token
+        SimpleAuthzLoginToken token = new SimpleAuthzLoginToken();
+        token.setToken(getLoginTokenGenerator(authc).generateLoginToken(authc));
+        token.setClientId(client.getId());
+        token.setUserId(user.getId().toString());
+        token.setCreated(System.currentTimeMillis());
+        token.setExpiresIn(getLoginTokenExpires(client));
+
+        //Saves the token.
+        config.getTokenStore().saveLoginToken(token);
+
+        return token;
+    }
+
+    @Override
+    public AuthzLoginToken consumeLoginToken(String loginToken) {
+        return config.getTokenStore().removeAndLoadLoginToken(loginToken);
+    }
+
+    @Override
     public AuthzAccessToken loadAccessToken(String accessToken) {
         return config.getTokenStore().loadAccessToken(accessToken);
     }
@@ -143,6 +169,10 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         return expires;
     }
+
+    protected int getLoginTokenExpires(AuthzClient client) {
+        return config.getDefaultLoginTokenExpires();
+    }
 	
 	protected boolean isAllowRefreshToken(AuthzClient client) {
 	    return null == client || client.isAllowRefreshToken();
@@ -155,5 +185,8 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	protected AuthzRefreshTokenGenerator getRefreshTokenGenerator(AuthzAuthentication authc) {
 	    return defaultRefreshTokenGenerator;
 	}
-	
+
+    protected AuthzLoginTokenGenerator getLoginTokenGenerator(AuthzAuthentication authc) {
+        return defaultLoginTokenGenerator;
+    }
 }

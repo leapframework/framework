@@ -55,6 +55,9 @@ public class Client extends Model {
     
     @Column(name="allow_refresh_token")
     protected Boolean allowRefreshToken;
+
+    @Column(name="allow_login_token")
+    protected Boolean allowLoginToken;
     
     @Column
     protected boolean enabled = true;
@@ -137,6 +140,14 @@ public class Client extends Model {
 
     public void setAllowRefreshToken(Boolean allowRefreshToken) {
         this.allowRefreshToken = allowRefreshToken;
+    }
+
+    public Boolean getAllowLoginToken() {
+        return allowLoginToken;
+    }
+
+    public void setAllowLoginToken(Boolean allowLoginToken) {
+        this.allowLoginToken = allowLoginToken;
     }
 
     public boolean isEnabled() {

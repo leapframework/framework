@@ -19,32 +19,25 @@ import leap.core.annotation.Inject;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
+import leap.oauth2.as.endpoint.logintoken.LoginTokenHandler;
 import leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler;
-import leap.web.App;
-import leap.web.Handler;
-import leap.web.Endpoint;
-import leap.web.Request;
-import leap.web.Response;
+import leap.web.*;
 import leap.web.route.Routes;
 
 /**
- * Not a standard endpoint, to obtain the access token's info issued by authorization server.
- * 
- * <p>
- * 
- * see <a href="https://developers.google.com/identity/protocols/OAuth2UserAgent#validatetoken">Google OAuth2.0 protocols</a>
+ * Not a standard endpoint, to generate a new login token for login.
  */
-public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,Handler {
+public class LoginTokenEndpoint extends AbstractAuthzEndpoint implements Endpoint,Handler {
     
-    protected @Inject TokenInfoHandler[] handlers;
+    protected @Inject LoginTokenHandler[] handlers;
     
 	@Override
     public void startEndpoint(App app, Routes routes) {
-	    if(config.isEnabled() && config.isTokenInfoEndpointEnabled()) {
-	        sc.ignore(config.getTokenInfoEndpointPath());
+	    if(config.isEnabled() && config.isLoginTokenEnabled()) {
+	        sc.ignore(config.getLoginTokenEndpointPath());
 	        
 	        routes.create()
-	              .get(config.getTokenInfoEndpointPath(), this)
+	              .get(config.getLoginTokenEndpointPath(), this)
 	              .apply();
 	    }
     }
@@ -54,15 +47,15 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 
 		OAuth2Params params = new RequestOAuth2Params(request);
 
-	    for(TokenInfoHandler h : handlers) {
+	    for(LoginTokenHandler h : handlers) {
 	        
-	        if(h.handleTokenInfoRequest(request, response, params)) {
+	        if(h.handleLoginTokenRequest(request, response, params)) {
 	            return;
 	        }
 	        
 	    }
 	    
-	    OAuth2Errors.invalidRequest(response, "invalid token parameters");;
+	    OAuth2Errors.invalidRequest(response, "invalid parameters");;
     }
 	
 }

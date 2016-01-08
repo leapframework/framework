@@ -79,6 +79,10 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	default String getState() {
 		return getParameter(STATE);
 	}
+
+	default String getAccessToken() {
+		return getParameter(ACCESS_TOKEN);
+	}
 	
 	default String getRefreshToken() {
 		return getParameter(REFRESH_TOKEN);

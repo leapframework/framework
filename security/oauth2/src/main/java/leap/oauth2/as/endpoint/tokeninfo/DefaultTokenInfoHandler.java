@@ -27,13 +27,13 @@ import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 
-public class AccessTokenInfoHandler implements TokenInfoHandler {
+public class DefaultTokenInfoHandler implements TokenInfoHandler {
     
     protected @Inject AuthzTokenManager tokenManager;
 
     @Override
-    public boolean handleTokenInfoRequest(Request request, Response response) throws Throwable {
-        String accessToken = request.getParameter(OAuth2Params.ACCESS_TOKEN);
+    public boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable {
+        String accessToken = params.getAccessToken();
         if(null != accessToken) {
             if(accessToken.isEmpty()) {
                 OAuth2Errors.invalidRequest(response, "token required");

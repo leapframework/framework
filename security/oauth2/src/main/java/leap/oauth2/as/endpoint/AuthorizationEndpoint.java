@@ -138,7 +138,10 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         OAuth2Params params = new QueryOAuth2Params(qs);
         ResponseTypeHandler handler = getResponseTypeHandler(request, response, params);
-        
+        if(null == handler) {
+            return State.INTERCEPTED;
+        }
+
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
         if(result.isError()) {
             return State.INTERCEPTED;
@@ -172,6 +175,9 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             
             params = new QueryOAuth2Params(qs);
             handler = getResponseTypeHandler(request, response, params);
+            if(null == handler){
+                return State.INTERCEPTED;
+            }
             
             Result<AuthzClient> result = handler.validateRequest(request, response, params);
             if(result.isError()) {

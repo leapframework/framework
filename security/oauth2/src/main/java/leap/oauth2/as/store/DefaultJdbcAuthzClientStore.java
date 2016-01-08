@@ -53,15 +53,21 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
         client.setId(entity.getId());
         client.setSecret(entity.getSecret());
         client.setRedirectUri(entity.getRedirectUri());
+        client.setLogoutUri(entity.getLogoutUri());
 
         if(!Strings.isEmpty(entity.getRedirectUriPattern())) {
             client.setRedirectUriPattern(new AntPathPattern(entity.getRedirectUriPattern()));
+        }
+
+        if(!Strings.isEmpty(entity.getLogoutUriPattern())) {
+            client.setLogoutUriPattern(new AntPathPattern(entity.getLogoutUriPattern()));
         }
         
         client.setAccessTokenExpires(entity.getAccessTokenExpires());
         client.setRefreshTokenExpires(entity.getRefreshTokenExpires());
         client.setAllowAuthorizationCode(entity.getAllowAuthorizationCode());
         client.setAllowRefreshToken(entity.getAllowRefreshToken());
+        client.setAllowLoginToken(entity.getAllowLoginToken());
         client.setEnabled(entity.isEnabled());
         
         return client;

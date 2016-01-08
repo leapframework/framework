@@ -53,6 +53,9 @@ public class AuthzClientEntity implements OAuth2Entity {
     
     @Column(name="allow_refresh_token")
     protected Boolean allowRefreshToken;
+
+    @Column(name="allow_login_token")
+    protected Boolean allowLoginToken;
     
     @Column(defaultValue="1")
     protected boolean enabled;
@@ -88,7 +91,23 @@ public class AuthzClientEntity implements OAuth2Entity {
     public void setRedirectUriPattern(String redirectUriPattern) {
         this.redirectUriPattern = redirectUriPattern;
     }
-    
+
+    public String getLogoutUri() {
+        return logoutUri;
+    }
+
+    public void setLogoutUri(String logoutUri) {
+        this.logoutUri = logoutUri;
+    }
+
+    public String getLogoutUriPattern() {
+        return logoutUriPattern;
+    }
+
+    public void setLogoutUriPattern(String logoutUriPattern) {
+        this.logoutUriPattern = logoutUriPattern;
+    }
+
     public Integer getAccessTokenExpires() {
         return accessTokenExpires;
     }
@@ -121,12 +140,12 @@ public class AuthzClientEntity implements OAuth2Entity {
         this.allowRefreshToken = allowRefreshToken;
     }
 
-    public boolean isAllowAuthorizationCode() {
-        return allowAuthorizationCode == null || allowAuthorizationCode;
+    public Boolean getAllowLoginToken() {
+        return allowLoginToken;
     }
 
-    public boolean isAllowRefreshToken() {
-        return allowRefreshToken == null || allowRefreshToken;
+    public void setAllowLoginToken(Boolean allowLoginToken) {
+        this.allowLoginToken = allowLoginToken;
     }
 
     public boolean isEnabled() {

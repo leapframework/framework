@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.endpoint.tokeninfo;
+package leap.oauth2.as.token;
 
-import leap.oauth2.OAuth2Params;
-import leap.web.Request;
-import leap.web.Response;
+import leap.lang.expirable.TimeExpirable;
 
-public interface TokenInfoHandler {
+import java.io.Serializable;
+
+public interface AuthzLoginToken extends TimeExpirable, Serializable {
 
     /**
-     * Returns <code>true</code> if handled.
+     * The token value.
      */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
+    String getToken();
+
+    /**
+     * The id of client.
+     */
+    String getClientId();
+
+    /**
+     * The id of user.
+     */
+    String getUserId();
 
 }
