@@ -187,7 +187,7 @@ class THttpRequestImpl implements THttpRequest {
         if(!"".equals(path)) {
             for(String contextPath : tclient.getContextPaths()) {
                 if(path.equals(contextPath)) {
-                    url = uri.getScheme() + ":" + uri.getSchemeSpecificPart() + path + "/";
+                    url = uri.getScheme() + ":" + uri.getSchemeSpecificPart() + "/";
                     if(null != uri.getQuery()) {
                         url = url + "?" + uri.getRawQuery();
                     }

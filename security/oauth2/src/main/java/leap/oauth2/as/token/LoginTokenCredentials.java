@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.user;
+package leap.oauth2.as.token;
 
-import leap.core.security.Credentials;
+import leap.core.security.token.TokenCredentials;
 
-public class UsernameCredentials implements Credentials {
-    
-    protected final String username;
+public class LoginTokenCredentials implements TokenCredentials {
 
-    public UsernameCredentials(String usernmae) {
-        this.username = usernmae;
+    protected final String token;
+
+    public LoginTokenCredentials(String token) {
+        this.token = token;
     }
 
-    public String getUsername() {
-        return username;
+    @Override
+    public String getToken() {
+        return token;
     }
-
 }

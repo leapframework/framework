@@ -36,7 +36,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     private static final Log log = LogFactory.get(DefaultAuthenticationManager.class);
 
     protected @Inject SecurityConfig             securityConfig;
-    protected @Inject AuthenticationHandler[]    handlers;
+    protected @Inject AuthenticationResolver[]   handlers;
     protected @Inject SecuritySessionManager     sessionManager;
     protected @Inject TokenAuthenticationManager tokenAuthenticationManager;
     protected @Inject RememberMeManager          rememberMeManager;
@@ -64,30 +64,32 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         Authentication authc = null;
 
         if(State.isContinue(tokenAuthenticationManager.preResolveAuthentication(request, response, context))) {
-            boolean handled = false;
+            if(null == context.getAuthentication()) {
+                boolean handled = false;
 
-            for(AuthenticationHandler h : handlers){
-                if(h.resolveAuthentication(request, response, context).isIntercepted()){
-                    handled = true;
-                    break;
+                for(AuthenticationResolver h : handlers){
+                    if(h.resolveAuthentication(request, response, context).isIntercepted()){
+                        handled = true;
+                        break;
+                    }
+                }
+
+                authc = sessionManager.getAuthentication(request);
+                if(null != authc) {
+                    return authc;
+                }
+
+                if(!handled){
+                    handled = tokenAuthenticationManager.resolveAuthentication(request, response, context).isIntercepted();
+                }
+
+                if(!handled && securityConfig.isRememberMeEnabled()) {
+                    rememberMeManager.resolveAuthentication(request, response, context);
                 }
             }
 
-            authc = sessionManager.getAuthentication(request);
-            if(null != authc) {
-                return authc;
-            }
-
-            if(!handled){
-                handled = tokenAuthenticationManager.resolveAuthentication(request, response, context).isIntercepted();
-            }
-
-            if(!handled && securityConfig.isRememberMeEnabled()) {
-                rememberMeManager.resolveAuthentication(request, response, context);
-            }
-
             authc = context.getAuthentication();
-            if(null != authc && authc.isAuthenticated()){
+            if(null != authc && authc.isAuthenticated() && !authc.isClientOnly()){
                 loginImmediately(request, response, authc);
             }
 
@@ -111,7 +113,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLoginSuccess(request, response, authc);	
 		}
 
-		for(AuthenticationHandler h : handlers) {
+		for(AuthenticationResolver h : handlers) {
 			h.onLoginSuccess(request, response, authc);
 		}
 	}
@@ -129,7 +131,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLogoutSuccess(request, response);	
 		}
 		
-        for (AuthenticationHandler h : handlers) {
+        for (AuthenticationResolver h : handlers) {
             h.onLogoutSuccess(request, response);
         }
     }

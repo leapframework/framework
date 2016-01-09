@@ -91,7 +91,7 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	/**
 	 * Returns the request path in lowercase or original case.
 	 * 
-	 * @see #getRequestPath().
+	 * @see #getPath().
 	 */
 	public abstract String getPath(boolean lowercase);
 	

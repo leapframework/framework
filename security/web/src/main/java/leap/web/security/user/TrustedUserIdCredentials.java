@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.authc;
+package leap.web.security.user;
 
-import leap.web.Request;
-import leap.web.Response;
+import leap.core.security.TrustedCredentials;
 
-public interface RememberMeManager extends AuthenticationResolver {
-	
-	void forgetRememberedUser(Request request,Response response);
+public class TrustedUserIdCredentials implements TrustedCredentials {
+
+    protected final String userId;
+
+    public TrustedUserIdCredentials(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
 
 }

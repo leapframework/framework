@@ -44,5 +44,5 @@ public interface AuthenticationContext extends ValidationContext {
 
 	String getAuthenticationToken();
 
-	void setAuthentcationToken(String token);
+	void setAuthenticationToken(String token);
 }

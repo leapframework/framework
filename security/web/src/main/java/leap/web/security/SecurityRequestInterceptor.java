@@ -163,14 +163,12 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 				return State.INTERCEPTED;
 			}
 		}
-		
-        Authentication authentication = context.getAuthentication();
-        if (null == authentication) {
-			log.debug("Resolving authentication...");
-            authentication = handler.resolveAuthentication(request, response, context);
-            Assert.notNull(authentication,"'Authentication' must not be null");
-            context.setAuthentication(authentication);
-        }
+
+        log.debug("Resolving authentication...");
+        Authentication authentication = handler.resolveAuthentication(request, response, context);
+
+        Assert.notNull(authentication,"'Authentication' must not be null");
+        context.setAuthentication(authentication);
 
 		if(log.isDebugEnabled()) {
 			if(authentication.isAuthenticated()) {
@@ -182,13 +180,13 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
         context.setUser(authentication.getUserPrincipal());
 		request.setUser(authentication.getUserPrincipal());
-		
+
 		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.postResolveAuthentication(request, response, context).isIntercepted()){
 				return State.INTERCEPTED;
 			}
 		}
-		
+
 		return State.CONTINUE;
 	}
 	

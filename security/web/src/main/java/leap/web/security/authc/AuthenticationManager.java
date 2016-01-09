@@ -20,14 +20,12 @@ import leap.core.security.UserPrincipal;
 import leap.core.validation.ValidationContext;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.security.SecurityContextHolder;
 
 public interface AuthenticationManager {
-    
+
     /**
      * Resolves the {@link Authentication} from the request.
-     * 
-     * <p>
-     * The {@link Authentication} must be returned.
      */
     Authentication resolveAuthentication(Request request,Response response, AuthenticationContext context) throws Throwable;
     

@@ -33,7 +33,7 @@ import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserDetailsPrincipal;
 import leap.web.security.user.UserStore;
 
-public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler implements RememberMeManager {
+public class DefaultRememberMeManager extends CookieBasedAuthenticationResolver implements RememberMeManager {
 	
 	private static final Log log = LogFactory.get(DefaultRememberMeManager.class);
 	
