@@ -20,9 +20,11 @@ package leap.oauth2.as.sso;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.security.SecurityContextHolder;
 
 public interface AuthzSSOManager {
 
-    void onAuthenticated(Request request, Response response, AuthzAuthentication authc) throws Throwable;
+    void onOAuth2LoginSuccess(Request request, Response response, AuthzAuthentication authc) throws Throwable;
 
+    String[] resolveLogoutUrls(Request request, Response response, SecurityContextHolder context) throws Throwable;
 }

@@ -13,17 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.endpoint.tokeninfo;
+package leap.web.security.authc;
 
-import leap.oauth2.OAuth2Params;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.security.cookie.AbstractSecurityCookieBean;
 
-public interface TokenInfoHandler {
+public abstract class CookieBasedAuthenticationResolver extends AbstractSecurityCookieBean implements AuthenticationResolver {
 
-    /**
-     * Returns <code>true</code> if handled.
-     */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
-
+	@Override
+    public void onLogoutSuccess(Request request, Response response) {
+		removeCookie(request, response);
+    }
+	
 }

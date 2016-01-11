@@ -43,7 +43,7 @@ public class CodeIdTokenResponseTypeHandler extends AbstractResponseTypeHandler 
         }
 
         //Notify sso manager.
-        ssoManager.onAuthenticated(request, response, authc);
+        ssoManager.onOAuth2LoginSuccess(request, response, authc);
 
         //Create a new authorization code and id token.
         AuthzCode code = codeManager.createAuthorizationCode(authc);

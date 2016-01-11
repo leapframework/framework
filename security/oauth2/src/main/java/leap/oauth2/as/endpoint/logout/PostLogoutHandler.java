@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.endpoint.tokeninfo;
+package leap.oauth2.as.endpoint.logout;
 
-import leap.oauth2.OAuth2Params;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.security.SecurityContextHolder;
+import leap.web.view.View;
 
-public interface TokenInfoHandler {
+public interface PostLogoutHandler {
 
-    /**
-     * Returns <code>true</code> if handled.
-     */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
+    void handlePostLogout(Request request, Response response, SecurityContextHolder context, View defaultLogoutView) throws Throwable;
 
 }

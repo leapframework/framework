@@ -19,6 +19,8 @@ import leap.core.security.Credentials;
 import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
@@ -27,12 +29,15 @@ import leap.web.security.logout.LogoutContext;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
 
+	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
+
 	protected final SecurityConfig config;
 	protected final Request        request;
 
     protected Authentication       authentication;
     protected LoginContext         loginContext;
     protected LogoutContext        logoutContext;
+	protected String			   authenticationToken;
 	
 	public DefaultSecurityContextHolder(SecurityConfig config, Request request){
 		this.config  = config;
@@ -55,11 +60,23 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     }
 
 	@Override
+	public String getAuthenticationToken() {
+		return authenticationToken;
+	}
+
+	@Override
+	public void setAuthenticationToken(String token) {
+        log.debug("Set authentication token : {}", token);
+		this.authenticationToken = token;
+	}
+
+	@Override
     public Authentication getAuthentication() {
         return authentication;
     }
 
     public void setAuthentication(Authentication authentication) {
+        log.debug("Set authentication : {}", authentication);
         this.authentication = authentication;
     }
 
@@ -101,6 +118,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         private boolean       error;
         private Credentials   credentials;
         private UserPrincipal user;
+
+		@Override
+		public String getAuthenticationToken() {
+			return DefaultSecurityContextHolder.this.getAuthenticationToken();
+		}
+
+		@Override
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
+		}
 
 		@Override
         public Authentication getAuthentication() {
@@ -176,6 +203,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {
 
 		private String returnUrl;
+
+		@Override
+		public String getAuthenticationToken() {
+			return DefaultSecurityContextHolder.this.getAuthenticationToken();
+		}
+
+		@Override
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
+		}
 
 		@Override
         public Authentication getAuthentication() {

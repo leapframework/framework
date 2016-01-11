@@ -42,7 +42,7 @@ public class DefaultUserManager implements UserManager {
     }
 
     @Override
-    public Result<Authentication> creatAuthenticaionByUsername(String username) {
+    public Result<Authentication> createAuthenticationByUsername(String username) {
         UserDetails details = sc.getUserStore().findUserDetailsByUsername(username);
         
         //TODO : check user enabled?
@@ -51,7 +51,17 @@ public class DefaultUserManager implements UserManager {
             return Result.empty();
         }
 
-        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new UsernameCredentials(username)));
+        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new TrustedUsernameCredentials(username)));
     }
-    
+
+    @Override
+    public Result<Authentication> createAuthenticationByUserId(String userid) {
+        UserDetails details = sc.getUserStore().findUserDetailsByIdString(userid);
+
+        if(null == details) {
+            return Result.empty();
+        }
+
+        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new TrustedUserIdCredentials(userid)));
+    }
 }

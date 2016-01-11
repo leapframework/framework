@@ -17,6 +17,7 @@ package leap.oauth2.as.entity;
 
 import leap.lang.expirable.TimeExpirable;
 import leap.oauth2.OAuth2Entity;
+import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
@@ -26,9 +27,11 @@ import java.sql.Timestamp;
 public class AuthzSSOLoginEntity implements OAuth2Entity {
 
     @Id
+    protected String id;
+
+    @Column(name = "session_id", length = 38)
     protected String sessionId;
 
-    @Id
     @Created
     protected Timestamp loginTime;
 
@@ -38,10 +41,19 @@ public class AuthzSSOLoginEntity implements OAuth2Entity {
     @ClientId
     protected String clientId;
 
+    @Column
     protected boolean initial;
 
     @Expiration
     protected Timestamp expiration;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getSessionId() {
         return sessionId;

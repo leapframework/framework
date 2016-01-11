@@ -41,6 +41,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
     protected String  clientId;
     protected String  clientSecret;
     protected String  clientRedirectUri = DEFAULT_REDIRECT_PATH;
+    protected String  clientLogoutUri = DEFAULT_LOGOUT_PATH;
     protected String  serverUrl;
     protected String  serverTokenEndpointUrl;
     protected String  serverAuthorizationEndpointUrl;
@@ -113,6 +114,17 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
     @Configurable.Property
     public OAuth2WebAppConfigurator setClientRedirectUri(String uri) {
         this.clientRedirectUri = Paths.suffixWithoutSlash(uri);
+        return this;
+    }
+
+    @Override
+    public String getClientLogoutUri() {
+        return clientLogoutUri;
+    }
+
+    @Configurable.Property
+    public OAuth2WebAppConfigurator setClientLogoutUri(String uri) {
+        this.clientLogoutUri = uri;
         return this;
     }
 

@@ -27,6 +27,7 @@ public class AuthzClientBuilder implements Buildable<AuthzClient> {
     protected PathPattern redirectUriPattern;
     protected String      logoutUri;
     protected PathPattern logoutUriPattern;
+    protected Boolean     allowLoginToken;
     
     public AuthzClientBuilder(String id, String secret) {
         this.id = id;
@@ -92,6 +93,15 @@ public class AuthzClientBuilder implements Buildable<AuthzClient> {
         return this;
     }
 
+    public Boolean getAllowLoginToken() {
+        return allowLoginToken;
+    }
+
+    public AuthzClientBuilder setAllowLoginToken(Boolean allowLoginToken) {
+        this.allowLoginToken = allowLoginToken;
+        return this;
+    }
+
     @Override
     public AuthzClient build() {
         SimpleAuthzClient client = new SimpleAuthzClient();
@@ -102,6 +112,7 @@ public class AuthzClientBuilder implements Buildable<AuthzClient> {
         client.setRedirectUriPattern(redirectUriPattern);
         client.setLogoutUri(logoutUri);
         client.setLogoutUriPattern(logoutUriPattern);
+        client.setAllowLoginToken(allowLoginToken);
         
         return client;
     }

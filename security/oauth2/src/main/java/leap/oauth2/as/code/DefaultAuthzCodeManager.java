@@ -53,12 +53,12 @@ public class DefaultAuthzCodeManager implements AuthzCodeManager {
 
     @Override
     public AuthzCode consumeAuthorizationCode(String code) {
-        return config.getCodeStore().removeAuthorizationCode(code);
+        return config.getCodeStore().removeAndLoadAuthorizationCode(code);
     }
 
     @Override
     public void removeAuthorizationCode(AuthzCode code) {
-        config.getCodeStore().removeAuthorizationCode(code.getCode());
+        config.getCodeStore().removeAndLoadAuthorizationCode(code.getCode());
     }
     
 }

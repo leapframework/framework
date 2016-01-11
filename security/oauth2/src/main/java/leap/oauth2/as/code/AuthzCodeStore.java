@@ -20,11 +20,11 @@ public interface AuthzCodeStore {
     void saveAuthorizationCode(AuthzCode code);
     
     AuthzCode loadAuthorizationCode(String code);
+
+    void removeAuthorizationCode(String code);
     
-    AuthzCode removeAuthorizationCode(String code);
-    
-    void removeAuthorizationCode(AuthzCode code);
- 
+    AuthzCode removeAndLoadAuthorizationCode(String code);
+
     /**
      * Cleanup expired authorization codes.
      */

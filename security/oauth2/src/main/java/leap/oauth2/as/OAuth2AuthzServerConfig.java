@@ -66,7 +66,15 @@ public interface OAuth2AuthzServerConfig {
 	boolean isOpenIDConnectEnabled();
 
 	/**
-	 * Returns <code>true</code> if single logout (single signout) enabled.
+	 * Returns <code></code> if single login enabled.
+	 *
+	 * <p/>
+	 * Default is <code>true</code>.
+     */
+	boolean isSingleLoginEnabled();
+
+	/**
+	 * Returns <code>true</code> if single logout enabled.
 	 *
 	 * <p/>
 	 * Default is <code>true</code>.
@@ -116,6 +124,8 @@ public interface OAuth2AuthzServerConfig {
 	boolean isPasswordCredentialsEnabled();
 	
 	boolean isRefreshTokenEnabled();
+
+	boolean isLoginTokenEnabled();
 	
 	boolean isClientCredentialsEnabled();
 	
@@ -128,6 +138,8 @@ public interface OAuth2AuthzServerConfig {
 	String getAuthzEndpointPath();
 	
 	String getTokenInfoEndpointPath();
+
+	String getLoginTokenEndpointPath();
 	
 	String getLogoutEndpointPath();
 	
@@ -157,6 +169,11 @@ public interface OAuth2AuthzServerConfig {
 	 * Returns the default expires in (seconds) of authorization code.
 	 */
 	int getDefaultAuthorizationCodeExpires();
+
+	/**
+	 * Returns the default expires in (seconds) of login token.
+     */
+	int getDefaultLoginTokenExpires();
 	
 	/**
 	 * Returns the default expires in (seconds) of id token for Open ID Connect.

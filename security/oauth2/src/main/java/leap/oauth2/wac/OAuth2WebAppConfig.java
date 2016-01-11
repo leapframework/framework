@@ -67,6 +67,11 @@ public interface OAuth2WebAppConfig {
      * Returns the uri of redirect endpoint.
      */
     String getClientRedirectUri();
+
+    /**
+     * Optional.
+     */
+    String getClientLogoutUri();
     
     /**
      * Required. Returns the token endpoint url of remote oauth server.

@@ -22,6 +22,9 @@ import leap.core.security.UserPrincipal;
 import leap.core.validation.ValidationContext;
 import leap.lang.Out;
 import leap.lang.Strings;
+import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
@@ -29,9 +32,11 @@ import leap.web.security.SecuritySessionManager;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
 
 public class DefaultAuthenticationManager implements AuthenticationManager {
-	
+
+    private static final Log log = LogFactory.get(DefaultAuthenticationManager.class);
+
     protected @Inject SecurityConfig             securityConfig;
-    protected @Inject AuthenticationHandler[]    handlers;
+    protected @Inject AuthenticationResolver[]   handlers;
     protected @Inject SecuritySessionManager     sessionManager;
     protected @Inject TokenAuthenticationManager tokenAuthenticationManager;
     protected @Inject RememberMeManager          rememberMeManager;
@@ -56,37 +61,48 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 
 	@Override
     public Authentication resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-		boolean handled = false;
-		for(AuthenticationHandler h : handlers){
-			if(h.resolveAuthentication(request, response, context).isIntercepted()){
-				handled = true;
-				break;
-			}
-		}
-		
-		if(!handled && securityConfig.isAuthenticationTokenEnabled()){
-			handled = tokenAuthenticationManager.resolveAuthentication(request, response, context).isIntercepted();
-		}
-		
-		Authentication authc = sessionManager.getAuthentication(request);
-		if(null != authc) {
-		    return authc;
-		}
-		
-		if(!handled && securityConfig.isRememberMeEnabled()) {
-			rememberMeManager.resolveAuthentication(request, response, context);	
-		}
-		
-		authc = context.getAuthentication();
-		if(null != authc && authc.isAuthenticated()){
-			loginImmediately(request, response, authc);
-		}
-		
+        Authentication authc = null;
+
+        if(State.isContinue(tokenAuthenticationManager.preResolveAuthentication(request, response, context))) {
+            if(null == context.getAuthentication()) {
+                boolean handled = false;
+
+                for(AuthenticationResolver h : handlers){
+                    if(h.resolveAuthentication(request, response, context).isIntercepted()){
+                        handled = true;
+                        break;
+                    }
+                }
+
+                authc = sessionManager.getAuthentication(request);
+                if(null != authc) {
+                    return authc;
+                }
+
+                if(!handled){
+                    handled = tokenAuthenticationManager.resolveAuthentication(request, response, context).isIntercepted();
+                }
+
+                if(!handled && securityConfig.isRememberMeEnabled()) {
+                    rememberMeManager.resolveAuthentication(request, response, context);
+                }
+            }
+
+            authc = context.getAuthentication();
+            if(null != authc && authc.isAuthenticated() && !authc.isClientOnly()){
+                loginImmediately(request, response, authc);
+            }
+
+        }
+
 		return null == authc ? createAnonymousAuthentication(request, response, context) : authc;
     }
 
 	@Override
     public void loginImmediately(Request request, Response response, Authentication authc) {
+
+        log.debug("User {} logged in", authc.getUserPrincipal().getLoginName());
+
 		saveAuthentication(request, response, authc);
 		
 		if(securityConfig.isAuthenticationTokenEnabled()) {
@@ -97,7 +113,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLoginSuccess(request, response, authc);	
 		}
 
-		for(AuthenticationHandler h : handlers) {
+		for(AuthenticationResolver h : handlers) {
 			h.onLoginSuccess(request, response, authc);
 		}
 	}
@@ -115,7 +131,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLogoutSuccess(request, response);	
 		}
 		
-        for (AuthenticationHandler h : handlers) {
+        for (AuthenticationResolver h : handlers) {
             h.onLogoutSuccess(request, response);
         }
     }

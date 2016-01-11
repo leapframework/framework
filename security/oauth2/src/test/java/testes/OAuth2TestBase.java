@@ -263,7 +263,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	}
 
 	protected void login(String contextPath, String username,String password) {
-		forLogin(contextPath, username, password).send();
+		forLogin(contextPath, username, password).sendAjax().assertOk();
 	}
 	
 	protected THttpRequest forLogin(String contextPath, String username, String password) {
@@ -275,7 +275,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	}
 	
 	protected void logout(String contextPath) {
-		post(contextPath + "/logout");
+		ajaxPost(contextPath + "/logout").assertOk();
 	}
 
 	protected THttpRequest withAccessToken(THttpRequest request, String token) {

@@ -58,10 +58,10 @@
 		  class="leap.oauth2.as.token.UUIDAuthzTokenGenerator" primary="true">
     
         <additional-type-def type="leap.oauth2.as.token.AuthzRefreshTokenGenerator" name="uuid" primary="true"/>
-        
+        <additional-type-def type="leap.oauth2.as.token.AuthzLoginTokenGenerator"   name="uuid" primary="true"/>
     </bean>
     
-    <!-- endpoints -->
+    <!-- oauth2 standard endpoints -->
 	<bean type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.TokenEndpoint"/>
 
@@ -70,7 +70,7 @@
 		  
 	<bean type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.TokenInfoEndpoint"/>
-          
+
     <!-- authorize endpoint : response types -->
     <bean name="code"
           type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
@@ -99,7 +99,11 @@
           
     <!-- token info endpoint : handlers -->
     <bean type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler"
-          class="leap.oauth2.as.endpoint.tokeninfo.AccessTokenInfoHandler"/>
+          class="leap.oauth2.as.endpoint.tokeninfo.DefaultTokenInfoHandler"/>
+
+	<!-- logout endpoint : handlers -->
+	<bean type="leap.oauth2.as.endpoint.logout.PostLogoutHandler"
+		  class="leap.oauth2.as.endpoint.logout.DefaultPostLogoutHandler" primary="true"/>
           
     <!-- openid connect : common -->
     <bean type="leap.oauth2.as.openid.IdTokenGenerator"
@@ -120,5 +124,13 @@
 
 	<!-- sso -->
 	<bean type="leap.oauth2.as.sso.AuthzSSOManager" class="leap.oauth2.as.sso.DefaultAuthzSSOManager" primary="true"/>
+
+    <!-- login token endpoint  -->
+    <bean type="leap.web.Endpoint"
+          class="leap.oauth2.as.endpoint.LoginTokenEndpoint"/>
+
+    <!-- login token endpoint : handlers -->
+    <bean type="leap.oauth2.as.endpoint.logintoken.LoginTokenHandler"
+          class="leap.oauth2.as.endpoint.logintoken.DefaultLoginTokenHandler"/>
 
 </beans>

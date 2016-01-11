@@ -21,7 +21,7 @@ import java.util.Map;
 import leap.lang.expirable.TimeExpirable;
 
 /**
- * The token(s) issued by authorication server.
+ * The token(s) issued by authorization server.
  */
 public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	

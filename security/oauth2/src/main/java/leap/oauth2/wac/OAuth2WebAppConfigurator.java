@@ -21,6 +21,7 @@ package leap.oauth2.wac;
 public interface OAuth2WebAppConfigurator {
     
     String DEFAULT_REDIRECT_PATH            = "/oauth2_redirect";
+    String DEFAULT_LOGOUT_PATH              = "/oauth2_logout";
     String DEFAULT_ERROR_VIEW               = "/oauth2_error";
     String DEFAULT_ACCESS_TOKEN_COOKIE_NAME = "wac_at";
     

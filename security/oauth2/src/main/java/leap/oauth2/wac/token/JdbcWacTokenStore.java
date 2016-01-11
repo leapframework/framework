@@ -64,7 +64,7 @@ public class JdbcWacTokenStore extends AbstractJdbcAuthzStore implements WacToke
             return null;
         }
         
-        WacAccessTokenEntity entity = dao.find(WacAccessTokenEntity.class, cookie.getValue());
+        WacAccessTokenEntity entity = dao.findOrNull(WacAccessTokenEntity.class, cookie.getValue());
         if(null == entity) {
             return null;
         }

@@ -34,7 +34,7 @@ public class TokenAuthenticationTest extends SecurityTestCase {
 		forLogin("/app3").sendAjax();
 		Cookie cookie = client().getCookie(cookieName);
 		assertNotNull(cookie);
-		assertEquals("127.0.0.1", cookie.getDomain());
+		assertEquals("localhost", cookie.getDomain());
 		
 		logout("/app3");
 		client().removeCookie(cookieName);

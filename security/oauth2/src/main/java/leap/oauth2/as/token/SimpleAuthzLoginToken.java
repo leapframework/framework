@@ -13,30 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.entity;
+package leap.oauth2.as.token;
 
-import leap.oauth2.OAuth2ExpirableEntity;
-import leap.orm.annotation.Column;
-import leap.orm.annotation.Id;
-import leap.orm.annotation.Table;
+import leap.lang.expirable.TimeExpirableSeconds;
+import leap.oauth2.as.code.AuthzCode;
 
-@Table("oauth2_refresh_token")
-public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
-    
-    @Id
-    @Token
+public class SimpleAuthzLoginToken extends TimeExpirableSeconds implements AuthzLoginToken {
+
     protected String token;
-    
-    @ClientId
     protected String clientId;
-    
-    @UserId
     protected String userId;
-    
-    @Column
-    @Scope
-    protected String scope;
 
+    public SimpleAuthzLoginToken() {
+        super();
+    }
+
+    @Override
     public String getToken() {
         return token;
     }
@@ -59,13 +51,5 @@ public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
 
     public void setUserId(String userId) {
         this.userId = userId;
-    }
-
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
     }
 }

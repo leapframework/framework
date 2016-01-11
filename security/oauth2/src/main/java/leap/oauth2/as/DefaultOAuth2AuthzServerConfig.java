@@ -58,6 +58,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    cleanupEnabled                  = true;
     protected int        cleanupInterval                 = 60 * 5; //5 minute
     protected boolean    openIDConnectEnabled            = true;
+    protected boolean    singleLoginEnabled              = true;
     protected boolean    singleLogoutEnabled             = true;
     protected boolean    tokenEndpointEnabled            = true;
     protected boolean    authzEndpointEnabled            = true;
@@ -65,18 +66,21 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    logoutEndpointEnabled           = true;
     protected boolean    passwordCredentialsEnabled      = true;
     protected boolean    refreshTokenEnabled             = true;
+    protected boolean    loginTokenEnabled               = true;
     protected boolean    authorizationCodeEnabled        = true;
     protected boolean    implicitGrantEnabled            = true;
     protected boolean    clientCredentialsEnabled        = true;
     protected String     tokenEndpointPath               = DEFAULT_TOKEN_ENDPOINT_PATH;
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
+    protected String     loginTokenEndpointPath          = DEFAULT_LOGINTOKEN_ENDPOINT_PATH;
     protected String     logoutEndpointPath              = DEFAULT_LOGOUT_ENDPOINT_PATH;
     protected String     errorView                       = DEFAULT_ERROR_VIEW;
     protected String     loginView                       = DEFAULT_LOGIN_VIEW;
     protected String     logoutView                      = DEFAULT_LOGOUT_VIEW;
     protected int        defaultAccessTokenExpires       = 3600;                          //1 hour
     protected int        defaultRefreshTokenExpires      = 3600 * 24 * 30;                //30 days
+    protected int        defaultLoginTokenExpires        = 60 * 5;                        //5 minutes
     protected int        defaultAuthorizationCodeExpires = 60 * 5;                        //5 minutes
     protected int        defaultIdTokenExpires           = 60 * 5;                        //5 minutes
     protected int        defaultLoginSessionExpires      = 3600 * 24;                     //24 hours
@@ -118,7 +122,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		return enabled;
 	}
 
-    @Override
+    @Configurable.Property
+    public OAuth2AuthzServerConfigurator setSingleLoginEnabled(boolean enabled) {
+        this.singleLoginEnabled = enabled;
+        return this;
+    }
+
+    @Configurable.Property
     public OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled) {
         this.singleLogoutEnabled = enabled;
         return this;
@@ -157,6 +167,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     }
 
     @Override
+    public boolean isSingleLoginEnabled() {
+        return singleLoginEnabled;
+    }
+
+    @Override
     public boolean isSingleLogoutEnabled() {
         return singleLogoutEnabled;
     }
@@ -191,7 +206,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	    return refreshTokenEnabled;
     }
 
-	@Override
+    @Override
+    public boolean isLoginTokenEnabled() {
+        return loginTokenEnabled;
+    }
+
+    @Override
     public boolean isClientCredentialsEnabled() {
 	    return clientCredentialsEnabled;
     }
@@ -220,7 +240,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public String getTokenInfoEndpointPath() {
         return tokenInfoEndpointPath;
     }
-	
+
+    @Override
+    public String getLoginTokenEndpointPath() {
+        return loginTokenEndpointPath;
+    }
+
     @Override
     public String getLogoutEndpointPath() {
         return logoutEndpointPath;
@@ -249,8 +274,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public int getDefaultRefreshTokenExpires() {
 	    return defaultRefreshTokenExpires;
     }
-	
-	@Override
+
+    @Override
+    public int getDefaultLoginTokenExpires() {
+        return defaultLoginTokenExpires;
+    }
+
+    @Override
     public int getDefaultAuthorizationCodeExpires() {
         return defaultAuthorizationCodeExpires;
     }
@@ -285,6 +315,8 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	@Configurable.Property
 	public OAuth2AuthzServerConfigurator setOpenIDConnectEnabled(boolean enabled) {
 	    this.openIDConnectEnabled = enabled;
+        this.singleLoginEnabled   = enabled;
+        this.singleLogoutEnabled  = enabled;
 	    return this;
 	}
 
@@ -336,6 +368,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		return this;
 	}
 
+    @Configurable.Property
+    public OAuth2AuthzServerConfigurator setLoginTokenEnabled(boolean enabled) {
+        this.loginTokenEnabled = enabled;
+        return this;
+    }
+
 	@Configurable.Property
 	public OAuth2AuthzServerConfigurator setClientCredentialsEnabled(boolean clientCredentialsEnabled) {
 		this.clientCredentialsEnabled = clientCredentialsEnabled;
@@ -357,6 +395,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	@Configurable.Property
     public OAuth2AuthzServerConfigurator setTokenInfoEndpointPath(String path) {
         this.tokenInfoEndpointPath = path;
+        return this;
+    }
+
+    public OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path) {
+        this.loginTokenEndpointPath = path;
         return this;
     }
     
@@ -394,6 +437,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public OAuth2AuthzServerConfigurator setDefaultRefreshTokenExpires(int seconds) {
 		this.defaultRefreshTokenExpires = seconds;
 	    return this;
+    }
+
+    @Configurable.Property
+    public OAuth2AuthzServerConfigurator setDefaultLoginTokenExpires(int seconds) {
+        this.defaultLoginTokenExpires = seconds;
+        return this;
     }
 	
 	@Configurable.Property

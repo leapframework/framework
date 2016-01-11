@@ -39,7 +39,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
 
-public class DefaultTokenAuthenticationManager extends CookieBasedAuthenticationHandler implements TokenAuthenticationManager,PostCreateBean {
+public class DefaultTokenAuthenticationManager extends CookieBasedAuthenticationResolver implements TokenAuthenticationManager,PostCreateBean {
 	
 	private static final Log log = LogFactory.get(DefaultTokenAuthenticationManager.class);
 	
@@ -60,28 +60,38 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 		this.logoutToken = token;
 	}
 
-	@Override
+    @Override
+    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
+        if(!securityConfig.isAuthenticationTokenEnabled()) {
+            return State.CONTINUE;
+        }
+
+        String token = getToken(request);
+
+        if(getLogoutToken().equals(token)){
+            sessionManager.removeAuthentication(request);
+        }
+
+        context.setAuthenticationToken(token);
+
+        return State.CONTINUE;
+    }
+
+    @Override
 	public State resolveAuthentication(Request request, Response response, AuthenticationContext context) throws ServletException, IOException {
 		if(!securityConfig.isAuthenticationTokenEnabled()) {
             return State.CONTINUE;
         }
 
-		String token = getToken(request);
+		String token = context.getAuthenticationToken();
 		if(Strings.isEmpty(token)) {
 			return State.CONTINUE;
 		}
-		
-		Authentication authc = sessionManager.getAuthentication(request);
 
-		boolean logout = token.equals(getLogoutToken());
-		
-		if(logout) {
-			if(null != authc) {
-				sessionManager.removeAuthentication(request);
-			}
-			return State.CONTINUE;
-		}
-		
+        if(getLogoutToken().equals(token)){
+            return State.CONTINUE;
+        }
+
 		TokenCredentials   credentials  = new SimpleTokenCredentials(token);
 		Out<UserPrincipal> outPrincipal = new Out<>();
 		try {
@@ -107,7 +117,8 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 		if(!principal.isAuthenticated()){
 			throw new IllegalStateException("The returned principal must be authenticated");
 		}
-		
+
+        Authentication authc = sessionManager.getAuthentication(request);
 		if(null != authc && !principal.getId().equals(authc.getUserPrincipal().getId())) {
 			sessionManager.removeAuthentication(request);
 		}

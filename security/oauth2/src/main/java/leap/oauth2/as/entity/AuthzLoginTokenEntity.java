@@ -16,12 +16,11 @@
 package leap.oauth2.as.entity;
 
 import leap.oauth2.OAuth2ExpirableEntity;
-import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("oauth2_refresh_token")
-public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
+@Table("oauth2_login_token")
+public class AuthzLoginTokenEntity extends OAuth2ExpirableEntity {
     
     @Id
     @Token
@@ -32,10 +31,6 @@ public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
     
     @UserId
     protected String userId;
-    
-    @Column
-    @Scope
-    protected String scope;
 
     public String getToken() {
         return token;
@@ -61,11 +56,4 @@ public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
         this.userId = userId;
     }
 
-    public String getScope() {
-        return scope;
-    }
-
-    public void setScope(String scope) {
-        this.scope = scope;
-    }
 }

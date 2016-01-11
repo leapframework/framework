@@ -40,7 +40,7 @@ public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler impl
         }
 
         //Notify sso manager.
-        ssoManager.onAuthenticated(request, response, authc);
+        ssoManager.onOAuth2LoginSuccess(request, response, authc);
 
         //Response id token.
         String idToken = idTokenGenerator.generateIdToken(authc);
