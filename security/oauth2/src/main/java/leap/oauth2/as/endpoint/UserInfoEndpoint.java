@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.endpoint.tokeninfo;
+package leap.oauth2.as.endpoint;
 
-import leap.oauth2.OAuth2Params;
-import leap.web.Request;
-import leap.web.Response;
+import leap.web.*;
+import leap.web.route.Routes;
 
-public interface TokenInfoHandler {
+/**
+ * Open ID Connect defined endpoint, see <a href="https://openid.net/specs/openid-connect-basic-1_0.html#UserInfo">UserInfo Endpoint</a>
+ */
+public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,Handler {
+    
+	@Override
+    public void startEndpoint(App app, Routes routes) {
+		//TODO :
+    }
 
-    /**
-     * Returns <code>true</code> if handled.
-     */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
+	@Override
+    public void handle(Request request, Response response) throws Throwable {
 
+		//TODO :
+
+    }
+	
 }

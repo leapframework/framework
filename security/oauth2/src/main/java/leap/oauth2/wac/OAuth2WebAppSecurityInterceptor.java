@@ -49,7 +49,6 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected @Inject SecurityConfigurator  sc;
     protected @Inject ViewSource            vs;
     protected @Inject AuthenticationManager am;
-    protected @Inject LoginManager          lim;
     protected @Inject LogoutManager         lom;
     protected @Inject WacResponseHandler[]  handlers;
     
@@ -186,6 +185,11 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         qs.add(OAuth2Params.CLIENT_ID,     config.getClientId());
         qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
         qs.add(OAuth2Params.LOGOUT_URI,    buildClientLogoutUri(request));
+
+        String login_token = request.getParameter(OAuth2Params.LOGIN_TOKEN);
+        if(!Strings.isEmpty(login_token)) {
+            qs.add(OAuth2Params.LOGIN_TOKEN, Urls.encode(login_token));
+        }
         
         return "redirect:" + Urls.appendQueryString(config.getServerAuthorizationEndpointUrl(), qs.build());
     }
@@ -199,7 +203,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
             url = request.getContextUrl() + config.getClientRedirectUri();
         }
         
-        url = Urls.appendQueryString(url, "oauth2_redirect=1");
+        url = Urls.appendQueryString(url, "oauth2_redirect=1&" + sc.config().getReturnUrlParameterName() + "=" + Urls.encode(request.getUriWithQueryString()));
         
         return url;
     }
@@ -218,7 +222,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected String buildRemoteLogoutUrl(Request request) {
         QueryStringBuilder qs = new QueryStringBuilder();
         
-        qs.add(OAuth2Params.CLIENT_ID,               config.getClientId());
+        qs.add(OAuth2Params.CLIENT_ID,                config.getClientId());
         qs.add(OAuth2Params.POST_LOGOUT_REDIRECT_URI, buildLogoutRedirectUri(request));
         
         return Urls.appendQueryString(config.getServerLogoutEndpointUrl(), qs.build());

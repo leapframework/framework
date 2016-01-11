@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.authc;
+package leap.oauth2.as.token;
 
-import leap.web.Request;
-import leap.web.Response;
-import leap.web.security.cookie.AbstractSecurityCookieBean;
+import leap.core.security.token.TokenCredentials;
 
-public abstract class CookieBasedAuthenticationHandler extends AbstractSecurityCookieBean implements AuthenticationHandler {
+public class LoginTokenCredentials implements TokenCredentials {
 
-	@Override
-    public void onLogoutSuccess(Request request, Response response) {
-		removeCookie(request, response);
+    protected final String token;
+
+    public LoginTokenCredentials(String token) {
+        this.token = token;
     }
-	
+
+    @Override
+    public String getToken() {
+        return token;
+    }
 }

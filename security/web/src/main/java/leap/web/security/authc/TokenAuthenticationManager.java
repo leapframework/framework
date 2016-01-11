@@ -19,7 +19,7 @@ import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
 
-public interface TokenAuthenticationManager extends AuthenticationHandler {
+public interface TokenAuthenticationManager extends AuthenticationResolver {
 
     State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
 

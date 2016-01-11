@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.user;
+package leap.oauth2.as.token;
 
-import leap.core.security.Credentials;
+import leap.lang.expirable.TimeExpirable;
 
-public class UsernameCredentials implements Credentials {
-    
-    protected final String username;
+import java.io.Serializable;
 
-    public UsernameCredentials(String usernmae) {
-        this.username = usernmae;
-    }
+public interface AuthzLoginToken extends TimeExpirable, Serializable {
 
-    public String getUsername() {
-        return username;
-    }
+    /**
+     * The token value.
+     */
+    String getToken();
+
+    /**
+     * The id of client.
+     */
+    String getClientId();
+
+    /**
+     * The id of user.
+     */
+    String getUserId();
 
 }

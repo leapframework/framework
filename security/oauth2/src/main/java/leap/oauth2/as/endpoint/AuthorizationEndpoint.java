@@ -32,6 +32,9 @@ import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
+import leap.oauth2.as.token.AuthzLoginToken;
+import leap.oauth2.as.token.AuthzTokenManager;
+import leap.oauth2.as.token.LoginTokenCredentials;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -50,9 +53,10 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     public static final String CLIENT_ATTRIBUTE  = "oauth2.client";
     public static final String STATE_ATTRIBUTE   = "oauth2.state";
     public static final String PARAMS_ATTRIBUTE  = "oauth2.params";
-	
-    protected @Inject ViewSource  viewSource;
-    protected @Inject UserManager um;
+
+    protected @Inject AuthzTokenManager tokenManager;
+    protected @Inject ViewSource        viewSource;
+    protected @Inject UserManager       um;
     
     protected String loginUrl;
     
@@ -76,7 +80,30 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
 	protected String getEndpointPath() {
 	    return config.getAuthzEndpointPath();
 	}
-	
+
+    @Override
+    public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        if(config.isLoginTokenEnabled()) {
+            String loginToken = request.getParameter(OAuth2Params.LOGIN_TOKEN);
+            if(!Strings.isEmpty(loginToken)) {
+
+                log.debug("Found login token parameter : {}", loginToken);
+                AuthzLoginToken token = tokenManager.consumeLoginToken(loginToken);
+                if(null == token) {
+                    log.debug("The login token expired or invalid, ignore it");
+                    return State.CONTINUE;
+                }
+
+                log.debug("Create authentication for user {} by login token", token.getUserId());
+                Result<Authentication> authc = um.createAuthenticationByUserId(token.getUserId());
+                if(authc.isValid()) {
+                    context.setAuthentication(authc.get());
+                }
+            }
+        }
+        return State.CONTINUE;
+    }
+
     @Override
     public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
         if(!request.getPath().equals(getEndpointPath())) {
@@ -138,7 +165,10 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         OAuth2Params params = new QueryOAuth2Params(qs);
         ResponseTypeHandler handler = getResponseTypeHandler(request, response, params);
-        
+        if(null == handler) {
+            return State.INTERCEPTED;
+        }
+
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
         if(result.isError()) {
             return State.INTERCEPTED;
@@ -172,6 +202,9 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             
             params = new QueryOAuth2Params(qs);
             handler = getResponseTypeHandler(request, response, params);
+            if(null == handler){
+                return State.INTERCEPTED;
+            }
             
             Result<AuthzClient> result = handler.validateRequest(request, response, params);
             if(result.isError()) {

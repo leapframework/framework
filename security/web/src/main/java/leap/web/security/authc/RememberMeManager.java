@@ -18,7 +18,7 @@ package leap.web.security.authc;
 import leap.web.Request;
 import leap.web.Response;
 
-public interface RememberMeManager extends AuthenticationHandler {
+public interface RememberMeManager extends AuthenticationResolver {
 	
 	void forgetRememberedUser(Request request,Response response);
 

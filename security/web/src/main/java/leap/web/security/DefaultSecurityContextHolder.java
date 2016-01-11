@@ -19,6 +19,8 @@ import leap.core.security.Credentials;
 import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
@@ -26,6 +28,8 @@ import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
+
+	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
 	protected final SecurityConfig config;
 	protected final Request        request;
@@ -61,7 +65,8 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	}
 
 	@Override
-	public void setAuthentcationToken(String token) {
+	public void setAuthenticationToken(String token) {
+        log.debug("Set authentication token : {}", token);
 		this.authenticationToken = token;
 	}
 
@@ -71,6 +76,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     }
 
     public void setAuthentication(Authentication authentication) {
+        log.debug("Set authentication : {}", authentication);
         this.authentication = authentication;
     }
 
@@ -119,8 +125,8 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		}
 
 		@Override
-		public void setAuthentcationToken(String token) {
-			DefaultSecurityContextHolder.this.setAuthentcationToken(token);
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
 		}
 
 		@Override
@@ -204,8 +210,8 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		}
 
 		@Override
-		public void setAuthentcationToken(String token) {
-			DefaultSecurityContextHolder.this.setAuthentcationToken(token);
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
 		}
 
 		@Override

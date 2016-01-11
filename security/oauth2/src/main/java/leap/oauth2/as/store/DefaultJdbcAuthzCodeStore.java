@@ -61,24 +61,21 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
     }
 
     @Override
-    public AuthzCode removeAuthorizationCode(String code) {
-        AuthzCode authzCode = loadAuthorizationCode(code);
-        if(null == authzCode) {
-            return null;
-        }
-        
-        if(deleteAuthorizationCode(code)) {
-            return authzCode;
-        }else{
-            return null;    
-        }
+    public void removeAuthorizationCode(String code) {
+        deleteAuthorizationCode(code);
     }
 
     @Override
-    public void removeAuthorizationCode(AuthzCode code) {
-        deleteAuthorizationCode(code.getCode());
+    public AuthzCode removeAndLoadAuthorizationCode(String code) {
+        AuthzCode authzCode = loadAuthorizationCode(code);
+
+        if(null != authzCode) {
+            removeAuthorizationCode(code);
+        }
+
+        return authzCode;
     }
-    
+
     @Override
     public void cleanupAuthorizationCodes() {
         int result;

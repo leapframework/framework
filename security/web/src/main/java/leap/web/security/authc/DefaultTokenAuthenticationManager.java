@@ -39,7 +39,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import java.io.IOException;
 
-public class DefaultTokenAuthenticationManager extends CookieBasedAuthenticationHandler implements TokenAuthenticationManager,PostCreateBean {
+public class DefaultTokenAuthenticationManager extends CookieBasedAuthenticationResolver implements TokenAuthenticationManager,PostCreateBean {
 	
 	private static final Log log = LogFactory.get(DefaultTokenAuthenticationManager.class);
 	
@@ -72,7 +72,7 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
             sessionManager.removeAuthentication(request);
         }
 
-        context.setAuthentcationToken(token);
+        context.setAuthenticationToken(token);
 
         return State.CONTINUE;
     }

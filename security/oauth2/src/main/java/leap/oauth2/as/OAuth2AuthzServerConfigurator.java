@@ -23,14 +23,16 @@ import leap.oauth2.as.store.AuthzInMemoryStore;
 
 public interface OAuth2AuthzServerConfigurator {
 	
-    String DEFAULT_AUTHZ_ENDPOINT_PATH     = "/oauth2/authorize";
-    String DEFAULT_TOKEN_ENDPOINT_PATH     = "/oauth2/token";
-    String DEFAULT_TOKENINFO_ENDPOINT_PATH = "/oauth2/tokeninfo";
-    String DEFAULT_LOGOUT_ENDPOINT_PATH    = "/oauth2/logout";
+    String DEFAULT_AUTHZ_ENDPOINT_PATH      = "/oauth2/authorize";
+    String DEFAULT_TOKEN_ENDPOINT_PATH      = "/oauth2/token";
+    String DEFAULT_TOKENINFO_ENDPOINT_PATH  = "/oauth2/tokeninfo";
+    String DEFAULT_LOGINTOKEN_ENDPOINT_PATH = "/oauth2/logintoken";
+    String DEFAULT_LOGOUT_ENDPOINT_PATH     = "/oauth2/logout";
     
     String DEFAULT_ERROR_VIEW              = "/oauth2/error";
     String DEFAULT_LOGIN_VIEW              = "/oauth2/login";
     String DEFAULT_LOGOUT_VIEW             = "/oauth2/logout";
+
 	/**
 	 * Returtns the {@link OAuth2AuthzServerConfig}.
 	 */
@@ -53,6 +55,13 @@ public interface OAuth2AuthzServerConfigurator {
 	 */
 	default OAuth2AuthzServerConfigurator enableOpenIDConnect() {
 	    return setOpenIDConnectEnabled(true);
+	}
+
+	/**
+	 * Disables Open ID Connect (login & logout).
+     */
+	default OAuth2AuthzServerConfigurator disableOpenIDConnect() {
+		return setOpenIDConnectEnabled(false);
 	}
 	
 	/**
@@ -82,10 +91,6 @@ public interface OAuth2AuthzServerConfigurator {
 
 	OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled);
 	
-	OAuth2AuthzServerConfigurator setAuthzEndpointEnabled(boolean enabled);
-	
-	OAuth2AuthzServerConfigurator setTokenEndpointEnabled(boolean enabled);
-	
 	OAuth2AuthzServerConfigurator setTokenInfoEndpointEnabled(boolean enabled);
 	
 	OAuth2AuthzServerConfigurator setLogoutEndpointEnabled(boolean enabled);
@@ -93,6 +98,8 @@ public interface OAuth2AuthzServerConfigurator {
 	OAuth2AuthzServerConfigurator setPasswordCredentialsEnabled(boolean eanbled);
 	
 	OAuth2AuthzServerConfigurator setRefreshTokenEnabled(boolean enabled);
+
+    OAuth2AuthzServerConfigurator setLoginTokenEnabled(boolean enabled);
 	
 	OAuth2AuthzServerConfigurator setClientCredentialsEnabled(boolean enabled);
 	
@@ -105,6 +112,8 @@ public interface OAuth2AuthzServerConfigurator {
 	OAuth2AuthzServerConfigurator setAuthzEndpointPath(String path);
 	
 	OAuth2AuthzServerConfigurator setTokenInfoEndpointPath(String path);
+
+    OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path);
 	
 	OAuth2AuthzServerConfigurator setLogoutEndpointPath(String path);
 	

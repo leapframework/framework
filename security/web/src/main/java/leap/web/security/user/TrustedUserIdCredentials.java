@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.as.endpoint.tokeninfo;
+package leap.web.security.user;
 
-import leap.oauth2.OAuth2Params;
-import leap.web.Request;
-import leap.web.Response;
+import leap.core.security.TrustedCredentials;
 
-public interface TokenInfoHandler {
+public class TrustedUserIdCredentials implements TrustedCredentials {
 
-    /**
-     * Returns <code>true</code> if handled.
-     */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
+    protected final String userId;
+
+    public TrustedUserIdCredentials(String userId) {
+        this.userId = userId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
 
 }
