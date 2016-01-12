@@ -87,14 +87,14 @@ public class BundledAsset extends TextAsset {
             try {
                 log.info("Bunlde asset '{}' reloaded", path);
                 Asset newBundleAsset = bundler.bundle(bundle);
-                this.resource = newBundleAsset.getResource();
-                this.debugResource = newBundleAsset.getDebugResource();
                 if(!resource.isExpired()){
                 	resource.expire();
                 }
                 if(!debugResource.isExpired()){
                 	 debugResource.expire();
                 }
+                this.resource = newBundleAsset.getResource();
+                this.debugResource = newBundleAsset.getDebugResource();
             } catch (IOException e) {
                 log.error("Error realoding bundle asset : {}", path, e);
             }
