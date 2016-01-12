@@ -42,7 +42,7 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
     
     @Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
-        if(config.isEnabled() && config.isLogoutEndpointEnabled()) {
+        if(config.isEnabled() && config.isSingleLoginEnabled()) {
             sc.interceptors().add(this);
             
             if(!Strings.isEmpty(config.getLogoutView())) {

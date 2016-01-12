@@ -45,7 +45,10 @@ public interface OAuth2AuthzServerConfig {
 	boolean isCleanupEnabled();
 	
 	/**
-	 * Returns the interval in seconds for cleanup expired tokens, authorization codes, etc. 
+	 * Returns the interval in seconds for cleanup expired tokens, authorization codes, etc.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_CLEANUP_INTERVAL}.
 	 */
 	int getCleanupInterval();
 	
@@ -56,14 +59,6 @@ public interface OAuth2AuthzServerConfig {
 	 * Default is <code>true</code>.
 	 */
 	boolean isHttpsOnly();
-	
-	/**
-	 * Returns <code>true</code> if the Open ID Connect is enabled.
-	 * 
-	 * <p>
-	 * Default is <code>true</code>.
-	 */
-	boolean isOpenIDConnectEnabled();
 
 	/**
 	 * Returns <code></code> if single login enabled.
@@ -81,77 +76,124 @@ public interface OAuth2AuthzServerConfig {
      */
 	boolean isSingleLogoutEnabled();
 
-	/**
-	 * Returns <code>true</code> if oauth2 token endpoint is enabled.
-	 *
-	 * <p/>
-	 * Default is enabled, but only valid if {@link #isEnabled()} returns <code>true</code>.
+    /**
+     * Returns <code>true</code> if login token (endpoint) enabled.
+     *
+     * <p/>
+     * Deault is <code>true</code>.
      */
-	boolean isTokenEndpointEnabled();
-
-	/**
-	 * Returns <code>true</code> if oauth2 authorization endpoint is enabled.
-	 *
-	 * <p/>
-	 * Default is enabled, but only valid if {@link #isEnabled()} returns <code>true</code>.
-	 */
-	boolean isAuthzEndpointEnabled();
-
-	/**
-	 * Returns <code>true</code> if oauth2 token info endpoint is enabled.
-	 *
-	 * <p/>
-	 * The token info endpoint is not a standard endpoint in oauth2,
-	 *
-	 * see <a href="https://developers.google.com/identity/protocols/OAuth2UserAgent#validatetoken">Google OAuth2.0 protocols</a> for details.
-	 *
-	 * <p/>
-	 * Default is enabled, but only valid if {@link #isEnabled()} returns <code>true</code>.
-	 */
-	boolean isTokenInfoEndpointEnabled();
-
-	/**
-	 * Returns <code>true</code> if oauth2 token info endpoint is enabled.
-	 *
-	 * <p/>
-	 * The logout endpoint is an endpoint defined in open id connect.
-	 *
-	 * <p/>
-	 * Default is enabled, but only valid if both {@link #isEnabled()} and {@link #isOpenIDConnectEnabled()} returns <code>true</code>.
-	 */
-	boolean isLogoutEndpointEnabled();
-
-	boolean isPasswordCredentialsEnabled();
-	
-	boolean isRefreshTokenEnabled();
-
 	boolean isLoginTokenEnabled();
-	
+
+    /**
+     * Returns <code>true</code> if user info (endpoint) enabled.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+	boolean isUserInfoEnabled();
+
+    /**
+     * Returns <code>true</code> if client credentials grant type is allowed.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
 	boolean isClientCredentialsEnabled();
-	
+
+    /**
+     * Returns <code>true</code> if password credentials grant type is allowed.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+    boolean isPasswordCredentialsEnabled();
+
+    /**
+     * Returns <code>true</code> if authorization code flow enabled.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
 	boolean isAuthorizationCodeEnabled();
-	
+
+    /**
+     * Returns <code>true</code> if implicit flow enabled.
+     *
+     * <p/>
+     * Default is <code>true</code>
+     */
 	boolean isImplicitGrantEnabled();
-	
+
+    /**
+     * Returns the path of authorization endpoint.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_AUTHZ_ENDPOINT_PATH}.
+     */
+    String getAuthzEndpointPath();
+
+    /**
+     * Returns the path of token endpoint.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_TOKEN_ENDPOINT_PATH}.
+     */
 	String getTokenEndpointPath();
-	
-	String getAuthzEndpointPath();
-	
+
+    /**
+     * Returns the path of tokeninfo endpoint.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_TOKENINFO_ENDPOINT_PATH}.
+     */
 	String getTokenInfoEndpointPath();
 
+    /**
+     * Returns the path of logintoken endpoint.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGINTOKEN_ENDPOINT_PATH}.
+     */
 	String getLoginTokenEndpointPath();
-	
-	String getLogoutEndpointPath();
-	
+
+    /**
+     * Returns the path of logout endopint.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGOUT_ENDPOINT_PATH}.
+     */
+    String getLogoutEndpointPath();
+
+    /**
+     * Returns the path of userinfo endpoint.
+     *
+     * <p/>
+     *
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_USERINFO_ENDPOINT_PATH}.
+     */
+    String getUserInfoEndpointPath();
+
+    /**
+     * Retruns the error view for rendering oauth2 request error.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_ERROR_VIEW}.
+     */
 	String getErrorView();
 	
 	/**
 	 * Returns the login view or <code>null</code> if use default login flow.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGIN_VIEW}.
 	 */
 	String getLoginView();
 	
 	/**
 	 * Returns the logout view or <code>null</code> use default.
+     *
+     * <p/>
+     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGOUT_VIEW}.
 	 */
 	String getLogoutView();
 	
