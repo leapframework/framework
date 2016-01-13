@@ -22,9 +22,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetResource;
 import leap.lang.Strings;
 import leap.lang.io.Files;
 import leap.lang.io.IO;

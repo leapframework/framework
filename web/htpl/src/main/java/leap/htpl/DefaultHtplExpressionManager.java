@@ -29,7 +29,7 @@ import leap.core.annotation.M;
 import leap.core.annotation.N;
 import leap.core.el.EL;
 import leap.core.el.ExpressionLanguage;
-import leap.core.web.assets.AssetConfig;
+import leap.web.assets.AssetConfig;
 import leap.htpl.escaping.EscapableExpression;
 import leap.htpl.expression.HtplExpression;
 import leap.htpl.expression.HtplExpression.Parameters;

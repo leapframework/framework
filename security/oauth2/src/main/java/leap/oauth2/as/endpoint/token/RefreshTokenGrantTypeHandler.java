@@ -53,11 +53,6 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 	
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) {
-		if(!config.isRefreshTokenEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
-			return;
-		}
-		
 		String refreshToken = params.getRefreshToken();
 		if(Strings.isEmpty(refreshToken)) {
 			OAuth2Errors.invalidRequest(response, "refresh_token required");

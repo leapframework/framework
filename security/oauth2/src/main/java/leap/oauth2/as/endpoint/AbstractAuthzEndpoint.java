@@ -83,7 +83,7 @@ public abstract class AbstractAuthzEndpoint implements Endpoint {
     }
     
     protected void redirectToken(Request request, Response response, OAuth2Params params, AuthzAccessToken token) {
-        Map<String, String> query = new LinkedHashMap<String, String>(5);
+        Map<String, String> query = new LinkedHashMap<>(5);
         query.put("access_token", token.getToken());
         query.put("token_type", "bearer"); //TODO : supports other token type.
         

@@ -133,4 +133,11 @@
     <bean type="leap.oauth2.as.endpoint.logintoken.LoginTokenHandler"
           class="leap.oauth2.as.endpoint.logintoken.DefaultLoginTokenHandler"/>
 
+	<!-- userinfo endpoint -->
+	<bean type="leap.web.Endpoint"
+		  class="leap.oauth2.as.endpoint.UserInfoEndpoint"/>
+
+	<!-- userinfo endpoint : handlers -->
+	<bean type="leap.oauth2.as.endpoint.userinfo.UserInfoHandler"
+		  class="leap.oauth2.as.endpoint.userinfo.DefaultUserInfoHandler"/>
 </beans>

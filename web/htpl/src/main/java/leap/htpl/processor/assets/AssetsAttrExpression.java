@@ -17,8 +17,8 @@ package leap.htpl.processor.assets;
 
 import java.util.Map;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetSource;
 import leap.htpl.HtplContext;
 import leap.htpl.ast.Attr;
 import leap.htpl.expression.AttrExpression;

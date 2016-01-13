@@ -43,7 +43,7 @@ public class HomeControllerTest extends WebTestCase {
 		
 		get("/index").assertContentEquals("<h1>Hello world!</h1>");
 		get("/index.do").assertContentEquals("<h1>Hello world!</h1>");
-		//TODO : get("/index;jsessionid=x").assertContentEquals("<h1>Hello world!</h1>");
+		get("/index;jsessionid=x").assertContentEquals("<h1>Hello world!</h1>");
 	}
 
 	@Test

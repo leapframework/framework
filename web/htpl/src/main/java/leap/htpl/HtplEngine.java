@@ -18,8 +18,8 @@ package leap.htpl;
 import java.util.Locale;
 
 import leap.core.BeanFactory;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetManager;
+import leap.web.assets.AssetSource;
 import leap.htpl.ast.Attr;
 import leap.htpl.ast.Element;
 import leap.htpl.escaping.EscapeType;

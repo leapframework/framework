@@ -6,9 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetManager;
-
 /*
  * Copyright 2015 the original author or authors.
  *

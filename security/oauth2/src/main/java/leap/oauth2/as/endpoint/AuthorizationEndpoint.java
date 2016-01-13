@@ -62,25 +62,15 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     
 	@Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
-	    if(config.isEnabled() && isEndpointEnabled()) {
-	        if(isEndpointEnabled()) {
-	            sc.interceptors().add(this);
-	        }
-	        
+	    if(config.isEnabled()) {
+            sc.interceptors().add(this);
+
 	        if (!Strings.isEmpty(config.getLoginView()) && null != viewSource.getView(config.getLoginView(), null)) {
 	            loginUrl = "view:" + config.getLoginView();
 	        }
 	    }
     }
 	
-	protected boolean isEndpointEnabled() {
-	    return config.isAuthzEndpointEnabled();
-	}
-	
-	protected String getEndpointPath() {
-	    return config.getAuthzEndpointPath();
-	}
-
     @Override
     public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
         if(config.isLoginTokenEnabled()) {
@@ -106,7 +96,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
 
     @Override
     public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        if(!request.getPath().equals(getEndpointPath())) {
+        if(!request.getPath().equals(config.getAuthzEndpointPath())) {
             return State.CONTINUE;
         }
         

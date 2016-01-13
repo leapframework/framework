@@ -17,9 +17,6 @@ package leap.web.assets;
 
 import java.io.IOException;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetBundle;
-
 public interface AssetBundler {
 
     /**

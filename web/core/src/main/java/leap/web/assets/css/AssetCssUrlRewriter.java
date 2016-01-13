@@ -1,7 +1,7 @@
 package leap.web.assets.css;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetManager;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetManager;
 import leap.lang.css.CssUrlRewriter;
 
 public class AssetCssUrlRewriter extends CssUrlRewriter {

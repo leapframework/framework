@@ -56,17 +56,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    enabled                         = false;
     protected boolean    httpsOnly                       = true;
     protected boolean    cleanupEnabled                  = true;
-    protected int        cleanupInterval                 = 60 * 5; //5 minute
-    protected boolean    openIDConnectEnabled            = true;
+    protected int        cleanupInterval                 = DEFAULT_CLEANUP_INTERVAL;
     protected boolean    singleLoginEnabled              = true;
     protected boolean    singleLogoutEnabled             = true;
-    protected boolean    tokenEndpointEnabled            = true;
-    protected boolean    authzEndpointEnabled            = true;
-    protected boolean    tokenInfoEndpointEnabled        = true;
-    protected boolean    logoutEndpointEnabled           = true;
     protected boolean    passwordCredentialsEnabled      = true;
-    protected boolean    refreshTokenEnabled             = true;
     protected boolean    loginTokenEnabled               = true;
+    protected boolean    userInfoEnabled                 = true;
     protected boolean    authorizationCodeEnabled        = true;
     protected boolean    implicitGrantEnabled            = true;
     protected boolean    clientCredentialsEnabled        = true;
@@ -74,16 +69,17 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
     protected String     loginTokenEndpointPath          = DEFAULT_LOGINTOKEN_ENDPOINT_PATH;
+    protected String     userInfoEndpointPath            = DEFAULT_USERINFO_ENDPOINT_PATH;
     protected String     logoutEndpointPath              = DEFAULT_LOGOUT_ENDPOINT_PATH;
     protected String     errorView                       = DEFAULT_ERROR_VIEW;
     protected String     loginView                       = DEFAULT_LOGIN_VIEW;
     protected String     logoutView                      = DEFAULT_LOGOUT_VIEW;
-    protected int        defaultAccessTokenExpires       = 3600;                          //1 hour
-    protected int        defaultRefreshTokenExpires      = 3600 * 24 * 30;                //30 days
-    protected int        defaultLoginTokenExpires        = 60 * 5;                        //5 minutes
-    protected int        defaultAuthorizationCodeExpires = 60 * 5;                        //5 minutes
-    protected int        defaultIdTokenExpires           = 60 * 5;                        //5 minutes
-    protected int        defaultLoginSessionExpires      = 3600 * 24;                     //24 hours
+    protected int        defaultAccessTokenExpires       = DEFAULT_ACCESS_TOKEN_EXPIRES;
+    protected int        defaultRefreshTokenExpires      = DEFAULT_REFRESH_TOKEN_EXPIRES;
+    protected int        defaultLoginTokenExpires        = DEFAULT_LOGIN_TOKEN_EXPIRES;
+    protected int        defaultAuthorizationCodeExpires = DEFAULT_AUTHORIZATION_CODE_EXPIRES;
+    protected int        defaultIdTokenExpires           = DEFAULT_ID_TOKEN_EXPIRES;
+    protected int        defaultLoginSessionExpires      = DEFAULT_LOGIN_SESSION_EXPIRES;
     protected String     jdbcDataSourceName              = null;
     protected PrivateKey privateKey                      = null;
 
@@ -162,11 +158,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     }
 
     @Override
-    public boolean isOpenIDConnectEnabled() {
-        return openIDConnectEnabled;
-    }
-
-    @Override
     public boolean isSingleLoginEnabled() {
         return singleLoginEnabled;
     }
@@ -177,38 +168,18 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     }
 
     @Override
-	public boolean isTokenEndpointEnabled() {
-		return tokenEndpointEnabled;
-	}
-
-	@Override
-	public boolean isAuthzEndpointEnabled() {
-		return authzEndpointEnabled;
-	}
-	
-    @Override
-    public boolean isTokenInfoEndpointEnabled() {
-        return tokenInfoEndpointEnabled;
-    }
-    
-	@Override
-    public boolean isLogoutEndpointEnabled() {
-        return logoutEndpointEnabled;
-    }
-
-    @Override
     public boolean isPasswordCredentialsEnabled() {
 	    return passwordCredentialsEnabled;
-    }
-
-	@Override
-    public boolean isRefreshTokenEnabled() {
-	    return refreshTokenEnabled;
     }
 
     @Override
     public boolean isLoginTokenEnabled() {
         return loginTokenEnabled;
+    }
+
+    @Override
+    public boolean isUserInfoEnabled() {
+        return userInfoEnabled;
     }
 
     @Override
@@ -244,6 +215,10 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     @Override
     public String getLoginTokenEndpointPath() {
         return loginTokenEndpointPath;
+    }
+
+    public String getUserInfoEndpointPath() {
+        return userInfoEndpointPath;
     }
 
     @Override
@@ -312,38 +287,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	    return this;
 	}
 	
-	@Configurable.Property
-	public OAuth2AuthzServerConfigurator setOpenIDConnectEnabled(boolean enabled) {
-	    this.openIDConnectEnabled = enabled;
-        this.singleLoginEnabled   = enabled;
-        this.singleLogoutEnabled  = enabled;
-	    return this;
-	}
-
-	@Configurable.Property
-	public OAuth2AuthzServerConfigurator setAuthzEndpointEnabled(boolean enabled) {
-		this.authzEndpointEnabled = enabled;
-		return this;
-	}
-	
-	@Configurable.Property
-	public OAuth2AuthzServerConfigurator setTokenEndpointEnabled(boolean enabled) {
-		this.tokenEndpointEnabled = enabled;
-		return this;
-	}
-
-	@Configurable.Property
-    public OAuth2AuthzServerConfigurator setTokenInfoEndpointEnabled(boolean enabled) {
-        this.tokenInfoEndpointEnabled = enabled;
-        return this;
-    }
-    
-    @Configurable.Property
-    public OAuth2AuthzServerConfigurator setLogoutEndpointEnabled(boolean enabled) {
-        this.logoutEndpointEnabled = enabled;
-        return this;
-    }
-
     @Configurable.Property
 	public OAuth2AuthzServerConfigurator setAuthorizationCodeEnabled(boolean authorazationCodeEnabled) {
 		this.authorizationCodeEnabled = authorazationCodeEnabled;
@@ -362,15 +305,15 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		return this;
 	}
 
-	@Configurable.Property
-	public OAuth2AuthzServerConfigurator setRefreshTokenEnabled(boolean refreshTokenEnabled) {
-		this.refreshTokenEnabled = refreshTokenEnabled;
-		return this;
-	}
-
     @Configurable.Property
     public OAuth2AuthzServerConfigurator setLoginTokenEnabled(boolean enabled) {
         this.loginTokenEnabled = enabled;
+        return this;
+    }
+
+    @Configurable.Property
+    public OAuth2AuthzServerConfig setUserInfoEnabled(boolean enabled) {
+        this.userInfoEnabled = enabled;
         return this;
     }
 
@@ -398,8 +341,15 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return this;
     }
 
+    @Configurable.Property
     public OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path) {
         this.loginTokenEndpointPath = path;
+        return this;
+    }
+
+    @Configurable.Property
+    public OAuth2AuthzServerConfig setUserInfoEndpointPath(String path) {
+        this.userInfoEndpointPath = path;
         return this;
     }
     
@@ -482,7 +432,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return null;
     }
 
-    @Override
     public OAuth2AuthzServerConfigurator setClientStore(AuthzClientStore store) {
         Args.notNull(store);
         this.clientStore = store;
@@ -533,13 +482,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return ssoStore;
     }
 
-    @Override
     public OAuth2AuthzServerConfigurator setPrivateKey(PrivateKey privateKey) {
         this.privateKey = privateKey;
         return this;
     }
 
-    @Override
     public OAuth2AuthzServerConfigurator setPrivateKey(String privateKey) {
         if(Strings.isEmpty(privateKey)) {
             this.privateKey = null;
@@ -578,10 +525,10 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
                 }
             }
             
-            if(cleanupEnabled) {
+            if(isCleanupEnabled()) {
                 schedulerManager
                     .newFixedThreadPoolScheduler("auth-cleanup")
-                    .scheduleAtFixedRate(() -> cleanup(), cleanupInterval * 1000l);
+                    .scheduleAtFixedRate(() -> cleanup(), getCleanupInterval() * 1000l);
             }
         }
     }

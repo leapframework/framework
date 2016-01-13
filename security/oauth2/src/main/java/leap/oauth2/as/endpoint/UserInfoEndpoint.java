@@ -15,24 +15,78 @@
  */
 package leap.oauth2.as.endpoint;
 
+import leap.core.annotation.Inject;
+import leap.oauth2.OAuth2Errors;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.endpoint.userinfo.UserInfoHandler;
+import leap.oauth2.as.token.AuthzAccessToken;
+import leap.oauth2.as.token.AuthzTokenManager;
+import leap.oauth2.rs.token.ResAccessToken;
+import leap.oauth2.rs.token.ResAccessTokenExtractor;
 import leap.web.*;
 import leap.web.route.Routes;
+import leap.web.security.user.UserDetails;
+import leap.web.security.user.UserManager;
 
 /**
  * Open ID Connect defined endpoint, see <a href="https://openid.net/specs/openid-connect-basic-1_0.html#UserInfo">UserInfo Endpoint</a>
  */
 public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,Handler {
-    
+
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject ResAccessTokenExtractor tokenExtractor;
+    protected @Inject AuthzTokenManager       tokenManager;
+    protected @Inject UserManager             userManager;
+    protected @Inject UserInfoHandler[]       handlers;
+
 	@Override
     public void startEndpoint(App app, Routes routes) {
-		//TODO :
+        if(config.isEnabled() && config.isUserInfoEnabled()) {
+            sc.ignore(config.getUserInfoEndpointPath());
+
+            routes.create()
+                  .get(config.getUserInfoEndpointPath(), this)
+                  .enableCors()
+                  .apply();
+        }
     }
 
 	@Override
     public void handle(Request request, Response response) throws Throwable {
+        ResAccessToken token = tokenExtractor.extractTokenFromRequest(request);
+        if(null == token) {
+            OAuth2Errors.invalidRequest(response, "Invalid access token");
+            return;
+        }
 
-		//TODO :
+        AuthzAccessToken at = tokenManager.loadAccessToken(token.getToken());
+        if(null == at) {
+            OAuth2Errors.invalidToken(response, "Invalid access token");
+            return;
+        }
 
+        if(at.isClientOnly()) {
+            OAuth2Errors.invalidToken(response, "Invalid access token");
+            return;
+        }
+
+        String userid = at.getUserId();
+        UserDetails userDetails = userManager.loadUserDetails(userid);
+        if(null == userDetails) {
+            OAuth2Errors.invalidToken(response, "User not found");
+            return;
+        }
+
+        if(!userDetails.isEnabled()) {
+            OAuth2Errors.invalidToken(response, "User disabled");
+            return;
+        }
+
+        for(UserInfoHandler h : handlers) {
+            if(h.handleUserInfoResponse(request, response, at, userDetails)) {
+                return ;
+            }
+        }
     }
 	
 }

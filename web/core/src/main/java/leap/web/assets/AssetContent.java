@@ -13,23 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.web.assets;
+package leap.web.assets;
 
-public interface AssetBundle {
-    
-    /**
-     * Returns the full asset path of bundle.
-     */
-    String getPath();
-    
-    /**
-     * Returns the asset type of bundle.
-     */
-    AssetType getType();
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
-    /**
-     * Returns the assets of bundle. 
-     */
-    Asset[] getAssets();
+public interface AssetContent {
     
+    /**
+     * Returns the resource input stream.
+     */
+    InputStream getInputStream() throws IOException ;
+    
+    /**
+     * Returns the resource reader.
+     */
+    Reader getReader() throws IOException ;
+    
+    /**
+     * Returns the last modified time of this resoruce.
+     */
+    long getLastModified();
+    
+    /**
+     * Returns the size of this resource.
+     */
+    long getContentLength();
+
 }

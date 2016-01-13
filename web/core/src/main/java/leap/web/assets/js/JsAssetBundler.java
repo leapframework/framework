@@ -15,7 +15,7 @@
  */
 package leap.web.assets.js;
 
-import leap.core.web.assets.AssetBundle;
+import leap.web.assets.AssetBundle;
 import leap.web.assets.AbstractAssetBundler;
 import leap.web.assets.AssetBundler;
 

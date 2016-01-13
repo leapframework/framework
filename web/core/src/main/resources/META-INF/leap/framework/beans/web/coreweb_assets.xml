@@ -2,10 +2,10 @@
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
     <!-- Core -->
-    <bean type="leap.core.web.assets.AssetSource"   class="leap.web.assets.DefaultAssetSource"   primary="true"/>
-    <bean type="leap.core.web.assets.AssetManager"  class="leap.web.assets.DefaultAssetManager"  primary="true"/>
-	<bean type="leap.core.web.assets.AssetConfig"   class="leap.web.assets.DefaultAssetConfig"   primary="true"/>
-	<bean type="leap.core.web.assets.AssetStrategy" class="leap.web.assets.DefaultAssetStrategy" primary="true"/>	
+    <bean type="leap.web.assets.AssetSource" class="leap.web.assets.DefaultAssetSource" primary="true"/>
+    <bean type="leap.web.assets.AssetManager" class="leap.web.assets.DefaultAssetManager" primary="true"/>
+	<bean type="leap.web.assets.AssetConfig" class="leap.web.assets.DefaultAssetConfig" primary="true"/>
+	<bean type="leap.web.assets.AssetStrategy" class="leap.web.assets.DefaultAssetStrategy" primary="true"/>
 	
 	<!-- Assets cache -->
 	<bean name="assets" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache"/>
