@@ -67,28 +67,41 @@ public class DefaultHtplExpressionManager implements HtplExpressionManager {
         	throw new ExpressionException("Error parsing expression '" + text + "' : " + e.getMessage() , e);
         }
     }
+
+	public Expression tryParseCompositeExpression(HtplEngine engine, String text) {
+        final List<Object> nodes = new ArrayList<>();
+
+        AtomicBoolean hasExpression = new AtomicBoolean(false);
+
+        doParseCompositeExpression(engine, text, new ParseHandler() {
+            @Override
+            public void textParsed(String text) {
+                nodes.add(text);
+            }
+
+            @Override
+            public void exprParsed(Expression expr) {
+                nodes.add(expr);
+                hasExpression.set(true);
+            }
+        });
+
+        if(!hasExpression.get()) {
+            return null;
+        }else if(nodes.size() == 1 && nodes.get(0) instanceof Expression){
+            return (Expression)nodes.get(0);
+        }else{
+            return new CompositeExpression(text, nodes.toArray());
+        }
+    }
     
 	@Override
     public Expression parseCompositeExpression(HtplEngine engine, String text) {
-		final List<Object> nodes = new ArrayList<Object>();
-		
-		doParseCompositeExpression(engine, text, new ParseHandler() {
-			@Override
-			public void textParsed(String text) {
-				nodes.add(text);
-			}
-			
-			@Override
-			public void exprParsed(Expression expr) {
-				nodes.add(expr);
-			}
-		});
-		
-		if(nodes.size() == 1 && nodes.get(0) instanceof Expression){
-			return (Expression)nodes.get(0);
-		}else{
-			return new CompositeExpression(text, nodes.toArray());	
-		}
+        Expression expr = tryParseCompositeExpression(engine, text);
+        if(null == expr) {
+            expr = new ValuedExpression<>(text);
+        }
+        return expr;
     }
 	
 	@Override
