@@ -43,7 +43,7 @@ import leap.core.Session;
 import leap.core.i18n.MessageSource;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Exceptions;

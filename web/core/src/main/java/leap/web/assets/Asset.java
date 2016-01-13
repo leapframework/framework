@@ -13,21 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.web.assets;
+package leap.web.assets;
 
-public interface AssetStrategy {
-	
-	int getFingerprintLength();
 
-	String getFingerprint(byte[] content);
+public interface Asset {
+	
+	String getPath();
+	
+	String getContentType();
+	
+	AssetResource getResource();
+	
+	AssetResource getDebugResource();
+	
+	long getLoadedAt();
+	
+	boolean isText();
 
-	String getPathWithFingerprint(String path,String fingerprint);
+	boolean reloadable();
 	
-	String getPathWithoutFingerprint(String path);
-	
+	boolean reload();
+
 	/**
-	 * Returns an array contains the path and fingerprint or <code>null</code> if the path is no fingerprint.
-	 */
-	String[] splitPathAndFingerprint(String path);
-	
+	 * Returns <code>true</code> if the asset is a bundle asset.
+     */
+	default boolean isBundle() {
+		return false;
+	}
+
+	default String getClientUrl(boolean debug) {
+		return debug ? getDebugResource().getClientUrl() : getResource().getClientUrl();
+	}
+
 }

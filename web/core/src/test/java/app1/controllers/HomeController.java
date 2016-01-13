@@ -16,7 +16,7 @@
 package app1.controllers;
 
 import leap.core.annotation.Inject;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.web.Request;
 import app1.filters.TestFilter;
 

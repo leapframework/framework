@@ -23,7 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import leap.core.security.UserPrincipal;
 import leap.core.web.RequestBase;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.lang.http.Headers;
 import leap.lang.http.MimeType;
 import leap.web.action.ActionContext;

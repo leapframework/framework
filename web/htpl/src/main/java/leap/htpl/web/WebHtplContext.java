@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import leap.core.i18n.MessageSource;
 import leap.core.web.RequestBase;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.htpl.AbstractHtplContext;
 import leap.htpl.HtplContext;
 import leap.htpl.HtplEngine;

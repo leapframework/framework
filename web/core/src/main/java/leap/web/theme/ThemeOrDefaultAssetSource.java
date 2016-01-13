@@ -17,9 +17,9 @@ package leap.web.theme;
 
 import java.util.Locale;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetResource;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetResource;
+import leap.web.assets.AssetSource;
 
 public class ThemeOrDefaultAssetSource implements AssetSource {
 	

@@ -13,31 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.web.assets;
+package leap.web.assets;
 
-public enum AssetType {
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
-    CSS,
+public interface AssetContent {
     
-    JS,
+    /**
+     * Returns the resource input stream.
+     */
+    InputStream getInputStream() throws IOException ;
     
-    IMG,
- 
-    OTHER;
+    /**
+     * Returns the resource reader.
+     */
+    Reader getReader() throws IOException ;
     
-    public boolean isCSS() {
-        return this == CSS;
-    }
+    /**
+     * Returns the last modified time of this resoruce.
+     */
+    long getLastModified();
     
-    public boolean isJS() {
-        return this == JS;
-    }
-    
-    public boolean isIMG() {
-        return this == IMG;
-    }
-    
-    public boolean isOther() {
-        return this == OTHER;
-    }
+    /**
+     * Returns the size of this resource.
+     */
+    long getContentLength();
+
 }

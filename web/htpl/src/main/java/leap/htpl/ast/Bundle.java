@@ -19,10 +19,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetBundleBuilder;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetBundleBuilder;
+import leap.web.assets.AssetManager;
+import leap.web.assets.AssetSource;
 import leap.htpl.HtplContext;
 import leap.htpl.HtplDocument;
 import leap.htpl.HtplEngine;

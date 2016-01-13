@@ -29,7 +29,7 @@ import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.time.StopWatch;

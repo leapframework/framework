@@ -39,6 +39,8 @@ public class DefaultUserInfoHandler implements UserInfoHandler {
         //see http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         //sub, name, email, gender
 
+        //TODO :
+
         return claims;
     }
 

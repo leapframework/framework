@@ -17,9 +17,9 @@ package leap.web.assets.css;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.web.assets.AssetBundle;
-import leap.core.web.assets.AssetResource;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetBundle;
+import leap.web.assets.AssetResource;
+import leap.web.assets.AssetSource;
 import leap.lang.path.Paths;
 import leap.web.assets.AbstractAssetBundler;
 import leap.web.assets.AssetBundler;

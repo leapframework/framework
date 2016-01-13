@@ -1,39 +1,83 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.leapframework.org/schema/web/config" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.leapframework.org/schema/web/config"
-	elementFormDefault="qualified" attributeFormDefault="unqualified">
+<xsd:schema xmlns="http://www.leapframework.org/schema/web/config" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.leapframework.org/schema/web/config"
+            elementFormDefault="qualified" attributeFormDefault="unqualified">
 
-	<xsd:element name="config">
-		<xsd:annotation>
-			<xsd:documentation>
-				Web application configuration
-			</xsd:documentation>
-		</xsd:annotation>
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:restriction base="xsd:anyType">
-					<xsd:sequence>
-						<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
-					</xsd:sequence>
-					<xsd:attribute name="views-location" type="xsd:string" use="optional" />
-					<xsd:attribute name="default-theme" type="xsd:string" use="optional" />
-					<xsd:attribute name="themes-location" type="xsd:string" use="optional" />
-					<xsd:attribute name="default-format" type="xsd:string" use="optional" />
-					<xsd:attribute name="format-parameter" type="xsd:string" use="optional" />
-					<xsd:attribute name="trim-parameters" type="xsd:boolean">
-					</xsd:attribute>
-					<xsd:attribute name="allow-format-extension" type="xsd:boolean">
-					</xsd:attribute>
-					<xsd:attribute name="allow-format-parameter" type="xsd:boolean">
-					</xsd:attribute>
-					<xsd:attribute name="allow-action-extension" type="xsd:boolean">
-					</xsd:attribute>
-					<xsd:attribute name="action-extensions" type="xsd:string">
-					</xsd:attribute>
-					<xsd:attribute name="cors-enabled" type="xsd:boolean">
-					</xsd:attribute>					
-				</xsd:restriction>
-			</xsd:complexContent>
-		</xsd:complexType>
-	</xsd:element>
+    <!-- top elements -->
 
+    <xsd:element name="mvc">
+        <xsd:annotation>
+            <xsd:documentation>
+                Web mvc configuration
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="errors" minOccurs="0" maxOccurs="1"/>
+                <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="views-location" type="xsd:string" use="optional"/>
+            <xsd:attribute name="default-theme" type="xsd:string" use="optional"/>
+            <xsd:attribute name="themes-location" type="xsd:string" use="optional"/>
+            <xsd:attribute name="default-format" type="xsd:string" use="optional"/>
+            <xsd:attribute name="format-parameter" type="xsd:string" use="optional"/>
+            <xsd:attribute name="trim-parameters" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="allow-format-extension" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="allow-format-parameter" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="allow-action-extension" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="action-extensions" type="xsd:string" use="optional"/>
+            <xsd:attribute name="cors-enabled" type="xsd:boolean" use="optional"/>
+
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="errors">
+        <xsd:annotation>
+            <xsd:documentation>
+                Web mvc errors configuration
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="error-view" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element ref="error-code" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="error-view">
+        <xsd:complexType>
+            <xsd:attribute name="error-code" type="xsd:integer" use="optional"/>
+            <xsd:attribute name="exception-type" type="xsd:string" use="optional"/>
+            <xsd:attribute name="view-path" type="xsd:string" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="error-code">
+        <xsd:complexType>
+            <xsd:attribute name="exception-type" type="xsd:string" use="required"/>
+            <xsd:attribute name="error-code" type="xsd:integer" use="required"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="assets">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="folder" type="AssetsFolder" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="path-prefix" type="xsd:string" use="optional"/>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <!-- Types -->
+
+    <xsd:complexType name="AssetsFolder">
+        <xsd:attribute name="location" type="xsd:string" use="required"/>
+        <xsd:attribute name="path-prefix" type="xsd:string" use="optional"/>
+    </xsd:complexType>
 </xsd:schema>

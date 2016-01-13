@@ -9,10 +9,10 @@
     
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 
-	<web:config>
-		<errors>
-			<error-view exception="app.controllers.ErrorTestController$CustomeException" view="errors/custom"/>
-		</errors>
-	</web:config>
+	<web:mvc>
+		<web:errors>
+			<web:error-view exception-type="app.controllers.ErrorTestController$CustomeException" view-path="errors/custom"/>
+		</web:errors>
+	</web:mvc>
     
 </config>

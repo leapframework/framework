@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config" xmlns:web="http://www.leapframework.org/schema/web/config">
 
-    <web:config allow-format-extension="true" 
-        	 	allow-action-extension="true" 
-        	 	action-extensions="do">
-        	 	
-		<errors>
-			<error-view status="400" view="errors/400"/>
-			<error-view status="401" view="errors/401"/>
-			<error-view status="403" view="errors/403"/>
-			<error-view status="404" view="errors/404"/>
-			<error-view status="500" view="errors/500"/>
-		</errors>
-		
-	</web:config>
-        	 	
+    <web:mvc allow-format-extension="true"
+             allow-action-extension="true"
+             action-extensions="do"/>
+
+    <web:errors>
+        <web:error-view view-path="errors/400" error-code="400"/>
+        <web:error-view view-path="errors/401" error-code="401"/>
+        <web:error-view view-path="errors/403" error-code="403"/>
+        <web:error-view view-path="errors/404" error-code="404"/>
+        <web:error-view view-path="errors/500" error-code="500"/>
+    </web:errors>
 </config>

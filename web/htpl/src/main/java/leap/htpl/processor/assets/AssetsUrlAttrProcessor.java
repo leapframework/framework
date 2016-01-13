@@ -17,8 +17,8 @@ package leap.htpl.processor.assets;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetConfig;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetConfig;
 import leap.htpl.HtplDocument;
 import leap.htpl.HtplEngine;
 import leap.htpl.ast.Attr;
