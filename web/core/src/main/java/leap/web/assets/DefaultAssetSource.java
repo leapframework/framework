@@ -21,8 +21,6 @@ import leap.core.AppConfigAware;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.cache.Cache;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetSource;
 
 public class DefaultAssetSource extends AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 	

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.web.assets;
+package leap.htpl.tests;
 
-public interface AssetBundle {
-    
-    /**
-     * Returns the full asset path of bundle.
-     */
-    String getPath();
-    
-    /**
-     * Returns the asset type of bundle.
-     */
-    AssetType getType();
+import leap.htpl.HtplTestCase;
+import org.junit.Test;
 
-    /**
-     * Returns the assets of bundle. 
-     */
-    Asset[] getAssets();
-    
+public class IncludeTest extends HtplTestCase {
+
+    @Test
+    public void testIncludeExpression() {
+        get("/test/include_expression")
+                .assertOk()
+                .assertContentContains("<p>Include</p>")
+                .assertContentContains("</div>");
+    }
+
 }

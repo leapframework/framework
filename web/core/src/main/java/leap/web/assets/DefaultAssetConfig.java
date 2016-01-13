@@ -22,8 +22,6 @@ import leap.core.AppConfigAware;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.web.assets.AssetConfig;
-import leap.core.web.assets.AssetStrategy;
 import leap.lang.path.Paths;
 
 @Configurable(prefix="webassets")

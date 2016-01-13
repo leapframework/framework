@@ -19,17 +19,28 @@ import leap.core.el.ExpressionLanguage;
 import leap.lang.expression.Expression;
 import leap.lang.expression.ExpressionException;
 
+/**
+ * The expression manager of htpl template engine.
+ */
 public interface HtplExpressionManager {
-	
+
+    /**
+     * The interface for handling expression parseing.
+     */
 	interface ParseHandler {
 		void textParsed(String text);
 		void exprParsed(Expression expr);
 	}
-	
+
+    /**
+     * Returns the default expression language.
+     */
 	ExpressionLanguage getExpressionLanguage();
 
-	Expression parseExpression(HtplEngine engine,String expression) throws ExpressionException;
-	
+	Expression parseExpression(HtplEngine engine,String expression);
+
+	Expression tryParseCompositeExpression(HtplEngine engine, String text);
+
 	Expression parseCompositeExpression(HtplEngine engine,String text);
 	
 	void parseCompositeExpression(HtplEngine engine, String text, ParseHandler callback);

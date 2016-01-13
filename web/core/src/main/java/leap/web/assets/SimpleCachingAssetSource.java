@@ -20,7 +20,6 @@ import java.util.Locale;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.validation.annotations.NotNull;
-import leap.core.web.assets.Asset;
 
 public class SimpleCachingAssetSource extends AbstractCachingAssetSource {
 	

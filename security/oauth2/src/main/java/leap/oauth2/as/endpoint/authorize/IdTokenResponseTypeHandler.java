@@ -34,8 +34,8 @@ public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler impl
     
     @Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
-        if(!config.isOpenIDConnectEnabled()) {
-            errorHandler.invalidRequest(response, "Open ID Connect disabled");
+        if(!config.isSingleLoginEnabled()) {
+            errorHandler.invalidRequest(response, "Single login disabled");
             return;
         }
 

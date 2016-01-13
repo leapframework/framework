@@ -16,7 +16,7 @@
 package leap.web.theme;
 
 import leap.core.i18n.MessageSource;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.web.view.ViewSource;
 
 public class SimpleTheme implements Theme {

@@ -39,14 +39,13 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 	
 	@Override
     public void startEndpoint(App app, Routes routes) {
-		if(config.isEnabled() && config.isTokenEndpointEnabled()) {
+		if(config.isEnabled()) {
 			sc.ignore(config.getTokenEndpointPath());
 			
 			routes.create()
 				  .post(config.getTokenEndpointPath(), this)
 				  .setCsrfEnabled(false)
 				  .apply();
-			
 		}
 
 	}

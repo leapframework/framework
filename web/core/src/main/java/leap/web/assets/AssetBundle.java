@@ -15,29 +15,21 @@
  */
 package leap.web.assets;
 
-import leap.lang.Strings;
+public interface AssetBundle {
+    
+    /**
+     * Returns the full asset path of bundle.
+     */
+    String getPath();
+    
+    /**
+     * Returns the asset type of bundle.
+     */
+    AssetType getType();
 
-public class TextAsset extends AbstractAsset {
-
-    public TextAsset(AssetManager manager, String path, String text, String contentType) {
-        super(path);
-        this.contentType = contentType;
-        this.debugResource = new TextAssetResource(manager, this, Strings.getBytesUtf8(text));
-        this.resource      = debugResource;
-    }
-
-    @Override
-    public boolean isText() {
-        return true;
-    }
-
-    @Override
-    public boolean reloadable() {
-        return false;
-    }
-
-    @Override
-    public boolean reload() {
-        return false;
-    }
+    /**
+     * Returns the assets of bundle. 
+     */
+    Asset[] getAssets();
+    
 }

@@ -16,7 +16,7 @@
 package app.controllers;
 
 import leap.core.AppContext;
-import leap.core.web.assets.AssetStrategy;
+import leap.web.assets.AssetStrategy;
 import leap.web.WebTestCase;
 
 import org.junit.BeforeClass;

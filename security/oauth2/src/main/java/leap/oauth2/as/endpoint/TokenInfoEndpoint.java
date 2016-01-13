@@ -40,7 +40,7 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
     
 	@Override
     public void startEndpoint(App app, Routes routes) {
-	    if(config.isEnabled() && config.isTokenInfoEndpointEnabled()) {
+	    if(config.isEnabled()) {
 	        sc.ignore(config.getTokenInfoEndpointPath());
 	        
 	        routes.create()

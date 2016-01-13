@@ -17,8 +17,6 @@ package leap.web.assets;
 
 import java.util.Locale;
 
-import leap.core.web.assets.Asset;
-
 public interface AssetResolver {
 
 	/**

@@ -18,8 +18,8 @@ package leap.htpl.processor.assets;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetConfig;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetConfig;
 import leap.htpl.HtplContext;
 import leap.htpl.HtplEngine;
 import leap.htpl.expression.UrlExpression;

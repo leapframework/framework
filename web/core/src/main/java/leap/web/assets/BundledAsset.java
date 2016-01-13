@@ -17,10 +17,6 @@ package leap.web.assets;
 
 import java.io.IOException;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetBundle;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetType;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.logging.Log;
