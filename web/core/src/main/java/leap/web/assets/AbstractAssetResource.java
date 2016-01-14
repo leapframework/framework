@@ -101,7 +101,7 @@ public abstract class AbstractAssetResource implements AssetResource {
 	@Override
     public void expire() throws IllegalStateException {
 		if(expired){
-			throw new IllegalStateException("This resource aleady expired");
+			throw new IllegalStateException("This resource already expired");
 		}
 		this.expired = true;
     }

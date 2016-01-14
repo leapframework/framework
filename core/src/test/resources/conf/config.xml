@@ -12,7 +12,7 @@
         <property name="test.prop2">
             test.val2
         </property>
-        <property name="testNotExistPlaceholder" value="${notExistProeprty}"/>
+        <property name="testNotExistPlaceholder" value="${notExistProperty}"/>
     </properties>
     
     <properties>

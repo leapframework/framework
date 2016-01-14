@@ -287,6 +287,13 @@ public class IO {
 		copy(input, sw);
 		return sw.toString();
 	}
+
+    /**
+     * Writes the string to the output file using default charset.
+     */
+	public static void writeString(File file, String string) {
+       writeString(file, string, Charsets.defaultCharset());
+    }
 	
 	public static void writeString(File file,String string, Charset encoding){
 		FileOutputStream out = null;

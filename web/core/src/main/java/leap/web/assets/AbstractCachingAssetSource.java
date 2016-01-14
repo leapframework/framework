@@ -31,6 +31,7 @@ import leap.core.schedule.Scheduler;
 import leap.core.schedule.SchedulerManager;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
 
 public abstract class AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 
@@ -88,11 +89,17 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 	
 	@Override
 	public Asset getAsset(String path,Locale locale){
+		if(null == path) {
+            return null;
+        }
+
 		if(null == locale){
 			locale = defaultLocale;
 		}
-		
-		Cache<Object, Asset> cache = getAssetCache();
+
+        path = Paths.prefixWithoutSlash(path);
+
+        Cache<Object, Asset> cache = getAssetCache();
 		
 		Object cacheKey = getAssetCacheKey(path, locale);
 		Asset asset = cache.get(cacheKey);

@@ -16,24 +16,19 @@
 package leap.web.assets;
 
 import java.nio.charset.Charset;
+import java.util.List;
 
 import leap.core.AppConfig;
 
 public interface AssetConfig {
 	
-	String DEFAULT_PATH_PREFIX		 = "/assets/";
-	String DEFAULT_SOURCE_DIRECTORY  = "/WEB-INF/assets/";
-	String DEFAULT_PUBLIC_DIRECTORY  = "/static/";
-	String DEFAULT_MANIFEST_FILE     = "/WEB-INF/assets.manifest.json";
-	String DEFAULT_HASH_ALGORITHM    = "MD5";
-	long   DEFAULT_RELOAD_INTERVAL   = 2000;	 //2 seconds
-	int    DEFAULT_CACHE_MAX_AGE	 = 365 * 24 * 60 * 60 ; //1 year in seconds
-	int    DEFAULT_GZIP_MIN_LENGTH   = 512; //512 bytes
-	
 	/**
-	 * Returns <code>true</code> if assets handling was disabled.
+	 * Returns <code>true</code> if assets handling is enabled.
+	 *
+	 * <p/>
+	 * Default is <code>true</code>.
 	 */
-	boolean isDisabled();
+	boolean isEnabled();
 	
 	/**
 	 * The default value is <code>true</code> in development environment.
@@ -70,23 +65,15 @@ public interface AssetConfig {
 	 * The path must start with '/' and ends with '/'.
 	 * 
 	 * <p>
-	 * Default is {@link #DEFAULT_PATH_PREFIX}
+	 * Default is {@link AssetConfigurator#DEFAULT_PATH_PREFIX}
 	 */
 	String getPathPrefix();	
 	
 	/**
-	 * Returns the source assets directory in webapp.
-	 * 
-	 * <p>
-	 * Default is {@link #DEFAULT_SOURCE_DIRECTORY}
-	 */
-	String getSourceDirectory();
-
-	/**
 	 * Returns the assets directory in webapp.
 	 * 
 	 * <p>
-	 * Default is {@link #DEFAULT_PUBLIC_DIRECTORY}
+	 * Default is {@link AssetConfigurator#DEFAULT_PUBLIC_DIRECTORY}
 	 */
 	String getPublicDirectory();
 	
@@ -96,7 +83,7 @@ public interface AssetConfig {
 	 * <p>
 	 * Default is <code>false</code>
 	 */
-	public boolean isPublishEnabled();
+	boolean isPublishEnabled();
 	
 	/**
 	 * Returns the publish directory.
@@ -105,14 +92,6 @@ public interface AssetConfig {
 	 * Default is <code>null</code>.
 	 */
 	String getPublishDirectory();
-	
-	/**
-	 * Returns the assets manifest file's path.
-	 * 
-	 * <p>
-	 * Default is {@link #DEFAULT_MANIFEST_FILE}
-	 */
-	String getManifestFile();	
 	
 	/**
 	 * Returns <code>true</code> if enable the reloading of asset resources.
@@ -131,7 +110,7 @@ public interface AssetConfig {
 	 * Returns the interval in milliseconds to reload asset resources.
 	 * 
 	 * <p>
-	 * Default is {@link #DEFAULT_RELOAD_INTERVAL}.
+	 * Default is {@link AssetConfigurator#DEFAULT_RELOAD_INTERVAL}.
 	 */
 	long getReloadInterval();
 	
@@ -139,7 +118,7 @@ public interface AssetConfig {
 	 * Returns the hash algorithm.
 	 * 
 	 * <p>
-	 * Default is {@link #DEFAULT_HASH_ALGORITHM}
+	 * Default is {@link AssetConfigurator#DEFAULT_HASH_ALGORITHM}
 	 */
 	String getHashAlgorithm();	
 	
@@ -147,4 +126,9 @@ public interface AssetConfig {
 	 * Returns the value of max-age (seconds) in Cache-Control header.
 	 */
 	int getCacheMaxAge();
+
+	/**
+	 * Returns a list contains the external folder(s) of assets.
+     */
+	List<AssetFolder> getFolders();
 }

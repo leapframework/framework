@@ -176,8 +176,8 @@ public class Locales {
 	
 	public static String[] getLocaleFilePaths(Locale locale, String filePath) {
 		String ext  = Paths.getFileExtension(filePath);
-		String path = Strings.isEmpty(ext) ? filePath : filePath.substring(0,filePath.length() - ext.length());
-		return getLocalePaths(locale, path, ext);
+		String path = Strings.isEmpty(ext) ? filePath : filePath.substring(0,filePath.length() - ext.length() - 1);
+		return getLocalePaths(locale, path, "." + ext);
 	}
 	
 	protected Locales(){

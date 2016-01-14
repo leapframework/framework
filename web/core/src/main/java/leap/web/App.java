@@ -27,6 +27,7 @@ import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.FileResource;
+import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 import leap.web.config.WebConfig;
@@ -37,6 +38,7 @@ import leap.web.error.ErrorViews;
 import leap.web.route.Routes;
 
 import javax.servlet.ServletContext;
+import java.io.File;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
@@ -61,6 +63,7 @@ public class App implements AttributeAccessor {
 	protected ServletContext    servletContext;	
 	protected String            basePath;
 	protected FileResource		baseDir;
+	protected FileResource      tempDir;
 	protected ServletResource   rootResource;
 	
 	private WebConfig			webConfig;
@@ -158,6 +161,13 @@ public class App implements AttributeAccessor {
     public final FileResource getBaseDir() {
     	return baseDir;
     }
+
+	/**
+	 * Returns the temp directory.
+     */
+	public final FileResource getTempDir() {
+		return tempDir;
+	}
 	
 	/**
 	 * Returns the base path of current application.
@@ -285,6 +295,7 @@ public class App implements AttributeAccessor {
 	private void initConfig() {
 		this.rootResource = Servlets.getResource(servletContext, "/"); 
         this.baseDir      = rootResource.isFile() ? rootResource.toFileResource() : null;
+		this.tempDir	  = Resources.createFileResource(new File(System.getProperty("java.io.tmpdir")));
 	}
 	
 	private void initBeans() {
