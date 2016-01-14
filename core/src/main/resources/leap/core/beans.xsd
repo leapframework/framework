@@ -99,6 +99,7 @@
 	    <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 	    <xsd:attribute name="singleton" type="xsd:boolean"/>
 	    <xsd:attribute name="lazy-init" default="default" type="defaultable-boolean"/>
+	    <xsd:attribute name="auto-inject" default="false"/>
 	    <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
         <xsd:attribute name="override" type="xsd:boolean" use="optional"/>
 	    <xsd:attribute name="init-method" type="xsd:string"/>
@@ -155,6 +156,7 @@
 				<xsd:any namespace="##other" processContents="strict"/>
 			</xsd:choice>
 		</xsd:sequence>
+		<xsd:attribute name="name" type="xsd:string"/>
 		<xsd:attribute name="type" type="xsd:string"/>
 		<xsd:attribute name="ref" type="xsd:string"/>
 		<xsd:attribute name="value" type="xsd:string"/>

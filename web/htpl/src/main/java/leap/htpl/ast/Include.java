@@ -74,6 +74,7 @@ public class Include extends Node implements HtplRenderable {
 	protected Node doDeepClone(Node parent) {
 		Include clone = new Include(templateName,fragmentName,required);
 		clone.template = template;
+		clone.expression = expression;
 		clone.fragment = null == fragment ? null : fragment.deepClone(clone);
 		clone.resource = resource;
 		return clone;
