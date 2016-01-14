@@ -40,26 +40,11 @@
         </xsd:annotation>
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element ref="error-view" minOccurs="0" maxOccurs="unbounded"/>
-                <xsd:element ref="error-code" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="error-view" type="ErrorView" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="error-code" type="ErrorCode" minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
             <xsd:anyAttribute namespace="##other" processContents="lax"/>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="error-view">
-        <xsd:complexType>
-            <xsd:attribute name="error-code" type="xsd:integer" use="optional"/>
-            <xsd:attribute name="exception-type" type="xsd:string" use="optional"/>
-            <xsd:attribute name="view-path" type="xsd:string" use="required"/>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="error-code">
-        <xsd:complexType>
-            <xsd:attribute name="exception-type" type="xsd:string" use="required"/>
-            <xsd:attribute name="error-code" type="xsd:integer" use="required"/>
         </xsd:complexType>
     </xsd:element>
 
@@ -69,12 +54,22 @@
                 <xsd:element name="folder" type="AssetsFolder" minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
-            <xsd:attribute name="path-prefix" type="xsd:string" use="optional"/>
+            <!--<xsd:attribute name="path-prefix" type="xsd:string" use="optional"/>-->
             <xsd:anyAttribute namespace="##other" processContents="lax"/>
         </xsd:complexType>
     </xsd:element>
 
     <!-- Types -->
+    <xsd:complexType name="ErrorView">
+        <xsd:attribute name="error-code" type="xsd:integer" use="optional"/>
+        <xsd:attribute name="exception-type" type="xsd:string" use="optional"/>
+        <xsd:attribute name="view-path" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="ErrorCode">
+        <xsd:attribute name="exception-type" type="xsd:string" use="required"/>
+        <xsd:attribute name="error-code" type="xsd:integer" use="required"/>
+    </xsd:complexType>
 
     <xsd:complexType name="AssetsFolder">
         <xsd:attribute name="location" type="xsd:string" use="required"/>

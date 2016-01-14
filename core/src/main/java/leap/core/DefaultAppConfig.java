@@ -25,16 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
@@ -152,7 +144,26 @@ public class DefaultAppConfig implements AppConfig {
 		if(!initProperties.isEmpty()) {
 			Maps.resolveValues(initProperties, new DefaultPlaceholderResolver(SystemPropertyAccessor.INSTANCE));
 		}
-		
+
+        Properties props = System.getProperties();
+        for(Object key : props.keySet()) {
+            String name = key.toString();
+
+            if(name.startsWith("sun.")){
+                continue;
+            }
+
+            if(name.startsWith("org.apache.")){
+                continue;
+            }
+
+            if(name.startsWith("com.oracle.")){
+                continue;
+            }
+
+            initProperties.put(name, System.getProperty(name));
+        }
+
 		for(String p : INIT_PROPERTEIS){
 			if(!initProperties.containsKey(p)){
 				String v = System.getProperty(p);

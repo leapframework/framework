@@ -41,6 +41,9 @@ public class AssetsTestController extends ControllerBase {
 	
 	public String getAssetUrl(String path,Boolean debug) throws Throwable {
 		Asset asset = assetSource.getAsset(path,Request.current().getLocale());
+        if(null == asset) {
+            return "";
+        }
 		return debug != null && debug ? asset.getDebugResource().getClientUrl() : asset.getResource().getClientUrl();
 	}
 	

@@ -243,7 +243,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	            }
 				
             } catch (NestedIOException e) {
-            	log.error("Error writting asset content,{}", e.getMessage(), e);
+            	log.error("Error writing asset content,{}", e.getMessage(), e);
             	throw e;
             }
 		}
@@ -251,7 +251,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 
 	@Override
     public boolean load(BeanFactory factory) throws Exception {
-	    return !config.isDisabled();
+	    return config.isEnabled();
     }
 	
 	private final static byte[] gzip(InputStream is, long length) throws IOException {

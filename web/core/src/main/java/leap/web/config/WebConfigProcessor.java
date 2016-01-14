@@ -23,7 +23,9 @@ import leap.core.AppConfigProcessor;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
+import leap.lang.path.Paths;
 import leap.lang.xml.XmlReader;
+import leap.web.assets.AssetConfigExtension;
 import leap.web.cors.CorsConfig;
 import leap.web.error.ErrorsConfig;
 
@@ -32,12 +34,8 @@ public class WebConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/config";
 
+    //mvc
 	private static final String MVC_ELEMENT                      = "mvc";
-	private static final String ERRORS_ELEMENT                   = "errors";
-	private static final String ERROR_VIEW_ELEMENT               = "error-view";
-	private static final String ERROR_CODE_ELEMENT               = "error-code";
-	private static final String CORS_ELEMENT                     = "cors";
-	private static final String CORS_ENABLED                     = "cors-enabled";
 	private static final String DEFAULT_THEME_ATTRIBUTE          = "default-theme";
 	private static final String THEMES_LOCATION_ATTRIBUTE        = "themes-location";
 	private static final String VIEWS_LOCATION_ATTRIBUTE         = "views-location";
@@ -48,11 +46,26 @@ public class WebConfigProcessor implements AppConfigProcessor {
 	private static final String ALLOW_FORMAT_EXTENSION_ATTRIBUTE = "allow-format-extension";
 	private static final String ALLOW_FORMAT_PARAMETER_ATTRIBUTE = "allow-format-parameter";
 	private static final String ACTION_EXTENSIONS_ATTRIBUTE      = "action-extensions";
+    private static final String CORS_ENABLED                     = "cors-enabled";
+
+    //errors
+	private static final String ERRORS_ELEMENT                   = "errors";
+	private static final String ERROR_VIEW_ELEMENT               = "error-view";
+	private static final String ERROR_CODE_ELEMENT               = "error-code";
 	private static final String ERROR_CODE_ATTRIBUTE             = "error-code";
 	private static final String EXCEPTION_TYPE_ATTRIBUTE         = "exception-type";
 	private static final String VIEW_PATH_ATTRIBUTE              = "view-path";
-	
-	@Override
+
+    //cors
+    private static final String CORS_ELEMENT                     = "cors";
+
+    //assets
+    private static final String ASSETS_ELEMENT                   = "assets";
+    private static final String FOLDER_ELEMENT                   = "folder";
+    private static final String LOCATION_ATTRIBUTE               = "location";
+    private static final String PATH_PREFIX_ATTRIBUTE            = "path-prefix";
+
+    @Override
     public String getNamespaceURI() {
 	    return NAMESPACE_URI;
     }
@@ -60,19 +73,24 @@ public class WebConfigProcessor implements AppConfigProcessor {
 	@Override
     public void processElement(AppConfigContext context, XmlReader reader) {
 		if(reader.isStartElement(MVC_ELEMENT)){
-            readMvc(context, reader);
+            readMvcConfig(context, reader);
             return;
 		}
 
         if(reader.isStartElement(ERRORS_ELEMENT)) {
-            readErrors(context, reader);
+            readErrorsConfig(context, reader);
+            return;
+        }
+
+        if(reader.isStartElement(ASSETS_ELEMENT)) {
+            readAssetsConfig(context, reader);
             return;
         }
 		
-		throw new AppConfigException("Unknow xml element '" + reader.getElementLocalName() + "', check the config : " + reader.getSource());
+		throw new AppConfigException("Unknown xml element '" + reader.getElementLocalName() + "', check the config : " + reader.getSource());
     }
 
-	protected void readMvc(AppConfigContext context, XmlReader reader) {
+	protected void readMvcConfig(AppConfigContext context, XmlReader reader) {
         //theme name
         String themeName = reader.getAttribute(DEFAULT_THEME_ATTRIBUTE);
         if(!Strings.isEmpty(themeName)){
@@ -152,7 +170,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 	
 	protected void readMvcChilds(AppConfigContext context, XmlReader reader){
 		if(reader.isStartElement(ERRORS_ELEMENT)){
-			readErrors(context, reader);
+			readErrorsConfig(context, reader);
 		}else if(reader.isStartElement(CORS_ELEMENT)) {
 			readCorsConfig(context, reader);
 		}else{
@@ -160,7 +178,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 		}
 	}
 	
-	protected void readErrors(AppConfigContext context, XmlReader reader) {
+	protected void readErrorsConfig(AppConfigContext context, XmlReader reader) {
 		ErrorsConfig ec = context.getExtension(ErrorsConfig.class);
 		if(null == ec) {
 			ec = new ErrorsConfig();
@@ -227,4 +245,20 @@ public class WebConfigProcessor implements AppConfigProcessor {
 			}while(attrs.hasNext());
 		}
 	}
+
+    protected void readAssetsConfig(AppConfigContext context, XmlReader reader) {
+        AssetConfigExtension config = context.getOrCreateExtension(AssetConfigExtension.class);
+
+        while(reader.nextWhileNotEnd(ASSETS_ELEMENT)) {
+
+            if(reader.isStartElement(FOLDER_ELEMENT)) {
+                String location   = reader.resolveRequiredAttribute(LOCATION_ATTRIBUTE);
+                String pathPrefix = reader.resolveAttribute(PATH_PREFIX_ATTRIBUTE);
+
+                config.addFolder(new AssetConfigExtension.AssetFolderConfig(location, pathPrefix));
+                continue;
+            }
+
+        }
+    }
 }

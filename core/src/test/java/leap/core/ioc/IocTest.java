@@ -106,7 +106,7 @@ public class IocTest extends CoreTestCase {
 	
 	@Test
 	public void testConstructorDefaultValue() {
-	    TestBean bean = beanFactory.getBean("testConsutrctorDefaultValue");
+	    TestBean bean = beanFactory.getBean("testConstructorDefaultValue");
 	    assertEquals("defaultStringValue", bean.getString());
 	}
 	

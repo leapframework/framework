@@ -288,11 +288,11 @@ public class Paths {
      * Converts the path provided to a slash-leading form, no matter what is provided.
      */
     public static String prefixWithSlash(final String path) {
-        return !Strings.startsWith(path, "/") ? "/" + path : path;
+        return null == path ? null : !Strings.startsWith(path, "/") ? "/" + path : path;
     }
     
     public static String prefixWithoutSlash(final String path){
-    	return Strings.startsWith(path, "/") ? path.substring(1) : path;
+    	return null == path ? null : Strings.startsWith(path, "/") ? path.substring(1) : path;
     }
     
     public static String prefixAndSuffixWithSlash(String path){

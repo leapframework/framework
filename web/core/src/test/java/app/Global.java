@@ -15,47 +15,53 @@
  */
 package app;
 
+import leap.core.annotation.Inject;
 import leap.lang.Assert;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.App;
 import leap.web.Results;
+import leap.web.assets.AssetConfigurator;
+import leap.web.config.WebConfigurator;
 import leap.web.route.Routes;
 
 public class Global extends App {
+    private static final Log log = LogFactory.get(Global.class);
 	
 	public static final String APPLICATION_START_CALLED_ATTRIBUTE = "application_start_called";
 	public static final String APPLICATION_INIT_CALLED_ATTRIBUTE  = "application_init_called";
-	
-	private static final Log log = LogFactory.get(Global.class);
+
+    private @Inject AssetConfigurator ac;
+
+    @Override
+    protected void configure(WebConfigurator c) {
+        ac.addFolder(getTempDir().createRelative("./assets").getFilepath());
+    }
+
+    @Override
+	protected void routing(Routes routes) {
+		routes
+				.get("/handler/get", (req, resp) -> Results.text("Hello Handler"))
+
+				.get("/handler/test.json", () -> Results.json("Hello Json"));
+	}
 	
 	@Override
     protected void init() throws Throwable {
 		Boolean called = (Boolean)getServletContext().getAttribute(APPLICATION_INIT_CALLED_ATTRIBUTE);
-		Assert.isNull(called,"onApplicationInit aleady called");
+		Assert.isNull(called,"init already called");
 		getServletContext().setAttribute(APPLICATION_INIT_CALLED_ATTRIBUTE, true);
     }
 	
 	@Override
     protected void start() throws Throwable {
 		Boolean called = (Boolean)getServletContext().getAttribute(APPLICATION_START_CALLED_ATTRIBUTE);
-		Assert.isNull(called,"onApplicationStart aleady called");
+		Assert.isNull(called,"start already called");
 		getServletContext().setAttribute(APPLICATION_START_CALLED_ATTRIBUTE, true);
 	}
 
 	@Override
     protected void stop() throws Throwable {
-		log.info("onApplicationEnd called");
-    }
-	
-	@Override
-    protected void routing(Routes routes) {
-		routes
-		
-		.get("/handler/get", (req, resp) -> Results.text("Hello Handler"))
-		
-		.get("/handler/test.json", () -> Results.json("Hello Json"));
-		
-	}
 
+    }
 }
