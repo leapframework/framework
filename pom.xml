@@ -65,6 +65,8 @@
         <postgresql.version>9.1-901.jdbc4</postgresql.version>
         <mariadb.version>1.1.7</mariadb.version>
         <derby.version>10.10.2.0</derby.version>
+        <jetty.version>9.2.2.v20140723</jetty.version>
+        <httpclient.version>4.3.6</httpclient.version>
 
         <!-- Sonar :
              The destination file for the code coverage report has to be set to the same value
@@ -372,6 +374,7 @@
         <module>data/orm-test-resources</module>
         <module>test/junit</module>
         <module>test/webunit</module>
+		<module>test/webunit-jsp</module>
 		<module>web/core</module>
 		<module>web/api</module>
 		<module>web/htpl</module>
