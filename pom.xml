@@ -15,11 +15,11 @@
 	
 	<distributionManagement>
 		<repository>
-			<id>repo</id>
+			<id>leap-repo-releases</id>
 			<url>${leap.repository}/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>bingo-maven-repository-snapshots</id>
+			<id>leap-repo-snapshots</id>
 			<url>${leap.repository}/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
