@@ -15,10 +15,7 @@
  */
 package leap.web;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -64,15 +61,15 @@ import leap.web.view.ViewSource;
 
 public class DefaultRequest extends Request {
 
-    protected final App                app;
-    protected final WebConfig          config;
-    protected final AppHandler         handler;
-    protected final Response           response;
-    protected final String             overridedMethod;
-    protected final String             method;
-    protected final String             path;
-    protected final Params             params = new SimpleParams();
-    protected final HttpServletRequest req;
+    protected final App            app;
+    protected final WebConfig      config;
+    protected final AppHandler     handler;
+    protected final Response       response;
+    protected final String         overridedMethod;
+    protected final String         method;
+    protected final String         path;
+    protected final Params         params = new SimpleParams();
+    protected final RequestWrapper req;
 
     private String                     lowercaseRequestPath;
     private String                     serverUrl;
@@ -103,7 +100,7 @@ public class DefaultRequest extends Request {
     private Map<String, Object>        queryParamsMap;
     private Boolean                    acceptValidationError;
 	
-	public DefaultRequest(App app, AppHandler handler, HttpServletRequest servletRequest, Response response){
+	public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response){
 		this.app    		 = app;
 		this.config			 = app.getWebConfig();
 		this.handler		 = handler;
@@ -539,7 +536,12 @@ public class DefaultRequest extends Request {
 	    return req.getCookies();
     }
 
-	@Override
+    @Override
+    public BufferedInputStream peekInputStream() throws IOException {
+        return req.peekInputStream();
+    }
+
+    @Override
     public InputStream getInputStream() {
 	    try {
 	        return req.getInputStream();
