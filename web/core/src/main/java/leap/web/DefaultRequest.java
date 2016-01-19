@@ -63,12 +63,12 @@ import leap.web.view.View;
 import leap.web.view.ViewSource;
 
 public class DefaultRequest extends Request {
-	
+
     protected final App                app;
     protected final WebConfig          config;
     protected final AppHandler         handler;
     protected final Response           response;
-    protected final String             overriedMethod;
+    protected final String             overridedMethod;
     protected final String             method;
     protected final String             path;
     protected final Params             params = new SimpleParams();
@@ -104,15 +104,15 @@ public class DefaultRequest extends Request {
     private Boolean                    acceptValidationError;
 	
 	public DefaultRequest(App app, AppHandler handler, HttpServletRequest servletRequest, Response response){
-		this.app    		= app;
-		this.config			= app.getWebConfig();
-		this.handler		= handler;
-		this.response		= response;
-		this.req            = servletRequest;
-		this.overriedMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
-		this.method			= Strings.upperCase(Strings.isEmpty(overriedMethod) ? req.getMethod() : overriedMethod);
-		this.path    		= extractRequestPath();
-		this.locale         = req.getLocale();
+		this.app    		 = app;
+		this.config			 = app.getWebConfig();
+		this.handler		 = handler;
+		this.response		 = response;
+		this.req             = servletRequest;
+		this.overridedMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+		this.method			 = Strings.upperCase(Strings.isEmpty(overridedMethod) ? req.getMethod() : overridedMethod);
+		this.path    		 = extractRequestPath();
+		this.locale          = req.getLocale();
 		this.resolveServicePath(path);
 	}
 	
@@ -376,8 +376,8 @@ public class DefaultRequest extends Request {
     }
 
 	@Override
-    public String getOverriedMethod() {
-	    return overriedMethod;
+    public String getOverridedMethod() {
+	    return overridedMethod;
     }
 
 	@Override
