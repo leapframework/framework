@@ -64,6 +64,10 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
                 redirectPath = Servlets.getRequestPathFromUri(redirectUri);
             }else{
                 redirectPath = Servlets.getRequestPathFromUri(redirectUri, app.getContextPath());
+                // when redirectPath is empty,set it to contextPath
+                if(Strings.isEmpty(redirectPath)){
+                	redirectPath = "/";
+                }
             }
             sc.ignore(redirectPath);
             app.routes().get(redirectPath, (req, resp) -> handleAuthzServerLoginResponse(req, resp));
@@ -74,6 +78,10 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
                     logoutPath = Servlets.getRequestPathFromUri(logoutUri);
                 }else{
                     logoutPath = Servlets.getRequestPathFromUri(logoutUri, app.getContextPath());
+                    // when logoutPath is empty,set it to root contextPath
+                    if(Strings.isEmpty(logoutPath)){
+                    	logoutPath = "/";
+                    }
                 }
                 sc.ignore(logoutPath);
                 app.routes().get(logoutPath,(req,resp) -> handleAuthzServerLogoutNotification(req, resp));
