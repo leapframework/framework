@@ -35,6 +35,10 @@ class RequestWrapper extends HttpServletRequestWrapper {
     }
 
     public BufferedInputStream peekInputStream() throws IOException {
+        return new BufferedInputStream(new ByteArrayInputStream(peekBytes()));
+    }
+
+    public byte[] peekBytes() throws IOException {
         if(get_reader || get_stream) {
             throw new IllegalStateException("getInputStream or getReader has been called on this request");
         }
@@ -42,7 +46,8 @@ class RequestWrapper extends HttpServletRequestWrapper {
         if (null == bytes) {
             bytes = IO.readByteArray(request.getInputStream());
         }
-        return new BufferedInputStream(new ByteArrayInputStream(bytes));
+
+        return bytes;
     }
 
     @Override

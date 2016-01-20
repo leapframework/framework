@@ -141,6 +141,13 @@ public abstract class Request extends RequestBase {
      * @throws IllegalStateException if getInputStream or getReader method has been called.
      */
 	public abstract BufferedInputStream peekInputStream() throws IOException;
+
+    /**
+     * Retrieves the body of the request as byte array.
+     *
+     * @throws IllegalStateException if getInputStream or getReader method has been called.
+     */
+    public abstract byte[] peekInputStreamAsBytes() throws IOException;
 	
 	/**
 	 * Returns an array contains all the media types parsed from request header {@link Headers#ACCEPT}.

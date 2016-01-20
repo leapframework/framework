@@ -542,6 +542,11 @@ public class DefaultRequest extends Request {
     }
 
     @Override
+    public byte[] peekInputStreamAsBytes() throws IOException {
+        return req.peekBytes();
+    }
+
+    @Override
     public InputStream getInputStream() {
 	    try {
 	        return req.getInputStream();
