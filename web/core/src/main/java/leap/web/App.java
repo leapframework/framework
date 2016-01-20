@@ -20,6 +20,7 @@ import leap.core.AppContext;
 import leap.core.AppHome;
 import leap.core.BeanFactory;
 import leap.core.i18n.MessageSource;
+import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.CopyOnWriteArrayBeanList;
 import leap.lang.accessor.AttributeAccessor;
@@ -40,7 +41,9 @@ import leap.web.route.Routes;
 import javax.servlet.ServletContext;
 import java.io.File;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class App implements AttributeAccessor {
 	
@@ -70,8 +73,8 @@ public class App implements AttributeAccessor {
 	private WebConfigurator	    webConfigurator;
 	private Endpoint[]          endpoints;
 	
-	private final BeanList<AppInitializable> initializableBeans = new CopyOnWriteArrayBeanList<AppInitializable>();
-	private final BeanList<AppListener>      listeners          = new CopyOnWriteArrayBeanList<>();
+    private final List<BeanDefinition>  initializableBeans = new CopyOnWriteArrayList<>();
+	private final BeanList<AppListener> listeners          = new CopyOnWriteArrayBeanList<>();
 	
 	public App(){
 
@@ -194,10 +197,10 @@ public class App implements AttributeAccessor {
 		return config.getDefaultLocale();
 	}
 	
-	@Internal
-	final BeanList<AppInitializable> initializableBeans() {
-	    return initializableBeans;
-	}
+    @Internal
+	final List<BeanDefinition> initializableBeans() {
+        return initializableBeans;
+    }
 	
 	/**
 	 * Returns default charset of current application.
@@ -343,11 +346,12 @@ public class App implements AttributeAccessor {
 
 		init();
 
-		for(AppInitializable bean : initializableBeans) {
+		for(BeanDefinition bd : initializableBeans) {
+            factory.tryInitBean(bd);
             try {
-                bean.postAppInit(this);
+                ((AppInitializable)bd.getSingletonInstance()).postAppInit(this);
             } catch (Throwable e) {
-                log.error("Error notifying app post init on bean '{}', {}", bean.getClass().getName(), e.getMessage());
+                log.error("Error notifying app post init on bean '{}', {}", bd, e.getMessage());
                 throw e;
             }
 		}

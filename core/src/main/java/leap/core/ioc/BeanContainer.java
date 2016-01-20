@@ -35,13 +35,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
-import leap.core.AppConfig;
-import leap.core.AppConfigAware;
-import leap.core.AppContext;
-import leap.core.AppContextAware;
-import leap.core.BeanFactory;
-import leap.core.BeanFactoryAware;
-import leap.core.BeanFactoryInitializable;
+import leap.core.*;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -251,17 +245,45 @@ public class BeanContainer implements BeanFactory {
 		initializing = false;
 		
 		this.resolveAfterLoading();
+
+        if(null != processors){
+            for(BeanDefinitionBase bd : allBeanDefinitions) {
+                for(int i=0;i<processors.length;i++){
+                    try{
+                        processors[i].postInitBean(appContext, beanFactory, bd);
+                    }catch(Throwable e) {
+                        throw new AppInitException(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
 		this.initBeanFactoryInitializableBeans();
 		this.initNonLazyBeans();
-		this.containerInited = true;
+
+        this.containerInited = true;
 
 		return this;
 	}
-	
+
+    @Override
+    public boolean tryInitBean(BeanDefinition bd) {
+        if(!allBeanDefinitions.contains(bd)) {
+            throw new IllegalStateException("Not a managed bean " + bd);
+        }
+
+        if(bd.isInited()) {
+            return false;
+        }
+
+        doGetBean((BeanDefinitionBase)bd);
+        return true;
+    }
+
     @Override
     public void postInit(AppContext context) throws Exception {
     	if(appInited){
-    		throw new IllegalStateException("postInitialize aleady called");
+    		throw new IllegalStateException("postInitialize already called");
     	}
     	this.appInited = true;
     }
@@ -944,6 +966,8 @@ public class BeanContainer implements BeanFactory {
 		bean = doBeanCreation(bd);
 		
 		afterBeanCreation(bd);
+
+        bd.setInited(true);
 		
 		return bean;
 	}

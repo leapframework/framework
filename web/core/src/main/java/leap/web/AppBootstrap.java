@@ -24,9 +24,7 @@ import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.AppException;
 import leap.core.BeanFactory;
-import leap.core.ioc.BeanDefinition;
-import leap.core.ioc.BeanProcessor;
-import leap.core.ioc.ServletOnlyBean;
+import leap.core.ioc.*;
 import leap.core.web.ServletContextInitializerBase;
 import leap.lang.Classes;
 import leap.lang.beans.BeanCreationException;
@@ -175,7 +173,25 @@ public class AppBootstrap extends ServletContextInitializerBase {
     }
     
 	public static final class AppBeanProcessor implements BeanProcessor,ServletOnlyBean {
-		@Override
+
+        @Override
+        public void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
+            BeanDefinition bd = c.definition();
+            if(AppInitializable.class.isAssignableFrom(bd.getBeanClass())) {
+                ServletContext sc = context.tryGetServletContext();
+                if(null == sc) {
+                    throw new BeanDefinitionException("Current app context must be servlet environment, cannot init bean " + bd);
+                }
+
+                if(!bd.isSingleton()) {
+                    throw new BeanDefinitionException("AppInitializable bean must be singleton, check the bean " + bd);
+                }
+
+                app(sc,bd).initializableBeans().add(bd);
+            }
+        }
+
+        @Override
         public void postCreateBean(AppContext appContext, BeanFactory beanFactory, BeanDefinition definition, Object bean) throws Exception {
 			ServletContext sc = appContext.tryGetServletContext();
 			if(bean instanceof AppAware){
@@ -183,10 +199,6 @@ public class AppBootstrap extends ServletContextInitializerBase {
 					throw new BeanCreationException("Current app context must be servlet environment, cannot create bean " + definition);
 				}
 				((AppAware) bean).setApp(app(sc, definition));
-			}
-			
-			if(bean instanceof AppInitializable) {
-			    app(sc, definition).initializableBeans().add((AppInitializable)bean);
 			}
         }
 		

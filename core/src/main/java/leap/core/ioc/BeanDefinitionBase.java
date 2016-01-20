@@ -29,7 +29,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.tostring.ToStringBuilder;
 
 @SuppressWarnings("rawtypes")
-class BeanDefinitionBase implements BeanDefinition,TypeDefinition {
+class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinitionConfigurator {
 	
 	protected final Object source;
 	
@@ -62,9 +62,16 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition {
 	
 	protected Object singletonInstance;
 	protected int    sortOrder = DEFAULT_SORT_ORDER;
+
+    protected boolean inited;
 	
 	public BeanDefinitionBase(Object source){
 		this.source = source;
+	}
+
+	@Override
+	public BeanDefinition definition() {
+		return this;
 	}
 
 	@Override
@@ -180,7 +187,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition {
 		return lazyInit;
 	}
 
-	protected void setLazyInit(boolean lazyInit) {
+	public void setLazyInit(boolean lazyInit) {
 		this.lazyInit = lazyInit;
 	}
 
@@ -296,8 +303,16 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition {
 	public boolean isMapBean(){
 		return isTypeOf(Map.class);
 	}
-	
-	public boolean isConfigurable() {
+
+    public boolean isInited() {
+        return inited;
+    }
+
+    public void setInited(boolean inited) {
+        this.inited = inited;
+    }
+
+    public boolean isConfigurable() {
 		if(null == configurable) {
 			configurable = beanClass.isAnnotationPresent(Configurable.class); 
 		}
