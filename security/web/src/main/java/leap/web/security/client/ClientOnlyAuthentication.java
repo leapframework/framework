@@ -54,4 +54,9 @@ public class ClientOnlyAuthentication extends AbstractAuthentication {
     public ClientPrincipal getClientPrincipal() {
         return client;
     }
+
+    @Override
+    public String toString() {
+        return "Client[id=" + client.getIdAsString() + "]";
+    }
 }

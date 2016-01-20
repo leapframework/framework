@@ -25,6 +25,7 @@ import leap.core.security.token.SimpleTokenCredentials;
 import leap.core.security.token.TokenCredentials;
 import leap.core.security.token.TokenVerifyException;
 import leap.lang.Out;
+import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.intercepting.State;
@@ -78,18 +79,18 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
     }
 
     @Override
-	public State resolveAuthentication(Request request, Response response, AuthenticationContext context) throws ServletException, IOException {
+	public Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws ServletException, IOException {
 		if(!securityConfig.isAuthenticationTokenEnabled()) {
-            return State.CONTINUE;
+            return Result.empty();
         }
 
 		String token = context.getAuthenticationToken();
 		if(Strings.isEmpty(token)) {
-			return State.CONTINUE;
+			return Result.empty();
 		}
 
         if(getLogoutToken().equals(token)){
-            return State.CONTINUE;
+            return Result.empty();
         }
 
 		TokenCredentials   credentials  = new SimpleTokenCredentials(token);
@@ -100,12 +101,12 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 		    }
 		    
 	        if(!tokenAuthenticator.authenticate(context, credentials, outPrincipal)) {
-	        	return State.CONTINUE;
+	        	return Result.empty();
 	        }
         } catch (TokenVerifyException e) {
         	log.info("Token verify error, " + e.getMessage(), e);
         	removeCookie(request, response);
-        	return State.CONTINUE;
+        	return Result.empty();
         }
 		
 		UserPrincipal principal = outPrincipal.getValue();
@@ -125,9 +126,8 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 
         authc = new TokenAuthentication(principal, credentials);
         authc.setToken(token);
-		context.setAuthentication(authc);
 
-		return State.INTERCEPTED;
+		return Result.of(authc);
 	}
 
 	@Override

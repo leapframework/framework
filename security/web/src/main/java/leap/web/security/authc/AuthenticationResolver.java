@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import javax.servlet.ServletException;
 
+import leap.lang.Result;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
@@ -28,7 +29,7 @@ public interface AuthenticationResolver {
 	/**
 	 * Resolves {@link Authentication} in the request.
      */
-	State resolveAuthentication(Request request,Response response, AuthenticationContext context) throws Throwable;
+	Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
 
 	/**
 	 * Invoked when login success.

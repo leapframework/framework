@@ -59,13 +59,6 @@ public interface Authentication {
 	void setToken(String token) throws IllegalStateException;
 
 	/**
-	 * Returns <code>true</code> if the authentication includes client.
-     */
-	default boolean hasClient() {
-		return getClientPrincipal() != null;
-	}
-
-	/**
 	 * Returns <code>true</code> if the authentication only contains client, no user.
      */
 	default boolean isClientOnly() {
