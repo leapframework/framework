@@ -21,14 +21,12 @@
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-htpl</artifactId>
 			<version>${project.version}</version>
-            <optional>true</optional>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-orm</artifactId>
 			<version>${project.version}</version>
-            <optional>true</optional>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
