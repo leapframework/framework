@@ -15,18 +15,22 @@
  */
 package leap.web.security;
 
-import java.util.Comparator;
-
 import leap.core.web.RequestBase;
 import leap.core.web.RequestMatcher;
 import leap.lang.Args;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 
+import java.util.Comparator;
+
 public class SecuredPath implements RequestMatcher,Comparable<SecuredPath> {
-	
+
+	private static final Log log = LogFactory.get(SecuredPath.class);
+
 	public static Comparator<SecuredPath> COMPARATOR = new Comparator<SecuredPath>() {
 		@Override
 		public int compare(SecuredPath o1, SecuredPath o2) {
@@ -83,19 +87,22 @@ public class SecuredPath implements RequestMatcher,Comparable<SecuredPath> {
 	}
 	
 	public boolean isAllow(Request request, AuthenticationContext context, Authentication authc) {
-		if(allowAnonymous) {
+		if(isAllowAnonymous()) {
 			return true;
 		}
 		
 		if(!authc.isAuthenticated()){
+            log.debug("path [{}] : not authenticated, deny the request.", pathPattern);
 			return false;
 		}
 		
-		if(authc.isRememberMe() && !allowRememberMe){
+		if(authc.isRememberMe() && !isAllowRememberMe()){
+            log.debug("path [{}] : remember-me authentication not allowed.", pathPattern);
 			return false;
 		}
 		
-        if (authc.isClientOnly() && !allowClientOnly) {
+        if (authc.isClientOnly() && !isAllowClientOnly()) {
+            log.debug("path [{}] : client-only authentication not allowed.", pathPattern);
             return false;
         }
 

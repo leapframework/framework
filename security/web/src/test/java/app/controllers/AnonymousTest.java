@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,22 +16,25 @@
 package app.controllers;
 
 import leap.web.security.SecurityTestCase;
-
 import org.junit.Test;
 
-public class HomeControllerTest extends SecurityTestCase {
+public class AnonymousTest extends SecurityTestCase {
 
-	@Test
-	public void testLoginView() {
-		get("/").assertContentContains("return_url");
-	}
-	
-	@Test
-	public void testLoginAndLogout() {
-		login("","admin","1");
-		get("/").assertContentContains("Hello");
-		logout();
-		get("/").assertContentContains("return_url");
-	}
+    @Test
+    public void testAllowAnonymous() {
+        logout();
+        get("/anonymous").assertContentEquals("Hello");
+        get("/anonymous1").assertContentEquals("Hello1");
+    }
+
+    @Test
+    public void testInheritedAnnotation() {
+        logout();
+        ajaxGet("/anonymous2/allow").assertOk();
+        ajaxGet("/anonymous2/deny").assert401();
+
+        ajaxGet("/anonymous3/allow").assertOk();
+        ajaxGet("/anonymous3/deny").assert401();
+    }
 
 }

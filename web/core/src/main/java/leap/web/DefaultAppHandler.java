@@ -42,6 +42,7 @@ import leap.web.cors.CorsConfig;
 import leap.web.debug.DebugDetector;
 import leap.web.error.ErrorInfo;
 import leap.web.exception.BadRequestException;
+import leap.web.exception.RequestHandledException;
 import leap.web.exception.ResponseException;
 import leap.web.format.FormatManager;
 import leap.web.format.ResponseFormat;
@@ -153,40 +154,43 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		DefaultRequestExecution execution = new DefaultRequestExecution();
 		try{
 			boolean	handled = false;
-			try{
+			try {
 				//handle by interceptors
 				handled = State.isIntercepted(interceptors.preHandleRequest(request, response));
-				
+
 				//handle by handlers
-				if(!handled){
+				if (!handled) {
 					handled = handleByHandlers(request, response);
 				}
-				
+
 				//routing to action
-				if(!handled){
+				if (!handled) {
 					DefaultActionContext ac = newActionContext(request, response);
-					
+
 					//resolve action path
-					String path = resolveActionPath(request,response,ac);
-					
-					if(_debug){
-						log.debug("Routing path '{}'",ac.getPath());
+					String path = resolveActionPath(request, response, ac);
+
+					if (_debug) {
+						log.debug("Routing path '{}'", ac.getPath());
 					}
-					
+
 					int routeState = routeAndExecuteAction(request, response, ac);
-					
-					if(routeState == ROUTE_STATE_HANLDED){
+
+					if (routeState == ROUTE_STATE_HANLDED) {
 						handled = true;
-					}else if(routeState == ROUTE_STATE_NOT_HANDLED){
+					} else if (routeState == ROUTE_STATE_NOT_HANDLED) {
 						handled = handleNoAction(request, response, path);
-					}else{
+					} else {
 						return false;
 					}
 				}
-				
-				if(!handled && _debug){
-					log.debug("Request '{}' not handled",request.getPath());
+
+				if (!handled && _debug) {
+					log.debug("Request '{}' not handled", request.getPath());
 				}
+			}catch(RequestHandledException e) {
+				log.debug("Caught a RequestHandledException, stop handle the request.",e);
+				handled = true;
 			}catch(ResponseException e){
 				handled = true;
 				renderResponseException(request, response, e);

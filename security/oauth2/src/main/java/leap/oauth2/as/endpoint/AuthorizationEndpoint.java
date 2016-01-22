@@ -34,7 +34,6 @@ import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
 import leap.oauth2.as.token.AuthzLoginToken;
 import leap.oauth2.as.token.AuthzTokenManager;
-import leap.oauth2.as.token.LoginTokenCredentials;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -86,7 +85,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
 
                 log.debug("Create authentication for user {} by login token", token.getUserId());
                 Result<Authentication> authc = um.createAuthenticationByUserId(token.getUserId());
-                if(authc.isValid()) {
+                if(authc.isPresent()) {
                     context.setAuthentication(authc.get());
                 }
             }
@@ -108,7 +107,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
         
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
-        if(result.isError()) {
+        if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
         
@@ -160,7 +159,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
 
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
-        if(result.isError()) {
+        if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
         
@@ -195,12 +194,12 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             if(null == handler){
                 return State.INTERCEPTED;
             }
-            
+
             Result<AuthzClient> result = handler.validateRequest(request, response, params);
-            if(result.isError()) {
+            if(result.isIntercepted()) {
                 return State.INTERCEPTED;
             }
-            
+
             client = result.get();
         }
         

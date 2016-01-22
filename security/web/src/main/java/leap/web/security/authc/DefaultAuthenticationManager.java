@@ -29,6 +29,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.exception.RequestHandledException;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecuritySessionManager;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
@@ -38,7 +39,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     private static final Log log = LogFactory.get(DefaultAuthenticationManager.class);
 
     protected @Inject SecurityConfig             securityConfig;
-    protected @Inject AuthenticationResolver[]   handlers;
+    protected @Inject AuthenticationResolver[]   resolvers;
     protected @Inject SecuritySessionManager     sessionManager;
     protected @Inject TokenAuthenticationManager tokenAuthenticationManager;
     protected @Inject RememberMeManager          rememberMeManager;
@@ -69,24 +70,31 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
             authc = context.getAuthentication();
 
             if(null == authc) {
-                for(AuthenticationResolver h : handlers){
-					authc = Result.val(h.resolveAuthentication(request, response, context));
-                    if(null != authc) {
+                for(AuthenticationResolver h : resolvers){
+                    Result<Authentication> r = h.resolveAuthentication(request, response, context);
+                    if(null == r || r.isEmpty()) {
+                        continue;
+                    }
+
+                    if(r.isIntercepted()) {
+                        RequestHandledException.throwIt();
+                    }
+
+                    if(r.isPresent()) {
+                        authc = r.get();
                         break;
                     }
                 }
 
                 if(null == authc) {
                     authc = sessionManager.getAuthentication(request);
-
                     if(null != authc) {
                         return authc;
                     }
 
-                    authc = Result.val(tokenAuthenticationManager.resolveAuthentication(request, response, context));
-
+                    authc = Result.value(tokenAuthenticationManager.resolveAuthentication(request, response, context));
                     if(null == authc) {
-                        authc = Result.val(rememberMeManager.resolveAuthentication(request, response, context));
+                        authc = Result.value(rememberMeManager.resolveAuthentication(request, response, context));
                     }
                 }
             }
@@ -120,7 +128,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLoginSuccess(request, response, authc);	
 		}
 
-		for(AuthenticationResolver h : handlers) {
+		for(AuthenticationResolver h : resolvers) {
 			h.onLoginSuccess(request, response, authc);
 		}
 	}
@@ -138,7 +146,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 			rememberMeManager.onLogoutSuccess(request, response);	
 		}
 		
-        for (AuthenticationResolver h : handlers) {
+        for (AuthenticationResolver h : resolvers) {
             h.onLogoutSuccess(request, response);
         }
     }

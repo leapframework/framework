@@ -49,7 +49,7 @@ public class ClientGrantTypeHandler implements GrantTypeHandler {
 		//Authenticate client.
 		Result<AuthzClient> client = clientManager.authenticate(params);
 		if(!client.isPresent()) {
-			OAuth2Errors.invalidClient(response, client.isError() ? client.error().getMessage() : "invalid client credentials");
+			OAuth2Errors.invalidClient(response, "invalid client credentials");
 			return;
 		}
 		

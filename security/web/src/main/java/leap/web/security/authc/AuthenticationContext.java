@@ -42,7 +42,13 @@ public interface AuthenticationContext extends ValidationContext {
      */
 	void setAuthentication(Authentication authc);
 
+	/**
+	 * Optional. Returns the authentication token.
+     */
 	String getAuthenticationToken();
 
+	/**
+	 * Sets the authentication token.
+     */
 	void setAuthenticationToken(String token);
 }

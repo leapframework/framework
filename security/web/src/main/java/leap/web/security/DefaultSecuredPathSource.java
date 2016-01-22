@@ -19,10 +19,14 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 
 public class DefaultSecuredPathSource implements SecuredPathSource {
+
+    private static final Log log = LogFactory.get(DefaultSecuredPathSource.class);
 	
 	private static final PathPattern ANY_PATTERN = new PathPattern() {
 		
@@ -35,7 +39,12 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
 		public String getPattern() {
 			return "/**";
 		}
-	};
+
+        @Override
+        public String toString() {
+            return getPattern();
+        }
+    };
 	
 	private static final SecuredPath ANY  = new SecuredPathBuilder().setPathPattern(ANY_PATTERN).build();
 	private static final SecuredPath NULL = new SecuredPathBuilder().setPathPattern(ANY_PATTERN).build();
@@ -50,14 +59,18 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
 	    if(null != securedPath) {
 	        return securedPath == NULL ? null : securedPath;
 	    }
+
+        log.debug("Matching request {} ...", request.getPath());
 	    
 		SecuredPath[] urls = config.getSecuredPaths();
 		for(int i=0;i<urls.length;i++){
 			SecuredPath u = urls[i];
 			if(u.matches(request)) {
+                log.debug("Matches -> {}", u.pathPattern);
 			    cachedPaths.put(request.getPath(), securedPath);
 				return u;
 			}
+            log.debug("Not matches -> {}", u.pathPattern);
 		}
 		
 		if(config.isAuthenticateAnyRequests()) {
