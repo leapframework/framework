@@ -31,6 +31,7 @@ import leap.web.Response;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.csrf.CSRF;
 
 import javax.servlet.ServletException;
 import java.io.IOException;
@@ -92,8 +93,13 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
                     return State.INTERCEPTED;
                 }
             }
-            
+
+            //Set the authentication.
             context.setAuthentication(authc);
+
+            //Ignore csrf token checking.
+            CSRF.ignore(request.getServletRequest());
+
             return State.CONTINUE;
         } catch (OAuth2InvalidTokenException e) {
             errorHandler.handleInvalidToken(request, response, e.getMessage());

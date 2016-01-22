@@ -17,10 +17,12 @@ package leap.web.security.authc;
 
 import leap.core.annotation.Inject;
 import leap.core.security.Anonymous;
+import leap.core.security.ClientPrincipal;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.ValidationContext;
 import leap.lang.Out;
+import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
@@ -64,35 +66,40 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         Authentication authc = null;
 
         if(State.isContinue(tokenAuthenticationManager.preResolveAuthentication(request, response, context))) {
-            if(null == context.getAuthentication()) {
-                boolean handled = false;
+            authc = context.getAuthentication();
 
+            if(null == authc) {
                 for(AuthenticationResolver h : handlers){
-                    if(h.resolveAuthentication(request, response, context).isIntercepted()){
-                        handled = true;
+					authc = Result.val(h.resolveAuthentication(request, response, context));
+                    if(null != authc) {
                         break;
                     }
                 }
 
-                authc = sessionManager.getAuthentication(request);
-                if(null != authc) {
-                    return authc;
-                }
+                if(null == authc) {
+                    authc = sessionManager.getAuthentication(request);
 
-                if(!handled){
-                    handled = tokenAuthenticationManager.resolveAuthentication(request, response, context).isIntercepted();
-                }
+                    if(null != authc) {
+                        return authc;
+                    }
 
-                if(!handled && securityConfig.isRememberMeEnabled()) {
-                    rememberMeManager.resolveAuthentication(request, response, context);
+                    authc = Result.val(tokenAuthenticationManager.resolveAuthentication(request, response, context));
+
+                    if(null == authc) {
+                        authc = Result.val(rememberMeManager.resolveAuthentication(request, response, context));
+                    }
                 }
             }
 
-            authc = context.getAuthentication();
-            if(null != authc && authc.isAuthenticated() && !authc.isClientOnly()){
-                loginImmediately(request, response, authc);
-            }
+            if(null != authc) {
+                if(null == authc.getUserPrincipal()) {
+                    authc = new WrappedAuthentication(authc,createAnonymous(request, response, context));
+                }
 
+                if(authc.isAuthenticated() && !authc.isClientOnly()) {
+                    loginImmediately(request, response, authc);
+                }
+            }
         }
 
 		return null == authc ? createAnonymousAuthentication(request, response, context) : authc;
@@ -155,4 +162,55 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 		
 		return anonymous;
 	}
+
+    protected static final class WrappedAuthentication implements Authentication {
+
+        private final Authentication wrapped;
+        private final UserPrincipal  user;
+
+        WrappedAuthentication(Authentication wrapped, UserPrincipal user) {
+            this.wrapped = wrapped;
+            this.user    = user;
+        }
+
+        @Override
+        public boolean isAuthenticated() {
+            return wrapped.isAuthenticated();
+        }
+
+        @Override
+        public boolean isRememberMe() {
+            return wrapped.isRememberMe();
+        }
+
+        @Override
+        public Credentials getCredentials() {
+            return wrapped.getCredentials();
+        }
+
+        @Override
+        public UserPrincipal getUserPrincipal() {
+            return user;
+        }
+
+        @Override
+        public ClientPrincipal getClientPrincipal() {
+            return wrapped.getClientPrincipal();
+        }
+
+        @Override
+        public String getToken() {
+            return wrapped.getToken();
+        }
+
+        @Override
+        public void setToken(String token) throws IllegalStateException {
+            wrapped.setToken(token);
+        }
+
+        @Override
+        public String toString() {
+            return wrapped.toString();
+        }
+    }
 }

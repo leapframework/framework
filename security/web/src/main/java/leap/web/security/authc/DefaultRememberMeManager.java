@@ -18,11 +18,11 @@ package leap.web.security.authc;
 import javax.servlet.http.Cookie;
 
 import leap.core.security.UserPrincipal;
+import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.codec.MD5;
 import leap.lang.convert.Converts;
-import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
@@ -38,34 +38,33 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationResolver 
 	private static final Log log = LogFactory.get(DefaultRememberMeManager.class);
 	
 	@Override
-    public State resolveAuthentication(Request request, Response response, AuthenticationContext context) {
+    public Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) {
 		Cookie cookie = getCookie(request);
 		
 		if(null == cookie){
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		if(Strings.isEmpty(cookie.getValue())){
 			//invalid cookie
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		String[] tokens = decodeRememberMeTokens(cookie);
 		if(null == tokens){
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		log.debug("A valid remember-me cookie detected, authenticates it");
-		Authentication auth = authenticateRemembrerMeTokens(request, response, context, tokens);
-		if(null == auth){
+		Authentication authc = authenticateRemembrerMeTokens(request, response, context, tokens);
+		if(null == authc){
 			log.debug("Failed authenticating the remember-me cookie, removes it");
 			removeCookie(request, response, cookie);
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		log.debug("Successful to authenticating the remember-me cookie");
-		context.setAuthentication(auth);
-		return State.INTERCEPTED;
+		return Result.of(authc);
 	}
 	
 	@Override

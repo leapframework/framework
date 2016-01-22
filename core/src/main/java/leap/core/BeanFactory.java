@@ -207,6 +207,14 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * The value of returned {@link Map} is the definition of bean.
 	 */
 	<T> Map<T,BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException;
+
+    /**
+     * Try init the bean (create instance) if not inited.
+     *
+     * <p/>
+     * Returns <code>true</code> if init success, <code>false</code> if already inited.
+     */
+	boolean tryInitBean(BeanDefinition bd);
 	
 	/**
 	 * Returns a new created bean's instance identified by the given id (case sensitive).

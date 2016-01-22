@@ -22,11 +22,19 @@ public interface Result<T> {
         public Object get() {return null;}
         public boolean isPresent() {return false;}
     };
+
+    static boolean ok(Result r) {
+        return null != r && r.isValid();
+    }
+
+    static <T> T val(Result<T> r) {
+        return null == r ? null : r.get();
+    }
     
     @SuppressWarnings("unchecked")
     static <T> Result<T> empty() {
         return (Result<T>)EMPTY;
-    } 
+    }
     
     static <T> Result<T> of(final T value) {
         return new Result<T>(){
@@ -76,7 +84,7 @@ public interface Result<T> {
     default boolean isError() { return false;} 
     
     /**
-     * Returns <code>true</code> if no error and the valie is present.
+     * Returns <code>true</code> if no error and the value is present.
      */
     default boolean isValid() { return isPresent() && !isError(); }
     

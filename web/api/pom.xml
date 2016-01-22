@@ -20,7 +20,7 @@
             <groupId>org.leapframework</groupId>
             <artifactId>leap-oauth2</artifactId>
             <version>${project.version}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
         </dependency>
 		<dependency>
 			<groupId>org.leapframework</groupId>

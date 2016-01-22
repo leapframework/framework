@@ -44,8 +44,11 @@
           class="leap.web.security.user.UsernamePasswordAuthenticator"/>
           
     <!-- User beans -->
-    <bean type="leap.web.security.user.UserStore"   class="leap.web.security.user.DefaultUserStore"   primary="true"/>
     <bean type="leap.web.security.user.UserManager" class="leap.web.security.user.DefaultUserManager" primary="true"/>
+
+    <beans if-class-present="leap.orm.Orm">
+        <bean type="leap.web.security.user.UserStore" class="leap.web.security.user.DefaultUserStore" primary="true"/>
+    </beans>
     
     <!-- Login -->
     <bean type="leap.web.security.login.LoginManager" 

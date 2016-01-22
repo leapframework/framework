@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans" xmlns:util="http://www.leapframework.org/schema/beans/util">
+<beans xmlns="http://www.leapframework.org/schema/beans">
 
 	<!-- 
     <bean name="h2" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" primary="true">
@@ -10,15 +10,16 @@
         <property name="maxActive"		 value="2"/>
     </bean>
     -->
-     
+
+    <!--
     <bean name="derby" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="org.apache.derby.jdbc.EmbeddedDriver" />
         <property name="jdbcUrl"         value="jdbc:derby:target/derby/test;create=true" />
         <property name="maxActive"		 value="2"/>
     </bean>
-    
+    -->
+
     <!-- 
-    
     <bean name="mysql" type="javax.sql.DataSource" class="leap.core.ds.UnPooledDataSource">
         <property name="driverClassName" value="com.mysql.jdbc.Driver" />
         <property name="jdbcUrl"         value="jdbc:mysql://localhost:3306/test" />
@@ -39,9 +40,7 @@
         <property name="username"        value="leap" />
         <property name="password"        value="leap" />
     </bean>      
-    
     -->
     
     <import resource="beans_local.xml" check-existence="false"/>
-    
 </beans>

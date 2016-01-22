@@ -32,13 +32,20 @@
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-webunit</artifactId>
 			<version>${project.version}</version>
-			<scope>provided</scope>
-		</dependency>		
+			<scope>test</scope>
+		</dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-webunit-jsp</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
+            <scope>test</scope>
+        </dependency>
 		<dependency>
-		    <groupId>javax.servlet.jsp.jstl</groupId>
-		    <artifactId>javax.servlet.jsp.jstl-api</artifactId>
-		    <version>${jstl.version}</version>
-		    <scope>provided</scope>
+			<groupId>javax.servlet.jsp.jstl</groupId>
+			<artifactId>javax.servlet.jsp.jstl-api</artifactId>
+			<version>${jstl.version}</version>
+			<scope>provided</scope>
 		</dependency>
         <dependency>
             <groupId>org.webjars</groupId>
@@ -52,19 +59,5 @@
 			<version>${jaxrs.api.version}</version>
 			<scope>provided</scope>
 		</dependency>
-		<!--
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>3.2.4.RELEASE</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-		    <groupId>org.springframework.webflow</groupId>
-		    <artifactId>spring-js</artifactId>
-		    <version>2.3.2.RELEASE</version>
-		    <scope>test</scope>
-		</dependency>	
-		 -->		
 	</dependencies>
 </project>

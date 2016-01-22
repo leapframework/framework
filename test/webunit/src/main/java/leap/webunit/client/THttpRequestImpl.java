@@ -22,7 +22,9 @@ import java.util.List;
 
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
+import leap.lang.http.MimeType;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.http.exception.HttpException;
 import leap.lang.logging.Log;
@@ -151,12 +153,18 @@ class THttpRequestImpl implements THttpRequest {
 			log.debug("Sending '{}' request to '{}'...", method, url);
 			
 			THttpResponseImpl response = new THttpResponseImpl(this, request, client.execute(request) );
-			
-			log.debug("Response result : [status={}, type='{}', length={}]",
-					  response.getStatus(),
-					  response.getContentType(),
-					  response.getContentLength());
-			
+
+            if(log.isDebugEnabled()) {
+                log.debug("Response result : [status={}, type='{}', length={}]",
+                        response.getStatus(),
+                        response.getContentType(),
+                        response.getContentLength());
+
+                MimeType contentType = response.getMimeType();
+                if(null != contentType && ContentTypes.isText(contentType.toString())) {
+                    log.debug("Content -> \n{}", Strings.abbreviate(response.getContent(), 200));
+                }
+            }
 	        return response;
         } catch (Exception e) {
         	throw new HttpException("Error send http request : " + e.getMessage(),e);

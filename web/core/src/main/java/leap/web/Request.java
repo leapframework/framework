@@ -15,6 +15,7 @@
  */
 package leap.web;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.util.Map;
 
@@ -133,6 +134,20 @@ public abstract class Request extends RequestBase {
 	 * @see #getPathExtension()
 	 */
 	public abstract boolean hasPathExtension();
+
+    /**
+     * Retrieves the body of the request as binary data.
+     *
+     * @throws IllegalStateException if getInputStream or getReader method has been called.
+     */
+	public abstract BufferedInputStream peekInputStream() throws IOException;
+
+    /**
+     * Retrieves the body of the request as byte array.
+     *
+     * @throws IllegalStateException if getInputStream or getReader method has been called.
+     */
+    public abstract byte[] peekInputStreamAsBytes() throws IOException;
 	
 	/**
 	 * Returns an array contains all the media types parsed from request header {@link Headers#ACCEPT}.
@@ -153,7 +168,7 @@ public abstract class Request extends RequestBase {
 	public abstract void setThemeName(String themeName);
 	
 	/**
-	 * Returns a immutable map contains all the parameters in current request.
+	 * Returns an immutable map contains all the parameters in current request.
 	 * 
 	 * <p>
 	 * The key is the parameter name.

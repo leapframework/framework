@@ -15,6 +15,9 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.ClientPrincipal;
+import leap.core.security.UserPrincipal;
+
 public abstract  class AbstractAuthentication implements Authentication{
 
     protected String token;
@@ -32,4 +35,18 @@ public abstract  class AbstractAuthentication implements Authentication{
         this.token = token;
     }
 
+    @Override
+    public String toString() {
+        UserPrincipal   user   = getUserPrincipal();
+        ClientPrincipal client = getClientPrincipal();
+
+        StringBuilder s = new StringBuilder();
+        s.append("Authc[user=")
+         .append(null == user ? "n/a" : user.getLoginName())
+         .append(",client=")
+         .append(null == client ? "n/a" : client.getIdAsString())
+         .append("]") ;
+
+        return s.toString();
+    }
 }
