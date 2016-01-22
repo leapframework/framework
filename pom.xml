@@ -24,6 +24,11 @@
 		</snapshotRepository>
 	</distributionManagement>
 	
+	<scm>
+		<developerConnection>scm:git:https://github.com/leapframework/framework.git</developerConnection>
+		<tag>v@{project.version}</tag>
+	</scm>
+	
 	<properties>
 		<!-- common properties -->
 		<common.encoding>UTF-8</common.encoding>
