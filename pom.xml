@@ -55,7 +55,7 @@
 		<plugins.install.version>2.3.1</plugins.install.version>
 		<plugins.jar.version>2.3.2</plugins.jar.version>
 		<plugins.deploy.version>2.7</plugins.deploy.version>
-		<plugins.release.version>2.2.1</plugins.release.version>
+		<plugins.release.version>2.5.3</plugins.release.version>
 		<plugins.dependency.version>2.1</plugins.dependency.version>
 		<plugins.eclipse.version>2.9</plugins.eclipse.version>
 
