@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-pom</artifactId>
-	<version>0.1.0b</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<distributionManagement>
