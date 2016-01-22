@@ -38,7 +38,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected LoginContext         loginContext;
     protected LogoutContext        logoutContext;
 	protected String			   authenticationToken;
-	
+
 	public DefaultSecurityContextHolder(SecurityConfig config, Request request){
 		this.config  = config;
 		this.request = request;
@@ -93,8 +93,9 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		}
 	    return logoutContext;
     }
-	
-	protected abstract class AbstractContext implements AuthenticationContext {
+
+    protected abstract class AbstractContext implements AuthenticationContext {
+
 		@Override
         public SecurityConfig getSecurityConfig() {
 	        return config;
@@ -105,7 +106,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	        return DefaultSecurityContextHolder.this;
         }
 
-		@Override
+        @Override
         public Validation validation() {
 	        return DefaultSecurityContextHolder.this.validation();
         }

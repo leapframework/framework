@@ -28,6 +28,9 @@ public interface AuthenticationResolver {
 
 	/**
 	 * Resolves {@link Authentication} in the request.
+	 *
+	 * <p/>
+	 * Returns a failure result if failed to resolve authentication and the request was handled by the resolver.
      */
 	Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
 

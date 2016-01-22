@@ -19,27 +19,16 @@ import java.util.function.Consumer;
 
 public class Out<T> implements Valued<T>,Consumer<T>,Result<T> {
 
-    protected T     value;
-    protected Error error;
-    
+    protected T value;
+
 	@Override
     public T get() {
         return value;
     }
 
     @Override
-    public Error error() {
-        return error;
-    }
-    
-    @Override
     public boolean isPresent() {
         return null != value;
-    }
-    
-    @Override
-    public boolean isError() {
-        return null != error;
     }
     
     @Override
@@ -58,48 +47,12 @@ public class Out<T> implements Valued<T>,Consumer<T>,Result<T> {
 	
 	public Out<T> ok(T value) {
 	    this.value = value;
-	    this.error = null;
 	    return this;
 	}
-	
-	public Out<T> err() {
-	    return err(true);
-	}
-	
-	public Out<T> err(boolean error) {
-	    if(error) {
-	        this.error = Error.EMPTY;
-	    }else{
-	        this.error = null;
-	    }
-	    return this;
-	}
-	
-    public Out<T> err(Error error) {
-        this.error = error;
-        return this;
-    }
-    
-    public Out<T> err(String message) {
-        this.error = new Error(message);
-        return this;
-    }
-    
-    public Out<T> err(String code, String message) {
-        this.error = new Error(code, message);
-        return this;
-    }
-    
-    public Out<T> err(Throwable error) {
-        this.error = new Error(error);
-        return this;
-    }
 
     @Override
     public String toString() {
-        if(null != error) {
-            return error.toString();
-        }else if(null == value){
+        if(null == value){
             return "null";
         }else{
             return value.toString();

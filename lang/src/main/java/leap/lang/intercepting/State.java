@@ -16,10 +16,10 @@
 package leap.lang.intercepting;
 
 public class State {
-	
-	public static final int SC_CONTINUE         = -1;
+
+	public static final int SC_CONTINUE           = -1;
 	public static final int SC_CONTINUE_PROCESSED = 0;
-	public static final int SC_INTERCEPTED      = 1;
+	public static final int SC_INTERCEPTED        = 1;
 	
 	public static State CONTINUE           = new State(SC_CONTINUE);
 	public static State CONTINUE_PROCESSED = new State(SC_CONTINUE_PROCESSED);

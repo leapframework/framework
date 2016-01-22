@@ -17,7 +17,6 @@ package leap.oauth2.as.endpoint.authorize;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
-import leap.lang.Out;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.http.QueryStringBuilder;
@@ -41,8 +40,6 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
     
     @Override
     public Result<AuthzClient> validateRequest(Request request, Response response, OAuth2Params params) throws Throwable {
-        Out<AuthzClient> result = new Out<>();
-        
         Validation validation = request.getValidation();
         
         String clientId = params.getClientId();
@@ -50,7 +47,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             log.debug("error : client_id required");
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "client_id required");
             request.forwardToView(config.getErrorView());
-            return result.err();
+            return Result.intercepted();
         }
         
         String redirectUri = params.getRedirectUri();
@@ -58,7 +55,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             log.debug("error : redirect_uri required");
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "redirect_uri required");
             request.forwardToView(config.getErrorView());
-            return result.err();
+            return Result.intercepted();
         }
         
         AuthzClient client = clientManager.loadClientById(clientId);
@@ -66,24 +63,24 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             log.debug("error : client_id {} not found", clientId);
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "invalid client_id");
             request.forwardToView(config.getErrorView());
-            return result.err();
+            return Result.intercepted();
         }
         
         if(!client.isEnabled()) {
             log.debug("error : client '{}' disabled", clientId);
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "client disabled");
             request.forwardToView(config.getErrorView());
-            return result.err();
+            return Result.intercepted();
         }
 
         if(!client.acceptsRedirectUri(redirectUri)) {
             log.debug("error : mismatch redirect_uri '{}' of client '{}'", redirectUri, clientId);
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "invalid redirect_uri");
             request.forwardToView(config.getErrorView());
-            return result.err();         
+            return Result.intercepted();
         }
         
-        return result.ok(client);
+        return Result.of(client);
     }
     
     protected void sendSuccessRedirect(Response response, AuthzAuthentication authc, QueryStringBuilder qs) {

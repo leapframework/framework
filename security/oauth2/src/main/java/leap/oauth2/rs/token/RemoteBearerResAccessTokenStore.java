@@ -28,6 +28,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 
 public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore {
@@ -61,22 +62,23 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
                 JsonValue json = JSON.decodeToJsonValue(content);
                 
                 if(!json.isMap()) {
-                    return Result.err("Not a json object");
+                    throw new OAuth2InternalServerException("Invalid response from auth server : not a json map");
                 }else{
                     Map<String, Object> map = json.asMap();
                     String error = (String)map.get("error");
                     if(Strings.isEmpty(error)) {
                         return Result.of(createAccessTokenDetails(map));
                     }else{
-                        return Result.err(error + " : " + map.get("error_description"));
+                        log.info("{} : {}", error, map.get("error_description"));
+                        return Result.empty();
                     }
                 }
             } catch (Exception e) {
                 log.error(e);
-                return Result.err(e);
+                return Result.empty();
             }
         }else{
-            return Result.err("Not a json response");
+            throw new OAuth2InternalServerException("Invalid response from auth server");
         }
     }
 

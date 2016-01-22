@@ -30,6 +30,11 @@ public class ResponseException extends AppException {
 		this.content = null;
 	}
 
+	public ResponseException(int status, Content content) {
+		this.status  = status;
+		this.content = content;
+	}
+
 	public ResponseException(int status, String message) {
 		super(message);
 		this.status  = status;
@@ -42,11 +47,6 @@ public class ResponseException extends AppException {
 		this.content = null;
 	}
 	
-	public ResponseException(int status, Content content) {
-		this.status  = status;
-		this.content = content;
-	}
-
 	public ResponseException(int status, String message, Throwable cause) {
 		super(message, cause);
 		this.status  = status;

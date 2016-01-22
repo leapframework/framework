@@ -39,6 +39,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
+import leap.web.exception.RequestHandledException;
 import leap.web.exception.ResponseException;
 
 public class AppFilter implements Filter {
@@ -89,30 +90,31 @@ public class AppFilter implements Filter {
 		response.setRequest(request);
 		AppContext.setCurrent(appContext);
 		RequestContext.setCurrent(request);
-		try{
+		try {
 			//handle assets request
-			if(null != assetHandler && assetHandler.matches(request)){
-				if(handleAssetRequest(request,response)){
-					return;	
+			if (null != assetHandler && assetHandler.matches(request)) {
+				if (handleAssetRequest(request, response)) {
+					return;
 				}
 			}
-			
+
 			//handle other request
-			if(app.filters().isEmpty()){
-				checkIgnoreAndDoService(request,response,chain);
-			}else{
+			if (app.filters().isEmpty()) {
+				checkIgnoreAndDoService(request, response, chain);
+			} else {
 				//execute filters first
 				FilterChainBase chain1 =
 						new FilterChainBase(app.filters()) {
 							@Override
 							protected void doNext(RequestBase requestBase, ResponseBase responseBase) throws ServletException, IOException {
-								checkIgnoreAndDoService(request,response,chain);
+								checkIgnoreAndDoService(request, response, chain);
 							}
 						};
-						
+
 				chain1.doFilter(request, response);
 			}
-			
+		}catch(RequestHandledException e){
+			log.debug("Caught a RequestHandledException by filter, stop handle request.");
 		}catch(Throwable e){
 			boolean handled = false;
 			
