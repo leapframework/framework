@@ -22,75 +22,187 @@ import leap.web.route.Routes;
 
 import java.util.Set;
 
-
+/**
+ * The configurator of {@link WebConfig}.
+ */
 public interface WebConfigurator {
-	
+
+    /**
+     * The prefix of config properties.
+     */
 	String CONFIG_PREFIX = "webmvc.";
 	
-	String CONFIG_DEFAULT_CHARSET        = CONFIG_PREFIX + "default-charset";
-	String CONFIG_DEFAULT_LOCALE         = CONFIG_PREFIX + "default-locale";
-	String CONFIG_DEFAULT_THEME	         = CONFIG_PREFIX + "default-theme";
-	String CONFIG_THEMES_LOCATION		 = CONFIG_PREFIX + "themes-location";
+	String CONFIG_DEFAULT_THEME          = CONFIG_PREFIX + "default-theme";
+	String CONFIG_THEMES_LOCATION        = CONFIG_PREFIX + "themes-location";
 	String CONFIG_VIEWS_LOCATION         = CONFIG_PREFIX + "views-location";
 	String CONFIG_DEFAULT_FORMAT         = CONFIG_PREFIX + "default-format";
 	String CONFIG_FORMAT_PARAMETER       = CONFIG_PREFIX + "format-parameter";
-	String CONFIG_JSESSIONID_PARAMETER   = CONFIG_PREFIX + "jsessionid-parameter";
-	String CONFIG_TRIM_PARAMETERS		 = CONFIG_PREFIX + "trim-parameters";
+	String CONFIG_TRIM_PARAMETERS        = CONFIG_PREFIX + "trim-parameters";
 	String CONFIG_ALLOW_FORMAT_EXTENSION = CONFIG_PREFIX + "allow-format-extension";
 	String CONFIG_ALLOW_FORMAT_PARAMETER = CONFIG_PREFIX + "allow-format-parameter";
 	String CONFIG_ALLOW_ACTION_EXTENSION = CONFIG_PREFIX + "allow-action-extension";
 	String CONFIG_ACTION_EXTENSIONS      = CONFIG_PREFIX + "action-extensions";
-	String CONFIG_CORS_ENABLED			 = CONFIG_PREFIX + "cors-enabled";
-	
-	String DEFAULT_VIEWS_LOCATION       = "/WEB-INF/views";
-	String DEFAULT_THEMES_LOCATION      = "/WEB-INF/themes";
-	String DEFAULT_THEME_NAME		    = "default";
-	String DEFAULT_FORMAT_NAME	        = "json";
-	String DEFAULT_FORMAT_PARAMETER     = "$format";
-	String DEFAULT_EVENT_PARAMETER      = "$event";
-	String DEFAULT_JSESSIONID_PARAMETER = ";jsessionid";
-	
+	String CONFIG_CORS_ENABLED           = CONFIG_PREFIX + "cors-enabled";
+
+	String DEFAULT_VIEWS_LOCATION    = "/WEB-INF/views";
+	String DEFAULT_THEMES_LOCATION   = "/WEB-INF/themes";
+	String DEFAULT_THEME_NAME        = "default";
+	String DEFAULT_FORMAT_NAME       = "json";
+	String DEFAULT_FORMAT_PARAMETER  = "$format";
+	String DEFAULT_EVENT_PARAMETER   = "$event";
+	String DEFAULT_JSESSIONID_PREFIX = ";jsessionid";
+
+    /**
+     * Returns the configuration.
+     */
 	WebConfig config();
-	
+
+    /**
+     * Returns the {@link Routes} for configuring routes table.
+     */
 	Routes routes();
-	
+
+    /**
+     * Returns the {@link ErrorViews} for configuring error views.
+     */
 	ErrorViews errorViews();
-	
+
+    /**
+     * Returns the {@link ErrorCodes} for configuring error codes.
+     */
 	ErrorCodes errorCodes();
-	
+
+    /**
+     * Returns the {@link FilterMappings} for configuring filter mappings.
+     */
 	FilterMappings filters();
-	
+
+    /**
+     * Returns the {@link WebInterceptors} for configuring interceptors.
+     */
 	WebInterceptors interceptors();
-	
-	WebConfigurator setViewsLocation(String viewsLocation);
-	
-	WebConfigurator setDefaultFormatName(String defaultFormatName);
-	
-	WebConfigurator setThemesLocation(String themesLocation);
 
-	WebConfigurator setDefaultThemeName(String defaultThemeName);
+    /**
+     * Optional.
+     *
+     * Sets the name of default request/response data format.
+     *
+     * <p/>
+     * Default is {@link #DEFAULT_FORMAT_NAME}.
+     */
+	WebConfigurator setDefaultFormatName(String name);
 
-	WebConfigurator setFormatParameter(String formatParameter);
+    /**
+     * Optional.
+     *
+     * Sets the name of default theme.
+     *
+     * <p/>
+     * Default is {@link #DEFAULT_THEME_NAME}.
+     */
+	WebConfigurator setDefaultThemeName(String name);
 
-	WebConfigurator setEventParameter(String eventParameter);
-	
-	WebConfigurator setJsessionidParameter(String p);
+    /**
+     * Optional.
+     *
+     * Sets the parameter name for resolving request/response data format.
+     *
+     * <p/>
+     * Default is {@link #DEFAULT_FORMAT_PARAMETER}
+     */
+	WebConfigurator setFormatParameterName(String name);
 
-	WebConfigurator setAllowFormatExtension(boolean allowFormatExtension);
+    /**
+     * Optional.
+     *
+     * Sets the prefix string of jsessionid value in request path.
+     *
+     * <p/>
+     * Default is {@link #DEFAULT_JSESSIONID_PREFIX}.
+     */
+	WebConfigurator setJsessionidPrefix(String p);
 
-	WebConfigurator setAllowFormatParameter(boolean allowFormatParameter);
+    /**
+     * Optional.
+     *
+     * Sets enable or disable format extension in request path.
+     *
+     * <p/>
+     * Default is enabled.
+     */
+	WebConfigurator setFormatExtensionEnabled(boolean enabled);
 
-	WebConfigurator setAllowActionExtension(boolean allowActionExtension);
+    /**
+     * Optional.
+     *
+     * Sets enable or disable resolving request/response data format by request parameter, such as <code>.json</code>.
+     *
+     * <p/>
+     * Default is enabled.
+     */
+	WebConfigurator setFormatParameterEnabled(boolean enabled);
 
-	WebConfigurator setCorsEnabled(boolean corsEnabled);
-	
-	WebConfigurator setTrimParameters(boolean trimParameters);
-	
-	WebConfigurator setCookieDomain(String cookieDomain);
-	
+    /**
+     * Optional.
+     *
+     * Sets enable of disable action extension(s) in request path, such as <code>.do</code>.
+     *
+     * <p/>
+     * Default is enabled.
+     */
+	WebConfigurator setActionExtensionEnabled(boolean enabled);
+
+    /**
+     * Optional.
+     *
+     * Sets enable or disable CROS for all requests by default.
+     *
+     * <p/>
+     * Default is disabled.
+     */
+	WebConfigurator setCorsEnabled(boolean enabled);
+
+    /**
+     * Optional.
+     *
+     * Sets enable or disable trims all request parameters automatically by default.
+     *
+     * <p/>
+     * Default is enabled.
+     */
+	WebConfigurator setAutoTrimParameters(boolean enabled);
+
+    /**
+     * Optional.
+     *
+     * Sets the domain name for writing cookie in response.
+     *
+     * <p/>
+     * See {@link javax.servlet.http.Cookie#setDomain(String)} for details.
+     *
+     * <p/>
+     * Default is no domain name specified.
+     */
+	WebConfigurator setCookieDomain(String domain);
+
+    /**
+     * Optional.
+     *
+     * Sets the action extension(s).
+     */
 	WebConfigurator setActionExtensions(Set<String> extensions);
-	
+
+    /**
+     * Optional.
+     *
+     * Sets the action extension(s).
+     */
 	WebConfigurator setActionExtensions(String... extensions);
-	
-	WebConfigurator addActionExtension(String extension) throws IllegalArgumentException;
+
+    /**
+     * Adds an action extension.
+     *
+     * @param extension the extension name without dot prefix.
+     */
+	WebConfigurator addActionExtension(String extension);
 }

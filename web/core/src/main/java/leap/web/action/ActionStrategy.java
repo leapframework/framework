@@ -18,7 +18,10 @@ package leap.web.action;
 import leap.core.web.path.PathTemplate;
 
 public interface ActionStrategy {
-	
+
+	/**
+	 *
+     */
 	String getIndexActionName();
 	
 	boolean isController(Class<?> cls);

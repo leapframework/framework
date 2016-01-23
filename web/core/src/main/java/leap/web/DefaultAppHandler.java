@@ -276,9 +276,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		String path = null;
 		
 		if(request.hasPathExtension()){
-			if(webConfig.isAllowActionExtension() && webConfig.getActionExtensions().contains(request.getPathExtension())){
+			if(webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(request.getPathExtension())){
 				path = request.getServicePathWithoutExtension();
-			}else if(webConfig.isAllowFormatExtension()){
+			}else if(webConfig.isFormatExtensionEnabled()){
 				ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
 				if(null != fmt){
 					ac.setResponseFormat(fmt);

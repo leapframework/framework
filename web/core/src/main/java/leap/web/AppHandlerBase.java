@@ -46,7 +46,7 @@ public abstract class AppHandlerBase implements AppHandler,PostCreateBean {
 
     protected @M App    app;
     protected @R String homePath;
-	
+
 	@Override
     public void setApp(App app) {
 		this.app = app;
