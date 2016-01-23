@@ -22,7 +22,6 @@ import javax.servlet.*;
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 
@@ -34,12 +33,10 @@ import leap.core.web.RequestIgnore;
 import leap.core.web.ResponseBase;
 import leap.lang.New;
 import leap.lang.http.HTTP;
-import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
-import leap.web.exception.RequestHandledException;
 import leap.web.exception.ResponseException;
 
 public class AppFilter implements Filter {
@@ -113,8 +110,8 @@ public class AppFilter implements Filter {
 
 				chain1.doFilter(request, response);
 			}
-		}catch(RequestHandledException e){
-			log.debug("Caught a RequestHandledException by filter, stop handle request.");
+		}catch(RequestIntercepted e){
+			log.debug("Caught a RequestIntercepted Exception by app filter.");
 		}catch(Throwable e){
 			boolean handled = false;
 			

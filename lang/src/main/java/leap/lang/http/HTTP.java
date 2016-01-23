@@ -163,6 +163,8 @@ public class HTTP {
      * Enumeration of HTTP method.
      */
 	public static enum Method {
+		NONE,
+
 		GET,
 		
 		POST,
@@ -178,6 +180,18 @@ public class HTTP {
 		HEAD,
 		
 		TRACE;
+
+        public boolean isNone() {
+            return this == NONE;
+        }
+
+        public boolean isGet() {
+            return this == GET;
+        }
+
+        public boolean isPost() {
+            return this == POST;
+        }
 	}
 	
     /**

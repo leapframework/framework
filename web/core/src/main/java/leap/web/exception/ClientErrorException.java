@@ -18,35 +18,35 @@ package leap.web.exception;
 import leap.web.Content;
 
 /**
- * A base runtime application exception indicating a server error (HTTP 5xx status codes).
+ * A base runtime application exception indicating a client request error (HTTP 4xx status codes).
  */
-public class ServerErrorException extends ResponseException {
+public class ClientErrorException extends ResponseException {
 
-    public ServerErrorException(int status) {
+    public ClientErrorException(int status) {
         super(status);
     }
 
-    public ServerErrorException(int status, Content content) {
+    public ClientErrorException(int status, Content content) {
         super(status, content);
     }
 
-    public ServerErrorException(int status, String message) {
+    public ClientErrorException(int status, String message) {
         super(status, message);
     }
 
-    public ServerErrorException(int status, Throwable cause) {
+    public ClientErrorException(int status, Throwable cause) {
         super(status, cause);
     }
 
-    public ServerErrorException(int status, String message, Throwable cause) {
+    public ClientErrorException(int status, String message, Throwable cause) {
         super(status, message, cause);
     }
 
-    public ServerErrorException(int status, String message, Content content) {
+    public ClientErrorException(int status, String message, Content content) {
         super(status, message, content);
     }
 
-    public ServerErrorException(int status, String message, Content content, Throwable cause) {
+    public ClientErrorException(int status, String message, Content content, Throwable cause) {
         super(status, message, content, cause);
     }
 

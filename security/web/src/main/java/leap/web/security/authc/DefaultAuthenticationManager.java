@@ -28,8 +28,8 @@ import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
+import leap.web.RequestIntercepted;
 import leap.web.Response;
-import leap.web.exception.RequestHandledException;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecuritySessionManager;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
@@ -77,7 +77,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
                     }
 
                     if(r.isIntercepted()) {
-                        RequestHandledException.throwIt();
+                        RequestIntercepted.throwIt();
                     }
 
                     if(r.isPresent()) {

@@ -15,6 +15,8 @@
  */
 package leap.web.annotation;
 
+import leap.lang.http.HTTP;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
@@ -27,8 +29,8 @@ import java.lang.annotation.Target;
 public @interface RequestMapping {
 
 	String path() default "";
-	
-	String method() default "";
+
+	HTTP.Method method() default HTTP.Method.NONE;
 	
 	String params() default "";
 	

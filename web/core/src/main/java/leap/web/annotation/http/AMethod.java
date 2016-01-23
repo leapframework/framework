@@ -22,9 +22,12 @@ import java.lang.annotation.Target;
 
 import leap.lang.annotation.Internal;
 
+/**
+ * The annotation of http method annotation.
+ */
 @Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Internal
-public @interface VERB {
+public @interface AMethod {
 
 }

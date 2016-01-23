@@ -22,7 +22,6 @@ import java.util.List;
 
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
-import leap.core.BeanFactoryAware;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Classes;
 import leap.lang.Strings;
@@ -36,29 +35,28 @@ import leap.web.annotation.NonController;
 import leap.web.annotation.Path;
 import leap.web.annotation.RequestMapping;
 import leap.web.annotation.RequestMappings;
-import leap.web.annotation.http.VERB;
+import leap.web.annotation.http.AMethod;
 
-public class DefaultActionStrategy implements ActionStrategy,BeanFactoryAware,AppAware {
-	
-	public static final String CONTROLLER_SUFFIX      = "Controller";
-	public static final String[] CONTROLLER_PACKAGES  = new String[]{"controllers","controller"};
-	
-	public static final String DEFAULT_HOME_CONTROLLER_NAME = "home";
-	public static final String DEFAULT_INDEX_ACTION_NAME    = "index";
-	
-	protected App    	  app;
+/**
+ * The default implementation of {@link ActionStrategy}.
+ */
+public class DefaultActionStrategy implements ActionStrategy,AppAware {
+
+    public static final String   CONTROLLER_SUFFIX   = "Controller";
+    public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
+
+    public static final String DEFAULT_HOME_CONTROLLER_NAME = "home";
+    public static final String DEFAULT_INDEX_ACTION_NAME    = "index";
+
+    protected App    	  app;
 	protected BeanFactory beanFactory;
 	protected String 	  homeControllerName = DEFAULT_HOME_CONTROLLER_NAME;
 	protected String 	  indexActionName    = DEFAULT_INDEX_ACTION_NAME;
 	
     @Override
     public void setApp(App app) {
-    	this.app = app;
-    }
-
-	@Override
-    public void setBeanFactory(BeanFactory beanFactory) {
-    	this.beanFactory = beanFactory;
+    	this.app         = app;
+        this.beanFactory = app.factory();
     }
 
 	public String getHomeControllerName() {
@@ -181,7 +179,7 @@ public class DefaultActionStrategy implements ActionStrategy,BeanFactoryAware,Ap
 		
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
-			if(a.annotationType().isAnnotationPresent(VERB.class)){
+			if(a.annotationType().isAnnotationPresent(AMethod.class)){
 				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
 				break;
 			}
@@ -234,7 +232,7 @@ public class DefaultActionStrategy implements ActionStrategy,BeanFactoryAware,Ap
 	}
 	
 	protected ActionMapping createActionMapping(ActionBuilder action, String defaultMethod, String defaultPath, RequestMapping mapping) {
-		String method = Strings.firstNotEmpty(mapping.method(),defaultMethod);
+		String method = mapping.method().isNone() ? defaultMethod : mapping.method().name();
 		String path   = Strings.firstNotEmpty(mapping.path(),defaultPath);
 		String params = mapping.params();
 		

@@ -31,7 +31,7 @@ import leap.web.action.FailureHandler;
 public @interface Failure {
 	
 	/**
-	 * Failure if the exception throwed.
+	 * Failure if the exception threw.
 	 */
 	Class<?> exception() default Object.class;
 	

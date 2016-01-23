@@ -340,7 +340,7 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	@SuppressWarnings("unchecked")
     protected List<ActionInterceptor> resolveActionInterceptors(App app,ControllerHolder ch,ReflectMethod m) {
-		List<ActionInterceptor> interceptors = new ArrayList<ActionInterceptor>();
+		List<ActionInterceptor> interceptors = new ArrayList<>();
 		
 		InterceptedBy a = m.getAnnotation(InterceptedBy.class);
 		if(null != a && a.value().length > 0) {
@@ -380,10 +380,6 @@ public class DefaultAppInitializer implements AppInitializer {
 			return controller;
 		}
 
-		public ReflectClass reflectClass() {
-			return reflectClass;
-		}
-		
 		public Class<?> cls(){
 			return reflectClass.getReflectedClass();
 		}

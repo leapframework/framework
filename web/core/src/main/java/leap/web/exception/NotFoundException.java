@@ -18,7 +18,7 @@ package leap.web.exception;
 import leap.lang.http.HTTP;
 import leap.web.Content;
 
-public class NotFoundException extends ResponseException {
+public class NotFoundException extends ClientErrorException {
 
 	public NotFoundException() {
 	    super(HTTP.SC_NOT_FOUND);

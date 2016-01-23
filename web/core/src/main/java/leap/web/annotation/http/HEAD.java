@@ -23,6 +23,6 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @AMethod
-public @interface PATCH {
+public @interface HEAD {
 
 }
