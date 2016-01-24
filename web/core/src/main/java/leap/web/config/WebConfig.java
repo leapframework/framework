@@ -78,7 +78,7 @@ public interface WebConfig {
      * Returns the request parameter name for resolving request data format.
      *
      * <p/>
-     * Default is {@link WebConfigurator#DEFAULT_FORMAT_PARAMETER}.
+     * Default is {@link WebConfigurator#DEFAULT_FORMAT_PARAMETER_NAME}.
      */
     String getFormatParameterName();
     
@@ -133,6 +133,32 @@ public interface WebConfig {
      * Default is <code>true</code>.
      */
     boolean isFormatParameterEnabled();
+
+    /**
+     * Required.
+     *
+     * Returns the name of home controller.
+     *
+     * <p/>
+     * Home controller's name is an initial config property, must be configured before the initialzation of app.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_HOME_CONTROLLER_NAME}.
+     */
+    String getHomeControllerName();
+
+    /**
+     * Required.
+     *
+     * Returns the name of index action.
+     *
+     * <p/>
+     * Index action's name is an initial config property, must be configured before the initialization of app.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_INDEX_ACTION_NAME}.
+     */
+    String getIndexActionName();
 
     /**
      * Returns an immutable {@link Set} contains the action extensions.

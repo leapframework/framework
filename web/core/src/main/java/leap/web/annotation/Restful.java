@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app1;
+package leap.web.annotation;
 
-import leap.web.WebTestCase;
+import java.lang.annotation.*;
 
-public class AppTest extends WebTestCase {
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Controller
+public @interface Restful {
 
-
-	
 }

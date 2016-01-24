@@ -32,7 +32,7 @@ public class OpenIDAuthTest extends OpenIdTestBase {
                 "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=" + Urls.encode("code id_token");
 
         login();
-        String redirectUrl = get(uri).assertRecirect().getRedirectUrl();
+        String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
 
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
 

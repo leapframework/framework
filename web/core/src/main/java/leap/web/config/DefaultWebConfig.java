@@ -20,9 +20,7 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import leap.core.BeanFactory;
-import leap.core.annotation.Configurable;
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
+import leap.core.annotation.*;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Args;
 import leap.lang.path.Paths;
@@ -41,18 +39,20 @@ import leap.web.theme.ThemeManager;
 @Configurable(prefix="webmvc")
 public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBean {
 	
-	protected String  viewsLocation          = DEFAULT_VIEWS_LOCATION;
-	protected String  themesLocation         = DEFAULT_THEMES_LOCATION;
-	protected String  defaultThemeName       = DEFAULT_THEME_NAME;
-	protected String  defaultFormatName      = DEFAULT_FORMAT_NAME;
-	protected String  formatParameter        = DEFAULT_FORMAT_PARAMETER;
-	protected String  jsessionidPrefix       = DEFAULT_JSESSIONID_PREFIX;
-	protected boolean autoTrimParameters     = true;
-	protected boolean formatExtensionEnabled = true;
-	protected boolean formatParameterEnabled = true;
-	protected boolean actionExtensionEnabled = true;
-	protected boolean corsEnabled            = false;
-	protected String  cookieDomain           = null;
+	protected @R String  viewsLocation          = DEFAULT_VIEWS_LOCATION;
+	protected @R String  themesLocation         = DEFAULT_THEMES_LOCATION;
+	protected @R String  defaultThemeName       = DEFAULT_THEME_NAME;
+	protected @R String  defaultFormatName      = DEFAULT_FORMAT_NAME;
+	protected @R String  formatParameterName    = DEFAULT_FORMAT_PARAMETER_NAME;
+	protected @R String  jsessionidPrefix       = DEFAULT_JSESSIONID_PREFIX;
+    protected @R String  homeControllerName     = DEFAULT_HOME_CONTROLLER_NAME;
+    protected @R String  indexActionName        = DEFAULT_INDEX_ACTION_NAME;
+	protected @R boolean autoTrimParameters     = true;
+	protected @R boolean formatExtensionEnabled = true;
+	protected @R boolean formatParameterEnabled = true;
+	protected @R boolean actionExtensionEnabled = true;
+	protected @R boolean corsEnabled            = false;
+	protected @N String  cookieDomain           = null;
 
 	protected @Inject @M Routes          routes;
 	protected @Inject @M FilterMappings  filters;
@@ -112,7 +112,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	}
 
 	public String getFormatParameterName() {
-		return formatParameter;
+		return formatParameterName;
 	}
 
 	@Override
@@ -148,8 +148,18 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	public boolean isAutoTrimParameters() {
 		return autoTrimParameters;
 	}
-	
-	@Override
+
+    @Override
+    public String getHomeControllerName() {
+        return homeControllerName;
+    }
+
+    @Override
+    public String getIndexActionName() {
+        return indexActionName;
+    }
+
+    @Override
     public Set<String> getActionExtensions() {
 	    return actionExtensionsImmutableView;
     }
@@ -211,7 +221,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 
 	@Configurable.Property
 	public WebConfigurator setFormatParameterName(String formatParameter) {
-		this.formatParameter = formatParameter;
+		this.formatParameterName = formatParameter;
 		return this;
 	}
 

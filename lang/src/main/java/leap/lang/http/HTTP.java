@@ -205,7 +205,7 @@ public class HTTP {
      * @see <a href="http://en.wikipedia.org/wiki/List_of_HTTP_status_codes">List of HTTP status codes - Wikipedia</a>
      */
     //from spring framework
-    public static enum Status {
+    public enum Status {
 
     	// 1xx Informational
 

@@ -319,7 +319,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				return ResultResultProcessor.INSTANCE;
 			}
 			
-			//The return type is Renderable
+			//The return type is Renderable.
 			if(Renderable.class.isAssignableFrom(returnType)){
 				return RenderableResultProcessor.INSTANCE;
 			}
@@ -329,7 +329,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				return new StringResultProcessor(app, route);
 			}
 			
-			//Render the return value by resposne formats 
+			//Render the return value by response formats
 			return new FormattingResultProcessor(app,route);
 		}
 		

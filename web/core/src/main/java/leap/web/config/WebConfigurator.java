@@ -27,30 +27,15 @@ import java.util.Set;
  */
 public interface WebConfigurator {
 
-    /**
-     * The prefix of config properties.
-     */
-	String CONFIG_PREFIX = "webmvc.";
-	
-	String CONFIG_DEFAULT_THEME          = CONFIG_PREFIX + "default-theme";
-	String CONFIG_THEMES_LOCATION        = CONFIG_PREFIX + "themes-location";
-	String CONFIG_VIEWS_LOCATION         = CONFIG_PREFIX + "views-location";
-	String CONFIG_DEFAULT_FORMAT         = CONFIG_PREFIX + "default-format";
-	String CONFIG_FORMAT_PARAMETER       = CONFIG_PREFIX + "format-parameter";
-	String CONFIG_TRIM_PARAMETERS        = CONFIG_PREFIX + "trim-parameters";
-	String CONFIG_ALLOW_FORMAT_EXTENSION = CONFIG_PREFIX + "allow-format-extension";
-	String CONFIG_ALLOW_FORMAT_PARAMETER = CONFIG_PREFIX + "allow-format-parameter";
-	String CONFIG_ALLOW_ACTION_EXTENSION = CONFIG_PREFIX + "allow-action-extension";
-	String CONFIG_ACTION_EXTENSIONS      = CONFIG_PREFIX + "action-extensions";
-	String CONFIG_CORS_ENABLED           = CONFIG_PREFIX + "cors-enabled";
-
-	String DEFAULT_VIEWS_LOCATION    = "/WEB-INF/views";
-	String DEFAULT_THEMES_LOCATION   = "/WEB-INF/themes";
-	String DEFAULT_THEME_NAME        = "default";
-	String DEFAULT_FORMAT_NAME       = "json";
-	String DEFAULT_FORMAT_PARAMETER  = "$format";
-	String DEFAULT_EVENT_PARAMETER   = "$event";
-	String DEFAULT_JSESSIONID_PREFIX = ";jsessionid";
+    String CONFIG_PREFIX                 = "webmvc.";
+    String DEFAULT_VIEWS_LOCATION        = "/WEB-INF/views";
+    String DEFAULT_THEMES_LOCATION       = "/WEB-INF/themes";
+    String DEFAULT_THEME_NAME            = "default";
+    String DEFAULT_FORMAT_NAME           = "json";
+    String DEFAULT_INDEX_ACTION_NAME     = "index";
+    String DEFAULT_HOME_CONTROLLER_NAME  = "Home";
+    String DEFAULT_FORMAT_PARAMETER_NAME = "$format";
+    String DEFAULT_JSESSIONID_PREFIX     = ";jsessionid";
 
     /**
      * Returns the configuration.
@@ -108,7 +93,7 @@ public interface WebConfigurator {
      * Sets the parameter name for resolving request/response data format.
      *
      * <p/>
-     * Default is {@link #DEFAULT_FORMAT_PARAMETER}
+     * Default is {@link #DEFAULT_FORMAT_PARAMETER_NAME}
      */
 	WebConfigurator setFormatParameterName(String name);
 

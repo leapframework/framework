@@ -17,23 +17,49 @@ package leap.web.action;
 
 import leap.core.web.path.PathTemplate;
 
+import java.lang.reflect.Method;
+
+/**
+ * The strategy interface for configuring and processing action.
+ */
 public interface ActionStrategy {
 
-	/**
-	 *
+    /**
+     * Returns true if the class is a controller class.
      */
-	String getIndexActionName();
-	
-	boolean isController(Class<?> cls);
-	
+	boolean isControllerClass(Class<?> cls);
+
+    /**
+     * Required.
+     *
+     * Returns the controller name of the controller class.
+     */
+    String getControllerName(Class<?> cls);
+
+    /**
+     * Required.
+     *
+     * Returns the instance of the the controller class.
+     */
+    Object getControllerInstance(Class<?> cls);
+
+    /**
+     * Required.
+     *
+     * Returns the default or declared paths of the controller class.
+     */
+    String[] getControllerPaths(Class<?> cls);
+
+    /**
+     * Returns true if the method is an action method.
+     */
+    boolean isActionMethod(Method m);
+
+    /**
+     * Returns true if the action is an index action.
+     */
 	boolean isIndexAction(ActionBuilder action);
-	
-	String getControllerName(Class<?> cls);
-	
-	Object getControllerInstance(Class<?> cls);
-	
-	String[] getControllerPaths(Class<?> cls);
-	
+
 	ActionMapping[] getActionMappings(ActionBuilder action);
 	
 	String[] getDefaultViewNames(ActionBuilder action,String controllerPath,String actionPath,PathTemplate pathTemplate);

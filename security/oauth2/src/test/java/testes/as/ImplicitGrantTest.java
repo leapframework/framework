@@ -32,7 +32,7 @@ public class ImplicitGrantTest extends OAuth2TestBase {
 	    get(uri).assertOk().assertContentContains("Login with your Account");
 	    
 	    login();
-	    String redirectUrl = get(uri).assertRecirect().getRedirectUrl();
+	    String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
 	    
 	    assertTrue(redirectUrl.contains(Global.TEST_CLIENT_REDIRECT_URI));
 	}

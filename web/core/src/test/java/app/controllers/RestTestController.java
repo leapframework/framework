@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,13 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation;
+package app.controllers;
 
-import java.lang.annotation.*;
+import leap.web.annotation.Restful;
+import leap.web.annotation.http.GET;
+import leap.web.annotation.http.POST;
 
-@Target({ElementType.TYPE,ElementType.ANNOTATION_TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface Controller {
+@Restful
+public class RestTestController {
+
+    @GET
+    public TestObject getObject() {
+        return new TestObject("a");
+    }
+
+    @POST
+    public void createObject(TestObject o) {
+
+    }
+
+    static final class TestObject {
+        public String v;
+
+        TestObject() {}
+        TestObject(String v) { this.v = v;}
+    }
 
 }
