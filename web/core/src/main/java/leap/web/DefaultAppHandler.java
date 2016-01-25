@@ -42,7 +42,6 @@ import leap.web.cors.CorsConfig;
 import leap.web.debug.DebugDetector;
 import leap.web.error.ErrorInfo;
 import leap.web.exception.BadRequestException;
-import leap.web.exception.RequestHandledException;
 import leap.web.exception.ResponseException;
 import leap.web.format.FormatManager;
 import leap.web.format.ResponseFormat;
@@ -72,7 +71,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M CorsConfig              corsConfig;
 
 	protected LocaleResolver localeResolver;
-	protected boolean		 mappingViewToAction = true;
 	protected int	  		 maxExecutionCount   = 10;
 	
 	@Override
@@ -82,7 +80,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     }
 
 	@Override
-	public void prepareRequest(final Request request,Response response) throws Throwable {
+	public void prepareRequest(final Request request,final Response response) throws Throwable {
 		//debug
 		debugDetector.detectDebugStatus(request);
 		
@@ -95,7 +93,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 			request.setLocale(app.getDefaultLocale());
 		}
 		
-		//valiation
+		//validation
 	    request.setValidation(validationManager.createValidation(new SimpleErrors(){
 			@Override
             public Locale getLocale() {
@@ -188,8 +186,8 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 				if (!handled && _debug) {
 					log.debug("Request '{}' not handled", request.getPath());
 				}
-			}catch(RequestHandledException e) {
-				log.debug("Caught a RequestHandledException, stop handle the request.",e);
+			}catch(RequestIntercepted e) {
+				log.debug("Caught a RequestIntercepted Exception, finish handling request.",e);
 				handled = true;
 			}catch(ResponseException e){
 				handled = true;
@@ -278,9 +276,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		String path = null;
 		
 		if(request.hasPathExtension()){
-			if(webConfig.isAllowActionExtension() && webConfig.getActionExtensions().contains(request.getPathExtension())){
+			if(webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(request.getPathExtension())){
 				path = request.getServicePathWithoutExtension();
-			}else if(webConfig.isAllowFormatExtension()){
+			}else if(webConfig.isFormatExtensionEnabled()){
 				ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
 				if(null != fmt){
 					ac.setResponseFormat(fmt);

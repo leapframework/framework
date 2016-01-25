@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.annotation;
+package app.controllers;
 
-import java.lang.annotation.*;
+import leap.web.annotation.Restful;
+import leap.web.annotation.http.GET;
+import leap.web.annotation.http.POST;
 
-/**
- * The annotation means that the controller or action can be accessed by anonymous user.
- */
-@Inherited
-@Target({ElementType.TYPE,ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AllowAnonymous {
+@Restful
+public class RestTestController {
 
-    /**
-     * Sets to allow(true) or deny(false), default is allow.
-     */
-    boolean value() default true;
-	
+    @GET
+    public TestObject getObject() {
+        return new TestObject("a");
+    }
+
+    @POST
+    public void createObject(TestObject o) {
+
+    }
+
+    static final class TestObject {
+        public String v;
+
+        TestObject() {}
+        TestObject(String v) { this.v = v;}
+    }
+
 }

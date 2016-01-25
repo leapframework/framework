@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.annotation;
+package leap.web;
 
-import java.lang.annotation.*;
+public class RequestIntercepted extends RuntimeException {
 
-/**
- * The annotation means that the controller or action can be accessed by anonymous user.
- */
-@Inherited
-@Target({ElementType.TYPE,ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface AllowAnonymous {
+    private static final RequestIntercepted instance = new RequestIntercepted();
 
-    /**
-     * Sets to allow(true) or deny(false), default is allow.
-     */
-    boolean value() default true;
-	
+    public static void throwIt() {
+        throw instance;
+    }
+
+    private RequestIntercepted() {
+        super("The request execution chain has been intercepted!");
+    }
+
 }

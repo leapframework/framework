@@ -17,7 +17,6 @@ package leap.web.config;
 
 import java.util.Set;
 
-import leap.core.BeanFactory;
 import leap.web.ajax.AjaxDetector;
 import leap.web.ajax.AjaxHandler;
 import leap.web.cors.CorsHandler;
@@ -25,83 +24,194 @@ import leap.web.format.FormatManager;
 import leap.web.pjax.PjaxDetector;
 import leap.web.theme.ThemeManager;
 
+/**
+ * The configuration of web app.
+ *
+ * <p/>
+ * Use {@link WebConfigurator} for configuring.
+ */
 public interface WebConfig {
 	
     /**
-     * Starts with '/' but not ends with '/'
+     * Required.
+     *
+     * Returns the path of view's location in web app, It must be starts with '/' but not ends with '/'.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_VIEWS_LOCATION}.
      */
     String getViewsLocation();
     
 	/**
-     * Starts with '/' but not ends with '/'
+     * Required.
+     *
+     * Returns the path of theme's location in web app, It must be starts with '/' but not ends with '/'.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_THEMES_LOCATION}.
      */
 	String getThemesLocation();
     
     /**
-     * Returns this application's theme name.
+     * Required.
+     *
+     * Returns the name of default theme name.
+	 *
+	 * <p/>
+	 * Default is {@link WebConfigurator#DEFAULT_THEME_NAME}.
      */
     String getDefaultThemeName();
-    
-    String getDefaultFormatName();
-    
-    String getFormatParameter();
-    
+
     /**
-     * Returns the name of jsessionid in url, such as <code>;jsessionid=xxxxxx</coce>.
-     * 
-     * <p>
-     * Default is <code>;jsessionid</code>
+     * Required.
+     *
+     * Returns the name of default request/response data format.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_FORMAT_NAME}.
      */
-    String getJsessionidParameter();
+    String getDefaultFormatName();
+
+    /**
+     * Required.
+     *
+     * Returns the request parameter name for resolving request data format.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_FORMAT_PARAMETER_NAME}.
+     */
+    String getFormatParameterName();
     
     /**
-     * Returns the domain string for set cookie in response.
+     * Required.
+     *
+     * Returns the prefix part of jsessionid in url, such as <code>;jsessionid=xxxxxx</coce>.
      * 
      * <p>
-     * Returns <code>null</code> if no domain.
+     * Default is {@link WebConfigurator#DEFAULT_JSESSIONID_PREFIX}.
+     */
+    String getJsessionidPrefix();
+    
+    /**
+     * Optional.
+     *
+     * Returns the domain name for set cookie in response.
+     *
+     * <p/>
+     * Default is <code>null</code>.
      */
     String getCookieDomain();
-    
-    boolean isTrimParameters();
-    
-    boolean isAllowActionExtension();
-    
-    boolean isAllowFormatExtension();
-    
-    boolean isAllowFormatParameter();
 
+    /**
+     * Returns <code>true</code> if trims all request parameters automatically.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+    boolean isAutoTrimParameters();
+
+    /**
+     * Returns <code>true</code> if allow action extension(s) in request path, such as <code>.do</code>.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+    boolean isActionExtensionEnabled();
+
+    /**
+     * Returns <code>true</code> if allow format extension in request path, such as <code>.json</code>.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+    boolean isFormatExtensionEnabled();
+
+    /**
+     * Returns <code>true</code> if allow resolving request format form parameter.
+     *
+     * <p/>
+     * Default is <code>true</code>.
+     */
+    boolean isFormatParameterEnabled();
+
+    /**
+     * Required.
+     *
+     * Returns the name of home controller.
+     *
+     * <p/>
+     * Home controller's name is an initial config property, must be configured before the initialzation of app.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_HOME_CONTROLLER_NAME}.
+     */
+    String getHomeControllerName();
+
+    /**
+     * Required.
+     *
+     * Returns the name of index action.
+     *
+     * <p/>
+     * Index action's name is an initial config property, must be configured before the initialization of app.
+     *
+     * <p/>
+     * Default is {@link WebConfigurator#DEFAULT_INDEX_ACTION_NAME}.
+     */
+    String getIndexActionName();
+
+    /**
+     * Returns an immutable {@link Set} contains the action extensions.
+     */
     Set<String> getActionExtensions();
-    
+
+    /**
+     * Returns <code>true</code> if CORS is enabled in current web app by default.
+     *
+     * <p/>
+     * Default <code>false</code>.
+     */
     boolean isCorsEnabled();
-    
+
 	/**
-	 * Returns the {@link ThemeManager} of current application.
-	 * 
-	 * <p>
-	 * The returned object is a reference of primary bean for type {@link ThemeManager}.
-	 * 
-	 * @see BeanFactory#getBean(Class)
+     * Required.
+     *
+	 * Returns the implementation of {@link ThemeManager}.
 	 */
 	ThemeManager getThemeManager();
-	
+
 	/**
-	 * Returns the {@link FormatManager} of current application.
-	 * 
-	 * <p>
-	 * The returned object is a reference of primary bean for type {@link FormatManager}.
-	 * 
-	 * @see BeanFactory#getBean(Class)
+     * Required.
+     *
+     * Returns the implementation of {@link FormatManager}.
 	 */
 	FormatManager getFormatManager();
-	
+
 	/**
-	 * Returns the {@link AjaxHandler} of current application.
+	 * Required.
+     *
+     * Returns the implementation of {@link AjaxHandler}.
 	 */
 	AjaxHandler getAjaxHandler();
-	
+
+    /**
+     * Required.
+     *
+     * Returns the implementation of {@link AjaxDetector}.
+     */
 	AjaxDetector getAjaxDetector();
-	
+
+    /**
+     * Required.
+     *
+     * Returns the implementation of {@link PjaxDetector}.
+     */
 	PjaxDetector getPjaxDetector();
-	
+
+    /**
+     * Required.
+     *
+     * Returns the implementation of {@link CorsHandler}.
+     */
     CorsHandler getCorsHandler();
 }

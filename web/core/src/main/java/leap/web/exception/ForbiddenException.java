@@ -18,7 +18,7 @@ package leap.web.exception;
 import leap.lang.http.HTTP;
 import leap.web.Content;
 
-public class ForbiddenException extends ResponseException {
+public class ForbiddenException extends ClientErrorException {
 
 	public ForbiddenException() {
 	    super(HTTP.SC_FORBIDDEN);

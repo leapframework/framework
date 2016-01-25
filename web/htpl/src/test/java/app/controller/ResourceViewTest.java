@@ -26,13 +26,13 @@ public class ResourceViewTest extends HtplTestCase {
 	@Test
 	public void testJsView() {
 		THttpResponse resp = get("/test.js?$debug=0").assertContentEquals("var i=100;");
-		assertEquals(MimeTypes.TEXT_JAVASCRIPT_TYPE.getSubtype(),resp.getMimeType().getSubtype());
+		assertEquals(MimeTypes.TEXT_JAVASCRIPT_TYPE.getSubtype(),resp.getContentType().getSubtype());
 	}
 	
 	@Test
 	public void testCssView() {
 		THttpResponse resp = get("/test.css?$debug=0").assertContentEquals("#header{color:red;}");
-		assertEquals(MimeTypes.TEXT_CSS_TYPE.getSubtype(),resp.getMimeType().getSubtype());
+		assertEquals(MimeTypes.TEXT_CSS_TYPE.getSubtype(),resp.getContentType().getSubtype());
 	}
 	
 }

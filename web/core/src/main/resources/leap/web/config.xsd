@@ -17,14 +17,14 @@
                 <xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
             <xsd:attribute name="views-location" type="xsd:string" use="optional"/>
-            <xsd:attribute name="default-theme" type="xsd:string" use="optional"/>
             <xsd:attribute name="themes-location" type="xsd:string" use="optional"/>
+            <xsd:attribute name="default-theme" type="xsd:string" use="optional"/>
             <xsd:attribute name="default-format" type="xsd:string" use="optional"/>
-            <xsd:attribute name="format-parameter" type="xsd:string" use="optional"/>
-            <xsd:attribute name="trim-parameters" type="xsd:boolean" use="optional"/>
-            <xsd:attribute name="allow-format-extension" type="xsd:boolean" use="optional"/>
-            <xsd:attribute name="allow-format-parameter" type="xsd:boolean" use="optional"/>
-            <xsd:attribute name="allow-action-extension" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="format-parameter-name" type="xsd:string" use="optional"/>
+            <xsd:attribute name="auto-trim-parameters" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="format-extension-enabled" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="format-parameter-enabled" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="action-extension-enabled" type="xsd:boolean" use="optional"/>
             <xsd:attribute name="action-extensions" type="xsd:string" use="optional"/>
             <xsd:attribute name="cors-enabled" type="xsd:boolean" use="optional"/>
 

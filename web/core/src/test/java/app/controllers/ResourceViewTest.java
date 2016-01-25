@@ -26,13 +26,13 @@ public class ResourceViewTest extends WebTestCase {
 	@Test
 	public void testJsView() {
 		THttpResponse resp = get("/test.js").assertContentEquals("var i=100;");
-		assertEquals(MimeTypes.TEXT_JAVASCRIPT_TYPE.getSubtype(),resp.getMimeType().getSubtype());
+		assertEquals(MimeTypes.TEXT_JAVASCRIPT_TYPE.getSubtype(),resp.getContentType().getSubtype());
 	}
 	
 	@Test
 	public void testCssView() {
 		THttpResponse resp = get("/test.css").assertContentEquals("#header{color:red;}");
-		assertEquals(MimeTypes.TEXT_CSS_TYPE.getSubtype(),resp.getMimeType().getSubtype());
+		assertEquals(MimeTypes.TEXT_CSS_TYPE.getSubtype(),resp.getContentType().getSubtype());
 	}
 	
 }

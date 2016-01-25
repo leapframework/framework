@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.annotation;
+package leap.web.annotation.http;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * The annotation means that the controller or action can be accessed by anonymous user.
- */
-@Inherited
-@Target({ElementType.TYPE,ElementType.METHOD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AllowAnonymous {
+@AMethod
+public @interface HEAD {
 
-    /**
-     * Sets to allow(true) or deny(false), default is allow.
-     */
-    boolean value() default true;
-	
 }

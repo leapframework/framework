@@ -46,14 +46,6 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 		super(MimeTypes.APPLICATION_JSON_TYPE);
 	}
 
-	public void setRenderer(FormatWriter renderer) {
-		this.writer = renderer;
-	}
-	
-	public void setWriter(FormatWriter writer) {
-		this.writer = writer;
-	}
-
 	@Override
     public boolean supportsRequestBody() {
 		return true;

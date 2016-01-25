@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leap.lang.Arrays2;
-import leap.web.App;
-import leap.web.Content;
-import leap.web.Result;
+import leap.web.*;
 import leap.web.annotation.Produces;
 import leap.web.format.FormatManager;
 import leap.web.format.FormatNotAcceptableException;
@@ -52,7 +50,6 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		result.setReturnValue(returnValue);
 		
 		ResponseFormat format = resolveResponseFormat(context);
-		
 		if(null == format && null != view){
 			result.render(view);
 			return;
@@ -61,10 +58,19 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		if(null == format){
 			format = formatManager.getDefaultResponseFormat();
 		}
-		
-		Content content = format.getContent(context,returnValue);	
-		
-		result.render(content);
+
+        if(returnValue instanceof ResponseEntity) {
+            ResponseEntity re = (ResponseEntity)returnValue;
+
+            result.setStatus(re.getStatus().value());
+
+            Object entity = re.getEntity();
+            if(null != entity) {
+                result.render(format.getContent(context, entity));
+            }
+        }else{
+            result.render(format.getContent(context,returnValue));
+        }
     }
 	
 	protected boolean hasAnnotatedFormats() {

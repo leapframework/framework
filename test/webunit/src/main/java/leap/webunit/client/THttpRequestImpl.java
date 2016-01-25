@@ -44,7 +44,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
-import org.apache.http.io.SessionOutputBuffer;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.HeaderGroup;
@@ -155,12 +154,12 @@ class THttpRequestImpl implements THttpRequest {
 			THttpResponseImpl response = new THttpResponseImpl(this, request, client.execute(request) );
 
             if(log.isDebugEnabled()) {
-                log.debug("Response result : [status={}, type='{}', length={}]",
+                log.debug("Response result : [status={}, content-type='{}', content-length={}]",
                         response.getStatus(),
                         response.getContentType(),
                         response.getContentLength());
 
-                MimeType contentType = response.getMimeType();
+                MimeType contentType = response.getContentType();
                 if(null != contentType && ContentTypes.isText(contentType.toString())) {
                     log.debug("Content -> \n{}", Strings.abbreviate(response.getContent(), 200));
                 }
