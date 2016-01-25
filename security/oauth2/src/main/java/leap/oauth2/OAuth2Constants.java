@@ -44,6 +44,8 @@ public class OAuth2Constants {
 	 * in <a href="http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-6">Section 6</a>. This value is OPTIONAL.
 	 */
 	public static String REFRESH_TOKEN = "refresh_token";
+	
+	public static String V3TOKEN_PREFIX = "v3_";
 
 	/**
 	 * The scope of the access token as described by <a
