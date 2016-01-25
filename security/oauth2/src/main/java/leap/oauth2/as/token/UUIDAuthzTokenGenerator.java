@@ -33,7 +33,7 @@ public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,Authz
 
     @Override
     public String generateLoginToken(AuthzAuthentication authc) {
-        return generateUUID();
+        return "v3_"+generateUUID();
     }
 
     protected String generateUUID() {

@@ -25,7 +25,7 @@ import leap.orm.annotation.ColumnType;
 
 public interface OAuth2Entity {
     
-    @ADomain(length=38)
+    @ADomain(length=50)
     @Retention(RetentionPolicy.RUNTIME)
     @interface Token {}
 
