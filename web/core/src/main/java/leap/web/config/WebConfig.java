@@ -173,6 +173,11 @@ public interface WebConfig {
      */
     boolean isCorsEnabled();
 
+    /**
+     * Returns all the configured {@link ModuleConfig}.
+     */
+    Set<ModuleConfig> getModules();
+
 	/**
      * Required.
      *

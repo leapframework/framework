@@ -32,6 +32,20 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="module">
+        <xsd:annotation>
+            <xsd:documentation>
+                Web module configuration
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
+            <xsd:attribute name="base-path" type="xsd:string" use="required" default="/"/>
+            <xsd:attribute name="base-package" type="xsd:string" use="required"/>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="errors">
         <xsd:annotation>
             <xsd:documentation>

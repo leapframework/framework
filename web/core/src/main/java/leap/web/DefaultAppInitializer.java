@@ -37,9 +37,12 @@ import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyles;
+import leap.lang.path.Paths;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
+import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resources;
 import leap.web.action.Action;
 import leap.web.action.ActionBuilder;
 import leap.web.action.ActionContext;
@@ -62,6 +65,7 @@ import leap.web.annotation.HttpsOnly;
 import leap.web.annotation.InterceptedBy;
 import leap.web.annotation.Multipart;
 import leap.web.annotation.NonAction;
+import leap.web.config.ModuleConfig;
 import leap.web.error.ErrorsConfig;
 import leap.web.format.ResponseFormat;
 import leap.web.multipart.MultipartFile;
@@ -103,22 +107,47 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	//Loads the routes from scanned classes
 	protected void loadRoutesFromClasses(final App app){
-		final String basePackage = app.config().getBasePackage();
+		//Load web app's routes.
+        log.debug("Load routes[base-path=/] from classes in base package '{}'", app.getBasePackage());
+		final String basePackage = app.getBasePackage();
 		app.config().getResources().processClasses((cls) -> {
 			if(cls.getName().startsWith(basePackage)){
 				if(as.isControllerClass(cls)){
-					loadControllerClass(app,cls);
+					loadControllerClass(app, "/", cls);
 				}					
 			}
 		});
+
+		//Load web module's routes.
+		for(ModuleConfig module : app.getWebConfig().getModules()){
+            ResourceSet rs = Resources.scanPackage(module.getBasePackage());
+
+            if(rs.isEmpty()) {
+                log.info("No resource scanned in base package '{}' of module '{}', is the module exists?");
+            }else{
+                log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
+                        module.getBasePath(), module.getBasePackage(), module.getName());
+
+                rs.processClasses((cls) -> {
+                    if(as.isControllerClass(cls)) {
+                        loadControllerClass(app, module.getBasePath(), cls);
+                    }
+                });
+            }
+        }
 	}
 	
-	protected void loadControllerClass(App app, Class<?> cls) {
+	protected void loadControllerClass(App app, String basePath, Class<?> cls) {
 		//An controller can defines two or more controller path
 		//i.e User.class can define paths : /user and /users
 		String[] controllerPaths = as.getControllerPaths(cls);
-		
-		for(String controllerPath : controllerPaths){
+
+        String pathPrefix = "";
+        if(!basePath.equals("/")) {
+            pathPrefix = Paths.prefixWithAndSuffixWithoutSlash(basePath);
+        }
+
+        for(String controllerPath : controllerPaths){
 			//Normalize the path
 			if(!controllerPath.startsWith("/")){
 				controllerPath = "/" + controllerPath;
@@ -126,6 +155,8 @@ public class DefaultAppInitializer implements AppInitializer {
 			if(controllerPath.endsWith("/")){
 				controllerPath = controllerPath.substring(0,controllerPath.length() - 1);
 			}
+
+            controllerPath = pathPrefix + controllerPath;
 			
 			//Scan all action methods in controller class.
 			ReflectClass rcls = ReflectClass.of(cls);

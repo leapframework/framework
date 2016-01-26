@@ -19,10 +19,15 @@ import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.*;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Args;
+import leap.lang.collection.ImvCopyOnWriteArraySet;
+import leap.lang.collection.ImvSet;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.web.FilterMapping;
 import leap.web.FilterMappings;
@@ -38,6 +43,8 @@ import leap.web.theme.ThemeManager;
 
 @Configurable(prefix="webmvc")
 public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBean {
+
+    private static final Log log = LogFactory.get(DefaultWebConfig.class);
 	
 	protected @R String  viewsLocation          = DEFAULT_VIEWS_LOCATION;
 	protected @R String  themesLocation         = DEFAULT_THEMES_LOCATION;
@@ -54,6 +61,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	protected @R boolean corsEnabled            = false;
 	protected @N String  cookieDomain           = null;
 
+    protected @Inject @M AppConfig       config;
 	protected @Inject @M Routes          routes;
 	protected @Inject @M FilterMappings  filters;
 	protected @Inject @M ErrorViews      errorViews;
@@ -65,10 +73,10 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	protected @Inject @M PjaxDetector    pjaxDetector;
 	protected @Inject @M CorsHandler     corsHandler;
 	protected @Inject @M WebInterceptors interceptors;
-	
-	protected final Set<String> actionExtensions              = new CopyOnWriteArraySet<>();
-	protected final Set<String> actionExtensionsImmutableView = Collections.unmodifiableSet(actionExtensions); 
-	
+
+    protected final Set<ModuleConfig> modules          = new ImvCopyOnWriteArraySet<>();
+    protected final Set<String>       actionExtensions = new ImvCopyOnWriteArraySet<>();
+
 	@Override
     public WebConfig config() {
 	    return this;
@@ -161,7 +169,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 
     @Override
     public Set<String> getActionExtensions() {
-	    return actionExtensionsImmutableView;
+	    return ((ImvSet)actionExtensions).getImmutableView();
     }
 	
 	@Override
@@ -196,6 +204,7 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 
 	@Configurable.Property
 	public WebConfigurator setViewsLocation(String path) {
+        Args.notEmpty(path, "views location");
 		this.viewsLocation = path;
 		return this;
 	}
@@ -296,9 +305,21 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 		actionExtensions.add(extension);
 		return this;
 	}
+
+    public Set<ModuleConfig> getModules() {
+        return ((ImvSet)modules).getImmutableView();
+    }
 	
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
-		this.filters.addAll(factory.getBeans(FilterMapping.class));
+        //filters.
+        this.filters.addAll(factory.getBeans(FilterMapping.class));
+
+        //modules.
+        ModuleConfigExtension moduleConfigExtension = config.getExtension(ModuleConfigExtension.class);
+        if(null != moduleConfigExtension) {
+            modules.addAll(moduleConfigExtension.getModules().values());
+            log.info("Load {} web module configurations", modules.size());
+        }
     }
 }

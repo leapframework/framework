@@ -33,25 +33,23 @@ public class WebConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/config";
 
-    //mvc
 	private static final String MVC_ELEMENT                      = "mvc";
-
-    //errors
+    private static final String MODULE_ELEMENT                   = "module";
 	private static final String ERRORS_ELEMENT                   = "errors";
 	private static final String ERROR_VIEW_ELEMENT               = "error-view";
 	private static final String ERROR_CODE_ELEMENT               = "error-code";
+    private static final String CORS_ELEMENT                     = "cors";
+    private static final String ASSETS_ELEMENT                   = "assets";
+    private static final String FOLDER_ELEMENT                   = "folder";
+
 	private static final String ERROR_CODE_ATTRIBUTE             = "error-code";
 	private static final String EXCEPTION_TYPE_ATTRIBUTE         = "exception-type";
 	private static final String VIEW_PATH_ATTRIBUTE              = "view-path";
-
-    //cors
-    private static final String CORS_ELEMENT                     = "cors";
-
-    //assets
-    private static final String ASSETS_ELEMENT                   = "assets";
-    private static final String FOLDER_ELEMENT                   = "folder";
     private static final String LOCATION_ATTRIBUTE               = "location";
     private static final String PATH_PREFIX_ATTRIBUTE            = "path-prefix";
+    private static final String NAME_ATTRIBUTE                   = "name";
+    private static final String BASE_PATH_ATTRIBUTE              = "base-path";
+    private static final String BASE_PACKAGE_ATTRIBUTE           = "base-package";
 
     @Override
     public String getNamespaceURI() {
@@ -72,6 +70,11 @@ public class WebConfigProcessor implements AppConfigProcessor {
 
         if(reader.isStartElement(ASSETS_ELEMENT)) {
             readAssetsConfig(context, reader);
+            return;
+        }
+
+        if(reader.isStartElement(MODULE_ELEMENT)) {
+            readModuleConfig(context, reader);
             return;
         }
 		
@@ -184,5 +187,28 @@ public class WebConfigProcessor implements AppConfigProcessor {
             }
 
         }
+    }
+
+    protected void readModuleConfig(AppConfigContext context, XmlReader reader) {
+        ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
+
+        String name = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
+        String basePath = reader.resolveRequiredAttribute(BASE_PATH_ATTRIBUTE);
+        String basePackage = reader.resolveRequiredAttribute(BASE_PACKAGE_ATTRIBUTE);
+
+        if(extension.getModule(name) != null) {
+            throw new AppConfigException("The web module '" + name + "' already exists, check config : " + reader.getCurrentLocation());
+        }
+
+        if(!basePath.startsWith("/")) {
+            throw new AppConfigException("The base-path '" + basePath + "' of web module '" + name + "' must be start with '/'");
+        }
+
+        DefaultModuleConfig module = new DefaultModuleConfig();
+        module.setName(name);
+        module.setBasePath(basePath);
+        module.setBasePackage(basePackage);
+
+        extension.addModule(module);
     }
 }
