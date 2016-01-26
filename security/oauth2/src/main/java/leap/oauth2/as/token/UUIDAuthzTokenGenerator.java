@@ -34,7 +34,7 @@ public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,Authz
 
     @Override
     public String generateLoginToken(AuthzAuthentication authc) {
-        return OAuth2Constants.V3TOKEN_PREFIX+generateUUID();
+        return generateUUID();
     }
 
     protected String generateUUID() {

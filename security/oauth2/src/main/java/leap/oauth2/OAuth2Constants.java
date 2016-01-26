@@ -45,8 +45,6 @@ public class OAuth2Constants {
 	 */
 	public static String REFRESH_TOKEN = "refresh_token";
 	
-	public static String V3TOKEN_PREFIX = "v3_";
-
 	/**
 	 * The scope of the access token as described by <a
 	 * href="http://tools.ietf.org/html/draft-ietf-oauth-v2-22#section-3.3">Section 3.3</a>
