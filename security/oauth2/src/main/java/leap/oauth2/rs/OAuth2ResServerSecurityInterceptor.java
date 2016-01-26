@@ -24,12 +24,14 @@ import leap.oauth2.OAuth2InvalidTokenException;
 import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.rs.auth.ResAuthentication;
 import leap.oauth2.rs.auth.ResAuthenticationResolver;
+import leap.oauth2.rs.auth.ResCredentialsAuthenticator;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.oauth2.rs.token.ResAccessTokenExtractor;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
+import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.csrf.CSRF;
 
@@ -46,14 +48,15 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
     protected @Inject OAuth2ResServerConfig       config;
     protected @Inject ResAccessTokenExtractor     tokenExtractor;
     protected @Inject OAuth2ResServerErrorHandler errorHandler;
-    protected @Inject ResAuthenticationResolver   authcManager;
+    protected @Inject ResCredentialsAuthenticator credentialsAuthenticator;
+    protected @Inject ResAuthenticationResolver[] authenticationResolvers;
 	
 	public OAuth2ResServerSecurityInterceptor() {
         super();
     }
 
     @Override
-	public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws ServletException, IOException {
+	public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
 		if (config.isEnabled()) {
 			
 			//ResPath url = config.getResourcePath(request.getPath());
@@ -70,23 +73,40 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
 		return State.CONTINUE;
 	}
 	
-	protected State preResolveAuthentication(Request request, Response response, AuthenticationContext context, ResPath path) throws ServletException, IOException {
-        //Extract access token from request.
-		ResAccessToken token = tokenExtractor.extractTokenFromRequest(request);
-		if(null == token) {
-            //If no access token just ignore resolving authentication from access token.
-		    return State.CONTINUE;
-		}
+	protected State preResolveAuthentication(Request request, Response response, AuthenticationContext context, ResPath path) throws Throwable {
+        Authentication authc = null;
+        for(ResAuthenticationResolver resolver : authenticationResolvers) {
+            Result<Authentication> result = resolver.resolveAuthentication(request, response, context);
+            if(result.isPresent()) {
+                authc = result.get();
+                break;
+            }
+            if(result.isIntercepted()) {
+                return State.INTERCEPTED;
+            }
+        }
+
+        ResAccessToken token = null;
+        if(null == authc) {
+            //Extract access token from request.
+            token = tokenExtractor.extractTokenFromRequest(request);
+            if(null == token) {
+                //If no access token just ignore resolving authentication from access token.
+                return State.CONTINUE;
+            }
+        }
 
         //Resolving authentication from access token.
         try {
-            Result<ResAuthentication> result = authcManager.resolveAuthentication(token);
-            if(!result.isPresent()) {
-                errorHandler.handleInvalidToken(request, response, "Invalid access token");
-                return State.INTERCEPTED;
+            if(null == authc) {
+                Result<ResAuthentication> result = credentialsAuthenticator.authenticate(token);
+                if(!result.isPresent()) {
+                    errorHandler.handleInvalidToken(request, response, "Invalid access token");
+                    return State.INTERCEPTED;
+                }
+                authc = result.get();
             }
-            
-            ResAuthentication authc = result.get();
+
             if(null != path) {
                 if(!path.isAllow(request, context, authc)) {
                     errorHandler.handleInsufficientScope(request, response, "Access denied");
