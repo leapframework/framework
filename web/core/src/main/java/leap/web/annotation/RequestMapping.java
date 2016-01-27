@@ -17,15 +17,12 @@ package leap.web.annotation;
 
 import leap.lang.http.HTTP;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Repeatable;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Repeatable(RequestMappings.class)
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface RequestMapping {
 
 	String path() default "";
