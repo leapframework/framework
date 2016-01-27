@@ -33,6 +33,7 @@ import leap.web.action.Argument.BindingFrom;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
+import leap.web.exception.ResponseException;
 import leap.web.format.FormatManager;
 import leap.web.format.FormatNotAcceptableException;
 import leap.web.format.FormatNotFoundException;
@@ -123,45 +124,53 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		ExecutionAttributes eas = (ExecutionAttributes)context.getRoute().getExecutionAttributes();
 		DefaultActionExecution execution = new DefaultActionExecution(validation);
 		
-		try{
-			//resolve request format
-			RequestFormat requestFormat = resolveRequestFormat(context, eas);
-			
-			//pre-execute action interceptors
-			if(State.isIntercepted(eas.interceptors.preExecuteAction(context,validation))){
-				execution.setStatus(Execution.Status.INTERCEPTED);
-				return null;
-			}
-			
-			//resolve argument values
-			Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
-			execution.setArgs(args);
-			
-			//expose arguments as view data
-			exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);
-			
-			//if validate errors, do not continue to execute the action.
-			if(validation.hasErrors() && !context.isAcceptValidationError()){
-				execution.setStatus(Execution.Status.FAILURE);
-				if(State.isContinue(eas.interceptors.onActionFailure(context, validation, execution))){
-				    throw new ValidationException(validation.errors());    
-				}else{
-					log.info("Action validation error handled by interceptors");
-					return null;
-				}
-			}
-			
-			//execute action
-			Action action = context.getAction();
-			Object value  = action.execute(context, args);
-			
-			execution.setReturnValue(value);
-			execution.setStatus(Execution.Status.SUCCESS);
+		try {
+            //resolve request format
+            RequestFormat requestFormat = resolveRequestFormat(context, eas);
 
-			//post-execute action interceptors
-			eas.interceptors.postExecuteAction(context, validation, execution);
-			return execution.getReturnValue();
+            //pre-execute action interceptors
+            if (State.isIntercepted(eas.interceptors.preExecuteAction(context, validation))) {
+                execution.setStatus(Execution.Status.INTERCEPTED);
+                return null;
+            }
+
+            //resolve argument values
+            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
+            execution.setArgs(args);
+
+            //expose arguments as view data
+            exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);
+
+            //if validate errors, do not continue to execute the action.
+            if (validation.hasErrors() && !context.isAcceptValidationError()) {
+                execution.setStatus(Execution.Status.FAILURE);
+                if (State.isContinue(eas.interceptors.onActionFailure(context, validation, execution))) {
+                    throw new ValidationException(validation.errors());
+                } else {
+                    log.info("Action validation error handled by interceptors");
+                    return null;
+                }
+            }
+
+            //execute action
+            Action action = context.getAction();
+            Object value = action.execute(context, args);
+
+            execution.setReturnValue(value);
+            execution.setStatus(Execution.Status.SUCCESS);
+
+            //post-execute action interceptors
+            eas.interceptors.postExecuteAction(context, validation, execution);
+            return execution.getReturnValue();
+
+        }catch(ResponseException e) {
+            log.debug("Caught a ResponseException while executing action, just throw it!");
+            throw e;
+		}catch(RequestIntercepted e) {
+            log.debug("Caught a RequestIntercepted while executing action, just throw it!");
+			throw e;
 		}catch(Throwable e){
+            log.warn("Error executing action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setStatus(Execution.Status.FAILURE);
 			execution.setException(e);
 			
