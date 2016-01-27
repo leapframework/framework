@@ -22,6 +22,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import leap.core.validation.Validation;
 import leap.core.web.RequestBase;
 import leap.core.web.ResponseBase;
 import leap.web.Params;
@@ -47,6 +48,7 @@ public class ContextArgumentResolver implements ArgumentResolver {
 		TYPES.add(Result.class);
 		TYPES.add(ViewData.class);
 		TYPES.add(Params.class);
+		TYPES.add(Validation.class);
 	}
 	
 	public static boolean isContext(Class<?> type){
@@ -73,7 +75,9 @@ public class ContextArgumentResolver implements ArgumentResolver {
 			return context;
 		}else if(type.equals(Result.class)){
 			return context.getResult();
-		}
+		}else if(type.equals(Validation.class)) {
+            return context.getRequest().getValidation();
+        }
 		
 		throw new IllegalStateException("The argument type '" + type.getName() + "' is not a supported context type");
     }
