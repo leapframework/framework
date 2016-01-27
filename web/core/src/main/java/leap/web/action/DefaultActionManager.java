@@ -21,7 +21,6 @@ import leap.core.ds.DataSourceManager;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationException;
 import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
 import leap.lang.*;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
@@ -34,6 +33,7 @@ import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
 import leap.web.exception.ResponseException;
+import leap.web.exception.ValidateFailureException;
 import leap.web.format.FormatManager;
 import leap.web.format.FormatNotAcceptableException;
 import leap.web.format.FormatNotFoundException;
@@ -184,6 +184,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
 						}
 					}
 				}
+
+                //TODO: special validation exception.
+                if(e instanceof ValidationException) {
+                    throw new ValidateFailureException(validation);
+                }
+
 				throw e;
 			}else{
 				log.info("Action error handled by interceptors",e);
@@ -287,13 +293,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				
 				Object value = resolver.resolveValue(context, argument);
 				
-				Validator[] validators = argument.getValidators();
+				ArgumentValidator[] validators = argument.getValidators();
 				for(int j=0;j<validators.length;j++){
-					Validator v = validators[j];
-					
-					if(validation.validate(argument.getName(), value, v).hasErrors()){
-						break;
-					}
+					ArgumentValidator v = validators[j];
+                    if(!v.validate(validation, argument, value)) {
+                        break;
+                    }
 				}
 				
 				args[i] = value;

@@ -36,15 +36,15 @@ import leap.web.annotation.RequestBody;
 import leap.web.annotation.RequestParam;
 
 public class ArgumentBuilder implements Buildable<Argument> {
-	
-	protected String          name;
-	protected Class<?>        type;
-	protected Type            genericType;
-	protected TypeInfo		  typeInfo;
-	protected Boolean		  required;
-	protected BindingFrom     bindingFrom;
-	protected Annotation[]    annotations;
-	protected List<Validator> validators = new ArrayList<>();
+
+	protected String       name;
+	protected Class<?>     type;
+	protected Type         genericType;
+	protected TypeInfo     typeInfo;
+	protected Boolean      required;
+	protected BindingFrom  bindingFrom;
+	protected Annotation[] annotations;
+	protected List<ArgumentValidator> validators = new ArrayList<>();
 	
 	public ArgumentBuilder() {
 	    super();
@@ -120,18 +120,13 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return this;
 	}
 	
-	public ArgumentBuilder addValidator(Validator validator){
+	public ArgumentBuilder addValidator(ArgumentValidator validator){
 		validators.add(validator);
 		return this;
 	}
 		
-	public List<Validator> getValidators() {
+	public List<ArgumentValidator> getValidators() {
 		return validators;
-	}
-
-	public ArgumentBuilder setValidators(List<Validator> validators) {
-		this.validators = validators;
-		return this;
 	}
 
 	public ArgumentBuilder configAnnotations() {
@@ -192,7 +187,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	
 	@Override
     public Argument build() {
-		Validator[] validators = null == this.validators ? null : this.validators.toArray(new Validator[]{});
+		ArgumentValidator[] validators = null == this.validators ? null : this.validators.toArray(new ArgumentValidator[]{});
 		
 	    return new Argument(name, type, genericType, typeInfo, required, bindingFrom, annotations,validators);
     }

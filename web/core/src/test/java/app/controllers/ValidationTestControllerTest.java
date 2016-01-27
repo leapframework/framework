@@ -33,4 +33,13 @@ public class ValidationTestControllerTest extends WebTestCase {
     public void testAnnotationRequired1() {
         get("/validation_test/required1").assertOk().assertContentEquals("OK");
     }
+
+    @Test
+	public void testValidateBean() {
+        forPost("/validation_test/validate")
+                .json(new ValidationTestController.VBean())
+                .sendAjax()
+                .assert400(); //bad request
+    }
+
 }

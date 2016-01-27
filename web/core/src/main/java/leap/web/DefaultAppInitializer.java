@@ -43,28 +43,9 @@ import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-import leap.web.action.Action;
-import leap.web.action.ActionBuilder;
-import leap.web.action.ActionContext;
-import leap.web.action.ActionExecution;
-import leap.web.action.ActionInterceptor;
-import leap.web.action.ActionManager;
-import leap.web.action.ActionMapping;
-import leap.web.action.ActionStrategy;
+import leap.web.action.*;
 import leap.web.action.Argument.BindingFrom;
-import leap.web.action.ArgumentBuilder;
-import leap.web.action.ConditionalFailureHandler;
-import leap.web.action.ControllerBase;
-import leap.web.action.FailureHandler;
-import leap.web.action.MethodActionBuilder;
-import leap.web.action.RenderViewFailureHandler;
-import leap.web.annotation.AcceptValidationError;
-import leap.web.annotation.Failure;
-import leap.web.annotation.Failures;
-import leap.web.annotation.HttpsOnly;
-import leap.web.annotation.InterceptedBy;
-import leap.web.annotation.Multipart;
-import leap.web.annotation.NonAction;
+import leap.web.annotation.*;
 import leap.web.config.ModuleConfig;
 import leap.web.error.ErrorsConfig;
 import leap.web.format.ResponseFormat;
@@ -366,9 +347,13 @@ public class DefaultAppInitializer implements AppInitializer {
 		Validator v = null;
 		for(Annotation pa : p.getAnnotations()){
 			if((v = validationManager.tryCreateValidator(pa, p.getType())) != null){
-				a.addValidator(v);
+				a.addValidator(new SimpleArgumentValidator(v));
 			}
 		}
+
+        if(p.isAnnotationPresent(Validate.class)){
+            a.addValidator(new NestedArgumentValidator(p.getAnnotation(Validate.class)));
+        }
 		
 		return a;
 	}

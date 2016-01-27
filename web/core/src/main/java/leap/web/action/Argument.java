@@ -32,7 +32,7 @@ import leap.web.view.ViewData;
 
 public class Argument implements Named {
 	
-	public static enum BindingFrom {
+	public enum BindingFrom {
 		UNDEFINED,
 		
 		PATH_PARAM,
@@ -43,18 +43,18 @@ public class Argument implements Named {
 		
 		PART_PARAM,
 		
-		REQUEST_BODY;
+		REQUEST_BODY
 	}
-	
-	protected final String       name;
-	protected final Class<?>     type;
-	protected final Type         genericType;
-	protected final TypeInfo	 typeInfo;
-	protected final Boolean		 required;
-	protected final BindingFrom  bindingFrom;
-	protected final Annotation[] annotations;
-	protected final Validator[]  validators;
-	protected final String		 viewAttributeName;
+
+	protected final String              name;
+	protected final Class<?>            type;
+	protected final Type                genericType;
+	protected final TypeInfo            typeInfo;
+	protected final Boolean             required;
+	protected final BindingFrom         bindingFrom;
+	protected final Annotation[]        annotations;
+	protected final ArgumentValidator[] validators;
+	protected final String              viewAttributeName;
 	
 	public Argument(String name, 
 					Class<?> type, 
@@ -63,7 +63,7 @@ public class Argument implements Named {
 					Boolean	required,
 					BindingFrom bindingFrom,
 					Annotation[] annotations,
-					Validator[] validators) {
+					ArgumentValidator[] validators) {
 		
 		Args.notEmpty(name,   "name");
 		Args.notNull(type,    "type");
@@ -76,7 +76,7 @@ public class Argument implements Named {
 		this.required		   = required;
 		this.bindingFrom       = null == bindingFrom ? BindingFrom.UNDEFINED : bindingFrom;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
-		this.validators        = null == validators ? (Validator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
+		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
 		this.viewAttributeName = resolveViewAttributeName();
 	}
 
@@ -137,9 +137,9 @@ public class Argument implements Named {
 	}
 	
 	/**
-	 * Returns the {@link Validator} arrays.
+	 * Returns the {@link ArgumentValidator} arrays.
 	 */
-	public Validator[] getValidators() {
+	public ArgumentValidator[] getValidators() {
 		return validators;
 	}
 	
