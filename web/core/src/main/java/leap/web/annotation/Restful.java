@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.exception;
+package leap.web.annotation;
 
-public class RequestHandledException extends RuntimeException {
+import java.lang.annotation.*;
 
-    private static final RequestHandledException instance = new RequestHandledException();
-
-    public static void throwIt() {
-        throw instance;
-    }
-
-    private RequestHandledException() {
-        super("Not an Exception, It means the request already handled");
-    }
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Controller
+public @interface Restful {
 
 }

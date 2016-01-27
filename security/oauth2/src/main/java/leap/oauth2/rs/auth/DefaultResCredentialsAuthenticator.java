@@ -36,10 +36,10 @@ import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
 /**
- * Default implementation of {@link ResAuthenticationResolver}.
+ * Default implementation of {@link ResCredentialsAuthenticator}.
  */
-public class DefaultResAuthenticationResolver implements ResAuthenticationResolver, PostCreateBean {
-    private static final Log log = LogFactory.get(DefaultResAuthenticationResolver.class);
+public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthenticator, PostCreateBean {
+    private static final Log log = LogFactory.get(DefaultResCredentialsAuthenticator.class);
 
     protected @Inject BeanFactory           factory;
     protected @Inject OAuth2ResServerConfig config;
@@ -52,7 +52,7 @@ public class DefaultResAuthenticationResolver implements ResAuthenticationResolv
     protected int                                 cacheExpiresInMs = 120 * 1000; //2 minutes
 
     @Override
-    public Result<ResAuthentication> resolveAuthentication(ResAccessToken at) {
+    public Result<ResAuthentication> authenticate(ResAccessToken at) {
         //Resolve from cache.
         CachedAuthentication cached = getCachedAuthentication(at);
         if(null != cached) {

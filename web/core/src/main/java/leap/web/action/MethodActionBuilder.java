@@ -24,11 +24,11 @@ import leap.lang.Builders;
 import leap.lang.reflect.ReflectMethod;
 
 public class MethodActionBuilder implements ActionBuilder {
-	
-	protected Object                  controller;
-	protected ReflectMethod           method;
-	protected List<ArgumentBuilder>   arguments = new ArrayList<ArgumentBuilder>();
-	protected List<ActionInterceptor> interceptors = new ArrayList<ActionInterceptor>();
+
+	protected Object                  controller   = null;
+	protected ReflectMethod           method       = null;
+	protected List<ArgumentBuilder>   arguments    = new ArrayList<>();
+	protected List<ActionInterceptor> interceptors = new ArrayList<>();
 	
 	public MethodActionBuilder(Object controller, ReflectMethod method) {
 		Args.notNull(controller);
@@ -38,20 +38,26 @@ public class MethodActionBuilder implements ActionBuilder {
 		this.method     = method;
 	}
 
+    @Override
+    public Object getController() {
+        return controller;
+    }
+
 	@Override
     public String getName() {
 	    return method.getName();
     }
 
-	public Object getController() {
-		return controller;
-	}
-
 	public ReflectMethod getMethod() {
 		return method;
 	}
 
-	@Override
+    @Override
+    public Class<?> getReturnType() {
+        return method.getReturnType();
+    }
+
+    @Override
     public Annotation[] getAnnotations() {
 	    return method.getAnnotations();
     }

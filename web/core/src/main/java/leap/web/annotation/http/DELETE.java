@@ -22,9 +22,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@VERB
+@AMethod
 public @interface DELETE {
 
-	String value() default "";
-	
 }

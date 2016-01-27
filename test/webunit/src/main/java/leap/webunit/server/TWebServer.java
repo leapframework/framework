@@ -17,6 +17,8 @@ package leap.webunit.server;
 
 import leap.lang.Charsets;
 import leap.lang.Classes;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resources;
 import leap.lang.tools.DEV;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
@@ -49,6 +51,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Embedded Web Server for Testing.
  */
 public class TWebServer {
+
+	private static final Log log = LogFactory.get(TWebServer.class);
 	
 	public static final String ROOT_CONTEXT_PATH   = "";
 	public static final String ROOT_WEB_APP_NAME   = "root";

@@ -19,19 +19,65 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 import leap.lang.Buildable;
+import leap.lang.Classes;
 
 public interface ActionBuilder extends Buildable<Action> {
-	
+
+	/**
+	 * Required.
+     *
+     * Returns the name of action.
+     */
 	String getName();
 
+    /**
+     * Returns a mutable list contains the argument of action.
+     */
 	List<ArgumentBuilder> getArguments();
-	
-	void addArgument(ArgumentBuilder arg);
-	
-	Annotation[] getAnnotations();
-	
-	default boolean isAnnotationPresent(Class<? extends Annotation> t) {
-		return false;
-	}
 
+    /**
+     * Adds a argument.
+     */
+	void addArgument(ArgumentBuilder arg);
+
+    /**
+     * Returns the type of return value or null if no return value.
+     */
+    Class<?> getReturnType();
+
+    /**
+     * Returns true if the action has return type.
+     */
+    default boolean hasReturnType() { return null != getReturnType(); }
+
+    /**
+     * Returns the annotations of action.
+     */
+	default Annotation[] getAnnotations() {
+        return Classes.EMPTY_ANNOTATION_ARRAY;
+    }
+
+    /**
+     * Returns a mutable list contains {@link ActionInterceptor} of the action.
+     */
+    List<ActionInterceptor> getInterceptors();
+
+    /**
+     * Adds an {@link ActionInterceptor} for the action.
+     */
+    void addInterceptor(ActionInterceptor i);
+
+    /**
+     * Returns the instance of controller if exists.
+     */
+    default Object getController() {
+        return null;
+    }
+
+    /**
+     * Returns true if the given annotation type exists in the action's annotations array.
+     */
+	default boolean isAnnotationPresent(Class<? extends Annotation> t) {
+		return Classes.isAnnotatioinPresent(getAnnotations(), t);
+	}
 }

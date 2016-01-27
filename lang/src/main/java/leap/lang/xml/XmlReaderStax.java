@@ -103,7 +103,19 @@ final class XmlReaderStax extends XmlReaderBase implements XmlReader {
     @Override
     @SuppressWarnings("unchecked")
     public Iterator<String> getAttributeNames() {
-	    return event.asStartElement().getAttributes();
+        final Iterator<Attribute> it = event.asStartElement().getAttributes();
+		return new Iterator<String>() {
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public String next() {
+                Attribute a = it.next();
+                return a.getName().getLocalPart();
+            }
+        };
     }
 
 	@Override

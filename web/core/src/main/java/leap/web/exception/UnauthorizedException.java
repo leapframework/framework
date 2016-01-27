@@ -18,7 +18,7 @@ package leap.web.exception;
 import leap.lang.http.HTTP;
 import leap.web.Content;
 
-public class UnauthorizedException extends ResponseException {
+public class UnauthorizedException extends ClientErrorException {
 
 	public UnauthorizedException() {
 	    super(HTTP.SC_UNAUTHORIZED);

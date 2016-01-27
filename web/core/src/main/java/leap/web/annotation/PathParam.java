@@ -26,9 +26,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathParam {
+
 	/**
 	 * The name of path parameter.
 	 */
-	public String value() default "";
+	String value() default "";
 
 }

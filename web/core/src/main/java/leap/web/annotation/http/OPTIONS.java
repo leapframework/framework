@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package app1;
+package leap.web.annotation.http;
 
-import leap.web.WebTestCase;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class AppTest extends WebTestCase {
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@AMethod
+public @interface OPTIONS {
 
-
-	
 }

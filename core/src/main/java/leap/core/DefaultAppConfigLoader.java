@@ -88,33 +88,33 @@ class DefaultAppConfigLoader {
 	private static final String LOCATION_ATTRIBUTE         = "location";
 	
 	private static final List<AppConfigProcessor> processors = Factory.newInstances(AppConfigProcessor.class);
-	
+
 	protected String  profileName;
 	protected String  basePackage;
 	protected Boolean debug;
 	protected Locale  defaultLocale;
 	protected Charset defaultCharset;
 	protected Object  externalContext;
-	
-	protected final Set<String>                   additionalPackages = new LinkedHashSet<String>();
-	protected final Map<String,String>			  externalProperties;
-	protected final Map<String,String>            properties  = new LinkedHashMap<String, String>();
+
+	protected final Set<String> additionalPackages = new LinkedHashSet<>();
+	protected final Map<String, String> externalProperties;
+	protected final Map<String, String>           properties  = new LinkedHashMap<>();
 	protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
-	protected final Set<Resource>                 resources   = new HashSet<Resource>();
-	protected final List<SysPermissionDefinition> permissions = new ArrayList<SysPermissionDefinition>();
+	protected final Set<Resource>                 resources   = new HashSet<>();
+	protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
 	protected final Map<String, DataSourceConfig> dataSourceConfigs;
-	
-	protected final Map<Class<?>,Map<String,SysPermissionDefinition>> typedPermissions =  new HashMap<Class<?>, Map<String,SysPermissionDefinition>>();
-	
-	protected final DefaultPlaceholderResolver  placeholderResolver;
-	protected final AppPropertyProcessor propertyProcessor;
+
+	protected final Map<Class<?>, Map<String, SysPermissionDefinition>> typedPermissions = new HashMap<>();
+
+	protected final DefaultPlaceholderResolver placeholderResolver;
+	protected final AppPropertyProcessor       propertyProcessor;
 	
 	protected DefaultAppConfigLoader(){
 		this.externalContext     = null;
 		this.externalProperties  = null;
 		this.placeholderResolver = null;
 		this.propertyProcessor   = null;
-		this.dataSourceConfigs   = new HashMap<String, DataSourceConfig>();
+		this.dataSourceConfigs   = new HashMap<>();
 	}
 
 	/*

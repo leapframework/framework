@@ -92,7 +92,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         String codeUri = serverContextPath + AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
         
         login();
-        String redirectUrl = get(codeUri).assertRecirect().getRedirectUrl();
+        String redirectUrl = get(codeUri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
         
@@ -113,7 +113,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
                         "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
         
         login();
-        String redirectUrl = get(uri).assertRecirect().getRedirectUrl();
+        String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
 
@@ -131,7 +131,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
                         "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token";
         
         login();
-        String redirectUrl = get(uri).assertRecirect().getRedirectUrl();
+        String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
 

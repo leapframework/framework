@@ -88,7 +88,7 @@ class THttpResponseImpl implements THttpResponse {
 	}
 	
 	@Override
-    public MimeType getMimeType(){
+    public MimeType getContentType(){
 		if(null == contentType){
 			HttpEntity entity = httpResponse.getEntity();
 			Header     header = null == entity ? null : entity.getContentType();
@@ -102,13 +102,6 @@ class THttpResponseImpl implements THttpResponse {
 	}
 	
 	@Override
-    public String getContentType(){
-		HttpEntity entity = httpResponse.getEntity();
-		Header     header = null == entity ? null : entity.getContentType();
-		return null == header ? null : header.getValue();
-	}
-	
-	@Override
     public long getContentLength(){
 		HttpEntity entity = httpResponse.getEntity();
 		return null == entity ? -1L : entity.getContentLength();
@@ -116,13 +109,13 @@ class THttpResponseImpl implements THttpResponse {
 	
 	@Override
     public String getMediaType(){
-		MimeType contentType = getMimeType();
+		MimeType contentType = getContentType();
 		return null == contentType ? null : contentType.getMediaType();
 	}
 	
 	@Override
     public String getCharset(){
-		MimeType contentType = getMimeType();
+		MimeType contentType = getContentType();
 		return null == contentType ? null : contentType.getCharset();
 	}
 	
@@ -201,6 +194,12 @@ class THttpResponseImpl implements THttpResponse {
     }
 
 	@Override
+	public THttpResponse assertContentNotEmpty() {
+        TestBase.assertNotEmpty(getContent());
+		return this;
+	}
+
+	@Override
     public THttpResponse assertContentContains(String containsContent){
 		TestBase.assertContains(getContent(),containsContent);
 		return this;
@@ -251,7 +250,7 @@ class THttpResponseImpl implements THttpResponse {
 	
 	@Override
     public THttpResponse assertContentTypePresent(){
-		TestBase.assertNotNull(getMimeType());
+		TestBase.assertNotNull(getContentType());
 		return this;
 	}
 	
@@ -268,7 +267,7 @@ class THttpResponseImpl implements THttpResponse {
 	}
 	
 	private Charset charset(){
-		MimeType contentType = getMimeType();
+		MimeType contentType = getContentType();
 		String   charset     = null == contentType ? null : contentType.getCharset();
 		
 		return null == charset ? Charsets.UTF_8 : Charsets.forName(charset);

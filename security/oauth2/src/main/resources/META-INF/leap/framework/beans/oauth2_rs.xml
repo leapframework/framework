@@ -16,8 +16,8 @@
           class="leap.oauth2.rs.DefaultOAuth2ResServerErrorHandler" primary="true"/>
           
     <!-- auth -->
-    <bean type="leap.oauth2.rs.auth.ResAuthenticationResolver"
-          class="leap.oauth2.rs.auth.DefaultResAuthenticationResolver" primary="true"/>
+    <bean type="leap.oauth2.rs.auth.ResCredentialsAuthenticator"
+          class="leap.oauth2.rs.auth.DefaultResCredentialsAuthenticator" primary="true"/>
           
     <!-- token -->    
     <bean type="leap.oauth2.rs.token.ResTokenManager"

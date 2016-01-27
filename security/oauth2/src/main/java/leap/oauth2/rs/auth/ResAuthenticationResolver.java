@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,20 @@
 package leap.oauth2.rs.auth;
 
 import leap.lang.Result;
-import leap.oauth2.rs.token.ResAccessToken;
+import leap.web.Request;
+import leap.web.Response;
+import leap.web.security.authc.Authentication;
+import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.authc.AuthenticationResolver;
 
-public interface ResAuthenticationResolver {
-    
-    Result<ResAuthentication> resolveAuthentication(ResAccessToken credentials);
+public interface ResAuthenticationResolver extends AuthenticationResolver {
+
+    /**
+     * Resolves {@link Authentication} in the request.
+     *
+     * <p/>
+     * Returns a failure result if failed to resolve authentication and the request was handled by the resolver.
+     */
+    Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
 
 }

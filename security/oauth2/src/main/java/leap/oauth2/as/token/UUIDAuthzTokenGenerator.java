@@ -17,6 +17,7 @@ package leap.oauth2.as.token;
 
 import java.util.UUID;
 
+import leap.oauth2.OAuth2Constants;
 import leap.oauth2.as.authc.AuthzAuthentication;
 
 public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,AuthzAccessTokenGenerator, AuthzLoginTokenGenerator {

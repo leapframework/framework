@@ -23,7 +23,6 @@ import leap.core.AppConfigProcessor;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
-import leap.lang.path.Paths;
 import leap.lang.xml.XmlReader;
 import leap.web.assets.AssetConfigExtension;
 import leap.web.cors.CorsConfig;
@@ -34,36 +33,23 @@ public class WebConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/config";
 
-    //mvc
 	private static final String MVC_ELEMENT                      = "mvc";
-	private static final String DEFAULT_THEME_ATTRIBUTE          = "default-theme";
-	private static final String THEMES_LOCATION_ATTRIBUTE        = "themes-location";
-	private static final String VIEWS_LOCATION_ATTRIBUTE         = "views-location";
-	private static final String DEFAULT_FORMAT_ATTRIBUTE         = "default-format";
-	private static final String FORMAT_PARAMETER_ATTRIBUTE       = "format-parameter";
-	private static final String TRIM_PARAMETERS_ATTRIBUTE        = "trim-parameters";
-	private static final String ALLOW_ACTION_EXTENSION_ATTRIBUTE = "allow-action-extension";
-	private static final String ALLOW_FORMAT_EXTENSION_ATTRIBUTE = "allow-format-extension";
-	private static final String ALLOW_FORMAT_PARAMETER_ATTRIBUTE = "allow-format-parameter";
-	private static final String ACTION_EXTENSIONS_ATTRIBUTE      = "action-extensions";
-    private static final String CORS_ENABLED                     = "cors-enabled";
-
-    //errors
+    private static final String MODULE_ELEMENT                   = "module";
 	private static final String ERRORS_ELEMENT                   = "errors";
 	private static final String ERROR_VIEW_ELEMENT               = "error-view";
 	private static final String ERROR_CODE_ELEMENT               = "error-code";
+    private static final String CORS_ELEMENT                     = "cors";
+    private static final String ASSETS_ELEMENT                   = "assets";
+    private static final String FOLDER_ELEMENT                   = "folder";
+
 	private static final String ERROR_CODE_ATTRIBUTE             = "error-code";
 	private static final String EXCEPTION_TYPE_ATTRIBUTE         = "exception-type";
 	private static final String VIEW_PATH_ATTRIBUTE              = "view-path";
-
-    //cors
-    private static final String CORS_ELEMENT                     = "cors";
-
-    //assets
-    private static final String ASSETS_ELEMENT                   = "assets";
-    private static final String FOLDER_ELEMENT                   = "folder";
     private static final String LOCATION_ATTRIBUTE               = "location";
     private static final String PATH_PREFIX_ATTRIBUTE            = "path-prefix";
+    private static final String NAME_ATTRIBUTE                   = "name";
+    private static final String BASE_PATH_ATTRIBUTE              = "base-path";
+    private static final String BASE_PACKAGE_ATTRIBUTE           = "base-package";
 
     @Override
     public String getNamespaceURI() {
@@ -86,81 +72,22 @@ public class WebConfigProcessor implements AppConfigProcessor {
             readAssetsConfig(context, reader);
             return;
         }
+
+        if(reader.isStartElement(MODULE_ELEMENT)) {
+            readModuleConfig(context, reader);
+            return;
+        }
 		
 		throw new AppConfigException("Unknown xml element '" + reader.getElementLocalName() + "', check the config : " + reader.getSource());
     }
 
 	protected void readMvcConfig(AppConfigContext context, XmlReader reader) {
-        //theme name
-        String themeName = reader.getAttribute(DEFAULT_THEME_ATTRIBUTE);
-        if(!Strings.isEmpty(themeName)){
-            context.setProperty(WebConfigurator.CONFIG_DEFAULT_THEME, themeName);
-        }
-
-        String themesLocation = reader.getAttribute(THEMES_LOCATION_ATTRIBUTE);
-        if(!Strings.isEmpty(themesLocation)){
-            context.setProperty(WebConfigurator.CONFIG_THEMES_LOCATION, themesLocation);
-        }
-
-        //views-location
-        String viewsLocation = reader.getAttribute(VIEWS_LOCATION_ATTRIBUTE);
-        if(!Strings.isEmpty(viewsLocation)){
-            if(!(viewsLocation.startsWith("/"))){
-                throw new AppConfigException("views-location must starts with '/', check the config : " + reader.getSource());
+        reader.getAttributeNames().forEachRemaining((name) -> {
+            String value = reader.resolveAttribute(name);
+            if(!Strings.isEmpty(value)) {
+                context.setProperty(WebConfigurator.CONFIG_PREFIX + name, value);
             }
-            if(viewsLocation.endsWith("/")){
-                viewsLocation = viewsLocation.substring(0,viewsLocation.length() - 2);
-            }
-            context.setProperty(WebConfigurator.CONFIG_VIEWS_LOCATION, viewsLocation);
-        }
-
-        //default-format
-        String defaultFormat = reader.getAttribute(DEFAULT_FORMAT_ATTRIBUTE);
-        if(!Strings.isEmpty(defaultFormat)){
-            context.setProperty(WebConfigurator.CONFIG_DEFAULT_FORMAT, defaultFormat);
-        }
-
-        //format-parameter
-        String formatParameter = reader.getAttribute(FORMAT_PARAMETER_ATTRIBUTE);
-        if(!Strings.isEmpty(formatParameter)){
-            context.setProperty(WebConfigurator.CONFIG_FORMAT_PARAMETER, formatParameter);
-        }
-
-        //allow-format-extension
-        Boolean allowFormatExtension = reader.getBooleanAttribute(ALLOW_FORMAT_EXTENSION_ATTRIBUTE);
-        if(null != allowFormatExtension){
-            context.setProperty(WebConfigurator.CONFIG_ALLOW_FORMAT_EXTENSION,String.valueOf(allowFormatExtension));
-        }
-
-        //allow-format-parameter
-        Boolean allowFormatParameter = reader.getBooleanAttribute(ALLOW_FORMAT_PARAMETER_ATTRIBUTE);
-        if(null != allowFormatParameter){
-            context.setProperty(WebConfigurator.CONFIG_ALLOW_FORMAT_PARAMETER, String.valueOf(allowFormatParameter));
-        }
-
-        //trim-parameters
-        Boolean trimParameters = reader.getBooleanAttribute(TRIM_PARAMETERS_ATTRIBUTE);
-        if(null != trimParameters){
-            context.setProperty(WebConfigurator.CONFIG_TRIM_PARAMETERS,String.valueOf(trimParameters));
-        }
-
-        //allow-action-extension
-        Boolean allowActionExtension = reader.getBooleanAttribute(ALLOW_ACTION_EXTENSION_ATTRIBUTE);
-        if(null != allowActionExtension){
-            context.setProperty(WebConfigurator.CONFIG_ALLOW_ACTION_EXTENSION, String.valueOf(allowActionExtension));
-        }
-
-        //action-extensions
-        String actionExtensions = reader.getAttribute(ACTION_EXTENSIONS_ATTRIBUTE);
-        if(!Strings.isEmpty(actionExtensions)){
-            context.setProperty(WebConfigurator.CONFIG_ACTION_EXTENSIONS, actionExtensions);
-        }
-
-        //cors-enabled
-        String corsEnabled = reader.getAttribute(CORS_ENABLED);
-        if(!Strings.isEmpty(corsEnabled)){
-            context.setProperty(WebConfigurator.CONFIG_CORS_ENABLED, corsEnabled);
-        }
+        });
 
         reader.next();
         while(!reader.isEndElement(MVC_ELEMENT)){
@@ -260,5 +187,28 @@ public class WebConfigProcessor implements AppConfigProcessor {
             }
 
         }
+    }
+
+    protected void readModuleConfig(AppConfigContext context, XmlReader reader) {
+        ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
+
+        String name = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
+        String basePath = reader.resolveRequiredAttribute(BASE_PATH_ATTRIBUTE);
+        String basePackage = reader.resolveRequiredAttribute(BASE_PACKAGE_ATTRIBUTE);
+
+        if(extension.getModule(name) != null) {
+            throw new AppConfigException("The web module '" + name + "' already exists, check config : " + reader.getCurrentLocation());
+        }
+
+        if(!basePath.startsWith("/")) {
+            throw new AppConfigException("The base-path '" + basePath + "' of web module '" + name + "' must be start with '/'");
+        }
+
+        DefaultModuleConfig module = new DefaultModuleConfig();
+        module.setName(name);
+        module.setBasePath(basePath);
+        module.setBasePackage(basePackage);
+
+        extension.addModule(module);
     }
 }

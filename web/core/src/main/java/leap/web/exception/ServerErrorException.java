@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,36 +15,39 @@
  */
 package leap.web.exception;
 
-import leap.lang.http.HTTP;
 import leap.web.Content;
 
+/**
+ * A base runtime application exception indicating a server error (HTTP 5xx status codes).
+ */
 public class ServerErrorException extends ResponseException {
 
-	public ServerErrorException() {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR);
+    public ServerErrorException(int status) {
+        super(status);
     }
 
-	public ServerErrorException(String message) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, message);
+    public ServerErrorException(int status, Content content) {
+        super(status, content);
     }
 
-	public ServerErrorException(Content content) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, content);
+    public ServerErrorException(int status, String message) {
+        super(status, message);
     }
 
-	public ServerErrorException(Throwable cause) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, cause);
+    public ServerErrorException(int status, Throwable cause) {
+        super(status, cause);
     }
 
-	public ServerErrorException(String message, Throwable cause) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, message, cause);
+    public ServerErrorException(int status, String message, Throwable cause) {
+        super(status, message, cause);
     }
 
-	public ServerErrorException(String message, Content content) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, message, content);
+    public ServerErrorException(int status, String message, Content content) {
+        super(status, message, content);
     }
 
-	public ServerErrorException(String message, Content content, Throwable cause) {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR, message, content, cause);
+    public ServerErrorException(int status, String message, Content content, Throwable cause) {
+        super(status, message, content, cause);
     }
+
 }

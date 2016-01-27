@@ -21,14 +21,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Spring style.
+ * Spring style, same as {@link PathParam}.
  */
 @Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathVariable {
+
 	/**
 	 * The name of path parameter.
 	 */
-	public String value() default "";
+	String value() default "";
 
 }

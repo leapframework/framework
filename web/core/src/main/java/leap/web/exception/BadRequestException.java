@@ -18,7 +18,7 @@ package leap.web.exception;
 import leap.lang.http.HTTP;
 import leap.web.Content;
 
-public class BadRequestException extends ResponseException {
+public class BadRequestException extends ClientErrorException {
 
 	private static final long serialVersionUID = -6793332581671315008L;
 	

@@ -384,7 +384,7 @@ public class DefaultRequest extends Request {
 	
 	@Override
     public String getParameter(String name) {
-		if(config.isTrimParameters()){
+		if(config.isAutoTrimParameters()){
 			//Auto trim request parameters
 			String s = req.getParameter(name);
 			return null == s ? null : s.trim();
@@ -398,7 +398,7 @@ public class DefaultRequest extends Request {
 	    String[] values = req.getParameterValues(name);
 	    
 	    //Auto trim request parameters
-	    if(null != values && config.isTrimParameters()){
+	    if(null != values && config.isAutoTrimParameters()){
 	    	for(int i=0;i<values.length;i++){
 	    		values[i] = Strings.trim(values[i]);
 	    	}
@@ -761,11 +761,11 @@ public class DefaultRequest extends Request {
 			if( index > 0){
 				path = path.substring(0,index);
 			}
-		}else if((index = path.lastIndexOf(app.getWebConfig().getJsessionidParameter())) > 0) {
+		}else if((index = path.lastIndexOf(app.getWebConfig().getJsessionidPrefix())) > 0) {
 			path = path.substring(0,index);
 		}
 		
-		//remvoes '/' if the path ends with '/'
+		//removes '/' if the path ends with '/'
 		if(path.length() > 1){
 			int lastIndex = path.length() - 1;
 			if(path.charAt(lastIndex) == '/'){
@@ -801,7 +801,7 @@ public class DefaultRequest extends Request {
 	protected Map<String, Object> initRequestParameters(){
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-		boolean trim = config.isTrimParameters();
+		boolean trim = config.isAutoTrimParameters();
 		
 		for(Entry<String, String[]> entry : req.getParameterMap().entrySet()){
 			String   name  = entry.getKey();
