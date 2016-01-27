@@ -21,7 +21,7 @@ import leap.web.Content;
 public class NotFoundException extends ClientErrorException {
 
 	public NotFoundException() {
-	    super(HTTP.SC_NOT_FOUND);
+	    super(HTTP.SC_NOT_FOUND, "Not Found");
     }
 
 	public NotFoundException(String message) {

@@ -21,7 +21,7 @@ import leap.web.Content;
 public class UnauthorizedException extends ClientErrorException {
 
 	public UnauthorizedException() {
-	    super(HTTP.SC_UNAUTHORIZED);
+	    super(HTTP.SC_UNAUTHORIZED, "Unauthorized");
     }
 
 	public UnauthorizedException(String message) {

@@ -21,7 +21,7 @@ import leap.web.Content;
 public class InternalServerErrorException extends ServerErrorException {
 
 	public InternalServerErrorException() {
-	    super(HTTP.SC_INTERNAL_SERVER_ERROR);
+	    super(HTTP.SC_INTERNAL_SERVER_ERROR, "Internal Server Error");
     }
 
 	public InternalServerErrorException(String message) {

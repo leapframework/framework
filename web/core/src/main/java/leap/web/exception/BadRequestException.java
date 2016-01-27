@@ -23,7 +23,7 @@ public class BadRequestException extends ClientErrorException {
 	private static final long serialVersionUID = -6793332581671315008L;
 	
 	public BadRequestException() {
-	    super(HTTP.SC_BAD_REQUEST);
+	    super(HTTP.SC_BAD_REQUEST, "Bad Request");
     }
 	
 	public BadRequestException(String message) {

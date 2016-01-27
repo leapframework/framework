@@ -21,7 +21,7 @@ import leap.web.Content;
 public class NotImplementedException extends ServerErrorException {
 
 	public NotImplementedException() {
-	    super(HTTP.SC_NOT_IMPLEMENTED);
+	    super(HTTP.SC_NOT_IMPLEMENTED, "Not Implemented");
     }
 
 	public NotImplementedException(String message) {

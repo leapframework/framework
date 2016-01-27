@@ -21,7 +21,7 @@ import leap.web.Content;
 public class ForbiddenException extends ClientErrorException {
 
 	public ForbiddenException() {
-	    super(HTTP.SC_FORBIDDEN);
+	    super(HTTP.SC_FORBIDDEN, "Forbidden");
     }
 
 	public ForbiddenException(String message) {
