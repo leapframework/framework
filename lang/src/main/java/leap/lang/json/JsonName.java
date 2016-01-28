@@ -15,18 +15,24 @@
  */
 package leap.lang.json;
 
+import leap.lang.annotation.Named;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import leap.lang.annotation.Named;
-
+/**
+ * Specify the name of field in json.
+ */
 @Retention(RetentionPolicy.RUNTIME)  
 @Target(ElementType.FIELD)
 @Named("value")
-public @interface JsonNamed {
+public @interface JsonName {
 
+    /**
+     * The name in json.
+     */
 	String value();
 	
 }

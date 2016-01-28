@@ -172,7 +172,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     }
     
     private static class Bean1 {
-    	@JsonNamed("Name")
+    	@JsonName("Name")
     	public String name;
     }
 }
