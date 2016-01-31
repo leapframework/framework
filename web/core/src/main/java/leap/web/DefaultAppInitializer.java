@@ -15,13 +15,6 @@
  */
 package leap.web;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.servlet.http.Part;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
@@ -53,6 +46,12 @@ import leap.web.multipart.MultipartFile;
 import leap.web.route.RouteBuilder;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
+import javax.servlet.http.Part;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 public class DefaultAppInitializer implements AppInitializer {
 	
@@ -195,12 +194,14 @@ public class DefaultAppInitializer implements AppInitializer {
 				actionPath = actionPathWithoutExt;
 			}
 		}
+
+		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(Restful.class);
 		
 		if(!Strings.isEmpty(actionPath)){
-			if(actionPath.startsWith("/")){
+			if(!restful && actionPath.startsWith("/")){
 				path.append(actionPath);
 			}else{
-				path.append(controllerPath).append('/').append(actionPath);
+				path.append(controllerPath).append(Paths.prefixWithSlash(actionPath));
 			}
 		}else{
 			path.append(controllerPath);

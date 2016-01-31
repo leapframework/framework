@@ -15,6 +15,7 @@
  */
 package app.controllers;
 
+import leap.web.annotation.Path;
 import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
@@ -31,6 +32,13 @@ public class RestTestController {
     public void createObject(TestObject o) {
 
     }
+
+    @GET
+    @Path("/children")
+    public void getChildren() {
+
+    }
+
 
     static final class TestObject {
         public String v;

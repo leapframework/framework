@@ -30,4 +30,9 @@ public class RestTestControllerTest extends WebTestBase {
         post("/rest_test").assertOk().assertContentEmpty();
     }
 
+    @Test
+    public void testGetChildren() {
+        get("/rest_test/children").assertOk();
+    }
+
 }
