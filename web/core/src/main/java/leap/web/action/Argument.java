@@ -15,24 +15,18 @@
  */
 package leap.web.action;
 
+import leap.lang.*;
+import leap.web.annotation.ViewAttribute;
+import leap.web.view.ViewData;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import leap.core.validation.Validator;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Named;
-import leap.lang.Strings;
-import leap.lang.TypeInfo;
-import leap.web.annotation.ViewAttribute;
-import leap.web.view.ViewData;
-
 public class Argument implements Named {
 	
-	public enum BindingFrom {
+	public enum Location {
 		UNDEFINED,
 		
 		PATH_PARAM,
@@ -51,7 +45,7 @@ public class Argument implements Named {
 	protected final Type                genericType;
 	protected final TypeInfo            typeInfo;
 	protected final Boolean             required;
-	protected final BindingFrom         bindingFrom;
+	protected final Location            location;
 	protected final Annotation[]        annotations;
 	protected final ArgumentValidator[] validators;
 	protected final String              viewAttributeName;
@@ -61,7 +55,7 @@ public class Argument implements Named {
 					Type genericType,
 					TypeInfo typeInfo,
 					Boolean	required,
-					BindingFrom bindingFrom,
+					Location location,
 					Annotation[] annotations,
 					ArgumentValidator[] validators) {
 		
@@ -74,7 +68,7 @@ public class Argument implements Named {
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
 		this.required		   = required;
-		this.bindingFrom       = null == bindingFrom ? BindingFrom.UNDEFINED : bindingFrom;
+		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
 		this.viewAttributeName = resolveViewAttributeName();
@@ -120,10 +114,10 @@ public class Argument implements Named {
 	}
 
 	/**
-	 * Returns the {@link BindingFrom} of this argument.
+	 * Returns the {@link Location} of this argument.
 	 */
-	public BindingFrom getBindingFrom() {
-		return bindingFrom;
+	public Location getLocation() {
+		return location;
 	}
 
 	/**

@@ -26,7 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
-import leap.web.action.Argument.BindingFrom;
+import leap.web.action.Argument.Location;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
@@ -234,7 +234,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		//found declared request body argument
 		int count=0;
 		for(Argument a : arguments){
-			if(a.getBindingFrom() == BindingFrom.REQUEST_BODY){
+			if(a.getLocation() == Location.REQUEST_BODY){
 				rbaf.argument   = a;
 				rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
 				rbaf.declared   = true;

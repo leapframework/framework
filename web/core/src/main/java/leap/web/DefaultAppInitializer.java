@@ -37,7 +37,7 @@ import leap.lang.reflect.ReflectParameter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.web.action.*;
-import leap.web.action.Argument.BindingFrom;
+import leap.web.action.Argument.Location;
 import leap.web.annotation.*;
 import leap.web.config.ModuleConfig;
 import leap.web.error.ErrorsConfig;
@@ -217,11 +217,11 @@ public class DefaultAppInitializer implements AppInitializer {
 		//Resolve path variables
 		if(pathTemplate.hasVariables()) {
 			for(ArgumentBuilder a : action.getArguments()) {
-				if(null == a.getBindingFrom()) {
+				if(null == a.getLocation()) {
 					String name = NamingStyles.LOWER_UNDERSCORE.of(a.getName());
 					for(String v : pathTemplate.getTemplateVariables()) {
 						if(name.equals(NamingStyles.LOWER_UNDERSCORE.of(v))){
-							a.setBindingFrom(BindingFrom.PATH_PARAM);
+							a.setLocation(Location.PATH_PARAM);
 							a.setName(v);
 						}
 					}

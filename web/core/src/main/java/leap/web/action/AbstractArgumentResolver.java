@@ -24,7 +24,7 @@ import leap.lang.io.IO;
 import leap.lang.naming.NamingStyles;
 import leap.web.App;
 import leap.web.Request;
-import leap.web.action.Argument.BindingFrom;
+import leap.web.action.Argument.Location;
 import leap.web.route.RouteBase;
 
 import javax.servlet.http.Part;
@@ -65,21 +65,21 @@ public abstract class AbstractArgumentResolver implements ArgumentResolver {
 	}
 
     protected BiFunction<ActionContext, Argument, Object> func(RouteBase route, Argument arg) {
-        BindingFrom loc = arg.getBindingFrom();
+        Location loc = arg.getLocation();
 
-        if(BindingFrom.QUERY_PARAM == loc) {
+        if(Location.QUERY_PARAM == loc) {
             return query;
         }
 
-        if(BindingFrom.PATH_PARAM == loc) {
+        if(Location.PATH_PARAM == loc) {
             return (c,a) -> c.getPathParameters().get(resolvePathVar(route, arg.getName()));
         }
 
-        if(BindingFrom.REQUEST_PARAM == loc) {
+        if(Location.REQUEST_PARAM == loc) {
             return request;
         }
 
-        if(BindingFrom.PART_PARAM == loc) {
+        if(Location.PART_PARAM == loc) {
             return part;
         }
 
