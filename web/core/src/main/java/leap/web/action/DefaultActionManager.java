@@ -17,10 +17,8 @@ package leap.web.action;
 
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
-import leap.core.ds.DataSourceManager;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationException;
-import leap.core.validation.ValidationManager;
 import leap.lang.*;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
@@ -57,22 +55,19 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		}
 	};
 	
-	private List<ExecutionAttributes> easList = new ArrayList<ExecutionAttributes>();
+	private List<ExecutionAttributes> easList = new ArrayList<>();
 
-	protected @Inject App				  app;
-	protected @Inject RequestFormat[]     requestFormats;
-
-	protected @Inject DataSourceManager          dataSourceManager;
+	protected @Inject App                        app;
+	protected @Inject RequestFormat[]            requestFormats;
 	protected @Inject FormatManager              formatManager;
-	protected @Inject ValidationManager          validationManager;
 	protected @Inject ResultProcessorProvider[]  resultProcessorProviders;
 	protected @Inject ArgumentResolverProvider[] argumentResolverProviders;
 	protected @Inject ActionInitializable[]      actionInitializables;
-	protected @Inject WebInterceptors            webInterceptors;
+	protected @Inject WebInterceptors            interceptors;
 
 	@Override
     public void postAppStart(App app) throws Throwable {
-		ActionInterceptor[] actionInterceptors = webInterceptors.getActionInterceptors().toArray(new ActionInterceptor[]{});
+		ActionInterceptor[] actionInterceptors = interceptors.getActionInterceptors().toArray(new ActionInterceptor[]{});
 
 		for(ExecutionAttributes eas : easList) {
 			eas.interceptors = new ActionInterceptors(Arrays2.concat(actionInterceptors, eas.action.getInterceptors()));
@@ -361,7 +356,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		
 		//Get context resolver
 		if(ContextArgumentResolver.isContext(argument.getType())){
-			ea.resolver     = ContextArgumentResolver.INSTANCE;
+			ea.resolver     = ContextArgumentResolver.of(argument.getType());
 			ea.isContextual = true;
 			return;
 		}
@@ -370,7 +365,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		
 		//Get external resolver
 		for(ArgumentResolverProvider provider : argumentResolverProviders){
-			if((resolver = provider.tryGetArgumentResolver(action, argument)) != null){
+			if((resolver = provider.tryGetArgumentResolver(route, action, argument)) != null){
 				break;
 			}
 		}
@@ -379,17 +374,17 @@ public class DefaultActionManager implements ActionManager,AppListener {
 			TypeInfo typeInfo = argument.getTypeInfo();
 			if(typeInfo.isCollectionType()){
 				//Collection type resolver
-				resolver = new CollectionArgumentResolver(app, action, argument);
+				resolver = new CollectionArgumentResolver(app, route, argument);
 			}else if(typeInfo.isSimpleType()){
 				//Simple type resolver
-				resolver = new SimpleArgumentResolver(app, action, argument);
+				resolver = new SimpleArgumentResolver(app, route, argument);
 			}else{
 				if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
 					//Part resolver
-					resolver = new MultipartArgumentResolver(app, action, argument);
+					resolver = new MultipartArgumentResolver(app, route, argument);
 				}else{
 					//Complex type resolver
-					resolver = new ComplexArgumentResolver(app, action, argument);
+					resolver = new ComplexArgumentResolver(app, route, argument);
 				}
 			}
 		}

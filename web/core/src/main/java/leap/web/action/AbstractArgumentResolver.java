@@ -15,101 +15,111 @@
  */
 package leap.web.action;
 
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.util.Map;
-
-import javax.servlet.http.Part;
-
 import leap.lang.Charsets;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
 import leap.lang.io.IO;
+import leap.lang.naming.NamingStyles;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.action.Argument.BindingFrom;
-import leap.web.annotation.PartParam;
-import leap.web.annotation.PathParam;
-import leap.web.annotation.PathVariable;
-import leap.web.annotation.QueryParam;
-import leap.web.annotation.RequestBody;
-import leap.web.annotation.RequestParam;
+import leap.web.route.RouteBase;
+
+import javax.servlet.http.Part;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+import java.util.function.BiFunction;
 
 public abstract class AbstractArgumentResolver implements ArgumentResolver {
-	
-	protected final BindingFrom bindingFrom;
 
-	protected AbstractArgumentResolver(App app,Action action,Argument arg) {
-		this.bindingFrom = resolveBindingFrom(arg);
+    protected static final BiFunction<ActionContext, Argument, Object> query    = (c,a) -> c.getRequest().getQueryParameters().get(a.getName());
+    protected static final BiFunction<ActionContext, Argument, Object> request  = (c,a) -> c.getRequest().getParameters().get(a.getName());
+    protected static final BiFunction<ActionContext, Argument, Object> part     = (c,a) -> c.getRequest().getPart(a.getName());
+    protected static final BiFunction<ActionContext, Argument, Object> _default = (c,a) -> {
+        String             name    = a.getName();
+        Request            request = c.getRequest();
+        Map<String,Object> params  = request.getParameters();
+
+        if(params.containsKey(name)) {
+            return params.get(name);
+        }
+
+        if(request.isMultipart()) {
+            return request.getPart(name);
+        }
+
+        return null;
+    };
+
+	protected final BiFunction<ActionContext, Argument, Object> func;
+
+	protected AbstractArgumentResolver(App app,RouteBase route,Argument arg) {
+        this.func = func(route, arg);
 	}
 	
 	protected Object getParameter(ActionContext ac,Argument arg) throws Throwable{
-		Request            request = ac.getRequest();
-		String             name    = arg.getName();
-		Map<String,Object> params  = request.getParameters();
-		
-		if(bindingFrom == BindingFrom.PATH_PARAM){
-			return ac.getPathParameters().get(name);
-		}
-		
-        if (bindingFrom == BindingFrom.QUERY_PARAM) {
-            return request.getQueryParameters().get(name);
+        return func.apply(ac, arg);
+	}
+
+    protected BiFunction<ActionContext, Argument, Object> func(RouteBase route, Argument arg) {
+        BindingFrom loc = arg.getBindingFrom();
+
+        if(BindingFrom.QUERY_PARAM == loc) {
+            return query;
         }
-		
-		if(bindingFrom == BindingFrom.REQUEST_PARAM){
-			return params.get(name);
-		}
-		
-		if(bindingFrom == BindingFrom.PART_PARAM) {
-			return request.getPart(name);
-		}
-		
-		if(ac.getPathParameters().containsKey(name)){
-			return ac.getPathParameters().get(name);
-		}
-		
-		if(params.containsKey(name)) {
-			return params.get(name);
-		}
-		
-		if(request.isMultipart()) {
-			return request.getPart(name);
-		}
-		
-		return null;
-	}
-	
-	protected BindingFrom resolveBindingFrom(Argument arg) {
-		for(Annotation a : arg.getAnnotations()) {
-			if(a.annotationType().equals(RequestParam.class)){
-				return BindingFrom.REQUEST_PARAM;
-			}
-			
-			if(a.annotationType().equals(PathVariable.class)){
-				return BindingFrom.PATH_PARAM;
-			}
-			
-			if(a.annotationType().equals(PathParam.class)) {
-			    return BindingFrom.PART_PARAM;
-			}
-			
-			if(a.annotationType().equals(QueryParam.class)) {
-			    return BindingFrom.QUERY_PARAM;
-			}
-			
-			if(a.annotationType().equals(RequestBody.class)){
-				return BindingFrom.REQUEST_BODY;
-			}
-			
-			if(a.annotationType().equals(PartParam.class)) {
-				return BindingFrom.PART_PARAM;
-			}
-		}
-		return BindingFrom.UNDEFINED;
-	}
-	
+
+        if(BindingFrom.PATH_PARAM == loc) {
+            return (c,a) -> c.getPathParameters().get(resolvePathVar(route, arg.getName()));
+        }
+
+        if(BindingFrom.REQUEST_PARAM == loc) {
+            return request;
+        }
+
+        if(BindingFrom.PART_PARAM == loc) {
+            return part;
+        }
+
+        if(arg.getTypeInfo().isSimpleType()) {
+            String var = tryResolvePathVar(route, arg.getName());
+            if(null != var) {
+                return (c,a) -> c.getPathParameters().get(var);
+            }
+        }
+
+        return _default;
+    }
+
+    protected String resolvePathVar(RouteBase route, String name) {
+        String var = tryResolvePathVar(route, name);
+
+        if(null != var) {
+            return var;
+        }
+
+        throw new IllegalStateException("No path param '" + name + "' exists in action : " + route.getAction());
+    }
+
+    protected String tryResolvePathVar(RouteBase route, String name) {
+        List<String> vars = route.getPathTemplate().getTemplateVariables();
+        for(String var : vars) {
+            if(Strings.equalsIgnoreCase(var, name)) {
+                return var;
+            }
+        }
+
+        for(String var : vars) {
+            if(NamingStyles.LOWER_UNDERSCORE.of(var).equals(NamingStyles.LOWER_UNDERSCORE.of(name))) {
+                return var;
+            }
+        }
+
+        return null;
+    }
+
 	protected Object convertFromPart(Part part,Argument arg) throws Throwable {
 		if(part.getSize() == 0) {
 			return null;

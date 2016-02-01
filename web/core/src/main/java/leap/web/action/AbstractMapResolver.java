@@ -15,18 +15,19 @@
  */
 package leap.web.action;
 
+import leap.web.App;
+import leap.web.route.RouteBase;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import leap.web.App;
-
 @SuppressWarnings({ "rawtypes", "unchecked" }) 
 public abstract class AbstractMapResolver extends AbstractArgumentResolver {
 
-	public AbstractMapResolver(App app, Action action, Argument arg) {
-	    super(app, action, arg);
+	public AbstractMapResolver(App app, RouteBase route, Argument arg) {
+	    super(app, route, arg);
     }
 	
 	protected void putToMap(Map map, String name, Object value) {

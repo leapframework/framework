@@ -15,21 +15,20 @@
  */
 package leap.web.action;
 
-import javax.servlet.http.Part;
-
 import leap.lang.Classes;
 import leap.lang.convert.Converts;
 import leap.web.App;
+import leap.web.route.RouteBase;
+
+import javax.servlet.http.Part;
 
 /**
  * An {@link ArgumentResolver} for resolving simple argument type.
- * 
- * @see TypeStrategy#isSimpleType(Class, java.lang.reflect.Type)
  */
 public class SimpleArgumentResolver extends AbstractArgumentResolver {
 	
-	public SimpleArgumentResolver(App app,Action action,Argument argument) {
-	    super(app,action,argument);
+	public SimpleArgumentResolver(App app, RouteBase route, Argument argument) {
+	    super(app,route,argument);
     }
 
 	@Override
