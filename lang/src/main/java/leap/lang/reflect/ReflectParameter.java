@@ -15,11 +15,13 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.Named;
+import leap.lang.TypeInfo;
+import leap.lang.Types;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-
-import leap.lang.Named;
 
 public class ReflectParameter implements Named {
 
@@ -27,13 +29,15 @@ public class ReflectParameter implements Named {
 	private final String	name;
 	private final Parameter p;
 	private final Type	    genericType;
+	private final TypeInfo  typeInfo;
 	
 	public ReflectParameter(int index, String name, Parameter p, Type genericType) {
 		this.index	     = index;
 		this.name		 = name;
 		this.p    		 = p;
 		this.genericType = genericType;
-	}
+        this.typeInfo    = Types.getTypeInfo(p.getType(), genericType);
+    }
 	
 	public Parameter getReflectedParameter() {
 		return p;
@@ -50,6 +54,10 @@ public class ReflectParameter implements Named {
 	public final Class<?> getType() {
 		return p.getType();
 	}
+
+    public final TypeInfo getTypeInfo() {
+        return typeInfo;
+    }
 	
 	public final Type getGenericType() {
     	return genericType;
