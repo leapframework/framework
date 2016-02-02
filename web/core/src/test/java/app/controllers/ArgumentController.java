@@ -15,18 +15,20 @@
  */
 package app.controllers;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.Arrays2;
 import leap.lang.Assert;
+import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
 import leap.web.Request;
 import leap.web.action.ControllerBase;
+import leap.web.annotation.Arguments;
 import leap.web.annotation.Path;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ArgumentController extends ControllerBase {
 	
@@ -90,6 +92,22 @@ public class ArgumentController extends ControllerBase {
 	public void pathVar1(String testId) {
 		text(testId);
 	}
+
+    @Path("args_bean/{id}")
+    public void argsBean(@Arguments ArgsBean bean) {
+        Assert.notNull(bean);
+        Assert.notNull(bean.request);
+        Assert.isFalse(Strings.isEmpty(bean.id));
+        Assert.isFalse(Strings.isEmpty(bean.name));
+    }
+
+    @Path("args_bean1/{id}")
+    public void argsBean1(ArgsBean1 bean) {
+        Assert.notNull(bean);
+        Assert.notNull(bean.request);
+        Assert.isFalse(Strings.isEmpty(bean.id));
+        Assert.isFalse(Strings.isEmpty(bean.name));
+    }
 	
 	public String testForm(TestForm form){
 		return JSON.stringify(form);
@@ -251,4 +269,15 @@ public class ArgumentController extends ControllerBase {
         }
         
 	}
+
+	public static class ArgsBean {
+        public Request request;
+        public String  id;
+        public String  name;
+    }
+
+    @Arguments
+    public static final class ArgsBean1 extends ArgsBean {
+
+    }
 }

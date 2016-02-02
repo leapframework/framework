@@ -21,11 +21,9 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -48,7 +46,6 @@ import leap.web.view.View;
 import leap.web.view.ViewSource;
 
 import javax.servlet.http.Part;
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
@@ -341,20 +338,7 @@ public class DefaultAppInitializer implements AppInitializer {
 	}
 	
 	protected ArgumentBuilder createArgument(App app,ReflectMethod m, ReflectParameter p) {
-		ArgumentBuilder a = new ArgumentBuilder(p);
-		
-		a.setTypeInfo(Types.getTypeInfo(a.getType(), a.getGenericType()));
-
-		Validator v = null;
-		for(Annotation pa : p.getAnnotations()){
-			if((v = validationManager.tryCreateValidator(pa, p.getType())) != null){
-				a.addValidator(new SimpleArgumentValidator(v));
-			}
-		}
-
-        if(p.isAnnotationPresent(Validate.class)){
-            a.addValidator(new NestedArgumentValidator(p.getAnnotation(Validate.class)));
-        }
+		ArgumentBuilder a = new ArgumentBuilder(validationManager, p);
 		
 		return a;
 	}

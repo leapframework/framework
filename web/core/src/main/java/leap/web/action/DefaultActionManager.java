@@ -19,7 +19,10 @@ import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationException;
+import leap.core.validation.ValidationManager;
 import leap.lang.*;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
@@ -27,6 +30,7 @@ import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
+import leap.web.annotation.Arguments;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
@@ -58,6 +62,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	private List<ExecutionAttributes> easList = new ArrayList<>();
 
 	protected @Inject App                        app;
+    protected @Inject ValidationManager          validationManager;
 	protected @Inject RequestFormat[]            requestFormats;
 	protected @Inject FormatManager              formatManager;
 	protected @Inject ResultProcessorProvider[]  resultProcessorProviders;
@@ -106,7 +111,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		//prepare result processor
     	eas.resultProcessor = getResultProcessor(route);
     	
-    	//parepare formats
+    	//prepare formats
     	eas.annotatedFormats = getAnnotatedFormats(route);
     	eas.supportedFormats = getSupportedFormats(route);
     	eas.action           = route.getAction();
@@ -227,46 +232,48 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	}
 	
 	protected RequestBodyArgumentInfo resolveRequestBodyArgument(RouteBuilder route, ExecutionAttributes eas){
-		RequestBodyArgumentInfo rbaf = new RequestBodyArgumentInfo();
-		
-		Argument[] arguments = route.getAction().getArguments();
-		
-		//found declared request body argument
-		int count=0;
-		for(Argument a : arguments){
-			if(a.getLocation() == Location.REQUEST_BODY){
-				rbaf.argument   = a;
-				rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
-				rbaf.declared   = true;
-				count++;
-			}
-		}
-		if(count > 1){
-			throw new AppConfigException("Only one request body argument allowed, check the action : " + route.getAction()); 
-		}
-		
-		if(null != rbaf.argument){
-			return rbaf;
-		}
-		
-		//found candidate request body arugment
-		//candidate request body argument must be complex type.
-		for(Argument a : arguments){
-			if(ContextArgumentResolver.isContext(a.getType())){
-				continue;
-			}
-			
-			TypeInfo ti = a.getTypeInfo();
-			
-			//TODO : two or more compelx types?
-			if(ti.isComplexType() || ti.isComplexElementType()){
-				rbaf.argument = a;
-				return rbaf;
-			}
-		}
-		
-		return rbaf;
+        return resolveRequestBodyArgument(route, route.getAction().getArguments());
 	}
+
+    protected RequestBodyArgumentInfo resolveRequestBodyArgument(RouteBuilder route, Argument[] arguments){
+        RequestBodyArgumentInfo rbaf = new RequestBodyArgumentInfo();
+
+        //found declared request body argument
+        int count=0;
+        for(Argument a : arguments){
+            if(a.getLocation() == Location.REQUEST_BODY){
+                rbaf.argument   = a;
+                rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
+                rbaf.declared   = true;
+                count++;
+            }
+        }
+        if(count > 1){
+            throw new AppConfigException("Only one request body argument allowed, check the action : " + route.getAction());
+        }
+
+        if(null != rbaf.argument){
+            return rbaf;
+        }
+
+        //found candidate request body argument
+        //candidate request body argument must be complex type.
+        for(Argument a : arguments){
+            if(ContextArgumentResolver.isContext(a.getType())){
+                continue;
+            }
+
+            TypeInfo ti = a.getTypeInfo();
+
+            //TODO : two or more complex types?
+            if(ti.isComplexType() || ti.isComplexElementType()){
+                rbaf.argument = a;
+                return rbaf;
+            }
+        }
+
+        return rbaf;
+    }
 	
     protected Object[] resolveArgumentValues(ActionContext context, Validation validation, RequestFormat format, ExecutionAttributes eas) throws Throwable {
 		Action action = context.getAction();
@@ -352,50 +359,84 @@ public class DefaultActionManager implements ActionManager,AppListener {
     }
 
     protected void prepareArgument(RouteBuilder route, Argument argument, ExecutionArgument ea, RequestBodyArgumentInfo rbaf) {
-		Action action = route.getAction();
-		
-		//Get context resolver
-		if(ContextArgumentResolver.isContext(argument.getType())){
-			ea.resolver     = ContextArgumentResolver.of(argument.getType());
-			ea.isContextual = true;
-			return;
-		}
-		
-		ArgumentResolver resolver = null;
-		
-		//Get external resolver
-		for(ArgumentResolverProvider provider : argumentResolverProviders){
-			if((resolver = provider.tryGetArgumentResolver(route, action, argument)) != null){
-				break;
-			}
-		}
-		
-		if(null == resolver){
-			TypeInfo typeInfo = argument.getTypeInfo();
-			if(typeInfo.isCollectionType()){
-				//Collection type resolver
-				resolver = new CollectionArgumentResolver(app, route, argument);
-			}else if(typeInfo.isSimpleType()){
-				//Simple type resolver
-				resolver = new SimpleArgumentResolver(app, route, argument);
-			}else{
-				if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
-					//Part resolver
-					resolver = new MultipartArgumentResolver(app, route, argument);
-				}else{
-					//Complex type resolver
-					resolver = new ComplexArgumentResolver(app, route, argument);
-				}
-			}
-		}
-		
-		//Get request body resolver
-		if(argument == rbaf.argument){
-			ea.resolver     = new RequestBodyArgumentResolver(app, action, argument, rbaf.annotation, rbaf.declared, resolver);
-			ea.isRequstBody = true;
-		}else{
-			ea.resolver = resolver;
-		}
+        ArgumentResolver resolver = null;
+
+        boolean args = Classes.isAnnotatioinPresent(argument.getAnnotations(), Arguments.class) ||
+                       argument.getType().isAnnotationPresent(Arguments.class);
+
+        if(args && !argument.getTypeInfo().isComplexType()) {
+            throw new IllegalStateException("Only Complex Type can be 'Arguments', check arg : " + argument);
+        }
+
+        resolver = args ? createBeanArgumentsResolver(route, argument) : resolveArgumentResolver(route, argument, rbaf);
+
+        ea.resolver     = resolver;
+        ea.isContextual = resolver instanceof ContextArgumentResolver;
+    }
+
+    protected ArgumentResolver resolveArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
+        //Get context resolver
+        if(ContextArgumentResolver.isContext(argument.getType())){
+            return ContextArgumentResolver.of(argument.getType());
+        }
+
+        ArgumentResolver resolver = null;
+
+        //Get external resolver
+        for(ArgumentResolverProvider provider : argumentResolverProviders){
+            if((resolver = provider.tryGetArgumentResolver(route, route.getAction(), argument)) != null){
+                break;
+            }
+        }
+
+        if(null == resolver){
+            TypeInfo typeInfo = argument.getTypeInfo();
+            if(typeInfo.isCollectionType()){
+                //Collection type resolver
+                resolver = new CollectionArgumentResolver(app, route, argument);
+            }else if(typeInfo.isSimpleType()){
+                //Simple type resolver
+                resolver = new SimpleArgumentResolver(app, route, argument);
+            }else{
+                if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
+                    //Part resolver
+                    resolver = new MultipartArgumentResolver(app, route, argument);
+                }else{
+                    //Complex type resolver
+                    resolver = new ComplexArgumentResolver(app, route, argument);
+                }
+            }
+        }
+
+        //Get request body resolver
+        if(argument == rbaf.argument){
+            resolver = new RequestBodyArgumentResolver(app, route.getAction(), argument, rbaf.annotation, rbaf.declared, resolver);
+        }
+
+        return resolver;
+    }
+
+    protected BeanArgumentsResolver createBeanArgumentsResolver(RouteBuilder route, Argument argument) {
+        BeanType bt = BeanType.of(argument.getType());
+
+        List<BeanArgumentsResolver.BeanArgument> bas = new ArrayList<>();
+
+        for(BeanProperty bp : bt.getProperties()) {
+            BeanArgumentsResolver.BeanArgument ba = new BeanArgumentsResolver.BeanArgument();
+            ba.property = bp;
+            ba.argument = new ArgumentBuilder(validationManager, bp).build();
+
+            bas.add(ba);
+        }
+
+        Argument[] arguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
+        RequestBodyArgumentInfo rbaf = resolveRequestBodyArgument(route, arguments);
+
+        for(BeanArgumentsResolver.BeanArgument ba : bas) {
+            ba.resolver = resolveArgumentResolver(route, ba.argument, rbaf);
+        }
+
+        return new BeanArgumentsResolver(bt, bas.toArray(new BeanArgumentsResolver.BeanArgument[]{}));
     }
     
 	protected RequestFormat resolveRequestFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {
@@ -493,8 +534,8 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	
 	public static final class ExecutionArgument {
 		public ArgumentResolver resolver;
-		public boolean			isContextual;
-		public boolean		    isRequstBody;
+		public boolean          isContextual;
+		//public boolean          isRequestBody;
 	}
     
     protected final class RequestBodyArgumentInfo {

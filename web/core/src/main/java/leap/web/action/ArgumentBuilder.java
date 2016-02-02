@@ -15,24 +15,23 @@
  */
 package leap.web.action;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-
+import leap.core.validation.ValidationManager;
+import leap.core.validation.Validator;
 import leap.core.validation.annotations.Required;
 import leap.lang.Buildable;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.annotation.Optional;
+import leap.lang.beans.BeanProperty;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument.Location;
-import leap.web.annotation.PathParam;
-import leap.web.annotation.PathVariable;
-import leap.web.annotation.QueryParam;
-import leap.web.annotation.RequestBody;
-import leap.web.annotation.RequestParam;
+import leap.web.annotation.*;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArgumentBuilder implements Buildable<Argument> {
 
@@ -48,15 +47,40 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	public ArgumentBuilder() {
 	    super();
     }
-	
-	public ArgumentBuilder(ReflectParameter p) {
-		this.name        = p.getName();
-		this.type        = p.getType();
+
+	public ArgumentBuilder(ValidationManager validationManager, BeanProperty p) {
+		this.name 		 = p.getName();
+		this.type 		 = p.getType();
+		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
 		this.configAnnotations();
+        this.resolverValidators(validationManager);
 	}
 	
+	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
+		this.name        = p.getName();
+		this.type        = p.getType();
+		this.typeInfo    = p.getTypeInfo();
+		this.genericType = p.getGenericType();
+		this.annotations = p.getAnnotations();
+		this.configAnnotations();
+        this.resolverValidators(validationManager);
+	}
+
+    protected void resolverValidators(ValidationManager validationManager) {
+        Validator v = null;
+        for(Annotation pa : annotations){
+            if((v = validationManager.tryCreateValidator(pa, type)) != null){
+                addValidator(new SimpleArgumentValidator(v));
+            }
+        }
+
+        if(Classes.isAnnotatioinPresent(annotations,Validate.class)){
+            addValidator(new NestedArgumentValidator(Classes.getAnnotation(annotations, Validate.class)));
+        }
+    }
+
 	public String getName() {
 		return name;
 	}

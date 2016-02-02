@@ -152,4 +152,9 @@ public class Argument implements Named {
 		}
 		return n;
 	}
+
+    @Override
+    public String toString() {
+        return "Argument[name=" + name + ",type=" + type + "]";
+    }
 }
