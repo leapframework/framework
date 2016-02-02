@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 /**
  * Spring style, same as {@link PathParam}.
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER,ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathVariable {
 
