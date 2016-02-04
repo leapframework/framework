@@ -15,6 +15,7 @@
  */
 package leap.web.action;
 
+import leap.core.validation.Valid;
 import leap.core.validation.ValidationManager;
 import leap.core.validation.Validator;
 import leap.core.validation.annotations.Required;
@@ -76,8 +77,10 @@ public class ArgumentBuilder implements Buildable<Argument> {
             }
         }
 
-        if(Classes.isAnnotatioinPresent(annotations,Validate.class)){
-            addValidator(new NestedArgumentValidator(Classes.getAnnotation(annotations, Validate.class)));
+        if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
+            addValidator(new NestedArgumentValidator(Classes.getAnnotation(annotations, Valid.class)));
+        }else if(type.isAnnotationPresent(Valid.class)) {
+            addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
         }
     }
 

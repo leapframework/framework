@@ -256,20 +256,26 @@ public class DefaultActionManager implements ActionManager,AppListener {
             return rbaf;
         }
 
-        //found candidate request body argument
-        //candidate request body argument must be complex type.
+        //Finds the candidate request body arguments.
+        List<Argument> candidates = new ArrayList<>();
         for(Argument a : arguments){
             if(ContextArgumentResolver.isContext(a.getType())){
                 continue;
             }
 
-            TypeInfo ti = a.getTypeInfo();
-
-            //TODO : two or more complex types?
-            if(ti.isComplexType() || ti.isComplexElementType()){
+            if(a.isAnnotationPresent(RequestBody.class)) {
                 rbaf.argument = a;
                 return rbaf;
             }
+
+            TypeInfo ti = a.getTypeInfo();
+            if(ti.isComplexType() || ti.isComplexElementType()){
+                candidates.add(a);
+            }
+        }
+
+        if(candidates.size() == 1) {
+            rbaf.argument = candidates.get(0);
         }
 
         return rbaf;
@@ -368,7 +374,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
             throw new IllegalStateException("Only Complex Type can be 'Arguments', check arg : " + argument);
         }
 
-        resolver = args ? createBeanArgumentsResolver(route, argument) : resolveArgumentResolver(route, argument, rbaf);
+        resolver = args ? createBeanArgumentsResolver(route, argument, rbaf) : resolveArgumentResolver(route, argument, rbaf);
 
         ea.resolver     = resolver;
         ea.isContextual = resolver instanceof ContextArgumentResolver;
@@ -416,8 +422,10 @@ public class DefaultActionManager implements ActionManager,AppListener {
         return resolver;
     }
 
-    protected BeanArgumentsResolver createBeanArgumentsResolver(RouteBuilder route, Argument argument) {
+    protected BeanArgumentsResolver createBeanArgumentsResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
         BeanType bt = BeanType.of(argument.getType());
+
+        boolean requestBody = rbaf.isDeclaredRequestBody(argument);
 
         List<BeanArgumentsResolver.BeanArgument> bas = new ArrayList<>();
 
@@ -429,14 +437,18 @@ public class DefaultActionManager implements ActionManager,AppListener {
             bas.add(ba);
         }
 
-        Argument[] arguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
-        RequestBodyArgumentInfo rbaf = resolveRequestBodyArgument(route, arguments);
+        Argument[] nestedArguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
+        RequestBodyArgumentInfo nestedRbaf = requestBody ? new RequestBodyArgumentInfo() : resolveRequestBodyArgument(route, nestedArguments);
 
         for(BeanArgumentsResolver.BeanArgument ba : bas) {
-            ba.resolver = resolveArgumentResolver(route, ba.argument, rbaf);
+            ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
         }
 
-        return new BeanArgumentsResolver(bt, bas.toArray(new BeanArgumentsResolver.BeanArgument[]{}));
+        return new BeanArgumentsResolver(app,
+                                         argument,
+                                         requestBody ? rbaf.annotation : null,
+                                         bt,
+                                         bas.toArray(new BeanArgumentsResolver.BeanArgument[]{}));
     }
     
 	protected RequestFormat resolveRequestFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {
@@ -542,5 +554,13 @@ public class DefaultActionManager implements ActionManager,AppListener {
     	public Argument    argument;
     	public RequestBody annotation;
     	public boolean	   declared;
+
+        boolean isDeclaredRequestBody(Argument a) {
+            return declared && argument == a;
+        }
+
+        boolean isCandidateRequestBody(Argument a) {
+            return !declared && argument == a;
+        }
     }
 }

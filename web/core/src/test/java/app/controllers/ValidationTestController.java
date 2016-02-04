@@ -19,7 +19,7 @@ import leap.core.validation.annotations.Required;
 import leap.web.annotation.AcceptValidationError;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.Produces;
-import leap.web.annotation.Validate;
+import leap.core.validation.Valid;
 
 public class ValidationTestController {
 	
@@ -34,7 +34,7 @@ public class ValidationTestController {
 
     @Produces("json")
     @Consumes("json")
-    public void validate(@Validate VBean bean) {
+    public void validate(@Valid VBean bean) {
 
     }
 

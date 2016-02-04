@@ -16,12 +16,15 @@
 package app.controllers;
 
 import app.models.products.Product;
+import leap.lang.Assert;
 import leap.lang.Charsets;
 import leap.lang.codec.Hex;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
 import leap.web.Request;
 import leap.web.action.ControllerBase;
+import leap.web.annotation.Arguments;
+import leap.web.annotation.QueryParam;
 import leap.web.annotation.RequestBody;
 
 import java.io.IOException;
@@ -68,5 +71,27 @@ public class RequestBodyController extends ControllerBase {
         try(InputStream in = request.peekInputStream()){
             s.append(IO.readString(in, Charsets.defaultCharset()));
         }
+    }
+
+    public void argsBody(ArgsBean bean) {
+        Assert.notEmpty(bean.id);
+        Assert.notEmpty(bean.name);
+    }
+
+    public void argsBody1(@RequestBody ArgsBean1 bean) {
+        Assert.notEmpty(bean.id);
+        Assert.notEmpty(bean.name);
+    }
+
+    @Arguments
+    public static final class ArgsBean {
+        public @QueryParam  String id;
+        public @RequestBody String name;
+    }
+
+    @Arguments
+    public static final class ArgsBean1 {
+        public @QueryParam String id;
+        public             String name;
     }
 }

@@ -16,17 +16,16 @@
 package leap.web.action;
 
 import leap.core.validation.Validation;
-import leap.core.validation.ValidationManager;
 import leap.lang.Enumerables;
 import leap.lang.TypeInfo;
-import leap.web.annotation.Validate;
+import leap.core.validation.Valid;
 
 public class NestedArgumentValidator implements ArgumentValidator {
 
-    protected final Validate          config;
-    protected final boolean           required;
+    protected final Valid   config;
+    protected final boolean required;
 
-    public NestedArgumentValidator(Validate config) {
+    public NestedArgumentValidator(Valid config) {
         this.config    = config;
         this.required  = config.required();
     }

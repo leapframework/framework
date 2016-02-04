@@ -15,19 +15,15 @@
  */
 package leap.lang;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.convert.Converts;
 import leap.lang.exception.ObjectNotFoundException;
+
+import java.lang.reflect.Array;
+import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * java bean utils
@@ -86,7 +82,7 @@ public class Beans {
 	
     public static Map<String,Object> toMap(Object bean){
 		if(null == bean){
-			return new HashMap<String, Object>();
+			return new HashMap<>();
 		}else if(bean instanceof Map){
 			return (Map)bean;
 		}else if(bean instanceof DynaBean){

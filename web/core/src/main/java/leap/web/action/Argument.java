@@ -120,6 +120,13 @@ public class Argument implements Named {
 		return location;
 	}
 
+    /**
+     * Returns true if the {@link Location} of argument is not null and not {@link Location#UNDEFINED}.
+     */
+    public boolean isLocationDeclared(){
+       return null != location && location != Location.UNDEFINED;
+    }
+
 	/**
 	 * Returns the {@link ElementType#PARAMETER} annotations in the {@link Method} of this argument.
 	 * 
@@ -143,6 +150,13 @@ public class Argument implements Named {
 	public String getViewAttributeName() {
 		return viewAttributeName;
 	}
+
+    /**
+     * Returns true if the given annotation type is present at the arguemnt.
+     */
+    public boolean isAnnotationPresent(Class<? extends Annotation> t) {
+        return Classes.isAnnotatioinPresent(annotations, t);
+    }
 
 	private String resolveViewAttributeName() {
 		String   n = name;

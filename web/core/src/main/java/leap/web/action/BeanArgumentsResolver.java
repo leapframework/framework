@@ -17,21 +17,34 @@ package leap.web.action;
 
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.web.App;
+import leap.web.annotation.RequestBody;
+import leap.web.body.RequestBodyReader;
+import leap.web.format.RequestFormat;
+
+import java.util.Map;
 
 public class BeanArgumentsResolver implements ArgumentResolver {
 
-    protected final BeanType       beanType;
-    protected final BeanArgument[] bindingArguments;
+    protected final Argument          argument;
+    protected final RequestBody       requestBody;
+    protected final BeanType          beanType;
+    protected final BeanArgument[]    bindingArguments;
+    protected final RequestBodyReader requestBodyReader;
 
-    public BeanArgumentsResolver(BeanType beanType, BeanArgument[] beanArguments) {
-        this.beanType = beanType;
-        this.bindingArguments = beanArguments;
+    public BeanArgumentsResolver(App app, Argument argument, RequestBody requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
+        this.argument          = argument;
+        this.requestBody       = requestBody;
+        this.beanType          = beanType;
+        this.bindingArguments  = bindingArguments;
+        this.requestBodyReader = getRequestBodyReader(app, argument);
     }
 
     @Override
     public Object resolveValue(ActionContext context, Argument argument) throws Throwable {
         Object bean = beanType.newInstance();
 
+        //binding the nested arguments(properties) in bean.
         for(BeanArgument ba : bindingArguments) {
             Object v = ba.resolver.resolveValue(context, ba.argument);
             if(null != v) {
@@ -39,7 +52,43 @@ public class BeanArgumentsResolver implements ArgumentResolver {
             }
         }
 
+        //The bean itself is request body argument.
+        if(null != requestBody) {
+            Map body = readRequestBody(context);
+
+            if(null != body && !body.isEmpty()) {
+                for(BeanArgument ba : bindingArguments) {
+                    if(!ba.argument.isLocationDeclared()) {
+                        String name = ba.argument.getName();
+                        if(body.containsKey(name)) {
+                            Object value = body.get(name);
+                            ba.property.setValue(bean, value);
+                        }
+                    }
+                }
+            }
+        }
+
         return bean;
+    }
+
+    protected Map readRequestBody(ActionContext context) throws Throwable{
+        RequestFormat format = context.getRequestFormat();
+
+        if(null != format && format.supportsRequestBody()){
+            return (Map)format.readRequestBody(context.getRequest(), Map.class, null);
+        }else{
+            return (Map)requestBodyReader.readRequestBody(context.getRequest(), Map.class, null);
+        }
+    }
+
+    protected RequestBodyReader getRequestBodyReader(App app, Argument argument) {
+        for(RequestBodyReader reader : app.factory().getBeans(RequestBodyReader.class)){
+            if(reader.canReadRequestBody(argument.getType(), argument.getGenericType())){
+                return reader;
+            }
+        }
+        return null;
     }
 
     public static final class BeanArgument {

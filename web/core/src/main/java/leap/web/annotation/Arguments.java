@@ -17,6 +17,13 @@ package leap.web.annotation;
 
 import java.lang.annotation.*;
 
+/**
+ * Annotates a bean (complex type) that wraps the action's arguments..
+ *
+ * <p/>
+ *
+ * The type of annotated parameter must be complex type.
+ */
 @Target({ElementType.PARAMETER,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited

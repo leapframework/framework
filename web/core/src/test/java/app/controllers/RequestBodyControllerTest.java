@@ -15,14 +15,14 @@
  */
 package app.controllers;
 
-import org.junit.Test;
-
 import app.models.products.Product;
+import leap.lang.New;
 import leap.lang.codec.Hex;
 import leap.lang.http.MimeTypes;
 import leap.lang.json.JSON;
 import leap.web.WebTestCase;
 import leap.webunit.client.THttpResponse;
+import org.junit.Test;
 
 public class RequestBodyControllerTest extends WebTestCase {
 
@@ -77,5 +77,15 @@ public class RequestBodyControllerTest extends WebTestCase {
                 .setBody(json)
                 .send()
                 .assert500();
+    }
+
+	@Test
+	public void testArgsBody() {
+        forPost("/request_body/args_body?id=1").setBody("Hello").send().assertOk();
+	}
+
+    @Test
+    public void testArgsBody1() {
+        forPost("/request_body/args_body1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 }
