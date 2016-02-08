@@ -180,4 +180,10 @@ public class HomeController {
 	public void jsp(ViewData vd) {
 	    
 	}
+
+	public static final class NestedController {
+        public void index() {
+
+        }
+    }
 }

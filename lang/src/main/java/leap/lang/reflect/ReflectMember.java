@@ -15,25 +15,31 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.Named;
+
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 
-import leap.lang.Named;
-
 abstract class ReflectMember implements Named {
 
-	protected final ReflectClass reflectiveClass;
-	protected final boolean	        declared;
-	protected final boolean	        isPublic;
+    protected final Class<?>     declaringClass;
+	protected final ReflectClass reflectClass;
+	protected final boolean      declared;
+	protected final boolean      isPublic;
 	
-	protected ReflectMember(ReflectClass reflectionClass,Member member){
-		this.reflectiveClass = reflectionClass;
-		this.declared        = member.getDeclaringClass() == reflectionClass.getReflectedClass();
-		this.isPublic        = Modifier.isPublic(member.getModifiers());
+	protected ReflectMember(ReflectClass reflectClass, Member member){
+        this.declaringClass = member.getDeclaringClass();
+		this.reflectClass   = reflectClass;
+		this.declared       = member.getDeclaringClass() == reflectClass.getReflectedClass();
+		this.isPublic       = Modifier.isPublic(member.getModifiers());
 	}
 
-	public ReflectClass getReflectiveClass() {
-    	return reflectiveClass;
+    public Class<?> getDeclaringClass() {
+        return declaringClass;
+    }
+
+	public ReflectClass getReflectClass() {
+    	return reflectClass;
     }
 	
 	public boolean isDeclared() {
@@ -43,4 +49,5 @@ abstract class ReflectMember implements Named {
 	public boolean isPublic(){
 		return isPublic;
 	}
+
 }

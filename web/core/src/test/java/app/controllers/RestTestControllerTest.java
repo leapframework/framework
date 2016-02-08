@@ -35,4 +35,8 @@ public class RestTestControllerTest extends WebTestBase {
         get("/rest_test/children").assertOk();
     }
 
+    @Test
+    public void testGetNested() {
+        get("/rest_test/nested").assertOk();
+    }
 }

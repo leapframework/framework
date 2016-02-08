@@ -231,4 +231,9 @@ public class HomeControllerTest extends WebTestCase {
 	    get("/https_only").assert400();
 	    httpsClient().get("/https_only").assertOk().assertContentEquals("OK");
 	}
+
+    @Test
+    public void testNestedController() {
+        get("/nested").assertOk();
+    }
 }

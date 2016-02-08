@@ -15,12 +15,6 @@
  */
 package leap.web.action;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -28,13 +22,17 @@ import leap.core.web.path.PathTemplate;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
-import leap.lang.reflect.ReflectException;
-import leap.lang.reflect.Reflection;
+import leap.lang.path.Paths;
 import leap.web.App;
-import leap.web.AppAware;
 import leap.web.annotation.*;
 import leap.web.annotation.http.AMethod;
 import leap.web.config.WebConfig;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The default implementation of {@link ActionStrategy}.
@@ -130,7 +128,7 @@ public class DefaultActionStrategy implements ActionStrategy {
 		if(null != a){
 			return a.value();
 		}
-		
+
 		//get path conventional
 		String controllerName = getControllerName(cls);
 		
@@ -145,16 +143,37 @@ public class DefaultActionStrategy implements ActionStrategy {
 				break;
 			}
 		}
-		
-		String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
-		
+
+        String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
+
+        if(cls.getEnclosingClass() != null && isControllerClass(cls.getEnclosingClass())) {
+            String[] parentPaths = getControllerPaths(cls.getEnclosingClass());
+            if(parentPaths.length == 1) {
+                pathPrefix = pathPrefix + Paths.prefixWithSlash(parentPaths[0]);
+            }else{
+                String[] paths = new String[parentPaths.length];
+                for(int i=0;i<paths.length;i++) {
+                    String pp = pathPrefix + Paths.prefixWithSlash(parentPaths[i]);
+                    if(pp.equals("/")) {
+                        pp = "";
+                    }
+                    paths[i] = Strings.isEmpty(pp) ? pathSuffix : pp + "/" + pathSuffix;
+                }
+                return paths;
+            }
+        }
+
+        if("/".equals(pathPrefix)) {
+            pathPrefix = "";
+        }
+
 		if(Strings.isEmpty(pathPrefix)){
 			return new String[]{pathSuffix};
 		}else{
 			return new String[]{pathPrefix + "/" + pathSuffix};
 		}
     }
-	
+
 	public ActionMapping[] getActionMappings(ActionBuilder action) {
 		List<ActionMapping> mappings = new ArrayList<>();
 		

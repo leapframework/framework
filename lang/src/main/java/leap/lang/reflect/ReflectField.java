@@ -219,7 +219,7 @@ public class ReflectField extends ReflectMember {
 	
 	private ReflectMethod findSetter(Class<?> fieldType,String nameToFind){
 		//iterate all public methods.
-		for(ReflectMethod rm : reflectiveClass.getMethods()){
+		for(ReflectMethod rm : reflectClass.getMethods()){
 			Method m = rm.getReflectedMethod();
 			if(m.getParameterTypes().length == 1 && 
 					fieldType.isAssignableFrom(Primitives.wrap(m.getParameterTypes()[0]))){
@@ -261,7 +261,7 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	private ReflectMethod findGetter(Class<?> fieldType,String nameToFind){
-		for(ReflectMethod rm : reflectiveClass.getMethods()){
+		for(ReflectMethod rm : reflectClass.getMethods()){
 			Method m = rm.getReflectedMethod();
 			if(m.getParameterTypes().length == 0 && 
 					Primitives.wrap(m.getReturnType()).isAssignableFrom(fieldType)){

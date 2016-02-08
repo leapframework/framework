@@ -39,7 +39,6 @@ public class RestTestController {
 
     }
 
-
     static final class TestObject {
         public String v;
 
@@ -47,4 +46,10 @@ public class RestTestController {
         TestObject(String v) { this.v = v;}
     }
 
+    public static class NestedController {
+        @GET
+        public void index() {
+
+        }
+    }
 }
