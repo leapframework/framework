@@ -101,11 +101,12 @@ public class ArgumentController extends ControllerBase {
         Assert.isFalse(Strings.isEmpty(bean.name));
     }
 
-    @Path("args_bean1/{id}")
+    @Path("args_bean1/{id}/{parent_id}")
     public void argsBean1(ArgsBean1 bean) {
         Assert.notNull(bean);
         Assert.notNull(bean.request);
         Assert.isFalse(Strings.isEmpty(bean.id));
+        Assert.isFalse(Strings.isEmpty(bean.parentId));
         Assert.isFalse(Strings.isEmpty(bean.name));
     }
 	
@@ -277,7 +278,10 @@ public class ArgumentController extends ControllerBase {
     }
 
     @Arguments
-    public static final class ArgsBean1 extends ArgsBean {
-
+    public static final class ArgsBean1{
+        public Request request;
+        public String  id;
+        public String  parentId;
+        public String  name;
     }
 }

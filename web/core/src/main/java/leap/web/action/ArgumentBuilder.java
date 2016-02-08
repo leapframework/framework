@@ -197,7 +197,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 			this.location = Location.REQUEST_BODY;
 			return this;
 		}
-		
+
 		Optional o = Classes.getAnnotation(annotations, Optional.class, false);
 		if(null != o) {
 			required = false;

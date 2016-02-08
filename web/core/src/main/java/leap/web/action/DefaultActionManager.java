@@ -265,6 +265,15 @@ public class DefaultActionManager implements ActionManager,AppListener {
 
             if(a.isAnnotationPresent(RequestBody.class)) {
                 rbaf.argument = a;
+                rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
+                rbaf.declared = true;
+                return rbaf;
+            }
+
+            if(a.getType().isAnnotationPresent(RequestBody.class)) {
+                rbaf.argument = a;
+                rbaf.annotation = a.getType().getAnnotation(RequestBody.class);
+                rbaf.declared = true;
                 return rbaf;
             }
 

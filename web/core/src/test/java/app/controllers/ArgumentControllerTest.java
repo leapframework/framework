@@ -233,7 +233,7 @@ public class ArgumentControllerTest extends WebTestCase {
     @ContextualIgnore
 	public void testArgsBean() {
         get("argument/args_bean/1?name=2").assertOk();
-        get("argument/args_bean1/1?name=2").assertOk();
+        get("argument/args_bean1/1/2?name=2").assertOk();
     }
 	
 	@Test
