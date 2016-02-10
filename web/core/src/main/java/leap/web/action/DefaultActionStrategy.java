@@ -126,7 +126,19 @@ public class DefaultActionStrategy implements ActionStrategy {
 		//get path from annotation
 		Path a = cls.getAnnotation(Path.class);
 		if(null != a){
-			return a.value();
+            if(a.value().length > 1) {
+                throw new AppConfigException("The @Path annotation only supports one path value in controller");
+            }
+
+            if(cls.getEnclosingClass() != null && isControllerClass(cls.getEnclosingClass())) {
+                String[] parentPaths = getControllerPaths(cls.getEnclosingClass());
+                if(parentPaths.length == 1) {
+                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value()[0])};
+                }else{
+                    throw new IllegalStateException("Controller only supports one path value");
+                }
+            }
+            return new String[]{Paths.prefixWithSlash(a.value()[0])};
 		}
 
 		//get path conventional
@@ -151,15 +163,7 @@ public class DefaultActionStrategy implements ActionStrategy {
             if(parentPaths.length == 1) {
                 pathPrefix = pathPrefix + Paths.prefixWithSlash(parentPaths[0]);
             }else{
-                String[] paths = new String[parentPaths.length];
-                for(int i=0;i<paths.length;i++) {
-                    String pp = pathPrefix + Paths.prefixWithSlash(parentPaths[i]);
-                    if(pp.equals("/")) {
-                        pp = "";
-                    }
-                    paths[i] = Strings.isEmpty(pp) ? pathSuffix : pp + "/" + pathSuffix;
-                }
-                return paths;
+                throw new IllegalStateException("Controller only supports one path value");
             }
         }
 

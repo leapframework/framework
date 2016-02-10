@@ -52,4 +52,30 @@ public class RestTestController {
 
         }
     }
+
+    @Path("/nested1")
+    public static class Nested1Controller {
+
+        @GET
+        public void index() {
+
+        }
+    }
+
+    @Path("nested2")
+    public static class Nested2Controller {
+
+        @GET
+        public void index() {
+
+        }
+
+        public static class Nested3Controller {
+
+            @GET
+            public void index() {
+
+            }
+        }
+    }
 }
