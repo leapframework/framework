@@ -15,6 +15,7 @@
  */
 package app.controllers;
 
+import leap.web.annotation.Parent;
 import leap.web.annotation.Path;
 import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
@@ -22,6 +23,11 @@ import leap.web.annotation.http.POST;
 
 @Restful
 public class RestTestController {
+
+    @Parent(RestTestController.class)
+    public static abstract class SubController {
+
+    }
 
     @GET
     public TestObject getObject() {

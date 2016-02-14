@@ -15,10 +15,10 @@
  */
 package leap.web.api.meta;
 
-import java.util.Map;
-
 import leap.lang.Args;
 import leap.lang.meta.MComplexType;
+
+import java.util.Map;
 
 public class ApiModel extends ApiNamedWithDesc {
 	
@@ -42,8 +42,6 @@ public class ApiModel extends ApiNamedWithDesc {
 	    super(name, title, summary, description, attrs);
 	    
 	    Args.notNull(type, "type");
-	    Args.notEmpty(properties,"properties");
-	    
 	    this.type       = type;
 	    this.properties = properties;
     }

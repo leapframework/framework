@@ -123,6 +123,8 @@ public class DefaultActionStrategy implements ActionStrategy {
 
 	@Override
     public String[] getControllerPaths(Class<?> cls) {
+        Class<?> parent = getParentControllerClass(cls);
+
 		//get path from annotation
 		Path a = cls.getAnnotation(Path.class);
 		if(null != a){
@@ -130,8 +132,8 @@ public class DefaultActionStrategy implements ActionStrategy {
                 throw new AppConfigException("The @Path annotation only supports one path value in controller");
             }
 
-            if(cls.getEnclosingClass() != null && isControllerClass(cls.getEnclosingClass())) {
-                String[] parentPaths = getControllerPaths(cls.getEnclosingClass());
+            if(null != parent) {
+                String[] parentPaths = getControllerPaths(parent);
                 if(parentPaths.length == 1) {
                     return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value()[0])};
                 }else{
@@ -158,8 +160,8 @@ public class DefaultActionStrategy implements ActionStrategy {
 
         String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
 
-        if(cls.getEnclosingClass() != null && isControllerClass(cls.getEnclosingClass())) {
-            String[] parentPaths = getControllerPaths(cls.getEnclosingClass());
+        if(null != parent) {
+            String[] parentPaths = getControllerPaths(parent);
             if(parentPaths.length == 1) {
                 pathPrefix = pathPrefix + Paths.prefixWithSlash(parentPaths[0]);
             }else{
@@ -176,6 +178,20 @@ public class DefaultActionStrategy implements ActionStrategy {
 		}else{
 			return new String[]{pathPrefix + "/" + pathSuffix};
 		}
+    }
+
+    protected Class<?> getParentControllerClass(Class<?> c) {
+        Parent p = c.getAnnotation(Parent.class);
+        if(null != p) {
+            return p.value();
+        }
+
+        Class<?> enclosingClass = c.getEnclosingClass();
+        if(null != enclosingClass && isControllerClass(enclosingClass)) {
+            return enclosingClass;
+        }
+
+        return null;
     }
 
 	public ActionMapping[] getActionMappings(ActionBuilder action) {
