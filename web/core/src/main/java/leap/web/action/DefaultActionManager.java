@@ -246,6 +246,33 @@ public class DefaultActionManager implements ActionManager,AppListener {
                 rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
                 rbaf.declared   = true;
                 count++;
+                continue;
+            }
+
+            if(a.isAnnotationPresent(RequestBody.class)) {
+                RequestBody rb = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
+                if(!rb.value()) {
+                    continue;
+                }
+
+                rbaf.argument   = a;
+                rbaf.annotation = rb;
+                rbaf.declared   = true;
+                count++;
+                continue;
+            }
+
+            if(a.getType().isAnnotationPresent(RequestBody.class)) {
+                RequestBody rb = a.getType().getAnnotation(RequestBody.class);
+                if(!rb.value()) {
+                    continue;
+                }
+
+                rbaf.argument   = a;
+                rbaf.annotation = rb;
+                rbaf.declared   = true;
+                count++;
+                continue;
             }
         }
         if(count > 1){
@@ -261,30 +288,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
         for(Argument a : arguments){
             if(ContextArgumentResolver.isContext(a.getType())){
                 continue;
-            }
-
-            if(a.isAnnotationPresent(RequestBody.class)) {
-				RequestBody rb = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
-                if(!rb.value()) {
-                    continue;
-                }
-
-                rbaf.argument   = a;
-                rbaf.annotation = rb;
-                rbaf.declared   = true;
-                return rbaf;
-            }
-
-            if(a.getType().isAnnotationPresent(RequestBody.class)) {
-                RequestBody rb = a.getType().getAnnotation(RequestBody.class);
-                if(!rb.value()) {
-                    continue;
-                }
-
-                rbaf.argument   = a;
-                rbaf.annotation = rb;
-                rbaf.declared   = true;
-                return rbaf;
             }
 
             TypeInfo ti = a.getTypeInfo();
@@ -457,7 +460,10 @@ public class DefaultActionManager implements ActionManager,AppListener {
         }
 
         Argument[] nestedArguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
-        RequestBodyArgumentInfo nestedRbaf = requestBody ? new RequestBodyArgumentInfo() : resolveRequestBodyArgument(route, nestedArguments);
+        RequestBodyArgumentInfo nestedRbaf = resolveRequestBodyArgument(route, nestedArguments);
+        if(!nestedRbaf.declared && requestBody) {
+            nestedRbaf = new RequestBodyArgumentInfo();
+        }
 
         for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
             ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);

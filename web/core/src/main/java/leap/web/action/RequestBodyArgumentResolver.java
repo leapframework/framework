@@ -38,10 +38,6 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 		this.requestBodyDeclared    = requestBodyDeclared;
 		this.nonRequestBodyResolver = nonRequestBodyResolver;
 		this.requestBodyReader      = getRequestBodyReader(app, argument);
-		
-		if(this.requestBodyDeclared && requestBodyReader == null){
-			throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
-		}
 	}
 
 	@Override
@@ -51,11 +47,14 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 		if(null != format && format.supportsRequestBody()){
 			return format.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
 		}
-		
+
 		if(requestBodyDeclared){
-			return requestBodyReader.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
+            if(null == requestBodyReader) {
+                throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
+            }
+            return requestBodyReader.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
 		}
-		
+
 		return nonRequestBodyResolver.resolveValue(context, argument);
 	}
 

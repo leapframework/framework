@@ -79,6 +79,12 @@ public class RequestBodyController extends ControllerBase {
         Assert.notEmpty(bean.name);
     }
 
+    public void argsBody0(ArgsBean0 bean) {
+        Assert.notEmpty(bean.id);
+        Assert.notNull(bean.nested);
+        Assert.notEmpty(bean.nested.name);
+    }
+
     public void argsBody1(@RequestBody ArgsBean1 bean) {
         Assert.notEmpty(bean.id);
         Assert.notEmpty(bean.name);
@@ -103,6 +109,16 @@ public class RequestBodyController extends ControllerBase {
     public static final class ArgsBean {
         public @QueryParam  String id;
         public @RequestBody String name;
+    }
+
+    @RequestBean
+    public static final class ArgsBean0 {
+        public @QueryParam  String     id;
+        public @RequestBody NestedBean nested;
+    }
+
+    public static final class NestedBean {
+        public String name;
     }
 
     @RequestBean
