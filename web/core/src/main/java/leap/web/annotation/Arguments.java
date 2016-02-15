@@ -29,4 +29,13 @@ import java.lang.annotation.*;
 @Inherited
 public @interface Arguments {
 
+    /**
+     * Validates the arguments or not.
+     */
+    boolean valid() default true;
+
+    /**
+     * Returns true if the arguments is request body.
+     */
+    boolean requestBody() default false;
 }

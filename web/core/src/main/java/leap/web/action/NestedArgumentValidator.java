@@ -25,6 +25,11 @@ public class NestedArgumentValidator implements ArgumentValidator {
     protected final Valid   config;
     protected final boolean required;
 
+    public NestedArgumentValidator(boolean required) {
+        this.required = required;
+        this.config   = null;
+    }
+
     public NestedArgumentValidator(Valid config) {
         this.config    = config;
         this.required  = config.required();

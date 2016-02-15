@@ -81,7 +81,12 @@ public class ArgumentBuilder implements Buildable<Argument> {
             addValidator(new NestedArgumentValidator(Classes.getAnnotation(annotations, Valid.class)));
         }else if(type.isAnnotationPresent(Valid.class)) {
             addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
-        }
+        }else {
+			Arguments a = type.getAnnotation(Arguments.class);
+			if(null != a && a.valid()){
+                addValidator(new NestedArgumentValidator(true));
+            }
+		}
     }
 
 	public String getName() {
@@ -165,15 +170,6 @@ public class ArgumentBuilder implements Buildable<Argument> {
 			return this;
 		}
 		
-		PathVariable pv = Classes.getAnnotation(annotations, PathVariable.class, true);
-		if(null != pv){
-			this.location = Location.PATH_PARAM;
-			if(!Strings.isEmpty(pv.value())){
-				this.name = pv.value();
-			}
-			return this;
-		}
-		
         PathParam pp = Classes.getAnnotation(annotations, PathParam.class, true);
         if (null != pp) {
             this.location = Location.PATH_PARAM;
@@ -207,6 +203,13 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		if(null != r) {
 			required = true;
 		}
+
+        if(null != type) {
+            Arguments a = type.getAnnotation(Arguments.class);
+            if(null != a && a.requestBody()) {
+                location = Location.REQUEST_BODY;
+            }
+        }
 		
 		return this;
 	}

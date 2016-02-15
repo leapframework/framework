@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,12 @@
  */
 package leap.web.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
-/**
- * Spring style, same as {@link PathParam}.
- */
-@Target({ElementType.PARAMETER,ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PathVariable {
-
-	/**
-	 * The name of path parameter.
-	 */
-	String value() default "";
+@Inherited
+@Controller
+public @interface RestController {
 
 }

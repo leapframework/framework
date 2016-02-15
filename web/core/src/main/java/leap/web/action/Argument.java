@@ -16,7 +16,6 @@
 package leap.web.action;
 
 import leap.lang.*;
-import leap.web.annotation.ViewAttribute;
 import leap.web.view.ViewData;
 
 import java.lang.annotation.Annotation;
@@ -48,8 +47,7 @@ public class Argument implements Named {
 	protected final Location            location;
 	protected final Annotation[]        annotations;
 	protected final ArgumentValidator[] validators;
-	protected final String              viewAttributeName;
-	
+
 	public Argument(String name, 
 					Class<?> type, 
 					Type genericType,
@@ -71,7 +69,6 @@ public class Argument implements Named {
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
-		this.viewAttributeName = resolveViewAttributeName();
 	}
 
 	@Override
@@ -148,7 +145,7 @@ public class Argument implements Named {
 	 * Returns the name for exposing the argument's value to {@link ViewData}.
 	 */
 	public String getViewAttributeName() {
-		return viewAttributeName;
+		return null;
 	}
 
     /**
@@ -157,15 +154,6 @@ public class Argument implements Named {
     public boolean isAnnotationPresent(Class<? extends Annotation> t) {
         return Classes.isAnnotatioinPresent(annotations, t);
     }
-
-	private String resolveViewAttributeName() {
-		String   n = name;
-		ViewAttribute a = Classes.getAnnotation(annotations, ViewAttribute.class);
-		if(null != a && !Strings.isEmpty(a.value())){
-			n = a.value();
-		}
-		return n;
-	}
 
     @Override
     public String toString() {

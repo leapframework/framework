@@ -455,7 +455,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 
         return new BeanArgumentsResolver(app,
                                          argument,
-                                         requestBody ? rbaf.annotation : null,
+                                         requestBody,
                                          bt,
                                          bas.toArray(new BeanArgumentsResolver.BeanArgument[]{}));
     }

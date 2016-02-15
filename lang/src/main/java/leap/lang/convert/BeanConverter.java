@@ -24,7 +24,7 @@ import java.util.Map.Entry;
 
 import leap.lang.Objects2;
 import leap.lang.Out;
-import leap.lang.annotation.Named;
+import leap.lang.annotation.Name;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.BeanProperty;
 import leap.lang.reflect.ReflectClass;
@@ -72,10 +72,10 @@ public class BeanConverter extends AbstractConverter<Object>{
 			boolean multiNames = false;
 			
 			for(Annotation a : prop.getAnnotations()){
-				Named namedAnnotation = a.annotationType().getAnnotation(Named.class);
+				Name nameAnnotation = a.annotationType().getAnnotation(Name.class);
 				
-				if(null != namedAnnotation){
-					name = (String)ReflectClass.of(a.getClass()).getMethod(namedAnnotation.value()).invoke(a);
+				if(null != nameAnnotation){
+					name = (String)ReflectClass.of(a.getClass()).getMethod(nameAnnotation.value()).invoke(a);
 					multiNames = true;
 					break;
 				}

@@ -23,6 +23,7 @@ import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.path.Paths;
+import leap.lang.reflect.Reflection;
 import leap.web.App;
 import leap.web.annotation.*;
 import leap.web.annotation.http.AMethod;
@@ -128,19 +129,15 @@ public class DefaultActionStrategy implements ActionStrategy {
 		//get path from annotation
 		Path a = cls.getAnnotation(Path.class);
 		if(null != a){
-            if(a.value().length > 1) {
-                throw new AppConfigException("The @Path annotation only supports one path value in controller");
-            }
-
             if(null != parent) {
                 String[] parentPaths = getControllerPaths(parent);
                 if(parentPaths.length == 1) {
-                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value()[0])};
+                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value())};
                 }else{
                     throw new IllegalStateException("Controller only supports one path value");
                 }
             }
-            return new String[]{Paths.prefixWithSlash(a.value()[0])};
+            return new String[]{Paths.prefixWithSlash(a.value())};
 		}
 
 		//get path conventional
@@ -198,27 +195,29 @@ public class DefaultActionStrategy implements ActionStrategy {
 		List<ActionMapping> mappings = new ArrayList<>();
 		
 		Annotation[] annotations = action.getAnnotations();
-		
+
+		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
 			if(a.annotationType().isAnnotationPresent(AMethod.class)){
 				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
+
+                Method value = Reflection.findMethod(a.annotationType(), "value");
+                if(null != value){
+                    defaultPath = (String)Reflection.invokeMethod(value, a);
+                    if(!"".equals(defaultPath)) {
+                        mappings.add(new ActionMapping(defaultPath,defaultMethod));
+                    }
+                }
 				break;
 			}
 		}
 		
-		String defaultPath = "";
-		
 		//Path annotation
 		Path pa = Classes.getAnnotation(annotations, Path.class);
 		if(null != pa){
-			if(pa.value().length == 1){
-				defaultPath = pa.value()[0];
-			}
-			
-			for(String path : pa.value()){
-				mappings.add(new ActionMapping(path,defaultMethod));
-			}
+			defaultPath = pa.value();
+			mappings.add(new ActionMapping(defaultPath,defaultMethod));
 		}
 		
 		if(Strings.isEmpty(defaultPath)){
@@ -242,7 +241,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
+        if(null != controller && controller.getClass().isAnnotationPresent(RestController.class)) {
             restful = true;
         }
 

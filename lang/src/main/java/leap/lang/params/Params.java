@@ -15,11 +15,11 @@
  */
 package leap.lang.params;
 
-import java.util.Collection;
-import java.util.Map;
-
 import leap.lang.Emptiable;
 import leap.lang.beans.DynaBean;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * Case insensitive interface to get and set parameters.
@@ -32,56 +32,56 @@ public interface Params extends Emptiable {
 	/**
 	 * Returns an readonly empty params.
 	 */
-	public static EmptyParams empty() {
+	static EmptyParams empty() {
 		return EmptyParams.INSTANCE;
 	}
 	
 	/**
 	 * Returns a {@link BeanParams} contains all the properties in the given bean..
 	 */
-	public static BeanParams bean(Object bean) {
+	static BeanParams bean(Object bean) {
 		return new BeanParams(bean);
 	}
 	
 	/**
 	 * Returns an {@link ArrayParams} contains all the values in the given array.
 	 */
-	public static ArrayParams array(Object... values) {
+	static ArrayParams array(Object... values) {
 		return new ArrayParams(values);
 	}
 	
 	/**
 	 * Returns an {@link ArrayParams} contains all the values in the given array.
 	 */
-	public static ArrayParams of(Object[] array) {
+	static ArrayParams of(Object[] array) {
 		return new ArrayParams(array);
 	}
 	
 	/**
 	 * Returns an {@link ArrayParams} contains all the elements in the given collection.
 	 */
-	public static ArrayParams of(@SuppressWarnings("rawtypes") Collection c) {
+	static ArrayParams of(@SuppressWarnings("rawtypes") Collection c) {
 		return new ArrayParams(null == c ? null : c.toArray());
 	}
 	
 	/**
 	 * Returns a {@link MapParams} contains the given parameter name and value.
 	 */
-	public static MapParams of(String name,Object value) {
+	static MapParams of(String name,Object value) {
 		return (MapParams)new MapParams().set(name, value);
 	}
 	
 	/**
 	 * Returns a {@link MapParams} contains the given parameters.
 	 */
-	public static MapParams of(String name1,Object value1,String name2,Object value2) {
+	static MapParams of(String name1,Object value1,String name2,Object value2) {
 		return (MapParams)new MapParams().set(name1, value1).set(name2, value2);
 	}
 	
 	/**
 	 * Returns a {@link MapParams} contains the given parameters.
 	 */
-	public static MapParams of(String name1,Object value1,String name2,Object value2,String name3,Object value3) {
+	static MapParams of(String name1,Object value1,String name2,Object value2,String name3,Object value3) {
 		return (MapParams)new MapParams().set(name1, value1).set(name2, value2).set(name3, value2);
 	}
 	
@@ -89,14 +89,14 @@ public interface Params extends Emptiable {
 	 * Returns a {@link MapParams} contains all the key values in the given map.
 	 */
 	@SuppressWarnings({ "unchecked", "rawtypes" })
-    public static MapParams of(Map map) {
+    static MapParams of(Map map) {
 		return new MapParams(map);
 	}
 	
 	/**
 	 * Returns a {@link MapParams} contains all the properties in the given bean.
 	 */
-	public static MapParams of(DynaBean bean) {
+	static MapParams of(DynaBean bean) {
 		return null == bean ? new MapParams() : new MapParams(bean.getProperties());
 	}
 	

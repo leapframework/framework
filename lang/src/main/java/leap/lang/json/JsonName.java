@@ -15,7 +15,7 @@
  */
 package leap.lang.json;
 
-import leap.lang.annotation.Named;
+import leap.lang.annotation.Name;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -27,7 +27,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)  
 @Target(ElementType.FIELD)
-@Named("value")
+@Name("value")
 public @interface JsonName {
 
     /**

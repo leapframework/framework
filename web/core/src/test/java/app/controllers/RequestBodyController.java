@@ -85,7 +85,11 @@ public class RequestBodyController extends ControllerBase {
 
     public void argsBody2(ArgsBean2 bean) {
         Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.parentId);
+        Assert.notEmpty(bean.name);
+    }
+
+    public void argsBody3(ArgsBean3 bean) {
+        Assert.notEmpty(bean.id);
         Assert.notEmpty(bean.name);
     }
 
@@ -105,7 +109,12 @@ public class RequestBodyController extends ControllerBase {
     @RequestBody
     public static final class ArgsBean2 {
         public String id;
-        public String parentId;
+        public String name;
+    }
+
+    @Arguments(requestBody = true)
+    public static final class ArgsBean3 {
+        public String id;
         public String name;
     }
 }

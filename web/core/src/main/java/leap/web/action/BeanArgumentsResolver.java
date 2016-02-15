@@ -18,7 +18,6 @@ package leap.web.action;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.web.App;
-import leap.web.annotation.RequestBody;
 import leap.web.body.RequestBodyReader;
 import leap.web.format.RequestFormat;
 
@@ -27,12 +26,12 @@ import java.util.Map;
 public class BeanArgumentsResolver implements ArgumentResolver {
 
     protected final Argument          argument;
-    protected final RequestBody       requestBody;
+    protected final boolean           requestBody;
     protected final BeanType          beanType;
     protected final BeanArgument[]    bindingArguments;
     protected final RequestBodyReader requestBodyReader;
 
-    public BeanArgumentsResolver(App app, Argument argument, RequestBody requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
+    public BeanArgumentsResolver(App app, Argument argument, boolean requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
         this.argument          = argument;
         this.requestBody       = requestBody;
         this.beanType          = beanType;
@@ -53,7 +52,7 @@ public class BeanArgumentsResolver implements ArgumentResolver {
         }
 
         //The bean itself is request body argument.
-        if(null != requestBody) {
+        if(requestBody) {
             Map body = readRequestBody(context);
 
             if(null != body && !body.isEmpty()) {

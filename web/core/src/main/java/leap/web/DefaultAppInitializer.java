@@ -192,7 +192,7 @@ public class DefaultAppInitializer implements AppInitializer {
 			}
 		}
 
-		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(Restful.class);
+		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(RestController.class);
 		
 		if(!Strings.isEmpty(actionPath)){
 			if(!restful && actionPath.startsWith("/")){

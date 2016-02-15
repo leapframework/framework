@@ -236,4 +236,14 @@ public class HomeControllerTest extends WebTestCase {
     public void testNestedController() {
         get("/nested").assertOk();
     }
+
+	@Test
+	public void testMethodWithPath() {
+		get("/method_with_path").assertOk();
+        post("/method_with_path").assertOk();
+        put("/method_with_path").assertOk();
+        delete("/method_with_path").assertOk();
+        head("/method_with_path").assertOk();
+        options("/method_with_path").assertOk();
+	}
 }
