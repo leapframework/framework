@@ -39,8 +39,6 @@ public class ValidationTestController {
     }
 
     public static final class VBean {
-
         public @Required String name;
-
     }
 }

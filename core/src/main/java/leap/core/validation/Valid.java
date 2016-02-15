@@ -22,6 +22,17 @@ import java.lang.annotation.*;
 @Inherited
 public @interface Valid {
 
+	/**
+	 * Enables or Disables validation.
+	 *
+	 * <p/>
+	 * Default is enabled.
+     */
+	boolean value() default true;
+
+    /**
+     * Return true if the validated value must not be null or empty.
+     */
 	boolean required() default true;
-	
+
 }

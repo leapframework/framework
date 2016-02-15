@@ -78,9 +78,15 @@ public class ArgumentBuilder implements Buildable<Argument> {
         }
 
         if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
-            addValidator(new NestedArgumentValidator(Classes.getAnnotation(annotations, Valid.class)));
+            Valid valid = Classes.getAnnotation(annotations, Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(valid));
+            }
         }else if(type.isAnnotationPresent(Valid.class)) {
-            addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
+            Valid valid = type.getAnnotation(Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
+            }
         }else {
 			RequestBean a = type.getAnnotation(RequestBean.class);
 			if(null != a && a.valid()){
@@ -189,7 +195,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
         }
 		
 		RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
-		if(null != rb){
+		if(null != rb && rb.value()){
 			this.location = Location.REQUEST_BODY;
 			return this;
 		}
@@ -210,7 +216,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
                 location = Location.REQUEST_BODY;
             }
         }
-		
+
 		return this;
 	}
 	

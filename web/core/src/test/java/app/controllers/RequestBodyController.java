@@ -18,6 +18,7 @@ package app.controllers;
 import app.models.products.Product;
 import leap.lang.Assert;
 import leap.lang.Charsets;
+import leap.lang.Strings;
 import leap.lang.codec.Hex;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
@@ -93,6 +94,11 @@ public class RequestBodyController extends ControllerBase {
         Assert.notEmpty(bean.name);
     }
 
+    public void argsBody4(ArgsBean4 bean) {
+        Assert.notEmpty(bean.id);
+        Assert.isTrue(Strings.isEmpty(bean.name));
+    }
+
     @RequestBean
     public static final class ArgsBean {
         public @QueryParam  String id;
@@ -114,6 +120,18 @@ public class RequestBodyController extends ControllerBase {
 
     @RequestBean(requestBody = true)
     public static final class ArgsBean3 {
+        public String id;
+        public String name;
+    }
+
+    @RequestBean
+    @RequestBody
+    public static abstract class ArgsBeanBase {
+
+    }
+
+    @RequestBody(false)
+    public static final class ArgsBean4 extends ArgsBeanBase {
         public String id;
         public String name;
     }

@@ -85,5 +85,6 @@ public class RequestBodyControllerTest extends WebTestCase {
 		forPost("/request_body/args_body1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
 		forPost("/request_body/args_body2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
 		forPost("/request_body/args_body3?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/request_body/args_body4?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
 	}
 }
