@@ -17,7 +17,7 @@ package leap.core.validation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.TYPE, ElementType.PARAMETER,ElementType.METHOD})
+@Target({ElementType.TYPE, ElementType.PARAMETER,ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Valid {
