@@ -23,7 +23,7 @@ import leap.web.format.RequestFormat;
 
 import java.util.Map;
 
-public class BeanArgumentsResolver implements ArgumentResolver {
+public class RequestBeanArgumentResolver implements ArgumentResolver {
 
     protected final Argument          argument;
     protected final boolean           requestBody;
@@ -31,7 +31,7 @@ public class BeanArgumentsResolver implements ArgumentResolver {
     protected final BeanArgument[]    bindingArguments;
     protected final RequestBodyReader requestBodyReader;
 
-    public BeanArgumentsResolver(App app, Argument argument, boolean requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
+    public RequestBeanArgumentResolver(App app, Argument argument, boolean requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
         this.argument          = argument;
         this.requestBody       = requestBody;
         this.beanType          = beanType;

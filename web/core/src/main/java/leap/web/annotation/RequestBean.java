@@ -18,7 +18,7 @@ package leap.web.annotation;
 import java.lang.annotation.*;
 
 /**
- * Annotates a bean (complex type) that wraps the action's arguments..
+ * Annotates a bean (complex type) that wraps the request parameters.
  *
  * <p/>
  *
@@ -27,15 +27,16 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface Arguments {
+public @interface RequestBean {
 
     /**
-     * Validates the arguments or not.
+     * Validates the bean or not.
      */
     boolean valid() default true;
 
     /**
-     * Returns true if the arguments is request body.
+     * Returns true if the bean is also a request body argument.
      */
     boolean requestBody() default false;
+
 }

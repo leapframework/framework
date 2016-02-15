@@ -30,7 +30,7 @@ import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
-import leap.web.annotation.Arguments;
+import leap.web.annotation.RequestBean;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
@@ -376,14 +376,14 @@ public class DefaultActionManager implements ActionManager,AppListener {
     protected void prepareArgument(RouteBuilder route, Argument argument, ExecutionArgument ea, RequestBodyArgumentInfo rbaf) {
         ArgumentResolver resolver = null;
 
-        boolean args = Classes.isAnnotatioinPresent(argument.getAnnotations(), Arguments.class) ||
-                       argument.getType().isAnnotationPresent(Arguments.class);
+        boolean args = Classes.isAnnotatioinPresent(argument.getAnnotations(), RequestBean.class) ||
+                       argument.getType().isAnnotationPresent(RequestBean.class);
 
         if(args && !argument.getTypeInfo().isComplexType()) {
-            throw new IllegalStateException("Only Complex Type can be 'Arguments', check arg : " + argument);
+            throw new IllegalStateException("Only Complex Type can be 'RequestBean', check arg : " + argument);
         }
 
-        resolver = args ? createBeanArgumentsResolver(route, argument, rbaf) : resolveArgumentResolver(route, argument, rbaf);
+        resolver = args ? createRequestBeanArgumentResolver(route, argument, rbaf) : resolveArgumentResolver(route, argument, rbaf);
 
         ea.resolver     = resolver;
         ea.isContextual = resolver instanceof ContextArgumentResolver;
@@ -431,15 +431,15 @@ public class DefaultActionManager implements ActionManager,AppListener {
         return resolver;
     }
 
-    protected BeanArgumentsResolver createBeanArgumentsResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
+    protected RequestBeanArgumentResolver createRequestBeanArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
         BeanType bt = BeanType.of(argument.getType());
 
         boolean requestBody = rbaf.isDeclaredRequestBody(argument);
 
-        List<BeanArgumentsResolver.BeanArgument> bas = new ArrayList<>();
+        List<RequestBeanArgumentResolver.BeanArgument> bas = new ArrayList<>();
 
         for(BeanProperty bp : bt.getProperties()) {
-            BeanArgumentsResolver.BeanArgument ba = new BeanArgumentsResolver.BeanArgument();
+            RequestBeanArgumentResolver.BeanArgument ba = new RequestBeanArgumentResolver.BeanArgument();
             ba.property = bp;
             ba.argument = new ArgumentBuilder(validationManager, bp).build();
 
@@ -449,15 +449,15 @@ public class DefaultActionManager implements ActionManager,AppListener {
         Argument[] nestedArguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
         RequestBodyArgumentInfo nestedRbaf = requestBody ? new RequestBodyArgumentInfo() : resolveRequestBodyArgument(route, nestedArguments);
 
-        for(BeanArgumentsResolver.BeanArgument ba : bas) {
+        for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
             ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
         }
 
-        return new BeanArgumentsResolver(app,
+        return new RequestBeanArgumentResolver(app,
                                          argument,
                                          requestBody,
                                          bt,
-                                         bas.toArray(new BeanArgumentsResolver.BeanArgument[]{}));
+                                         bas.toArray(new RequestBeanArgumentResolver.BeanArgument[]{}));
     }
     
 	protected RequestFormat resolveRequestFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {

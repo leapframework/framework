@@ -82,7 +82,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
         }else if(type.isAnnotationPresent(Valid.class)) {
             addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
         }else {
-			Arguments a = type.getAnnotation(Arguments.class);
+			RequestBean a = type.getAnnotation(RequestBean.class);
 			if(null != a && a.valid()){
                 addValidator(new NestedArgumentValidator(true));
             }
@@ -205,7 +205,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		}
 
         if(null != type) {
-            Arguments a = type.getAnnotation(Arguments.class);
+            RequestBean a = type.getAnnotation(RequestBean.class);
             if(null != a && a.requestBody()) {
                 location = Location.REQUEST_BODY;
             }

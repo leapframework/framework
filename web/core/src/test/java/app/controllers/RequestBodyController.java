@@ -23,7 +23,7 @@ import leap.lang.io.IO;
 import leap.lang.json.JSON;
 import leap.web.Request;
 import leap.web.action.ControllerBase;
-import leap.web.annotation.Arguments;
+import leap.web.annotation.RequestBean;
 import leap.web.annotation.QueryParam;
 import leap.web.annotation.RequestBody;
 
@@ -93,26 +93,26 @@ public class RequestBodyController extends ControllerBase {
         Assert.notEmpty(bean.name);
     }
 
-    @Arguments
+    @RequestBean
     public static final class ArgsBean {
         public @QueryParam  String id;
         public @RequestBody String name;
     }
 
-    @Arguments
+    @RequestBean
     public static final class ArgsBean1 {
         public @QueryParam String id;
         public             String name;
     }
 
-    @Arguments
+    @RequestBean
     @RequestBody
     public static final class ArgsBean2 {
         public String id;
         public String name;
     }
 
-    @Arguments(requestBody = true)
+    @RequestBean(requestBody = true)
     public static final class ArgsBean3 {
         public String id;
         public String name;
