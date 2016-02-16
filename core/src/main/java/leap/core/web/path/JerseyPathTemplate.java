@@ -39,10 +39,10 @@
  */
 package leap.core.web.path;
 
-import java.util.Map;
-
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
+
+import java.util.Map;
 
 
 //This class is a modified copy from <a href="http://jersey.java.net">jersey</a>.
@@ -72,7 +72,6 @@ final class JerseyPathTemplate extends JerseyUriTemplate implements PathTemplate
      *
      * @param path the URI path template.
      * @return slash-prefixed path.
-     * @see #PathTemplate(String)
      */
     private static String prefixWithSlash(final String path) {
         return !path.isEmpty() && path.charAt(0) == '/' ? path : "/" + path;

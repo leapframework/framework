@@ -17,6 +17,7 @@ package leap.web.action;
 
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.convert.Converts;
 import leap.web.App;
 import leap.web.body.RequestBodyReader;
 import leap.web.format.RequestFormat;
@@ -60,8 +61,16 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
                     if(!ba.argument.isLocationDeclared()) {
                         String name = ba.argument.getName();
                         if(body.containsKey(name)) {
+
+                            BeanProperty bp = ba.property;
+
                             Object value = body.get(name);
-                            ba.property.setValue(bean, value);
+                            if(null == value) {
+                                bp.setValue(bean, null);
+                            }else{
+                                bp.setValue(bean, Converts.convert(value, bp.getType(), bp.getGenericType()));
+                            }
+
                         }
                     }
                 }

@@ -124,6 +124,14 @@ public class Argument implements Named {
        return null != location && location != Location.UNDEFINED;
     }
 
+    /**
+     * Returns true if the location of argument is {@link Location#REQUEST_BODY}.
+     * @return
+     */
+	public boolean isRequestBodyDeclared() {
+        return null != location && location == Location.REQUEST_BODY;
+    }
+
 	/**
 	 * Returns the {@link ElementType#PARAMETER} annotations in the {@link Method} of this argument.
 	 * 

@@ -41,7 +41,9 @@ import java.util.List;
 public class DefaultActionStrategy implements ActionStrategy {
 
     public static final String   CONTROLLER_SUFFIX   = "Controller";
+    public static final String   RESOURCE_SUFFIX     = "Resource";
     public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
+    public static final String[] RESOURCE_PACKAGES   = new String[]{"resources", "resource"};
 
     protected @Inject App         app;
     protected @Inject BeanFactory factory;
@@ -102,9 +104,14 @@ public class DefaultActionStrategy implements ActionStrategy {
 		int suffixStartIndex = cls.getSimpleName().indexOf(CONTROLLER_SUFFIX);
 		if(suffixStartIndex > 0){
 			return Strings.lowerUnderscore(cls.getSimpleName().substring(0,suffixStartIndex));
-		}else{
-			return Strings.lowerUnderscore(cls.getSimpleName());
 		}
+
+        suffixStartIndex = cls.getSimpleName().indexOf(RESOURCE_SUFFIX);
+        if(suffixStartIndex > 0) {
+            return Strings.lowerUnderscore(cls.getSimpleName().substring(0,suffixStartIndex));
+        }
+
+        return Strings.lowerUnderscore(cls.getSimpleName());
     }
 
     @Override
@@ -145,8 +152,8 @@ public class DefaultActionStrategy implements ActionStrategy {
 		
 		String   pathPrefix             = "";
 		String   clsPackageName         = Classes.getPackageName(cls);
+
 		String[] baseControllerPackages = controllerPackagePrefixes();
-		
 		for(String baseControllerPackage : baseControllerPackages) {
 			if(clsPackageName.startsWith(baseControllerPackage)){
 				//package name starts with {base-package}.controller
@@ -154,6 +161,17 @@ public class DefaultActionStrategy implements ActionStrategy {
 				break;
 			}
 		}
+
+        if(Strings.isEmpty(pathPrefix)) {
+            String[] baseResourcePackages = resourcePackagePrefixes();
+            for(String baseResourcePackage : baseResourcePackages) {
+                if(clsPackageName.startsWith(baseResourcePackage)){
+                    //package name starts with {base-package}.resource
+                    pathPrefix = clsPackageName.substring(baseResourcePackage.length()).replace('.', '/');
+                    break;
+                }
+            }
+        }
 
         String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
 
@@ -316,6 +334,14 @@ public class DefaultActionStrategy implements ActionStrategy {
         String[] a = new String[CONTROLLER_PACKAGES.length];
         for(int i=0;i<a.length;i++) {
             a[i] = app.config().getBasePackage() + "." + CONTROLLER_PACKAGES[i] + ".";
+        }
+        return a;
+    }
+
+    protected String[] resourcePackagePrefixes() {
+        String[] a = new String[RESOURCE_PACKAGES.length];
+        for(int i=0;i<a.length;i++) {
+            a[i] = app.config().getBasePackage() + "." + RESOURCE_PACKAGES[i] + ".";
         }
         return a;
     }

@@ -71,8 +71,8 @@ import leap.web.api.meta.ApiParameterBase;
 import leap.web.api.meta.ApiPath;
 import leap.web.api.meta.ApiProperty;
 import leap.web.api.meta.ApiResponse;
-import leap.web.api.meta.ApiSecurtyDef;
-import leap.web.api.meta.OAuth2ApiSecuirtyDef;
+import leap.web.api.meta.ApiSecurityDef;
+import leap.web.api.meta.OAuth2ApiSecurityDef;
 import leap.web.api.meta.OAuth2Scope;
 import leap.web.api.spec.JsonSpecWriter;
 
@@ -267,10 +267,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     protected void writeSecurityDefs(WriteContext context, ApiMetadata m, JsonWriter w) {
         w.startObject();
 
-        for(ApiSecurtyDef def : m.getSecurityDefs()) {
+        for(ApiSecurityDef def : m.getSecurityDefs()) {
             
-            if(def instanceof OAuth2ApiSecuirtyDef) {
-                writeOAuth2SecurityDef(context, m, w, (OAuth2ApiSecuirtyDef)def);
+            if(def instanceof OAuth2ApiSecurityDef) {
+                writeOAuth2SecurityDef(context, m, w, (OAuth2ApiSecurityDef)def);
                 continue;
             }
             
@@ -280,7 +280,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         w.endObject();
     }
     
-    protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecuirtyDef d) {
+    protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
         context.defaultSecurity = OAUTH;
         if(null != d.getScopes() && d.getScopes().length > 0) {
             String[] values = new String[d.getScopes().length];
@@ -294,7 +294,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         //writeOAuth2AccesCode(context, m, w, d);
     }
     
-    protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecuirtyDef d) {
+    protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
         w.property(OAUTH, () -> {
             w.startObject();
             
@@ -308,7 +308,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecuirtyDef d) {
+    protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
         w.property(OAUTH_ACCESS_CODE, () -> {
             w.startObject();
             
@@ -323,7 +323,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecuirtyDef d, OAuth2Scope[] scopes) {
+    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d, OAuth2Scope[] scopes) {
         w.property(SCOPES, () -> {
             w.startObject();
             if(null != scopes) {

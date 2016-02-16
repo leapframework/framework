@@ -15,21 +15,21 @@
  */
 package leap.web.api.meta;
 
-import java.util.Map;
-
 import leap.lang.Args;
 
-public class OAuth2ApiSecuirtyDef extends ApiSecurtyDef {
+import java.util.Map;
+
+public class OAuth2ApiSecurityDef extends ApiSecurityDef {
     
     protected final String        authzEndpointUrl;
     protected final String        tokenEndpointUrl;
     protected final OAuth2Scope[] scopes;
     
-    public OAuth2ApiSecuirtyDef(String authzEndpointUrl, String tokenEndpointUrl, OAuth2Scope[] scopes) {
+    public OAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, OAuth2Scope[] scopes) {
         this(authzEndpointUrl,tokenEndpointUrl, scopes, null);
     }
 
-    public OAuth2ApiSecuirtyDef(String authzEndpointUrl, String tokenEndpointUrl, OAuth2Scope[] scopes, Map<String, Object> attrs) {
+    public OAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, OAuth2Scope[] scopes, Map<String, Object> attrs) {
         super(attrs);
         
         Args.notEmpty(authzEndpointUrl, "authorization endpoint url");

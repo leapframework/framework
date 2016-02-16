@@ -22,6 +22,8 @@ import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.Types;
 import leap.lang.http.HTTP;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.meta.*;
 import leap.web.App;
 import leap.web.action.Action;
@@ -33,6 +35,8 @@ import leap.web.route.Route;
 import java.lang.reflect.Type;
 
 public class DefaultApiMetadataFactory implements ApiMetadataFactory {
+
+	private static final Log log = LogFactory.get(DefaultApiMetadataFactory.class);
 	
 	protected @Inject App				     app;
 	protected @Inject ApiMetadataProcessor[] processors;
@@ -112,8 +116,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         if(c.isOAuthEnabled()) {
-            OAuth2ApiSecuirtyDef def = 
-                    new OAuth2ApiSecuirtyDef(c.getOAuthAuthorizationUrl(), 
+            OAuth2ApiSecurityDef def =
+                    new OAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
                                              c.getOAuthTokenUrl(),
                                              c.getOAuthScopes());
             
@@ -150,7 +154,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			path.setPathTemplate(pt);
 			md.addPath(path);
 		}
-		
+
+        log.debug("Path {} -> {} :", pt, route.getAction());
 		createApiOperation(context, md, route, path);
 	}
 	
@@ -158,9 +163,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		ApiOperationBuilder op = new ApiOperationBuilder();
 		
 		op.setName(route.getAction().getName());
-		
+
 		//Set http method
 		setApiMethod(context, m, route, path, op);
+
+        log.debug(" {}", op.getMethod());
 	
 		//Create parameters.
 		createApiParameters(context, m, route, path, op);
@@ -194,22 +201,27 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	
 	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
 		Action action = route.getAction();
+
+        log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
-			 ApiParameterBuilder p = new ApiParameterBuilder();
-			 
-			 p.setName(a.getName());
-			 p.setType(createMType(context, m, a.getTypeInfo()));
-			 p.setLocation(getParameterLocation(context, action, a, op, p));
-			 
-			 if(null != a.getRequired()) {
-				 p.setRequired(a.getRequired());
-			 }else if(p.getLocation() == ApiParameter.Location.PATH) {
-				 p.setRequired(true);
-			 }
-		
-			 op.addParameter(p);
-		}
+            ApiParameterBuilder p = new ApiParameterBuilder();
+
+            p.setName(a.getName());
+
+            log.trace("   {}", a.getName(), p.getLocation());
+
+            p.setType(createMType(context, m, a.getTypeInfo()));
+            p.setLocation(getParameterLocation(context, action, a, op, p));
+
+            if (null != a.getRequired()) {
+                p.setRequired(a.getRequired());
+            } else if (p.getLocation() == ApiParameter.Location.PATH) {
+                p.setRequired(true);
+            }
+
+            op.addParameter(p);
+        }
 	}
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {

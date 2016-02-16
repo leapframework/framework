@@ -24,24 +24,24 @@ import leap.lang.New;
  */
 public class ApiMetadata extends ApiNamedWithDesc {
 	
-	protected final String    	  		 termsOfService;
-	protected final ApiConcat 	  		 concat;
-	protected final String    	  		 version;
-	protected final String    	  		 host;
-	protected final String    	  		 basePath;
-	protected final String[]  	  		 protocols;
-	protected final String[]  	  	     consumes;
-	protected final String[]  	  		 produces;
+	protected final String               termsOfService;
+	protected final ApiConcat            concat;
+	protected final String               version;
+	protected final String               host;
+	protected final String               basePath;
+	protected final String[]             protocols;
+	protected final String[]             consumes;
+	protected final String[]             produces;
 	protected final Map<String,ApiPath>  paths;
 	protected final Map<String,ApiModel> models;
-	protected final ApiSecurtyDef[]      securityDefs;
+	protected final ApiSecurityDef[]     securityDefs;
 
 	public ApiMetadata(String name, String title, String summary, String description, 
 					 String termsOfService, ApiConcat concat, String version, 
 					 String host, String basePath, String[] protocols, String[] consumes, String[] produces, 
 					 Map<String, ApiPath> paths, 
 					 Map<String, ApiModel> models,
-					 ApiSecurtyDef[] securityDefs,
+					 ApiSecurityDef[] securityDefs,
 					 Map<String, Object> attrs)  {
 		super(name, title, summary, description, attrs);
 	    this.termsOfService = termsOfService;
@@ -139,7 +139,7 @@ public class ApiMetadata extends ApiNamedWithDesc {
 		return models;
 	}
 
-    public ApiSecurtyDef[] getSecurityDefs() {
+    public ApiSecurityDef[] getSecurityDefs() {
         return securityDefs;
     }
 }
