@@ -305,7 +305,7 @@ public class JerseyUriTemplateParser {
             // Template name character
             nameBuffer.append(c);
         } else {
-            throw new IllegalArgumentException("");
+            throw new IllegalArgumentException("Invalid character '" + c + "' in parameter name of path template : " + template);
         }
 
         String nameRegexString = "";

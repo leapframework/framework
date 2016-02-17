@@ -15,11 +15,6 @@
  */
 package leap.webunit.client;
 
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -30,23 +25,22 @@ import leap.lang.http.exception.HttpException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.net.Urls;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.HeaderGroup;
+
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.List;
 
 class THttpRequestImpl implements THttpRequest {
 	
@@ -168,7 +162,9 @@ class THttpRequestImpl implements THttpRequest {
         } catch (Exception e) {
         	throw new HttpException("Error send http request : " + e.getMessage(),e);
         }finally{
-        	request.releaseConnection();
+            if(null != request) {
+                request.releaseConnection();
+            }
         }
 	}
 	
@@ -241,6 +237,14 @@ class THttpRequestImpl implements THttpRequest {
 
         if (method.equals(Method.PATCH)) {
             request = new HttpPatch(url);
+        }
+
+        if (method.equals(Method.HEAD)) {
+            request = new HttpHead(url);
+        }
+
+        if (method.equals(Method.OPTIONS)) {
+            request = new HttpOptions(url);
         }
 
         if (null == request) {

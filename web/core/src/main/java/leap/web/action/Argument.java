@@ -15,24 +15,17 @@
  */
 package leap.web.action;
 
+import leap.lang.*;
+import leap.web.view.ViewData;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import leap.core.validation.Validator;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Named;
-import leap.lang.Strings;
-import leap.lang.TypeInfo;
-import leap.web.annotation.ViewAttribute;
-import leap.web.view.ViewData;
-
 public class Argument implements Named {
 	
-	public static enum BindingFrom {
+	public enum Location {
 		UNDEFINED,
 		
 		PATH_PARAM,
@@ -43,27 +36,26 @@ public class Argument implements Named {
 		
 		PART_PARAM,
 		
-		REQUEST_BODY;
+		REQUEST_BODY
 	}
-	
-	protected final String       name;
-	protected final Class<?>     type;
-	protected final Type         genericType;
-	protected final TypeInfo	 typeInfo;
-	protected final Boolean		 required;
-	protected final BindingFrom  bindingFrom;
-	protected final Annotation[] annotations;
-	protected final Validator[]  validators;
-	protected final String		 viewAttributeName;
-	
+
+	protected final String              name;
+	protected final Class<?>            type;
+	protected final Type                genericType;
+	protected final TypeInfo            typeInfo;
+	protected final Boolean             required;
+	protected final Location            location;
+	protected final Annotation[]        annotations;
+	protected final ArgumentValidator[] validators;
+
 	public Argument(String name, 
 					Class<?> type, 
 					Type genericType,
 					TypeInfo typeInfo,
 					Boolean	required,
-					BindingFrom bindingFrom,
+					Location location,
 					Annotation[] annotations,
-					Validator[] validators) {
+					ArgumentValidator[] validators) {
 		
 		Args.notEmpty(name,   "name");
 		Args.notNull(type,    "type");
@@ -74,10 +66,9 @@ public class Argument implements Named {
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
 		this.required		   = required;
-		this.bindingFrom       = null == bindingFrom ? BindingFrom.UNDEFINED : bindingFrom;
+		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
-		this.validators        = null == validators ? (Validator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
-		this.viewAttributeName = resolveViewAttributeName();
+		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
 	}
 
 	@Override
@@ -120,11 +111,26 @@ public class Argument implements Named {
 	}
 
 	/**
-	 * Returns the {@link BindingFrom} of this argument.
+	 * Returns the {@link Location} of this argument.
 	 */
-	public BindingFrom getBindingFrom() {
-		return bindingFrom;
+	public Location getLocation() {
+		return location;
 	}
+
+    /**
+     * Returns true if the {@link Location} of argument is not null and not {@link Location#UNDEFINED}.
+     */
+    public boolean isLocationDeclared(){
+       return null != location && location != Location.UNDEFINED;
+    }
+
+    /**
+     * Returns true if the location of argument is {@link Location#REQUEST_BODY}.
+     * @return
+     */
+	public boolean isRequestBodyDeclared() {
+        return null != location && location == Location.REQUEST_BODY;
+    }
 
 	/**
 	 * Returns the {@link ElementType#PARAMETER} annotations in the {@link Method} of this argument.
@@ -137,9 +143,9 @@ public class Argument implements Named {
 	}
 	
 	/**
-	 * Returns the {@link Validator} arrays.
+	 * Returns the {@link ArgumentValidator} arrays.
 	 */
-	public Validator[] getValidators() {
+	public ArgumentValidator[] getValidators() {
 		return validators;
 	}
 	
@@ -147,15 +153,18 @@ public class Argument implements Named {
 	 * Returns the name for exposing the argument's value to {@link ViewData}.
 	 */
 	public String getViewAttributeName() {
-		return viewAttributeName;
+		return null;
 	}
 
-	private String resolveViewAttributeName() {
-		String   n = name;
-		ViewAttribute a = Classes.getAnnotation(annotations, ViewAttribute.class);
-		if(null != a && !Strings.isEmpty(a.value())){
-			n = a.value();
-		}
-		return n;
-	}
+    /**
+     * Returns true if the given annotation type is present at the arguemnt.
+     */
+    public boolean isAnnotationPresent(Class<? extends Annotation> t) {
+        return Classes.isAnnotatioinPresent(annotations, t);
+    }
+
+    @Override
+    public String toString() {
+        return "Argument[name=" + name + ",type=" + type + "]";
+    }
 }

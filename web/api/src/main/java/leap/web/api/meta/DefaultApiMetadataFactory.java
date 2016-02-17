@@ -15,8 +15,6 @@
  */
 package leap.web.api.meta;
 
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
 import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
@@ -24,20 +22,21 @@ import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.Types;
 import leap.lang.http.HTTP;
-import leap.lang.meta.MCollectionType;
-import leap.lang.meta.MComplexType;
-import leap.lang.meta.MComplexTypeRef;
-import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactory;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.meta.*;
 import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
-import leap.web.action.Argument.BindingFrom;
+import leap.web.action.Argument.Location;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.meta.ApiParameter.Location;
 import leap.web.route.Route;
 
+import java.lang.reflect.Type;
+
 public class DefaultApiMetadataFactory implements ApiMetadataFactory {
+
+	private static final Log log = LogFactory.get(DefaultApiMetadataFactory.class);
 	
 	protected @Inject App				     app;
 	protected @Inject ApiMetadataProcessor[] processors;
@@ -117,8 +116,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         if(c.isOAuthEnabled()) {
-            OAuth2ApiSecuirtyDef def = 
-                    new OAuth2ApiSecuirtyDef(c.getOAuthAuthorizationUrl(), 
+            OAuth2ApiSecurityDef def =
+                    new OAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
                                              c.getOAuthTokenUrl(),
                                              c.getOAuthScopes());
             
@@ -155,7 +154,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			path.setPathTemplate(pt);
 			md.addPath(path);
 		}
-		
+
+        log.debug("Path {} -> {} :", pt, route.getAction());
 		createApiOperation(context, md, route, path);
 	}
 	
@@ -163,9 +163,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		ApiOperationBuilder op = new ApiOperationBuilder();
 		
 		op.setName(route.getAction().getName());
-		
+
 		//Set http method
 		setApiMethod(context, m, route, path, op);
+
+        log.debug(" {}", op.getMethod());
 	
 		//Create parameters.
 		createApiParameters(context, m, route, path, op);
@@ -182,7 +184,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		if("*".equals(method)) {
 			boolean hasBodyParameter = false;
 			for(Argument a : route.getAction().getArguments()) {
-				if(a.getBindingFrom() == BindingFrom.REQUEST_BODY || a.getBindingFrom() == BindingFrom.PART_PARAM) {
+				if(a.getLocation() == Location.REQUEST_BODY || a.getLocation() == Location.PART_PARAM) {
 					hasBodyParameter = true;
 				}
 			}
@@ -199,22 +201,27 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	
 	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
 		Action action = route.getAction();
+
+        log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
-			 ApiParameterBuilder p = new ApiParameterBuilder();
-			 
-			 p.setName(a.getName());
-			 p.setType(createMType(context, m, a.getTypeInfo()));
-			 p.setLocation(getParameterLocation(context, action, a, op, p));
-			 
-			 if(null != a.getRequired()) {
-				 p.setRequired(a.getRequired());
-			 }else if(p.getLocation() == Location.PATH) {
-				 p.setRequired(true);
-			 }
-		
-			 op.addParameter(p);
-		}
+            ApiParameterBuilder p = new ApiParameterBuilder();
+
+            p.setName(a.getName());
+
+            log.trace("   {}", a.getName(), p.getLocation());
+
+            p.setType(createMType(context, m, a.getTypeInfo()));
+            p.setLocation(getParameterLocation(context, action, a, op, p));
+
+            if (null != a.getRequired()) {
+                p.setRequired(a.getRequired());
+            } else if (p.getLocation() == ApiParameter.Location.PATH) {
+                p.setRequired(true);
+            }
+
+            op.addParameter(p);
+        }
 	}
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
@@ -255,38 +262,38 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 	}
 	
-	protected Location getParameterLocation(ApiMetadataContext context,Action action, Argument arg, ApiOperationBuilder o, ApiParameterBuilder p) {
-		BindingFrom from = arg.getBindingFrom();
-		if(null == from || from == BindingFrom.UNDEFINED) {
+	protected ApiParameter.Location getParameterLocation(ApiMetadataContext context, Action action, Argument arg, ApiOperationBuilder o, ApiParameterBuilder p) {
+		Location from = arg.getLocation();
+		if(null == from || from == Location.UNDEFINED) {
 			
 			if(p.getType().isTypeRef() || p.getType().isCollectionType()) {
-				return Location.BODY;
+				return ApiParameter.Location.BODY;
 			}else{
 				if(o.getMethod() == HTTP.Method.GET) {
-					return Location.QUERY;
+					return ApiParameter.Location.QUERY;
 				}else{
-					return Location.FORM;
+					return ApiParameter.Location.FORM;
 				}
 			}
 		}
 		
-		if(from == BindingFrom.QUERY_PARAM) {
-		    return Location.QUERY;
+		if(from == Location.QUERY_PARAM) {
+		    return ApiParameter.Location.QUERY;
 		}
 		
-		if(from == BindingFrom.PATH_PARAM) {
-			return Location.PATH;
+		if(from == Location.PATH_PARAM) {
+			return ApiParameter.Location.PATH;
 		}
 		
-		if(from == BindingFrom.REQUEST_BODY) {
-			return Location.BODY;
+		if(from == Location.REQUEST_BODY) {
+			return ApiParameter.Location.BODY;
 		}
 		
-		if(from == BindingFrom.REQUEST_PARAM) {
+		if(from == Location.REQUEST_PARAM) {
 			if(o.getMethod() == HTTP.Method.GET) {
-				return Location.QUERY;
+				return ApiParameter.Location.QUERY;
 			}else{
-				return Location.FORM;
+				return ApiParameter.Location.FORM;
 			}
 		}
 		

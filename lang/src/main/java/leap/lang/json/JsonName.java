@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.api.meta;
+package leap.lang.json;
 
-import java.util.Map;
+import leap.lang.annotation.Name;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public abstract class ApiSecurtyDef extends ApiObject {
+/**
+ * Specify the name of field in json.
+ */
+@Retention(RetentionPolicy.RUNTIME)  
+@Target(ElementType.FIELD)
+@Name("value")
+public @interface JsonName {
 
-    public ApiSecurtyDef() {
-        super();
-    }
-
-    public ApiSecurtyDef(Map<String, Object> attrs) {
-        super(attrs);
-    }
-    
+    /**
+     * The name in json.
+     */
+	String value();
+	
 }

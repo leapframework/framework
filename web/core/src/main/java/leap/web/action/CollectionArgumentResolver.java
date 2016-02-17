@@ -15,6 +15,15 @@
  */
 package leap.web.action;
 
+import leap.lang.Beans;
+import leap.lang.Strings;
+import leap.lang.TypeInfo;
+import leap.lang.beans.BeanType;
+import leap.lang.convert.Converts;
+import leap.web.App;
+import leap.web.route.RouteBase;
+
+import javax.servlet.http.Part;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,19 +31,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.BiFunction;
 
-import javax.servlet.http.Part;
-
-import leap.lang.Beans;
-import leap.lang.Strings;
-import leap.lang.TypeInfo;
-import leap.lang.beans.BeanType;
-import leap.lang.convert.Converts;
-import leap.web.App;
-
 /**
  * The {@link ArgumentResolver} for resolving collection type.
- * 
- * @see TypeStrategy#isCollectionType(Class, java.lang.reflect.Type)
  */
 public class CollectionArgumentResolver extends AbstractMapResolver {
 	
@@ -42,8 +40,8 @@ public class CollectionArgumentResolver extends AbstractMapResolver {
 	private final BiFunction<ActionContext, Argument, Object> resolver;
 	private final String									  arrayPrefix;
 	
-	public CollectionArgumentResolver(App app, Action action,Argument argument) {
-		super(app,action,argument);
+	public CollectionArgumentResolver(App app, RouteBase route, Argument argument) {
+		super(app,route,argument);
 		
 		this.elementType = argument.getTypeInfo().getElementTypeInfo();
 		this.arrayPrefix = argument.getName() + "[";

@@ -1,20 +1,18 @@
 package leap.web.route;
 
-import java.util.Comparator;
-import java.util.Map;
-
-import leap.core.web.path.PathTemplate;
 import leap.lang.Sourced;
-import leap.web.action.Action;
 import leap.web.action.FailureHandler;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
 
+import java.util.Comparator;
+import java.util.Map;
+
 /**
  * Indicates a routing rule use to mapping a request to a handler.
  */
-public interface Route extends Sourced {
+public interface Route extends RouteBase, Sourced {
 
 	Comparator<Route> COMPARATOR = 
 			new Comparator<Route>() {
@@ -70,16 +68,6 @@ public interface Route extends Sourced {
 	 */
 	String getMethod();
 
-	/**
-	 * Returns the path template defined in this routing rule use to match a request path.
-	 */
-	PathTemplate getPathTemplate();
-
-	/**
-	 * Returns a {@link Action} object to handle http request or <code>null</code> if no action.
-	 */
-	Action getAction();
-	
 	/**
 	 * Returns an array contains all the {@link FailureHandler}.
 	 */

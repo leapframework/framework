@@ -43,7 +43,7 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
     protected List<String>                 produces     = new ArrayList<String>();
     protected Map<String, ApiPathBuilder>  paths        = new LinkedHashMap<String, ApiPathBuilder>();
     protected Map<String, ApiModelBuilder> models       = new LinkedHashMap<String, ApiModelBuilder>();
-    protected List<ApiSecurtyDef>          securityDefs = new ArrayList<ApiSecurtyDef>();
+    protected List<ApiSecurityDef>         securityDefs = new ArrayList<ApiSecurityDef>();
 	
 	public ApiMetadataBuilder() {
         super();
@@ -170,11 +170,11 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		return models.containsKey(name);
 	}
 	
-	public List<ApiSecurtyDef> getSecurityDefs() {
+	public List<ApiSecurityDef> getSecurityDefs() {
         return securityDefs;
     }
 	
-	public void addSecurityDef(ApiSecurtyDef def) {
+	public void addSecurityDef(ApiSecurityDef def) {
 	    securityDefs.add(def);
 	}
 
@@ -188,7 +188,7 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
         					produces.toArray(Arrays2.EMPTY_STRING_ARRAY), 
         					Builders.buildMap(paths),
         					Builders.buildMap(models),
-        					securityDefs.toArray(new ApiSecurtyDef[]{}),
+        					securityDefs.toArray(new ApiSecurityDef[]{}),
         					attrs);
     }
 	

@@ -42,47 +42,47 @@ public class AppContextInitializer {
 	private static ThreadLocal<AppConfig>   initialAppConfig;
 	private static boolean					initializing;
 	
-	public static final String CP_FRAMEWORK_CORE_PREFIX    = "/META-INF/leap/core";
-	public static final String CP_FRAMEWORK_MODULES_PREFIX = "/META-INF/leap/framework";
-	public static final String CP_EXTENSION_MODULES_PREFIX = "/META-INF/leap/extension";
-	public static final String CP_APPLICATION_SYS_PREFIX   = "/META-INF/conf";
-	public static final String CP_APPLICATION_USR_PREFIX   = "/conf";
+	public static final String CLASSPATH_CORE_PREFIX      = "/META-INF/leap/core";
+	public static final String CLASSPATH_FRAMEWORK_PREFIX = "/META-INF/leap/framework";
+	public static final String CLASSPATH_MODULES_PREFIX   = "/META-INF/leap/modules/*";
+	public static final String CLASSPATH_APPSYS_PREFIX    = "/META-INF/conf";
+	public static final String CLASSPATH_APPUSR_PREFIX    = "/conf";
 	
 	private static final String XML_EXT = ".xml";
 
-	private static final String[] FRAMEWORK_CORE_LOCATIONS = new String[]{CP_FRAMEWORK_CORE_PREFIX + "/{0}{1}",
-																		  CP_FRAMEWORK_CORE_PREFIX + "/{0}/**/*{1}"};
+	private static final String[] FRAMEWORK_CORE_LOCATIONS = new String[]{CLASSPATH_CORE_PREFIX + "/{0}{1}",
+																		  CLASSPATH_CORE_PREFIX + "/{0}/**/*{1}"};
 	
-	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS = new String[]{CP_FRAMEWORK_MODULES_PREFIX + "/{0}{1}",
-																			  CP_FRAMEWORK_MODULES_PREFIX + "/{0}/**/*{1}"};
+	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_FRAMEWORK_PREFIX + "/{0}{1}",
+																			  CLASSPATH_FRAMEWORK_PREFIX + "/{0}/**/*{1}"};
 	
-	private static final String[] EXTENSION_TEMPLATE_LOCATIONS = new String[]{CP_EXTENSION_MODULES_PREFIX + "/{0}{1}",
-																			  CP_EXTENSION_MODULES_PREFIX + "/{0}/**/*{1}"};
+	private static final String[] MODULES_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_MODULES_PREFIX + "/{0}{1}",
+																			  CLASSPATH_MODULES_PREFIX + "/{0}/**/*{1}"};
 
-	private static final String[] APPSYS_TEMPLATE_LOCATIONS = new String[]{CP_APPLICATION_SYS_PREFIX + "/{0}{1}",
-																		   CP_APPLICATION_SYS_PREFIX + "/{0}/**/*{1}"};
+	private static final String[] APPSYS_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_APPSYS_PREFIX + "/{0}{1}",
+																		   CLASSPATH_APPSYS_PREFIX + "/{0}/**/*{1}"};
 
-	private static final String[] APPUSR_TEMPLATE_LOCATIONS = new String[]{CP_APPLICATION_USR_PREFIX + "/{0}{1}",
-		   																   CP_APPLICATION_USR_PREFIX + "/{0}/**/*{1}"};		
+	private static final String[] APPUSR_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_APPUSR_PREFIX + "/{0}{1}",
+		   																   CLASSPATH_APPUSR_PREFIX + "/{0}/**/*{1}"};
 
-	private static final String[] FRAMEWORK_CORE_LOCATIONS_BY_PATTERN = new String[]{CP_FRAMEWORK_CORE_PREFIX + "/{0}{1}"};
+	private static final String[] FRAMEWORK_CORE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_CORE_PREFIX + "/{0}{1}"};
 	
-	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CP_FRAMEWORK_MODULES_PREFIX + "/{0}{1}"};	
+	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_FRAMEWORK_PREFIX + "/{0}{1}"};
 	
-	private static final String[] EXTENSION_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CP_EXTENSION_MODULES_PREFIX + "/{0}{1}"};	
+	private static final String[] MODULES_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_MODULES_PREFIX + "/{0}{1}"};
 	
-	private static final String[] APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CP_APPLICATION_SYS_PREFIX + "/{0}{1}"};
+	private static final String[] APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_APPSYS_PREFIX + "/{0}{1}"};
 	
-	private static final String[] APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CP_APPLICATION_USR_PREFIX + "/{0}{1}"};	
+	private static final String[] APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_APPUSR_PREFIX + "/{0}{1}"};
 	
-	private static final String RES_FRAMEWORK_CORE_LOCATION    = Strings.format("classpath*:{0}/**/*",CP_FRAMEWORK_CORE_PREFIX);
-	private static final String RES_FRAMEWORK_MODULES_LOCATION = Strings.format("classpath*:{0}/**/*",CP_FRAMEWORK_MODULES_PREFIX);
-	private static final String RES_EXTENSION_MODULES_LOCATION = Strings.format("classpath*:{0}/**/*",CP_EXTENSION_MODULES_PREFIX);
-	private static final String RES_APPLICATION_SYS_LOCATION   = Strings.format("classpath*:{0}/**/*",CP_APPLICATION_SYS_PREFIX);
-	private static final String RES_APPLICATION_USR_LOCATION   = Strings.format("classpath:{0}/**/*", CP_APPLICATION_USR_PREFIX);
+	private static final String RES_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CLASSPATH_CORE_PREFIX);
+	private static final String RES_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CLASSPATH_FRAMEWORK_PREFIX);
+	private static final String RES_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CLASSPATH_MODULES_PREFIX);
+	private static final String RES_APPSYS_LOCATION    = Strings.format("classpath*:{0}/**/*", CLASSPATH_APPSYS_PREFIX);
+	private static final String RES_APPUSR_LOCATION    = Strings.format("classpath:{0}/**/*",  CLASSPATH_APPUSR_PREFIX);
 	
 	public static boolean isFrameworkResource(String url) {
-	    return url.contains(CP_FRAMEWORK_CORE_PREFIX) || url.contains(CP_FRAMEWORK_MODULES_PREFIX);
+	    return url.contains(CLASSPATH_CORE_PREFIX) || url.contains(CLASSPATH_FRAMEWORK_PREFIX);
 	}
 	
 	public static ResourceSet resources() throws IllegalStateException {
@@ -90,26 +90,26 @@ public class AppContextInitializer {
 			ResourceSet resources = initialContext.get();
 			
 			if(null == resources){
-				resources = Resources.scan(RES_FRAMEWORK_CORE_LOCATION,
-										   RES_FRAMEWORK_MODULES_LOCATION,
-										   RES_EXTENSION_MODULES_LOCATION,
-										   RES_APPLICATION_SYS_LOCATION,
-										   RES_APPLICATION_USR_LOCATION);
+				resources = Resources.scan(RES_CORE_LOCATION,
+						RES_FRAMEWORK_LOCATION,
+						RES_MODULES_LOCATION,
+						RES_APPSYS_LOCATION,
+						RES_APPUSR_LOCATION);
 				initialContext.set(resources);
 			}
 			return resources;
 			
 		}else{
-			return Resources.scan(RES_FRAMEWORK_CORE_LOCATION,
-					   			  RES_FRAMEWORK_MODULES_LOCATION,
-					   			  RES_EXTENSION_MODULES_LOCATION,
-					   			  RES_APPLICATION_SYS_LOCATION,
-					   			  RES_APPLICATION_USR_LOCATION);
+			return Resources.scan(RES_CORE_LOCATION,
+					RES_FRAMEWORK_LOCATION,
+					RES_MODULES_LOCATION,
+					RES_APPSYS_LOCATION,
+					RES_APPUSR_LOCATION);
 		}
 	}
 	
 	public static Resource getClasspathDirectoryForAppUsr(String name) {
-		return Resources.getResource("classpath:" + CP_APPLICATION_USR_PREFIX + "/" + name);
+		return Resources.getResource("classpath:" + CLASSPATH_APPUSR_PREFIX + "/" + name);
 	}
 	
 	public static Resource[] searchClasspathXmlResourcesForFramework(String xmlResourceName){
@@ -123,7 +123,7 @@ public class AppContextInitializer {
 		
 		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS, 	 rs, xmlResourceName, ext);
 		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, EXTENSION_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
+		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
 		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
 		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
 		
@@ -141,7 +141,7 @@ public class AppContextInitializer {
 		
 		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS, 	 rs, xmlResourceName, ext);
 		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, EXTENSION_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
+		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
 		
 		return list.toArray(new Resource[list.size()]);
 	}
@@ -200,7 +200,7 @@ public class AppContextInitializer {
 		
 		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS_BY_PATTERN,     rs, xmlResourcePattern, ext);
 		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, EXTENSION_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
+		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
 		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
 		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
 		
@@ -216,7 +216,7 @@ public class AppContextInitializer {
 		
 		ResourceSet rs = resources();
 		
-		searchClassPathResources(list, EXTENSION_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
+		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
 		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
 		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
 		
@@ -232,7 +232,7 @@ public class AppContextInitializer {
 		
 		ResourceSet rs = resources();
 		
-		searchClassPathResources(list, EXTENSION_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
+		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
 		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
 		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
 		

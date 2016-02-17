@@ -15,8 +15,14 @@
  */
 package leap.core.validation;
 
+/**
+ * A bean implements this interface will be invoked by bean validator.
+ */
 public interface Validatable {
 
+	/**
+	 * Returns true if no error(s).
+     */
 	boolean validate(Validation validation,int maxErrors);
 	
 }

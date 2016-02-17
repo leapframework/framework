@@ -15,12 +15,19 @@
  */
 package app.controllers;
 
-import leap.web.annotation.Restful;
+import leap.web.annotation.Parent;
+import leap.web.annotation.Path;
+import leap.web.annotation.RestController;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 
-@Restful
+@RestController
 public class RestTestController {
+
+    @Parent(RestTestController.class)
+    public static abstract class SubController {
+
+    }
 
     @GET
     public TestObject getObject() {
@@ -32,6 +39,12 @@ public class RestTestController {
 
     }
 
+    @GET
+    @Path("/children")
+    public void getChildren() {
+
+    }
+
     static final class TestObject {
         public String v;
 
@@ -39,4 +52,36 @@ public class RestTestController {
         TestObject(String v) { this.v = v;}
     }
 
+    public static class NestedController {
+        @GET
+        public void index() {
+
+        }
+    }
+
+    @Path("/nested1")
+    public static class Nested1Controller {
+
+        @GET
+        public void index() {
+
+        }
+    }
+
+    @Path("nested2")
+    public static class Nested2Controller {
+
+        @GET
+        public void index() {
+
+        }
+
+        public static class Nested3Controller {
+
+            @GET
+            public void index() {
+
+            }
+        }
+    }
 }

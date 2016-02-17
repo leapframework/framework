@@ -15,9 +15,9 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-
 import leap.lang.value.Page;
+
+import java.util.List;
 
 public class DefaultPageResult<T> implements PageResult<T> {
 	
@@ -25,8 +25,8 @@ public class DefaultPageResult<T> implements PageResult<T> {
 	protected final Page      page;
 	protected final PageIndex pageInfo;
 	
-	private long 			totalCount = -1;
-	private QueryResult<T>  result	   = null;
+	private long           totalCount = -1;
+	private QueryResult<T> result     = null;
 	
 	public DefaultPageResult(Query<T> query,Page page) {
 		this.query    = query;

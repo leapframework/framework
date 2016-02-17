@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation;
+package app.resources;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import leap.web.annotation.Path;
+import leap.web.annotation.RestController;
+import leap.web.annotation.http.GET;
 
-/**
- * Spring style, same as {@link PathParam}.
- */
-@Target({ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PathVariable {
+@RestController
+@Path("/test000")
+public class Test1Resource {
 
-	/**
-	 * The name of path parameter.
-	 */
-	String value() default "";
+    @GET
+    public void index() {
+
+    }
 
 }

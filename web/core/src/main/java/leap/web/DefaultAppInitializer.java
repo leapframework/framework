@@ -15,24 +15,15 @@
  */
 package leap.web;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.servlet.http.Part;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -43,28 +34,9 @@ import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-import leap.web.action.Action;
-import leap.web.action.ActionBuilder;
-import leap.web.action.ActionContext;
-import leap.web.action.ActionExecution;
-import leap.web.action.ActionInterceptor;
-import leap.web.action.ActionManager;
-import leap.web.action.ActionMapping;
-import leap.web.action.ActionStrategy;
-import leap.web.action.Argument.BindingFrom;
-import leap.web.action.ArgumentBuilder;
-import leap.web.action.ConditionalFailureHandler;
-import leap.web.action.ControllerBase;
-import leap.web.action.FailureHandler;
-import leap.web.action.MethodActionBuilder;
-import leap.web.action.RenderViewFailureHandler;
-import leap.web.annotation.AcceptValidationError;
-import leap.web.annotation.Failure;
-import leap.web.annotation.Failures;
-import leap.web.annotation.HttpsOnly;
-import leap.web.annotation.InterceptedBy;
-import leap.web.annotation.Multipart;
-import leap.web.annotation.NonAction;
+import leap.web.action.*;
+import leap.web.action.Argument.Location;
+import leap.web.annotation.*;
 import leap.web.config.ModuleConfig;
 import leap.web.error.ErrorsConfig;
 import leap.web.format.ResponseFormat;
@@ -72,6 +44,11 @@ import leap.web.multipart.MultipartFile;
 import leap.web.route.RouteBuilder;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
+import javax.servlet.http.Part;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 public class DefaultAppInitializer implements AppInitializer {
 	
@@ -214,12 +191,14 @@ public class DefaultAppInitializer implements AppInitializer {
 				actionPath = actionPathWithoutExt;
 			}
 		}
+
+		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(RestController.class);
 		
 		if(!Strings.isEmpty(actionPath)){
-			if(actionPath.startsWith("/")){
+			if(!restful && actionPath.startsWith("/")){
 				path.append(actionPath);
 			}else{
-				path.append(controllerPath).append('/').append(actionPath);
+				path.append(controllerPath).append(Paths.prefixWithSlash(actionPath));
 			}
 		}else{
 			path.append(controllerPath);
@@ -235,11 +214,11 @@ public class DefaultAppInitializer implements AppInitializer {
 		//Resolve path variables
 		if(pathTemplate.hasVariables()) {
 			for(ArgumentBuilder a : action.getArguments()) {
-				if(null == a.getBindingFrom()) {
+				if(null == a.getLocation()) {
 					String name = NamingStyles.LOWER_UNDERSCORE.of(a.getName());
 					for(String v : pathTemplate.getTemplateVariables()) {
 						if(name.equals(NamingStyles.LOWER_UNDERSCORE.of(v))){
-							a.setBindingFrom(BindingFrom.PATH_PARAM);
+							a.setLocation(Location.PATH_PARAM);
 							a.setName(v);
 						}
 					}
@@ -359,16 +338,7 @@ public class DefaultAppInitializer implements AppInitializer {
 	}
 	
 	protected ArgumentBuilder createArgument(App app,ReflectMethod m, ReflectParameter p) {
-		ArgumentBuilder a = new ArgumentBuilder(p);
-		
-		a.setTypeInfo(Types.getTypeInfo(a.getType(), a.getGenericType()));
-
-		Validator v = null;
-		for(Annotation pa : p.getAnnotations()){
-			if((v = validationManager.tryCreateValidator(pa, p.getType())) != null){
-				a.addValidator(v);
-			}
-		}
+		ArgumentBuilder a = new ArgumentBuilder(validationManager, p);
 		
 		return a;
 	}

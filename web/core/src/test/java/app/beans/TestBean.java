@@ -19,7 +19,7 @@ import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
 import app.Global;
 
-@Bean
+@Bean(primary = true)
 public class TestBean {
 	
 	public @Inject Global app;

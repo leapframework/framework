@@ -39,16 +39,12 @@
  */
 package leap.core.web.path;
 
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import leap.lang.annotation.Internal;
+
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-
-import leap.lang.annotation.Internal;
 
 //This class is a modified copy from <a href="http://jersey.java.net">jersey</a>.
 
@@ -467,7 +463,7 @@ public class JerseyUriTemplate {
 
     @Override
     public final String toString() {
-        return pattern.toString();
+        return template;
     }
 
     /**

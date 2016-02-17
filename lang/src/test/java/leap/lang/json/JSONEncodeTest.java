@@ -293,7 +293,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		
 		public String id;
 		
-		@JsonNamed("name1")
+		@JsonName("name1")
 		public String name;
 		
 		public NamedBean() {

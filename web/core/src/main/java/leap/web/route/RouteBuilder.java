@@ -15,11 +15,6 @@
  */
 package leap.web.route;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -31,7 +26,12 @@ import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
 
-public class RouteBuilder implements Buildable<Route> {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+public class RouteBuilder implements RouteBase, Buildable<Route> {
 	
 	protected Object	   		   source;
 	protected String       		   method;
@@ -51,7 +51,7 @@ public class RouteBuilder implements Buildable<Route> {
 	protected String	  		   controllerPath;
 	protected Object	   		   executionAttributes;
 	protected Map<String, String>  requiredParameters;
-	protected List<FailureHandler> failureHandlers = new ArrayList<FailureHandler>();
+	protected List<FailureHandler> failureHandlers = new ArrayList<>();
 	
 	public Object getSource() {
 		return source;

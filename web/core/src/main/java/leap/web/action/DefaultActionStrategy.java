@@ -15,12 +15,6 @@
  */
 package leap.web.action;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -28,13 +22,18 @@ import leap.core.web.path.PathTemplate;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
-import leap.lang.reflect.ReflectException;
+import leap.lang.path.Paths;
 import leap.lang.reflect.Reflection;
 import leap.web.App;
-import leap.web.AppAware;
 import leap.web.annotation.*;
 import leap.web.annotation.http.AMethod;
 import leap.web.config.WebConfig;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The default implementation of {@link ActionStrategy}.
@@ -42,7 +41,9 @@ import leap.web.config.WebConfig;
 public class DefaultActionStrategy implements ActionStrategy {
 
     public static final String   CONTROLLER_SUFFIX   = "Controller";
+    public static final String   RESOURCE_SUFFIX     = "Resource";
     public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
+    public static final String[] RESOURCE_PACKAGES   = new String[]{"resources", "resource"};
 
     protected @Inject App         app;
     protected @Inject BeanFactory factory;
@@ -103,9 +104,14 @@ public class DefaultActionStrategy implements ActionStrategy {
 		int suffixStartIndex = cls.getSimpleName().indexOf(CONTROLLER_SUFFIX);
 		if(suffixStartIndex > 0){
 			return Strings.lowerUnderscore(cls.getSimpleName().substring(0,suffixStartIndex));
-		}else{
-			return Strings.lowerUnderscore(cls.getSimpleName());
 		}
+
+        suffixStartIndex = cls.getSimpleName().indexOf(RESOURCE_SUFFIX);
+        if(suffixStartIndex > 0) {
+            return Strings.lowerUnderscore(cls.getSimpleName().substring(0,suffixStartIndex));
+        }
+
+        return Strings.lowerUnderscore(cls.getSimpleName());
     }
 
     @Override
@@ -125,19 +131,29 @@ public class DefaultActionStrategy implements ActionStrategy {
 
 	@Override
     public String[] getControllerPaths(Class<?> cls) {
+        Class<?> parent = getParentControllerClass(cls);
+
 		//get path from annotation
 		Path a = cls.getAnnotation(Path.class);
 		if(null != a){
-			return a.value();
+            if(null != parent) {
+                String[] parentPaths = getControllerPaths(parent);
+                if(parentPaths.length == 1) {
+                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value())};
+                }else{
+                    throw new IllegalStateException("Controller only supports one path value");
+                }
+            }
+            return new String[]{Paths.prefixWithSlash(a.value())};
 		}
-		
+
 		//get path conventional
 		String controllerName = getControllerName(cls);
 		
 		String   pathPrefix             = "";
 		String   clsPackageName         = Classes.getPackageName(cls);
+
 		String[] baseControllerPackages = controllerPackagePrefixes();
-		
 		for(String baseControllerPackage : baseControllerPackages) {
 			if(clsPackageName.startsWith(baseControllerPackage)){
 				//package name starts with {base-package}.controller
@@ -145,41 +161,81 @@ public class DefaultActionStrategy implements ActionStrategy {
 				break;
 			}
 		}
-		
-		String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
-		
+
+        if(Strings.isEmpty(pathPrefix)) {
+            String[] baseResourcePackages = resourcePackagePrefixes();
+            for(String baseResourcePackage : baseResourcePackages) {
+                if(clsPackageName.startsWith(baseResourcePackage)){
+                    //package name starts with {base-package}.resource
+                    pathPrefix = clsPackageName.substring(baseResourcePackage.length()).replace('.', '/');
+                    break;
+                }
+            }
+        }
+
+        String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
+
+        if(null != parent) {
+            String[] parentPaths = getControllerPaths(parent);
+            if(parentPaths.length == 1) {
+                pathPrefix = pathPrefix + Paths.prefixWithSlash(parentPaths[0]);
+            }else{
+                throw new IllegalStateException("Controller only supports one path value");
+            }
+        }
+
+        if("/".equals(pathPrefix)) {
+            pathPrefix = "";
+        }
+
 		if(Strings.isEmpty(pathPrefix)){
 			return new String[]{pathSuffix};
 		}else{
 			return new String[]{pathPrefix + "/" + pathSuffix};
 		}
     }
-	
+
+    protected Class<?> getParentControllerClass(Class<?> c) {
+        Parent p = c.getAnnotation(Parent.class);
+        if(null != p) {
+            return p.value();
+        }
+
+        Class<?> enclosingClass = c.getEnclosingClass();
+        if(null != enclosingClass && isControllerClass(enclosingClass)) {
+            return enclosingClass;
+        }
+
+        return null;
+    }
+
 	public ActionMapping[] getActionMappings(ActionBuilder action) {
 		List<ActionMapping> mappings = new ArrayList<>();
 		
 		Annotation[] annotations = action.getAnnotations();
-		
+
+		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
 			if(a.annotationType().isAnnotationPresent(AMethod.class)){
 				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
+
+                Method value = Reflection.findMethod(a.annotationType(), "value");
+                if(null != value){
+                    defaultPath = (String)Reflection.invokeMethod(value, a);
+                    if(!"".equals(defaultPath)) {
+                        mappings.add(new ActionMapping(defaultPath,defaultMethod));
+                    }
+                }
 				break;
 			}
 		}
 		
-		String defaultPath = "";
-		
 		//Path annotation
 		Path pa = Classes.getAnnotation(annotations, Path.class);
 		if(null != pa){
-			if(pa.value().length == 1){
-				defaultPath = pa.value()[0];
-			}
-			
-			for(String path : pa.value()){
-				mappings.add(new ActionMapping(path,defaultMethod));
-			}
+			defaultPath = pa.value();
+			mappings.add(new ActionMapping(defaultPath,defaultMethod));
 		}
 		
 		if(Strings.isEmpty(defaultPath)){
@@ -203,7 +259,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
+        if(null != controller && controller.getClass().isAnnotationPresent(RestController.class)) {
             restful = true;
         }
 
@@ -278,6 +334,14 @@ public class DefaultActionStrategy implements ActionStrategy {
         String[] a = new String[CONTROLLER_PACKAGES.length];
         for(int i=0;i<a.length;i++) {
             a[i] = app.config().getBasePackage() + "." + CONTROLLER_PACKAGES[i] + ".";
+        }
+        return a;
+    }
+
+    protected String[] resourcePackagePrefixes() {
+        String[] a = new String[RESOURCE_PACKAGES.length];
+        for(int i=0;i<a.length;i++) {
+            a[i] = app.config().getBasePackage() + "." + RESOURCE_PACKAGES[i] + ".";
         }
         return a;
     }

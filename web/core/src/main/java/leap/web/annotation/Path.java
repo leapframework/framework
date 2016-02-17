@@ -22,6 +22,9 @@ import java.lang.annotation.*;
 @Inherited
 public @interface Path {
 
-	String[] value();
+	/**
+	 * The jax-rs style path template.
+     */
+	String value();
 	
 }

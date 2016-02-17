@@ -15,8 +15,10 @@
  */
 package leap.web.action;
 
+import leap.web.route.RouteBase;
+
 public interface ArgumentResolverProvider {
 	
-	ArgumentResolver tryGetArgumentResolver(Action action,Argument argument);
+	ArgumentResolver tryGetArgumentResolver(RouteBase route, Action action, Argument argument);
 
 }

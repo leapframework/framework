@@ -15,18 +15,31 @@
  */
 package leap.core.validation;
 
+import leap.core.annotation.Inject;
+import leap.core.annotation.M;
+import leap.core.validation.validators.RequiredValidator;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
 
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
-
 public class DefaultBeanValidator implements BeanValidator {
 	
 	private static final String BEAN_VALIDATION_INFO_KEY = DefaultBeanValidator.class.getName() + "_VALIDATE";
+
+    protected static final Validator BEAN_VALIDATOR = new AbstractValidator<Object>() {
+        @Override
+        protected boolean doValidate(Object value) {
+            return false;
+        }
+
+        @Override
+        public String getErrorCode() {
+            return null;
+        }
+    };
 
 	protected @Inject @M ValidationManager validationManager;
 	
@@ -83,20 +96,31 @@ public class DefaultBeanValidator implements BeanValidator {
 		Object v = p.getValue(bean);
 		
 		boolean pass = true;
-		
-		//Validated by vaidators
+
+        boolean validateBean = false;
+
+		//Validated by validators
 		for(int i=0;i<vp.validators.length;i++){
 			Validator validator = vp.validators[i];
-			
-			if(!validation.stateValidate(p.getName(), v, validator)){
-				pass = false;
-				
-				if(validation.maxErrorsReached(maxErrors)){
-					break;
-				}
-			}
+
+            if(validator == BEAN_VALIDATOR) {
+                validateBean = true;
+                continue;
+            }else{
+                if(!validation.stateValidate(p.getName(), v, validator)){
+                    pass = false;
+
+                    if(validation.maxErrorsReached(maxErrors)){
+                        break;
+                    }
+                }
+            }
 		}
-		
+
+        if(validateBean && pass && null != v) {
+            return validate(v, validation);
+        }
+
 		return pass;
 	}
 	
@@ -104,6 +128,11 @@ public class DefaultBeanValidator implements BeanValidator {
 		List<ValidatedProperty> vps = new ArrayList<>();
 		
 		for(BeanProperty bp : bt.getProperties()){
+			Valid valid = bp.getAnnotation(Valid.class);
+            if(null != valid && !valid.value()) {
+                continue;
+            }
+
 			Annotation[] annotations = bp.getAnnotations();
 			
 			List<Validator> validators = new ArrayList<>();
@@ -114,7 +143,18 @@ public class DefaultBeanValidator implements BeanValidator {
 					validators.add(validator);
 				}
 			}
-			
+
+            if(bp.isComplexType()) {
+                if(null != valid) {
+                    if(valid.required()) {
+                        validators.add(RequiredValidator.INSTANCE);
+                    }
+                    validators.add(BEAN_VALIDATOR);
+                }else if(!validators.isEmpty()) {
+                    validators.add(BEAN_VALIDATOR);
+                }
+            }
+
 			if(!validators.isEmpty()){
 				vps.add(new ValidatedProperty(bp,validators.toArray(new Validator[validators.size()])));
 			}

@@ -273,7 +273,7 @@ class JsonEncoderImpl implements JsonEncoder {
                 if(null != jsonField || !prop.isAnnotationPresent(JsonIgnore.class)){
                     String propName = prop.getName();
                     
-                    JsonNamed named = prop.getAnnotation(JsonNamed.class);
+                    JsonName named = prop.getAnnotation(JsonName.class);
                     
                     if(null != named){
                     	propName = named.value();

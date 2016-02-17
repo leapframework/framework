@@ -15,20 +15,18 @@
  */
 package app.controllers;
 
-import java.util.Map;
-
+import app.controllers.ArgumentController.CollecitonModel;
+import app.controllers.ArgumentController.Item;
+import app.controllers.ArgumentController.SimpleModel;
+import app.controllers.ArgumentController.TestForm;
 import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.lang.json.JSON;
 import leap.web.WebTestCase;
 import leap.webunit.client.THttpRequest;
-
 import org.junit.Test;
 
-import app.controllers.ArgumentController.CollecitonModel;
-import app.controllers.ArgumentController.Item;
-import app.controllers.ArgumentController.SimpleModel;
-import app.controllers.ArgumentController.TestForm;
+import java.util.Map;
 
 @Contextual
 public class ArgumentControllerTest extends WebTestCase {
@@ -230,6 +228,13 @@ public class ArgumentControllerTest extends WebTestCase {
 		
 		get("argument/path_var1/aaa").assertContentEquals("aaa");
 	}
+
+    @Test
+    @ContextualIgnore
+	public void testArgsBean() {
+        get("argument/args_bean/1?name=2").assertOk();
+        get("argument/args_bean1/1/2?name=2").assertOk();
+    }
 	
 	@Test
 	public void testForm(){

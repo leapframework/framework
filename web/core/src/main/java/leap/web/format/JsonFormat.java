@@ -15,16 +15,15 @@
  */
 package leap.web.format;
 
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.Exceptions;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeTypes;
+import leap.lang.io.IO;
 import leap.lang.json.JsonValue;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Content;
 import leap.web.Contents;
 import leap.web.Request;
@@ -32,7 +31,13 @@ import leap.web.Response;
 import leap.web.json.JsonConfig;
 import leap.web.json.Jsonp;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,RequestFormat {
+
+	private static final Log log = LogFactory.get(JsonFormat.class);
 	
 	@NotNull
 	@Inject(name="json")
@@ -55,7 +60,15 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
     public Object readRequestBody(Request request, Class<?> type, Type genericType) throws IOException, IllegalStateException {
 		JsonValue jsonObject = null;
 		try {
-	        jsonObject = leap.lang.json.JSON.decodeToJsonValue(request.getReader());
+            if(log.isTraceEnabled()) {
+                String json = IO.readString(request.getReader());
+
+                log.trace("Json request body : \n{}", json);
+
+                jsonObject = leap.lang.json.JSON.decodeToJsonValue(json);
+            }else{
+                jsonObject = leap.lang.json.JSON.decodeToJsonValue(request.getReader());
+            }
         } catch (Exception e) {
         	throw new InvalidFormatContentException("Error reading 'json' request body, " + e.getMessage(), e);
         }

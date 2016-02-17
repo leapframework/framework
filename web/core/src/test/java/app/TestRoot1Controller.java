@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation;
+package app;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import leap.web.annotation.Path;
 
-import leap.web.view.ViewData;
+@Path("/test_root000")
+public class TestRoot1Controller {
 
-@Target({ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface ViewAttribute {
+    public void index() {
 
-	/**
-	 * The name of view data's attribute.
-	 * 
-	 * @see ViewData
-	 */
-	String value();
-	
+    }
+
 }

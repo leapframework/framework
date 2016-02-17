@@ -17,22 +17,25 @@ package leap.web.action;
 
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
-import leap.core.ds.DataSourceManager;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationException;
 import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
 import leap.lang.*;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
-import leap.web.action.Argument.BindingFrom;
+import leap.web.action.Argument.Location;
+import leap.web.annotation.RequestBean;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
+import leap.web.exception.ResponseException;
+import leap.web.exception.ValidateFailureException;
 import leap.web.format.FormatManager;
 import leap.web.format.FormatNotAcceptableException;
 import leap.web.format.FormatNotFoundException;
@@ -56,22 +59,20 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		}
 	};
 	
-	private List<ExecutionAttributes> easList = new ArrayList<ExecutionAttributes>();
+	private List<ExecutionAttributes> easList = new ArrayList<>();
 
-	protected @Inject App				  app;
-	protected @Inject RequestFormat[]     requestFormats;
-
-	protected @Inject DataSourceManager          dataSourceManager;
+	protected @Inject App                        app;
+    protected @Inject ValidationManager          validationManager;
+	protected @Inject RequestFormat[]            requestFormats;
 	protected @Inject FormatManager              formatManager;
-	protected @Inject ValidationManager          validationManager;
 	protected @Inject ResultProcessorProvider[]  resultProcessorProviders;
 	protected @Inject ArgumentResolverProvider[] argumentResolverProviders;
 	protected @Inject ActionInitializable[]      actionInitializables;
-	protected @Inject WebInterceptors            webInterceptors;
+	protected @Inject WebInterceptors            interceptors;
 
 	@Override
     public void postAppStart(App app) throws Throwable {
-		ActionInterceptor[] actionInterceptors = webInterceptors.getActionInterceptors().toArray(new ActionInterceptor[]{});
+		ActionInterceptor[] actionInterceptors = interceptors.getActionInterceptors().toArray(new ActionInterceptor[]{});
 
 		for(ExecutionAttributes eas : easList) {
 			eas.interceptors = new ActionInterceptors(Arrays2.concat(actionInterceptors, eas.action.getInterceptors()));
@@ -110,7 +111,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		//prepare result processor
     	eas.resultProcessor = getResultProcessor(route);
     	
-    	//parepare formats
+    	//prepare formats
     	eas.annotatedFormats = getAnnotatedFormats(route);
     	eas.supportedFormats = getSupportedFormats(route);
     	eas.action           = route.getAction();
@@ -123,45 +124,53 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		ExecutionAttributes eas = (ExecutionAttributes)context.getRoute().getExecutionAttributes();
 		DefaultActionExecution execution = new DefaultActionExecution(validation);
 		
-		try{
-			//resolve request format
-			RequestFormat requestFormat = resolveRequestFormat(context, eas);
-			
-			//pre-execute action interceptors
-			if(State.isIntercepted(eas.interceptors.preExecuteAction(context,validation))){
-				execution.setStatus(Execution.Status.INTERCEPTED);
-				return null;
-			}
-			
-			//resolve argument values
-			Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
-			execution.setArgs(args);
-			
-			//expose arguments as view data
-			exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);
-			
-			//if validate errors, do not continue to execute the action.
-			if(validation.hasErrors() && !context.isAcceptValidationError()){
-				execution.setStatus(Execution.Status.FAILURE);
-				if(State.isContinue(eas.interceptors.onActionFailure(context, validation, execution))){
-				    throw new ValidationException(validation.errors());    
-				}else{
-					log.info("Action validation error handled by interceptors");
-					return null;
-				}
-			}
-			
-			//execute action
-			Action action = context.getAction();
-			Object value  = action.execute(context, args);
-			
-			execution.setReturnValue(value);
-			execution.setStatus(Execution.Status.SUCCESS);
+		try {
+            //resolve request format
+            RequestFormat requestFormat = resolveRequestFormat(context, eas);
 
-			//post-execute action interceptors
-			eas.interceptors.postExecuteAction(context, validation, execution);
-			return execution.getReturnValue();
+            //pre-execute action interceptors
+            if (State.isIntercepted(eas.interceptors.preExecuteAction(context, validation))) {
+                execution.setStatus(Execution.Status.INTERCEPTED);
+                return null;
+            }
+
+            //resolve argument values
+            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
+            execution.setArgs(args);
+
+            //expose arguments as view data
+            exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);
+
+            //if validate errors, do not continue to execute the action.
+            if (validation.hasErrors() && !context.isAcceptValidationError()) {
+                execution.setStatus(Execution.Status.FAILURE);
+                if (State.isContinue(eas.interceptors.onActionFailure(context, validation, execution))) {
+                    throw new ValidationException(validation.errors());
+                } else {
+                    log.info("Action validation error handled by interceptors");
+                    return null;
+                }
+            }
+
+            //execute action
+            Action action = context.getAction();
+            Object value = action.execute(context, args);
+
+            execution.setReturnValue(value);
+            execution.setStatus(Execution.Status.SUCCESS);
+
+            //post-execute action interceptors
+            eas.interceptors.postExecuteAction(context, validation, execution);
+            return execution.getReturnValue();
+
+        }catch(ResponseException e) {
+            log.debug("Caught a ResponseException while executing action, just throw it!");
+            throw e;
+		}catch(RequestIntercepted e) {
+            log.debug("Caught a RequestIntercepted while executing action, just throw it!");
+			throw e;
 		}catch(Throwable e){
+            log.warn("Error executing action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setStatus(Execution.Status.FAILURE);
 			execution.setException(e);
 			
@@ -175,6 +184,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
 						}
 					}
 				}
+
+                //TODO: special validation exception.
+                if(e instanceof ValidationException) {
+                    throw new ValidateFailureException(validation);
+                }
+
 				throw e;
 			}else{
 				log.info("Action error handled by interceptors",e);
@@ -217,46 +232,76 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	}
 	
 	protected RequestBodyArgumentInfo resolveRequestBodyArgument(RouteBuilder route, ExecutionAttributes eas){
-		RequestBodyArgumentInfo rbaf = new RequestBodyArgumentInfo();
-		
-		Argument[] arguments = route.getAction().getArguments();
-		
-		//found declared request body argument
-		int count=0;
-		for(Argument a : arguments){
-			if(a.getBindingFrom() == BindingFrom.REQUEST_BODY){
-				rbaf.argument   = a;
-				rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
-				rbaf.declared   = true;
-				count++;
-			}
-		}
-		if(count > 1){
-			throw new AppConfigException("Only one request body argument allowed, check the action : " + route.getAction()); 
-		}
-		
-		if(null != rbaf.argument){
-			return rbaf;
-		}
-		
-		//found candidate request body arugment
-		//candidate request body argument must be complex type.
-		for(Argument a : arguments){
-			if(ContextArgumentResolver.isContext(a.getType())){
-				continue;
-			}
-			
-			TypeInfo ti = a.getTypeInfo();
-			
-			//TODO : two or more compelx types?
-			if(ti.isComplexType() || ti.isComplexElementType()){
-				rbaf.argument = a;
-				return rbaf;
-			}
-		}
-		
-		return rbaf;
+        return resolveRequestBodyArgument(route, route.getAction().getArguments());
 	}
+
+    protected RequestBodyArgumentInfo resolveRequestBodyArgument(RouteBuilder route, Argument[] arguments){
+        RequestBodyArgumentInfo rbaf = new RequestBodyArgumentInfo();
+
+        //found declared request body argument
+        int count=0;
+        for(Argument a : arguments){
+            if(a.getLocation() == Location.REQUEST_BODY){
+                rbaf.argument   = a;
+                rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
+                rbaf.declared   = true;
+                count++;
+                continue;
+            }
+
+            if(a.isAnnotationPresent(RequestBody.class)) {
+                RequestBody rb = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
+                if(!rb.value()) {
+                    continue;
+                }
+
+                rbaf.argument   = a;
+                rbaf.annotation = rb;
+                rbaf.declared   = true;
+                count++;
+                continue;
+            }
+
+            if(a.getType().isAnnotationPresent(RequestBody.class)) {
+                RequestBody rb = a.getType().getAnnotation(RequestBody.class);
+                if(!rb.value()) {
+                    continue;
+                }
+
+                rbaf.argument   = a;
+                rbaf.annotation = rb;
+                rbaf.declared   = true;
+                count++;
+                continue;
+            }
+        }
+        if(count > 1){
+            throw new AppConfigException("Only one request body argument allowed, check the action : " + route.getAction());
+        }
+
+        if(null != rbaf.argument){
+            return rbaf;
+        }
+
+        //Finds the candidate request body arguments.
+        List<Argument> candidates = new ArrayList<>();
+        for(Argument a : arguments){
+            if(ContextArgumentResolver.isContext(a.getType())){
+                continue;
+            }
+
+            TypeInfo ti = a.getTypeInfo();
+            if(ti.isComplexType() || ti.isComplexElementType()){
+                candidates.add(a);
+            }
+        }
+
+        if(candidates.size() == 1) {
+            rbaf.argument = candidates.get(0);
+        }
+
+        return rbaf;
+    }
 	
     protected Object[] resolveArgumentValues(ActionContext context, Validation validation, RequestFormat format, ExecutionAttributes eas) throws Throwable {
 		Action action = context.getAction();
@@ -278,13 +323,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				
 				Object value = resolver.resolveValue(context, argument);
 				
-				Validator[] validators = argument.getValidators();
+				ArgumentValidator[] validators = argument.getValidators();
 				for(int j=0;j<validators.length;j++){
-					Validator v = validators[j];
-					
-					if(validation.validate(argument.getName(), value, v).hasErrors()){
-						break;
-					}
+					ArgumentValidator v = validators[j];
+                    if(!v.validate(validation, argument, value)) {
+                        break;
+                    }
 				}
 				
 				args[i] = value;
@@ -343,50 +387,93 @@ public class DefaultActionManager implements ActionManager,AppListener {
     }
 
     protected void prepareArgument(RouteBuilder route, Argument argument, ExecutionArgument ea, RequestBodyArgumentInfo rbaf) {
-		Action action = route.getAction();
-		
-		//Get context resolver
-		if(ContextArgumentResolver.isContext(argument.getType())){
-			ea.resolver     = ContextArgumentResolver.INSTANCE;
-			ea.isContextual = true;
-			return;
-		}
-		
-		ArgumentResolver resolver = null;
-		
-		//Get external resolver
-		for(ArgumentResolverProvider provider : argumentResolverProviders){
-			if((resolver = provider.tryGetArgumentResolver(action, argument)) != null){
-				break;
-			}
-		}
-		
-		if(null == resolver){
-			TypeInfo typeInfo = argument.getTypeInfo();
-			if(typeInfo.isCollectionType()){
-				//Collection type resolver
-				resolver = new CollectionArgumentResolver(app, action, argument);
-			}else if(typeInfo.isSimpleType()){
-				//Simple type resolver
-				resolver = new SimpleArgumentResolver(app, action, argument);
-			}else{
-				if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
-					//Part resolver
-					resolver = new MultipartArgumentResolver(app, action, argument);
-				}else{
-					//Complex type resolver
-					resolver = new ComplexArgumentResolver(app, action, argument);
-				}
-			}
-		}
-		
-		//Get request body resolver
-		if(argument == rbaf.argument){
-			ea.resolver     = new RequestBodyArgumentResolver(app, action, argument, rbaf.annotation, rbaf.declared, resolver);
-			ea.isRequstBody = true;
-		}else{
-			ea.resolver = resolver;
-		}
+        ArgumentResolver resolver = null;
+
+        boolean args = Classes.isAnnotatioinPresent(argument.getAnnotations(), RequestBean.class) ||
+                       argument.getType().isAnnotationPresent(RequestBean.class);
+
+        if(args && !argument.getTypeInfo().isComplexType()) {
+            throw new IllegalStateException("Only Complex Type can be 'RequestBean', check arg : " + argument);
+        }
+
+        resolver = args ? createRequestBeanArgumentResolver(route, argument, rbaf) : resolveArgumentResolver(route, argument, rbaf);
+
+        ea.resolver     = resolver;
+        ea.isContextual = resolver instanceof ContextArgumentResolver;
+    }
+
+    protected ArgumentResolver resolveArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
+        //Get context resolver
+        if(ContextArgumentResolver.isContext(argument.getType())){
+            return ContextArgumentResolver.of(argument.getType());
+        }
+
+        ArgumentResolver resolver = null;
+
+        //Get external resolver
+        for(ArgumentResolverProvider provider : argumentResolverProviders){
+            if((resolver = provider.tryGetArgumentResolver(route, route.getAction(), argument)) != null){
+                break;
+            }
+        }
+
+        if(null == resolver){
+            TypeInfo typeInfo = argument.getTypeInfo();
+            if(typeInfo.isCollectionType()){
+                //Collection type resolver
+                resolver = new CollectionArgumentResolver(app, route, argument);
+            }else if(typeInfo.isSimpleType()){
+                //Simple type resolver
+                resolver = new SimpleArgumentResolver(app, route, argument);
+            }else{
+                if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
+                    //Part resolver
+                    resolver = new MultipartArgumentResolver(app, route, argument);
+                }else{
+                    //Complex type resolver
+                    resolver = new ComplexArgumentResolver(app, route, argument);
+                }
+            }
+        }
+
+        //Get request body resolver
+        if(argument == rbaf.argument){
+            resolver = new RequestBodyArgumentResolver(app, route.getAction(), argument, rbaf.annotation, rbaf.declared, resolver);
+        }
+
+        return resolver;
+    }
+
+    protected RequestBeanArgumentResolver createRequestBeanArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
+        BeanType bt = BeanType.of(argument.getType());
+
+        boolean requestBody = rbaf.isDeclaredRequestBody(argument);
+
+        List<RequestBeanArgumentResolver.BeanArgument> bas = new ArrayList<>();
+
+        for(BeanProperty bp : bt.getProperties()) {
+            RequestBeanArgumentResolver.BeanArgument ba = new RequestBeanArgumentResolver.BeanArgument();
+            ba.property = bp;
+            ba.argument = new ArgumentBuilder(validationManager, bp).build();
+
+            bas.add(ba);
+        }
+
+        Argument[] nestedArguments = bas.stream().map(ba -> ba.argument).toArray(Argument[]::new);
+        RequestBodyArgumentInfo nestedRbaf = resolveRequestBodyArgument(route, nestedArguments);
+        if(!nestedRbaf.declared && requestBody) {
+            nestedRbaf = new RequestBodyArgumentInfo();
+        }
+
+        for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
+            ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
+        }
+
+        return new RequestBeanArgumentResolver(app,
+                                         argument,
+                                         requestBody,
+                                         bt,
+                                         bas.toArray(new RequestBeanArgumentResolver.BeanArgument[]{}));
     }
     
 	protected RequestFormat resolveRequestFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {
@@ -484,13 +571,21 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	
 	public static final class ExecutionArgument {
 		public ArgumentResolver resolver;
-		public boolean			isContextual;
-		public boolean		    isRequstBody;
+		public boolean          isContextual;
+		//public boolean          isRequestBody;
 	}
     
     protected final class RequestBodyArgumentInfo {
     	public Argument    argument;
     	public RequestBody annotation;
     	public boolean	   declared;
+
+        boolean isDeclaredRequestBody(Argument a) {
+            return declared && argument == a;
+        }
+
+        boolean isCandidateRequestBody(Argument a) {
+            return !declared && argument == a;
+        }
     }
 }

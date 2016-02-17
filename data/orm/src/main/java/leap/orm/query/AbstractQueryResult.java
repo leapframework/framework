@@ -15,10 +15,10 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyRecordsException;
+
+import java.util.List;
 
 public abstract class AbstractQueryResult<T> implements QueryResult<T> {
 	

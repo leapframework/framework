@@ -15,10 +15,6 @@
  */
 package leap.web.action;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.List;
-
 import leap.core.annotation.Transactional;
 import leap.core.transaction.DefaultTransactionDefinition;
 import leap.core.transaction.TransactionDefinition;
@@ -27,6 +23,10 @@ import leap.lang.Args;
 import leap.lang.New;
 import leap.lang.reflect.ReflectException;
 import leap.lang.reflect.ReflectMethod;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class MethodAction implements Action {
 	
@@ -91,7 +91,7 @@ public class MethodAction implements Action {
 
 	@Override
     public Annotation[] getControllerAnnotations() {
-	    return method.getReflectiveClass().getAnnotations();
+	    return method.getReflectClass().getAnnotations();
     }
 	
     public Annotation[] getAnnotations() {
@@ -159,7 +159,16 @@ public class MethodAction implements Action {
 	
 	@Override
     public String toString() {
-		return method.getReflectiveClass().getReflectedClass().getSimpleName() + "." + method.getName();
+        return n(method.getDeclaringClass()) + "." + method.getName();
+    }
+
+    protected static String n(Class<?> c) {
+        Class<?> ec = c.getEnclosingClass();
+        if(null != ec) {
+            return n(ec) + "$" + c.getSimpleName();
+        }else{
+            return c.getSimpleName();
+        }
     }
 	
 	protected Annotation[] mergeAnnotations() {

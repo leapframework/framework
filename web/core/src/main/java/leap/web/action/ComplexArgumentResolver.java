@@ -15,18 +15,17 @@
  */
 package leap.web.action;
 
+import leap.lang.Beans;
+import leap.lang.beans.BeanType;
+import leap.web.App;
+import leap.web.route.RouteBase;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import leap.lang.Beans;
-import leap.lang.beans.BeanType;
-import leap.web.App;
-
 /**
  * The {@link ArgumentResolver} for resolving complex type.
- * 
- * @see TypeStrategy#isSimpleType(Class, java.lang.reflect.Type)
  */
 public class ComplexArgumentResolver extends AbstractMapResolver {
 
@@ -35,8 +34,8 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 	protected final String   prefix;
 	protected final boolean  bindable;
 	
-	public ComplexArgumentResolver(App app, Action action, Argument argument){
-		super(app,action,argument);
+	public ComplexArgumentResolver(App app, RouteBase route, Argument argument){
+		super(app,route,argument);
 		this.beanClass = argument.getType();
 		this.beanType  = BeanType.of(beanClass);
 		this.prefix    = argument.getName() + ".";
@@ -66,7 +65,7 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 			String key = entry.getKey();
 			if(key.startsWith(prefix)){
 				if(null == map){
-					map = new HashMap<String, Object>(beanType.getProperties().length);
+					map = new HashMap<>(beanType.getProperties().length);
 				}
 				
 				map.put(key.substring(prefix.length()), entry.getValue());
