@@ -15,9 +15,10 @@
  */
 package leap.lang;
 
-import java.lang.reflect.Type;
-
 import leap.lang.meta.MTypeKind;
+
+import java.lang.reflect.Type;
+import java.util.Map;
 
 /**
  * The type info of java type.
@@ -72,10 +73,20 @@ public class TypeInfo {
 	public boolean isSimpleType() {
 		return typeKind == MTypeKind.SIMPLE;
 	}
-	
+
 	public boolean isComplexType(){
 		return typeKind == MTypeKind.COMPLEX;
 	}
+
+    /**
+     * Returns true if the type is {@link Map}.
+     *
+     * <p/>
+     * The {@link Map} is also a complex type.
+     */
+	public boolean isMap() {
+        return type == Map.class;
+    }
 	
 	public boolean isSimpleElementType() {
 	    return null != elementTypeInfo && elementTypeInfo.isSimpleType();

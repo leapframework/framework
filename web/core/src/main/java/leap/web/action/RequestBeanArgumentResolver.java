@@ -47,11 +47,12 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
 
         //binding the nested arguments(properties) in bean.
         for(BeanArgument ba : bindingArguments) {
-            if(ba.body) {
+            ArgumentResolver r = ba.resolver;
+            if(null == r) {
                 continue;
             }
 
-            Object v = ba.resolver.resolveValue(context, ba.argument);
+            Object v = r.resolveValue(context, ba.argument);
             if(null != v) {
                 ba.property.setValue(bean, v);
             }
@@ -66,13 +67,19 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
                     Argument a = ba.argument;
 
                     if(ba.body) {
-                        Object v = a.getBeanType().newInstance();
 
-                        if(!body.isEmpty()) {
-                            Beans.setProperties(a.getBeanType(), v, body);
+                        if(ba.isMap) {
+                            ba.property.setValue(bean, body);
+                        }else{
+                            Object v = a.getBeanType().newInstance();
+
+                            if(!body.isEmpty()) {
+                                Beans.setProperties(a.getBeanType(), v, body);
+                            }
+
+                            ba.property.setValue(bean, v);
                         }
 
-                        ba.property.setValue(bean, v);
                         continue;
                     }
 
@@ -122,9 +129,16 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
     }
 
     public static final class BeanArgument {
-        public BeanProperty     property;
+        public final BeanProperty     property;
+        public final boolean          isMap;
+
         public Argument         argument;
         public boolean          body;
         public ArgumentResolver resolver;
+
+        public BeanArgument(BeanProperty p) {
+            this.property = p;
+            this.isMap    = p.getTypeInfo().isMap();
+        }
     }
 }

@@ -18,7 +18,6 @@ package leap.web.action;
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
-import leap.core.validation.ValidationException;
 import leap.core.validation.ValidationManager;
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
@@ -30,8 +29,8 @@ import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
-import leap.web.annotation.RequestBean;
 import leap.web.annotation.Consumes;
+import leap.web.annotation.RequestBean;
 import leap.web.annotation.RequestBody;
 import leap.web.config.WebInterceptors;
 import leap.web.exception.ResponseException;
@@ -143,13 +142,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 
             //if validate errors, do not continue to execute the action.
             if (validation.hasErrors() && !context.isAcceptValidationError()) {
-                execution.setStatus(Execution.Status.FAILURE);
-                if (State.isContinue(eas.interceptors.onActionFailure(context, validation, execution))) {
-                    throw new ValidationException(validation.errors());
-                } else {
-                    log.info("Action validation error handled by interceptors");
-                    return null;
-                }
+                throw new ValidateFailureException(validation);
             }
 
             //execute action
@@ -162,42 +155,54 @@ public class DefaultActionManager implements ActionManager,AppListener {
             //post-execute action interceptors
             eas.interceptors.postExecuteAction(context, validation, execution);
             return execution.getReturnValue();
-
-        }catch(ResponseException e) {
-            log.debug("Caught a ResponseException while executing action, just throw it!");
-            throw e;
 		}catch(RequestIntercepted e) {
             log.debug("Caught a RequestIntercepted while executing action, just throw it!");
 			throw e;
 		}catch(Throwable e){
-            log.warn("Error executing action {}, {}", context.getAction(), e.getMessage(), e);
+            //Ignores successful response exception.
+            if(e instanceof ResponseException) {
+                ResponseException re = (ResponseException)e;
+                int s = re.getStatus();
+                if (s >= 200 && s <= 300) {
+                    log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
+                    throw e;
+                }
+            }
+
+            log.error("Failed to execute action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setStatus(Execution.Status.FAILURE);
 			execution.setException(e);
-			
-			if(!State.isIntercepted(eas.interceptors.onActionFailure(context, validation, execution))) {
-				FailureHandler[] failureHandlers = context.getRoute().getFailureHandlers();
-				if(failureHandlers.length > 0) {
-					for(FailureHandler h : failureHandlers) {
-						if(h.handleFailure(context, execution, context.getResult())) {
-							log.info("Action handled by failure handler");
-							return null;
-						}
-					}
-				}
 
-                //TODO: special validation exception.
-                if(e instanceof ValidationException) {
-                    throw new ValidateFailureException(validation);
-                }
-
-				throw e;
-			}else{
-				log.info("Action error handled by interceptors",e);
-				return null;
-			}
+            if(!handleFailure(context, validation, execution, eas)) {
+                throw e;
+            }else{
+                return null;
+            }
 		}finally {
 			eas.interceptors.completeExecuteAction(context, validation, execution);
 		}
+    }
+
+    protected boolean handleFailure(ActionContext context,
+                                    Validation validation,
+                                    ActionExecution execution,
+                                    ExecutionAttributes eas) throws Throwable {
+        if(State.isIntercepted(eas.interceptors.onActionFailure(context, validation, execution))) {
+            log.info("Action error handled by interceptors");
+            return true;
+        }
+
+        FailureHandler[] failureHandlers = context.getRoute().getFailureHandlers();
+        if(failureHandlers.length > 0) {
+            for(FailureHandler h : failureHandlers) {
+                if(h.handleFailure(context, execution, context.getResult())) {
+                    log.info("Action handled by failure handler");
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 	
 	@Override
@@ -444,12 +449,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
         List<RequestBeanArgumentResolver.BeanArgument> bas = new ArrayList<>();
 
         for(BeanProperty bp : bt.getProperties()) {
-            RequestBeanArgumentResolver.BeanArgument ba = new RequestBeanArgumentResolver.BeanArgument();
-            ba.property = bp;
+            RequestBeanArgumentResolver.BeanArgument ba = new RequestBeanArgumentResolver.BeanArgument(bp);
+
             ba.argument = new ArgumentBuilder(validationManager, bp).build();
 
-            if(bp.isAnnotationPresent(RequestBean.BodyBean.class) ||
-               bp.getType().isAnnotationPresent(RequestBean.BodyBean.class)) {
+            if(bp.isAnnotationPresent(RequestBean.BodyParams.class) ||
+               bp.getType().isAnnotationPresent(RequestBean.BodyParams.class)) {
                 ba.body = true;
             }
 
@@ -463,6 +468,11 @@ public class DefaultActionManager implements ActionManager,AppListener {
         }
 
         for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
+            if(requestBody) {
+                if(ba.property.isComplexType()) {
+                    continue;
+                }
+            }
             if(!ba.body) {
                 ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
             }

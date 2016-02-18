@@ -20,6 +20,8 @@ import leap.web.annotation.QueryParam;
 import leap.web.annotation.RequestBean;
 import leap.web.annotation.RequestBody;
 
+import java.util.Map;
+
 public class RequestBeanController {
 
     public void test(ReqBean bean) {
@@ -41,6 +43,7 @@ public class RequestBeanController {
     public void test2(ReqBean2 bean) {
         Assert.notEmpty(bean.id);
         Assert.notEmpty(bean.name);
+        Assert.isNull(bean.vars);
     }
 
     public void test3(ReqBean3 bean) {
@@ -68,6 +71,7 @@ public class RequestBeanController {
         Assert.notEmpty(bean.id);
         Assert.notEmpty(bean.name);
         Assert.notEmpty(bean.body.name);
+        Assert.notEmpty(bean.params.get("name"));
     }
 
     @RequestBean
@@ -95,8 +99,9 @@ public class RequestBeanController {
     @RequestBean
     @RequestBody
     public static final class ReqBean2 {
-        public String id;
-        public String name;
+        public String             id;
+        public String             name;
+        public Map<String,Object> vars;
     }
 
     @RequestBean(requestBody = true)
@@ -120,7 +125,7 @@ public class RequestBeanController {
         public String name;
     }
 
-    @RequestBean.BodyBean
+    @RequestBean.BodyParams
     public static final class BodyBean1 {
         public String name;
     }
@@ -140,8 +145,9 @@ public class RequestBeanController {
     @RequestBean
     @RequestBody
     public static final class ReqBean5 {
-        public String    id;
-        public String    name;
-        public @RequestBean.BodyBean BodyBean2 body;
+        public                         String              id;
+        public                         String              name;
+        public @RequestBean.BodyParams BodyBean2           body;
+        public @RequestBean.BodyParams Map<String, Object> params;
     }
 }

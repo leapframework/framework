@@ -21,6 +21,7 @@ import leap.web.App;
 import leap.web.route.RouteBase;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -33,6 +34,7 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 	protected final Class<?> beanClass;
 	protected final String   prefix;
 	protected final boolean  bindable;
+    protected final boolean  map;
 	
 	public ComplexArgumentResolver(App app, RouteBase route, Argument argument){
 		super(app,route,argument);
@@ -40,6 +42,7 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 		this.beanType  = BeanType.of(beanClass);
 		this.prefix    = argument.getName() + ".";
 		this.bindable  = Bindable.class.isAssignableFrom(beanClass);
+        this.map       = Map.class.equals(beanClass);
 	}
 
     @Override
@@ -92,6 +95,10 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
     }
     
     protected Object mapBinding(ActionContext context,Argument argument,Map<String, Object> map) {
+        if(this.map) {
+            return new LinkedHashMap<>(map);
+        }
+
     	Object bean = beanType.newInstance();
     	
     	if(bindable){

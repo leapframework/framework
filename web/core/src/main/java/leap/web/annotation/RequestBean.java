@@ -32,7 +32,7 @@ public @interface RequestBean {
     @Target({ElementType.FIELD,ElementType.METHOD,ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @Inherited
-    @interface BodyBean {
+    @interface BodyParams {
 
     }
 
