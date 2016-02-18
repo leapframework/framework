@@ -80,7 +80,7 @@ public interface ActionContext extends AttributeAccessor {
 	 * The path variable will override the request's parameter if the name is same.
 	 */
 	Map<String, Object> getMergedParameters();
-	
+
 	/**
 	 * Returns the requested format or <code>null</code>.
 	 * 

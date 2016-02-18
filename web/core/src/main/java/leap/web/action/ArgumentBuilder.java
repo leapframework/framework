@@ -195,7 +195,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
         }
 		
 		RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
-		if(null != rb && rb.value()){
+		if(null != rb){
 			this.location = Location.REQUEST_BODY;
 			return this;
 		}

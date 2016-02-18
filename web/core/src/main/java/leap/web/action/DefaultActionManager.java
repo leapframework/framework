@@ -251,10 +251,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
 
             if(a.isAnnotationPresent(RequestBody.class)) {
                 RequestBody rb = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
-                if(!rb.value()) {
-                    continue;
-                }
-
                 rbaf.argument   = a;
                 rbaf.annotation = rb;
                 rbaf.declared   = true;
@@ -264,10 +260,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
 
             if(a.getType().isAnnotationPresent(RequestBody.class)) {
                 RequestBody rb = a.getType().getAnnotation(RequestBody.class);
-                if(!rb.value()) {
-                    continue;
-                }
-
                 rbaf.argument   = a;
                 rbaf.annotation = rb;
                 rbaf.declared   = true;
@@ -456,6 +448,11 @@ public class DefaultActionManager implements ActionManager,AppListener {
             ba.property = bp;
             ba.argument = new ArgumentBuilder(validationManager, bp).build();
 
+            if(bp.isAnnotationPresent(RequestBean.BodyBean.class) ||
+               bp.getType().isAnnotationPresent(RequestBean.BodyBean.class)) {
+                ba.body = true;
+            }
+
             bas.add(ba);
         }
 
@@ -466,7 +463,9 @@ public class DefaultActionManager implements ActionManager,AppListener {
         }
 
         for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
-            ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
+            if(!ba.body) {
+                ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
+            }
         }
 
         return new RequestBeanArgumentResolver(app,

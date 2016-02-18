@@ -28,11 +28,11 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 	protected final ArgumentResolver  nonRequestBodyResolver;
 	
 	public RequestBodyArgumentResolver(App app,
-									  Action action,
-									  Argument argument, 
-									  RequestBody annotation, 
-									  boolean requestBodyDeclared,
-									  ArgumentResolver nonRequestBodyResolver) {
+									   Action action,
+									   Argument argument,
+									   RequestBody annotation,
+									   boolean requestBodyDeclared,
+									   ArgumentResolver nonRequestBodyResolver) {
 		
 		this.annotation             = annotation;
 		this.requestBodyDeclared    = requestBodyDeclared;

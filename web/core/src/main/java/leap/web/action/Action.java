@@ -15,13 +15,14 @@
  */
 package leap.web.action;
 
+import leap.lang.Classes;
+import leap.lang.Named;
+import leap.lang.accessor.AnnotationsGetter;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-import leap.lang.Classes;
-import leap.lang.Named;
-
-public interface Action extends Named {
+public interface Action extends Named,AnnotationsGetter {
 	
 	Argument[]			EMPTY_ARGUMENTS	   = new Argument[]{};
 	ActionInterceptor[] EMPTY_INTERCEPTORS = new ActionInterceptor[]{};
@@ -80,10 +81,6 @@ public interface Action extends Named {
 	 */
 	default ActionInterceptor[] getInterceptors() {
 		return EMPTY_INTERCEPTORS;
-	}
-	
-	default <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-		return Classes.getAnnotation(getAnnotations(), annotationType);
 	}
 	
 	default <T extends Annotation> T getControllerAnnotation(Class<T> annotationType) {

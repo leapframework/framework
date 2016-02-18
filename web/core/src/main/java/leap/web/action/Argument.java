@@ -16,6 +16,9 @@
 package leap.web.action;
 
 import leap.lang.*;
+import leap.lang.accessor.AnnotationsGetter;
+import leap.lang.accessor.TypeInfoGetter;
+import leap.lang.beans.BeanType;
 import leap.web.view.ViewData;
 
 import java.lang.annotation.Annotation;
@@ -23,7 +26,7 @@ import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-public class Argument implements Named {
+public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	
 	public enum Location {
 		UNDEFINED,
@@ -43,6 +46,7 @@ public class Argument implements Named {
 	protected final Class<?>            type;
 	protected final Type                genericType;
 	protected final TypeInfo            typeInfo;
+    protected final BeanType            beanType;
 	protected final Boolean             required;
 	protected final Location            location;
 	protected final Annotation[]        annotations;
@@ -65,6 +69,7 @@ public class Argument implements Named {
 		this.type              = type;
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
+        this.beanType          = typeInfo.isComplexType() ? BeanType.of(type) : null;
 		this.required		   = required;
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
@@ -82,24 +87,31 @@ public class Argument implements Named {
 	public Class<?> getType() {
 		return type;
 	}
-	
+
 	/**
 	 * Returns the generic type of this argument.
-	 * 
+	 *
 	 * <p>
 	 * Returns <code>null</code> if no generic type.
 	 */
 	public Type getGenericType() {
 		return genericType;
 	}
-	
+
 	/**
 	 * Returns the type info of this argument.
 	 */
 	public TypeInfo getTypeInfo() {
 		return typeInfo;
 	}
-	
+
+    /**
+     * Returns null if not a complex type.
+     */
+    public BeanType getBeanType() {
+        return beanType;
+    }
+
 	/**
 	 * Returns <code>true</code> or <code>false</code> if this argument is required or not explicitly declared.
 	 * 
@@ -126,9 +138,8 @@ public class Argument implements Named {
 
     /**
      * Returns true if the location of argument is {@link Location#REQUEST_BODY}.
-     * @return
      */
-	public boolean isRequestBodyDeclared() {
+	public boolean isRequestBodyLocation() {
         return null != location && location == Location.REQUEST_BODY;
     }
 
@@ -155,13 +166,6 @@ public class Argument implements Named {
 	public String getViewAttributeName() {
 		return null;
 	}
-
-    /**
-     * Returns true if the given annotation type is present at the arguemnt.
-     */
-    public boolean isAnnotationPresent(Class<? extends Annotation> t) {
-        return Classes.isAnnotatioinPresent(annotations, t);
-    }
 
     @Override
     public String toString() {

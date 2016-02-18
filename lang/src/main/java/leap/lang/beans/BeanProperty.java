@@ -17,6 +17,8 @@ package leap.lang.beans;
 
 import leap.lang.Named;
 import leap.lang.TypeInfo;
+import leap.lang.accessor.AnnotationsGetter;
+import leap.lang.accessor.TypeInfoGetter;
 import leap.lang.convert.ConvertUnsupportedException;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
@@ -29,7 +31,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-public class BeanProperty implements Named {
+public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter {
 	private static final Log log = LogFactory.get(BeanProperty.class);
 	
 	private String   	  name;
@@ -90,10 +92,6 @@ public class BeanProperty implements Named {
 		return _transient;
 	}
 	
-	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType){
-		return getAnnotation(annotationType) != null;
-	}
-	
 	public boolean isSimpleType() {
 		return typeInfo.isSimpleType();
 	}
@@ -112,16 +110,6 @@ public class BeanProperty implements Named {
 	
 	public boolean hasSetter(){
 		return null != setter;
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-		for(Annotation a : annotations){
-			if(a.annotationType().equals(annotationType)){
-				return (T)a;
-			}
-		}
-		return null;
 	}
 	
 	public Field getField(){

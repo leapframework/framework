@@ -15,6 +15,7 @@
  */
 package leap.web.action;
 
+import leap.lang.Beans;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
@@ -46,6 +47,10 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
 
         //binding the nested arguments(properties) in bean.
         for(BeanArgument ba : bindingArguments) {
+            if(ba.body) {
+                continue;
+            }
+
             Object v = ba.resolver.resolveValue(context, ba.argument);
             if(null != v) {
                 ba.property.setValue(bean, v);
@@ -56,10 +61,27 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
         if(requestBody) {
             Map body = readRequestBody(context);
 
-            if(null != body && !body.isEmpty()) {
+            if(null != body) {
                 for(BeanArgument ba : bindingArguments) {
-                    if(!ba.argument.isLocationDeclared()) {
-                        String name = ba.argument.getName();
+                    Argument a = ba.argument;
+
+                    if(ba.body) {
+                        Object v = a.getBeanType().newInstance();
+
+                        if(!body.isEmpty()) {
+                            Beans.setProperties(a.getBeanType(), v, body);
+                        }
+
+                        ba.property.setValue(bean, v);
+                        continue;
+                    }
+
+                    if(body.isEmpty()) {
+                        continue;
+                    }
+
+                    if(!a.isLocationDeclared()) {
+                        String name = a.getName();
                         if(body.containsKey(name)) {
 
                             BeanProperty bp = ba.property;
@@ -102,6 +124,7 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
     public static final class BeanArgument {
         public BeanProperty     property;
         public Argument         argument;
+        public boolean          body;
         public ArgumentResolver resolver;
     }
 }

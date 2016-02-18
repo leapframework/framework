@@ -15,13 +15,13 @@
  */
 package leap.web.format;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-
 import leap.lang.Named;
 import leap.lang.http.MimeType;
 import leap.web.Request;
 import leap.web.action.Action;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 public interface RequestFormat extends Named {
 	
@@ -39,13 +39,6 @@ public interface RequestFormat extends Named {
 	 * Returns <code>true</code> if this format supports reading request body message.
 	 */
 	boolean supportsRequestBody();
-	
-	/**
-	 * Returns <code>true</code> if this format supports body parameters.
-	 * 
-	 * @see BindingFrom#BODY_PARAM
-	 */
-	boolean supportsBodyParameters();
 	
 	/**
 	 * Reads the body content of the given {@link Request} and converts to the given type.

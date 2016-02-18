@@ -16,16 +16,12 @@
 package app.controllers;
 
 import app.models.products.Product;
-import leap.lang.Assert;
 import leap.lang.Charsets;
-import leap.lang.Strings;
 import leap.lang.codec.Hex;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
 import leap.web.Request;
 import leap.web.action.ControllerBase;
-import leap.web.annotation.RequestBean;
-import leap.web.annotation.QueryParam;
 import leap.web.annotation.RequestBody;
 
 import java.io.IOException;
@@ -74,81 +70,4 @@ public class RequestBodyController extends ControllerBase {
         }
     }
 
-    public void argsBody(ArgsBean bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-    }
-
-    public void argsBody0(ArgsBean0 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notNull(bean.nested);
-        Assert.notEmpty(bean.nested.name);
-    }
-
-    public void argsBody1(@RequestBody ArgsBean1 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-    }
-
-    public void argsBody2(ArgsBean2 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-    }
-
-    public void argsBody3(ArgsBean3 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-    }
-
-    public void argsBody4(ArgsBean4 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.isTrue(Strings.isEmpty(bean.name));
-    }
-
-    @RequestBean
-    public static final class ArgsBean {
-        public @QueryParam  String id;
-        public @RequestBody String name;
-    }
-
-    @RequestBean
-    public static final class ArgsBean0 {
-        public @QueryParam  String     id;
-        public @RequestBody NestedBean nested;
-    }
-
-    public static final class NestedBean {
-        public String name;
-    }
-
-    @RequestBean
-    public static final class ArgsBean1 {
-        public @QueryParam String id;
-        public             String name;
-    }
-
-    @RequestBean
-    @RequestBody
-    public static final class ArgsBean2 {
-        public String id;
-        public String name;
-    }
-
-    @RequestBean(requestBody = true)
-    public static final class ArgsBean3 {
-        public String id;
-        public String name;
-    }
-
-    @RequestBean
-    @RequestBody
-    public static abstract class ArgsBeanBase {
-
-    }
-
-    @RequestBody(false)
-    public static final class ArgsBean4 extends ArgsBeanBase {
-        public String id;
-        public String name;
-    }
 }

@@ -29,6 +29,13 @@ import java.lang.annotation.*;
 @Inherited
 public @interface RequestBean {
 
+    @Target({ElementType.FIELD,ElementType.METHOD,ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface BodyBean {
+
+    }
+
     /**
      * Validates the bean or not.
      */

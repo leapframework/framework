@@ -26,6 +26,4 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface RequestBody {
 
-    boolean value() default true;
-
 }

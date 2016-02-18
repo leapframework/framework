@@ -15,10 +15,6 @@
  */
 package leap.web.action;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 import leap.lang.accessor.MapAttributeAccessor;
 import leap.web.Request;
 import leap.web.Response;
@@ -26,6 +22,10 @@ import leap.web.Result;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
+
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class DefaultActionContext extends MapAttributeAccessor implements ActionContext {
 
@@ -42,7 +42,7 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	protected Boolean             acceptValidationError;
 	
 	private Map<String, Object> mergedParameters;
-	
+
 	public DefaultActionContext(Request request,Response response) {
 		this.request  = request;
 		this.response = response;
@@ -104,7 +104,7 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 		this.pathParameters = Collections.unmodifiableMap(params);
 	}
 
-	public RequestFormat getRequestFormat() {
+    public RequestFormat getRequestFormat() {
 		return requestFormat;
 	}
 
