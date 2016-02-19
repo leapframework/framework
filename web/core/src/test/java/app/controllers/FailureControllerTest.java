@@ -38,5 +38,8 @@ public class FailureControllerTest extends WebTestCase {
     @Test
     public void testResponseException() {
         get("/failure/response_exception").assertOk().assertContentEquals("OK");
+
+		String message = (String)get("/failure/response_exception1").assert400().getJson().asJsonScalar().raw();
+		assertEquals("bad request", message);
     }
 }

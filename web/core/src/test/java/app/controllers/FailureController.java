@@ -25,6 +25,7 @@ import leap.web.action.ActionContext;
 import leap.web.action.ActionExecution;
 import leap.web.action.FailureHandler;
 import leap.web.annotation.Failure;
+import leap.web.exception.BadRequestException;
 import leap.web.exception.ResponseException;
 
 public class FailureController {
@@ -49,6 +50,11 @@ public class FailureController {
     public void responseException() {
         throw new ResponseException(HTTP.SC_OK, Contents.text("OK"));
     }
+
+    @Failure(handler=FailureHandler3.class)
+    public void responseException1() {
+        throw new BadRequestException("bad request");
+    }
 	
 	public static final class FailureHandler1 implements FailureHandler {
 
@@ -70,4 +76,19 @@ public class FailureController {
             return true;
         }
     }
+
+    public static final class FailureHandler3 implements FailureHandler {
+        @Override
+        public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
+            if(execution.getException() instanceof ResponseException) {
+                ResponseException e = (ResponseException)execution.getException();
+
+                result.setStatus(e.getStatus());
+                result.setRenderable(Contents.json(e.getMessage()));
+
+            }
+            return false;
+        }
+    }
+
 }
