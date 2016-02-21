@@ -26,10 +26,7 @@ import leap.web.Contents;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.Results;
-import leap.web.annotation.HttpsOnly;
-import leap.web.annotation.NonAction;
-import leap.web.annotation.Path;
-import leap.web.annotation.Produces;
+import leap.web.annotation.*;
 import leap.web.annotation.http.*;
 import leap.web.format.ResponseFormat;
 import leap.web.view.ViewData;
@@ -210,6 +207,11 @@ public class HomeController {
 	public void jsp(ViewData vd) {
 	    
 	}
+
+    @Success(status=HTTP.Status.NO_CONTENT)
+	public void successStatus() {
+        System.out.println();
+    }
 
 	public static final class NestedController {
         public void index() {

@@ -15,9 +15,6 @@
  */
 package leap.web.route;
 
-import java.util.Collections;
-import java.util.Map;
-
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.Sourced;
@@ -26,6 +23,9 @@ import leap.web.action.FailureHandler;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
+
+import java.util.Collections;
+import java.util.Map;
 
 class RouteImpl implements Sourced, Route {
 	
@@ -41,7 +41,8 @@ class RouteImpl implements Sourced, Route {
 	protected final Object		 		executionAttributes;
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
-	
+
+	protected Integer successStatus;
 	protected Boolean corsEnabled;
 	protected Boolean csrfEnabled;
 	protected Boolean supportsMultipart;
@@ -132,7 +133,22 @@ class RouteImpl implements Sourced, Route {
 	    return failureHandlers;
     }
 
-	/**
+    @Override
+    public Integer getSuccessStatus() {
+        return successStatus;
+    }
+
+    @Override
+    public void setSuccessStatus(Integer status) throws IllegalStateException {
+        if(null != status) {
+            if(status < 200 || status > 299) {
+                throw new IllegalStateException("The status must be null or 2xx");
+            }
+        }
+        this.successStatus = status;
+    }
+
+    /**
 	 * Returns <code>true</code> if this action supports multipart request.
 	 */
 	@Override

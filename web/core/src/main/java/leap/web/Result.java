@@ -15,12 +15,12 @@
  */
 package leap.web;
 
-import java.util.Map;
-
 import leap.lang.annotation.Nullable;
 import leap.lang.http.HTTP;
 import leap.web.view.LinkedViewData;
 import leap.web.view.ViewData;
+
+import java.util.Map;
 
 
 /**
@@ -28,8 +28,8 @@ import leap.web.view.ViewData;
  */
 public class Result {
 	
-	public static final int STATUS_UNKNOW   = -1;
-	
+	public static final int STATUS_UNDEFINED = -1;
+
 	/**
 	 * Returns current action result.
 	 * 
@@ -39,7 +39,7 @@ public class Result {
 		return Request.current().getResult();
 	}
 	
-	private int        status = STATUS_UNKNOW;
+	private int        status = STATUS_UNDEFINED;
 	private Renderable renderable;
 	private ViewData   viewData = new LinkedViewData();
 	private int        executionCount; 
@@ -60,10 +60,10 @@ public class Result {
 	/**
      * Returns a boolean indicating if the result has been committed.  
      * 
-     * A committed response has already had its status code or renderable content setted.
+     * A committed result has already had its status code or renderable content set.
      */
     public boolean isCommitted(){
-    	return null != renderable || STATUS_UNKNOW != status;
+    	return null != renderable || STATUS_UNDEFINED != status;
     }
     
     public int getStatus() {
@@ -108,25 +108,30 @@ public class Result {
     }
     
     public Result render(Renderable renderable){
-    	return render(HTTP.SC_OK,renderable);
+    	return render(status > 0 ? -1 : HTTP.SC_OK,renderable);
     }
     
     public Result render(Renderable renderable, Object data){
-    	return render(HTTP.SC_OK,renderable,data);
+    	return render(status > 0 ? -1 : HTTP.SC_OK,renderable,data);
     }
     
     public Result render(Renderable renderable,Object data,Map<String, ?> attributes){
-    	return render(HTTP.SC_OK,renderable,data,attributes);
+    	return render(status > 0 ? -1 : HTTP.SC_OK,renderable,data,attributes);
     }
     
     public Result render(int status,Renderable renderable){
-    	this.status     = status;
+        if(status > 0) {
+            this.status = status;
+        }
     	this.renderable = renderable;
     	return this;
     }
     
     public Result render(int status, Renderable renderable, Object data){
-    	this.status      = status;
+        if(status > 0) {
+            this.status = status;
+        }
+
     	this.renderable  = renderable;
     	
     	this.setReturnValue(data);
@@ -135,7 +140,10 @@ public class Result {
     }
     
     public Result render(int status, Renderable renderable, Object data,Map<String, ?> attributes){
-    	this.status      = status;
+        if(status > 0) {
+            this.status = status;
+        }
+
     	this.renderable  = renderable;
     	
     	this.setReturnValue(data);
@@ -147,7 +155,7 @@ public class Result {
     }
     
     public Result text(String text) {
-    	return render(HTTP.SC_OK, Contents.text(text));
+    	return render(status > 0 ? -1 : HTTP.SC_OK, Contents.text(text));
     }
     
     public Result text(int status, String text) {
@@ -155,7 +163,7 @@ public class Result {
     }
     
     public Result html(String html) {
-    	return render(HTTP.SC_OK, Contents.html(html));
+    	return render(status > 0 ? -1 : HTTP.SC_OK, Contents.html(html));
     }
     
     public Result html(int status, String html) {
@@ -163,7 +171,7 @@ public class Result {
     }
     
     public Result json(String json) {
-    	return render(HTTP.SC_OK, Contents.json(json));
+    	return render(status > 0 ? -1 : HTTP.SC_OK, Contents.json(json));
     }
     
     public Result json(int status, String json) {
@@ -178,8 +186,8 @@ public class Result {
      * Sets this result from other result object.
      */
     public Result setResult(Result other){
-    	this.status      = other.status;
-    	this.renderable  = other.renderable;
+    	this.status     = other.status;
+    	this.renderable = other.renderable;
     	this.viewData   = other.viewData;
     	return this;
     }

@@ -246,4 +246,9 @@ public class HomeControllerTest extends WebTestCase {
         head("/method_with_path").assertOk();
         options("/method_with_path").assertOk();
 	}
+
+	@Test
+	public void testSuccessStatus() {
+		get("/success_status").assertStatusEquals(HTTP.SC_NO_CONTENT);
+	}
 }

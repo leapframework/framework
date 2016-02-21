@@ -257,7 +257,13 @@ public class DefaultAppInitializer implements AppInitializer {
 		
 		//create action.
 		route.setAction(act);
-		
+
+		//success status.
+		Success success = act.getAnnotation(Success.class);
+		if(null != success) {
+            route.setSuccessStatus(success.status().value());
+		}
+
 		//validation
 		AcceptValidationError acceptValidationError = act.searchAnnotation(AcceptValidationError.class);
 		if(null != acceptValidationError) {

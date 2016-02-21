@@ -212,6 +212,11 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		if(validation.hasErrors() && !context.isAcceptValidationError()){
 			eas.resultProcessor.processValidationErrors(context, validation, result);			
 		}else{
+            Integer successStatus = context.getRoute().getSuccessStatus();
+            if(null != successStatus) {
+                result.setStatus(successStatus);
+            }
+
 			eas.resultProcessor.processReturnValue(context, returnValue, result);	
 		}
 	}

@@ -15,21 +15,12 @@
  */
 package leap.web;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
 import leap.core.AppException;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
-import leap.web.assets.AssetSource;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.time.StopWatch;
@@ -37,6 +28,7 @@ import leap.web.action.ActionContext;
 import leap.web.action.ActionManager;
 import leap.web.action.DefaultActionContext;
 import leap.web.ajax.AjaxDetector;
+import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
 import leap.web.cors.CorsConfig;
 import leap.web.debug.DebugDetector;
@@ -54,6 +46,13 @@ import leap.web.view.LinkedViewData;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
 import leap.web.view.WrappedViewData;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
@@ -539,7 +538,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		}
 		
 		//set response status if the result status is valid.
-		if(result.getStatus() != Result.STATUS_UNKNOW){
+		if(result.getStatus() != Result.STATUS_UNDEFINED){
 			response.setStatus(result.getStatus());
 		}
 		

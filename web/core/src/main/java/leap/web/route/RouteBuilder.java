@@ -37,6 +37,7 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 	protected String       		   method;
 	protected PathTemplate 		   pathTemplate;
 	protected Action	   		   action;
+	protected Integer			   successStatus;
 	protected Boolean			   corsEnabled;
 	protected Boolean			   csrfEnabled;
 	protected Boolean			   supportsMultipart;
@@ -88,7 +89,16 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 		this.action = action;
 		return this;
 	}
-	
+
+	public Integer getSuccessStatus() {
+		return successStatus;
+	}
+
+	public RouteBuilder setSuccessStatus(Integer successStatus) {
+		this.successStatus = successStatus;
+        return this;
+	}
+
 	public Boolean getCorsEnabled() {
 		return corsEnabled;
 	}
@@ -255,7 +265,9 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
             							 executionAttributes,
             							 failureHandlers.toArray(new FailureHandler[failureHandlers.size()]),
             							 requiredParameters);
-		
+
+        route.setSuccessStatus(successStatus);
+
 		if(null != httpsOnly) {
 		    route.setHttpsOnly(httpsOnly);
 		}
@@ -267,7 +279,7 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 		if(null != allowClientOnly) {
 		    route.setAllowClientOnly(allowClientOnly);
 		}
-		
+
 		return route;
 	}
 }

@@ -73,6 +73,21 @@ public interface Route extends RouteBase, Sourced {
 	 */
 	FailureHandler[] getFailureHandlers();
 
+    /**
+     * Returns the http response status if success or null if use default.
+     */
+	Integer getSuccessStatus();
+
+    /**
+     * Sets the http response status if success.
+     *
+     * <p/>
+     * The status must be null or 2xx.
+     *
+     * @throws IllegalStateException if the status is not null or not a 2xx value.
+     */
+    void setSuccessStatus(Integer status) throws IllegalStateException;
+
 	/**
 	 * Returns <code>true</code> if this action supports multipart request.
 	 */
