@@ -15,15 +15,12 @@
  */
 package leap.web.security.user;
 
-import java.util.Map;
-
 import leap.core.annotation.Inject;
 import leap.lang.Lazy;
 import leap.orm.dao.Dao;
 
 public class DefaultUserStore implements UserStore {
 	
-    public static final String SQL_KEY_FIND_USER_ACCOUNT             = "security.findUserAccount";
     public static final String SQL_KEY_FIND_USER_DETAILS             = "security.findUserDetails";
     public static final String SQL_KEY_FIND_USER_DETAILS_BY_USERNAME = "security.findUserDetailsByUsername";
     public static final String SQL_PARAM_LOGIN_NAME                  = "username";
@@ -35,15 +32,6 @@ public class DefaultUserStore implements UserStore {
 	public void setLazyDao(Lazy<Dao> lazyDao) {
 		this.lazyDao = lazyDao;
 	}
-
-	@Override
-    public UserAccount findUserAccount(String loginName, Map<String, Object> parameters) {
-	    return lazyDao.get()
-	    		  .createNamedQuery(SQL_KEY_FIND_USER_ACCOUNT, SimpleUserAccount.class)
-	    	      .params(parameters)
-	    	      .param(SQL_PARAM_LOGIN_NAME, loginName)
-	    	      .singleOrNull();
-    }
 
 	@Override
     public UserDetails findUserDetails(Object userId) {

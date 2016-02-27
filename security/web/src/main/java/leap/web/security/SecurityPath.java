@@ -27,69 +27,125 @@ import leap.web.security.authc.AuthenticationContext;
 
 import java.util.Comparator;
 
-public class SecuredPath implements RequestMatcher,Comparable<SecuredPath> {
+public class SecurityPath implements RequestMatcher,Comparable<SecurityPath> {
 
-	private static final Log log = LogFactory.get(SecuredPath.class);
+	private static final Log log = LogFactory.get(SecurityPath.class);
 
-	public static Comparator<SecuredPath> COMPARATOR = new Comparator<SecuredPath>() {
-		@Override
-		public int compare(SecuredPath o1, SecuredPath o2) {
-            if (o1 == null && o2 == null) {
-                return 0;
-            }
-            if (o1 == null) {
-                return 1;
-            }
-            if (o2 == null) {
-                return -1;
-            }
-            
-            int i = o1.getPathPatternString().length() - o2.getPathPatternString().length();
-            if(i != 0){
-            	return i;
-            }
-            
+    public static Comparator<SecurityPath> COMPARATOR = (o1, o2) -> {
+        if (o1 == null && o2 == null) {
+            return 0;
+        }
+        if (o1 == null) {
+            return 1;
+        }
+        if (o2 == null) {
             return -1;
-		}
-	};
+        }
+
+        int i = o1.getPathPatternString().length() - o2.getPathPatternString().length();
+        if(i != 0){
+            return i;
+        }
+
+        return -1;
+    };
+
+	protected final PathPattern    pathPattern;
+	protected final boolean        allowAnonymous;
+	protected final boolean        allowClientOnly;
+	protected final boolean        allowRememberMe;
+    protected final String[]       permissions;
+    protected final String[]       roles;
+
+	protected final SecurityRule[] rules;
 	
-	protected final PathPattern   pathPattern;
-	protected final boolean		  allowAnonymous;
-	protected final boolean       allowClientOnly;
-	protected final boolean		  allowRememberMe;
-	protected final SecuredRule[] rules;
-	
-	public SecuredPath(PathPattern pathPattern, 
-	                   boolean allowAnonymous, boolean allowClientOnly, boolean allowRememberMe, SecuredRule[] rules) {
+	public SecurityPath(PathPattern pathPattern,
+                        boolean allowAnonymous,
+                        boolean allowClientOnly,
+                        boolean allowRememberMe,
+                        String[] permissions,
+                        String[] roles,
+                        SecurityRule[] rules) {
 		Args.notNull(pathPattern,"path pattern");
 		this.pathPattern	 = pathPattern;
 	    this.allowAnonymous  = allowAnonymous;
 	    this.allowClientOnly = allowClientOnly;
 	    this.allowRememberMe = allowRememberMe;
+        this.permissions     = permissions;
+        this.roles           = roles;
 	    this.rules           = rules;
     }
-	
+
+    /**
+     * Returns the path pattern.
+     */
 	public PathPattern getPathPattern() {
 		return pathPattern;
 	}
-	
+
+    /**
+     * Returns the path pattern as string.
+     */
 	public String getPathPatternString(){
 		return pathPattern.getPattern();
 	}
-	
-	@Override
+
+    /**
+     * Returns true if the path pattern allows anonymous access (that means no authentication required).
+     */
+    public boolean isAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    /**
+     * Returns true if the path pattern allows client-only authentication.
+     */
+    public boolean isAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    /**
+     * Returns true if the path pattern allows remember-me authentication.
+     */
+    public boolean isAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    /**
+     * Returns the permissions allowed.
+     */
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    /**
+     * Returns the roles allowed.
+     */
+    public String[] getRoles() {
+        return roles;
+    }
+
+    @Override
     public boolean matches(RequestBase request) {
 	    return pathPattern.matches(request.getPath());
     }
-	
+
+    /**
+     * Returns true if the path pattern matches the given path.
+     */
 	public boolean matches(String path) {
 		return pathPattern.matches(path);
 	}
-	
-	public boolean isAllow(Request request, AuthenticationContext context, Authentication authc) {
+
+    /**
+     * Returns true if the path pattern allows the authentication.
+     */
+	public boolean checkAuthentication(Request request, AuthenticationContext context) {
 		if(isAllowAnonymous()) {
 			return true;
 		}
+
+        Authentication authc = context.getAuthentication();
 		
 		if(!authc.isAuthenticated()){
             log.debug("path [{}] : not authenticated, deny the request.", pathPattern);
@@ -109,18 +165,6 @@ public class SecuredPath implements RequestMatcher,Comparable<SecuredPath> {
 		return applyRules(request, context, authc);
 	}
 	
-    public boolean isAllowAnonymous() {
-		return allowAnonymous;
-	}
-    
-    public boolean isAllowClientOnly() {
-        return allowClientOnly;
-    }
-
-	public boolean isAllowRememberMe() {
-		return allowRememberMe;
-	}
-	
 	private boolean applyRules(Request request, AuthenticationContext context, Authentication authc)  {
 		
 		if(null != rules && rules.length > 0){
@@ -135,7 +179,7 @@ public class SecuredPath implements RequestMatcher,Comparable<SecuredPath> {
     }
 
 	@Override
-    public int compareTo(SecuredPath o) {
+    public int compareTo(SecurityPath o) {
 	    return COMPARATOR.compare(this, o);
     }
 }

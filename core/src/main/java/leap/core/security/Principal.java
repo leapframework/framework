@@ -22,7 +22,7 @@ import java.io.Serializable;
 public interface Principal extends Serializable {
 	
 	/**
-	 * Returns the id of current principal.
+	 * Returns the id of principal.
 	 */
 	Object getId();
 
@@ -33,26 +33,12 @@ public interface Principal extends Serializable {
 		Object id = getId();
 		return null == id ? null : Converts.toString(id);
 	}
-	
+
 	/**
-	 * Returns <code>true</code> if the current principal is anonymous.
+	 * Returns <code>true</code> if the principal is anonymous (not authenticated).
 	 */
-	boolean isAnonymous();
-	
-	/**
-	 * Returns <code>true</code> if the current principal is remember-me.
-	 */
-	boolean isRememberMe();
-	
-	/**
-	 * Returns <code>true</code> if the principal is not anonymous.
-	 */
-	boolean isAuthenticated();
-	
-	/**
-	 * Returns <code>true</code> if the principal is not anonymous or remember-me.
-	 */
-	default boolean isFullyAuthenticated() {
-		return isAuthenticated() && !isRememberMe();
-	}
+	default boolean isAnonymous() {
+        return false;
+    }
+
 }

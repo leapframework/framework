@@ -160,15 +160,11 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 	}
 	
 	public UserPrincipal createAnonymous(Request request,Response response,AuthenticationContext context) {
-		Anonymous anonymous = new Anonymous();
-		
-		String name = request.getMessageSource().getMessage("websecurity.anonymous.name");
-		if(Strings.isEmpty(name)){
-			name = "Anonymous";
-		}
-		anonymous.setNickName(name);
-		
-		return anonymous;
+        String name = request.getMessageSource().getMessage("websecurity.anonymous.name");
+        if(Strings.isEmpty(name)){
+            name = "Anonymous";
+        }
+		return new Anonymous(name);
 	}
 
     protected static final class WrappedAuthentication implements Authentication {
@@ -192,7 +188,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         }
 
         @Override
-        public Credentials getCredentials() {
+        public Object getCredentials() {
             return wrapped.getCredentials();
         }
 

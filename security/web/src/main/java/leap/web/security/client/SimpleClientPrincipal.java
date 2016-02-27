@@ -34,18 +34,4 @@ public class SimpleClientPrincipal implements ClientPrincipal {
         return id;
     }
 
-    @Override
-    public boolean isAnonymous() {
-        return false;
-    }
-
-    @Override
-    public boolean isRememberMe() {
-        return false;
-    }
-
-    @Override
-    public boolean isAuthenticated() {
-        return true;
-    }
 }

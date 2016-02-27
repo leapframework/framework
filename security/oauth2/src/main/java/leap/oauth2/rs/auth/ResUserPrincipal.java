@@ -33,21 +33,6 @@ public class ResUserPrincipal implements UserPrincipal {
 	}
 
 	@Override
-	public boolean isAnonymous() {
-		return false;
-	}
-
-	@Override
-	public boolean isRememberMe() {
-		return false;
-	}
-
-	@Override
-	public boolean isAuthenticated() {
-		return true;
-	}
-
-	@Override
 	public String getName() {
 		return user.getName();
 	}
@@ -56,11 +41,4 @@ public class ResUserPrincipal implements UserPrincipal {
 	public String getLoginName() {
 		return user.getLoginName();
 	}
-
-    @Override
-    @SuppressWarnings("unchecked")
-	public <T> T getDetails() {
-		return (T)user.getDetails();
-	}
-
 }

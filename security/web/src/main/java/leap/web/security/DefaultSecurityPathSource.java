@@ -24,9 +24,9 @@ import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 
-public class DefaultSecuredPathSource implements SecuredPathSource {
+public class DefaultSecurityPathSource implements SecurityPathSource {
 
-    private static final Log log = LogFactory.get(DefaultSecuredPathSource.class);
+    private static final Log log = LogFactory.get(DefaultSecurityPathSource.class);
 	
 	private static final PathPattern ANY_PATTERN = new PathPattern() {
 		
@@ -46,28 +46,28 @@ public class DefaultSecuredPathSource implements SecuredPathSource {
         }
     };
 	
-	private static final SecuredPath ANY  = new SecuredPathBuilder().setPathPattern(ANY_PATTERN).build();
-	private static final SecuredPath NULL = new SecuredPathBuilder().setPathPattern(ANY_PATTERN).build();
+	private static final SecurityPath ANY  = new SecurityPathBuilder().setPathPattern(ANY_PATTERN).build();
+	private static final SecurityPath NULL = new SecurityPathBuilder().setPathPattern(ANY_PATTERN).build();
 
 	protected @Inject @M SecurityConfig config;
 
-	protected Cache<String, SecuredPath> cachedPaths = new SimpleLRUCache<>(1024);
+	protected Cache<String, SecurityPath> cachedPaths = new SimpleLRUCache<>(1024);
 	
 	@Override
-	public SecuredPath getSecuredPath(SecurityContextHolder context, Request request) {
-	    SecuredPath securedPath = cachedPaths.get(request.getPath());
-	    if(null != securedPath) {
-	        return securedPath == NULL ? null : securedPath;
+	public SecurityPath getSecuredPath(SecurityContextHolder context, Request request) {
+	    SecurityPath securityPath = cachedPaths.get(request.getPath());
+	    if(null != securityPath) {
+	        return securityPath == NULL ? null : securityPath;
 	    }
 
         log.debug("Matching request {} ...", request.getPath());
 	    
-		SecuredPath[] urls = config.getSecuredPaths();
+		SecurityPath[] urls = config.getSecuredPaths();
 		for(int i=0;i<urls.length;i++){
-			SecuredPath u = urls[i];
+			SecurityPath u = urls[i];
 			if(u.matches(request)) {
                 log.debug("Matches -> {}", u.pathPattern);
-			    cachedPaths.put(request.getPath(), securedPath);
+			    cachedPaths.put(request.getPath(), securityPath);
 				return u;
 			}
             log.debug("Not matches -> {}", u.pathPattern);

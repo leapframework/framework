@@ -15,10 +15,7 @@
  */
 package leap.web.security.user;
 
-import java.util.Map;
-
 import leap.lang.Assert;
-import leap.lang.annotation.Nullable;
 
 public interface UserStore {
 
@@ -29,18 +26,6 @@ public interface UserStore {
 		return idString;
 	}
 
-	/**
-	 * Optional. Returns the {@link UserAccount} by searching the given username.
-     */
-	default UserAccount findUserAccount(String username){
-		return findUserAccount(username,null);
-	}
-	
-	/**
-	 * Optional. Returns the {@link UserAccount} by searching the given username.
-	 */
-	UserAccount findUserAccount(String username,@Nullable Map<String, Object> parameters);
-	
 	/**
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 */

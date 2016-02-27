@@ -187,7 +187,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 		@Override
         public boolean isAuthenticated() {
-	        return null != user && user.isAuthenticated();
+	        return null != user && !user.isAnonymous();
         }
 
 		@Override

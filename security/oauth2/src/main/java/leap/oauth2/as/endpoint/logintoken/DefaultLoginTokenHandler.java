@@ -16,30 +16,24 @@
 package leap.oauth2.as.endpoint.logintoken;
 
 import leap.core.annotation.Inject;
-import leap.core.security.SecurityContext;
 import leap.core.security.UserPrincipal;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonWriter;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
-import leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzLoginToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 import leap.web.security.user.UserStore;
-
-import java.util.Map.Entry;
 
 public class DefaultLoginTokenHandler implements LoginTokenHandler {
 
@@ -84,7 +78,7 @@ public class DefaultLoginTokenHandler implements LoginTokenHandler {
                 OAuth2Errors.invalidGrant(response, "invalid user");
                 return true;
             }
-            user = new SimpleUserDetailsPrincipal(ud);
+            user = ud;
 
             //Authenticate client.
             AuthzClient client = clientManager.loadClientById(at.getClientId());

@@ -16,7 +16,6 @@
 package leap.web.security.authc;
 
 import leap.core.security.ClientPrincipal;
-import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 
 public interface Authentication {
@@ -29,34 +28,38 @@ public interface Authentication {
 	/**
 	 * Returns <code>true</code> if the authentication is authenticated from remember-me store.
 	 */
-	boolean isRememberMe();
-	
+	default boolean isRememberMe() {
+        return false;
+    }
+
+    /**
+     * Optional. Returns the authentication token if exists.
+     */
+    String getToken();
+
+    /**
+     * Sets the authentication token.
+     *
+     * @throws IllegalStateException if the authentication token already exists.
+     */
+    void setToken(String token) throws IllegalStateException;
+
 	/**
 	 * Required. Returns the authentication credentials.
 	 */
-	Credentials getCredentials();
+	Object getCredentials();
 	
 	/**
 	 * Optional. Returns the authentication user.
 	 */
 	UserPrincipal getUserPrincipal();
 	
-	/**
-	 * Optional. Returns the authentication client.
-	 */
-	ClientPrincipal getClientPrincipal();
-
-	/**
-	 * Optional. Returns the authentication token if exists.
+    /**
+     * Optional. Returns the authentication client.
      */
-	String getToken();
-
-	/**
-	 * Sets the authentication token.
-	 *
-	 * @throws IllegalStateException if the authentication token already exists.
-     */
-	void setToken(String token) throws IllegalStateException;
+    default ClientPrincipal getClientPrincipal() {
+        return null;
+    }
 
 	/**
 	 * Returns <code>true</code> if the authentication only contains client, no user.
@@ -65,4 +68,10 @@ public interface Authentication {
 		return getUserPrincipal() == null || getUserPrincipal().isAnonymous();
 	}
 
+    /**
+     * Returns <code>true</code> if the principal is authenticated and not remember-me.
+     */
+    default boolean isFullyAuthenticated() {
+        return isAuthenticated() && !isRememberMe();
+    }
 }

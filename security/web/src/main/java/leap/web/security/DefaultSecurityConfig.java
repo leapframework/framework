@@ -60,12 +60,12 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected String                   csrfParameterName              = SecurityConstants.DEFAULT_CSRF_PARAMETER;
     protected boolean                  authenticationTokenEnabled     = true;
     protected String                   authenticationTokenCookieName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_COOKIE;
-    protected String                   authenticationTokenHeaderName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
-    protected String                   authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
-    protected String                   tokenSecret                    = null;
-    protected String                   cookieDomain                   = null;
-    protected List<RequestIgnore>      ignores                        = new ArrayList<>();
-    protected Map<String, SecuredPath> securedPaths                   = new HashMap<>();
+    protected String                    authenticationTokenHeaderName = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
+    protected String                    authenticationTokenType       = SecurityConstants.DEFAULT_TOKEN_TYPE;
+    protected String                    tokenSecret                   = null;
+    protected String                    cookieDomain                  = null;
+    protected List<RequestIgnore>       ignores                       = new ArrayList<>();
+    protected Map<String, SecurityPath> securedPaths                  = new HashMap<>();
 
     @Inject
     protected PasswordEncoder               passwordEncoder;
@@ -79,10 +79,10 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     @Inject
     protected BeanList<SecurityInterceptor> interceptors;
 
-    private SecuredPath[]                   sortedSecuredPaths           = new SecuredPath[] {};
-    private RequestIgnore[]                 ignoresArray                 = new RequestIgnore[] {};
-    private SecurityInterceptor[]           interceptorArray             = new SecurityInterceptor[]{};
-    private final Object                    interceptorLock              = new Object();
+    private SecurityPath[]        sortedSecurityPaths = new SecurityPath[] {};
+    private RequestIgnore[]       ignoresArray        = new RequestIgnore[] {};
+    private SecurityInterceptor[] interceptorArray    = new SecurityInterceptor[]{};
+    private final Object          interceptorLock     = new Object();
     
     public DefaultSecurityConfig() {
         super();
@@ -394,8 +394,8 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
-    public SecuredPath[] getSecuredPaths() {
-        return sortedSecuredPaths;
+    public SecurityPath[] getSecuredPaths() {
+        return sortedSecurityPaths;
     }
 
     @Override
@@ -412,16 +412,16 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
-    public SecurityConfigurator secured(SecuredPath path) {
+    public SecurityConfigurator secured(SecurityPath path) {
         Args.notNull(path, "security path");
         securedPaths.put(path.getPathPatternString(), path);
-        this.sortedSecuredPaths = securedPaths.values().stream().sorted(SecuredPath.COMPARATOR).toArray((i) -> new SecuredPath[i]);
+        this.sortedSecurityPaths = securedPaths.values().stream().sorted(SecurityPath.COMPARATOR).toArray((i) -> new SecurityPath[i]);
         return this;
     }
 
     @Override
     public SecurityConfigurator secured(String path, boolean allowAnonymous) {
-        secured(new SecuredPathBuilder(path).allowAnonymous().build());
+        secured(new SecurityPathBuilder(path).allowAnonymous().build());
         return this;
     }
     

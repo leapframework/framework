@@ -33,16 +33,11 @@ public class SimpleAuthentication extends AbstractAuthentication implements Auth
 		this.userPrincipal = user;
 		this.credentials   = credentials;
 	}
-	
+
 	@Override
-    public boolean isAuthenticated() {
-	    return null != userPrincipal && userPrincipal.isAuthenticated();
-    }
-	
-	@Override
-    public boolean isRememberMe() {
-	    return null != userPrincipal && userPrincipal.isRememberMe();
-    }
+	public boolean isAuthenticated() {
+		return !userPrincipal.isAnonymous();
+	}
 
 	@Override
 	public Credentials getCredentials() {

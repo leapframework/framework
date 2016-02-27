@@ -15,7 +15,9 @@
  */
 package leap.core.security;
 
-
+/**
+ * User's principal.
+ */
 public interface UserPrincipal extends Principal {
 	
 	/**
@@ -27,10 +29,5 @@ public interface UserPrincipal extends Principal {
 	 * Returns the user's name use to login.
 	 */
 	String getLoginName();
-	
-	/**
-	 * Returns a object contains the user details properties.
-	 */
-	<T> T getDetails();
 
 }

@@ -20,7 +20,7 @@ import leap.web.Request;
 import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 
-public interface SecuredRule {
+public interface SecurityRule {
 
 	boolean apply(Request request,AuthenticationContext context,Authentication authc) throws SecurityException;
 	

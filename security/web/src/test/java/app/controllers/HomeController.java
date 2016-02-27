@@ -17,8 +17,8 @@ package app.controllers;
 
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.web.Request;
 import leap.web.security.annotation.AllowAnonymous;
+import leap.web.security.annotation.Permit;
 
 public class HomeController {
 	
@@ -36,7 +36,12 @@ public class HomeController {
 	public String anonymous1() {
 		return "Hello1";
 	}
-	
+
+    @Permit("permission1")
+    public void permission1() {
+        
+    }
+
 	public void login(){
 		log.info("Goto login view");
 	}

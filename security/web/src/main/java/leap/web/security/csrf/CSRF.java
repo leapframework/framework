@@ -15,19 +15,26 @@
  */
 package leap.web.security.csrf;
 
-import javax.servlet.http.HttpServletRequest;
-
 import leap.core.web.RequestBase;
+import leap.web.Request;
+
+import javax.servlet.http.HttpServletRequest;
 
 public class CSRF {
 	static final String GENERATED_TOKEN_KEY = CsrfToken.class.getName();
-	static final String REQUEST_TOKEN_KEY   = CsrfToken.class.getName() + "$REQ";
-	static final String CSRF_IGNROED_KEY    = CsrfToken.class.getName() + "$IGNORED";
+	static final String REQUEST_TOKEN_KEY   = CsrfToken.class.getName() + "$req";
+	static final String CSRF_IGNORED_KEY    = CsrfToken.class.getName() + "$ignored";
 
+    /**
+     * Returns the generated csrf token stored in http request.
+     */
 	public static CsrfToken getGeneratedToken(HttpServletRequest request) {
 		return (CsrfToken)request.getAttribute(GENERATED_TOKEN_KEY);
 	}
-	
+
+    /**
+     * Returns the generated csrf token stored in http request.
+     */
 	public static CsrfToken getGeneratedToken(RequestBase request) {
 		return (CsrfToken)request.getAttribute(GENERATED_TOKEN_KEY);
 	}
@@ -52,14 +59,32 @@ public class CSRF {
 	 * Ignores the csrf checking in the http request.
 	 */
 	public static void ignore(HttpServletRequest request) {
-		request.setAttribute(CSRF_IGNROED_KEY, Boolean.TRUE);
+		request.setAttribute(CSRF_IGNORED_KEY, Boolean.TRUE);
 	}
-	
+
+    /**
+     * Returns true if csrf checking is ignored in the http request.
+     */
 	public static boolean isIgnored(HttpServletRequest request) {
-		Object v = request.getAttribute(CSRF_IGNROED_KEY);
+		Object v = request.getAttribute(CSRF_IGNORED_KEY);
 		return Boolean.TRUE == v;
 	}
-	
+
+	/**
+	 * Ignores the csrf checking in the http request.
+	 */
+	public static void ignore(Request request) {
+		request.setAttribute(CSRF_IGNORED_KEY, Boolean.TRUE);
+	}
+
+    /**
+     * Returns true if csrf checking is ignored in the http request.
+     */
+    public static boolean isIgnored(Request request) {
+		Object v = request.getAttribute(CSRF_IGNORED_KEY);
+		return Boolean.TRUE == v;
+	}
+
 	protected CSRF() {
 		
 	}

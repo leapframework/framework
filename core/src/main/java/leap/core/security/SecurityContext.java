@@ -19,9 +19,8 @@ import leap.core.RequestContext;
 
 public abstract class SecurityContext {
 	
-	public static final String CONTEXT_ATTRIBUTE_NAME     = "REQ_" + SecurityContext.class.getName();
-	public static final String PASSWORD_ENCODER_BEAN_NAME = "security";
-	
+	public static final String CONTEXT_ATTRIBUTE_NAME = "REQ_" + SecurityContext.class.getName();
+
 	public static SecurityContext current() {
 		SecurityContext context = (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
 		

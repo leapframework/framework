@@ -17,7 +17,6 @@
 package leap.web.security;
 
 import leap.core.ioc.BeanList;
-import leap.core.security.crypto.PasswordEncoder;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.user.UserStore;
 
@@ -147,7 +146,7 @@ public interface SecurityConfigurator {
 	/**
 	 * Adds an secured path.
 	 */
-	SecurityConfigurator secured(SecuredPath path);
+	SecurityConfigurator secured(SecurityPath path);
 
 	/**
 	 * Adds an intercept url.

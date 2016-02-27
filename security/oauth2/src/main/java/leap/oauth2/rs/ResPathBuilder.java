@@ -18,10 +18,10 @@ package leap.oauth2.rs;
 import java.util.Collection;
 
 import leap.lang.path.PathPattern;
-import leap.web.security.SecuredPathBuilder;
-import leap.web.security.SecuredRule;
+import leap.web.security.SecurityPathBuilder;
+import leap.web.security.SecurityRule;
 
-public class ResPathBuilder extends SecuredPathBuilder {
+public class ResPathBuilder extends SecurityPathBuilder {
 	
 	protected ResScope scope;
 	
@@ -68,19 +68,19 @@ public class ResPathBuilder extends SecuredPathBuilder {
     }
 
 	@Override
-    public ResPathBuilder addRules(SecuredRule... rules) {
+    public ResPathBuilder addRules(SecurityRule... rules) {
         super.addRules(rules);
         return this;
     }
 
 	@Override
-    public ResPathBuilder addRules(Collection<SecuredRule> rules) {
+    public ResPathBuilder addRules(Collection<SecurityRule> rules) {
         super.addRules(rules);
         return this;
     }
 
 	@Override
-    public ResPathBuilder addRule(SecuredRule rule) {
+    public ResPathBuilder addRule(SecurityRule rule) {
         super.addRule(rule);
         return this;
     }
@@ -96,6 +96,6 @@ public class ResPathBuilder extends SecuredPathBuilder {
 
 	@Override
     public ResPath build() {
-		return new ResPath(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, rules.toArray(new SecuredRule[]{}), scope);
+		return new ResPath(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, rules.toArray(new SecurityRule[]{}), scope);
 	}
 }

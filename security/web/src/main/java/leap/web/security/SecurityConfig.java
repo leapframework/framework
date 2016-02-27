@@ -175,7 +175,7 @@ public interface SecurityConfig {
 	/**
 	 * 
 	 */
-	SecuredPath[] getSecuredPaths();
+	SecurityPath[] getSecuredPaths();
 	
 	/**
 	 * Required.

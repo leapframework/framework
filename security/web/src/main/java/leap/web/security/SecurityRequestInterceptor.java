@@ -41,7 +41,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	
     protected @Inject @M SecurityConfig       config;
     protected @Inject @M SecurityConfigurator configurator;
-    protected @Inject @M SecuredPathSource    pathSource;
+    protected @Inject @M SecurityPathSource   pathSource;
     protected @Inject @M SecurityHandler      handler;
     protected @Inject @M CsrfHandler          csrf;
 
@@ -52,7 +52,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        
 	        AllowAnonymous a = action.searchAnnotation(AllowAnonymous.class);
 	        if(route.isAllowAnonymous() || (null != a && a.value())) {
-	            configurator.secured(new SecuredPathBuilder()
+	            configurator.secured(new SecurityPathBuilder()
 	                                        .allowAnonymous()
 	                                        .setPathPattern(route.getPathTemplate())
 	                                        .build());
@@ -61,7 +61,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        
 	        AllowClientOnly aa = action.searchAnnotation(AllowClientOnly.class);
 	        if(route.isAllowClientOnly() || (null != aa && aa.value())) {
-	            configurator.secured(new SecuredPathBuilder()
+	            configurator.secured(new SecurityPathBuilder()
 	                                .allowClientOnly()
 	                                .setPathPattern(route.getPathTemplate())
 	                                .build());
@@ -72,7 +72,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        if(null != secured){
 	            boolean isAction = action.getAnnotation(Secured.class) != null;
 	            
-	            SecuredPathBuilder url = new SecuredPathBuilder();
+	            SecurityPathBuilder url = new SecurityPathBuilder();
 	            
 	            if(isAction){
 	                url.setPathPattern(route.getPathTemplate());
@@ -128,11 +128,8 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		SecurityContext.removeCurrent();
 	}
 
-	/**
-	 * Returns <code>true</code> if current request handled.
-	 */
 	protected State handleRequest(Request request, Response response,DefaultSecurityContextHolder context) throws Throwable {
-		//Resolves authentication.
+		//Resolve authentication.
 		State state = resolveAuthentication(request,response,context);
 		if(state.isIntercepted()){
 			return state;
@@ -147,9 +144,24 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		if(handleLogoutRequest(request, response, context)) {
 			return State.INTERCEPTED;
 		}
-		
-		//Check security.
-		return checkSecurity(request, response, context);
+
+        //Resolve security path.
+        SecurityPath path = resolveSecurityPath(request, response, context);
+
+        //Check authentication
+		state = checkAuthentication(request, response, context, path);
+        if(state.isIntercepted()) {
+            return state;
+        }
+
+        //Resolve authorization.
+        state = resolveAuthorization(request, response, context);
+        if(state.isIntercepted()) {
+            return state;
+        }
+
+        //Check authorization.
+		return checkAuthorization(request, response, context, path);
 	}
 	
 	/**
@@ -157,7 +169,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	 */
 	protected State resolveAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
 	    SecurityInterceptor[] interceptors = config.getInterceptors();
-		for(SecurityInterceptor interceptor : interceptors) {
+		for(SecurityInterceptor interceptor : config.getInterceptors()) {
 			if(interceptor.preResolveAuthentication(request, response, context).isIntercepted()){
 				log.debug("Intercepted by interceptor : {}", interceptor.getClass());
 				return State.INTERCEPTED;
@@ -189,7 +201,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 		return State.CONTINUE;
 	}
-	
+
     protected boolean handleLoginRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
         return handler.handleLoginRequest(request, response, context);
     }
@@ -197,33 +209,48 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     protected boolean handleLogoutRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
         return handler.handleLogoutRequest(request, response, context);
     }
+
+    protected SecurityPath resolveSecurityPath(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+        return pathSource.getSecuredPath(context, request);
+    }
+
+    protected State checkAuthentication(Request request, Response response, DefaultSecurityContextHolder context, SecurityPath path) throws Throwable {
+        //Check current request path is secured :
+        //1. if secured, checks is allow to access
+        //2. if not, return continue state directly.
+        if(null != path && !path.checkAuthentication(request, context)){
+            handler.handleAuthenticationDenied(request, response, context);
+            return State.INTERCEPTED;
+        }
+        return State.CONTINUE;
+    }
+
+    protected State resolveAuthorization(Request request,Response response,DefaultSecurityContextHolder context) throws Throwable {
+        SecurityInterceptor[] interceptors = config.getInterceptors();
+        for(SecurityInterceptor si : config.getInterceptors()) {
+            if(State.isIntercepted(si.postResolveAuthorization(request, response, context))) {
+                return State.INTERCEPTED;
+            }
+        }
+
+        Authorization authorization = handler.resolveAuthorization(request,response,context);
+
+
+        return State.CONTINUE;
+    }
 	
 	/**
 	 * Returns <code>true</code> if current request handled by this interceptor.
 	 */
-	protected State checkSecurity(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
-		Authentication authentication = context.getAuthentication();
-		
-		//Check current request path is secured :
-		//1. if secured, checks is allow to access
-		//2. if not, return false directly.
-		SecuredPath securedPath = pathSource.getSecuredPath(context, request);
-		if(null != securedPath && !securedPath.isAllow(request, context, authentication)){
-			handler.handleAuthenticationDenied(request, response, context);
-			return State.INTERCEPTED;
-		}
-		
+	protected State checkAuthorization(Request request, Response response, DefaultSecurityContextHolder context, SecurityPath path) throws Throwable {
+        /*
 		//Authorizes current request
 		Authorization authorization = resolveAuthorization(request, response, context);
 		if(null != authorization && !authorization.isAuthorized()){
 		    handler.handleAuthorizationDenied(request, response, context);
 			return State.INTERCEPTED;
 		}
-		
+		*/
 		return State.CONTINUE;
-	}
-	
-	protected Authorization resolveAuthorization(Request request,Response response,DefaultSecurityContextHolder context) throws Throwable {
-		return handler.resolveAuthorization(request,response,context);
 	}
 }

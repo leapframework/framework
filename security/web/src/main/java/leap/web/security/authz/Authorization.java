@@ -17,6 +17,5 @@ package leap.web.security.authz;
 
 public interface Authorization {
 
-	boolean isAuthorized();
-	
+
 }

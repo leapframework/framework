@@ -17,23 +17,8 @@ package leap.web.security.authz;
 
 public class SimpleAuthorization implements Authorization {
 
-	protected boolean authorized;
-	
 	public SimpleAuthorization() {
 	    super();
     }
-
-	public SimpleAuthorization(boolean authorized) {
-		this.authorized = authorized;
-	}
-	
-	@Override
-	public boolean isAuthorized() {
-		return authorized;
-	}
-
-	public void setAuthorized(boolean authorized) {
-		this.authorized = authorized;
-	}
 
 }

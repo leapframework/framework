@@ -13,15 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.user;
+package leap.web.security;
 
-import leap.core.security.UserPrincipal;
+import leap.web.Request;
 
-public interface UserDetailsPrincipal extends UserPrincipal {
+public interface SecurityPathSource {
 
-    /**
-     * Optional.
-     */
-	UserAccount getAccount();
-
+	SecurityPath getSecuredPath(SecurityContextHolder context, Request request);
+	
 }

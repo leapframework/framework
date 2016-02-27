@@ -28,11 +28,9 @@ public class DefaultUserManager implements UserManager {
 
     @Override
     public UserDetails getUserDetails(UserPrincipal user) {
-        Object details = user.getDetails();
-        if(details instanceof UserDetails) {
-            return (UserDetails)details;
+        if(user instanceof UserDetails) {
+            return (UserDetails)user;
         }
-        
         return sc.getUserStore().findUserDetails(user.getId());
     }
 
@@ -51,7 +49,7 @@ public class DefaultUserManager implements UserManager {
             return Result.empty();
         }
 
-        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new TrustedUsernameCredentials(username)));
+        return Result.of(new SimpleAuthentication(details, new TrustedUsernameCredentials(username)));
     }
 
     @Override
@@ -62,6 +60,6 @@ public class DefaultUserManager implements UserManager {
             return Result.empty();
         }
 
-        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new TrustedUserIdCredentials(userid)));
+        return Result.of(new SimpleAuthentication(details, new TrustedUserIdCredentials(userid)));
     }
 }

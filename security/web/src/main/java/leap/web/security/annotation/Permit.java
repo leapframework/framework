@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.user;
+package leap.web.security.annotation;
 
-public interface UserAccount {
-	
-	/**
-	 * Returns the user's id.
-	 */
-	Object getId();
-	
-	/**
-	 * Returns the user's encrypted password.
-	 */
-	String getPassword();
-	
-	/**
-	 * Returns <code>true</code> if the account is enabled.
-	 */
-	boolean isEnabled();
-	
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Permit {
+
+    String[] value();
+
 }

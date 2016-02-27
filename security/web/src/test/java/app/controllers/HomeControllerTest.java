@@ -34,4 +34,13 @@ public class HomeControllerTest extends SecurityTestCase {
 		get("/").assertContentContains("return_url");
 	}
 
+    @Test
+	public void testPermission1() {
+        login();
+
+
+
+        logout();
+    }
+
 }

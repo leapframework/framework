@@ -15,8 +15,6 @@
  */
 package leap.oauth2.wac.auth;
 
-import java.util.Map;
-
 import leap.core.annotation.Inject;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
@@ -35,9 +33,10 @@ import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.login.LoginManager;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
+
+import java.util.Map;
 
 public class DefaultWacResponseHandler implements WacResponseHandler {
     
@@ -55,7 +54,7 @@ public class DefaultWacResponseHandler implements WacResponseHandler {
         if(!Strings.isEmpty(idToken)) {
             WacIdToken details = verifyIdToken(params, idToken);
             
-            Authentication authc = authentcate(request, response, params, idToken, details);
+            Authentication authc = authenticate(request, response, params, idToken, details);
             if(null == authc) {
                 //TODO : 
                 throw new IllegalStateException("Invalid authentication");
@@ -86,7 +85,7 @@ public class DefaultWacResponseHandler implements WacResponseHandler {
         return details;
     }
     
-    protected Authentication authentcate(Request request, Response response, OAuth2Params params, String idToken, WacIdToken details) throws Throwable {
+    protected Authentication authenticate(Request request, Response response, OAuth2Params params, String idToken, WacIdToken details) throws Throwable {
         String clientId = details.getClientId();
         String userId   = details.getUserId();
         
@@ -100,7 +99,7 @@ public class DefaultWacResponseHandler implements WacResponseHandler {
                 log.debug("The user id '{}' created with id token '{}' is not found", userId, idToken);
                 return null;
             }else{
-                user = new SimpleUserDetailsPrincipal(userDetails);    
+                user = userDetails;
             }
         }
         

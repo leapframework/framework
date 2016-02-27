@@ -18,9 +18,10 @@ package leap.web.security.authc;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
 
-public abstract  class AbstractAuthentication implements Authentication{
+public abstract class AbstractAuthentication implements Authentication{
 
-    protected String token;
+    protected String  token;
+    protected boolean rememberMe;
 
     @Override
     public String getToken() {
@@ -33,6 +34,15 @@ public abstract  class AbstractAuthentication implements Authentication{
             throw new IllegalStateException("Token already exists");
         }
         this.token = token;
+    }
+
+    @Override
+    public boolean isRememberMe() {
+        return rememberMe;
+    }
+
+    public void setRememberMe(boolean rememberMe) {
+        this.rememberMe = rememberMe;
     }
 
     @Override

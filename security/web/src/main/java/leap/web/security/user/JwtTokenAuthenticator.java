@@ -15,9 +15,6 @@
  */
 package leap.web.security.user;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
@@ -36,6 +33,9 @@ import leap.web.security.SecurityConfig;
 import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.TokenAuthenticator;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator implements TokenAuthenticator, PostCreateBean {
 	
@@ -64,12 +64,13 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 				return false;
 			}
 			
-			UserAccount account = resolveUserAccount(context, username, claims);
-			if(null == account) {
+			UserDetails details = resolveUserDetails(context, username, claims);
+			if(null == details) {
 				return false;
 			}
-			
-			return resolveUserPrincipal(username, account, user);
+
+			user.set(details);
+			return true;
 		}
 		
 		return false;

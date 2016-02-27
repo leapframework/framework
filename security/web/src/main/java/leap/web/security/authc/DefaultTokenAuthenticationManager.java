@@ -114,11 +114,6 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 			throw new IllegalStateException("Credentials '" + credentials + "' authenticated but no principal was returned");
 		}
 		
-		//Checks the authenticated state in principal
-		if(!principal.isAuthenticated()){
-			throw new IllegalStateException("The returned principal must be authenticated");
-		}
-
         Authentication authc = sessionManager.getAuthentication(request);
 		if(null != authc && !principal.getId().equals(authc.getUserPrincipal().getId())) {
 			sessionManager.removeAuthentication(request);

@@ -10,7 +10,7 @@
         <additional-type-def type="leap.web.security.SecurityConfigurator"/>
     </bean>
     	  
-   	<bean type="leap.web.security.SecuredPathSource" class="leap.web.security.DefaultSecuredPathSource" primary="true"/>
+   	<bean type="leap.web.security.SecurityPathSource" class="leap.web.security.DefaultSecurityPathSource" primary="true"/>
     	  
     <bean type="leap.web.security.SecurityHandler" class="leap.web.security.DefaultSecurityHandler" primary="true"/>
     

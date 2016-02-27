@@ -17,7 +17,6 @@ package leap.web.security.authc;
 
 import leap.core.security.SecurityContext;
 import leap.core.validation.ValidationContext;
-import leap.lang.Strings;
 import leap.web.security.SecurityConfig;
 
 public interface AuthenticationContext extends ValidationContext {

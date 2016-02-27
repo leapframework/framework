@@ -16,19 +16,14 @@
 package leap.web.security.user;
 
 
-public interface UserDetails {
+import leap.core.security.UserPrincipal;
 
-	Object getId();
-	
+public interface UserDetails extends UserPrincipal {
+
 	/**
-	 * Returns the name for displaying in screen of this user. Cannot return <code>null</code>.
-	 */
-	String getName();
-	
-	/**
-	 * Returns the user name used to authenticate the user. Cannot return <code>null</code>.
-	 */
-	String getLoginName();
+	 * Optional. Returns the user's login password.
+     */
+	String getPassword();
 
     /**
      * Returns <code>true</code> if the user is enabled.

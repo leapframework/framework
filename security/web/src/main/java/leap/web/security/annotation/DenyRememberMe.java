@@ -13,12 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security;
+package leap.web.security.annotation;
 
-import leap.web.Request;
+import java.lang.annotation.*;
 
-public interface SecuredPathSource {
-
-	SecuredPath getSecuredPath(SecurityContextHolder context, Request request);
-	
-}
+/**
+ * The annotation means that the controller or action can not be accessed by remember-me user.
+ */
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface DenyRememberMe {}

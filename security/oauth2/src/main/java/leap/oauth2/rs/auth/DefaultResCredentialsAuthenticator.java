@@ -31,7 +31,6 @@ import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.oauth2.rs.token.ResAccessTokenDetails;
 import leap.oauth2.rs.token.ResTokenManager;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
@@ -100,7 +99,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
                 log.debug("The user id '{}' created with access token '{}' is not found", userId, at.getToken());
                 return Result.empty();
             }else{
-                user = new SimpleUserDetailsPrincipal(userDetails);    
+                user = userDetails;
             }
         }
         

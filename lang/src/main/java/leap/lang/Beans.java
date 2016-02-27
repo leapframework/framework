@@ -268,12 +268,15 @@ public class Beans {
 	}
     
     public static void setProperties(BeanType beanType,Object bean,Map<String, Object> map){
+		boolean dyna = bean instanceof DynaBean;
     	for(Entry<String, Object> entry : map.entrySet()){
     		String name = entry.getKey();
     		BeanProperty bp = beanType.tryGetProperty(name);
     		if(null != bp){
     			bp.setValue(bean, entry.getValue());
-    		}
+    		}else if(dyna) {
+				((DynaBean)bean).setProperty(name, entry.getValue());
+			}
     	}
     }
     
@@ -383,8 +386,8 @@ public class Beans {
     	setProperty(beanType, bean, property, value, false);
     }
     
-    public static void setProperty(BeanType beanType,Object bean,String property,Object value, boolean ignorecase){
-    	if(ignorecase){
+    public static void setProperty(BeanType beanType,Object bean,String property,Object value, boolean ignoreCase){
+    	if(ignoreCase){
     		if(beanType.trySetIgnoreCase(bean, property, value)){
     			return;
     		}

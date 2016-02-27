@@ -35,9 +35,6 @@ import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.csrf.CSRF;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-
 /**
  * The {@link SecurityInterceptor} for protecting resource request in oauth2 resource server.
  */
@@ -108,7 +105,7 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
             }
 
             if(null != path) {
-                if(!path.isAllow(request, context, authc)) {
+                if(!path.checkAuthentication(request, context)) {
                     errorHandler.handleInsufficientScope(request, response, "Access denied");
                     return State.INTERCEPTED;
                 }

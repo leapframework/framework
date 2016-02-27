@@ -15,15 +15,13 @@
  */
 package leap.oauth2.as.endpoint.token;
 
-import java.util.function.Consumer;
-
 import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
 import leap.lang.Strings;
-import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
@@ -34,10 +32,11 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.authc.AuthenticationManager;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 import leap.web.security.user.UserStore;
+
+import java.util.function.Consumer;
 
 /**
  * grant_type=refresh_token
@@ -84,7 +83,7 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 				OAuth2Errors.invalidGrant(response, "invalid user");
 				return;
 			}
-			user = new SimpleUserDetailsPrincipal(ud);
+			user = ud;
 		}
 		
 		//Authenticate client.

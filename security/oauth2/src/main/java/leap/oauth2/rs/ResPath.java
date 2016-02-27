@@ -15,22 +15,26 @@
  */
 package leap.oauth2.rs;
 
+import leap.lang.Arrays2;
 import leap.lang.path.PathPattern;
 import leap.oauth2.rs.auth.ResAuthentication;
 import leap.web.Request;
-import leap.web.security.SecuredPath;
-import leap.web.security.SecuredRule;
+import leap.web.security.SecurityPath;
+import leap.web.security.SecurityRule;
 import leap.web.security.authc.AuthenticationContext;
 
-public class ResPath extends SecuredPath {
+public class ResPath extends SecurityPath {
 	
 	protected final ResScope scope;
 
 	public ResPath(PathPattern pathPattern,
-				   boolean allowAnonymous, boolean allowClientOnly, boolean allowRememberMe,
-				   SecuredRule[] rules, ResScope scope) {
+				   boolean allowAnonymous,
+				   boolean allowClientOnly,
+				   boolean allowRememberMe,
+				   SecurityRule[] rules,
+				   ResScope scope) {
 	    
-		super(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, rules);
+		super(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, Arrays2.EMPTY_STRING_ARRAY, Arrays2.EMPTY_STRING_ARRAY, rules);
 		
 		this.scope = scope;
 	}
@@ -40,7 +44,7 @@ public class ResPath extends SecuredPath {
 	}
 
     public boolean isAllow(Request request, AuthenticationContext context, ResAuthentication authc) {
-    	if(!super.isAllow(request, context, authc)) {
+    	if(!super.checkAuthentication(request, context)) {
     		return false;
     	}
     	

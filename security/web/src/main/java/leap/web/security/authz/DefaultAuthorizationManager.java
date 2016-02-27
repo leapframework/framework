@@ -15,16 +15,15 @@
  */
 package leap.web.security.authz;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Out;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 public class DefaultAuthorizationManager implements AuthorizationManager {
 
@@ -41,6 +40,6 @@ public class DefaultAuthorizationManager implements AuthorizationManager {
 			}
 		}
 		
-		return new SimpleAuthorization(!config.isAuthorizeAnyRequests());
+		return new SimpleAuthorization();
     }
 }

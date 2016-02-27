@@ -172,14 +172,14 @@ public interface Route extends RouteBase, Sourced {
 	/**
 	 * Returns <code>true</code> if the action accepts validation error.
 	 * 
-	 * That means the action will be exeucted in spite of validation error.
+	 * That means the action will be executed in spite of validation error.
 	 */
 	boolean isAcceptValidationError();
 	
 	/**
 	 * Sets the property.
 	 */
-	void setAcceptValidationError(boolean allow);
+	void setAcceptValidationError(boolean accept);
 	
 	/**
 	 * Returns <code>true</code> if the route only accepts https request.
@@ -216,5 +216,5 @@ public interface Route extends RouteBase, Sourced {
 	 * Sets the property.
 	 */
 	void setAllowClientOnly(boolean allow);
-}
 
+}
