@@ -29,7 +29,7 @@ import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.oauth2.wac.token.WacTokenManager;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.login.LoginManager;

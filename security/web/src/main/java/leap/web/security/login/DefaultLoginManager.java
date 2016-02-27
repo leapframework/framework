@@ -25,7 +25,7 @@ import leap.web.security.DefaultSecurityContextHolder;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 

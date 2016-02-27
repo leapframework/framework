@@ -77,7 +77,7 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 		if(!token.isClientOnly()) {
 			//Authenticate user.
 			UserStore   us = sc.getUserStore();
-		    UserDetails ud = us.findUserDetailsByIdString(token.getUserId());
+		    UserDetails ud = us.loadUserDetailsByIdString(token.getUserId());
 			if(null == ud || !ud.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
 				OAuth2Errors.invalidGrant(response, "invalid user");

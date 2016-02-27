@@ -33,7 +33,7 @@ public abstract class UsernameBasedAuthenticator {
 	
 	protected UserDetails resolveUserDetails(ValidationContext context, String username, Map<String, Object> params) {
 		UserDetails details =
-				sc.getUserStore().findUserDetailsByUsername(username);
+				sc.getUserStore().loadUserDetailsByLoginName(username);
 		
 		//User not found
 		if(null == details){

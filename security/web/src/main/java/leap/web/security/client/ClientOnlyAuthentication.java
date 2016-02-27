@@ -46,12 +46,12 @@ public class ClientOnlyAuthentication extends AbstractAuthentication {
     }
 
     @Override
-    public UserPrincipal getUserPrincipal() {
+    public UserPrincipal getUser() {
         return null;
     }
 
     @Override
-    public ClientPrincipal getClientPrincipal() {
+    public ClientPrincipal getClient() {
         return client;
     }
 

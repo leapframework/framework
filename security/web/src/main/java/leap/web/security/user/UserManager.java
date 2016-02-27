@@ -17,7 +17,7 @@ package leap.web.security.user;
 
 import leap.core.security.UserPrincipal;
 import leap.lang.Result;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public interface UserManager {
 

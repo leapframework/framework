@@ -13,10 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.authc;
-
-import leap.core.security.ClientPrincipal;
-import leap.core.security.UserPrincipal;
+package leap.core.security;
 
 public interface Authentication {
 
@@ -50,22 +47,29 @@ public interface Authentication {
 	Object getCredentials();
 	
 	/**
-	 * Optional. Returns the authentication user.
+	 * Optional. Returns the user principal.
 	 */
-	UserPrincipal getUserPrincipal();
+	UserPrincipal getUser();
 	
     /**
-     * Optional. Returns the authentication client.
+     * Optional. Returns the client principal.
      */
-    default ClientPrincipal getClientPrincipal() {
+    default ClientPrincipal getClient() {
         return null;
+    }
+
+    /**
+     * Returns true if the client is not null.
+     */
+    default boolean hasClient() {
+        return null != getClient();
     }
 
 	/**
 	 * Returns <code>true</code> if the authentication only contains client, no user.
      */
 	default boolean isClientOnly() {
-		return getUserPrincipal() == null || getUserPrincipal().isAnonymous();
+		return getUser() == null || getUser().isAnonymous();
 	}
 
     /**

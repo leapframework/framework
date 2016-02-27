@@ -22,7 +22,7 @@ import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
@@ -34,7 +34,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected final SecurityConfig config;
 	protected final Request        request;
 
-    protected Authentication       authentication;
     protected LoginContext         loginContext;
     protected LogoutContext        logoutContext;
 	protected String			   authenticationToken;
@@ -69,11 +68,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         log.debug("Set authentication token : {}", token);
 		this.authenticationToken = token;
 	}
-
-	@Override
-    public Authentication getAuthentication() {
-        return authentication;
-    }
 
     public void setAuthentication(Authentication authentication) {
         log.debug("Set authentication : {}", authentication);

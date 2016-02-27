@@ -20,31 +20,29 @@ import leap.lang.Assert;
 public interface UserStore {
 
 	/**
-	 * Returns the id as {@link Object} type from string type.
+	 * Returns the id as {@link Object} type from {@link String} type.
      */
-	default Object idFromString(String idString) {
+	default Object getObjectId(String idString) {
 		return idString;
 	}
 
 	/**
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 */
-	UserDetails findUserDetails(Object userId);
-
-	/**
-	 * @see {@link #findUserDetails(Object)}
-	 */
-	default UserDetails findUserDetailsByIdString(String idString) {
-		return findUserDetails(idFromString(idString));
-	}
+	UserDetails loadUserDetailsById(Object userId);
 
 	/**
 	 * Finds the {@link UserDetails} by the login name of user.
 	 */
-	default UserDetails findUserDetailsByUsername(String username) {
-	    throw new IllegalStateException("Not implemented");
+	UserDetails loadUserDetailsByLoginName(String loginName);
+
+	/**
+	 * @see {@link #loadUserDetailsById(Object)}
+	 */
+	default UserDetails loadUserDetailsByIdString(String idString) {
+		return loadUserDetailsById(getObjectId(idString));
 	}
-	
+
 	/**
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 * 
@@ -54,7 +52,7 @@ public interface UserStore {
 	 * @throws IllegalStateException if {@link UserDetails#getLoginName()} or {@link UserDetails#getName()} is null.
 	 */
 	default UserDetails findAndCheckUserDetails(Object userId) throws IllegalStateException {
-		UserDetails ud = findUserDetails(userId);
+		UserDetails ud = loadUserDetailsById(userId);
 		
 		if(null != ud) {
 		    Assert.notNull(ud.getName(), "The 'name' in 'UserDetails:" + ud.getClass() + "' cannot be null");
@@ -68,6 +66,6 @@ public interface UserStore {
 	 * @see {@link #findAndCheckUserDetails(Object)}
      */
 	default UserDetails findAndCheckUserDetailsByIdString(String idString) throws IllegalStateException {
-		return findAndCheckUserDetails(idFromString(idString));
+		return findAndCheckUserDetails(getObjectId(idString));
 	}
 }

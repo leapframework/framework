@@ -17,7 +17,7 @@ package leap.web.security;
 
 import leap.core.security.SecurityException;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 
 public interface SecurityRule {

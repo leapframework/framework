@@ -16,10 +16,7 @@
 package leap.web.security.authc;
 
 import leap.core.annotation.Inject;
-import leap.core.security.Anonymous;
-import leap.core.security.ClientPrincipal;
-import leap.core.security.Credentials;
-import leap.core.security.UserPrincipal;
+import leap.core.security.*;
 import leap.core.validation.ValidationContext;
 import leap.lang.Out;
 import leap.lang.Result;
@@ -100,7 +97,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
             }
 
             if(null != authc) {
-                if(null == authc.getUserPrincipal()) {
+                if(null == authc.getUser()) {
                     authc = new WrappedAuthentication(authc,createAnonymous(request, response, context));
                 }
 
@@ -116,7 +113,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
 	@Override
     public void loginImmediately(Request request, Response response, Authentication authc) {
 
-        log.debug("User {} logged in", authc.getUserPrincipal().getLoginName());
+        log.debug("User {} logged in", authc.getUser().getLoginName());
 
 		saveAuthentication(request, response, authc);
 		
@@ -193,13 +190,13 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         }
 
         @Override
-        public UserPrincipal getUserPrincipal() {
+        public UserPrincipal getUser() {
             return user;
         }
 
         @Override
-        public ClientPrincipal getClientPrincipal() {
-            return wrapped.getClientPrincipal();
+        public ClientPrincipal getClient() {
+            return wrapped.getClient();
         }
 
         @Override

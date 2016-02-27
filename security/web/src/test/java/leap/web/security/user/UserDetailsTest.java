@@ -43,7 +43,7 @@ public class UserDetailsTest extends SecurityTestCase {
 		
 		User.deleteBy("loginName", username);
 		
-		assertNull(userStore.findUserDetailsByUsername(username));
+		assertNull(userStore.loadUserDetailsByLoginName(username));
 		
 		User user = new User();
 		user.setLoginName(username);
@@ -51,7 +51,7 @@ public class UserDetailsTest extends SecurityTestCase {
 		user.save();
 
 		try{
-			UserDetails account = userStore.findUserDetailsByUsername(username);
+			UserDetails account = userStore.loadUserDetailsByLoginName(username);
 			assertNotNull(account);
 			assertNotNull(account.getId());
 			assertEquals(encodedPassword, account.getPassword());

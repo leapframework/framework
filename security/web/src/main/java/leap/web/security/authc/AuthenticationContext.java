@@ -15,6 +15,7 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
 import leap.core.validation.ValidationContext;
 import leap.web.security.SecurityConfig;

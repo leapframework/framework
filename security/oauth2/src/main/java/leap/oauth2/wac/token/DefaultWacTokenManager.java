@@ -32,7 +32,7 @@ import leap.oauth2.RefreshTokenInvalidException;
 import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.oauth2.wac.OAuth2AccessToken;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public class DefaultWacTokenManager implements WacTokenManager {
     
@@ -61,7 +61,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
                 at.setToken((String)map.get("access_token"));
                 at.setRefreshToken((String)map.get("refresh_token"));
                 at.setExpiresIn((Integer)map.get("expires_in"));
-                at.setUserId(authc.getUserPrincipal().getIdAsString());
+                at.setUserId(authc.getUser().getIdAsString());
                 
                 saveAccessToken(request, at);
                 

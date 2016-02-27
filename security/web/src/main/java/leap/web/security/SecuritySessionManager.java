@@ -16,7 +16,7 @@
 package leap.web.security;
 
 import leap.core.web.RequestBase;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public interface SecuritySessionManager {
 	

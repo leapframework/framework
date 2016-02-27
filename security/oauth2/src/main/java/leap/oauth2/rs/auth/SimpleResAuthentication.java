@@ -19,7 +19,7 @@ import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.web.security.authc.AbstractAuthentication;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public class SimpleResAuthentication extends AbstractAuthentication implements Authentication, ResAuthentication {
 	
@@ -49,12 +49,12 @@ public class SimpleResAuthentication extends AbstractAuthentication implements A
 	}
 
 	@Override
-	public UserPrincipal getUserPrincipal() {
+	public UserPrincipal getUser() {
 		return user;
 	}
 
 	@Override
-    public ClientPrincipal getClientPrincipal() {
+    public ClientPrincipal getClient() {
 	    return client;
     }
 

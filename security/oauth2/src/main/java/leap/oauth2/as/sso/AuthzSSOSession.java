@@ -16,7 +16,7 @@
 package leap.oauth2.as.sso;
 
 import leap.lang.expirable.TimeExpirable;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 /**
  * Indicates a single-sign-on session of an user.

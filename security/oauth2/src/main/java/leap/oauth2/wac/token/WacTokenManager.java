@@ -17,7 +17,7 @@ package leap.oauth2.wac.token;
 
 import leap.oauth2.wac.OAuth2AccessToken;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 /**
  * The token manager used by web app client.

@@ -30,7 +30,7 @@ import leap.lang.Strings;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.TokenAuthenticator;
 
@@ -78,9 +78,9 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 
 	@Override
 	protected Map<String, Object> createDefaultClaims(Authentication auth) {
-		UserPrincipal user = auth.getUserPrincipal();
+		UserPrincipal user = auth.getUser();
 		
-		Map<String, Object> claims = new HashMap<String, Object>();
+		Map<String, Object> claims = new HashMap<>();
 		
 		claims.put(CLAIM_NAME, user.getLoginName());
 		

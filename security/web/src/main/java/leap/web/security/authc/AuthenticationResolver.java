@@ -15,12 +15,8 @@
  */
 package leap.web.security.authc;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
+import leap.core.security.Authentication;
 import leap.lang.Result;
-import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
 

@@ -73,7 +73,7 @@ public class DefaultLoginTokenHandler implements LoginTokenHandler {
             //Authenticate user.
             UserPrincipal user = null;
             UserStore us = sc.getUserStore();
-            UserDetails ud = us.findUserDetailsByIdString(at.getUserId());
+            UserDetails ud = us.loadUserDetailsByIdString(at.getUserId());
             if(null == ud || !ud.isEnabled()) {
                 OAuth2Errors.invalidGrant(response, "invalid user");
                 return true;

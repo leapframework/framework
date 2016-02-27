@@ -19,13 +19,13 @@ import leap.core.annotation.Inject;
 import leap.lang.Lazy;
 import leap.orm.dao.Dao;
 
-public class DefaultUserStore implements UserStore {
+public class JdbcUserStore implements UserStore {
 	
-    public static final String SQL_KEY_FIND_USER_DETAILS             = "security.findUserDetails";
-    public static final String SQL_KEY_FIND_USER_DETAILS_BY_USERNAME = "security.findUserDetailsByUsername";
-    public static final String SQL_PARAM_LOGIN_NAME                  = "username";
-    public static final String SQL_PARAM_USER_ID                     = "userid";
-	
+    public static final String SQL_KEY_FIND_USER_DETAILS_BY_ID         = "security.findUserDetailsById";
+    public static final String SQL_KEY_FIND_USER_DETAILS_BY_LOGIN_NAME = "security.findUserDetailsByLoginName";
+    public static final String SQL_PARAM_USER_ID                       = "userId";
+    public static final String SQL_PARAM_LOGIN_NAME                    = "loginName";
+
 	@Inject(name="security",namedOrPrimary=true)
 	protected Lazy<Dao> lazyDao;
 	
@@ -34,17 +34,17 @@ public class DefaultUserStore implements UserStore {
 	}
 
 	@Override
-    public UserDetails findUserDetails(Object userId) {
+    public UserDetails loadUserDetailsById(Object userId) {
 	    return lazyDao.get()
-	    		  .createNamedQuery(SQL_KEY_FIND_USER_DETAILS, SimpleUserDetails.class)
+	    		  .createNamedQuery(SQL_KEY_FIND_USER_DETAILS_BY_ID, SimpleUserDetails.class)
 	    		  .param(SQL_PARAM_USER_ID, userId)
 	    		  .singleOrNull();
     }
 
     @Override
-    public UserDetails findUserDetailsByUsername(String username) {
+    public UserDetails loadUserDetailsByLoginName(String username) {
         return lazyDao.get()
-                .createNamedQuery(SQL_KEY_FIND_USER_DETAILS_BY_USERNAME, SimpleUserDetails.class)
+                .createNamedQuery(SQL_KEY_FIND_USER_DETAILS_BY_LOGIN_NAME, SimpleUserDetails.class)
                 .param(SQL_PARAM_LOGIN_NAME, username)
                 .singleOrNull();
     }

@@ -15,18 +15,15 @@
  */
 package leap.core.security;
 
-/**
- * User's principal.
- */
 public interface UserPrincipal extends Principal {
 	
 	/**
-	 * Returns the user's name use to display.
+	 * Returns the user's display name.
 	 */
 	String getName();
 
 	/**
-	 * Returns the user's name use to login.
+	 * Returns the user's login name.
 	 */
 	String getLoginName();
 

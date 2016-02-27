@@ -46,24 +46,18 @@ public abstract class SecurityContext {
 	public static void removeCurrent(){
 		RequestContext.current().removeAttribute(CONTEXT_ATTRIBUTE_NAME);
 	}
-	
-	protected UserPrincipal   user;
-	protected ClientPrincipal client;
-	
-	public UserPrincipal getUser(){
-		return user;
-	}
-	
-	public void setUser(UserPrincipal user) {
-		this.user = user;
-	}
 
-	public ClientPrincipal getClient() {
-		return client;
-	}
+	protected Authentication authentication;
 
-	public void setClient(ClientPrincipal client) {
-		this.client = client;
-	}
-	
+    public Authentication getAuthentication() {
+        return authentication;
+    }
+
+    public UserPrincipal getUser() {
+        return null == authentication ? null : authentication.getUser();
+    }
+
+    public ClientPrincipal getClient() {
+        return null == authentication ? null : authentication.getClient();
+    }
 }

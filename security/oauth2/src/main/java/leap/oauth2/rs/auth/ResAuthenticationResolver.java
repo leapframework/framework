@@ -18,7 +18,7 @@ package leap.oauth2.rs.auth;
 import leap.lang.Result;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationResolver;
 

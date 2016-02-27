@@ -15,6 +15,7 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
 import leap.lang.Result;
 import leap.lang.Strings;
@@ -70,7 +71,7 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationResolver 
 
 	@Override
     public void onLoginSuccess(Request request, Response response, Authentication authentication) {
-		UserPrincipal user = authentication.getUserPrincipal();
+		UserPrincipal user = authentication.getUser();
 		
 		if(user instanceof UserDetails){
 			String rememberMe = request.getParameter(securityConfig.getRememberMeParameterName());
@@ -164,7 +165,7 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationResolver 
         UserStore userStore = securityConfig.getUserStore();
         
         String username = tokens[0];
-        UserDetails user = userStore.findUserDetailsByUsername(username);
+        UserDetails user = userStore.loadUserDetailsByLoginName(username);
         if(null == user){
         	log.debug("The remembered user '{}' not found",username);
         	return null;

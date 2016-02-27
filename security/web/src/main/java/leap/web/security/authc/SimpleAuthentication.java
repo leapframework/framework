@@ -15,6 +15,7 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
@@ -53,11 +54,11 @@ public class SimpleAuthentication extends AbstractAuthentication implements Auth
 	}
 
 	@Override
-	public UserPrincipal getUserPrincipal() {
+	public UserPrincipal getUser() {
 		return userPrincipal;
 	}
 
-	public ClientPrincipal getClientPrincipal() {
+	public ClientPrincipal getClient() {
 		return clientPrincipal;
 	}
 

@@ -17,7 +17,7 @@ package leap.web.security.user;
 
 import java.util.Map;
 
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.TokenAuthenticator;
 
 public abstract class UsernameBasedTokenAuthenticator extends UsernameBasedAuthenticator implements TokenAuthenticator {

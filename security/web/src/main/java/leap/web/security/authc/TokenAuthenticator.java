@@ -15,6 +15,7 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.token.TokenSignatureException;
 import leap.web.Request;
 import leap.web.Response;

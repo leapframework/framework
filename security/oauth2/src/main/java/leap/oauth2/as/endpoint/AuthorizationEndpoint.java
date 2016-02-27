@@ -41,7 +41,7 @@ import leap.web.exception.ResponseException;
 import leap.web.route.Routes;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.user.UserManager;
 import leap.web.view.ViewSource;
 
@@ -129,7 +129,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         //Handle authentication.
         handleAuthenticated(request, response, 
-                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc),
+                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc),
                             handler);
         
         //Intercepted.
@@ -204,7 +204,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
         
         //Handle authentication.
-        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal()), authc), handler);
+        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc), handler);
         
         //Intercepted.
         return State.INTERCEPTED;

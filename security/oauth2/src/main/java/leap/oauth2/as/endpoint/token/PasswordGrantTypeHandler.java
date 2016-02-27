@@ -31,7 +31,7 @@ import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.user.UserManager;
 
@@ -87,7 +87,7 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
             }
 		}
 		
-		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, userManager.getUserDetails(authc.getUserPrincipal()));
+		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, userManager.getUserDetails(authc.getUser()));
 		
 		//Generate token.
 		callback.accept(tokenManager.createAccessToken(oauthAuthc));

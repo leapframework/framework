@@ -22,7 +22,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 
 import java.util.Comparator;

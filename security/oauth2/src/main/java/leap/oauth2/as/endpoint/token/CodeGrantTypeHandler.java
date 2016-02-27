@@ -80,7 +80,7 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		
 		//Load user details.
 		UserStore us = sc.getUserStore();
-		UserDetails userDetails = us.findUserDetailsByIdString(authzCode.getUserId());
+		UserDetails userDetails = us.loadUserDetailsByIdString(authzCode.getUserId());
 		if(null == userDetails) {
             OAuth2Errors.invalidGrant(response, "user id '" + authzCode.getUserId() + "' not found");
             return;

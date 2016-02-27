@@ -27,7 +27,7 @@ import leap.oauth2.as.client.AuthzClient;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityContextHolder;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 import java.util.HashSet;
 import java.util.List;
@@ -79,7 +79,7 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager {
         }
 
         AuthzSSOStore ss = config.getSSOStore();
-        AuthzSSOSession session = ss.loadSessionByToken(authc.getUserPrincipal().getLoginName(), token);
+        AuthzSSOSession session = ss.loadSessionByToken(authc.getUser().getLoginName(), token);
         if(null == session) {
             return Arrays2.EMPTY_STRING_ARRAY;
         }
@@ -98,7 +98,7 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager {
     protected AuthzSSOSession newSession(Request request, Response response, AuthzAuthentication authc) {
         SimpleAuthzSSOSession session = new SimpleAuthzSSOSession();
 
-        UserPrincipal user = authc.getAuthentication().getUserPrincipal();
+        UserPrincipal user = authc.getAuthentication().getUser();
 
         session.setId(UUID.randomUUID().toString());
         session.setUserId(user.getIdAsString());

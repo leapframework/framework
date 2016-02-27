@@ -19,6 +19,7 @@ import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
+import leap.core.security.Authentication;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.SimpleTokenCredentials;
@@ -115,7 +116,7 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
 		}
 		
         Authentication authc = sessionManager.getAuthentication(request);
-		if(null != authc && !principal.getId().equals(authc.getUserPrincipal().getId())) {
+		if(null != authc && !principal.getId().equals(authc.getUser().getId())) {
 			sessionManager.removeAuthentication(request);
 		}
 

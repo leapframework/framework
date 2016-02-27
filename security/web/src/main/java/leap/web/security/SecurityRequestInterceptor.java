@@ -31,7 +31,7 @@ import leap.web.route.Route;
 import leap.web.security.annotation.AllowAnonymous;
 import leap.web.security.annotation.AllowClientOnly;
 import leap.web.security.annotation.Secured;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authz.Authorization;
 import leap.web.security.csrf.CsrfHandler;
 
@@ -190,8 +190,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 
-        context.setUser(authentication.getUserPrincipal());
-		request.setUser(authentication.getUserPrincipal());
+		request.setUser(authentication.getUser());
 
 		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.postResolveAuthentication(request, response, context).isIntercepted()){

@@ -23,12 +23,12 @@ public class InMemoryUserStore implements UserStore {
     private final Map<String, User> users = new ConcurrentHashMap<String, InMemoryUserStore.User>();
 
     @Override
-    public UserDetails findUserDetails(Object userId) {
+    public UserDetails loadUserDetailsById(Object userId) {
         return users.get((String)userId);
     }
     
     @Override
-    public UserDetails findUserDetailsByUsername(String username) {
+    public UserDetails loadUserDetailsByLoginName(String username) {
         return users.get(username);
     }
 

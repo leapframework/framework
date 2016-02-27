@@ -19,7 +19,7 @@ import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public interface SecurityInterceptor extends Interceptor{
 

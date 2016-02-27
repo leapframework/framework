@@ -17,7 +17,7 @@ package leap.oauth2.as.authc;
 
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.client.AuthzClient;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.user.UserDetails;
 
 /**

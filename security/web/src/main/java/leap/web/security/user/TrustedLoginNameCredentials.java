@@ -17,16 +17,16 @@ package leap.web.security.user;
 
 import leap.core.security.TrustedCredentials;
 
-public class TrustedUsernameCredentials implements TrustedCredentials {
+public class TrustedLoginNameCredentials implements TrustedCredentials {
     
-    protected final String username;
+    protected final String loginName;
 
-    public TrustedUsernameCredentials(String usernmae) {
-        this.username = usernmae;
+    public TrustedLoginNameCredentials(String loginName) {
+        this.loginName = loginName;
     }
 
-    public String getUsername() {
-        return username;
+    public String getLoginName() {
+        return loginName;
     }
 
 }
