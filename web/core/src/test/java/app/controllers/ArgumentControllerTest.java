@@ -232,7 +232,7 @@ public class ArgumentControllerTest extends WebTestCase {
 		
 		Map<String, Object> result = JSON.decodeToMap(json);
 		assertEquals("s1",result.get("strValue"));
-		assertEquals(1,result.get("intValue"));
+		assertEquals("1",result.get("intValue"));
 	}
 	
 	@Test
