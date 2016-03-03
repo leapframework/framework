@@ -75,7 +75,7 @@ public abstract class TestBase extends Assert {
 		if(null == array || array.length == 0){
 			throw new AssertionError("The given array must not be null or empty");
 		}
-	}	
+	}
 	
 	public static void assertNotEmpty(Iterable<?> iterable){
 		if(null == iterable || !iterable.iterator().hasNext()){
