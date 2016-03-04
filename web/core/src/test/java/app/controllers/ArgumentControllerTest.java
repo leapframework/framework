@@ -133,6 +133,12 @@ public class ArgumentControllerTest extends WebTestCase {
 	}
 	
 	@Test
+	public void testMap() {
+		THttpRequest form = client().request("/argument/map");
+		assertMapTest(form);
+	}
+	
+	@Test
 	public void testMapArray() {
 		THttpRequest form = client().request("/argument/map_array");
 		assertArrayTest(form);
@@ -217,6 +223,16 @@ public class ArgumentControllerTest extends WebTestCase {
 		Item item4 = items[4];
 		assertEquals("s5-s1", item4.getItemArray()[0].getStrValue());
 		assertEquals(new Integer(51), item4.getItemArray()[0].getIntValue());
+	}
+	
+	protected void assertMapTest(THttpRequest form) {
+		form.addFormParam("strValue", "s1");
+		form.addFormParam("intValue", "1");
+		String json = form.send().getContent();
+		
+		Map<String, Object> result = JSON.decodeToMap(json);
+		assertEquals("s1",result.get("strValue"));
+		assertEquals("1",result.get("intValue"));
 	}
 	
 	@Test
