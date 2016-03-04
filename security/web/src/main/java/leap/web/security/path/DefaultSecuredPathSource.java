@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security;
+package leap.web.security.path;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -23,10 +23,12 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.security.SecurityConfig;
+import leap.web.security.SecurityContextHolder;
 
-public class DefaultSecurityPathSource implements SecurityPathSource {
+public class DefaultSecuredPathSource implements SecuredPathSource {
 
-    private static final Log log = LogFactory.get(DefaultSecurityPathSource.class);
+    private static final Log log = LogFactory.get(DefaultSecuredPathSource.class);
 	
 	private static final PathPattern ANY_PATTERN = new PathPattern() {
 		
@@ -36,41 +38,39 @@ public class DefaultSecurityPathSource implements SecurityPathSource {
 		}
 		
 		@Override
-		public String getPattern() {
+		public String pattern() {
 			return "/**";
 		}
 
         @Override
         public String toString() {
-            return getPattern();
+            return pattern();
         }
     };
 	
-	private static final SecurityPath ANY  = new SecurityPathBuilder().setPathPattern(ANY_PATTERN).build();
-	private static final SecurityPath NULL = new SecurityPathBuilder().setPathPattern(ANY_PATTERN).build();
+	private static final SecuredPath ANY  = new DefaultSecuredPathBuilder().setPattern(ANY_PATTERN).build();
+	private static final SecuredPath NULL = new DefaultSecuredPathBuilder().setPattern(ANY_PATTERN).build();
 
 	protected @Inject @M SecurityConfig config;
 
-	protected Cache<String, SecurityPath> cachedPaths = new SimpleLRUCache<>(1024);
+	protected Cache<String, SecuredPath> cachedPaths = new SimpleLRUCache<>(1024);
 	
 	@Override
-	public SecurityPath getSecuredPath(SecurityContextHolder context, Request request) {
-	    SecurityPath securityPath = cachedPaths.get(request.getPath());
-	    if(null != securityPath) {
-	        return securityPath == NULL ? null : securityPath;
+	public SecuredPath getSecuredPath(SecurityContextHolder context, Request request) {
+	    SecuredPath securedPath = cachedPaths.get(request.getPath());
+	    if(null != securedPath) {
+	        return securedPath == NULL ? null : securedPath;
 	    }
 
         log.debug("Matching request {} ...", request.getPath());
 	    
-		SecurityPath[] urls = config.getSecuredPaths();
-		for(int i=0;i<urls.length;i++){
-			SecurityPath u = urls[i];
-			if(u.matches(request)) {
-                log.debug("Matches -> {}", u.pathPattern);
-			    cachedPaths.put(request.getPath(), securityPath);
-				return u;
+		for(SecuredPath p : config.getSecuredPaths()){
+			if(p.matches(request)) {
+                log.debug("Matches -> {}", p.getPattern());
+			    cachedPaths.put(request.getPath(), securedPath);
+				return p;
 			}
-            log.debug("Not matches -> {}", u.pathPattern);
+            log.debug("Not matches -> {}", p.getPattern());
 		}
 		
 		if(config.isAuthenticateAnyRequests()) {

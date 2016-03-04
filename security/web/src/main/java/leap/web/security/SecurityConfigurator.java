@@ -18,6 +18,7 @@ package leap.web.security;
 
 import leap.core.ioc.BeanList;
 import leap.web.security.csrf.CsrfStore;
+import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
 
 /**
@@ -29,6 +30,11 @@ public interface SecurityConfigurator {
 	 * Returns the {@link SecurityConfig} configuration object for current web application.
 	 */
 	SecurityConfig config();
+
+    /**
+     * Returns the paths configurator.
+     */
+    SecuredPaths paths();
 	
 	/**
 	 * Enables web security.
@@ -50,6 +56,16 @@ public interface SecurityConfigurator {
 	default SecurityConfigurator authenticateAnyRequests() {
 		return setAuthenticateAnyRequests(true);
 	}
+
+    /**
+     * Enables anonymous access to the given paths.
+     */
+    default SecurityConfigurator allowAnonymousAccessTo(String... paths) {
+        for(String path : paths){
+            paths().apply(path,true);
+        }
+        return this;
+    }
 	
 	/**
 	 * Sets enable or disable.
@@ -142,34 +158,7 @@ public interface SecurityConfigurator {
 	 * Do not intercept the given path.
 	 */
 	SecurityConfigurator ignore(String path);
-	
-	/**
-	 * Adds an secured path.
-	 */
-	SecurityConfigurator secured(SecurityPath path);
 
-	/**
-	 * Adds an intercept url.
-	 */
-	SecurityConfigurator secured(String path,boolean allowAnonymous);
-
-	/**
-	 * Adds an secured path.
-	 */
-	default SecurityConfigurator secured(String path) {
-		return secured(path,false);
-	}
-
-	/**
-	 * Enables anonymous access to the given paths.
-	 */
-	default SecurityConfigurator allowAnonymousAccessTo(String... paths) {
-		for(String path : paths){
-			secured(path,true);
-		}
-		return this;
-	}
-	
 	/**
 	 * Returns a mutable list contains all {@link SecurityInterceptor}. 
 	 */

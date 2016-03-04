@@ -18,7 +18,7 @@ package leap.web.security;
 import leap.web.Request;
 import leap.web.Response;
 import leap.core.security.Authentication;
-import leap.web.security.authz.Authorization;
+import leap.core.security.Authorization;
 
 public interface SecurityHandler {
 
@@ -43,11 +43,27 @@ public interface SecurityHandler {
 	 * Returns <code>null</code> if no authorization resolved.
 	 */
 	Authorization resolveAuthorization(Request request,Response response, SecurityContextHolder context) throws Throwable;
-	
+
+    /**
+     * Checks the authentication is allowed.
+     *
+     * <p/>
+     * Returns true if allowed.
+     */
+	boolean checkAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable;
+
 	/**
 	 * Handles if current authentication has no permission to access the resource. 
 	 */
 	void handleAuthenticationDenied(Request request,Response response, SecurityContextHolder context) throws Throwable;
+
+    /**
+     * Checks the authorization is allowed.
+     *
+     * <p/>
+     * Returns true if allowed.
+     */
+    boolean checkAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable;
 	
 	/**
 	 * Handles if current authorization has no permission to access the resource.

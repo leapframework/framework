@@ -19,11 +19,10 @@ import leap.lang.Arrays2;
 import leap.lang.path.PathPattern;
 import leap.oauth2.rs.auth.ResAuthentication;
 import leap.web.Request;
-import leap.web.security.SecurityPath;
-import leap.web.security.SecurityRule;
+import leap.web.security.path.DefaultSecuredPath;
 import leap.web.security.authc.AuthenticationContext;
 
-public class ResPath extends SecurityPath {
+public class ResPath extends DefaultSecuredPath {
 	
 	protected final ResScope scope;
 
@@ -31,10 +30,9 @@ public class ResPath extends SecurityPath {
 				   boolean allowAnonymous,
 				   boolean allowClientOnly,
 				   boolean allowRememberMe,
-				   SecurityRule[] rules,
 				   ResScope scope) {
 	    
-		super(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, Arrays2.EMPTY_STRING_ARRAY, Arrays2.EMPTY_STRING_ARRAY, rules);
+		super(pathPattern, allowAnonymous, allowClientOnly, allowRememberMe, Arrays2.EMPTY_STRING_ARRAY, Arrays2.EMPTY_STRING_ARRAY);
 		
 		this.scope = scope;
 	}

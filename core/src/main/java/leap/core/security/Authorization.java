@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,17 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.authz;
+package leap.core.security;
 
-import leap.core.security.Principal;
+public interface Authorization {
 
-public class DefaultAuthorizer implements Authorizer {
-
-	@Override
-    public boolean hasPermission(Principal user, String permission) {
-	    // TODO implement DefaultAuthorizer.hasPermission
-	    return false;
+    default boolean hasRole(String role) {
+        return false;
     }
 
-	
+    default boolean hasAnyRole(String... roles) {
+        return false;
+    }
+
+    default boolean hasPermission(String permission) {
+        return false;
+    }
+
+    default boolean hasAnyPermission(String... permissions) {
+        return false;
+    }
+
 }

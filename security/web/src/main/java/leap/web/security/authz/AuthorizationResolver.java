@@ -15,10 +15,13 @@
  */
 package leap.web.security.authz;
 
-import leap.core.security.Principal;
+import leap.core.security.Authorization;
+import leap.core.web.RequestBase;
+import leap.lang.Result;
+import leap.web.Response;
 
-public interface Authorizer {
-
-	boolean hasPermission(Principal user,String permission);
+public interface AuthorizationResolver {
 	
+	Result<Authorization> resolveAuthorization(RequestBase request, Response response, AuthorizationContext context) throws Throwable;
+
 }

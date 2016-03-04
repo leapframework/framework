@@ -38,7 +38,7 @@ public class HomeControllerTest extends SecurityTestCase {
 	public void testPermission1() {
         login();
 
-
+		get("/permission1").assert403();
 
         logout();
     }

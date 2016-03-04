@@ -59,10 +59,10 @@ public class DefaultRoutes implements Routes {
 	
 	@Override
     public RouteConfigurator create() {
-		return new RouteConfiguratorImpl((c) -> {
+		return new DefaultRouteConfigurator((c) -> {
 			RouteBuilder rb = createRoute(c.getMethod(), c.getPath(), c.getHandler());
 			
-			rb.setSupportsMultipart(c.isSupportsMulitpart());
+			rb.setSupportsMultipart(c.isSupportsMultipart());
 			rb.setCorsEnabled(c.getCorsEnabled());
 			rb.setCsrfEnabled(c.getCsrfEnabled());
 			rb.setHttpsOnly(c.getHttpsOnly());

@@ -27,7 +27,7 @@ import leap.web.view.View;
 import java.util.Collections;
 import java.util.Map;
 
-class RouteImpl implements Sourced, Route {
+class DefaultRoute implements Sourced, Route {
 	
 	protected final Object		 		source;
 	protected final String 		 		method;
@@ -48,25 +48,25 @@ class RouteImpl implements Sourced, Route {
 	protected Boolean supportsMultipart;
 	protected boolean acceptValidationError;
 	protected boolean httpsOnly;
-	protected boolean allowAnonymou;
+	protected boolean allowAnonymous;
 	protected boolean allowClientOnly;
 	
-	public RouteImpl(Object 	    source, 
-					 String 	    method, 
-					 PathTemplate   pathTemplate, 
-					 Action 	    action,
-					 Boolean		corsEnabled,
-					 Boolean		csrfEnabled,
-					 Boolean		supportsMultipart,
-					 Boolean        acceptValidationError,
-					 RequestFormat  requestFormat,
-					 ResponseFormat responseFormat,
-					 View 		    defaultView, 
-					 String		    defaultViewName,
-					 String 	    controllerPath, 
-					 Object 	    executionAttributes,
-					 FailureHandler[]	failureHandlers,
-					 Map<String, String> requiredParameters) {
+	public DefaultRoute(Object 	    source,
+						String 	    method,
+						PathTemplate   pathTemplate,
+						Action 	    action,
+						Boolean		corsEnabled,
+						Boolean		csrfEnabled,
+						Boolean		supportsMultipart,
+						Boolean        acceptValidationError,
+						RequestFormat  requestFormat,
+						ResponseFormat responseFormat,
+						View 		    defaultView,
+						String		    defaultViewName,
+						String 	    controllerPath,
+						Object 	    executionAttributes,
+						FailureHandler[]	failureHandlers,
+						Map<String, String> requiredParameters) {
 		
 		Args.notEmpty(method,"http method");
 		Args.notNull(pathTemplate,"path template");
@@ -258,12 +258,12 @@ class RouteImpl implements Sourced, Route {
     
     @Override
     public boolean isAllowAnonymous() {
-        return allowAnonymou;
+        return allowAnonymous;
     }
 
     @Override
     public void setAllowAnonymous(boolean allow) {
-        this.allowAnonymou = allow;
+        this.allowAnonymous = allow;
     }
 
     @Override

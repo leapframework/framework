@@ -15,11 +15,6 @@
  */
 package leap.web;
 
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
 import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.AppException;
@@ -32,6 +27,10 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.Reflection;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import java.util.Map;
 
 public class AppBootstrap extends ServletContextInitializerBase {
     private static final Log log = LogFactory.get(AppBootstrap.class);
@@ -114,7 +113,7 @@ public class AppBootstrap extends ServletContextInitializerBase {
 	}
 	
 	@Override
-    protected void onAppContexReady(AppContext context) {
+    protected void onAppContextReady(AppContext context) {
 		beanFactory.addBean(App.class, app, true);
 		beanFactory.addBean(ServletContext.class, servletContext, true);
 		

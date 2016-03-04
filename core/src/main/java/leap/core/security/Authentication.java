@@ -15,6 +15,8 @@
  */
 package leap.core.security;
 
+import leap.lang.Arrays2;
+
 public interface Authentication {
 
 	/**
@@ -59,6 +61,20 @@ public interface Authentication {
     }
 
     /**
+     * Optional. Returns the granted permissions.
+     */
+	default String[] getPermissions() {
+        return Arrays2.EMPTY_STRING_ARRAY;
+    }
+
+    /**
+     * Optional. Returns the granted roles.
+     */
+    default String[] getRoles() {
+        return Arrays2.EMPTY_STRING_ARRAY;
+    }
+
+    /**
      * Returns true if the client is not null.
      */
     default boolean hasClient() {
@@ -69,11 +85,11 @@ public interface Authentication {
 	 * Returns <code>true</code> if the authentication only contains client, no user.
      */
 	default boolean isClientOnly() {
-		return getUser() == null || getUser().isAnonymous();
+		return hasClient() && (getUser() == null || getUser().isAnonymous());
 	}
 
     /**
-     * Returns <code>true</code> if the principal is authenticated and not remember-me.
+     * Returns <code>true</code> if the user is authenticated and not remember-me.
      */
     default boolean isFullyAuthenticated() {
         return isAuthenticated() && !isRememberMe();

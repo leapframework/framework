@@ -15,10 +15,47 @@
  */
 package leap.web.security.authz;
 
+import leap.core.security.Authorization;
+import leap.lang.Arrays2;
+
 public class SimpleAuthorization implements Authorization {
 
-	public SimpleAuthorization() {
-	    super();
+	protected String[] roles;
+    protected String[] permissions;
+
+    public String[] getRoles() {
+        return roles;
     }
 
+    public void setRoles(String[] roles) {
+        this.roles = roles;
+    }
+
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String[] permissions) {
+        this.permissions = permissions;
+    }
+
+    @Override
+    public boolean hasRole(String role) {
+        return Arrays2.contains(roles, role);
+    }
+
+    @Override
+    public boolean hasAnyRole(String... roles) {
+        return Arrays2.containsAny(this.roles, roles);
+    }
+
+    @Override
+    public boolean hasPermission(String permission) {
+        return Arrays2.contains(permissions, permission);
+    }
+
+    @Override
+    public boolean hasAnyPermission(String... permissions) {
+        return Arrays2.contains(this.permissions, permissions);
+    }
 }

@@ -19,8 +19,14 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
+import leap.web.security.path.SecuredPath;
 
 public interface SecurityContextHolder extends AuthenticationContext, AuthorizationContext {
+
+    /**
+     * Optional. Returns the path mapping to the request.
+     */
+    SecuredPath getSecurityPath();
 
     /**
      * Required.

@@ -15,9 +15,6 @@
  */
 package leap.web.route;
 
-import java.util.function.Function;
-import java.util.function.Supplier;
-
 import leap.lang.Assert;
 import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
@@ -25,22 +22,25 @@ import leap.web.action.Action;
 import leap.web.action.HandlerAction;
 import leap.web.action.RunnableAction;
 
-class RouteConfiguratorImpl implements RouteConfigurator {
+import java.util.function.Function;
+import java.util.function.Supplier;
+
+class DefaultRouteConfigurator implements RouteConfigurator {
 	
-	private final Function<RouteConfiguratorImpl, Route> callback;
-	private boolean apply;
+	private final Function<DefaultRouteConfigurator, Route> callback;
+	private boolean                                         apply;
 	
 	protected Method  method;
 	protected String  path;
 	protected Action  handler;
-	protected boolean supportsMulitpart;
+	protected boolean supportsMultipart;
 	protected Boolean corsEnabled;
 	protected Boolean csrfEnabled;
 	protected Boolean httpsOnly;
 	protected Boolean allowAnonymous;
 	protected Boolean allowClientOnly;
 	
-	public RouteConfiguratorImpl(Function<RouteConfiguratorImpl, Route> callback) {
+	public DefaultRouteConfigurator(Function<DefaultRouteConfigurator, Route> callback) {
 		this.callback = callback;
 	}
 	
@@ -56,8 +56,8 @@ class RouteConfiguratorImpl implements RouteConfigurator {
 		return handler;
 	}
 
-	public boolean isSupportsMulitpart() {
-		return supportsMulitpart;
+	public boolean isSupportsMultipart() {
+		return supportsMultipart;
 	}
 
 	public Boolean getCorsEnabled() {
@@ -99,7 +99,7 @@ class RouteConfiguratorImpl implements RouteConfigurator {
 
 	@Override
 	public RouteConfigurator setSupportsMultipart(boolean v) {
-		this.supportsMulitpart = v;
+		this.supportsMultipart = v;
 		return this;
 	}
 
@@ -135,8 +135,7 @@ class RouteConfiguratorImpl implements RouteConfigurator {
 
     @Override
 	public Route apply() {
-		Assert.isFalse(apply, "The route aleady added");
-		
+		Assert.isFalse(apply,   "The route already added");
 		Assert.notEmpty(path,   "'path' cannot be empty");
 		Assert.notNull(handler, "'handler' cannot be null");
 		

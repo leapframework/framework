@@ -80,7 +80,7 @@ final class JerseyPathTemplate extends JerseyUriTemplate implements PathTemplate
     private String pattern;
 
 	@Override
-    public String getPattern() {
+    public String pattern() {
 		if(null == pattern){
 			pattern = getTemplate().replaceAll(TEMPLATE_NAMES_PATTERN.pattern(), "*");
 		}

@@ -15,16 +15,12 @@
  */
 package leap.lang;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Predicate;
-
 import leap.lang.collection.ArrayIterable;
 import leap.lang.collection.EmptyIterable;
+
+import java.lang.reflect.Array;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A <code>null</code> safe util class for array object.
@@ -219,6 +215,20 @@ public class Arrays2 {
 	public static boolean containsInObjectArray(Object array, Object objectToFind) {
 		return indexOfObjectArray(array, objectToFind) != INDEX_NOT_FOUND;
 	}
+
+	public static boolean containsAny(String[] array, String... items) {
+        if(null == array) {
+            return false;
+        }
+        for(String item : items) {
+            for(String itemInArray : array) {
+                if(Strings.equals(item, itemInArray)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
 	public static int indexOf(long[] array, long valueToFind) {
 		return indexOf(array, valueToFind, 0);

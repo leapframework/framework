@@ -257,7 +257,7 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 			this.csrfEnabled = null != csrf ? csrf.value() : null;
 		}
 		
-		RouteImpl route = new RouteImpl(source, method, pathTemplate, action,
+		DefaultRoute route = new DefaultRoute(source, method, pathTemplate, action,
             							 corsEnabled, csrfEnabled, supportsMultipart,acceptValidationError,
             							 requestFormat,responseFormat,
             							 defaultView, defaultViewName, 

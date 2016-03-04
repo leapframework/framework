@@ -17,29 +17,41 @@ package leap.web.security.authz;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.lang.Out;
+import leap.core.security.Authorization;
+import leap.lang.Result;
 import leap.web.Request;
+import leap.web.RequestIntercepted;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 
-import javax.servlet.ServletException;
-import java.io.IOException;
-
 public class DefaultAuthorizationManager implements AuthorizationManager {
 
-    protected @Inject @M SecurityConfig         config;
-    protected @Inject @M AuthorizationHandler[] handlers;
+    protected static final Authorization EMPTY_AUTHZ = new Authorization() {};
+
+    protected @Inject @M SecurityConfig          config;
+    protected @Inject @M AuthorizationResolver[] resolvers;
 
 	@Override
-    public Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws ServletException, IOException {
-		Out<Authorization> out = new Out<Authorization>();
-		
-		for(AuthorizationHandler h : handlers){
-			if(h.authorize(request, response, context, out)) {
-				return out.getValue();
-			}
+    public Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable {
+
+		for(AuthorizationResolver resolver : resolvers){
+			Result<Authorization> r =
+                    resolver.resolveAuthorization(request, response, context);
+
+            if(null == r || r.isEmpty()) {
+                continue;
+            }
+
+            if(r.isIntercepted()) {
+                RequestIntercepted.throwIt();
+            }
+
+            if(r.isPresent()) {
+                return r.get();
+            }
+
 		}
 		
-		return new SimpleAuthorization();
+		return EMPTY_AUTHZ;
     }
 }

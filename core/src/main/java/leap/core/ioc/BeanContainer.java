@@ -15,26 +15,6 @@
  */
 package leap.core.ioc;
 
-import java.io.Closeable;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
-
 import leap.core.*;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
@@ -43,25 +23,11 @@ import leap.core.annotation.R;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
-import leap.lang.Args;
-import leap.lang.Beans;
-import leap.lang.Classes;
+import leap.lang.*;
 import leap.lang.Comparators;
-import leap.lang.Disposable;
-import leap.lang.Exceptions;
-import leap.lang.Iterables;
-import leap.lang.Lazy;
-import leap.lang.Objects2;
-import leap.lang.Predicates;
-import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.annotation.Internal;
-import leap.lang.beans.BeanCreationException;
-import leap.lang.beans.BeanException;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
-import leap.lang.beans.NoSuchBeanException;
+import leap.lang.beans.*;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -74,35 +40,47 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
+import java.io.Closeable;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.function.Supplier;
+
 @Internal
 public class BeanContainer implements BeanFactory {
 	
 	private static final Log log = LogFactory.get(BeanContainer.class);
 	
 	/** Definition of beans that are currently in creation */
-	private final ThreadLocal<Map<BeanDefinitionBase,Object>> beansCurrentlyInCreation = new ThreadLocal<Map<BeanDefinitionBase,Object>>();
+	private final ThreadLocal<Map<BeanDefinitionBase,Object>> beansCurrentlyInCreation = new ThreadLocal<>();
 	
 	private static final BeanDefinitionBase NULL_BD = new BeanDefinitionBase(null);
 
-    protected Set<InitDefinition>                              initDefinitions           = new LinkedHashSet<InitDefinition>(10);
-    protected Set<BeanDefinitionBase>                          allBeanDefinitions        = new LinkedHashSet<BeanDefinitionBase>();
-    protected Map<String, BeanDefinitionBase>                  identifiedBeanDefinitions = new HashMap<String, BeanDefinitionBase>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>>           typedBeanDefinitions      = new HashMap<Class<?>, Set<BeanDefinitionBase>>();
-    protected Map<String, BeanListDefinition>                  beanListDefinitions       = new HashMap<String, BeanListDefinition>();
-    protected Map<Class<?>, FactoryBean>                       typedFactoryBeans         = new HashMap<Class<?>, FactoryBean>();
-    protected Map<Class<?>, BeanDefinitionBase>                typedFactoryDefinitions   = new HashMap<Class<?>, BeanDefinitionBase>();
-    protected Map<String, BeanDefinitionBase>                  namedBeanDefinitions      = new HashMap<String, BeanDefinitionBase>();
-    protected Map<Class<?>, BeanDefinitionBase>                primaryBeanDefinitions    = new HashMap<Class<?>, BeanDefinitionBase>();
-    protected Map<String, AliasDefinition>                     aliasDefinitions          = new HashMap<String, AliasDefinition>();
+    protected Set<InitDefinition>                              initDefinitions           = new CopyOnWriteArraySet<>();
+    protected Set<BeanDefinitionBase>                          allBeanDefinitions        = new CopyOnWriteArraySet<>();
+    protected Map<String, BeanDefinitionBase>                  identifiedBeanDefinitions = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>           typedBeanDefinitions      = new HashMap<>();
+    protected Map<String, BeanListDefinition>                  beanListDefinitions       = new HashMap<>();
+    protected Map<Class<?>, FactoryBean>                       typedFactoryBeans         = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>                typedFactoryDefinitions   = new HashMap<>();
+    protected Map<String, BeanDefinitionBase>                  namedBeanDefinitions      = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>                primaryBeanDefinitions    = new HashMap<>();
+    protected Map<String, AliasDefinition>                     aliasDefinitions          = new HashMap<>();
 
-    private Map<String, List<?>>                               typedBeansMap             = new ConcurrentHashMap<String, List<?>>();
-    private Map<Class<?>, Map<String, ?>>                      namedBeansMap             = new ConcurrentHashMap<Class<?>, Map<String, ?>>();
-    private Map<Class<?>, Map<?, BeanDefinition>>              typedInstances            = new ConcurrentHashMap<Class<?>, Map<?, BeanDefinition>>();
+    private Map<String, List<?>>                               typedBeansMap             = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<String, ?>>                      namedBeansMap             = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<?, BeanDefinition>>              typedInstances            = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                              primaryBeans              = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>                         postProcessorBeans        = new ArrayList<BeanDefinitionBase>();
+    protected List<BeanDefinitionBase>                         postProcessorBeans        = new ArrayList<>();
     protected BeanProcessor[]                                  processors;
-    protected List<BeanFactoryInitializable>                   beanFactoryInitializables = new ArrayList<BeanFactoryInitializable>();
+    protected List<BeanFactoryInitializable>                   beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;

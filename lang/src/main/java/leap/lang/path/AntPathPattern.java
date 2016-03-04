@@ -17,11 +17,11 @@ package leap.lang.path;
 
 import leap.lang.Args;
 
-public class AntPathPattern implements PathPattern {
-	
-	private final AntPathMatcher matcher;
+public class AntPathPattern extends AbstractPathPattern {
+
 	private final String	     pattern;
-	
+	private final AntPathMatcher matcher;
+
 	public AntPathPattern(String pattern){
 		this(pattern,AntPathMatcher.DEFAULT_INSTANCE);
 	}
@@ -33,7 +33,7 @@ public class AntPathPattern implements PathPattern {
 	}
 
 	@Override
-	public String getPattern() {
+	public String pattern() {
 		return pattern;
 	}
 
@@ -41,5 +41,4 @@ public class AntPathPattern implements PathPattern {
 	public boolean matches(String path) {
 		return matcher.match(pattern, path);
 	}
-
 }

@@ -9,8 +9,11 @@
     <bean type="leap.web.security.SecurityConfig" class="leap.web.security.DefaultSecurityConfig" primary="true">
         <additional-type-def type="leap.web.security.SecurityConfigurator"/>
     </bean>
+
+    <bean type="leap.web.security.path.SecuredPaths"
+          class="leap.web.security.path.DefaultSecuredPaths" primary="true"/>
     	  
-   	<bean type="leap.web.security.SecurityPathSource" class="leap.web.security.DefaultSecurityPathSource" primary="true"/>
+   	<bean type="leap.web.security.path.SecuredPathSource" class="leap.web.security.path.DefaultSecuredPathSource" primary="true"/>
     	  
     <bean type="leap.web.security.SecurityHandler" class="leap.web.security.DefaultSecurityHandler" primary="true"/>
     
@@ -28,9 +31,6 @@
     <bean type="leap.web.security.authz.AuthorizationManager" 
     	  class="leap.web.security.authz.DefaultAuthorizationManager" primary="true"/>
     	  
-    <bean type="leap.web.security.authz.Authorizer" 
-    	  class="leap.web.security.authz.DefaultAuthorizer" primary="true"/>
-    
    	<!-- session -->
 	<bean type="leap.web.security.SecuritySessionManager" 
 		  class="leap.web.security.DefaultSecuritySessionManager" primary="true"/>

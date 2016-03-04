@@ -54,4 +54,8 @@ public interface SecurityInterceptor extends Interceptor{
 	default State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
 	    return State.CONTINUE;
 	}
+
+	default State postLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
+		return State.CONTINUE;
+	}
 }

@@ -15,11 +15,6 @@
  */
 package leap.web.security;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Configurable;
@@ -33,7 +28,11 @@ import leap.lang.Strings;
 import leap.lang.path.AntPathPattern;
 import leap.web.Renderable;
 import leap.web.security.csrf.CsrfStore;
+import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Configurable(prefix = "websecurity")
 public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurator, PostConfigureBean {
@@ -60,29 +59,21 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected String                   csrfParameterName              = SecurityConstants.DEFAULT_CSRF_PARAMETER;
     protected boolean                  authenticationTokenEnabled     = true;
     protected String                   authenticationTokenCookieName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_COOKIE;
-    protected String                    authenticationTokenHeaderName = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
-    protected String                    authenticationTokenType       = SecurityConstants.DEFAULT_TOKEN_TYPE;
-    protected String                    tokenSecret                   = null;
-    protected String                    cookieDomain                  = null;
-    protected List<RequestIgnore>       ignores                       = new ArrayList<>();
-    protected Map<String, SecurityPath> securedPaths                  = new HashMap<>();
+    protected String                   authenticationTokenHeaderName  = SecurityConstants.DEFAULT_TOKEN_AUTHENTICATION_HEADER;
+    protected String                   authenticationTokenType        = SecurityConstants.DEFAULT_TOKEN_TYPE;
+    protected String                   tokenSecret                    = null;
+    protected String                   cookieDomain                   = null;
+    protected List<RequestIgnore>      ignores                        = new ArrayList<>();
 
-    @Inject
-    protected PasswordEncoder               passwordEncoder;
-    
-    @Inject
-    protected UserStore                     userStore;
-    
-    @Inject
-    protected CsrfStore                     csrfStore;
-    
-    @Inject
-    protected BeanList<SecurityInterceptor> interceptors;
+    protected @Inject SecuredPaths                  securedPaths;
+    protected @Inject PasswordEncoder               passwordEncoder;
+    protected @Inject UserStore                     userStore;
+    protected @Inject CsrfStore                     csrfStore;
+    protected @Inject BeanList<SecurityInterceptor> interceptors;
 
-    private SecurityPath[]        sortedSecurityPaths = new SecurityPath[] {};
-    private RequestIgnore[]       ignoresArray        = new RequestIgnore[] {};
-    private SecurityInterceptor[] interceptorArray    = new SecurityInterceptor[]{};
-    private final Object          interceptorLock     = new Object();
+    private RequestIgnore[]       ignoresArray       = new RequestIgnore[] {};
+    private SecurityInterceptor[] interceptorArray   = new SecurityInterceptor[]{};
+    private final Object          interceptorLock    = new Object();
     
     public DefaultSecurityConfig() {
         super();
@@ -91,6 +82,11 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     @Override
     public SecurityConfig config() {
         return this;
+    }
+
+    @Override
+    public SecuredPaths paths() {
+        return securedPaths;
     }
 
     public boolean isEnabled() {
@@ -394,13 +390,13 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
-    public SecurityPath[] getSecuredPaths() {
-        return sortedSecurityPaths;
+    public RequestIgnore[] getIgnores() {
+        return ignoresArray;
     }
 
     @Override
-    public RequestIgnore[] getIgnores() {
-        return ignoresArray;
+    public SecuredPaths getSecuredPaths() {
+        return securedPaths;
     }
 
     @Override
@@ -411,20 +407,6 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return this;
     }
 
-    @Override
-    public SecurityConfigurator secured(SecurityPath path) {
-        Args.notNull(path, "security path");
-        securedPaths.put(path.getPathPatternString(), path);
-        this.sortedSecurityPaths = securedPaths.values().stream().sorted(SecurityPath.COMPARATOR).toArray((i) -> new SecurityPath[i]);
-        return this;
-    }
-
-    @Override
-    public SecurityConfigurator secured(String path, boolean allowAnonymous) {
-        secured(new SecurityPathBuilder(path).allowAnonymous().build());
-        return this;
-    }
-    
     public SecurityConfigurator setPasswordEncoder(PasswordEncoder encoder) {
         Args.notNull(encoder, "password encoder");
         this.passwordEncoder = encoder;

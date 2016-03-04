@@ -75,7 +75,7 @@ public abstract class ServletContextInitializerBase {
 		   initParams
 		);
 		
-		onAppContexReady(appContext);
+		onAppContextReady(appContext);
 	}
 	
 	protected void onAppConfigReady(AppConfig config, Map<String, String> initParams) {
@@ -86,7 +86,7 @@ public abstract class ServletContextInitializerBase {
 		
 	}
 	
-	protected void onAppContexReady(AppContext context) {
+	protected void onAppContextReady(AppContext context) {
 		
 	}
 	
