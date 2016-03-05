@@ -224,24 +224,6 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
         this.httpsOnly = httpsOnly;
         return this;
     }
-    
-    public Boolean getAllowAnonymous() {
-        return allowAnonymous;
-    }
-
-    public RouteBuilder setAllowAnonymous(Boolean allowAnonymous) {
-        this.allowAnonymous = allowAnonymous;
-        return this;
-    }
-
-    public Boolean getAllowClientOnly() {
-        return allowClientOnly;
-    }
-
-    public RouteBuilder setAllowClientOnly(Boolean allowClientOnly) {
-        this.allowClientOnly = allowClientOnly;
-        return this;
-    }
 
     @Override
 	public Route build() {
@@ -270,14 +252,6 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 
 		if(null != httpsOnly) {
 		    route.setHttpsOnly(httpsOnly);
-		}
-		
-		if(null != allowAnonymous) {
-		    route.setAllowAnonymous(allowAnonymous);
-		}
-		
-		if(null != allowClientOnly) {
-		    route.setAllowClientOnly(allowClientOnly);
 		}
 
 		return route;

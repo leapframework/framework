@@ -150,7 +150,7 @@ public interface Route extends RouteBase, Sourced {
 	void setCorsEnabled(Boolean enabled);
 	
 	/**
-	 * Sets the <code>supportMultipart</code> propety. 
+	 * Sets the <code>supportMultipart</code> property.
 	 */
 	void setSupportsMultipart(boolean supports);
 	
@@ -190,31 +190,5 @@ public interface Route extends RouteBase, Sourced {
 	 * Sets https only.
 	 */
 	void setHttpsOnly(boolean httpsOnly);
-	
-	/**
-	 * Returns <code>true</code> if the route allow anonymous access.
-	 * 
-	 * <p>
-	 * Valid only if web security module enabled. 
-	 */
-	boolean isAllowAnonymous();
-	
-	/**
-	 * Sets the property.
-	 */
-	void setAllowAnonymous(boolean allow);
-	
-	/**
-	 * Returns <code>true</code> if the route allow client only access.
-	 * 
-	 * <p>
-	 * Valid only if web security module enabled.
-	 */
-	boolean isAllowClientOnly();
-	
-	/**
-	 * Sets the property.
-	 */
-	void setAllowClientOnly(boolean allow);
 
 }

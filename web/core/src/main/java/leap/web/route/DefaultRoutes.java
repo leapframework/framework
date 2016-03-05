@@ -15,24 +15,20 @@
  */
 package leap.web.route;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.function.Supplier;
-
 import leap.core.annotation.Inject;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.collection.ArrayIterator;
 import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
-import leap.web.action.Action;
-import leap.web.action.ActionManager;
-import leap.web.action.HandlerAction;
-import leap.web.action.RunnableAction;
-import leap.web.action.SupplierAction;
+import leap.web.action.*;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
 	
@@ -66,9 +62,7 @@ public class DefaultRoutes implements Routes {
 			rb.setCorsEnabled(c.getCorsEnabled());
 			rb.setCsrfEnabled(c.getCsrfEnabled());
 			rb.setHttpsOnly(c.getHttpsOnly());
-			rb.setAllowAnonymous(c.getAllowAnonymous());
-			rb.setAllowClientOnly(c.getAllowClientOnly());
-			
+
 			Route r = rb.build();
 			
 			add(r);

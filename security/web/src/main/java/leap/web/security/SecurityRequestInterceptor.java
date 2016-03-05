@@ -54,12 +54,12 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        Action action = route.getAction();
 	        
 	        AllowAnonymous a = action.searchAnnotation(AllowAnonymous.class);
-	        if(route.isAllowAnonymous() || (null != a && a.value())) {
+	        if((null != a && a.value())) {
 	            paths.of(route).allowAnonymous().apply();
 	        }
 	        
 	        AllowClientOnly aa = action.searchAnnotation(AllowClientOnly.class);
-	        if(route.isAllowClientOnly() || (null != aa && aa.value())) {
+	        if((null != aa && aa.value())) {
                 paths.of(route).allowClientOnly().apply();
 	        }
 

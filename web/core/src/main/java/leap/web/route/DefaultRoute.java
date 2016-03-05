@@ -48,9 +48,7 @@ class DefaultRoute implements Sourced, Route {
 	protected Boolean supportsMultipart;
 	protected boolean acceptValidationError;
 	protected boolean httpsOnly;
-	protected boolean allowAnonymous;
-	protected boolean allowClientOnly;
-	
+
 	public DefaultRoute(Object 	    source,
 						String 	    method,
 						PathTemplate   pathTemplate,
@@ -254,26 +252,6 @@ class DefaultRoute implements Sourced, Route {
 
     public void setHttpsOnly(boolean httpsOnly) {
         this.httpsOnly = httpsOnly;
-    }
-    
-    @Override
-    public boolean isAllowAnonymous() {
-        return allowAnonymous;
-    }
-
-    @Override
-    public void setAllowAnonymous(boolean allow) {
-        this.allowAnonymous = allow;
-    }
-
-    @Override
-    public boolean isAllowClientOnly() {
-        return allowClientOnly;
-    }
-
-    @Override
-    public void setAllowClientOnly(boolean allow) {
-        this.allowClientOnly = allow;
     }
 
     @Override
