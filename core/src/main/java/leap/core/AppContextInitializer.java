@@ -15,12 +15,6 @@
  */
 package leap.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import leap.core.sys.DefaultSysSecurity;
 import leap.core.sys.SysContext;
 import leap.lang.Exceptions;
@@ -33,6 +27,12 @@ import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class AppContextInitializer {
 	
@@ -79,7 +79,7 @@ public class AppContextInitializer {
 	private static final String RES_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CLASSPATH_FRAMEWORK_PREFIX);
 	private static final String RES_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CLASSPATH_MODULES_PREFIX);
 	private static final String RES_APPSYS_LOCATION    = Strings.format("classpath*:{0}/**/*", CLASSPATH_APPSYS_PREFIX);
-	private static final String RES_APPUSR_LOCATION    = Strings.format("classpath:{0}/**/*",  CLASSPATH_APPUSR_PREFIX);
+	private static final String RES_APPUSR_LOCATION    = Strings.format("classpath*:{0}/**/*",  CLASSPATH_APPUSR_PREFIX);
 	
 	public static boolean isFrameworkResource(String url) {
 	    return url.contains(CLASSPATH_CORE_PREFIX) || url.contains(CLASSPATH_FRAMEWORK_PREFIX);
