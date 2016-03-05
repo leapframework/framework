@@ -59,9 +59,11 @@ public class ArgumentController extends ControllerBase {
 	public String beanList(List<Item> items) {
 		return JSON.stringify(items);
 	}
+
 	public String map(Map<String,Object> map) {
 		return JSON.stringify(map);
 	}
+	
 	public String mapArray(Map<String,Object>[] items) {
 		return JSON.stringify(items);
 	}

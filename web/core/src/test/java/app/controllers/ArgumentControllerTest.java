@@ -137,7 +137,7 @@ public class ArgumentControllerTest extends WebTestCase {
 		THttpRequest form = client().request("/argument/map");
 		assertMapTest(form);
 	}
-	
+
 	@Test
 	public void testMapArray() {
 		THttpRequest form = client().request("/argument/map_array");
@@ -224,7 +224,7 @@ public class ArgumentControllerTest extends WebTestCase {
 		assertEquals("s5-s1", item4.getItemArray()[0].getStrValue());
 		assertEquals(new Integer(51), item4.getItemArray()[0].getIntValue());
 	}
-	
+
 	protected void assertMapTest(THttpRequest form) {
 		form.addFormParam("strValue", "s1");
 		form.addFormParam("intValue", "1");

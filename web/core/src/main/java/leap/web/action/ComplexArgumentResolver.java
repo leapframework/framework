@@ -34,22 +34,22 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 	protected final Class<?> beanClass;
 	protected final String   prefix;
 	protected final boolean  bindable;
-    protected final boolean  map;
-	
+	protected final boolean  map;
+
 	public ComplexArgumentResolver(App app, RouteBase route, Argument argument){
 		super(app,route,argument);
 		this.beanClass = argument.getType();
 		this.beanType  = BeanType.of(beanClass);
 		this.prefix    = argument.getName() + ".";
 		this.bindable  = Bindable.class.isAssignableFrom(beanClass);
-        this.map       = Map.class.equals(beanClass);
+		this.map       = Map.class.equals(beanClass);
 	}
 
-    @Override
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public final Object resolveValue(ActionContext context, Argument argument) throws Throwable {
+	@Override
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public final Object resolveValue(ActionContext context, Argument argument) throws Throwable {
 		Map<String, Object> params = context.getMergedParameters();
-		
+
 		//direct mapping
 		Object value = params.get(argument.getName());
 		if(null != value){
@@ -61,56 +61,56 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 				return mapBinding(context, argument, (Map)value);
 			}
 		}
-		
+
 		Map<String, Object> map = null;
-		
+
 		for(Entry<String, Object> entry : params.entrySet()){
 			String key = entry.getKey();
 			if(key.startsWith(prefix)){
 				if(null == map){
 					map = new HashMap<>(beanType.getProperties().length);
 				}
-				
+
 				map.put(key.substring(prefix.length()), entry.getValue());
 			}
 		}
-		
+
 		if(null == map){
 			map = params;
 		}
 
 		//TODO : optimize performance
 		return mapBinding(context, argument, resolveMap(map));
-    }
-    
-    @SuppressWarnings("rawtypes")
-    protected Map resolveMap(Map<String,Object> params) {
-    	Map map = new HashMap();
-    	
-    	for(Entry<String,Object> entry : params.entrySet()) {
-    		putToMap(map, entry.getKey(), entry.getValue());
-    	}
-    	
-    	return map;
-    }
-    
-    protected Object mapBinding(ActionContext context,Argument argument,Map<String, Object> map) {
-        if(this.map) {
-            return new LinkedHashMap<>(map);
-        }
+	}
 
-    	Object bean = beanType.newInstance();
-    	
-    	if(bindable){
-    		((Bindable)bean).preBinding(context.getRequest(), context.getResponse(), context, context.getRequest().getValidation());
-    	}
-    	
-    	Beans.setPropertiesNestable(beanType, bean, map);
-    	
-    	if(bindable){
-    		((Bindable)bean).postBinding(context.getRequest(), context.getResponse(), context, context.getRequest().getValidation());
-    	}
-    	
-    	return bean;
-    }
+	@SuppressWarnings("rawtypes")
+	protected Map resolveMap(Map<String,Object> params) {
+		Map map = new HashMap();
+
+		for(Entry<String,Object> entry : params.entrySet()) {
+			putToMap(map, entry.getKey(), entry.getValue());
+		}
+
+		return map;
+	}
+
+	protected Object mapBinding(ActionContext context,Argument argument,Map<String, Object> map) {
+		if(this.map) {
+			return new LinkedHashMap<>(map);
+		}
+
+		Object bean = beanType.newInstance();
+
+		if(bindable){
+			((Bindable)bean).preBinding(context.getRequest(), context.getResponse(), context, context.getRequest().getValidation());
+		}
+
+		Beans.setPropertiesNestable(beanType, bean, map);
+
+		if(bindable){
+			((Bindable)bean).postBinding(context.getRequest(), context.getResponse(), context, context.getRequest().getValidation());
+		}
+
+		return bean;
+	}
 }
