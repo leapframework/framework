@@ -15,6 +15,7 @@
  */
 package leap.htpl;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.validation.annotations.NotEmpty;
 
@@ -28,7 +29,7 @@ public class DefaultHtplConfig implements HtplConfig {
 		return prefix;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}

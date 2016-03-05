@@ -80,7 +80,7 @@ public class DmoTest extends OrmTestCase {
 			}
 			
 			if(!mapped){
-				fail("Property '" + bp.getName() + "' not mapped in class '" + cls.getName() + "'");
+				fail("ConfigProperty '" + bp.getName() + "' not mapped in class '" + cls.getName() + "'");
 			}
 		}
 	}

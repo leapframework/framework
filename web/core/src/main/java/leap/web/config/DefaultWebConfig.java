@@ -15,9 +15,7 @@
  */
 package leap.web.config;
 
-import java.util.Collections;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
@@ -202,81 +200,81 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
 	    return corsHandler;
     }
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setViewsLocation(String path) {
         Args.notEmpty(path, "views location");
 		this.viewsLocation = path;
 		return this;
 	}
 
-    @Configurable.Property
+    @ConfigProperty
     public WebConfigurator setThemesLocation(String path) {
         Args.notEmpty(path,"themes location");
         this.themesLocation = Paths.prefixWithAndSuffixWithoutSlash(path);
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
 	public WebConfigurator setDefaultFormatName(String defaultFormatName) {
 		this.defaultFormatName = defaultFormatName;
 		return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setDefaultThemeName(String defaultThemeName) {
 		this.defaultThemeName = defaultThemeName;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setFormatParameterName(String formatParameter) {
 		this.formatParameterName = formatParameter;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setJsessionidPrefix(String p) {
 		this.jsessionidPrefix = p;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setFormatExtensionEnabled(boolean enabled) {
 		this.formatExtensionEnabled = enabled;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setFormatParameterEnabled(boolean enabled) {
 		this.formatParameterEnabled = enabled;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setActionExtensionEnabled(boolean enabled) {
 		this.actionExtensionEnabled = enabled;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setCorsEnabled(boolean enabled) {
 		this.corsEnabled = enabled;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setAutoTrimParameters(boolean eanbled) {
 		this.autoTrimParameters = eanbled;
 		return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public WebConfigurator setCookieDomain(String cookieDomain) {
 		this.cookieDomain = cookieDomain;
 		return this;
 	}
 
-    @Configurable.Property
+    @ConfigProperty
 	public WebConfigurator setActionExtensions(Set<String> extensions) {
 		this.actionExtensions.clear();
 		if(null != extensions) {

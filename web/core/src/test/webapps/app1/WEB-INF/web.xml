@@ -21,7 +21,7 @@
 	</context-param>
 	
 	<listener>
-		<listener-class>leap.web.AppServletContextListener</listener-class>
+		<listener-class>leap.web.AppBootstrap</listener-class>
 	</listener>
 	
 	<filter>

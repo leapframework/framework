@@ -16,10 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.*;
-import leap.core.annotation.Configurable;
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
-import leap.core.annotation.R;
+import leap.core.annotation.*;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
@@ -31,10 +28,7 @@ import leap.lang.beans.*;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.reflect.ReflectClass;
-import leap.lang.reflect.ReflectException;
-import leap.lang.reflect.ReflectField;
-import leap.lang.reflect.Reflection;
+import leap.lang.reflect.*;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
@@ -1022,46 +1016,73 @@ public class BeanContainer implements BeanFactory {
 					keyPrefix = keyPrefix + ".";
 				}
 			}
+
+            Set<ReflectField> done = new HashSet<>();
 			
 			for(BeanProperty bp : bt.getProperties()){
 				if(!bp.isWritable()) {
 					continue;
 				}
 				
-				Configurable.Property a = bp.getAnnotation(Configurable.Property.class);
+				ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
 				if(null == a) {
 					continue;
 				}
-				
-				if(a.value().length > 0) {
-					for(String key : a.value()) {
-						if(doBeanConfigure(bean, bp, key)) {
-							break;
-						}
-					}
-				}else{
-					if(doBeanConfigure(bean, bp, keyPrefix + bp.getName())) {
-						continue;
-					}
-					
-					if(doBeanConfigure(bean, bp, keyPrefix + Strings.lowerHyphen(bp.getName()))) {
-						continue;
-					}
-				}
+
+                doBeanConfigure(bean, bp, keyPrefix, a);
+
+                if(null != bp.getReflectField()) {
+                    done.add(bp.getReflectField());
+                }
+
 			}
+
+            for(ReflectField field : bt.getReflectClass().getFields()) {
+                if(done.contains(field)) {
+                    continue;
+                }
+
+                ConfigProperty a = field.getAnnotation(ConfigProperty.class);
+                if(null == a) {
+                    continue;
+                }
+
+                doBeanConfigure(bean, field, keyPrefix, a);
+            }
+
+            done.clear();
 		}
 	}
+
+
+    protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
+        if(a.value().length > 0) {
+            for(String key : a.value()) {
+                if(doBeanConfigure(bean, v, key)) {
+                    break;
+                }
+            }
+        }else{
+            if(doBeanConfigure(bean, v, keyPrefix + v.getName())) {
+                return;
+            }
+
+            if(doBeanConfigure(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()))) {
+                return;
+            }
+        }
+    }
 	
-	protected boolean doBeanConfigure(Object bean, BeanProperty bp, String key) {
+	protected boolean doBeanConfigure(Object bean, ReflectValued v, String key) {
 		if(appContext.getConfig().hasProperty(key)){
 			String prop = appContext.getConfig().getProperty(key);
 			
 			if(!Strings.isEmpty(prop = prop.trim())) {
 				try {
-	                Object value = Converts.convert(prop, bp.getType(), bp.getGenericType());
-	                bp.setValue(bean, value);
+	                Object value = Converts.convert(prop, v.getType(), v.getGenericType());
+	                v.setValue(bean, value);
                 } catch (Exception e) {
-                	throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + bp.getName() + 
+                	throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
                 									"' using config key '" + key + "', " + e.getMessage(), e);
                 }
 			}
@@ -1099,8 +1120,8 @@ public class BeanContainer implements BeanFactory {
 
                 try {
                     //skip when bean value aleady setted.
-                    if (null != bp.getReflectiveField() && !bp.getType().isPrimitive()) {
-                        if (null != bp.getReflectiveField().getValue(bean)) {
+                    if (null != bp.getReflectField() && !bp.getType().isPrimitive()) {
+                        if (null != bp.getReflectField().getValue(bean)) {
                             continue;
                         }
                     }
@@ -1198,7 +1219,7 @@ public class BeanContainer implements BeanFactory {
 					}
 				}else if(List.class.equals(type) || BeanList.class.equals(type)){
 					if(!Strings.isEmpty(beanName)){
-						throw new BeanCreationException("Autowired List property does not support the 'name' annotation field in bean " + bd);
+						throw new BeanCreationException("The injected List property does not support the 'name' annotation field in bean " + bd);
 					}
 					
 					if(null == beanType || Object.class.equals(beanType)){

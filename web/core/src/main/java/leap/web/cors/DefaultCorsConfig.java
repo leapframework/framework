@@ -15,6 +15,7 @@
  */
 package leap.web.cors;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
@@ -131,41 +132,41 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 	}
 
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setAllowedOrigins(String[] allowedOrigins) {
 		this.allowedOrigins = allowedOrigins;
 		resetAllowAnyOrigin();
 	}
 
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setAllowedMethods(String[] allowedMethods) {
 		this.allowedMethods = allowedMethods;
 		resetAllowAnyMethod();
 	}
 
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setAllowedHeaders(String[] allowedHeaders) {
 		this.allowedHeaders = allowedHeaders;
 		resetAllowAnyHeader();
 	}
 
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setExposedHeaders(String[] exposedHeaders) {
 		this.exposedHeaders = exposedHeaders;
 		resetExposedHeadersValue();
 	}
 
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setSupportsCredentials(boolean supportsCredentials) {
 		this.supportsCredentials = supportsCredentials;
 	}
 	
 	@Override
-	@Configurable.Property
+	@ConfigProperty
     public void setPreflightMaxAge(int preflightMaxAge) {
 		this.preflightMaxAge = preflightMaxAge;
 	}

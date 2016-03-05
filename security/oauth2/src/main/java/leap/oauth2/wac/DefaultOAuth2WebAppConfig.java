@@ -16,6 +16,7 @@
 package leap.oauth2.wac;
 
 import leap.core.AppConfigException;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
@@ -60,7 +61,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return enabled;
     }
     
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setEnabled(boolean enabled) {
         this.enabled = enabled;
         this.oauth2LoginEnabled = enabled;
@@ -91,7 +92,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return clientId;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setClientId(String clientId) {
         this.clientId = clientId;
         return this;
@@ -101,7 +102,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return clientSecret;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setClientSecret(String clientSecret) {
         this.clientSecret = clientSecret;
         return this;
@@ -111,7 +112,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return clientRedirectUri;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setClientRedirectUri(String uri) {
         this.clientRedirectUri = Paths.suffixWithoutSlash(uri);
         return this;
@@ -122,13 +123,13 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return clientLogoutUri;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setClientLogoutUri(String uri) {
         this.clientLogoutUri = uri;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setServerUrl(String url) {
         this.serverUrl = Paths.suffixWithoutSlash(url);
         this.serverAuthorizationEndpointUrl = this.serverUrl + "/oauth2/authorize";
@@ -141,7 +142,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return serverTokenEndpointUrl;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setServerTokenEndpointUrl(String url) {
         this.serverTokenEndpointUrl = url;
         return this;
@@ -152,7 +153,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return serverAuthorizationEndpointUrl;
     }
     
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setServerAuthorizationEndpointUrl(String url) {
         this.serverAuthorizationEndpointUrl = url;
         return this;
@@ -163,7 +164,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return serverLogoutEndpointUrl;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setServerLogoutEndpointUrl(String url) {
         this.serverLogoutEndpointUrl = url;
         return this;
@@ -173,7 +174,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return errorView;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setErrorView(String errorView) {
         this.errorView = errorView;
         return this;
@@ -183,7 +184,7 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return accessTokenCookieName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2WebAppConfigurator setAccessTokenCookieName(String accessTokenCookieName) {
         this.accessTokenCookieName = accessTokenCookieName;
         return this;

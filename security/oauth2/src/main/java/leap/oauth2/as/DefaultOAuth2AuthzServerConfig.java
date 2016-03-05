@@ -16,6 +16,7 @@
 package leap.oauth2.as;
 
 import leap.core.AppConfig;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
@@ -118,25 +119,25 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		return enabled;
 	}
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setSingleLoginEnabled(boolean enabled) {
         this.singleLoginEnabled = enabled;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled) {
         this.singleLogoutEnabled = enabled;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setCleanupEnabled(boolean cleanup) {
         this.cleanupEnabled = cleanup;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setCleanupInterval(int seconds) {
         this.cleanupInterval = seconds;
         return this;
@@ -275,145 +276,145 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return jdbcDataSourceName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
 	public OAuth2AuthzServerConfigurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setHttpsOnly(boolean httpsOnly) {
 	    this.httpsOnly = httpsOnly;
 	    return this;
 	}
 	
-    @Configurable.Property
+    @ConfigProperty
 	public OAuth2AuthzServerConfigurator setAuthorizationCodeEnabled(boolean authorazationCodeEnabled) {
 		this.authorizationCodeEnabled = authorazationCodeEnabled;
 		return this;
 	}
 	
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setImplicitGrantEnabled(boolean enabled) {
 		this.implicitGrantEnabled = enabled;
 		return this;
     }
 
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setPasswordCredentialsEnabled(boolean passwordCredentialsEnabled) {
 		this.passwordCredentialsEnabled = passwordCredentialsEnabled;
 		return this;
 	}
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setLoginTokenEnabled(boolean enabled) {
         this.loginTokenEnabled = enabled;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfig setUserInfoEnabled(boolean enabled) {
         this.userInfoEnabled = enabled;
         return this;
     }
 
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setClientCredentialsEnabled(boolean clientCredentialsEnabled) {
 		this.clientCredentialsEnabled = clientCredentialsEnabled;
 		return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2AuthzServerConfigurator setTokenEndpointPath(String path) {
 		tokenEndpointPath = path;
 	    return this;
     }
 
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2AuthzServerConfigurator setAuthzEndpointPath(String path) {
 		this.authzEndpointPath = path;
 	    return this;
     }
 
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2AuthzServerConfigurator setTokenInfoEndpointPath(String path) {
         this.tokenInfoEndpointPath = path;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path) {
         this.loginTokenEndpointPath = path;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfig setUserInfoEndpointPath(String path) {
         this.userInfoEndpointPath = path;
         return this;
     }
     
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setLogoutEndpointPath(String path) {
         this.logoutEndpointPath = path;
         return this;
     }
 	
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2AuthzServerConfigurator setErrorView(String view) {
 		this.errorView = view;
 	    return this;
     }
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setLoginView(String view) {
 	    this.loginView = view;
 	    return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setLogoutView(String view) {
 	    this.loginView = view;
 	    return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setDefaultAccessTokenExpires(int defaultExpiresIn) {
 		this.defaultAccessTokenExpires = defaultExpiresIn;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2AuthzServerConfigurator setDefaultRefreshTokenExpires(int seconds) {
 		this.defaultRefreshTokenExpires = seconds;
 	    return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setDefaultLoginTokenExpires(int seconds) {
         this.defaultLoginTokenExpires = seconds;
         return this;
     }
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setDefaultAuthorizationCodeExpires(int seconds) {
 	    this.defaultAuthorizationCodeExpires = seconds;
 	    return this;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setDefaultIdTokenExpires(int seconds) {
 	    this.defaultIdTokenExpires = seconds;
 	    return this;
 	}
 
-    @Configurable.Property
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setDefaultLoginSessionExpires(int seconds){
         this.defaultLoginSessionExpires = seconds;
         return this;
     }
 	
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setJdbcDataSourceName(String name) {
 	    this.jdbcDataSourceName = name;
 	    return this;

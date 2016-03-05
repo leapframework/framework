@@ -17,6 +17,7 @@ package leap.web.security;
 
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.ioc.BeanList;
@@ -93,7 +94,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return enabled;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public SecurityConfigurator setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
@@ -120,7 +121,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return crossContext;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setCrossContext(boolean crossContext) {
         this.crossContext = crossContext;
         return this;
@@ -130,7 +131,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return csrfEnabled == null ? this.enabled : csrfEnabled;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setCsrfEnabled(boolean csrfEnabled) {
         this.csrfEnabled = csrfEnabled;
         return this;
@@ -140,7 +141,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return authenticateAnyRequests;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setAuthenticateAnyRequests(boolean authenticateAnyRequests) {
         this.authenticateAnyRequests = authenticateAnyRequests;
         return this;
@@ -150,7 +151,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return authorizeAnyRequests;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setAuthorizeAnyRequests(boolean authorizeAnyRequests) {
         this.authorizeAnyRequests = authorizeAnyRequests;
         return this;
@@ -186,7 +187,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return returnUrlParameterName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setReturnUrlParameterName(String returnUrlParameterName) {
         Args.notEmpty(returnUrlParameterName);
         this.returnUrlParameterName = returnUrlParameterName;
@@ -198,7 +199,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return rememberMeEnabled;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setRememberMeEnabled(boolean rememberMeEnabled) {
         this.rememberMeEnabled = rememberMeEnabled;
         return this;
@@ -209,7 +210,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return rememberMeSecret;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setRememberMeSecret(String rememberMeSecret) {
         Args.notEmpty(rememberMeSecret);
         this.rememberMeSecret = rememberMeSecret;
@@ -220,7 +221,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return rememberMeCookieName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setRememberMeCookieName(String rememberMeCookieName) {
         Args.notEmpty(rememberMeCookieName);
         this.rememberMeCookieName = rememberMeCookieName;
@@ -231,7 +232,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return rememberMeParameterName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setRememberMeParameterName(String rememberMeParameterName) {
         Args.notEmpty(rememberMeParameterName);
         this.rememberMeParameterName = rememberMeParameterName;
@@ -242,7 +243,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return rememberMeExpiresParameterName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setRememberMeExpiresParameterName(String rememberMeExpiresParameterName) {
         Args.notEmpty(rememberMeExpiresParameterName);
         this.rememberMeExpiresParameterName = rememberMeExpiresParameterName;
@@ -253,7 +254,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return defaultRememberMeExpires;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setDefaultRememberMeExpires(int defaultRememberExpires) {
         Args.assertTrue(defaultRememberExpires > 0, "Expires must be > 0");
         this.defaultRememberMeExpires = defaultRememberExpires;
@@ -275,7 +276,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setCsrfParameterName(String csrfParameterName) {
         this.csrfParameterName = csrfParameterName;
         return this;
@@ -300,18 +301,18 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return authenticationTokenHeaderName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public void setAuthenticationTokenHeaderName(String authenticationTokenHeaderName) {
         this.authenticationTokenHeaderName = authenticationTokenHeaderName;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setAuthenticationTokenEnabled(boolean authenticationTokenEnabled) {
         this.authenticationTokenEnabled = authenticationTokenEnabled;
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public void setAuthenticationTokenCookieName(String authenticationTokenCookieName) {
         this.authenticationTokenCookieName = authenticationTokenCookieName;
     }
@@ -320,7 +321,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return authenticationTokenType;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public void setAuthenticationTokenType(String authenticationTokenType) {
         this.authenticationTokenType = authenticationTokenType;
     }
@@ -329,7 +330,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return tokenSecret;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public void setTokenSecret(String tokenSecret) {
         this.tokenSecret = tokenSecret;
     }
@@ -338,7 +339,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return cookieDomain;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public void setCookieDomain(String cookieDomain) {
         this.cookieDomain = cookieDomain;
     }
@@ -350,7 +351,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return loginUrl;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setLoginUrl(String url) {
         this.loginUrl = url;
         return this;
@@ -370,7 +371,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return logoutSuccessUrl;
     }
     
-    @Configurable.Property
+    @ConfigProperty
     public SecurityConfigurator setLoginAction(String path) {
         this.loginAction = path;
         return this;
@@ -382,7 +383,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
         return this;
     }
 
-    @Configurable.Property
+    @ConfigProperty
     public DefaultSecurityConfig setLogoutSuccessUrl(String url) {
         Args.notEmpty(url);
         this.logoutSuccessUrl = url;

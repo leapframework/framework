@@ -25,7 +25,7 @@ public final class HtplConstants {
 	//Variable names
 	public static final String LOOP_VARIABLE = "loop";
 	
-	//Property names
+	//ConfigProperty names
 	public static final String LAYOUT_PROPERTY = "layout";
 	public static final String TITLE_PROPERTY  = "title";
 

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="leap.web.AppBootable" class="app.DemoBootstrap">
+        <additional-type-def type="app.DemoBootstrap" primary="true"/>
+    </bean>
+
+</beans>

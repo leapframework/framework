@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.annotation;
+package app;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import leap.web.App;
 
-@Target({ElementType.TYPE}) 
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface Configurable {
+public class Global extends App {
 
-	/**
-	 * Enables or Disables config.
-	 */
-	boolean value() default true;
-
-	/**
-	 * The prefix of config property.
-	 */
-	String prefix() default "";
-	
 }

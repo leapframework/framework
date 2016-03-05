@@ -15,6 +15,7 @@
  */
 package leap.web.json;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Args;
 
@@ -40,7 +41,7 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		return defaultSerializationKeyQuoted;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public JsonConfigurator setDefaultSerializationKeyQuoted(boolean keyQuoted) {
 		this.defaultSerializationKeyQuoted = keyQuoted;
 		return this;
@@ -50,7 +51,7 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		return defaultSerializationIgnoreNull;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public JsonConfigurator setDefaultSerializationIgnoreNull(boolean ignoreNull) {
 		this.defaultSerializationIgnoreNull = ignoreNull;
 		return this;
@@ -60,19 +61,19 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		return defaultSerializationIgnoreEmpty;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public JsonConfigurator setDefaultSerializationIgnoreEmpty(boolean ignoreEmpty) {
 		this.defaultSerializationIgnoreEmpty = ignoreEmpty;
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public JsonConfigurator setJsonpEnabled(boolean enabled) {
 		this.jsonpEnabled = enabled;
 	    return this;
     }
 
-	@Configurable.Property
+	@ConfigProperty
     public JsonConfigurator setJsonpParameter(String jsonpParameter) {
 		Args.notEmpty(jsonpParameter, "jsonp parameter");
 		this.jsonpParameter = jsonpParameter;

@@ -20,7 +20,7 @@ import leap.lang.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 
-public class ReflectField extends ReflectMember {
+public class ReflectField extends ReflectMember implements ReflectValued {
 	
 	private final Field    field;
 	private final Class<?> type;

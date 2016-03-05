@@ -24,6 +24,7 @@ import java.util.List;
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -74,7 +75,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return enabled;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
 		return this;
@@ -95,13 +96,13 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return gzipMinLength;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setGzipMinLength(int gzipMinLength) {
 		this.gzipMinLength = gzipMinLength;
         return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setGzipEnabled(boolean gzipEnabled) {
 		this.gzipEnabled = gzipEnabled;
         return this;
@@ -112,7 +113,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 	    return charset;
     }
 	
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setDebug(boolean debug) {
 		this.debug = debug;
         return this;
@@ -123,7 +124,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return pathPrefix;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setPathPrefix(String pathPrefix) {
 		this.pathPrefix = Paths.prefixAndSuffixWithSlash(pathPrefix);
         return this;
@@ -133,7 +134,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return sourceDirectory;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setSourceDirectory(String sourceDirectory) {
 		this.sourceDirectory = Paths.prefixAndSuffixWithSlash(sourceDirectory);
         return this;
@@ -144,7 +145,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return publicDirectory;
 	}
 	
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setPublicDirectory(String publicDirectory) {
 		this.publicDirectory = Paths.prefixAndSuffixWithSlash(publicDirectory);
         return this;
@@ -155,7 +156,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return publishEnabled;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setPublishEnabled(boolean enabled) {
 		this.publishEnabled = enabled;
         return this;
@@ -166,7 +167,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return publishDirectory;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setPublishDirectory(String dir) {
 		this.publishDirectory = dir;
         return this;
@@ -176,7 +177,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 	    return manifestFile;
     }
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setManifestFile(String file) {
 		this.manifestFile = file;
         return this;
@@ -186,7 +187,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return reloadEnabled;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setReloadEnabled(boolean reloadEnabled) {
 		this.reloadEnabled = reloadEnabled;
         return this;
@@ -196,7 +197,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return reloadInterval;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setReloadInterval(long reloadInterval) {
 		this.reloadInterval = reloadInterval;
         return this;
@@ -207,7 +208,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 	    return hashAlgorithm;
     }
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setHashAlgorithm(String hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm;
         return this;
@@ -217,7 +218,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 		return cacheMaxAge;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public AssetConfigurator setCacheMaxAge(int maxCacheAge) {
 		this.cacheMaxAge = maxCacheAge;
         return this;

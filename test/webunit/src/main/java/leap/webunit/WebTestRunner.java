@@ -15,6 +15,7 @@
  */
 package leap.webunit;
 
+import leap.core.AppContext;
 import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
@@ -42,4 +43,17 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
         }
         */
     }
+
+    @Override
+    protected Object createTest() throws Exception {
+        Object test = super.createTest();
+
+        AppContext context = AppContext.tryGetCurrent();
+        if(null != context) {
+            context.getBeanFactory().inject(test);
+        }
+
+        return test;
+    }
+
 }

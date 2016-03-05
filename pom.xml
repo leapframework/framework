@@ -385,6 +385,7 @@
         <module>web/test-resources</module>
 		<module>web/test-module</module>
 		<module>web/test-webapp</module>
+		<module>web/test-webapp1</module>
 		<module>security/web</module>
 		<module>security/oauth2</module>
 		<module>assembly/fw</module>

@@ -25,13 +25,14 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectField;
 import leap.lang.reflect.ReflectMethod;
+import leap.lang.reflect.ReflectValued;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter {
+public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,ReflectValued {
 	private static final Log log = LogFactory.get(BeanProperty.class);
 	
 	private String   	  name;
@@ -116,7 +117,7 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter {
 		return null != field ? field.getReflectedField() : null;
 	}
 	
-	public ReflectField getReflectiveField(){
+	public ReflectField getReflectField(){
 		return field;
 	}
 	

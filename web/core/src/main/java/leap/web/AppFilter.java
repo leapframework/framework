@@ -15,16 +15,6 @@
  */
 package leap.web;
 
-import java.io.*;
-import java.util.Map;
-
-import javax.servlet.*;
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
 import leap.core.AppContext;
 import leap.core.AppException;
 import leap.core.RequestContext;
@@ -38,6 +28,16 @@ import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
 import leap.web.exception.ResponseException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public class AppFilter implements Filter {
 	
@@ -55,7 +55,7 @@ public class AppFilter implements Filter {
     public void init(FilterConfig config) throws ServletException {
 		this.servletContext = config.getServletContext();
 		this.bootstrap      = AppBootstrap.tryGet(servletContext);
-		
+
 		if(null == bootstrap) {
 			bootstrap = new AppBootstrap();
 			
@@ -73,8 +73,10 @@ public class AppFilter implements Filter {
 	    this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
 	    this.ignores      = bootstrap.getBeanFactory().getBeans(RequestIgnore.class).toArray(new RequestIgnore[]{});
 
-	    //start application
-	    bootstrap.startApplication();
+        if(!bootstrap.isSelfStarted()) {
+            //start application
+            bootstrap.startApplication();
+        }
     }
 
 	@Override
@@ -225,7 +227,9 @@ public class AppFilter implements Filter {
 	
 	@Override
     public void destroy() {
-		bootstrap.stopApplication();
+        if(!bootstrap.isSelfStarted()) {
+            bootstrap.stopApplication();
+        }
     }
 
     protected static class ServletInputStreamWrapper extends ServletInputStream {

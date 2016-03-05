@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.cache.Cache;
@@ -52,7 +53,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	    return enabled;
     }
 
-	@Configurable.Property
+	@ConfigProperty
     public OAuth2ResServerConfigurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	    return this;
@@ -87,7 +88,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 		return this;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public OAuth2ResServerConfigurator setAuthorizationServerMode(AuthzServerMode mode) {
 		return this;
 	}
@@ -97,7 +98,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
         return remoteTokenInfoEndpointUrl;
     }
 	
-    @Configurable.Property
+    @ConfigProperty
 	public OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url) {
 	    this.remoteTokenInfoEndpointUrl = url;
 	    return this;
