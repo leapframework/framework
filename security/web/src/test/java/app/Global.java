@@ -15,24 +15,18 @@
  */
 package app;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
-import leap.web.App;
-import leap.web.Filter;
-import leap.web.FilterChain;
-import leap.web.FilterMappings;
-import leap.web.Request;
-import leap.web.Response;
+import leap.web.*;
 import leap.web.config.WebConfigurator;
 import leap.web.security.SecurityConfigurator;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.csrf.CSRF;
+
+import javax.servlet.ServletException;
+import java.io.IOException;
 
 public class Global extends App {
     
@@ -55,6 +49,14 @@ public class Global extends App {
 				}
 				
 				chain.doFilter(request, response);
+			}
+		});
+
+		sc.interceptors().add(new SecurityInterceptor() {
+			@Override
+			public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+				context.getAuthentication().setPermissions("permission2");
+				return State.CONTINUE;
 			}
 		});
 	}

@@ -42,6 +42,11 @@ public class HomeController {
         
     }
 
+	@Permissions("permission2")
+	public void permission2() {
+
+	}
+
 	public void login(){
 		log.info("Goto login view");
 	}

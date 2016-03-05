@@ -15,8 +15,6 @@
  */
 package leap.core.security;
 
-import leap.lang.Arrays2;
-
 public interface Authentication {
 
 	/**
@@ -61,18 +59,24 @@ public interface Authentication {
     }
 
     /**
-     * Optional. Returns the granted permissions.
+     * Returns the granted permissions.
      */
-	default String[] getPermissions() {
-        return Arrays2.EMPTY_STRING_ARRAY;
-    }
+	String[] getPermissions();
 
     /**
-     * Optional. Returns the granted roles.
+     * Sets the granted permissions.
      */
-    default String[] getRoles() {
-        return Arrays2.EMPTY_STRING_ARRAY;
-    }
+    void setPermissions(String... permissions);
+
+    /**
+     * Returns the granted roles.
+     */
+    String[] getRoles();
+
+    /**
+     * Sets the granted roles.
+     */
+    void setRoles(String... roles);
 
     /**
      * Returns true if the client is not null.

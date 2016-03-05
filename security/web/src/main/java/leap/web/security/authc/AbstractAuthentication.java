@@ -21,8 +21,10 @@ import leap.core.security.UserPrincipal;
 
 public abstract class AbstractAuthentication implements Authentication {
 
-    protected String  token;
-    protected boolean rememberMe;
+    protected String   token;
+    protected boolean  rememberMe;
+    protected String[] permissions;
+    protected String[] roles;
 
     @Override
     public String getToken() {
@@ -44,6 +46,26 @@ public abstract class AbstractAuthentication implements Authentication {
 
     public void setRememberMe(boolean rememberMe) {
         this.rememberMe = rememberMe;
+    }
+
+    @Override
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    @Override
+    public void setPermissions(String... permissions) {
+        this.permissions = permissions;
+    }
+
+    @Override
+    public String[] getRoles() {
+        return roles;
+    }
+
+    @Override
+    public void setRoles(String... roles) {
+        this.roles = roles;
     }
 
     @Override

@@ -210,6 +210,26 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
         }
 
         @Override
+        public String[] getPermissions() {
+            return wrapped.getPermissions();
+        }
+
+        @Override
+        public void setPermissions(String... permissions) {
+            wrapped.setPermissions(permissions);
+        }
+
+        @Override
+        public String[] getRoles() {
+            return wrapped.getRoles();
+        }
+
+        @Override
+        public void setRoles(String... roles) {
+            wrapped.setRoles(roles);
+        }
+
+        @Override
         public String toString() {
             return wrapped.toString();
         }
