@@ -20,6 +20,7 @@ public class SimpleUserDetails implements UserDetails {
 	protected Object id;
 	protected String name;
 	protected String loginName;
+    protected String password;
 	protected String firstName;
 	protected String lastName;
 
@@ -34,20 +35,12 @@ public class SimpleUserDetails implements UserDetails {
 		this.id = id;
 	}
 
-	public String getLoginName() {
-		return loginName;
-	}
-
-	public void setLoginName(String name) {
-		this.loginName = name;
-	}
-
 	public String getName() {
 		if(null == name) {
 			if(null != firstName) {
 				name = firstName + " " + lastName;
 			}else{
-				name = getLoginName();	
+				name = getLoginName();
 			}
 		}
 		return name;
@@ -56,8 +49,25 @@ public class SimpleUserDetails implements UserDetails {
 	public void setName(String nickName) {
 		this.name = nickName;
 	}
-	
-	public String getDisplayName() {
+
+	public String getLoginName() {
+		return loginName;
+	}
+
+	public void setLoginName(String name) {
+		this.loginName = name;
+	}
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDisplayName() {
 		return getName();
 	}
 	

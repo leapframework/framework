@@ -19,7 +19,7 @@ import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
 import leap.lang.Result;
 import leap.web.security.SecurityConfig;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.SimpleAuthentication;
 
 public class DefaultUserManager implements UserManager {
@@ -28,22 +28,20 @@ public class DefaultUserManager implements UserManager {
 
     @Override
     public UserDetails getUserDetails(UserPrincipal user) {
-        Object details = user.getDetails();
-        if(details instanceof UserDetails) {
-            return (UserDetails)details;
+        if(user instanceof UserDetails) {
+            return (UserDetails)user;
         }
-        
-        return sc.getUserStore().findUserDetails(user.getId());
+        return sc.getUserStore().loadUserDetailsById(user.getId());
     }
 
     @Override
     public UserDetails loadUserDetails(String userId) {
-        return sc.getUserStore().findUserDetails(userId);
+        return sc.getUserStore().loadUserDetailsById(userId);
     }
 
     @Override
-    public Result<Authentication> creatAuthenticaionByUsername(String username) {
-        UserDetails details = sc.getUserStore().findUserDetailsByUsername(username);
+    public Result<Authentication> createAuthenticationByUsername(String username) {
+        UserDetails details = sc.getUserStore().loadUserDetailsByLoginName(username);
         
         //TODO : check user enabled?
         
@@ -51,7 +49,17 @@ public class DefaultUserManager implements UserManager {
             return Result.empty();
         }
 
-        return Result.of(new SimpleAuthentication(new SimpleUserDetailsPrincipal(details), new UsernameCredentials(username)));
+        return Result.of(new SimpleAuthentication(details, new TrustedLoginNameCredentials(username)));
     }
-    
+
+    @Override
+    public Result<Authentication> createAuthenticationByUserId(String userid) {
+        UserDetails details = sc.getUserStore().loadUserDetailsByIdString(userid);
+
+        if(null == details) {
+            return Result.empty();
+        }
+
+        return Result.of(new SimpleAuthentication(details, new TrustedUserIdCredentials(userid)));
+    }
 }

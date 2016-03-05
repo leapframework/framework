@@ -15,7 +15,6 @@
  */
 package leap.core.security;
 
-
 public interface ClientPrincipal extends Principal {
 
 }

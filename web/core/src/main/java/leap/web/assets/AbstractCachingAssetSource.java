@@ -29,12 +29,9 @@ import leap.core.annotation.M;
 import leap.core.cache.Cache;
 import leap.core.schedule.Scheduler;
 import leap.core.schedule.SchedulerManager;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetConfig;
-import leap.core.web.assets.AssetResource;
-import leap.core.web.assets.AssetSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
 
 public abstract class AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 
@@ -92,11 +89,17 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 	
 	@Override
 	public Asset getAsset(String path,Locale locale){
+		if(null == path) {
+            return null;
+        }
+
 		if(null == locale){
 			locale = defaultLocale;
 		}
-		
-		Cache<Object, Asset> cache = getAssetCache();
+
+        path = Paths.prefixWithoutSlash(path);
+
+        Cache<Object, Asset> cache = getAssetCache();
 		
 		Object cacheKey = getAssetCacheKey(path, locale);
 		Asset asset = cache.get(cacheKey);
@@ -107,7 +110,13 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
             } catch (Throwable e) {
                 throw new AssetException("Error loading asset '" + path + "'", e);
             }
-
+			
+			//check default locale cacheKey
+			if(asset == null){
+				cacheKey = getAssetCacheKey(path, defaultLocale);
+				asset = cache.get(cacheKey);
+			}
+			
 			if (asset == null) {
 				asset = UNRESOLVED_ASSET;
 			}

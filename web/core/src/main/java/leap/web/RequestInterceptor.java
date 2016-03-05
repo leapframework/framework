@@ -34,14 +34,14 @@ public interface RequestInterceptor {
 	}
 	
 	/**
-	 * Called if failed to handle request.
+	 * Called if failed to handle request (before handling the failure).
 	 */
 	default State onRequestFailure(Request request, Response response, RequestExecution execution) throws Throwable {
 	    return State.CONTINUE;
 	}
 
 	/**
-	 * Like Java's <code>finally</code>. Called after handling request whenever success or fialure.
+	 * Like Java's <code>finally</code>. Called after handling request whenever success or failure.
 	 */
 	default void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
 	    

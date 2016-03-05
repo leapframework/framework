@@ -23,17 +23,12 @@ public class InMemoryUserStore implements UserStore {
     private final Map<String, User> users = new ConcurrentHashMap<String, InMemoryUserStore.User>();
 
     @Override
-    public UserAccount findUserAccount(String username, Map<String, Object> parameters) {
-        return users.get(username);
-    }
-
-    @Override
-    public UserDetails findUserDetails(Object userId) {
+    public UserDetails loadUserDetailsById(Object userId) {
         return users.get((String)userId);
     }
     
     @Override
-    public UserDetails findUserDetailsByUsername(String username) {
+    public UserDetails loadUserDetailsByLoginName(String username) {
         return users.get(username);
     }
 
@@ -51,7 +46,7 @@ public class InMemoryUserStore implements UserStore {
         return users.get(username);
     }
     
-    public static final class User implements UserAccount,UserDetails {
+    public static final class User implements UserDetails {
         
         protected String  name;
         protected String  loginName;

@@ -15,57 +15,53 @@
  */
 package leap.web.security.authc;
 
-import javax.servlet.http.Cookie;
-
+import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
+import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.codec.MD5;
 import leap.lang.convert.Converts;
-import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
-import leap.web.security.user.UserAccount;
-import leap.web.security.user.UserDetails;
-import leap.web.security.user.UserDetailsPrincipal;
-import leap.web.security.user.UserStore;
+import leap.web.security.user.*;
 
-public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler implements RememberMeManager {
+import javax.servlet.http.Cookie;
+
+public class DefaultRememberMeManager extends CookieBasedAuthenticationResolver implements RememberMeManager {
 	
 	private static final Log log = LogFactory.get(DefaultRememberMeManager.class);
 	
 	@Override
-    public State resolveAuthentication(Request request, Response response, AuthenticationContext context) {
+    public Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) {
 		Cookie cookie = getCookie(request);
 		
 		if(null == cookie){
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		if(Strings.isEmpty(cookie.getValue())){
 			//invalid cookie
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		String[] tokens = decodeRememberMeTokens(cookie);
 		if(null == tokens){
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		log.debug("A valid remember-me cookie detected, authenticates it");
-		Authentication auth = authenticateRemembrerMeTokens(request, response, context, tokens);
-		if(null == auth){
+		Authentication authc = authenticateRememberMeTokens(request, response, context, tokens);
+		if(null == authc){
 			log.debug("Failed authenticating the remember-me cookie, removes it");
 			removeCookie(request, response, cookie);
-			return State.CONTINUE;
+			return Result.empty();
 		}
 		
 		log.debug("Successful to authenticating the remember-me cookie");
-		context.setAuthentication(auth);
-		return State.INTERCEPTED;
+		return Result.of(authc);
 	}
 	
 	@Override
@@ -75,16 +71,13 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler i
 
 	@Override
     public void onLoginSuccess(Request request, Response response, Authentication authentication) {
-		UserPrincipal user = authentication.getUserPrincipal();
+		UserPrincipal user = authentication.getUser();
 		
-		if(user instanceof UserDetailsPrincipal){
+		if(user instanceof UserDetails){
 			String rememberMe = request.getParameter(securityConfig.getRememberMeParameterName());
 		
 			if(Converts.toBoolean(rememberMe, false)){
-				UserAccount account = ((UserDetailsPrincipal) user).getAccount();
-				if(null != account) {
-				    setRememberMeCookie(request,response,user.getLoginName(),account.getPassword());    
-				}
+                setRememberMeCookie(request,response,user.getLoginName(),((UserDetails) user).getPassword());
 			}else{
 				removeCookie(request, response);
 			}
@@ -154,7 +147,7 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler i
 		return tokens;
 	}
 	
-	protected Authentication authenticateRemembrerMeTokens(Request request,Response response,AuthenticationContext context,String[] tokens) {
+	protected Authentication authenticateRememberMeTokens(Request request, Response response, AuthenticationContext context, String[] tokens) {
         long expires;
 
         try {
@@ -172,13 +165,13 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler i
         UserStore userStore = securityConfig.getUserStore();
         
         String username = tokens[0];
-        UserAccount account = userStore.findUserAccount(username);
-        if(null == account){
+        UserDetails user = userStore.loadUserDetailsByLoginName(username);
+        if(null == user){
         	log.debug("The remembered user '{}' not found",username);
         	return null;
         }
         
-        String signed = sign(username, account.getPassword(), expires);
+        String signed = sign(username, user.getPassword(), expires);
         if(null == signed){
         	return null;
         }
@@ -188,12 +181,10 @@ public class DefaultRememberMeManager extends CookieBasedAuthenticationHandler i
         	return null;
         }
         
-        UserDetails details = userStore.findAndCheckUserDetails(account.getId());
-        
-        SimpleUserDetailsPrincipal user = new SimpleUserDetailsPrincipal(account, details);
-        user.setRememberMe(true);
-        
-		return new SimpleAuthentication(user);
+		SimpleAuthentication authc = new SimpleAuthentication(user);
+		authc.setRememberMe(true);
+
+		return authc;
 	}
 	
 	protected String sign(String username, String password, long expires) {

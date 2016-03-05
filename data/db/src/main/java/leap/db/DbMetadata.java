@@ -133,7 +133,7 @@ public interface DbMetadata {
 	 * Returns the cached {@link DbTable} in the given schema which name equals to the given name (ignore case).
 	 * 
 	 * <p>
-	 * Returns <code>null</code if table not exists in the given schema.
+	 * Returns <code>null</code> if table not exists in the given schema.
 	 */
 	DbTable tryGetTable(String schema,String tableName);
 	
@@ -141,7 +141,7 @@ public interface DbMetadata {
 	 * Returns the cached {@link DbTable} in the given schema which name equals to the given name (ignore case).
 	 * 
 	 * <p>
-	 * Returns <code>null</code if table not exists in the given schema.
+	 * Returns <code>null</code> if table not exists in the given schema.
 	 */
 	DbTable tryGetTable(DbSchemaObjectName tableName);
 	

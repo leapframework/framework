@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
  * R means required(not empty), used in bean injection only.
  * 
  * <p>
- * The {@link M} means mandotary(not null). 
+ * The {@link M} means mandatory (not null).
  * 
  * <p>
  * The {@link N} means nullable. 

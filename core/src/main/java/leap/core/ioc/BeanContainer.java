@@ -15,70 +15,36 @@
  */
 package leap.core.ioc;
 
+import leap.core.*;
+import leap.core.annotation.*;
+import leap.core.validation.annotations.NotEmpty;
+import leap.core.validation.annotations.NotNull;
+import leap.core.web.ServletContextAware;
+import leap.lang.*;
+import leap.lang.Comparators;
+import leap.lang.accessor.PropertyGetter;
+import leap.lang.annotation.Internal;
+import leap.lang.beans.*;
+import leap.lang.convert.Converts;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.reflect.*;
+import leap.lang.resource.Resource;
+import leap.lang.resource.ResourceSet;
+import leap.lang.text.DefaultPlaceholderResolver;
+import leap.lang.text.PlaceholderResolver;
+
 import java.io.Closeable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
-
-import leap.core.AppConfig;
-import leap.core.AppConfigAware;
-import leap.core.AppContext;
-import leap.core.AppContextAware;
-import leap.core.BeanFactory;
-import leap.core.BeanFactoryAware;
-import leap.core.BeanFactoryInitializable;
-import leap.core.annotation.Configurable;
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
-import leap.core.annotation.R;
-import leap.core.validation.annotations.NotEmpty;
-import leap.core.validation.annotations.NotNull;
-import leap.core.web.ServletContextAware;
-import leap.lang.Args;
-import leap.lang.Beans;
-import leap.lang.Classes;
-import leap.lang.Comparators;
-import leap.lang.Disposable;
-import leap.lang.Exceptions;
-import leap.lang.Iterables;
-import leap.lang.Lazy;
-import leap.lang.Objects2;
-import leap.lang.Predicates;
-import leap.lang.Strings;
-import leap.lang.Types;
-import leap.lang.accessor.PropertyGetter;
-import leap.lang.annotation.Internal;
-import leap.lang.beans.BeanCreationException;
-import leap.lang.beans.BeanException;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
-import leap.lang.beans.NoSuchBeanException;
-import leap.lang.convert.Converts;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-import leap.lang.reflect.ReflectClass;
-import leap.lang.reflect.ReflectException;
-import leap.lang.reflect.ReflectField;
-import leap.lang.reflect.Reflection;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.text.DefaultPlaceholderResolver;
-import leap.lang.text.PlaceholderResolver;
 
 @Internal
 public class BeanContainer implements BeanFactory {
@@ -86,29 +52,29 @@ public class BeanContainer implements BeanFactory {
 	private static final Log log = LogFactory.get(BeanContainer.class);
 	
 	/** Definition of beans that are currently in creation */
-	private final ThreadLocal<Map<BeanDefinitionBase,Object>> beansCurrentlyInCreation = new ThreadLocal<Map<BeanDefinitionBase,Object>>();
+	private final ThreadLocal<Map<BeanDefinitionBase,Object>> beansCurrentlyInCreation = new ThreadLocal<>();
 	
 	private static final BeanDefinitionBase NULL_BD = new BeanDefinitionBase(null);
 
-    protected Set<InitDefinition>                              initDefinitions           = new LinkedHashSet<InitDefinition>(10);
-    protected Set<BeanDefinitionBase>                          allBeanDefinitions        = new LinkedHashSet<BeanDefinitionBase>();
-    protected Map<String, BeanDefinitionBase>                  identifiedBeanDefinitions = new HashMap<String, BeanDefinitionBase>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>>           typedBeanDefinitions      = new HashMap<Class<?>, Set<BeanDefinitionBase>>();
-    protected Map<String, BeanListDefinition>                  beanListDefinitions       = new HashMap<String, BeanListDefinition>();
-    protected Map<Class<?>, FactoryBean>                       typedFactoryBeans         = new HashMap<Class<?>, FactoryBean>();
-    protected Map<Class<?>, BeanDefinitionBase>                typedFactoryDefinitions   = new HashMap<Class<?>, BeanDefinitionBase>();
-    protected Map<String, BeanDefinitionBase>                  namedBeanDefinitions      = new HashMap<String, BeanDefinitionBase>();
-    protected Map<Class<?>, BeanDefinitionBase>                primaryBeanDefinitions    = new HashMap<Class<?>, BeanDefinitionBase>();
-    protected Map<String, AliasDefinition>                     aliasDefinitions          = new HashMap<String, AliasDefinition>();
+    protected Set<InitDefinition>                              initDefinitions           = new CopyOnWriteArraySet<>();
+    protected Set<BeanDefinitionBase>                          allBeanDefinitions        = new CopyOnWriteArraySet<>();
+    protected Map<String, BeanDefinitionBase>                  identifiedBeanDefinitions = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>           typedBeanDefinitions      = new HashMap<>();
+    protected Map<String, BeanListDefinition>                  beanListDefinitions       = new HashMap<>();
+    protected Map<Class<?>, FactoryBean>                       typedFactoryBeans         = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>                typedFactoryDefinitions   = new HashMap<>();
+    protected Map<String, BeanDefinitionBase>                  namedBeanDefinitions      = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>                primaryBeanDefinitions    = new HashMap<>();
+    protected Map<String, AliasDefinition>                     aliasDefinitions          = new HashMap<>();
 
-    private Map<String, List<?>>                               typedBeansMap             = new ConcurrentHashMap<String, List<?>>();
-    private Map<Class<?>, Map<String, ?>>                      namedBeansMap             = new ConcurrentHashMap<Class<?>, Map<String, ?>>();
-    private Map<Class<?>, Map<?, BeanDefinition>>              typedInstances            = new ConcurrentHashMap<Class<?>, Map<?, BeanDefinition>>();
+    private Map<String, List<?>>                               typedBeansMap             = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<String, ?>>                      namedBeansMap             = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<?, BeanDefinition>>              typedInstances            = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                              primaryBeans              = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>                         postProcessorBeans        = new ArrayList<BeanDefinitionBase>();
+    protected List<BeanDefinitionBase>                         postProcessorBeans        = new ArrayList<>();
     protected BeanProcessor[]                                  processors;
-    protected List<BeanFactoryInitializable>                   beanFactoryInitializables = new ArrayList<BeanFactoryInitializable>();
+    protected List<BeanFactoryInitializable>                   beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
@@ -251,17 +217,45 @@ public class BeanContainer implements BeanFactory {
 		initializing = false;
 		
 		this.resolveAfterLoading();
+
+        if(null != processors){
+            for(BeanDefinitionBase bd : allBeanDefinitions) {
+                for(int i=0;i<processors.length;i++){
+                    try{
+                        processors[i].postInitBean(appContext, beanFactory, bd);
+                    }catch(Throwable e) {
+                        throw new AppInitException(e.getMessage(), e);
+                    }
+                }
+            }
+        }
+
 		this.initBeanFactoryInitializableBeans();
 		this.initNonLazyBeans();
-		this.containerInited = true;
+
+        this.containerInited = true;
 
 		return this;
 	}
-	
+
+    @Override
+    public boolean tryInitBean(BeanDefinition bd) {
+        if(!allBeanDefinitions.contains(bd)) {
+            throw new IllegalStateException("Not a managed bean " + bd);
+        }
+
+        if(bd.isInited()) {
+            return false;
+        }
+
+        doGetBean((BeanDefinitionBase)bd);
+        return true;
+    }
+
     @Override
     public void postInit(AppContext context) throws Exception {
     	if(appInited){
-    		throw new IllegalStateException("postInitialize aleady called");
+    		throw new IllegalStateException("postInitialize already called");
     	}
     	this.appInited = true;
     }
@@ -944,6 +938,8 @@ public class BeanContainer implements BeanFactory {
 		bean = doBeanCreation(bd);
 		
 		afterBeanCreation(bd);
+
+        bd.setInited(true);
 		
 		return bean;
 	}
@@ -1020,46 +1016,73 @@ public class BeanContainer implements BeanFactory {
 					keyPrefix = keyPrefix + ".";
 				}
 			}
+
+            Set<ReflectField> done = new HashSet<>();
 			
 			for(BeanProperty bp : bt.getProperties()){
 				if(!bp.isWritable()) {
 					continue;
 				}
 				
-				Configurable.Property a = bp.getAnnotation(Configurable.Property.class);
+				ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
 				if(null == a) {
 					continue;
 				}
-				
-				if(a.value().length > 0) {
-					for(String key : a.value()) {
-						if(doBeanConfigure(bean, bp, key)) {
-							break;
-						}
-					}
-				}else{
-					if(doBeanConfigure(bean, bp, keyPrefix + bp.getName())) {
-						continue;
-					}
-					
-					if(doBeanConfigure(bean, bp, keyPrefix + Strings.lowerHyphen(bp.getName()))) {
-						continue;
-					}
-				}
+
+                doBeanConfigure(bean, bp, keyPrefix, a);
+
+                if(null != bp.getReflectField()) {
+                    done.add(bp.getReflectField());
+                }
+
 			}
+
+            for(ReflectField field : bt.getReflectClass().getFields()) {
+                if(done.contains(field)) {
+                    continue;
+                }
+
+                ConfigProperty a = field.getAnnotation(ConfigProperty.class);
+                if(null == a) {
+                    continue;
+                }
+
+                doBeanConfigure(bean, field, keyPrefix, a);
+            }
+
+            done.clear();
 		}
 	}
+
+
+    protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
+        if(a.value().length > 0) {
+            for(String key : a.value()) {
+                if(doBeanConfigure(bean, v, key)) {
+                    break;
+                }
+            }
+        }else{
+            if(doBeanConfigure(bean, v, keyPrefix + v.getName())) {
+                return;
+            }
+
+            if(doBeanConfigure(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()))) {
+                return;
+            }
+        }
+    }
 	
-	protected boolean doBeanConfigure(Object bean, BeanProperty bp, String key) {
+	protected boolean doBeanConfigure(Object bean, ReflectValued v, String key) {
 		if(appContext.getConfig().hasProperty(key)){
 			String prop = appContext.getConfig().getProperty(key);
 			
 			if(!Strings.isEmpty(prop = prop.trim())) {
 				try {
-	                Object value = Converts.convert(prop, bp.getType(), bp.getGenericType());
-	                bp.setValue(bean, value);
+	                Object value = Converts.convert(prop, v.getType(), v.getGenericType());
+	                v.setValue(bean, value);
                 } catch (Exception e) {
-                	throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + bp.getName() + 
+                	throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
                 									"' using config key '" + key + "', " + e.getMessage(), e);
                 }
 			}
@@ -1097,8 +1120,8 @@ public class BeanContainer implements BeanFactory {
 
                 try {
                     //skip when bean value aleady setted.
-                    if (null != bp.getReflectiveField() && !bp.getType().isPrimitive()) {
-                        if (null != bp.getReflectiveField().getValue(bean)) {
+                    if (null != bp.getReflectField() && !bp.getType().isPrimitive()) {
+                        if (null != bp.getReflectField().getValue(bean)) {
                             continue;
                         }
                     }
@@ -1196,7 +1219,7 @@ public class BeanContainer implements BeanFactory {
 					}
 				}else if(List.class.equals(type) || BeanList.class.equals(type)){
 					if(!Strings.isEmpty(beanName)){
-						throw new BeanCreationException("Autowired List property does not support the 'name' annotation field in bean " + bd);
+						throw new BeanCreationException("The injected List property does not support the 'name' annotation field in bean " + bd);
 					}
 					
 					if(null == beanType || Object.class.equals(beanType)){

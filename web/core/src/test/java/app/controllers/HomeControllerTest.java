@@ -43,7 +43,7 @@ public class HomeControllerTest extends WebTestCase {
 		
 		get("/index").assertContentEquals("<h1>Hello world!</h1>");
 		get("/index.do").assertContentEquals("<h1>Hello world!</h1>");
-		//TODO : get("/index;jsessionid=x").assertContentEquals("<h1>Hello world!</h1>");
+		get("/index;jsessionid=x").assertContentEquals("<h1>Hello world!</h1>");
 	}
 
 	@Test
@@ -230,5 +230,25 @@ public class HomeControllerTest extends WebTestCase {
 	public void testHttpsOnly() {
 	    get("/https_only").assert400();
 	    httpsClient().get("/https_only").assertOk().assertContentEquals("OK");
+	}
+
+    @Test
+    public void testNestedController() {
+        get("/nested").assertOk();
+    }
+
+	@Test
+	public void testMethodWithPath() {
+		get("/method_with_path").assertOk();
+        post("/method_with_path").assertOk();
+        put("/method_with_path").assertOk();
+        delete("/method_with_path").assertOk();
+        head("/method_with_path").assertOk();
+        options("/method_with_path").assertOk();
+	}
+
+	@Test
+	public void testSuccessStatus() {
+		get("/success_status").assertStatusEquals(HTTP.SC_NO_CONTENT);
 	}
 }

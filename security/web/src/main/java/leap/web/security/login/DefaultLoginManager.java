@@ -17,17 +17,21 @@ package leap.web.security.login;
 
 import leap.core.annotation.Inject;
 import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.DefaultSecurityContextHolder;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 
 public class DefaultLoginManager implements LoginManager {
+
+    private static final Log log = LogFactory.get(DefaultLoginManager.class);
     
     protected @Inject SecurityConfig        config;
     protected @Inject LoginHandler[]       handlers;
@@ -44,10 +48,13 @@ public class DefaultLoginManager implements LoginManager {
         }
         
         if(request.isAjax()) {
+            log.debug("Promote login for ajax request");
             ajaxHandler.promoteLogin(request, response, context);
         }else{
+            log.debug("Promote login");
             viewHandler.promoteLogin(request, response, context);    
         }
+
         return true;
     }
 
@@ -127,9 +134,9 @@ public class DefaultLoginManager implements LoginManager {
             handleLoginSuccessView(request, response, context);
         }else{
             if(request.isAjax()) {
-                ajaxHandler.handleLoginFailed(request, response, context);
+                ajaxHandler.handleLoginFailure(request, response, context);
             }else{
-                viewHandler.handleLoginFailed(request, response, context);
+                viewHandler.handleLoginFailure(request, response, context);
             }
         }
     }

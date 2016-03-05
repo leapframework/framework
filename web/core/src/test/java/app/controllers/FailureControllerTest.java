@@ -23,11 +23,23 @@ public class FailureControllerTest extends WebTestCase {
 
 	@Test
 	public void testValidationFailure() {
-		get("/failure/validation_error").assert500();
+		get("/failure/validation_error").assert400();
 		get("/failure/validation_error?value=1").assertOk();
 		
 		get("/failure/validation_error1").assert500().assertContentEquals("Validation Error");
 		get("/failure/validation_error?value=1").assertOk();
 	}
-	
+
+	@Test
+	public void testIntercepted() {
+        get("/failure/intercepted").assertOk().assertContentEquals("OK");
+	}
+
+    @Test
+    public void testResponseException() {
+        get("/failure/response_exception").assertOk().assertContentEquals("OK");
+
+		String message = (String)get("/failure/response_exception1").assert400().getJson().asJsonScalar().raw();
+		assertEquals("bad request", message);
+    }
 }

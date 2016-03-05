@@ -15,53 +15,29 @@
  */
 package leap.web;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.servlet.http.Part;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.ValidationManager;
-import leap.core.validation.Validator;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyles;
+import leap.lang.path.Paths;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
-import leap.web.action.Action;
-import leap.web.action.ActionBuilder;
-import leap.web.action.ActionContext;
-import leap.web.action.ActionExecution;
-import leap.web.action.ActionInterceptor;
-import leap.web.action.ActionManager;
-import leap.web.action.ActionMapping;
-import leap.web.action.ActionStrategy;
-import leap.web.action.Argument.BindingFrom;
-import leap.web.action.ArgumentBuilder;
-import leap.web.action.ConditionalFailureHandler;
-import leap.web.action.ControllerBase;
-import leap.web.action.FailureHandler;
-import leap.web.action.MethodActionBuilder;
-import leap.web.action.RenderViewFailureHandler;
-import leap.web.annotation.AcceptValidationError;
-import leap.web.annotation.Failure;
-import leap.web.annotation.Failures;
-import leap.web.annotation.HttpsOnly;
-import leap.web.annotation.InterceptedBy;
-import leap.web.annotation.Multipart;
-import leap.web.annotation.NonAction;
+import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resources;
+import leap.web.action.*;
+import leap.web.action.Argument.Location;
+import leap.web.annotation.*;
+import leap.web.config.ModuleConfig;
 import leap.web.error.ErrorsConfig;
 import leap.web.format.ResponseFormat;
 import leap.web.multipart.MultipartFile;
@@ -69,13 +45,18 @@ import leap.web.route.RouteBuilder;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
 
+import javax.servlet.http.Part;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
+
 public class DefaultAppInitializer implements AppInitializer {
 	
 	private static final Log log = LogFactory.get(DefaultAppInitializer.class);
 	
     protected @Inject @M BeanFactory         factory;
-    protected @Inject @M ActionStrategy      actionStrategy;
-    protected @Inject @M ActionManager       actionManager;
+    protected @Inject @M ActionStrategy      as;
+    protected @Inject @M ActionManager       am;
     protected @Inject @M ViewSource          viewSource;
     protected @Inject @M ValidationManager   validationManager;
     protected @Inject @M PathTemplateFactory pathTemplateFactory;	
@@ -103,22 +84,47 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	//Loads the routes from scanned classes
 	protected void loadRoutesFromClasses(final App app){
-		final String basePackage = app.config().getBasePackage();
+		//Load web app's routes.
+        log.debug("Load routes[base-path=/] from classes in base package '{}'", app.getBasePackage());
+		final String basePackage = app.getBasePackage();
 		app.config().getResources().processClasses((cls) -> {
 			if(cls.getName().startsWith(basePackage)){
-				if(actionStrategy.isController(cls)){
-					loadControllerClass(app,cls);
+				if(as.isControllerClass(cls)){
+					loadControllerClass(app, "/", cls);
 				}					
 			}
 		});
+
+		//Load web module's routes.
+		for(ModuleConfig module : app.getWebConfig().getModules()){
+            ResourceSet rs = Resources.scanPackage(module.getBasePackage());
+
+            if(rs.isEmpty()) {
+                log.info("No resource scanned in base package '{}' of module '{}', is the module exists?");
+            }else{
+                log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
+                        module.getBasePath(), module.getBasePackage(), module.getName());
+
+                rs.processClasses((cls) -> {
+                    if(as.isControllerClass(cls)) {
+                        loadControllerClass(app, module.getBasePath(), cls);
+                    }
+                });
+            }
+        }
 	}
 	
-	protected void loadControllerClass(App app, Class<?> cls) {
+	protected void loadControllerClass(App app, String basePath, Class<?> cls) {
 		//An controller can defines two or more controller path
 		//i.e User.class can define paths : /user and /users
-		String[] controllerPaths = actionStrategy.getControllerPaths(cls);
-		
-		for(String controllerPath : controllerPaths){
+		String[] controllerPaths = as.getControllerPaths(cls);
+
+        String pathPrefix = "";
+        if(!basePath.equals("/")) {
+            pathPrefix = Paths.prefixWithAndSuffixWithoutSlash(basePath);
+        }
+
+        for(String controllerPath : controllerPaths){
 			//Normalize the path
 			if(!controllerPath.startsWith("/")){
 				controllerPath = "/" + controllerPath;
@@ -126,19 +132,25 @@ public class DefaultAppInitializer implements AppInitializer {
 			if(controllerPath.endsWith("/")){
 				controllerPath = controllerPath.substring(0,controllerPath.length() - 1);
 			}
+
+            controllerPath = pathPrefix + controllerPath;
 			
 			//Scan all action methods in controller class.
 			ReflectClass rcls = ReflectClass.of(cls);
 			
 			//Create controller instance
-			Object controller = actionStrategy.getControllerInstance(cls);
+			Object controller = as.getControllerInstance(cls);
 			
 	        ControllerHolder controllerHolder = new ControllerHolder(controller,rcls,controllerPath);
 	        
 			for(ReflectMethod rm : rcls.getMethods()){
-				if(!rm.isPublic() || rm.isStatic() || rm.isGetterMethod() || rm.isSetterMethod() || rm.isAnnotationPresent(NonAction.class)){
-					continue;
-				}
+				if(rm.isGetterMethod() || rm.isSetterMethod()) {
+                    continue;
+                }
+
+                if(!as.isActionMethod(rm.getReflectedMethod())) {
+                    continue;
+                }
 
 				Class<?> declaringClass = rm.getReflectedMethod().getDeclaringClass();
 				if(declaringClass.equals(ControllerBase.class) || declaringClass.equals(Results.class)){
@@ -153,7 +165,7 @@ public class DefaultAppInitializer implements AppInitializer {
 	protected void loadActionMethod(App app,ControllerHolder cholder, ReflectMethod rm){
 		ActionBuilder action = createAction(app, cholder, rm);
 		
-		ActionMapping[] mappings = actionStrategy.getActionMappings(action);
+		ActionMapping[] mappings = as.getActionMappings(action);
 		
 		for(ActionMapping m : mappings){
 			addActionRoute(app, cholder.cls(), cholder.path(), action, m);
@@ -179,12 +191,14 @@ public class DefaultAppInitializer implements AppInitializer {
 				actionPath = actionPathWithoutExt;
 			}
 		}
+
+		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(RestController.class);
 		
 		if(!Strings.isEmpty(actionPath)){
-			if(actionPath.startsWith("/")){
+			if(!restful && actionPath.startsWith("/")){
 				path.append(actionPath);
 			}else{
-				path.append(controllerPath).append('/').append(actionPath);
+				path.append(controllerPath).append(Paths.prefixWithSlash(actionPath));
 			}
 		}else{
 			path.append(controllerPath);
@@ -200,11 +214,11 @@ public class DefaultAppInitializer implements AppInitializer {
 		//Resolve path variables
 		if(pathTemplate.hasVariables()) {
 			for(ArgumentBuilder a : action.getArguments()) {
-				if(null == a.getBindingFrom()) {
+				if(null == a.getLocation()) {
 					String name = NamingStyles.LOWER_UNDERSCORE.of(a.getName());
 					for(String v : pathTemplate.getTemplateVariables()) {
 						if(name.equals(NamingStyles.LOWER_UNDERSCORE.of(v))){
-							a.setBindingFrom(BindingFrom.PATH_PARAM);
+							a.setLocation(Location.PATH_PARAM);
 							a.setName(v);
 						}
 					}
@@ -223,7 +237,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		route.setSupportsMultipart(supportsMultipart(action));
 		
 		//resole default view path
-		String[] defaultViewNames = actionStrategy.getDefaultViewNames(action, controllerPath, actionPath, pathTemplate);
+		String[] defaultViewNames = as.getDefaultViewNames(action, controllerPath, actionPath, pathTemplate);
 		for(String defaultViewName : defaultViewNames){
 			try {
 				View view = resolveView(app, defaultViewName);
@@ -243,7 +257,13 @@ public class DefaultAppInitializer implements AppInitializer {
 		
 		//create action.
 		route.setAction(act);
-		
+
+		//success status.
+		Success success = act.getAnnotation(Success.class);
+		if(null != success) {
+            route.setSuccessStatus(success.status().value());
+		}
+
 		//validation
 		AcceptValidationError acceptValidationError = act.searchAnnotation(AcceptValidationError.class);
 		if(null != acceptValidationError) {
@@ -270,7 +290,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		}
 		
 		//prepare the action
-		actionManager.prepareAction(route);
+		am.prepareAction(route);
 		
 		//add route
 		app.routes().add(route.build());
@@ -324,23 +344,14 @@ public class DefaultAppInitializer implements AppInitializer {
 	}
 	
 	protected ArgumentBuilder createArgument(App app,ReflectMethod m, ReflectParameter p) {
-		ArgumentBuilder a = new ArgumentBuilder(p);
-		
-		a.setTypeInfo(Types.getTypeInfo(a.getType(), a.getGenericType()));
-
-		Validator v = null;
-		for(Annotation pa : p.getAnnotations()){
-			if((v = validationManager.tryCreateValidator(pa, p.getType())) != null){
-				a.addValidator(v);
-			}
-		}
+		ArgumentBuilder a = new ArgumentBuilder(validationManager, p);
 		
 		return a;
 	}
 	
 	@SuppressWarnings("unchecked")
     protected List<ActionInterceptor> resolveActionInterceptors(App app,ControllerHolder ch,ReflectMethod m) {
-		List<ActionInterceptor> interceptors = new ArrayList<ActionInterceptor>();
+		List<ActionInterceptor> interceptors = new ArrayList<>();
 		
 		InterceptedBy a = m.getAnnotation(InterceptedBy.class);
 		if(null != a && a.value().length > 0) {
@@ -380,10 +391,6 @@ public class DefaultAppInitializer implements AppInitializer {
 			return controller;
 		}
 
-		public ReflectClass reflectClass() {
-			return reflectClass;
-		}
-		
 		public Class<?> cls(){
 			return reflectClass.getReflectedClass();
 		}

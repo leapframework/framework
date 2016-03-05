@@ -15,11 +15,6 @@
  */
 package leap.web.route;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -31,12 +26,18 @@ import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
 
-public class RouteBuilder implements Buildable<Route> {
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
+public class RouteBuilder implements RouteBase, Buildable<Route> {
 	
 	protected Object	   		   source;
 	protected String       		   method;
 	protected PathTemplate 		   pathTemplate;
 	protected Action	   		   action;
+	protected Integer			   successStatus;
 	protected Boolean			   corsEnabled;
 	protected Boolean			   csrfEnabled;
 	protected Boolean			   supportsMultipart;
@@ -51,7 +52,7 @@ public class RouteBuilder implements Buildable<Route> {
 	protected String	  		   controllerPath;
 	protected Object	   		   executionAttributes;
 	protected Map<String, String>  requiredParameters;
-	protected List<FailureHandler> failureHandlers = new ArrayList<FailureHandler>();
+	protected List<FailureHandler> failureHandlers = new ArrayList<>();
 	
 	public Object getSource() {
 		return source;
@@ -88,7 +89,16 @@ public class RouteBuilder implements Buildable<Route> {
 		this.action = action;
 		return this;
 	}
-	
+
+	public Integer getSuccessStatus() {
+		return successStatus;
+	}
+
+	public RouteBuilder setSuccessStatus(Integer successStatus) {
+		this.successStatus = successStatus;
+        return this;
+	}
+
 	public Boolean getCorsEnabled() {
 		return corsEnabled;
 	}
@@ -247,7 +257,7 @@ public class RouteBuilder implements Buildable<Route> {
 			this.csrfEnabled = null != csrf ? csrf.value() : null;
 		}
 		
-		RouteImpl route = new RouteImpl(source, method, pathTemplate, action,
+		DefaultRoute route = new DefaultRoute(source, method, pathTemplate, action,
             							 corsEnabled, csrfEnabled, supportsMultipart,acceptValidationError,
             							 requestFormat,responseFormat,
             							 defaultView, defaultViewName, 
@@ -255,7 +265,9 @@ public class RouteBuilder implements Buildable<Route> {
             							 executionAttributes,
             							 failureHandlers.toArray(new FailureHandler[failureHandlers.size()]),
             							 requiredParameters);
-		
+
+        route.setSuccessStatus(successStatus);
+
 		if(null != httpsOnly) {
 		    route.setHttpsOnly(httpsOnly);
 		}
@@ -267,7 +279,7 @@ public class RouteBuilder implements Buildable<Route> {
 		if(null != allowClientOnly) {
 		    route.setAllowClientOnly(allowClientOnly);
 		}
-		
+
 		return route;
 	}
 }

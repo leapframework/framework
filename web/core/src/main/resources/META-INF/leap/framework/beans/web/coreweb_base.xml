@@ -46,9 +46,9 @@
 	<!-- request body readers -->
 	<bean type="leap.web.body.RequestBodyReader" class="leap.web.body.StringRequestBodyReader"/>
 	<bean type="leap.web.body.RequestBodyReader" class="leap.web.body.BytesRequestBodyReader"/>
-	
+
 	<!-- multipart -->
-	<bean type="leap.web.AppServletContainerInitializer" class="leap.web.multipart.MultipartInitializer"/>
+	<bean type="leap.web.AppBootable" class="leap.web.multipart.MultipartInitializer"/>
 	
 	<!-- cors -->
 	<bean type="leap.web.cors.CorsHandler" class="leap.web.cors.DefaultCorsHandler" primary="true"/>

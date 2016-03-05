@@ -15,53 +15,70 @@
  */
 package leap.web.assets;
 
+import java.io.File;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
+import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.web.assets.AssetConfig;
-import leap.core.web.assets.AssetStrategy;
+import leap.core.ioc.PostCreateBean;
+import leap.lang.Args;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 
 @Configurable(prefix="webassets")
-public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
-	
-	protected boolean disabled;
-	protected boolean debug;
-	protected Charset charset;
-	protected boolean gzipEnabled      = true;
-	protected int	  gzipMinLength    = DEFAULT_GZIP_MIN_LENGTH;
-	protected String  pathPrefix	   = DEFAULT_PATH_PREFIX;
-	protected String  sourceDirectory  = DEFAULT_SOURCE_DIRECTORY;
-	protected String  publicDirectory  = DEFAULT_PUBLIC_DIRECTORY;
-	protected boolean publishEnabled   = false;
-	protected String  publishDirectory = null;
-	protected String  manifestFile     = DEFAULT_MANIFEST_FILE;
-	protected boolean reloadEnabled    = false;
-	protected long    reloadInterval   = DEFAULT_RELOAD_INTERVAL;
-	protected String  hashAlgorithm    = DEFAULT_HASH_ALGORITHM;
-	protected int	  cacheMaxAge      = DEFAULT_CACHE_MAX_AGE;
-	
-	protected @Inject @M AssetStrategy fingerprintStrategy;
+public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppConfigAware, PostCreateBean {
+
+    private static final Log log = LogFactory.get(DefaultAssetConfig.class);
+
+    protected AppConfig config;
+
+    protected boolean enabled = true;
+    protected boolean debug;
+    protected Charset charset;
+    protected boolean gzipEnabled      = true;
+    protected int     gzipMinLength    = DEFAULT_GZIP_MIN_LENGTH;
+    protected String  pathPrefix       = DEFAULT_PATH_PREFIX;
+    protected String  sourceDirectory  = DEFAULT_SOURCE_DIRECTORY;
+    protected String  publicDirectory  = DEFAULT_PUBLIC_DIRECTORY;
+    protected boolean publishEnabled   = false;
+    protected String  publishDirectory = null;
+    protected String  manifestFile     = DEFAULT_MANIFEST_FILE;
+    protected boolean reloadEnabled    = false;
+    protected long    reloadInterval   = DEFAULT_RELOAD_INTERVAL;
+    protected String  hashAlgorithm    = DEFAULT_HASH_ALGORITHM;
+    protected int     cacheMaxAge      = DEFAULT_CACHE_MAX_AGE;
+
+    protected List<AssetFolder> folders              = new ArrayList<>();
+    protected List<AssetFolder> foldersImmutableView = Collections.unmodifiableList(folders);
+
+    protected @Inject @M AssetStrategy fingerprintStrategy;
 	
 	@Override
     public void setAppConfig(AppConfig config) {
+        this.config        = config;
 		this.debug         = config.isDebug();
 		this.charset       = config.getDefaultCharset();
 		this.reloadEnabled = debug ? true : config.isReloadEnabled();
     }
 	
 	@Override
-	public boolean isDisabled() {
-		return disabled;
+	public boolean isEnabled() {
+		return enabled;
 	}
 
-	@Configurable.Property
-	public void setDisabled(boolean disabled) {
-		this.disabled = disabled;
+	@ConfigProperty
+	public AssetConfigurator setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		return this;
 	}
 
 	@Override
@@ -79,14 +96,16 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 		return gzipMinLength;
 	}
 
-	@Configurable.Property
-	public void setGzipMinLength(int gzipMinLength) {
+	@ConfigProperty
+	public AssetConfigurator setGzipMinLength(int gzipMinLength) {
 		this.gzipMinLength = gzipMinLength;
+        return this;
 	}
 
-	@Configurable.Property
-	public void setGzipEnabled(boolean gzipEnabled) {
+	@ConfigProperty
+	public AssetConfigurator setGzipEnabled(boolean gzipEnabled) {
 		this.gzipEnabled = gzipEnabled;
+        return this;
 	}
 
 	@Override
@@ -94,14 +113,10 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 	    return charset;
     }
 	
-	@Configurable.Property
-	public void setCharset(Charset charset) {
-		this.charset = charset;
-	}
-
-	@Configurable.Property
-	public void setDebug(boolean debug) {
+	@ConfigProperty
+	public AssetConfigurator setDebug(boolean debug) {
 		this.debug = debug;
+        return this;
 	}
 	
 	@Override
@@ -109,19 +124,20 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 		return pathPrefix;
 	}
 
-	@Configurable.Property
-	public void setPathPrefix(String pathPrefix) {
+	@ConfigProperty
+	public AssetConfigurator setPathPrefix(String pathPrefix) {
 		this.pathPrefix = Paths.prefixAndSuffixWithSlash(pathPrefix);
+        return this;
 	}
 
-	@Override
 	public String getSourceDirectory() {
 		return sourceDirectory;
 	}
 	
-	@Configurable.Property
-	public void setSourceDirectory(String sourceDirectory) {
+	@ConfigProperty
+	public AssetConfigurator setSourceDirectory(String sourceDirectory) {
 		this.sourceDirectory = Paths.prefixAndSuffixWithSlash(sourceDirectory);
+        return this;
 	}
 
 	@Override
@@ -129,9 +145,10 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 		return publicDirectory;
 	}
 	
-	@Configurable.Property
-	public void setPublicDirectory(String publicDirectory) {
+	@ConfigProperty
+	public AssetConfigurator setPublicDirectory(String publicDirectory) {
 		this.publicDirectory = Paths.prefixAndSuffixWithSlash(publicDirectory);
+        return this;
 	}
 
 	@Override
@@ -139,9 +156,10 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 		return publishEnabled;
 	}
 
-	@Configurable.Property
-	public void setPublishEnabled(boolean publishEnabled) {
-		this.publishEnabled = publishEnabled;
+	@ConfigProperty
+	public AssetConfigurator setPublishEnabled(boolean enabled) {
+		this.publishEnabled = enabled;
+        return this;
 	}
 
 	@Override
@@ -149,37 +167,40 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 		return publishDirectory;
 	}
 
-	@Configurable.Property
-	public void setPublishDirectory(String publishDirectory) {
-		this.publishDirectory = publishDirectory;
+	@ConfigProperty
+	public AssetConfigurator setPublishDirectory(String dir) {
+		this.publishDirectory = dir;
+        return this;
 	}
 
-	@Override
     public String getManifestFile() {
 	    return manifestFile;
     }
 
-	@Configurable.Property
-	public void setManifestFile(String manifestFile) {
-		this.manifestFile = manifestFile;
+	@ConfigProperty
+	public AssetConfigurator setManifestFile(String file) {
+		this.manifestFile = file;
+        return this;
 	}
 	
 	public boolean isReloadEnabled() {
 		return reloadEnabled;
 	}
 
-	@Configurable.Property
-	public void setReloadEnabled(boolean manifestReloadEnabled) {
-		this.reloadEnabled = manifestReloadEnabled;
+	@ConfigProperty
+	public AssetConfigurator setReloadEnabled(boolean reloadEnabled) {
+		this.reloadEnabled = reloadEnabled;
+        return this;
 	}
 
 	public long getReloadInterval() {
 		return reloadInterval;
 	}
 
-	@Configurable.Property
-	public void setReloadInterval(long manifestReloadInterval) {
-		this.reloadInterval = manifestReloadInterval;
+	@ConfigProperty
+	public AssetConfigurator setReloadInterval(long reloadInterval) {
+		this.reloadInterval = reloadInterval;
+        return this;
 	}
 
 	@Override
@@ -187,25 +208,63 @@ public class DefaultAssetConfig implements AssetConfig, AppConfigAware {
 	    return hashAlgorithm;
     }
 
-	@Configurable.Property
-	public void setHashAlgorithm(String hashAlgorithm) {
+	@ConfigProperty
+	public AssetConfigurator setHashAlgorithm(String hashAlgorithm) {
 		this.hashAlgorithm = hashAlgorithm;
+        return this;
 	}
 
 	public int getCacheMaxAge() {
 		return cacheMaxAge;
 	}
 
-	@Configurable.Property
-	public void setCacheMaxAge(int maxCacheAge) {
+	@ConfigProperty
+	public AssetConfigurator setCacheMaxAge(int maxCacheAge) {
 		this.cacheMaxAge = maxCacheAge;
+        return this;
 	}
 
 	public AssetStrategy getFingerprintStrategy() {
 		return fingerprintStrategy;
 	}
 
-	public void setFingerprintStrategy(AssetStrategy strategy) {
+	public AssetConfigurator setFingerprintStrategy(AssetStrategy strategy) {
 		this.fingerprintStrategy = strategy;
+        return this;
 	}
+
+    @Override
+    public List<AssetFolder> getFolders() {
+        return foldersImmutableView;
+    }
+
+    @Override
+    public AssetConfigurator addFolder(String location) {
+        Args.notEmpty(location, "location");
+        folders.add(createAssetFolder(location, null));
+        return this;
+    }
+
+    @Override
+    public AssetConfigurator addFolder(String location, String pathPrefix) {
+        Args.notEmpty(location, "location");
+        folders.add(createAssetFolder(location, pathPrefix));
+        return this;
+    }
+
+    @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        AssetConfigExtension ext = config.getExtension(AssetConfigExtension.class);
+        if(null == ext) {
+            return;
+        }
+        for(AssetConfigExtension.AssetFolderConfig f : ext.getFolders()) {
+            folders.add(createAssetFolder(f.getLocation(), f.getPathPrefix()));
+        }
+    }
+
+    protected AssetFolder createAssetFolder(String location, String pathPrefix) {
+        log.info("Assets folder : {}", location);
+        return new FileAssetFolder(new File(location), Paths.prefixAndSuffixWithSlash(pathPrefix));
+    }
 }

@@ -15,11 +15,13 @@
  */
 package leap.oauth2.as.endpoint;
 
+import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
+import leap.oauth2.as.endpoint.logout.PostLogoutHandler;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -27,7 +29,6 @@ import leap.web.route.Routes;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
-import leap.web.security.logout.LogoutManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
 
@@ -35,17 +36,21 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
     
     protected @Inject AuthenticationManager authcManager;
     protected @Inject ViewSource            viewSource;
-    protected @Inject LogoutManager         logoutManager;
-    
+    protected @Inject PostLogoutHandler     postLogoutHandler;
+
     protected View defaultLogoutView;
     
     @Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
-        if(config.isEnabled() && config.isLogoutEndpointEnabled()) {
+        if(config.isEnabled() && config.isSingleLoginEnabled()) {
             sc.interceptors().add(this);
             
             if(!Strings.isEmpty(config.getLogoutView())) {
                 this.defaultLogoutView = viewSource.getView(config.getLogoutView());
+            }
+
+            if(null == defaultLogoutView) {
+                throw new AppConfigException("The oauth2 logout view must be configured if logout endpoint enabled");
             }
         }
     }
@@ -59,24 +64,10 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
         //TODO : validate the request.
         
         //Do Logout
-        OAuth2Params params = new RequestOAuth2Params(request);
-        
-        String redirectUri = params.getPostLogoutRedirectUri();
-        if(Strings.isEmpty(redirectUri)) {
-            //No redirect uri, render the view.
-            if(null != defaultLogoutView) {
-                authcManager.logoutImmediately(request, response);
-                defaultLogoutView.render(request, response);
-            }else{
-                logoutManager.logout(request, response, context);
-            }
-        }else{
-            //Logout 
-            authcManager.logoutImmediately(request, response);
-            
-            //Redirect to the uri;
-            response.sendRedirect(redirectUri);
-        }
+        authcManager.logoutImmediately(request, response);
+
+        //Handle post logout.
+        postLogoutHandler.handlePostLogout(request, response, context, defaultLogoutView);
 
         return State.INTERCEPTED;
     }

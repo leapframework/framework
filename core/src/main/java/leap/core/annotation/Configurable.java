@@ -25,14 +25,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Configurable {
-	
-	@Target({ElementType.FIELD, ElementType.METHOD}) 
-	@Retention(RetentionPolicy.RUNTIME)
-	@Inherited
-	public @interface Property{
-		String[] value() default {};
-	}
-	
+
 	/**
 	 * Enables or Disables config.
 	 */

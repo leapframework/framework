@@ -75,6 +75,12 @@ public class DefaultLogoutManager implements LogoutManager {
         }else{
             viewHandler.handleLogoutSuccess(request, response, context.getLogoutContext());
         }
+
+        for(SecurityInterceptor i : config.getInterceptors()) {
+            if(State.isIntercepted(i.postLogout(request, response, context))) {
+                return;
+            }
+        }
     }
 
     protected boolean isLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {

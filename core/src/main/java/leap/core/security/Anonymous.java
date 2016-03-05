@@ -15,26 +15,24 @@
  */
 package leap.core.security;
 
-public class Anonymous implements UserPrincipal {
+public final class Anonymous implements UserPrincipal {
 	
 	private static final long serialVersionUID = -2408741977440943645L;
 
-	public static final String DEFAULT_ANYNYMOUS_ID  = "anonymous";
-	
-	protected String  id       = DEFAULT_ANYNYMOUS_ID;
-	protected String  name     = DEFAULT_ANYNYMOUS_ID;
-	protected String  nickName = DEFAULT_ANYNYMOUS_ID;
-	
-	private final boolean authenticated = false;;
-	private final boolean rememberMe    = false;
-	private final Object  details		= null;
-	
+	public static final String ANONYMOUS_NAME = "anonymous";
+
+	protected final String id;
+	protected final String name;
+	protected final String loginName;
+
 	public Anonymous() {
-		this(DEFAULT_ANYNYMOUS_ID);
+        this(ANONYMOUS_NAME);
 	}
 	
-	public Anonymous(String id){
-		this.id = id;
+	public Anonymous(String name){
+        this.id        = ANONYMOUS_NAME;
+        this.name      = name;
+        this.loginName = ANONYMOUS_NAME;
 	}
 
 	@Override
@@ -42,37 +40,17 @@ public class Anonymous implements UserPrincipal {
 	    return id;
     }
 
+    public String getName() {
+        return name;
+    }
+
 	@Override
     public String getLoginName() {
-	    return name;
+	    return loginName;
     }
 	
-	public String getName() {
-		return nickName;
-	}
-
-	public void setNickName(String nickName) {
-		this.nickName = nickName;
-	}
-
-	@Override
-    public boolean isAnonymous() {
+    public final boolean isAnonymous() {
 	    return true;
     }
 
-	@Override
-    public boolean isRememberMe() {
-	    return rememberMe;
-    }
-
-	@Override
-    public boolean isAuthenticated() {
-	    return authenticated;
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public <T> T getDetails() {
-	    return (T)details;
-    }
 }

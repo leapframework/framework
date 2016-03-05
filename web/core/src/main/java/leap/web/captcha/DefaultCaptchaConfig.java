@@ -16,6 +16,7 @@
 package leap.web.captcha;
 
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Assert;
@@ -30,7 +31,7 @@ public class DefaultCaptchaConfig implements CaptchaConfig, CaptchaConfigurator,
 	protected int	  tokenMinLength      = DEFAULT_TOKEN_MIN_LENGTH;
 	protected int     tokenMaxLength      = DEFAULT_TOKEN_MAX_LENGTH;
 	
-	@Configurable.Property
+	@ConfigProperty
 	public CaptchaConfigurator setDefaultCookieName(String name) {
 		this.defaultCookieName = name;
 		return this;

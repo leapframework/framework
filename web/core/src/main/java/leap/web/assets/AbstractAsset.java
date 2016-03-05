@@ -15,9 +15,6 @@
  */
 package leap.web.assets;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetResource;
-
 
 public abstract class AbstractAsset implements Asset {
 	

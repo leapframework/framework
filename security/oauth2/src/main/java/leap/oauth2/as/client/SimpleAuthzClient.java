@@ -30,6 +30,7 @@ public class SimpleAuthzClient implements AuthzClient {
     protected Integer     refreshTokenExpires;
     protected Boolean     allowAuthorizationCode;
     protected Boolean     allowRefreshToken;
+    protected Boolean     allowLoginToken;
     protected Boolean     enabled;
     
     public String getId() {
@@ -112,6 +113,14 @@ public class SimpleAuthzClient implements AuthzClient {
         this.allowRefreshToken = allowRefreshToken;
     }
 
+    public Boolean getAllowLoginToken() {
+        return allowLoginToken;
+    }
+
+    public void setAllowLoginToken(Boolean allowLoginToken) {
+        this.allowLoginToken = allowLoginToken;
+    }
+
     public Boolean getEnabled() {
         return enabled;
     }
@@ -126,6 +135,10 @@ public class SimpleAuthzClient implements AuthzClient {
 
     public boolean isAllowRefreshToken() {
         return null == allowRefreshToken || allowRefreshToken;
+    }
+
+    public boolean isAllowLoginToken() {
+        return null == allowLoginToken || allowLoginToken;
     }
 
     public boolean isEnabled() {

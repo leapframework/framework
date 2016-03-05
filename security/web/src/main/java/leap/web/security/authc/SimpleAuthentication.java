@@ -15,11 +15,12 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 
-public class SimpleAuthentication implements Authentication {
+public class SimpleAuthentication extends AbstractAuthentication implements Authentication {
 	
 	protected Credentials     credentials;
 	protected UserPrincipal   userPrincipal;
@@ -33,16 +34,11 @@ public class SimpleAuthentication implements Authentication {
 		this.userPrincipal = user;
 		this.credentials   = credentials;
 	}
-	
+
 	@Override
-    public boolean isAuthenticated() {
-	    return null != userPrincipal && userPrincipal.isAuthenticated();
-    }
-	
-	@Override
-    public boolean isRememberMe() {
-	    return null != userPrincipal && userPrincipal.isRememberMe();
-    }
+	public boolean isAuthenticated() {
+		return !userPrincipal.isAnonymous();
+	}
 
 	@Override
 	public Credentials getCredentials() {
@@ -58,11 +54,11 @@ public class SimpleAuthentication implements Authentication {
 	}
 
 	@Override
-	public UserPrincipal getUserPrincipal() {
+	public UserPrincipal getUser() {
 		return userPrincipal;
 	}
 
-	public ClientPrincipal getClientPrincipal() {
+	public ClientPrincipal getClient() {
 		return clientPrincipal;
 	}
 

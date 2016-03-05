@@ -15,19 +15,24 @@
  */
 package leap.oauth2.as.token;
 
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.as.authc.AuthzAuthentication;
 
 public interface AuthzTokenManager {
     
     /**
-     * Creates a new token.
+     * Creates a new access token.
      */
     AuthzAccessToken createAccessToken(AuthzAuthentication authc);
 
     /**
-     * Creates a new token.
+     * Creates a new access token.
      */
 	AuthzAccessToken createAccessToken(AuthzAuthentication authc, AuthzRefreshToken rt);
+
+	/**
+	 * Creates a new login token.
+     */
+	AuthzLoginToken createLoginToken(AuthzAuthentication authc);
 	
 	/**
 	 * Returns the {@link AuthzAccessToken} or <code>null</code> if not exists.
@@ -38,6 +43,14 @@ public interface AuthzTokenManager {
 	 * Returns the {@link AuthzRefreshToken} or <code>null</code> if not exists.
 	 */
 	AuthzRefreshToken loadRefreshToken(String refreshToken);
+
+	/**
+	 * Returns the consumed login token or <code>null</code> if not exists.
+	 *
+	 * <p/>
+	 * The login token will be removed after consumption.
+     */
+	AuthzLoginToken consumeLoginToken(String loginToken);
 	
 	/**
 	 * Removes the acces token.
@@ -48,5 +61,6 @@ public interface AuthzTokenManager {
 	 * Removes the refresh token.
 	 */
 	void removeRefreshToken(AuthzRefreshToken token);
-	
+
+
 }

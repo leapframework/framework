@@ -3,6 +3,7 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
             targetNamespace="http://www.leapframework.org/schema/config" elementFormDefault="qualified">
 
+    <!-- top elements -->
 	<xsd:element name="config">
 		<xsd:complexType>
 			<xsd:sequence>
@@ -123,41 +124,6 @@
     
     <xsd:element name="datasource" type="DataSourceConfig"/>
     
-    <xsd:complexType name="DataSourceConfig">
-        <xsd:sequence>
-            <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="dataSourceJndiName" type="xsd:string" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="dataSourceJndiResourceRef" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
-            <xsd:element name="driverClassName" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="jdbcUrl" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="username" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="password" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="defaultAutoCommit" type="xsd:boolean" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="defaultTransactionIsolation" minOccurs="0" maxOccurs="1">
-                <xsd:simpleType>
-                    <xsd:restriction base="xsd:string">
-                        <xsd:enumeration value="NONE"></xsd:enumeration>
-                        <xsd:enumeration value="READ_COMMITTED"></xsd:enumeration>
-                        <xsd:enumeration value="READ_UNCOMMITTED"></xsd:enumeration>
-                        <xsd:enumeration value="REPEATABLE_READ"></xsd:enumeration>
-                        <xsd:enumeration value="SERIALIZABLE"></xsd:enumeration>
-                    </xsd:restriction>
-                </xsd:simpleType>
-            </xsd:element>
-            <xsd:element name="defaultReadOnly" type="xsd:boolean" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="defaultCatalog" type="xsd:string" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="maxWait" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="maxActive" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="maxIdle" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element name="minIdle" type="xsd:int" minOccurs="0" maxOccurs="1"></xsd:element>
-            <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"></xsd:element>
-        </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="optional" />
-        <xsd:attribute name="type" type="xsd:string"></xsd:attribute>
-        <xsd:attribute name="default" type="xsd:boolean" use="optional" default="false"/>
-        <xsd:attribute name="if-profile" use="optional" />
-    </xsd:complexType>
-
     <xsd:element name="resources">
         <xsd:annotation>
             <xsd:documentation><![CDATA[
@@ -220,69 +186,85 @@
     <xsd:element name="properties">
         <xsd:complexType>
         	<xsd:sequence>
-        		<xsd:element ref="property" minOccurs="0"
-        			maxOccurs="unbounded">
-        		</xsd:element>
+        		<xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
         	</xsd:sequence>
         	<xsd:attribute name="profile" use="optional" type="xsd:string"/>
-        	<xsd:attribute name="prefix" type="xsd:string" use="optional"></xsd:attribute>
+        	<xsd:attribute name="prefix" type="xsd:string" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 
-    <xsd:element name="property">
-        <xsd:complexType>
-            <xsd:simpleContent>
-                <xsd:extension base="xsd:string">
-                    <xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
-                    <xsd:attribute name="value" type="xsd:string" use="optional"></xsd:attribute>
-                    <xsd:attribute name="override" type="xsd:boolean">
-                        <xsd:annotation>
-                            <xsd:documentation><![CDATA[
-                                if set to true this property value will override the exists property with same name. 
-                            ]]></xsd:documentation>
-                        </xsd:annotation>                     
-                    </xsd:attribute>
-                    <xsd:attribute name="profile" use="optional"/>
-                </xsd:extension>
-            </xsd:simpleContent>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="assets-prefix">
-        <xsd:annotation>
-            <xsd:documentation><![CDATA[
-                Specifies the webapp assets prefix.
-            ]]></xsd:documentation>
-        </xsd:annotation>
-        <xsd:complexType>
-            <xsd:simpleContent>
-                <xsd:extension base="xsd:string"/>
-            </xsd:simpleContent>
-        </xsd:complexType>
-    </xsd:element>        
-    
     <xsd:element name="permissions">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element ref="grant"/>
-                    <xsd:element ref="deny"/>
+                    <xsd:element name="grant" type="Permission"/>
+                    <xsd:element name="deny" type="Permission"/>
                 </xsd:choice>
             </xsd:sequence>
             <xsd:attribute name="profile" use="optional"/>
         </xsd:complexType>
     </xsd:element>
     
-    <xsd:element name="grant" type="PermissionDefinition"/>
-    <xsd:element name="deny" type="PermissionDefinition"/>
-
-    <xsd:complexType name="PermissionDefinition">
+    <!-- types -->
+    <xsd:complexType name="Property">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">
-                <xsd:attribute name="type"    type="xsd:string" use="optional"></xsd:attribute>
-                <xsd:attribute name="class"   type="xsd:string" use="required"></xsd:attribute>
-                <xsd:attribute name="name"    type="xsd:string" use="required"></xsd:attribute>
-                <xsd:attribute name="actions" type="xsd:string" use="required"></xsd:attribute>
+                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                <xsd:attribute name="value" type="xsd:string" use="optional"/>
+                <xsd:attribute name="override" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                                if set to true this property value will override the exists property with same name.
+                            ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
+                <xsd:attribute name="profile" use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="DataSourceConfig">
+        <xsd:sequence>
+            <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="dataSourceJndiName" type="xsd:string" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="dataSourceJndiResourceRef" type="xsd:boolean" minOccurs="0" maxOccurs="1" />
+            <xsd:element name="driverClassName" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="jdbcUrl" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="username" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="password" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="defaultAutoCommit" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="defaultTransactionIsolation" minOccurs="0" maxOccurs="1">
+                <xsd:simpleType>
+                    <xsd:restriction base="xsd:string">
+                        <xsd:enumeration value="NONE"/>
+                        <xsd:enumeration value="READ_COMMITTED"/>
+                        <xsd:enumeration value="READ_UNCOMMITTED"/>
+                        <xsd:enumeration value="REPEATABLE_READ"/>
+                        <xsd:enumeration value="SERIALIZABLE"/>
+                    </xsd:restriction>
+                </xsd:simpleType>
+            </xsd:element>
+            <xsd:element name="defaultReadOnly" type="xsd:boolean" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="defaultCatalog" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="maxWait" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="maxActive" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="maxIdle" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="minIdle" type="xsd:int" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="optional" />
+        <xsd:attribute name="type" type="xsd:string"/>
+        <xsd:attribute name="default" type="xsd:boolean" use="optional" default="false"/>
+        <xsd:attribute name="if-profile" use="optional" />
+    </xsd:complexType>
+
+    <xsd:complexType name="Permission">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type"    type="xsd:string" use="optional"/>
+                <xsd:attribute name="class"   type="xsd:string" use="required"/>
+                <xsd:attribute name="name"    type="xsd:string" use="required"/>
+                <xsd:attribute name="actions" type="xsd:string" use="required"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>

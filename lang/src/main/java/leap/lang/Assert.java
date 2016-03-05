@@ -97,6 +97,16 @@ public class Assert {
 		}
 		return object;
 	}
+
+    /**
+     * throw an {@link IllegalStateException} if the input is null or empty.
+     */
+	public static <T> T notEmpty(T object) throws IllegalStateException{
+        if(Objects2.isEmpty(object)) {
+            throw new IllegalStateException("The value cannot be null or empty");
+        }
+        return object;
+    }
 	
 	/**
 	 * throw an {@link IllegalStateException} if the input is null or empty.

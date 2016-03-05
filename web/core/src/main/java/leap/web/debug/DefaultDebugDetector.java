@@ -15,6 +15,7 @@
  */
 package leap.web.debug;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
@@ -35,7 +36,7 @@ public class DefaultDebugDetector implements DebugDetector {
 		return debugEnabled;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public void setDebugEnabled(boolean debugEnabled) {
 		this.debugEnabled = debugEnabled;
 	}
@@ -44,7 +45,7 @@ public class DefaultDebugDetector implements DebugDetector {
 		return debugParameter;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public void setDebugParameter(String debugParameter) {
 		this.debugParameter = debugParameter;
 	}
@@ -53,7 +54,7 @@ public class DefaultDebugDetector implements DebugDetector {
 		return debugSecret;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public void setDebugSecret(String debugSecret) {
 		this.debugSecret = debugSecret;
 	}
@@ -62,7 +63,7 @@ public class DefaultDebugDetector implements DebugDetector {
 		return debugSecretParameter;
 	}
 
-	@Configurable.Property
+	@ConfigProperty
 	public void setDebugSecretParameter(String debugSecretParameter) {
 		this.debugSecretParameter = debugSecretParameter;
 	}

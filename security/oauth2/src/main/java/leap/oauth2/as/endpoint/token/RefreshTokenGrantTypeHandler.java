@@ -15,16 +15,14 @@
  */
 package leap.oauth2.as.endpoint.token;
 
-import java.util.function.Consumer;
-
 import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
 import leap.lang.Strings;
-import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.OAuth2Params;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.oauth2.as.token.AuthzAccessToken;
@@ -34,29 +32,26 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.authc.AuthenticationManager;
-import leap.web.security.user.SimpleUserDetailsPrincipal;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
+import leap.web.security.user.UserStore;
+
+import java.util.function.Consumer;
 
 /**
  * grant_type=refresh_token
  */
 public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 	
-	protected @Inject OAuth2ServerConfig     config;
-	protected @Inject AuthzTokenManager     tokenManager;
-	protected @Inject AuthenticationManager authcManager;
-	protected @Inject AuthzClientManager	clientManager;
-	protected @Inject SecurityConfig        sc;
-	protected @Inject UserManager           um;
+	protected @Inject OAuth2AuthzServerConfig config;
+	protected @Inject AuthzTokenManager       tokenManager;
+	protected @Inject AuthenticationManager   authcManager;
+	protected @Inject AuthzClientManager      clientManager;
+	protected @Inject SecurityConfig          sc;
+	protected @Inject UserManager             um;
 	
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) {
-		if(!config.isRefreshTokenEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
-			return;
-		}
-		
 		String refreshToken = params.getRefreshToken();
 		if(Strings.isEmpty(refreshToken)) {
 			OAuth2Errors.invalidRequest(response, "refresh_token required");
@@ -81,13 +76,14 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 		UserPrincipal user = null;
 		if(!token.isClientOnly()) {
 			//Authenticate user.
-		    UserDetails ud = sc.getUserStore().findUserDetails(token.getUserId());
+			UserStore   us = sc.getUserStore();
+		    UserDetails ud = us.loadUserDetailsByIdString(token.getUserId());
 			if(null == ud || !ud.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
 				OAuth2Errors.invalidGrant(response, "invalid user");
 				return;
 			}
-			user = new SimpleUserDetailsPrincipal(ud);
+			user = ud;
 		}
 		
 		//Authenticate client.

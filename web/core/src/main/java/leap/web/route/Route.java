@@ -1,20 +1,18 @@
 package leap.web.route;
 
-import java.util.Comparator;
-import java.util.Map;
-
-import leap.core.web.path.PathTemplate;
 import leap.lang.Sourced;
-import leap.web.action.Action;
 import leap.web.action.FailureHandler;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
 
+import java.util.Comparator;
+import java.util.Map;
+
 /**
  * Indicates a routing rule use to mapping a request to a handler.
  */
-public interface Route extends Sourced {
+public interface Route extends RouteBase, Sourced {
 
 	Comparator<Route> COMPARATOR = 
 			new Comparator<Route>() {
@@ -71,19 +69,24 @@ public interface Route extends Sourced {
 	String getMethod();
 
 	/**
-	 * Returns the path template defined in this routing rule use to match a request path.
-	 */
-	PathTemplate getPathTemplate();
-
-	/**
-	 * Returns a {@link Action} object to handle http request or <code>null</code> if no action.
-	 */
-	Action getAction();
-	
-	/**
 	 * Returns an array contains all the {@link FailureHandler}.
 	 */
 	FailureHandler[] getFailureHandlers();
+
+    /**
+     * Returns the http response status if success or null if use default.
+     */
+	Integer getSuccessStatus();
+
+    /**
+     * Sets the http response status if success.
+     *
+     * <p/>
+     * The status must be null or 2xx.
+     *
+     * @throws IllegalStateException if the status is not null or not a 2xx value.
+     */
+    void setSuccessStatus(Integer status) throws IllegalStateException;
 
 	/**
 	 * Returns <code>true</code> if this action supports multipart request.
@@ -169,14 +172,14 @@ public interface Route extends Sourced {
 	/**
 	 * Returns <code>true</code> if the action accepts validation error.
 	 * 
-	 * That means the action will be exeucted in spite of validation error.
+	 * That means the action will be executed in spite of validation error.
 	 */
 	boolean isAcceptValidationError();
 	
 	/**
 	 * Sets the property.
 	 */
-	void setAcceptValidationError(boolean allow);
+	void setAcceptValidationError(boolean accept);
 	
 	/**
 	 * Returns <code>true</code> if the route only accepts https request.
@@ -213,5 +216,5 @@ public interface Route extends Sourced {
 	 * Sets the property.
 	 */
 	void setAllowClientOnly(boolean allow);
-}
 
+}

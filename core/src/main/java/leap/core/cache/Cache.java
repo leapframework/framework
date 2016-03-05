@@ -55,7 +55,7 @@ public interface Cache<K,V> {
 	 * Returns <code>true</code> if the entry is present.
 	 * 
 	 * <p>
-	 * Returns <code>false</code if the entry does not exists.
+	 * Returns <code>false</code> if the entry does not exists.
 	 */
 	boolean remove(K key);
 	

@@ -15,17 +15,13 @@
  */
 package leap.web.security.user;
 
-import java.util.Map;
-
 import leap.core.annotation.Inject;
-import leap.core.security.UserPrincipal;
 import leap.core.validation.ValidationContext;
-import leap.lang.Assert;
-import leap.lang.Out;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.security.SecurityConfig;
 
+import java.util.Map;
 
 public abstract class UsernameBasedAuthenticator {
 	private static final Log log = LogFactory.get(UsernameBasedAuthenticator.class);
@@ -35,40 +31,25 @@ public abstract class UsernameBasedAuthenticator {
 	
 	protected @Inject SecurityConfig sc;
 	
-	protected UserAccount resolveUserAccount(ValidationContext context, String username, Map<String, Object> params) {
-		UserAccount account = 
-				sc.getUserStore().findUserAccount(username,params);
+	protected UserDetails resolveUserDetails(ValidationContext context, String username, Map<String, Object> params) {
+		UserDetails details =
+				sc.getUserStore().loadUserDetailsByLoginName(username);
 		
 		//User not found
-		if(null == account){
+		if(null == details){
 			log.debug("User '{}' not found",username);
 			context.validation().addError(UsernamePasswordCredentials.USERNAME, USER_NOT_FOUND_MESSAGE_KEY, "User not found");
 			return null;
 		}
 		
 		//Check enabled
-		if(!account.isEnabled()){
+		if(!details.isEnabled()){
 			log.debug("User '{}' was disabled",username);
 			context.validation().addError(UsernamePasswordCredentials.USERNAME, USER_NOT_ENABLED_MESSAGE_KEY,"User was disabled");
 			return null;
 		}
 		
-		return account;
+		return details;
 	}
-	
-	protected boolean resolveUserPrincipal(String username, UserAccount account, Out<UserPrincipal> principal) {
-		//Authenticated
-		Assert.notEmpty(account.getId(), "The value of 'userId' property in the returned user account must not be empty");
-		
-		UserDetails details = sc.getUserStore().findAndCheckUserDetails(account.getId());
-		
-		Assert.notNull(details,"Cannot found the user details of user id '" + account.getId() + 
-								   "', username : " + username);
-		
-		log.debug("User '{}' authenticated successfully!",username);
-		
-		principal.set(new SimpleUserDetailsPrincipal(account, details, true));
-		return true;
-	}
-	
+
 }

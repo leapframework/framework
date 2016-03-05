@@ -43,20 +43,21 @@ public class UsernamePasswordAuthenticator extends UsernameBasedAuthenticator im
 		if(credentials instanceof UsernamePasswordCredentials){
 			UsernamePasswordCredentials usernamePassword = (UsernamePasswordCredentials)credentials;
 			
-			UserAccount account = resolveUserAccount(context, usernamePassword.getUsername(), usernamePassword.getParameters());
-			if(null == account) {
+			UserDetails details = resolveUserDetails(context, usernamePassword.getUsername(), usernamePassword.getParameters());
+			if(null == details) {
 				return true;
 			}
 			
 			//Check password
 			String rawPassword = Strings.nullToEmpty(usernamePassword.getPassword());
-			if(!sc.getPasswordEncoder().matches(rawPassword, account.getPassword())){
+			if(!sc.getPasswordEncoder().matches(rawPassword, details.getPassword())){
 				log.debug("Incorrect password of user '{}'",usernamePassword.getUsername());
 				context.validation().addError(UsernamePasswordCredentials.PASSWORD, INCORRECT_PASSWORD_MESSAGE_KEY,"Incorrect password");
-				return true;
+			}else{
+				principal.set(details);
 			}
-			
-			return resolveUserPrincipal(usernamePassword.getUsername(), account, principal);
+
+			return true;
 		}
 		
 		return false;

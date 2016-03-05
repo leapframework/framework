@@ -15,30 +15,29 @@
  */
 package leap.web.multipart;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.path.Paths;
+import leap.web.App;
+import leap.web.AppBootable;
+import leap.web.route.Route;
 
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration;
 import javax.servlet.ServletRegistration.Dynamic;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-import leap.lang.path.Paths;
-import leap.web.App;
-import leap.web.AppServletContainerInitializer;
-import leap.web.route.Route;
-
-public class MultipartInitializer implements AppServletContainerInitializer {
+public class MultipartInitializer implements AppBootable {
 
 	private static final Log log = LogFactory.get(MultipartInitializer.class);
 	
 	@Override
-    public void onStartup(ServletContext sc, App app) throws ServletException {
+    public void postBootingApp(App app,ServletContext sc) throws ServletException {
 		List<Route> multipartRoutes = resolveMultipartRoutes(app);
 		if(multipartRoutes.isEmpty()) {
 			return;

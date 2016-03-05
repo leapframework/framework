@@ -15,11 +15,8 @@
  */
 package leap.web.action;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-
+import leap.core.validation.Valid;
+import leap.core.validation.ValidationManager;
 import leap.core.validation.Validator;
 import leap.core.validation.annotations.Required;
 import leap.lang.Buildable;
@@ -27,37 +24,77 @@ import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.annotation.Optional;
+import leap.lang.beans.BeanProperty;
 import leap.lang.reflect.ReflectParameter;
-import leap.web.action.Argument.BindingFrom;
-import leap.web.annotation.PathParam;
-import leap.web.annotation.PathVariable;
-import leap.web.annotation.QueryParam;
-import leap.web.annotation.RequestBody;
-import leap.web.annotation.RequestParam;
+import leap.web.action.Argument.Location;
+import leap.web.annotation.*;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ArgumentBuilder implements Buildable<Argument> {
-	
-	protected String          name;
-	protected Class<?>        type;
-	protected Type            genericType;
-	protected TypeInfo		  typeInfo;
-	protected Boolean		  required;
-	protected BindingFrom     bindingFrom;
-	protected Annotation[]    annotations;
-	protected List<Validator> validators = new ArrayList<>();
+
+	protected String       name;
+	protected Class<?>     type;
+	protected Type         genericType;
+	protected TypeInfo     typeInfo;
+	protected Boolean      required;
+	protected Location     location;
+	protected Annotation[] annotations;
+	protected List<ArgumentValidator> validators = new ArrayList<>();
 	
 	public ArgumentBuilder() {
 	    super();
     }
-	
-	public ArgumentBuilder(ReflectParameter p) {
-		this.name        = p.getName();
-		this.type        = p.getType();
+
+	public ArgumentBuilder(ValidationManager validationManager, BeanProperty p) {
+		this.name 		 = p.getName();
+		this.type 		 = p.getType();
+		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
 		this.configAnnotations();
+        this.resolverValidators(validationManager);
 	}
 	
+	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
+		this.name        = p.getName();
+		this.type        = p.getType();
+		this.typeInfo    = p.getTypeInfo();
+		this.genericType = p.getGenericType();
+		this.annotations = p.getAnnotations();
+		this.configAnnotations();
+        this.resolverValidators(validationManager);
+	}
+
+    protected void resolverValidators(ValidationManager validationManager) {
+        Validator v = null;
+        for(Annotation pa : annotations){
+            if((v = validationManager.tryCreateValidator(pa, type)) != null){
+                addValidator(new SimpleArgumentValidator(v));
+            }
+        }
+
+        if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
+            Valid valid = Classes.getAnnotation(annotations, Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(valid));
+            }
+        }else if(type.isAnnotationPresent(Valid.class)) {
+            Valid valid = type.getAnnotation(Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
+            }
+        }else {
+			RequestBean a = type.getAnnotation(RequestBean.class);
+			if(null != a && a.valid()){
+                addValidator(new NestedArgumentValidator(true));
+            }
+		}
+    }
+
 	public String getName() {
 		return name;
 	}
@@ -102,12 +139,12 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.required = required;
 	}
 
-	public BindingFrom getBindingFrom() {
-		return bindingFrom;
+	public Location getLocation() {
+		return location;
 	}
 
-	public ArgumentBuilder setBindingFrom(BindingFrom from) {
-		this.bindingFrom = from;
+	public ArgumentBuilder setLocation(Location from) {
+		this.location = from;
 		return this;
 	}
 	
@@ -120,42 +157,28 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return this;
 	}
 	
-	public ArgumentBuilder addValidator(Validator validator){
+	public ArgumentBuilder addValidator(ArgumentValidator validator){
 		validators.add(validator);
 		return this;
 	}
 		
-	public List<Validator> getValidators() {
+	public List<ArgumentValidator> getValidators() {
 		return validators;
-	}
-
-	public ArgumentBuilder setValidators(List<Validator> validators) {
-		this.validators = validators;
-		return this;
 	}
 
 	public ArgumentBuilder configAnnotations() {
 		RequestParam rp = Classes.getAnnotation(annotations, RequestParam.class, true);
 		if(null != rp){
-			this.bindingFrom = BindingFrom.REQUEST_PARAM;
+			this.location = Location.REQUEST_PARAM;
 			if(!Strings.isEmpty(rp.value())){
 				this.name = rp.value();
 			}
 			return this;
 		}
 		
-		PathVariable pv = Classes.getAnnotation(annotations, PathVariable.class, true);
-		if(null != pv){
-			this.bindingFrom = BindingFrom.PATH_PARAM;
-			if(!Strings.isEmpty(pv.value())){
-				this.name = pv.value();
-			}
-			return this;
-		}
-		
         PathParam pp = Classes.getAnnotation(annotations, PathParam.class, true);
         if (null != pp) {
-            this.bindingFrom = BindingFrom.PATH_PARAM;
+            this.location = Location.PATH_PARAM;
             if (!Strings.isEmpty(pp.value())) {
                 this.name = pp.value();
             }
@@ -164,7 +187,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
         
         QueryParam qp = Classes.getAnnotation(annotations, QueryParam.class, true);
         if (null != qp) {
-            this.bindingFrom = BindingFrom.QUERY_PARAM;
+            this.location = Location.QUERY_PARAM;
             if (!Strings.isEmpty(qp.value())) {
                 this.name = qp.value();
             }
@@ -173,10 +196,10 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		
 		RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
 		if(null != rb){
-			this.bindingFrom = BindingFrom.REQUEST_BODY;
+			this.location = Location.REQUEST_BODY;
 			return this;
 		}
-		
+
 		Optional o = Classes.getAnnotation(annotations, Optional.class, false);
 		if(null != o) {
 			required = false;
@@ -186,14 +209,21 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		if(null != r) {
 			required = true;
 		}
-		
+
+        if(null != type) {
+            RequestBean a = type.getAnnotation(RequestBean.class);
+            if(null != a && a.requestBody()) {
+                location = Location.REQUEST_BODY;
+            }
+        }
+
 		return this;
 	}
 	
 	@Override
     public Argument build() {
-		Validator[] validators = null == this.validators ? null : this.validators.toArray(new Validator[]{});
+		ArgumentValidator[] validators = null == this.validators ? null : this.validators.toArray(new ArgumentValidator[]{});
 		
-	    return new Argument(name, type, genericType, typeInfo, required, bindingFrom, annotations,validators);
+	    return new Argument(name, type, genericType, typeInfo, required, location, annotations,validators);
     }
 }

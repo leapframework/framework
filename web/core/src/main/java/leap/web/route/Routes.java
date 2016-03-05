@@ -15,18 +15,20 @@
  */
 package leap.web.route;
 
-import java.util.Map;
-import java.util.function.Supplier;
-
+import leap.lang.Emptiable;
 import leap.lang.http.HTTP;
 import leap.web.Handler;
 
-public interface Routes extends Iterable<Route> {
-	
+import java.util.Map;
+import java.util.function.Supplier;
+
+public interface Routes extends Iterable<Route>,Emptiable {
+
+	/**
+	 * Returns the size of routes.
+     */
 	int size();
-	
-	boolean isEmpty();
-	
+
 	/**
 	 * Returns a new created {@link RouteConfigurator}.
 	 */
@@ -163,7 +165,7 @@ public interface Routes extends Iterable<Route> {
 	Routes addAll(Iterable<Route> routes);
 	
 	/**
-	 * Returns a matched {@link RouteImpl} or <code>null</code> if no route matched.
+	 * Returns a matched {@link DefaultRoute} or <code>null</code> if no route matched.
 	 */
 	Route match(String method,String path,Map<String,Object> inParameters, Map<String,String> outVariables);
 	

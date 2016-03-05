@@ -15,10 +15,36 @@
  */
 package leap.web.security.authz;
 
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
+import leap.core.security.Authorization;
+import leap.core.security.SecurityContext;
+import leap.web.security.SecurityConfig;
 
 public interface AuthorizationContext {
 
+	/**
+	 * Returns {@link SecurityConfig}.
+	 */
+	SecurityConfig getSecurityConfig();
+
+	/**
+	 * Returns {@link SecurityContext}
+	 */
+	SecurityContext getSecurityContext();
+
+	/**
+	 * Required. Returns current {@link Authentication}
+	 */
 	Authentication getAuthentication();
-	
+
+    /**
+     * Returns the {@link Authorization}.
+     */
+	Authorization getAuthorization();
+
+    /**
+     * Sets the {@link Authorization}.
+     */
+    void setAuthorization(Authorization authz);
+
 }

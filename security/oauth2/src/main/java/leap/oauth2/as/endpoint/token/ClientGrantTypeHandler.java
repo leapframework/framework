@@ -21,8 +21,8 @@ import leap.core.annotation.Inject;
 import leap.lang.Result;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.OAuth2ServerConfig;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.oauth2.as.token.AuthzAccessToken;
@@ -35,9 +35,9 @@ import leap.web.Response;
  */
 public class ClientGrantTypeHandler implements GrantTypeHandler {
 	
-	protected @Inject OAuth2ServerConfig  config;
-	protected @Inject AuthzClientManager clientManager;
-	protected @Inject AuthzTokenManager	 tokenManager;
+	protected @Inject OAuth2AuthzServerConfig config;
+	protected @Inject AuthzClientManager      clientManager;
+	protected @Inject AuthzTokenManager       tokenManager;
 	
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
@@ -49,7 +49,7 @@ public class ClientGrantTypeHandler implements GrantTypeHandler {
 		//Authenticate client.
 		Result<AuthzClient> client = clientManager.authenticate(params);
 		if(!client.isPresent()) {
-			OAuth2Errors.invalidClient(response, client.isError() ? client.error().getMessage() : "invalid client credentials");
+			OAuth2Errors.invalidClient(response, "invalid client credentials");
 			return;
 		}
 		

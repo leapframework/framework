@@ -17,21 +17,21 @@ package app;
 
 import leap.core.annotation.Inject;
 import leap.lang.naming.NamingStyles;
-import leap.oauth2.rs.ResourceServerConfigurator;
+import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.api.Apis;
 import leap.web.config.WebConfigurator;
 
 public class Global extends App {
 	
-    protected @Inject Apis                       apis;
-    protected @Inject ResourceServerConfigurator rsc;
+    protected @Inject Apis                        apis;
+    protected @Inject OAuth2ResServerConfigurator rsc;
 	
 	@Override
     protected void configure(WebConfigurator c) {
 	    //Enables oauth2 resource server.
 	    rsc.enable()
-	       .setRemoteServerUrl("https://localhost:8443/auth");
+	       .useRemoteAuthorizationServer("https://localhost:8443/auth/oauth2/tokeninfo");
 	    
 	    apis.setDefaultOAuthAuthorizationUrl("http://127.0.0.1:8080/auth/oauth2/authorize", 
 	                                         "app", 

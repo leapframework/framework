@@ -15,41 +15,18 @@
  */
 package leap.webunit.server;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import leap.lang.Charsets;
 import leap.lang.Classes;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resources;
-
+import leap.lang.tools.DEV;
 import org.eclipse.jetty.annotations.AnnotationConfiguration;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.http.HttpMethod;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.http.MimeTypes;
-import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
-import org.eclipse.jetty.server.SecureRequestCustomizer;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.util.resource.FileResource;
@@ -58,10 +35,24 @@ import org.eclipse.jetty.util.resource.ResourceCollection;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.webapp.WebAppContext;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.net.URL;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Embedded Web Server for Testing.
  */
 public class TWebServer {
+
+	private static final Log log = LogFactory.get(TWebServer.class);
 	
 	public static final String ROOT_CONTEXT_PATH   = "";
 	public static final String ROOT_WEB_APP_NAME   = "root";
@@ -84,7 +75,7 @@ public class TWebServer {
 	private final ErrorHandler              errorHandler;
 	private final Map<String,WebAppContext> contexts = new ConcurrentHashMap<String, WebAppContext>();
 	
-	private File currentDir;
+	private leap.lang.resource.FileResource currentDir;
 	
 	public TWebServer(int httpPort){
 		this(httpPort, DEFAULT_HTTPS_PORT, true);
@@ -141,6 +132,10 @@ public class TWebServer {
 	public boolean isStarted(){
 		return server.isStarted();
 	}
+
+	public String[] getContextPaths() {
+		return contexts.keySet().toArray(new String[]{});
+	}
 	
 	/**
 	 * Starts this server.
@@ -149,7 +144,7 @@ public class TWebServer {
         try {
         	if(contexts.isEmpty()){
         		throw new IllegalStateException("No webapp(s) exists in project directory '" +
-												currentDir.getAbsolutePath() +
+												currentDir.getFilepath() +
 												"', if running in IntelliJ IDEA, set Working Directory to $MODULE_DIR$");
         	}
         	
@@ -360,22 +355,36 @@ public class TWebServer {
     }
 	
 	private void init() {
-		currentDir = new File(System.getProperty("user.dir"));
+		currentDir = Resources.getUserDir();
+
+        if(!currentDir.createRelative("./src/main").exists()) {
+            Class<?> testClass = DEV.getCurrentTestClass();
+            if(null != testClass) {
+                String path = testClass.getResource("").getFile();
+                int index = path.indexOf("/target/test-classes");
+                if(index > 0) {
+                    String dir = path.substring(0, index);
+                    currentDir = Resources.createFileResource(dir);
+                }
+            }
+        }
     }
 	
 	private void autoScanWebapps(){
+        String projectHomePath = currentDir.getFile().getAbsolutePath();
+
 		//root webapp
-		File webappDir = new File(currentDir.getAbsolutePath() + "/src/main/webapp");
+		File webappDir = new File(projectHomePath + "/src/main/webapp");
 		if(!webappDir.exists()){
-			webappDir = new File(currentDir.getAbsolutePath() + "/src/test/webapp");
+			webappDir = new File(projectHomePath + "/src/test/webapp");
 		}
 		if(webappDir.exists()){
 			tryAddWebApp(ROOT_CONTEXT_PATH,webappDir);
 		}
 		
 		//webapps
-		tryAddWebapps(new File(currentDir.getAbsolutePath() + "/src/main/webapps"));
-		tryAddWebapps(new File(currentDir.getAbsolutePath() + "/src/test/webapps"));
+		tryAddWebapps(new File(projectHomePath + "/src/main/webapps"));
+		tryAddWebapps(new File(projectHomePath + "/src/test/webapps"));
 	}
 	
 	private void tryAddWebapps(File webappsDir){

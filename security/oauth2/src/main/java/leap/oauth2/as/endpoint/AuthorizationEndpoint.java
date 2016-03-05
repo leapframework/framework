@@ -29,18 +29,19 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.QueryOAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.as.SimpleAuthzAuthentication;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
+import leap.oauth2.as.token.AuthzLoginToken;
+import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.config.WebConfig;
 import leap.web.exception.ResponseException;
 import leap.web.route.Routes;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.user.UserManager;
 import leap.web.view.ViewSource;
 
@@ -51,37 +52,50 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     public static final String CLIENT_ATTRIBUTE  = "oauth2.client";
     public static final String STATE_ATTRIBUTE   = "oauth2.state";
     public static final String PARAMS_ATTRIBUTE  = "oauth2.params";
-	
-    protected @Inject WebConfig   webConfig;
-    protected @Inject ViewSource  viewSource;
-    protected @Inject UserManager um;
+
+    protected @Inject AuthzTokenManager tokenManager;
+    protected @Inject ViewSource        viewSource;
+    protected @Inject UserManager       um;
     
     protected String loginUrl;
     
 	@Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
-	    if(config.isEnabled() && isEndpointEnabled()) {
-	        if(isEndpointEnabled()) {
-	            sc.interceptors().add(this);
-	        }
-	        
+	    if(config.isEnabled()) {
+            sc.interceptors().add(this);
+
 	        if (!Strings.isEmpty(config.getLoginView()) && null != viewSource.getView(config.getLoginView(), null)) {
 	            loginUrl = "view:" + config.getLoginView();
 	        }
 	    }
     }
 	
-	protected boolean isEndpointEnabled() {
-	    return config.isAuthzEndpointEnabled();
-	}
-	
-	protected String getEndpointPath() {
-	    return config.getAuthzEndpointPath();
-	}
-	
+    @Override
+    public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        if(config.isLoginTokenEnabled()) {
+            String loginToken = request.getParameter(OAuth2Params.LOGIN_TOKEN);
+            if(!Strings.isEmpty(loginToken)) {
+
+                log.debug("Found login token parameter : {}", loginToken);
+                AuthzLoginToken token = tokenManager.consumeLoginToken(loginToken);
+                if(null == token) {
+                    log.debug("The login token expired or invalid, ignore it");
+                    return State.CONTINUE;
+                }
+
+                log.debug("Create authentication for user {} by login token", token.getUserId());
+                Result<Authentication> authc = um.createAuthenticationByUserId(token.getUserId());
+                if(authc.isPresent()) {
+                    context.setAuthentication(authc.get());
+                }
+            }
+        }
+        return State.CONTINUE;
+    }
+
     @Override
     public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        if(!request.getPath().equals(getEndpointPath())) {
+        if(!request.getPath().equals(config.getAuthzEndpointPath())) {
             return State.CONTINUE;
         }
         
@@ -93,7 +107,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
         
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
-        if(result.isError()) {
+        if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
         
@@ -115,7 +129,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         //Handle authentication.
         handleAuthenticated(request, response, 
-                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())),
+                            new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc),
                             handler);
         
         //Intercepted.
@@ -140,9 +154,12 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         
         OAuth2Params params = new QueryOAuth2Params(qs);
         ResponseTypeHandler handler = getResponseTypeHandler(request, response, params);
-        
+        if(null == handler) {
+            return State.INTERCEPTED;
+        }
+
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
-        if(result.isError()) {
+        if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
         
@@ -174,17 +191,20 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             
             params = new QueryOAuth2Params(qs);
             handler = getResponseTypeHandler(request, response, params);
-            
-            Result<AuthzClient> result = handler.validateRequest(request, response, params);
-            if(result.isError()) {
+            if(null == handler){
                 return State.INTERCEPTED;
             }
-            
+
+            Result<AuthzClient> result = handler.validateRequest(request, response, params);
+            if(result.isIntercepted()) {
+                return State.INTERCEPTED;
+            }
+
             client = result.get();
         }
         
         //Handle authentication.
-        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUserPrincipal())), handler);
+        handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc), handler);
         
         //Intercepted.
         return State.INTERCEPTED;

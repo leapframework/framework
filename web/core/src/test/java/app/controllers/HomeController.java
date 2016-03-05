@@ -26,11 +26,8 @@ import leap.web.Contents;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.Results;
-import leap.web.annotation.HttpsOnly;
-import leap.web.annotation.NonAction;
-import leap.web.annotation.Path;
-import leap.web.annotation.Produces;
-import leap.web.annotation.http.POST;
+import leap.web.annotation.*;
+import leap.web.annotation.http.*;
 import leap.web.format.ResponseFormat;
 import leap.web.view.ViewData;
 import app.Global;
@@ -176,8 +173,49 @@ public class HomeController {
 	public String arbitraryPath(String subPath) {
 		return subPath;
 	}
+
+    @GET("method_with_path")
+	public void methodWithPathGet() {
+
+    }
+
+    @POST("method_with_path")
+    public void methodWithPathPost() {
+
+    }
+
+    @PUT("method_with_path")
+    public void methodWithPathPut() {
+
+    }
+
+    @DELETE("method_with_path")
+    public void methodWithPathDelete() {
+
+    }
+
+    @HEAD("method_with_path")
+    public void methodWithPathHead() {
+
+    }
+
+    @OPTIONS("method_with_path")
+    public void methodWithPathOptions() {
+
+    }
 	
 	public void jsp(ViewData vd) {
 	    
 	}
+
+    @Success(status=HTTP.Status.NO_CONTENT)
+	public void successStatus() {
+        System.out.println();
+    }
+
+	public static final class NestedController {
+        public void index() {
+
+        }
+    }
 }

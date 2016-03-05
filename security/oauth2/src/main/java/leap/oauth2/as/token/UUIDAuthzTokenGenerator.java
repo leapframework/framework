@@ -17,9 +17,10 @@ package leap.oauth2.as.token;
 
 import java.util.UUID;
 
-import leap.oauth2.as.AuthzAuthentication;
+import leap.oauth2.OAuth2Constants;
+import leap.oauth2.as.authc.AuthzAuthentication;
 
-public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,AuthzAccessTokenGenerator {
+public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,AuthzAccessTokenGenerator, AuthzLoginTokenGenerator {
 
     @Override
     public String generateAccessToken(AuthzAuthentication authc) {
@@ -30,7 +31,12 @@ public class UUIDAuthzTokenGenerator implements AuthzRefreshTokenGenerator,Authz
     public String generateRefreshToken(AuthzAuthentication authc) {
         return generateUUID();
     }
-    
+
+    @Override
+    public String generateLoginToken(AuthzAuthentication authc) {
+        return generateUUID();
+    }
+
     protected String generateUUID() {
         return UUID.randomUUID().toString();
     }

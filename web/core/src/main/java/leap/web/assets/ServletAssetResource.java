@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetManager;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;

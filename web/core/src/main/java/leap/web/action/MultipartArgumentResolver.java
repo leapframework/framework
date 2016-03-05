@@ -15,13 +15,14 @@
  */
 package leap.web.action;
 
-import javax.servlet.http.Part;
-
 import leap.lang.http.Headers;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.multipart.MultipartFile;
 import leap.web.multipart.StandardMultipartFile;
+import leap.web.route.RouteBase;
+
+import javax.servlet.http.Part;
 
 public class MultipartArgumentResolver extends AbstractArgumentResolver {
 	
@@ -29,8 +30,8 @@ public class MultipartArgumentResolver extends AbstractArgumentResolver {
 	
 	private final boolean returnMultipartFile;
 
-	public MultipartArgumentResolver(App app, Action action, Argument arg) {
-		super(app, action, arg);
+	public MultipartArgumentResolver(App app, RouteBase route, Argument arg) {
+		super(app, route, arg);
 		
 		this.returnMultipartFile = arg.getType().equals(MultipartFile.class);
 	}

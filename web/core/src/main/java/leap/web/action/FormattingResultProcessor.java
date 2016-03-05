@@ -19,9 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import leap.lang.Arrays2;
-import leap.web.App;
-import leap.web.Content;
-import leap.web.Result;
+import leap.web.*;
 import leap.web.annotation.Produces;
 import leap.web.format.FormatManager;
 import leap.web.format.FormatNotAcceptableException;
@@ -50,9 +48,30 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 	@Override
     public void processReturnValue(ActionContext context, Object returnValue, Result result) throws Throwable {
 		result.setReturnValue(returnValue);
-		
+
+        if(returnValue instanceof Renderable) {
+            ((Renderable) returnValue).render(context.getRequest(), context.getResponse());
+            return;
+        }
+
+        if(returnValue instanceof ResponseEntity) {
+            ResponseEntity re = (ResponseEntity)returnValue;
+
+            result.setStatus(re.getStatus().value());
+            Object entity = re.getEntity();
+
+            if(null != entity) {
+                if(entity instanceof Renderable) {
+                    ((Renderable) entity).render(context.getRequest(), context.getResponse());
+                }else{
+                    result.render(resolveResponseFormatOrDefault(context).getContent(context, entity));
+                }
+            }
+
+            return;
+        }
+
 		ResponseFormat format = resolveResponseFormat(context);
-		
 		if(null == format && null != view){
 			result.render(view);
 			return;
@@ -61,16 +80,21 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		if(null == format){
 			format = formatManager.getDefaultResponseFormat();
 		}
-		
-		Content content = format.getContent(context,returnValue);	
-		
-		result.render(content);
+        result.render(format.getContent(context,returnValue));
     }
-	
+
 	protected boolean hasAnnotatedFormats() {
 		return null != annotatedFormats && annotatedFormats.length > 0;
 	}
-	
+
+    protected ResponseFormat resolveResponseFormatOrDefault(ActionContext context) throws Throwable {
+        ResponseFormat f = resolveResponseFormat(context);
+        if(f == null) {
+            f = formatManager.getDefaultResponseFormat();
+        }
+        return f;
+    }
+
 	protected ResponseFormat resolveResponseFormat(ActionContext context) throws Throwable {
 		
 		//Resolve from request
@@ -91,7 +115,7 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 		if(null == format && null != annotatedFormats){
 			format = selectAnnotatedFormat(context);
 		}
-		
+
 		//No format found, return null
 		return format;
 	}

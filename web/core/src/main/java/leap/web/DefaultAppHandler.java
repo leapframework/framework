@@ -15,21 +15,12 @@
  */
 package leap.web;
 
-import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Locale;
-import java.util.Map;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
-
 import leap.core.AppException;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
-import leap.core.web.assets.AssetSource;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.time.StopWatch;
@@ -37,6 +28,7 @@ import leap.web.action.ActionContext;
 import leap.web.action.ActionManager;
 import leap.web.action.DefaultActionContext;
 import leap.web.ajax.AjaxDetector;
+import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
 import leap.web.cors.CorsConfig;
 import leap.web.debug.DebugDetector;
@@ -55,6 +47,13 @@ import leap.web.view.View;
 import leap.web.view.ViewSource;
 import leap.web.view.WrappedViewData;
 
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
+
 public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
     protected @Inject @M RequestHandlerMapping[] handlerMappings;
@@ -71,7 +70,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M CorsConfig              corsConfig;
 
 	protected LocaleResolver localeResolver;
-	protected boolean		 mappingViewToAction = true;
 	protected int	  		 maxExecutionCount   = 10;
 	
 	@Override
@@ -81,7 +79,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     }
 
 	@Override
-	public void prepareRequest(final Request request,Response response) throws Throwable {
+	public void prepareRequest(final Request request,final Response response) throws Throwable {
 		//debug
 		debugDetector.detectDebugStatus(request);
 		
@@ -94,7 +92,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 			request.setLocale(app.getDefaultLocale());
 		}
 		
-		//valiation
+		//validation
 	    request.setValidation(validationManager.createValidation(new SimpleErrors(){
 			@Override
             public Locale getLocale() {
@@ -153,40 +151,43 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		DefaultRequestExecution execution = new DefaultRequestExecution();
 		try{
 			boolean	handled = false;
-			try{
+			try {
 				//handle by interceptors
 				handled = State.isIntercepted(interceptors.preHandleRequest(request, response));
-				
+
 				//handle by handlers
-				if(!handled){
+				if (!handled) {
 					handled = handleByHandlers(request, response);
 				}
-				
+
 				//routing to action
-				if(!handled){
+				if (!handled) {
 					DefaultActionContext ac = newActionContext(request, response);
-					
+
 					//resolve action path
-					String path = resolveActionPath(request,response,ac);
-					
-					if(_debug){
-						log.debug("Routing path '{}'",ac.getPath());
+					String path = resolveActionPath(request, response, ac);
+
+					if (_debug) {
+						log.debug("Routing path '{}'", ac.getPath());
 					}
-					
+
 					int routeState = routeAndExecuteAction(request, response, ac);
-					
-					if(routeState == ROUTE_STATE_HANLDED){
+
+					if (routeState == ROUTE_STATE_HANLDED) {
 						handled = true;
-					}else if(routeState == ROUTE_STATE_NOT_HANDLED){
+					} else if (routeState == ROUTE_STATE_NOT_HANDLED) {
 						handled = handleNoAction(request, response, path);
-					}else{
+					} else {
 						return false;
 					}
 				}
-				
-				if(!handled && _debug){
-					log.debug("Request '{}' not handled",request.getPath());
+
+				if (!handled && _debug) {
+					log.debug("Request '{}' not handled", request.getPath());
 				}
+			}catch(RequestIntercepted e) {
+				log.debug("Caught a RequestIntercepted Exception, finish handling request.",e);
+				handled = true;
 			}catch(ResponseException e){
 				handled = true;
 				renderResponseException(request, response, e);
@@ -274,9 +275,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		String path = null;
 		
 		if(request.hasPathExtension()){
-			if(webConfig.isAllowActionExtension() && webConfig.getActionExtensions().contains(request.getPathExtension())){
+			if(webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(request.getPathExtension())){
 				path = request.getServicePathWithoutExtension();
-			}else if(webConfig.isAllowFormatExtension()){
+			}else if(webConfig.isFormatExtensionEnabled()){
 				ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
 				if(null != fmt){
 					ac.setResponseFormat(fmt);
@@ -537,7 +538,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		}
 		
 		//set response status if the result status is valid.
-		if(result.getStatus() != Result.STATUS_UNKNOW){
+		if(result.getStatus() != Result.STATUS_UNDEFINED){
 			response.setStatus(result.getStatus());
 		}
 		

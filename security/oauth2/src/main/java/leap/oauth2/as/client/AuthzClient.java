@@ -72,6 +72,11 @@ public interface AuthzClient {
 	boolean isAllowRefreshToken();
 
 	/**
+	 * Returns <code>true</code> if the client allows to use login token.
+     */
+	boolean isAllowLoginToken();
+
+	/**
      * Returns <code>true</code> if the client accepts the given uri as redirect uri.
      */
     boolean acceptsRedirectUri(String uri);

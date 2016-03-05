@@ -15,20 +15,6 @@
  */
 package leap.web;
 
-import java.io.IOException;
-import java.util.Map;
-
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.FilterConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
 import leap.core.AppContext;
 import leap.core.AppException;
 import leap.core.RequestContext;
@@ -42,6 +28,16 @@ import leap.lang.logging.LogFactory;
 import leap.lang.servlet.Servlets;
 import leap.web.assets.AssetHandler;
 import leap.web.exception.ResponseException;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Map;
 
 public class AppFilter implements Filter {
 	
@@ -59,7 +55,7 @@ public class AppFilter implements Filter {
     public void init(FilterConfig config) throws ServletException {
 		this.servletContext = config.getServletContext();
 		this.bootstrap      = AppBootstrap.tryGet(servletContext);
-		
+
 		if(null == bootstrap) {
 			bootstrap = new AppBootstrap();
 			
@@ -77,42 +73,47 @@ public class AppFilter implements Filter {
 	    this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
 	    this.ignores      = bootstrap.getBeanFactory().getBeans(RequestIgnore.class).toArray(new RequestIgnore[]{});
 
-	    //start application
-	    bootstrap.startApplication();
+        if(!bootstrap.isSelfStarted()) {
+            //start application
+            bootstrap.startApplication();
+        }
     }
 
 	@Override
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {
+        final RequestWrapper requestWrapper = new RequestWrapper((HttpServletRequest)req);
+
 		final DefaultResponse response = createResponse((HttpServletResponse)resp);
-		final DefaultRequest  request  = createRequest((HttpServletRequest)req, response);
+		final DefaultRequest  request  = createRequest(requestWrapper, response);
 		
 		response.setRequest(request);
 		AppContext.setCurrent(appContext);
 		RequestContext.setCurrent(request);
-		try{
+		try {
 			//handle assets request
-			if(null != assetHandler && assetHandler.matches(request)){
-				if(handleAssetRequest(request,response)){
-					return;	
+			if (null != assetHandler && assetHandler.matches(request)) {
+				if (handleAssetRequest(request, response)) {
+					return;
 				}
 			}
-			
+
 			//handle other request
-			if(app.filters().isEmpty()){
-				checkIgnoreAndDoService(request,response,chain);
-			}else{
+			if (app.filters().isEmpty()) {
+				checkIgnoreAndDoService(request, response, chain);
+			} else {
 				//execute filters first
 				FilterChainBase chain1 =
 						new FilterChainBase(app.filters()) {
 							@Override
 							protected void doNext(RequestBase requestBase, ResponseBase responseBase) throws ServletException, IOException {
-								checkIgnoreAndDoService(request,response,chain);
+								checkIgnoreAndDoService(request, response, chain);
 							}
 						};
-						
+
 				chain1.doFilter(request, response);
 			}
-			
+		}catch(RequestIntercepted e){
+			log.debug("Caught a RequestIntercepted Exception by app filter.");
 		}catch(Throwable e){
 			boolean handled = false;
 			
@@ -142,6 +143,7 @@ public class AppFilter implements Filter {
 				}
 			}
 		}finally{
+            requestWrapper.destroy();
 			RequestContext.removeCurrent();
 			AppContext.removeCurrent();
 		}
@@ -209,7 +211,7 @@ public class AppFilter implements Filter {
 		} catch (RuntimeException e){
 			throw e;
         } catch (Throwable e) {
-        	throw new ServletException("Error servicing current reuqest, " + e.getMessage(), e);
+        	throw new ServletException("Error servicing current request, " + e.getMessage(), e);
         }
 	}
 	
@@ -217,7 +219,7 @@ public class AppFilter implements Filter {
 	    return new DefaultResponse(servletResponse);
     }
 
-    protected DefaultRequest createRequest(HttpServletRequest servletRequest, Response response) throws IOException {
+    protected DefaultRequest createRequest(RequestWrapper servletRequest, Response response) throws IOException {
 		final DefaultRequest request = new DefaultRequest(app,appHandler,servletRequest,response);
 	    request.setCharacterEncoding(app.getDefaultCharset().name());
 	    return request;
@@ -225,7 +227,42 @@ public class AppFilter implements Filter {
 	
 	@Override
     public void destroy() {
-		bootstrap.stopApplication();
+        if(!bootstrap.isSelfStarted()) {
+            bootstrap.stopApplication();
+        }
+    }
+
+    protected static class ServletInputStreamWrapper extends ServletInputStream {
+
+        private final InputStream in;
+
+        public ServletInputStreamWrapper(InputStream in) {
+            this.in = in;
+        }
+
+        @Override
+        public boolean isFinished() {
+            try{
+                return in.available() > 0;
+            }catch(IOException e) {
+                throw new IllegalStateException("I/O Error : " + e.getMessage(), e);
+            }
+        }
+
+        @Override
+        public boolean isReady() {
+            return !isFinished();
+        }
+
+        @Override
+        public void setReadListener(ReadListener readListener) {
+            throw new IllegalStateException("setReadListener not supported");
+        }
+
+        @Override
+        public int read() throws IOException {
+            return in.read();
+        }
     }
 	
 	protected class ErrorServletResponseWrapper extends HttpServletResponseWrapper {

@@ -15,14 +15,13 @@
  */
 package app.controllers;
 
-import org.junit.Test;
-
 import app.models.products.Product;
 import leap.lang.codec.Hex;
 import leap.lang.http.MimeTypes;
 import leap.lang.json.JSON;
 import leap.web.WebTestCase;
 import leap.webunit.client.THttpResponse;
+import org.junit.Test;
 
 public class RequestBodyControllerTest extends WebTestCase {
 
@@ -55,5 +54,27 @@ public class RequestBodyControllerTest extends WebTestCase {
 		
 		resp.assertContentEquals(json);
 	}
-	
+
+    @Test
+	public void testPeekInputStream() {
+        Product product = new Product();
+        product.setId(100);
+        product.setTitle("Hello");
+        String json = JSON.encode(product);
+
+        String content =
+                forPost("/request_body/peek_input_stream")
+                .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
+                .setBody(json)
+                .send()
+                .assertOk().getContent();
+
+        assertEquals(content, json + json);
+
+        forPost("/request_body/peek_input_stream_err")
+                .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
+                .setBody(json)
+                .send()
+                .assert500();
+    }
 }

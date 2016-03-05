@@ -22,7 +22,7 @@ import leap.lang.Args;
 public class SEC {
 	
 	public static UserPrincipal user(){
-		return SecurityContext.currentUser();
+		return SecurityContext.user();
 	}
 
 	public static String encodePassword(String plainPassword){

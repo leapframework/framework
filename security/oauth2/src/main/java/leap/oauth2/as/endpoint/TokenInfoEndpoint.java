@@ -17,6 +17,8 @@ package leap.oauth2.as.endpoint;
 
 import leap.core.annotation.Inject;
 import leap.oauth2.OAuth2Errors;
+import leap.oauth2.OAuth2Params;
+import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler;
 import leap.web.App;
 import leap.web.Handler;
@@ -38,7 +40,7 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
     
 	@Override
     public void startEndpoint(App app, Routes routes) {
-	    if(config.isEnabled() && config.isTokenInfoEndpointEnabled()) {
+	    if(config.isEnabled()) {
 	        sc.ignore(config.getTokenInfoEndpointPath());
 	        
 	        routes.create()
@@ -50,9 +52,11 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 	@Override
     public void handle(Request request, Response response) throws Throwable {
 
+		OAuth2Params params = new RequestOAuth2Params(request);
+
 	    for(TokenInfoHandler h : handlers) {
 	        
-	        if(h.handleTokenInfoRequest(request, response)) {
+	        if(h.handleTokenInfoRequest(request, response, params)) {
 	            return;
 	        }
 	        

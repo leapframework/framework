@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-parent</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<version>0.2.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
 	<licenses>
@@ -15,19 +14,26 @@
 	
 	<distributionManagement>
 		<repository>
-			<id>repo</id>
+			<id>leap-repo-releases</id>
 			<url>${leap.repository}/releases</url>
 		</repository>
 		<snapshotRepository>
-			<id>bingo-maven-repository-snapshots</id>
+			<id>leap-repo-snapshots</id>
 			<url>${leap.repository}/snapshots</url>
 		</snapshotRepository>
 	</distributionManagement>
+	
+	<scm>
+		<developerConnection>scm:git:https://github.com/leapframework/framework.git</developerConnection>
+		<tag>v@{project.version}</tag>
+	</scm>
 	
 	<properties>
 		<!-- common properties -->
 		<common.encoding>UTF-8</common.encoding>
 		<java.version>1.8</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 		<!-- maven properties -->
 		<maven.compile.source>${java.version}</maven.compile.source>
@@ -48,25 +54,32 @@
 		<plugins.install.version>2.3.1</plugins.install.version>
 		<plugins.jar.version>2.3.2</plugins.jar.version>
 		<plugins.deploy.version>2.7</plugins.deploy.version>
-		<plugins.release.version>2.2.1</plugins.release.version>
+		<plugins.release.version>2.5.3</plugins.release.version>
 		<plugins.dependency.version>2.1</plugins.dependency.version>
 		<plugins.eclipse.version>2.9</plugins.eclipse.version>
-		
-		<surefireArgLine></surefireArgLine>	
-	
+
 		<!-- dependency versions -->
 		<slf4j.version>1.7.5</slf4j.version>
         <logback.version>1.0.13</logback.version>
 		<servlet.version>3.1.0</servlet.version>
 		<jsp.version>2.3.1</jsp.version>
 		<jstl.version>1.2.1</jstl.version>
-		<jacoco.version>0.7.1.201405082137</jacoco.version>
-		
         <h2.version>1.3.172</h2.version>
         <mysql.version>5.1.26</mysql.version>
         <postgresql.version>9.1-901.jdbc4</postgresql.version>
         <mariadb.version>1.1.7</mariadb.version>
         <derby.version>10.10.2.0</derby.version>
+        <jetty.version>9.2.2.v20140723</jetty.version>
+        <httpclient.version>4.3.6</httpclient.version>
+
+        <!-- Sonar :
+             The destination file for the code coverage report has to be set to the same value
+             in the parent pom and in each module pom. Then JaCoCo will add up information in
+             the same report, so that, it will give the cross-module code coverage.
+        -->
+        <jacoco.dataFileDir>${project.basedir}/../../target</jacoco.dataFileDir>
+        <jacoco.dataFilePath>${jacoco.dataFileDir}/jacoco-it.exec</jacoco.dataFilePath>
+        <sonar.language>java</sonar.language>
 	</properties>
 	
 	<build>
@@ -150,9 +163,12 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
 					<version>${plugins.surefire.version}</version>
-					<configuration>
-		                <argLine>-Dfile.encoding=UTF-8 -Dorg.apache.jasper.compiler.disablejsr199=true ${surefireArgLine}</argLine>					
-					</configuration>
+                    <configuration>
+                        <systemPropertyVariables>
+                            <file.encoding>UTF-8</file.encoding>
+                            <org.apache.jasper.compiler.disablejsr199>true</org.apache.jasper.compiler.disablejsr199>
+                        </systemPropertyVariables>
+                    </configuration>
 				</plugin>
 
 				<!-- javadoc -->
@@ -230,6 +246,13 @@
 						</sourceExcludes>
 					</configuration>
 				</plugin>
+
+                <!-- jacoco -->
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.7.5.201505241946</version>
+                </plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -245,6 +268,44 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
+
+            <!-- jacoco
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <destFile>${jacoco.dataFilePath}</destFile>
+                    <append>true</append>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>agent-for-ut</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>agent-for-it</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    -->
+                    <!--
+                    <execution>
+                        <id>jacoco-site</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${jacoco.dataFilePath}</dataFile>
+                            <outputDirectory>${jacoco.dataFileDir}/jacoco-ut/${project.name}</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            -->
 		</plugins>
 	</build>
 
@@ -317,10 +378,14 @@
         <module>data/orm-test-resources</module>
         <module>test/junit</module>
         <module>test/webunit</module>
+		<module>test/webunit-jsp</module>
 		<module>web/core</module>
 		<module>web/api</module>
 		<module>web/htpl</module>
         <module>web/test-resources</module>
+		<module>web/test-module</module>
+		<module>web/test-webapp</module>
+		<module>web/test-webapp1</module>
 		<module>security/web</module>
 		<module>security/oauth2</module>
 		<module>assembly/fw</module>

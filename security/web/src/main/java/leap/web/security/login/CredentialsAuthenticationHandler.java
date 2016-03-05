@@ -23,7 +23,7 @@ import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityContextHolder;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.AuthenticationManager;
 
@@ -53,7 +53,7 @@ public class CredentialsAuthenticationHandler implements LoginHandler {
 					        authenticationManager.authenticate(context, credentials);
 					
 		            if(null != authc){
-		            	sc.setUser(authc.getUserPrincipal());
+		            	sc.setUser(authc.getUser());
 		            }
 		            
 	            } catch (AuthenticationException e) {

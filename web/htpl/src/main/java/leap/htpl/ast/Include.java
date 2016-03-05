@@ -30,14 +30,16 @@ import leap.htpl.exception.HtplCompileException;
 import leap.htpl.exception.HtplParseException;
 import leap.htpl.exception.HtplRenderException;
 import leap.lang.Strings;
+import leap.lang.expression.Expression;
 import leap.lang.servlet.ServletResource;
 
 public class Include extends Node implements HtplRenderable {
 
-	private final String  templateName;
-	private final String  fragmentName;
-	private final boolean required;
-	
+	private final String     templateName;
+	private final String     fragmentName;
+	private final boolean    required;
+
+    private Expression      expression;
 	private HtplTemplate    template; //included template
 	private Fragment 	    fragment;
 	private ServletResource resource; //included servlet resource
@@ -45,7 +47,7 @@ public class Include extends Node implements HtplRenderable {
 	public Include(String templateName) {
 		this(templateName,null,true);
 	}
-	
+
 	public Include(String templateName,String fragmentName) {
 		this(templateName,fragmentName,true);
 	}
@@ -64,10 +66,15 @@ public class Include extends Node implements HtplRenderable {
 		return fragmentName;
 	}
 
+	protected Expression tryParseTemplateExpression() {
+		return null;
+	}
+
 	@Override
 	protected Node doDeepClone(Node parent) {
 		Include clone = new Include(templateName,fragmentName,required);
 		clone.template = template;
+		clone.expression = expression;
 		clone.fragment = null == fragment ? null : fragment.deepClone(clone);
 		clone.resource = resource;
 		return clone;
@@ -80,23 +87,27 @@ public class Include extends Node implements HtplRenderable {
 	
 	@Override
     protected Node doProcess(HtplEngine engine,HtplDocument doc, ProcessCallback callback) {
-		template = engine.resolveTemplate(doc.getResource(), templateName, doc.getLocale());
-		if(null == template){
-			processTemplateNotFound(engine, doc);
-			return this;
-		}
-		
-		if(!Strings.isEmpty(fragmentName)){
-			fragment = template.getDocument().getFragment(fragmentName);
-			if(null == fragment && required){
-				throw new HtplCompileException("No fragment named '" + fragmentName + "' in the included template '" + templateName + "'");
-			}
-			fragment = fragment.deepClone(this);
-		}
-		
-		doc.addIncludedTemplate(templateName, template);
-		
-		return this;
+        expression = engine.getExpressionManager().tryParseCompositeExpression(engine, templateName);
+
+        if(null == expression){
+            template = engine.resolveTemplate(doc.getResource(), templateName, doc.getLocale());
+            if(null == template){
+                processTemplateNotFound(engine, doc);
+                return this;
+            }
+
+            if(!Strings.isEmpty(fragmentName)){
+                fragment = template.getDocument().getFragment(fragmentName);
+                if(null == fragment && required){
+                    throw new HtplCompileException("No fragment named '" + fragmentName + "' in the included template '" + templateName + "'");
+                }
+                fragment = fragment.deepClone(this);
+            }
+
+            doc.addIncludedTemplate(templateName, template);
+        }
+
+        return this;
 	}
 	
 	@Override
@@ -109,7 +120,60 @@ public class Include extends Node implements HtplRenderable {
 	
 	@Override
     public void render(HtplTemplate tpl, HtplContext context, HtplWriter writer) throws IOException {
-		if(null != template) {
+        if(null != expression) {
+
+            String result = context.evalString(expression);
+            if(Strings.isEmpty(result)) {
+                if(required) {
+                    throw new HtplRenderException("The included template expression '" + this.templateName + "' returns empty string");
+                }
+                return;
+            }
+
+            String templateName = result;
+            String fragmentName = null;
+            int index = templateName.indexOf('#');
+            if(index > 0) {
+                fragmentName = result.substring(index+1);
+                templateName = result.substring(0, index);
+            }
+
+            HtplTemplate template = context.getEngine().resolveTemplate(tpl.getDocument().getResource(), templateName, context.getLocale());
+            if(null == template) {
+
+                if(required) {
+                    throw new HtplRenderException("The included template '" + templateName + "' not found");
+                }
+
+                return;
+            }
+
+            Fragment fragment = null;
+            if(null != fragmentName) {
+                fragment = template.getDocument().getFragment(fragmentName);
+                if(null == fragment) {
+                    if(required) {
+                        throw new HtplRenderException("The included fragment '" + result + "' not found");
+                    }
+                    return;
+                }
+            }
+
+            if(context.isDebug()) {
+                writer.append("<!--#include \"" + result + "\"-->\n");
+            }
+
+            if(null == fragment){
+                template.render(tpl, context, writer);
+            }else{
+                fragment.render(tpl, context, writer);
+            }
+
+            if(context.isDebug()) {
+                writer.append("\n<!--#endinclude-->");
+            }
+
+        }else if(null != template) {
 			if(context.isDebug()) {
 				writer.append("<!--#include \"" + templateName + "\"-->\n");
 			}

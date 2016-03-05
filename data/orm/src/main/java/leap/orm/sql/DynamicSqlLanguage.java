@@ -18,6 +18,7 @@ package leap.orm.sql;
 import java.util.ArrayList;
 import java.util.List;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
@@ -39,7 +40,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	
 	private Cache<String, List<Sql>> cache = new SimpleLRUCache<String, List<Sql>>();
 	
-	@Configurable.Property
+	@ConfigProperty
 	public void setMode(String mode) {
 	    if("simple".equals(mode)) {
 	        smart = false;

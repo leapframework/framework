@@ -55,8 +55,8 @@ public class DefaultFormatManager implements FormatManager,PostCreateBean {
 	@Override
     public RequestFormat resolveRequestFormat(Request request) throws Throwable {
 		//Resolve response format from request's parameter
-		if(webConfig.isAllowFormatParameter()){
-			String formatName = request.getParameter(webConfig.getFormatParameter());
+		if(webConfig.isFormatParameterEnabled()){
+			String formatName = request.getParameter(webConfig.getFormatParameterName());
 			if(!Strings.isEmpty(formatName)){
 				//request format is not mandatory, 
 				//so we just try to get the format object and return it or return null if not found.
@@ -111,8 +111,8 @@ public class DefaultFormatManager implements FormatManager,PostCreateBean {
 	@Override
     public ResponseFormat resolveResponseFormat(Request request) throws Throwable{
 		//Resolve response format from request's parameter
-		if(webConfig.isAllowFormatParameter()){
-			String formatName = request.getParameter(webConfig.getFormatParameter());
+		if(webConfig.isFormatParameterEnabled()){
+			String formatName = request.getParameter(webConfig.getFormatParameterName());
 			if(!Strings.isEmpty(formatName)){
 				return getResponseFormat(formatName);
 			}

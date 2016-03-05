@@ -17,53 +17,54 @@ package leap.lang;
 
 public interface Result<T> {
     
-    @SuppressWarnings("rawtypes")
     Result EMPTY = new Result(){
         public Object get() {return null;}
-        public boolean isPresent() {return false;}
     };
-    
+
+    Result INTERCEPTED = new Result(){
+        public Object get() { return null;}
+        public boolean isIntercepted() { return true;}
+    };
+
     @SuppressWarnings("unchecked")
     static <T> Result<T> empty() {
         return (Result<T>)EMPTY;
-    } 
-    
+    }
+
+    @SuppressWarnings("unchecked")
+    static <T> Result<T> intercepted() {
+        return (Result<T>) INTERCEPTED;
+    }
+
+    static boolean empty(Result r) {
+        return null != r && r.isEmpty();
+    }
+
+    static boolean present(Result r) {
+        return null != r && r.isPresent();
+    }
+
+    static boolean intercepted(Result r) {
+        return null != r && r.isIntercepted();
+    }
+
+    static <T> T value(Result<T> r) {
+        return null == r ? null : r.get();
+    }
+
     static <T> Result<T> of(final T value) {
-        return new Result<T>(){
-            public T get() {return value;}
-        };
+        return () -> value;
     }
-    
-    static <T> Result<T> err(String message) {
-        return new Result<T>() {
-            public T get() {return null;}
-            public Error error() {return new Error(message);}
-        };
-    }
-    
-    static <T> Result<T> err(Throwable e) {
-        return new Result<T>() {
-            public T get() {return null;}
-            public Error error() {return new Error(e);}
-        };
-    }
-    
-    static <T> Result<T> err(String message, Throwable e) {
-        return new Result<T>() {
-            public T get() {return null;}
-            public Error error() {return new Error(message, e);}
-        };
-    }
-    
+
     /**
      * Returns the result value. May be <code>null</code>.
      */
     T get();
 
     /**
-     * Returns the error object. May be <code>null</code>.
+     * Returns <code>true</code> if the result is empty, that means no error, no value and not intercepted.
      */
-    default Error error() { return null;}
+    default boolean isEmpty() { return null == get() && !isIntercepted(); }
     
     /**
      * Returns <code>true</code> if the result value is not <code>null</code>.
@@ -71,13 +72,7 @@ public interface Result<T> {
     default boolean isPresent() { return null != get(); }
     
     /**
-     * Returns <code>true</code> if the error object is not <code>null</code>.
+     * Returns <code>true</code> if no result returned and the execution was intercepted.
      */
-    default boolean isError() { return false;} 
-    
-    /**
-     * Returns <code>true</code> if no error and the valie is present.
-     */
-    default boolean isValid() { return isPresent() && !isError(); }
-    
+    default boolean isIntercepted() { return false; }
 }

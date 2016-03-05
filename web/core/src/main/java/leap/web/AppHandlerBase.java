@@ -28,6 +28,7 @@ import leap.core.ioc.PostCreateBean;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.action.ActionStrategy;
+import leap.web.config.WebConfig;
 import leap.web.route.RoutesPrinter;
 
 public abstract class AppHandlerBase implements AppHandler,PostCreateBean {
@@ -39,14 +40,15 @@ public abstract class AppHandlerBase implements AppHandler,PostCreateBean {
 	private boolean _started;
 	private boolean _stopped;
 	private Object  _token;
-	
+
+    protected @Inject @M WebConfig        config;
     protected @Inject @M AppInitializer[] initializers;
     protected @Inject @M RoutesPrinter    routesPrinter;
     protected @Inject @M ActionStrategy   actionStrategy;
 
     protected @M App    app;
     protected @R String homePath;
-	
+
 	@Override
     public void setApp(App app) {
 		this.app = app;
@@ -133,7 +135,7 @@ public abstract class AppHandlerBase implements AppHandler,PostCreateBean {
 	
 	@Override
     public void postCreate(BeanFactory beanFactory) throws Throwable {
-		this.homePath = "/" + actionStrategy.getIndexActionName();
+		this.homePath = "/" + config.getIndexActionName();
     }
 
 	protected void preStart(App app) {

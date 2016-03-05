@@ -15,23 +15,29 @@
  */
 package leap.web.assets;
 
+import java.util.List;
 import java.util.Locale;
 
 import leap.core.AppConfigAware;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.cache.Cache;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetSource;
+import leap.lang.Locales;
+import leap.lang.Strings;
+import leap.lang.path.Paths;
+import leap.lang.resource.Resource;
 
 public class DefaultAssetSource extends AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 	
-	@Inject(name="assets")
-	protected @M Cache<Object, Asset> assetCache;
+	protected @Inject AssetConfig  config;
+    protected @Inject AssetManager manager;
 	
 	/** The underlying resolvers to resolve assets*/
 	protected @Inject AssetResolver[] resolvers;
-	
+
+    @Inject(name="assets")
+    protected @M Cache<Object, Asset> assetCache;
+
 	@Override
     protected Cache<Object, Asset> getAssetCache() {
 	    return assetCache;
@@ -49,8 +55,57 @@ public class DefaultAssetSource extends AbstractCachingAssetSource implements As
 				return a;
 			}
 		}
-		
+
+		return loadAssetFromExternalFolders(assetPath, locale);
+	}
+
+	protected Asset loadAssetFromExternalFolders(String assetPath, Locale locale) throws Throwable {
+		List<AssetFolder> folders = config.getFolders();
+		if(folders.isEmpty()) {
+			return null;
+		}
+
+		Asset asset;
+
+		for(AssetFolder folder : folders) {
+
+			if(null != (asset = loadAssetFromExternalFolder(assetPath, locale, folder))) {
+				return asset;
+			}
+
+		}
+
 		return null;
 	}
 
+	protected Asset loadAssetFromExternalFolder(String assetPath, Locale locale, AssetFolder folder) throws Throwable {
+        String filepath = assetPath;
+
+        if(!Strings.isEmpty(folder.getPathPrefix())) {
+
+            String prefix = Paths.prefixWithoutSlash(folder.getPathPrefix());
+
+            if(!assetPath.startsWith(prefix)) {
+                return null;
+            }
+
+            filepath = Strings.removeStart(filepath, prefix);
+        }
+
+        String[] filepaths = Locales.getLocaleFilePaths(locale, filepath);
+
+        Resource resource = null;
+        for(String path : filepaths) {
+            resource = folder.getRelativeResource(path);
+            if(null != resource && resource.exists()) {
+                break;
+            }
+        }
+
+        if(null == resource || !resource.exists()) {
+            return null;
+        }
+
+		return new SimpleAsset(manager, assetPath, resource);
+	}
 }

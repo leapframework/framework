@@ -15,12 +15,13 @@
  */
 package leap.web.security;
 
+import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
-public interface SecurityInterceptor {
+public interface SecurityInterceptor extends Interceptor{
 
 	default State preResolveAuthentication(Request request,Response response, SecurityContextHolder context) throws Throwable {
 		return State.CONTINUE;
@@ -29,6 +30,14 @@ public interface SecurityInterceptor {
 	default State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
 		return State.CONTINUE;
 	}
+
+	default State preResolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
+		return State.CONTINUE;
+	}
+
+    default State postResolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        return State.CONTINUE;
+    }
 	
 	default State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
 	    return State.CONTINUE;
@@ -44,5 +53,9 @@ public interface SecurityInterceptor {
 	
 	default State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
 	    return State.CONTINUE;
+	}
+
+	default State postLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
+		return State.CONTINUE;
 	}
 }

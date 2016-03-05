@@ -17,17 +17,21 @@ package leap.web.security.user;
 
 import leap.core.security.UserPrincipal;
 import leap.lang.Result;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public interface UserManager {
 
     UserDetails getUserDetails(UserPrincipal user);
 
     UserDetails loadUserDetails(String userId);
-    
+
     /**
      * Creates the authentication for the given username.
      */
-    Result<Authentication> creatAuthenticaionByUsername(String username);
-    
+    Result<Authentication> createAuthenticationByUsername(String username);
+
+    /**
+     * Creates the authentication for the given userid.
+     */
+    Result<Authentication> createAuthenticationByUserId(String userid);
 }

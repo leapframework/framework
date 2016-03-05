@@ -15,10 +15,10 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-
 import leap.lang.Emptiable;
 import leap.lang.value.Page;
+
+import java.util.List;
 
 public interface PageResult<T> extends Emptiable {
 	

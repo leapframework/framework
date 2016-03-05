@@ -15,26 +15,18 @@
  */
 package leap.core;
 
-import static leap.core.AppContextInitializer.CP_APPLICATION_SYS_PREFIX;
-import static leap.core.AppContextInitializer.CP_APPLICATION_USR_PREFIX;
-import static leap.core.AppContextInitializer.CP_EXTENSION_MODULES_PREFIX;
-import static leap.core.AppContextInitializer.CP_FRAMEWORK_CORE_PREFIX;
-import static leap.core.AppContextInitializer.CP_FRAMEWORK_MODULES_PREFIX;
+import static leap.core.AppContextInitializer.CLASSPATH_APPSYS_PREFIX;
+import static leap.core.AppContextInitializer.CLASSPATH_APPUSR_PREFIX;
+import static leap.core.AppContextInitializer.CLASSPATH_MODULES_PREFIX;
+import static leap.core.AppContextInitializer.CLASSPATH_CORE_PREFIX;
+import static leap.core.AppContextInitializer.CLASSPATH_FRAMEWORK_PREFIX;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
@@ -62,6 +54,7 @@ import leap.lang.security.RSA;
 import leap.lang.security.RSA.RsaKeyPair;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
+import leap.lang.tools.DEV;
 
 /**
  * a default implementation of {@link AppConfig}
@@ -70,25 +63,25 @@ public class DefaultAppConfig implements AppConfig {
 	
 	private static final Log log = LogFactory.get(DefaultAppConfig.class);
 	
-	private static final String APP_PROFILE_CONFIG_RESOURCE = CP_APPLICATION_USR_PREFIX + "/profile";
+	private static final String APP_PROFILE_CONFIG_RESOURCE = CLASSPATH_APPUSR_PREFIX + "/profile";
 	
-	private static final String[] FRAMEWORK_CONFIG_LOCATIONS = new String[]{CP_FRAMEWORK_CORE_PREFIX + "/config.xml",
-																			CP_FRAMEWORK_CORE_PREFIX + "/config/**/*.xml",
-																		    CP_FRAMEWORK_MODULES_PREFIX + "/config.xml",
-																	        CP_FRAMEWORK_MODULES_PREFIX + "/config/**/*.xml"};
+	private static final String[] FRAMEWORK_CONFIG_LOCATIONS = new String[]{CLASSPATH_CORE_PREFIX + "/config.xml",
+																			CLASSPATH_CORE_PREFIX + "/config/**/*.xml",
+																		    CLASSPATH_FRAMEWORK_PREFIX + "/config.xml",
+																	        CLASSPATH_FRAMEWORK_PREFIX + "/config/**/*.xml"};
 	
-	private static final String[] EXTENSION_CONFIG_LOCATIONS = new String[]{CP_EXTENSION_MODULES_PREFIX + "/config.xml",
-																			CP_EXTENSION_MODULES_PREFIX + "/config/**/*.xml"};
+	private static final String[] EXTENSION_CONFIG_LOCATIONS = new String[]{CLASSPATH_MODULES_PREFIX + "/config.xml",
+																			CLASSPATH_MODULES_PREFIX + "/config/**/*.xml"};
 	
-	private static final String[] APPSYS_CONFIG_LOCATIONS    = new String[]{CP_APPLICATION_SYS_PREFIX    + "/config.xml",
-																			CP_APPLICATION_SYS_PREFIX    + "/config/**/*.xml"};
+	private static final String[] APPSYS_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPSYS_PREFIX + "/config.xml",
+																			CLASSPATH_APPSYS_PREFIX + "/config/**/*.xml"};
 
-	private static final String[] APPBASE_CONFIG_LOCATIONS   = new String[]{CP_APPLICATION_USR_PREFIX    + "/config.xml"};
+	private static final String[] APPBASE_CONFIG_LOCATIONS   = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml"};
 	
-	private static final String[] APPUSR_CONFIG_LOCATIONS    = new String[]{CP_APPLICATION_USR_PREFIX    + "/config.xml",
-																			CP_APPLICATION_USR_PREFIX    + "/config/**/*.xml",
-																			CP_APPLICATION_USR_PREFIX    + "/profiles/{profile}/config.xml",
-																			CP_APPLICATION_USR_PREFIX    + "/profiles/{profile}/config/**/*.xml"};
+	private static final String[] APPUSR_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml",
+																			CLASSPATH_APPUSR_PREFIX + "/config/**/*.xml",
+																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config.xml",
+																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config/**/*.xml"};
 	
 	//all init properties
 	protected static Set<String> INIT_PROPERTEIS = new HashSet<>();
@@ -151,7 +144,26 @@ public class DefaultAppConfig implements AppConfig {
 		if(!initProperties.isEmpty()) {
 			Maps.resolveValues(initProperties, new DefaultPlaceholderResolver(SystemPropertyAccessor.INSTANCE));
 		}
-		
+
+        Properties props = System.getProperties();
+        for(Object key : props.keySet()) {
+            String name = key.toString();
+
+            if(name.startsWith("sun.")){
+                continue;
+            }
+
+            if(name.startsWith("org.apache.")){
+                continue;
+            }
+
+            if(name.startsWith("com.oracle.")){
+                continue;
+            }
+
+            initProperties.put(name, System.getProperty(name));
+        }
+
 		for(String p : INIT_PROPERTEIS){
 			if(!initProperties.containsKey(p)){
 				String v = System.getProperty(p);
@@ -375,7 +387,7 @@ public class DefaultAppConfig implements AppConfig {
 	
 	protected String autoDetectProfileName(){
 		//Auto detect development environment (maven environment)
-		if(Maven.isMavenProject(externalContext)){
+		if(DEV.isDevProject(externalContext)){
 			return AppProfile.DEVELOPMENT.getName();
 		}else{
 			return DEFAULT_PROFILE;

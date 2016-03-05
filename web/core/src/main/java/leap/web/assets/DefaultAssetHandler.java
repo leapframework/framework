@@ -31,10 +31,6 @@ import leap.core.annotation.M;
 import leap.core.ioc.LoadableBean;
 import leap.core.web.RequestBase;
 import leap.core.web.ResponseBase;
-import leap.core.web.assets.AssetConfig;
-import leap.core.web.assets.AssetResource;
-import leap.core.web.assets.AssetSource;
-import leap.core.web.assets.AssetStrategy;
 import leap.lang.Strings;
 import leap.lang.exception.NestedIOException;
 import leap.lang.http.HTTP;
@@ -247,7 +243,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	            }
 				
             } catch (NestedIOException e) {
-            	log.error("Error writting asset content,{}", e.getMessage(), e);
+            	log.error("Error writing asset content,{}", e.getMessage(), e);
             	throw e;
             }
 		}
@@ -255,7 +251,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 
 	@Override
     public boolean load(BeanFactory factory) throws Exception {
-	    return !config.isDisabled();
+	    return config.isEnabled();
     }
 	
 	private final static byte[] gzip(InputStream is, long length) throws IOException {

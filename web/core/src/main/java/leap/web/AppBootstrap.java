@@ -15,18 +15,8 @@
  */
 package leap.web;
 
-import java.util.Map;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-
-import leap.core.AppConfig;
-import leap.core.AppContext;
-import leap.core.AppException;
-import leap.core.BeanFactory;
-import leap.core.ioc.BeanDefinition;
-import leap.core.ioc.BeanProcessor;
-import leap.core.ioc.ServletOnlyBean;
+import leap.core.*;
+import leap.core.ioc.*;
 import leap.core.web.ServletContextInitializerBase;
 import leap.lang.Classes;
 import leap.lang.beans.BeanCreationException;
@@ -34,17 +24,26 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.Reflection;
+import leap.lang.servlet.Servlets;
 
-public class AppBootstrap extends ServletContextInitializerBase {
+import javax.servlet.ServletContext;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.ServletException;
+import java.util.Map;
+
+public class AppBootstrap extends ServletContextInitializerBase implements ServletContextListener {
     private static final Log log = LogFactory.get(AppBootstrap.class);
 	
 	public static final String GLOBAL_CLASS_NAME  = "Global";
-	public static final String APP_ATTRIBUTE_NAME = App.class.getName(); 
-	
-	protected String	 basePath;
-	protected App        app;
-	protected AppHandler handler;
-	
+	public static final String APP_ATTRIBUTE_NAME = App.class.getName();
+
+    protected String         basePath;
+    protected App            app;
+    protected ServletContext servletContext;
+    protected AppHandler     handler;
+    protected boolean        selfStarted;
+
 	private Object _token;
 	
 	public static AppBootstrap tryGet(ServletContext sc) {
@@ -58,7 +57,31 @@ public class AppBootstrap extends ServletContextInitializerBase {
 		}
 		return c;
 	}
-	
+
+	@Override
+	public void contextInitialized(ServletContextEvent sce) {
+        ServletContext sc = sce.getServletContext();
+
+        try {
+            bootApplication(sc, Servlets.getInitParamsMap(sc));
+
+            startApplication();
+
+            selfStarted = true;
+        } catch (ServletException e) {
+            throw new AppInitException("Error booting app, " + e.getMessage(), e);
+        }
+	}
+
+	@Override
+	public void contextDestroyed(ServletContextEvent sce) {
+        stopApplication();
+	}
+
+    public boolean isSelfStarted() {
+        return selfStarted;
+    }
+
 	public String getBasePath() {
 		return basePath;
 	}
@@ -85,12 +108,18 @@ public class AppBootstrap extends ServletContextInitializerBase {
 	
 	protected final void bootApplication(final ServletContext sc,final Map<String,String> initParams) throws ServletException {
 		try {
+            this.servletContext = sc;
+
 		    log.info("Booting app '{}'...", getAppDisplayName(sc));
+
+            preBooting();
 		    
 			super.initAppContext(sc,initParams);
+
+            postBooting();
 			
-			for(AppServletContainerInitializer initializer : beanFactory.getBeans(AppServletContainerInitializer.class)) {
-				initializer.onStartup(sc, app);
+			for(AppBootable bootable : beanFactory.getBeans(AppBootable.class)) {
+				bootable.postBootingApp(app,sc);
 			}
 			
 			sc.setAttribute(AppBootstrap.class.getName(), this);
@@ -101,6 +130,14 @@ public class AppBootstrap extends ServletContextInitializerBase {
         	throw new ServletException("Error booting application, message : " + e.getMessage(),e);
         }
 	}
+
+    protected void preBooting() {
+
+    }
+
+    protected void postBooting() {
+
+    }
 	
 	@Override
     protected void onAppConfigReady(AppConfig config,Map<String, String> initParams) {
@@ -116,7 +153,7 @@ public class AppBootstrap extends ServletContextInitializerBase {
 	}
 	
 	@Override
-    protected void onAppContexReady(AppContext context) {
+    protected void onAppContextReady(AppContext context) {
 		beanFactory.addBean(App.class, app, true);
 		beanFactory.addBean(ServletContext.class, servletContext, true);
 		
@@ -175,7 +212,25 @@ public class AppBootstrap extends ServletContextInitializerBase {
     }
     
 	public static final class AppBeanProcessor implements BeanProcessor,ServletOnlyBean {
-		@Override
+
+        @Override
+        public void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
+            BeanDefinition bd = c.definition();
+            if(AppInitializable.class.isAssignableFrom(bd.getBeanClass())) {
+                ServletContext sc = context.tryGetServletContext();
+                if(null == sc) {
+                    throw new BeanDefinitionException("Current app context must be servlet environment, cannot init bean " + bd);
+                }
+
+                if(!bd.isSingleton()) {
+                    throw new BeanDefinitionException("AppInitializable bean must be singleton, check the bean " + bd);
+                }
+
+                app(sc,bd).initializableBeans().add(bd);
+            }
+        }
+
+        @Override
         public void postCreateBean(AppContext appContext, BeanFactory beanFactory, BeanDefinition definition, Object bean) throws Exception {
 			ServletContext sc = appContext.tryGetServletContext();
 			if(bean instanceof AppAware){
@@ -183,10 +238,6 @@ public class AppBootstrap extends ServletContextInitializerBase {
 					throw new BeanCreationException("Current app context must be servlet environment, cannot create bean " + definition);
 				}
 				((AppAware) bean).setApp(app(sc, definition));
-			}
-			
-			if(bean instanceof AppInitializable) {
-			    app(sc, definition).initializableBeans().add((AppInitializable)bean);
 			}
         }
 		

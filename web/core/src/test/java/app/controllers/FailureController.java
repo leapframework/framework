@@ -16,11 +16,17 @@
 package app.controllers;
 
 import leap.core.validation.annotations.Required;
+import leap.lang.http.HTTP;
+import leap.web.Contents;
+import leap.web.RequestIntercepted;
+import leap.web.Response;
 import leap.web.Result;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionExecution;
 import leap.web.action.FailureHandler;
 import leap.web.annotation.Failure;
+import leap.web.exception.BadRequestException;
+import leap.web.exception.ResponseException;
 
 public class FailureController {
 
@@ -32,6 +38,23 @@ public class FailureController {
 	public void validationError1(@Required String value) {
 		
 	}
+
+    @Failure(handler=FailureHandler2.class)
+	public void intercepted(Response response) {
+        response.setStatus(HTTP.SC_OK);
+        response.getWriter().write("OK");
+        RequestIntercepted.throwIt();
+    }
+
+    @Failure(handler=FailureHandler2.class)
+    public void responseException() {
+        throw new ResponseException(HTTP.SC_OK, Contents.text("OK"));
+    }
+
+    @Failure(handler=FailureHandler3.class)
+    public void responseException1() {
+        throw new BadRequestException("bad request");
+    }
 	
 	public static final class FailureHandler1 implements FailureHandler {
 
@@ -44,4 +67,28 @@ public class FailureController {
 			return false;
         }
 	}
+
+    public static final class FailureHandler2 implements FailureHandler {
+        @Override
+        public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
+            result.setStatus(HTTP.SC_BAD_REQUEST);
+            result.setRenderable(Contents.text("IllegalState"));
+            return true;
+        }
+    }
+
+    public static final class FailureHandler3 implements FailureHandler {
+        @Override
+        public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
+            if(execution.getException() instanceof ResponseException) {
+                ResponseException e = (ResponseException)execution.getException();
+
+                result.setStatus(e.getStatus());
+                result.setRenderable(Contents.json(e.getMessage()));
+
+            }
+            return false;
+        }
+    }
+
 }

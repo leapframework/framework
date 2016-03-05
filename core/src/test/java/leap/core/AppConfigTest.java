@@ -43,7 +43,7 @@ public class AppConfigTest extends AppTestBase {
 	
 	@Test
 	public void testPlaceholder() {
-	    assertEquals("${notExistProeprty}", config.getProperty("testNotExistPlaceholder"));
+	    assertEquals("${notExistProperty}", config.getProperty("testNotExistPlaceholder"));
 	}
 	
 	@Test

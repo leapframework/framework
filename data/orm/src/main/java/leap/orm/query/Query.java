@@ -15,9 +15,6 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-import java.util.Map;
-
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyRecordsException;
 import leap.core.value.Scalar;
@@ -28,6 +25,9 @@ import leap.lang.params.ArrayParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.lang.value.Page;
+
+import java.util.List;
+import java.util.Map;
 
 public interface Query<T> {
 	

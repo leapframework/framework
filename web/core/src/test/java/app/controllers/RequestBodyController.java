@@ -15,11 +15,17 @@
  */
 package app.controllers;
 
+import app.models.products.Product;
+import leap.lang.Charsets;
 import leap.lang.codec.Hex;
+import leap.lang.io.IO;
 import leap.lang.json.JSON;
+import leap.web.Request;
 import leap.web.action.ControllerBase;
 import leap.web.annotation.RequestBody;
-import app.models.products.Product;
+
+import java.io.IOException;
+import java.io.InputStream;
 
 public class RequestBodyController extends ControllerBase {
 	
@@ -42,5 +48,26 @@ public class RequestBodyController extends ControllerBase {
 	public String entityBody(Product product) {
 		return JSON.encode(product);
 	}
+
+	public String peekInputStream(Request request) throws IOException{
+        StringBuilder s = new StringBuilder();
+        try(InputStream in = request.peekInputStream()){
+            s.append(IO.readString(in, Charsets.defaultCharset()));
+        }
+        try(InputStream in = request.getInputStream()){
+            s.append(IO.readString(in, Charsets.defaultCharset()));
+        }
+        return s.toString();
+    }
+
+    public void peekInputStreamErr(Request request) throws IOException {
+        StringBuilder s = new StringBuilder();
+        try(InputStream in = request.getInputStream()){
+            s.append(IO.readString(in, Charsets.defaultCharset()));
+        }
+        try(InputStream in = request.peekInputStream()){
+            s.append(IO.readString(in, Charsets.defaultCharset()));
+        }
+    }
 
 }

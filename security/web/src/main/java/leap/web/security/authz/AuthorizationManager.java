@@ -15,21 +15,12 @@
  */
 package leap.web.security.authz;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-
+import leap.core.security.Authorization;
 import leap.web.Request;
 import leap.web.Response;
 
 public interface AuthorizationManager {
 	
-	/**
-	 * Checks current request is authorized.
-	 * 
-	 * <p>
-	 * Returns <code>true</code> or <code>false</code> indicates authorized or not.
-	 */
-	Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws ServletException, IOException;
+	Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable;
 
 }

@@ -15,20 +15,24 @@
  */
 package leap.web.format;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
 import leap.lang.Classes;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.json.JsonStringable;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.json.JsonConfig;
 import leap.web.json.JsonSerialize;
 
+import java.io.IOException;
+import java.io.Writer;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+
 public class JsonFormatWriter implements FormatWriter {
+
+	private static final Log log = LogFactory.get(JsonFormatWriter.class);
 	
 	private JsonSettings defaultJsonSettings;
 	
@@ -49,8 +53,17 @@ public class JsonFormatWriter implements FormatWriter {
 		if(null != a) {
 			settings = createJsonSettings(a);
 		}
-		
-		JSON.createEncoder(value, settings).encode(out);
+
+        if(log.isTraceEnabled()) {
+
+            String json = JSON.createEncoder(value, settings).encodeToString();
+
+            log.trace("json output -> \n{}", json);
+
+            out.write(json);
+        }else{
+            JSON.createEncoder(value, settings).encode(out);
+        }
     }
 
 	protected JsonSettings getDefaultJsonSettings() {

@@ -15,22 +15,24 @@
  */
 package leap.lang.beans;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-
 import leap.lang.Named;
 import leap.lang.TypeInfo;
-import leap.lang.Types;
+import leap.lang.accessor.AnnotationsGetter;
+import leap.lang.accessor.TypeInfoGetter;
 import leap.lang.convert.ConvertUnsupportedException;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectField;
 import leap.lang.reflect.ReflectMethod;
+import leap.lang.reflect.ReflectValued;
 
-public class BeanProperty implements Named {
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+
+public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,ReflectValued {
 	private static final Log log = LogFactory.get(BeanProperty.class);
 	
 	private String   	  name;
@@ -91,14 +93,14 @@ public class BeanProperty implements Named {
 		return _transient;
 	}
 	
-	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType){
-		return getAnnotation(annotationType) != null;
-	}
-	
 	public boolean isSimpleType() {
-		return Types.isSimpleType(type, genericType);
+		return typeInfo.isSimpleType();
 	}
-	
+
+	public boolean isComplexType() {
+		return typeInfo.isComplexType();
+	}
+
 	public boolean isField(){
 		return null != field;
 	}
@@ -111,21 +113,11 @@ public class BeanProperty implements Named {
 		return null != setter;
 	}
 	
-	@SuppressWarnings("unchecked")
-	public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-		for(Annotation a : annotations){
-			if(a.annotationType().equals(annotationType)){
-				return (T)a;
-			}
-		}
-		return null;
-	}
-	
 	public Field getField(){
 		return null != field ? field.getReflectedField() : null;
 	}
 	
-	public ReflectField getReflectiveField(){
+	public ReflectField getReflectField(){
 		return field;
 	}
 	

@@ -17,17 +17,22 @@ package leap.web.security;
 
 import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
-import leap.web.security.authz.Authorization;
+import leap.core.security.Authorization;
 import leap.web.security.authz.AuthorizationManager;
 import leap.web.security.login.LoginManager;
 import leap.web.security.logout.LogoutManager;
+import leap.web.security.path.SecuredPath;
 
 public class DefaultSecurityHandler implements SecurityHandler {
-	
+
+    private static final Log log = LogFactory.get(DefaultSecurityHandler.class);
+
     protected @Inject AuthenticationManager authcManager;
     protected @Inject AuthorizationManager  authzManager;
     protected @Inject LoginManager          loginManager;
@@ -42,10 +47,32 @@ public class DefaultSecurityHandler implements SecurityHandler {
     public Authorization resolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
 		return authzManager.resolveAuthorization(request,response,context);
     }
-	
-	@Override
+
+    @Override
     public void handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
-	    loginManager.promoteLogin(request, response, context);
+        loginManager.promoteLogin(request, response, context);
+    }
+
+    @Override
+    public boolean checkAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        SecuredPath path = context.getSecurityPath();
+
+        if(null != path) {
+            return path.checkAuthentication(request, context);
+        }
+
+        return true;
+    }
+
+    @Override
+    public boolean checkAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        SecuredPath path = context.getSecurityPath();
+
+        if(null != path) {
+            return path.checkAuthorization(request, context);
+        }
+
+        return true;
     }
 
     @Override

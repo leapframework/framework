@@ -33,11 +33,21 @@ public class HomeControllerTest extends SecurityTestCase {
 		logout();
 		get("/").assertContentContains("return_url");
 	}
-	
-	@Test
-	public void testAllowAnonymous() {
-		get("/anonymous").assertContentEquals("Hello");
-		get("/anonymous1").assertContentEquals("Hello1");
-	}
-	
+
+    @Test
+	public void testPermission1() {
+        login();
+
+		get("/permission1").assert403();
+
+        logout();
+    }
+
+    @Test
+	public void testPermission2() {
+        login();
+        get("/permission2").assertOk();
+        logout();
+    }
+
 }

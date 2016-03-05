@@ -20,9 +20,9 @@ import java.util.Locale;
 import leap.core.RequestContext;
 import leap.core.i18n.MessageSource;
 import leap.core.web.RequestBase;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 
-public class DefaultHtplContext extends AbstractHtplContext implements HtplContext {
+public class DefaultHtplContext extends AbstractHtplContext{
 
 	protected String	    	 contextPath;
 	protected RequestBase   	 request;

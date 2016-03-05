@@ -17,27 +17,28 @@ package leap.oauth2.as.token;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.web.security.user.UserDetails;
 
 public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	
-	protected @Inject OAuth2ServerConfig		     config;
+	protected @Inject OAuth2AuthzServerConfig    config;
 	protected @Inject AuthzAccessTokenGenerator  defaultAccessTokenGenerator;
 	protected @Inject AuthzRefreshTokenGenerator defaultRefreshTokenGenerator;
-	protected @Inject BeanFactory 	             factory;
+    protected @Inject AuthzLoginTokenGenerator   defaultLoginTokenGenerator;
+	protected @Inject BeanFactory                factory;
 	
     @Override
     public AuthzAccessToken createAccessToken(AuthzAuthentication authc) {
-        AuthzClient               client      = authc.getClient();
-        UserDetails               user        = authc.getUser();
+        AuthzClient client      = authc.getClientDetails();
+        UserDetails               user        = authc.getUserDetails();
         AuthzAccessTokenGenerator atGenerator = getAccessTokenGenerator(authc);
         boolean                   rtCreated   = false;
         
         //Create access token.
-        SimpleAuthzAccessToken  at = new SimpleAuthzAccessToken();
+        SimpleAuthzAccessToken at = new SimpleAuthzAccessToken();
         SimpleAuthzRefreshToken rt = new SimpleAuthzRefreshToken();
         
         //Generate token value
@@ -96,7 +97,32 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         return at;
     }
 
-	@Override
+    @Override
+    public AuthzLoginToken createLoginToken(AuthzAuthentication authc) {
+        AuthzClient              client    = authc.getClientDetails();
+        UserDetails              user      = authc.getUserDetails();
+        AuthzLoginTokenGenerator generator = getLoginTokenGenerator(authc);
+
+        //Creates the token
+        SimpleAuthzLoginToken token = new SimpleAuthzLoginToken();
+        token.setToken(getLoginTokenGenerator(authc).generateLoginToken(authc));
+        token.setClientId(client.getId());
+        token.setUserId(user.getId().toString());
+        token.setCreated(System.currentTimeMillis());
+        token.setExpiresIn(getLoginTokenExpires(client));
+
+        //Saves the token.
+        config.getTokenStore().saveLoginToken(token);
+
+        return token;
+    }
+
+    @Override
+    public AuthzLoginToken consumeLoginToken(String loginToken) {
+        return config.getTokenStore().removeAndLoadLoginToken(loginToken);
+    }
+
+    @Override
     public AuthzAccessToken loadAccessToken(String accessToken) {
         return config.getTokenStore().loadAccessToken(accessToken);
     }
@@ -143,6 +169,10 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         return expires;
     }
+
+    protected int getLoginTokenExpires(AuthzClient client) {
+        return config.getDefaultLoginTokenExpires();
+    }
 	
 	protected boolean isAllowRefreshToken(AuthzClient client) {
 	    return null == client || client.isAllowRefreshToken();
@@ -155,5 +185,8 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	protected AuthzRefreshTokenGenerator getRefreshTokenGenerator(AuthzAuthentication authc) {
 	    return defaultRefreshTokenGenerator;
 	}
-	
+
+    protected AuthzLoginTokenGenerator getLoginTokenGenerator(AuthzAuthentication authc) {
+        return defaultLoginTokenGenerator;
+    }
 }

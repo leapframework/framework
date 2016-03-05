@@ -15,11 +15,6 @@
  */
 package leap.web.action;
 
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import leap.lang.accessor.AttributeAccessor;
 import leap.web.Request;
 import leap.web.Response;
@@ -28,6 +23,10 @@ import leap.web.ajax.AjaxDetector;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.route.Route;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 public interface ActionContext extends AttributeAccessor {
 
@@ -81,19 +80,19 @@ public interface ActionContext extends AttributeAccessor {
 	 * The path variable will override the request's parameter if the name is same.
 	 */
 	Map<String, Object> getMergedParameters();
-	
+
 	/**
 	 * Returns the requested format or <code>null</code>.
 	 * 
 	 * <p>
 	 * Returns <code>null</code> if the {@link RequestFormat} did not resolved.
 	 */
-	public abstract RequestFormat getRequestFormat();
+	RequestFormat getRequestFormat();
 	
 	/**
 	 * Sets the {@link RequestFormat} of current requst.
 	 */
-	public abstract void setRequestFormat(RequestFormat format);
+	void setRequestFormat(RequestFormat format);
 	
 	/**
 	 * Returns the requested response format.
@@ -101,17 +100,17 @@ public interface ActionContext extends AttributeAccessor {
 	 * <p>
 	 * Returns <code>null</code> if the {@link ResponseFormat} did not resolved.
 	 */
-	public abstract ResponseFormat getResponseFormat();
+	ResponseFormat getResponseFormat();
 	
 	/**
 	 * Sets the {@link ResponseFormat} of current request.
 	 */
-	public abstract void setResponseFormat(ResponseFormat format);
+	void setResponseFormat(ResponseFormat format);
 	
 	/**
 	 * @see Route#isAcceptValidationError()
 	 */
-	public boolean isAcceptValidationError();
+	boolean isAcceptValidationError();
 	
 	/**
 	 * Returns <code>true</code> if current request is an ajax request.
@@ -119,7 +118,7 @@ public interface ActionContext extends AttributeAccessor {
 	 * @see Request#isAjax()
 	 * @see AjaxDetector#detectAjaxRequest(Request)
 	 */
-	default public boolean isAjax() {
+	default boolean isAjax() {
 		return getRequest().isAjax();
 	}
 }

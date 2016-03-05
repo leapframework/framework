@@ -17,8 +17,8 @@ package app.controllers;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetSource;
 import leap.lang.Assert;
 import leap.lang.io.IO;
 import leap.web.Content;
@@ -41,6 +41,9 @@ public class AssetsTestController extends ControllerBase {
 	
 	public String getAssetUrl(String path,Boolean debug) throws Throwable {
 		Asset asset = assetSource.getAsset(path,Request.current().getLocale());
+        if(null == asset) {
+            return "";
+        }
 		return debug != null && debug ? asset.getDebugResource().getClientUrl() : asset.getResource().getClientUrl();
 	}
 	

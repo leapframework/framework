@@ -21,7 +21,7 @@ import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 import leap.orm.model.Model;
 
-@Table("auth_client")
+@Table("oauth2_client")
 @AutoGenerateColumns(false)
 public class Client extends Model {
     
@@ -35,10 +35,16 @@ public class Client extends Model {
     @Column(name="redirect_uri", length=1000)
     protected String redirectUri;
     
-    @Column(name="redirect_pattern", length=300)
-    protected String redirectPattern;
+    @Column(name="redirect_uri_pattern", length=300)
+    protected String redirectUriPattern;
+
+    @Column(name="logout_uri", length = 1000)
+    protected String logoutUri;
+
+    @Column(name="logout_uri_pattern", length=300)
+    protected String logoutUriPattern;
     
-    @Column(name="ac_expires")
+    @Column(name="at_expires")
     protected Integer accessTokenExpires;
     
     @Column(name="rt_expires")
@@ -49,6 +55,9 @@ public class Client extends Model {
     
     @Column(name="allow_refresh_token")
     protected Boolean allowRefreshToken;
+
+    @Column(name="allow_login_token")
+    protected Boolean allowLoginToken;
     
     @Column
     protected boolean enabled = true;
@@ -77,12 +86,28 @@ public class Client extends Model {
         this.redirectUri = redirectUri;
     }
 
-    public String getRedirectPattern() {
-        return redirectPattern;
+    public String getRedirectUriPattern() {
+        return redirectUriPattern;
     }
 
-    public void setRedirectPattern(String redirectPattern) {
-        this.redirectPattern = redirectPattern;
+    public void setRedirectUriPattern(String redirectUriPattern) {
+        this.redirectUriPattern = redirectUriPattern;
+    }
+
+    public String getLogoutUri() {
+        return logoutUri;
+    }
+
+    public void setLogoutUri(String logoutUri) {
+        this.logoutUri = logoutUri;
+    }
+
+    public String getLogoutUriPattern() {
+        return logoutUriPattern;
+    }
+
+    public void setLogoutUriPattern(String logoutUriPattern) {
+        this.logoutUriPattern = logoutUriPattern;
     }
 
     public Integer getAccessTokenExpires() {
@@ -115,6 +140,14 @@ public class Client extends Model {
 
     public void setAllowRefreshToken(Boolean allowRefreshToken) {
         this.allowRefreshToken = allowRefreshToken;
+    }
+
+    public Boolean getAllowLoginToken() {
+        return allowLoginToken;
+    }
+
+    public void setAllowLoginToken(Boolean allowLoginToken) {
+        this.allowLoginToken = allowLoginToken;
     }
 
     public boolean isEnabled() {

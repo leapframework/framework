@@ -16,15 +16,15 @@
 package leap.oauth2.as.code;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.as.AuthzAuthentication;
-import leap.oauth2.as.OAuth2ServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.web.security.user.UserDetails;
 
 public class DefaultAuthzCodeManager implements AuthzCodeManager {
     
-    protected @Inject OAuth2ServerConfig  config;
-    protected @Inject AuthzCodeGenerator codeGenerator;
+    protected @Inject OAuth2AuthzServerConfig config;
+    protected @Inject AuthzCodeGenerator      codeGenerator;
 
     @Override
     public AuthzCode createAuthorizationCode(AuthzAuthentication authc) {
@@ -37,12 +37,12 @@ public class DefaultAuthzCodeManager implements AuthzCodeManager {
         code.setExpiresIn(config.getDefaultAuthorizationCodeExpires());
         code.setCreated(System.currentTimeMillis());
         
-        AuthzClient client = authc.getClient();
+        AuthzClient client = authc.getClientDetails();
         if(null != client) {
             code.setClientId(client.getId());    
         }
 
-        UserDetails user = authc.getUser();
+        UserDetails user = authc.getUserDetails();
         code.setUserId(user.getId().toString());
         
         //Store it.
@@ -53,12 +53,12 @@ public class DefaultAuthzCodeManager implements AuthzCodeManager {
 
     @Override
     public AuthzCode consumeAuthorizationCode(String code) {
-        return config.getCodeStore().removeAuthorizationCode(code);
+        return config.getCodeStore().removeAndLoadAuthorizationCode(code);
     }
 
     @Override
     public void removeAuthorizationCode(AuthzCode code) {
-        config.getCodeStore().removeAuthorizationCode(code.getCode());
+        config.getCodeStore().removeAndLoadAuthorizationCode(code.getCode());
     }
     
 }

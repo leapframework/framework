@@ -15,11 +15,15 @@
  */
 package leap.oauth2.as.endpoint.tokeninfo;
 
+import leap.oauth2.OAuth2Params;
 import leap.web.Request;
 import leap.web.Response;
 
 public interface TokenInfoHandler {
-    
-    boolean handleTokenInfoRequest(Request request, Response response) throws Throwable;
+
+    /**
+     * Returns <code>true</code> if handled.
+     */
+    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
 
 }

@@ -15,8 +15,6 @@
  */
 package leap.webunit;
 
-import javax.servlet.ServletContext;
-
 import leap.junit.TestBase;
 import leap.lang.Strings;
 import leap.lang.http.HTTP.Method;
@@ -25,9 +23,12 @@ import leap.webunit.client.THttpClientImpl;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;
 import leap.webunit.server.TWebServer;
-
 import org.junit.BeforeClass;
+import org.junit.runner.RunWith;
 
+import javax.servlet.ServletContext;
+
+@RunWith(WebTestRunner.class)
 public abstract class WebTestBase extends TestBase {
 	
     private static THttpClient httpClient;
@@ -35,7 +36,7 @@ public abstract class WebTestBase extends TestBase {
 
     protected static int            httpPort  = TWebServer.DEFAULT_HTTP_PORT;
     protected static int            httpsPort = TWebServer.DEFAULT_HTTPS_PORT;
-    protected static TWebServer    server;
+    protected static TWebServer     server;
     protected static ServletContext rootServletContext;
 	protected static boolean        defaultHttps;
 	protected static boolean        duplicateRootContext;
@@ -53,11 +54,15 @@ public abstract class WebTestBase extends TestBase {
             
             if (null == server) {
                 server = new TWebServer(httpPort, httpsPort, true);
+
                 if(duplicateRootContext) {
                     server.duplicateContext("", "/root");
                 }
                 
                 server.start();
+
+                httpClient.addContextPaths(server.getContextPaths());
+                httpsClient.addContextPaths(server.getContextPaths());
             }
         }
         
@@ -127,6 +132,36 @@ public abstract class WebTestBase extends TestBase {
 		request  = response.request();
 		return response;
 	}
+
+    protected final THttpResponse put(String path) {
+        response = client().request(Method.PUT,path(path)).send();
+        request  = response.request();
+        return response;
+    }
+
+    protected final THttpResponse patch(String path) {
+        response = client().request(Method.PATCH,path(path)).send();
+        request  = response.request();
+        return response;
+    }
+
+    protected final THttpResponse head(String path) {
+        response = client().request(Method.HEAD,path(path)).send();
+        request  = response.request();
+        return response;
+    }
+
+    protected final THttpResponse delete(String path) {
+        response = client().request(Method.DELETE,path(path)).send();
+        request  = response.request();
+        return response;
+    }
+
+    protected final THttpResponse options(String path) {
+        response = client().request(Method.OPTIONS,path(path)).send();
+        request  = response.request();
+        return response;
+    }
 	
 	protected final THttpResponse post(String path,String name,String value) {
 		response = forPost(path).addFormParam(name, value).send();

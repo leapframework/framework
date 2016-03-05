@@ -15,7 +15,6 @@
  */
 package leap.web.assets;
 
-import leap.core.web.assets.AssetManager;
 import leap.lang.Strings;
 
 public class TextAsset extends AbstractAsset {

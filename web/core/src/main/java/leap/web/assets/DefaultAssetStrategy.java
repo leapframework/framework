@@ -21,8 +21,6 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ioc.PostCreateBean;
-import leap.core.web.assets.AssetConfig;
-import leap.core.web.assets.AssetStrategy;
 import leap.lang.Randoms;
 import leap.lang.Strings;
 import leap.lang.codec.Digests;

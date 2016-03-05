@@ -15,20 +15,18 @@
  */
 package app.controllers;
 
-import java.util.Map;
-
+import app.controllers.ArgumentController.CollecitonModel;
+import app.controllers.ArgumentController.Item;
+import app.controllers.ArgumentController.SimpleModel;
+import app.controllers.ArgumentController.TestForm;
 import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.lang.json.JSON;
 import leap.web.WebTestCase;
 import leap.webunit.client.THttpRequest;
-
 import org.junit.Test;
 
-import app.controllers.ArgumentController.CollecitonModel;
-import app.controllers.ArgumentController.Item;
-import app.controllers.ArgumentController.SimpleModel;
-import app.controllers.ArgumentController.TestForm;
+import java.util.Map;
 
 @Contextual
 public class ArgumentControllerTest extends WebTestCase {
@@ -135,6 +133,12 @@ public class ArgumentControllerTest extends WebTestCase {
 	}
 	
 	@Test
+	public void testMap() {
+		THttpRequest form = client().request("/argument/map");
+		assertMapTest(form);
+	}
+	
+	@Test
 	public void testMapArray() {
 		THttpRequest form = client().request("/argument/map_array");
 		assertArrayTest(form);
@@ -221,6 +225,16 @@ public class ArgumentControllerTest extends WebTestCase {
 		assertEquals(new Integer(51), item4.getItemArray()[0].getIntValue());
 	}
 	
+	protected void assertMapTest(THttpRequest form) {
+		form.addFormParam("strValue", "s1");
+		form.addFormParam("intValue", "1");
+		String json = form.send().getContent();
+		
+		Map<String, Object> result = JSON.decodeToMap(json);
+		assertEquals("s1",result.get("strValue"));
+		assertEquals("1",result.get("intValue"));
+	}
+	
 	@Test
 	@ContextualIgnore
 	public void testPathVar(){
@@ -230,6 +244,13 @@ public class ArgumentControllerTest extends WebTestCase {
 		
 		get("argument/path_var1/aaa").assertContentEquals("aaa");
 	}
+
+    @Test
+    @ContextualIgnore
+	public void testArgsBean() {
+        get("argument/args_bean/1?name=2").assertOk();
+        get("argument/args_bean1/1/2?name=2").assertOk();
+    }
 	
 	@Test
 	public void testForm(){

@@ -23,12 +23,13 @@ import java.lang.annotation.Target;
 /**
  * JAX-RS style. 
  */
-@Target({ElementType.PARAMETER})
+@Target({ElementType.PARAMETER,ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathParam {
+
 	/**
 	 * The name of path parameter.
 	 */
-	public String value() default "";
+	String value() default "";
 
 }

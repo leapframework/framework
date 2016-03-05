@@ -15,10 +15,6 @@
  */
 package leap.orm.query;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyColumnsException;
 import leap.core.exception.TooManyRecordsException;
@@ -35,6 +31,10 @@ import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	
 	protected final OrmContext			context;
@@ -42,7 +42,7 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected final Dao		            dao;
 	protected final EntityMapping       em;
 	protected final Class<T>            targetType;
-	protected final Map<String, Object> params = new HashMap<String, Object>();
+	protected final Map<String, Object> params = new HashMap<>();
 	
 	protected Limit  limit;
 	protected String orderBy;
@@ -65,10 +65,6 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
     public EntityMapping getPrimaryEntityMapping() {
 	    return em;
     }
-
-	protected boolean isEntityType(){
-		return null != em;
-	}
 
 	@Override
     public Query<T> param(String name, Object value) {

@@ -24,7 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import leap.core.Session;
 import leap.core.web.RequestBase;
-import leap.web.security.authc.Authentication;
+import leap.core.security.Authentication;
 
 public class DefaultSecuritySessionManager implements SecuritySessionManager {
 	

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.leapframework.org/schema/config"
+        xmlns:web="http://www.leapframework.org/schema/web/config"
+        xsi:schemaLocation="http://www.leapframework.org/schema/config http://www.leapframework.org/schema/config
+	http://www.leapframework.org/schema/web/config http://www.leapframework.org/schema/web/config">
+
+    <web:module name="test" base-path="/t" base-package="test.module"/>
+
+</config>

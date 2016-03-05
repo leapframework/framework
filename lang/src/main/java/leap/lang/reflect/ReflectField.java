@@ -15,23 +15,16 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.*;
+
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Primitives;
-import leap.lang.Strings;
+public class ReflectField extends ReflectMember implements ReflectValued {
+	
+	private final Field    field;
+	private final Class<?> type;
 
-public class ReflectField extends ReflectMember {
-	
-	private final Field    reflectedField;
-	private final Class<?> fieldType;
-	
 	private final ReflectMethod setter;
 	private final ReflectMethod getter;
 	
@@ -43,13 +36,13 @@ public class ReflectField extends ReflectMember {
 	
 	protected ReflectField(ReflectClass reflectiveClass, Field field){
 		super(reflectiveClass,field);
-		
-		this.reflectedField = field;
-		this.fieldType      = field.getType();
-		this.setter         = findSetter();
-		this.getter         = findGetter();
-		this.accessor       = reflectiveClass.getAccessor();
-		
+
+		this.field      = field;
+		this.type       = field.getType();
+		this.setter     = findSetter();
+		this.getter     = findGetter();
+		this.accessor   = reflectiveClass.getAccessor();
+
 		if(null != setter){
 			setter.setSetterOf(this);
 		}
@@ -66,51 +59,51 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	public String getName() {
-	    return reflectedField.getName();
+	    return field.getName();
     }
 
     public Class<?> getType(){
-        return fieldType;
+        return type;
     }
     
     public Type getGenericType(){
-        return reflectedField.getGenericType();
+        return field.getGenericType();
     }
     
     public Annotation[] getAnnotations() {
-    	return reflectedField.getAnnotations();
+    	return field.getAnnotations();
     }
     
 	public Field getReflectedField(){
-		return reflectedField;
+		return field;
 	}
 	
 	public Class<?> getDeclaringClass(){
-		return reflectedField.getDeclaringClass();
+		return field.getDeclaringClass();
 	}
 	
 	public boolean isAnnotationPresent(Class<? extends Annotation> annotationType){
-		return reflectedField.isAnnotationPresent(annotationType);
+		return field.isAnnotationPresent(annotationType);
 	}
 	
 	public <T extends Annotation> T getAnnotation(Class<T> annotationType) {
-		return reflectedField.getAnnotation(annotationType);
+		return field.getAnnotation(annotationType);
 	}
 	
 	public boolean isSynthetic(){
-		return reflectedField.isSynthetic();
+		return field.isSynthetic();
 	}
 	
 	public boolean isStatic(){
-		return Modifier.isStatic(reflectedField.getModifiers());
+		return Modifier.isStatic(field.getModifiers());
 	}	
 	
 	public boolean isFinal(){
-		return Modifier.isFinal(reflectedField.getModifiers());
+		return Modifier.isFinal(field.getModifiers());
 	}
 	
 	public boolean isTransient(){
-		return Modifier.isTransient(reflectedField.getModifiers());
+		return Modifier.isTransient(field.getModifiers());
 	}
 	
 	public boolean hasGetter(){
@@ -130,15 +123,15 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	public boolean isPublicGet(){
-		return Modifier.isPublic(reflectedField.getModifiers()) || (null != getter && getter.isPublic()); 
+		return Modifier.isPublic(field.getModifiers()) || (null != getter && getter.isPublic());
 	}
 	
 	public boolean isPublicSet(){
-		return Modifier.isPublic(reflectedField.getModifiers()) || (null != setter && setter.isPublic()); 
+		return Modifier.isPublic(field.getModifiers()) || (null != setter && setter.isPublic());
 	}
 	
 	public boolean isPublicGetSet(){
-		return Modifier.isPublic(reflectedField.getModifiers()) || (
+		return Modifier.isPublic(field.getModifiers()) || (
 				(null != setter && setter.isPublic()) && (null != getter && getter.isPublic())); 
 	}
 	
@@ -148,8 +141,8 @@ public class ReflectField extends ReflectMember {
 	
 	public void setValue(Object instance, Object value, boolean useSetter) {
         try {
-        	if(reflectedField.isSynthetic() || isFinal()){
-        		reflectedField.set(instance, safeValue(value));
+        	if(field.isSynthetic() || isFinal()){
+        		field.set(instance, safeValue(value));
         	}else{
             	if(useSetter && null != setter){
             		if(setterAccessorIndex != -1){
@@ -161,7 +154,7 @@ public class ReflectField extends ReflectMember {
             		if(fieldAccessorIndex != -1){
                     	accessor.setFieldValue(instance, fieldAccessorIndex, safeValue(value));
                     }else{
-                        reflectedField.set(instance, safeValue(value));
+                        field.set(instance, safeValue(value));
                     }
             	}
         	}
@@ -186,7 +179,7 @@ public class ReflectField extends ReflectMember {
         		if(fieldAccessorIndex != -1){
                     return accessor.getFieldValue(instance, fieldAccessorIndex);
                 }else {
-                    return reflectedField.get(instance);
+                    return field.get(instance);
                 }
         	}
         } catch (Throwable e) {
@@ -205,9 +198,9 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	private ReflectMethod findSetter(){
-		String   fieldName  = reflectedField.getName().startsWith("_") ? reflectedField.getName().substring(1) : reflectedField.getName();
+		String   fieldName  = field.getName().startsWith("_") ? field.getName().substring(1) : field.getName();
 		String   nameToFind = "set" + Character.toUpperCase(fieldName.charAt(0)) + (fieldName.length() > 1 ? fieldName.substring(1) : "");
-		Class<?> fieldType  = Primitives.wrap(reflectedField.getType());
+		Class<?> fieldType  = Primitives.wrap(field.getType());
 		
 		ReflectMethod m = findSetter(fieldType, nameToFind);
 		
@@ -226,7 +219,7 @@ public class ReflectField extends ReflectMember {
 	
 	private ReflectMethod findSetter(Class<?> fieldType,String nameToFind){
 		//iterate all public methods.
-		for(ReflectMethod rm : reflectiveClass.getMethods()){
+		for(ReflectMethod rm : reflectClass.getMethods()){
 			Method m = rm.getReflectedMethod();
 			if(m.getParameterTypes().length == 1 && 
 					fieldType.isAssignableFrom(Primitives.wrap(m.getParameterTypes()[0]))){
@@ -240,15 +233,15 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	private ReflectMethod findGetter(){
-		String   fieldName  = reflectedField.getName().startsWith("_") ? reflectedField.getName().substring(1) : reflectedField.getName();
+		String   fieldName  = field.getName().startsWith("_") ? field.getName().substring(1) : field.getName();
 		String   nameToFind = "get" + Character.toUpperCase(fieldName.charAt(0)) + (fieldName.length() > 1 ? fieldName.substring(1) : "");
-		Class<?> fieldType  = Primitives.wrap(reflectedField.getType());
+		Class<?> fieldType  = Primitives.wrap(field.getType());
 		
 		ReflectMethod m = findGetter(fieldType,nameToFind);
 		
 		if(null == m && Classes.isBoolean(fieldType)){
 			if(fieldName.startsWith("is") && fieldName.length() > 2){
-				if(Boolean.class.equals(reflectedField.getType())){
+				if(Boolean.class.equals(field.getType())){
 					nameToFind = "get" + Strings.upperFirst(fieldName.substring(2));
 					
 					if(null != (m = findGetter(fieldType, nameToFind))){
@@ -268,7 +261,7 @@ public class ReflectField extends ReflectMember {
 	}
 	
 	private ReflectMethod findGetter(Class<?> fieldType,String nameToFind){
-		for(ReflectMethod rm : reflectiveClass.getMethods()){
+		for(ReflectMethod rm : reflectClass.getMethods()){
 			Method m = rm.getReflectedMethod();
 			if(m.getParameterTypes().length == 0 && 
 					Primitives.wrap(m.getReturnType()).isAssignableFrom(fieldType)){
@@ -283,8 +276,8 @@ public class ReflectField extends ReflectMember {
 	
 	private void setAccessiable(){
 		try {
-			if(!reflectedField.isAccessible()){
-				this.reflectedField.setAccessible(true);	
+			if(!field.isAccessible()){
+				this.field.setAccessible(true);
 			}
         } catch (SecurityException e) {
         	;
@@ -293,13 +286,13 @@ public class ReflectField extends ReflectMember {
 	
     private Object safeValue(Object value){
         if(null == value){
-        	return Classes.getDefaultValue(fieldType);
+        	return Classes.getDefaultValue(type);
         }
         return value;
     }
     
 	@Override
     public String toString() {
-		return reflectedField.toString();
+		return field.toString();
     }
 }

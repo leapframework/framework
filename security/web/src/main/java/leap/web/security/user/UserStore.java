@@ -15,34 +15,34 @@
  */
 package leap.web.security.user;
 
-import java.util.Map;
-
 import leap.lang.Assert;
-import leap.lang.annotation.Nullable;
 
 public interface UserStore {
 
-	default UserAccount findUserAccount(String username){
-		return findUserAccount(username,null);
-	}
-	
 	/**
-	 * Returns <code>null</code> if the given user name not found.
-	 */
-	UserAccount findUserAccount(String username,@Nullable Map<String, Object> parameters);
-	
+	 * Returns the id as {@link Object} type from {@link String} type.
+     */
+	default Object getObjectId(String idString) {
+		return idString;
+	}
+
 	/**
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 */
-	UserDetails findUserDetails(Object userId);
-	
+	UserDetails loadUserDetailsById(Object userId);
+
 	/**
 	 * Finds the {@link UserDetails} by the login name of user.
 	 */
-	default UserDetails findUserDetailsByUsername(String username) {
-	    throw new IllegalStateException("Not implemented");
+	UserDetails loadUserDetailsByLoginName(String loginName);
+
+	/**
+	 * @see {@link #loadUserDetailsById(Object)}
+	 */
+	default UserDetails loadUserDetailsByIdString(String idString) {
+		return loadUserDetailsById(getObjectId(idString));
 	}
-	
+
 	/**
 	 * Returns the {@link UserDetails} or <code>null</code>.
 	 * 
@@ -52,7 +52,7 @@ public interface UserStore {
 	 * @throws IllegalStateException if {@link UserDetails#getLoginName()} or {@link UserDetails#getName()} is null.
 	 */
 	default UserDetails findAndCheckUserDetails(Object userId) throws IllegalStateException {
-		UserDetails ud = findUserDetails(userId);
+		UserDetails ud = loadUserDetailsById(userId);
 		
 		if(null != ud) {
 		    Assert.notNull(ud.getName(), "The 'name' in 'UserDetails:" + ud.getClass() + "' cannot be null");
@@ -62,4 +62,10 @@ public interface UserStore {
 		return ud;
 	}
 
+	/**
+	 * @see {@link #findAndCheckUserDetails(Object)}
+     */
+	default UserDetails findAndCheckUserDetailsByIdString(String idString) throws IllegalStateException {
+		return findAndCheckUserDetails(getObjectId(idString));
+	}
 }

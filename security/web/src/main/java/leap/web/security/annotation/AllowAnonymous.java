@@ -15,15 +15,19 @@
  */
 package leap.web.security.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
+/**
+ * The annotation means that the controller or action can be accessed by anonymous user.
+ */
+@Inherited
 @Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface AllowAnonymous {
-	
+
+    /**
+     * Sets to allow(true) or deny(false), default is allow.
+     */
     boolean value() default true;
 	
 }

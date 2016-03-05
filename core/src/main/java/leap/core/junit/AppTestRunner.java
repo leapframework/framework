@@ -15,15 +15,15 @@
  */
 package leap.core.junit;
 
-import java.util.List;
-
 import leap.core.AppContext;
 import leap.core.BeanFactory;
-
+import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+
+import java.util.List;
 
 public class AppTestRunner extends BlockJUnit4ClassRunner {
     
@@ -35,6 +35,8 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
 
 	public AppTestRunner(Class<?> klass) throws InitializationError {
 	    super(klass);
+
+		DEV.setCurrentTestClass(klass);
     }
 
 	@Override
@@ -50,8 +52,8 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
         */
 	}
 
-    @Override
-    protected Object createTest() throws Exception {
+	@Override
+	protected Object createTest() throws Exception {
         return factory.inject(super.createTest());
     }
 	

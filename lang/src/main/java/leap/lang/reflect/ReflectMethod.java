@@ -106,7 +106,7 @@ public class ReflectMethod extends ReflectMember{
 	        if(accessorIndex == -1){
 	        	return reflectedMethod.invoke(instance, args);
 	        }else{
-	        	return reflectiveClass.getAccessor().invokeMethod(instance, accessorIndex, args);
+	        	return reflectClass.getAccessor().invokeMethod(instance, accessorIndex, args);
 	        }
         } catch (Throwable e) {
         	if(e instanceof InvocationTargetException){

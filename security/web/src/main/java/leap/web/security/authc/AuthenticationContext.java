@@ -15,9 +15,9 @@
  */
 package leap.web.security.authc;
 
+import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
 import leap.core.validation.ValidationContext;
-import leap.lang.Strings;
 import leap.web.security.SecurityConfig;
 
 public interface AuthenticationContext extends ValidationContext {
@@ -42,4 +42,13 @@ public interface AuthenticationContext extends ValidationContext {
      */
 	void setAuthentication(Authentication authc);
 
+	/**
+	 * Optional. Returns the authentication token.
+     */
+	String getAuthenticationToken();
+
+	/**
+	 * Sets the authentication token.
+     */
+	void setAuthenticationToken(String token);
 }

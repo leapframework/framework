@@ -15,12 +15,12 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-
 import leap.core.exception.EmptyRecordsException;
 import leap.core.exception.TooManyRecordsException;
 import leap.lang.Emptiable;
 import leap.lang.convert.ConvertException;
+
+import java.util.List;
 
 public interface QueryResult<T> extends Emptiable {
 	

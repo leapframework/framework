@@ -23,7 +23,7 @@ import leap.lang.json.JsonWriter;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.RequestOAuth2Params;
-import leap.oauth2.as.OAuth2ServerErrorHandler;
+import leap.oauth2.as.OAuth2AuthzServerErrorHandler;
 import leap.oauth2.as.endpoint.token.GrantTypeHandler;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.web.App;
@@ -35,18 +35,17 @@ import leap.web.route.Routes;
 
 public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
     
-    protected @Inject OAuth2ServerErrorHandler errorHandler;
+    protected @Inject OAuth2AuthzServerErrorHandler errorHandler;
 	
 	@Override
     public void startEndpoint(App app, Routes routes) {
-		if(config.isEnabled() && config.isTokenEndpointEnabled()) {
+		if(config.isEnabled()) {
 			sc.ignore(config.getTokenEndpointPath());
 			
 			routes.create()
 				  .post(config.getTokenEndpointPath(), this)
 				  .setCsrfEnabled(false)
 				  .apply();
-			
 		}
 
 	}

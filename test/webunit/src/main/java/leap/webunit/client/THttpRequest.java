@@ -15,14 +15,16 @@
  */
 package leap.webunit.client;
 
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
 import leap.lang.http.Headers;
 import leap.lang.http.MimeType;
+import leap.lang.json.JSON;
+
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @SuppressWarnings("rawtypes") 
 public interface THttpRequest {
@@ -120,6 +122,14 @@ public interface THttpRequest {
         }
         return this;
     }
+
+    /**
+     * Sets the json content type and body.
+     */
+    default THttpRequest setJson(Object value) {
+        setContentType(ContentTypes.APPLICATION_JSON_UTF8);
+        return setBody(JSON.stringify(value));
+    }
     
     /**
      * Returns the multipart reqeust.
@@ -132,7 +142,7 @@ public interface THttpRequest {
     default THttpRequest setBody(String content) {
         return setBody(Strings.getBytes(content, getCharset().name()));
     }
-    
+
     /**
      * Sets the request body
      */

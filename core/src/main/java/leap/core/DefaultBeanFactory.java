@@ -401,7 +401,15 @@ public class DefaultBeanFactory implements BeanFactory {
 		}
     }
 
-	@Override
+    @Override
+    public boolean tryInitBean(BeanDefinition bd) {
+        if(null != externalFactory && externalFactory.tryInitBean(bd)) {
+            return true;
+        }
+        return beanContainer.tryInitBean(bd);
+    }
+
+    @Override
     public boolean isSingleton(String beanId) throws NoSuchBeanException {
 		Boolean singleton = null;
 		

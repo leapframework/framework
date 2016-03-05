@@ -15,29 +15,40 @@
  */
 package leap.web.security;
 
-import leap.core.security.Credentials;
-import leap.core.security.SecurityContext;
-import leap.core.security.UserPrincipal;
+import leap.core.security.*;
 import leap.core.validation.Validation;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Request;
-import leap.web.security.authc.Authentication;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
+import leap.web.security.path.SecuredPath;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
+
+	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
 	protected final SecurityConfig config;
 	protected final Request        request;
 
-    protected Authentication       authentication;
-    protected LoginContext         loginContext;
-    protected LogoutContext        logoutContext;
-	
+	protected SecuredPath   path;
+    protected LoginContext  loginContext;
+    protected LogoutContext logoutContext;
+	protected String        authenticationToken;
+
 	public DefaultSecurityContextHolder(SecurityConfig config, Request request){
 		this.config  = config;
 		this.request = request;
 	}
+
+	void initContext() {
+        request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
+    }
+
+    static void removeContext(Request request) {
+        request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
+    }
 	
 	@Override
     public Validation validation() {
@@ -55,12 +66,33 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     }
 
 	@Override
-    public Authentication getAuthentication() {
-        return authentication;
+	public SecuredPath getSecurityPath() {
+		return path;
+	}
+
+	public void setSecurityPath(SecuredPath path) {
+		this.path = path;
+	}
+
+	@Override
+	public String getAuthenticationToken() {
+		return authenticationToken;
+	}
+
+	@Override
+	public void setAuthenticationToken(String token) {
+        log.debug("Set authentication token : {}", token);
+		this.authenticationToken = token;
+	}
+
+    public void setAuthentication(Authentication authc) {
+        log.debug("Set authentication : {}", authc);
+        this.authentication = authc;
     }
 
-    public void setAuthentication(Authentication authentication) {
-        this.authentication = authentication;
+    public void setAuthorization(Authorization authz) {
+        log.debug("Set authorization : {}", authz);
+        this.authorization = authz;
     }
 
     public LoginContext getLoginContext() {
@@ -76,8 +108,9 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		}
 	    return logoutContext;
     }
-	
-	protected abstract class AbstractContext implements AuthenticationContext {
+
+    protected abstract class AbstractContext implements AuthenticationContext {
+
 		@Override
         public SecurityConfig getSecurityConfig() {
 	        return config;
@@ -88,7 +121,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	        return DefaultSecurityContextHolder.this;
         }
 
-		@Override
+        @Override
         public Validation validation() {
 	        return DefaultSecurityContextHolder.this.validation();
         }
@@ -103,11 +136,20 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         private UserPrincipal user;
 
 		@Override
+		public String getAuthenticationToken() {
+			return DefaultSecurityContextHolder.this.getAuthenticationToken();
+		}
+
+		@Override
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
+		}
+
+		@Override
         public Authentication getAuthentication() {
 	        return DefaultSecurityContextHolder.this.authentication;
         }
 
-		@Override
         public void setAuthentication(Authentication auth) {
 			DefaultSecurityContextHolder.this.setAuthentication(auth);
 		}
@@ -159,7 +201,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 		@Override
         public boolean isAuthenticated() {
-	        return null != user && user.isAuthenticated();
+	        return null != user && !user.isAnonymous();
         }
 
 		@Override
@@ -178,11 +220,20 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		private String returnUrl;
 
 		@Override
+		public String getAuthenticationToken() {
+			return DefaultSecurityContextHolder.this.getAuthenticationToken();
+		}
+
+		@Override
+		public void setAuthenticationToken(String token) {
+			DefaultSecurityContextHolder.this.setAuthenticationToken(token);
+		}
+
+		@Override
         public Authentication getAuthentication() {
 	        return DefaultSecurityContextHolder.this.authentication;
         }
 
-		@Override
         public void setAuthentication(Authentication auth) {
 			DefaultSecurityContextHolder.this.setAuthentication(auth);
 		}

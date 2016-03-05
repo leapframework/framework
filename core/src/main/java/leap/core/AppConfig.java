@@ -59,7 +59,7 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns the base package name of current application, i.e. <code>com.example</code>
 	 * 
 	 * <p>
-	 * Returns <code>null</code> if not configed.
+	 * Returns <code>null</code> if not configured.
 	 */
 	String getBasePackage();
 	
@@ -98,7 +98,7 @@ public interface AppConfig extends PropertyGetter {
 	String ensureGetSecret();
 	
 	/**
-	 * Returns the decoded private key of proepty 'private_key';
+	 * Returns the decoded private key of property 'private_key';
 	 * 
 	 * <p>
 	 * Returns the <code>null</code> if not private key configured.

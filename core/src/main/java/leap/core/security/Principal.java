@@ -15,34 +15,30 @@
  */
 package leap.core.security;
 
+import leap.lang.convert.Converts;
+
 import java.io.Serializable;
 
 public interface Principal extends Serializable {
 	
 	/**
-	 * Returns the id of current principal.
+	 * Returns the id of principal.
 	 */
 	Object getId();
-	
+
 	/**
-	 * Returns <code>true</code> if the current principal is anonymous.
-	 */
-	boolean isAnonymous();
-	
-	/**
-	 * Returns <code>true</code> if the current principal is remember-me.
-	 */
-	boolean isRememberMe();
-	
-	/**
-	 * Returns <code>true</code> if the principal is not anonymous.
-	 */
-	boolean isAuthenticated();
-	
-	/**
-	 * Returns <code>true</code> if the principal is not anonymous or remember-me.
-	 */
-	default boolean isFullyAuthenticated() {
-		return isAuthenticated() && !isRememberMe();
+	 * Returns the id as {@link String} type.
+     */
+	default String getIdAsString() {
+		Object id = getId();
+		return null == id ? null : Converts.toString(id);
 	}
+
+	/**
+	 * Returns <code>true</code> if the principal is anonymous (not authenticated).
+	 */
+	default boolean isAnonymous() {
+        return false;
+    }
+
 }

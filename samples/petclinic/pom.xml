@@ -27,7 +27,7 @@
 	<dependencies>
 	    <dependency>
 	        <groupId>org.leapframework</groupId>
-	        <artifactId>leap-fw</artifactId>
+	        <artifactId>leap</artifactId>
 	        <version>${project.version}</version>
 	        <type>pom</type>
 	    </dependency>

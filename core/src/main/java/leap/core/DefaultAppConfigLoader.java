@@ -15,31 +15,11 @@
  */
 package leap.core;
 
-import java.io.IOException;
-import java.lang.reflect.Constructor;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDefinition;
-import leap.lang.Args;
-import leap.lang.Charsets;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.Factory;
-import leap.lang.Locales;
-import leap.lang.Out;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.convert.Converts;
@@ -52,6 +32,11 @@ import leap.lang.resource.Resources;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
+
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.nio.charset.Charset;
+import java.util.*;
 
 class DefaultAppConfigLoader {
 	
@@ -88,33 +73,33 @@ class DefaultAppConfigLoader {
 	private static final String LOCATION_ATTRIBUTE         = "location";
 	
 	private static final List<AppConfigProcessor> processors = Factory.newInstances(AppConfigProcessor.class);
-	
+
 	protected String  profileName;
 	protected String  basePackage;
 	protected Boolean debug;
 	protected Locale  defaultLocale;
 	protected Charset defaultCharset;
 	protected Object  externalContext;
-	
-	protected final Set<String>                   additionalPackages = new LinkedHashSet<String>();
-	protected final Map<String,String>			  externalProperties;
-	protected final Map<String,String>            properties  = new LinkedHashMap<String, String>();
+
+	protected final Set<String> additionalPackages = new LinkedHashSet<>();
+	protected final Map<String, String> externalProperties;
+	protected final Map<String, String>           properties  = new LinkedHashMap<>();
 	protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
-	protected final Set<Resource>                 resources   = new HashSet<Resource>();
-	protected final List<SysPermissionDefinition> permissions = new ArrayList<SysPermissionDefinition>();
+	protected final Set<Resource>                 resources   = new HashSet<>();
+	protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
 	protected final Map<String, DataSourceConfig> dataSourceConfigs;
-	
-	protected final Map<Class<?>,Map<String,SysPermissionDefinition>> typedPermissions =  new HashMap<Class<?>, Map<String,SysPermissionDefinition>>();
-	
-	protected final DefaultPlaceholderResolver  placeholderResolver;
-	protected final AppPropertyProcessor propertyProcessor;
+
+	protected final Map<Class<?>, Map<String, SysPermissionDefinition>> typedPermissions = new HashMap<>();
+
+	protected final DefaultPlaceholderResolver placeholderResolver;
+	protected final AppPropertyProcessor       propertyProcessor;
 	
 	protected DefaultAppConfigLoader(){
 		this.externalContext     = null;
 		this.externalProperties  = null;
 		this.placeholderResolver = null;
 		this.propertyProcessor   = null;
-		this.dataSourceConfigs   = new HashMap<String, DataSourceConfig>();
+		this.dataSourceConfigs   = new HashMap<>();
 	}
 
 	/*
@@ -265,7 +250,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(DEFAULT_LOCALE)){
 				if(null != defaultLocale){
-					throw new AppConfigException("default-locale aleady defined as '" + defaultLocale.toString() + "', duplicated config in xml : " + reader.getSource());
+					throw new AppConfigException("default-locale already defined as '" + defaultLocale.toString() + "', duplicated config in xml : " + reader.getSource());
 				}
 				String defaultLocaleString = reader.resolveElementTextAndEnd();
 				if(!Strings.isEmpty(defaultLocaleString)){
@@ -276,7 +261,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(DEFAULT_ENCODING)){
 				if(null != defaultCharset){
-					throw new AppConfigException("default-charset aleady defined as '" + defaultCharset.name() + "', duplicated config in xml : " + reader.getSource());
+					throw new AppConfigException("default-charset already defined as '" + defaultCharset.name() + "', duplicated config in xml : " + reader.getSource());
 				}
 				String defaultEncodingName = reader.resolveElementTextAndEnd();
 				if(!Strings.isEmpty(defaultEncodingName)){
@@ -321,7 +306,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(DEFAULT_LOCALE)){
 				if(null != defaultLocale){
-					throw new AppConfigException("default-locale aleady defined as '" + defaultLocale.toString() + "', duplicated config in xml : " + reader.getSource());
+					throw new AppConfigException("default-locale already defined as '" + defaultLocale.toString() + "', duplicated config in xml : " + reader.getSource());
 				}
 				String defaultLocaleString = reader.resolveElementTextAndEnd();
 				if(!Strings.isEmpty(defaultLocaleString)){
@@ -332,7 +317,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(DEFAULT_ENCODING)){
 				if(null != defaultCharset){
-					throw new AppConfigException("default-charset aleady defined as '" + defaultCharset.name() + "', duplicated config in xml : " + reader.getSource());
+					throw new AppConfigException("default-charset already defined as '" + defaultCharset.name() + "', duplicated config in xml : " + reader.getSource());
 				}
 				String defaultEncodingName = reader.resolveElementTextAndEnd();
 				if(!Strings.isEmpty(defaultEncodingName)){
@@ -686,7 +671,7 @@ class DefaultAppConfigLoader {
 			if(conf.isDefault()) {
 		         
 	            if (hasDefaultDataSource) {
-	                throw new AppConfigException("Default DataSource aleady exists");
+	                throw new AppConfigException("Default DataSource already exists");
 	            }
 	            
 			    this.hasDefaultDataSource = true;

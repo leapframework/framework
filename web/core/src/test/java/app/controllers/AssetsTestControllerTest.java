@@ -16,7 +16,10 @@
 package app.controllers;
 
 import leap.core.AppContext;
-import leap.core.web.assets.AssetStrategy;
+import leap.lang.io.IO;
+import leap.lang.net.Urls;
+import leap.lang.resource.FileResource;
+import leap.web.assets.AssetStrategy;
 import leap.web.WebTestCase;
 
 import org.junit.BeforeClass;
@@ -30,6 +33,10 @@ public class AssetsTestControllerTest extends WebTestCase {
 	public static void init(){
 		fingerprintStrategy = AppContext.factory().getBean(AssetStrategy.class);
 	}
+
+    protected String url(String path) {
+        return get("assets_test/get_asset_url?path=" + Urls.encode(path)).assertOk().getContent();
+    }
 	
 	@Test
 	public void testHelloAsset() {
@@ -65,6 +72,28 @@ public class AssetsTestControllerTest extends WebTestCase {
 		get("/assets/plugins/pdfjs/web/images/toolbarButton-menuArrows.png").assertOk();
 		get("/assets/plugins/pdfjs/web/locale/locale.properties").assertOk();
 	}
+
+    @Test
+    public void testExternalAssets() {
+        FileResource tempDir = app.getTempDir();
+
+        tempDir.createRelative("./upload").getFile().mkdirs();
+        tempDir.createRelative("./assets").getFile().mkdirs();
+
+        FileResource file1 = tempDir.createRelative("./upload/1.js");
+        FileResource file2 = tempDir.createRelative("./assets/external_assets_js1.js");
+
+        IO.writeString(file1.getFile(), "var i=0;");
+        IO.writeString(file2.getFile(), "var i=0;");
+
+        String url1 = url("/upload/1.js");
+        String url2 = url("/external_assets_js1.js");
+        assertNotEmpty(url1);
+        assertNotEmpty(url2);
+
+        get(url1).assertContentEquals("var i=0;");
+        get(url2).assertContentEquals("var i=0;");
+    }
 
 	private void assertPathWithFingerprint(String exepctedPath,String actualPathWithFingerprint) {
 		String[] values = fingerprintStrategy.splitPathAndFingerprint(actualPathWithFingerprint);

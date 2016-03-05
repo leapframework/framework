@@ -15,12 +15,12 @@
  */
 package leap.web.format;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
-
 import leap.lang.http.MimeType;
 import leap.web.Request;
 import leap.web.action.Action;
+
+import java.io.IOException;
+import java.lang.reflect.Type;
 
 public abstract class AbstractRequestFormat extends AbstractHttpFormat implements RequestFormat {
 	
@@ -39,11 +39,6 @@ public abstract class AbstractRequestFormat extends AbstractHttpFormat implement
 
 	@Override
     public boolean supportsRequestBody() {
-	    return false;
-    }
-
-	@Override
-    public boolean supportsBodyParameters() {
 	    return false;
     }
 

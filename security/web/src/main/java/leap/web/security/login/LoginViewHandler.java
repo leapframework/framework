@@ -27,6 +27,6 @@ public interface LoginViewHandler  {
     
     void handleLoginSuccess(Request request, Response response, SecurityContextHolder context) throws Throwable;
     
-    void handleLoginFailed(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable;
     
 }

@@ -17,9 +17,6 @@ package leap.web.assets;
 
 import java.io.IOException;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetResource;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -31,10 +28,10 @@ import leap.lang.servlet.Servlets;
 public class ServletAsset extends AbstractAsset implements Asset {
 	
 	private static final Log log = LogFactory.get(ServletAsset.class);
-	
+
 	private final AssetManager manager;
-	private final boolean 	  reloadable;
-	private final boolean	  text;
+	private final boolean      reloadable;
+	private final boolean      text;
 	
 	private String mimeType;
 	

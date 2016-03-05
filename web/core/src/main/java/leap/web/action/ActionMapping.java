@@ -22,7 +22,7 @@ public class ActionMapping {
 
 	protected String 			  path;
 	protected String 			  method;
-	protected Map<String, String> params = new HashMap<String, String>();
+	protected Map<String, String> params = new HashMap<>();
 	
 	public ActionMapping() {
 	    super();

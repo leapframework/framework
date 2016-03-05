@@ -15,10 +15,7 @@
  */
 package leap.web;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -43,7 +40,7 @@ import leap.core.Session;
 import leap.core.i18n.MessageSource;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
-import leap.core.web.assets.AssetSource;
+import leap.web.assets.AssetSource;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Exceptions;
@@ -63,16 +60,16 @@ import leap.web.view.View;
 import leap.web.view.ViewSource;
 
 public class DefaultRequest extends Request {
-	
-    protected final App                app;
-    protected final WebConfig          config;
-    protected final AppHandler         handler;
-    protected final Response           response;
-    protected final String             overriedMethod;
-    protected final String             method;
-    protected final String             path;
-    protected final Params             params = new SimpleParams();
-    protected final HttpServletRequest req;
+
+    protected final App            app;
+    protected final WebConfig      config;
+    protected final AppHandler     handler;
+    protected final Response       response;
+    protected final String         overridedMethod;
+    protected final String         method;
+    protected final String         path;
+    protected final Params         params = new SimpleParams();
+    protected final RequestWrapper req;
 
     private String                     lowercaseRequestPath;
     private String                     serverUrl;
@@ -103,16 +100,16 @@ public class DefaultRequest extends Request {
     private Map<String, Object>        queryParamsMap;
     private Boolean                    acceptValidationError;
 	
-	public DefaultRequest(App app, AppHandler handler, HttpServletRequest servletRequest, Response response){
-		this.app    		= app;
-		this.config			= app.getWebConfig();
-		this.handler		= handler;
-		this.response		= response;
-		this.req            = servletRequest;
-		this.overriedMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
-		this.method			= Strings.upperCase(Strings.isEmpty(overriedMethod) ? req.getMethod() : overriedMethod);
-		this.path    		= extractRequestPath();
-		this.locale         = req.getLocale();
+	public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response){
+		this.app    		 = app;
+		this.config			 = app.getWebConfig();
+		this.handler		 = handler;
+		this.response		 = response;
+		this.req             = servletRequest;
+		this.overridedMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+		this.method			 = Strings.upperCase(Strings.isEmpty(overridedMethod) ? req.getMethod() : overridedMethod);
+		this.path    		 = extractRequestPath();
+		this.locale          = req.getLocale();
 		this.resolveServicePath(path);
 	}
 	
@@ -376,8 +373,8 @@ public class DefaultRequest extends Request {
     }
 
 	@Override
-    public String getOverriedMethod() {
-	    return overriedMethod;
+    public String getOverridedMethod() {
+	    return overridedMethod;
     }
 
 	@Override
@@ -387,7 +384,7 @@ public class DefaultRequest extends Request {
 	
 	@Override
     public String getParameter(String name) {
-		if(config.isTrimParameters()){
+		if(config.isAutoTrimParameters()){
 			//Auto trim request parameters
 			String s = req.getParameter(name);
 			return null == s ? null : s.trim();
@@ -401,7 +398,7 @@ public class DefaultRequest extends Request {
 	    String[] values = req.getParameterValues(name);
 	    
 	    //Auto trim request parameters
-	    if(null != values && config.isTrimParameters()){
+	    if(null != values && config.isAutoTrimParameters()){
 	    	for(int i=0;i<values.length;i++){
 	    		values[i] = Strings.trim(values[i]);
 	    	}
@@ -539,7 +536,17 @@ public class DefaultRequest extends Request {
 	    return req.getCookies();
     }
 
-	@Override
+    @Override
+    public BufferedInputStream peekInputStream() throws IOException {
+        return req.peekInputStream();
+    }
+
+    @Override
+    public byte[] peekInputStreamAsBytes() throws IOException {
+        return req.peekBytes();
+    }
+
+    @Override
     public InputStream getInputStream() {
 	    try {
 	        return req.getInputStream();
@@ -754,11 +761,11 @@ public class DefaultRequest extends Request {
 			if( index > 0){
 				path = path.substring(0,index);
 			}
-		}else if((index = path.lastIndexOf(app.getWebConfig().getJsessionidParameter())) > 0) {
+		}else if((index = path.lastIndexOf(app.getWebConfig().getJsessionidPrefix())) > 0) {
 			path = path.substring(0,index);
 		}
 		
-		//remvoes '/' if the path ends with '/'
+		//removes '/' if the path ends with '/'
 		if(path.length() > 1){
 			int lastIndex = path.length() - 1;
 			if(path.charAt(lastIndex) == '/'){
@@ -794,7 +801,7 @@ public class DefaultRequest extends Request {
 	protected Map<String, Object> initRequestParameters(){
 		Map<String, Object> map = new LinkedHashMap<String, Object>();
 
-		boolean trim = config.isTrimParameters();
+		boolean trim = config.isAutoTrimParameters();
 		
 		for(Entry<String, String[]> entry : req.getParameterMap().entrySet()){
 			String   name  = entry.getKey();

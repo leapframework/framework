@@ -29,9 +29,9 @@ public class PathTemplateTest extends TestBase {
 
 	@Test
 	public void testPathTemplateToPathPattern() {
-		assertEquals("/", pt("/").getPattern());
-		assertEquals("/*",pt("/{id}").getPattern());
-		assertEquals("/a/b/*/c",pt("/a/b/{id}/c").getPattern());
+		assertEquals("/", pt("/").pattern());
+		assertEquals("/*",pt("/{id}").pattern());
+		assertEquals("/a/b/*/c",pt("/a/b/{id}/c").pattern());
 	}
 	
 }

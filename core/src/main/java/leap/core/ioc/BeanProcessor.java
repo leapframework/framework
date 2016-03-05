@@ -19,7 +19,13 @@ import leap.core.AppContext;
 import leap.core.BeanFactory;
 
 public interface BeanProcessor {
+
+	default void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
+        
+    }
 	
-	void postCreateBean(AppContext context, BeanFactory factory, BeanDefinition def, Object bean) throws Throwable;
+	default void postCreateBean(AppContext context, BeanFactory factory, BeanDefinition def, Object bean) throws Throwable {
+
+    }
 
 }

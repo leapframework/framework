@@ -19,10 +19,6 @@ import java.io.IOException;
 import java.io.Reader;
 
 import leap.core.annotation.Inject;
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetBundle;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetResource;
 import leap.lang.io.IO;
 
 public abstract class AbstractAssetBundler implements AssetBundler {

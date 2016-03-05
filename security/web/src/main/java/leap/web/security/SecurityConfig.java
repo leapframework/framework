@@ -19,6 +19,7 @@ import leap.core.AppConfig;
 import leap.core.security.crypto.PasswordEncoder;
 import leap.core.web.RequestIgnore;
 import leap.web.security.csrf.CsrfStore;
+import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
 
 /**
@@ -173,11 +174,6 @@ public interface SecurityConfig {
 	String getLogoutSuccessUrl();
 	
 	/**
-	 * 
-	 */
-	SecuredPath[] getSecuredPaths();
-	
-	/**
 	 * Required.
 	 */
 	UserStore getUserStore();
@@ -196,6 +192,11 @@ public interface SecurityConfig {
 	 * Optional.
 	 */
 	RequestIgnore[] getIgnores();
+
+	/**
+	 * Returns the {@link SecuredPaths}.
+     */
+	SecuredPaths getSecuredPaths();
 	
 	/**
 	 * Optional.

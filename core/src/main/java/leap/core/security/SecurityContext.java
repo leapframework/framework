@@ -19,9 +19,13 @@ import leap.core.RequestContext;
 
 public abstract class SecurityContext {
 	
-	public static final String CONTEXT_ATTRIBUTE_NAME     = "REQ_" + SecurityContext.class.getName();
-	public static final String PASSWORD_ENCODER_BEAN_NAME = "security";
-	
+	protected static final String CONTEXT_ATTRIBUTE_NAME = SecurityContext.class.getName();
+
+    /**
+     * Returns the instance of {@link SecurityContext} in current request.
+     *
+     * @throws IllegalStateException if the context not exists in current request.
+     */
 	public static SecurityContext current() {
 		SecurityContext context = (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
 		
@@ -31,40 +35,63 @@ public abstract class SecurityContext {
 		
 		return context;
 	}
-	
-	public static UserPrincipal currentUser() {
+
+    /**
+     * Returns the instance of {@link SecurityContext} in current request of returns <code>null</code> if the context not exists.
+     */
+    public static SecurityContext tryGetCurrent(){
+        return (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
+    }
+
+    /**
+     * Returns the {@link UserPrincipal} in current request.
+     */
+    public static UserPrincipal user() {
 		return current().getUser();
 	}
-	
-	public static SecurityContext tryGetCurrent(){
-		return (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
-	}
-	
-	public static void setCurrent(SecurityContext context){
-		RequestContext.current().setAttribute(CONTEXT_ATTRIBUTE_NAME, context);
-	}
-	
-	public static void removeCurrent(){
-		RequestContext.current().removeAttribute(CONTEXT_ATTRIBUTE_NAME);
-	}
-	
-	protected UserPrincipal   user;
-	protected ClientPrincipal client;
-	
-	public UserPrincipal getUser(){
-		return user;
-	}
-	
-	public void setUser(UserPrincipal user) {
-		this.user = user;
-	}
 
-	public ClientPrincipal getClient() {
-		return client;
-	}
+    /**
+     * Returns the {@link Authentication} in current request.
+     */
+    public static Authentication authentication() {
+        return current().authentication;
+    }
 
-	public void setClient(ClientPrincipal client) {
-		this.client = client;
-	}
-	
+    /**
+     * Returns the {@link Authorization} in current request.
+     */
+    public static Authorization authorization() {
+        return current().getAuthorization();
+    }
+
+	protected Authentication authentication;
+	protected Authorization  authorization;
+
+    /**
+     * Required. Returns the {@link Authentication}.
+     */
+    public Authentication getAuthentication() {
+        return authentication;
+    }
+
+    /**
+     * Required. Returns the {@link Authorization}.
+     */
+    public Authorization getAuthorization() {
+        return authorization;
+    }
+
+    /**
+     * Required. Returns the {@link UserPrincipal}.
+     */
+    public UserPrincipal getUser() {
+        return null == authentication ? null : authentication.getUser();
+    }
+
+    /**
+     * Optional. Returns the {@link ClientPrincipal}.
+     */
+    public ClientPrincipal getClient() {
+        return null == authentication ? null : authentication.getClient();
+    }
 }

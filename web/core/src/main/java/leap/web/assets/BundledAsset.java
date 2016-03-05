@@ -17,10 +17,6 @@ package leap.web.assets;
 
 import java.io.IOException;
 
-import leap.core.web.assets.Asset;
-import leap.core.web.assets.AssetBundle;
-import leap.core.web.assets.AssetManager;
-import leap.core.web.assets.AssetType;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
 import leap.lang.logging.Log;
@@ -87,6 +83,12 @@ public class BundledAsset extends TextAsset {
             try {
                 log.info("Bunlde asset '{}' reloaded", path);
                 Asset newBundleAsset = bundler.bundle(bundle);
+                if(!resource.isExpired()){
+                	resource.expire();
+                }
+                if(!debugResource.isExpired()){
+                	 debugResource.expire();
+                }
                 this.resource = newBundleAsset.getResource();
                 this.debugResource = newBundleAsset.getDebugResource();
             } catch (IOException e) {

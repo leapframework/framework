@@ -33,30 +33,30 @@ public class ErrorTestController {
 	}
 	
 	public void errCustom(){
-		throw new CustomeException("err");
+		throw new CustomException("err");
 	}
 	
-	public static final class CustomeException extends RuntimeException {
+	public static final class CustomException extends RuntimeException {
 
 		private static final long serialVersionUID = -6199374679613539141L;
 
-		public CustomeException() {
+		public CustomException() {
 	        super();
         }
 
-		public CustomeException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+		public CustomException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
 	        super(message, cause, enableSuppression, writableStackTrace);
         }
 
-		public CustomeException(String message, Throwable cause) {
+		public CustomException(String message, Throwable cause) {
 	        super(message, cause);
         }
 
-		public CustomeException(String message) {
+		public CustomException(String message) {
 	        super(message);
         }
 
-		public CustomeException(Throwable cause) {
+		public CustomException(Throwable cause) {
 	        super(cause);
         }
 		

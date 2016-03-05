@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://www.leapframework.org/schema/config" xmlns:web="http://www.leapframework.org/schema/web/config">
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns="http://www.leapframework.org/schema/config" 
+	xmlns:web="http://www.leapframework.org/schema/web/config"
+	xsi:schemaLocation="http://www.leapframework.org/schema/config http://www.leapframework.org/schema/config
+	http://www.leapframework.org/schema/web/config http://www.leapframework.org/schema/web/config">
     
     <properties>
         <property name="jdbc.driverClassName">org.h2.Driver</property>
@@ -9,10 +13,13 @@
     
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 
-	<web:config>
-		<errors>
-			<error-view exception="app.controllers.ErrorTestController$CustomeException" view="errors/custom"/>
-		</errors>
-	</web:config>
-    
+	<web:mvc>
+        <web:errors>
+            <web:error-view exception-type="app.controllers.ErrorTestController$CustomException" view-path="errors/custom"/>
+        </web:errors>
+    </web:mvc>
+
+    <web:assets>
+        <web:folder location="${java.io.tmpdir}/upload" path-prefix="/upload"/>
+    </web:assets>
 </config>
