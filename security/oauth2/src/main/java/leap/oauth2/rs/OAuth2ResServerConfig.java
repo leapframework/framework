@@ -50,15 +50,5 @@ public interface OAuth2ResServerConfig {
      * Required if use remote authorization server.
 	 */
 	String getRemoteTokenInfoEndpointUrl();
-	
-	/**
-	 * Optional. Resolves the {@link ResScope} of the given path, returns <code>null</code> if cannot resolved.
-	 */
-	ResScope resolveResourceScope(String path);
-	
-	/**
-	 * Optional. Resolves {@link ResPath} if the given path, returns <code>null</code> if cannot resolved.
-	 */
-	ResPath resolveResourcePath(String path);
 
 }

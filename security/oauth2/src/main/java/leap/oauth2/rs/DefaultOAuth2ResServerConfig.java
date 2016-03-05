@@ -15,11 +15,6 @@
  */
 package leap.oauth2.rs;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
@@ -41,9 +36,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	protected AuthzServerMode		authzServerMode = AuthzServerMode.NONE;
 	protected String                remoteTokenInfoEndpointUrl;
 	protected Cache<String, Object> cachedInterceptUrls;
-	protected Map<String, ResScope> scopes        = new HashMap<>();
-	protected List<ResPath>         interceptUrls = new CopyOnWriteArrayList<>();
-	
+
 	@Override
 	public OAuth2ResServerConfig config() {
 		return this;
@@ -103,41 +96,6 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	    this.remoteTokenInfoEndpointUrl = url;
 	    return this;
 	}
-
-    public OAuth2ResServerConfigurator addScope(String path, ResScope scope) {
-		scopes.put(path, scope);
-		return this;
-	}
-
-	@Override
-    public ResScope resolveResourceScope(String path) {
-	    return scopes.get(path);
-    }
-
-    public OAuth2ResServerConfigurator intercept(ResPath url) {
-		if(null != url) {
-			interceptUrls.add(url);
-		}
-	    return this;
-    }
-
-	@Override
-    public ResPath resolveResourcePath(String path) {
-		Object cachedUrl = cachedInterceptUrls.get(path);
-		if(null != cachedUrl) {
-			return cachedUrl instanceof ResPath ? (ResPath)cachedUrl : null;
-		}
-		
-		for(ResPath url : interceptUrls) {
-			if(url.matches(path)){
-				cachedInterceptUrls.put(path, url);
-				return url;
-			}
-		}
-		
-		cachedInterceptUrls.put(path, Boolean.FALSE);
-	    return null;
-    }
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
