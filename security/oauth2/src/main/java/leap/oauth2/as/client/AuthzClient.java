@@ -55,6 +55,11 @@ public interface AuthzClient {
 	 * Optional. Returns the default logout uri of the client.
      */
 	String getLogoutUri();
+
+    /**
+     * Optional. Returns the granted scope of the client.
+     */
+	String getGrantedScope();
 	
 	/**
 	 * Returns <code>true</code> if the client is enabled.

@@ -31,6 +31,7 @@ public class SimpleAuthzClient implements AuthzClient {
     protected Boolean     allowAuthorizationCode;
     protected Boolean     allowRefreshToken;
     protected Boolean     allowLoginToken;
+    protected String      grantedScope;
     protected Boolean     enabled;
     
     public String getId() {
@@ -119,6 +120,15 @@ public class SimpleAuthzClient implements AuthzClient {
 
     public void setAllowLoginToken(Boolean allowLoginToken) {
         this.allowLoginToken = allowLoginToken;
+    }
+
+    @Override
+    public String getGrantedScope() {
+        return grantedScope;
+    }
+
+    public void setGrantedScope(String grantedScope) {
+        this.grantedScope = grantedScope;
     }
 
     public Boolean getEnabled() {

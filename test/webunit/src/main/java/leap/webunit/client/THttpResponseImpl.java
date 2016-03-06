@@ -15,10 +15,6 @@
  */
 package leap.webunit.client;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
 import leap.junit.TestBase;
 import leap.lang.Arrays2;
 import leap.lang.Charsets;
@@ -32,12 +28,15 @@ import leap.lang.http.MimeTypes;
 import leap.lang.io.IO;
 import leap.lang.jsoup.Jsoup;
 import leap.lang.jsoup.nodes.Document;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.Charset;
 
 class THttpResponseImpl implements THttpResponse {
 	
@@ -210,7 +209,13 @@ class THttpResponseImpl implements THttpResponse {
 		TestBase.assertTrue(isSuccess());
 		return this;
 	}
-	
+
+	@Override
+	public THttpResponse assertFailure() {
+		TestBase.assertFalse(isSuccess());
+		return this;
+	}
+
 	@Override
     public THttpResponse assertOk(){
 		TestBase.assertTrue("The response status should be 200, but is " + getStatus(),isOk());

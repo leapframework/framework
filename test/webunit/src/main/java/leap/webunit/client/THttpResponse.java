@@ -15,18 +15,12 @@
  */
 package leap.webunit.client;
 
-import java.io.InputStream;
-
-import leap.lang.exception.NestedIOException;
-import leap.lang.http.HTTP;
-import leap.lang.http.HTTP.Status;
-import leap.lang.http.Header;
-import leap.lang.http.Headers;
-import leap.lang.http.MimeType;
-import leap.lang.http.MimeTypes;
+import leap.lang.http.*;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.jsoup.nodes.Document;
+
+import java.io.InputStream;
 
 /**
  * The HTTP response in client side for testing only.
@@ -204,6 +198,11 @@ public interface THttpResponse {
 	 * Asserts response status is 2xx
 	 */
 	THttpResponse assertSuccess();
+
+	/**
+	 * Asserts response status is >= 300
+	 */
+	THttpResponse assertFailure();
 
 	/**
 	 * Asserts response status is 200

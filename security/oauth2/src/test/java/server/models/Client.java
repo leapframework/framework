@@ -58,6 +58,9 @@ public class Client extends Model {
 
     @Column(name="allow_login_token")
     protected Boolean allowLoginToken;
+
+    @Column(name="granted_scope", length = 1000)
+    protected String grantedScope;
     
     @Column
     protected boolean enabled = true;
@@ -148,6 +151,14 @@ public class Client extends Model {
 
     public void setAllowLoginToken(Boolean allowLoginToken) {
         this.allowLoginToken = allowLoginToken;
+    }
+
+    public String getGrantedScope() {
+        return grantedScope;
+    }
+
+    public void setGrantedScope(String grantedScope) {
+        this.grantedScope = grantedScope;
     }
 
     public boolean isEnabled() {

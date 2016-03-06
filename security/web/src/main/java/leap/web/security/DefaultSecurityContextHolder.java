@@ -24,22 +24,25 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
 import leap.web.security.path.SecuredPath;
+import leap.web.security.permission.PermissionManager;
 
 public class DefaultSecurityContextHolder extends SecurityContext implements SecurityContextHolder {
 
 	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
-	protected final SecurityConfig config;
-	protected final Request        request;
+	protected final SecurityConfig    config;
+	protected final PermissionManager permissionManager;
+	protected final Request           request;
 
 	protected SecuredPath   path;
     protected LoginContext  loginContext;
     protected LogoutContext logoutContext;
 	protected String        authenticationToken;
 
-	public DefaultSecurityContextHolder(SecurityConfig config, Request request){
-		this.config  = config;
-		this.request = request;
+	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
+		this.config            = config;
+        this.permissionManager = permissionManager;
+		this.request           = request;
 	}
 
 	void initContext() {
@@ -49,7 +52,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     static void removeContext(Request request) {
         request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
     }
-	
+
 	@Override
     public Validation validation() {
 	    return request.getValidation();
@@ -59,8 +62,13 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     public SecurityConfig getSecurityConfig() {
 	    return config;
     }
-	
-	@Override
+
+    @Override
+    public PermissionManager getPermissionManager() {
+        return permissionManager;
+    }
+
+    @Override
     public SecurityContext getSecurityContext() {
 	    return this;
     }

@@ -29,12 +29,13 @@ import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
 import leap.web.route.Route;
-import leap.web.security.annotation.AllowAnonymous;
-import leap.web.security.annotation.AllowClientOnly;
-import leap.web.security.annotation.Permissions;
-import leap.web.security.annotation.Secured;
+import leap.web.security.annotation.*;
 import leap.web.security.csrf.CsrfHandler;
-import leap.web.security.path.*;
+import leap.web.security.path.SecuredPath;
+import leap.web.security.path.SecuredPathConfigurator;
+import leap.web.security.path.SecuredPathSource;
+import leap.web.security.path.SecuredPaths;
+import leap.web.security.permission.PermissionManager;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
@@ -42,6 +43,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	
     protected @Inject @M SecurityConfig       config;
     protected @Inject @M SecurityConfigurator configurator;
+    protected @Inject @M PermissionManager    permissionManager;
     protected @Inject @M SecuredPathSource    pathSource;
     protected @Inject @M SecurityHandler      handler;
     protected @Inject @M CsrfHandler          csrf;
@@ -52,16 +54,21 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 	    for(Route route : app.routes()) {
 	        Action action = route.getAction();
-	        
-	        AllowAnonymous a = action.searchAnnotation(AllowAnonymous.class);
-	        if((null != a && a.value())) {
-	            paths.of(route).allowAnonymous().apply();
+
+	        AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
+	        if(null != aa) {
+	            paths.of(route).setAllowAnonymous(aa.value()).apply();
 	        }
 	        
-	        AllowClientOnly aa = action.searchAnnotation(AllowClientOnly.class);
-	        if((null != aa && aa.value())) {
-                paths.of(route).allowClientOnly().apply();
+	        AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
+	        if(null != ac) {
+                paths.of(route).setAllowClientOnly(ac.value()).apply();
 	        }
+
+			AllowRememberMe ar = action.searchAnnotation(AllowRememberMe.class);
+			if(null != ar) {
+				paths.of(route).setAllowRememberMe(ar.value()).apply();
+			}
 
             Permissions permissions = action.searchAnnotation(Permissions.class);
             if(null != permissions) {
@@ -115,7 +122,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 		
-		DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config,request);
+		DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
 		context.initContext();
 
 		return handleRequest(request, response, context);
@@ -174,11 +181,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 
-        log.debug("Resolving authentication...");
-        Authentication authc = handler.resolveAuthentication(request, response, context);
+		Authentication authc = context.getAuthentication();
+        if(null == authc) {
+            log.debug("Resolving authentication...");
+            authc = handler.resolveAuthentication(request, response, context);
 
-        Assert.notNull(authc,"'Authentication' must not be null");
-        context.setAuthentication(authc);
+            Assert.notNull(authc,"'Authentication' must not be null");
+            context.setAuthentication(authc);
+        }else{
+            log.debug("Authentication already resolved by interceptor -> {}", authc);
+        }
 
 		if(log.isDebugEnabled()) {
 			if(authc.isAuthenticated()) {
@@ -227,11 +239,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
             }
         }
 
-        log.debug("Resolving authorization...");
-        Authorization authz = handler.resolveAuthorization(request,response,context);
+        Authorization authz = context.getAuthorization();
+        if(null == authz) {
+            log.debug("Resolving authorization...");
+            authz = handler.resolveAuthorization(request,response,context);
+            Assert.notNull(authz,"The authorization must not be null");
+            context.setAuthorization(authz);
+        }else{
+            log.debug("Authorization already resolved by interceptor -> {}", authz);
+        }
 
-        Assert.notNull(authz,"The authorization must not be null");
-        context.setAuthorization(authz);
 
         for(SecurityInterceptor si : interceptors) {
             if(State.isIntercepted(si.postResolveAuthorization(request, response, context))) {

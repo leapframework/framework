@@ -154,5 +154,10 @@ public class DefaultSecuredPaths implements SecuredPaths {
         public int compareTo(SecuredPath o) {
             return path.compareTo(o);
         }
+
+        @Override
+        public String toString() {
+            return path.toString();
+        }
     }
 }

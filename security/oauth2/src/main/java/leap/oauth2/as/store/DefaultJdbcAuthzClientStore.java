@@ -68,6 +68,7 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
         client.setAllowAuthorizationCode(entity.getAllowAuthorizationCode());
         client.setAllowRefreshToken(entity.getAllowRefreshToken());
         client.setAllowLoginToken(entity.getAllowLoginToken());
+        client.setGrantedScope(entity.getGrantedScope());
         client.setEnabled(entity.isEnabled());
         
         return client;

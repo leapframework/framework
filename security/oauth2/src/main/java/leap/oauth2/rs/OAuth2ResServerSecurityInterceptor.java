@@ -55,22 +55,13 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
     @Override
 	public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
 		if (config.isEnabled()) {
-			
-			//ResPath url = config.getResourcePath(request.getPath());
-			
-			//if(null == url && !config.isInterceptAnyRequests()) {
-			//	return State.CONTINUE;
-			//}else{
-			    //log.debug("Authenticating oauth2 request '{}'...", request.getPath());
-				return preResolveAuthentication(request, response, context, null);
-			//}
-
+            return doPreResolveAuthentication(request, response, context);
 		}
 		
 		return State.CONTINUE;
 	}
 	
-	protected State preResolveAuthentication(Request request, Response response, AuthenticationContext context, ResPath path) throws Throwable {
+	protected State doPreResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         Authentication authc = null;
         for(ResAuthenticationResolver resolver : authenticationResolvers) {
             Result<Authentication> result = resolver.resolveAuthentication(request, response, context);
@@ -102,13 +93,6 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
                     return State.INTERCEPTED;
                 }
                 authc = result.get();
-            }
-
-            if(null != path) {
-                if(!path.checkAuthentication(request, context)) {
-                    errorHandler.handleInsufficientScope(request, response, "Access denied");
-                    return State.INTERCEPTED;
-                }
             }
 
             //Set the authentication.

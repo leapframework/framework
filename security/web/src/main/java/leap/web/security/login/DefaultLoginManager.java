@@ -28,16 +28,18 @@ import leap.web.security.SecurityInterceptor;
 import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
+import leap.web.security.permission.PermissionManager;
 
 public class DefaultLoginManager implements LoginManager {
 
     private static final Log log = LogFactory.get(DefaultLoginManager.class);
     
     protected @Inject SecurityConfig        config;
-    protected @Inject LoginHandler[]       handlers;
-    protected @Inject LoginAjaxHandler     ajaxHandler;
-    protected @Inject LoginViewHandler     viewHandler;
+    protected @Inject LoginHandler[]        handlers;
+    protected @Inject LoginAjaxHandler      ajaxHandler;
+    protected @Inject LoginViewHandler      viewHandler;
     protected @Inject AuthenticationManager authcManager;
+    protected @Inject PermissionManager     permissionManager;
     
     @Override
     public boolean promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
@@ -77,7 +79,7 @@ public class DefaultLoginManager implements LoginManager {
     
     @Override
     public void handleLoginSuccess(Request request, Response response, Authentication authc) throws Throwable {
-        DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, request);
+        DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
         context.setAuthentication(authc);
         handleLoginSuccessView(request, response, context);
     }

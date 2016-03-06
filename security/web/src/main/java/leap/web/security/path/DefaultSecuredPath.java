@@ -25,6 +25,7 @@ import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
+import leap.web.security.permission.PermissionManager;
 
 public class DefaultSecuredPath implements SecuredPath {
 
@@ -154,10 +155,12 @@ public class DefaultSecuredPath implements SecuredPath {
 
         //Check permissions
         if(permissions.length > 0) {
+            PermissionManager pm = context.getPermissionManager();
+
             boolean allow = false;
             String[] grantedPermissions = authc.getPermissions();
             if(null != grantedPermissions && grantedPermissions.length > 0) {
-                allow = Arrays2.containsAny(grantedPermissions,permissions);
+                allow = pm.checkPermissionImpliesAny(grantedPermissions,permissions);
             }
 
             if(!allow) {

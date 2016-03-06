@@ -20,9 +20,9 @@ import java.lang.annotation.*;
 /**
  * The annotation means that the controller or action can be access by client-only authentication (no user credentials).
  */
-@Inherited
 @Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface AllowClientOnly {
 
     /**

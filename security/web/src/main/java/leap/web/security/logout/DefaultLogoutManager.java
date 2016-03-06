@@ -24,6 +24,7 @@ import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
+import leap.web.security.permission.PermissionManager;
 
 public class DefaultLogoutManager implements LogoutManager {
 
@@ -32,6 +33,7 @@ public class DefaultLogoutManager implements LogoutManager {
     protected @Inject AuthenticationManager authcManager;
     protected @Inject LogoutViewHandler     viewHandler;
     protected @Inject LogoutAjaxHandler     ajaxHandler;
+    protected @Inject PermissionManager     permissionManager;
 
     @Override
     public boolean handleLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
@@ -47,7 +49,7 @@ public class DefaultLogoutManager implements LogoutManager {
     
     @Override
     public void logout(Request request, Response response) throws Throwable {
-        logout(request, response, new DefaultSecurityContextHolder(config, request));
+        logout(request, response, new DefaultSecurityContextHolder(config, permissionManager, request));
     }
 
     @Override

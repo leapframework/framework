@@ -15,34 +15,32 @@
  */
 package leap.core.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Target({ElementType.FIELD,ElementType.METHOD}) 
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface Inject {
 	
 	/**
 	 * Enables(true) or Disables(false) inject.
 	 */
-	public boolean value() default true;
+	boolean value() default true;
 
 	/**
 	 * The bean id depends on.
 	 */
-	public String id() default "";
+	String id() default "";
 	
 	/**
 	 * The bean type depends on.
 	 */
-	public Class<?> type() default Object.class;
+	Class<?> type() default Object.class;
 	
 	/**
 	 * The bean name depends on, must be used with type.
 	 */
-	public String name() default "";
+	String name() default "";
 	
 	/**
 	 * Inject the primary bean if this value set to <code>true</code> and the named bean not found.
@@ -50,10 +48,10 @@ public @interface Inject {
 	 * <p>
 	 * Only use in single bean injection.
 	 */
-	public boolean namedOrPrimary() default false;
+	boolean namedOrPrimary() default false;
 	
 	/**
 	 * The bean qualifier value , only use in bean list injection.
 	 */
-	public String qualifier() default "";
+	String qualifier() default "";
 }

@@ -15,8 +15,6 @@
  */
 package leap.oauth2.as.store;
 
-import java.util.Date;
-
 import leap.core.AppConfig;
 import leap.lang.New;
 import leap.lang.logging.Log;
@@ -30,6 +28,8 @@ import leap.orm.command.CreateEntityCommand;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
+
+import java.util.Date;
 
 public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implements AuthzTokenStore {
     
@@ -152,6 +152,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         entity.setUserId(token.getUserId());
         entity.setRefreshToken(token.getRefreshToken());
         entity.setTimeExpirable(token);
+        entity.setScope(token.getScope());
         
         return entity;
     }
@@ -164,6 +165,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         entity.setUserId(token.getUserId());
         entity.setScope(token.getScope());
         entity.setTimeExpirable(token);
+        entity.setScope(token.getScope());
         
         return entity;
     }

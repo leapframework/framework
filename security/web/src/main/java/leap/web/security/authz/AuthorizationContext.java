@@ -19,6 +19,7 @@ import leap.core.security.Authentication;
 import leap.core.security.Authorization;
 import leap.core.security.SecurityContext;
 import leap.web.security.SecurityConfig;
+import leap.web.security.permission.PermissionManager;
 
 public interface AuthorizationContext {
 
@@ -31,6 +32,11 @@ public interface AuthorizationContext {
 	 * Returns {@link SecurityContext}
 	 */
 	SecurityContext getSecurityContext();
+
+	/**
+	 * Returns {@link PermissionManager}
+     */
+	PermissionManager getPermissionManager();
 
 	/**
 	 * Required. Returns current {@link Authentication}

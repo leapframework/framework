@@ -38,7 +38,15 @@ public interface SecurityInterceptor extends Interceptor{
     default State postResolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
         return State.CONTINUE;
     }
-	
+
+    default State onAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        return State.CONTINUE;
+    }
+
+	default State onAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        return State.CONTINUE;
+    }
+
 	default State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
 	    return State.CONTINUE;
 	}
