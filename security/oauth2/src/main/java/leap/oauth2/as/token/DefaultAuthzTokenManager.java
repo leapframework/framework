@@ -17,6 +17,7 @@ package leap.oauth2.as.token;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
@@ -51,7 +52,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
             rt.setExpiresIn(getRefreshTokenExpires(client));
         }
         
-        //Set token refereces.
+        //Set refresh token.
         at.setRefreshToken(rt.getToken());
         
         //Set expires & created
@@ -69,10 +70,13 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
             at.setUserId(user.getId().toString());
             rt.setUserId(at.getUserId());
         }
-        
+
+        //Merge scope.
+        String scope = mergeScope(client, authc);
+
         //Scope
-        at.setScope(authc.getScope());
-        rt.setScope(authc.getScope());
+        at.setScope(scope);
+        rt.setScope(scope);
         
         //Store the token
         config.getTokenStore().saveAccessToken(at);
@@ -82,6 +86,22 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         }
         
         return at;
+    }
+
+    protected String mergeScope(AuthzClient client, AuthzAuthentication authc) {
+        if(Strings.isEmpty(client.getGrantedScope()) && Strings.isEmpty(authc.getScope())) {
+            return null;
+        }
+
+        if(Strings.isEmpty(client.getGrantedScope())) {
+            return authc.getScope();
+        }
+
+        if(Strings.isEmpty(authc.getScope())) {
+            return client.getGrantedScope();
+        }
+
+        return client.getGrantedScope() + "," + authc.getScope();
     }
     
     @Override

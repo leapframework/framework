@@ -15,6 +15,7 @@
  */
 package leap.oauth2.as.entity;
 
+import leap.lang.enums.Bool;
 import leap.oauth2.OAuth2Entity;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
@@ -56,7 +57,10 @@ public class AuthzClientEntity implements OAuth2Entity {
 
     @Column(name="allow_login_token")
     protected Boolean allowLoginToken;
-    
+
+    @Column(name="granted_scope", length = 1000, nullable = Bool.TRUE)
+    protected String grantedScope;
+
     @Column(defaultValue="1")
     protected boolean enabled;
 
@@ -146,6 +150,14 @@ public class AuthzClientEntity implements OAuth2Entity {
 
     public void setAllowLoginToken(Boolean allowLoginToken) {
         this.allowLoginToken = allowLoginToken;
+    }
+
+    public String getGrantedScope() {
+        return grantedScope;
+    }
+
+    public void setGrantedScope(String grantedScope) {
+        this.grantedScope = grantedScope;
     }
 
     public boolean isEnabled() {

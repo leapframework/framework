@@ -38,11 +38,6 @@ public class SimpleResAuthentication extends AbstractAuthentication implements A
 		return true;
 	}
 
-	@Override
-	public boolean isRememberMe() {
-		return false;
-	}
-
     @Override
 	public ResAccessToken getCredentials() {
 		return credentials;

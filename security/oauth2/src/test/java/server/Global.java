@@ -78,7 +78,13 @@ public class Global extends App implements OAuth2TestData {
         Client client1 = new Client();
         client1.setId("client1");
         client1.setSecret("client1_secret");
+        client1.setGrantedScope("admin:status");
         client1.create();
+
+        Client client2 = new Client();
+        client2.setId("client2");
+        client2.setSecret("client2_secret");
+        client2.create();
     }
     
     protected void registerUsers() {

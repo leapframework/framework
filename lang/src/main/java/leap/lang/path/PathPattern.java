@@ -16,6 +16,7 @@
 package leap.lang.path;
 
 import java.util.Comparator;
+import java.util.Objects;
 
 public interface PathPattern {
 
@@ -23,18 +24,20 @@ public interface PathPattern {
      * The default comparator.
      */
     Comparator<PathPattern> DEFAULT_COMPARATOR = (p1, p2) -> {
-        if (p1 == null && p2 == null) {
+        if(Objects.equals(p1, p2)) {
             return 0;
         }
+
         if (p1 == null) {
             return 1;
         }
+
         if (p2 == null) {
             return -1;
         }
 
         int i = p1.pattern().length() - p2.pattern().length();
-        if(i != 0){
+        if(i != 0) {
             return i;
         }
 

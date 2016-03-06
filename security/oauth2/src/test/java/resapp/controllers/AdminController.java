@@ -16,12 +16,18 @@
 package resapp.controllers;
 
 import leap.web.security.annotation.AllowClientOnly;
+import leap.web.security.annotation.Permissions;
 
 @AllowClientOnly
 public class AdminController {
 
     public void hello() {
         
+    }
+
+    @Permissions("admin:status")
+    public void status() {
+
     }
     
 }

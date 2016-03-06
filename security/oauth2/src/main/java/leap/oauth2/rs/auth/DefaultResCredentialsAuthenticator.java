@@ -108,6 +108,9 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         }
         
         ResAuthentication authc = new SimpleResAuthentication(at, user, client);
+        if(null != details.getScope()) {
+            authc.setPermissions(Strings.split(details.getScope(), ","));
+        }
         
         cacheAuthentication(at, details, authc);
 

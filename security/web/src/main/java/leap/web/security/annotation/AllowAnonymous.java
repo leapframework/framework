@@ -20,9 +20,9 @@ import java.lang.annotation.*;
 /**
  * The annotation means that the controller or action can be accessed by anonymous user.
  */
-@Inherited
 @Target({ElementType.TYPE,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
+@Inherited
 public @interface AllowAnonymous {
 
     /**

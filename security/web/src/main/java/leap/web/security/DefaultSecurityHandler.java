@@ -17,6 +17,7 @@ package leap.web.security;
 
 import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
+import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
@@ -33,6 +34,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     private static final Log log = LogFactory.get(DefaultSecurityHandler.class);
 
+    protected @Inject SecurityConfig        config;
     protected @Inject AuthenticationManager authcManager;
     protected @Inject AuthorizationManager  authzManager;
     protected @Inject LoginManager          loginManager;
@@ -46,11 +48,6 @@ public class DefaultSecurityHandler implements SecurityHandler {
 	@Override
     public Authorization resolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
 		return authzManager.resolveAuthorization(request,response,context);
-    }
-
-    @Override
-    public void handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        loginManager.promoteLogin(request, response, context);
     }
 
     @Override
@@ -76,7 +73,24 @@ public class DefaultSecurityHandler implements SecurityHandler {
     }
 
     @Override
+    public void handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        for(SecurityInterceptor si : config.getInterceptors()) {
+            if(State.isIntercepted(si.onAuthenticationDenied(request, response, context))) {
+                return;
+            }
+        }
+
+        loginManager.promoteLogin(request, response, context);
+    }
+
+    @Override
     public void handleAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        for(SecurityInterceptor si : config.getInterceptors()) {
+            if(State.isIntercepted(si.onAuthorizationDenied(request, response, context))) {
+                return;
+            }
+        }
+
         if(request.isAjax()){
             response.setStatus(HTTP.SC_FORBIDDEN);
         }else{

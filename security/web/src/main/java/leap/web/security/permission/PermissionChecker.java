@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,14 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.security.annotation;
+package leap.web.security.permission;
 
-import java.lang.annotation.*;
+import java.security.Permission;
 
-/**
- * The annotation means that the controller or action can not be accessed by remember-me user.
- */
-@Target({ElementType.TYPE,ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface DenyRememberMe {}
+public interface PermissionChecker {
+
+    /**
+     * Checks if the specified permission are "implied by" the "impliedBy" permission.
+     *
+     * see {@link java.security.Permission#implies(Permission)}.
+     */
+    boolean checkPermissionImplies(String checkingPermission,String impliedByPermission);
+
+}

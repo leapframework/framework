@@ -90,7 +90,11 @@
     
     <!--  token -->
     <bean name="jwt" type="leap.web.security.authc.TokenAuthenticator" class="leap.web.security.user.JwtTokenAuthenticator"/>
-    
+
+    <!-- permission -->
+    <bean type="leap.web.security.permission.PermissionManager"
+          class="leap.web.security.permission.DefaultPermissionManager" primary="true"/>
+
 	<beans if-class-present="leap.htpl.HtplContext">
 		<bean type="leap.htpl.interceptor.NodeInterceptor" class="leap.web.security.csrf.CsrfFormInterceptor"/>
 	</beans>

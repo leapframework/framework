@@ -15,8 +15,6 @@
  */
 package leap.oauth2.rs.token;
 
-import java.util.Map;
-
 import leap.core.annotation.Inject;
 import leap.lang.Result;
 import leap.lang.Strings;
@@ -30,6 +28,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
+
+import java.util.Map;
 
 public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore {
     
@@ -94,6 +94,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         details.setUserId((String)map.remove("user_id"));
         details.setCreated((Long)map.remove("created"));
         details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
+        details.setScope((String)map.remove("scope"));
         
         //TODO : scope
         

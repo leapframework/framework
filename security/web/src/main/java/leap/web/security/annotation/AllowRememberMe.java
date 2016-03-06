@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2014 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.oauth2.rs.auth;
+package leap.web.security.annotation;
 
-import leap.core.security.UserPrincipal;
+import java.lang.annotation.*;
 
-public class ResUserPrincipal implements UserPrincipal {
+/**
+ * The annotation means that the controller or action can not be accessed by remember-me user.
+ */
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface AllowRememberMe {
 
-	private static final long serialVersionUID = -3280681234961513540L;
-	
-	protected final ResOwner user;
-	
-	public ResUserPrincipal(ResOwner user) {
-		this.user = user; 
-	}
+    /**
+     * Sets to allow(true) or deny(false), default is allow.
+     */
+    boolean value() default true;
 
-	@Override
-	public Object getId() {
-		return user.getId();
-	}
-
-	@Override
-	public String getName() {
-		return user.getName();
-	}
-
-	@Override
-	public String getLoginName() {
-		return user.getLoginName();
-	}
 }

@@ -15,21 +15,33 @@
  */
 package testes.rs;
 
+import org.junit.Test;
 import testes.OAuth2TestBase;
 import testes.TokenResponse;
 
-import org.junit.Test;
-
 public class AdminControllerTest extends OAuth2TestBase {
+
+    @Override
+    protected void setUp() throws Exception {
+        serverContextPath = "/server";
+    }
 
     @Test
     public void testClientOnlyAccessToken() {
-        serverContextPath = "/server";
-        
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
         
         withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
         withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
+    }
+
+    @Test
+    public void testClientGrantedScope() {
+        TokenResponse token1 = obtainAccessTokenByClient("client1", "client1_secret");
+        TokenResponse token2 = obtainAccessTokenByClient("client2", "client2_secret");
+
+        withAccessToken(forGet("/resapp/admin/status"), token1.accessToken).send().assertOk();
+        withAccessToken(forGet("/resapp/admin/status"), token2.accessToken).send().assertFailure();
+
     }
     
 }
