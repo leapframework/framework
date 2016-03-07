@@ -30,7 +30,7 @@ public class DemoBootstrap implements AppBootable {
     protected @ConfigProperty @R String configValue;
 
     @Override
-    public void postBootingApp(App app, ServletContext sc) throws ServletException {
+    public void postBootApp(App app, ServletContext sc) throws ServletException {
 
     }
 

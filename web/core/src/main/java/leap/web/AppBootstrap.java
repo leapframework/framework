@@ -43,6 +43,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
     protected ServletContext servletContext;
     protected AppHandler     handler;
     protected boolean        selfStarted;
+	protected AppBootable[]  bootables = new AppBootable[0];
 
 	private Object _token;
 	
@@ -117,9 +118,10 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 			super.initAppContext(sc,initParams);
 
             postBooting();
-			
-			for(AppBootable bootable : beanFactory.getBeans(AppBootable.class)) {
-				bootable.postBootingApp(app,sc);
+
+            bootables = beanFactory.getBeans(AppBootable.class).toArray(new AppBootable[0]);
+			for(AppBootable bootable : bootables) {
+				bootable.postBootApp(app,sc);
 			}
 			
 			sc.setAttribute(AppBootstrap.class.getName(), this);
@@ -186,6 +188,14 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 				handler.stopApp(_token);	
 				servletContext.removeAttribute(APP_ATTRIBUTE_NAME);
 			}
+
+            for(AppBootable bootable : bootables) {
+                try{
+                    bootable.postStopApp(app, servletContext);
+                }catch(Throwable e) {
+                    log.warn("Error invoke postStopApp on bootable bean, {}", e.getMessage(), e);
+                }
+            }
 		}finally{
 			super.destroyAppContext();
 		}

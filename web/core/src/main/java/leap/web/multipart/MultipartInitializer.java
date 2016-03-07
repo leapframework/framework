@@ -37,7 +37,7 @@ public class MultipartInitializer implements AppBootable {
 	private static final Log log = LogFactory.get(MultipartInitializer.class);
 	
 	@Override
-    public void postBootingApp(App app,ServletContext sc) throws ServletException {
+    public void postBootApp(App app, ServletContext sc) throws ServletException {
 		List<Route> multipartRoutes = resolveMultipartRoutes(app);
 		if(multipartRoutes.isEmpty()) {
 			return;
