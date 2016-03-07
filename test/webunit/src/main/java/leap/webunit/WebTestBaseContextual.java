@@ -15,19 +15,18 @@
  */
 package leap.webunit;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.junit.contexual.ContextualProvider;
 import leap.junit.contexual.ContextualRule;
-
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.runner.Description;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class WebTestBaseContextual extends WebTestBase {
 	
-	private static final List<String> contextPaths = new ArrayList<String>();
+	private static final List<String> contextPaths = new ArrayList<>();
 	
 	static {
 		contextPaths.add("");
