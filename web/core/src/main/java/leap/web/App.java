@@ -54,7 +54,7 @@ public class App implements AttributeAccessor {
 	 * Returns the instance of {@link App} for the given servlet context.
 	 */
 	public static App get(ServletContext sc) {
-		return AppBootstrap.getApplication(sc);
+		return AppBootstrap.getApp(sc);
 	}
 	
 	protected Log log = LogFactory.get(this.getClass());

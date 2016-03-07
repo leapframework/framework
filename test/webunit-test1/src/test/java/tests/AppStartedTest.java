@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web;
+package tests;
 
-import javax.servlet.ServletContext;
+import leap.webunit.WebTestBase;
+import org.junit.Test;
 
-public interface AppBootable {
+public class AppStartedTest extends WebTestBase {
 
-    /**
-     * Called on booting the web application.
-     */
-	void onAppBooting(App app, ServletContext sc) throws Exception;
-
-    /**
-     * Called after stopping the web application.
-     */
-    default void onAppStopped(App app, ServletContext sc) throws Exception {
-
+    @Test
+    public void testAllAppStarted() {
+        get("/").assertOk();
+        get("/app1").assertOk();
     }
+
 }

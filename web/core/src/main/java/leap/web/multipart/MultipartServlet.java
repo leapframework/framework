@@ -38,7 +38,7 @@ public class MultipartServlet extends HttpServlet {
 	
 	@Override
     public void init(ServletConfig config) throws ServletException {
-		app        = AppBootstrap.getApplication(config.getServletContext());
+		app        = AppBootstrap.getApp(config.getServletContext());
 		appHandler = app.factory().getBean(AppHandler.class);
     }
 

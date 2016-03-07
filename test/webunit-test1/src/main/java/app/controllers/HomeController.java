@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web;
+package app.controllers;
 
-import javax.servlet.ServletContext;
+public class HomeController {
 
-public interface AppBootable {
-
-    /**
-     * Called on booting the web application.
-     */
-	void onAppBooting(App app, ServletContext sc) throws Exception;
-
-    /**
-     * Called after stopping the web application.
-     */
-    default void onAppStopped(App app, ServletContext sc) throws Exception {
+    public void index() {
 
     }
+
 }

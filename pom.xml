@@ -379,6 +379,8 @@
         <module>test/junit</module>
         <module>test/webunit</module>
 		<module>test/webunit-jsp</module>
+		<module>test/webunit-test1</module>
+        <module>test/webunit-test2</module>
 		<module>web/core</module>
 		<module>web/api</module>
 		<module>web/htpl</module>
