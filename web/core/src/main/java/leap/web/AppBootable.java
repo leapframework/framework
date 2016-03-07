@@ -16,10 +16,13 @@
 package leap.web;
 
 import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
 
 public interface AppBootable {
 	
-	void postBootingApp(App app, ServletContext sc) throws ServletException;
+	void postBootApp(App app, ServletContext sc) throws Exception;
+
+    default void postStopApp(App app, ServletContext sc) throws Exception {
+
+    }
 
 }
