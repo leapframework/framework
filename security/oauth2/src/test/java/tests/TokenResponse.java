@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web;
+package tests;
 
-import javax.servlet.ServletContext;
+import java.util.Map;
 
-public interface AppBootable {
+public class TokenResponse extends AuthzResponse {
 
-    /**
-     * Called on booting the web application.
-     */
-	void onAppBooting(App app, ServletContext sc) throws Exception;
+    public String              accessToken;
+    public String              refreshToken;
+    public String              code;
+    public String              idToken;
+    public Integer             expiresIn;
+    public Map<String, Object> externalParams;
 
-    /**
-     * Called after stopping the web application.
-     */
-    default void onAppStopped(App app, ServletContext sc) throws Exception {
-
-    }
 }

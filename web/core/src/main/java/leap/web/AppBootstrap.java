@@ -30,31 +30,42 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class AppBootstrap extends ServletContextInitializerBase implements ServletContextListener {
     private static final Log log = LogFactory.get(AppBootstrap.class);
 	
-	public static final String GLOBAL_CLASS_NAME  = "Global";
-	public static final String APP_ATTRIBUTE_NAME = App.class.getName();
+	public static final String GLOBAL_CLASS_NAME   = "Global";
+	public static final String APP_ATTR_NAME       = App.class.getName();
+    public static final String BOOTSTRAP_ATTR_NAME = AppBootstrap.class.getName();
 
-    protected String         basePath;
-    protected App            app;
-    protected ServletContext servletContext;
-    protected AppHandler     handler;
-    protected boolean        selfStarted;
-	protected AppBootable[]  bootables = new AppBootable[0];
+    protected String               basePath;
+    protected App                  app;
+    protected ServletContext       servletContext;
+    protected AppHandler           handler;
+    protected boolean              selfStarted;
+    protected List<BeanDefinition> bootables = new ArrayList<>();
 
 	private Object _token;
-	
-	public static AppBootstrap tryGet(ServletContext sc) {
-		return (AppBootstrap)sc.getAttribute(AppBootstrap.class.getName());
+
+    public static AppBootstrap get(ServletContext sc) throws ObjectNotFoundException {
+        AppBootstrap b = (AppBootstrap) sc.getAttribute(BOOTSTRAP_ATTR_NAME);
+        if(null == b){
+            throw new ObjectNotFoundException("AppBootstrap not exists in the given ServletContext");
+        }
+        return b;
+    }
+
+    public static AppBootstrap tryGet(ServletContext sc) {
+		return (AppBootstrap)sc.getAttribute(BOOTSTRAP_ATTR_NAME);
 	}
 
-	public static App getApplication(ServletContext sc) throws ObjectNotFoundException{
-		App c = (App)sc.getAttribute(APP_ATTRIBUTE_NAME);
+	public static App getApp(ServletContext sc) throws ObjectNotFoundException{
+		App c = (App)sc.getAttribute(APP_ATTR_NAME);
 		if(null == c){
-			throw new ObjectNotFoundException("Application not exists in the given ServletContext");
+			throw new ObjectNotFoundException("App not exists in the given ServletContext");
 		}
 		return c;
 	}
@@ -111,20 +122,20 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 		try {
             this.servletContext = sc;
 
+            sc.setAttribute(AppBootstrap.class.getName(), this);
+
 		    log.info("Booting app '{}'...", getAppDisplayName(sc));
 
             preBooting();
 		    
 			super.initAppContext(sc,initParams);
 
-            postBooting();
+            for(BeanDefinition bootable : bootables) {
+                beanFactory.tryInitBean(bootable);
+                ((AppBootable)bootable.getSingletonInstance()).onAppBooting(app,sc);
+            }
 
-            bootables = beanFactory.getBeans(AppBootable.class).toArray(new AppBootable[0]);
-			for(AppBootable bootable : bootables) {
-				bootable.postBootApp(app,sc);
-			}
-			
-			sc.setAttribute(AppBootstrap.class.getName(), this);
+            postBooting();
         } catch (Throwable e) {
         	if(e instanceof RuntimeException){
         		throw (RuntimeException)e;
@@ -151,7 +162,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 		}
 		
 		app.onConfigReady(config, servletContext, basePath);
-		servletContext.setAttribute(APP_ATTRIBUTE_NAME, app);
+		servletContext.setAttribute(APP_ATTR_NAME, app);
 	}
 	
 	@Override
@@ -186,14 +197,14 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 			AppContext.setCurrent(appContext);
 			if(null != handler && null != _token){
 				handler.stopApp(_token);	
-				servletContext.removeAttribute(APP_ATTRIBUTE_NAME);
+				servletContext.removeAttribute(APP_ATTR_NAME);
 			}
 
-            for(AppBootable bootable : bootables) {
+            for(BeanDefinition bootable : bootables) {
                 try{
-                    bootable.postStopApp(app, servletContext);
+                    ((AppBootable)bootable.getSingletonInstance()).onAppStopped(app, servletContext);
                 }catch(Throwable e) {
-                    log.warn("Error invoke postStopApp on bootable bean, {}", e.getMessage(), e);
+                    log.warn("Error invoke onAppStopped on bootable bean, {}", e.getMessage(), e);
                 }
             }
 		}finally{
@@ -226,17 +237,27 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
         @Override
         public void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
             BeanDefinition bd = c.definition();
-            if(AppInitializable.class.isAssignableFrom(bd.getBeanClass())) {
+
+            boolean initializable = AppInitializable.class.isAssignableFrom(bd.getBeanClass());
+            boolean bootable      = AppBootable.class.isAssignableFrom(bd.getBeanClass());
+
+            if(initializable || bootable) {
                 ServletContext sc = context.tryGetServletContext();
                 if(null == sc) {
                     throw new BeanDefinitionException("Current app context must be servlet environment, cannot init bean " + bd);
                 }
 
                 if(!bd.isSingleton()) {
-                    throw new BeanDefinitionException("AppInitializable bean must be singleton, check the bean " + bd);
+                    throw new BeanDefinitionException("Bean must be singleton, check the bean " + bd);
                 }
 
-                app(sc,bd).initializableBeans().add(bd);
+                if(initializable) {
+                    app(sc,bd).initializableBeans().add(bd);
+                }
+
+                if(bootable) {
+                    get(sc).bootables.add(bd);
+                }
             }
         }
 
@@ -252,7 +273,7 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
         }
 		
 		protected App app(ServletContext sc, BeanDefinition bd) {
-            App app = (App)sc.getAttribute(APP_ATTRIBUTE_NAME);
+            App app = (App)sc.getAttribute(APP_ATTR_NAME);
             if(null == app){
                 throw new BeanCreationException("App not ready yet, cannot create bean " + bd);
             }

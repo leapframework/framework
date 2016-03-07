@@ -66,7 +66,7 @@ public abstract class WebTestBase extends TestBase {
             }
         }
         
-        rootServletContext = server.getServletContext("");
+        rootServletContext = server.tryGetServletContext("");
     }
     
     protected static THttpClient httpsClient() {
@@ -88,8 +88,11 @@ public abstract class WebTestBase extends TestBase {
     protected void setUp() throws Exception {
         if (null == servletContext) {
             servletContext = rootServletContext;
+            contextPath = "";
+        }else{
+            contextPath = servletContext.getContextPath();
         }
-        contextPath = servletContext.getContextPath();
+
         this.doSetUp();
     }
     

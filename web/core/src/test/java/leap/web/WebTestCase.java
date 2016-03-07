@@ -25,7 +25,7 @@ public abstract class WebTestCase extends WebTestBaseContextual {
 	@Override
     protected void doSetUp() throws Exception {
 		try {
-            app = AppBootstrap.getApplication(servletContext);
+            app = AppBootstrap.getApp(servletContext);
         } catch (ObjectNotFoundException e) {
             throw new RuntimeException("Failed startup of the test webapp(s)");
         }

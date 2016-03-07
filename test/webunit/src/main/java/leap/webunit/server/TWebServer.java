@@ -223,7 +223,19 @@ public class TWebServer {
 		
 		return context.getServletContext();
 	}
-	
+
+    /**
+     * Returns the {@link ServletContext} of the contextPath or null if not exists.
+     */
+	public ServletContext tryGetServletContext(String contextPath)  {
+		WebAppContext context = contexts.get(contextPath);
+
+		return null == context ? null : context.getServletContext();
+	}
+
+    /**
+     * Returns all servlet contexts.
+     */
 	public Map<String,ServletContext> getServletContexts(){
 		Map<String, ServletContext> servletContexts = new LinkedHashMap<String, ServletContext>();
 
