@@ -80,7 +80,12 @@ class THttpResponseImpl implements THttpResponse {
     public boolean isSuccess(){
 		return 200 <= getStatus() && getStatus() < 300;
 	}
-	
+
+	@Override
+	public boolean isFailure() {
+		return getStatus() >= 300;
+	}
+
 	@Override
     public String getLocation(){
 		return getHeader(Headers.LOCATION);

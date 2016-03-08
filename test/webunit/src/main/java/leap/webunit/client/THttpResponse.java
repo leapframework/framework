@@ -48,6 +48,11 @@ public interface THttpResponse {
 	boolean isSuccess();
 
     /**
+     * Returns true if the HTTP status is >= 300.
+     */
+    boolean isFailure();
+
+    /**
      * Returns the header value of {@link Headers#LOCATION}.
      *
      * <p/>
@@ -127,6 +132,13 @@ public interface THttpResponse {
 		return assertStatusEquals(HTTP.SC_BAD_REQUEST);
 	}
 
+	/**
+	 * Asserts that the HTTP status is 400 bad request.
+     */
+	default THttpResponse assertBadRequest() {
+		return assert400();
+	}
+
     /**
      * Asserts that the HTTP status is 401 unauthorized.
      */
@@ -134,10 +146,24 @@ public interface THttpResponse {
 		return assertStatusEquals(HTTP.SC_UNAUTHORIZED);
 	}
 
+	/**
+	 * Asserts that the HTTP status is 401 unauthorized.
+	 */
+	default THttpResponse assertUnAuthorized() {
+		return assertStatusEquals(HTTP.SC_UNAUTHORIZED);
+	}
+
     /**
      * Asserts that the HTTP status is 403 forbidden.
      */
 	default THttpResponse assert403() {
+		return assertStatusEquals(HTTP.SC_FORBIDDEN);
+	}
+
+	/**
+	 * Asserts that the HTTP status is 403 forbidden.
+	 */
+	default THttpResponse assertForbidden() {
 		return assertStatusEquals(HTTP.SC_FORBIDDEN);
 	}
 
@@ -149,6 +175,13 @@ public interface THttpResponse {
 	}
 
     /**
+     * Asserts that the HTTP status is 404 not found.
+     */
+    default THttpResponse assertNotFound() {
+        return assertStatusEquals(HTTP.SC_NOT_FOUND);
+    }
+
+    /**
      * Asserts that the HTTP status is 500 internal server error.
      */
 	default THttpResponse assert500() {
@@ -156,10 +189,10 @@ public interface THttpResponse {
 	}
 
     /**
-     * Asserts that the HTTP status is 404
+     * Asserts that the HTTP status is 500 internal server error.
      */
-    default THttpResponse assertNotFound() {
-        return assert404();
+    default THttpResponse assertInternalServerError() {
+        return assertStatusEquals(HTTP.SC_INTERNAL_SERVER_ERROR);
     }
 
     /**
@@ -224,14 +257,43 @@ public interface THttpResponse {
 	 */
 	THttpResponse assertContentTypeText();
 
+    /**
+     * Asserts response content type equals to the given media type.
+     *
+     * <p/>
+     * Example :
+     *
+     * <pre>
+     *     assertContentTypeEquals("text/plain");
+     * </pre>
+     */
 	THttpResponse assertContentTypeEquals(String mediaType);
 
+    /**
+     * Asserts response content type equals to the given media type and matches the given charset.
+     *
+     * <p/>
+     * Example :
+     *
+     * <pre>
+     *     assertContentTypeEquals("text/plain","utf-8);
+     * </pre>
+     */
 	THttpResponse assertContentTypeEquals(String mediaType, String charset);
 
+    /**
+     * Asserts the content type is present in http response.
+     */
 	THttpResponse assertContentTypePresent();
 
+    /**
+     * Asserts the header's value equals the expected value.
+     */
 	THttpResponse assertHeaderEquals(String headerName, String expectedValue);
 
+    /**
+     * Asserts the charset in content type equals to the expected value.
+     */
 	THttpResponse assertCharsetEquals(String expectedCharset);
 
 }
