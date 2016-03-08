@@ -8,6 +8,7 @@
     <resources location="classpath:/tested/**/*"/>
     
     <properties>
+        <property name="testConfigProperty" value="t"/>
         <property name="test.prop1" value="test.val1"/>
         <property name="test.prop2">
             test.val2

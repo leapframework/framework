@@ -13,18 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.annotation;
+package tested.beans;
 
-import java.lang.annotation.*;
+import leap.core.annotation.Bean;
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Inject;
 
-@Target({ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface ConfigProperty {
+@Bean
+public class CBean {
 
-    /**
-     * The config property's key
-     */
-    String[] value() default {};
+    private final ABean1  bean;
+    private final String testConfigProperty;
 
+    public CBean(@Inject ABean1 bean, @ConfigProperty String testConfigProperty) {
+        this.bean = bean;
+        this.testConfigProperty = testConfigProperty;
+    }
+
+    public ABean1 getBean() {
+        return bean;
+    }
+
+    public String getTestConfigProperty() {
+        return testConfigProperty;
+    }
 }

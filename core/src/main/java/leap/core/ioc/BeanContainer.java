@@ -16,7 +16,10 @@
 package leap.core.ioc;
 
 import leap.core.*;
-import leap.core.annotation.*;
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Inject;
+import leap.core.annotation.M;
+import leap.core.annotation.R;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
@@ -976,8 +979,8 @@ public class BeanContainer implements BeanFactory {
 	        }
 	        
 	        doBeanSetProperties(bd,bean);
-	        doBeanInvokeMethods(bd,bean);
 	        doBeanInjection(bd,bean);
+            doBeanInvokeMethods(bd,bean);
 	        
 			if(null != bd.getInitMethod()){
 				Reflection.invokeMethod(bd.getInitMethod(), bean);
@@ -1014,6 +1017,54 @@ public class BeanContainer implements BeanFactory {
 	protected void postBeanCreation(Object bean) {
 		
 	}
+
+    protected Object resolveConfigProperty(BeanDefinitionBase bd, ConfigProperty p, String name, Class<?> type, Type genericType) {
+        String keyPrefix = bd.getConfigurationPrefix();
+        if(!Strings.isEmpty(keyPrefix)) {
+            char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
+            if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
+                keyPrefix = keyPrefix + ".";
+            }
+        }else{
+            keyPrefix = "";
+        }
+        if(p.value().length > 0) {
+            for(String key : p.value()) {
+                Object value = resolveConfigProperty(keyPrefix + key, type, genericType);
+                if(null != value){
+                    return value;
+                }
+            }
+        }else{
+            Object value = resolveConfigProperty(keyPrefix + name, type, genericType);
+            if(null != value) {
+                return value;
+            }
+
+            value = resolveConfigProperty(keyPrefix + Strings.lowerHyphen(name), type, genericType);
+            if(null != value) {
+                return value;
+            }
+        }
+
+        return null;
+    }
+
+    protected Object resolveConfigProperty(String key, Class<?> type, Type genericType) {
+        if(appContext.getConfig().hasProperty(key)){
+            String prop = appContext.getConfig().getProperty(key);
+
+            if(!Strings.isEmpty(prop = prop.trim())) {
+                try {
+                    return Converts.convert(prop, type, genericType);
+                } catch (Exception e) {
+                    throw new BeanCreationException("Error resolve property for type '" + type +
+                            "' using config key '" + key + "', " + e.getMessage(), e);
+                }
+            }
+        }
+        return null;
+    }
 	
 	protected void doBeanConfigure(BeanDefinitionBase bd, Object bean) throws Throwable {
 		if(null != bd && bd.isConfigurable()) {
@@ -1151,7 +1202,7 @@ public class BeanContainer implements BeanFactory {
         for (ReflectField rf : bt.getReflectClass().getFields()) {
             if (rf.isAnnotationPresent(Inject.class)) {
                 try {
-                    //skip when bean value aleady setted.
+                    //skip when bean value already set.
                     if (null != rf.getValue(bean)) {
                         continue;
                     }
@@ -1344,7 +1395,33 @@ public class BeanContainer implements BeanFactory {
 
 		List<ArgumentDefinition> constructorArguments = bd.getConstructorArguments();
 		if(constructorArguments.isEmpty()){
-			bean = Reflection.newInstance(beanClass);
+            ReflectClass rc = ReflectClass.of(beanClass);
+            if(rc.hasDefaultConstructor()) {
+                bean = rc.newInstance();
+            }else{
+                if(rc.getConstructors().length == 1) {
+                    ReflectConstructor c = rc.getConstructors()[0];
+                    Object[] args = new Object[c.getParameters().length];
+
+                    for(int i=0;i<args.length;i++) {
+                        ReflectParameter p = c.getParameters()[i];
+
+                        if(p.isAnnotationPresent(Inject.class)) {
+                            args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
+                            continue;
+                        }
+
+                        ConfigProperty a = p.getAnnotation(ConfigProperty.class);
+                        if(null != a) {
+                            args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
+                            continue;
+                        }
+                    }
+                    return c.newInstance(args);
+                }else{
+                    throw new BeanCreationException("Cannot create bean without default constructor, check the bean : " + bd);
+                }
+            }
 		}else{
 			bean = Reflection.newInstance(bd.getConstructor(),doResolveArgs(bd, constructorArguments));
 		}
@@ -1518,7 +1595,7 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	protected Object[] doResolveArgs(final BeanDefinitionBase bd,final List<ArgumentDefinition> argDefs){
-		List<Object> args = new ArrayList<Object>();
+		List<Object> args = new ArrayList<>();
 		
 		for(ArgumentDefinition ad : argDefs){
 			if(null != ad.getValueDefinition().getDefinedType()){

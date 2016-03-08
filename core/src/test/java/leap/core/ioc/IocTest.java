@@ -101,6 +101,14 @@ public class IocTest extends CoreTestCase {
 	    TestBean bean = beanFactory.getBean("testConstructorDefaultValue");
 	    assertEquals("defaultStringValue", bean.getString());
 	}
+
+    @Test
+    public void testNoPublicConstructor() {
+        CBean cbean = beanFactory.getBean(CBean.class);
+
+        assertNotNull(cbean.getBean());
+        assertNotEmpty(cbean.getTestConfigProperty());
+    }
 	
 	protected void assertTestBean(TestBean testBean){
 		assertEquals(100, testBean.getInt1());
