@@ -54,7 +54,7 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
 
 	@Override
 	protected Object createTest() throws Exception {
-        return factory.inject(super.createTest());
+        return factory.getOrCreateBean(getTestClass().getJavaClass());
     }
 	
 }

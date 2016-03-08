@@ -139,7 +139,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 			ResourceSet rs = Resources.scan(messagesDir, "**/*.*");
 			if(!rs.isEmpty()){
 				MessageSource themeMessageSource = 
-						app.factory().newInstance(ResourceMessageSource.class).readFromResources(rs.toArray(Resource.class));
+						app.factory().createBean(ResourceMessageSource.class).readFromResources(rs.toArray(Resource.class));
 				return new ThemeOrDefaultMessageSource(themeMessageSource,app.getMessageSource());
 			}
 		}
@@ -152,7 +152,7 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		if(null != assetsDir && assetsDir.exists()){
 			String location = assetsDir.getPathWithinContext();
 			
-			ServletAssetResolver resolver = app.factory().newInstance(ServletAssetResolver.class);
+			ServletAssetResolver resolver = app.factory().createBean(ServletAssetResolver.class);
 			resolver.setPrefix(Paths.prefixAndSuffixWithSlash(location));
 			
 			SimpleCachingAssetSource themeAssetSource = new SimpleCachingAssetSource();

@@ -13,31 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test.perms;
+package tested.beans;
 
-import leap.core.sys.SysPermissionBase;
-
-public class TestPermission extends SysPermissionBase {
+public class InitClass {
 	
-	private static final long serialVersionUID = 3814085061173200278L;
-	
-	private static final String[] ALL_ACTIONS = new String[]{"create","update"};
-
-	public TestPermission(String name) {
-		super(name);
+	static {
+		InitedClass.inited = true;
 	}
-
-	public TestPermission(String name, String actions) {
-		super(name, actions);
-	}
-
-	@Override
-    protected String[] getAllActionsAscendingSorted() {
-	    return ALL_ACTIONS;
-    }
-
-	@Override
-    public boolean isDefaultGranted() {
-	    return false;
-    }
 }

@@ -20,7 +20,7 @@ import leap.core.junit.AppTestBase;
 
 import org.junit.Test;
 
-import test.beans.ValidBean;
+import tested.beans.ValidBean;
 
 public class ValidationTest extends AppTestBase {
 	

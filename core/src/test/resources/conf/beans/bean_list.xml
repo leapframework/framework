@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
     
-    <bean type="test.beans.TestBeanType" class="test.beans.TestBean"/>
-    <bean type="test.beans.TestBeanType" class="test.beans.TestBean"/>
+    <bean type="tested.beans.TestBeanType" class="tested.beans.TestBean"/>
+    <bean type="tested.beans.TestBeanType" class="tested.beans.TestBean"/>
 
-    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
-    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
+    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
+    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
     
-    <bean-list type="test.beans.TestBeanType1">
-	    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
-	    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
-	    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
+    <bean-list type="tested.beans.TestBeanType1">
+	    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
+	    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
+	    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
     </bean-list>
     
-    <bean type="test.beans.TestBeanType1" qualifier="a" class="test.beans.TestBean"/>
+    <bean type="tested.beans.TestBeanType1" qualifier="a" class="tested.beans.TestBean"/>
 
-    <bean-list type="test.beans.TestBeanType1" qualifier="a">
-	    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
-	    <bean type="test.beans.TestBeanType1" class="test.beans.TestBean"/>
+    <bean-list type="tested.beans.TestBeanType1" qualifier="a">
+	    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
+	    <bean type="tested.beans.TestBeanType1" class="tested.beans.TestBean"/>
     </bean-list>
     
 </beans>

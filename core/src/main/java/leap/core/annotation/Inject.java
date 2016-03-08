@@ -17,7 +17,7 @@ package leap.core.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.FIELD,ElementType.METHOD}) 
+@Target({ElementType.FIELD,ElementType.METHOD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Inject {

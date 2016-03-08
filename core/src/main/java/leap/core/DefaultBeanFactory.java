@@ -15,18 +15,18 @@
  */
 package leap.core;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.core.ioc.BeanContainer;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanDefinitionException;
 import leap.lang.Args;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * A default implementation of {@link BeanFactory}
@@ -66,7 +66,7 @@ public class DefaultBeanFactory implements BeanFactory {
     public AppContext getAppContext() {
 	    return beanContainer.getAppContext();
     }
-	
+
 	@Override
     public AppConfig getAppConfig() {
 	    return config;
@@ -180,27 +180,16 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 	
     @Override
-    public <T> T newInstance(Class<T> cls) throws BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.newInstance(cls) : null);
+    public <T> T createBean(Class<T> cls) throws BeanException {
+		T bean = (T)(null != externalFactory ? externalFactory.createBean(cls) : null);
 		
 	    if(null == bean){
-	    	return beanContainer.newInstance(cls);
+	    	return beanContainer.createBean(cls);
 	    }
 		
 	    return bean;
     }
 
-	@Override
-    public <T> T createBean(String id) throws NoSuchBeanException, BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(id) : null);
-		
-	    if(null == bean){
-	    	return beanContainer.createBean(id);
-	    }
-		
-	    return bean;
-    }
-	
     @Override
     public <T> T tryGetBean(String id) {
 	    T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(id) : null);
@@ -213,17 +202,6 @@ public class DefaultBeanFactory implements BeanFactory {
     }
     
 	@Override
-    public <T> T tryCreateBean(String id) throws BeanException {
-	    T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(id) : null);
-	    
-	    if(null == bean){
-	    	bean = beanContainer.tryCreateBean(id);
-	    }
-	    
-	    return bean;
-    }
-
-	@Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException, BeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		
@@ -235,11 +213,11 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 	
 	@Override
-    public <T> T createBean(Class<T> type) throws NoSuchBeanException, BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(type) : null);
+    public <T> T getOrCreateBean(Class<T> type) throws NoSuchBeanException, BeanException {
+		T bean = null;// (T)(null != externalFactory ? externalFactory.tryCreateBean(type) : null);
 		
 		if(null == bean){
-			bean = beanContainer.createBean(type);
+			bean = beanContainer.getOrCreateBean(type);
 		}
 		
 	    return bean;
@@ -267,17 +245,6 @@ public class DefaultBeanFactory implements BeanFactory {
         return bean;
     }
 
-    @Override
-    public <T> T tryCreateBean(Class<T> type) throws BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(type) : null);
-		
-		if(null == bean){
-			bean = beanContainer.tryCreateBean(type);
-		}
-		
-	    return bean;
-    }
-	
 	@Override
     public <T> T getBean(Class<? super T> type, String name) throws NoSuchBeanException, BeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type,name) : null);
@@ -290,11 +257,11 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 	
 	@Override
-    public <T> T createBean(Class<T> type, String name) throws NoSuchBeanException, BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(type,name) : null);
+    public <T> T getOrCreateBean(Class<T> type, String name) throws NoSuchBeanException, BeanException {
+		T bean = null; // (T)(null != externalFactory ? externalFactory.tryCreateBean(type,name) : null);
 		
 		if(null == bean){
-			bean = beanContainer.createBean(type,name);
+			bean = beanContainer.getOrCreateBean(type,name);
 		}
 		
 	    return bean;
@@ -306,17 +273,6 @@ public class DefaultBeanFactory implements BeanFactory {
 		
 		if(null == bean){
 			bean = beanContainer.tryGetBean(type,name);
-		}
-		
-	    return bean;
-    }
-	
-	@Override
-    public <T> T tryCreateBean(Class<T> type, String name) throws BeanException {
-		T bean = (T)(null != externalFactory ? externalFactory.tryCreateBean(type,name) : null);
-		
-		if(null == bean){
-			bean = beanContainer.tryCreateBean(type,name);
 		}
 		
 	    return bean;

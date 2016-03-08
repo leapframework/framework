@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,18 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test.beans;
+package tested;
 
-public class PrimaryBean implements PrimaryBean1,PrimaryBean2 {
+import leap.core.AppPropertyProcessor;
+import leap.lang.Out;
 
-	private String value;
+public class DupPropertyProcessor implements AppPropertyProcessor {
 
-	public String getValue() {
-		return value;
+	@Override
+	public boolean process(String name, String value, Out<String> newValue) {
+		if(value.startsWith("dup:")) {
+			String v = value.substring(4);
+			newValue.set(v + v);
+			return true;
+		}
+		return false;
 	}
 
-	public void setValue(String value) {
-		this.value = value;
-	}
-	
 }

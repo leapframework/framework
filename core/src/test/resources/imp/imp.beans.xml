@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
-    <bean id="imp.simpleBean" class="test.beans.SimpleBean"/>
+    <bean id="imp.simpleBean" class="tested.beans.SimpleBean"/>
 </beans>

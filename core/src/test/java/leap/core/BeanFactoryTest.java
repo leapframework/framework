@@ -23,11 +23,11 @@ import leap.lang.Lazy;
 
 import org.junit.Test;
 
-import test.beans.InjectBean;
-import test.beans.PrimaryBean;
-import test.beans.PrimaryBean1;
-import test.beans.PrimaryBean2;
-import test.beans.TestBean;
+import tested.beans.InjectBean;
+import tested.beans.PrimaryBean;
+import tested.beans.PrimaryBean1;
+import tested.beans.PrimaryBean2;
+import tested.beans.TestBean;
 
 public class BeanFactoryTest extends AppTestBase {
 

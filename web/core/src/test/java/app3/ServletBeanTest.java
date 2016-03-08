@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,21 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test;
+package app3;
 
-import leap.core.AppPropertyProcessor;
-import leap.lang.Out;
+import leap.web.WebTestCase;
+import org.junit.Test;
 
-public class DupPropertyProcessor implements AppPropertyProcessor {
+public class ServletBeanTest extends WebTestCase {
 
-	@Override
-	public boolean process(String name, String value, Out<String> newValue) {
-		if(value.startsWith("dup:")) {
-			String v = value.substring(4);
-			newValue.set(v + v);
-			return true;
-		}
-		return false;
-	}
+    @Test
+    public void testServletProxy() {
+        get("/app3/test_servlet_bean").assertContentEquals("Ok");
+    }
 
 }

@@ -13,8 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package test.beans;
+package tested.beans;
 
-public interface TestBeanType {
+public interface TestBeanType1 {
 
 }

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+	version="3.0">
+
+	<display-name>Archetype Created Servlet 3.0 Web Application</display-name>
+
+    <listener>
+        <listener-class>leap.web.AppBootstrap</listener-class>
+    </listener>
+
+    <context-param>
+        <param-name>base-package</param-name>
+        <param-value>app3</param-value>
+    </context-param>
+
+    <servlet>
+        <servlet-name>TestServletBean</servlet-name>
+        <servlet-class>leap.core.web.ServletProxy</servlet-class>
+        <init-param>
+            <param-name>servlet-class</param-name>
+            <param-value>app3.ServletBean</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>TestServletBean</servlet-name>
+        <url-pattern>/test_servlet_bean</url-pattern>
+    </servlet-mapping>
+</web-app>

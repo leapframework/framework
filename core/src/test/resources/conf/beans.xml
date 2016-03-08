@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
-    <bean id="testConstructor1" class="test.beans.TestBean">
+    <bean id="testConstructor1" class="tested.beans.TestBean">
         <constructor-arg value="hello"/>
     </bean>
     
-    <bean class="test.beans.PrimaryBean"/>
+    <bean class="tested.beans.PrimaryBean"/>
     
-    <bean type="test.beans.PrimaryBean1" class="test.beans.PrimaryBean" primary="true">
+    <bean type="tested.beans.PrimaryBean1" class="tested.beans.PrimaryBean" primary="true">
     	<property name="value" value="1"/>
     </bean>
     
-    <bean type="test.beans.PrimaryBean2" class="test.beans.PrimaryBean" primary="true">
+    <bean type="tested.beans.PrimaryBean2" class="tested.beans.PrimaryBean" primary="true">
     	<property name="value" value="2"/>
     </bean>  
     
-    <bean type="test.beans.PrimaryBean2" class="test.beans.PrimaryBean">
+    <bean type="tested.beans.PrimaryBean2" class="tested.beans.PrimaryBean">
     	<property name="value" value="3"/>
     </bean>       
     
@@ -26,16 +26,16 @@
    	<alias alias="testAlias" type="leap.core.cache.Cache" name="test"/>
     
     <beans if-profile="production">
-        <bean id="testProfile.shouldNotCreated" class="test.beans.TestBean"/>
+        <bean id="testProfile.shouldNotCreated" class="tested.beans.TestBean"/>
     </beans>
     
     <beans if-profile="development">
-        <bean id="testProfile.shouldBeCreated" class="test.beans.TestBean"/>
+        <bean id="testProfile.shouldBeCreated" class="tested.beans.TestBean"/>
     </beans>    
     
-    <bean class="test.beans.InjectBean"/>
+    <bean class="tested.beans.InjectBean"/>
     
-    <bean id="testConstructorDefaultValue" class="test.beans.TestBean">
+    <bean id="testConstructorDefaultValue" class="tested.beans.TestBean">
         <constructor-arg value="${not_exists_config_property}" default-value="defaultStringValue"/>
     </bean>
 </beans>
