@@ -303,7 +303,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		}
 		
 		if(!FailureHandler.class.equals(a.handler())) {
-			FailureHandler handler = factory.createBean(a.handler());
+			FailureHandler handler = factory.getOrCreateBean(a.handler());
 			route.addFailureHandler(new ConditionalFailureHandler(cond) {
 				@Override
 				protected void doHandlerFailure(ActionContext context, ActionExecution execution, Result result) {
@@ -357,7 +357,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		if(null != a && a.value().length > 0) {
 			for(Class<? extends ActionInterceptor> c : a.value()) {
 				try {
-	                interceptors.add(app.factory().createBean((Class<ActionInterceptor>)c));
+	                interceptors.add(app.factory().getOrCreateBean((Class<ActionInterceptor>)c));
                 } catch (BeanException e) {
                 	log.error("Error creating bean of action interceptor '{}' : {}", c, e.getMessage());
                 	throw e;

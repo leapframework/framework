@@ -123,7 +123,7 @@ public class DefaultActionStrategy implements ActionStrategy {
 		}
 		
         try {
-        	return factory.newInstance(cls);
+        	return factory.createBean(cls);
         } catch (Exception e) {
         	throw new AppConfigException("Error creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
         }

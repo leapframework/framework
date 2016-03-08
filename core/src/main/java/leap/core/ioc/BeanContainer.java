@@ -293,6 +293,17 @@ public class BeanContainer implements BeanFactory {
 		return bd;
 	}
 
+	protected <T> BeanDefinitionBase createBeanDefinition(Class<T> type){
+		BeanDefinitionBase bd = new BeanDefinitionBase(XmlBeanDefinitionLoader.RUNTIME_SOURCE);
+
+		bd.setType(type);
+		bd.setBeanClass(type);
+		bd.setSingleton(true);
+		bd.setPrimary(true);
+
+		return bd;
+	}
+
 	@Override
     public <T> void addBean(String id, boolean lazyInit, Class<? extends T> beanClass, Object... constructorArgs) throws BeanException {
 		ensureAppNotInited();
@@ -320,7 +331,10 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	@Override
-    public <T> T newInstance(Class<T> cls) throws BeanException {
+    public <T> T createBean(Class<T> cls) throws BeanException {
+        return (T)doCreateBean(createBeanDefinition(cls));
+        /*
+
 		try {
 	        T bean = Reflection.newInstance(cls);
 	        
@@ -338,9 +352,9 @@ public class BeanContainer implements BeanFactory {
         } catch (Throwable e) {
         	throw new BeanCreationException("Error creating instance of '" + cls.getName() + "', " + e.getMessage(), e);
         }
+        */
     }
 
-	@Override
     public <T> T createBean(String id) throws NoSuchBeanException, BeanException {
 		T bean = tryCreateBean(id);
 		if(null == bean){
@@ -360,7 +374,6 @@ public class BeanContainer implements BeanFactory {
 		return (T)doGetBean(bd);
     }
 	
-    @Override
     @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(String id) throws BeanException {
     	Args.notEmpty(id,"bean id");
@@ -383,11 +396,11 @@ public class BeanContainer implements BeanFactory {
     }
     
     @Override
-    public <T> T createBean(Class<T> type) throws BeanException {
+    public <T> T getOrCreateBean(Class<T> type) throws BeanException {
     	T bean = tryCreateBean(type);
 		
 		if(null == bean){
-			return (T)newInstance(type);
+			return (T) createBean(type);
 		}
 		
 	    return bean;
@@ -437,7 +450,6 @@ public class BeanContainer implements BeanFactory {
         return (T)doGetBean(bd);
     }
 	
-    @Override
     @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type) throws BeanException {
 		Args.notNull(type,"bean type");
@@ -465,12 +477,11 @@ public class BeanContainer implements BeanFactory {
 	    return bean;
     }
 	
-    @Override
-    public <T> T createBean(Class<T> type, String name) throws BeanException {
+    public <T> T getOrCreateBean(Class<T> type, String name) throws BeanException {
 		T bean = tryCreateBean(type, name);
 		
 		if(null == bean){
-			return (T)newInstance(type);
+			return (T) createBean(type);
 		}
 		
 	    return bean;
@@ -491,7 +502,6 @@ public class BeanContainer implements BeanFactory {
 		return null;
     }
 	
-    @Override
     @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
@@ -1468,7 +1478,7 @@ public class BeanContainer implements BeanFactory {
 	protected void beforeBeanCreation(BeanDefinitionBase bd) {
 		Map<BeanDefinitionBase,Object> curVal = this.beansCurrentlyInCreation.get();
 		if(null == curVal){
-			curVal = new HashMap<BeanDefinitionBase,Object>(5);
+			curVal = new HashMap<>(5);
 			this.beansCurrentlyInCreation.set(curVal);
 		}
 		curVal.put(bd, null);

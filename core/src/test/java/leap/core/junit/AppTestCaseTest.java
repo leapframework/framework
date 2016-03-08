@@ -15,16 +15,32 @@
  */
 package leap.core.junit;
 
+import leap.core.AppConfig;
+import leap.core.AppContext;
+import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 import org.junit.Test;
 
-import leap.core.AppContext;
-import leap.core.junit.AppTestBase;
+public class AppTestCaseTest extends AppTestBase implements PostCreateBean {
 
-public class AppTestCaseTest extends AppTestBase {
+	protected @Inject AppConfig config;
+
+    private boolean postCreateCalled;
 
 	@Test
 	public void testAppContextInited(){
 		assertNotNull(AppContext.current());
 	}
-	
+
+	@Test
+	public void testInject() {
+		assertNotNull(config);
+        assertTrue(postCreateCalled);
+	}
+
+    @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        postCreateCalled = true;
+    }
 }

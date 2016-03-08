@@ -279,7 +279,7 @@ public class TWebServer {
 		}
 		
 		if(contexts.containsKey(contextPath)){
-			throw new IllegalArgumentException("Context path '" + contextPath + "' aleady exists in this server");
+			throw new IllegalArgumentException("Context path '" + contextPath + "' already exists in this server");
 		}
 		
 		WebAppContext context = new WebAppContext();

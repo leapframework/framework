@@ -24,7 +24,7 @@ import leap.core.sys.SysSecurityPermission;
 
 import org.junit.Test;
 
-import test.perms.TestPermission;
+import tested.perms.TestPermission;
 
 public class SysSecurityTest extends AppTestBase {
 

@@ -82,7 +82,7 @@ public class DefaultEntityValidator implements EntityValidator {
 			}
 		}
 		
-		//Validated by vaidators
+		//Validated by validators
 		for(int i=0;i<validators.length;i++){
 			validators[i].validate(entity, fm, value, validation, maxErrors);
 			if(validation.maxErrorsReached(maxErrors)){

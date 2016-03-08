@@ -46,14 +46,12 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected Object createTest() throws Exception {
-        Object test = super.createTest();
-
         AppContext context = AppContext.tryGetCurrent();
         if(null != context) {
-            context.getBeanFactory().inject(test);
+            return context.getBeanFactory().getOrCreateBean(getTestClass().getJavaClass());
+        }else{
+            return super.createTest();
         }
-
-        return test;
     }
 
 }

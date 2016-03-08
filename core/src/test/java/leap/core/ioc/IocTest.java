@@ -15,25 +15,17 @@
  */
 package leap.core.ioc;
 
-import java.util.List;
-import java.util.Map;
-
 import leap.core.CoreTestCase;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyAccessor;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-
 import org.junit.Test;
+import tested.beans.*;
 
-import test.beans.ABean;
-import test.beans.ABean1;
-import test.beans.ABeanType;
-import test.beans.InitedClass;
-import test.beans.TestBean;
-import test.beans.TestBeanType;
-import test.beans.TestBeanType1;
+import java.util.List;
+import java.util.Map;
 
 public class IocTest extends CoreTestCase {
 	

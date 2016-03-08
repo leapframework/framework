@@ -2,20 +2,20 @@
 <beans xmlns="http://www.leapframework.org/schema/beans">
     
 	<beans if="true">
-	    <bean id="testIfBeanTrue1" class="test.beans.TestBean"/>
-	    <bean id="testIfBeanTrue2" class="test.beans.TestBean"/>
+	    <bean id="testIfBeanTrue1" class="tested.beans.TestBean"/>
+	    <bean id="testIfBeanTrue2" class="tested.beans.TestBean"/>
 	</beans>
 	
 	<beans if="true">
-	    <bean id="testIfBeanTrue3" class="test.beans.TestBean"/>
+	    <bean id="testIfBeanTrue3" class="tested.beans.TestBean"/>
 	</beans>	
 	
 	<beans if="false">
-	    <bean id="testIfBeanFalse1" class="test.beans.TestBean"/>
+	    <bean id="testIfBeanFalse1" class="tested.beans.TestBean"/>
 	</beans>
 	
 	<beans if="false">
-	    <bean id="testIfBeanFalse2" class="test.beans.TestBean"/>
+	    <bean id="testIfBeanFalse2" class="tested.beans.TestBean"/>
 	</beans>	
     
 </beans>

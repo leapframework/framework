@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-	<base-package>test</base-package>
+	<base-package>tested</base-package>
 
     <import resource="../imp/imp.config.xml"/>
     
-    <resources location="classpath:/test/**/*"/>
+    <resources location="classpath:/tested/**/*"/>
     
     <properties>
         <property name="test.prop1" value="test.val1"/>
@@ -32,7 +32,7 @@
     </properties>
     
     <permissions>
-        <grant class="test.perms.TestPermission" name="*" actions="create"/>
+        <grant class="tested.perms.TestPermission" name="*" actions="create"/>
     </permissions>
     
     <config if-profile="production">

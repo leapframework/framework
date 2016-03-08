@@ -15,18 +15,14 @@
  */
 package leap.core.ioc;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import leap.core.annotation.Configurable;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
 import leap.lang.tostring.ToStringBuilder;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.util.*;
 
 @SuppressWarnings("rawtypes")
 class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinitionConfigurator {
@@ -52,12 +48,12 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected Boolean                  configurable;
     protected String                   configurationPrefix;
 
-    protected List<TypeDefinition>     additionalTypeDefs   = new ArrayList<TypeDefinition>();
-    protected List<FactoryDefinition>  factoryDefs          = new ArrayList<FactoryDefinition>();
-    protected List<ArgumentDefinition> constructorArguments = new ArrayList<ArgumentDefinition>();
-    protected List<PropertyDefinition> properties           = new ArrayList<PropertyDefinition>();
-    protected List<InvokeDefinition>   invokes              = new ArrayList<InvokeDefinition>();
-    protected Set<String>              qualifiers           = new LinkedHashSet<String>();
+    protected List<TypeDefinition>     additionalTypeDefs   = new ArrayList<>();
+    protected List<FactoryDefinition>  factoryDefs          = new ArrayList<>();
+    protected List<ArgumentDefinition> constructorArguments = new ArrayList<>();
+    protected List<PropertyDefinition> properties           = new ArrayList<>();
+    protected List<InvokeDefinition>   invokes              = new ArrayList<>();
+    protected Set<String>              qualifiers           = new LinkedHashSet<>();
     protected ValueDefinition          valueDefinition;
 	
 	protected Object singletonInstance;
