@@ -130,19 +130,6 @@ public class Lexer {
 	
 	public final void nextChar(){
 		ch = charAt(++pos);
-		
-		//convert SBC case to DBC case
-		switch (ch) {
-			case '，':
-				ch = ',';
-				chars.setCharAt(pos, ch);
-				return;
-			case '；':
-				ch = ';';
-				chars.setCharAt(pos, ch);
-			default:
-				break;
-		}
 	}
 	
 	public final void nextChars(int number){
