@@ -168,9 +168,10 @@
                             <file.encoding>UTF-8</file.encoding>
                             <org.apache.jasper.compiler.disablejsr199>true</org.apache.jasper.compiler.disablejsr199>
                         </systemPropertyVariables>
+                        <skipTests>true</skipTests>
                     </configuration>
 				</plugin>
-
+				
 				<!-- javadoc -->
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
