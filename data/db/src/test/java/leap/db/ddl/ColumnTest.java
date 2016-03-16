@@ -58,10 +58,7 @@ public class ColumnTest extends DbTestCase {
 		db.cmdCreateColumn(table.getTableName(), col3.build()).execute();
 		t1 = db.getMetadata().tryGetTable(t1);
 		DbColumn c3 = t1.findColumn(col3.getName());
-		if(col3 == null || c3 == null){
-			LogFactory.get(ColumnTest.class).error("col3:"+col3+" c3:"+c3);
-		}
-		
+		LogFactory.get(ColumnTest.class).error("col3:"+col3.getComment()+" c3:"+c3.getComment());
 		assertEquals(col3.getComment(), c3.getComment());
 		
 		//test column comment for alter column
