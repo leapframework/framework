@@ -3,15 +3,11 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
             targetNamespace="http://www.leapframework.org/schema/domains">
 
-	<xsd:element name="domains">
+	<xsd:element name="models">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:choice minOccurs="0" maxOccurs="unbounded">
 					<xsd:element ref="import" />
-					<xsd:element ref="entity-domain" />
-					<xsd:element ref="field-domain" />
-					<xsd:element ref="entity-domain-alias" />
-					<xsd:element ref="field-domain-alias" />
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 			</xsd:sequence>
@@ -56,65 +52,14 @@
         </xsd:complexType>
     </xsd:element>
     
-	<xsd:element name="entity-domain">
+	<xsd:element name="entity">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:choice minOccurs="0" maxOccurs="unbounded">
-					<xsd:element ref="field-domain"/>
-				</xsd:choice>						
+				<xsd:choice minOccurs="0" maxOccurs="unbounded"/>
 			</xsd:sequence>
 			<xsd:attribute name="name" type="xsd:string" use="required"/>
-			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>
-	
-    <xsd:element name="entity-domain-alias">
-        <xsd:complexType>
-            <xsd:simpleContent>
-                <xsd:extension base="xsd:string">
-                	<xsd:attribute name="domain" type="xsd:string" use="required"/>
-                	<xsd:attribute name="alias"  type="xsd:string" use="optional"/>
-                </xsd:extension>
-            </xsd:simpleContent>
-        </xsd:complexType>
-    </xsd:element>
-
-	<xsd:element name="field-domain">
-		<xsd:complexType>
-			<xsd:attribute name="entity-domain" type="xsd:string"/>
-			<xsd:attribute name="name" type="xsd:string" use="required" />
-			<xsd:attribute name="type" type="JdbcType" use="optional" />
-			<xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
-			<xsd:attribute name="length" type="xsd:int" use="optional" />
-			<xsd:attribute name="precision" type="xsd:int" use="optional" />
-			<xsd:attribute name="scale" type="xsd:int" use="optional" />
-			<xsd:attribute name="default-value" type="xsd:string" use="optional" />
-			<xsd:attribute name="insert" type="xsd:boolean"/>
-			<xsd:attribute name="update" type="xsd:boolean"/>
-			<xsd:attribute name="insert-value" type="xsd:string"/>
-			<xsd:attribute name="update-value" type="xsd:string"/>
-			<xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
-			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
-			<xsd:attribute name="override" type="xsd:boolean">
-				<xsd:annotation>
-					<xsd:documentation><![CDATA[
-                              if set to true this domain value will override the exists domain with same code. 
-                          ]]></xsd:documentation>
-				</xsd:annotation>
-			</xsd:attribute>
-		</xsd:complexType>
-	</xsd:element>
-    
-    <xsd:element name="field-domain-alias">
-        <xsd:complexType>
-            <xsd:simpleContent>
-                <xsd:extension base="xsd:string">
-                	<xsd:attribute name="domain" type="xsd:string" use="required"/>
-                	<xsd:attribute name="alias"  type="xsd:string" use="optional"/>
-                </xsd:extension>
-            </xsd:simpleContent>
-        </xsd:complexType>
-    </xsd:element>
 
     <xsd:simpleType name="JdbcType">
     	<xsd:restriction base="xsd:string">

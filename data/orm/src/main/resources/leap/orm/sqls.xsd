@@ -56,11 +56,11 @@
         <xsd:complexType>
         	<xsd:simpleContent>
         		<xsd:extension base="xsd:string">
-        			<xsd:attribute name="key" type="xsd:string" use="optional"></xsd:attribute>
-        			<xsd:attribute name="entity-class" type="xsd:string" use="optional"></xsd:attribute>
-        			<xsd:attribute name="entity-name" type="xsd:string" use="optional"></xsd:attribute>
-        			<xsd:attribute name="name" type="xsd:string" use="optional"></xsd:attribute>
-        			<xsd:attribute name="lang" type="xsd:string" use="optional"></xsd:attribute>
+        			<xsd:attribute name="key" type="xsd:string" use="optional"/>
+        			<xsd:attribute name="entity-class" type="xsd:string" use="optional"/>
+        			<xsd:attribute name="entity-name" type="xsd:string" use="optional"/>
+        			<xsd:attribute name="name" type="xsd:string" use="optional"/>
+        			<xsd:attribute name="lang" type="xsd:string" use="optional"/>
         			<xsd:attribute name="override" type="xsd:boolean">
         				<xsd:annotation>
         					<xsd:documentation><![CDATA[

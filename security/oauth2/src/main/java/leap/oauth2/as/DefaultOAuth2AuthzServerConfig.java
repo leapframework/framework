@@ -23,7 +23,7 @@ import leap.core.ds.DataSourceManager;
 import leap.core.schedule.SchedulerManager;
 import leap.core.store.JdbcStore;
 import leap.lang.Args;
-import leap.lang.Run;
+import leap.lang.Try;
 import leap.lang.Strings;
 import leap.lang.security.RSA;
 import leap.oauth2.as.client.AuthzClientStore;
@@ -535,8 +535,8 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     }
     
     protected void cleanup() {
-        Run.catchThrowable(() -> getCodeStore().cleanupAuthorizationCodes()); 
-        Run.catchThrowable(() -> getTokenStore().cleanupTokens());
-        Run.catchThrowable(() -> getSSOStore().cleanupSSO());
+        Try.catchAll(() -> getCodeStore().cleanupAuthorizationCodes());
+        Try.catchAll(() -> getTokenStore().cleanupTokens());
+        Try.catchAll(() -> getSSOStore().cleanupSSO());
     }
 }

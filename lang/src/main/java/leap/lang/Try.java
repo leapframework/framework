@@ -18,23 +18,23 @@ package leap.lang;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
-public class Run {
+public class Try {
     
-    private static final Log log = LogFactory.get(Run.class);
+    private static final Log log = LogFactory.get(Try.class);
 
-    public static void catchThrowable(CatchThrowableRunnable runnable) {
+    public static void catchAll(CatchRunnable runnable) {
         try {
             runnable.run();
         } catch (Throwable e) {
-            log.warn("Error running, " + e.getMessage(), e);
+            log.info(e);
         }
     }
-    
-    public static interface CatchThrowableRunnable {
+
+    public interface CatchRunnable {
         void run() throws Throwable;
     }
     
-    protected Run() {
+    protected Try() {
         
     }
 }

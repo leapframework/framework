@@ -21,6 +21,6 @@ public interface JsonParsable {
 		parseJson(JSON.decodeToJsonValue(json));
 	}
 	
-	void parseJson(JsonValue value);
+	void parseJson(JsonValue json);
 
 }

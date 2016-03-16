@@ -15,13 +15,16 @@
  */
 package leap.lang.json;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.Emptiable;
 import leap.lang.collection.UnmodifiableIteratorBase;
 import leap.lang.convert.Converts;
+import leap.lang.reflect.ReflectClass;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
 
 @SuppressWarnings({"unchecked","rawtypes"})
 public class JsonArray implements Iterable<JsonValue>,Emptiable,JsonValue {
@@ -47,12 +50,15 @@ public class JsonArray implements Iterable<JsonValue>,Emptiable,JsonValue {
 		return this;
 	}
 
+	/**
+	 * Returns the length of items.
+     */
 	public int length(){
 		return list.size();
 	}
 	
 	/**
-	 * Returns the raw value.
+	 * Returns the raw value of item at the given index.
 	 */
     public <T> T get(int i){
 		return (T)list.get(i);
@@ -110,6 +116,44 @@ public class JsonArray implements Iterable<JsonValue>,Emptiable,JsonValue {
     public String toString() {
 		return list.toString();
 	}
+
+    /**
+     * Parse all the items to the given type using {@link JsonParsable#parseJson(JsonValue)}.
+     */
+    public <T extends JsonParsable> List<T> parseList(Class<T> type) {
+        List<T> newList = new ArrayList<>();
+
+        ReflectClass rc = ReflectClass.of(type);
+
+        for(Object item : this.list) {
+
+            T obj = rc.newInstance();
+
+            obj.parseJson(JsonValue.of(item));
+
+            newList.add(obj);
+        }
+
+        return newList;
+    }
+
+    /**
+     * Parse all the items to the given type using {@link JsonParsable#parseJson(JsonValue)}.
+     */
+    public <T extends JsonParsable> List<T> parseList(Supplier<T> factory) {
+        List<T> newList = new ArrayList<>();
+
+        for(Object item : this.list) {
+
+            T obj = factory.get();
+
+            obj.parseJson(JsonValue.of(item));
+
+            newList.add(obj);
+        }
+
+        return newList;
+    }
 
 	@Override
     public Iterator<JsonValue> iterator() {
