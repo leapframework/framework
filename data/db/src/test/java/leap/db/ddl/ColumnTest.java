@@ -23,6 +23,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder1;
 import leap.junit.contexual.Contextual;
+import leap.lang.logging.LogFactory;
 
 import org.junit.Test;
 
@@ -57,6 +58,10 @@ public class ColumnTest extends DbTestCase {
 		db.cmdCreateColumn(table.getTableName(), col3.build()).execute();
 		t1 = db.getMetadata().tryGetTable(t1);
 		DbColumn c3 = t1.findColumn(col3.getName());
+		if(col3 == null || c3 == null){
+			LogFactory.get(ColumnTest.class).error("col3:"+col3+" c3:"+c3);
+		}
+		
 		assertEquals(col3.getComment(), c3.getComment());
 		
 		//test column comment for alter column
