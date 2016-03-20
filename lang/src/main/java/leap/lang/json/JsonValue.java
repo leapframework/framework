@@ -91,4 +91,24 @@ public interface JsonValue {
 	default JsonScalar asJsonScalar() {
 		throw new IllegalStateException("Not a scalar value");
 	}
+
+	default String asString() {
+		return (String)raw();
+	}
+
+	default Long asLong() {
+		return (Long)raw();
+	}
+
+    default Integer asInteger() {
+        return (Integer)raw();
+    }
+
+    default Float asFloat() {
+        return (Float) raw();
+    }
+
+    default Double asDouble() {
+        return (Double) raw();
+    }
 }
