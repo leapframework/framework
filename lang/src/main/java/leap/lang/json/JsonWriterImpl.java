@@ -16,6 +16,13 @@ package leap.lang.json;
  */
 
 
+import leap.lang.Beans;
+import leap.lang.Enums;
+import leap.lang.Strings;
+import leap.lang.codec.Base64;
+import leap.lang.naming.NamingStyle;
+import leap.lang.naming.NamingStyles;
+
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
@@ -24,13 +31,6 @@ import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import leap.lang.Beans;
-import leap.lang.Enums;
-import leap.lang.Strings;
-import leap.lang.codec.Base64;
-import leap.lang.naming.NamingStyle;
-import leap.lang.naming.NamingStyles;
 
 public class JsonWriterImpl implements JsonWriter {
 	
@@ -289,6 +289,25 @@ public class JsonWriterImpl implements JsonWriter {
 		endArray();
 	    return this;
     }
+
+	@Override
+	public JsonWriter arrayString(Iterable<String> array) {
+        startArray();
+        if(null != array) {
+            Iterator<String> it = array.iterator();
+            int i=0;
+            while(it.hasNext()) {
+                if(i > 0) {
+                    separator();
+                }else{
+                    i++;
+                }
+                value(it.next());
+            }
+        }
+        endArray();
+		return this;
+	}
 
 	public JsonWriter array(double... array) {
 		startArray();

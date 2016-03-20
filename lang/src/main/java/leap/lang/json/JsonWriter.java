@@ -15,12 +15,12 @@
  */
 package leap.lang.json;
 
+import leap.lang.Strings;
+import leap.lang.naming.NamingStyle;
+
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
-
-import leap.lang.Strings;
-import leap.lang.naming.NamingStyle;
 
 public interface JsonWriter {
 	
@@ -366,6 +366,36 @@ public interface JsonWriter {
 		return key(key).array(a);
 	}
 
+    default JsonWriter property(String key, Iterable<Object> a) {
+        return key(key).array(a);
+    }
+
+    default JsonWriter propertyString(String key, Iterable<String> a) {
+        return key(key).arrayString(a);
+    }
+
+	/**
+	 * Writes an array property.
+	 */
+	default JsonWriter propertyJsonable(String key, JsonStringable... array) {
+		key(key).startArray();
+		for(JsonStringable o : array){
+			o.toJson(this);
+		}
+		return endArray();
+	}
+
+	/**
+	 * Writes an array property.
+	 */
+	default JsonWriter propertyJsonable(String key, Iterable<? extends JsonStringable> iterable) {
+		key(key).startArray();
+		for(JsonStringable o : iterable){
+			o.toJson(this);
+		}
+		return endArray();
+	}
+
 	JsonWriter array(String... array);
 	
 	/**
@@ -387,7 +417,7 @@ public interface JsonWriter {
 	JsonWriter array(float... array);
 	
 	JsonWriter array(double... array);
-	
+
 	JsonWriter array(Number... array);
 	
 	JsonWriter array(Date... array);
@@ -397,36 +427,16 @@ public interface JsonWriter {
 	JsonWriter array(Iterator<?> array);
 	
 	JsonWriter array(Object[] array);
-	
+
+    JsonWriter arrayString(Iterable<String> array);
+
 	/**
 	 * Writes an array.
 	 */
-	default JsonWriter array(JsonStringable... array) {
+	default JsonWriter arrayJsonable(JsonStringable... array) {
 		for(JsonStringable o : array){
 			o.toJson(this);
 		}
 		return this;
-	}
-	
-	/**
-	 * Writes an array property.
-	 */
-	default JsonWriter array(String key, JsonStringable... array) {
-		key(key).startArray();
-		for(JsonStringable o : array){
-			o.toJson(this);
-		}
-		return endArray();
-	}
-	
-	/**
-	 * Writes an array property.
-	 */
-	default JsonWriter array(String key, Iterable<? extends JsonStringable> iterable) {
-		key(key).startArray();
-		for(JsonStringable o : iterable){
-			o.toJson(this);
-		}
-		return endArray();
 	}
 }
