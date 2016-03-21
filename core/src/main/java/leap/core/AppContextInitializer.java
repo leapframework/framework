@@ -312,6 +312,13 @@ public class AppContextInitializer {
 			factory.load(context);
 		
 			onInited(context);
+
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run() {
+					factory.close();
+				}
+			});
 			
 			log.debug("Standalone app context initialized");
 		}finally{
