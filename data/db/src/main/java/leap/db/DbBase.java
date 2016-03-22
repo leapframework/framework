@@ -125,7 +125,7 @@ public abstract class DbBase implements Db {
         if(null != initSqlFile) {
             String sqls = initSqlFile.getContent();
             if(!Strings.isEmpty(sqls)) {
-                log.info("Init db '{}' by sql file '{}'", name + initSqlFile.getClasspath());
+                log.info("Init db '{}' by sql file '{}'", name, initSqlFile.getClasspath());
                 createExecution().add(sqls).execute();
             }
         }

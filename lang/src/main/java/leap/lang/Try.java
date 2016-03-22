@@ -30,6 +30,14 @@ public class Try {
         }
     }
 
+    public static void throwUnchecked(CatchRunnable runnable) {
+        try{
+            runnable.run();
+        }catch (Throwable e) {
+            throw Exceptions.uncheck(e);
+        }
+    }
+
     public interface CatchRunnable {
         void run() throws Throwable;
     }
