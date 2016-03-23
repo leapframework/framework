@@ -15,21 +15,6 @@
  */
 package leap.lang.http.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -46,6 +31,19 @@ import leap.lang.time.StopWatch;
 import leap.lang.value.ImmutableNamedValue;
 import leap.lang.value.NamedValue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.function.BiConsumer;
+
 public class JdkHttpRequest implements HttpRequest {
     
     private static final Log log = LogFactory.get(JdkHttpRequest.class);
@@ -54,8 +52,8 @@ public class JdkHttpRequest implements HttpRequest {
     protected final String        url;
     protected final boolean       ssl;
     
-    protected final Map<String, String>      cookies = new LinkedHashMap<String, String>();
-    protected final Map<String, String>      headers = new LinkedHashMap<String, String>();
+    protected final Map<String, String>      cookies     = new LinkedHashMap<>();
+    protected final SimpleHeaders            headers     = new SimpleHeaders();
     protected final QueryStringBuilder       queryParams = new QueryStringBuilder();
     protected final List<NamedValue<String>> formParams  = new ArrayList<>();
     
@@ -98,7 +96,14 @@ public class JdkHttpRequest implements HttpRequest {
     @Override
     public HttpRequest setHeader(String name, String value) {
         Args.notEmpty(name, "name");
-        headers.put(name, value);
+        headers.set(name, value);
+        return this;
+    }
+
+    @Override
+    public HttpRequest addHeader(String name, String value) {
+        Args.notEmpty(name);
+        headers.add(name, value);
         return this;
     }
 
@@ -124,6 +129,13 @@ public class JdkHttpRequest implements HttpRequest {
     }
 
     @Override
+    public HttpRequest setBody(InputStream is) {
+        Args.notNull(is);
+        this.content = is;
+        return this;
+    }
+
+    @Override
     public HttpResponse get() {
         return send(HTTP.Method.GET);
     }
@@ -132,21 +144,21 @@ public class JdkHttpRequest implements HttpRequest {
     public HttpResponse post() {
         return send(HTTP.Method.POST);
     }
-    
-    protected boolean hasHeader(String name) {
-        return headers.containsKey(name);
-    }
-    
-    protected JdkHttpResponse send(HTTP.Method m) {
+
+    public JdkHttpResponse send(HTTP.Method m) {
         String connUrl = url;
-        
+
         if(!queryParams.isEmpty()) {
             connUrl = Urls.appendQueryString(connUrl, queryParams.build());
         }
-        
+
         return doSend(m, connUrl);
     }
-    
+
+    protected boolean hasHeader(String name) {
+        return headers.exists(name);
+    }
+
     protected JdkHttpResponse doSend(HTTP.Method m, String connUrl) {
         try {
             log.debug("Sending '{}' request to url : {}", m, connUrl);
@@ -211,11 +223,7 @@ public class JdkHttpRequest implements HttpRequest {
     }
     
     protected void setHeaders(HttpURLConnection conn) throws IOException {
-        if(!headers.isEmpty()) {
-            for(Entry<String, String> header : headers.entrySet()) {
-                conn.addRequestProperty(header.getKey(), header.getValue());
-            }
-        }
+        headers.forEach((name,value) -> conn.addRequestProperty(name, value));
     }
     
     protected void setCookies(HttpURLConnection conn) throws IOException {
@@ -261,6 +269,56 @@ public class JdkHttpRequest implements HttpRequest {
             }
         }
         return new ByteArrayInputStream(Strings.getBytesUtf8(content.toString()));
+    }
+
+    private static final class SimpleHeaders {
+
+        private static final List<String> EMPTY = Collections.emptyList();
+
+        private final Map<String,List<String>> map = new LinkedHashMap<>(5);
+
+        public boolean exists(String name) {
+            return map.containsKey(name);
+        }
+
+        public List<String> get(String name) {
+            List<String> values = map.get(name);
+            return null == values ? EMPTY : values;
+        }
+
+        public void add(String name, String value) {
+            mustGet(name).add(value);
+        }
+
+        public void set(String name, String value) {
+            List<String> values = mustGet(name);
+            if(!values.isEmpty()) {
+                values.clear();
+            }
+            values.add(value);
+        }
+
+        public void forEach(BiConsumer<String, String> consumer) {
+            if(map.isEmpty()) {
+                return;
+            }
+
+            for(Map.Entry<String,List<String>> entry : map.entrySet()) {
+                String name = entry.getKey();
+                for(String value : entry.getValue()) {
+                    consumer.accept(name, value);
+                }
+            }
+        }
+
+        protected List<String> mustGet(String name) {
+            List<String> values = map.get(name);
+            if(null == values){
+                values = new ArrayList<>(1);
+                map.put(name, values);
+            }
+            return values;
+        }
     }
  
 }

@@ -15,12 +15,13 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.http.HTTP;
+import leap.lang.http.MimeType;
+
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
-
-import leap.lang.http.HTTP;
-import leap.lang.http.MimeType;
+import java.util.function.BiConsumer;
 
 /**
  * A simple http response interface.
@@ -102,5 +103,12 @@ public interface HttpResponse {
      * Returns the response body as string.
      */
     String getString();
-    
+
+    /**
+     * Executes the function for each header.
+     *
+     * <p/>
+     * The input arguments are (name,value)
+     */
+    void forEachHeaders(BiConsumer<String,String> func);
 }

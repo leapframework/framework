@@ -15,17 +15,18 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.Strings;
+import leap.lang.http.Headers;
+import leap.lang.http.MimeType;
+import leap.lang.http.MimeTypes;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
-
-import leap.lang.Strings;
-import leap.lang.http.Headers;
-import leap.lang.http.MimeType;
-import leap.lang.http.MimeTypes;
+import java.util.function.BiConsumer;
 
 public class JdkHttpResponse implements HttpResponse {
 
@@ -96,6 +97,17 @@ public class JdkHttpResponse implements HttpResponse {
     
     public String getString() {
         return Strings.newString(getBytes(), charset());
+    }
+
+    @Override
+    public void forEachHeaders(BiConsumer<String, String> func) {
+        for(Map.Entry<String,List<String>> entry : headers.entrySet()) {
+            String name = entry.getKey();
+
+            for(String value : entry.getValue()) {
+                func.accept(name, value);
+            }
+        }
     }
 
     protected String charset() {
