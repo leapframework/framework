@@ -19,8 +19,6 @@ import leap.lang.http.HTTP;
 import leap.lang.http.MimeType;
 
 import java.net.HttpURLConnection;
-import java.util.List;
-import java.util.Map;
 import java.util.function.BiConsumer;
 
 /**
@@ -80,11 +78,9 @@ public interface HttpResponse {
     String[] getHeaderValues(String name);
     
     /**
-     * Returns an unmodifiable Map of the header fields.
-     * 
-     * @see HttpURLConnection#getHeaderFields()
+     * Returns the headers.
      */
-    Map<String, List<String>> getHeaders();
+    HttpHeaders getHeaders();
     
     /**
      * Returns the content-type header as {@link MimeType}.

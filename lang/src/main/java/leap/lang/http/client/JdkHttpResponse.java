@@ -32,13 +32,12 @@ public class JdkHttpResponse implements HttpResponse {
 
     protected final JdkHttpClient  client;
     protected final JdkHttpRequest request;
-    
-    protected int                       status;
-    protected String                    reason;
-    protected Map<String, List<String>> headers;
-    protected byte[]                    bytes;
 
-    protected MimeType contentType;
+    protected int         status;
+    protected String      reason;
+    protected HttpHeaders headers;
+    protected byte[]      bytes;
+    protected MimeType    contentType;
     
     protected JdkHttpResponse(JdkHttpClient client, JdkHttpRequest request, HttpURLConnection conn) throws IOException {
         this.client  = client;
@@ -76,7 +75,7 @@ public class JdkHttpResponse implements HttpResponse {
     }
 
     @Override
-    public Map<String, List<String>> getHeaders() {
+    public HttpHeaders getHeaders() {
         return headers;
     }
 
@@ -101,13 +100,7 @@ public class JdkHttpResponse implements HttpResponse {
 
     @Override
     public void forEachHeaders(BiConsumer<String, String> func) {
-        for(Map.Entry<String,List<String>> entry : headers.entrySet()) {
-            String name = entry.getKey();
-
-            for(String value : entry.getValue()) {
-                func.accept(name, value);
-            }
-        }
+        headers.forEach(func);
     }
 
     protected String charset() {
@@ -120,9 +113,22 @@ public class JdkHttpResponse implements HttpResponse {
     }
     
     protected void init(HttpURLConnection conn) throws IOException {
-        status  = conn.getResponseCode();
+        status = conn.getResponseCode();
         reason = conn.getResponseMessage();
-        headers = conn.getHeaderFields();
+
+        headers = new SimpleHttpHeaders();
+
+        for(Map.Entry<String,List<String>> entry : conn.getHeaderFields().entrySet()) {
+            String name = entry.getKey();
+            if(null == name) {
+                continue;
+            }
+
+            for(String value : entry.getValue()) {
+                headers.add(name, value);
+            }
+        }
+
         bytes = readBody(conn);
     }
     

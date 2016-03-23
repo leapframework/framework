@@ -42,7 +42,6 @@ import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 
 public class JdkHttpRequest implements HttpRequest {
     
@@ -53,7 +52,7 @@ public class JdkHttpRequest implements HttpRequest {
     protected final boolean       ssl;
     
     protected final Map<String, String>      cookies     = new LinkedHashMap<>();
-    protected final SimpleHeaders            headers     = new SimpleHeaders();
+    protected final SimpleHttpHeaders        headers     = new SimpleHttpHeaders();
     protected final QueryStringBuilder       queryParams = new QueryStringBuilder();
     protected final List<NamedValue<String>> formParams  = new ArrayList<>();
     
@@ -271,54 +270,4 @@ public class JdkHttpRequest implements HttpRequest {
         return new ByteArrayInputStream(Strings.getBytesUtf8(content.toString()));
     }
 
-    private static final class SimpleHeaders {
-
-        private static final List<String> EMPTY = Collections.emptyList();
-
-        private final Map<String,List<String>> map = new LinkedHashMap<>(5);
-
-        public boolean exists(String name) {
-            return map.containsKey(name);
-        }
-
-        public List<String> get(String name) {
-            List<String> values = map.get(name);
-            return null == values ? EMPTY : values;
-        }
-
-        public void add(String name, String value) {
-            mustGet(name).add(value);
-        }
-
-        public void set(String name, String value) {
-            List<String> values = mustGet(name);
-            if(!values.isEmpty()) {
-                values.clear();
-            }
-            values.add(value);
-        }
-
-        public void forEach(BiConsumer<String, String> consumer) {
-            if(map.isEmpty()) {
-                return;
-            }
-
-            for(Map.Entry<String,List<String>> entry : map.entrySet()) {
-                String name = entry.getKey();
-                for(String value : entry.getValue()) {
-                    consumer.accept(name, value);
-                }
-            }
-        }
-
-        protected List<String> mustGet(String name) {
-            List<String> values = map.get(name);
-            if(null == values){
-                values = new ArrayList<>(1);
-                map.put(name, values);
-            }
-            return values;
-        }
-    }
- 
 }
