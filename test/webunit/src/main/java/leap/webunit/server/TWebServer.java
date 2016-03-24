@@ -73,7 +73,7 @@ public class TWebServer {
 	private final Server                    server;
 	private final HttpConfiguration         httpConfig;
 	private final ErrorHandler              errorHandler;
-	private final Map<String,WebAppContext> contexts = new ConcurrentHashMap<String, WebAppContext>();
+	private final Map<String,WebAppContext> contexts = new ConcurrentHashMap<>();
 	
 	private leap.lang.resource.FileResource currentDir;
 	
@@ -109,14 +109,18 @@ public class TWebServer {
 	    
 	    return c;
 	}
-	
+
 	protected Server newServer() {
 	    Server server = new Server();
 	    
 	    ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
 	    connector.setPort(httpPort);
-	    
+
+        ServerConnector connector1 = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+        connector1.setPort(httpPort + 1);
+
 	    server.addConnector(connector);
+        server.addConnector(connector1);
 	    
 	    return server;
 	}
@@ -357,13 +361,20 @@ public class TWebServer {
         HttpConfiguration c = new HttpConfiguration(httpConfig);
         c.addCustomizer(new SecureRequestCustomizer());
         
-        ServerConnector sslConnector = 
-                new ServerConnector(server, 
+        ServerConnector sslConnector =
+                new ServerConnector(server,
                                     new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
                                     new HttpConnectionFactory(c));
-        
         sslConnector.setPort(httpConfig.getSecurePort());
+
+        ServerConnector sslConnector1 =
+                new ServerConnector(server,
+                        new SslConnectionFactory(sslContextFactory, HttpVersion.HTTP_1_1.asString()),
+                        new HttpConnectionFactory(c));
+        sslConnector1.setPort(httpConfig.getSecurePort() + 1);
+
         server.addConnector(sslConnector);
+        server.addConnector(sslConnector1);
     }
 	
 	private void init() {
