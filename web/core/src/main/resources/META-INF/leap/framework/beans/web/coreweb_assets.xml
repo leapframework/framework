@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
+<beans xmlns="http://www.leapframework.org/schema/beans" if-servlet-environment="true">
 
     <!-- Core -->
     <bean type="leap.web.assets.AssetSource" class="leap.web.assets.DefaultAssetSource" primary="true"/>
