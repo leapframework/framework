@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.leapframework.org/schema/domains" 
+<xsd:schema xmlns="http://www.leapframework.org/schema/models"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema" 
-            targetNamespace="http://www.leapframework.org/schema/domains">
+            targetNamespace="http://www.leapframework.org/schema/models">
 
 	<xsd:element name="models">
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:choice minOccurs="0" maxOccurs="unbounded">
 					<xsd:element ref="import" />
+                    <xsd:element ref="global-field"/>
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 			</xsd:sequence>
@@ -51,6 +52,53 @@
             </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
+
+    <xsd:element name="global-field">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="xsd:anyType">
+                    <xsd:sequence>
+                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                            <xsd:group ref="fieldElements"/>
+                            <xsd:choice minOccurs="0" maxOccurs="1">
+                                <xsd:element ref="included-entities"/>
+                                <xsd:element ref="excluded-entities"/>
+                            </xsd:choice>
+                            <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+                        </xsd:choice>
+                    </xsd:sequence>
+                    <xsd:attributeGroup ref="fieldAttributes" />
+                    <xsd:attribute name="mapping-strategy" type="mappingStrategy" default="if-field-not-exists"/>
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="included-entities">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the included entity names, split use ','
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="excluded-entities">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the excluded entity names, split use ','
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     
 	<xsd:element name="entity">
 		<xsd:complexType>
@@ -60,6 +108,39 @@
 			<xsd:attribute name="name" type="xsd:string" use="required"/>
 		</xsd:complexType>
 	</xsd:element>
+
+    <xsd:attributeGroup name="fieldAttributes">
+        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="column" type="xsd:string" use="optional" />
+        <xsd:attribute name="jdbc-type" type="JdbcType" use="optional" />
+        <xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
+        <xsd:attribute name="length" type="xsd:int" use="optional" />
+        <xsd:attribute name="precision" type="xsd:int" use="optional" />
+        <xsd:attribute name="scale" type="xsd:int" use="optional" />
+        <xsd:attribute name="default-value" type="xsd:string" use="optional" />
+        <xsd:attribute name="insert" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="update" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="delete" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="select" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="insert-value" type="xsd:string" use="optional"/>
+        <xsd:attribute name="update-value" type="xsd:string" use="optional"/>
+        <xsd:attribute name="delete-value" type="xsd:string" use="optional"/>
+        <xsd:attribute name="select-value" type="xsd:string" use="optional"/>
+        <xsd:anyAttribute namespace="##other" processContents="lax" />
+    </xsd:attributeGroup>
+
+    <xsd:group name="fieldElements">
+        <xsd:sequence>
+        </xsd:sequence>
+    </xsd:group>
+
+    <xsd:simpleType name="mappingStrategy">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="mandatory"/>
+            <xsd:enumeration value="if-field-not-exists"/>
+            <xsd:enumeration value="if-column-exists"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 
     <xsd:simpleType name="JdbcType">
     	<xsd:restriction base="xsd:string">

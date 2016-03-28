@@ -15,8 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.util.List;
-
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.lang.Args;
@@ -27,6 +25,8 @@ import leap.lang.expression.Expression;
 import leap.lang.meta.MType;
 import leap.orm.domain.FieldDomain;
 import leap.orm.validation.FieldValidator;
+
+import java.util.List;
 
 public class FieldMapping {
 	
@@ -43,9 +43,13 @@ public class FieldMapping {
 	protected final Integer          scale;
 	protected final boolean		     insert;
 	protected final boolean		     update;
+    protected final boolean          delete;
+    protected final boolean          select;
 	protected final Expression       defaultValue;
 	protected final Expression	     insertValue;
 	protected final Expression	     updateValue;
+    protected final Expression       deleteValue;
+    protected final Expression       selectValue;
 	protected final FieldDomain      domain;
 	protected final boolean		     optimisticLock;
 	protected final String		     newOptimisticLockFieldName;
@@ -62,10 +66,12 @@ public class FieldMapping {
 						String sequenceName,
 						boolean nullable,
 						Integer maxLength,Integer presison,Integer scale,
-						boolean insert,boolean update,
+						boolean insert,boolean update,boolean delete, boolean select,
 						Expression defaultValue,
 						Expression insertValue,
 						Expression updateValue,
+                        Expression deleteValue,
+                        Expression selectValue,
 						boolean optimisticLock,
 						String newOptimisticLockFieldName,
 						FieldDomain domain,
@@ -89,9 +95,13 @@ public class FieldMapping {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
+        this.delete         = delete;
+        this.select         = select;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
+        this.deleteValue    = deleteValue;
+        this.selectValue    = selectValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
@@ -156,7 +166,15 @@ public class FieldMapping {
 		return updateValue;
 	}
 
-	public boolean isAutoGenerateValue(){
+    public Expression getDeleteValue() {
+        return deleteValue;
+    }
+
+    public Expression getSelectValue() {
+        return selectValue;
+    }
+
+    public boolean isAutoGenerateValue(){
 		return null != insertValue || column.isAutoIncrement() || !Strings.isEmpty(sequenceName);
 	}
 
@@ -172,7 +190,15 @@ public class FieldMapping {
 		return update;
 	}
 
-	public boolean isPrimaryKey() {
+    public boolean isDelete() {
+        return delete;
+    }
+
+    public boolean isSelect() {
+        return select;
+    }
+
+    public boolean isPrimaryKey() {
 		return column.isPrimaryKey();
 	}
 	

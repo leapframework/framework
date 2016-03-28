@@ -15,14 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.sql.Types;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.annotation.Inject;
@@ -46,12 +38,7 @@ import leap.lang.meta.MType;
 import leap.orm.OrmConfig;
 import leap.orm.OrmConstants;
 import leap.orm.OrmContext;
-import leap.orm.annotation.AEntity;
-import leap.orm.annotation.ARelation;
-import leap.orm.annotation.AutoGenerateColumns;
-import leap.orm.annotation.DataSource;
-import leap.orm.annotation.NonColumn;
-import leap.orm.annotation.NonEntity;
+import leap.orm.annotation.*;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
 import leap.orm.domain.EntityDomain;
@@ -61,6 +48,14 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.model.ModelField;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.sql.Types;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class DefaultMappingStrategy extends AbstractReadonlyBean implements MappingStrategy, AppConfigAware  {
 	
@@ -411,25 +406,74 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     									      RelationMappingBuilder rmb, 
     									      JoinFieldMappingBuilder jfmb, 
     									      FieldMappingBuilder lfmb) {
-		
+
 		FieldMappingBuilder rfmb = targetEmb.findFieldMappingByName(jfmb.getReferencedFieldName());
-		
+
 		if(!lfmb.getColumn().isPrimaryKey()) {
 			lfmb.setNullable(rmb.isOptional());
 			lfmb.getColumn().setNullable(rmb.isOptional());
 		}
-		
+
 		//force update length,precision,scale
 		lfmb.setMaxLength(rfmb.getMaxLength());
 		lfmb.setPrecision(rfmb.getPrecision());
 		lfmb.setScale(rfmb.getScale());
-		
+
 		lfmb.getColumn().setLength(rfmb.getColumn().getLength());
 		lfmb.getColumn().setPrecision(rfmb.getColumn().getPrecision());
 		lfmb.getColumn().setScale(rfmb.getColumn().getScale());
     }
 
-	@Override
+    @Override
+    public void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb) {
+        DbColumnBuilder c = fmb.getColumn();
+        if (Strings.isEmpty(c.getName())) {
+            c.setName(context.getNamingStrategy().fieldToColumnName(fmb.getFieldName()));
+        } else {
+            c.setName(context.getNamingStrategy().columnName(c.getName()));
+        }
+
+        MType dataType = fmb.getDataType();
+        if(null != dataType && dataType.isSimpleType()){
+            MSimpleType st = dataType.asSimpleType();
+
+            if(null == c.getTypeName()){
+                c.setTypeName(st.getJdbcType().getName());
+            }
+
+            if(null == c.getLength()){
+                c.setLength(st.getDefaultLength());
+            }
+
+            if(null == c.getPrecision()){
+                c.setPrecision(st.getDefaultPrecision());
+            }
+
+            if(null == c.getScale()){
+                c.setScale(st.getDefaultScale());
+            }
+        }
+
+        c.trySetScale(fmb.getScale());
+        c.trySetNullable(fmb.getNullable());
+        c.trySetLength(fmb.getMaxLength());
+        c.trySetPrecision(fmb.getPrecision());
+        c.trySetDefaultValue(fmb.getDefaultValue());
+
+        //Auto set optimistic lock
+        if(fmb.getFieldName().equalsIgnoreCase(context.getConfig().getOptimisticLockFieldName()) &&
+                isOptimisticLockFieldType(fmb.getColumn().getTypeCode())){
+            fmb.setOptimisticLock(true);
+            fmb.setNewOptimisticLockFieldName(context.getNamingStrategy().getFieldNameForNewValue(fmb.getFieldName()));
+        }
+
+        //Auto set reservedMetaFieldName
+        if(null == fmb.getReservedMetaFieldName()) {
+            fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(fmb.getFieldName()));
+        }
+    }
+
+    @Override
     public void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder f, FieldDomain d) {
 		DbColumnBuilder c = f.getColumn();
 		
@@ -445,27 +489,21 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 
 		f.trySetNullable(d.getNullable());
-		c.trySetNullable(d.getNullable());
-		
 		f.trySetMaxLength(d.getLength());
-		c.trySetLength(d.getLength());
-		
 		f.trySetPrecision(d.getPrecision());
-		c.trySetPrecision(d.getPrecision());
-		
 		f.trySetScale(d.getScale());
-		c.trySetScale(d.getScale());
-
 		f.trySetDefaultValue(d.getDefaultValue());
-		c.trySetDefaultValue(d.getDefaultValue());
-
 		f.trySetInsert(d.getInsert());
 		f.trySetUpdate(d.getUpdate());
-
 		f.trySetInsertValue(d.getInsertValue());
 		f.trySetUpdateValue(d.getUpdateValue());
-		
 		f.trySetSortOrder(d.getSortOrder());
+
+        c.trySetScale(d.getScale());
+        c.trySetNullable(d.getNullable());
+        c.trySetLength(d.getLength());
+        c.trySetPrecision(d.getPrecision());
+        c.trySetDefaultValue(d.getDefaultValue());
     }
 
 	protected void preMapping(MetadataContext context,EntityMappingBuilder emb){
@@ -564,78 +602,78 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 	
 	protected void postMappingFieldConventional(MetadataContext context, EntityMappingBuilder emb,FieldMappingBuilder fmb){
-		if(Strings.isEmpty(fmb.getFieldName())){
-			fmb.setFieldName(fmb.getBeanProperty().getName());
-		}
-		fmb.setFieldName(context.getNamingStrategy().fieldName(fmb.getFieldName()));
-		
-		if(null == fmb.getDataType()){
-			Class<?> javaType = fmb.getJavaType();
-			MSimpleType dataType = MSimpleTypes.forClass(javaType);
-			if(null == dataType){
-				throw new MetadataException("Unsupported java type '" + javaType + 
-											"' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
-			}
-			fmb.setDataType(dataType);
-		}
-		
-		if(null == fmb.getDomain()){
-			String       entityName   = emb.getEntityName();
-			String       fieldName    = fmb.getFieldName();
-			EntityDomain entityDomain = emb.getDomain();
-			FieldDomain  fieldDomain  = null;
-			
-			if(null != entityDomain){
-				fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityDomain,fieldName);
-			}else{
-				fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityName,fieldName);	
-			}
-			
-			if(null != fieldDomain && fieldDomain.isAutoMapping()) {
-				log.trace("Found domain '{}' matched the field '{}' of entity '{}'",fieldDomain.getName(),fieldName,entityName);
-				configFieldMappingByDomain(emb, fmb, fieldDomain);
-			}
-		}
-		
+        if(Strings.isEmpty(fmb.getFieldName())){
+            fmb.setFieldName(fmb.getBeanProperty().getName());
+        }
+        fmb.setFieldName(context.getNamingStrategy().fieldName(fmb.getFieldName()));
+
+        if(null == fmb.getDataType()){
+            Class<?> javaType = fmb.getJavaType();
+            MSimpleType dataType = MSimpleTypes.forClass(javaType);
+            if(null == dataType){
+                throw new MetadataException("Unsupported java type '" + javaType +
+                        "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+            }
+            fmb.setDataType(dataType);
+        }
+
+        if(null == fmb.getDomain()){
+            String       entityName   = emb.getEntityName();
+            String       fieldName    = fmb.getFieldName();
+            EntityDomain entityDomain = emb.getDomain();
+            FieldDomain  fieldDomain  = null;
+
+            if(null != entityDomain){
+                fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityDomain,fieldName);
+            }else{
+                fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityName,fieldName);
+            }
+
+            if(null != fieldDomain && fieldDomain.isAutoMapping()) {
+                log.trace("Found domain '{}' matched the field '{}' of entity '{}'",fieldDomain.getName(),fieldName,entityName);
+                configFieldMappingByDomain(emb, fmb, fieldDomain);
+            }
+        }
+
         DbColumnBuilder c = fmb.getColumn();
         if (Strings.isEmpty(c.getName())) {
             c.setName(context.getNamingStrategy().fieldToColumnName(fmb.getFieldName()));
         } else {
             c.setName(context.getNamingStrategy().columnName(c.getName()));
         }
-		
-		MType dataType = fmb.getDataType();
-		if(dataType.isSimpleType()){
-			MSimpleType st = dataType.asSimpleType();
-			
-			if(null == c.getTypeName()){
-				c.setTypeName(st.getJdbcType().getName());
-			}
-			
-			if(null == c.getLength()){
-				c.setLength(st.getDefaultLength());
-			}
-			
-			if(null == c.getPrecision()){
-				c.setPrecision(st.getDefaultPrecision());
-			}
-			
-			if(null == c.getScale()){
-				c.setScale(st.getDefaultScale());
-			}
-		}
-		
-		//Auto set optimistic lock 
-		if(fmb.getFieldName().equalsIgnoreCase(context.getConfig().getOptimisticLockFieldName()) && 
-		   isOptimisticLockFieldType(fmb.getColumn().getTypeCode())){
-			fmb.setOptimisticLock(true);
-			fmb.setNewOptimisticLockFieldName(context.getNamingStrategy().getFieldNameForNewValue(fmb.getFieldName()));
-		}
-		
-		//Auto set reservedMetaFieldName
-		if(null == fmb.getReservedMetaFieldName()) {
-			fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(fmb.getFieldName()));
-		}
+
+        MType dataType = fmb.getDataType();
+        if(null != dataType && dataType.isSimpleType()){
+            MSimpleType st = dataType.asSimpleType();
+
+            if(null == c.getTypeName()){
+                c.setTypeName(st.getJdbcType().getName());
+            }
+
+            if(null == c.getLength()){
+                c.setLength(st.getDefaultLength());
+            }
+
+            if(null == c.getPrecision()){
+                c.setPrecision(st.getDefaultPrecision());
+            }
+
+            if(null == c.getScale()){
+                c.setScale(st.getDefaultScale());
+            }
+        }
+
+        //Auto set optimistic lock
+        if(fmb.getFieldName().equalsIgnoreCase(context.getConfig().getOptimisticLockFieldName()) &&
+                isOptimisticLockFieldType(fmb.getColumn().getTypeCode())){
+            fmb.setOptimisticLock(true);
+            fmb.setNewOptimisticLockFieldName(context.getNamingStrategy().getFieldNameForNewValue(fmb.getFieldName()));
+        }
+
+        //Auto set reservedMetaFieldName
+        if(null == fmb.getReservedMetaFieldName()) {
+            fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(fmb.getFieldName()));
+        }
 	}
 	
 	protected boolean isOptimisticLockFieldType(int typeCode){

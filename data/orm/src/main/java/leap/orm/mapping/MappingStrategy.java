@@ -114,10 +114,16 @@ public interface MappingStrategy {
 									   EntityMappingBuilder targetEmb,
 									   RelationMappingBuilder rmb, 
 									   JoinFieldMappingBuilder jfmb, 
-									   FieldMappingBuilder lfmb);	
+									   FieldMappingBuilder lfmb);
+
+
+    /**
+     * Configures the field mapping conventional.
+     */
+    void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb);
 	
 	/**
-	 * Configs the attributes of the given {@link FieldMappingBuilder} by the given {@link FieldDomain}.
+	 * Configures the attributes of the given {@link FieldMappingBuilder} by the given {@link FieldDomain}.
 	 */
 	void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder fmb,FieldDomain domain);
 

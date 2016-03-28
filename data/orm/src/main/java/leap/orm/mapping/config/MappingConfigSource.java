@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.annotation;
+package leap.orm.mapping.config;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import leap.orm.OrmContext;
 
-/**
- * M means mandatory(not null), used in bean injection only.
- * 
- * <p>
- * The {@link N} annotation means nullable. 
- */
-@Target({ElementType.FIELD,ElementType.METHOD}) 
-@Retention(RetentionPolicy.RUNTIME)
-public @interface M {}
+public interface MappingConfigSource {
+
+    /**
+     * Loads the mapping configurations.
+     */
+    MappingConfig load(OrmContext context);
+
+}

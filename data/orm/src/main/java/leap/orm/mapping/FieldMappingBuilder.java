@@ -15,10 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.el.EL;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumnBuilder;
@@ -36,6 +32,10 @@ import leap.orm.domain.FieldDomain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
 import leap.orm.validation.FieldValidator;
+
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	
@@ -56,11 +56,15 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	protected Integer			    precision;
 	protected Integer			    scale;
 	protected String			    defaultValue;
+    protected Expression		    defaultValueExpression;
 	protected Boolean			    insert;
 	protected Boolean			    update;
-	protected Expression		    defaultValueExpression;
+    protected Boolean               delete;
+    protected Boolean               select;
 	protected Expression		    insertValue;
 	protected Expression		    updateValue;
+    protected Expression            deleteValue;
+    protected Expression            selectValue;
 	protected boolean			    optimisticLock;
 	protected String			    newOptimisticLockFieldName;
 	protected FieldDomain           domain;
@@ -282,6 +286,38 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		}
 		return this;
 	}
+
+    public Expression getDeleteValue() {
+        return deleteValue;
+    }
+
+    public FieldMappingBuilder setDeleteValue(Expression v) {
+        this.deleteValue = v;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetDeleteValue(Expression v) {
+        if(null == this.deleteValue) {
+            this.deleteValue = v;
+        }
+        return this;
+    }
+
+    public Expression getSelectValue() {
+        return selectValue;
+    }
+
+    public FieldMappingBuilder setSelectValue(Expression v) {
+        this.selectValue = v;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetSelectValue(Expression v) {
+        if(null == this.selectValue) {
+            this.selectValue = v;
+        }
+        return this;
+    }
 	
 	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
@@ -416,6 +452,46 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
+    public boolean isDelete() {
+        return null != delete && delete;
+    }
+
+    public Boolean getDelete(){
+        return delete;
+    }
+
+    public FieldMappingBuilder setDelete(Boolean b) {
+        this.delete = b;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetDelete(Boolean b){
+        if(null == this.delete){
+            this.delete = b;
+        }
+        return this;
+    }
+
+    public boolean isSelect() {
+        return null != select && select;
+    }
+
+    public Boolean getSelect(){
+        return select;
+    }
+
+    public FieldMappingBuilder setSelect(Boolean b) {
+        this.select = b;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetSelect(Boolean b){
+        if(null == this.select){
+            this.select = b;
+        }
+        return this;
+    }
+
 	public boolean isId(){
 		return null != column && column.isPrimaryKey();
 	}
@@ -504,6 +580,14 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		if(null == update){
 			update = true;
 		}
+
+        if(null == delete) {
+            delete = false;
+        }
+
+        if(null == select) {
+            select = false;
+        }
 		
 		if(null == defaultValueExpression){
 			defaultValueExpression = EL.tryCreateValueExpression(defaultValue, javaType);
@@ -519,7 +603,9 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-	    						insert, update, defaultValueExpression, insertValue, updateValue, 
+	    						insert, update, delete, select,
+                                defaultValueExpression,
+                                insertValue, updateValue, deleteValue, selectValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName);

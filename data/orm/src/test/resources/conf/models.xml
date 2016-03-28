@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<models xmlns="http://www.leapframework.org/schema/models">
+ 
+    <global-field name="ecode" column="ecode" jdbc-type="varchar" length="100" nullable="false"
+                  select="true" insert="true" update="true" delete="true">
+
+        <included-entities>ECodeModel</included-entities>
+
+    </global-field>
+
+</models>

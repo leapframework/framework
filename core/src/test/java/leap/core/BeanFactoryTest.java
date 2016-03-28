@@ -15,19 +15,15 @@
  */
 package leap.core;
 
-import java.util.List;
-
 import leap.core.cache.Cache;
 import leap.core.junit.AppTestBase;
+import leap.core.variable.Variable;
 import leap.lang.Lazy;
-
 import org.junit.Test;
+import tested.beans.*;
+import tested.variables.NowVariable1;
 
-import tested.beans.InjectBean;
-import tested.beans.PrimaryBean;
-import tested.beans.PrimaryBean1;
-import tested.beans.PrimaryBean2;
-import tested.beans.TestBean;
+import java.util.List;
 
 public class BeanFactoryTest extends AppTestBase {
 
@@ -80,4 +76,9 @@ public class BeanFactoryTest extends AppTestBase {
 		assertNotNull(bean.nonGetterGetPrivateInjectPrimaryBean());
 		assertNull(bean.nonGetterGetNotInjectPrimaryBean());
 	}
+
+    @Test
+    public void testOverrideNamedBean() {
+        assertEquals(NowVariable1.class,factory.getBean(Variable.class,"now").getClass());
+    }
 }

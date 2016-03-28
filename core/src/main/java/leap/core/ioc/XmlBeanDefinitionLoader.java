@@ -336,7 +336,7 @@ class XmlBeanDefinitionLoader {
 	        		
 	        		if(reader.isStartElement(IMPORT_ELEMENT)){
 	        			boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-	        			String importResourceName = reader.getAttributeRequired(RESOURCE_ATTRIBUTE);
+	        			String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 	        			
 	        			Resource importResource = Resources.getResource(resource,importResourceName);
 	        			
@@ -406,12 +406,12 @@ class XmlBeanDefinitionLoader {
 	
 	protected void readInit(BeanContainer container,XmlReader reader,LoaderContext context){
 		container.addInitDefinition(new InitDefinition(reader.getSource(), 
-													   reader.getAttributeRequired(CLASS_ATTRIBUTE),
+													   reader.getRequiredAttribute(CLASS_ATTRIBUTE),
 													   reader.getAttribute(INIT_METHOD_ATTRIBUTE)));
 	}
 	
 	protected AliasDefinition readAlias(BeanContainer container,XmlReader reader,LoaderContext context){
-		String alias = reader.getAttributeRequired(ALIAS_ATTRIBUTE);
+		String alias = reader.getRequiredAttribute(ALIAS_ATTRIBUTE);
 		String id    = reader.getAttribute(ID_ATTRIBUTE);
 		
 		if(!Strings.isEmpty(id)){
@@ -420,8 +420,8 @@ class XmlBeanDefinitionLoader {
 		
 		return new AliasDefinition(reader.getSource(),
 								   alias,
-								   Classes.forName(reader.getAttributeRequired(TYPE_ATTRIBUTE)),
-								   reader.getAttributeRequired(NAME_ATTRIBUTE)
+								   Classes.forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
+								   reader.getRequiredAttribute(NAME_ATTRIBUTE)
 								   );
 	}
 	
@@ -670,12 +670,12 @@ class XmlBeanDefinitionLoader {
 					continue;
 				}
 				if(reader.isStartElement(REF_ELEMENT)){
-					values.add(beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE)));
+					values.add(beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE)));
 					continue;
 				}
 				
 				if(reader.isStartElement(IDREF_ELEMENT)){
-					values.add(beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE)));
+					values.add(beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE)));
 					continue;
 				}
 				
@@ -747,7 +747,7 @@ class XmlBeanDefinitionLoader {
     protected void readBeanTypeDef(BeanContainer container, XmlReader reader, LoaderContext context, BeanDefinitionBase bean) {
         TypeDefinitionBase def = new TypeDefinitionBase();
         
-        String   typeClassName = reader.getAttributeRequired(TYPE_ATTRIBUTE);
+        String   typeClassName = reader.getRequiredAttribute(TYPE_ATTRIBUTE);
         Class<?> typeClass     = Classes.tryForName(typeClassName);
         
         if(null == typeClass) {
@@ -771,7 +771,7 @@ class XmlBeanDefinitionLoader {
             throw new BeanDefinitionException("Bean [" + bean + "] must be implements FactoryBean");
         }
         
-        String targetTypeName = reader.getAttributeRequired(TARGET_TYPE_ATTRIBUTE);
+        String targetTypeName = reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE);
         
         if(Strings.isEmpty(targetTypeName)){
             throw new BeanDefinitionException("Attribute '" + TARGET_TYPE_ATTRIBUTE + "' of element '" + REGISTER_BEAN_FACTORY_ELEMENT + "' must not be empty, source : " + reader.getSource());
@@ -800,7 +800,7 @@ class XmlBeanDefinitionLoader {
 		
 		PropertyDefinition prop = new PropertyDefinition();
 		
-		prop.setName(reader.getAttributeRequired(NAME_ATTRIBUTE));
+		prop.setName(reader.getRequiredAttribute(NAME_ATTRIBUTE));
 		prop.setDefaultValue(reader.getAttribute(DEFAULT_VALUE_ATTRIBUTE));
 		prop.setValueDefinition(readValue(container, reader, context,PROPERTY_ELEMENT));
 		prop.setProperty(bean.getBeanClassType().getProperty(prop.getName()));
@@ -821,7 +821,7 @@ class XmlBeanDefinitionLoader {
 	protected void readInvoke(BeanContainer container,XmlReader reader,LoaderContext context,BeanDefinitionBase bean){
 		InvokeDefinition invoke = new InvokeDefinition();
 		
-		String methodName = reader.getAttributeRequired(METHOD_ATTRIBUTE);
+		String methodName = reader.getRequiredAttribute(METHOD_ATTRIBUTE);
 		
 		while(reader.nextWhileNotEnd(INVOKE_ELEMENT)){
 			if(reader.isStartElement(METHOD_ARG_ELEMENT)){
@@ -910,11 +910,11 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		if(reader.isStartElement(REF_ELEMENT)){
-			return beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE));
+			return beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE));
 		}
 		
 		if(reader.isStartElement(IDREF_ELEMENT)){
-			return beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE));
+			return beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE));
 		}
 		
 		if(reader.isStartElement(NULL_ELEMENT)){
@@ -1111,7 +1111,7 @@ class XmlBeanDefinitionLoader {
 			
 			if(reader.isStartElement()){
 				if(reader.isStartElement(PROP_ELEMENT)){
-					props.put(reader.getAttributeRequired(KEY_ATTRIBUTE),reader.getElementTextAndEnd());
+					props.put(reader.getRequiredAttribute(KEY_ATTRIBUTE),reader.getElementTextAndEnd());
 				}else{
 					throw new BeanDefinitionException("unsupported child element '" + reader.getElementLocalName() + "' in 'props' element, source : " + reader.getSource());	
 				}
@@ -1150,7 +1150,7 @@ class XmlBeanDefinitionLoader {
 	}
 	
 	protected static Class<?> classAttribute(XmlReader reader,String name,boolean required){
-		String value = required ? reader.getAttributeRequired(name) : reader.getAttribute(name);
+		String value = required ? reader.getRequiredAttribute(name) : reader.getAttribute(name);
 		
 		if(Strings.isEmpty(value)){
 			return null;

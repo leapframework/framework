@@ -336,7 +336,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(RESOURCES_ELEMENT)){
 				if(matchProfile(context.getProfile(), reader)){
-					Collections2.addAll(this.resources, Resources.scan(reader.getAttributeRequired(LOCATION_ATTRIBUTE)));
+					Collections2.addAll(this.resources, Resources.scan(reader.getRequiredAttribute(LOCATION_ATTRIBUTE)));
 				}
 				reader.nextToEndElement(RESOURCES_ELEMENT);
 				continue;
