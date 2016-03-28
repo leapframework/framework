@@ -15,10 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
@@ -27,14 +23,11 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.AstNode;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlNodeContainer;
-import leap.orm.sql.ast.SqlObjectName;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlTableContainer;
-import leap.orm.sql.ast.SqlTableName;
-import leap.orm.sql.ast.SqlTableSource;
+import leap.orm.sql.ast.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class SqlResolver {
 
@@ -42,7 +35,7 @@ public class SqlResolver {
 	protected final OrmMetadata		metadata;
 	protected final Sql				sql;
 	
-	private Stack<SqlSelect> selects = new Stack<SqlSelect>();
+	private Stack<SqlSelect> selects = new Stack<>();
 	
 	public SqlResolver(MetadataContext context,Sql sql){
 		this.context  = context;
@@ -51,7 +44,7 @@ public class SqlResolver {
 	}
 	
 	public Sql resolve(){
-		resolve(new Stack<Tables>(), sql.nodes());
+		resolve(new Stack<>(), sql.nodes());
 		return sql;
 	}
 	

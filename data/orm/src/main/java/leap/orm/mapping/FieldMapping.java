@@ -32,27 +32,25 @@ public class FieldMapping {
 	
 	protected final String		     fieldName;
 	protected final MType            dataType;
-	protected final String			 metaFieldName;
+	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
 	protected final BeanProperty     beanProperty;
 	protected final DbColumn         column;
-	protected final String		     sequenceName;
-	protected final boolean		     nullable;
+	protected final String           sequenceName;
+	protected final boolean          nullable;
 	protected final Integer          maxLength;
 	protected final Integer          precision;
 	protected final Integer          scale;
-	protected final boolean		     insert;
-	protected final boolean		     update;
-    protected final boolean          delete;
-    protected final boolean          select;
+	protected final boolean          insert;
+	protected final boolean          update;
+    protected final boolean          where;
 	protected final Expression       defaultValue;
-	protected final Expression	     insertValue;
-	protected final Expression	     updateValue;
-    protected final Expression       deleteValue;
-    protected final Expression       selectValue;
+	protected final Expression       insertValue;
+	protected final Expression       updateValue;
+    protected final Expression       whereValue;
 	protected final FieldDomain      domain;
-	protected final boolean		     optimisticLock;
-	protected final String		     newOptimisticLockFieldName;
+	protected final boolean          optimisticLock;
+	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
 	
 	protected final ReservedMetaFieldName reservedMetaFieldName;
@@ -66,12 +64,11 @@ public class FieldMapping {
 						String sequenceName,
 						boolean nullable,
 						Integer maxLength,Integer presison,Integer scale,
-						boolean insert,boolean update,boolean delete, boolean select,
+						boolean insert,boolean update,boolean where,
 						Expression defaultValue,
 						Expression insertValue,
 						Expression updateValue,
-                        Expression deleteValue,
-                        Expression selectValue,
+                        Expression whereValue,
 						boolean optimisticLock,
 						String newOptimisticLockFieldName,
 						FieldDomain domain,
@@ -95,13 +92,11 @@ public class FieldMapping {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
-        this.delete         = delete;
-        this.select         = select;
+        this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
-        this.deleteValue    = deleteValue;
-        this.selectValue    = selectValue;
+        this.whereValue     = whereValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
@@ -166,12 +161,8 @@ public class FieldMapping {
 		return updateValue;
 	}
 
-    public Expression getDeleteValue() {
-        return deleteValue;
-    }
-
-    public Expression getSelectValue() {
-        return selectValue;
+    public Expression getWhereValue() {
+        return whereValue;
     }
 
     public boolean isAutoGenerateValue(){
@@ -190,12 +181,8 @@ public class FieldMapping {
 		return update;
 	}
 
-    public boolean isDelete() {
-        return delete;
-    }
-
-    public boolean isSelect() {
-        return select;
+    public boolean isWhere() {
+        return where;
     }
 
     public boolean isPrimaryKey() {

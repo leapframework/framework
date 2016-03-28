@@ -15,11 +15,12 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import leap.orm.sql.ast.SqlQuery;
 import leap.orm.sql.ast.SqlSelect;
 import leap.orm.sql.ast.SqlTableName;
+import leap.orm.sql.ast.SqlWhere;
+
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 abstract class SqlQueryParser extends SqlParser {
@@ -30,7 +31,7 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected boolean parseWhere(SqlQuery query){
 		if(lexer.token() == Token.WHERE){
-			accept();
+			acceptNode(new SqlWhere(lexer.token(), lexer.tokenText()));
 			return true;
 		}
 		return false;

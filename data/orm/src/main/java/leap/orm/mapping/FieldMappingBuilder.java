@@ -46,31 +46,29 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	protected MType			   	    dataType;
 	protected String			    metaFieldName;
 	protected Class<?>              javaType;
-	protected BeanProperty	        beanProperty;
+	protected BeanProperty          beanProperty;
 	protected DbColumnBuilder       column;
-	protected boolean			    columnNameDeclared;
-	protected String			    sequenceName;
+	protected boolean               columnNameDeclared;
+	protected String                sequenceName;
 	protected IdGenerator           idGenerator;
-	protected Boolean			    nullable;
-	protected Integer			    maxLength;
-	protected Integer			    precision;
-	protected Integer			    scale;
-	protected String			    defaultValue;
-    protected Expression		    defaultValueExpression;
-	protected Boolean			    insert;
-	protected Boolean			    update;
-    protected Boolean               delete;
-    protected Boolean               select;
-	protected Expression		    insertValue;
-	protected Expression		    updateValue;
-    protected Expression            deleteValue;
-    protected Expression            selectValue;
-	protected boolean			    optimisticLock;
-	protected String			    newOptimisticLockFieldName;
+	protected Boolean               nullable;
+	protected Integer               maxLength;
+	protected Integer               precision;
+	protected Integer               scale;
+	protected String                defaultValue;
+    protected Expression            defaultValueExpression;
+	protected Boolean               insert;
+	protected Boolean               update;
+    protected Boolean               where;
+	protected Expression            insertValue;
+	protected Expression            updateValue;
+    protected Expression            whereValue;
+	protected boolean               optimisticLock;
+	protected String                newOptimisticLockFieldName;
 	protected FieldDomain           domain;
-	protected Annotation[]		    annotations;
+	protected Annotation[]          annotations;
 	protected List<FieldValidator>  validators;
-	protected Integer			    sortOrder;
+	protected Integer               sortOrder;
 	protected ReservedMetaFieldName reservedMetaFieldName;
 	
 	public FieldMappingBuilder(){
@@ -287,34 +285,18 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public Expression getDeleteValue() {
-        return deleteValue;
+    public Expression getWhereValue() {
+        return whereValue;
     }
 
-    public FieldMappingBuilder setDeleteValue(Expression v) {
-        this.deleteValue = v;
-        return this;
-    }
-
-    public FieldMappingBuilder trySetDeleteValue(Expression v) {
-        if(null == this.deleteValue) {
-            this.deleteValue = v;
-        }
-        return this;
-    }
-
-    public Expression getSelectValue() {
-        return selectValue;
-    }
-
-    public FieldMappingBuilder setSelectValue(Expression v) {
-        this.selectValue = v;
+    public FieldMappingBuilder setWhereValue(Expression v) {
+        this.whereValue = v;
         return this;
     }
 
     public FieldMappingBuilder trySetSelectValue(Expression v) {
-        if(null == this.selectValue) {
-            this.selectValue = v;
+        if(null == this.whereValue) {
+            this.whereValue = v;
         }
         return this;
     }
@@ -452,42 +434,22 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean isDelete() {
-        return null != delete && delete;
+    public boolean isWhere() {
+        return null != where && where;
     }
 
-    public Boolean getDelete(){
-        return delete;
+    public Boolean getWhere(){
+        return where;
     }
 
-    public FieldMappingBuilder setDelete(Boolean b) {
-        this.delete = b;
+    public FieldMappingBuilder setWhere(Boolean b) {
+        this.where = b;
         return this;
     }
 
-    public FieldMappingBuilder trySetDelete(Boolean b){
-        if(null == this.delete){
-            this.delete = b;
-        }
-        return this;
-    }
-
-    public boolean isSelect() {
-        return null != select && select;
-    }
-
-    public Boolean getSelect(){
-        return select;
-    }
-
-    public FieldMappingBuilder setSelect(Boolean b) {
-        this.select = b;
-        return this;
-    }
-
-    public FieldMappingBuilder trySetSelect(Boolean b){
-        if(null == this.select){
-            this.select = b;
+    public FieldMappingBuilder trySetWhere(Boolean b){
+        if(null == this.where){
+            this.where = b;
         }
         return this;
     }
@@ -581,12 +543,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			update = true;
 		}
 
-        if(null == delete) {
-            delete = false;
-        }
-
-        if(null == select) {
-            select = false;
+        if(null == where) {
+            where = false;
         }
 		
 		if(null == defaultValueExpression){
@@ -603,9 +561,9 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-	    						insert, update, delete, select,
+	    						insert, update, where,
                                 defaultValueExpression,
-                                insertValue, updateValue, deleteValue, selectValue,
+                                insertValue, updateValue, whereValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName);

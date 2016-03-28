@@ -61,12 +61,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String DEFAULT_VALUE_ATTRIBUTE    = "default-value";
     private static final String INSERT_ATTRIBUTE           = "insert";
     private static final String UPDATE_ATTRIBUTE           = "update";
-    private static final String DELETE_ATTRIBUTE           = "delete";
-    private static final String SELECT_ATTRIBUTE           = "select";
+    private static final String WHERE_ATTRIBUTE            = "where";
     private static final String INSERT_VALUE_ATTRIBUTE     = "insert-value";
     private static final String UPDATE_VALUE_ATTRIBUTE     = "update-value";
-    private static final String DELETE_VALUE_ATTRIBUTE     = "delete-value";
-    private static final String SELECT_VALUE_ATTRIBUTE     = "select-value";
+    private static final String WHERE_VALUE_ATTRIBUTE      = "where-value";
     private static final String OVERRIDE_ATTRIBUTE         = "override";
 
     protected @Inject AppConfig appConfig;
@@ -210,12 +208,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         String  defaultValue = reader.resolveAttribute(DEFAULT_VALUE_ATTRIBUTE);
         Boolean insert       = reader.resolveBooleanAttribute(INSERT_ATTRIBUTE);
         Boolean update       = reader.resolveBooleanAttribute(UPDATE_ATTRIBUTE);
-        Boolean delete       = reader.resolveBooleanAttribute(DELETE_ATTRIBUTE);
-        Boolean select       = reader.resolveBooleanAttribute(SELECT_ATTRIBUTE);
+        Boolean where        = reader.resolveBooleanAttribute(WHERE_ATTRIBUTE);
         String  insertValue  = reader.resolveAttribute(INSERT_VALUE_ATTRIBUTE);
         String  updateValue  = reader.resolveAttribute(UPDATE_VALUE_ATTRIBUTE);
-        String  deleteValue  = reader.resolveAttribute(DELETE_VALUE_ATTRIBUTE);
-        String  selectValue  = reader.resolveAttribute(SELECT_VALUE_ATTRIBUTE);
+        String  whereValue   = reader.resolveAttribute(WHERE_VALUE_ATTRIBUTE);
         boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 
         //field-name
@@ -239,8 +235,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
 
         Expression insertValueExpression = null;
         Expression updateValueExpression = null;
-        Expression deleteValueExpression = null;
-        Expression selectValueExpression = null;
+        Expression whereValueExpression = null;
 
         if(!Strings.isEmpty(insertValue)){
             insertValueExpression = EL.tryCreateValueExpression(insertValue);
@@ -250,12 +245,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             updateValueExpression = EL.tryCreateValueExpression(updateValue);
         }
 
-        if(!Strings.isEmpty(deleteValue)){
-            deleteValueExpression = EL.tryCreateValueExpression(deleteValue);
-        }
-
-        if(!Strings.isEmpty(selectValue)){
-            selectValueExpression = EL.tryCreateValueExpression(selectValue);
+        if(!Strings.isEmpty(whereValue)){
+            whereValueExpression = EL.tryCreateValueExpression(whereValue);
         }
 
         field.setNullable(nullable);
@@ -265,12 +256,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setDefaultValue(defaultValue);
         field.setInsert(insert);
         field.setUpdate(update);
-        field.setDelete(delete);
-        field.setSelect(select);
+        field.setWhere(where);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);
-        field.setDeleteValue(deleteValueExpression);
-        field.setSelectValue(selectValueExpression);
+        field.setWhereValue(whereValueExpression);
 
         return field;
     }
