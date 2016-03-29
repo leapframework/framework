@@ -208,7 +208,7 @@ public abstract class SqlParserBase {
 		if(nodes.size() > 0){
 			AstNode lastNode = nodes.get(nodes.size() - 1);
 			if(lastNode instanceof Text){
-				((Text) lastNode).getText().append(text);
+				((Text) lastNode).append(text);
 			}else{
 				nodes.add(new Text(text));
 			}

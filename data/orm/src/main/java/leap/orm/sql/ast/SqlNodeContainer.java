@@ -15,12 +15,13 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
+
+import java.io.IOException;
+import java.util.function.Function;
 
 public abstract class SqlNodeContainer extends SqlNode implements AstNodeContainer {
 
@@ -74,5 +75,20 @@ public abstract class SqlNodeContainer extends SqlNode implements AstNodeContain
 	@Override
     public <T extends AstNode> T findLastNode(Class<T> type) {
 	    return AstUtils.findLastNode(nodes, type);
+    }
+
+    @Override
+    public boolean traverse(Function<AstNode, Boolean> visitor) {
+        if(!visitor.apply(this)) {
+            return false;
+        }
+
+        for(AstNode node : nodes) {
+            if(!node.traverse(visitor)){
+                return false;
+            }
+        }
+
+        return true;
     }
 }

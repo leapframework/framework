@@ -15,14 +15,15 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.Exceptions;
 import leap.lang.annotation.Internal;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
+
+import java.io.IOException;
+import java.util.function.Function;
 
 @Internal
 public abstract class AstNode {
@@ -81,10 +82,15 @@ public abstract class AstNode {
     protected void toSql_(Appendable buf) throws IOException {
 		toString_(buf);
     }
+
+    public boolean traverse(Function<AstNode, Boolean> visitor) {
+        return visitor.apply(this);
+    }
 	
 	protected abstract void toString_(Appendable buf) throws IOException;
 	
 	protected abstract void buildStatement_(SqlStatementBuilder stm,Params params) throws IOException;
 	
 	protected abstract void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException;
+
 }

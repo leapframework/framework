@@ -15,9 +15,6 @@
  */
 package leap.orm.metadata;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -31,18 +28,15 @@ import leap.orm.DefaultOrmMetadata;
 import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.EntityMappingBuilder;
-import leap.orm.mapping.Mapper;
-import leap.orm.mapping.MappingConfigContext;
-import leap.orm.mapping.MappingExistsException;
-import leap.orm.mapping.MappingNotFoundException;
-import leap.orm.mapping.MappingStrategy;
+import leap.orm.mapping.*;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlConfigContext;
 import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlSource;
-import leap.orm.sql.SqlConfigContext;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultMetadataManager implements OrmMetadataManager {
 	
@@ -194,8 +188,13 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		protected LoadingContext(OrmContext ormContext){
 			this.ormContext = ormContext;
 		}
-		
-		@Override
+
+        @Override
+        public String getName() {
+            return ormContext.getName();
+        }
+
+        @Override
         public OrmConfig getConfig() {
 	        return ormContext.getConfig();
         }

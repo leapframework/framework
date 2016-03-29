@@ -21,6 +21,8 @@ import leap.lang.params.Params;
 import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.AstUtils;
 
+import java.util.function.Function;
+
 @Internal
 @SuppressWarnings("unchecked")
 public class Sql {
@@ -155,4 +157,12 @@ public class Sql {
 		
 		return Strings.trim(sb.toString());
 	}
+
+    public void traverse(Function<AstNode, Boolean> visitor) {
+        for(AstNode node : nodes) {
+            if(!node.traverse(visitor)){
+                return;
+            }
+        }
+    }
 }

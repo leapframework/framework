@@ -15,20 +15,25 @@
  */
 package leap.orm.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.ParseLevel;
+import leap.orm.sql.ast.*;
 import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configurable(prefix="orm.dynamicSQL")
 public class DynamicSqlLanguage implements SqlLanguage {
@@ -38,7 +43,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	protected Boolean            smart;
 	protected ExpressionLanguage expressionLanguage;
 	
-	private Cache<String, List<Sql>> cache = new SimpleLRUCache<String, List<Sql>>();
+	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
 	
 	@ConfigProperty
 	public void setMode(String mode) {
@@ -65,9 +70,9 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
 	@Override
     public List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
-		List<Sql> sqls = doParseSql(text);
+		List<Sql> sqls = doParseSql(context, text);
 		
-		List<SqlClause> clauses = new ArrayList<SqlClause>();
+		List<SqlClause> clauses = new ArrayList<>();
 		
 		for(Sql sql : sqls){
 			clauses.add(createClause(context,sql));
@@ -78,16 +83,33 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	
 	@Override
     public DynamicSqlClause parseClause(MetadataContext context, String sql) throws SqlClauseException {
-		List<Sql> sqls = doParseSql(sql);
+		List<Sql> sqls = doParseSql(context, sql);
 		return createClause(context, sqls.get(0));
     }
 	
-	protected List<Sql> doParseSql(String sql) {
-		List<Sql> sqls = cache.get(sql);
+	protected List<Sql> doParseSql(MetadataContext context, String sql) {
+        String key = context.getName() + "___" + sql;
+
+		List<Sql> sqls = cache.get(key);
 		if(null == sqls) {
 			log.debug("Parsing sql :\n {}", sql);
 			sqls = createParser(sql).sqls();
-			cache.put(sql, sqls);
+
+            if(smart()) {
+
+                List<Sql> resolvedSqls = new ArrayList<>();
+
+                for(Sql s : sqls) {
+                    s = new SqlResolver(context,s).resolve();
+                    processingWhereFields(s);
+                    resolvedSqls.add(s);
+                }
+
+                sqls = resolvedSqls;
+
+            }
+
+			cache.put(key, sqls);
 		}
 		return sqls;
 	}
@@ -101,11 +123,104 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	}
 	
 	protected DynamicSqlClause createClause(MetadataContext context, Sql sql) {
-		if(smart()){
-			sql = new SqlResolver(context,sql).resolve();
-		}
 		return new DynamicSqlClause(this,sql);
 	}
+
+    protected void processingWhereFields(Sql sql) {
+        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
+
+            List<SqlTableSource> tables = new ArrayList<>();
+
+            AstNode clause = sql.nodes()[0];
+
+            if(clause instanceof SqlQuery) {
+
+                SqlQuery query = (SqlQuery)clause;
+
+                for(SqlTableSource ts : query.getTableSources()) {
+
+                    if(ts instanceof SqlTableName) {
+
+                        EntityMapping em = ((SqlTableName)ts).getEntityMapping();
+
+                        if(null != em && em.hasWhereFields()) {
+                            tables.add(ts);
+                        }
+
+                    }
+
+                }
+
+                if(tables.isEmpty()) {
+                    return;
+                }
+            }
+
+            sql.traverse((node) -> {
+
+                if(node instanceof SqlWhere) {
+
+                    //todo : take the first one only
+                    SqlTableSource ts = tables.get(0);
+                    EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
+
+                    //checks the where field(s) exists in the where expression.
+                    AtomicBoolean exists = new AtomicBoolean(false);
+                    node.traverse((n1) -> {
+
+                        if(n1 instanceof SqlObjectName) {
+
+                            FieldMapping fmInSQL = ((SqlObjectName)n1).getFieldMapping();
+
+                            for(FieldMapping fm : em.getWhereFieldMappings()) {
+                                if(fmInSQL == fm) {
+                                    exists.set(true);
+                                    return false;
+                                }
+                            }
+                        }
+
+                        return true;
+                    });
+
+                    //if not exists, add the where condition
+                    if(!exists.get()) {
+                        AstNode[] olds = ((SqlWhere)node).getNodes();
+
+                        List<AstNode> nodes = new ArrayList<>();
+
+                        //where ( original expression ) and (...)
+                        nodes.add(new Text(olds[0].toString()).append(" ("));
+                        for(int i=1;i<olds.length;i++) {
+                            nodes.add(olds[i]);
+                        }
+                        nodes.add(new Text(" ) and ( "));
+
+                        String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+
+                        for(int i=0;i<em.getWhereFieldMappings().length;i++) {
+                            FieldMapping fm = em.getWhereFieldMappings()[i];
+
+                            if(i > 0) {
+                                nodes.add(new Text(" and "));
+                            }
+
+                            nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
+                            nodes.add(new ExprParamPlaceholder(fm.getWhereValue().toString(), fm.getWhereValue()));
+                        }
+
+                        nodes.add(new Text(" ) "));
+
+                        ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
+
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+        }
+    }
 	
 	protected boolean smart() {
 	    if(null == smart) {

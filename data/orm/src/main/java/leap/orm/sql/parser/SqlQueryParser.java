@@ -81,7 +81,7 @@ abstract class SqlQueryParser extends SqlParser {
     protected void parseWhereExpression(SqlQuery query, SqlWhere where) {
         suspendNodes();
 
-        accept();
+        acceptNode(new SqlToken(lexer.token(), lexer.tokenText()));
 
         AtomicInteger lparens = new AtomicInteger();
         for(;;) {
@@ -114,6 +114,7 @@ abstract class SqlQueryParser extends SqlParser {
             //todo : for update, etc...
         }
 
+        where.setQuery(query);
         where.setNodes(nodes());
         restoreNodes().addNode(where);
     }

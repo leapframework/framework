@@ -14,28 +14,22 @@
  * limitations under the License.
  */
 
-package leap.orm.tested.model;
+package leap.orm.dao.query;
 
-import leap.orm.model.Model;
+import leap.orm.OrmTestCase;
+import leap.orm.tested.model.ECodeModel;
+import org.junit.Test;
 
-public class ECodeModel extends Model {
+public class WhereQueryTest extends OrmTestCase {
 
-    private String name;
+    @Test
+    public void testSingleWhereField() {
+        ECodeModel.deleteAll();
 
-    public ECodeModel() {
+        new ECodeModel("1").create();
+        new ECodeModel("2").set("ecode","t1").create();
 
-    }
-
-    public ECodeModel(String name) {
-        this.name = name;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+        assertEquals(1,ECodeModel.where("1=1").count());
     }
 
 }

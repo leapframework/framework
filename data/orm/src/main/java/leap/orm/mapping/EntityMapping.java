@@ -15,14 +15,11 @@
  */
 package leap.orm.mapping;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
 import leap.lang.Args;
+import leap.lang.Assert;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
@@ -35,6 +32,10 @@ import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 public class EntityMapping {
 	private static final Log log = LogFactory.get(EntityMapping.class);
 	
@@ -43,6 +44,7 @@ public class EntityMapping {
 	protected final BeanType                     beanType;
 	protected final DbTable		  		         table;
 	protected final FieldMapping[]               fieldMappings;
+    protected final FieldMapping[]               whereFieldMappings;
 	protected final FieldMapping[]               keyFieldMappings;
 	protected final String[]                     keyFieldNames;
 	protected final String[]					 keyColumnNames;
@@ -92,6 +94,7 @@ public class EntityMapping {
 	    this.columnNameToFields     = createColumnNameToFieldsMap();
 	    this.fieldNameToFields      = createFieldNameToFieldsMap();
 	    this.metaNameToFields		= createMetaNameToFieldsMap();
+        this.whereFieldMappings     = evalWhereFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
 	    this.keyColumnNames			= evalKeyColumnNames();
@@ -237,8 +240,16 @@ public class EntityMapping {
 	public boolean hasOptimisticLock(){
 		return null != optimisticLockField;
 	}
-	
-	public FieldMapping getOptimisticLockField() {
+
+    public boolean hasWhereFields() {
+        return whereFieldMappings.length > 0;
+    }
+
+    public FieldMapping[] getWhereFieldMappings() {
+        return whereFieldMappings;
+    }
+
+    public FieldMapping getOptimisticLockField() {
 		return optimisticLockField;
 	}
 
@@ -269,6 +280,20 @@ public class EntityMapping {
 		
 		return list.toArray(new FieldMapping[list.size()]);
 	}
+
+    private FieldMapping[] evalWhereFieldMappings(){
+        List<FieldMapping> list = New.arrayList();
+
+        for(FieldMapping fm : this.fieldMappings){
+            if(fm.isWhere()){
+                Assert.isTrue(null != fm.getWhereValue(),
+                             "There where value expression must not be null of where field '" + fm.getFieldName() + "'");
+                list.add(fm);
+            }
+        }
+
+        return list.toArray(new FieldMapping[list.size()]);
+    }
 	
 	private String[] evalKeyFieldNames(){
 		String[] names = new String[keyFieldMappings.length];

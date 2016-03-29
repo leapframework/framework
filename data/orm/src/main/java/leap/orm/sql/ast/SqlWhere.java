@@ -18,4 +18,14 @@ package leap.orm.sql.ast;
 
 public class SqlWhere extends SqlNodeContainer {
 
+    protected SqlQuery query;
+
+    public SqlQuery getQuery() {
+        return query;
+    }
+
+    public void setQuery(SqlQuery query) {
+        this.query = query;
+    }
+
 }
