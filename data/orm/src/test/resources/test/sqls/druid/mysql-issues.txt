@@ -1,0 +1,4 @@
+select truncate(AVG(mark),2) from tabName where spu = ? and is_delete=0 and is_check = '2'
+
+---------------------------
+delete from t_order wher id = 1

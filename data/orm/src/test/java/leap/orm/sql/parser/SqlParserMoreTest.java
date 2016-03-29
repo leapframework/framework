@@ -15,8 +15,6 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.List;
-
 import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.lang.Strings;
@@ -28,15 +26,11 @@ import leap.lang.resource.Resources;
 import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.AstUtils;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlObjectName;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlTableName;
-import leap.orm.sql.ast.SqlTop;
-
+import leap.orm.sql.ast.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 
 @ContextualIgnore
@@ -61,7 +55,12 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		SqlSelect subQuery = select.findLastNode(SqlSelect.class);
 		assertNotNull(subQuery);
 	}
-	
+
+    @Test
+    public void testSimpleSelect() {
+        assertParse("select * from t where lastName = :lastName");
+    }
+
 	@Test
 	public void testSimpleJoin() {
 		assertParse("select * from t join t1 on t.id = t1.id");

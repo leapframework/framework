@@ -16,11 +16,6 @@
 
 package leap.orm.sql.ast;
 
-import leap.orm.sql.parser.Token;
+public class SqlWhere extends SqlNodeContainer {
 
-public class SqlWhere extends SqlToken {
-
-    public SqlWhere(Token token, String text) {
-        super(token, text);
-    }
 }

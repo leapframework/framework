@@ -132,14 +132,14 @@ public class SqlResolver {
 			if(null != tableName.getEntityMapping()){
 				FieldMapping fm = tableName.getEntityMapping().tryGetFieldMapping(name.getLastName());
 				if(null != fm){
-					name.setFieldMapping(fm);
+					name.setFieldMapping(tableName.getEntityMapping(), fm);
 					return true;
 				}
 				
 				//Special column/field name 'id'
 				if("id".equalsIgnoreCase(name.getLastName())) {
 					if(tableName.getEntityMapping().getKeyFieldMappings().length == 1) {
-						name.setFieldMapping(tableName.getEntityMapping().getKeyFieldMappings()[0]);
+						name.setFieldMapping(tableName.getEntityMapping(), tableName.getEntityMapping().getKeyFieldMappings()[0]);
 						return true;
 					}
 				}

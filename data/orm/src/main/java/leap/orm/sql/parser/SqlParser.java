@@ -15,11 +15,6 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.el.EL;
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Args;
@@ -32,21 +27,12 @@ import leap.lang.text.KeyValueParser;
 import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.Sql.Type;
-import leap.orm.sql.ast.AstNode;
-import leap.orm.sql.ast.DynamicClause;
-import leap.orm.sql.ast.ElseStatement;
-import leap.orm.sql.ast.ExprParamPlaceholder;
-import leap.orm.sql.ast.ExprParamReplacement;
-import leap.orm.sql.ast.IfCaluse;
-import leap.orm.sql.ast.IfCondition;
-import leap.orm.sql.ast.IfStatement;
-import leap.orm.sql.ast.JdbcPlaceholder;
-import leap.orm.sql.ast.ParamPlaceholder;
-import leap.orm.sql.ast.ParamReplacement;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlObjectName;
-import leap.orm.sql.ast.SqlOrderBy;
-import leap.orm.sql.ast.SqlTableName;
+import leap.orm.sql.ast.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Internal
 public class SqlParser extends SqlParserBase {
@@ -644,7 +630,7 @@ public class SqlParser extends SqlParserBase {
 	}
 	
 	protected void parseTag(){
-		throw new IllegalStateException("Not impelemented");
+		throw new IllegalStateException("Not implemented");
 	}
 	
 	protected void parseTableName(){

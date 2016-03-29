@@ -1,0 +1,1 @@
+merge into (select * from T09_RULE_CAL_COUNT where data_dt = '20160328' and rule_type = '2') t using (select cust_no,organ_key from (select t1.cust_no, t1.organ_key from t08_cust_result_c_mid t1 union (select t2.cust_no, t2.organ_key from t08_cust_result_i_mid t2))) t3 on(t3.cust_no =t.cust_no) when matched then update set t.organ_key=t3.organ_key

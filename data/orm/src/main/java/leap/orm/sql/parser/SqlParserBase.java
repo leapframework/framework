@@ -15,10 +15,6 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
 import leap.lang.exception.ParseException;
@@ -28,6 +24,10 @@ import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 public abstract class SqlParserBase {
 	
@@ -40,8 +40,8 @@ public abstract class SqlParserBase {
 	protected AstNode		node;
 	protected List<AstNode> nodes;
 	
-	private Stack<List<AstNode>> savedNodes = new Stack<List<AstNode>>();
-	private Stack<Sql.Scope>     scope      = new Stack<Sql.Scope>();
+	private Stack<List<AstNode>> savedNodes = new Stack<>();
+	private Stack<Sql.Scope>     scope      = new Stack<>();
 	
 	protected SqlParserBase(Lexer lexer,ExpressionLanguage el){
 		this.lexer     = lexer;
@@ -55,12 +55,7 @@ public abstract class SqlParserBase {
 		appendText();
 		return this;
 	}
-	
-	protected final SqlParserBase nextTokenOnly(){
-		lexer.nextToken();
-		return this;
-	}
-	
+
 	protected final void accept(){
 		appendText(lexer.tokenText());
 		nextToken();
@@ -173,6 +168,33 @@ public abstract class SqlParserBase {
 		
 		return removedNodes;
 	}
+
+    protected final boolean lookahead(Token... tokens) {
+        if(lexer.isEOS()){
+            return false;
+        }
+
+        createSavePoint();
+
+        try{
+            for(Token token : tokens) {
+
+                if(lexer.token() != token) {
+                    return false;
+                }
+
+                nextToken();
+
+                if(lexer.isEOS()){
+                    return false;
+                }
+            }
+        }finally{
+            restoreSavePoint();
+        }
+
+        return true;
+    }
 	
 	protected final void appendText(){
 		appendText(lexer.acceptText());
