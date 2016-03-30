@@ -42,9 +42,6 @@ public class ConfigMapper implements Mapper {
     protected void processGlobalFields(MappingConfigContext context, MappingConfig config) {
 
         for(GlobalFieldMappingConfig gf : config.getGlobalFields()) {
-
-            context.getMappingStrategy().configFieldMappingConventional(context, gf.getField());
-
             processGlobalField(context, gf);
         }
 
@@ -68,7 +65,10 @@ public class ConfigMapper implements Mapper {
                                              "', the field already exists!");
         }
 
-        em.addFieldMapping(fm);
+        FieldMappingBuilder real =
+                context.getMappingStrategy().createFieldMappingByTemplate(context, em, fm);
+
+        em.addFieldMapping(real);
     }
 
     protected boolean isIncluded(MappingConfigContext context, EntityMappingBuilder em, GlobalFieldMappingConfig gf) {

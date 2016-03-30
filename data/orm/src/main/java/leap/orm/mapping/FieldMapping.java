@@ -48,6 +48,7 @@ public class FieldMapping {
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
     protected final Expression       whereValue;
+    protected final Expression       whereIf;
 	protected final FieldDomain      domain;
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
@@ -69,6 +70,7 @@ public class FieldMapping {
 						Expression insertValue,
 						Expression updateValue,
                         Expression whereValue,
+                        Expression whereIf,
 						boolean optimisticLock,
 						String newOptimisticLockFieldName,
 						FieldDomain domain,
@@ -97,6 +99,7 @@ public class FieldMapping {
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
         this.whereValue     = whereValue;
+        this.whereIf = whereIf;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
@@ -163,6 +166,10 @@ public class FieldMapping {
 
     public Expression getWhereValue() {
         return whereValue;
+    }
+
+    public Expression getWhereIf() {
+        return whereIf;
     }
 
     public boolean isAutoGenerateValue(){

@@ -63,6 +63,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	protected Expression            insertValue;
 	protected Expression            updateValue;
     protected Expression            whereValue;
+    protected Expression            whereIf;
 	protected boolean               optimisticLock;
 	protected String                newOptimisticLockFieldName;
 	protected FieldDomain           domain;
@@ -80,6 +81,38 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		setFieldName(name).
 		setJavaType(type);
 	}
+
+    public FieldMappingBuilder(FieldMappingBuilder template) {
+        this.fieldName = template.fieldName;
+        this.dataType  = template.dataType;
+        this.metaFieldName = template.metaFieldName;
+        this.javaType = template.getJavaType();
+        this.beanProperty = template.beanProperty;
+        this.column = new DbColumnBuilder(template.column);
+        this.columnNameDeclared = template.columnNameDeclared;
+        this.sequenceName = template.sequenceName;
+        this.idGenerator = template.idGenerator;
+        this.nullable = template.nullable;
+        this.maxLength = template.maxLength;
+        this.precision = template.precision;
+        this.scale = template.scale;
+        this.defaultValue = template.defaultValue;
+        this.defaultValueExpression = template.defaultValueExpression;
+        this.insert = template.insert;
+        this.update = template.update;
+        this.where = template.where;
+        this.insertValue = template.insertValue;
+        this.updateValue = template.updateValue;
+        this.whereValue = template.whereValue;
+        this.whereIf = template.whereIf;
+        this.optimisticLock = template.optimisticLock;
+        this.newOptimisticLockFieldName = template.newOptimisticLockFieldName;
+        this.domain = template.domain;
+        this.annotations = template.annotations;
+        this.validators = null == template.validators ? null : new ArrayList<>(template.validators);
+        this.sortOrder = template.sortOrder;
+        this.reservedMetaFieldName = template.reservedMetaFieldName;
+    }
 	
 	public String getFieldName() {
 		return fieldName;
@@ -294,13 +327,11 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-    public FieldMappingBuilder trySetSelectValue(Expression v) {
-        if(null == this.whereValue) {
-            this.whereValue = v;
-        }
+    public FieldMappingBuilder setWhereIf(Expression e) {
+        this.whereIf = e;
         return this;
     }
-	
+
 	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
@@ -563,7 +594,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						nullable,maxLength,precision,scale,
 	    						insert, update, where,
                                 defaultValueExpression,
-                                insertValue, updateValue, whereValue,
+                                insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName);

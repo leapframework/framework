@@ -91,6 +91,11 @@ public interface MappingStrategy {
 	 * 
 	 */
 	FieldMappingBuilder createFieldMappingByColumn(MetadataContext context,EntityMappingBuilder emb, DbColumn column);
+
+    /**
+     *
+     */
+    FieldMappingBuilder createFieldMappingByTemplate(MetadataContext context,EntityMappingBuilder emb, FieldMappingBuilder template);
 	
 	/**
 	 * 
@@ -117,11 +122,6 @@ public interface MappingStrategy {
 									   FieldMappingBuilder lfmb);
 
 
-    /**
-     * Configures the field mapping conventional.
-     */
-    void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb);
-	
 	/**
 	 * Configures the attributes of the given {@link FieldMappingBuilder} by the given {@link FieldDomain}.
 	 */

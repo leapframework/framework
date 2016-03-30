@@ -345,8 +345,23 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		
 		return fmb;
     }
-	
-	@Override
+
+    @Override
+    public FieldMappingBuilder createFieldMappingByTemplate(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder template) {
+        FieldMappingBuilder fmb = new FieldMappingBuilder(template);
+
+        FieldDomain domain = context.getMetadata().domains().tryGetFieldDomain(emb.getEntityName(), fmb.getFieldName());
+        if(null != domain){
+            configFieldMappingByDomain(emb, fmb, domain);
+        }
+
+        preMappingField(context, emb, fmb);
+        postMappingField(context, emb, fmb);
+
+        return fmb;
+    }
+
+    @Override
 	public FieldMappingBuilder createFieldMappingByDomain(MetadataContext context,EntityMappingBuilder emb,String domainName){
 		FieldDomain domain = context.getMetadata().domains().getFieldDomain(domainName);
 		
@@ -424,7 +439,6 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		lfmb.getColumn().setScale(rfmb.getColumn().getScale());
     }
 
-    @Override
     public void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb) {
         DbColumnBuilder c = fmb.getColumn();
         if (Strings.isEmpty(c.getName())) {
@@ -609,12 +623,14 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
         if(null == fmb.getDataType()){
             Class<?> javaType = fmb.getJavaType();
-            MSimpleType dataType = MSimpleTypes.forClass(javaType);
-            if(null == dataType){
-                throw new MetadataException("Unsupported java type '" + javaType +
-                        "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+            if(null != javaType) {
+                MSimpleType dataType = MSimpleTypes.forClass(javaType);
+                if(null == dataType){
+                    throw new MetadataException("Unsupported java type '" + javaType +
+                            "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+                }
+                fmb.setDataType(dataType);
             }
-            fmb.setDataType(dataType);
         }
 
         if(null == fmb.getDomain()){

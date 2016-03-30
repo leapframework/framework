@@ -185,6 +185,8 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
                     //if not exists, add the where condition
                     if(!exists.get()) {
+                        FieldMapping[] whereFields = em.getWhereFieldMappings();
+
                         AstNode[] olds = ((SqlWhere)node).getNodes();
 
                         List<AstNode> nodes = new ArrayList<>();
@@ -194,22 +196,22 @@ public class DynamicSqlLanguage implements SqlLanguage {
                         for(int i=1;i<olds.length;i++) {
                             nodes.add(olds[i]);
                         }
-                        nodes.add(new Text(" ) and ( "));
+                        nodes.add(new Text(" )"));
 
                         String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                        if(whereFields.length == 1 && whereFields[0].getWhereIf() == null) {
+                            addWhereFieldNode(nodes, whereFields[0], alias);
+                        }else{
+                            nodes.add(new Text(" and ( 1=1"));
 
-                        for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                            FieldMapping fm = em.getWhereFieldMappings()[i];
+                            for(int i=0;i<em.getWhereFieldMappings().length;i++) {
+                                FieldMapping fm = em.getWhereFieldMappings()[i];
 
-                            if(i > 0) {
-                                nodes.add(new Text(" and "));
+                                addWhereFieldNode(nodes, fm, alias);
                             }
 
-                            nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
-                            nodes.add(new ExprParamPlaceholder(fm.getWhereValue().toString(), fm.getWhereValue()));
+                            nodes.add(new Text(" ) "));
                         }
-
-                        nodes.add(new Text(" ) "));
 
                         ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -219,6 +221,21 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
                 return true;
             });
+        }
+    }
+
+    protected void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias) {
+        List<AstNode> list = new ArrayList<>();
+
+        list.add(new Text(" and "));
+
+        list.add(new Text(alias + "." + fm.getColumnName() + " = "));
+        list.add(new ExprParamPlaceholder(fm.getWhereValue().toString(), fm.getWhereValue()));
+
+        if(null != fm.getWhereIf()) {
+            nodes.add(new ConditionalNode(fm.getWhereIf(), nodes.toArray(new AstNode[0])));
+        }else{
+            nodes.addAll(list);
         }
     }
 	

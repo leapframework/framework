@@ -16,6 +16,7 @@
 
 package leap.orm.dao.query;
 
+import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.ECodeModel;
 import org.junit.Test;
@@ -26,10 +27,26 @@ public class WhereQueryTest extends OrmTestCase {
     public void testSingleWhereField() {
         ECodeModel.deleteAll();
 
-        new ECodeModel("1").create();
-        new ECodeModel("2").set("ecode","t1").create();
+        ECodeModel o1 = new ECodeModel("1").create();
+        ECodeModel o2 = new ECodeModel("2").set("ecode","t1").create();
 
         assertEquals(1,ECodeModel.where("1=1").count());
+        assertEquals("1",ECodeModel.<ECodeModel>where("1=1").first().getName());
+
+        assertEquals(1,ECodeModel.where("ecode = ?", "t1").count());
+        assertEquals("2",ECodeModel.<ECodeModel>where("ecode = ?", "t1").first().getName());
+
+        assertEquals(1, ECodeModel.where("1=1").update(New.hashMap("name", "11")));
+        assertEquals("11",ECodeModel.<ECodeModel>where("1=1").first().getName());
+
+        assertEquals(1, ECodeModel.where("ecode = ?", "t1").update(New.hashMap("name", "22")));
+        assertEquals("22",ECodeModel.<ECodeModel>where("ecode = ?", "t1").first().getName());
+
+        assertEquals(1, ECodeModel.where("1=1").delete());
+        assertNull(ECodeModel.<ECodeModel>where("1=1").firstOrNull());
+
+        assertEquals(1, ECodeModel.where("ecode = ?", "t1").delete());
+        assertNull(ECodeModel.<ECodeModel>where("ecode = ?", "t1").firstOrNull());
     }
 
 }
