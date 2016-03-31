@@ -56,7 +56,7 @@
     <xsd:element name="global-field">
         <xsd:complexType>
             <xsd:complexContent>
-                <xsd:extension base="xsd:anyType">
+                <xsd:restriction base="xsd:anyType">
                     <xsd:sequence>
                         <xsd:choice minOccurs="0" maxOccurs="unbounded">
                             <xsd:group ref="fieldElements"/>
@@ -69,7 +69,7 @@
                     </xsd:sequence>
                     <xsd:attributeGroup ref="fieldAttributes" />
                     <xsd:attribute name="mapping-strategy" type="mappingStrategy" default="if-field-not-exists"/>
-                </xsd:extension>
+                </xsd:restriction>
             </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
