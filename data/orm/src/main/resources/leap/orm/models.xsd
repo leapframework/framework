@@ -55,18 +55,22 @@
 
     <xsd:element name="global-field">
         <xsd:complexType>
-            <xsd:sequence>
-                <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:group ref="fieldElements"/>
-                    <xsd:choice minOccurs="0" maxOccurs="1">
-                        <xsd:element ref="included-entities"/>
-                        <xsd:element ref="excluded-entities"/>
-                    </xsd:choice>
-                    <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
-                </xsd:choice>
-            </xsd:sequence>
-            <xsd:attributeGroup ref="fieldAttributes" />
-            <xsd:attribute name="mapping-strategy" type="mappingStrategy" default="if-field-not-exists"/>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:sequence>
+                        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                            <xsd:group ref="fieldElements"/>
+                            <xsd:choice minOccurs="0" maxOccurs="1">
+                                <xsd:element ref="included-entities"/>
+                                <xsd:element ref="excluded-entities"/>
+                            </xsd:choice>
+                            <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+                        </xsd:choice>
+                    </xsd:sequence>
+                    <xsd:attributeGroup ref="fieldAttributes" />
+                    <xsd:attribute name="mapping-strategy" type="mappingStrategy" default="if-field-not-exists"/>
+                </xsd:restriction>
+            </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
 
