@@ -15,12 +15,17 @@
  */
 package leap.htpl;
 
+import leap.lang.Sourced;
+
 import java.io.Writer;
 import java.util.Locale;
 
-import leap.lang.Sourced;
-
 public interface HtplTemplate extends Sourced {
+
+    /**
+     * Returns the name of template or returns null if no name.
+     */
+    String getName();
 	
 	/**
 	 * Returns {@link HtplEngine engine} creates this template.
@@ -66,11 +71,40 @@ public interface HtplTemplate extends Sourced {
 	 * Renders this template as a child included by the parent template.
 	 */
 	void render(HtplTemplate parent,HtplContext context,HtplWriter writer);
-	
-	void addListener(HtplTemplateListener listener);
-	
-	boolean containsListener(HtplTemplateListener listener);
-	
-	boolean removeListener(HtplTemplateListener listener);
-	
+
+    /**
+     * Adds a listener.
+     */
+    void addListener(HtplTemplateListener listener);
+
+    /**
+     * Returns true if the listener exists.
+     */
+    boolean containsListener(HtplTemplateListener listener);
+
+    /**
+     * Removes the listener.
+     *
+     * <p/>
+     * Returns true if the listener exists.
+     */
+    boolean removeListener(HtplTemplateListener listener);
+
+    /**
+     * Adds an interceptor.
+     */
+    void addInterceptor(HtplTemplateInterceptor interceptor);
+
+    /**
+     * Returns true if the interceptor exists.
+     */
+    boolean containsInterceptor(HtplTemplateInterceptor interceptor);
+
+    /**
+     * Removes the interceptor.
+     *
+     * <p/>
+     * Returns true if the interceptor exists.
+     */
+    boolean removeInterceptor(HtplTemplateInterceptor interceptor);
 }

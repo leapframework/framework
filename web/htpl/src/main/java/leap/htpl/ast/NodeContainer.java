@@ -15,6 +15,12 @@
  */
 package leap.htpl.ast;
 
+import leap.htpl.HtplCompiler;
+import leap.htpl.HtplDocument;
+import leap.htpl.HtplEngine;
+import leap.htpl.ast.Text.Type;
+import leap.lang.New;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,18 +28,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-import leap.htpl.HtplCompiler;
-import leap.htpl.HtplDocument;
-import leap.htpl.HtplEngine;
-import leap.htpl.ast.Text.Type;
-import leap.lang.New;
-
 public abstract class NodeContainer extends Node {
 
 	protected List<Node> childNodes;
 	
 	public NodeContainer(){
-		this(new ArrayList<Node>());
+		this(new ArrayList<>());
 	}
 	
 	public NodeContainer(Node... childNodes){
@@ -147,7 +147,7 @@ public abstract class NodeContainer extends Node {
 	
 	@Override
     protected Node doProcess(HtplEngine engine,HtplDocument doc, ProcessCallback callback) throws Throwable {
-		List<Node> processedNodes = new ArrayList<Node>();
+		List<Node> processedNodes = new ArrayList<>();
 		if(null != childNodes){
 			for(Node node : childNodes){
 				Node processed;

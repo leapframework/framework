@@ -96,7 +96,7 @@
           class="leap.web.security.permission.DefaultPermissionManager" primary="true"/>
 
 	<beans if-class-present="leap.htpl.HtplContext">
-		<bean type="leap.htpl.interceptor.NodeInterceptor" class="leap.web.security.csrf.CsrfFormInterceptor"/>
+		<bean type="leap.htpl.interceptor.ProcessInterceptor" class="leap.web.security.csrf.CsrfFormInterceptor"/>
 	</beans>
 
 </beans>

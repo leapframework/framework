@@ -15,11 +15,6 @@
  */
 package leap.core;
 
-import java.nio.charset.Charset;
-import java.security.PrivateKey;
-import java.util.Locale;
-import java.util.Map;
-
 import leap.core.ds.DataSourceConfig;
 import leap.lang.Charsets;
 import leap.lang.Locales;
@@ -27,25 +22,30 @@ import leap.lang.accessor.PropertyGetter;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
+import java.nio.charset.Charset;
+import java.security.PrivateKey;
+import java.util.Locale;
+import java.util.Map;
+
 public interface AppConfig extends PropertyGetter {
-	
-	public String  INIT_PROPERTY_PROFILE         = "profile";
-	public String  INIT_PROPERTY_DEBUG		  	 = "debug";
-	public String  INIT_PROPERTY_BASE_PACKAGE    = "base-package";
-	public String  INIT_PROPERTY_DEFAULT_CHARSET = "default-charset";
-	public String  INIT_PROPERTY_DEFAULT_LOCALE  = "default-locale";
-	
-	public String  PROPERTY_SECRET				 = "secret";
-	public String  PROPERTY_PRIVATE_KEY          = "private_key";
-	public String  PROPERTY_HOME			     = "home";
-	public String  PROPERTY_RELOAD_ENABLED	     = "reload-enabled";
-	
-	public String  DEFAULT_PROFILE				 = "production";
-	public String  DEFAULT_BASE_PACKAGE          = "app";
-	public Locale  DEFAULT_LOCALE                = Locales.DEFAULT_LOCALE;
-	public Charset DEFAULT_CHARSET               = Charsets.UTF_8;
-	
-	/**
+
+    String INIT_PROPERTY_PROFILE         = "profile";
+    String INIT_PROPERTY_DEBUG           = "debug";
+    String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
+    String INIT_PROPERTY_DEFAULT_CHARSET = "default-charset";
+    String INIT_PROPERTY_DEFAULT_LOCALE  = "default-locale";
+
+    String PROPERTY_SECRET         = "secret";
+    String PROPERTY_PRIVATE_KEY    = "private_key";
+    String PROPERTY_HOME           = "home";
+    String PROPERTY_RELOAD_ENABLED = "reload-enabled";
+
+    String  DEFAULT_PROFILE      = "production";
+    String  DEFAULT_BASE_PACKAGE = "app";
+    Locale  DEFAULT_LOCALE       = Locales.DEFAULT_LOCALE;
+    Charset DEFAULT_CHARSET      = Charsets.UTF_8;
+
+    /**
 	 * Returns current profile name.
 	 */
 	String getProfile();
@@ -135,7 +135,7 @@ public interface AppConfig extends PropertyGetter {
 	String getProperty(String name,String defaultValue);
 	
 	/**
-	 * Returns the configed property value as the given type, or returns <code>null</code> if empty.
+	 * Returns the configured property value as the given type, or returns <code>null</code> if empty.
 	 */
 	<T> T getProperty(String name,Class<T> type);
 	
@@ -150,10 +150,10 @@ public interface AppConfig extends PropertyGetter {
 	boolean getBooleanProperty(String name,boolean defaultValue);
 	
 	/**
-	 * Returns the property value as {@link Integer} type.
+	 * Returns the property value as {@link Integer} type.hj
 	 */
 	int getIntProperty(String name,int defaultValue);
-	
+
 	/**
 	 * Returns <code>true</code> if the given property name exists.
 	 */

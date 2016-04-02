@@ -15,11 +15,7 @@
  */
 package leap.htpl;
 
-import java.util.Locale;
-
 import leap.core.BeanFactory;
-import leap.web.assets.AssetManager;
-import leap.web.assets.AssetSource;
 import leap.htpl.ast.Attr;
 import leap.htpl.ast.Element;
 import leap.htpl.escaping.EscapeType;
@@ -27,6 +23,10 @@ import leap.htpl.escaping.HtplEscaper;
 import leap.htpl.exception.HtplParseException;
 import leap.lang.exception.NestedIOException;
 import leap.lang.resource.Resource;
+import leap.web.assets.AssetManager;
+import leap.web.assets.AssetSource;
+
+import java.util.Locale;
 
 public interface HtplEngine {
 	
@@ -78,9 +78,11 @@ public interface HtplEngine {
 	
 	HtplTemplate resolveTemplate(String templateName,Locale locale) throws HtplParseException,NestedIOException;
 
-	HtplTemplate resolveTemplate(HtplResource current,String templateName,Locale locale) throws HtplParseException,NestedIOException;
-	
-	HtplTemplate createTemplate(HtplResource resource) throws HtplParseException,NestedIOException;
+    HtplTemplate resolveTemplate(HtplResource current,String templateName,Locale locale) throws HtplParseException,NestedIOException;
+
+    HtplTemplate createTemplate(HtplResource resource) throws HtplParseException,NestedIOException;
+
+    HtplTemplate createTemplate(HtplResource resource, String templateName) throws HtplParseException,NestedIOException;
 	
 	HtplTemplate createTemplate(Resource resource) throws HtplParseException,NestedIOException;
 	

@@ -598,7 +598,7 @@ public class BeanContainer implements BeanFactory {
 		Map<String,T> beans = (Map<String,T>)namedBeansMap.get(type);
 		
 		if(null == beans){
-			beans = new LinkedHashMap<String, T>(5);
+			beans = new LinkedHashMap<>(5);
 			
 			Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(type);
 			if(null != typeSet){
@@ -624,7 +624,7 @@ public class BeanContainer implements BeanFactory {
 		Map<T,BeanDefinition> beans = (Map<T,BeanDefinition>)typedInstances.get(type);
 		
 		if(null == beans){
-			beans = new LinkedHashMap<T, BeanDefinition>(5);
+			beans = new LinkedHashMap<>(5);
 			
 			Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(type);
 			if(null != typeSet){

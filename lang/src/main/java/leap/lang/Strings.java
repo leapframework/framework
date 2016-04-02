@@ -1033,11 +1033,17 @@ public class Strings {
 		}
 		return out.toString();
 	}
-	
+
+    /**
+     * lower_underscore
+     */
 	public static String lowerUnderscore(String name) {
 		return lowerSplit(name, '_');
 	}
-	
+
+    /**
+     * lower-hyphen
+     */
 	public static String lowerHyphen(String name) {
 		return lowerSplit(name, '-');
 	}

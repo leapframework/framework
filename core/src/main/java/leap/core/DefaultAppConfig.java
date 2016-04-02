@@ -15,11 +15,23 @@
  */
 package leap.core;
 
-import static leap.core.AppContextInitializer.CLASSPATH_APPSYS_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_APPUSR_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_MODULES_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_CORE_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_FRAMEWORK_PREFIX;
+import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceManager;
+import leap.core.instrument.AppInstrumentProcessor;
+import leap.core.instrument.DefaultAppInstrumentContext;
+import leap.core.sys.SysPermissionDefinition;
+import leap.lang.*;
+import leap.lang.accessor.SystemPropertyAccessor;
+import leap.lang.convert.Converts;
+import leap.lang.io.IO;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.resource.*;
+import leap.lang.security.RSA;
+import leap.lang.security.RSA.RsaKeyPair;
+import leap.lang.text.DefaultPlaceholderResolver;
+import leap.lang.text.PlaceholderResolver;
+import leap.lang.tools.DEV;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,33 +40,7 @@ import java.security.PrivateKey;
 import java.util.*;
 import java.util.Map.Entry;
 
-import leap.core.ds.DataSourceConfig;
-import leap.core.ds.DataSourceManager;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.core.instrument.DefaultAppInstrumentContext;
-import leap.core.sys.SysPermissionDefinition;
-import leap.lang.Charsets;
-import leap.lang.Factory;
-import leap.lang.Maps;
-import leap.lang.Out;
-import leap.lang.Props;
-import leap.lang.Randoms;
-import leap.lang.Strings;
-import leap.lang.accessor.SystemPropertyAccessor;
-import leap.lang.convert.Converts;
-import leap.lang.io.IO;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-import leap.lang.resource.FileResource;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
-import leap.lang.resource.SimpleResourceSet;
-import leap.lang.security.RSA;
-import leap.lang.security.RSA.RsaKeyPair;
-import leap.lang.text.DefaultPlaceholderResolver;
-import leap.lang.text.PlaceholderResolver;
-import leap.lang.tools.DEV;
+import static leap.core.AppContextInitializer.*;
 
 /**
  * a default implementation of {@link AppConfig}
@@ -84,13 +70,13 @@ public class DefaultAppConfig implements AppConfig {
 																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config/**/*.xml"};
 	
 	//all init properties
-	protected static Set<String> INIT_PROPERTEIS = new HashSet<>();
+	protected static Set<String> INIT_PROPERTIES = new HashSet<>();
 	static {
-		INIT_PROPERTEIS.add(INIT_PROPERTY_PROFILE);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_BASE_PACKAGE);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEBUG);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEFAULT_CHARSET);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEFAULT_LOCALE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_PROFILE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_BASE_PACKAGE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEBUG);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_CHARSET);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 	
 	protected Object					    externalContext     = null;
@@ -103,14 +89,14 @@ public class DefaultAppConfig implements AppConfig {
 	protected String						secret				= null;
 	protected PrivateKey                    privateKey          = null;
 	protected Map<Class<?>, Object>         extensions          = new HashMap<>();
-	protected Map<String,String>            properties          = new LinkedHashMap<String, String>();
+	protected Map<String,String>            properties          = new LinkedHashMap<>();
 	protected Map<String,String>            propertiesReadonly  = Collections.unmodifiableMap(properties);
-	protected List<SysPermissionDefinition> permissions         = new ArrayList<SysPermissionDefinition>();
+	protected List<SysPermissionDefinition> permissions         = new ArrayList<>();
 	protected List<SysPermissionDefinition> permissionsReadonly = Collections.unmodifiableList(permissions);
 	protected ResourceSet		            resources           = null;
 	protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
 	protected AppPropertyProcessor		    propertyProcessor	= new DefaultPropertyProcessor();
-	protected Map<String, DataSourceConfig> dataSourceConfigs   = new HashMap<String, DataSourceConfig>();
+	protected Map<String, DataSourceConfig> dataSourceConfigs   = new HashMap<>();
 	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
 	
 	protected DefaultAppConfig(Object externalContext, Map<String, String> initProperties){
@@ -164,7 +150,7 @@ public class DefaultAppConfig implements AppConfig {
             initProperties.put(name, System.getProperty(name));
         }
 
-		for(String p : INIT_PROPERTEIS){
+		for(String p : INIT_PROPERTIES){
 			if(!initProperties.containsKey(p)){
 				String v = System.getProperty(p);
 				if(!Strings.isEmpty(v)){
@@ -307,8 +293,8 @@ public class DefaultAppConfig implements AppConfig {
     public int getIntProperty(String name, int defaultValue) {
 	    return Maps.getInteger(properties, name, defaultValue);
     }
-	
-	@Override
+
+    @Override
     public ResourceSet getResources() {
 	    return resources;
     }
@@ -336,7 +322,7 @@ public class DefaultAppConfig implements AppConfig {
 		
 		//resources
 		try {
-	        Map<String,Resource> urlResourceMap = new HashMap<String, Resource>();
+	        Map<String,Resource> urlResourceMap = new HashMap<>();
 	        
 	        loadBasePackageResources(urlResourceMap,basePackage);
 	        
@@ -471,7 +457,7 @@ public class DefaultAppConfig implements AppConfig {
 		    }
 		}
 		
-		//load datasource form prooperties
+		//load datasource form properties
 		new DataSourceConfigPropertiesLoader(properties, dataSourceConfigs).load();
 	}
 	
@@ -592,7 +578,7 @@ public class DefaultAppConfig implements AppConfig {
 		}
 		
 		protected void load() {
-			Map<String, DataSourceConfig.Builder> dsMap = new HashMap<String, DataSourceConfig.Builder>();
+			Map<String, DataSourceConfig.Builder> dsMap = new HashMap<>();
 			
 			for(Entry<String, String> entry : properties.entrySet()) {
 				String key = entry.getKey();
@@ -600,7 +586,7 @@ public class DefaultAppConfig implements AppConfig {
 
 				if(key.startsWith(DB_DEFAULT_PREFIX)) {
 					if(dataSourceConfigs.containsKey(DataSourceManager.DEFAULT_DATASOURCE_NAME)) {
-						throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' aleady configed, check property '" + key + "'");
+						throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' already configured, check property '" + key + "'");
 					}
 					
 					DataSourceConfig.Builder conf = dsMap.get(DataSourceManager.DEFAULT_DATASOURCE_NAME);
@@ -621,7 +607,7 @@ public class DefaultAppConfig implements AppConfig {
 						String dataSourceProp = key.substring(dotIndex + 1);
 						
 						if(dataSourceConfigs.containsKey(dataSourceName)) {
-							throw new AppConfigException("DataSource '" + dataSourceName + "' aleady configed, check property '" + key + "'");
+							throw new AppConfigException("DataSource '" + dataSourceName + "' already configured, check property '" + key + "'");
 						}
 						
 						DataSourceConfig.Builder conf = dsMap.get(dataSourceName);

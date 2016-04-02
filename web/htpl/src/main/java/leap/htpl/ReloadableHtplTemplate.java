@@ -15,11 +15,6 @@
  */
 package leap.htpl;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.Locale;
-
 import leap.htpl.resolver.StringHtplResource;
 import leap.lang.Args;
 import leap.lang.Exceptions;
@@ -29,20 +24,26 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.ServletResource;
 
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.util.Locale;
+
 public class ReloadableHtplTemplate extends AbstractHtplTemplate implements HtplTemplate {
 	private static final Log log = LogFactory.get(ReloadableHtplTemplate.class);
-	
-	protected final HtplEngine engine;
-	protected final HtplTemplateListener reloadListener;
-	
-	protected HtplResource resource;
+
+    protected final HtplEngine           engine;
+    protected final HtplTemplateListener reloadListener;
+
+    protected HtplResource resource;
 	protected HtplTemplate template;
 	
-	public ReloadableHtplTemplate(HtplEngine engine,HtplResource resource) {
+	public ReloadableHtplTemplate(HtplEngine engine,HtplResource resource, String templateName) {
 		Args.notNull(resource,"resource");
 		Args.assertTrue(resource.reloadable(),"The given resource must be reloadable");
 		this.engine   = engine;
 		this.resource = resource;
+        this.name = templateName;
 		this.reloadListener = new HtplTemplateListener() {
 			@Override
 			public void onTemplateReloaded(HtplTemplate template) {
@@ -143,7 +144,7 @@ public class ReloadableHtplTemplate extends AbstractHtplTemplate implements Htpl
 		try{
 			r = resource.getReader();
 			
-			HtplTemplate template = engine.createTemplate(new WrappedHtplResource(resource,IO.readString(r)));
+			HtplTemplate template = engine.createTemplate(new WrappedHtplResource(resource,IO.readString(r)), name);
 			
 			for(HtplTemplate tpl : template.getDocument().getIncludedTemplates().values()) {
 				if(!tpl.containsListener(reloadListener)){

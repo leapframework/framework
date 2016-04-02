@@ -15,19 +15,40 @@
  */
 package leap.htpl;
 
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-
+import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractHtplTemplate implements HtplTemplate {
 
 	private static final Log log = LogFactory.get(AbstractHtplTemplate.class);
-	
-	protected final Set<HtplTemplateListener> listeners = new CopyOnWriteArraySet<HtplTemplateListener>();
-	
-	@Override
+
+	protected final List<HtplTemplateListener>    listeners    = new CopyOnWriteArrayList<>();
+    protected final List<HtplTemplateInterceptor> interceptors = new CopyOnWriteArrayList<>();
+
+    protected String name;
+
+    public AbstractHtplTemplate() {
+
+    }
+
+    public AbstractHtplTemplate(String name) {
+        this.name = name;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    @Override
     public void addListener(HtplTemplateListener listener) {
 		listeners.add(listener);
     }
@@ -42,7 +63,22 @@ public abstract class AbstractHtplTemplate implements HtplTemplate {
 	    return listeners.contains(listener);
     }
 
-	protected void notifyTemplateReloaded() {
+    @Override
+    public void addInterceptor(HtplTemplateInterceptor interceptor) {
+        interceptors.add(interceptor);
+    }
+
+    @Override
+    public boolean containsInterceptor(HtplTemplateInterceptor interceptor) {
+        return interceptors.contains(interceptor);
+    }
+
+    @Override
+    public boolean removeInterceptor(HtplTemplateInterceptor interceptor) {
+        return interceptors.remove(interceptor);
+    }
+
+    protected void notifyTemplateReloaded() {
 		if(listeners.isEmpty()){
 			return;
 		}
@@ -55,4 +91,20 @@ public abstract class AbstractHtplTemplate implements HtplTemplate {
             }
 		}
 	}
+
+    protected boolean preRenderTemplate(HtplContext context, HtplWriter writer) throws Throwable  {
+        for(HtplTemplateInterceptor interceptor : interceptors) {
+            if(State.isIntercepted(interceptor.preRenderTemplate(this, context, writer))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected void postRenderTemplate(HtplContext context, HtplWriter writer) throws Throwable {
+        for(HtplTemplateInterceptor interceptor : interceptors) {
+            interceptor.postRenderTemplate(this, context, writer);
+        }
+    }
+
 }

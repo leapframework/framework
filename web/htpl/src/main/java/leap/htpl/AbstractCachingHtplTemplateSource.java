@@ -15,17 +15,17 @@
  */
 package leap.htpl;
 
-import java.io.Writer;
-import java.util.Locale;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.cache.Cache;
 import leap.core.validation.annotations.NotNull;
 
+import java.io.Writer;
+import java.util.Locale;
+
 public abstract class AbstractCachingHtplTemplateSource implements HtplTemplateSource,AppConfigAware {
 	
-	protected static final HtplTemplate UNRESOLVED_TEMPLATE = new HtplTemplate() {
+	protected static final HtplTemplate UNRESOLVED_TEMPLATE = new AbstractHtplTemplate() {
 		public Object getSource() {return null;}
 		public HtplResource getResource() { return null;}
         public HtplPage createPage() {return null;}
@@ -36,10 +36,7 @@ public abstract class AbstractCachingHtplTemplateSource implements HtplTemplateS
 		public Locale getLocale() {return null;}
 		public HtplEngine getEngine() {return null;}
 		public HtplDocument getDocument() {return null;}
-        public void addListener(HtplTemplateListener listener) {}
-        public boolean containsListener(HtplTemplateListener listener) {return false;}
-		public boolean removeListener(HtplTemplateListener listener) {return false;}
-	};
+    };
 	
 	protected @NotNull Locale defaultLocale;
 	

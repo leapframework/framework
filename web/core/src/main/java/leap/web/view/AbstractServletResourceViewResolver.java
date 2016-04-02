@@ -15,8 +15,6 @@
  */
 package leap.web.view;
 
-import java.util.Locale;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -28,6 +26,8 @@ import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
+
+import java.util.Locale;
 
 public abstract class AbstractServletResourceViewResolver extends AbstractViewResolver implements ServletResourceViewResolver,PostCreateBean {
 	
@@ -103,5 +103,5 @@ public abstract class AbstractServletResourceViewResolver extends AbstractViewRe
 		return null;
 	}
 	
-	protected abstract View loadView(String prefix, String suffix, String viewPath, Locale locale, String resourcePath, ServletResource resource);
+	protected abstract View loadView(String prefix, String suffix, String viewName, Locale locale, String resourcePath, ServletResource resource);
 }
