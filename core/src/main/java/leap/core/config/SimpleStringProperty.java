@@ -16,7 +16,9 @@
 
 package leap.core.config;
 
-public interface DynaPropertyProvider {
+public class SimpleStringProperty extends SimpleProperty<String> implements StringProperty {
 
-
+    public SimpleStringProperty(String value) {
+        super(value);
+    }
 }

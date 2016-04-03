@@ -20,6 +20,7 @@ import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.annotation.R;
+import leap.core.config.*;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
@@ -82,12 +83,12 @@ public class BeanContainer implements BeanFactory {
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
     protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
-	
-	private AppContext	appContext;
-	private BeanFactory	beanFactory;
-	private boolean     initializing;
-	private boolean     containerInited;
-	private boolean     appInited;
+
+    private AppContext  appContext;
+    private BeanFactory beanFactory;
+    private boolean     initializing;
+    private boolean     containerInited;
+    private boolean     appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -100,13 +101,13 @@ public class BeanContainer implements BeanFactory {
 	
 	/** Synchronization monitor for the "refresh" and "destroy" */
 	private final Object startupShutdownMonitor = new Object();
-	
+
 	public BeanContainer(PropertyGetter properties){
 		this.placeholderResolver            = new DefaultPlaceholderResolver(properties);
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
 		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader();
 	}
-	
+
 	public BeanContainer(AppConfig config){
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
@@ -231,6 +232,11 @@ public class BeanContainer implements BeanFactory {
                     }
                 }
             }
+        }
+
+        AppConfig config = getAppConfig();
+        if(config instanceof AppConfigBase) {
+            ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
 		this.initBeanFactoryInitializableBeans();
@@ -1084,6 +1090,11 @@ public class BeanContainer implements BeanFactory {
 				if(!bp.isWritable()) {
 					continue;
 				}
+
+                if(Property.class.isAssignableFrom(bp.getType())) {
+                    doBeanConfigure(bean, bp, keyPrefix, bp.getAnnotation(ConfigProperty.class));
+                    continue;
+                }
 				
 				ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
 				if(null == a) {
@@ -1103,6 +1114,11 @@ public class BeanContainer implements BeanFactory {
                     continue;
                 }
 
+                if(Property.class.isAssignableFrom(field.getType())) {
+                    doBeanConfigure(bean, field, keyPrefix, field.getAnnotation(ConfigProperty.class));
+                    continue;
+                }
+
                 ConfigProperty a = field.getAnnotation(ConfigProperty.class);
                 if(null == a) {
                     continue;
@@ -1117,7 +1133,7 @@ public class BeanContainer implements BeanFactory {
 
 
     protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
-        if(a.value().length > 0) {
+        if(null != a && a.value().length > 0) {
             for(String key : a.value()) {
                 if(doBeanConfigure(bean, v, key)) {
                     break;
@@ -1135,6 +1151,11 @@ public class BeanContainer implements BeanFactory {
     }
 	
 	protected boolean doBeanConfigure(Object bean, ReflectValued v, String key) {
+        if(Property.class.isAssignableFrom(v.getType())) {
+            doBeanConfigureDynaProperty(bean, v, key);
+            return true;
+        }
+
 		if(appContext.getConfig().hasProperty(key)){
 			String prop = appContext.getConfig().getProperty(key);
 			
@@ -1150,9 +1171,53 @@ public class BeanContainer implements BeanFactory {
 			
 			return true;
 		}
+
 		return false;
 	}
-	
+
+    protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key) {
+        AppConfig config = getAppConfig();
+
+        //todo :
+        Class<?> type = v.getType();
+
+        Property value = null;
+
+        if(type.equals(StringProperty.class)) {
+
+            value = config.getDynaProperty(key);
+
+        }else if(type.equals(IntegerProperty.class)) {
+
+            value = config.getDynaIntegerProperty(key);
+
+        }else if(type.equals(LongProperty.class)) {
+
+            value = config.getDynaLongProperty(key);
+
+        }else if(type.equals(BooleanProperty.class)) {
+
+            value = config.getDynaBooleanProperty(key);
+
+        }else if(type.equals(DoubleProperty.class)) {
+
+            value = config.getDynaDoubleProperty(key);
+
+        }else if(type.equals(Property.class)){
+
+            Class<?> valueType = Types.getActualTypeArgument(v.getGenericType());
+
+            value = config.getDynaProperty(key, valueType);
+
+        }else{
+            throw new IllegalStateException("Not supported property type '" + type + "'");
+        }
+
+        if(null != value) {
+            v.setValue(bean, value);
+        }
+    }
+
     protected void doBeanInjection(BeanDefinitionBase bd,Object bean) throws Throwable {
         BeanFactory factory = null != beanFactory ? beanFactory : this;
         
@@ -1180,7 +1245,7 @@ public class BeanContainer implements BeanFactory {
                 log.trace("Injecting property '{}'", bp.getName());
 
                 try {
-                    //skip when bean value aleady setted.
+                    //skip when bean value already set.
                     if (null != bp.getReflectField() && !bp.getType().isPrimitive()) {
                         if (null != bp.getReflectField().getValue(bean)) {
                             continue;
@@ -1305,7 +1370,7 @@ public class BeanContainer implements BeanFactory {
 					}
 				}else if(type.isArray()){
 					if(!Strings.isEmpty(beanName)){
-						throw new BeanCreationException("Autowired Array property does not support the 'name' annotation field in bean " + bd);
+						throw new BeanCreationException("Auto Injected Array property does not support the 'name' annotation field in bean " + bd);
 					}
 					
 					if(null == beanType || Object.class.equals(beanType)){

@@ -13,27 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core.config;
 
-import leap.lang.convert.Converts;
-
-/**
- * A wrapper interface for configuration property.
- *
- * @param <T> the type of property value.
- */
-public interface Property<T> {
-
-    /**
-     * Returns the property value. May be null.
-     */
-    T get();
-
-    /**
-     * Converts the property value to the given type.
-     */
-    default <T1> T1 get(Class<T1> type) {
-        return Converts.convert(get(), type);
-    }
+public interface StringProperty extends Property<String> {
 
 }

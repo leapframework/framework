@@ -15,6 +15,7 @@
  */
 package leap.core;
 
+import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.instrument.AppInstrumentProcessor;
@@ -45,7 +46,7 @@ import static leap.core.AppContextInitializer.*;
 /**
  * a default implementation of {@link AppConfig}
  */
-public class DefaultAppConfig implements AppConfig {
+public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	
 	private static final Log log = LogFactory.get(DefaultAppConfig.class);
 	
@@ -80,6 +81,7 @@ public class DefaultAppConfig implements AppConfig {
 	}
 	
 	protected Object					    externalContext     = null;
+    protected PropertyProvider              propertyProvider    = null;
 	protected String						profile				= null;
 	protected Boolean						debug				= null;
 	protected String						basePackage			= null;
@@ -105,7 +107,7 @@ public class DefaultAppConfig implements AppConfig {
 		this.placeholderResolver.setIgnoreUnresolvablePlaceholders(true);
 		this.init(initProperties);
 	}
-	
+
 	protected void init(Map<String, String> initProperties){
 		if(null == initProperties){
 			initProperties = new HashMap<>();
@@ -159,7 +161,11 @@ public class DefaultAppConfig implements AppConfig {
 			}
 		}
 	}
-	
+
+    public void setPropertyProvider(PropertyProvider p)  {
+        this.propertyProvider = p;
+    }
+
 	protected void loadInitPropertiesFromConfig(Map<String, String> initProperties) {
 		PlaceholderResolver pr = new DefaultPlaceholderResolver(initProperties);
 		
@@ -292,6 +298,54 @@ public class DefaultAppConfig implements AppConfig {
 	@Override
     public int getIntProperty(String name, int defaultValue) {
 	    return Maps.getInteger(properties, name, defaultValue);
+    }
+
+    @Override
+    public StringProperty getDynaProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getStringProperty(name);
+        }
+        return new SimpleStringProperty(properties.get(name));
+    }
+
+    @Override
+    public <T> Property<T> getDynaProperty(String name, Class<T> type) {
+        if(null != propertyProvider) {
+            return propertyProvider.getProperty(name, type);
+        }
+        return new SimpleProperty<>(Converts.convert(properties.get(name), type));
+    }
+
+    @Override
+    public IntegerProperty getDynaIntegerProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getIntegerProperty(name);
+        }
+        return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
+    }
+
+    @Override
+    public LongProperty getDynaLongProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getLongProperty(name);
+        }
+        return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
+    }
+
+    @Override
+    public BooleanProperty getDynaBooleanProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getBooleanProperty(name);
+        }
+        return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
+    }
+
+    @Override
+    public DoubleProperty getDynaDoubleProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDoubleProperty(name);
+        }
+        return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
     }
 
     @Override

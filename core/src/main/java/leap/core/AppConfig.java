@@ -15,6 +15,7 @@
  */
 package leap.core;
 
+import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.lang.Charsets;
 import leap.lang.Locales;
@@ -130,7 +131,7 @@ public interface AppConfig extends PropertyGetter {
 	<T> T removeExtension(Class<T> type);
 	
 	/**
-	 * Returns the configed property value as String, or returns the default value if empty.
+	 * Returns the configured property value as String, or returns the default value if empty.
 	 */
 	String getProperty(String name,String defaultValue);
 	
@@ -140,7 +141,7 @@ public interface AppConfig extends PropertyGetter {
 	<T> T getProperty(String name,Class<T> type);
 	
 	/**
-	 * Returns the configed property value as the given type, or returns the default value if empty.
+	 * Returns the configured property value as the given type, or returns the default value if empty.
 	 */
 	<T> T getProperty(String name,Class<T> type,T defaultValue);
 	
@@ -153,6 +154,39 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns the property value as {@link Integer} type.hj
 	 */
 	int getIntProperty(String name,int defaultValue);
+
+    /**
+     * Returns the wrapped property with or without underlying property value.
+     *
+     * <p/>
+     * Never returns null.
+     */
+    <T> Property<T> getDynaProperty(String name, Class<T> type);
+
+    /**
+     * @see {@link #getDynaProperty(String, Class)}
+     */
+    StringProperty getDynaProperty(String name);
+
+    /**
+     * @see {@link #getDynaProperty(String, Class)}.
+     */
+    IntegerProperty getDynaIntegerProperty(String name);
+
+    /**
+     * @see {@link #getDynaProperty(String, Class)}.
+     */
+    LongProperty getDynaLongProperty(String name);
+
+    /**
+     * @see {@link #getDynaProperty(String, Class)}.
+     */
+    BooleanProperty getDynaBooleanProperty(String name);
+
+    /**
+     * @see {@link #getDynaProperty(String, Class)}.
+     */
+    DoubleProperty getDynaDoubleProperty(String name);
 
 	/**
 	 * Returns <code>true</code> if the given property name exists.

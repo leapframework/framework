@@ -16,6 +16,21 @@
 
 package leap.core.config;
 
-public interface IntProperty extends DynaProperty<Integer> {
+public class SimpleProperty<T> implements Property<T> {
 
+    private T value;
+
+    public SimpleProperty(T value) {
+        this.value = value;
+    }
+
+    @Override
+    public T get() {
+        return value;
+    }
+
+    @Override
+    public String toString() {
+        return null == value ? "null" : value.toString();
+    }
 }

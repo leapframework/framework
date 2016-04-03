@@ -81,4 +81,28 @@ public class BeanFactoryTest extends AppTestBase {
     public void testOverrideNamedBean() {
         assertEquals(NowVariable1.class,factory.getBean(Variable.class,"now").getClass());
     }
+
+    @Test
+    public void testPropertyInject() {
+        PBean pbean = factory.getBean(PBean.class);
+        assertNotNull(pbean);
+
+        assertEquals("s1", pbean.stringProperty1.get());
+        assertEquals("s2", pbean.stringProperty2.get());
+
+        assertEquals(1, pbean.integerProperty1.get().intValue());
+        assertEquals(2, pbean.integerProperty2.get().intValue());
+
+        assertEquals(11L, pbean.longProperty1.get().longValue());
+        assertEquals(12L, pbean.longProperty2.get().longValue());
+
+        assertEquals(false, pbean.booleanProperty1.get());
+        assertEquals(true,  pbean.booleanProperty2.get());
+
+        assertEquals(new Double(1.1d), pbean.doubleProperty1.get());
+        assertEquals(new Double(1.2d), pbean.doubleProperty2.get());
+
+        assertNull(pbean.property1.get());
+    }
+
 }

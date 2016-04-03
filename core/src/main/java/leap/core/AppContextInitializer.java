@@ -400,7 +400,7 @@ public class AppContextInitializer {
 		return config;
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
+	protected static DefaultBeanFactory createStandaloneAppFactory(DefaultAppConfig config,BeanFactory externalAppFactory){
 		return new DefaultBeanFactory(config,externalAppFactory);
 	}
 	
