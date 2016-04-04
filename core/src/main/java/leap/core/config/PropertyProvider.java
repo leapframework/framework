@@ -16,18 +16,59 @@
 
 package leap.core.config;
 
+/**
+ * Used by {@link leap.core.AppConfig} for dynamic {@link Property} configuration.
+ */
 public interface PropertyProvider {
 
+    /**
+     * Returns the {@link StringProperty}.
+     */
+    StringProperty getProperty(String name);
+
+    /**
+     * Returns the {@link Property} for the given type.
+     */
     <T> Property<T> getProperty(String name,Class<T> type);
 
-    StringProperty getStringProperty(String name);
+    /**
+     * Returns the {@link IntegerProperty}.
+     *
+     * <p/>
+     * The returned {@link Property} object cannot be null.
+     */
+    default IntegerProperty getIntegerProperty(String name) {
+        return new WrappedIntegerProperty(getProperty(name, Integer.class));
+    }
 
-    IntegerProperty getIntegerProperty(String name);
+    /**
+     * Returns the {@link LongProperty}.
+     *
+     * <p/>
+     * The returned {@link Property} object cannot be null.
+     */
+    default LongProperty getLongProperty(String name) {
+        return new WrappedLongProperty(getProperty(name, Long.class));
+    }
 
-    LongProperty getLongProperty(String name);
+    /**
+     * Returns the {@link BooleanProperty}.
+     *
+     * <p/>
+     * The returned {@link Property} object cannot be null.
+     */
+    default BooleanProperty getBooleanProperty(String name) {
+        return new WrappedBooleanProperty(getProperty(name, Boolean.class));
+    }
 
-    BooleanProperty getBooleanProperty(String name);
-
-    DoubleProperty getDoubleProperty(String name);
+    /**
+     * Returns the {@link DoubleProperty}.
+     *
+     * <p/>
+     * The returned {@link Property} object cannot be null.
+     */
+    default DoubleProperty getDoubleProperty(String name) {
+        return new WrappedDoubleProperty(getProperty(name, Double.class));
+    }
 
 }

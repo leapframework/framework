@@ -303,7 +303,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public StringProperty getDynaProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getStringProperty(name);
+            return propertyProvider.getProperty(name);
         }
         return new SimpleStringProperty(properties.get(name));
     }
