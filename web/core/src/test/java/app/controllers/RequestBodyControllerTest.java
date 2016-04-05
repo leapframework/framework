@@ -39,6 +39,21 @@ public class RequestBodyControllerTest extends WebTestCase {
 		THttpResponse resp = forPost("/request_body/bytes_body").setBody("hello").send();
 		resp.assertContentEquals(Hex.encode("hello".getBytes()));
 	}
+
+    @Test
+    public void testJsonBody() {
+        Product product = new Product();
+        product.setId(100);
+        product.setTitle("Hello");
+
+        String json = JSON.encode(product);
+
+        THttpResponse resp = forPost("/request_body/json_body")
+                .setContentType(MimeTypes.APPLICATION_JSON_TYPE)
+                .setBody(json).send();
+
+        resp.assertContentEquals(json);
+    }
 	
 	@Test
 	public void testEntityBody() {

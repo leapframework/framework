@@ -251,6 +251,10 @@ public class DefaultActionManager implements ActionManager,AppListener {
         //found declared request body argument
         int count=0;
         for(Argument a : arguments){
+            if(a.getName().equals("json")) {
+                System.out.println("");
+            }
+
             if(a.getLocation() == Location.REQUEST_BODY){
                 rbaf.argument   = a;
                 rbaf.annotation = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
