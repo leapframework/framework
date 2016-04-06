@@ -22,14 +22,16 @@ package leap.core.config;
 public interface PropertyProvider {
 
     /**
-     * Returns the {@link StringProperty}.
-     */
-    StringProperty getProperty(String name);
-
-    /**
      * Returns the {@link Property} for the given type.
      */
     <T> Property<T> getProperty(String name,Class<T> type);
+
+    /**
+     * Returns the {@link StringProperty}.
+     */
+    default StringProperty getProperty(String name) {
+        return new WrappedStringProperty(getProperty(name, String.class));
+    }
 
     /**
      * Returns the {@link IntegerProperty}.
