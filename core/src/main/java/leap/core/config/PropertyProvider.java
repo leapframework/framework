@@ -22,15 +22,20 @@ package leap.core.config;
 public interface PropertyProvider {
 
     /**
+     * Returns the raw property value or null if not exists.
+     */
+    String getRawProperty(String name);
+
+    /**
      * Returns the {@link Property} for the given type.
      */
-    <T> Property<T> getProperty(String name,Class<T> type);
+    <T> Property<T> getDynaProperty(String name, Class<T> type);
 
     /**
      * Returns the {@link StringProperty}.
      */
-    default StringProperty getProperty(String name) {
-        return new WrappedStringProperty(getProperty(name, String.class));
+    default StringProperty getDynaProperty(String name) {
+        return new WrappedStringProperty(getDynaProperty(name, String.class));
     }
 
     /**
@@ -39,8 +44,8 @@ public interface PropertyProvider {
      * <p/>
      * The returned {@link Property} object cannot be null.
      */
-    default IntegerProperty getIntegerProperty(String name) {
-        return new WrappedIntegerProperty(getProperty(name, Integer.class));
+    default IntegerProperty getDynaIntegerProperty(String name) {
+        return new WrappedIntegerProperty(getDynaProperty(name, Integer.class));
     }
 
     /**
@@ -49,8 +54,8 @@ public interface PropertyProvider {
      * <p/>
      * The returned {@link Property} object cannot be null.
      */
-    default LongProperty getLongProperty(String name) {
-        return new WrappedLongProperty(getProperty(name, Long.class));
+    default LongProperty getDynaLongProperty(String name) {
+        return new WrappedLongProperty(getDynaProperty(name, Long.class));
     }
 
     /**
@@ -59,8 +64,8 @@ public interface PropertyProvider {
      * <p/>
      * The returned {@link Property} object cannot be null.
      */
-    default BooleanProperty getBooleanProperty(String name) {
-        return new WrappedBooleanProperty(getProperty(name, Boolean.class));
+    default BooleanProperty getDynaBooleanProperty(String name) {
+        return new WrappedBooleanProperty(getDynaProperty(name, Boolean.class));
     }
 
     /**
@@ -69,8 +74,8 @@ public interface PropertyProvider {
      * <p/>
      * The returned {@link Property} object cannot be null.
      */
-    default DoubleProperty getDoubleProperty(String name) {
-        return new WrappedDoubleProperty(getProperty(name, Double.class));
+    default DoubleProperty getDynaDoubleProperty(String name) {
+        return new WrappedDoubleProperty(getDynaProperty(name, Double.class));
     }
 
 }

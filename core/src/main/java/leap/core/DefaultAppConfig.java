@@ -264,12 +264,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
 	@Override
     public String getProperty(String name) {
-	    return properties.get(name);
-    }
-	
-	@Override
-    public boolean hasProperty(String name) {
-	    return properties.containsKey(name);
+        String v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
+        return null == v ? properties.get(name) : v;
     }
 	
 	@Override
@@ -303,7 +299,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public StringProperty getDynaProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getProperty(name);
+            return propertyProvider.getDynaProperty(name);
         }
         return new SimpleStringProperty(properties.get(name));
     }
@@ -311,7 +307,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public <T> Property<T> getDynaProperty(String name, Class<T> type) {
         if(null != propertyProvider) {
-            return propertyProvider.getProperty(name, type);
+            return propertyProvider.getDynaProperty(name, type);
         }
         return new SimpleProperty<>(Converts.convert(properties.get(name), type));
     }
@@ -319,7 +315,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public IntegerProperty getDynaIntegerProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getIntegerProperty(name);
+            return propertyProvider.getDynaIntegerProperty(name);
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
     }
@@ -327,7 +323,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public LongProperty getDynaLongProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getLongProperty(name);
+            return propertyProvider.getDynaLongProperty(name);
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
     }
@@ -335,7 +331,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public BooleanProperty getDynaBooleanProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getBooleanProperty(name);
+            return propertyProvider.getDynaBooleanProperty(name);
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
     }
@@ -343,7 +339,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public DoubleProperty getDynaDoubleProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDoubleProperty(name);
+            return propertyProvider.getDynaDoubleProperty(name);
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
     }

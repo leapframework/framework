@@ -129,6 +129,11 @@ public interface AppConfig extends PropertyGetter {
 	 * @see AppConfigProcessor
 	 */
 	<T> T removeExtension(Class<T> type);
+
+    /**
+     * Returns the raw value of property or null if not exists.
+     */
+    String getProperty(String name);
 	
 	/**
 	 * Returns the configured property value as String, or returns the default value if empty.
@@ -188,11 +193,6 @@ public interface AppConfig extends PropertyGetter {
      */
     DoubleProperty getDynaDoubleProperty(String name);
 
-	/**
-	 * Returns <code>true</code> if the given property name exists.
-	 */
-	boolean hasProperty(String name);
-	
 	/**
 	 * Returns the map contains all the data source configs.
 	 */

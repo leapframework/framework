@@ -87,6 +87,7 @@ public class BeanFactoryTest extends AppTestBase {
         PBean pbean = factory.getBean(PBean.class);
         assertNotNull(pbean);
 
+        assertEquals("s1", pbean.rawStringProperty1);
         assertEquals("s1", pbean.stringProperty1.get());
         assertEquals("s2", pbean.stringProperty2.get());
 

@@ -1057,9 +1057,9 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected Object resolveConfigProperty(String key, Class<?> type, Type genericType) {
-        if(appContext.getConfig().hasProperty(key)){
-            String prop = appContext.getConfig().getProperty(key);
+        String prop = appContext.getConfig().getProperty(key);
 
+        if(null != prop){
             if(!Strings.isEmpty(prop = prop.trim())) {
                 try {
                     return Converts.convert(prop, type, genericType);
@@ -1069,6 +1069,7 @@ public class BeanContainer implements BeanFactory {
                 }
             }
         }
+
         return null;
     }
 	
@@ -1135,7 +1136,7 @@ public class BeanContainer implements BeanFactory {
     protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
         if(null != a && a.value().length > 0) {
             for(String key : a.value()) {
-                if(doBeanConfigure(bean, v, key)) {
+                if(doBeanConfigure(bean, v, keyPrefix + key)) {
                     break;
                 }
             }
@@ -1156,19 +1157,15 @@ public class BeanContainer implements BeanFactory {
             return true;
         }
 
-		if(appContext.getConfig().hasProperty(key)){
-			String prop = appContext.getConfig().getProperty(key);
-			
-			if(!Strings.isEmpty(prop = prop.trim())) {
-				try {
-	                Object value = Converts.convert(prop, v.getType(), v.getGenericType());
-	                v.setValue(bean, value);
-                } catch (Exception e) {
-                	throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
-                									"' using config key '" + key + "', " + e.getMessage(), e);
-                }
-			}
-			
+        String prop = appContext.getConfig().getProperty(key);
+        if(null != prop) {
+            try {
+                Object value = Converts.convert(prop, v.getType(), v.getGenericType());
+                v.setValue(bean, value);
+            } catch (Exception e) {
+                throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
+                                                "' using config key '" + key + "', " + e.getMessage(), e);
+            }
 			return true;
 		}
 

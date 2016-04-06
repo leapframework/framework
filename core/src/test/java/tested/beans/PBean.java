@@ -17,12 +17,16 @@
 package tested.beans;
 
 import leap.core.annotation.Bean;
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.config.*;
 
 @Bean
 @Configurable(prefix="pbean")
 public class PBean {
+
+    @ConfigProperty("stringProperty1")
+    public String            rawStringProperty1;
 
     public Property<String>  stringProperty1;
     public Property<Integer> integerProperty1;
