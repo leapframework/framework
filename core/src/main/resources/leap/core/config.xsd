@@ -188,7 +188,7 @@
         	<xsd:sequence>
         		<xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
         	</xsd:sequence>
-        	<xsd:attribute name="profile" use="optional" type="xsd:string"/>
+        	<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
         	<xsd:attribute name="prefix" type="xsd:string" use="optional"/>
         </xsd:complexType>
     </xsd:element>
@@ -201,7 +201,7 @@
                     <xsd:element name="deny" type="Permission"/>
                 </xsd:choice>
             </xsd:sequence>
-            <xsd:attribute name="profile" use="optional"/>
+            <xsd:attribute name="if-profile" use="optional"/>
         </xsd:complexType>
     </xsd:element>
     
@@ -218,7 +218,7 @@
                             ]]></xsd:documentation>
                     </xsd:annotation>
                 </xsd:attribute>
-                <xsd:attribute name="profile" use="optional"/>
+                <xsd:attribute name="if-profile" use="optional"/>
             </xsd:extension>
         </xsd:simpleContent>
     </xsd:complexType>

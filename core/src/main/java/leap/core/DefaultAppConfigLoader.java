@@ -350,7 +350,7 @@ class DefaultAppConfigLoader {
 			if(reader.isStartElement(IMPORT_ELEMENT)){
 				if(matchProfile(context.getProfile(), reader)){
 					boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-					boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverried());
+					boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverrided());
 					String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 					
 					Resource importResource = Resources.getResource(resource,importResourceName);
@@ -472,9 +472,15 @@ class DefaultAppConfigLoader {
 		
 		while(reader.nextWhileNotEnd(PROPERTIES_ELEMENT)){
 			if(reader.isStartElement(PROPERTY_ELEMENT)){
+
+                if(!matchProfile(context.getProfile(), reader)){
+                    reader.nextToEndElement(PROPERTY_ELEMENT);
+                    continue;
+                }
+
 				String  name     = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
 				String  value    = reader.resolveAttribute(VALUE_ATTRIBUTE);
-				boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverried());
+				boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverrided());
 
 				if(Strings.isEmpty(value)){
 					value = reader.resolveElementTextAndEnd();
@@ -562,7 +568,7 @@ class DefaultAppConfigLoader {
 	        
 	        SysPermission permObject = (SysPermission)constructor.newInstance(name,actions);
 	        
-			addPermission(new SysPermissionDefinition(reader.getSource(), permType, permObject, granted),context.isDefaultOverried());
+			addPermission(new SysPermissionDefinition(reader.getSource(), permType, permObject, granted),context.isDefaultOverrided());
         } catch (NoSuchMethodException e) {
         	throw new AppConfigException("Permission class '" + className + "' must define the consturstor(String.class,String.class), source : " + reader.getSource());
         } catch (Exception e){
@@ -609,15 +615,15 @@ class DefaultAppConfigLoader {
 	}
 	
 	private final class LoadContext extends MapPropertyAccessor implements AppConfigContext{
-		protected String  	  profile         = null;
-		protected boolean     defaultOverried = false;
+		protected String      profile              = null;
+		protected boolean     defaultOverrided     = false;
 		protected boolean     hasDefaultDataSource = false;
-		protected Set<String> resources       = new HashSet<String>();
+		protected Set<String> resources            = new HashSet<String>();
 		
 		LoadContext(String profile,boolean defaultOverried){
 			super(DefaultAppConfigLoader.this.properties);
 			this.profile = profile;
-			this.defaultOverried = defaultOverried;
+			this.defaultOverrided = defaultOverried;
 		}
 
 		@Override
@@ -626,8 +632,8 @@ class DefaultAppConfigLoader {
         }
 		
 		@Override
-        public boolean isDefaultOverried() {
-	        return defaultOverried;
+        public boolean isDefaultOverrided() {
+	        return defaultOverrided;
         }
 
 		@Override
