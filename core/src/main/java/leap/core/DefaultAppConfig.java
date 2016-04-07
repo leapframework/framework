@@ -40,11 +40,12 @@ import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static leap.core.AppContextInitializer.*;
 
 /**
- * a default implementation of {@link AppConfig}
+ * A default implementation of {@link AppConfig}
  */
 public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	
@@ -91,14 +92,15 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	protected String						secret				= null;
 	protected PrivateKey                    privateKey          = null;
 	protected Map<Class<?>, Object>         extensions          = new HashMap<>();
-	protected Map<String,String>            properties          = new LinkedHashMap<>();
+	protected Map<String,String>            properties          = new ConcurrentHashMap<>();
 	protected Map<String,String>            propertiesReadonly  = Collections.unmodifiableMap(properties);
+    protected Map<String,List<String>>      arrayProperties     = new ConcurrentHashMap<>();
 	protected List<SysPermissionDefinition> permissions         = new ArrayList<>();
 	protected List<SysPermissionDefinition> permissionsReadonly = Collections.unmodifiableList(permissions);
 	protected ResourceSet		            resources           = null;
 	protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
 	protected AppPropertyProcessor		    propertyProcessor	= new DefaultPropertyProcessor();
-	protected Map<String, DataSourceConfig> dataSourceConfigs   = new HashMap<>();
+	protected Map<String, DataSourceConfig> dataSourceConfigs   = new ConcurrentHashMap<>();
 	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
 	
 	protected DefaultAppConfig(Object externalContext, Map<String, String> initProperties){
@@ -125,7 +127,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		this.defaultCharset = Maps.get(initProperties, INIT_PROPERTY_DEFAULT_CHARSET, Charset.class);
 		this.defaultLocale  = Maps.get(initProperties, INIT_PROPERTY_DEFAULT_LOCALE, Locale.class);
 		
-		this.properties.putAll(initProperties);
+		loadProperties(initProperties);
 	}
 	
 	protected void loadInitPropertiesFromSystem(Map<String, String> initProperties) {
@@ -179,6 +181,44 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 			initProperties.putAll(Props.load(confProperties).toMap(pr));
 		}
 	}
+
+    protected void loadProperty(String name, String value) {
+
+        //array property
+        if(name.endsWith("[]")) {
+            name = name.substring(0, name.length() - 2);
+
+            List<String> values = arrayProperties.get(name);
+            if(null == values){
+                values = new ArrayList<>();
+                arrayProperties.put(name, values);
+            }
+
+            values.add(value);
+        }else{
+            properties.put(name, value);
+        }
+    }
+
+    protected void loadProperties(Map<String,String> map) {
+        for(Entry<String,String> entry : map.entrySet()) {
+            loadProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
+    protected void loadArrayProperties(Map<String, List<String>> map) {
+        for(Entry<String, List<String>> entry : map.entrySet()) {
+            String key = entry.getKey();
+
+            List<String> list = arrayProperties.get(key);
+            if(null == list) {
+                list = new ArrayList<>();
+                arrayProperties.put(key, list);
+            }
+
+            list.addAll(entry.getValue());
+        }
+    }
 	
 	@Override
     public String getProfile() {
@@ -297,6 +337,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
+    public String[] getArrayProperty(String name) {
+        List<String> values = arrayProperties.get(name);
+
+        return null == values ? null : values.toArray(Arrays2.EMPTY_STRING_ARRAY);
+    }
+
+    @Override
     public StringProperty getDynaProperty(String name) {
         if(null != propertyProvider) {
             return propertyProvider.getDynaProperty(name);
@@ -365,11 +412,18 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		DefaultAppConfigLoader appsysLoader    = load(APPSYS_CONFIG_LOCATIONS);
 		
 		//properties
-		properties.putAll(frameworkLoader.getProperties());
-		properties.putAll(extensionLoader.getProperties());
-		properties.putAll(appsysLoader.getProperties());
-		properties.putAll(appusrLoader.getProperties());
-		
+		loadProperties(frameworkLoader.getProperties());
+        loadArrayProperties(frameworkLoader.getArrayProperties());
+
+		loadProperties(extensionLoader.getProperties());
+        loadArrayProperties(extensionLoader.getArrayProperties());
+
+		loadProperties(appsysLoader.getProperties());
+        loadArrayProperties(appsysLoader.getArrayProperties());
+
+		loadProperties(appusrLoader.getProperties());
+        loadArrayProperties(appusrLoader.getArrayProperties());
+
 		//resources
 		try {
 	        Map<String,Resource> urlResourceMap = new HashMap<>();

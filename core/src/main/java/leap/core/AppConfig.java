@@ -161,6 +161,22 @@ public interface AppConfig extends PropertyGetter {
 	int getIntProperty(String name,int defaultValue);
 
     /**
+     * An array property is ends with chars <code>[]</code>.
+     *
+     * <p/>
+     * Returns null if no the array property.
+     *
+     * <p/>
+     *
+     * For example, following properties configuration will return an array : [a,b].
+     * <pre>
+     *     prop1[] = a
+     *     prop1[] = b
+     * </pre>
+     */
+    String[] getArrayProperty(String name);
+
+    /**
      * Returns the wrapped property with or without underlying property value.
      *
      * <p/>

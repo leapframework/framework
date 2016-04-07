@@ -43,6 +43,9 @@
         <property name="booleanProperty2" value="true"/>
         <property name="doubleProperty1"  value="1.1"/>
         <property name="doubleProperty2"  value="1.2"/>
+        <property name="arrayProperty1[]" value="a"/>
+        <property name="arrayProperty1[]" value="b"/>
+        <property name="arrayProperty1[]" value="c"/>
     </properties>
     
     <permissions>

@@ -81,13 +81,14 @@ class DefaultAppConfigLoader {
 	protected Charset defaultCharset;
 	protected Object  externalContext;
 
-	protected final Set<String> additionalPackages = new LinkedHashSet<>();
-	protected final Map<String, String> externalProperties;
-	protected final Map<String, String>           properties  = new LinkedHashMap<>();
-	protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
-	protected final Set<Resource>                 resources   = new HashSet<>();
-	protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
-	protected final Map<String, DataSourceConfig> dataSourceConfigs;
+    protected final Set<String> additionalPackages = new LinkedHashSet<>();
+    protected final Map<String, String> externalProperties;
+    protected final Map<String, String>           properties  = new LinkedHashMap<>();
+    protected final Map<String, List<String>>     arrayProperties = new LinkedHashMap<>();
+    protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
+    protected final Set<Resource>                 resources   = new HashSet<>();
+    protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
+    protected final Map<String, DataSourceConfig> dataSourceConfigs;
 
 	protected final Map<Class<?>, Map<String, SysPermissionDefinition>> typedPermissions = new HashMap<>();
 
@@ -149,6 +150,10 @@ class DefaultAppConfigLoader {
 	protected Map<String, String> getProperties() {
 		return properties;
 	}
+
+    protected Map<String, List<String>> getArrayProperties() {
+        return arrayProperties;
+    }
 	
 	protected Set<Resource> getResources(){
 		return resources;
@@ -489,8 +494,19 @@ class DefaultAppConfigLoader {
 						value = newValue.getValue();	
 					}
 				}
-				
-				properties.put(prefix + name, value);	
+
+                if(key.endsWith("[]")) {
+                    key = key.substring(0, key.length()-2);
+                    List<String> list = arrayProperties.get(key);
+                    if(null == list) {
+                        list = new ArrayList<>();
+                        arrayProperties.put(key, list);
+                    }
+                    list.add(value);
+                }else{
+                    properties.put(key, value);
+                }
+
 				continue;
 			}
 		}

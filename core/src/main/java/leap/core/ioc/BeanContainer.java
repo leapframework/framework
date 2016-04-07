@@ -1157,7 +1157,35 @@ public class BeanContainer implements BeanFactory {
             return true;
         }
 
-        String prop = appContext.getConfig().getProperty(key);
+        if(v.getType().isArray()) {
+            String[] array = getAppConfig().getArrayProperty(key);
+            if(null != array) {
+                v.setValue(bean, array);
+                return true;
+            }
+        }
+
+        if(List.class.equals(v.getType())) {
+            String[] array = getAppConfig().getArrayProperty(key);
+            if(null != array) {
+                List<String> list = new ArrayList<>();
+                Collections2.addAll(list, array);
+                v.setValue(bean, list);
+                return true;
+            }
+        }
+
+        if(Set.class.equals(v.getType())) {
+            String[] array = getAppConfig().getArrayProperty(key);
+            if(null != array) {
+                Set<String> set = new LinkedHashSet<>();
+                Collections2.addAll(set, array);
+                v.setValue(bean, set);
+                return true;
+            }
+        }
+
+        String prop = getAppConfig().getProperty(key);
         if(null != prop) {
             try {
                 Object value = Converts.convert(prop, v.getType(), v.getGenericType());
@@ -1178,7 +1206,7 @@ public class BeanContainer implements BeanFactory {
         //todo :
         Class<?> type = v.getType();
 
-        Property value = null;
+        Property value;
 
         if(type.equals(StringProperty.class)) {
 

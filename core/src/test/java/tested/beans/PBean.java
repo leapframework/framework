@@ -40,4 +40,6 @@ public class PBean {
     public DoubleProperty    doubleProperty2;
 
     public Property<String>  property1;
+
+    public @ConfigProperty String[] arrayProperty1;
 }

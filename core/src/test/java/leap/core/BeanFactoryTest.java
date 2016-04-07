@@ -104,6 +104,13 @@ public class BeanFactoryTest extends AppTestBase {
         assertEquals(new Double(1.2d), pbean.doubleProperty2.get());
 
         assertNull(pbean.property1.get());
+
+        String[] arrayProperty1 = pbean.arrayProperty1;
+        assertNotNull(arrayProperty1);
+        assertEquals(3, arrayProperty1.length);
+        assertEquals("a", arrayProperty1[0]);
+        assertEquals("b", arrayProperty1[1]);
+        assertEquals("c", arrayProperty1[2]);
     }
 
 }
