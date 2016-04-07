@@ -18,4 +18,12 @@ package leap.core.config;
 
 public interface BooleanProperty extends Property<Boolean> {
 
+    default boolean isTrue() {
+        return null != get() && get().equals(Boolean.TRUE);
+    }
+
+    default boolean isFalse() {
+        return null != get() && get().equals(Boolean.FALSE);
+    }
+
 }
