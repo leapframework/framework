@@ -140,7 +140,7 @@
                             ]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
-                    <xsd:attribute name="profile" use="optional"/>
+                    <xsd:attribute name="if-profile" use="optional"/>
                 </xsd:restriction>
             </xsd:complexContent>
         </xsd:complexType>
@@ -177,7 +177,7 @@
                             ]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
-                    <xsd:attribute name="profile" use="optional"/>
+                    <xsd:attribute name="if-profile" use="optional"/>
                 </xsd:restriction>
             </xsd:complexContent>
         </xsd:complexType>
