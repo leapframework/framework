@@ -315,7 +315,7 @@ public class SqlParser extends SqlParserBase {
 			
 			if(lexer.token() == Token.LPAREN) {
 				count++;
-				accept();
+				acceptText();
 				continue;
 			}
 			
@@ -324,7 +324,7 @@ public class SqlParser extends SqlParserBase {
 				if(count == 0) {
 					return true;
 				}
-				accept();
+				acceptText();
 				continue;
 			}
 			
@@ -377,12 +377,12 @@ public class SqlParser extends SqlParserBase {
 			return true;
 		}else if(token == Token.DOLLAR_REPLACEMENT){
 			// $name$
-			acceptNode(new ParamReplacement(lexer.literal(), Scope.UNKNOW));
+			acceptNode(new ParamReplacement(lexer.literal(), Scope.UNKNOWN));
 			return true;
 		}else if(token == Token.EXPR_REPLACEMENT){
 			// ${..}
 			String expr = lexer.literal();
-			acceptNode(new ExprParamReplacement(expr, compileExpression(expr),Scope.UNKNOW));
+			acceptNode(new ExprParamReplacement(expr, compileExpression(expr),Scope.UNKNOWN));
 			return true;
 		}else if(token == Token.AT_IF){
 			// @if(..) .. @elseif(..) .. @else .. @endif;
@@ -420,7 +420,7 @@ public class SqlParser extends SqlParserBase {
 			}
 		}
 		
-		accept();
+		acceptText();
 	}
 	
 	protected final boolean parseOrderBy(){

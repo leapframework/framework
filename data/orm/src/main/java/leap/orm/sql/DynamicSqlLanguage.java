@@ -101,7 +101,10 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
                 for(Sql s : sqls) {
                     s = new SqlResolver(context,s).resolve();
+
+                    processingShardingTable(s);
                     processingWhereFields(s);
+
                     resolvedSqls.add(s);
                 }
 
@@ -125,6 +128,41 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	protected DynamicSqlClause createClause(MetadataContext context, Sql sql) {
 		return new DynamicSqlClause(this,sql);
 	}
+
+    protected void processingShardingTable(Sql sql) {
+        //todo :
+
+        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
+
+            sql.traverse((node) -> {
+
+                if(node instanceof SqlWhere) {
+
+                    SqlWhere where = (SqlWhere)node;
+                    SqlQuery query = where.getQuery();
+
+                    for(SqlTableSource ts : query.getTableSources()) {
+
+                        if(ts instanceof SqlTableName) {
+
+                            EntityMapping em = ((SqlTableName)ts).getEntityMapping();
+
+                            if(null != em && em.isSharding()) {
+
+                                
+
+                            }
+                        }
+
+                    }
+
+                }
+
+                return true;
+            });
+        }
+
+    }
 
     protected void processingWhereFields(Sql sql) {
         if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {

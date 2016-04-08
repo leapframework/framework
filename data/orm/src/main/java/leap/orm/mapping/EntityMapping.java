@@ -22,7 +22,6 @@ import leap.lang.Args;
 import leap.lang.Assert;
 import leap.lang.New;
 import leap.lang.Strings;
-import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
@@ -103,60 +102,103 @@ public class EntityMapping {
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
     }
-	
+
+    /**
+     * Returns the entity name.
+     */
 	public String getEntityName(){
 		return entityName;
 	}
-	
+
+    /**
+     * Returns the table name of entity.
+     */
 	public String getTableName(){
 		return table.getName();
 	}
 
-	@Nullable
+    /**
+     * Optional. Returns the mapping java class of entity.
+     */
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
-	
+
+    /**
+     * Optional. Returns the mapping {@link Model} class of entity.
+     */
+    public Class<? extends Model> getModelClass() {
+        return modelClass;
+    }
+
+    /**
+     * Returns the db table.
+     */
 	public DbTable getTable() {
 		return table;
 	}
-	
-	@Nullable
+
+    /**
+     * Returns true if the entity is a sharding entity.
+     */
+    public boolean isSharding() {
+        return false;
+    }
+
+    /**
+     * Optional. Returns {@link BeanType} of the mapping java class of entity.
+     */
 	public BeanType getBeanType() {
 		return beanType;
 	}
-	
-	@Nullable
+
+    /**
+     * Optional. Returns the {@link EntityDomain} of entity.
+     */
 	public EntityDomain getDomain() {
 		return domain;
 	}
-	
-	public Class<? extends Model> getModelClass() {
-		return modelClass;
-	}
 
+    /**
+     * Returns all the {@link RelationMapping}.
+     */
+    public RelationMapping[] getRelationMappings() {
+        return relationMappings;
+    }
+
+    /**
+     * Returns all the fields of entity.
+     */
 	public FieldMapping[] getFieldMappings() {
 		return fieldMappings;
 	}
-	
+
+    /**
+     * Returns all the primary key fields of entity.
+     */
 	public FieldMapping[] getKeyFieldMappings() {
 		return keyFieldMappings;
 	}
 
+    /**
+     * Returns all the names of primary key fields of entity.
+     */
 	public String[] getKeyFieldNames() {
 		return keyFieldNames;
 	}
-	
+
+    /**
+     * Returns all the names of primary key columns of entity.
+     */
 	public String[] getKeyColumnNames() {
 		return keyColumnNames;
 	}
-	
+
+    /**
+     * Returns the validators for validating the entity.
+     */
 	public EntityValidator[] getValidators() {
 		return validators;
-	}
-	
-	public RelationMapping[] getRelationMappings() {
-		return relationMappings;
 	}
 
 	public FieldMapping getFieldMapping(String fieldName) throws ObjectNotFoundException {

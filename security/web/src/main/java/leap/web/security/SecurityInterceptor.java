@@ -55,9 +55,13 @@ public interface SecurityInterceptor extends Interceptor{
 	    return State.CONTINUE;
 	}
 
-	default State postLoginAuthentication(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
+	default State onLoginAuthenticationSuccess(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
 	    return State.CONTINUE;
 	}
+
+    default State onLoginAuthenticationFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        return State.CONTINUE;
+    }
 	
 	default State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
 	    return State.CONTINUE;

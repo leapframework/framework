@@ -29,7 +29,7 @@ public class Sql {
 	
 	public enum ParseLevel {
 		BASE,
-		MORE;
+		MORE
 	}
 	
 	public enum Type {
@@ -45,7 +45,7 @@ public class Sql {
 	}
 	
 	public enum Scope {
-		UNKNOW,
+        UNKNOWN,
 		
 		SELECT_LIST,
 		

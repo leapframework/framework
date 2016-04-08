@@ -169,7 +169,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     }
 
     @Override
-    public State postLoginAuthentication(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
+    public State onLoginAuthenticationSuccess(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
         String savedQueryString = request.getParameter(STATE_ATTRIBUTE);
         if(Strings.isEmpty(savedQueryString)) {
             return State.CONTINUE;

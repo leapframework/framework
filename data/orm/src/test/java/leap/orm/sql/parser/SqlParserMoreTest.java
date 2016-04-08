@@ -57,6 +57,11 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 	}
 
     @Test
+    public void testSimpleAndExpr() {
+        assertParse("select * from t where a = 1 and b is null");
+    }
+
+    @Test
     public void testSimpleSelect() {
         assertParse("select * from t where lastName = :lastName");
     }
@@ -83,7 +88,7 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 	}
 	
     @Test
-    public void testDyanmicWithParams() {
+    public void testDynamicWithParams() {
         assertParse("select * from t {?limit :count;nullable:true}");
         
         split("select * from t {?limit :count; nullable:true}");

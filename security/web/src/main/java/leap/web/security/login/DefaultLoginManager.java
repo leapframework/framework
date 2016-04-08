@@ -110,15 +110,19 @@ public class DefaultLoginManager implements LoginManager {
                 return;
             }
         }
-        
-        for(LoginHandler handler : handlers){
-            if(State.isIntercepted(handler.handleLoginAuthentication(request, response, context))){
-                return;
-            }
-        }
-        
+
         LoginContext sc = context.getLoginContext();
-        
+
+        if(!sc.isAuthenticated()) {
+
+            for(LoginHandler handler : handlers){
+                if(State.isIntercepted(handler.handleLoginAuthentication(request, response, context))){
+                    return;
+                }
+            }
+
+        }
+
         //If authentication success.
         if(sc.isAuthenticated()){
             Authentication authc = new SimpleAuthentication(sc.getUser(), sc.getCredentials());
@@ -128,13 +132,20 @@ public class DefaultLoginManager implements LoginManager {
             
             //login success.
             for(SecurityInterceptor i : config.getInterceptors()) {
-                if(State.isIntercepted(i.postLoginAuthentication(request, response, context, authc))) {
+                if(State.isIntercepted(i.onLoginAuthenticationSuccess(request, response, context, authc))) {
                     return ;
                 }
             }
             
             handleLoginSuccessView(request, response, context);
         }else{
+            //login failed.
+            for(SecurityInterceptor i : config.getInterceptors()) {
+                if(State.isIntercepted(i.onLoginAuthenticationFailure(request, response, context))) {
+                    return ;
+                }
+            }
+
             if(request.isAjax()) {
                 ajaxHandler.handleLoginFailure(request, response, context);
             }else{

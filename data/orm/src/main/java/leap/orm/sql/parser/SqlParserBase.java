@@ -23,6 +23,7 @@ import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.ast.AstNode;
+import leap.orm.sql.ast.SqlToken;
 import leap.orm.sql.ast.Text;
 
 import java.util.ArrayList;
@@ -56,10 +57,14 @@ public abstract class SqlParserBase {
 		return this;
 	}
 
-	protected final void accept(){
+	protected final void acceptText(){
 		appendText(lexer.tokenText());
 		nextToken();
 	}
+
+    protected final void acceptNode() {
+        acceptNode(new SqlToken(lexer.token(), lexer.tokenText()));
+    }
 	
 	/**
 	 * Accepts the given node and move to next token.
@@ -70,8 +75,8 @@ public abstract class SqlParserBase {
 		nextToken();
 	}
 	
-	protected final void accept(Token token){
-		expect(token).accept();
+	protected final void expectAndAcceptText(Token token){
+		expect(token).acceptText();
 	}
 	
 	protected final void addNode(AstNode node){

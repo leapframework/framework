@@ -29,7 +29,7 @@ class SqlExprParser extends SqlParser {
 		parsePrimary();
 		
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			parseExprLparenToken();
 		}
 		
@@ -51,12 +51,12 @@ class SqlExprParser extends SqlParser {
 	
 	protected boolean parseRelationalExprRest() {
 	    Token token = lexer.token();
-	    
+
 	    if(token == Token.IS) {
-	        accept();
+	        acceptText();
 	        
 	        if(lexer.isToken(Token.NOT)) {
-	            accept();
+	            acceptText();
 	        }
 	        
 	        parsePrimary();
@@ -98,34 +98,34 @@ class SqlExprParser extends SqlParser {
 		
 		switch (token) {
 			case LPAREN:
-				accept();
+				acceptText();
 				parseExprLparenToken();
 				break;
 			case CASE:
-			    accept();
+			    acceptText();
 			    
 			    if(lexer.token() != Token.WHEN) {
 			        parseExpr();
 			    }
 			    
-			    accept(Token.WHEN);
+			    expectAndAcceptText(Token.WHEN);
 			    parseExpr();
-			    accept(Token.THEN);
+			    expectAndAcceptText(Token.THEN);
 			    parseExpr();
 			    
 			    while(lexer.token() == Token.WHEN) {
-			        accept();
+			        acceptText();
 			        parseExpr();
-			        accept(Token.THEN);
+			        expectAndAcceptText(Token.THEN);
 			        parseExpr();
 			    }
 			    
 			    if(lexer.token() == Token.ELSE) {
-			        accept();
+			        acceptText();
 			        parseExpr();
 			    }
 			    
-			    accept(Token.END);
+			    expectAndAcceptText(Token.END);
 			    break;
 			default:
 			    parsePrimaryToken();
@@ -142,7 +142,7 @@ class SqlExprParser extends SqlParser {
 		
 		if(lexer.token() != Token.RPAREN) {
 			do{
-				accept();
+				acceptText();
 				
 				if(lexer.token() == Token.RPAREN){
 					break;
@@ -166,7 +166,7 @@ class SqlExprParser extends SqlParser {
 		}
 		*/
 		
-		expect(Token.RPAREN).accept();
+		expect(Token.RPAREN).acceptText();
 	}
 	
 }

@@ -46,9 +46,9 @@ class SqlSelectParser extends SqlQueryParser {
 
 	protected SqlSelect parseSelectBody(){
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			SqlSelect select = parseSelectBody();
-			accept(Token.RPAREN);
+			expectAndAcceptText(Token.RPAREN);
 			return select;
 		}
 		
@@ -56,7 +56,7 @@ class SqlSelectParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		accept(Token.SELECT);
+		expectAndAcceptText(Token.SELECT);
 		
 		//SELECT (ALL | DISTINCT)? (TOP Integer (PERCENT))? selectList
 		parseDistinct(select);
@@ -77,13 +77,13 @@ class SqlSelectParser extends SqlQueryParser {
 	
 	protected void parseDistinct(SqlSelect select){
 		if(lexer.token() == Token.DISTINCT){
-			accept();
+			acceptText();
 			select.setDistinct(true);
 			return;
 		}
 		
 		if(lexer.token() == Token.ALL){
-			accept();
+			acceptText();
 			return;
 		}
 	}
@@ -114,7 +114,7 @@ class SqlSelectParser extends SqlQueryParser {
 		
 		if(lexer.token() == Token.COMMA){
 			do{
-				accept();
+				acceptText();
 				parseSelectItem(select);
 			}while(lexer.token() == Token.COMMA);
 		}
@@ -141,30 +141,30 @@ class SqlSelectParser extends SqlQueryParser {
 			switch (lexer.token()) {
 				case COMMA:
 				case JOIN:
-					accept();
+					acceptText();
 					break;
 				case LEFT:
 				case RIGHT:
-					accept();
+					acceptText();
 					if(lexer.token() == Token.OUTER){
-						accept();
+						acceptText();
 					}
-					accept(Token.JOIN);
+					expectAndAcceptText(Token.JOIN);
 					break;
 				case FULL:
-					accept();
+					acceptText();
 					if(lexer.token() == Token.OUTER){
-						accept();
+						acceptText();
 					}
-					accept(Token.JOIN);
+					expectAndAcceptText(Token.JOIN);
 					break;
 				case INNER:
-					accept();
-					accept(Token.JOIN);
+					acceptText();
+					expectAndAcceptText(Token.JOIN);
 					break;
 				default:
 					if(lexer.isIdentifier("STRAIGHT_JOIN") || lexer.isIdentifier("CROSS")){
-						accept();
+						acceptText();
 						break;
 					}
 					join = false;
@@ -184,7 +184,7 @@ class SqlSelectParser extends SqlQueryParser {
 		
 		if(lexer.token() == Token.ON) {
 			//Accets 'ON' 
-			accept();
+			acceptText();
 			
 			parseJoinOnExpr(query);
 		}
@@ -194,7 +194,7 @@ class SqlSelectParser extends SqlQueryParser {
 		new SqlExprParser(this).parseExpr();
 		
 		if(lexer.token() == Token.AND || lexer.token() == Token.OR) {
-			accept();
+			acceptText();
 			
 			if(lexer.token() == Token.EXISTS) {
 				parseExists(query, new AtomicInteger());
@@ -215,7 +215,7 @@ class SqlSelectParser extends SqlQueryParser {
 		}
 		
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			
 			//select item : subquery
 			if(lexer.token() == Token.SELECT){
@@ -224,19 +224,19 @@ class SqlSelectParser extends SqlQueryParser {
 				parseSelectItem(select);	
 			}
 			
-			accept(Token.RPAREN);
+			expectAndAcceptText(Token.RPAREN);
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
 			if(lexer.peekCharSkipWhitespaces() == '('){
-				accept();
-				accept(Token.LPAREN);
+				acceptText();
+				expectAndAcceptText(Token.LPAREN);
 				parseRestForClosingParen();
-				accept(Token.RPAREN);
+				expectAndAcceptText(Token.RPAREN);
 				
 				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					accept();
-					accept(Token.LPAREN);
+					acceptText();
+					expectAndAcceptText(Token.LPAREN);
 					parseRestForClosingParen();
-					accept(Token.RPAREN);
+					expectAndAcceptText(Token.RPAREN);
 				}
 			}else{
 				parseSqlObjectName();
@@ -250,7 +250,7 @@ class SqlSelectParser extends SqlQueryParser {
 	
 	protected String parseSelectItemAlias(SqlSelect select){
 		if(lexer.token() == Token.AS){
-			accept();
+			acceptText();
 			
 			expects(Token.IDENTIFIER,Token.QUOTED_IDENTIFIER,Token.LITERAL_CHARS);
 			
@@ -258,7 +258,7 @@ class SqlSelectParser extends SqlQueryParser {
 			
 			select.addSelectItemAlias(alias);
 			
-			accept();
+			acceptText();
 			
 			return alias;
 		}
@@ -270,7 +270,7 @@ class SqlSelectParser extends SqlQueryParser {
 			
 			select.addSelectItemAlias(alias);
 			
-			accept();
+			acceptText();
 			
 			return alias;
 		}
