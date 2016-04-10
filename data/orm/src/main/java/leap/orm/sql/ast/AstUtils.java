@@ -15,6 +15,8 @@
  */
 package leap.orm.sql.ast;
 
+import leap.orm.sql.parser.Token;
+
 public class AstUtils {
 	
     @SuppressWarnings("unchecked")
@@ -92,7 +94,75 @@ public class AstUtils {
 		}
 		return null;
     }
-    
+
+    public static AstNode prevNode(AstNode[] nodes, int currIndex) {
+        int i = currIndex - 1;
+
+        if( i < 0) {
+            return null;
+        }else{
+            return nodes[i];
+        }
+
+    }
+
+    public static <T extends AstNode> T prevNode(AstNode[] nodes, int currIndex,Class<T> type) {
+        AstNode node = prevNode(nodes, currIndex);
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static boolean prevToken(AstNode[] nodes, int currIndex, Token token) {
+        SqlToken node = prevNode(nodes, currIndex, SqlToken.class);
+        if(null == node) {
+            return false;
+        }
+
+        if(node.getToken() == token) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static AstNode nextNode(AstNode[] nodes, int currIndex) {
+        int i = currIndex + 1;
+
+        if( i >= nodes.length) {
+            return null;
+        }else{
+            return nodes[i];
+        }
+
+    }
+
+    public static <T extends AstNode> T nextNode(AstNode[] nodes, int currIndex,Class<T> type) {
+        AstNode node = nextNode(nodes, currIndex);
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static boolean nextToken(AstNode[] nodes, int currIndex, Token token) {
+        SqlToken node = nextNode(nodes, currIndex, SqlToken.class);
+        if(null == node) {
+            return false;
+        }
+
+        if(node.getToken() == token) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected AstUtils(){
     	
     }

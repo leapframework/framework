@@ -25,4 +25,8 @@ public interface MappingConfig {
      */
     Set<GlobalFieldMappingConfig> getGlobalFields();
 
+    /**
+     * Returns the sharding configurations.
+     */
+    Set<ShardingConfig> getShardings();
 }

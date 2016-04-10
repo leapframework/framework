@@ -182,8 +182,8 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 	protected static class LoadingContext implements MappingConfigContext,SqlConfigContext {
 		
 		private final OrmContext	 				     ormContext;
-		private final Map<Class<?>,EntityMappingBuilder> classToEntityMappings = new ConcurrentHashMap<Class<?>, EntityMappingBuilder>();
-		private final Map<String,EntityMappingBuilder>   nameToEntityMappings  = new ConcurrentHashMap<String, EntityMappingBuilder>();
+		private final Map<Class<?>,EntityMappingBuilder> classToEntityMappings = new ConcurrentHashMap<>();
+		private final Map<String,EntityMappingBuilder>   nameToEntityMappings  = new ConcurrentHashMap<>();
 		
 		protected LoadingContext(OrmContext ormContext){
 			this.ormContext = ormContext;

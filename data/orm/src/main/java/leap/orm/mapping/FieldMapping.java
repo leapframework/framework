@@ -53,6 +53,7 @@ public class FieldMapping {
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
+    protected final boolean          sharding;
 	
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
@@ -75,7 +76,8 @@ public class FieldMapping {
 						String newOptimisticLockFieldName,
 						FieldDomain domain,
 						List<FieldValidator> validators,
-						ReservedMetaFieldName reservedMetaFieldName) {
+						ReservedMetaFieldName reservedMetaFieldName,
+                        boolean sharding) {
 		
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
@@ -99,11 +101,12 @@ public class FieldMapping {
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
         this.whereValue     = whereValue;
-        this.whereIf = whereIf;
+        this.whereIf        = whereIf;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
+        this.sharding       = sharding;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -229,7 +232,11 @@ public class FieldMapping {
 		return validators;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    @Override
     public String toString() {
 	    return "FieldMapping[name=" + getFieldName() + ",column=" + getColumnName() + ",dataType=" + dataType + "]";
     }

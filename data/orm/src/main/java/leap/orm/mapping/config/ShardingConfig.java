@@ -14,36 +14,27 @@
  * limitations under the License.
  */
 
-package leap.orm.sql.ast;
+package leap.orm.mapping.config;
 
-import leap.orm.sql.parser.Token;
+public class ShardingConfig {
 
-import java.io.IOException;
+    private final String entity;
+    private final String shardingField;
 
-public class SqlToken extends SqlNode {
-
-    private final Token  token;
-    private final String text;
-
-    public SqlToken(Token token, String text) {
-        this.token = token;
-        this.text  = text;
+    public ShardingConfig(String entity, String shardingField) {
+        this.entity = entity;
+        this.shardingField = shardingField;
     }
 
-    public Token getToken() {
-        return token;
+    /**
+     * Returns the name of entity or entity class.
+     */
+    public String getEntity() {
+        return entity;
     }
 
-    public String getText() {
-        return text;
+    public String getShardingField() {
+        return shardingField;
     }
 
-    public boolean isToken(Token token) {
-        return this.token == token;
-    }
-
-    @Override
-    protected void toString_(Appendable buf) throws IOException {
-        buf.append(text);
-    }
 }

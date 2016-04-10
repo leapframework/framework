@@ -20,20 +20,15 @@ import leap.core.annotation.Configurable;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
-import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.ParseLevel;
-import leap.orm.sql.ast.*;
 import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Configurable(prefix="orm.dynamicSQL")
 public class DynamicSqlLanguage implements SqlLanguage {
@@ -102,8 +97,8 @@ public class DynamicSqlLanguage implements SqlLanguage {
                 for(Sql s : sqls) {
                     s = new SqlResolver(context,s).resolve();
 
-                    processingShardingTable(s);
-                    processingWhereFields(s);
+                    processShardingTable(s);
+                    processWhereFields(s);
 
                     resolvedSqls.add(s);
                 }
@@ -129,152 +124,12 @@ public class DynamicSqlLanguage implements SqlLanguage {
 		return new DynamicSqlClause(this,sql);
 	}
 
-    protected void processingShardingTable(Sql sql) {
-        //todo :
-
-        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
-
-            sql.traverse((node) -> {
-
-                if(node instanceof SqlWhere) {
-
-                    SqlWhere where = (SqlWhere)node;
-                    SqlQuery query = where.getQuery();
-
-                    for(SqlTableSource ts : query.getTableSources()) {
-
-                        if(ts instanceof SqlTableName) {
-
-                            EntityMapping em = ((SqlTableName)ts).getEntityMapping();
-
-                            if(null != em && em.isSharding()) {
-
-                                
-
-                            }
-                        }
-
-                    }
-
-                }
-
-                return true;
-            });
-        }
-
+    protected void processShardingTable(Sql sql) {
+        new SqlShardingProcessor(sql).processShardingTable();
     }
 
-    protected void processingWhereFields(Sql sql) {
-        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
-
-            List<SqlTableSource> tables = new ArrayList<>();
-
-            AstNode clause = sql.nodes()[0];
-
-            if(clause instanceof SqlQuery) {
-
-                SqlQuery query = (SqlQuery)clause;
-
-                for(SqlTableSource ts : query.getTableSources()) {
-
-                    if(ts instanceof SqlTableName) {
-
-                        EntityMapping em = ((SqlTableName)ts).getEntityMapping();
-
-                        if(null != em && em.hasWhereFields()) {
-                            tables.add(ts);
-                        }
-
-                    }
-
-                }
-
-                if(tables.isEmpty()) {
-                    return;
-                }
-            }
-
-            sql.traverse((node) -> {
-
-                if(node instanceof SqlWhere) {
-
-                    //todo : take the first one only
-                    SqlTableSource ts = tables.get(0);
-                    EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
-
-                    //checks the where field(s) exists in the where expression.
-                    AtomicBoolean exists = new AtomicBoolean(false);
-                    node.traverse((n1) -> {
-
-                        if(n1 instanceof SqlObjectName) {
-
-                            FieldMapping fmInSQL = ((SqlObjectName)n1).getFieldMapping();
-
-                            for(FieldMapping fm : em.getWhereFieldMappings()) {
-                                if(fmInSQL == fm) {
-                                    exists.set(true);
-                                    return false;
-                                }
-                            }
-                        }
-
-                        return true;
-                    });
-
-                    //if not exists, add the where condition
-                    if(!exists.get()) {
-                        FieldMapping[] whereFields = em.getWhereFieldMappings();
-
-                        AstNode[] olds = ((SqlWhere)node).getNodes();
-
-                        List<AstNode> nodes = new ArrayList<>();
-
-                        //where ( original expression ) and (...)
-                        nodes.add(new Text(olds[0].toString()).append(" ("));
-                        for(int i=1;i<olds.length;i++) {
-                            nodes.add(olds[i]);
-                        }
-                        nodes.add(new Text(" )"));
-
-                        String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                        if(whereFields.length == 1 && whereFields[0].getWhereIf() == null) {
-                            addWhereFieldNode(nodes, whereFields[0], alias);
-                        }else{
-                            nodes.add(new Text(" and ( 1=1"));
-
-                            for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                                FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                                addWhereFieldNode(nodes, fm, alias);
-                            }
-
-                            nodes.add(new Text(" ) "));
-                        }
-
-                        ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
-
-                        return false;
-                    }
-                }
-
-                return true;
-            });
-        }
-    }
-
-    protected void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias) {
-        List<AstNode> list = new ArrayList<>();
-
-        list.add(new Text(" and "));
-
-        list.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        list.add(new ExprParamPlaceholder(fm.getWhereValue().toString(), fm.getWhereValue()));
-
-        if(null != fm.getWhereIf()) {
-            nodes.add(new ConditionalNode(fm.getWhereIf(), nodes.toArray(new AstNode[0])));
-        }else{
-            nodes.addAll(list);
-        }
+    protected void processWhereFields(Sql sql) {
+        new SqlWhereProcessor(sql).processWhereFields();
     }
 	
 	protected boolean smart() {

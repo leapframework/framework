@@ -8,4 +8,5 @@
 
     </global-field>
 
+    <sharding entity="ShardingModel" sharding-field="type"/>
 </models>

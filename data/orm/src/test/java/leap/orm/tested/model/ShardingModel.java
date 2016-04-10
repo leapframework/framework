@@ -14,36 +14,29 @@
  * limitations under the License.
  */
 
-package leap.orm.sql.ast;
+package leap.orm.tested.model;
 
-import leap.orm.sql.parser.Token;
+import leap.orm.model.Model;
 
-import java.io.IOException;
+public class ShardingModel extends Model {
 
-public class SqlToken extends SqlNode {
+    protected String type;
+    protected String value;
 
-    private final Token  token;
-    private final String text;
-
-    public SqlToken(Token token, String text) {
-        this.token = token;
-        this.text  = text;
+    public String getType() {
+        return type;
     }
 
-    public Token getToken() {
-        return token;
+    public void setType(String type) {
+        this.type = type;
     }
 
-    public String getText() {
-        return text;
+    public String getValue() {
+        return value;
     }
 
-    public boolean isToken(Token token) {
-        return this.token == token;
+    public void setValue(String value) {
+        this.value = value;
     }
 
-    @Override
-    protected void toString_(Appendable buf) throws IOException {
-        buf.append(text);
-    }
 }

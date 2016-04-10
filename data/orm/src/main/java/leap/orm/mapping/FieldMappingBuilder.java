@@ -71,6 +71,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	protected List<FieldValidator>  validators;
 	protected Integer               sortOrder;
 	protected ReservedMetaFieldName reservedMetaFieldName;
+    protected boolean               sharding;
 	
 	public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -556,7 +557,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    public FieldMappingBuilder setSharding(boolean sharding) {
+        this.sharding = sharding;
+        return this;
+    }
+
+    @Override
     public FieldMapping build() {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
@@ -597,7 +607,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
                                 insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
-	    						reservedMetaFieldName);
+	    						reservedMetaFieldName,
+                                sharding);
     }
 
 	@Override

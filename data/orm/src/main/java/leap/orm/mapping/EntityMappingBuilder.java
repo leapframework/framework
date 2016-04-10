@@ -15,22 +15,18 @@
  */
 package leap.orm.mapping;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
-import leap.lang.Buildable;
-import leap.lang.Builders;
-import leap.lang.Comparators;
-import leap.lang.New;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.validation.EntityValidator;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	 
@@ -51,6 +47,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected DbTable					   physicalTable;
 	protected List<EntityValidator>        validators;
 	protected List<RelationMappingBuilder> relationMappings;
+    protected boolean                      sharding;
 	
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
@@ -333,7 +330,16 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    public EntityMappingBuilder setSharding(boolean sharding) {
+        this.sharding = sharding;
+        return this;
+    }
+
+    @Override
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 		
@@ -343,7 +349,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations);
+	    						 domain,modelClass,validators,relations, sharding);
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {

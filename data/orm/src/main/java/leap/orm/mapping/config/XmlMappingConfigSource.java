@@ -45,12 +45,15 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String MODELS_ELEMENT             = "models";
     private static final String IMPORT_ELEMENT             = "import";
     private static final String GLOBAL_FIELD_ELEMENT       = "global-field";
+    private static final String SHARDING_ELEMENT           = "sharding";
     private static final String INCLUDED_ENTITIES_ELEMENT  = "included-entities";
     private static final String EXCLUDED_ENTITIES_ELEMENT  = "excluded-entities";
     private static final String DEFAULT_OVERRIDE_ATTRIBUTE = "default-override";
     private static final String CHECK_EXISTENCE_ATTRIBUTE  = "check-existence";
     private static final String MAPPING_STRATEGY_ATTRIBUTE = "mapping-strategy";
     private static final String RESOURCE_ATTRIBUTE         = "resource";
+    private static final String ENTITY_ATTRIBUTE           = "entity";
+    private static final String SHARDING_FIELD_ATTRIBUTE   = "sharding-field";
     private static final String NAME_ATTRIBUTE             = "name";
     private static final String COLUMN_ATTRIBUTE           = "column";
     private static final String JDBC_TYPE_ATTRIBUTE        = "jdbc-type";
@@ -71,12 +74,18 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     protected @Inject AppConfig appConfig;
 
     private final Set<GlobalFieldMappingConfig> globalFields = new LinkedHashSet<>();
+    private final Set<ShardingConfig>           shardings    = new LinkedHashSet<>();
 
     private boolean loaded = false;
 
     @Override
     public Set<GlobalFieldMappingConfig> getGlobalFields() {
         return globalFields;
+    }
+
+    @Override
+    public Set<ShardingConfig> getShardings() {
+        return shardings;
     }
 
     @Override
@@ -158,6 +167,11 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                         continue;
                     }
 
+                    if(reader.isStartElement(SHARDING_ELEMENT)) {
+                        loadSharding(context, resource, reader, defaultOverride);
+                        continue;
+                    }
+
                     if(reader.isStartElement()) {
                         throw new MappingConfigException("Unsupported element '" + reader.getElementLocalName() + "' in file : " + resource.getClasspath());
                     }
@@ -172,7 +186,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             throw new MappingConfigException("valid root element not found in file : " + resource.getClasspath());
         }
     }
-
     protected void loadGlobalField(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
         FieldMappingBuilder  field    = readFieldMapping(reader, defaultOverride);
         FieldMappingStrategy strategy = readFieldMappingStrategy(reader);
@@ -193,6 +206,14 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         }
 
         globalFields.add(gf);
+    }
+
+    private void loadSharding(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
+
+        String entity        = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
+        String shardingField = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
+
+        shardings.add(new ShardingConfig(entity, shardingField));
     }
 
     protected FieldMappingBuilder readFieldMapping(XmlReader reader, boolean defaultOverride) {

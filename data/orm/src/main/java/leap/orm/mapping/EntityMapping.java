@@ -18,10 +18,7 @@ package leap.orm.mapping;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Assert;
-import leap.lang.New;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
@@ -59,10 +56,12 @@ public class EntityMapping {
 	protected final Class<? extends Model>       modelClass;
 	protected final EntityValidator[]            validators;
 	protected final RelationMapping[]			 relationMappings;
+    protected final boolean                      sharding;
 	
 	private final Map<String,FieldMapping> columnNameToFields;
 	private final Map<String,FieldMapping> fieldNameToFields;
 	private final Map<String,FieldMapping> metaNameToFields;
+    private final FieldMapping             shardingField;
 	
 	public EntityMapping(String entityName,
 						Class<?> entityClass,DbTable table,List<FieldMapping> fieldMappings,
@@ -70,7 +69,8 @@ public class EntityMapping {
 						EntityExecutionInterceptor deleteInterceptor,EntityExecutionInterceptor findIncerceptor,
 						EntityDomain domain, Class<? extends Model> modelClass,
 						List<EntityValidator> validators,
-						List<RelationMapping> relationMappings) {
+						List<RelationMapping> relationMappings,
+                        boolean sharding) {
 		
 		Args.notEmpty(entityName,"entity name");
 		Args.notNull(table,"table");
@@ -101,6 +101,8 @@ public class EntityMapping {
 	    this.autoIncrementKeyColumn = autoIncrementKey ? table.getPrimaryKeyColumns()[0] : null;
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
+        this.sharding               = sharding;
+        this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
     }
 
     /**
@@ -137,13 +139,6 @@ public class EntityMapping {
 	public DbTable getTable() {
 		return table;
 	}
-
-    /**
-     * Returns true if the entity is a sharding entity.
-     */
-    public boolean isSharding() {
-        return false;
-    }
 
     /**
      * Optional. Returns {@link BeanType} of the mapping java class of entity.
@@ -193,6 +188,20 @@ public class EntityMapping {
 	public String[] getKeyColumnNames() {
 		return keyColumnNames;
 	}
+
+    /**
+     * Returns true if the entity is a sharding entity.
+     */
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    /**
+     * Returns the sharding field or null.
+     */
+    public FieldMapping getShardingField() {
+        return shardingField;
+    }
 
     /**
      * Returns the validators for validating the entity.
