@@ -180,7 +180,7 @@ public class SqlParser extends SqlParserBase {
 		lexer.nextToken();
 		expect(Token.ORDER);
 		
-		nodes = new ArrayList<AstNode>();
+		nodes = new ArrayList<>();
 		
 		parseOrderBy();
 		
@@ -189,7 +189,7 @@ public class SqlParser extends SqlParserBase {
 	
 	protected Sql parseSql(){
 		type  = null;
-		nodes = new ArrayList<AstNode>();
+		nodes = new ArrayList<>();
 		
 		try {
 			Token token = lexer.token();
@@ -222,7 +222,7 @@ public class SqlParser extends SqlParserBase {
 		
 		return new Sql(type, nodes.toArray(new AstNode[nodes.size()]));
 	}
-	
+
 	protected final void parseSelect(){
 		if(parseMore) {
 			new SqlSelectParser(this).parseSelectBody();
@@ -239,7 +239,11 @@ public class SqlParser extends SqlParserBase {
 	}
 	
 	protected void parseInsert(){
-		parseAny();
+        if(parseMore) {
+            new SqlInsertParser(this).parseInsertBody();
+        }else{
+            parseAny();
+        }
 	}
 	
 	protected void parseUpdate(){
@@ -280,6 +284,25 @@ public class SqlParser extends SqlParserBase {
 	protected void parseExpr() {
 		new SqlExprParser(this).parseExpr();
 	}
+
+    protected AstNode parseExprNode() {
+
+        createSavePoint();
+
+        parseExpr();
+
+        AstNode[] nodes = removeSavePoint();
+
+        if(nodes.length == 0) {
+            return null;
+        }
+
+        if(nodes.length == 1) {
+            return nodes[0];
+        }
+
+        return new SqlNodeContainer(nodes);
+    }
 	
 	/**
 	 * Returns <code>true</code> if stop at the given stop tokens.
@@ -633,31 +656,41 @@ public class SqlParser extends SqlParserBase {
 		throw new IllegalStateException("Not implemented");
 	}
 	
-	protected void parseTableName(){
-		if(lexer.token().isKeywordOrIdentifier()){
-			SqlTableName name = new SqlTableName();
-			name.setQuoted(lexer.token().isQuotedIdentifier());
-			if(lexer.ch == '.'){
-				name.setFirstName(lexer.tokenText());
-				
-				lexer.nextChar();
-				nextToken().expectIdentifier();
-				
-				if(lexer.ch == '.'){
-					name.setSecondaryName(lexer.tokenText());
-					
-					lexer.nextChar();
-					nextToken().expectIdentifier();
-					
-					name.setLastName(lexer.tokenText());
-				}else{
-					name.setLastName(lexer.tokenText());
-				}
-			}else{
-				name.setLastName(lexer.tokenText());
-			}
-			
-			acceptNode(name);
-		}
+	protected SqlTableName parseTableName(){
+        SqlTableName name = parseTableNameOnly();
+        if(null != name) {
+            acceptNode(name);
+        }
+        return name;
 	}
+
+    protected SqlTableName parseTableNameOnly(){
+        if(lexer.token().isKeywordOrIdentifier()){
+            SqlTableName name = new SqlTableName();
+            name.setQuoted(lexer.token().isQuotedIdentifier());
+            if(lexer.ch == '.'){
+                name.setFirstName(lexer.tokenText());
+
+                lexer.nextChar();
+                nextToken().expectIdentifier();
+
+                if(lexer.ch == '.'){
+                    name.setSecondaryName(lexer.tokenText());
+
+                    lexer.nextChar();
+                    nextToken().expectIdentifier();
+
+                    name.setLastName(lexer.tokenText());
+                }else{
+                    name.setLastName(lexer.tokenText());
+                }
+            }else{
+                name.setLastName(lexer.tokenText());
+            }
+
+            return name;
+        }
+
+        return null;
+    }
 }

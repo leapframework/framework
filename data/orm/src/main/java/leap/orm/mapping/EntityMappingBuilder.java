@@ -22,6 +22,7 @@ import leap.lang.*;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
+import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
 
 import java.util.ArrayList;
@@ -49,6 +50,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected List<RelationMappingBuilder> relationMappings;
     protected boolean                      sharding;
     protected boolean                      autoCreateShardingTable;
+    protected ShardingAlgorithm            shardingAlgorithm;
 	
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
@@ -349,6 +351,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return this;
     }
 
+    public ShardingAlgorithm getShardingAlgorithm() {
+        return shardingAlgorithm;
+    }
+
+    public EntityMappingBuilder setShardingAlgorithm(ShardingAlgorithm shardingAlgorithm) {
+        this.shardingAlgorithm = shardingAlgorithm;
+        return this;
+    }
+
     @Override
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
@@ -359,7 +370,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations, sharding, autoCreateShardingTable);
+	    						 domain,modelClass,validators,relations, sharding, autoCreateShardingTable, shardingAlgorithm);
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {

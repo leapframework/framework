@@ -17,7 +17,6 @@
 package leap.orm.sql;
 
 import leap.db.Db;
-import leap.lang.convert.Converts;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dmo.Dmo;
@@ -52,9 +51,41 @@ class SqlShardingProcessor {
     }
 
     protected void processInsert() {
+        if(!(sql.nodes()[0] instanceof SqlInsert)) {
+            return;
+        }
 
+        SqlInsert insert = (SqlInsert)sql.nodes()[0];
 
+        SqlTableName tn = insert.getTableName();
+        if(null == tn) {
+            return;
+        }
 
+        EntityMapping em = tn.getEntityMapping();
+        if(null == em || !em.isSharding()) {
+            return;
+        }
+
+        FieldMapping shardingField = em.getShardingField();
+        if(null == shardingField) {
+            throw new IllegalStateException("Sharding field cannot be null of sharding entity '" + em.getEntityName() + "'");
+        }
+
+        int index=-1;
+        for(int i=0;i<insert.getColumns().size();i++) {
+            SqlObjectName col = insert.getColumn(i);
+
+            if(shardingField == col.getFieldMapping()) {
+                index = i;
+                break;
+            }
+        }
+
+        if(index >= 0) {
+            AstNode value = insert.getValue(index);
+            updateShardingTableName(tn, insert.getColumn(index), value);
+        }
     }
 
     protected void processQuery() {
@@ -125,7 +156,10 @@ class SqlShardingProcessor {
             where.setNodes(nodes.toArray(new AstNode[0]));
         }
 
-        AstNode value = sc.value;
+        updateShardingTableName(table, sc.column, sc.value);
+    }
+
+    private void updateShardingTableName(SqlTableName table, SqlObjectName column, AstNode value) {
         if(value instanceof SqlLiteral) {
             table.setDynamicTableName(new ShardingTableName(table.getEntityMapping(), ((SqlLiteral)value).getValue().toString()));
             return;
@@ -136,7 +170,7 @@ class SqlShardingProcessor {
             return;
         }
 
-        throw new IllegalStateException("Unsupported value '" + value + "' of sharding column '" + sc.column.getLastName() + "'");
+        throw new IllegalStateException("Unsupported value '" + value + "' of sharding column '" + column.getLastName() + "'");
     }
 
     //( sharding_column = ? [and] ) or ( [and] sharding_column = ? )
@@ -207,7 +241,6 @@ class SqlShardingProcessor {
     private static final class ShardingTableName implements DynamicName {
 
         private final EntityMapping em;
-        private final String        prefix;
         private final String        value;
         private final ParamBase     param;
 
@@ -215,14 +248,12 @@ class SqlShardingProcessor {
             this.em     = em;
             this.value  = value;
             this.param  = null;
-            this.prefix = em.getTableName().endsWith("_") ? em.getTableName() : em.getTableName() + "_";
         }
 
         public ShardingTableName(EntityMapping em, ParamBase param) {
             this.em    = em;
             this.param = param;
             this.value = null;
-            this.prefix = em.getTableName().endsWith("_") ? em.getTableName() : em.getTableName() + "_";
         }
 
         @Override
@@ -238,15 +269,15 @@ class SqlShardingProcessor {
                     //todo : do not allow null value.
                     return getTableName(stm.context().getOrmContext(), "");
                 }else{
-                    return getTableName(stm.context().getOrmContext(), Converts.toString(v));
+                    return getTableName(stm.context().getOrmContext(), v);
                 }
             }
         }
 
-        protected String getTableName(OrmContext context,String v) {
+        protected String getTableName(OrmContext context,Object v) {
             Db db = context.getDb();
 
-            String tableName = null == v ? em.getTableName() : prefix + v;
+            String tableName = em.getShardingAlgorithm().evalShardingTableName(em, v);
 
             if(em.isAutoCreateShardingTable() && !db.checkTableExists(tableName)) {
                 Dmo dmo = Dmo.get(context.getName());

@@ -18,20 +18,21 @@ package leap.orm.mapping.config;
 
 import leap.lang.Classes;
 import leap.orm.mapping.*;
+import leap.orm.sharding.ShardingFactory;
 
 class ShardingMapper {
 
-    void processShardings(MappingConfigContext context, MappingConfig config) {
+    void processShardings(ShardingFactory factory, MappingConfigContext context, MappingConfig config) {
 
         for(ShardingConfig s : config.getShardings()) {
 
-            processSharding(context, config, s);
+            processSharding(factory, context, config, s);
 
         }
 
     }
 
-    void processSharding(MappingConfigContext context, MappingConfig config, ShardingConfig s) {
+    void processSharding(ShardingFactory factory, MappingConfigContext context, MappingConfig config, ShardingConfig s) {
 
         EntityMappingBuilder em = context.tryGetEntityMapping(s.getEntity());
         if(null == em) {
@@ -43,7 +44,7 @@ class ShardingMapper {
 
         if(null == em) {
             return;
-            //todo :
+            //todo : multi-models
             //throw new MappingConfigException("No entity '" + s.getEntity() + "' exists in context '" + context.getName() + "', check sharding config");
         }
 
@@ -54,6 +55,7 @@ class ShardingMapper {
 
         em.setSharding(true);
         em.setAutoCreateShardingTable(s.isAutoCreateTable());
+        em.setShardingAlgorithm(factory.getShardingAlgorithm(em, s));
         fm.setSharding(true);
     }
 

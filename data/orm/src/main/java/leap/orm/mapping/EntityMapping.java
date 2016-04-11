@@ -26,6 +26,7 @@ import leap.lang.logging.LogFactory;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
+import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
 
 import java.util.Collections;
@@ -58,6 +59,7 @@ public class EntityMapping {
 	protected final RelationMapping[]			 relationMappings;
     protected final boolean                      sharding;
     protected final boolean                      autoCreateShardingTable;
+    protected final ShardingAlgorithm            shardingAlgorithm;
 	
 	private final Map<String,FieldMapping> columnNameToFields;
 	private final Map<String,FieldMapping> fieldNameToFields;
@@ -65,17 +67,21 @@ public class EntityMapping {
     private final FieldMapping             shardingField;
 	
 	public EntityMapping(String entityName,
-						Class<?> entityClass,DbTable table,List<FieldMapping> fieldMappings,
-						EntityExecutionInterceptor insertInterceptor,EntityExecutionInterceptor updateInterceptor,
-						EntityExecutionInterceptor deleteInterceptor,EntityExecutionInterceptor findIncerceptor,
-						EntityDomain domain, Class<? extends Model> modelClass,
-						List<EntityValidator> validators,
-						List<RelationMapping> relationMappings,
-                        boolean sharding, boolean autoCreateShardingTable) {
+                         Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
+                         EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
+                         EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
+                         EntityDomain domain, Class<? extends Model> modelClass,
+                         List<EntityValidator> validators,
+                         List<RelationMapping> relationMappings,
+                         boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm) {
 		
 		Args.notEmpty(entityName,"entity name");
 		Args.notNull(table,"table");
 		Args.notEmpty(fieldMappings,"field mappings");
+
+        if(sharding) {
+            Args.notNull(shardingAlgorithm, "The sharding algorithm must not be null in sharding entity");
+        }
 		
 		this.entityName		   = entityName;
 	    this.entityClass       = entityClass;
@@ -105,6 +111,7 @@ public class EntityMapping {
         this.sharding               = sharding;
         this.autoCreateShardingTable= autoCreateShardingTable;
         this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
+        this.shardingAlgorithm      = shardingAlgorithm;
     }
 
     /**
@@ -210,6 +217,20 @@ public class EntityMapping {
      */
     public FieldMapping getShardingField() {
         return shardingField;
+    }
+
+    /**
+     * Returns the {@link ShardingAlgorithm} or null.
+     */
+    public ShardingAlgorithm getShardingAlgorithm() {
+        return shardingAlgorithm;
+    }
+
+    /**
+     * Returns true if the given table name is the sharding table of the entity.
+     */
+    public boolean isShardingTable(String tableName) {
+        return sharding ? shardingAlgorithm.isShardingTable(this, tableName) : false;
     }
 
     /**

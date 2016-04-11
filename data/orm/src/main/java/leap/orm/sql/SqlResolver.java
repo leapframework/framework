@@ -15,7 +15,6 @@
  */
 package leap.orm.sql;
 
-import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.orm.OrmMetadata;
@@ -80,8 +79,10 @@ public class SqlResolver {
 			return;
 		}
 		
-		if(!tablesStack.isEmpty() && node instanceof SqlObjectName){
-			resolveColumn(tablesStack, (SqlObjectName)node);
+		if(!tablesStack.isEmpty()){
+            if(node instanceof SqlObjectName) {
+                resolveColumn(tablesStack, (SqlObjectName)node);
+            }
 		}
 	}
 	
@@ -131,6 +132,9 @@ public class SqlResolver {
 			SqlTableName tableName = (SqlTableName)tableSource;
 			if(null != tableName.getEntityMapping()){
 				FieldMapping fm = tableName.getEntityMapping().tryGetFieldMapping(name.getLastName());
+                if(null == fm) {
+                    fm = tableName.getEntityMapping().tryGetFieldMappingByColumn(name.getLastName());
+                }
 				if(null != fm){
 					name.setFieldMapping(tableName.getEntityMapping(), fm);
 					return true;
@@ -199,13 +203,8 @@ public class SqlResolver {
 	}
 	
 	protected static class Tables {
-		private final Map<String,SqlTableSource> aliases = new SimpleCaseInsensitiveMap<SqlTableSource>();
+		private final Map<String,SqlTableSource> aliases = new SimpleCaseInsensitiveMap<>();
 		private final List<SqlTableSource>       tables;
-		
-		public Tables(OrmMetadata metadata, SqlTableSource table){
-			this.tables = New.arrayList(table);
-			resolveTableSource(metadata, table);
-		}
 		
 		public Tables(OrmMetadata metadata, List<SqlTableSource> tables){
 			this.tables = tables;
@@ -224,6 +223,9 @@ public class SqlResolver {
 				EntityMapping em = metadata.tryGetEntityMapping(lastName);
 				if(null == em){
 					em = metadata.tryGetEntityMappingByTableName(lastName);
+                    if(null == em) {
+                        em = metadata.tryGetEntityMappingByShardingTableName(lastName);
+                    }
 				}
 				if(null != em){
 					if(tableName.getSecondaryOrFirstName() == null ||

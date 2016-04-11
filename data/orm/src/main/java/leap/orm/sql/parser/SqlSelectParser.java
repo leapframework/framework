@@ -179,7 +179,7 @@ class SqlSelectParser extends SqlQueryParser {
 		parseTableSource(query);
 		
 		if(lexer.token() == Token.ON) {
-			//Accets 'ON' 
+			//Accepts 'ON'
 			acceptText();
 			
 			parseJoinOnExpr(query);

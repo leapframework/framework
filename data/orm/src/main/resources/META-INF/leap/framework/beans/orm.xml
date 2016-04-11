@@ -88,4 +88,7 @@
     
     <!-- linq -->
     <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
+
+    <!-- sharding -->
+    <bean type="leap.orm.sharding.ShardingFactory" class="leap.orm.sharding.DefaultShardingFactory" primary="true"/>
 </beans>

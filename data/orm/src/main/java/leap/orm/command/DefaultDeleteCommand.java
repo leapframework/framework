@@ -22,9 +22,9 @@ import leap.orm.sql.SqlCommand;
 
 public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements DeleteCommand {
 	
-	protected final Object		  id;
-	protected final Params    idParameter;
-	protected final SqlCommand    sqlCommand;
+	protected final Object	   id;
+	protected final Params     idParameter;
+	protected final SqlCommand sqlCommand;
 	
 	public DefaultDeleteCommand(Dao dao,EntityMapping em,Object id) {
 	    super(dao,em);

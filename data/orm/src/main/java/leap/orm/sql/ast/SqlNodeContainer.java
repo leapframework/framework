@@ -23,7 +23,7 @@ import leap.orm.sql.SqlStatementBuilder;
 import java.io.IOException;
 import java.util.function.Function;
 
-public abstract class SqlNodeContainer extends SqlNode implements AstNodeContainer {
+public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
 
 	protected AstNode[] nodes;
 	
@@ -52,9 +52,11 @@ public abstract class SqlNodeContainer extends SqlNode implements AstNodeContain
 
 	@Override
     protected void toString_(Appendable buf) throws IOException {
-		for(int i=0;i<nodes.length;i++){
-			nodes[i].toString(buf);
-		}
+        if(null != nodes) {
+            for(int i=0;i<nodes.length;i++){
+                nodes[i].toString(buf);
+            }
+        }
     }
 
 	@Override

@@ -15,13 +15,13 @@
  */
 package leap.orm.mapping;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-
 import leap.lang.Strings;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
 public class DefaultResultSetMapping implements ResultSetMapping {
 	
@@ -66,10 +66,8 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			cm.setColumnLabel(md.getColumnLabel(i));
 			cm.setColumnType(md.getColumnType(i));
 			
-			String primaryTableName = primaryEntityMapping.getTableName();
-			String columnTableName  = md.getTableName(i);
-			
-			if(Strings.isEmpty(columnTableName) || primaryTableName.equalsIgnoreCase(columnTableName)){
+			String columnTableName = md.getTableName(i);
+			if(isEntityTable(primaryEntityMapping, columnTableName)){
 				FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnName());
 				
 				if(null != fm){
@@ -81,4 +79,9 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			columnMappings[i-1] = cm; 
 		}
 	}
+
+    protected boolean isEntityTable(EntityMapping em, String tableName) {
+        return Strings.isEmpty(tableName) || em.getTableName().equalsIgnoreCase(tableName) ||
+                (em.isSharding() && em.isShardingTable(tableName));
+    }
 }

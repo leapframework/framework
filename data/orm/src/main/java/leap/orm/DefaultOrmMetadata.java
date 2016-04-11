@@ -15,11 +15,6 @@
  */
 package leap.orm;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ioc.AbstractReadonlyBean;
@@ -35,6 +30,11 @@ import leap.orm.model.Model;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlNotFoundException;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetadata {
 	
 	public static final String SQL_COMMAND_KEY_ENTITY_NAME_TEMPLATE  = "orm.entity({0}).command({1})";
@@ -43,13 +43,14 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	private final Object _entityLock = new Object();
 	private final Object _sqlLock    = new Object();
 	
-	protected final Map<Class<?>,EntityMapping> classToEntityMappings  = new ConcurrentHashMap<Class<?>, EntityMapping>();
-	protected final Map<Class<?>,EntityMapping> modelToEntityMappings  = new ConcurrentHashMap<Class<?>, EntityMapping>();
-	protected final Map<String,EntityMapping>   nameToEntityMappings   = new ConcurrentHashMap<String, EntityMapping>();
-	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<String, EntityMapping>();
-	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<String, SqlCommand>();
-	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<String, SequenceMapping>();
-	
+	protected final Map<Class<?>,EntityMapping> classToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<Class<?>,EntityMapping> modelToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<String,EntityMapping>   nameToEntityMappings   = new ConcurrentHashMap<>();
+	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<>();
+	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
+    protected final Map<String,EntityMapping>   shardingEntityMappings = new ConcurrentHashMap<>();
+
 	protected @Inject @M Domains domains;
 	
 	@Override
@@ -172,7 +173,20 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	    return tableToEntityMappings.get(tableName.toLowerCase());
     }
 
-	@Override
+    @Override
+    public EntityMapping tryGetEntityMappingByShardingTableName(String tableName) {
+        for(EntityMapping em : shardingEntityMappings.values()) {
+
+            if(em.isShardingTable(tableName)) {
+                return em;
+            }
+
+        }
+
+        return null;
+    }
+
+    @Override
     public SequenceMapping tryGetSequenceMapping(String sequenceName) {
 		Args.notEmpty(sequenceName,"sequence name");
 	    return nameToSequenceMappings.get(sequenceName.toLowerCase());
@@ -217,6 +231,10 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			
 			nameToEntityMappings.put(em.getEntityName().toLowerCase(), em);
 			tableToEntityMappings.put(em.getTableName().toLowerCase(), em);
+
+            if(em.isSharding()) {
+                shardingEntityMappings.put(em.getEntityName().toLowerCase(), em);
+            }
         }
     }
 	
@@ -233,6 +251,7 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			}
 			
 			nameToEntityMappings.remove(entityNameKey);
+            shardingEntityMappings.remove(entityNameKey);
 			
 			if(null != entityClass){
 				classToEntityMappings.remove(entityClass);

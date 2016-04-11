@@ -62,6 +62,14 @@ public abstract class SqlParserBase {
 		nextToken();
 	}
 
+    protected final boolean acceptText(Token token) {
+        if(lexer.token() == token) {
+            acceptText();
+            return true;
+        }
+        return false;
+    }
+
     protected final void acceptNode() {
         acceptNode(new SqlToken(lexer.token(), lexer.tokenText()));
     }
@@ -121,7 +129,7 @@ public abstract class SqlParserBase {
     
 	protected final void suspendNodes(){
 		this.savedNodes.add(nodes);
-		this.nodes = new ArrayList<AstNode>();
+		this.nodes = new ArrayList<>();
 	}
 	
 	protected final SqlParserBase restoreNodes(){

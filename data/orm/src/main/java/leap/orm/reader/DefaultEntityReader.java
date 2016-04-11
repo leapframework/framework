@@ -15,14 +15,6 @@
  */
 package leap.orm.reader;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.exception.TooManyRecordsException;
 import leap.db.DbDialect;
 import leap.lang.Strings;
@@ -35,15 +27,19 @@ import leap.lang.logging.LogFactory;
 import leap.lang.reflect.Reflection;
 import leap.lang.value.Null;
 import leap.orm.OrmContext;
-import leap.orm.mapping.ResultColumnMapping;
-import leap.orm.mapping.DefaultResultSetMapping;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.FieldMapping;
-import leap.orm.mapping.ResultSetMapping;
+import leap.orm.mapping.*;
 import leap.orm.model.Model;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.value.Entity;
 import leap.orm.value.EntityBase;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultEntityReader implements EntityReader {
 	
@@ -213,7 +209,7 @@ public class DefaultEntityReader implements EntityReader {
 		String columnName = cm.getColumnLabel();
 		
 		if(null == mappings){
-			mappings = new ConcurrentHashMap<String, Object>();
+			mappings = new ConcurrentHashMap<>();
 			beanColumnMappings.put(beanType.getBeanClass(), mappings);
 		}else{
 			Object bp = mappings.get(columnName);
