@@ -15,11 +15,6 @@
  */
 package leap.orm.dmo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.db.Db;
 import leap.db.model.DbSchema;
 import leap.db.model.DbSchemaBuilder;
@@ -37,6 +32,11 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.MappingNotFoundException;
 import leap.orm.mapping.SequenceMapping;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultDmo extends DmoBase {
 	
@@ -82,7 +82,13 @@ public class DefaultDmo extends DmoBase {
 		return commandFactory().newCreateTableCommand(this, em(entityClass));
 	}
 
-	@Override
+    @Override
+    public CreateTableCommand cmdCreateTable(EntityMapping em) {
+        Args.notNull(em, "entity mapping");
+        return commandFactory().newCreateTableCommand(this, em);
+    }
+
+    @Override
 	public DropTableCommand cmdDropTable(Class<?> entityClass) {
 		Args.notNull(entityClass, "entity class");
 		return commandFactory().newDropTableCommand(this, em(entityClass));

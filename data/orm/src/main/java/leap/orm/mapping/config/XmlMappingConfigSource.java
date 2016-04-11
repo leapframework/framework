@@ -54,6 +54,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String RESOURCE_ATTRIBUTE         = "resource";
     private static final String ENTITY_ATTRIBUTE           = "entity";
     private static final String SHARDING_FIELD_ATTRIBUTE   = "sharding-field";
+    private static final String AUTO_CREATE_TABLE          = "auto-create-table";
     private static final String NAME_ATTRIBUTE             = "name";
     private static final String COLUMN_ATTRIBUTE           = "column";
     private static final String JDBC_TYPE_ATTRIBUTE        = "jdbc-type";
@@ -210,10 +211,11 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
 
     private void loadSharding(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
 
-        String entity        = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
-        String shardingField = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
+        String entity           = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
+        String shardingField    = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
+        boolean autoCreateTable = reader.resolveBooleanAttribute(AUTO_CREATE_TABLE, false);
 
-        shardings.add(new ShardingConfig(entity, shardingField));
+        shardings.add(new ShardingConfig(entity, shardingField, autoCreateTable));
     }
 
     protected FieldMappingBuilder readFieldMapping(XmlReader reader, boolean defaultOverride) {

@@ -15,6 +15,7 @@
  */
 package leap.orm.sql.ast;
 
+import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.SqlContext;
@@ -36,6 +37,10 @@ public class Text extends AstNode {
     public Text append(String s) {
         buf.append(s);
         return this;
+    }
+
+    public boolean isBlank() {
+        return Strings.isBlank(buf);
     }
 
 	@Override

@@ -183,8 +183,8 @@ abstract class SqlQueryParser extends SqlParser {
             return true;
         }
 
-        if(token == Token.LITERAL_CHARS) {
-            acceptNode();
+        if(token == Token.LITERAL_CHARS || token == Token.LITERAL_INT) {
+            acceptNode(new SqlLiteral(lexer.token(),lexer.text(),lexer.literal()));
             return true;
         }
 

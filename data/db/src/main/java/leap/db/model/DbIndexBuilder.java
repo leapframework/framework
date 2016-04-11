@@ -15,24 +15,35 @@
  */
 package leap.db.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.lang.Args;
 import leap.lang.Buildable;
+import leap.lang.Collections2;
 import leap.lang.json.JsonArray;
 import leap.lang.json.JsonObject;
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DbIndexBuilder implements Buildable<DbIndex>,JsonParsable {
 	
 	protected String       name;
 	protected boolean      unique;
-	protected List<String> columnNames = new ArrayList<String>();
+	protected List<String> columnNames = new ArrayList<>();
 	protected boolean	   internal;
-	
-	public String getName() {
+
+    public DbIndexBuilder() {
+
+    }
+
+    public DbIndexBuilder(DbIndex index) {
+        this.name = index.getName();
+        this.unique = index.isUnique();
+        Collections2.addAll(columnNames,index.getColumnNames());
+    }
+
+    public String getName() {
 		return name;
 	}
 

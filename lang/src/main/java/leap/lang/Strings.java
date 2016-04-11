@@ -59,8 +59,11 @@ public class Strings {
 	public static boolean isNotEmpty(String string){
 		return null != string && string.length() > 0;
 	}
-	
-	public static boolean isBlank(String string) {
+
+    /**
+     * Returns true if the given string is null or all characters are white spaces.
+     */
+	public static boolean isBlank(CharSequence string) {
 		int strLen;
 		if (string == null || (strLen = string.length()) == 0) {
 			return true;

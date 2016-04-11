@@ -15,17 +15,16 @@
  */
 package leap.db.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import leap.lang.Args;
-import leap.lang.Assert;
-import leap.lang.Buildable;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.json.JsonArray;
 import leap.lang.json.JsonObject;
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
+import leap.lang.value.SimpleEntry;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 	
@@ -36,10 +35,10 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 	protected String comment;
 	protected String primaryKeyName;
 	
-	protected List<String>       primaryKeyColumnNames = new ArrayList<String>();
-	protected List<DbColumn>     columns               = new ArrayList<DbColumn>();
-	protected List<DbForeignKey> foreignKeys           = new ArrayList<DbForeignKey>();
-	protected List<DbIndex>      indexes               = new ArrayList<DbIndex>();
+	protected List<String>       primaryKeyColumnNames = new ArrayList<>();
+	protected List<DbColumn>     columns               = new ArrayList<>();
+	protected List<DbForeignKey> foreignKeys           = new ArrayList<>();
+	protected List<DbIndex>      indexes               = new ArrayList<>();
 	
 	public DbTableBuilder(){
 		
@@ -54,6 +53,22 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 		this.schema  = schema;
 		this.name    = name;
 	}
+
+    public DbTableBuilder(DbTable table) {
+        this.catalog = table.getCatalog();
+        this.schema  = table.getSchema();
+        this.name    = table.getName();
+        this.type    = table.getType();
+        this.comment = table.getComment();
+        this.primaryKeyName = table.getPrimaryKeyName();
+
+        for(DbColumn column : table.getColumns()) {
+            addColumn(column);
+        }
+
+        Collections2.addAll(foreignKeys, table.getForeignKeys());
+        Collections2.addAll(indexes, table.getIndexes());
+    }
 	
 	public DbSchemaObjectName getTableName(){
 		return new DbSchemaObjectName(catalog, schema, name);
@@ -113,6 +128,45 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 		this.primaryKeyName = primaryKeyName;
 		return this;
 	}
+
+    public DbTableBuilder updateTableName(String newName) {
+
+        List<Map.Entry<DbIndex,DbIndex>> updatedIndexes = new ArrayList<>();
+        for(DbIndex index : indexes) {
+
+            if(Strings.containsIgnoreCase(index.getName(), name)) {
+
+                String newIndexName = Strings.replaceIgnoreCase(index.getName(), name, newName);
+
+                DbIndex newIndex = new DbIndexBuilder(index).setName(newIndexName).build();
+
+                updatedIndexes.add(new SimpleEntry<>(index, newIndex));
+            }
+
+        }
+        for(Map.Entry<DbIndex,DbIndex> entry : updatedIndexes) {
+            indexes.set(indexes.indexOf(entry.getKey()), entry.getValue());
+        }
+
+        List<Map.Entry<DbForeignKey,DbForeignKey>> updatedFks = new ArrayList<>();
+        for(DbForeignKey fk : foreignKeys) {
+            if(Strings.containsIgnoreCase(fk.getName(), name)) {
+
+                String newFkName = Strings.replaceIgnoreCase(fk.getName(), name , newName);
+
+                DbForeignKey newFk = new DbForeignKeyBuilder(fk).setName(newFkName).build();
+
+                updatedFks.add(new SimpleEntry<>(fk, newFk));
+            }
+        }
+
+        for(Map.Entry<DbForeignKey,DbForeignKey> entry : updatedFks) {
+            foreignKeys.set(foreignKeys.indexOf(entry.getKey()), entry.getValue());
+        }
+
+        this.name = newName;
+        return this;
+    }
 
 	public List<DbColumn> getColumns() {
 		return columns;

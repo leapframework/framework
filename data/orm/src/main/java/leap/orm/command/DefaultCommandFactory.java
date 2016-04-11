@@ -32,7 +32,7 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
 	@Override
-    public DeleteCommand newDeleteCommmand(Dao dao, EntityMapping em, Object id) {
+    public DeleteCommand newDeleteCommand(Dao dao, EntityMapping em, Object id) {
 	    return new DefaultDeleteCommand(dao, em, id);
     }
 

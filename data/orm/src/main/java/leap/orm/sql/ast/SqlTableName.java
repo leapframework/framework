@@ -15,15 +15,18 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.db.DbDialect;
+import leap.lang.params.Params;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlStatementBuilder;
+
+import java.io.IOException;
 
 public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 
 	private String 		  alias;
 	private EntityMapping entityMapping;
+    private DynamicName   dynamicTableName;
 	
 	public SqlTableName() {
 		
@@ -44,26 +47,49 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 	public void setEntityMapping(EntityMapping entityMapping) {
 		this.entityMapping = entityMapping;
 	}
-	
-	public boolean isEntity(){
+
+    public DynamicName getDynamicTableName() {
+        return dynamicTableName;
+    }
+
+    public void setDynamicTableName(DynamicName dynamicTableName) {
+        this.dynamicTableName = dynamicTableName;
+    }
+
+    public boolean isEntity(){
 		return null != entityMapping;
 	}
-	
-	@Override
+
+    @Override
+    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+        if(null != dynamicTableName) {
+            toSql_(stm, dynamicTableName.get(stm, params));
+        }else{
+            super.buildStatement_(stm, params);
+        }
+    }
+
+    @Override
     protected void toSql_(Appendable out) throws IOException {
-		if(null != firstName){
-			out.append(firstName).append('.');
-		}
-		
-		if(null != secondaryName){
-			out.append(secondaryName).append('.');
-		}
-		
-		if(null != entityMapping){
-			out.append(entityMapping.getTableName());
-		}else{
-			out.append(lastName);
-		}
+        toSql_(out, null);
+    }
+
+    protected void toSql_(Appendable out, String dynamicLastName) throws IOException{
+        if(null != firstName){
+            out.append(firstName).append('.');
+        }
+
+        if(null != secondaryName){
+            out.append(secondaryName).append('.');
+        }
+
+        if(null != dynamicLastName) {
+            out.append(dynamicLastName);
+        }else if(null != entityMapping){
+            out.append(entityMapping.getTableName());
+        }else{
+            out.append(lastName);
+        }
     }
 
     @Override

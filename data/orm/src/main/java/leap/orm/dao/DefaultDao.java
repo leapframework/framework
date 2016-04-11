@@ -157,7 +157,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(entityClass,"entityClass");
 		Args.notNull(id,"id");
 		
-		return commandFactory().newDeleteCommmand(this,em(entityClass),id).execute();
+		return commandFactory().newDeleteCommand(this,em(entityClass),id).execute();
     }
 	
 	@Override
@@ -165,7 +165,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(entityName,"entityName");
 		Args.notNull(id,"id");
 		
-		return commandFactory().newDeleteCommmand(this,em(entityName),id).execute();
+		return commandFactory().newDeleteCommand(this,em(entityName),id).execute();
     }
 
 	@Override
@@ -173,7 +173,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(em);
 		Args.notNull(id);
 		
-		return commandFactory().newDeleteCommmand(this, em, id).execute();
+		return commandFactory().newDeleteCommand(this, em, id).execute();
     }
 	
     public int deleteAll(Class<?> entityClass) {

@@ -18,32 +18,34 @@ package leap.orm.sql.ast;
 
 import leap.orm.sql.parser.Token;
 
-import java.io.IOException;
+public class SqlLiteral extends SqlToken {
 
-public class SqlToken extends SqlNode {
+    private final String literal;
 
-    protected final Token  token;
-    protected final String text;
+    public SqlLiteral(Token token, String text, String literal) {
+        super(token, text);
 
-    public SqlToken(Token token, String text) {
-        this.token = token;
-        this.text  = text;
+        this.literal = literal;
     }
 
-    public Token getToken() {
-        return token;
+    public String getLiteral() {
+        return literal;
     }
 
-    public String getText() {
-        return text;
-    }
+    public Object getValue() {
 
-    public boolean isToken(Token token) {
-        return this.token == token;
-    }
+        if(token == Token.LITERAL_CHARS) {
+            return literal;
+        }
 
-    @Override
-    protected void toString_(Appendable buf) throws IOException {
-        buf.append(text);
+        if(token == Token.LITERAL_INT) {
+            return Integer.parseInt(literal);
+        }
+
+        if(token == Token.LITERAL_FLOAT) {
+            return Float.parseFloat(literal);
+        }
+
+        throw new IllegalStateException("Unsupported literal '" + literal + "'");
     }
 }

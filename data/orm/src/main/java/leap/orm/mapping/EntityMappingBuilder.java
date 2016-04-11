@@ -48,6 +48,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected List<EntityValidator>        validators;
 	protected List<RelationMappingBuilder> relationMappings;
     protected boolean                      sharding;
+    protected boolean                      autoCreateShardingTable;
 	
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
@@ -339,6 +340,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return this;
     }
 
+    public boolean isAutoCreateShardingTable() {
+        return autoCreateShardingTable;
+    }
+
+    public EntityMappingBuilder setAutoCreateShardingTable(boolean autoCreateShardingTable) {
+        this.autoCreateShardingTable = autoCreateShardingTable;
+        return this;
+    }
+
     @Override
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
@@ -349,7 +359,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations, sharding);
+	    						 domain,modelClass,validators,relations, sharding, autoCreateShardingTable);
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {

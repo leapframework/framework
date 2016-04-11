@@ -18,12 +18,14 @@ package leap.orm.mapping.config;
 
 public class ShardingConfig {
 
-    private final String entity;
-    private final String shardingField;
+    private final String  entity;
+    private final String  shardingField;
+    private final boolean autoCreateTable;
 
-    public ShardingConfig(String entity, String shardingField) {
+    public ShardingConfig(String entity, String shardingField, boolean autoCreateTable) {
         this.entity = entity;
         this.shardingField = shardingField;
+        this.autoCreateTable = autoCreateTable;
     }
 
     /**
@@ -37,4 +39,7 @@ public class ShardingConfig {
         return shardingField;
     }
 
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
 }

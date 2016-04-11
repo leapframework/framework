@@ -53,6 +53,7 @@ class ShardingMapper {
         }
 
         em.setSharding(true);
+        em.setAutoCreateShardingTable(s.isAutoCreateTable());
         fm.setSharding(true);
     }
 

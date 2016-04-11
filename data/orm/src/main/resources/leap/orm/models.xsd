@@ -56,8 +56,9 @@
 
     <xsd:element name="sharding">
         <xsd:complexType>
-            <xsd:attribute name="entity"         type="xsd:string" use="required"/>
-            <xsd:attribute name="sharding-field" type="xsd:string" use="required"/>
+            <xsd:attribute name="entity"            type="xsd:string"  use="required"/>
+            <xsd:attribute name="sharding-field"    type="xsd:string"  use="required"/>
+            <xsd:attribute name="auto-create-table" type="xsd:boolean" use="optional" default="false"/>
         </xsd:complexType>
     </xsd:element>
 

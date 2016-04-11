@@ -16,6 +16,11 @@
 
 package leap.orm.sql;
 
+import leap.db.Db;
+import leap.lang.convert.Converts;
+import leap.lang.params.Params;
+import leap.orm.OrmContext;
+import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.ast.*;
@@ -23,6 +28,7 @@ import leap.orm.sql.parser.Token;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class SqlShardingProcessor {
 
@@ -80,7 +86,7 @@ class SqlShardingProcessor {
 
         List<AstNode> nodes = new ArrayList<>();
 
-        for(int i=0;i<where.getNodes().length;i++) {
+        for(int i=1;i<where.getNodes().length;i++) {
 
             AstNode node = where.getNodes()[i];
 
@@ -96,10 +102,25 @@ class SqlShardingProcessor {
 
         }
 
-        where.setNodes(nodes.toArray(new AstNode[0]));
+        if(AstUtils.isAllBlank(nodes)) {
+            where.setNodes(new AstNode[0]);
+        }else{
+            nodes.add(0, where.getNodes()[0]);
+            where.setNodes(nodes.toArray(new AstNode[0]));
+        }
 
-        //todo :
         AstNode value = sc.value;
+        if(value instanceof SqlLiteral) {
+            table.setDynamicTableName(new ShardingTableName(table.getEntityMapping(), ((SqlLiteral)value).getValue().toString()));
+            return;
+        }
+
+        if(value instanceof ParamBase) {
+            table.setDynamicTableName(new ShardingTableName(table.getEntityMapping(), (ParamBase)value));
+            return;
+        }
+
+        throw new IllegalStateException("Unsupported value '" + value + "' of sharding column '" + sc.column.getLastName() + "'");
     }
 
     //( sharding_column = ? [and] ) or ( [and] sharding_column = ? )
@@ -113,10 +134,12 @@ class SqlShardingProcessor {
                 SqlObjectName column = (SqlObjectName)wn;
                 if(column.getFieldMapping() == shardingField) {
 
-                    SqlToken eq = AstUtils.nextNode(where.getNodes(), i, SqlToken.class);
+                    AtomicInteger index = new AtomicInteger(i);
+
+                    SqlToken eq = AstUtils.nextNodeSkipBlank(where.getNodes(), index, SqlToken.class);
                     if(null != eq && eq.isToken(Token.EQ)) {
 
-                        AstNode value = AstUtils.nextNode(where.getNodes(), i+1);
+                        AstNode value = AstUtils.nextNodeSkipBlank(where.getNodes(), index);
 
                         if(null != value) {
 
@@ -124,20 +147,22 @@ class SqlShardingProcessor {
                             sc.column = column;
                             sc.value  = value;
 
-                            SqlToken prev = AstUtils.prevNode(where.getNodes(), i, SqlToken.class);
+                            int start = i;
+                            int end   = index.get();
+
+                            AtomicInteger prevIndex = new AtomicInteger(i);
+                            SqlToken prev = AstUtils.prevNodeSkipBlank(where.getNodes(), prevIndex, SqlToken.class);
                             if(null != prev && prev.isToken(Token.AND)) {
-                                sc.add(prev);
+                                start = prevIndex.get();
+                            }else{
+                                SqlToken and = AstUtils.nextNodeSkipBlank(where.getNodes(), index, SqlToken.class);
+                                if(null != and && and.isToken(Token.AND)) {
+                                    end = index.get();
+                                }
                             }
 
-                            sc.add(column);
-                            sc.add(eq);
-                            sc.add(value);
-
-                            if(sc.nodes.size() == 3) {
-                                SqlToken and = AstUtils.nextNode(where.getNodes(), i + 2, SqlToken.class);
-                                if(null != and && and.isToken(Token.AND)) {
-                                    sc.add(and);
-                                }
+                            for(int j=start;j<=end;j++) {
+                                sc.add(where.getNodes()[j]);
                             }
 
                             return sc;
@@ -160,6 +185,59 @@ class SqlShardingProcessor {
 
         void add(AstNode node) {
             nodes.add(node);
+        }
+    }
+
+    private static final class ShardingTableName implements DynamicName {
+
+        private final EntityMapping em;
+        private final String        prefix;
+        private final String        value;
+        private final ParamBase     param;
+
+        public ShardingTableName(EntityMapping em, String value) {
+            this.em     = em;
+            this.value  = value;
+            this.param  = null;
+            this.prefix = em.getTableName().endsWith("_") ? em.getTableName() : em.getTableName() + "_";
+        }
+
+        public ShardingTableName(EntityMapping em, ParamBase param) {
+            this.em    = em;
+            this.param = param;
+            this.value = null;
+            this.prefix = em.getTableName().endsWith("_") ? em.getTableName() : em.getTableName() + "_";
+        }
+
+        @Override
+        public String get(SqlStatementBuilder stm, Params params) {
+            if(null != value) {
+                return getTableName(stm.context().getOrmContext(), value);
+            }else{
+                stm.increaseAndGetParameterIndex();
+
+                Object v = param.eval(stm, params);
+
+                if(null == v) {
+                    //todo : do not allow null value.
+                    return getTableName(stm.context().getOrmContext(), "");
+                }else{
+                    return getTableName(stm.context().getOrmContext(), Converts.toString(v));
+                }
+            }
+        }
+
+        protected String getTableName(OrmContext context,String v) {
+            Db db = context.getDb();
+
+            String tableName = null == v ? em.getTableName() : prefix + v;
+
+            if(em.isAutoCreateShardingTable() && !db.checkTableExists(tableName)) {
+                Dmo dmo = Dmo.get(context.getName());
+                dmo.cmdCreateTable(em).changeTableName(tableName).execute();
+            }
+
+            return tableName;
         }
     }
 }
