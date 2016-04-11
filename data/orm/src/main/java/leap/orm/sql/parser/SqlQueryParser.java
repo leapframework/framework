@@ -48,7 +48,7 @@ abstract class SqlQueryParser extends SqlParser {
 
                 parseUnion();
 
-                expectAndAcceptText(Token.RPAREN);
+                expect(Token.RPAREN).acceptText();
                 fromSelect.setAlias(parseTableAlias());
                 query.addTableSource(fromSelect);
             }else{
@@ -56,7 +56,7 @@ abstract class SqlQueryParser extends SqlParser {
 
                 parseUnion();
 
-                expectAndAcceptText(Token.RPAREN);
+                expect(Token.RPAREN).acceptText();
             }
             return;
         }
@@ -207,7 +207,7 @@ abstract class SqlQueryParser extends SqlParser {
 
 			if(lexer.token() == Token.SELECT){
 				parseSelect();
-				expectAndAcceptText(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				lparens.decrementAndGet();
 			}
 		}
@@ -222,7 +222,7 @@ abstract class SqlQueryParser extends SqlParser {
 
 			if(lexer.token() == Token.SELECT){
 				parseSelect();
-				expectAndAcceptText(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				lparens.decrementAndGet();
 			}
 		}

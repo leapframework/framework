@@ -74,11 +74,7 @@ public abstract class SqlParserBase {
 		nodes.add(node);
 		nextToken();
 	}
-	
-	protected final void expectAndAcceptText(Token token){
-		expect(token).acceptText();
-	}
-	
+
 	protected final void addNode(AstNode node){
 		this.node = node;
 		nodes.add(node);

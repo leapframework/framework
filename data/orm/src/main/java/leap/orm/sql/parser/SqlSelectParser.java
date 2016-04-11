@@ -15,16 +15,12 @@
  */
 package leap.orm.sql.parser;
 
+import leap.orm.sql.Sql.Scope;
+import leap.orm.sql.ast.*;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlQuery;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlSelectList;
-import leap.orm.sql.ast.SqlTop;
 
 
 /**
@@ -48,7 +44,7 @@ class SqlSelectParser extends SqlQueryParser {
 		if(lexer.token() == Token.LPAREN){
 			acceptText();
 			SqlSelect select = parseSelectBody();
-			expectAndAcceptText(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 			return select;
 		}
 		
@@ -56,7 +52,7 @@ class SqlSelectParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		expectAndAcceptText(Token.SELECT);
+		expect(Token.SELECT).acceptText();
 		
 		//SELECT (ALL | DISTINCT)? (TOP Integer (PERCENT))? selectList
 		parseDistinct(select);
@@ -149,18 +145,18 @@ class SqlSelectParser extends SqlQueryParser {
 					if(lexer.token() == Token.OUTER){
 						acceptText();
 					}
-					expectAndAcceptText(Token.JOIN);
+					expect(Token.JOIN).acceptText();
 					break;
 				case FULL:
 					acceptText();
 					if(lexer.token() == Token.OUTER){
 						acceptText();
 					}
-					expectAndAcceptText(Token.JOIN);
+					expect(Token.JOIN).acceptText();
 					break;
 				case INNER:
 					acceptText();
-					expectAndAcceptText(Token.JOIN);
+					expect(Token.JOIN).acceptText();
 					break;
 				default:
 					if(lexer.isIdentifier("STRAIGHT_JOIN") || lexer.isIdentifier("CROSS")){
@@ -224,19 +220,19 @@ class SqlSelectParser extends SqlQueryParser {
 				parseSelectItem(select);	
 			}
 			
-			expectAndAcceptText(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
 			if(lexer.peekCharSkipWhitespaces() == '('){
 				acceptText();
-				expectAndAcceptText(Token.LPAREN);
+				expect(Token.LPAREN).acceptText();
 				parseRestForClosingParen();
-				expectAndAcceptText(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				
 				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
 					acceptText();
-					expectAndAcceptText(Token.LPAREN);
+					expect(Token.LPAREN).acceptText();
 					parseRestForClosingParen();
-					expectAndAcceptText(Token.RPAREN);
+					expect(Token.RPAREN).acceptText();
 				}
 			}else{
 				parseSqlObjectName();

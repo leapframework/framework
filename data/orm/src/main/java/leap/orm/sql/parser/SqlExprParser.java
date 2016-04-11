@@ -108,15 +108,15 @@ class SqlExprParser extends SqlParser {
 			        parseExpr();
 			    }
 			    
-			    expectAndAcceptText(Token.WHEN);
+			    expect(Token.WHEN).acceptText();
 			    parseExpr();
-			    expectAndAcceptText(Token.THEN);
+			    expect(Token.THEN).acceptText();
 			    parseExpr();
 			    
 			    while(lexer.token() == Token.WHEN) {
 			        acceptText();
 			        parseExpr();
-			        expectAndAcceptText(Token.THEN);
+			        expect(Token.THEN).acceptText();
 			        parseExpr();
 			    }
 			    
@@ -125,7 +125,7 @@ class SqlExprParser extends SqlParser {
 			        parseExpr();
 			    }
 			    
-			    expectAndAcceptText(Token.END);
+			    expect(Token.END).acceptText();
 			    break;
 			default:
 			    parsePrimaryToken();

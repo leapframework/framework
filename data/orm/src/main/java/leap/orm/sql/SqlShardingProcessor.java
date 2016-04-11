@@ -39,43 +39,59 @@ class SqlShardingProcessor {
     }
 
     void processShardingTable() {
-        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
+        if(sql.isInsert()) {
+            processInsert();
+            return ;
+        }
 
-            sql.traverse((node) -> {
+        if(sql.isDelete() || sql.isUpdate() || sql.isSelect()) {
+            processQuery();
+            return;
+        }
 
-                if(node instanceof SqlWhere) {
+    }
 
-                    SqlWhere where = (SqlWhere)node;
-                    SqlQuery query = where.getQuery();
+    protected void processInsert() {
 
-                    for(SqlTableSource ts : query.getTableSources()) {
 
-                        if(ts instanceof SqlTableName) {
 
-                            EntityMapping em = ((SqlTableName)ts).getEntityMapping();
+    }
 
-                            if(null != em && em.isSharding()) {
+    protected void processQuery() {
+        sql.traverse((node) -> {
 
-                                FieldMapping shardingField = em.getShardingField();
-                                if(null == shardingField) {
-                                    throw new IllegalStateException("Sharding field cannot be null of sharding entity '" + em.getEntityName() + "'");
-                                }
+            if(node instanceof SqlWhere) {
 
-                                ShardingCondition sc = findShardingCondition(where, shardingField);
-                                if(null != sc) {
-                                    processShardingCondition(where, (SqlTableName)ts, sc);
-                                }
+                SqlWhere where = (SqlWhere)node;
+                SqlQuery query = where.getQuery();
 
+                for(SqlTableSource ts : query.getTableSources()) {
+
+                    if(ts instanceof SqlTableName) {
+
+                        EntityMapping em = ((SqlTableName)ts).getEntityMapping();
+
+                        if(null != em && em.isSharding()) {
+
+                            FieldMapping shardingField = em.getShardingField();
+                            if(null == shardingField) {
+                                throw new IllegalStateException("Sharding field cannot be null of sharding entity '" + em.getEntityName() + "'");
                             }
-                        }
 
+                            ShardingCondition sc = findShardingCondition(where, shardingField);
+                            if(null != sc) {
+                                processShardingCondition(where, (SqlTableName)ts, sc);
+                            }
+
+                        }
                     }
 
                 }
 
-                return true;
-            });
-        }
+            }
+
+            return true;
+        });
     }
 
     //remove the sharding condition.

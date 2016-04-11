@@ -25,7 +25,15 @@ public class ShardingTest extends OrmTestCase {
 
     @Test
     @Contextual("h2")
-    public void testSimpleQuery() {
+    public void testSimpleSharding() {
+
+        //insert
+
+        //update
+
+        //delete
+
+        //select
 
         ShardingModel.where("type = 'a'").firstOrNull();
 

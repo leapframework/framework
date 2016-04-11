@@ -31,13 +31,13 @@ public class SqlUpdateParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		expectAndAcceptText(Token.UPDATE);
+		expect(Token.UPDATE).acceptText();
 		
 		//parse table source
 		parseTableSource(update);
 		
 		//parse set
-		expectAndAcceptText(Token.SET);
+		expect(Token.SET).acceptText();
 		
 		//parse update columns
 		parseUpdateColumns(update);
@@ -101,7 +101,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 		}
 
 		if(parseSqlObjectName()) {
-			expectAndAcceptText(Token.EQ);
+			expect(Token.EQ).acceptText();
 			parseUpdateValue(update);
 		}
 	}
@@ -116,19 +116,19 @@ public class SqlUpdateParser extends SqlQueryParser {
 			}else{
 				parseUpdateValue(update);
 			}
-			expectAndAcceptText(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || lexer.isKeyword()){
 			if(lexer.peekCharSkipWhitespaces() == '('){
 				acceptText();
-				expectAndAcceptText(Token.LPAREN);
+				expect(Token.LPAREN).acceptText();
 				parseRestForClosingParen();
-				expectAndAcceptText(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				
 				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
 					acceptText();
-					expectAndAcceptText(Token.LPAREN);
+					expect(Token.LPAREN).acceptText();
 					parseRestForClosingParen();
-					expectAndAcceptText(Token.RPAREN);
+					expect(Token.RPAREN).acceptText();
 				}
 			}else{
 				parseSqlObjectName();
