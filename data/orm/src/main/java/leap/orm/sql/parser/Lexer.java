@@ -296,6 +296,11 @@ public class Lexer {
 		literalStart = pos;
 		literal      = null;
 	}
+
+    protected final void startLiteral(int pos){
+        literalStart = pos;
+        literal      = null;
+    }
 	
 	protected final void endLiteral(){
 		literalEnd = pos;
@@ -762,7 +767,7 @@ public class Lexer {
 	 * Pos must move to the first char after '('
 	 */
 	public final void scanConditionalExpression(){
-		startLiteral();
+        int start = pos;
 
 		int lparens = 0;
 		
@@ -781,9 +786,10 @@ public class Lexer {
 			}
 			nextChar();
 		}
-		
-		endLiteral();
-		
+
+        startLiteral(start);
+        endLiteral();
+
 		if(!hasLiteral()){
 			reportError("Expression can not be emtpy : {0}",describePosition(markPos));
 		}

@@ -130,6 +130,26 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 			}
 		}
 	}
+
+    @Test
+    @Contextual
+    public void testDynamicFromResources() throws Exception{
+        for(Resource res : Resources.scan("classpath:/test/sqls/dynamic/**/*.sql")){
+            String text = res.getContent();
+
+            log.info("Split sqls in '{}'",res.getFilename());
+
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s) in '{}'",sqls.size(),res.getFilename());
+
+            for(int i=0;i<sqls.size();i++){
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}",(i+1),sql);
+                assertParse(sql);
+            }
+        }
+    }
 	
 	@Test
 	@Contextual
