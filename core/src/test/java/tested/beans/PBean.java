@@ -38,8 +38,16 @@ public class PBean {
     public LongProperty      longProperty2;
     public BooleanProperty   booleanProperty2;
     public DoubleProperty    doubleProperty2;
-
     public Property<String>  property1;
+    public Property<CProp>   complexProperty1;
 
+    public @ConfigProperty CProp    complexProperty2;
     public @ConfigProperty String[] arrayProperty1;
+
+    public static final class CProp {
+
+        public String name;
+        public int    value;
+
+    }
 }

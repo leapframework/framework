@@ -30,6 +30,7 @@ import leap.lang.accessor.PropertyGetter;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
@@ -1187,12 +1188,19 @@ public class BeanContainer implements BeanFactory {
 
         String prop = getAppConfig().getProperty(key);
         if(null != prop) {
-            try {
-                Object value = Converts.convert(prop, v.getType(), v.getGenericType());
-                v.setValue(bean, value);
-            } catch (Exception e) {
-                throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
-                                                "' using config key '" + key + "', " + e.getMessage(), e);
+            if(prop.length() > 0) {
+                try {
+                    Object value;
+                    if(Classes.isSimpleValueType(v.getType())) {
+                        value = Converts.convert(prop, v.getType(), v.getGenericType());
+                    }else{
+                        value = JSON.decode(prop, v.getType());
+                    }
+                    v.setValue(bean, value);
+                } catch (Exception e) {
+                    throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
+                            "' using config key '" + key + "', " + e.getMessage(), e);
+                }
             }
 			return true;
 		}

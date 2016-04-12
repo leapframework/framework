@@ -25,6 +25,7 @@ import leap.lang.*;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
+import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.*;
@@ -356,7 +357,18 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null != propertyProvider) {
             return propertyProvider.getDynaProperty(name, type);
         }
-        return new SimpleProperty<>(Converts.convert(properties.get(name), type));
+
+        String v = properties.get(name);
+        if(null == v || v.isEmpty()) {
+            return new SimpleProperty<>(null);
+        }
+
+        TypeInfo ti = Types.getTypeInfo(type,null);
+        if(ti.isComplexType()) {
+            return new SimpleProperty<>(JSON.decode(v, type));
+        }else{
+            return new SimpleProperty<>(Converts.convert(v, type));
+        }
     }
 
     @Override

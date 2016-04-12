@@ -71,7 +71,13 @@ public class ShardingTest extends OrmTestCase {
     }
 
     //todo
+    @Test
+    @Contextual("h2")
     public void testJoinQueryWithMultiSharding() {
+        String sql =
+                "select t1.*,t2.* from ShardingModel t1 join ShardingModel1 t2 on t1.value = t2.value " +
+                "where t1.type = 'a' and t2.type = 'b'";
 
+        dao.createSqlQuery(sql).firstOrNull();
     }
 }

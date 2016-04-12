@@ -16,6 +16,7 @@
 package leap.core;
 
 import leap.core.cache.Cache;
+import leap.core.config.Property;
 import leap.core.junit.AppTestBase;
 import leap.core.variable.Variable;
 import leap.lang.Lazy;
@@ -111,6 +112,16 @@ public class BeanFactoryTest extends AppTestBase {
         assertEquals("a", arrayProperty1[0]);
         assertEquals("b", arrayProperty1[1]);
         assertEquals("c", arrayProperty1[2]);
+
+        Property<PBean.CProp> cprop1 = pbean.complexProperty1;
+        assertNotNull(cprop1.get());
+        assertEquals("n1", cprop1.get().name);
+        assertEquals(100, cprop1.get().value);
+
+        PBean.CProp cprop2 = pbean.complexProperty2;
+        assertNotNull(cprop2);
+        assertEquals("n2", cprop2.name);
+        assertEquals(200, cprop2.value);
     }
 
 }
