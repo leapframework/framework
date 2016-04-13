@@ -17,7 +17,6 @@ package leap.web.security.authc.credentials;
 
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
-import leap.core.validation.ValidationContext;
 import leap.lang.Out;
 import leap.web.security.authc.AuthenticationException;
 
@@ -26,6 +25,6 @@ public interface CredentialsAuthenticator {
 	/**
 	 * Returns <code>true</code> if this authenticator handles the given {@link Credentials}.
 	 */
-	boolean authenticate(ValidationContext context,Credentials credentials,Out<UserPrincipal> user) throws AuthenticationException;
+	boolean authenticate(AuthenticateCredentialsContext context,Credentials credentials,Out<UserPrincipal> user) throws AuthenticationException;
 	
 }

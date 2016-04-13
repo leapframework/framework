@@ -15,27 +15,27 @@
  */
 package leap.web.security.user;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
+import leap.core.security.Authentication;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenCredentials;
 import leap.core.security.token.jwt.JwtSigner;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.MacSigner;
-import leap.core.validation.ValidationContext;
 import leap.lang.Out;
 import leap.lang.Strings;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
-import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.TokenAuthenticator;
-
-import java.util.HashMap;
-import java.util.Map;
+import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
 
 public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator implements TokenAuthenticator, PostCreateBean {
 	
@@ -52,7 +52,7 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 	}
 
 	@Override
-    public boolean authenticate(ValidationContext context, Credentials credentials, Out<UserPrincipal> user) throws AuthenticationException {
+    public boolean authenticate(AuthenticateCredentialsContext context, Credentials credentials, Out<UserPrincipal> user) throws AuthenticationException {
 		if(credentials instanceof TokenCredentials) {
 			String token = ((TokenCredentials) credentials).getToken();
 			
