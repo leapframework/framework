@@ -29,10 +29,6 @@ public interface LoginContext extends AuthenticationContext {
 	
 	void setLoginUrl(String loginUrl);
 	
-	boolean isError();
-	
-	void setError(boolean error);
-	
 	boolean isCredentialsResolved();
 
 	Credentials getCredentials();
