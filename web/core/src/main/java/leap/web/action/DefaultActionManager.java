@@ -176,7 +176,9 @@ public class DefaultActionManager implements ActionManager,AppListener {
             if(!handleFailure(context, validation, execution, eas)) {
                 throw e;
             }else{
-                return null;
+            	//return null
+            	//return execution.getReturnValue(),allow user to process their return value
+                return execution.getReturnValue();
             }
 		}finally {
 			eas.interceptors.completeExecuteAction(context, validation, execution);
