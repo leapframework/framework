@@ -18,7 +18,6 @@ package leap.web.security.authc;
 import leap.core.security.Authentication;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
-import leap.core.validation.ValidationContext;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.credentials.AuthenticateCredentialsContext;

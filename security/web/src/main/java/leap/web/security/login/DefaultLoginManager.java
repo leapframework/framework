@@ -113,7 +113,7 @@ public class DefaultLoginManager implements LoginManager {
 
         LoginContext sc = context.getLoginContext();
 
-        if(!sc.isAuthenticated()) {
+        if(!sc.isAuthenticated() && !sc.isError()) {
 
             for(LoginHandler handler : handlers){
                 if(State.isIntercepted(handler.handleLoginAuthentication(request, response, context))){
@@ -124,7 +124,7 @@ public class DefaultLoginManager implements LoginManager {
         }
 
         //If authentication success.
-        if(sc.isAuthenticated()){
+        if(sc.isAuthenticated() && !sc.isError()){
             Authentication authc = new SimpleAuthentication(sc.getUser(), sc.getCredentials());
             
             //login the authentication.
