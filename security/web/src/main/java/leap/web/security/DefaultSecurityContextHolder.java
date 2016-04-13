@@ -162,6 +162,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         private String        loginUrl;
         private Credentials   credentials;
         private UserPrincipal user;
+        private String 		  identity;
 
 		@Override
 		public String getAuthenticationToken() {
@@ -232,6 +233,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         public void setUser(UserPrincipal user) {
 			this.user = user;
         }
+
+		@Override
+		public String getIdentity() {
+			return identity;
+		}
+
+		@Override
+		public void setIdentity(String identity) {
+			this.identity = identity;
+		}
 
 		
 	}
