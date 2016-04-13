@@ -15,59 +15,63 @@
  */
 package leap.web.security;
 
+import leap.core.security.Authentication;
 import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
-import leap.core.security.Authentication;
+import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.authz.AuthorizationContext;
+import leap.web.security.login.LoginContext;
+import leap.web.security.logout.LogoutContext;
 
 public interface SecurityInterceptor extends Interceptor{
 
-	default State preResolveAuthentication(Request request,Response response, SecurityContextHolder context) throws Throwable {
+	default State preResolveAuthentication(Request request,Response response, AuthenticationContext context) throws Throwable {
 		return State.CONTINUE;
 	}
 	
-	default State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	default State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
 		return State.CONTINUE;
 	}
-
-	default State preResolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
-		return State.CONTINUE;
-	}
-
-    default State postResolveAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        return State.CONTINUE;
-    }
 
     default State onAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
         return State.CONTINUE;
     }
+	
+	default State preResolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable {
+		return State.CONTINUE;
+	}
 
-	default State onAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    default State postResolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable {
         return State.CONTINUE;
     }
 
-	default State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	default State onAuthorizationDenied(Request request, Response response, AuthorizationContext context) throws Throwable {
+        return State.CONTINUE;
+    }
+
+	default State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
 	    return State.CONTINUE;
 	}
 	
-	default State preLoginAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	default State preLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
 	    return State.CONTINUE;
 	}
 
-	default State onLoginAuthenticationSuccess(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
+	default State onLoginAuthenticationSuccess(Request request, Response response, LoginContext context, Authentication authc) throws Throwable {
 	    return State.CONTINUE;
 	}
 
-    default State onLoginAuthenticationFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    default State onLoginAuthenticationFailure(Request request, Response response, LoginContext context) throws Throwable {
         return State.CONTINUE;
     }
 	
-	default State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	default State preLogout(Request request, Response response, LogoutContext context) throws Throwable {
 	    return State.CONTINUE;
 	}
 
-	default State postLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	default State postLogout(Request request, Response response, LogoutContext context) throws Throwable {
 		return State.CONTINUE;
 	}
 }

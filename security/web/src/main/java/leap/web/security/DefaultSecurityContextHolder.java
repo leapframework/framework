@@ -15,7 +15,11 @@
  */
 package leap.web.security;
 
-import leap.core.security.*;
+import leap.core.security.Authentication;
+import leap.core.security.Authorization;
+import leap.core.security.Credentials;
+import leap.core.security.SecurityContext;
+import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -50,6 +54,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 	void initContext() {
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
+        request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
 
     static void removeContext(Request request) {

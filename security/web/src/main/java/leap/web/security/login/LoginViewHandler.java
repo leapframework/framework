@@ -21,12 +21,12 @@ import leap.web.security.SecurityContextHolder;
 
 public interface LoginViewHandler  {
     
-    void promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void promoteLogin(Request request, Response response, LoginContext context) throws Throwable;
 
-    void goLoginUrl(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void goLoginUrl(Request request, Response response, LoginContext context) throws Throwable;
     
-    void handleLoginSuccess(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void handleLoginSuccess(Request request, Response response, LoginContext context) throws Throwable;
     
-    void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void handleLoginFailure(Request request, Response response, LoginContext context) throws Throwable;
     
 }

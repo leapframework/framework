@@ -16,6 +16,7 @@
 package leap.web.security.login;
 
 import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -23,9 +24,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.DefaultSecurityContextHolder;
 import leap.web.security.SecurityConfig;
-import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.permission.PermissionManager;
@@ -42,7 +41,7 @@ public class DefaultLoginManager implements LoginManager {
     protected @Inject PermissionManager     permissionManager;
     
     @Override
-    public boolean promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public boolean promoteLogin(Request request, Response response, LoginContext context) throws Throwable {
         for(SecurityInterceptor i : config.getInterceptors()) {
             if(State.isIntercepted(i.prePromoteLogin(request, response, context))) {
                 return true;
@@ -61,7 +60,7 @@ public class DefaultLoginManager implements LoginManager {
     }
 
     @Override
-    public boolean handleLoginRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public boolean handleLoginRequest(Request request, Response response, LoginContext context) throws Throwable {
         if(!isLoginRequest(request, response, context)) {
             return false;
         }
@@ -81,10 +80,10 @@ public class DefaultLoginManager implements LoginManager {
     public void handleLoginSuccess(Request request, Response response, Authentication authc) throws Throwable {
         DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
         context.setAuthentication(authc);
-        handleLoginSuccessView(request, response, context);
+        handleLoginSuccessView(request, response, context.getLoginContext());
     }
 
-    protected void handleLoginView(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    protected void handleLoginView(Request request, Response response, LoginContext context) throws Throwable {
         
         for(LoginHandler handler : handlers){
             if(State.isIntercepted(handler.handleLoginView(request, response, context))){
@@ -95,7 +94,7 @@ public class DefaultLoginManager implements LoginManager {
         viewHandler.goLoginUrl(request, response, context);    
     }
     
-    protected void handleLoginSuccessView(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    protected void handleLoginSuccessView(Request request, Response response, LoginContext context) throws Throwable {
         if(request.isAjax()) {
             ajaxHandler.handleLoginSuccess(request, response, context);
         }else{
@@ -103,7 +102,7 @@ public class DefaultLoginManager implements LoginManager {
         }
     }
     
-    protected void handleLoginAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    protected void handleLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
         
         for(SecurityInterceptor i : config.getInterceptors()) {
             if(State.isIntercepted(i.preLoginAuthentication(request, response, context))){
@@ -111,9 +110,8 @@ public class DefaultLoginManager implements LoginManager {
             }
         }
 
-        LoginContext sc = context.getLoginContext();
 
-        if(!sc.isAuthenticated() && !sc.isError()) {
+        if(!context.isAuthenticated() && !context.isError()) {
 
             for(LoginHandler handler : handlers){
                 if(State.isIntercepted(handler.handleLoginAuthentication(request, response, context))){
@@ -124,8 +122,8 @@ public class DefaultLoginManager implements LoginManager {
         }
 
         //If authentication success.
-        if(sc.isAuthenticated() && !sc.isError()){
-            Authentication authc = new SimpleAuthentication(sc.getUser(), sc.getCredentials());
+        if(context.isAuthenticated() && !context.isError()){
+            Authentication authc = new SimpleAuthentication(context.getUser(), context.getCredentials());
             
             //login the authentication.
             authcManager.loginImmediately(request, response, authc);
@@ -154,7 +152,7 @@ public class DefaultLoginManager implements LoginManager {
         }
     }
 
-    protected boolean isLoginRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    protected boolean isLoginRequest(Request request, Response response, LoginContext context) throws Throwable {
         return request.getPath().equals(config.getLoginAction());
     }
 }

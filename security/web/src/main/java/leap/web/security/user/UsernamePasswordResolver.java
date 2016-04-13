@@ -78,7 +78,7 @@ public class UsernamePasswordResolver implements CredentialsResolver {
 			}
 			
 			log.debug("Resolved 'UsernamePasswordCredentials' : [username={}]",username);
-				
+			
 			out.set(new SimpleUsernamePasswordCredentials(username, password));
 			return true;
 		}

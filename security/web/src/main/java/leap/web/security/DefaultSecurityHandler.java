@@ -80,7 +80,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
             }
         }
 
-        loginManager.promoteLogin(request, response, context);
+        loginManager.promoteLogin(request, response, context.getLoginContext());
     }
 
     @Override
@@ -101,11 +101,11 @@ public class DefaultSecurityHandler implements SecurityHandler {
     
     @Override
     public boolean handleLoginRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
-		return loginManager.handleLoginRequest(request, response, context);
+		return loginManager.handleLoginRequest(request, response, context.getLoginContext());
 	}
 
 	@Override
     public boolean handleLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
-		return logoutManager.handleLogoutRequest(request, response, context);
+		return logoutManager.handleLogoutRequest(request, response, context.getLogoutContext());
 	}
 }

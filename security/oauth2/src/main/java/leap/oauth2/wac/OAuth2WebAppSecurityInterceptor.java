@@ -36,7 +36,9 @@ import leap.web.security.SecurityConfigurator;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
+import leap.web.security.login.LoginContext;
 import leap.web.security.login.LoginManager;
+import leap.web.security.logout.LogoutContext;
 import leap.web.security.logout.LogoutManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
@@ -94,20 +96,20 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     }
 
     @Override
-    public State prePromoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
         if(config.isOAuth2LoginEnabled()) {
             //Check cyclic redirect.
             if(!Strings.isEmpty(request.getParameter("oauth2_redirect"))) {
                 throw new IllegalStateException("Cannot promote login for oauth2 redirect request : " + request.getUri());
             }else{
-                context.getLoginContext().setLoginUrl(buildRemoteLoginUrl(request));
+            	context.setLoginUrl(buildRemoteLoginUrl(request));
             }
         }
         return State.CONTINUE;
     }
 
     @Override
-    public State preLogout(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State preLogout(Request request, Response response, LogoutContext context) throws Throwable {
         if(config.isEnabled() && config.isOAuth2LogoutEnabled()) {
             Boolean reqeustedLogout = (Boolean)request.getAttribute("oauth2_logout");
             if(null != reqeustedLogout) {

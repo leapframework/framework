@@ -24,7 +24,6 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.UrlHandler;
 import leap.web.security.SecurityConfig;
-import leap.web.security.SecurityContextHolder;
 
 public class DefaultLoginViewHandler implements LoginViewHandler,AppListener {
 	
@@ -32,28 +31,27 @@ public class DefaultLoginViewHandler implements LoginViewHandler,AppListener {
 	protected @Inject @M UrlHandler     urlHandler;
 	
     @Override
-    public void promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void promoteLogin(Request request, Response response, LoginContext context) throws Throwable {
         goLoginUrl(request, response, context);
     }
 
     @Override
-    public void goLoginUrl(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        LoginContext sc = context.getLoginContext();
+    public void goLoginUrl(Request request, Response response, LoginContext context) throws Throwable {
         
-        String loginUrl  = getLoginUrl(sc, request);
-        String returnUrl = getReturnUrl(sc, request, loginUrl);
+        String loginUrl  = getLoginUrl(context, request);
+        String returnUrl = getReturnUrl(context, request, loginUrl);
         
         //goto login url
-        goLoginUrl(sc, request, response, loginUrl, returnUrl);        
+        goLoginUrl(context, request, response, loginUrl, returnUrl);        
 	}
     
 	@Override
-    public void handleLoginSuccess(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        response.sendRedirect(getReturnUrl(context.getLoginContext(), request, null));
+    public void handleLoginSuccess(Request request, Response response, LoginContext context) throws Throwable {
+        response.sendRedirect(getReturnUrl(context, request, null));
     }
 	
     @Override
-    public void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void handleLoginFailure(Request request, Response response, LoginContext context) throws Throwable {
         goLoginUrl(request, response, context);
     }
 	

@@ -16,6 +16,7 @@
 package leap.oauth2.as.endpoint;
 
 import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.http.QueryString;
@@ -39,9 +40,9 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.exception.ResponseException;
 import leap.web.route.Routes;
-import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
-import leap.core.security.Authentication;
+import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.login.LoginContext;
 import leap.web.security.user.UserManager;
 import leap.web.view.ViewSource;
 
@@ -71,7 +72,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     }
 	
     @Override
-    public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(config.isLoginTokenEnabled()) {
             String loginToken = request.getParameter(OAuth2Params.LOGIN_TOKEN);
             if(!Strings.isEmpty(loginToken)) {
@@ -94,7 +95,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     }
 
     @Override
-    public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(!request.getPath().equals(config.getAuthzEndpointPath())) {
             return State.CONTINUE;
         }
@@ -119,11 +120,6 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             //Expose view data.
             exposeViewData(request, params, client);
             
-            //set login url
-            if(null != loginUrl) {
-                context.getLoginContext().setLoginUrl(loginUrl);
-            }
-            
             return State.CONTINUE;
         }
         
@@ -137,14 +133,23 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     }
     
     @Override
-    public State preLoginAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
+    	//set login url
+        if(null != loginUrl) {
+            context.setLoginUrl(loginUrl);
+        }
+    	return State.CONTINUE;
+    }
+    
+    @Override
+    public State preLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
         String savedQueryString = request.getParameter(STATE_ATTRIBUTE);
         if(Strings.isEmpty(savedQueryString)) {
             return State.CONTINUE;
         }
 
         if(null != loginUrl) {
-            context.getLoginContext().setLoginUrl(loginUrl);
+            context.setLoginUrl(loginUrl);
         }
         
         QueryString qs = QueryStringParser.parse(Urls.decode(savedQueryString));
@@ -169,7 +174,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     }
 
     @Override
-    public State onLoginAuthenticationSuccess(Request request, Response response, SecurityContextHolder context, Authentication authc) throws Throwable {
+    public State onLoginAuthenticationSuccess(Request request, Response response, LoginContext context, Authentication authc) throws Throwable {
         String savedQueryString = request.getParameter(STATE_ATTRIBUTE);
         if(Strings.isEmpty(savedQueryString)) {
             return State.CONTINUE;

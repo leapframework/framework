@@ -21,7 +21,6 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.DefaultSecurityContextHolder;
 import leap.web.security.SecurityConfig;
-import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.permission.PermissionManager;
@@ -36,7 +35,7 @@ public class DefaultLogoutManager implements LogoutManager {
     protected @Inject PermissionManager     permissionManager;
 
     @Override
-    public boolean handleLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public boolean handleLogoutRequest(Request request, Response response, LogoutContext context) throws Throwable {
         if(!isLogoutRequest(request, response, context)) {
             return false;
             
@@ -49,12 +48,12 @@ public class DefaultLogoutManager implements LogoutManager {
     
     @Override
     public void logout(Request request, Response response) throws Throwable {
-        logout(request, response, new DefaultSecurityContextHolder(config, permissionManager, request));
+    	DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
+        logout(request, response, context.getLogoutContext());
     }
 
     @Override
-    public void logout(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        LogoutContext sc = context.getLogoutContext();
+    public void logout(Request request, Response response, LogoutContext context) throws Throwable {
         
         for(SecurityInterceptor i : config.getInterceptors()) {
             if(State.isIntercepted(i.preLogout(request, response, context))) {
@@ -63,7 +62,7 @@ public class DefaultLogoutManager implements LogoutManager {
         }
 
         for(LogoutHandler handler : handlers) {
-            if(State.isIntercepted(handler.handleLogout(request, response, sc))){
+            if(State.isIntercepted(handler.handleLogout(request, response, context))){
                 return;
             }
         }
@@ -73,9 +72,9 @@ public class DefaultLogoutManager implements LogoutManager {
         
         //Logout success.
         if(request.isAjax()) {
-            ajaxHandler.handleLogoutSuccess(request, response, context.getLogoutContext());
+            ajaxHandler.handleLogoutSuccess(request, response, context);
         }else{
-            viewHandler.handleLogoutSuccess(request, response, context.getLogoutContext());
+            viewHandler.handleLogoutSuccess(request, response, context);
         }
 
         for(SecurityInterceptor i : config.getInterceptors()) {
@@ -85,7 +84,7 @@ public class DefaultLogoutManager implements LogoutManager {
         }
     }
 
-    protected boolean isLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    protected boolean isLogoutRequest(Request request, Response response, LogoutContext context) throws Throwable {
         return request.getPath().equals(config.getLogoutAction());
     }    
 }
