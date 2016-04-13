@@ -7,6 +7,7 @@ public class DefaultAuthenticateCredentialsContext implements AuthenticateCreden
 	protected Validation 	validation;
 	protected boolean 		error;
 	protected Object		errorObj;
+	protected String		identity;
 	
 	public DefaultAuthenticateCredentialsContext(Validation validation) {
 		super();
@@ -36,6 +37,16 @@ public class DefaultAuthenticateCredentialsContext implements AuthenticateCreden
 	@Override
 	public void setErrorObj(Object obj) {
 		this.errorObj = obj;
+	}
+
+	@Override
+	public String getIdentity() {
+		return identity;
+	}
+
+	@Override
+	public void setIdentity(String identity) {
+		this.identity = identity;
 	}
 
 }

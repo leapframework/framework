@@ -40,6 +40,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected String        authenticationToken;
 	protected boolean		error;
 	protected Object		errorObj;
+	protected String 		identity;
 
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
 		this.config            = config;
@@ -122,6 +123,8 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected abstract class AbstractContext implements AuthenticationContext {
     	private boolean       error;
         private Object		  errorObj;	
+        private String		  identity;
+        
 		@Override
         public SecurityConfig getSecurityConfig() {
 	        return config;
@@ -154,6 +157,16 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         public void setError(boolean error) {
 			this.error = error;
         }
+
+		@Override
+		public String getIdentity() {
+			return identity;
+		}
+
+		@Override
+		public void setIdentity(String identity) {
+			this.identity = identity;
+		}
 	}
 
 	protected final class DefaultLoginContext extends AbstractContext implements LoginContext {
@@ -298,5 +311,15 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	@Override
 	public void setErrorObj(Object obj) {
 		this.errorObj = obj;
+	}
+
+	@Override
+	public String getIdentity() {
+		return this.identity;
+	}
+
+	@Override
+	public void setIdentity(String identity) {
+		this.identity = identity;
 	}
 }

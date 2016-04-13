@@ -39,9 +39,5 @@ public interface LoginContext extends AuthenticationContext {
 	
 	UserPrincipal getUser();
 	
-	String getIdentity();
-	
-	void setIdentity(String identity);
-	
 	void setUser(UserPrincipal principal);
 }

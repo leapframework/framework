@@ -26,4 +26,16 @@ public interface AuthenticateCredentialsContext extends ValidationContext {
 	 * @param obj
 	 */
 	void setErrorObj(Object obj);
+	
+	/**
+	 * Get current authenticating identity
+	 * @return
+	 */
+	String getIdentity();
+	
+	/**
+	 * Sets current authenticating identity
+	 * @return
+	 */
+	void setIdentity(String identity);
 }
