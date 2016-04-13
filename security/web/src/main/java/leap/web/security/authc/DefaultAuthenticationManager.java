@@ -16,8 +16,11 @@
 package leap.web.security.authc;
 
 import leap.core.annotation.Inject;
-import leap.core.security.*;
-import leap.core.validation.ValidationContext;
+import leap.core.security.Anonymous;
+import leap.core.security.Authentication;
+import leap.core.security.ClientPrincipal;
+import leap.core.security.Credentials;
+import leap.core.security.UserPrincipal;
 import leap.lang.Out;
 import leap.lang.Result;
 import leap.lang.Strings;
@@ -29,6 +32,7 @@ import leap.web.RequestIntercepted;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecuritySessionManager;
+import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
 
 public class DefaultAuthenticationManager implements AuthenticationManager {
@@ -43,7 +47,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     protected @Inject CredentialsAuthenticator[] credentialsAuthenticators;
 	
 	@Override
-    public Authentication authenticate(ValidationContext context, Credentials credentials) {
+    public Authentication authenticate(AuthenticateCredentialsContext context, Credentials credentials) {
 		Out<UserPrincipal> user = new Out<>();
 		
 		for(CredentialsAuthenticator a : credentialsAuthenticators) {
