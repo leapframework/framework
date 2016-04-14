@@ -128,7 +128,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected abstract class AbstractContext implements AuthenticationContext {
     	private boolean       error;
         private Object		  errorObj;	
-        private String		  identity;
         
 		@Override
         public SecurityConfig getSecurityConfig() {
@@ -165,12 +164,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 		@Override
 		public String getIdentity() {
-			return identity;
+			return DefaultSecurityContextHolder.this.identity;
 		}
 
 		@Override
 		public void setIdentity(String identity) {
-			this.identity = identity;
+			DefaultSecurityContextHolder.this.identity = identity;
 		}
 	}
 
@@ -180,7 +179,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         private String        loginUrl;
         private Credentials   credentials;
         private UserPrincipal user;
-        private String 		  identity;
 
 		@Override
 		public String getAuthenticationToken() {
@@ -252,15 +250,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 			this.user = user;
         }
 
-		@Override
-		public String getIdentity() {
-			return identity;
-		}
-
-		@Override
-		public void setIdentity(String identity) {
-			this.identity = identity;
-		}
 	}
 	
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {
