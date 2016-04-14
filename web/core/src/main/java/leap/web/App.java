@@ -268,10 +268,17 @@ public class App implements AttributeAccessor {
 	}
 	
 	@Internal
+	final void onBeanFactoryReady(BeanFactory factory){
+		this.factory = factory;
+	}
+	
+	@Internal
 	final void onContextReady(AppContext context){
 		this.context = context;
 		this.home    = context.getHome();
-		this.factory = context.getBeanFactory();
+		if(this.factory == null){
+			this.factory = context.getBeanFactory();
+		}
 		initBeans();
 	}
 	
