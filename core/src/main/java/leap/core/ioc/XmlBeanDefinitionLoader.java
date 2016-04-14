@@ -496,7 +496,7 @@ class XmlBeanDefinitionLoader {
 		
 		bean.setFactoryBeanName(reader.getAttribute(FACTORY_BEAN_ATTRIBUTE));
 		bean.setFactoryMethodName(reader.getAttribute(FACTORY_METHOD_ATTRIBUTE));
-		
+		// TODO the property factoryBeanName and factoryMethodName was set but never used,why?
 		if(null == bean.getBeanClass() && Strings.isEmpty(bean.getFactoryBeanName())){
 			throw new BeanDefinitionException("bean's class or factory-bean must be sepcified, bean '" + bean.getIdOrName() + "' in source : " + reader.getSource());
 		}
