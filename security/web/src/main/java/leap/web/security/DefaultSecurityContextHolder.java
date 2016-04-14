@@ -261,8 +261,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		public void setIdentity(String identity) {
 			this.identity = identity;
 		}
-
-		
 	}
 	
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {

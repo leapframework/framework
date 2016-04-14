@@ -17,6 +17,8 @@ package leap.web.security.login;
 
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
+import leap.web.Request;
+import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
 
 public interface LoginContext extends AuthenticationContext {
