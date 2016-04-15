@@ -25,6 +25,6 @@ public interface CredentialsAuthenticator {
 	/**
 	 * Returns <code>true</code> if this authenticator handles the given {@link Credentials}.
 	 */
-	boolean authenticate(AuthenticateCredentialsContext context,Credentials credentials,Out<UserPrincipal> user) throws AuthenticationException;
+	boolean authenticate(CredentialsAuthenticationContext context,Credentials credentials,Out<UserPrincipal> user) throws AuthenticationException;
 	
 }

@@ -20,7 +20,7 @@ import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 
 public interface AuthenticationManager {
 
@@ -35,7 +35,7 @@ public interface AuthenticationManager {
      * <p>
      * Returns <code>null</code> if the given {@link Credentials} invalid.
      */
-    Authentication authenticate(AuthenticateCredentialsContext authenticationContext, Credentials credentials);
+    Authentication authenticate(CredentialsAuthenticationContext authenticationContext, Credentials credentials);
     
     /**
      * Creates a new anonymous user principal.

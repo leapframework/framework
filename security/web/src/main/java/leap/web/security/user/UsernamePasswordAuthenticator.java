@@ -24,7 +24,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.security.SecurityConfig;
 import leap.web.security.authc.AuthenticationException;
-import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
 
 public class UsernamePasswordAuthenticator extends UsernameBasedAuthenticator implements CredentialsAuthenticator {
@@ -36,7 +36,7 @@ public class UsernamePasswordAuthenticator extends UsernameBasedAuthenticator im
 	protected @Inject SecurityConfig sc;
 	
 	@Override
-    public boolean authenticate(AuthenticateCredentialsContext context, 
+    public boolean authenticate(CredentialsAuthenticationContext context, 
     							Credentials credentials, 
     							Out<UserPrincipal> principal) throws AuthenticationException {
 		

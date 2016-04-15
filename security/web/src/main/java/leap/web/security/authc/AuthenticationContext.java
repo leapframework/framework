@@ -18,9 +18,9 @@ package leap.web.security.authc;
 import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
 import leap.web.security.SecurityConfig;
-import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 
-public interface AuthenticationContext extends AuthenticateCredentialsContext {
+public interface AuthenticationContext extends CredentialsAuthenticationContext {
 
 	/**
 	 * Returns {@link SecurityConfig}.

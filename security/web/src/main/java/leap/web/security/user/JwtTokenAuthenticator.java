@@ -35,7 +35,7 @@ import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.TokenAuthenticator;
-import leap.web.security.authc.credentials.AuthenticateCredentialsContext;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 
 public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator implements TokenAuthenticator, PostCreateBean {
 	
@@ -52,7 +52,7 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 	}
 
 	@Override
-    public boolean authenticate(AuthenticateCredentialsContext context, Credentials credentials, Out<UserPrincipal> user) throws AuthenticationException {
+    public boolean authenticate(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> user) throws AuthenticationException {
 		if(credentials instanceof TokenCredentials) {
 			String token = ((TokenCredentials) credentials).getToken();
 			

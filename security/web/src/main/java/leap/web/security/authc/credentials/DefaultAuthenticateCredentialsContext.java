@@ -2,7 +2,7 @@ package leap.web.security.authc.credentials;
 
 import leap.core.validation.Validation;
 
-public class DefaultAuthenticateCredentialsContext implements AuthenticateCredentialsContext {
+public class DefaultAuthenticateCredentialsContext implements CredentialsAuthenticationContext {
 	
 	protected Validation 	validation;
 	protected boolean 		error;

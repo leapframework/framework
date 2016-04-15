@@ -2,7 +2,7 @@ package leap.web.security.authc.credentials;
 
 import leap.core.validation.ValidationContext;
 
-public interface AuthenticateCredentialsContext extends ValidationContext {
+public interface CredentialsAuthenticationContext extends ValidationContext {
 	/**
 	 * Return the error status of this context
 	 * @return
