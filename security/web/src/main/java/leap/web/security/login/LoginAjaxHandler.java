@@ -17,14 +17,13 @@ package leap.web.security.login;
 
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
 
 public interface LoginAjaxHandler {
     
-    void promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void promoteLogin(Request request, Response response, LoginContext context) throws Throwable;
 
-    void handleLoginSuccess(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void handleLoginSuccess(Request request, Response response, LoginContext context) throws Throwable;
     
-    void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void handleLoginFailure(Request request, Response response, LoginContext context) throws Throwable;
     
 }

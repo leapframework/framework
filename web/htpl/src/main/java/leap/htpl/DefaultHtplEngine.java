@@ -15,15 +15,6 @@
  */
 package leap.htpl;
 
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -33,8 +24,6 @@ import leap.core.ioc.BeanDefinitionException;
 import leap.core.ioc.PostCreateBean;
 import leap.core.schedule.Scheduler;
 import leap.core.schedule.SchedulerManager;
-import leap.web.assets.AssetManager;
-import leap.web.assets.AssetSource;
 import leap.htpl.ast.Attr;
 import leap.htpl.ast.Element;
 import leap.htpl.escaping.EscapeType;
@@ -47,12 +36,24 @@ import leap.htpl.resolver.StringHtplResource;
 import leap.lang.Args;
 import leap.lang.Enums;
 import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.NestedIOException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
+import leap.web.assets.AssetManager;
+import leap.web.assets.AssetSource;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 	
@@ -67,14 +68,16 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 
     protected @Inject @N AssetSource           assetSource;
     protected @Inject @N AssetManager          assetManager;
-    
+
+    protected @Inject HtplListener[]           listeners;
+
     protected Locale                           defaultLocale;
     protected Scheduler                        reloadScheduler;
     protected int                              reloadInterval      = HtplConstants.DEFAULT_RELOAD_INTERVAL;
-    protected List<ReloadableHtplTemplate>     reloadableTemplates = new CopyOnWriteArrayList<ReloadableHtplTemplate>();
+    protected List<ReloadableHtplTemplate>     reloadableTemplates = new CopyOnWriteArrayList<>();
     protected Map<String, HtplProcessors>      processorsMap       = new SimpleCaseInsensitiveMap<>();
-    protected Map<EscapeType, HtplEscaper>     escapersMap         = new HashMap<EscapeType, HtplEscaper>();
-    protected Map<String, HtplTemplate>        managedTemplates    = new ConcurrentHashMap<String, HtplTemplate>();
+    protected Map<EscapeType, HtplEscaper>     escapersMap         = new HashMap<>();
+    protected Map<String, HtplTemplate>        managedTemplates    = new ConcurrentHashMap<>();
 	
 	private boolean reloadScheduled = false;
 	
@@ -272,10 +275,15 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 
 	@Override
     public HtplTemplate createTemplate(HtplResource resource) {
-		return createTemplate(resource, null);
+		return createTemplate(resource, null, null);
     }
-	
-	public HtplTemplate createTemplate(HtplResource resource,Locale locale){
+
+    @Override
+    public HtplTemplate createTemplate(HtplResource resource, String templateName) throws HtplParseException, NestedIOException {
+        return createTemplate(resource, templateName, null);
+    }
+
+    public HtplTemplate createTemplate(HtplResource resource, String templateName, Locale locale){
 		Args.notNull(resource,"resource");
 		
 		if(resource.reloadable()){
@@ -293,7 +301,13 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 			}
 			
 			if(null == tpl) {
-				tpl = new ReloadableHtplTemplate(this, resource);
+				tpl = new ReloadableHtplTemplate(this, resource, templateName);
+
+                final HtplTemplate template = tpl;
+                for(HtplListener listener : listeners) {
+                    Try.throwUnchecked(() -> listener.onTemplateCreated(this, template));
+                }
+
 				reloadableTemplates.add(tpl);
 			}
 			
@@ -308,10 +322,17 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 					}
                 }
 			}
-			
+
 			return tpl;
 		}else{
-			return new DefaultHtplTemplate(this, resource, locale);	
+			final DefaultHtplTemplate template = new DefaultHtplTemplate(this, resource, locale);
+            template.setName(templateName);
+
+            for(HtplListener listener : listeners) {
+                Try.throwUnchecked(() -> listener.onTemplateCreated(this, template));
+            }
+
+            return template;
 		}
 	}
 	

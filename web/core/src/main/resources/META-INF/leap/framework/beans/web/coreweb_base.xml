@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
+<beans xmlns="http://www.leapframework.org/schema/beans" if-servlet-environment="true">
     
     <bean type="leap.core.ioc.BeanProcessor" class="leap.web.AppBootstrap$AppBeanProcessor"/>
     

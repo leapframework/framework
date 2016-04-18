@@ -166,6 +166,11 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 	}
 	
 	@Override
+	protected void onBeanFactoryReady(BeanFactory factory) {
+		app.onBeanFactoryReady(factory);
+	}
+	
+	@Override
     protected void onAppContextReady(AppContext context) {
 		beanFactory.addBean(App.class, app, true);
 		beanFactory.addBean(ServletContext.class, servletContext, true);

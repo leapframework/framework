@@ -17,22 +17,22 @@
  */
 package leap.oauth2.as.sso;
 
-import leap.core.annotation.Inject;
-import leap.core.security.UserPrincipal;
-import leap.lang.Arrays2;
-import leap.lang.Strings;
-import leap.oauth2.as.authc.AuthzAuthentication;
-import leap.oauth2.as.OAuth2AuthzServerConfig;
-import leap.oauth2.as.client.AuthzClient;
-import leap.web.Request;
-import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
-import leap.core.security.Authentication;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+
+import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
+import leap.core.security.UserPrincipal;
+import leap.lang.Arrays2;
+import leap.lang.Strings;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.client.AuthzClient;
+import leap.web.Request;
+import leap.web.Response;
+import leap.web.security.logout.LogoutContext;
 
 public class DefaultAuthzSSOManager implements AuthzSSOManager {
 
@@ -67,7 +67,7 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager {
     }
 
     @Override
-    public String[] resolveLogoutUrls(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public String[] resolveLogoutUrls(Request request, Response response, LogoutContext context) throws Throwable {
         Authentication authc = context.getAuthentication();
         if(null == authc) {
             return Arrays2.EMPTY_STRING_ARRAY;

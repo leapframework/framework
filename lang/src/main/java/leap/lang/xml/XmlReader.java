@@ -1,15 +1,14 @@
 package leap.lang.xml;
 
-import java.io.Closeable;
-import java.util.Iterator;
+import leap.lang.Sourced;
+import leap.lang.text.PlaceholderResolver;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-
-import leap.lang.Sourced;
-import leap.lang.text.PlaceholderResolver;
+import java.io.Closeable;
+import java.util.Iterator;
 
 /**
  * A wrapper interface of {@link XMLEventReader} to make it more easy to use.
@@ -134,8 +133,7 @@ public interface XmlReader extends Closeable,Sourced {
     	return null;
     }
     
-    String getElementTextAndEndRequired();
-    
+
     Iterator<String> getAttributeNames();
     
     //get string attribute
@@ -155,10 +153,6 @@ public interface XmlReader extends Closeable,Sourced {
     
     String getAttribute(String localName,String defaultValue);
     
-    String getAttributeRequired(QName name);
-    
-    String getAttributeRequired(String localName);
-    
     //get attribute for type
     <T> T getAttribute(QName name,Class<T> targetType);
     
@@ -168,12 +162,6 @@ public interface XmlReader extends Closeable,Sourced {
     
     <T> T getAttribute(String localName,Class<T> targetType, T defaultValue);
     
-    <T> T getAttributeRequired(QName name,Class<T> targetType);
-    
-    <T> T getAttributeRequired(String localName,Class<T> targetType);    
-    
-    //get boolean attribute
-    
     Boolean getBooleanAttribute(QName name);
     
     Boolean getBooleanAttribute(String localName);
@@ -181,13 +169,7 @@ public interface XmlReader extends Closeable,Sourced {
     boolean getBooleanAttribute(QName name,boolean defaultValue);
     
     boolean getBooleanAttribute(String localName,boolean defaultValue);
-    
-    boolean getBooleanAttributeRequired(QName name);
-    
-    boolean getBooleanAttributeRequired(String localName);
-    
-    //get int attribute
-    
+
     Integer getIntegerAttribute(QName name);
     
     Integer getIntegerAttribute(String localName);
@@ -195,34 +177,44 @@ public interface XmlReader extends Closeable,Sourced {
     int getIntAttribute(QName name,int defaultValue);
     
     int getIntAttribute(String localName,int defaultValue);
-    
-    int getIntAttributeRequire(QName name);
-    
-    int getIntAttributeRequried(String localName);
-    
+
+    //get required
+    String getRequiredElementTextAndEnd();
+
+    String getRequiredAttribute(QName name);
+
+    String getRequiredAttribute(String localName);
+
+    <T> T getRequiredAttribute(QName name, Class<T> targetType);
+
+    <T> T getRequiredAttribute(String localName, Class<T> targetType);
+
+    boolean getRequiredBooleanAttribute(QName name);
+
+    boolean getRequiredBooleanAttribute(String localName);
+
+    int getRequiredIntAttribute(QName name);
+
+    int getRequiredIntAttribute(String localName);
+
+    //resolve element text
     /**
      * Sets the {@link PlaceholderResolver} used by all methods starts with <code>resolve</code>.
-     * 
+     *
      * @see #resolveElementTextAndEnd()
      * @see #resolveAttribute(QName)
      */
     void setPlaceholderResolver(PlaceholderResolver placeholderResolver);
-    
+
     /**
      * Returns {@link PlaceholderResolver} defines in this reader.
-     * 
+     *
      * <p>
      * Returns <code>null</code> if no {@link PlaceholderResolver} defined in this reader.
      */
     PlaceholderResolver getPlaceholderResolver();
     
-    //resolve element text
-    
     String resolveElementTextAndEnd();
-    
-    String resolveRequiredElementTextAndEnd();
-    
-    //resolve string attribute
     
     String resolveAttribute(QName name);
     
@@ -232,11 +224,6 @@ public interface XmlReader extends Closeable,Sourced {
     
     String resolveAttribute(String localName,String defaultValue);
     
-    String resolveRequiredAttribute(QName name);
-    
-    String resolveRequiredAttribute(String localName);
-    
-    //resolve attribute for type
     <T> T resolveAttribute(QName name,Class<T> targetType);
     
     <T> T resolveAttribute(String localName,Class<T> targetType);
@@ -244,12 +231,6 @@ public interface XmlReader extends Closeable,Sourced {
     <T> T resolveAttribute(QName name,Class<T> targetType, T defaultValue);
     
     <T> T resolveAttribute(String localName,Class<T> targetType, T defaultValue);
-    
-    <T> T resolveAttributeRequired(QName name,Class<T> targetType);
-    
-    <T> T resolveAttributeRequired(String localName,Class<T> targetType);      
-    
-    //resolve boolean attribute
     
     Boolean resolveBooleanAttribute(QName name);
     
@@ -259,12 +240,6 @@ public interface XmlReader extends Closeable,Sourced {
     
     boolean resolveBooleanAttribute(String localName,boolean defaultValue);
     
-    boolean resolveBooleanAttributeRequired(QName name);
-    
-    boolean resolveBooleanAttributeRequired(String localName);
-    
-    //resolve int attribute
-    
     Integer resolveIntegerAttribute(QName name);
     
     Integer resolveIntegerAttribute(String localName);
@@ -272,8 +247,24 @@ public interface XmlReader extends Closeable,Sourced {
     int resolveIntAttribute(QName name,int defaultValue);
     
     int resolveIntAttribute(String localName,int defaultValue);
+
+    //resolve required.
+
+    String resolveRequiredElementTextAndEnd();
+
+    String resolveRequiredAttribute(QName name);
+
+    String resolveRequiredAttribute(String localName);
+
+    <T> T resolveRequiredAttribute(QName name, Class<T> targetType);
+
+    <T> T resolveRequiredAttribute(String localName, Class<T> targetType);
+
+    boolean resolveRequiredBooleanAttribute(QName name);
+
+    boolean resolveRequiredBooleanAttribute(String localName);
+
+    int resolveRequiredIntAttribute(QName name);
     
-    int resolveIntAttributeRequired(QName name);
-    
-    int resolveIntAttributeRequired(String localName);
+    int resolveRequiredIntAttribute(String localName);
 }

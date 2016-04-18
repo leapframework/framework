@@ -23,6 +23,7 @@ import leap.orm.tested.DomainEntity;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedTableName;
 import leap.orm.tested.model.DateMappingEntity;
+import leap.orm.tested.model.ECodeModel;
 import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.relation.RelationEntity1;
 
@@ -92,4 +93,13 @@ public class MappingTest extends OrmTestCase {
         FieldMapping fm2 = em.getFieldMapping("timestamp2");
         assertEquals(JdbcTypes.TIMESTAMP_TYPE_NAME,fm2.getColumn().getTypeName());	    
 	}
+
+    @Test
+    public void testGlobalField() {
+        EntityMapping em = metadata.getEntityMapping(ECodeModel.class);
+
+        FieldMapping ecode = em.getFieldMapping("ecode");
+        assertNotNull(ecode);
+        assertTrue(ecode.isWhere());
+    }
 }

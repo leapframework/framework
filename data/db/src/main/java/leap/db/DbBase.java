@@ -15,11 +15,14 @@
  */
 package leap.db;
 
-import javax.sql.DataSource;
-
 import leap.lang.Args;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
+
+import javax.sql.DataSource;
 
 public abstract class DbBase implements Db {
 	
@@ -51,6 +54,8 @@ public abstract class DbBase implements Db {
 		this.awareObjects();
 		
 		this.log = getLog(this.getClass());
+
+        this.init();
 	}
 	
 	@Override
@@ -93,25 +98,52 @@ public abstract class DbBase implements Db {
 	    return dataSource;
     }
 	
-	protected void awareObjects(){
-		if(null != dataSource && dataSource instanceof DbAware){
-			((DbAware)dataSource).setDb(this);
-		}
-
-		if(dialect instanceof DbAware){
-			((DbAware)dialect).setDb(this);
-		}
-		
-		if(metadata instanceof DbAware){
-			((DbAware)metadata).setDb(this);
-		}
-		
-		if(comparator instanceof DbAware){
-			((DbAware) comparator).setDb(this);
-		}
-	}
-	
 	public Log getLog(Class<?> cls){
 		return LogFactory.get(cls.getName() + "(" + platform.getName() + ":" + name + ")"); 
 	}
+
+    protected void awareObjects(){
+        if(null != dataSource && dataSource instanceof DbAware){
+            ((DbAware)dataSource).setDb(this);
+        }
+
+        if(dialect instanceof DbAware){
+            ((DbAware)dialect).setDb(this);
+        }
+
+        if(metadata instanceof DbAware){
+            ((DbAware)metadata).setDb(this);
+        }
+
+        if(comparator instanceof DbAware){
+            ((DbAware) comparator).setDb(this);
+        }
+    }
+
+    protected void init() {
+        Resource initSqlFile = findClasspathSql("init");
+        if(null != initSqlFile) {
+            String sqls = initSqlFile.getContent();
+            if(!Strings.isEmpty(sqls)) {
+                log.info("Init db '{}' by sql file '{}'", name, initSqlFile.getClasspath());
+                createExecution().addAll(dialect.splitSqlStatements(sqls)).execute();
+            }
+        }
+    }
+
+    protected Resource findClasspathSql(String filename) {
+        final String prefix = "classpath:/conf/db/" + name + "/" + filename;
+
+        Resource resource = Resources.getResource(prefix + "_" + getType().toLowerCase() + ".sql");
+        if(null != resource && resource.exists()) {
+            return resource;
+        }
+
+        resource = Resources.getResource(prefix + ".sql");
+        if(null != resource && resource.exists()) {
+            return resource;
+        }
+
+        return null;
+    }
 }

@@ -33,6 +33,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
+import leap.web.security.authc.credentials.DefaultAuthenticateCredentialsContext;
 import leap.web.security.user.UserManager;
 
 /**
@@ -71,8 +72,10 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
 			return;
 		}
 		
+		DefaultAuthenticateCredentialsContext context = new DefaultAuthenticateCredentialsContext(request.getValidation());
+		
 		//Authenticate user.
-		Authentication authc = authenticationManager.authenticate(request.getValidation(), params);
+		Authentication authc = authenticationManager.authenticate(context, params);
 		if(null == authc) {
 			OAuth2Errors.invalidGrant(response, "invalid username or password");
 			return;

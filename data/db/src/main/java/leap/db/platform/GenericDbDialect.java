@@ -15,79 +15,28 @@
  */
 package leap.db.platform;
 
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-
 import leap.core.jdbc.PreparedStatementHandler;
-import leap.db.Db;
-import leap.db.DbAware;
-import leap.db.DbCommand;
-import leap.db.DbException;
-import leap.db.DbMetadata;
-import leap.db.DbLimitQuery;
-import leap.db.change.AddColumnChange;
-import leap.db.change.AddForeignKeyChange;
-import leap.db.change.AddIndexChange;
-import leap.db.change.AddPrimaryKeyChange;
-import leap.db.change.AddSequenceChange;
-import leap.db.change.AddTableChange;
-import leap.db.change.ColumnDefinitionChange;
-import leap.db.change.ForeignKeyDefinitionChange;
-import leap.db.change.IndexDefinitionChange;
-import leap.db.change.RemoveColumnChange;
-import leap.db.change.RemoveForeignKeyChange;
-import leap.db.change.RemoveIndexChange;
-import leap.db.change.RemovePrimaryKeyChange;
-import leap.db.change.RemoveSequenceChange;
-import leap.db.change.RemoveTableChange;
-import leap.db.change.SchemaChange;
-import leap.db.change.SchemaChangeContext;
-import leap.db.change.UnsupportedChangeException;
-import leap.db.model.DbCascadeAction;
-import leap.db.model.DbColumn;
-import leap.db.model.DbColumnType;
-import leap.db.model.DbColumnTypes;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbForeignKeyColumn;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchema;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Assert;
-import leap.lang.Collections2;
-import leap.lang.Dates;
-import leap.lang.Enums;
-import leap.lang.New;
-import leap.lang.Primitives;
-import leap.lang.Strings;
+import leap.db.*;
+import leap.db.change.*;
+import leap.db.model.*;
+import leap.lang.*;
 import leap.lang.convert.Converts;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
-import leap.lang.jdbc.JDBC;
-import leap.lang.jdbc.JdbcType;
-import leap.lang.jdbc.JdbcTypeKind;
-import leap.lang.jdbc.JdbcTypes;
+import leap.lang.jdbc.*;
 import leap.lang.logging.Log;
 import leap.lang.reflect.Reflection;
 import leap.lang.value.Null;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.sql.Types;
+import java.util.*;
+import java.util.Date;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public abstract class GenericDbDialect extends GenericDbDialectBase implements DbAware  {
 
@@ -803,10 +752,48 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			return Converts.convert(value, targetType);
 		}
     }
-	
-	@Override
+
+    @Override
+    public List<String> splitSqlStatements(String sqlScript) {
+        if(Strings.isEmpty(sqlScript)) {
+            return Collections.emptyList();
+        }
+
+        List<String> sqls = new ArrayList<>();
+
+        String delimiter = getStatementDelimiter();
+        BufferedReader reader = new BufferedReader(new StringReader(sqlScript));
+
+        try {
+            StringBuffer sql = new StringBuffer();
+            for(;;) {
+                String line = reader.readLine();
+                if(null == line) {
+                    break;
+                }
+
+                if(line.endsWith(delimiter)) {
+                    sql.append(line.substring(0,line.length() - delimiter.length()));
+                    sqls.add(sql.toString().trim());
+                    sql.delete(0, sql.length());
+                }else{
+                    sql.append(line).append('\n');
+                }
+            }
+        } catch (IOException e) {
+            throw Exceptions.uncheck(e);
+        }
+
+        return sqls;
+    }
+
+    @Override
     public boolean isDisconnectSQLState(String state) {
 	    return null != state && disconnectSqlStates.contains(state);
+    }
+
+    public String getStatementDelimiter(){
+        return statementDelimiter;
     }
 
 	protected Object getColumnValueTypeUnknow(ResultSet rs,int index) throws SQLException {

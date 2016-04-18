@@ -30,7 +30,7 @@ public interface LogoutManager {
      * <p/>
      * Returns <code>false</code> if current request is not a logout request.
      */
-    boolean handleLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    boolean handleLogoutRequest(Request request, Response response, LogoutContext context) throws Throwable;
 
     /**
      * Logout user in current session.
@@ -40,6 +40,6 @@ public interface LogoutManager {
     /**
      * Logout user in current session with the {@link SecurityContextHolder}
      */
-    void logout(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    void logout(Request request, Response response, LogoutContext context) throws Throwable;
 
 }

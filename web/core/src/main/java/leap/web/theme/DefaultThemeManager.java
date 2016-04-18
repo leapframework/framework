@@ -28,6 +28,7 @@ import leap.core.i18n.ResourceMessageSource;
 import leap.core.ioc.PostCreateBean;
 import leap.web.assets.Asset;
 import leap.web.assets.AssetSource;
+import leap.lang.Strings;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -42,6 +43,7 @@ import leap.web.Request;
 import leap.web.assets.ServletAssetResolver;
 import leap.web.assets.SimpleCachingAssetSource;
 import leap.web.config.WebConfig;
+import leap.web.config.WebConfigurator;
 import leap.web.view.ServletResourceViewSource;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
@@ -98,7 +100,9 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 
 		if(!themes.isEmpty()){
 			this.defaultTheme = themes.get(webConfig.getDefaultThemeName());
-			if(null == this.defaultTheme){
+			// If the config of theme was not found and it is not default, it must throw exception
+			// If the config of theme was not found and it is default, there will choose the not theme resource
+			if(null == this.defaultTheme && !Strings.equals(webConfig.getDefaultThemeName(), WebConfigurator.DEFAULT_THEME_NAME)){
 				throw new AppConfigException("Default theme '" + webConfig.getDefaultThemeName() + "' not defined");
 			}
 		}

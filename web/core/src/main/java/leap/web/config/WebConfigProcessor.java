@@ -118,7 +118,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 			if(reader.isStartElement(ERROR_VIEW_ELEMENT)){
 				Integer code     = reader.getIntegerAttribute(ERROR_CODE_ATTRIBUTE);
 				String  typeName = reader.getAttribute(EXCEPTION_TYPE_ATTRIBUTE);
-				String  view     = reader.getAttributeRequired(VIEW_PATH_ATTRIBUTE);
+				String  view     = reader.getRequiredAttribute(VIEW_PATH_ATTRIBUTE);
 				
 				if(null != code){
 					ec.addErrorView(code, view);
@@ -136,8 +136,8 @@ public class WebConfigProcessor implements AppConfigProcessor {
 			}
 			
 			if(reader.isStartElement(ERROR_CODE_ELEMENT)) {
-				String code     = reader.getAttributeRequired(ERROR_CODE_ATTRIBUTE);
-				String typeName = reader.getAttributeRequired(EXCEPTION_TYPE_ATTRIBUTE);
+				String code     = reader.getRequiredAttribute(ERROR_CODE_ATTRIBUTE);
+				String typeName = reader.getRequiredAttribute(EXCEPTION_TYPE_ATTRIBUTE);
 				
 				Class<?> exceptionType = Classes.tryForName(typeName);
 				if(null == exceptionType) {

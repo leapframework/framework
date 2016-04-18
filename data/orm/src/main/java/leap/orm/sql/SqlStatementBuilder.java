@@ -15,6 +15,7 @@
  */
 package leap.orm.sql;
 
+import leap.db.Db;
 import leap.db.DbDialect;
 import leap.lang.Buildable;
 
@@ -25,6 +26,13 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
      */
     default DbDialect dialect() {
         return context().getOrmContext().getDb().getDialect();
+    }
+
+    /**
+     * Returns the {@link Db}.
+     */
+    default Db db() {
+        return context().getOrmContext().getDb();
     }
 	
 	/**

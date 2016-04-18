@@ -21,13 +21,15 @@ import leap.lang.params.Params;
 import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.AstUtils;
 
+import java.util.function.Function;
+
 @Internal
 @SuppressWarnings("unchecked")
 public class Sql {
 	
 	public enum ParseLevel {
 		BASE,
-		MORE;
+		MORE
 	}
 	
 	public enum Type {
@@ -43,7 +45,7 @@ public class Sql {
 	}
 	
 	public enum Scope {
-		UNKNOW,
+        UNKNOWN,
 		
 		SELECT_LIST,
 		
@@ -155,4 +157,12 @@ public class Sql {
 		
 		return Strings.trim(sb.toString());
 	}
+
+    public void traverse(Function<AstNode, Boolean> visitor) {
+        for(AstNode node : nodes) {
+            if(!node.traverse(visitor)){
+                return;
+            }
+        }
+    }
 }

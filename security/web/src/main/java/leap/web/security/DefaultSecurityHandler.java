@@ -16,15 +16,15 @@
 package leap.web.security;
 
 import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
+import leap.core.security.Authorization;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
-import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
-import leap.core.security.Authorization;
 import leap.web.security.authz.AuthorizationManager;
 import leap.web.security.login.LoginManager;
 import leap.web.security.logout.LogoutManager;
@@ -80,7 +80,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
             }
         }
 
-        loginManager.promoteLogin(request, response, context);
+        loginManager.promoteLogin(request, response, context.getLoginContext());
     }
 
     @Override
@@ -101,11 +101,11 @@ public class DefaultSecurityHandler implements SecurityHandler {
     
     @Override
     public boolean handleLoginRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
-		return loginManager.handleLoginRequest(request, response, context);
+		return loginManager.handleLoginRequest(request, response, context.getLoginContext());
 	}
 
 	@Override
     public boolean handleLogoutRequest(Request request, Response response, SecurityContextHolder context) throws Throwable {
-		return logoutManager.handleLogoutRequest(request, response, context);
+		return logoutManager.handleLogoutRequest(request, response, context.getLogoutContext());
 	}
 }

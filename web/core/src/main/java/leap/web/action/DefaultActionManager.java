@@ -176,7 +176,9 @@ public class DefaultActionManager implements ActionManager,AppListener {
             if(!handleFailure(context, validation, execution, eas)) {
                 throw e;
             }else{
-                return null;
+            	//return null
+            	//return execution.getReturnValue(),allow user to process their return value
+                return execution.getReturnValue();
             }
 		}finally {
 			eas.interceptors.completeExecuteAction(context, validation, execution);
@@ -222,6 +224,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	}
 	
 	protected void exposeArgumentsAsViewData(ViewData vm, ActionContext context,ExecutionAttributes eas, DefaultActionExecution execution) {
+        /*
 		Argument[] arguments = context.getAction().getArguments();
 		
 		if(arguments.length > 0){
@@ -239,6 +242,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				}
 			}
 		}
+		*/
 	}
 	
 	protected RequestBodyArgumentInfo resolveRequestBodyArgument(RouteBuilder route, ExecutionAttributes eas){

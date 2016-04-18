@@ -70,7 +70,7 @@ public class DbForeignKey extends DbNamedObject implements JsonStringable {
 			writer.property("onDelete", onDelete.name());
 		}
 		
-		writer.array("columns",columns);
+		writer.propertyJsonable("columns",columns);
 		
 		writer.endObject();
 	}

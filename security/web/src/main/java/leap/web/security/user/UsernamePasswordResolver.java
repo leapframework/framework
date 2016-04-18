@@ -70,7 +70,7 @@ public class UsernamePasswordResolver implements CredentialsResolver {
 					   .hasErrors()){
 				return true;
 			}
-				
+			context.setIdentity(username);
 			//Validates password if necessary
 			String password = request.getParameter(passwordParameter);
 			if(passwordRequired && context.validation().required(passwordParameter, password).hasErrors()){
@@ -78,7 +78,7 @@ public class UsernamePasswordResolver implements CredentialsResolver {
 			}
 			
 			log.debug("Resolved 'UsernamePasswordCredentials' : [username={}]",username);
-				
+			
 			out.set(new SimpleUsernamePasswordCredentials(username, password));
 			return true;
 		}

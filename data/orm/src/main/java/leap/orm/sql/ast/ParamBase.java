@@ -15,8 +15,6 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
 import leap.lang.Strings;
@@ -26,13 +24,15 @@ import leap.lang.params.Params;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.SqlStatementBuilder;
 
+import java.io.IOException;
+
 public abstract class ParamBase extends AstNode {
 	
 	@Override
 	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
 		stm.increaseAndGetParameterIndex();
 		
-		Object p = param(stm,params);
+		Object p = eval(stm,params);
 		
 		if(isReplace()){
 			addReplacedText(stm, params, p);
@@ -41,7 +41,10 @@ public abstract class ParamBase extends AstNode {
 		}
     }
 
-	protected Object param(SqlStatementBuilder stm, Params params){
+    /**
+     * Evaluates the param value.
+     */
+	public Object eval(SqlStatementBuilder stm, Params params){
 		if(params.isIndexed()){
 			return params.get(stm.currentParameterIndex());
 		}else{
@@ -58,7 +61,7 @@ public abstract class ParamBase extends AstNode {
 	}
 	
 	protected void addReplacedText(SqlStatementBuilder stm,Params params, Object p) throws IOException {
-		Object value  = param(stm,params);
+		Object value  = eval(stm,params);
 		String string = Converts.toString(value);
 		if(!Strings.isEmpty(string)){
 			Scope scope = getScope();

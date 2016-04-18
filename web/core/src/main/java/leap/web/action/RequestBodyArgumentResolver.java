@@ -42,20 +42,21 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 
 	@Override
 	public Object resolveValue(ActionContext context, Argument argument) throws Throwable {
-		RequestFormat format = context.getRequestFormat();
-		
-		if(null != format && format.supportsRequestBody()){
-			return format.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
-		}
 
-		if(requestBodyDeclared){
-            if(null == requestBodyReader) {
-                throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
-            }
+        if(requestBodyDeclared && null != requestBodyReader) {
             return requestBodyReader.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
-		}
+        }
 
-		return nonRequestBodyResolver.resolveValue(context, argument);
+        RequestFormat format = context.getRequestFormat();
+        if(null != format && format.supportsRequestBody()){
+            return format.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
+        }
+
+        if(requestBodyDeclared){
+            throw new IllegalArgumentException("Reading request body for type '" + argument.getType() + "' not supported");
+        }
+
+        return nonRequestBodyResolver.resolveValue(context, argument);
 	}
 
 	protected RequestBodyReader getRequestBodyReader(App app,Argument argument) {

@@ -51,7 +51,7 @@ public class ElConfigProcessor implements AppConfigProcessor {
 	
 	protected void readFunctions(AppConfigContext context, XmlReader reader, ElConfigFunctions funcs) {
 		String prefix	 = reader.getAttribute(PREFIX_ATTRIBUTE);
-		String className = reader.getAttributeRequired(CLASS_ATTRIBUTE);
+		String className = reader.getRequiredAttribute(CLASS_ATTRIBUTE);
 		
 		while(true){
 			reader.next();
@@ -70,7 +70,7 @@ public class ElConfigProcessor implements AppConfigProcessor {
 	}
 	
 	protected void readFunction(AppConfigContext context, XmlReader reader, ElConfigFunctions funcs, String prefix, String className) {
-		String methodDesc = reader.getAttributeRequired(METHOD_ATTRIBUTE);
+		String methodDesc = reader.getRequiredAttribute(METHOD_ATTRIBUTE);
 		String funcName   = reader.getAttribute(NAME_ATTRIBUTE);
 		
 		/*

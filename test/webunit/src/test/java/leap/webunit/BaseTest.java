@@ -51,13 +51,19 @@ public class BaseTest extends WebTestBase {
 	public void testDnsHostName() {
 		client().addHostName("www.example.com");
 		
-		THttpResponse response = client().get("http://www.example.com:8080/html.jsp");
-		
-		Document document = response.getDocument();
-		assertEquals("test html document", document.title());
-		
-		Element text = document.getElementById("text");
-		assertNotNull(text);
-		assertEquals("Hello",text.text());
+        assertTestDnsHostNameResponse(client().get("http://www.example.com:8080/html.jsp"));
+        assertTestDnsHostNameResponse(client().get("http://www.example.com:8081/html.jsp"));
+
+        assertTestDnsHostNameResponse(client().get("https://www.example.com:8443/html.jsp"));
+        assertTestDnsHostNameResponse(client().get("https://www.example.com:8444/html.jsp"));
 	}
+
+    private void assertTestDnsHostNameResponse(THttpResponse response) {
+        Document document = response.getDocument();
+        assertEquals("test html document", document.title());
+
+        Element text = document.getElementById("text");
+        assertNotNull(text);
+        assertEquals("Hello",text.text());
+    }
 }

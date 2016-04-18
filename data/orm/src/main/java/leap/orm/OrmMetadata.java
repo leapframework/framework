@@ -15,8 +15,6 @@
  */
 package leap.orm;
 
-import java.util.List;
-
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.domain.Domains;
@@ -24,6 +22,8 @@ import leap.orm.domain.FieldDomain;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.SequenceMapping;
 import leap.orm.sql.SqlCommand;
+
+import java.util.List;
 
 public interface OrmMetadata {
 	
@@ -137,6 +137,11 @@ public interface OrmMetadata {
 	 * Returns <code>null</code> if no mapping exists for the given table name.
 	 */
 	EntityMapping tryGetEntityMappingByTableName(String tableName);
+
+    /**
+     * Returns the {@link EntityMapping} for given sharding table name (ignore case).
+     */
+    EntityMapping tryGetEntityMappingByShardingTableName(String tableName);
 
 	/**
 	 * Returns the {@link SequenceMapping} for the given name (ignore case).

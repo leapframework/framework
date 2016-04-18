@@ -15,8 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.util.List;
-
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.lang.Args;
@@ -28,28 +26,34 @@ import leap.lang.meta.MType;
 import leap.orm.domain.FieldDomain;
 import leap.orm.validation.FieldValidator;
 
+import java.util.List;
+
 public class FieldMapping {
 	
 	protected final String		     fieldName;
 	protected final MType            dataType;
-	protected final String			 metaFieldName;
+	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
 	protected final BeanProperty     beanProperty;
 	protected final DbColumn         column;
-	protected final String		     sequenceName;
-	protected final boolean		     nullable;
+	protected final String           sequenceName;
+	protected final boolean          nullable;
 	protected final Integer          maxLength;
 	protected final Integer          precision;
 	protected final Integer          scale;
-	protected final boolean		     insert;
-	protected final boolean		     update;
+	protected final boolean          insert;
+	protected final boolean          update;
+    protected final boolean          where;
 	protected final Expression       defaultValue;
-	protected final Expression	     insertValue;
-	protected final Expression	     updateValue;
+	protected final Expression       insertValue;
+	protected final Expression       updateValue;
+    protected final Expression       whereValue;
+    protected final Expression       whereIf;
 	protected final FieldDomain      domain;
-	protected final boolean		     optimisticLock;
-	protected final String		     newOptimisticLockFieldName;
+	protected final boolean          optimisticLock;
+	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
+    protected final boolean          sharding;
 	
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
@@ -62,15 +66,18 @@ public class FieldMapping {
 						String sequenceName,
 						boolean nullable,
 						Integer maxLength,Integer presison,Integer scale,
-						boolean insert,boolean update,
+						boolean insert,boolean update,boolean where,
 						Expression defaultValue,
 						Expression insertValue,
 						Expression updateValue,
+                        Expression whereValue,
+                        Expression whereIf,
 						boolean optimisticLock,
 						String newOptimisticLockFieldName,
 						FieldDomain domain,
 						List<FieldValidator> validators,
-						ReservedMetaFieldName reservedMetaFieldName) {
+						ReservedMetaFieldName reservedMetaFieldName,
+                        boolean sharding) {
 		
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
@@ -89,13 +96,17 @@ public class FieldMapping {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
+        this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
+        this.whereValue     = whereValue;
+        this.whereIf        = whereIf;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
+        this.sharding       = sharding;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -156,7 +167,15 @@ public class FieldMapping {
 		return updateValue;
 	}
 
-	public boolean isAutoGenerateValue(){
+    public Expression getWhereValue() {
+        return whereValue;
+    }
+
+    public Expression getWhereIf() {
+        return whereIf;
+    }
+
+    public boolean isAutoGenerateValue(){
 		return null != insertValue || column.isAutoIncrement() || !Strings.isEmpty(sequenceName);
 	}
 
@@ -172,7 +191,11 @@ public class FieldMapping {
 		return update;
 	}
 
-	public boolean isPrimaryKey() {
+    public boolean isWhere() {
+        return where;
+    }
+
+    public boolean isPrimaryKey() {
 		return column.isPrimaryKey();
 	}
 	
@@ -209,7 +232,11 @@ public class FieldMapping {
 		return validators;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    @Override
     public String toString() {
 	    return "FieldMapping[name=" + getFieldName() + ",column=" + getColumnName() + ",dataType=" + dataType + "]";
     }

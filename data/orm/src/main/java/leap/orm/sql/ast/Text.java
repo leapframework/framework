@@ -15,45 +15,51 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
+import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
+
+import java.io.IOException;
 
 /**
  * Indicates a text segment in a sql text.
  */
 public class Text extends AstNode {
 	
-	private final StringBuilder text = new StringBuilder(16);
+	private final StringBuilder buf = new StringBuilder(16);
 	
 	public Text(String text){
-		this.text.append(text);
+		this.buf.append(text);
 	}
 	
-	public StringBuilder getText() {
-		return text;
-	}
+    public Text append(String s) {
+        buf.append(s);
+        return this;
+    }
+
+    public boolean isBlank() {
+        return Strings.isBlank(buf);
+    }
 
 	@Override
     protected void toString_(Appendable buf) throws IOException {
-		buf.append(text);
+		buf.append(this.buf);
     }
 
 	@Override
 	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		stm.append(text);
+		stm.append(buf);
     }
 	
 	@Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
-		stm.append(text);
+		stm.append(buf);
     }
 
 	@Override
     public String toString() {
-		return text.toString();
+		return buf.toString();
     }
 }

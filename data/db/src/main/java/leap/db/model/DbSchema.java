@@ -151,10 +151,10 @@ public class DbSchema extends DbSchemaName implements Named,JsonStringable {
 		 .property("name", name);
 		
 		//tables : [ {},{} ]
-		w.array("tables",tables);
+		w.propertyJsonable("tables",tables);
 		
 		if(sequences.length > 0){
-			w.array("sequences",sequences);
+			w.propertyJsonable("sequences",sequences);
 		}
 		
 		w.endObject();

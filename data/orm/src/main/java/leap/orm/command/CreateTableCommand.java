@@ -17,4 +17,14 @@ package leap.orm.command;
 
 public interface CreateTableCommand extends DmoCommand {
 
+    /**
+     * Returns the table name.
+     */
+    String getTableName();
+
+    /**
+     * Changes the table name.
+     */
+    CreateTableCommand changeTableName(String name);
+
 }

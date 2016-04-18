@@ -23,6 +23,8 @@ import leap.orm.mapping.MappingStrategy;
 import leap.orm.naming.NamingStrategy;
 
 public interface MetadataContext {
+
+    String getName();
 	
 	Db getDb();
 	

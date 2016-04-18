@@ -22,7 +22,7 @@ import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.sso.AuthzSSOManager;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
+import leap.web.security.logout.LogoutContext;
 import leap.web.view.View;
 
 public class DefaultPostLogoutHandler implements PostLogoutHandler {
@@ -31,7 +31,7 @@ public class DefaultPostLogoutHandler implements PostLogoutHandler {
     protected @Inject AuthzSSOManager         ssom;
 
     @Override
-    public void handlePostLogout(Request request, Response response, SecurityContextHolder context, View defaultLogoutView) throws Throwable {
+    public void handlePostLogout(Request request, Response response, LogoutContext context, View defaultLogoutView) throws Throwable {
         //Render logout view.
         OAuth2Params params = new RequestOAuth2Params(request);
 
@@ -40,7 +40,7 @@ public class DefaultPostLogoutHandler implements PostLogoutHandler {
         defaultLogoutView.render(request, response);
     }
 
-    protected void exposeViewAttributes(Request request, Response response, SecurityContextHolder context, OAuth2Params params) throws Throwable {
+    protected void exposeViewAttributes(Request request, Response response, LogoutContext context, OAuth2Params params) throws Throwable {
         request.setAttribute("redirect_uri",   params.getPostLogoutRedirectUri());
         request.setAttribute("authentication", context.getAuthentication());
 

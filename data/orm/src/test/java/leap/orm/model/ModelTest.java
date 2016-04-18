@@ -17,12 +17,11 @@ package leap.orm.model;
 
 import leap.orm.OrmTestCase;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.tested.model.ModelBase;
 import leap.orm.tested.model.Model1;
+import leap.orm.tested.model.ModelBase;
 import leap.orm.tested.model.ModelWithId4;
 import leap.orm.tested.model.NotAModel;
 import leap.orm.tested.model.petclinic.Owner;
-
 import org.junit.Test;
 
 public class ModelTest extends OrmTestCase {

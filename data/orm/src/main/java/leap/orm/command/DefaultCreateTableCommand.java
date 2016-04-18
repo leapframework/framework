@@ -15,22 +15,40 @@
  */
 package leap.orm.command;
 
-import java.util.List;
-
 import leap.db.DbExecution;
+import leap.db.model.DbTable;
+import leap.db.model.DbTableBuilder;
+import leap.lang.Args;
 import leap.lang.Error;
+import leap.lang.Strings;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 
+import java.util.List;
+
 public class DefaultCreateTableCommand extends AbstractDmoCommand implements CreateTableCommand {
     
-    protected final EntityMapping entityMapping;
+    protected final EntityMapping em;
     
     protected DbExecution execution;
+    protected String      tableName;
 
     public DefaultCreateTableCommand(Dmo dmo, EntityMapping em) {
         super(dmo);
-        this.entityMapping = em;
+        this.em = em;
+        this.tableName = em.getTableName();
+    }
+
+    @Override
+    public String getTableName() {
+        return tableName;
+    }
+
+    @Override
+    public CreateTableCommand changeTableName(String name) {
+        Args.notEmpty(name, "table name");
+        this.tableName = name;
+        return this;
     }
 
     @Override
@@ -40,11 +58,19 @@ public class DefaultCreateTableCommand extends AbstractDmoCommand implements Cre
 
     @Override
     protected boolean doExecute() {
-        if(db.checkTableExists(entityMapping.getTable())) {
+        DbTable table;
+
+        if(Strings.equalsIgnoreCase(tableName, em.getTableName())) {
+            table = em.getTable();
+        }else{
+            table = new DbTableBuilder(em.getTable()).updateTableName(tableName).build();
+        }
+
+        if(db.checkTableExists(table)) {
             return false;
         }
-        
-        execution = db.cmdCreateTable(entityMapping.getTable()).execute();
+
+        execution = db.cmdCreateTable(table).execute();
         return true;
     }
 

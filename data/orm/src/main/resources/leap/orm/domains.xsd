@@ -15,7 +15,7 @@
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 			</xsd:sequence>
-			<xsd:attribute name="default-override" type="xsd:boolean"></xsd:attribute>
+			<xsd:attribute name="default-override" type="xsd:boolean"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax" />
 		</xsd:complexType>
 	</xsd:element>
@@ -72,8 +72,8 @@
         <xsd:complexType>
             <xsd:simpleContent>
                 <xsd:extension base="xsd:string">
-                	<xsd:attribute name="domain" type="xsd:string" use="required"></xsd:attribute>
-                	<xsd:attribute name="alias"  type="xsd:string" use="optional"></xsd:attribute>
+                	<xsd:attribute name="domain" type="xsd:string" use="required"/>
+                	<xsd:attribute name="alias"  type="xsd:string" use="optional"/>
                 </xsd:extension>
             </xsd:simpleContent>
         </xsd:complexType>
@@ -81,7 +81,7 @@
 
 	<xsd:element name="field-domain">
 		<xsd:complexType>
-			<xsd:attribute name="entity-domain" type="xsd:string"></xsd:attribute>
+			<xsd:attribute name="entity-domain" type="xsd:string"/>
 			<xsd:attribute name="name" type="xsd:string" use="required" />
 			<xsd:attribute name="type" type="JdbcType" use="optional" />
 			<xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
@@ -89,10 +89,10 @@
 			<xsd:attribute name="precision" type="xsd:int" use="optional" />
 			<xsd:attribute name="scale" type="xsd:int" use="optional" />
 			<xsd:attribute name="default-value" type="xsd:string" use="optional" />
-			<xsd:attribute name="insert" type="xsd:boolean"></xsd:attribute>
-			<xsd:attribute name="update" type="xsd:boolean"></xsd:attribute>
-			<xsd:attribute name="insert-value" type="xsd:string"></xsd:attribute>
-			<xsd:attribute name="update-value" type="xsd:string"></xsd:attribute>
+			<xsd:attribute name="insert" type="xsd:boolean"/>
+			<xsd:attribute name="update" type="xsd:boolean"/>
+			<xsd:attribute name="insert-value" type="xsd:string"/>
+			<xsd:attribute name="update-value" type="xsd:string"/>
 			<xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
 			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
 			<xsd:attribute name="override" type="xsd:boolean">
@@ -109,8 +109,8 @@
         <xsd:complexType>
             <xsd:simpleContent>
                 <xsd:extension base="xsd:string">
-                	<xsd:attribute name="domain" type="xsd:string" use="required"></xsd:attribute>
-                	<xsd:attribute name="alias"  type="xsd:string" use="optional"></xsd:attribute>
+                	<xsd:attribute name="domain" type="xsd:string" use="required"/>
+                	<xsd:attribute name="alias"  type="xsd:string" use="optional"/>
                 </xsd:extension>
             </xsd:simpleContent>
         </xsd:complexType>
@@ -118,32 +118,32 @@
 
     <xsd:simpleType name="JdbcType">
     	<xsd:restriction base="xsd:string">
-    		<xsd:enumeration value="varchar"></xsd:enumeration>  
-    		<xsd:enumeration value="bigint"></xsd:enumeration>
-    		<xsd:enumeration value="binary"></xsd:enumeration>
-    		<xsd:enumeration value="bit"></xsd:enumeration>
-    		<xsd:enumeration value="blob"></xsd:enumeration>
-    		<xsd:enumeration value="boolean"></xsd:enumeration>
-    		<xsd:enumeration value="char"></xsd:enumeration>
-    		<xsd:enumeration value="clob"></xsd:enumeration>
-    		<xsd:enumeration value="date"></xsd:enumeration>
-    		<xsd:enumeration value="decimal"></xsd:enumeration>
-    		<xsd:enumeration value="double"></xsd:enumeration>
-    		<xsd:enumeration value="float"></xsd:enumeration>
-    		<xsd:enumeration value="integer"></xsd:enumeration>    		
-    		<xsd:enumeration value="longvarbinary"></xsd:enumeration>
-    		<xsd:enumeration value="longvarchar"></xsd:enumeration>
-    		<xsd:enumeration value="numeric"></xsd:enumeration>
-    		<xsd:enumeration value="real"></xsd:enumeration>
-    		<xsd:enumeration value="smallint"></xsd:enumeration>
-    		<xsd:enumeration value="time"></xsd:enumeration>
-    		<xsd:enumeration value="timestamp"></xsd:enumeration>
-    		<xsd:enumeration value="tinyint"></xsd:enumeration>
-    		<xsd:enumeration value="varbinary"></xsd:enumeration>
-    		<xsd:enumeration value="nchar"></xsd:enumeration>
-    		<xsd:enumeration value="nvarchar"></xsd:enumeration>
-    		<xsd:enumeration value="longnvarchar"></xsd:enumeration> 
-    		<xsd:enumeration value="nclob"></xsd:enumeration>		  		    		    		    		    		
+    		<xsd:enumeration value="varchar"/>
+    		<xsd:enumeration value="bigint"/>
+    		<xsd:enumeration value="binary"/>
+    		<xsd:enumeration value="bit"/>
+    		<xsd:enumeration value="blob"/>
+    		<xsd:enumeration value="boolean"/>
+    		<xsd:enumeration value="char"/>
+    		<xsd:enumeration value="clob"/>
+    		<xsd:enumeration value="date"/>
+    		<xsd:enumeration value="decimal"/>
+    		<xsd:enumeration value="double"/>
+    		<xsd:enumeration value="float"/>
+    		<xsd:enumeration value="integer"/>
+    		<xsd:enumeration value="longvarbinary"/>
+    		<xsd:enumeration value="longvarchar"/>
+    		<xsd:enumeration value="numeric"/>
+    		<xsd:enumeration value="real"/>
+    		<xsd:enumeration value="smallint"/>
+    		<xsd:enumeration value="time"/>
+    		<xsd:enumeration value="timestamp"/>
+    		<xsd:enumeration value="tinyint"/>
+    		<xsd:enumeration value="varbinary"/>
+    		<xsd:enumeration value="nchar"/>
+    		<xsd:enumeration value="nvarchar"/>
+    		<xsd:enumeration value="longnvarchar"/>
+    		<xsd:enumeration value="nclob"/>
     	</xsd:restriction>
     </xsd:simpleType>
 </xsd:schema>

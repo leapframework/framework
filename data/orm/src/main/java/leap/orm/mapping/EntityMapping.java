@@ -15,17 +15,10 @@
  */
 package leap.orm.mapping;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.New;
-import leap.lang.Strings;
-import leap.lang.annotation.Nullable;
+import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
@@ -33,7 +26,12 @@ import leap.lang.logging.LogFactory;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
+import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 public class EntityMapping {
 	private static final Log log = LogFactory.get(EntityMapping.class);
@@ -43,6 +41,7 @@ public class EntityMapping {
 	protected final BeanType                     beanType;
 	protected final DbTable		  		         table;
 	protected final FieldMapping[]               fieldMappings;
+    protected final FieldMapping[]               whereFieldMappings;
 	protected final FieldMapping[]               keyFieldMappings;
 	protected final String[]                     keyFieldNames;
 	protected final String[]					 keyColumnNames;
@@ -58,22 +57,31 @@ public class EntityMapping {
 	protected final Class<? extends Model>       modelClass;
 	protected final EntityValidator[]            validators;
 	protected final RelationMapping[]			 relationMappings;
+    protected final boolean                      sharding;
+    protected final boolean                      autoCreateShardingTable;
+    protected final ShardingAlgorithm            shardingAlgorithm;
 	
 	private final Map<String,FieldMapping> columnNameToFields;
 	private final Map<String,FieldMapping> fieldNameToFields;
 	private final Map<String,FieldMapping> metaNameToFields;
+    private final FieldMapping             shardingField;
 	
 	public EntityMapping(String entityName,
-						Class<?> entityClass,DbTable table,List<FieldMapping> fieldMappings,
-						EntityExecutionInterceptor insertInterceptor,EntityExecutionInterceptor updateInterceptor,
-						EntityExecutionInterceptor deleteInterceptor,EntityExecutionInterceptor findIncerceptor,
-						EntityDomain domain, Class<? extends Model> modelClass,
-						List<EntityValidator> validators,
-						List<RelationMapping> relationMappings) {
+                         Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
+                         EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
+                         EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
+                         EntityDomain domain, Class<? extends Model> modelClass,
+                         List<EntityValidator> validators,
+                         List<RelationMapping> relationMappings,
+                         boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm) {
 		
 		Args.notEmpty(entityName,"entity name");
 		Args.notNull(table,"table");
 		Args.notEmpty(fieldMappings,"field mappings");
+
+        if(sharding) {
+            Args.notNull(shardingAlgorithm, "The sharding algorithm must not be null in sharding entity");
+        }
 		
 		this.entityName		   = entityName;
 	    this.entityClass       = entityClass;
@@ -92,6 +100,7 @@ public class EntityMapping {
 	    this.columnNameToFields     = createColumnNameToFieldsMap();
 	    this.fieldNameToFields      = createFieldNameToFieldsMap();
 	    this.metaNameToFields		= createMetaNameToFieldsMap();
+        this.whereFieldMappings     = evalWhereFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
 	    this.keyColumnNames			= evalKeyColumnNames();
@@ -99,61 +108,136 @@ public class EntityMapping {
 	    this.autoIncrementKeyColumn = autoIncrementKey ? table.getPrimaryKeyColumns()[0] : null;
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
+        this.sharding               = sharding;
+        this.autoCreateShardingTable= autoCreateShardingTable;
+        this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
+        this.shardingAlgorithm      = shardingAlgorithm;
     }
-	
+
+    /**
+     * Returns the entity name.
+     */
 	public String getEntityName(){
 		return entityName;
 	}
-	
+
+    /**
+     * Returns the table name of entity.
+     */
 	public String getTableName(){
 		return table.getName();
 	}
 
-	@Nullable
+    /**
+     * Optional. Returns the mapping java class of entity.
+     */
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
-	
+
+    /**
+     * Optional. Returns the mapping {@link Model} class of entity.
+     */
+    public Class<? extends Model> getModelClass() {
+        return modelClass;
+    }
+
+    /**
+     * Returns the db table.
+     */
 	public DbTable getTable() {
 		return table;
 	}
-	
-	@Nullable
+
+    /**
+     * Optional. Returns {@link BeanType} of the mapping java class of entity.
+     */
 	public BeanType getBeanType() {
 		return beanType;
 	}
-	
-	@Nullable
+
+    /**
+     * Optional. Returns the {@link EntityDomain} of entity.
+     */
 	public EntityDomain getDomain() {
 		return domain;
 	}
-	
-	public Class<? extends Model> getModelClass() {
-		return modelClass;
-	}
 
+    /**
+     * Returns all the {@link RelationMapping}.
+     */
+    public RelationMapping[] getRelationMappings() {
+        return relationMappings;
+    }
+
+    /**
+     * Returns all the fields of entity.
+     */
 	public FieldMapping[] getFieldMappings() {
 		return fieldMappings;
 	}
-	
+
+    /**
+     * Returns all the primary key fields of entity.
+     */
 	public FieldMapping[] getKeyFieldMappings() {
 		return keyFieldMappings;
 	}
 
+    /**
+     * Returns all the names of primary key fields of entity.
+     */
 	public String[] getKeyFieldNames() {
 		return keyFieldNames;
 	}
-	
+
+    /**
+     * Returns all the names of primary key columns of entity.
+     */
 	public String[] getKeyColumnNames() {
 		return keyColumnNames;
 	}
-	
+
+    /**
+     * Returns true if the entity is a sharding entity.
+     */
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    /**
+     * Returns true if create the sharding table if not exists.
+     */
+    public boolean isAutoCreateShardingTable() {
+        return autoCreateShardingTable;
+    }
+
+    /**
+     * Returns the sharding field or null.
+     */
+    public FieldMapping getShardingField() {
+        return shardingField;
+    }
+
+    /**
+     * Returns the {@link ShardingAlgorithm} or null.
+     */
+    public ShardingAlgorithm getShardingAlgorithm() {
+        return shardingAlgorithm;
+    }
+
+    /**
+     * Returns true if the given table name is the sharding table of the entity.
+     */
+    public boolean isShardingTable(String tableName) {
+        return sharding ? shardingAlgorithm.isShardingTable(this, tableName) : false;
+    }
+
+    /**
+     * Returns the validators for validating the entity.
+     */
 	public EntityValidator[] getValidators() {
 		return validators;
-	}
-	
-	public RelationMapping[] getRelationMappings() {
-		return relationMappings;
 	}
 
 	public FieldMapping getFieldMapping(String fieldName) throws ObjectNotFoundException {
@@ -237,8 +321,16 @@ public class EntityMapping {
 	public boolean hasOptimisticLock(){
 		return null != optimisticLockField;
 	}
-	
-	public FieldMapping getOptimisticLockField() {
+
+    public boolean hasWhereFields() {
+        return whereFieldMappings.length > 0;
+    }
+
+    public FieldMapping[] getWhereFieldMappings() {
+        return whereFieldMappings;
+    }
+
+    public FieldMapping getOptimisticLockField() {
 		return optimisticLockField;
 	}
 
@@ -269,6 +361,20 @@ public class EntityMapping {
 		
 		return list.toArray(new FieldMapping[list.size()]);
 	}
+
+    private FieldMapping[] evalWhereFieldMappings(){
+        List<FieldMapping> list = New.arrayList();
+
+        for(FieldMapping fm : this.fieldMappings){
+            if(fm.isWhere()){
+                Assert.isTrue(null != fm.getWhereValue(),
+                             "There where value expression must not be null of where field '" + fm.getFieldName() + "'");
+                list.add(fm);
+            }
+        }
+
+        return list.toArray(new FieldMapping[list.size()]);
+    }
 	
 	private String[] evalKeyFieldNames(){
 		String[] names = new String[keyFieldMappings.length];

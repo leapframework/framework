@@ -15,9 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.cache.Cache;
@@ -30,6 +27,9 @@ import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.parser.Lexer;
 import leap.orm.sql.parser.SqlParser;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Configurable(prefix="orm.dynamicSQL")
 public class DynamicSqlLanguage implements SqlLanguage {
 	
@@ -38,7 +38,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	protected Boolean            smart;
 	protected ExpressionLanguage expressionLanguage;
 	
-	private Cache<String, List<Sql>> cache = new SimpleLRUCache<String, List<Sql>>();
+	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
 	
 	@ConfigProperty
 	public void setMode(String mode) {
@@ -65,9 +65,9 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
 	@Override
     public List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
-		List<Sql> sqls = doParseSql(text);
+		List<Sql> sqls = doParseSql(context, text);
 		
-		List<SqlClause> clauses = new ArrayList<SqlClause>();
+		List<SqlClause> clauses = new ArrayList<>();
 		
 		for(Sql sql : sqls){
 			clauses.add(createClause(context,sql));
@@ -78,16 +78,36 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	
 	@Override
     public DynamicSqlClause parseClause(MetadataContext context, String sql) throws SqlClauseException {
-		List<Sql> sqls = doParseSql(sql);
+		List<Sql> sqls = doParseSql(context, sql);
 		return createClause(context, sqls.get(0));
     }
 	
-	protected List<Sql> doParseSql(String sql) {
-		List<Sql> sqls = cache.get(sql);
+	protected List<Sql> doParseSql(MetadataContext context, String sql) {
+        String key = context.getName() + "___" + sql;
+
+		List<Sql> sqls = cache.get(key);
 		if(null == sqls) {
 			log.debug("Parsing sql :\n {}", sql);
 			sqls = createParser(sql).sqls();
-			cache.put(sql, sqls);
+
+            if(smart()) {
+
+                List<Sql> resolvedSqls = new ArrayList<>();
+
+                for(Sql s : sqls) {
+                    s = new SqlResolver(context,s).resolve();
+
+                    processShardingTable(s);
+                    processWhereFields(s);
+
+                    resolvedSqls.add(s);
+                }
+
+                sqls = resolvedSqls;
+
+            }
+
+			cache.put(key, sqls);
 		}
 		return sqls;
 	}
@@ -101,11 +121,16 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	}
 	
 	protected DynamicSqlClause createClause(MetadataContext context, Sql sql) {
-		if(smart()){
-			sql = new SqlResolver(context,sql).resolve();
-		}
 		return new DynamicSqlClause(this,sql);
 	}
+
+    protected void processShardingTable(Sql sql) {
+        new SqlShardingProcessor(sql).processShardingTable();
+    }
+
+    protected void processWhereFields(Sql sql) {
+        new SqlWhereProcessor(sql).processWhereFields();
+    }
 	
 	protected boolean smart() {
 	    if(null == smart) {

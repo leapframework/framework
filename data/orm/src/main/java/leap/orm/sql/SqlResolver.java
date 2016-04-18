@@ -15,11 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-
-import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.orm.OrmMetadata;
@@ -27,14 +22,11 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.AstNode;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlNodeContainer;
-import leap.orm.sql.ast.SqlObjectName;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlTableContainer;
-import leap.orm.sql.ast.SqlTableName;
-import leap.orm.sql.ast.SqlTableSource;
+import leap.orm.sql.ast.*;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
 public class SqlResolver {
 
@@ -42,7 +34,7 @@ public class SqlResolver {
 	protected final OrmMetadata		metadata;
 	protected final Sql				sql;
 	
-	private Stack<SqlSelect> selects = new Stack<SqlSelect>();
+	private Stack<SqlSelect> selects = new Stack<>();
 	
 	public SqlResolver(MetadataContext context,Sql sql){
 		this.context  = context;
@@ -51,7 +43,7 @@ public class SqlResolver {
 	}
 	
 	public Sql resolve(){
-		resolve(new Stack<Tables>(), sql.nodes());
+		resolve(new Stack<>(), sql.nodes());
 		return sql;
 	}
 	
@@ -87,8 +79,10 @@ public class SqlResolver {
 			return;
 		}
 		
-		if(!tablesStack.isEmpty() && node instanceof SqlObjectName){
-			resolveColumn(tablesStack, (SqlObjectName)node);
+		if(!tablesStack.isEmpty()){
+            if(node instanceof SqlObjectName) {
+                resolveColumn(tablesStack, (SqlObjectName)node);
+            }
 		}
 	}
 	
@@ -138,15 +132,18 @@ public class SqlResolver {
 			SqlTableName tableName = (SqlTableName)tableSource;
 			if(null != tableName.getEntityMapping()){
 				FieldMapping fm = tableName.getEntityMapping().tryGetFieldMapping(name.getLastName());
+                if(null == fm) {
+                    fm = tableName.getEntityMapping().tryGetFieldMappingByColumn(name.getLastName());
+                }
 				if(null != fm){
-					name.setFieldMapping(fm);
+					name.setFieldMapping(tableName.getEntityMapping(), fm);
 					return true;
 				}
 				
 				//Special column/field name 'id'
 				if("id".equalsIgnoreCase(name.getLastName())) {
 					if(tableName.getEntityMapping().getKeyFieldMappings().length == 1) {
-						name.setFieldMapping(tableName.getEntityMapping().getKeyFieldMappings()[0]);
+						name.setFieldMapping(tableName.getEntityMapping(), tableName.getEntityMapping().getKeyFieldMappings()[0]);
 						return true;
 					}
 				}
@@ -206,13 +203,8 @@ public class SqlResolver {
 	}
 	
 	protected static class Tables {
-		private final Map<String,SqlTableSource> aliases = new SimpleCaseInsensitiveMap<SqlTableSource>();
+		private final Map<String,SqlTableSource> aliases = new SimpleCaseInsensitiveMap<>();
 		private final List<SqlTableSource>       tables;
-		
-		public Tables(OrmMetadata metadata, SqlTableSource table){
-			this.tables = New.arrayList(table);
-			resolveTableSource(metadata, table);
-		}
 		
 		public Tables(OrmMetadata metadata, List<SqlTableSource> tables){
 			this.tables = tables;
@@ -231,6 +223,9 @@ public class SqlResolver {
 				EntityMapping em = metadata.tryGetEntityMapping(lastName);
 				if(null == em){
 					em = metadata.tryGetEntityMappingByTableName(lastName);
+                    if(null == em) {
+                        em = metadata.tryGetEntityMappingByShardingTableName(lastName);
+                    }
 				}
 				if(null != em){
 					if(tableName.getSecondaryOrFirstName() == null ||

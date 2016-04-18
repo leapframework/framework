@@ -15,25 +15,39 @@
  */
 package leap.db.model;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.lang.Buildable;
+import leap.lang.Collections2;
 import leap.lang.Strings;
 import leap.lang.json.JsonArray;
 import leap.lang.json.JsonObject;
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class DbForeignKeyBuilder implements Buildable<DbForeignKey>,JsonParsable {
 	
 	protected String                   name;
 	protected DbSchemaObjectName	   foreignTable;
-	protected List<DbForeignKeyColumn> columns = new ArrayList<DbForeignKeyColumn>();
+	protected List<DbForeignKeyColumn> columns = new ArrayList<>();
 	protected DbCascadeAction          onUpdate;
 	protected DbCascadeAction          onDelete;
-	
-	public String getName() {
+
+    public DbForeignKeyBuilder() {
+
+    }
+
+    public DbForeignKeyBuilder(DbForeignKey fk) {
+        this.name = fk.getName();
+        this.foreignTable = fk.getForeignTable();
+        this.onUpdate = fk.getOnUpdate();
+        this.onDelete = fk.getOnDelete();
+
+        Collections2.addAll(columns, fk.getColumns());
+    }
+
+    public String getName() {
 		return name;
 	}
 

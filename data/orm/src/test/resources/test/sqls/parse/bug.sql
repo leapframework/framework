@@ -1,1 +1,1 @@
-SELECT * FROM t {? limit :count	}
+select * from t1 where id = ? union select * from t2 where id = ?

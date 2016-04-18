@@ -15,8 +15,6 @@
  */
 package leap.orm.dmo;
 
-import java.util.List;
-
 import leap.db.model.DbSchema;
 import leap.lang.annotation.Dangerous;
 import leap.orm.Orm;
@@ -30,6 +28,8 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.MappingExistsException;
 import leap.orm.mapping.MappingNotFoundException;
+
+import java.util.List;
 
 /**
  * Dmo means Data Management Object.
@@ -102,9 +102,14 @@ public abstract class Dmo {
 	public abstract CreateEntityCommand cmdCreateEntity(Class<?> entityClass);
 
 	/**
-	 * Creates a new {@link leap.db.command.CreateTable} for creating table of entity.
+	 * Creates a new {@link CreateTableCommand} for creating table of entity.
      */
 	public abstract CreateTableCommand cmdCreateTable(Class<?> entityClass);
+
+    /**
+     * Creates a new {@link CreateTableCommand} for creating table of entity.
+     */
+    public abstract CreateTableCommand cmdCreateTable(EntityMapping em);
 
 	/**
 	 * Creates a new {@linke DropTableCommand} command for dropping the table of entity.

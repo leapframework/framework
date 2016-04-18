@@ -158,7 +158,7 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 	
 	@Override
-    public String getElementTextAndEndRequired() {
+    public String getRequiredElementTextAndEnd() {
 		String value = getElementTextAndEnd();
 		if(Strings.isEmpty(value)){
 			throw new IllegalStateException("Element text must not be empty, location: " + getCurrentLocation());
@@ -203,7 +203,7 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 	
 	@Override
-    public String getAttributeRequired(QName name) {
+    public String getRequiredAttribute(QName name) {
 		String value = getAttribute(name);
 		if(Strings.isEmpty(value)){
 			throw new IllegalStateException("Attribute '" + name + "' must not be empty, location : " + getCurrentLocation());
@@ -211,7 +211,7 @@ public abstract class XmlReaderBase implements XmlReader {
 	    return value;
     }
 	
-	public String getAttributeRequired(String localName) {
+	public String getRequiredAttribute(String localName) {
 		String value = getAttribute(localName);
 		if(Strings.isEmpty(value)){
 			throw new IllegalStateException("Attribute '" + localName + "' must not be empty, location : " + getCurrentLocation());
@@ -244,13 +244,13 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 
 	@Override
-    public <T> T getAttributeRequired(QName name, Class<T> targetType) {
-		return Converts.convert(getAttributeRequired(name),targetType);
+    public <T> T getRequiredAttribute(QName name, Class<T> targetType) {
+		return Converts.convert(getRequiredAttribute(name),targetType);
     }
 
 	@Override
-    public <T> T getAttributeRequired(String localName, Class<T> targetType) {
-		return Converts.convert(getAttributeRequired(localName),targetType);
+    public <T> T getRequiredAttribute(String localName, Class<T> targetType) {
+		return Converts.convert(getRequiredAttribute(localName),targetType);
     }
 
 	public Boolean getBooleanAttribute(QName name) {
@@ -274,13 +274,13 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 	
 	@Override
-    public boolean getBooleanAttributeRequired(QName name) {
-		return Converts.toBoolean(getAttributeRequired(name));
+    public boolean getRequiredBooleanAttribute(QName name) {
+		return Converts.toBoolean(getRequiredAttribute(name));
     }
 
 	@Override
-    public boolean getBooleanAttributeRequired(String localName) {
-	    return Converts.toBoolean(getAttributeRequired(localName));
+    public boolean getRequiredBooleanAttribute(String localName) {
+	    return Converts.toBoolean(getRequiredAttribute(localName));
     }	
 	
 	public Integer getIntegerAttribute(QName name) {
@@ -304,13 +304,13 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 	
 	@Override
-    public int getIntAttributeRequire(QName name) {
-	    return Converts.toInt(getAttributeRequired(name));
+    public int getRequiredIntAttribute(QName name) {
+	    return Converts.toInt(getRequiredAttribute(name));
     }
 
 	@Override
-    public int getIntAttributeRequried(String localName) {
-	    return Converts.toInt(getAttributeRequired(localName));
+    public int getRequiredIntAttribute(String localName) {
+	    return Converts.toInt(getRequiredAttribute(localName));
     }
 	
 	private final String resolve(String value){
@@ -324,7 +324,7 @@ public abstract class XmlReaderBase implements XmlReader {
 
 	@Override
     public String resolveRequiredElementTextAndEnd() {
-	    return resolve(getElementTextAndEndRequired());
+	    return resolve(getRequiredElementTextAndEnd());
     }
 
 	@Override
@@ -349,12 +349,12 @@ public abstract class XmlReaderBase implements XmlReader {
 
 	@Override
     public String resolveRequiredAttribute(QName name) {
-	    return resolve(getAttributeRequired(name));
+	    return resolve(getRequiredAttribute(name));
     }
 
 	@Override
     public String resolveRequiredAttribute(String localName) {
-	    return resolve(getAttributeRequired(localName));
+	    return resolve(getRequiredAttribute(localName));
     }
 	
 	@Override
@@ -382,12 +382,12 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 
 	@Override
-    public <T> T resolveAttributeRequired(QName name, Class<T> targetType) {
+    public <T> T resolveRequiredAttribute(QName name, Class<T> targetType) {
 		return Converts.convert(resolveRequiredAttribute(name), targetType);
 	}
 
 	@Override
-    public <T> T resolveAttributeRequired(String localName, Class<T> targetType) {
+    public <T> T resolveRequiredAttribute(String localName, Class<T> targetType) {
 		return Converts.convert(resolveRequiredAttribute(localName), targetType);
     }
 
@@ -416,12 +416,12 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 
 	@Override
-    public boolean resolveBooleanAttributeRequired(QName name) {
+    public boolean resolveRequiredBooleanAttribute(QName name) {
 	    return Converts.toBoolean(resolveRequiredAttribute(name));
     }
 
 	@Override
-    public boolean resolveBooleanAttributeRequired(String localName) {
+    public boolean resolveRequiredBooleanAttribute(String localName) {
 		return Converts.toBoolean(resolveRequiredAttribute(localName));
     }
 
@@ -450,12 +450,12 @@ public abstract class XmlReaderBase implements XmlReader {
     }
 
 	@Override
-    public int resolveIntAttributeRequired(QName name) {
+    public int resolveRequiredIntAttribute(QName name) {
 		return Converts.toInt(resolveRequiredAttribute(name));
     }
 
 	@Override
-    public int resolveIntAttributeRequired(String localName) {
+    public int resolveRequiredIntAttribute(String localName) {
 		return Converts.toInt(resolveRequiredAttribute(localName));
     }
 	

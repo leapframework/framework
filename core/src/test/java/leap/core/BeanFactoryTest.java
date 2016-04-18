@@ -15,19 +15,16 @@
  */
 package leap.core;
 
-import java.util.List;
-
 import leap.core.cache.Cache;
+import leap.core.config.Property;
 import leap.core.junit.AppTestBase;
+import leap.core.variable.Variable;
 import leap.lang.Lazy;
-
 import org.junit.Test;
+import tested.beans.*;
+import tested.variables.NowVariable1;
 
-import tested.beans.InjectBean;
-import tested.beans.PrimaryBean;
-import tested.beans.PrimaryBean1;
-import tested.beans.PrimaryBean2;
-import tested.beans.TestBean;
+import java.util.List;
 
 public class BeanFactoryTest extends AppTestBase {
 
@@ -80,4 +77,51 @@ public class BeanFactoryTest extends AppTestBase {
 		assertNotNull(bean.nonGetterGetPrivateInjectPrimaryBean());
 		assertNull(bean.nonGetterGetNotInjectPrimaryBean());
 	}
+
+    @Test
+    public void testOverrideNamedBean() {
+        assertEquals(NowVariable1.class,factory.getBean(Variable.class,"now").getClass());
+    }
+
+    @Test
+    public void testPropertyInject() {
+        PBean pbean = factory.getBean(PBean.class);
+        assertNotNull(pbean);
+
+        assertEquals("s1", pbean.rawStringProperty1);
+        assertEquals("s1", pbean.stringProperty1.get());
+        assertEquals("s2", pbean.stringProperty2.get());
+
+        assertEquals(1, pbean.integerProperty1.get().intValue());
+        assertEquals(2, pbean.integerProperty2.get().intValue());
+
+        assertEquals(11L, pbean.longProperty1.get().longValue());
+        assertEquals(12L, pbean.longProperty2.get().longValue());
+
+        assertEquals(false, pbean.booleanProperty1.get());
+        assertEquals(true,  pbean.booleanProperty2.get());
+
+        assertEquals(new Double(1.1d), pbean.doubleProperty1.get());
+        assertEquals(new Double(1.2d), pbean.doubleProperty2.get());
+
+        assertNull(pbean.property1.get());
+
+        String[] arrayProperty1 = pbean.arrayProperty1;
+        assertNotNull(arrayProperty1);
+        assertEquals(3, arrayProperty1.length);
+        assertEquals("a", arrayProperty1[0]);
+        assertEquals("b", arrayProperty1[1]);
+        assertEquals("c", arrayProperty1[2]);
+
+        Property<PBean.CProp> cprop1 = pbean.complexProperty1;
+        assertNotNull(cprop1.get());
+        assertEquals("n1", cprop1.get().name);
+        assertEquals(100, cprop1.get().value);
+
+        PBean.CProp cprop2 = pbean.complexProperty2;
+        assertNotNull(cprop2);
+        assertEquals("n2", cprop2.name);
+        assertEquals(200, cprop2.value);
+    }
+
 }

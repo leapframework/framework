@@ -15,18 +15,12 @@
  */
 package leap.core.web;
 
-import java.util.Map;
-import java.util.function.Consumer;
+import leap.core.*;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-
-import leap.core.AppConfig;
-import leap.core.AppContext;
-import leap.core.AppContextInitializer;
-import leap.core.BeanFactory;
-import leap.core.DefaultBeanFactory;
-import leap.lang.Disposable;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class ServletContextInitializerBase {
 
@@ -113,21 +107,5 @@ public abstract class ServletContextInitializerBase {
         protected DefaultBeanFactory load(AppContext appContext) {
 	        return super.load(appContext);
         }
-
-		protected void close(){
-			try{
-				if(null != beanContainer){
-					beanContainer.close();	
-				}
-			}finally{
-				if(null != externalFactory && externalFactory instanceof Disposable){
-					try {
-	                    ((Disposable)externalFactory).dispose();
-                    } catch (Throwable e) {
-                    	servletContext.log("Error dispose external factory",e);
-                    }
-				}
-			}
-		}
-	}	
+	}
 }

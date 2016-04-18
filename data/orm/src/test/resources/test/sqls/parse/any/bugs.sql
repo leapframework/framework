@@ -186,3 +186,5 @@ SELECT
    ELSE f.dir_name END AS dirName
 FROM
  pan_file f;
+
+select * from t where (true) order by c;

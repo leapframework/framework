@@ -15,6 +15,7 @@
  */
 package leap.web.security;
 
+import leap.core.RequestContext;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
@@ -22,7 +23,16 @@ import leap.web.security.logout.LogoutContext;
 import leap.web.security.path.SecuredPath;
 
 public interface SecurityContextHolder extends AuthenticationContext, AuthorizationContext {
-
+	public static final String CONTEXT_HOLDER_ATTRIBUTE_NAME = SecurityContextHolder.class.getName();
+	public static SecurityContextHolder current() {
+		SecurityContextHolder context = (SecurityContextHolder)RequestContext.current().getAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME);
+		
+		if(null == context){
+			throw new IllegalStateException("Current security context holder does not exists");
+		}
+		
+		return context;
+	}
     /**
      * Optional. Returns the path mapping to the request.
      */

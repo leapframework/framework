@@ -312,6 +312,13 @@ public class AppContextInitializer {
 			factory.load(context);
 		
 			onInited(context);
+
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run() {
+					factory.close();
+				}
+			});
 			
 			log.debug("Standalone app context initialized");
 		}finally{
@@ -393,7 +400,7 @@ public class AppContextInitializer {
 		return config;
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
+	protected static DefaultBeanFactory createStandaloneAppFactory(DefaultAppConfig config,BeanFactory externalAppFactory){
 		return new DefaultBeanFactory(config,externalAppFactory);
 	}
 	

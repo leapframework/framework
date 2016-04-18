@@ -31,13 +31,13 @@ public class SqlUpdateParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		accept(Token.UPDATE);
+		expect(Token.UPDATE).acceptText();
 		
 		//parse table source
 		parseTableSource(update);
 		
 		//parse set
-		accept(Token.SET);
+		expect(Token.SET).acceptText();
 		
 		//parse update columns
 		parseUpdateColumns(update);
@@ -65,11 +65,11 @@ public class SqlUpdateParser extends SqlQueryParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			accept();
+			acceptText();
 			
 			expect(Token.IDENTIFIER);
 			String alias = lexer.tokenText();
-			accept();
+			acceptText();
 			return alias;
 		}
 
@@ -77,7 +77,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 		
 		if(token.isKeywordOrIdentifier() && token != Token.SET){
 			String alias = lexer.tokenText();
-			accept();
+			acceptText();
 			return alias;
 		}
 		
@@ -89,7 +89,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 		
 		if(lexer.token() == Token.COMMA){
 			do{
-				accept();
+				acceptText();
 				parseUpdateColumn(update);
 			}while(lexer.token() == Token.COMMA);
 		}
@@ -101,14 +101,14 @@ public class SqlUpdateParser extends SqlQueryParser {
 		}
 
 		if(parseSqlObjectName()) {
-			accept(Token.EQ);
+			expect(Token.EQ).acceptText();
 			parseUpdateValue(update);
 		}
 	}
 	
 	protected void parseUpdateValue(SqlUpdate update) {
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			
 			//select item : subquery
 			if(lexer.token() == Token.SELECT){
@@ -116,19 +116,19 @@ public class SqlUpdateParser extends SqlQueryParser {
 			}else{
 				parseUpdateValue(update);
 			}
-			accept(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || lexer.isKeyword()){
 			if(lexer.peekCharSkipWhitespaces() == '('){
-				accept();
-				accept(Token.LPAREN);
+				acceptText();
+				expect(Token.LPAREN).acceptText();
 				parseRestForClosingParen();
-				accept(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				
 				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					accept();
-					accept(Token.LPAREN);
+					acceptText();
+					expect(Token.LPAREN).acceptText();
 					parseRestForClosingParen();
-					accept(Token.RPAREN);
+					expect(Token.RPAREN).acceptText();
 				}
 			}else{
 				parseSqlObjectName();

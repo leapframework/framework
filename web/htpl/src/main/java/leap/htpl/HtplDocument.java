@@ -15,9 +15,6 @@
  */
 package leap.htpl;
 
-import java.util.Locale;
-import java.util.Map;
-
 import leap.htpl.ast.Fragment;
 import leap.htpl.ast.Node;
 import leap.htpl.ast.NodeContainer;
@@ -25,50 +22,119 @@ import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.PropertyAccessor;
 import leap.lang.exception.ObjectExistsException;
 
+import java.util.Locale;
+import java.util.Map;
+
+/**
+ * Html (template) document object.
+ */
 public interface HtplDocument extends AttributeAccessor,PropertyAccessor {
-	
+
+    /**
+     * Returns the underlying resource of template.
+     */
 	HtplResource getResource();
-	
+
+    /**
+     * Returns the locale of current template or returns null if not specified.
+     */
 	Locale getLocale();
 
+    /**
+     * Returns this layout of current template or return null if not specified.
+     */
 	String getLayout();
-	
+
+    /**
+     * Sets the layout.
+     */
 	void setLayout(String layout);
-	
+
+    /**
+     * Returns the title of template.
+     */
 	String getTitle();
-	
+
+    /**
+     * sets the title of template.
+     */
 	void setTitle(String title);
 
+    /**
+     * Returns a {@link NodeContainer} contains all the nodes in this document.
+     */
+    NodeContainer nodes();
+
+    /**
+     * Returns all the attribute objects.
+     *
+     * <p/>
+     * The attributes can't be accessed in template.
+     */
+    Map<String, Object> getAttributes();
+
+    /**
+     * Returns a {@link Map} contains all properties of the template.
+     *
+     * <p/>
+     * The properties can be accessed in template.
+     */
 	Map<String, String> getProperties();
 
+    /**
+     * Puts the map as properties.
+     */
 	void putProperties(Map<String, String> properties);
 
-	Map<String, Object> getAttributes();
-
+    /**
+     * Returns all the {@link Fragment} in template.
+     */
 	Map<String, Fragment> getFragments();
 
+    /**
+     * Returns the {@link Fragment} or null if not exists.
+     */
 	Fragment getFragment(String name);
-	
+
+    /**
+     * Adds a {@link Fragment}.
+     */
 	void addFragment(String name,Fragment fragment) throws ObjectExistsException;
-	
+
+    /**
+     * Adds all the {@link Fragment}.
+     */
 	void addFragments(Map<String,Fragment> m);
-	
+
+    /**
+     * Removes a {@link Fragment}.
+     */
 	Fragment removeFragment(String name);
-	
+
+    /**
+     * Adds an included template.
+     */
 	void addIncludedTemplate(String name, HtplTemplate tpl);
-	
+
+    /**
+     * Removes an included template.
+     */
 	HtplTemplate removeIncludedTemplate(String name);
-	
+
+    /**
+     * Sets all the included templates.
+     */
 	void putIncludedTemplates(Map<String, HtplTemplate> m);
 
+    /**
+     * Returns all the included templates.
+     */
 	Map<String,HtplTemplate> getIncludedTemplates();
-	
+
+    /**
+     * Returns the required header nodes.
+     */
 	Node[] getRequiredHeaders();
-	
-	/**
-	 * Returns a {@link NodeContainer} contains all the root nodes in this document.
-	 */
-	NodeContainer nodes();
 	
 	/**
 	 * Deep clones this document.

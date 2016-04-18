@@ -15,32 +15,25 @@
  */
 package leap.htpl.ast;
 
+import leap.htpl.*;
+import leap.htpl.exception.HtplProcessException;
+import leap.lang.Exceptions;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import leap.htpl.AbstractHtplObject;
-import leap.htpl.HtplCompiler;
-import leap.htpl.HtplContext;
-import leap.htpl.HtplDocument;
-import leap.htpl.HtplEngine;
-import leap.htpl.HtplRenderable;
-import leap.htpl.HtplTemplate;
-import leap.htpl.HtplWriter;
-import leap.htpl.exception.HtplProcessException;
-import leap.lang.Exceptions;
-
 public abstract class Node extends AbstractHtplObject {
 	
-	public static interface ProcessCallback {
+	public interface ProcessCallback {
 		void preProcess(Node node);
 		
-		void postProcess(Node node, Node result);
+		Node postProcess(Node node, Node result);
 	}
 	
-    protected Map<String,Object> variables;	//local varibles defined in this node.
+    protected Map<String,Object> variables;	//local variables defined in this node.
     protected Node 				 parent;
     protected HtplRenderable     compiled;
     
@@ -91,7 +84,7 @@ public abstract class Node extends AbstractHtplObject {
     public void setVariable(String name,Object value){
     	checkLocked();
     	if(null == variables){
-    		variables = new HashMap<String, Object>();
+    		variables = new HashMap<>();
     	}
     	variables.put(name, value);
     }
@@ -102,7 +95,7 @@ public abstract class Node extends AbstractHtplObject {
     public void putVariables(Map<String,? extends Object> map){
     	checkLocked();
     	if(null == variables){
-    		variables = new HashMap<String, Object>();
+    		variables = new HashMap<>();
     	}
     	variables.putAll(map);
     }
@@ -120,7 +113,7 @@ public abstract class Node extends AbstractHtplObject {
     		
 	        Node result = doProcess(engine, doc, callback);
 	        
-	        callback.postProcess(this, result);
+	        result = callback.postProcess(this, result);
 	        
 	        return result;
     	} catch (RuntimeException e){
@@ -165,7 +158,7 @@ public abstract class Node extends AbstractHtplObject {
 		clone.parent = parent;
 		
 		if(null != this.variables){
-			clone.variables = new HashMap<String, Object>(this.variables);
+			clone.variables = new HashMap<>(this.variables);
 		}
 		
 		return (T)clone;

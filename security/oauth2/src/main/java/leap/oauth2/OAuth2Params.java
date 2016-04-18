@@ -39,8 +39,8 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	String ACCESS_TOKEN  = "access_token";
 	
 	//Error
-    String ERROR                    = "error";
-    String ERROR_DESECRIPTION       = "error_description";
+    String ERROR             = "error";
+    String ERROR_DESCRIPTION = "error_description";
 	
 	//Open ID Connect params
 	String NONCE                    = "nonce";
@@ -116,7 +116,7 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	}
 	
 	default String getErrorDescription() {
-	    return getParameter(ERROR_DESECRIPTION);
+	    return getParameter(ERROR_DESCRIPTION);
 	}
 	
 	default String getIdToken() {

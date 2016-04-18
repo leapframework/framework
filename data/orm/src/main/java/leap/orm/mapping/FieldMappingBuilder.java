@@ -15,10 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.el.EL;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumnBuilder;
@@ -37,6 +33,10 @@ import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
 import leap.orm.validation.FieldValidator;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
+
 public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	
 	public static final int MIDDLE_SORT_ORDER = Column.ORDER_MIDDLE;
@@ -46,28 +46,32 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	protected MType			   	    dataType;
 	protected String			    metaFieldName;
 	protected Class<?>              javaType;
-	protected BeanProperty	        beanProperty;
+	protected BeanProperty          beanProperty;
 	protected DbColumnBuilder       column;
-	protected boolean			    columnNameDeclared;
-	protected String			    sequenceName;
+	protected boolean               columnNameDeclared;
+	protected String                sequenceName;
 	protected IdGenerator           idGenerator;
-	protected Boolean			    nullable;
-	protected Integer			    maxLength;
-	protected Integer			    precision;
-	protected Integer			    scale;
-	protected String			    defaultValue;
-	protected Boolean			    insert;
-	protected Boolean			    update;
-	protected Expression		    defaultValueExpression;
-	protected Expression		    insertValue;
-	protected Expression		    updateValue;
-	protected boolean			    optimisticLock;
-	protected String			    newOptimisticLockFieldName;
+	protected Boolean               nullable;
+	protected Integer               maxLength;
+	protected Integer               precision;
+	protected Integer               scale;
+	protected String                defaultValue;
+    protected Expression            defaultValueExpression;
+	protected Boolean               insert;
+	protected Boolean               update;
+    protected Boolean               where;
+	protected Expression            insertValue;
+	protected Expression            updateValue;
+    protected Expression            whereValue;
+    protected Expression            whereIf;
+	protected boolean               optimisticLock;
+	protected String                newOptimisticLockFieldName;
 	protected FieldDomain           domain;
-	protected Annotation[]		    annotations;
+	protected Annotation[]          annotations;
 	protected List<FieldValidator>  validators;
-	protected Integer			    sortOrder;
+	protected Integer               sortOrder;
 	protected ReservedMetaFieldName reservedMetaFieldName;
+    protected boolean               sharding;
 	
 	public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -78,6 +82,38 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		setFieldName(name).
 		setJavaType(type);
 	}
+
+    public FieldMappingBuilder(FieldMappingBuilder template) {
+        this.fieldName = template.fieldName;
+        this.dataType  = template.dataType;
+        this.metaFieldName = template.metaFieldName;
+        this.javaType = template.getJavaType();
+        this.beanProperty = template.beanProperty;
+        this.column = new DbColumnBuilder(template.column);
+        this.columnNameDeclared = template.columnNameDeclared;
+        this.sequenceName = template.sequenceName;
+        this.idGenerator = template.idGenerator;
+        this.nullable = template.nullable;
+        this.maxLength = template.maxLength;
+        this.precision = template.precision;
+        this.scale = template.scale;
+        this.defaultValue = template.defaultValue;
+        this.defaultValueExpression = template.defaultValueExpression;
+        this.insert = template.insert;
+        this.update = template.update;
+        this.where = template.where;
+        this.insertValue = template.insertValue;
+        this.updateValue = template.updateValue;
+        this.whereValue = template.whereValue;
+        this.whereIf = template.whereIf;
+        this.optimisticLock = template.optimisticLock;
+        this.newOptimisticLockFieldName = template.newOptimisticLockFieldName;
+        this.domain = template.domain;
+        this.annotations = template.annotations;
+        this.validators = null == template.validators ? null : new ArrayList<>(template.validators);
+        this.sortOrder = template.sortOrder;
+        this.reservedMetaFieldName = template.reservedMetaFieldName;
+    }
 	
 	public String getFieldName() {
 		return fieldName;
@@ -282,7 +318,21 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		}
 		return this;
 	}
-	
+
+    public Expression getWhereValue() {
+        return whereValue;
+    }
+
+    public FieldMappingBuilder setWhereValue(Expression v) {
+        this.whereValue = v;
+        return this;
+    }
+
+    public FieldMappingBuilder setWhereIf(Expression e) {
+        this.whereIf = e;
+        return this;
+    }
+
 	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
@@ -416,6 +466,26 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
+    public boolean isWhere() {
+        return null != where && where;
+    }
+
+    public Boolean getWhere(){
+        return where;
+    }
+
+    public FieldMappingBuilder setWhere(Boolean b) {
+        this.where = b;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetWhere(Boolean b){
+        if(null == this.where){
+            this.where = b;
+        }
+        return this;
+    }
+
 	public boolean isId(){
 		return null != column && column.isPrimaryKey();
 	}
@@ -487,7 +557,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    public FieldMappingBuilder setSharding(boolean sharding) {
+        this.sharding = sharding;
+        return this;
+    }
+
+    @Override
     public FieldMapping build() {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
@@ -504,6 +583,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		if(null == update){
 			update = true;
 		}
+
+        if(null == where) {
+            where = false;
+        }
 		
 		if(null == defaultValueExpression){
 			defaultValueExpression = EL.tryCreateValueExpression(defaultValue, javaType);
@@ -519,10 +602,13 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-	    						insert, update, defaultValueExpression, insertValue, updateValue, 
+	    						insert, update, where,
+                                defaultValueExpression,
+                                insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
-	    						reservedMetaFieldName);
+	    						reservedMetaFieldName,
+                                sharding);
     }
 
 	@Override

@@ -15,10 +15,6 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
-
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
 import leap.lang.exception.ParseException;
@@ -27,7 +23,12 @@ import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.ast.AstNode;
+import leap.orm.sql.ast.SqlToken;
 import leap.orm.sql.ast.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Stack;
 
 public abstract class SqlParserBase {
 	
@@ -40,8 +41,8 @@ public abstract class SqlParserBase {
 	protected AstNode		node;
 	protected List<AstNode> nodes;
 	
-	private Stack<List<AstNode>> savedNodes = new Stack<List<AstNode>>();
-	private Stack<Sql.Scope>     scope      = new Stack<Sql.Scope>();
+	private Stack<List<AstNode>> savedNodes = new Stack<>();
+	private Stack<Sql.Scope>     scope      = new Stack<>();
 	
 	protected SqlParserBase(Lexer lexer,ExpressionLanguage el){
 		this.lexer     = lexer;
@@ -55,16 +56,23 @@ public abstract class SqlParserBase {
 		appendText();
 		return this;
 	}
-	
-	protected final SqlParserBase nextTokenOnly(){
-		lexer.nextToken();
-		return this;
-	}
-	
-	protected final void accept(){
+
+	protected final void acceptText(){
 		appendText(lexer.tokenText());
 		nextToken();
 	}
+
+    protected final boolean acceptText(Token token) {
+        if(lexer.token() == token) {
+            acceptText();
+            return true;
+        }
+        return false;
+    }
+
+    protected final void acceptNode() {
+        acceptNode(new SqlToken(lexer.token(), lexer.tokenText()));
+    }
 	
 	/**
 	 * Accepts the given node and move to next token.
@@ -74,11 +82,7 @@ public abstract class SqlParserBase {
 		nodes.add(node);
 		nextToken();
 	}
-	
-	protected final void accept(Token token){
-		expect(token).accept();
-	}
-	
+
 	protected final void addNode(AstNode node){
 		this.node = node;
 		nodes.add(node);
@@ -125,7 +129,7 @@ public abstract class SqlParserBase {
     
 	protected final void suspendNodes(){
 		this.savedNodes.add(nodes);
-		this.nodes = new ArrayList<AstNode>();
+		this.nodes = new ArrayList<>();
 	}
 	
 	protected final SqlParserBase restoreNodes(){
@@ -173,6 +177,33 @@ public abstract class SqlParserBase {
 		
 		return removedNodes;
 	}
+
+    protected final boolean lookahead(Token... tokens) {
+        if(lexer.isEOS()){
+            return false;
+        }
+
+        createSavePoint();
+
+        try{
+            for(Token token : tokens) {
+
+                if(lexer.token() != token) {
+                    return false;
+                }
+
+                nextToken();
+
+                if(lexer.isEOS()){
+                    return false;
+                }
+            }
+        }finally{
+            restoreSavePoint();
+        }
+
+        return true;
+    }
 	
 	protected final void appendText(){
 		appendText(lexer.acceptText());
@@ -186,7 +217,7 @@ public abstract class SqlParserBase {
 		if(nodes.size() > 0){
 			AstNode lastNode = nodes.get(nodes.size() - 1);
 			if(lastNode instanceof Text){
-				((Text) lastNode).getText().append(text);
+				((Text) lastNode).append(text);
 			}else{
 				nodes.add(new Text(text));
 			}

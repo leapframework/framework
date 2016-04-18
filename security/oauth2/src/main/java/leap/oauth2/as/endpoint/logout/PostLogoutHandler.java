@@ -17,11 +17,11 @@ package leap.oauth2.as.endpoint.logout;
 
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
+import leap.web.security.logout.LogoutContext;
 import leap.web.view.View;
 
 public interface PostLogoutHandler {
 
-    void handlePostLogout(Request request, Response response, SecurityContextHolder context, View defaultLogoutView) throws Throwable;
+    void handlePostLogout(Request request, Response response, LogoutContext context, View defaultLogoutView) throws Throwable;
 
 }

@@ -15,7 +15,7 @@
  */
 package app.controller;
 
-import leap.htpl.HtplTestCase;
+import tests.HtplTestCase;
 import leap.lang.http.MimeTypes;
 import leap.webunit.client.THttpResponse;
 

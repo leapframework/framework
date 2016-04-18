@@ -22,7 +22,6 @@ import leap.lang.Out;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
 import leap.web.security.authc.credentials.CredentialsResolver;
 
 public class CredentialsResolvingHandler implements LoginHandler {
@@ -30,15 +29,14 @@ public class CredentialsResolvingHandler implements LoginHandler {
 	protected @Inject @R CredentialsResolver[] credentialsResolver;
 	
 	@Override
-	public State handleLoginAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
-	    LoginContext sc = context.getLoginContext();
+	public State handleLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
 	    
-		if(!sc.isCredentialsResolved()){
+		if(!context.isCredentialsResolved()){
 			Out<Credentials> out = new Out<Credentials>();
 			
 			for(CredentialsResolver resolver : credentialsResolver){
 				if(resolver.resolveCredentials(context, request, out)){
-					sc.setCredentials(out.getValue());
+					context.setCredentials(out.getValue());
 					break;
 				}
 			}

@@ -65,7 +65,7 @@ public class ReflectField extends ReflectMember implements ReflectValued {
     public Class<?> getType(){
         return type;
     }
-    
+
     public Type getGenericType(){
         return field.getGenericType();
     }

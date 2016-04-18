@@ -15,8 +15,6 @@
  */
 package leap.db.model;
 
-import java.sql.Types;
-
 import leap.lang.Args;
 import leap.lang.Assert;
 import leap.lang.Buildable;
@@ -25,6 +23,8 @@ import leap.lang.jdbc.JdbcTypes;
 import leap.lang.json.JsonObject;
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
+
+import java.sql.Types;
 
 public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	
@@ -84,6 +84,21 @@ public class DbColumnBuilder implements Buildable<DbColumn>,JsonParsable {
 	public DbColumnBuilder(){
 		
 	}
+
+    public DbColumnBuilder(DbColumnBuilder template) {
+        this.name = template.name;
+        this.typeCode = template.typeCode;
+        this.typeName = template.typeName;
+        this.length = template.length;
+        this.precision = template.precision;
+        this.scale = template.scale;
+        this.nullable = template.nullable;
+        this.primaryKey = template.primaryKey;
+        this.unique = template.unique;
+        this.autoIncrement = template.autoIncrement;
+        this.defaultValue = template.defaultValue;
+        this.comment = template.comment;
+    }
 	
 	public DbColumnBuilder(String name){
 		this.name = name;

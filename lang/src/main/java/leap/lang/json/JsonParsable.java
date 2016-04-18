@@ -16,11 +16,24 @@
 package leap.lang.json;
 
 public interface JsonParsable {
-	
-	default void parseJson(String json) {
-		parseJson(JSON.decodeToJsonValue(json));
-	}
-	
-	void parseJson(JsonValue value);
 
+    /**
+     * Parse the json.
+     */
+	void parseJson(JsonValue json);
+
+    /**
+     * Parse the json.
+     */
+    default void parseJson(String json) {
+        parseJson(JSON.decodeToJsonValue(json));
+    }
+
+    /**
+     * Parse the json and returns the object itself.
+     */
+	default <T> T withParsingJson(JsonValue json) {
+        parseJson(json);
+        return (T)this;
+    }
 }

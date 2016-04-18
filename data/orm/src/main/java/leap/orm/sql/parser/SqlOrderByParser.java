@@ -26,16 +26,16 @@ class SqlOrderByParser extends SqlExprParser {
 	
 	public SqlOrderBy orderBy(){
 		if(lexer.token() == Token.ORDER){
-			accept();
+			acceptText();
 			
 			if(lexer.token() == Token.BY){
 				setScope(Scope.ORDER_BY);
 				
-				accept();
+				acceptText();
 				parseOrderByItem();
 				
 				while(lexer.token() == Token.COMMA){
-					accept();
+					acceptText();
 					parseOrderByItem();	
 				}
 				
@@ -89,15 +89,15 @@ class SqlOrderByParser extends SqlExprParser {
 	
 	protected boolean parseOrderByAscOrDesc(){
 		if(lexer.token() == Token.ASC || lexer.token() == Token.DESC){
-			accept();
+			acceptText();
 			
 			createSavePoint();
 			
 			if(lexer.isIdentifier("NULLS")){
-				accept();
+				acceptText();
 				
 				if(lexer.isIdentifier("FIRST") || lexer.isIdentifier("LAST")){
-					accept();
+					acceptText();
 					acceptSavePoint();
 					return true;
 				}

@@ -256,6 +256,14 @@ public class DefaultSqlFactory implements SqlFactory {
 			}
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
 		}
+
+        if(em.isSharding()) {
+            FieldMapping fm = em.getShardingField();
+            if(index > 0){
+                sql.append(" and");
+            }
+            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
+        }
 		
 		return sql.toString();
 	}
@@ -321,6 +329,14 @@ public class DefaultSqlFactory implements SqlFactory {
 			}
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
 		}
+
+        if(em.isSharding()) {
+            FieldMapping fm = em.getShardingField();
+            if(index > 0){
+                sql.append(" and");
+            }
+            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
+        }
 		
 		return sql.toString();
 	}
@@ -343,6 +359,14 @@ public class DefaultSqlFactory implements SqlFactory {
 			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
 			index++;
 		}
+
+        if(em.isSharding()) {
+            FieldMapping fm = em.getShardingField();
+            if(index > 0){
+                sql.append(" and");
+            }
+            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
+        }
 		
 		return sql.toString();
 	}

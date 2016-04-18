@@ -15,11 +15,9 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import leap.orm.sql.ast.*;
 
-import leap.orm.sql.ast.SqlQuery;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlTableName;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 abstract class SqlQueryParser extends SqlParser {
@@ -27,59 +25,100 @@ abstract class SqlQueryParser extends SqlParser {
 	public SqlQueryParser(SqlParser parent) {
 		super(parent);
 	}
+
+    protected boolean parseFrom(SqlQuery query){
+        if(lexer.token() == Token.FROM){
+            acceptText();
+            parseFromItem(query);
+            return true;
+        }
+        return false;
+    }
+
+    protected void parseFromItem(SqlQuery query) {
+        parseTableSource(query);
+    }
+
+    protected void parseTableSource(SqlQuery query) {
+        if(lexer.token() == Token.LPAREN){
+            acceptText();
+
+            if(lexer.token() == Token.SELECT){
+                SqlSelect fromSelect = new SqlSelectParser(this).parseSelectBody();
+
+                parseUnion();
+
+                expect(Token.RPAREN).acceptText();
+                fromSelect.setAlias(parseTableAlias());
+                query.addTableSource(fromSelect);
+            }else{
+                parseFromItem(query);
+
+                parseUnion();
+
+                expect(Token.RPAREN).acceptText();
+            }
+            return;
+        }
+
+        parseTableName();
+
+        if(node instanceof SqlTableName){
+            SqlTableName table = (SqlTableName)node;
+            table.setAlias(parseTableAlias());
+            query.addTableSource(table);
+        }
+    }
 	
 	protected boolean parseWhere(SqlQuery query){
 		if(lexer.token() == Token.WHERE){
-			accept();
+            parseWhereExpression(query, new SqlWhere());
 			return true;
 		}
 		return false;
 	}
-	
-	protected boolean parseFrom(SqlQuery query){
-		if(lexer.token() == Token.FROM){
-			accept();
-			parseFromItem(query);
-			return true;
-		}
-		return false;
-	}
-	
-	protected void parseFromItem(SqlQuery query) {
-		parseTableSource(query);
-	}
-	
-	protected void parseTableSource(SqlQuery query) {
-		if(lexer.token() == Token.LPAREN){
-			accept();
-			
-			if(lexer.token() == Token.SELECT){
-				SqlSelect fromSelect = new SqlSelectParser(this).parseSelectBody();
-				
-				parseUnion();
-				
-				accept(Token.RPAREN);
-				fromSelect.setAlias(parseTableAlias());
-				query.addTableSource(fromSelect);
-			}else{
-				parseFromItem(query);
-				
-				parseUnion();
-				
-				accept(Token.RPAREN);
-			}
-			return;
-		}
-		
-		parseTableName();
-		
-		if(node instanceof SqlTableName){
-			SqlTableName table = (SqlTableName)node;
-			table.setAlias(parseTableAlias());
-			query.addTableSource(table);
-		}
-	}
-	
+
+    protected void parseWhereExpression(SqlQuery query, SqlWhere where) {
+        suspendNodes();
+
+        acceptNode(new SqlToken(lexer.token(), lexer.tokenText()));
+
+        AtomicInteger lparens = new AtomicInteger();
+        for(;;) {
+            if(lexer.isEOS()){
+                appendText();
+                break;
+            }
+
+            if(!parseWhereBodyToken(query, lparens, lexer.token())) {
+                break;
+            }
+
+            //order by
+            if(lookahead(Token.ORDER, Token.BY)) {
+                break;
+            }
+
+            //group by
+            if(lookahead(Token.GROUP, Token.BY)) {
+                break;
+            }
+
+            Token token = lexer.token();
+
+            //union, limit (offset)
+            if(token == Token.UNION || token == Token.MINUS || token == Token.LIMIT) {
+                break;
+            }
+
+            //todo : for update, etc...
+        }
+
+        where.setQuery(query);
+        where.setNodes(nodes());
+        restoreNodes().addNode(where);
+    }
+
 	protected void parseQueryBodyRest(SqlQuery query){
 		AtomicInteger lparens = new AtomicInteger();
 		
@@ -88,80 +127,102 @@ abstract class SqlQueryParser extends SqlParser {
 				appendText();
 				break;
 			}
-			
-			Token token = lexer.token();
-			
-			if(token == Token.LPAREN){
-				lparens.incrementAndGet();
-				accept();
-				continue;
-			}
-			
-			if(token == Token.RPAREN){
-				if(lparens.decrementAndGet() < 0){
-					//sub-select end
-					break;
-				}
-				accept();
-				continue;
-			}
-			
-			if(token == Token.IN){
-				parseIn(query,lparens);
-				continue;
-			}
-			
-			if(token == Token.EXISTS){
-				parseExists(query,lparens);
-				continue;
-			}
-			
-			if(token == Token.IDENTIFIER){
-				parseSqlObjectName();
-				continue;
-			}
-			
-			//Sub-Query
-			if(token == Token.SELECT && Token.LPAREN == lexer.prevToken()) {
-				new SqlSelectParser(this).parseSelectBody();
-				continue;
-			}
 
-			//Union
-			if(token == Token.UNION || token == Token.MINUS) {
-				//parseUnionQuery(query);
-				return;
-			}
+            Token token = lexer.token();
+
+            //Union
+            if(token == Token.UNION || token == Token.MINUS) {
+                //parseUnionQuery(query);
+                return;
+            }
 			
-			parseToken();
+			if(!parseWhereBodyToken(query, lparens, lexer.token())){
+                break;
+            }
 		}
 	}
-	
-	protected void parseIn(SqlQuery select,AtomicInteger lparens){
-		accept();
+
+    protected boolean parseWhereBodyToken(SqlQuery query, AtomicInteger lparens, Token token) {
+        if(token == Token.LPAREN){
+            lparens.incrementAndGet();
+            acceptText();
+            return true;
+        }
+
+        if(token == Token.RPAREN){
+            if(lparens.decrementAndGet() < 0){
+                //sub-select end
+                return false;
+            }
+            acceptText();
+            return true;
+        }
+
+        if(token == Token.IN){
+            parseIn(query,lparens);
+            return true;
+        }
+
+        if(token == Token.EXISTS){
+            parseExists(query,lparens);
+            return true;
+        }
+
+        if(token == Token.IDENTIFIER){
+            parseSqlObjectName();
+            return true;
+        }
+
+        if(token == Token.AND) {
+            acceptNode();
+            return true;
+        }
+
+        if(token == Token.EQ) {
+            acceptNode();
+            return true;
+        }
+
+        if(token == Token.LITERAL_CHARS || token == Token.LITERAL_INT) {
+            acceptNode(new SqlLiteral(lexer.token(),lexer.text(),lexer.literal()));
+            return true;
+        }
+
+        //Sub-Query
+        if(token == Token.SELECT && Token.LPAREN == lexer.prevToken()) {
+            new SqlSelectParser(this).parseSelectBody();
+            return true;
+        }
+
+        parseToken();
+        return true;
+    }
+
+	protected void parseIn(SqlQuery query, AtomicInteger lparens){
+		acceptText();
 		
 		if(lexer.token() == Token.LPAREN){
 			lparens.incrementAndGet();
-			accept();
+			acceptText();
 
 			if(lexer.token() == Token.SELECT){
 				parseSelect();
-				accept(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				lparens.decrementAndGet();
 			}
 		}
 	}
 	
 	protected void parseExists(SqlQuery select,AtomicInteger lparens){
-		accept();
+		acceptText();
 		
 		if(lexer.token() == Token.LPAREN){
 			lparens.incrementAndGet();
-			accept();
+			acceptText();
 
 			if(lexer.token() == Token.SELECT){
 				parseSelect();
-				accept(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				lparens.decrementAndGet();
 			}
 		}
@@ -169,10 +230,10 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected void parseUnion() {
         if (lexer.token() == Token.UNION) {
-            accept();
+            acceptText();
 
             if (lexer.token() == Token.ALL || lexer.token() == Token.DISTINCT) {
-            	accept();
+            	acceptText();
             } 
             
             new SqlSelectParser(this).parseSelectBody();
@@ -180,7 +241,7 @@ abstract class SqlQueryParser extends SqlParser {
         }
 
         if (lexer.token() == Token.MINUS) {
-        	accept();
+        	acceptText();
         	
         	new SqlSelectParser(this).parseSelectBody();
         	return;
@@ -189,11 +250,11 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			accept();
+			acceptText();
 			
 			expect(Token.IDENTIFIER);
 			String alias = lexer.tokenText();
-			accept();
+			acceptText();
 			return alias;
 		}
 
@@ -201,7 +262,7 @@ abstract class SqlQueryParser extends SqlParser {
 		
 		if(token.isKeywordOrIdentifier() && !isEndFromItem() && token != Token.ON){
 			String alias = lexer.tokenText();
-			accept();
+			acceptText();
 			return alias;
 		}
 		

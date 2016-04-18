@@ -15,10 +15,6 @@
  */
 package leap.orm.dao;
 
-import java.sql.Statement;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.AppContext;
 import leap.core.exception.RecordNotFoundException;
 import leap.core.jdbc.JdbcExecutor;
@@ -39,6 +35,10 @@ import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.value.Entity;
 import leap.orm.value.EntityBase;
+
+import java.sql.Statement;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Dao means Data Access Object.
@@ -473,6 +473,8 @@ public abstract class Dao implements JdbcExecutor {
 	public abstract int executeNamedUpdate(String sqlKey, Map<String, Object> params);
 	
 	//----------------------------query--------------------------------
+	public abstract Query<Record> createQuery(SqlCommand command);
+
 	/**
 	 * Creates a new {@link Query} for executing the given sql command.
 	 */

@@ -19,8 +19,11 @@ import leap.core.ioc.BeanContainer;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanDefinitionException;
 import leap.lang.Args;
+import leap.lang.Disposable;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,7 +36,9 @@ import java.util.Map.Entry;
  */
 @SuppressWarnings("unchecked")
 public class DefaultBeanFactory implements BeanFactory {
-	
+
+    private static final Log log = LogFactory.get(DefaultBeanFactory.class);
+
 	protected final AppConfig	config;
 	protected final BeanFactory externalFactory;
 	
@@ -419,4 +424,20 @@ public class DefaultBeanFactory implements BeanFactory {
 	    
 	    this.initialized = true;
     }
+
+	public void close(){
+		try{
+			if(null != beanContainer){
+				beanContainer.close();
+			}
+		}finally{
+			if(null != externalFactory && externalFactory instanceof Disposable){
+				try {
+					((Disposable)externalFactory).dispose();
+				} catch (Throwable e) {
+					log.warn("Error disposing external factory",e);
+				}
+			}
+		}
+	}
 }

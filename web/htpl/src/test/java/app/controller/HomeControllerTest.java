@@ -15,7 +15,7 @@
  */
 package app.controller;
 
-import leap.htpl.HtplTestCase;
+import tests.HtplTestCase;
 import leap.lang.jsoup.nodes.Document;
 import leap.lang.jsoup.nodes.Element;
 import leap.webunit.client.THttpResponse;

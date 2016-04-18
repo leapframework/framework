@@ -38,4 +38,6 @@
     <bean id="testConstructorDefaultValue" class="tested.beans.TestBean">
         <constructor-arg value="${not_exists_config_property}" default-value="defaultStringValue"/>
     </bean>
+
+    <bean name="now" type="leap.core.variable.Variable" class="tested.variables.NowVariable1" override="true"/>
 </beans>
