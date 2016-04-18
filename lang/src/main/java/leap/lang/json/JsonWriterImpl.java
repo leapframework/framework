@@ -264,8 +264,13 @@ public class JsonWriterImpl implements JsonWriter {
     public JsonWriter property(String key, Object v) {
 	    return key(key).value(v);
     }
-	
-	public JsonWriter endObject() {
+
+    @Override
+    public JsonWriter property(String key, Map v) {
+        return key(key).map(v);
+    }
+
+    public JsonWriter endObject() {
         try {
     		out.append(CLOSE_OBJECT);
     		startProperty = false;
@@ -757,7 +762,7 @@ public class JsonWriterImpl implements JsonWriter {
 				Entry  entry = (Entry)item;
 				String key = ns(entry.getKey().toString());
 				Object val = entry.getValue();
-				propertyIgnorable(key, val);
+				property(key, val);
 			}
 			endObject();
 		}

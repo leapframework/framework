@@ -15,27 +15,15 @@
  */
 package leap.db;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.function.Consumer;
-
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.change.SchemaChange;
 import leap.db.change.SchemaChangeContext;
-import leap.db.model.DbCascadeAction;
-import leap.db.model.DbColumn;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchema;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
+import leap.db.model.*;
 import leap.lang.jdbc.JdbcTypes;
+
+import java.sql.*;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * a dialect interface of the underlying db platform.
@@ -166,9 +154,6 @@ public interface DbDialect {
 	 * Converts the given value to a string value used for display.
 	 * 
 	 * @param value the value to be translated.
-	 * 
-	 * @param type the jdbc type code of the given value, 
-	 * 		  the underlying implementation must handle type's value {@link JdbcTypes#UNKNOW_TYPE_CODE}. 
 	 */
 	String toDisplayString(int typeCode, Object value);
 	
@@ -444,6 +429,11 @@ public interface DbDialect {
 	 * The returned value will converts to the given target type.
 	 */
 	<T> T getColumnValue(ResultSet rs, String name, Class<T> targetType) throws SQLException;
+
+    /**
+     * Splits the sql scripts to multiple sql statements.
+     */
+    List<String> splitSqlStatements(String sqlScript);
 	
 	/**
 	 * Returns <code>true</code> if the given state indicates the connection is disconnect.
