@@ -207,7 +207,7 @@ public class BeanContainer implements BeanFactory {
 	 * 
 	 * <p/>
 	 * 
-	 * throws {@link IllegalStateException} if this container aleady initialized.
+	 * throws {@link IllegalStateException} if this container already initialized.
 	 */
 	public BeanContainer init() throws IllegalStateException{
 		if(initializing){

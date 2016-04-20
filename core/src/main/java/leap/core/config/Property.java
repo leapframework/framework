@@ -36,4 +36,11 @@ public interface Property<T> {
         return Converts.convert(get(), type);
     }
 
+    /**
+     * Returns true if the value is null.
+     */
+    default boolean isNull() {
+        return null == get();
+    }
+
 }
