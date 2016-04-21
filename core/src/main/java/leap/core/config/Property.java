@@ -17,6 +17,9 @@ package leap.core.config;
 
 import leap.lang.convert.Converts;
 
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 /**
  * A wrapper interface for configuration property.
  *
@@ -24,16 +27,48 @@ import leap.lang.convert.Converts;
  */
 public interface Property<T> {
 
+    static <T> Property<T> of(Function<String, T> converter) {
+        return new ConvertibleProperty<>(converter);
+    }
+
+    static <T> Property<T> of(Function<String, T> converter, T defaultValue) {
+        return new ConvertibleProperty<>(converter, defaultValue);
+    }
+
     /**
      * Returns the property value. May be null.
      */
     T get();
 
     /**
+     * Sets the value.
+     */
+    void set(T value);
+
+    /**
+     * Sets the value by converting from string.
+     */
+    void convert(String s);
+
+    /**
      * Converts the property value to the given type.
      */
     default <T1> T1 get(Class<T1> type) {
         return Converts.convert(get(), type);
+    }
+
+    /**
+     * Returns true if the value is null.
+     */
+    default boolean isNull() {
+        return null == get();
+    }
+
+    /**
+     * Called when changed.
+     */
+    default void onChanged(Consumer<T> callback) {
+
     }
 
 }

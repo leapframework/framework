@@ -32,6 +32,11 @@ public interface PropertyProvider {
     <T> Property<T> getDynaProperty(String name, Class<T> type);
 
     /**
+     * Binding the property.
+     */
+    <T> void bindDynaProperty(String name, Class<T> type, Property<T> p);
+
+    /**
      * Returns the {@link StringProperty}.
      */
     default StringProperty getDynaProperty(String name) {

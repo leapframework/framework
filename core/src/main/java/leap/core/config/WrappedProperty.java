@@ -16,6 +16,8 @@
 
 package leap.core.config;
 
+import java.util.function.Consumer;
+
 public class WrappedProperty<T> implements Property<T> {
 
     private final Property<T> wrapped;
@@ -26,7 +28,21 @@ public class WrappedProperty<T> implements Property<T> {
 
     @Override
     public T get() {
-        return null == wrapped ? null : wrapped.get();
+        return wrapped.get();
     }
 
+    @Override
+    public void set(T value) {
+        wrapped.set(value);
+    }
+
+    @Override
+    public void convert(String s) {
+        wrapped.convert(s);
+    }
+
+    @Override
+    public void onChanged(Consumer<T> callback) {
+        wrapped.onChanged(callback);
+    }
 }

@@ -19,6 +19,6 @@ package leap.core.config;
 public class SimpleIntegerProperty extends SimpleProperty<Integer> implements IntegerProperty {
 
     public SimpleIntegerProperty(Integer value) {
-        super(value);
+        super(Integer.class,value);
     }
 }

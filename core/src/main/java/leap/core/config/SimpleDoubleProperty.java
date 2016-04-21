@@ -19,6 +19,6 @@ package leap.core.config;
 public class SimpleDoubleProperty extends SimpleProperty<Double> implements DoubleProperty {
 
     public SimpleDoubleProperty(Double value) {
-        super(value);
+        super(Double.class, value);
     }
 }

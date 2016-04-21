@@ -19,6 +19,6 @@ package leap.core.config;
 public class SimpleLongProperty extends SimpleProperty<Long> implements LongProperty {
 
     public SimpleLongProperty(Long value) {
-        super(value);
+        super(Long.class, value);
     }
 }

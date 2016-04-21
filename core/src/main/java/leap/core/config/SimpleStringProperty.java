@@ -19,6 +19,11 @@ package leap.core.config;
 public class SimpleStringProperty extends SimpleProperty<String> implements StringProperty {
 
     public SimpleStringProperty(String value) {
-        super(value);
+        super(String.class, value);
+    }
+
+    @Override
+    public void convert(String s) {
+        set(s);
     }
 }

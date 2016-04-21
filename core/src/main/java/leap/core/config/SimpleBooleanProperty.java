@@ -19,6 +19,6 @@ package leap.core.config;
 public class SimpleBooleanProperty extends SimpleProperty<Boolean> implements BooleanProperty {
 
     public SimpleBooleanProperty(Boolean value) {
-        super(value);
+        super(Boolean.class,value);
     }
 }
