@@ -48,11 +48,11 @@ public class SimpleProperty<T> extends AbstractProperty<T> {
     }
 
     protected T doConvert(String s) {
-        if(null == s) {
+        if(null == s || s.length() == 0) {
             return null;
         }else{
             if(complex) {
-                return s.isEmpty() ? null : JSON.decode(s, type);
+                return JSON.decode(s, type);
             }else{
                 return Converts.convert(s, type);
             }
