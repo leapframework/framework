@@ -16,21 +16,46 @@
 
 package leap.core.config;
 
-public class SimpleProperty<T> implements Property<T> {
+import leap.lang.Args;
+import leap.lang.Types;
+import leap.lang.convert.Converts;
+import leap.lang.json.JSON;
 
-    private T value;
+public class SimpleProperty<T> extends AbstractProperty<T> {
 
-    public SimpleProperty(T value) {
-        this.value = value;
+    private final Class<T> type;
+    private final boolean  complex;
+
+    public SimpleProperty(Class<T> type) {
+        this(type, null);
+    }
+
+    public SimpleProperty(Class<T> type, T value) {
+        Args.notNull(type);
+        this.type    = type;
+        this.complex = Types.getTypeInfo(type, null).isComplexType();;
+        this.value   = value;
     }
 
     @Override
-    public T get() {
-        return value;
+    public void convert(String s) {
+        set(doConvert(s));
     }
 
     @Override
     public String toString() {
         return null == value ? "null" : value.toString();
+    }
+
+    protected T doConvert(String s) {
+        if(null == s) {
+            return null;
+        }else{
+            if(complex) {
+                return s.isEmpty() ? null : JSON.decode(s, type);
+            }else{
+                return Converts.convert(s, type);
+            }
+        }
     }
 }

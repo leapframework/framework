@@ -209,6 +209,11 @@ public interface AppConfig extends PropertyGetter {
      */
     DoubleProperty getDynaDoubleProperty(String name);
 
+    /**
+     * Binding the property.
+     */
+    <T> void bindDynaProperty(String name, Class<T> type, Property<T> p);
+
 	/**
 	 * Returns the map contains all the data source configs.
 	 */

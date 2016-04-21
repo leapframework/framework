@@ -1093,22 +1093,16 @@ public class BeanContainer implements BeanFactory {
 					continue;
 				}
 
-                if(Property.class.isAssignableFrom(bp.getType())) {
-                    doBeanConfigure(bean, bp, keyPrefix, bp.getAnnotation(ConfigProperty.class));
+                ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
+                if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
                     continue;
                 }
-				
-				ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
-				if(null == a) {
-					continue;
-				}
 
                 doBeanConfigure(bean, bp, keyPrefix, a);
 
                 if(null != bp.getReflectField()) {
                     done.add(bp.getReflectField());
                 }
-
 			}
 
             for(ReflectField field : bt.getReflectClass().getFields()) {
@@ -1211,10 +1205,13 @@ public class BeanContainer implements BeanFactory {
     protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key) {
         AppConfig config = getAppConfig();
 
-        //todo :
-        Class<?> type = v.getType();
+        Class<?> type  = v.getType();
+        Property value = (Property)v.getValue(bean);
 
-        Property value;
+        if(null != value) {
+            config.bindDynaProperty(key, type, value);
+            return;
+        }
 
         if(type.equals(StringProperty.class)) {
 

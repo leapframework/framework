@@ -16,18 +16,28 @@
 
 package leap.core.config;
 
-public interface BooleanProperty extends Property<Boolean> {
+import java.util.function.Consumer;
 
-    static BooleanProperty of(Boolean defaultValue) {
-        return new SimpleBooleanProperty(defaultValue);
+public abstract class AbstractProperty<T> implements Property<T> {
+
+    protected Consumer<T> callback;
+    protected T           value;
+
+    @Override
+    public T get() {
+        return value;
     }
 
-    default boolean isTrue() {
-        return null != get() && get().equals(Boolean.TRUE);
+    @Override
+    public void set(T value) {
+        this.value = value;
+        if(null != callback) {
+            callback.accept(value);
+        }
     }
 
-    default boolean isFalse() {
-        return null != get() && get().equals(Boolean.FALSE);
+    @Override
+    public void onChanged(Consumer<T> callback) {
+        this.callback = callback;
     }
-
 }

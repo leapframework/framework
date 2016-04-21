@@ -18,4 +18,8 @@ package leap.core.config;
 
 public interface IntegerProperty extends Property<Integer> {
 
+    static IntegerProperty of(Integer defaultValue) {
+        return new SimpleIntegerProperty(defaultValue);
+    }
+
 }

@@ -16,18 +16,21 @@
 
 package leap.core.config;
 
-public interface BooleanProperty extends Property<Boolean> {
+public class NullProperty<T> implements Property<T> {
 
-    static BooleanProperty of(Boolean defaultValue) {
-        return new SimpleBooleanProperty(defaultValue);
+    @Override
+    public T get() {
+        return null;
     }
 
-    default boolean isTrue() {
-        return null != get() && get().equals(Boolean.TRUE);
+    @Override
+    public void set(T value) {
+
     }
 
-    default boolean isFalse() {
-        return null != get() && get().equals(Boolean.FALSE);
+    @Override
+    public void convert(String s) {
+
     }
 
 }
