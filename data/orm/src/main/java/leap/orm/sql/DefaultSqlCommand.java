@@ -72,7 +72,15 @@ public class DefaultSqlCommand implements SqlCommand {
     public boolean isQuery() {
 	    return null != queryClause;
     }
-	
+
+	@Override
+	public SqlClause getQueryClause() throws SqlClauseException {
+		if(isQuery()){
+			return queryClause;
+		}
+		throw new SqlClauseException("this command is not a query command!");
+	}
+
 	@Override
     public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
 		return doExecuteUpdate(context, params, null);
