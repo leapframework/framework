@@ -25,6 +25,7 @@ import leap.core.jdbc.ResultSetReader;
 import leap.core.jdbc.RawScalarReader;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlCommand;
 
 public class ResultSetReaders {
 	
@@ -74,30 +75,31 @@ public class ResultSetReaders {
 		};
 	}
 	
-	public static <T> ResultSetReader<T> forFirstRow(final OrmContext context,final Class<T> resultClass){
+	public static <T> ResultSetReader<T> forFirstRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
 		return new ResultSetReader<T>() {
 			@Override
             public T read(ResultSet rs) throws SQLException {
-	            return context.getRowReader().readFirst(context, rs, resultClass);
+	            return context.getRowReader().readFirst(context, rs, resultClass,command);
             }
 		};
 	}
 	
-	public static <T> ResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass){
+	public static <T> ResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
 		return new ResultSetReader<T>() {
 			@Override
             public T read(ResultSet rs) throws SQLException {
-	            return context.getRowReader().readSingle(context, rs, resultClass);
+	            return context.getRowReader().readSingle(context, rs, resultClass,command);
             }
 		};
 	}
 	
-	public static <T> ResultSetReader<List<T>> forListRow(final OrmContext context,final Class<T> elementType, final Class<? extends T> resultClass){
+	public static <T> ResultSetReader<List<T>> forListRow(final OrmContext context, final Class<T> elementType,
+														  final Class<? extends T> resultClass, final SqlCommand command){
 		return new ResultSetReader<List<T>>() {
 			@Override
             public List<T> read(ResultSet rs) throws SQLException {
-	            return context.getRowReader().readList(context, rs, elementType, resultClass);
-            }
+				return context.getRowReader().readList(context, rs, elementType, resultClass, command);
+			}
 		};
 	}
 	
