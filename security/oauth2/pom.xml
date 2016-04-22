@@ -32,7 +32,7 @@
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-webunit</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
+			<scope>provided</scope>
 		</dependency>
     </dependencies>
 </project>
