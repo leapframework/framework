@@ -63,8 +63,8 @@ public class ModelQueryTest extends OrmTestCase {
 	public void testAdditionalField(){
 		deleteAll(Owner.class);
 		new Owner().set("firstName", "a").set("lastName","b").save();
-		assertEquals(1, Owner.query("simpleSqlIdWithAdditionalField").single().get("additional"));
-		assertEquals(1, Owner.query("select o.*,1 a from owner o").single().get("a"));
+		assertEquals(new Integer(1), Owner.query("simpleSqlIdWithAdditionalField").single().getInteger("additional"));
+		assertEquals(new Integer(1), Owner.query("select o.*,1 a from owner o").single().getInteger("a"));
 	}
 	
 	@Test

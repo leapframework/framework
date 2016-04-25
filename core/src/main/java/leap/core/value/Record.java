@@ -15,9 +15,46 @@
  */
 package leap.core.value;
 
+import leap.lang.convert.Converts;
+
 import java.util.Map;
 
 public interface Record extends Map<String, Object> {
 
-	
+    /**
+     * Returns the column value as {@link String}.
+     */
+    default String getString(String name) {
+        return get(name, String.class);
+    }
+
+    /**
+     * Returns the column value as {@link Integer}.
+     */
+    default Integer getInteger(String name) {
+        return get(name, Integer.class);
+    }
+
+    /**
+     * Returns the column value as {@link Long}
+     */
+    default Long getLong(String name) {
+        return get(name, Long.class);
+    }
+
+    /**
+     * Returns the column value as {@link Boolean}
+     */
+    default Boolean getBoolean(String name) {
+        return get(name, Boolean.class);
+    }
+
+    /**
+     * Returns the column value as the given type.
+     */
+    default <T> T get(String name, Class<T> type) {
+        Object v = get(name);
+
+        return null == v ? null : Converts.convert(v, type);
+    }
 }

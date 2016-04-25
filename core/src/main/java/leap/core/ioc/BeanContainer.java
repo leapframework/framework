@@ -1673,13 +1673,13 @@ public class BeanContainer implements BeanFactory {
 			public Collection get() {
 				Collection definedCol = (Collection)vd.getDefinedValue();
 				Collection createdCol = createCollection(bd, vd,definedCol);
-				
+
 				for(Object element : definedCol){
 					Object value = element instanceof ValueDefinition ? doResolveValue(bd, (ValueDefinition)element, null) : element;
-					
+
 					createdCol.add(doConvertValue(value, vd.getDefinedElementType()));
 				}
-				
+
 				return createdCol;
             }
 		};
@@ -1924,24 +1924,24 @@ public class BeanContainer implements BeanFactory {
             if(!Strings.isEmpty(def.getName())){
                 String key = beanType.getName() + "$" + def.getName();
                 if(!def.isOverride()) {
-                    BeanDefinitionBase existsBeanDefintion = namedBeanDefinitions.get(key);
-                    if(null != existsBeanDefintion){
+                    BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
+                    if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverrided()){
                         throw new BeanDefinitionException("Found duplicated bean name '" + bd.getName() + 
                                                           "' for type '" + beanType.getName() + 
-                                                          "' in resource : " + bd.getSource() + " with exists bean " + existsBeanDefintion);
+                                                          "' in resource : " + bd.getSource() + " with exists bean " + existsBeanDefinition);
                     }
                 }
                 namedBeanDefinitions.put(key, bd);
             }
             
-            //Add to primary bean definiton collection
+            //Add to primary bean definition collection
             if(def.isPrimary()){
                 if(!def.isOverride()) {
-                    BeanDefinitionBase existsBeanDefintion = primaryBeanDefinitions.get(beanType);
-                    if(null != existsBeanDefintion && existsBeanDefintion != NULL_BD){
+                    BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
+                    if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverrided()){
                         throw new BeanDefinitionException("Found duplicated primary bean " + bd + 
                                                           " for type '" + beanType.getName() + 
-                                                          "' with exists bean " + existsBeanDefintion.getSource());
+                                                          "' with exists bean " + existsBeanDefinition.getSource());
                     }
                 }
                 primaryBeanDefinitions.put(beanType, bd);
@@ -1950,7 +1950,7 @@ public class BeanContainer implements BeanFactory {
             //add to typed bean definition collection
             Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(beanType);
             if(null == typeSet){
-                typeSet = new TreeSet<BeanDefinitionBase>(Comparators.ORDERED_COMPARATOR);
+                typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
                 typedBeanDefinitions.put(beanType, typeSet);
             }
             typeSet.add(bd);
@@ -1975,7 +1975,7 @@ public class BeanContainer implements BeanFactory {
 			BeanListDefinition exists = beanListDefinitions.get(key);
 			
 			if(null != exists){
-				throw new BeanDefinitionException("Found duplicted bean list of type '" + bld.getType().getName() + 
+				throw new BeanDefinitionException("Found duplicated bean list of type '" + bld.getType().getName() +
 						  "', qualifier '" + bld.getQualifier() + "' in " + exists.getSource() + ", " + bld.getSource());
 			}
 		}
@@ -1994,13 +1994,13 @@ public class BeanContainer implements BeanFactory {
 	
 	private void ensureContainerNotInited(){
     	if(containerInited){
-    		throw new IllegalStateException("BeanContainer aleady initialized");
+    		throw new IllegalStateException("BeanContainer already initialized");
     	}
 	}
 	
 	private void ensureAppNotInited(){
     	if(appInited){
-    		throw new IllegalStateException("Cannot perform this operation, application aleady initialized");
+    		throw new IllegalStateException("Cannot perform this operation, application already initialized");
     	}
 	}
 }
