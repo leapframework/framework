@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
-    <init class="tested.beans.InitClass"/>
+    <init class="tested.beans.TInitClass"/>
     
-    <bean id="simpleBean" class="tested.beans.SimpleBean"/>
+    <bean id="simpleBean" class="tested.beans.NopBean"/>
     
     <import resource="../imp/imp.beans.xml"/>
     
-    <bean id="testBean" class="tested.beans.TestBean">
+    <bean id="testBean" class="tested.beans.TBean">
         <property name="string" value="string1"/>
         
         <property name="int1" value="${notExistsConfigProperty}" default-value="100"/>
@@ -37,9 +37,9 @@
         </property>
     </bean>
     
-    <bean id="testBean1" class="tested.beans.TestBean">
+    <bean id="testBean1" class="tested.beans.TBean">
         <property name="simpleBean">
-            <bean class="tested.beans.SimpleBean"/>
+            <bean class="tested.beans.NopBean"/>
 		</property>
 		<property name="string" value="string1"/>
 		<property name="map">
@@ -62,12 +62,12 @@
     
     <alias id="testBean" alias="testBeanAlias1"/>
     
-    <bean id="testBeanWithConstructor" class="tested.beans.TestBean">
+    <bean id="testBeanWithConstructor" class="tested.beans.TBean">
         <constructor-arg value="string1"/>
         <property name="string" value="string1"/>
     </bean>
     
-    <bean id="testBeanWithCollectionConstructor" class="tested.beans.TestBean">
+    <bean id="testBeanWithCollectionConstructor" class="tested.beans.TBean">
         <constructor-arg>
         	<list>
         		<value>string1</value>
@@ -84,25 +84,25 @@
         </constructor-arg>
     </bean>
     
-    <bean id="testBeanWithConstructorArgRefConstructor" class="tested.beans.TestBean">
-    	<constructor-arg ref="testBeanWithCollectionConstructor" type="tested.beans.TestBean"></constructor-arg>
+    <bean id="testBeanWithConstructorArgRefConstructor" class="tested.beans.TBean">
+    	<constructor-arg ref="testBeanWithCollectionConstructor" type="tested.beans.TBean"></constructor-arg>
     	<constructor-arg ref="testBeanWithConstructor"></constructor-arg>
     </bean>
     
-    <bean id="testBeanWithConstructorArgRefConstructor1" class="tested.beans.TestBean">
+    <bean id="testBeanWithConstructorArgRefConstructor1" class="tested.beans.TBean">
     	<constructor-arg ref="listBean" type="java.util.List"></constructor-arg>
     	<constructor-arg ref="mapMap" type="java.util.Map"></constructor-arg>
     </bean>
     
-    <bean id="testBeanWithDefinedBeanConstructor" class="tested.beans.TestBean">
+    <bean id="testBeanWithDefinedBeanConstructor" class="tested.beans.TBean">
     	<constructor-arg>
-        	<bean class="tested.beans.TestBean">
+        	<bean class="tested.beans.TBean">
         		<property name="string" value="testBeanWithDefinedBeanConstructor"></property>
         	</bean>
         </constructor-arg>
     </bean>
     
-    <bean id="testBeanWithLoadOverConstructor" class="tested.beans.TestBean">
+    <bean id="testBeanWithLoadOverConstructor" class="tested.beans.TBean">
         <constructor-arg>
         	<map>
         		<entry key="bean1" value-ref="testBean1">

@@ -15,8 +15,9 @@
  */
 package tested.beans;
 
-import leap.lang.Valued;
+import leap.core.annotation.Bean;
 
-public interface PrimaryBean1 extends Valued<String> {
+@Bean(primary=true)
+public class TAnnotationBean2 {
 
 }

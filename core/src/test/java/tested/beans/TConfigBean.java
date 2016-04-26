@@ -23,10 +23,13 @@ import leap.core.config.*;
 
 @Bean
 @Configurable(prefix="pbean")
-public class PBean {
+public class TConfigBean {
 
     @ConfigProperty("stringProperty1")
-    public String            rawStringProperty1;
+    public String rawStringProperty1;
+
+    @ConfigProperty("stringProperty1")
+    protected String rawStringProperty2;
 
     public Property<String>  stringProperty1;
     public Property<Integer> integerProperty1;
@@ -43,6 +46,10 @@ public class PBean {
 
     public @ConfigProperty CProp    complexProperty2;
     public @ConfigProperty String[] arrayProperty1;
+
+    public String getPublicRawStringProperty2() {
+        return rawStringProperty2;
+    }
 
     public static final class CProp {
 

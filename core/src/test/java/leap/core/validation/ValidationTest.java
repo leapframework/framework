@@ -20,7 +20,7 @@ import leap.core.junit.AppTestBase;
 
 import org.junit.Test;
 
-import tested.beans.ValidBean;
+import tested.beans.TValidBean;
 
 public class ValidationTest extends AppTestBase {
 	
@@ -30,7 +30,7 @@ public class ValidationTest extends AppTestBase {
 	public void testBeanValidation() {
 		Validation validation = manager.createValidation();
 		
-		ValidBean bean = new ValidBean();
+		TValidBean bean = new TValidBean();
 		bean.s1 = null;
 		bean.setS2("");
 		
@@ -45,7 +45,7 @@ public class ValidationTest extends AppTestBase {
 	public void testLengthValidation() {
 		Validation validation = manager.createValidation();
 		
-		ValidBean bean = new ValidBean();
+		TValidBean bean = new TValidBean();
 		bean.setL1(null);
 		assertFalse(validation.validate(bean).hasErrors());
 		

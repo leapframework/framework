@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
-    <bean id="imp.simpleBean" class="tested.beans.NopBean"/>
+
+    <bean class="tested.beans.TAutoInjectBean"/>
+    
 </beans>

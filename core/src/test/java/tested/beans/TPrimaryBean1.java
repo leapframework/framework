@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,19 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core;
+package tested.beans;
 
-import org.junit.Test;
+public class TPrimaryBean1 implements TPrimaryBeanType1,TPrimaryBeanType2 {
 
-import leap.core.annotation.Inject;
-import leap.core.junit.AppTestBase;
+	private String value;
 
-public class TestCaseInjectTest extends AppTestBase {
+	public String getValue() {
+		return value;
+	}
 
-    protected @Inject AppConfig config;
-    
-    @Test
-    public void testInject() {
-        assertNotNull(config);
-    }
+	public void setValue(String value) {
+		this.value = value;
+	}
+	
 }

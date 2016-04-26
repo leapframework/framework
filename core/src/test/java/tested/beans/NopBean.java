@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,26 +15,6 @@
  */
 package tested.beans;
 
-import leap.core.annotation.Bean;
-import leap.core.annotation.ConfigProperty;
-import leap.core.annotation.Inject;
+public class NopBean {
 
-@Bean
-public class CBean {
-
-    private final ABean1  bean;
-    private final String testConfigProperty;
-
-    public CBean(@Inject ABean1 bean, @ConfigProperty String testConfigProperty) {
-        this.bean = bean;
-        this.testConfigProperty = testConfigProperty;
-    }
-
-    public ABean1 getBean() {
-        return bean;
-    }
-
-    public String getTestConfigProperty() {
-        return testConfigProperty;
-    }
 }

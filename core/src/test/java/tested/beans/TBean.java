@@ -21,41 +21,41 @@ import java.util.Map;
 import java.util.Properties;
 
 @SuppressWarnings("rawtypes")
-public class TestBean implements TestBeanType, TestBeanType1 {
+public class TBean implements TBeanType1, TBeanType2 {
 	
 	protected String       string;
-	protected int		   int1;
-	protected int		   int2;
-	protected SimpleBean   simpleBean;
+	protected int          int1;
+	protected int          int2;
+	protected NopBean      simpleBean;
 	protected List<String> listString;
 	protected List<Object> listObject;
 	protected Properties   properties;
-    protected Map		   map;
+    protected Map          map;
     protected Collection   collection;
-    protected TestBean	   definedBean;
+    protected TBean        definedBean;
 
-	public TestBean(){
+	public TBean(){
 		
 	}
 	
-	public TestBean(String string){
+	public TBean(String string){
 		this.string = string;
 	}
 	
-	public TestBean(List<Object> listObject, Map map){
+	public TBean(List<Object> listObject, Map map){
 		this.map = map;
 		this.listObject =listObject;
 	}
 	
-	public TestBean(Map map){
+	public TBean(Map map){
 		this.map = map;
 	}
 	
-	public TestBean(TestBean definedBean){
+	public TBean(TBean definedBean){
 		this.definedBean = definedBean;
 	}
 	
-	public TestBean(TestBean definedBean, TestBean definedBean1){
+	public TBean(TBean definedBean, TBean definedBean1){
 		this.definedBean = definedBean;
 	}
 	
@@ -83,11 +83,11 @@ public class TestBean implements TestBeanType, TestBeanType1 {
 		this.int2 = int2;
 	}
 
-	public SimpleBean getSimpleBean() {
+	public NopBean getSimpleBean() {
 		return simpleBean;
 	}
 
-	public void setSimpleBean(SimpleBean simpleBean) {
+	public void setSimpleBean(NopBean simpleBean) {
 		this.simpleBean = simpleBean;
 	}
 
@@ -131,11 +131,11 @@ public class TestBean implements TestBeanType, TestBeanType1 {
 		this.collection = collection;
 	}
 
-	public TestBean getDefinedBean() {
+	public TBean getDefinedBean() {
 		return definedBean;
 	}
 
-	public void setDefinedBean(TestBean definedBean) {
+	public void setDefinedBean(TBean definedBean) {
 		this.definedBean = definedBean;
 	}
 }

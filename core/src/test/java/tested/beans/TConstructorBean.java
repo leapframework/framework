@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,25 @@
 package tested.beans;
 
 import leap.core.annotation.Bean;
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Inject;
 
-@Bean(primary=true)
-public class ABean implements ABeanType{
+@Bean
+public class TConstructorBean {
 
+    private final TAnnotationBean2 bean;
+    private final String           testConfigProperty;
+
+    public TConstructorBean(@Inject TAnnotationBean2 bean, @ConfigProperty String testConfigProperty) {
+        this.bean = bean;
+        this.testConfigProperty = testConfigProperty;
+    }
+
+    public TAnnotationBean2 getBean() {
+        return bean;
+    }
+
+    public String getTestConfigProperty() {
+        return testConfigProperty;
+    }
 }

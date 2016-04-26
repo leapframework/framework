@@ -16,10 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.*;
-import leap.core.annotation.ConfigProperty;
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
-import leap.core.annotation.R;
+import leap.core.annotation.*;
 import leap.core.config.*;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -61,25 +58,26 @@ public class BeanContainer implements BeanFactory {
 	
 	private static final BeanDefinitionBase NULL_BD = new BeanDefinitionBase(null);
 
-    protected Set<InitDefinition>                              initDefinitions           = new CopyOnWriteArraySet<>();
-    protected Set<BeanDefinitionBase>                          allBeanDefinitions        = new CopyOnWriteArraySet<>();
-    protected Map<String, BeanDefinitionBase>                  identifiedBeanDefinitions = new HashMap<>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>>           typedBeanDefinitions      = new HashMap<>();
-    protected Map<String, BeanListDefinition>                  beanListDefinitions       = new HashMap<>();
-    protected Map<Class<?>, FactoryBean>                       typedFactoryBeans         = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>                typedFactoryDefinitions   = new HashMap<>();
-    protected Map<String, BeanDefinitionBase>                  namedBeanDefinitions      = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>                primaryBeanDefinitions    = new HashMap<>();
-    protected Map<String, AliasDefinition>                     aliasDefinitions          = new HashMap<>();
+    protected Set<InitDefinition>                    initDefinitions           = new CopyOnWriteArraySet<>();
+    protected Set<BeanDefinitionBase>                allBeanDefinitions        = new CopyOnWriteArraySet<>();
+    protected Map<String, BeanDefinitionBase>        identifiedBeanDefinitions = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>> beanTypeDefinitions       = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>> beanClassDefinitions      = new HashMap<>();
+    protected Map<String, BeanListDefinition>        beanListDefinitions       = new HashMap<>();
+    protected Map<Class<?>, FactoryBean>             typedFactoryBeans         = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>      typedFactoryDefinitions   = new HashMap<>();
+    protected Map<String, BeanDefinitionBase>        namedBeanDefinitions      = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>      primaryBeanDefinitions    = new HashMap<>();
+    protected Map<String, AliasDefinition>           aliasDefinitions          = new HashMap<>();
 
-    private Map<String, List<?>>                               typedBeansMap             = new ConcurrentHashMap<>();
-    private Map<Class<?>, Map<String, ?>>                      namedBeansMap             = new ConcurrentHashMap<>();
-    private Map<Class<?>, Map<?, BeanDefinition>>              typedInstances            = new ConcurrentHashMap<>();
-    private Map<Class<?>, Object>                              primaryBeans              = new ConcurrentHashMap<>();
+    private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
+    private Map<Class<?>, Map<?, BeanDefinition>> typedInstances = new ConcurrentHashMap<>();
+    private Map<Class<?>, Object>                 primaryBeans   = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>                         postProcessorBeans        = new ArrayList<>();
-    protected BeanProcessor[]                                  processors;
-    protected List<BeanFactoryInitializable>                   beanFactoryInitializables = new ArrayList<>();
+    protected List<BeanDefinitionBase>       postProcessorBeans = new ArrayList<>();
+    protected BeanProcessor[]                processors;
+    protected List<BeanFactoryInitializable> beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
@@ -154,9 +152,11 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> T inject(T bean) throws BeanException {
 		try {
-			this.doBeanAware(null, bean);
-			this.doBeanConfigure(null, bean);
-	        this.doBeanInjection(null, bean);
+            BeanDefinitionBase bd = createBeanDefinition(bean.getClass());
+
+			this.doBeanAware(bd, bean);
+			this.doBeanConfigure(bd, bean);
+	        this.doBeanInjection(bd, bean);
         } catch (Throwable e) {
         	if(e instanceof BeanException){
         		throw (BeanException)e;
@@ -308,6 +308,7 @@ public class BeanContainer implements BeanFactory {
 
 		bd.setType(type);
 		bd.setBeanClass(type);
+        bd.setBeanClassType(BeanType.of(type));
 		bd.setSingleton(true);
 		bd.setPrimary(true);
 
@@ -427,7 +428,6 @@ public class BeanContainer implements BeanFactory {
 		}
 		
 		BeanDefinitionBase bd = findPrimaryBeanDefinition(type);
-		
 		if(null != bd){
 			return (T)doGetBean(bd);
 		}
@@ -551,7 +551,7 @@ public class BeanContainer implements BeanFactory {
     				beans.add((T)bean);
     			}
     		}else{
-        		Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(type);
+        		Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(type);
         		if(null != typeSet){
         			for(BeanDefinitionBase bd : typeSet){
         				beans.add((T)doGetBean(bd));
@@ -607,7 +607,7 @@ public class BeanContainer implements BeanFactory {
 		if(null == beans){
 			beans = new LinkedHashMap<>(5);
 			
-			Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(type);
+			Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(type);
 			if(null != typeSet){
 				for(BeanDefinitionBase bd : typeSet){
 					if(!Strings.isEmpty(bd.getName())){
@@ -633,7 +633,7 @@ public class BeanContainer implements BeanFactory {
 		if(null == beans){
 			beans = new LinkedHashMap<>(5);
 			
-			Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(type);
+			Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(type);
 			if(null != typeSet){
 				for(BeanDefinitionBase bd : typeSet){
 					if(!bd.isSingleton()){
@@ -813,10 +813,15 @@ public class BeanContainer implements BeanFactory {
 			return bd;
 		}
 		
-		Set<BeanDefinitionBase> bds = typedBeanDefinitions.get(beanType);
+		Set<BeanDefinitionBase> bds = beanTypeDefinitions.get(beanType);
 		if(null != bds && bds.size() == 1){
 			return bds.iterator().next();
 		}
+
+        bds = beanClassDefinitions.get(beanType);
+        if(null != bds && bds.size() == 1){
+            return bds.iterator().next();
+        }
 		
 		return null;
 	}
@@ -1947,14 +1952,22 @@ public class BeanContainer implements BeanFactory {
                 primaryBeanDefinitions.put(beanType, bd);
             }
             
-            //add to typed bean definition collection
-            Set<BeanDefinitionBase> typeSet = typedBeanDefinitions.get(beanType);
+            //add to bean type definition collection
+            Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(beanType);
             if(null == typeSet){
                 typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
-                typedBeanDefinitions.put(beanType, typeSet);
+                beanTypeDefinitions.put(beanType, typeSet);
             }
             typeSet.add(bd);
 	    }
+
+        //add to bean class definition collection
+        Set<BeanDefinitionBase> clsSet = beanClassDefinitions.get(bd.getBeanClass());
+        if(null == clsSet){
+            clsSet = new HashSet<>(1);
+            beanClassDefinitions.put(bd.getBeanClass(), clsSet);
+        }
+        clsSet.add(bd);
 	    
 	    for(FactoryDefinition fd : bd.getFactoryDefs()) {
 	        typedFactoryDefinitions.put(fd.getTargetType(), bd);

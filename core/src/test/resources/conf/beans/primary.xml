@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <!-- the bean type is the class itself -->
+    <bean class="tested.beans.TPrimaryBean1"/>
+
+    <bean type="tested.beans.TPrimaryBeanType1" class="tested.beans.TPrimaryBean1" primary="true">
+    	<property name="value" value="1"/>
+    </bean>
+    
+    <bean type="tested.beans.TPrimaryBeanType2" class="tested.beans.TPrimaryBean1" primary="true">
+    	<property name="value" value="2"/>
+    </bean>  
+    
+    <bean type="tested.beans.TPrimaryBeanType2" class="tested.beans.TPrimaryBean2">
+    	<property name="value" value="3"/>
+    </bean>       
+    
+</beans>

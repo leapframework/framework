@@ -21,25 +21,25 @@ import java.util.List;
 import leap.core.annotation.Inject;
 import leap.lang.Lazy;
 
-public class InjectBean {
+public class TAutoInjectBean {
 
-	public @Inject Lazy<PrimaryBean> 	   lazyPrimaryBean;
-	public @Inject Lazy<List<PrimaryBean>> lazyPrimaryBeans;
+	public @Inject Lazy<TPrimaryBean1>       lazyPrimaryBean;
+	public @Inject Lazy<List<TPrimaryBean1>> lazyPrimaryBeans;
 	
-	protected @Inject List<ABeanType> abeans = new ArrayList<ABeanType>();
+	protected @Inject List<TAnnotationBeanType> abeans = new ArrayList<TAnnotationBeanType>();
 	
-	private @Inject	PrimaryBean privateInjectPrimaryBean;
-	private PrimaryBean privateNotInjectPrimaryBean;
+	private @Inject TPrimaryBean1 privateInjectPrimaryBean;
+	private         TPrimaryBean1 privateNotInjectPrimaryBean;
 	
-	public PrimaryBean nonGetterGetPrivateInjectPrimaryBean() {
+	public TPrimaryBean1 nonGetterGetPrivateInjectPrimaryBean() {
 		return privateInjectPrimaryBean;
 	}
 	
-	public PrimaryBean nonGetterGetNotInjectPrimaryBean() {
+	public TPrimaryBean1 nonGetterGetNotInjectPrimaryBean() {
 		return privateNotInjectPrimaryBean;
 	}
 	
-	public List<ABeanType> abeans() {
+	public List<TAnnotationBeanType> abeans() {
 	    return abeans;
 	}
 }

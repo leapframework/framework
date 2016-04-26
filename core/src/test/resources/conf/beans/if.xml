@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+    
+	<beans if="true">
+	    <bean id="testIfBeanTrue1" class="tested.beans.TBean"/>
+	    <bean id="testIfBeanTrue2" class="tested.beans.TBean"/>
+	</beans>
+	
+	<beans if="true">
+	    <bean id="testIfBeanTrue3" class="tested.beans.TBean"/>
+	</beans>	
+	
+	<beans if="false">
+	    <bean id="testIfBeanFalse1" class="tested.beans.TBean"/>
+	</beans>
+	
+	<beans if="false">
+	    <bean id="testIfBeanFalse2" class="tested.beans.TBean"/>
+	</beans>
+
+    <beans if-profile="production">
+        <bean id="testProfile.shouldNotCreated" class="tested.beans.TBean"/>
+    </beans>
+
+    <beans if-profile="development">
+        <bean id="testProfile.shouldBeCreated" class="tested.beans.TBean"/>
+    </beans>
+
+</beans>
