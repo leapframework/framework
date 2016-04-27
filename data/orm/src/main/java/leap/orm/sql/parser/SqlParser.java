@@ -622,6 +622,7 @@ public class SqlParser extends SqlParserBase {
 			//stop at @elseif
 			if(lexer.token() == Token.AT_ELSEIF){
 				ifToken = lexer.token();
+				lexer.skipWhitespaces();
 				continue;
 			}
 			
