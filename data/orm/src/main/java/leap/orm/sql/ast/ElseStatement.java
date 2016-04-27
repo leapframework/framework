@@ -44,6 +44,8 @@ public class ElseStatement extends DynamicNode {
 
 	@Override
     protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		throw new IllegalStateException("Not implemented");
+		for(AstNode node : this.getBodyNodes()){
+			node.buildStatement(stm,params);
+		}
     }
 }

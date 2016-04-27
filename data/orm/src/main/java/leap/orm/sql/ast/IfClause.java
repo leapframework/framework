@@ -16,8 +16,10 @@
 package leap.orm.sql.ast;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import leap.lang.Args;
+import leap.lang.Objects2;
 import leap.lang.params.Params;
 import leap.orm.sql.SqlStatementBuilder;
 import leap.orm.sql.parser.Token;
@@ -58,6 +60,16 @@ public class IfClause extends DynamicNode {
 
 	@Override
     protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
+		boolean condition = false;
+		for(IfStatement ifStatement : this.getIfStatements()){
+			Object obj = ifStatement.getCondition().eval(stm,params);
+			if(Objects.equals(Boolean.TRUE,obj)){
+				ifStatement.buildStatement(stm,params);
+				condition = true;
+			}
+		}
+		if(!condition){
+			this.getElseStatement().buildStatement(stm,params);
+		}
     }
 }
