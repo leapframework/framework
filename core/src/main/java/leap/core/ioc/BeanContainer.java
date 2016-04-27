@@ -771,6 +771,16 @@ public class BeanContainer implements BeanFactory {
 		return aliasDefinitions;
 	}
 
+	protected BeanDefinitionBase findBeanDefinition(BeanReference br){
+		if(Strings.isNotEmpty(br.getTargetId())){
+			return findBeanDefinition(br.getTargetId());
+		}
+		if(Strings.isNotEmpty(br.getBeanName()) || null != br.getBeanType()){
+			return findBeanOrAliasDefinition(br.getBeanType(),br.getBeanName());
+		}
+		return null;
+	}
+
 	protected BeanDefinitionBase findBeanDefinition(String id){
 		return identifiedBeanDefinitions.get(id);
 	}
@@ -1822,17 +1832,21 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	protected Supplier<Object> createBeanReferenceValue(BeanDefinitionBase bd,final BeanReference br){
-		BeanDefinition referenced = findBeanDefinition(br.getTargetId());
+		BeanDefinition referenced = findBeanDefinition(br);
 		if(referenced == null){
 			throw new BeanDefinitionException("The referenced bean '" + br.getTargetId() + "' not exists, please check the bean : " + bd);
 		}
-		
 		br.setTargetBeanDefinition(referenced);
 		
 		return new Supplier<Object>() {
 			@Override
             public Object get() {
-	            return BeanContainer.this.getBean(br.targetId);
+				if(Strings.isNotEmpty(br.getTargetId())){
+					return BeanContainer.this.getBean(br.getTargetId());
+				}if(Strings.isNotEmpty(br.getBeanName()) && null!=br.getBeanType()){
+					return BeanContainer.this.getBean(br.getBeanType(),br.getBeanName());
+				}
+				return null;
             }
 		};
 	}

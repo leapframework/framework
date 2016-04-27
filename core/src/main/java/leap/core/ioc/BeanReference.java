@@ -17,11 +17,25 @@ package leap.core.ioc;
 
 class BeanReference {
 	
-	protected String 		 targetId;
+	protected String 		 				targetId;
+	protected String		 				beanName;
+	protected Class						beanType;
 	protected BeanDefinition targetBeanDefinition;
-	
+
+	public BeanReference(Class<?> beanType, String beanName) {
+		this.beanType = beanType;
+		this.beanName = beanName;
+	}
+
 	public BeanReference(String targetId){
 		this.targetId = targetId;
+	}
+
+	public String getBeanName(){
+		return this.beanName;
+	}
+	public <T> Class<T> getBeanType(){
+		return this.beanType;
 	}
 
 	public String getTargetId() {

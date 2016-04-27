@@ -65,6 +65,8 @@ class XmlBeanDefinitionLoader {
     public static final String REF_ELEMENT                      = "ref";
     public static final String IDREF_ELEMENT                    = "idref";
     public static final String BEAN_REF_ATTRIBUTE               = "bean";
+	public static final String NAME_REF_ATTRIBUTE               = "name";
+	public static final String TYPE_REF_ATTRIBUTE               = "type";
     public static final String IF_ATTRIBUTE                     = "if";
     public static final String IF_PROFILE_ATTRIBUTE             = "if-profile";
     public static final String IF_CLASS_PRESENT_ATTRIBUTE       = "if-class-present";
@@ -87,6 +89,8 @@ class XmlBeanDefinitionLoader {
     public static final String KEY_TYPE_ATTRIBUTE               = "key-type";
     public static final String PROPERTY_ELEMENT                 = "property";
     public static final String REF_ATTRIBUTE                    = "ref";
+	public static final String REF_TYPE_ATTRIBUTE               = "ref-type";
+	public static final String REF_NAME_ATTRIBUTE               = "ref-name";
     public static final String VALUE_ATTRIBUTE                  = "value";
     public static final String DEFAULT_VALUE_ATTRIBUTE          = "default-value";
     public static final String VALUE_ELEMENT                    = "value";
@@ -751,10 +755,23 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		String ref = reader.getAttribute(REF_ATTRIBUTE);
+		String refType = reader.getAttribute(REF_TYPE_ATTRIBUTE);
+		String refName = reader.getAttribute(REF_NAME_ATTRIBUTE);
 		if(!Strings.isEmpty(ref)){
 			return beanReference(context,ref);
 		}
-		
+		if(!Strings.isAllEmpty(refType,refName)){
+			if(Strings.isEmpty(refType) || Strings.isEmpty(refName)){
+				throw new BeanDefinitionException("property's attribute ref-type and ref-name must both empty or both not empty!"
+						+ reader.getElementLocalName() + "' in element '" + elementName + "', source : " + reader.getSource());
+			}
+			try {
+				Class<?> c = Classes.forName(refType);
+				return beanReference(context,c,refName);
+			}catch (NestedClassNotFoundException e){
+				throw new BeanDefinitionException("Invallid class name '" + refType + "', source : " + reader.getSource(), e);
+			}
+		}
 		while(reader.nextWhileNotEnd(elementName)){
 			if(reader.isStartElement()){
 				if(reader.isStartElement(DESCRIPTION_ELEMENT)){
@@ -789,7 +806,21 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		if(reader.isStartElement(REF_ELEMENT)){
-			return beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE));
+			String name = reader.getAttribute(NAME_REF_ATTRIBUTE);
+			String type = reader.getAttribute(TYPE_REF_ATTRIBUTE);
+			String id	= reader.getAttribute(BEAN_REF_ATTRIBUTE);
+			if(!Strings.isEmpty(id)){
+				return beanReference(context,id);
+			}else if(Strings.isNotEmpty(name) && Strings.isNotEmpty(type)){
+				try {
+					Class<?> c = Classes.forName(type);
+					return beanReference(context,c,	name);
+				}catch (NestedClassNotFoundException e){
+					throw new BeanDefinitionException("Invallid class name '" + type + "', source : " + reader.getSource(), e);
+				}
+			}else {
+				throw new BeanDefinitionException("ref element must have id attribute or name attribute and type attribute ,source : " + reader.getSource());
+			}
 		}
 		
 		if(reader.isStartElement(IDREF_ELEMENT)){
@@ -1014,6 +1045,9 @@ class XmlBeanDefinitionLoader {
 	
 	protected ValueDefinition beanReference(LoaderContext context,String ref){
 		return new ValueDefinition(new BeanReference(ref));
+	}
+	protected ValueDefinition beanReference(LoaderContext context, Class<?> type, String name){
+		return new ValueDefinition(new BeanReference(type,name));
 	}
 	
 	protected Class<?> javaTypeAttribute(XmlReader reader,String name){
