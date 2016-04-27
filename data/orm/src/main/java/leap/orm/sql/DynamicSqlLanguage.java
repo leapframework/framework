@@ -17,6 +17,7 @@ package leap.orm.sql;
 
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
+import leap.core.annotation.Inject;
 import leap.core.cache.Cache;
 import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
@@ -36,7 +37,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	private static final Log log = LogFactory.get(DynamicSqlLanguage.class);
 	
 	protected Boolean            smart;
-	protected ExpressionLanguage expressionLanguage;
+	protected @Inject ExpressionLanguage expressionLanguage;
 	
 	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
 	
