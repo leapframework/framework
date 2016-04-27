@@ -177,6 +177,8 @@
 			<xsd:complexContent>
 				<xsd:restriction base="xsd:anyType">
 					<xsd:attribute name="bean" type="xsd:string"/>
+					<xsd:attribute name="type" type="xsd:string"/>
+					<xsd:attribute name="name" type="xsd:string"/>
 				</xsd:restriction>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -393,6 +395,8 @@
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
 		<xsd:attribute name="ref" type="xsd:string"/>
+		<xsd:attribute name="ref-type" type="xsd:string"/>
+		<xsd:attribute name="ref-name" type="xsd:string"/>
 		<xsd:attribute name="value" type="xsd:string"/>
 		<xsd:attribute name="default-value" type="xsd:string"></xsd:attribute>
 		<xsd:attribute name="if" type="xsd:string"></xsd:attribute>
