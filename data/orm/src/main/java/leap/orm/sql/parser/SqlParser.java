@@ -645,7 +645,7 @@ public class SqlParser extends SqlParserBase {
 		}
 		
 		restoreNodes();
-		acceptNode(new IfCaluse(ifStatements.toArray(new IfStatement[ifStatements.size()]),elseStatement));
+		acceptNode(new IfClause(ifStatements.toArray(new IfStatement[ifStatements.size()]),elseStatement));
 	}
 	
 	protected final IfStatement createIfStatement(Token token, IfCondition condition,List<AstNode> bodyNodes){

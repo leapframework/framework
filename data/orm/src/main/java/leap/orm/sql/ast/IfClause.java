@@ -22,14 +22,14 @@ import leap.lang.params.Params;
 import leap.orm.sql.SqlStatementBuilder;
 import leap.orm.sql.parser.Token;
 
-public class IfCaluse extends DynamicNode {
+public class IfClause extends DynamicNode {
 	
 	private static final String END_IF = Token.AT_ENDIF.literal().toLowerCase();
 	
 	private final IfStatement[] ifStatements;
 	private final ElseStatement elseStatement;
 	
-	public IfCaluse(IfStatement[] ifStatements,ElseStatement elseStatement){
+	public IfClause(IfStatement[] ifStatements, ElseStatement elseStatement){
 		Args.notEmpty(ifStatements);
 		this.ifStatements  = ifStatements;
 		this.elseStatement = elseStatement;
