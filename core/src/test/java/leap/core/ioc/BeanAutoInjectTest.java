@@ -20,11 +20,16 @@ import leap.core.AppConfig;
 import leap.core.CoreTestCase;
 import leap.core.annotation.Inject;
 import org.junit.Test;
+import tested.beans.RefBean;
 import tested.beans.TAutoInjectBean;
 
 public class BeanAutoInjectTest extends CoreTestCase {
 
     protected @Inject AppConfig config;
+
+    protected @Inject(name = "autoInjectRefElement") RefBean autoInjectElement;
+    protected @Inject(name = "autoInjectRefAttr") RefBean autoInjectAttr;
+    protected @Inject(name = "refBean") RefBean refBean;
 
     @Test
     public void testTestCaseInject() {
@@ -36,6 +41,18 @@ public class BeanAutoInjectTest extends CoreTestCase {
         TAutoInjectBean bean = factory.getBean(TAutoInjectBean.class);
         assertNotNull(bean.nonGetterGetPrivateInjectPrimaryBean());
         assertNull(bean.nonGetterGetNotInjectPrimaryBean());
+    }
+    @Test
+    public void testXMLRefWithTypeAndName(){
+        assertNotNull(autoInjectElement);
+        assertNotNull(autoInjectElement.getRefBean());
+        assertEquals(autoInjectElement.getRefBean().getName(),"refbean");
+        assertTrue(autoInjectElement.getRefBean() == refBean);
+
+        assertNotNull(autoInjectAttr);
+        assertNotNull(autoInjectAttr.getRefBean());
+        assertEquals(autoInjectAttr.getRefBean().getName(),"refbean");
+        assertTrue(autoInjectAttr.getRefBean() == refBean);
     }
 
 }
