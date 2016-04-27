@@ -20,9 +20,12 @@ import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
+import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 
 import javax.sql.DataSource;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public abstract class DbBase implements Db {
 	
@@ -121,14 +124,60 @@ public abstract class DbBase implements Db {
     }
 
     protected void init() {
-        Resource initSqlFile = findClasspathSql("init");
-        if(null != initSqlFile) {
-            String sqls = initSqlFile.getContent();
-            if(!Strings.isEmpty(sqls)) {
-                log.info("Init db '{}' by sql file '{}'", name, initSqlFile.getClasspath());
-                createExecution().addAll(dialect.splitSqlStatements(sqls)).execute();
+        DbExecution execution = createExecution();
+
+        for(Resource r : findMetaInfClasspathSql("init")) {
+            loadSqlStatements(execution, r);
+        }
+
+        loadSqlStatements(execution, findClasspathSql("init"));
+
+        if(!execution.sqls().isEmpty()) {
+            log.info("Init db '{}' with {} sql statements", name, execution.sqls().size());
+            execution.execute();
+        }
+    }
+
+    protected void loadSqlStatements(DbExecution execution, Resource file) {
+        if(null == file || !file.exists()) {
+            return;
+        }
+        String sqls = file.getContent();
+        if(!Strings.isEmpty(sqls)) {
+            log.debug("Load init sql file '{}'", file.getClasspath());
+            execution.addAll(dialect.splitSqlStatements(sqls));
+        }
+    }
+
+    protected Resource[] findMetaInfClasspathSql(String filename) {
+        final String prefix = "classpath*:META-INF/conf/db/" + name + "/" + filename;
+
+        Set<Resource> found = new LinkedHashSet<>();
+
+        ResourceSet rs = Resources.scan(prefix + "_" + getType().toLowerCase() + ".sql");
+        rs.forEach(found::add);
+
+        rs = Resources.scan(prefix + ".sql");
+        for(Resource untyped : rs) {
+
+            boolean exists = false;
+            for(Resource typed : found) {
+                //exists -> META-INF/conf/db/{name}/filename_{type}.sql
+                //r      -> META-INF/conf/db/{name}/filename.sql
+
+                String cp = Strings.removeEnd(untyped.getClasspath(),"sql");
+                if((cp + "_" + getType().toLowerCase() + ".sql").equals(typed.getClasspath())) {
+                    exists = true;
+                    break;
+                }
+            }
+
+            if(!exists) {
+                found.add(untyped);
             }
         }
+
+        return found.toArray(new Resource[0]);
     }
 
     protected Resource findClasspathSql(String filename) {
