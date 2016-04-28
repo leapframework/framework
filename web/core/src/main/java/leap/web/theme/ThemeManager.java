@@ -37,4 +37,6 @@ public interface ThemeManager {
 	 */
 	Theme resolveTheme(Request request) throws Throwable;
 	
+	Theme getDefaultTheme();
+	
 }

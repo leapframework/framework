@@ -185,4 +185,9 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		}
 		return null;
 	}
+
+	@Override
+	public Theme getDefaultTheme() {
+		return defaultTheme;
+	}
 }
