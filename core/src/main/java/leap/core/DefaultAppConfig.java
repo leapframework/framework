@@ -360,14 +360,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
         String v = properties.get(name);
         if(null == v || v.isEmpty()) {
-            return new SimpleProperty<>(null);
+            return new NullProperty<>();
         }
 
         TypeInfo ti = Types.getTypeInfo(type,null);
         if(ti.isComplexType()) {
-            return new SimpleProperty<>(JSON.decode(v, type));
+            return new SimpleProperty<>(type, JSON.decode(v, type));
         }else{
-            return new SimpleProperty<>(Converts.convert(v, type));
+            return new SimpleProperty<>(type, Converts.convert(v, type));
         }
     }
 
@@ -401,6 +401,20 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             return propertyProvider.getDynaDoubleProperty(name);
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
+    }
+
+    @Override
+    public <T> void bindDynaProperty(String name, Class<T> type, Property<T> p) {
+        if(null == p) {
+            return;
+        }
+
+        if(null != propertyProvider) {
+            propertyProvider.bindDynaProperty(name, type, p);
+        }else if(properties.containsKey(name)){
+            p.convert(getProperty(name));
+        }
+
     }
 
     @Override

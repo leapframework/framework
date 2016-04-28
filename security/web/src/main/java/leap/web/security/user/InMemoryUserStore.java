@@ -32,8 +32,8 @@ public class InMemoryUserStore implements UserStore {
         return users.get(username);
     }
 
-    public InMemoryUserStore add(String username, String password) {
-        users.put(username, new User(username, password));
+    public InMemoryUserStore add(String username, String encryptedPassword) {
+        users.put(username, new User(username, encryptedPassword));
         return this;
     }
     

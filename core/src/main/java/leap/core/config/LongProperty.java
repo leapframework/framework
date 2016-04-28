@@ -18,4 +18,8 @@ package leap.core.config;
 
 public interface LongProperty extends Property<Long> {
 
+    static LongProperty of(Long defaultValue) {
+        return new SimpleLongProperty(defaultValue);
+    }
+
 }

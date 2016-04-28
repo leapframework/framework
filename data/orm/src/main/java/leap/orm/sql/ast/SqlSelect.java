@@ -15,6 +15,7 @@
  */
 package leap.orm.sql.ast;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -23,7 +24,7 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 
 	private boolean 	  distinct;
 	private SqlTop		  top;
-	private Set<String>   selectItemAliases;
+	private HashMap<String, String> selectItemAliases;
 	private SqlSelectList selectList;
 	private boolean		  union;
 
@@ -52,14 +53,21 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 	}
 
 	public boolean isSelectItemAlias(String name) {
-		return null != selectItemAliases && selectItemAliases.contains(name.toLowerCase());
+		return null != selectItemAliases && selectItemAliases.containsKey(name.toLowerCase());
 	}
 
 	public void addSelectItemAlias(String alias) {
 		if(null == selectItemAliases) {
-			selectItemAliases = new HashSet<String>();
+			selectItemAliases = new HashMap<>();
 		}
-		selectItemAliases.add(alias.toLowerCase());
+		selectItemAliases.put(alias.toLowerCase(),alias);
+	}
+
+	public String getSelectItemAlias(String name){
+		if(isSelectItemAlias(name)){
+			return selectItemAliases.get(name.toLowerCase());
+		}
+		return name;
 	}
 
 	public boolean isUnion() {

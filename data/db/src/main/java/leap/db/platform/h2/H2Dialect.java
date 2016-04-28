@@ -108,7 +108,7 @@ public class H2Dialect extends GenericDbDialect {
     public String getNextSequenceValueSqlString(String sequenceName) throws IllegalStateException {
 		return "nextval('" + quoteIdentifier(sequenceName) + "')";
 	}
-	
+
 	@Override
     public String getSelectNextSequenceValueSql(String sequenceName) throws IllegalStateException {
 		return "select " + getNextSequenceValueSqlString(sequenceName) + " from dual";
@@ -118,20 +118,20 @@ public class H2Dialect extends GenericDbDialect {
     public String getSelectCurrentSequenceValueSql(String sequenceName) throws IllegalStateException {
 	    return "select currval('" + quoteIdentifier(sequenceName) + "') from dual";
     }
-	
+
 	@Override
-    public String getLimitQuerySql(DbLimitQuery query) {
+	public String getLimitQuerySql(DbLimitQuery query) {
 		Limit limit = query.getLimit();
-		
+
 		int offset = limit.getStart() - 1;
 		int rows   = limit.getEnd()   - offset;
-		
-        String sql = query.getSql(db) + " limit ?,?";
-        query.getArgs().add(offset);
-        query.getArgs().add(rows);
-		
+
+		String sql = query.getSql(db) + " limit ?,?";
+		query.getArgs().add(offset);
+		query.getArgs().add(rows);
+
 		return sql;
-    }
+	}
 
 	@Override
     protected void registerSystemSchemas() {

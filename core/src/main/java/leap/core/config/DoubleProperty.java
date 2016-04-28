@@ -18,4 +18,8 @@ package leap.core.config;
 
 public interface DoubleProperty extends Property<Double> {
 
+    static DoubleProperty of(Double defaultValue) {
+        return new SimpleDoubleProperty(defaultValue);
+    }
+
 }

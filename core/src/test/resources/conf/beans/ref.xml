@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+   	<bean name="autoInjectRefElement" type="tested.beans.RefBean" class="tested.beans.RefBean">
+		<property name="refBean">
+			<ref type="tested.beans.RefBean" name="refBean" />
+		</property>
+	</bean>
+
+	<bean name="autoInjectRefAttr" type="tested.beans.RefBean" class="tested.beans.RefBean">
+		<property name="refBean" ref-type="tested.beans.RefBean" ref-name="refBean">
+		</property>
+	</bean>
+
+	<bean name="refBean" type="tested.beans.RefBean" class="tested.beans.RefBean">
+		<property name="name" value="refbean"/>
+	</bean>
+</beans>

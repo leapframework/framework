@@ -25,8 +25,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
-
-import leap.lang.codec.Base64;
+import java.util.Base64;
 
 public class RSA {
     
@@ -60,15 +59,15 @@ public class RSA {
     }
     
     public static String encodePrivateKey(RSAPrivateKey key) {
-        return Base64.encode(key.getEncoded());
+        return new String(java.util.Base64.getMimeEncoder().encode(key.getEncoded()));
     }
     
     public static String encodePublicKey(RSAPublicKey key) {
-        return Base64.encode(key.getEncoded());
+        return new String(Base64.getMimeEncoder().encode(key.getEncoded()));
     }
     
     public static RSAPrivateKey decodePrivateKey(String base64){
-        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Base64.decodeToBytes(base64));
+        PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(Base64.getMimeDecoder().decode(base64));
         try {
             return (RSAPrivateKey)f.generatePrivate(spec);
         } catch (InvalidKeySpecException e) {
@@ -77,7 +76,7 @@ public class RSA {
     }
     
     public static RSAPublicKey decodePublicKey(String base64){
-        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.decodeToBytes(base64));
+        X509EncodedKeySpec spec = new X509EncodedKeySpec(Base64.getMimeDecoder().decode(base64));
         try {
             return (RSAPublicKey)f.generatePublic(spec);
         } catch (InvalidKeySpecException e) {

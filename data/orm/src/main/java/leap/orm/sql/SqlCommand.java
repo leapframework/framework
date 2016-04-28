@@ -53,6 +53,14 @@ public interface SqlCommand extends Sourced {
 	 * A non query sql command can not invoke the {@link #executeQuery(QueryContext, Object, ResultSetReader)} method.
 	 */
 	boolean isQuery();
+
+	/**
+	 * Returns <code>SqlClause</code> if this command is a sql query
+	 *
+	 * @return the sql clause of this command
+	 * @throws SqlClauseException if this command is not a sql query
+     */
+	SqlClause getQueryClause() throws SqlClauseException;
 	
 	/**
 	 * Executes update and returns the affected rows.

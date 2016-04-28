@@ -17,10 +17,29 @@ package leap.core.ioc;
 
 import leap.core.BeanFactory;
 
-public interface FactoryBean {
-	
-	<T> T getBean(BeanFactory beanFactory, Class<T> type);
-	
-	<T> T getBean(BeanFactory beanFactory, Class<T> type,String name);
+/**
+ * A bean used as a factory for providing object(s).
+ */
+public interface FactoryBean<T> {
+
+    /**
+     * Returns the primary bean of the given type.
+     *
+     * <p/>
+     * Returns null if no primary bean exists.
+     */
+	default T getBean(BeanFactory beanFactory, Class<T> type) {
+        return null;
+    }
+
+    /**
+     * Returns the named bean of the given type.
+     *
+     * <p/>
+     * Returns null if no named bean exists.
+     */
+	default T getBean(BeanFactory beanFactory, Class<T> type,String name) {
+        return null;
+    }
 
 }

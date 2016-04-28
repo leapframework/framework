@@ -95,9 +95,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         details.setCreated((Long)map.remove("created"));
         details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
         details.setScope((String)map.remove("scope"));
-        
-        //TODO : scope
-        
+
         return details;
     }
 }
