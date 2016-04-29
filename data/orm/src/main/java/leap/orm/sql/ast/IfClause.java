@@ -69,7 +69,9 @@ public class IfClause extends DynamicNode {
 			}
 		}
 		if(!condition){
-			this.getElseStatement().buildStatement(stm,params);
+			if(this.getElseStatement() != null){
+				this.getElseStatement().buildStatement(stm,params);
+			}
 		}
     }
 }
