@@ -15,10 +15,10 @@
  */
 package leap.orm.config;
 
+import leap.lang.Classes;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import leap.lang.Classes;
 
 public class OrmModelsConfig {
 
@@ -31,10 +31,21 @@ public class OrmModelsConfig {
 		}
 		basePackages.add(p);
 	}
+
+    public boolean removeBasePackage(String p) {
+        if(!p.endsWith(".")) {
+            p = p + ".";
+        }
+        return basePackages.remove(p);
+    }
 	
 	public void addClassName(String cn) {
 		classNames.add(cn);
 	}
+
+    public boolean removeClassName(String cn) {
+        return classNames.remove(cn);
+    }
 	
 	public Set<String> getBasePackages() {
 		return basePackages;

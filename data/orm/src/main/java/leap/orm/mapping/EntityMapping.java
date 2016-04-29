@@ -57,6 +57,7 @@ public class EntityMapping {
 	protected final Class<? extends Model>       modelClass;
 	protected final EntityValidator[]            validators;
 	protected final RelationMapping[]			 relationMappings;
+    protected final boolean                      autoCreateTable;
     protected final boolean                      sharding;
     protected final boolean                      autoCreateShardingTable;
     protected final ShardingAlgorithm            shardingAlgorithm;
@@ -73,6 +74,7 @@ public class EntityMapping {
                          EntityDomain domain, Class<? extends Model> modelClass,
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
+                         boolean autoCreateTable,
                          boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm) {
 		
 		Args.notEmpty(entityName,"entity name");
@@ -108,6 +110,7 @@ public class EntityMapping {
 	    this.autoIncrementKeyColumn = autoIncrementKey ? table.getPrimaryKeyColumns()[0] : null;
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
+        this.autoCreateTable        = autoCreateTable;
         this.sharding               = sharding;
         this.autoCreateShardingTable= autoCreateShardingTable;
         this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
@@ -197,6 +200,13 @@ public class EntityMapping {
 	public String[] getKeyColumnNames() {
 		return keyColumnNames;
 	}
+
+    /**
+     * Returns true if auto create the table.
+     */
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
 
     /**
      * Returns true if the entity is a sharding entity.

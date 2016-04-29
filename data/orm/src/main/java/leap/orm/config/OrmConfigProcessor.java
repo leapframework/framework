@@ -89,7 +89,9 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			if(reader.isStartElement(PACKAGE_ELEMENT)) {
 				String basePackage = reader.resolveAttribute(NAME_ATTRIBUTE);
 				if(!Strings.isEmpty(basePackage)) {
-					context.addResources(Resources.scanPackage(basePackage));
+                    if(!models.removeBasePackage(basePackage)) {
+                        context.addResources(Resources.scanPackage(basePackage));
+                    }
 					models.addBasePackage(basePackage);
 				}
 				continue;
@@ -98,6 +100,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			if(reader.isStartElement(CLASS_ELEMENT)) {
 				String className = reader.resolveAttribute(NAME_ATTRIBUTE);
 				if(!Strings.isEmpty(className)) {
+                    models.removeClassName(className);
 					models.addClassName(className);
 				}
 				continue;

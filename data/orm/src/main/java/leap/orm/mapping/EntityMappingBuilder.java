@@ -38,7 +38,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected String					   tablePrefix;
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
-	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<FieldMappingBuilder>();
+    protected boolean                      autoCreateTable;
+	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
 	protected EntityExecutionInterceptor   updateInterceptor;
 	protected EntityExecutionInterceptor   deleteInterceptor;
@@ -159,7 +160,16 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	public List<FieldMappingBuilder> getFieldMappings() {
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
+
+    public EntityMappingBuilder setAutoCreateTable(boolean autoCreateTable) {
+        this.autoCreateTable = autoCreateTable;
+        return this;
+    }
+
+    public List<FieldMappingBuilder> getFieldMappings() {
 		return fieldMappings;
 	}
 	
@@ -370,7 +380,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations, sharding, autoCreateShardingTable, shardingAlgorithm);
+	    						 domain,modelClass,validators,relations, autoCreateTable,
+                                 sharding, autoCreateShardingTable, shardingAlgorithm);
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {
