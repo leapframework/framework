@@ -75,6 +75,22 @@ public class DynamicSqlTest extends OrmTestCase {
 		assertEquals(nameLike1,2L);
 		assertEquals(nameEq1,1L);
 		assertEquals(nameEq01,1L);
+		deleteAll(Owner.class);
+	}
+
+	@Test
+	public void testNestIfClauseDynamicSql(){
+		deleteAll(Owner.class);
+		new Owner().setFullName("a", "01").save();
+		new Owner().setFullName("b", "1").save();
+
+		long nameLike1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","%1%").count();
+		long nameEq01 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","123456").count();
+		long nameEq1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").count();
+		assertEquals(nameLike1,Owner.count());
+		assertEquals(nameEq1,1L);
+		assertEquals(nameEq01,1L);
+		deleteAll(Owner.class);
 	}
 
 }

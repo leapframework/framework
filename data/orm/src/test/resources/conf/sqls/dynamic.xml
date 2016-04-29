@@ -16,4 +16,21 @@
         @else last_name = '1' @endif
         ]]>
     </command>
+    <command key="test.sql.dynamic.clause.nest.if">
+        <![CDATA[
+        select * from owners
+        @if(name != null)
+            @if(name.length() < 3)
+                where
+                last_name like :name
+            @endif
+        @elseif (name != null && name.length() > 4)
+            where
+            last_name = '01'
+        @else
+            where
+            last_name = '1'
+        @endif
+        ]]>
+    </command>
 </sqls>
