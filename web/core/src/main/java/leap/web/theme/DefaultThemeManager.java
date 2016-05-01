@@ -15,10 +15,6 @@
  */
 package leap.web.theme;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -26,8 +22,6 @@ import leap.core.cache.CacheManager;
 import leap.core.i18n.MessageSource;
 import leap.core.i18n.ResourceMessageSource;
 import leap.core.ioc.PostCreateBean;
-import leap.web.assets.Asset;
-import leap.web.assets.AssetSource;
 import leap.lang.Strings;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
@@ -40,6 +34,8 @@ import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
 import leap.web.App;
 import leap.web.Request;
+import leap.web.assets.Asset;
+import leap.web.assets.AssetSource;
 import leap.web.assets.ServletAssetResolver;
 import leap.web.assets.SimpleCachingAssetSource;
 import leap.web.config.WebConfig;
@@ -47,6 +43,10 @@ import leap.web.config.WebConfigurator;
 import leap.web.view.ServletResourceViewSource;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 	
@@ -100,9 +100,10 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 
 		if(!themes.isEmpty()){
 			this.defaultTheme = themes.get(webConfig.getDefaultThemeName());
-			// If the config of theme was not found and it is not default, it must throw exception
-			// If the config of theme was not found and it is default, there will choose the not theme resource
-			if(null == this.defaultTheme && !Strings.equals(webConfig.getDefaultThemeName(), WebConfigurator.DEFAULT_THEME_NAME)){
+
+			if(null == this.defaultTheme &&
+               !Strings.equals(webConfig.getDefaultThemeName(), WebConfigurator.DEFAULT_THEME_NAME)){
+
 				throw new AppConfigException("Default theme '" + webConfig.getDefaultThemeName() + "' not defined");
 			}
 		}
@@ -186,7 +187,18 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 		return null;
 	}
 
-	@Override
+    @Override
+    public View getDefaultView(String viewName) {
+        View view = null == defaultTheme ? null : defaultTheme.getViewSource().getView(viewName);
+
+        if(null == view) {
+            view = viewSource.getView(viewName);
+        }
+
+        return view;
+    }
+
+    @Override
 	public Theme getDefaultTheme() {
 		return defaultTheme;
 	}
