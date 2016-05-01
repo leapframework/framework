@@ -227,8 +227,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		Args.notNull(cls,"class");
 		Args.assertFalse(isExplicitNonEntity(context,cls),
 						  "The class '" + cls.getName() + "' was declared as not an entity type explicitly");
-		
-		EntityMappingBuilder emb = new EntityMappingBuilder().setEntityClass(cls);;
+
+		EntityMappingBuilder emb = new EntityMappingBuilder().setEntityClass(cls);
 		
 		preMapping(context, emb);
 		preMappingEntity(context, emb);
@@ -261,7 +261,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		Args.notNull(modelClass,"model class");
 		
 		EntityMappingBuilder emb = new EntityMappingBuilder().setModelClass(modelClass);
-		
+
 		preMapping(context, emb);
 		preMappingEntity(context, emb);
 		postMappingEntity(context, emb);

@@ -93,6 +93,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		//create default sql commands for all entities.
 		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
 		    tryCreateDefaultSqlCommands(loadingContext, em);
+            tryCreateTable(loadingContext, em);
 		}
     }
     
@@ -106,6 +107,15 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         tryCreateFindAllCommand(context,em);
         tryCreateExistsCommand(context, em);
         tryCreateCountCommand(context, em);
+    }
+
+    protected void tryCreateTable(MetadataContext context, EntityMapping em) {
+        if(em.isAutoCreateTable()) {
+            if(!context.getDb().checkTableExists(em.getTable())){
+                log.info("Auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
+                context.getDb().cmdCreateTable(em.getTable()).execute();
+            }
+        }
     }
 	
 	protected void tryCreateInsertCommand(MetadataContext context,EntityMapping em) {

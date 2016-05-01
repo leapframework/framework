@@ -28,6 +28,16 @@ public @interface Table {
 	/**
 	 * The name of the table.
 	 */
-	public String value() default "";
-	
+	String value() default "";
+
+    /**
+     * The name of the table.
+     */
+    String name() default "";
+
+    /**
+     * If true will auto create the table if not exists.
+     */
+    boolean autoCreate() default false;
+
 }

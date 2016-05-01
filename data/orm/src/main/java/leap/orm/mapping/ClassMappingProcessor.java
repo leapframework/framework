@@ -15,8 +15,6 @@
  */
 package leap.orm.mapping;
 
-import java.lang.annotation.Annotation;
-
 import leap.core.BeanFactory;
 import leap.core.BeanFactoryAware;
 import leap.core.metamodel.ReservedMetaFieldName;
@@ -27,16 +25,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
-import leap.orm.annotation.ADomain;
-import leap.orm.annotation.Column;
-import leap.orm.annotation.ColumnType;
-import leap.orm.annotation.Domain;
-import leap.orm.annotation.Entity;
-import leap.orm.annotation.Id;
-import leap.orm.annotation.JoinField;
-import leap.orm.annotation.ManyToMany;
-import leap.orm.annotation.ManyToOne;
-import leap.orm.annotation.Table;
+import leap.orm.annotation.*;
 import leap.orm.annotation.meta.MetaName;
 import leap.orm.domain.Domains;
 import leap.orm.domain.EntityDomain;
@@ -44,6 +33,8 @@ import leap.orm.domain.FieldDomain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
+
+import java.lang.annotation.Annotation;
 
 public class ClassMappingProcessor extends MappingProcessorAdapter implements MappingProcessor,BeanFactoryAware {
 	
@@ -111,10 +102,14 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		}
 	}
 	
-	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Table annotation){
-		if(null != annotation){
-			emb.setTableName(annotation.value());
-			emb.setTableNameDeclared(true);
+	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Table a){
+		if(null != a){
+            String name = Strings.firstNotEmpty(a.name(), a.value());
+            if(!Strings.isEmpty(name)) {
+                emb.setTableName(name);
+                emb.setTableNameDeclared(true);
+            }
+            emb.setAutoCreateTable(a.autoCreate());
 		}
 	}
 	

@@ -24,6 +24,7 @@ import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedTableName;
 import leap.orm.tested.model.DateMappingEntity;
 import leap.orm.tested.model.ECodeModel;
+import leap.orm.tested.model.ModelNotDefaultTable;
 import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.relation.RelationEntity1;
 
@@ -101,5 +102,11 @@ public class MappingTest extends OrmTestCase {
         FieldMapping ecode = em.getFieldMapping("ecode");
         assertNotNull(ecode);
         assertTrue(ecode.isWhere());
+    }
+
+    @Test
+    public void testModelNotDefaultTable() {
+        EntityMapping em = metadata.getEntityMapping(ModelNotDefaultTable.class);
+        assertEquals("m_not_default_table", em.getTableName());
     }
 }

@@ -30,7 +30,6 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.theme.ThemeManager;
 import leap.web.view.View;
-import leap.web.view.ViewSource;
 
 public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInterceptor {
     
@@ -39,14 +38,14 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
     protected @Inject PostLogoutHandler     postLogoutHandler;
 
     protected View defaultLogoutView;
-    
+
     @Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
         if(config.isEnabled() && config.isSingleLoginEnabled()) {
             sc.interceptors().add(this);
             
             if(!Strings.isEmpty(config.getLogoutView())) {
-                this.defaultLogoutView = themeManager.getDefaultTheme().getViewSource().getView(config.getLogoutView());
+                this.defaultLogoutView = themeManager.getDefaultView(config.getLogoutView());
             }
 
             if(null == defaultLogoutView) {
