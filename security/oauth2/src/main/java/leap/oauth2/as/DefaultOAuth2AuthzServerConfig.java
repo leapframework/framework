@@ -66,6 +66,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    authorizationCodeEnabled        = true;
     protected boolean    implicitGrantEnabled            = true;
     protected boolean    clientCredentialsEnabled        = true;
+    protected boolean    requestLevelScopeEnabled        = false;
     protected String     tokenEndpointPath               = DEFAULT_TOKEN_ENDPOINT_PATH;
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
@@ -171,6 +172,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     @Override
     public boolean isPasswordCredentialsEnabled() {
 	    return passwordCredentialsEnabled;
+    }
+
+    @Override
+    public boolean isRequestLevelScopeEnabled() {
+        return requestLevelScopeEnabled;
     }
 
     @Override
@@ -323,8 +329,14 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		this.clientCredentialsEnabled = clientCredentialsEnabled;
 		return this;
 	}
-	
-	@ConfigProperty
+
+    @ConfigProperty
+    public OAuth2AuthzServerConfigurator setRequestLevelScopeEnabled(boolean enabled) {
+        this.requestLevelScopeEnabled = enabled;
+        return this;
+    }
+
+    @ConfigProperty
     public OAuth2AuthzServerConfigurator setTokenEndpointPath(String path) {
 		tokenEndpointPath = path;
 	    return this;
