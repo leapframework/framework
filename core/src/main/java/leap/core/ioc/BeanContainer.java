@@ -917,20 +917,28 @@ public class BeanContainer implements BeanFactory {
 		}		
 	}
 	
-	protected void resolveAfterLoading(){
+	protected void resolveAfterLoading() {
 		//bean post processors
-		List<BeanProcessor> postProcessorList = new ArrayList<BeanProcessor>();
+		List<BeanProcessor> postProcessorList = new ArrayList<>();
 		for(BeanDefinitionBase bd : postProcessorBeans){
 			postProcessorList.add((BeanProcessor)doGetBean(bd));
 		}
 		this.processors = postProcessorList.toArray(new BeanProcessor[]{});
-		
+
 		//create factory beans
 		for(BeanDefinitionBase bd : typedFactoryDefinitions.values()){
 		    for(FactoryDefinition fd : bd.getFactoryDefs()) {
 		        typedFactoryBeans.put(fd.getTargetType(),(FactoryBean)doGetBean(bd));    
 		    }
 		}
+
+        for(BeanProcessor processor : processors) {
+            try {
+                processor.postCreateProcessors(getAppContext(), this);
+            } catch (Throwable throwable) {
+                throw Exceptions.uncheck(throwable);
+            }
+        }
 	}
 	
 	protected void initNonLazyBeans() {
