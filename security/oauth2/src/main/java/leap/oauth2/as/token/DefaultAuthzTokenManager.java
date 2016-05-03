@@ -72,7 +72,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         }
 
         //Merge scope.
-        String scope = mergeScope(client, authc);
+        String scope = client.getGrantedScope();// mergeScope(client, authc);
 
         //Scope
         at.setScope(scope);
