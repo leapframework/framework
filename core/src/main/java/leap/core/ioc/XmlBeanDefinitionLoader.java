@@ -15,7 +15,7 @@
  */
 package leap.core.ioc;
 
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.el.EL;
 import leap.lang.*;
 import leap.lang.beans.BeanType;
@@ -143,7 +143,7 @@ class XmlBeanDefinitionLoader {
 	    for(Resource resource : resources){
 	    	if(resource.isReadable()){
 	    	    if(log.isDebugEnabled()) {
-	    	        if(AppContextInitializer.isFrameworkResource(resource.getURLString())) {
+	    	        if(AppResources.isFrameworkResource(resource.getURLString())) {
 	    	            log.trace("Reading beans from resource : {}",resource.getURLString());
 	    	        }else{
 	    	            log.debug("Reading beans from resource : {}",resource.getURLString());        

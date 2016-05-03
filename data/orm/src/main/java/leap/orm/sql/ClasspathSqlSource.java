@@ -15,13 +15,9 @@
  */
 package leap.orm.sql;
 
-import java.io.File;
-import java.util.HashSet;
-import java.util.Set;
-
 import leap.core.AppConfigException;
-import leap.core.AppContextInitializer;
 import leap.core.AppFileMonitor;
+import leap.core.AppResources;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Strings;
@@ -31,6 +27,10 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
+
+import java.io.File;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClasspathSqlSource implements SqlSource {
 	
@@ -42,9 +42,9 @@ public class ClasspathSqlSource implements SqlSource {
 	@Override
     public void loadSqlCommands(SqlConfigContext context) throws SqlConfigException, SqlClauseException {
 		//load all sqls
-		loadSqls(context,AppContextInitializer.searchClasspathXmlResourcesForFramework("sqls"));
+		loadSqls(context, AppResources.getAllClasspathResourcesForXml("sqls"));
 		
-		Resource dir = AppContextInitializer.getClasspathDirectoryForAppUsr("sqls");
+		Resource dir = AppResources.getAppClasspathDirectory("sqls");
 		if(dir.isFile()) {
             monitorSqls(context, dir.getFile());
 		}

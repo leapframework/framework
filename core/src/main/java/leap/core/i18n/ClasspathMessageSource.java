@@ -15,7 +15,7 @@
  */
 package leap.core.i18n;
 
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.BeanFactory;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Arrays2;
@@ -26,8 +26,8 @@ public class ClasspathMessageSource extends ResourceMessageSource implements Mes
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
 		Resource[] resources =
-				Arrays2.concat(AppContextInitializer.searchClasspathResourcesForFramework("messages",".*"), 
-							   AppContextInitializer.searchClasspathResourcesForFrameworkByPattern("messages_*",".*"));
+				Arrays2.concat(AppResources.getAllClasspathResources("messages",".*"),
+                               AppResources.getAllClasspathResourcesWithPattern("messages_*",".*"));
 	
 		super.readFromResources(resources);
     }

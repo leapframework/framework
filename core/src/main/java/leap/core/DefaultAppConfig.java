@@ -43,7 +43,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static leap.core.AppContextInitializer.*;
+import static leap.core.AppResources.*;
 
 /**
  * A default implementation of {@link AppConfig}
@@ -52,25 +52,18 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	
 	private static final Log log = LogFactory.get(DefaultAppConfig.class);
 	
-	private static final String APP_PROFILE_CONFIG_RESOURCE = CLASSPATH_APPUSR_PREFIX + "/profile";
+	private static final String APP_PROFILE_CONFIG_RESOURCE = CP_APP_PREFIX + "/profile";
 	
-	private static final String[] FRAMEWORK_CONFIG_LOCATIONS = new String[]{CLASSPATH_CORE_PREFIX + "/config.xml",
-																			CLASSPATH_CORE_PREFIX + "/config/**/*.xml",
-																		    CLASSPATH_FRAMEWORK_PREFIX + "/config.xml",
-																	        CLASSPATH_FRAMEWORK_PREFIX + "/config/**/*.xml"};
-	
-	private static final String[] EXTENSION_CONFIG_LOCATIONS = new String[]{CLASSPATH_MODULES_PREFIX + "/config.xml",
-																			CLASSPATH_MODULES_PREFIX + "/config/**/*.xml"};
-	
-	private static final String[] APPSYS_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPSYS_PREFIX + "/config.xml",
-																			CLASSPATH_APPSYS_PREFIX + "/config/**/*.xml"};
+	private static final String[] BASE_CONFIG_LOCATIONS = new String[]{
+            CP_APP_PREFIX + "/config.xml"
+    };
 
-	private static final String[] APPBASE_CONFIG_LOCATIONS   = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml"};
-	
-	private static final String[] APPUSR_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/config/**/*.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config/**/*.xml"};
+	private static final String[] APP_CONFIG_LOCATIONS  = new String[]{
+            CP_APP_PREFIX + "/config.xml",
+            CP_APP_PREFIX + "/config/**/*.xml",
+            CP_APP_PREFIX + "/profiles/{profile}/config.xml",
+            CP_APP_PREFIX + "/profiles/{profile}/config/**/*.xml"
+    };
 	
 	//all init properties
 	protected static Set<String> INIT_PROPERTIES = new HashSet<>();
@@ -432,23 +425,15 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		initBaseProperties();
 		
 		//load configs
-		DefaultAppConfigLoader appusrLoader    = load(profiled(APPUSR_CONFIG_LOCATIONS,profile));
-		DefaultAppConfigLoader frameworkLoader = load(FRAMEWORK_CONFIG_LOCATIONS);
-		DefaultAppConfigLoader extensionLoader = load(EXTENSION_CONFIG_LOCATIONS);		
-		DefaultAppConfigLoader appsysLoader    = load(APPSYS_CONFIG_LOCATIONS);
-		
+        DefaultAppConfigLoader fmmLoader = load(AppResources.getFMMClasspathResourcesForXml("config"));
+		DefaultAppConfigLoader appLoader = load(AppResources.getLocClasspathResources(profiled(APP_CONFIG_LOCATIONS,profile)));
+
 		//properties
-		loadProperties(frameworkLoader.getProperties());
-        loadArrayProperties(frameworkLoader.getArrayProperties());
+		loadProperties(fmmLoader.getProperties());
+        loadArrayProperties(fmmLoader.getArrayProperties());
 
-		loadProperties(extensionLoader.getProperties());
-        loadArrayProperties(extensionLoader.getArrayProperties());
-
-		loadProperties(appsysLoader.getProperties());
-        loadArrayProperties(appsysLoader.getArrayProperties());
-
-		loadProperties(appusrLoader.getProperties());
-        loadArrayProperties(appusrLoader.getArrayProperties());
+		loadProperties(appLoader.getProperties());
+        loadArrayProperties(appLoader.getArrayProperties());
 
 		//resources
 		try {
@@ -456,10 +441,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	        
 	        loadBasePackageResources(urlResourceMap,basePackage);
 	        
-	        loadResources(urlResourceMap,frameworkLoader);
-	        loadResources(urlResourceMap,extensionLoader);
-	        loadResources(urlResourceMap,appsysLoader);
-	        loadResources(urlResourceMap,appusrLoader);
+	        loadResources(urlResourceMap, fmmLoader);
+	        loadResources(urlResourceMap, appLoader);
 	        
 	        this.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
         } catch (IOException e) {
@@ -470,10 +453,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		instrumentClasses();
 		
 		//permissions
-		frameworkLoader.addPermissions(extensionLoader.getPermissions(), true);
-		frameworkLoader.addPermissions(appsysLoader.getPermissions(), true);
-		frameworkLoader.addPermissions(appusrLoader.getPermissions(), true);
-		this.permissions.addAll(frameworkLoader.getPermissions());
+		fmmLoader.addPermissions(appLoader.getPermissions(), true);
+		this.permissions.addAll(fmmLoader.getPermissions());
 		
 		this.postLoad();
 		
@@ -512,7 +493,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	
 	protected void initBaseProperties(){
 		DefaultAppConfigLoader loader = new DefaultAppConfigLoader(externalContext,properties,dataSourceConfigs,propertyProcessor);
-		Resource[] appBaseConfigFiles = AppContextInitializer.resources().searchClasspaths(APPBASE_CONFIG_LOCATIONS);
+		Resource[] appBaseConfigFiles = AppResources.get().searchClasspaths(BASE_CONFIG_LOCATIONS);
 		if(appBaseConfigFiles.length > 0) {
 			loader.loadBaseProperties(appBaseConfigFiles[0]);	
 		}
@@ -622,12 +603,10 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		return array;
 	}
 	
-	protected DefaultAppConfigLoader load(String[] locations){
+	protected DefaultAppConfigLoader load(Resource[] resources){
 		DefaultAppConfigLoader loader = new DefaultAppConfigLoader(externalContext,properties,dataSourceConfigs,propertyProcessor);
 		
 		loader.extensions.putAll(this.extensions);
-		
-		Resource[] resources = AppContextInitializer.resources().searchClasspaths(locations);
 		
 		loader.load(profile, resources);
 		

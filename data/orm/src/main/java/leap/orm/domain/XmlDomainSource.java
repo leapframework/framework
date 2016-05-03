@@ -15,14 +15,9 @@
  */
 package leap.orm.domain;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.el.EL;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
@@ -33,6 +28,11 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class XmlDomainSource implements DomainSource {
 	
@@ -65,7 +65,7 @@ public class XmlDomainSource implements DomainSource {
 	
 	@Override
     public void loadDomains(DomainConfigContext context) {
-		loadDomains(context,AppContextInitializer.searchClasspathXmlResourcesForFramework("domains"));
+		loadDomains(context, AppResources.getAllClasspathResourcesForXml("domains"));
     }
 	
 	protected void loadDomains(DomainConfigContext context,Resource[] resources){

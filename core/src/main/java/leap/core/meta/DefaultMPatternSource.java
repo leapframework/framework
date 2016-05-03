@@ -15,11 +15,7 @@
  */
 package leap.core.meta;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
-
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.BeanFactory;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Patterns;
@@ -30,6 +26,10 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.extension.ExProperties;
 import leap.lang.meta.MPattern;
 import leap.lang.resource.Resource;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.regex.Pattern;
 
 public class DefaultMPatternSource implements MPatternSource,PostCreateBean {
 	
@@ -54,7 +54,7 @@ public class DefaultMPatternSource implements MPatternSource,PostCreateBean {
 
 	@Override
     public void postCreate(BeanFactory beanFactory) throws Throwable {
-		loadPatterns(AppContextInitializer.searchClasspathResourcesForFramework("patterns", ".properties"));
+		loadPatterns(AppResources.getAllClasspathResources("patterns", ".properties"));
     }
 
 	private void loadPatterns(Resource[] rs) {

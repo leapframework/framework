@@ -201,7 +201,7 @@ class DefaultAppConfigLoader {
 				String resourceUrl = resource.getURL().toString();
 				
 				if(log.isDebugEnabled()){
-	                if(AppContextInitializer.isFrameworkResource(resourceUrl)) {
+	                if(AppResources.isFrameworkResource(resourceUrl)) {
 	                    log.trace("Load config from resource : {}",resourceUrl);
 	                }else{
 	                    log.debug("Load config from resource : {}",resourceUrl);    

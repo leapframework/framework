@@ -17,7 +17,7 @@ package leap.orm.mapping.config;
 
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.annotation.Inject;
 import leap.core.el.EL;
 import leap.db.model.DbColumnBuilder;
@@ -92,7 +92,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     @Override
     public MappingConfig load(OrmContext context) {
         if(!loaded) {
-            load(context, AppContextInitializer.searchClasspathXmlResourcesForFramework("models"));
+            load(context, AppResources.getAllClasspathResourcesForXml("models"));
             loaded = true;
         }
         return this;

@@ -15,10 +15,10 @@
  */
 package leap.lang.resource;
 
+import leap.lang.Enumerable;
+
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import leap.lang.Enumerable;
 
 public interface ResourceSet extends Enumerable<Resource> {
 	
@@ -33,7 +33,7 @@ public interface ResourceSet extends Enumerable<Resource> {
 	Resource[] searchClasspaths(String... classpathPatterns);
 	
 	/**
-	 * Searchs all the classes in this resource collection.
+	 * Search all the classes in this resource collection.
 	 */
 	Class<?>[] searchClasses();
 	
