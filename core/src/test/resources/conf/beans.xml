@@ -4,4 +4,5 @@
     <bean name="test" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache">
         <constructor-arg value="1024"/>
     </bean>
+
 </beans>

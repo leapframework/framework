@@ -15,7 +15,6 @@
  */
 package leap.core.ioc;
 
-import leap.core.AppContext;
 import leap.core.CoreTestCase;
 import leap.core.cache.Cache;
 import leap.core.variable.Variable;
@@ -46,8 +45,13 @@ public class BeanSimpleTest extends CoreTestCase {
 		List<TBeanType2> list2 = beanFactory.getBeans(TBeanType2.class, "a");
 		assertEquals(2, list2.size());
 	}
-	
 
+    @Test
+    public void testNonSingleton() {
+        TNonSingletonBean bean1 = beanFactory.getBean(TNonSingletonBean.class);
+        TNonSingletonBean bean2 = beanFactory.getBean(TNonSingletonBean.class);
+        assertNotSame(bean1, bean2);
+    }
 
     @Test
     public void testLazy() {
