@@ -15,6 +15,13 @@
  */
 package leap.lang.meta;
 
+import leap.lang.Strings;
+import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.jdbc.JdbcType;
+import leap.lang.jdbc.JdbcTypes;
+import leap.lang.reflect.Reflection;
+
+import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
@@ -23,12 +30,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
-
-import leap.lang.Strings;
-import leap.lang.exception.ObjectNotFoundException;
-import leap.lang.jdbc.JdbcType;
-import leap.lang.jdbc.JdbcTypes;
-import leap.lang.reflect.ReflectEnum;
 
 public class MSimpleTypes {
 	
@@ -90,10 +91,10 @@ public class MSimpleTypes {
 	
 	public static MSimpleType tryForClass(Class<?> cls) {
 		if(cls.isEnum()){
-			ReflectEnum re = ReflectEnum.of(cls);
-			if(re.isValued()){
-				return tryForClass(re.getValueType());
-			}else{
+            Field field = Reflection.findField(cls, "value");
+            if(null != field) {
+                return tryForClass(field.getType());
+            }else{
 				return tryForClass(String.class);
 			}
 		}
