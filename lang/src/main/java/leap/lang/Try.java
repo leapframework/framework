@@ -18,9 +18,19 @@ package leap.lang;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
+import java.util.function.Consumer;
+
 public class Try {
     
     private static final Log log = LogFactory.get(Try.class);
+
+    public static void catchAll(CatchRunnable runnable, Consumer<Throwable> errorHandler) {
+        try{
+            runnable.run();
+        }catch(Throwable e) {
+            errorHandler.accept(e);
+        }
+    }
 
     public static void catchAll(CatchRunnable runnable) {
         try {

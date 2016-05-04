@@ -65,6 +65,10 @@ public class HomeController {
 	public String text(){
 		return "Hello world!";
 	}
+
+    public byte[] bytes() {
+        return new byte[]{0x01,0x02};
+    }
 	
 	public Content html(){
 		return Contents.html("<h1>Hello world!</h1>");
