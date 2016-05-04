@@ -10,7 +10,7 @@ JOIN (
 			FROM
 				pan_file
 			WHERE
-				principal_id = 'Uaad14163-13af-413f-a51c-31cc83527449'
+				principal_id = $principalId$
 			UNION
 				SELECT
 					sum(data_size) AS size
@@ -18,9 +18,9 @@ JOIN (
 					pan_file
 				LEFT JOIN pan_version ON data_id = file_id
 				WHERE
-					principal_id = 'Uaad14163-13af-413f-a51c-31cc83527449'
+					principal_id = #principalId#
 		) f
-	LEFT JOIN uam_user ON user_id = '01182800-585b-49e6-8e74-f5fdcc1b30c4'
+	LEFT JOIN uam_user ON user_id = ?
 ) t
 SET used = fused,
  `usage` = round(
@@ -28,7 +28,7 @@ SET used = fused,
 	2
 )
 WHERE
-	quota_id = '01182800-585b-49e6-8e74-f5fdcc1b30c4'
+	quota_id = ?
 AND principal_type = 'D';UPDATE pan_used_quota
 JOIN (
 	SELECT

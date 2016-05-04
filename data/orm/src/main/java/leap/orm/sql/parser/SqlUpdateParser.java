@@ -27,39 +27,38 @@ public class SqlUpdateParser extends SqlQueryParser {
 	}
 	
 	public void parseUpdateBody() {
-		createSavePoint();
+        SqlUpdate update = new SqlUpdate();
 
-		SqlUpdate update = new SqlUpdate();
+        //suspendNodes();
+        createSavePoint();
 
-		//suspendNodes();
-		
-		expect(Token.UPDATE).acceptText();
-		
-		//parse table source
-		parseTableSource(update);
-		
-		//parse set
-		if(lexer.token() != Token.SET) {
-			//not a standard update statement.
-			restoreSavePoint();
-			parseRest();
-			return;
-		}
+        expect(Token.UPDATE).acceptText();
 
-		//accepts the set token.
-		acceptText();
-		
-		//parse update columns
-		parseUpdateColumns(update);
-		
-		//parse where
-		if(parseWhere(update)) {
-			parseQueryBodyRest(update);
-		}else{
-			parseRest();	
-		}
-		
-		update.setNodes(removeSavePoint());
+        //parse table source
+        parseTableSource(update);
+
+        //Not a standard update sql.
+        if(lexer.token() != Token.SET) {
+            restoreSavePoint();
+            parseAny();
+            return;
+        }
+
+        //parse set
+        expect(Token.SET).acceptText();
+
+        //parse update columns
+        parseUpdateColumns(update);
+
+        //parse where
+        if(parseWhere(update)) {
+            parseQueryBodyRest(update);
+        }else{
+            parseRest();
+        }
+
+        update.setNodes(removeSavePoint());
+        addNode(update);
 	}
 
 	protected void parseTableSource(SqlQuery query) {

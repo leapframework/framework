@@ -126,18 +126,60 @@ public abstract class SqlParserBase {
     protected final AstNode[] nodes(){
     	return nodes.toArray(new AstNode[nodes.size()]);
     }
-    
-	protected final void suspendNodes(){
+
+    /**
+     * Suspends current nodes. (will not save the lexer's state)
+     */
+    protected final void suspendNodes(){
 		this.savedNodes.add(nodes);
 		this.nodes = new ArrayList<>();
 	}
-	
+
+    /**
+     * Restores the previous suspended nodes. (will not restore the lexer's state)
+     */
 	protected final SqlParserBase restoreNodes(){
 		this.nodes = this.savedNodes.pop();
 		return this;
 	}
-	
-	protected final Scope scope(){
+
+    /**
+     * Creates a save point for saving all the state of parser, includes lexer's state and the parsed nodes.
+     */
+    protected final void createSavePoint(){
+        lexer.createSavePoint();
+        this.suspendNodes();
+    }
+
+    /**
+     * Restores all the state of parser to the previous created save point.
+     */
+    protected final void restoreSavePoint(){
+        lexer.restoreSavePoint();
+        this.restoreNodes();
+    }
+
+    protected final void acceptSavePoint(){
+        lexer.deleteSavePoint();
+        List<AstNode> popNodes = this.savedNodes.pop();
+        popNodes.addAll(this.nodes);
+        this.nodes = popNodes;
+    }
+
+    protected final AstNode[] removeSavePoint(){
+        lexer.deleteSavePoint();
+
+        List<AstNode> popNodes = this.savedNodes.pop();
+
+        AstNode[] removedNodes = this.nodes();
+
+        this.nodes = popNodes;
+
+        return removedNodes;
+    }
+
+
+    protected final Scope scope(){
 		return scope.isEmpty() ? null : scope.peek();
 	}
 	
@@ -149,35 +191,6 @@ public abstract class SqlParserBase {
 		this.scope.pop();
 	}
 	
-	protected final void createSavePoint(){
-		lexer.createSavePoint();
-		this.suspendNodes();
-	}
-	
-	protected final void restoreSavePoint(){
-		lexer.restoreSavePoint();
-		this.restoreNodes();
-	}
-	
-	protected final void acceptSavePoint(){
-		lexer.deleteSavePoint();
-		List<AstNode> popNodes = this.savedNodes.pop();
-		popNodes.addAll(this.nodes);
-		this.nodes = popNodes;
-	}
-	
-	protected final AstNode[] removeSavePoint(){
-		lexer.deleteSavePoint();
-		
-		List<AstNode> popNodes = this.savedNodes.pop();
-		
-		AstNode[] removedNodes = this.nodes();
-		
-		this.nodes = popNodes;
-		
-		return removedNodes;
-	}
-
     protected final boolean lookahead(Token... tokens) {
         if(lexer.isEOS()){
             return false;
