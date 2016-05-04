@@ -27,9 +27,11 @@ public class SqlUpdateParser extends SqlQueryParser {
 	}
 	
 	public void parseUpdateBody() {
+		createSavePoint();
+
 		SqlUpdate update = new SqlUpdate();
 
-		suspendNodes();
+		//suspendNodes();
 		
 		expect(Token.UPDATE).acceptText();
 		
@@ -37,7 +39,15 @@ public class SqlUpdateParser extends SqlQueryParser {
 		parseTableSource(update);
 		
 		//parse set
-		expect(Token.SET).acceptText();
+		if(lexer.token() != Token.SET) {
+			//not a standard update statement.
+			restoreSavePoint();
+			parseRest();
+			return;
+		}
+
+		//accepts the set token.
+		acceptText();
 		
 		//parse update columns
 		parseUpdateColumns(update);
@@ -49,10 +59,9 @@ public class SqlUpdateParser extends SqlQueryParser {
 			parseRest();	
 		}
 		
-		update.setNodes(nodes());
-		restoreNodes().addNode(update);
+		update.setNodes(removeSavePoint());
 	}
-	
+
 	protected void parseTableSource(SqlQuery query) {
 		parseTableName();
 		
