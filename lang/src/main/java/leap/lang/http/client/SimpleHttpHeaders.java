@@ -15,6 +15,8 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.Strings;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -26,7 +28,12 @@ public class SimpleHttpHeaders implements HttpHeaders {
 
     @Override
     public boolean exists(String name) {
-        return map.containsKey(name);
+        // https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+        // field name is case-insensitive
+
+        Set<String> keys = map.keySet();
+
+        return keys.stream().anyMatch(key -> Strings.equalsIgnoreCase(key, name));
     }
 
     @Override
