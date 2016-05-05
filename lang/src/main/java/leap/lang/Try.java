@@ -36,7 +36,7 @@ public class Try {
         try {
             runnable.run();
         } catch (Throwable e) {
-            log.info(e);
+            log.warn(e);
         }
     }
 
