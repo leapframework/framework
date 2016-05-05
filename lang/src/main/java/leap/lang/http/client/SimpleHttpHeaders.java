@@ -15,25 +15,23 @@
  */
 package leap.lang.http.client;
 
-import leap.lang.Strings;
+import leap.lang.collection.CaseInsensitiveMap;
+import leap.lang.collection.WrappedCaseInsensitiveMap;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
+// https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
+// field name is case-insensitive
 public class SimpleHttpHeaders implements HttpHeaders {
 
     private static final List<String> EMPTY = Collections.emptyList();
 
-    private final Map<String,List<String>> map = new LinkedHashMap<>(5);
+    private final CaseInsensitiveMap<List<String>> map = WrappedCaseInsensitiveMap.create(new LinkedHashMap<>(5));
 
     @Override
     public boolean exists(String name) {
-        // https://www.w3.org/Protocols/rfc2616/rfc2616-sec4.html#sec4.2
-        // field name is case-insensitive
-
-        Set<String> keys = map.keySet();
-
-        return keys.stream().anyMatch(key -> Strings.equalsIgnoreCase(key, name));
+        return map.containsKey(name);
     }
 
     @Override
@@ -78,5 +76,4 @@ public class SimpleHttpHeaders implements HttpHeaders {
         }
         return values;
     }
-
 }

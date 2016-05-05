@@ -17,6 +17,6 @@ package leap.lang.collection;
 
 import java.util.Map;
 
-public interface CaseSensitiveMap<V> extends Map<String, V> {
+public interface CaseInsensitiveMap<V> extends Map<String, V> {
 
 }

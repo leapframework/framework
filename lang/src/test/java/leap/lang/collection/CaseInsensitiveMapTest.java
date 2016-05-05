@@ -30,14 +30,14 @@ import org.junit.runner.Description;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CaseInsensitiveMapTest extends TestBase {
 	
-	private static final Map<String, Class<? extends CaseSensitiveMap>> maps = new HashMap<String, Class<? extends CaseSensitiveMap>>();
+	private static final Map<String, Class<? extends CaseInsensitiveMap>> maps = new HashMap<String, Class<? extends CaseInsensitiveMap>>();
 	
 	static {
 		maps.put(SimpleCaseInsensitiveMap.class.getSimpleName(), SimpleCaseInsensitiveMap.class);
 		maps.put(WrappedCaseInsensitiveMap.class.getSimpleName(), WrappedCaseInsensitiveMap.class);
 	}
 
-	private CaseSensitiveMap<Object> map;
+	private CaseInsensitiveMap<Object> map;
 	
 	@Rule
 	public final ContextualRule rule = new ContextualRule(new ContextualProvider() {

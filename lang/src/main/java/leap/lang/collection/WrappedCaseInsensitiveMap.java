@@ -15,19 +15,14 @@
  */
 package leap.lang.collection;
 
-import java.io.Serializable;
-import java.util.AbstractSet;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.Args;
 import leap.lang.Objects2;
 import leap.lang.value.SimpleEntry;
 
-public class WrappedCaseInsensitiveMap<V> implements Map<String, V>,CaseSensitiveMap<V>,Serializable {
+import java.io.Serializable;
+import java.util.*;
+
+public class WrappedCaseInsensitiveMap<V> implements Map<String, V>,CaseInsensitiveMap<V>,Serializable {
 	
 	private static final long serialVersionUID = -4254530641694177354L;
 

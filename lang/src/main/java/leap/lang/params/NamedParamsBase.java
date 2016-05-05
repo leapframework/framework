@@ -18,7 +18,7 @@ package leap.lang.params;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import leap.lang.collection.CaseSensitiveMap;
+import leap.lang.collection.CaseInsensitiveMap;
 import leap.lang.collection.WrappedCaseInsensitiveMap;
 
 public abstract class NamedParamsBase implements Params {
@@ -30,7 +30,7 @@ public abstract class NamedParamsBase implements Params {
 	}
 	
 	protected NamedParamsBase(Map<String,Object> map){
-		this.map = map instanceof CaseSensitiveMap ? map : WrappedCaseInsensitiveMap.create(map);
+		this.map = map instanceof CaseInsensitiveMap ? map : WrappedCaseInsensitiveMap.create(map);
 	}
 	
 	@Override

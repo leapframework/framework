@@ -15,12 +15,12 @@
  */
 package leap.lang.collection;
 
+import leap.lang.enums.CaseType;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import leap.lang.enums.CaseType;
-
-public class SimpleCaseInsensitiveMap<V> extends HashMap<String,V> implements CaseSensitiveMap<V> {
+public class SimpleCaseInsensitiveMap<V> extends HashMap<String,V> implements CaseInsensitiveMap<V> {
 
 	private static final long serialVersionUID = 7737207181956011290L;
 	
