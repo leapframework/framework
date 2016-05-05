@@ -15,20 +15,24 @@
  */
 package leap.lang.el.spel;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import leap.lang.Strings;
 import leap.lang.el.AbstractElFunction;
 import leap.lang.el.DefaultElParseContext;
 import leap.lang.el.ElEvalContext;
-
+import leap.lang.el.ElParseException;
 import org.junit.Test;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SpelInvokeTest extends SpelTestCase {
 
+    public static String t() {
+        return "ok";
+    }
+
 	@Test
-	public void testMethod() {
+	public void testMemberMethod() {
 		TestedBean bean = new TestedBean();
 		
 		Map<String, Object> vars = new HashMap<String, Object>();
@@ -41,6 +45,21 @@ public class SpelInvokeTest extends SpelTestCase {
 		vars.put("s", "Hello");
 		assertEquals(1, eval("s.indexOf('e')",vars));
 	}
+
+    @Test
+    public void testStaticMethod() {
+        assertEquals("ok", eval("T(" + SpelInvokeTest.class.getName() + ").t()"));
+    }
+
+    @Test
+    public void testUnsafeMothod() {
+        try{
+            eval("T(System).gc()");
+            fail();
+        }catch(ElParseException e) {
+            assertTrue(e.getMessage().contains("unsafe"));
+        }
+    }
 	
 	@Test
 	public void testBeanProperty() {
