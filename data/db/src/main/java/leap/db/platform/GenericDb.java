@@ -15,46 +15,13 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import javax.sql.DataSource;
-
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.core.transaction.Transactions;
-import leap.db.Db;
-import leap.db.DbBase;
-import leap.db.DbComparator;
-import leap.db.DbExecution;
-import leap.db.DbMetadata;
-import leap.db.DbPlatform;
-import leap.db.command.AlterTable;
-import leap.db.command.CreateColumn;
-import leap.db.command.CreateForeignKey;
-import leap.db.command.CreateIndex;
-import leap.db.command.CreatePrimaryKey;
-import leap.db.command.CreateSequence;
-import leap.db.command.CreateTable;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropSchema;
-import leap.db.command.DropSequence;
-import leap.db.command.DropTable;
-import leap.db.command.RenameColumn;
-import leap.db.model.DbColumn;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
+import leap.db.*;
+import leap.db.command.*;
+import leap.db.model.*;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Exceptions;
@@ -66,6 +33,9 @@ import leap.lang.jdbc.JDBC;
 import leap.lang.jdbc.JdbcTypes;
 import leap.lang.logging.Log;
 import leap.lang.time.StopWatch;
+
+import javax.sql.DataSource;
+import java.sql.*;
 
 public class GenericDb extends DbBase {
 	
@@ -382,7 +352,7 @@ public class GenericDb extends DbBase {
 		return doExecuteQuery(connection, sql, args, types, reader);
     }
 
-	protected int doExecuteUpdate(Connection connection, String sql, Object[] args, int[] types, PreparedStatementHandler<Db> handler) throws NestedSQLException {
+    protected int doExecuteUpdate(Connection connection, String sql, Object[] args, int[] types, PreparedStatementHandler<Db> handler) throws NestedSQLException {
 		PreparedStatement ps = null;
 		
 		try{

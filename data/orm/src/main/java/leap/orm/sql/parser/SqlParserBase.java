@@ -183,11 +183,11 @@ public abstract class SqlParserBase {
 		return scope.isEmpty() ? null : scope.peek();
 	}
 	
-	protected final void setScope(Scope scope){
+	protected final void pushScope(Scope scope){
 		this.scope.add(scope);
 	}
 	
-	protected final void removeScope(){
+	protected final void popScope(){
 		this.scope.pop();
 	}
 	

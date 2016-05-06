@@ -27,8 +27,16 @@ import leap.orm.sql.SqlStatementBuilder;
 import java.io.IOException;
 
 public abstract class ParamBase extends AstNode {
-	
-	@Override
+
+    private final Scope   scope;
+    private final boolean where;
+
+    public ParamBase(Scope scope) {
+        this.scope = scope;
+        this.where = Scope.WHERE == scope;
+    }
+
+    @Override
 	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
 		stm.increaseAndGetParameterIndex();
 		
@@ -57,7 +65,7 @@ public abstract class ParamBase extends AstNode {
 	}
 	
 	public Scope getScope(){
-		throw new IllegalStateException("No scope");
+		return scope;
 	}
 	
 	protected void addReplacedText(SqlStatementBuilder stm,Params params, Object p) throws IOException {
@@ -112,7 +120,7 @@ public abstract class ParamBase extends AstNode {
 			}
 			
 			stm.append(')');
-		}else if(null == value && stm.removeLastEqualsOperator()){
+		}else if(where && null == value && stm.removeLastEqualsOperator()){
 			stm.append(" is null");
 		}else{
 			stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);

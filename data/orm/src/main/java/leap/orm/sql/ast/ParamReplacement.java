@@ -15,9 +15,6 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
-import leap.lang.Args;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
 import leap.orm.sql.Sql.Scope;
@@ -25,14 +22,12 @@ import leap.orm.sql.SqlClauseException;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
+import java.io.IOException;
+
 public class ParamReplacement extends NamedParamNode {
 	
-	private final Scope  scope;
-	
-	public ParamReplacement(String name,Scope scope) {
-		super(name);
-	    Args.notNull(scope);
-	    this.scope = scope;
+	public ParamReplacement(Scope scope, String name) {
+		super(scope, name);
     }
 	
 	@Override
@@ -40,11 +35,6 @@ public class ParamReplacement extends NamedParamNode {
 	    return true;
     }
 
-	@Override
-    public Scope getScope() {
-	    return scope;
-    }
-	
 	@Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
 		throw new SqlClauseException("Batch executing sql cannot use Replacement Parameter [" + this + "]");	    

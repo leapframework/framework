@@ -765,20 +765,47 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         BufferedReader reader = new BufferedReader(new StringReader(sqlScript));
 
         try {
+            boolean inBlock = false;
             StringBuffer sql = new StringBuffer();
             for(;;) {
                 String line = reader.readLine();
                 if(null == line) {
+                    //eof
+                    if(sql.length() > 0) {
+                        sqls.add(sql.toString());
+                    }
                     break;
                 }
 
+                //in block.
+                if(inBlock) {
+                    if(line.endsWith("}}")) {
+                        sql.append(Strings.removeEnd(line, "}}"));
+                        sqls.add(sql.toString().trim());
+                        sql.delete(0, sql.length());
+                        inBlock = false;
+                    }else{
+                        sql.append(line).append('\n');
+                    }
+                    continue;
+                }
+
+                //not in block.
+                if(line.startsWith("{{")) {
+                    inBlock = true;
+                    sql.append(Strings.removeStart(line, "{{")).append('\n');
+                    continue;
+                }
+
+                //found a statement.
                 if(line.endsWith(delimiter)) {
                     sql.append(line.substring(0,line.length() - delimiter.length()));
                     sqls.add(sql.toString().trim());
                     sql.delete(0, sql.length());
-                }else{
-                    sql.append(line).append('\n');
+                    continue;
                 }
+
+                sql.append(line).append('\n');
             }
         } catch (IOException e) {
             throw Exceptions.uncheck(e);

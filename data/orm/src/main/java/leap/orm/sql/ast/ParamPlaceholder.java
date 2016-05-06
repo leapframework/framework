@@ -29,8 +29,8 @@ public class ParamPlaceholder extends NamedParamNode {
 	
 	private final Token  token;
 	
-	public ParamPlaceholder(Token token,String name) {
-		super(name);
+	public ParamPlaceholder(Sql.Scope scope, Token token, String name) {
+		super(scope, name);
 		Args.notNull(token);
 	    this.token = token;
     }

@@ -18,6 +18,7 @@ package leap.orm.sql.ast;
 import leap.lang.Args;
 import leap.lang.expression.Expression;
 import leap.lang.params.Params;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlStatementBuilder;
 
 public abstract class ExprParamBase extends ParamBase {
@@ -25,7 +26,9 @@ public abstract class ExprParamBase extends ParamBase {
 	protected final String     text;
 	protected final Expression expression;
 	
-	public ExprParamBase(String text, Expression expression){
+	public ExprParamBase(Sql.Scope scope, String text, Expression expression){
+        super(scope);
+
 		Args.notEmpty(text);
 		Args.notNull(expression);
 		this.text       = text;

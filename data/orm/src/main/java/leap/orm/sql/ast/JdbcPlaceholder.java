@@ -15,18 +15,19 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.jdbc.JDBC;
 import leap.lang.params.Params;
-import leap.orm.sql.JdbcSqlParameter;
-import leap.orm.sql.PreparedBatchSqlStatementBuilder;
-import leap.orm.sql.SqlContext;
-import leap.orm.sql.SqlStatementBuilder;
+import leap.orm.sql.*;
+
+import java.io.IOException;
 
 public class JdbcPlaceholder extends ParamBase {
-	
-	@Override
+
+    public JdbcPlaceholder(Sql.Scope scope) {
+        super(scope);
+    }
+
+    @Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
 		stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
 		stm.addBatchParameter(new JdbcSqlParameter(stm.increaseAndGetParameterIndex()));

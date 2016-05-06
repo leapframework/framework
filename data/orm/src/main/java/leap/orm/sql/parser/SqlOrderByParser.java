@@ -29,7 +29,7 @@ class SqlOrderByParser extends SqlExprParser {
 			acceptText();
 			
 			if(lexer.token() == Token.BY){
-				setScope(Scope.ORDER_BY);
+				pushScope(Scope.ORDER_BY);
 				
 				acceptText();
 				parseOrderByItem();
@@ -39,7 +39,7 @@ class SqlOrderByParser extends SqlExprParser {
 					parseOrderByItem();	
 				}
 				
-				removeScope();
+				popScope();
 				return new SqlOrderBy(nodes());
 			}
 		}

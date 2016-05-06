@@ -19,7 +19,6 @@ import leap.core.value.Record;
 import leap.orm.OrmTestCase;
 import leap.orm.query.Query;
 import leap.orm.tested.model.petclinic.Owner;
-
 import org.junit.Test;
 
 public class DynamicSqlTest extends OrmTestCase {
@@ -93,4 +92,10 @@ public class DynamicSqlTest extends OrmTestCase {
 		deleteAll(Owner.class);
 	}
 
+    @Test
+    public void testUpdateColumnWithNullValue() {
+
+        dao.executeNamedUpdate("test.sql.dynamic.clause.update_with_null_column", new Object[]{null});
+
+    }
 }

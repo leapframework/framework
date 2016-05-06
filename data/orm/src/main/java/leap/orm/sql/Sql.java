@@ -53,7 +53,7 @@ public class Sql {
 		
 		ORDER_BY,
 		
-		STRING;
+		STRING
 	}
 
 	private final Type      type;

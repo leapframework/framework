@@ -104,7 +104,7 @@ class SqlSelectParser extends SqlQueryParser {
 	protected void parseSelectList(SqlSelect select){
 		createSavePoint();
 		
-		setScope(Scope.SELECT_LIST);
+		pushScope(Scope.SELECT_LIST);
 		
 		parseSelectItem(select);
 		
@@ -115,7 +115,7 @@ class SqlSelectParser extends SqlQueryParser {
 			}while(lexer.token() == Token.COMMA);
 		}
 		
-		removeScope();
+		popScope();
 		
 		SqlSelectList list = new SqlSelectList(removeSavePoint());
 		select.setSelectList(list);

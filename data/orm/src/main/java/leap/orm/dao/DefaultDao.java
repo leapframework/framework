@@ -27,6 +27,7 @@ import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
 import leap.core.value.Record;
 import leap.lang.*;
+import leap.lang.params.ArrayParams;
 import leap.lang.tostring.ToStringBuilder;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
@@ -386,7 +387,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	
 	@Override
     public int executeNamedUpdate(String sqlKey, Object[] args) {
-		return ensureGetSqlCommand(sqlKey).executeUpdate(simpleSqlContext, args);
+		return ensureGetSqlCommand(sqlKey).executeUpdate(simpleSqlContext, new ArrayParams(args));
     }
 
 	@Override

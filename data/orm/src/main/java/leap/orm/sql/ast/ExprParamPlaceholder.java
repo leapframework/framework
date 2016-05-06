@@ -15,18 +15,19 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JDBC;
 import leap.orm.sql.ExpressionSqlParameter;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
+
+import java.io.IOException;
 
 public class ExprParamPlaceholder extends ExprParamBase {
 	
-	public ExprParamPlaceholder(String text, Expression expression) {
-	    super(text, expression);
+	public ExprParamPlaceholder(Sql.Scope scope, String text, Expression expression) {
+	    super(scope, text, expression);
     }
 
 	@Override

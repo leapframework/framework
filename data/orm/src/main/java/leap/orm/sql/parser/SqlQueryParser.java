@@ -15,6 +15,7 @@
  */
 package leap.orm.sql.parser;
 
+import leap.orm.sql.Sql;
 import leap.orm.sql.ast.*;
 
 import java.util.concurrent.atomic.AtomicInteger;
@@ -72,7 +73,9 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected boolean parseWhere(SqlQuery query){
 		if(lexer.token() == Token.WHERE){
+            pushScope(Sql.Scope.WHERE);
             parseWhereExpression(query, new SqlWhere());
+            popScope();
 			return true;
 		}
 		return false;

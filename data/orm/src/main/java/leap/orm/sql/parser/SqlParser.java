@@ -383,29 +383,29 @@ public class SqlParser extends SqlParserBase {
 			return true;
 		}else if(token == Token.COLON_PLACEHOLDER){
 			// :name
-			acceptNode(new ParamPlaceholder(token, lexer.literal()));
+			acceptNode(new ParamPlaceholder(scope(), token, lexer.literal()));
 			return true;
 		}else if(token == Token.JDBC_PLACEHOLDER){
 			// ?
-			acceptNode(new JdbcPlaceholder());
+			acceptNode(new JdbcPlaceholder(scope()));
 			return true;
 		}else if(token == Token.SHARP_PLACEHOLDER){
 			// #name#
-			acceptNode(new ParamPlaceholder(token, lexer.literal()));
+			acceptNode(new ParamPlaceholder(scope(), token, lexer.literal()));
 			return true;
 		}else if(token == Token.EXPR_PLACEHOLDER){
 			// #{..}
 			String expr = lexer.literal();
-			acceptNode(new ExprParamPlaceholder(expr, compileExpression(expr)));
+			acceptNode(new ExprParamPlaceholder(scope(), expr, compileExpression(expr)));
 			return true;
 		}else if(token == Token.DOLLAR_REPLACEMENT){
 			// $name$
-			acceptNode(new ParamReplacement(lexer.literal(), Scope.UNKNOWN));
+			acceptNode(new ParamReplacement(scope(), lexer.literal()));
 			return true;
 		}else if(token == Token.EXPR_REPLACEMENT){
 			// ${..}
 			String expr = lexer.literal();
-			acceptNode(new ExprParamReplacement(expr, compileExpression(expr),Scope.UNKNOWN));
+			acceptNode(new ExprParamReplacement(scope(), expr, compileExpression(expr)));
 			return true;
 		}else if(token == Token.AT_IF){
 			// @if(..) .. @elseif(..) .. @else .. @endif;
@@ -472,13 +472,13 @@ public class SqlParser extends SqlParserBase {
 			appendText(lexer.acceptText());
 			
 			if(lexer.token() == Token.DOLLAR_REPLACEMENT){
-				nodes.add(new ParamReplacement(lexer.literal(),Scope.STRING));
+				nodes.add(new ParamReplacement(Scope.STRING, lexer.literal()));
 				continue;
 			}
 			
 			if(lexer.token() == Token.EXPR_REPLACEMENT){
 				String expr = lexer.literal();
-				nodes.add(new ExprParamReplacement(expr, compileExpression(expr),Scope.STRING));
+				nodes.add(new ExprParamReplacement(Scope.STRING, expr, compileExpression(expr)));
 				continue;
 			}
 			
@@ -603,7 +603,7 @@ public class SqlParser extends SqlParserBase {
 			//scan condition node
 			lexer.nextChar();
 			lexer.scanConditionalExpression();
-			condition = new IfCondition(lexer.literal(), compileExpression(lexer.literal()));
+			condition = new IfCondition(scope(), lexer.literal(), compileExpression(lexer.literal()));
 			
 			nodes.clear(); //clear for body nodes
 			

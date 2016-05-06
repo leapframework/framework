@@ -137,7 +137,7 @@ class SqlWhereProcessor {
         list.add(new Text(" and "));
 
         list.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        list.add(new ExprParamPlaceholder(fm.getWhereValue().toString(), fm.getWhereValue()));
+        list.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
 
         if(null != fm.getWhereIf()) {
             nodes.add(new ConditionalNode(fm.getWhereIf(), nodes.toArray(new AstNode[0])));
