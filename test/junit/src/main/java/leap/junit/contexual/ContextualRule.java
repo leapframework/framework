@@ -70,7 +70,7 @@ public class ContextualRule implements TestRule {
 		    			contextNames = new String[]{contextName};
 		    		}
 		    		
-		    		boolean executed = false;
+		    		//boolean executed = false;
 		    		
 		    		for(String name : provider.names(description)){
 		    			if(isExecute(name,contextNames)){
@@ -80,16 +80,20 @@ public class ContextualRule implements TestRule {
 				    							   "\n------------------------------------------------------------------------------------------------------\n");
 				    			provider.beforeTest(description, name);
 				    			base.evaluate();
-				    			executed = true;
+				    			//executed = true;
 				    		}finally{
 				    			provider.afterTest(description,name);
 				    		}
-		    			}
+		    			}else{
+                            System.out.println("Test case '" + description.getMethodName() + "' not executed because the context name '" + name + "' not exists!");
+                        }
 		    		}
-		    		
+
+                    /*
 		    		if(!executed){
-		    			throw new IllegalArgumentException("unknow contextual qualifier : " + contextName);
+		    			throw new IllegalArgumentException("Unknown contextual qualifier : " + contextName);
 		    		}
+		    		*/
 		    	}else{
 		    		boolean hasNames = false;
 		    		

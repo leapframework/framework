@@ -16,7 +16,6 @@
 package leap.db;
 
 import leap.junit.contexual.Contextual;
-
 import org.junit.Test;
 
 public class DbTestCaseTest extends DbTestCase {
@@ -36,4 +35,33 @@ public class DbTestCaseTest extends DbTestCase {
 		assertNotNull(metadata);
 		assertNotNull(dialect);
 	}
+
+    @Test
+    @Contextual("not_exists_db")
+    public void testNotExistsDb() {
+
+    }
+
+    /*
+    @Test
+    @Contextual("mysql")
+    public void testFlyway() {
+
+        Flyway flyway = new Flyway();
+
+        flyway.setDataSource(db.getDataSource());
+
+        final String sqls = Resources.getResource("classpath:/test/mysql_script.sql").getContent();
+
+        db.execute(conn -> {
+
+            JdbcTemplate jt = new JdbcTemplate(conn,0);
+
+            SqlScript script = new SqlScript(sqls, new MySQLDbSupport(conn));
+
+            script.execute(jt);
+        });
+
+    }
+    */
 }

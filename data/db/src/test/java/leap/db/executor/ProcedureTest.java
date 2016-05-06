@@ -17,16 +17,16 @@
 package leap.db.executor;
 
 import leap.db.DbTestCase;
+import leap.junit.contexual.Contextual;
+import org.junit.Test;
 
 public class ProcedureTest extends DbTestCase {
 
-    /*
     @Test
     @Contextual("mysql")
     public void testQueryByProcedure() {
         String s = db.queryForString("{call sp1(?)}", new Object[]{"a"});
         assertNotEmpty(s);
     }
-    */
 
 }

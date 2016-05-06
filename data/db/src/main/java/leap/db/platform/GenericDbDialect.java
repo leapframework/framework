@@ -761,20 +761,64 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
         List<String> sqls = new ArrayList<>();
 
-        String delimiter = getStatementDelimiter();
+        String defaultDelimiter = getStatementDelimiter();
         BufferedReader reader = new BufferedReader(new StringReader(sqlScript));
 
         try {
+            boolean eof = false;
             boolean inBlock = false;
+            String delimiter = defaultDelimiter;
+
             StringBuffer sql = new StringBuffer();
-            for(;;) {
+            while(!eof) {
                 String line = reader.readLine();
                 if(null == line) {
+                    eof = true;
+
                     //eof
                     if(sql.length() > 0) {
                         sqls.add(sql.toString());
                     }
+
                     break;
+                }
+
+                //delimiter
+                String newDelimiter = parseDelimiter(reader, line);
+                if(null != newDelimiter) {
+                    delimiter = newDelimiter;
+                    continue;
+                }
+
+                //line comment
+                if(Strings.startsWithIgnoreCase(line, getLineCommentString())) {
+                    continue;
+                }
+
+                //block comment
+                if(Strings.startsWithIgnoreCase(line, getBlockCommentStart())) {
+                    for(;;) {
+                        line = reader.readLine();
+                        if(null == line) {
+                            eof = true;
+
+                            if(sql.length() > 0) {
+                                sqls.add(sql.toString());
+                            }
+
+                            break;
+                        }
+
+                        if(Strings.endsWithIgnoreCase(line, getBlockCommentEnd())) {
+                            break;
+                        }
+                    }
+
+                    if(eof) {
+                        break;
+                    }else{
+                        continue;
+                    }
                 }
 
                 //in block.
@@ -814,6 +858,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         return sqls;
     }
 
+    protected String parseDelimiter(BufferedReader reader, String line) {
+        return null;
+    }
+
     @Override
     public boolean isDisconnectSQLState(String state) {
 	    return null != state && disconnectSqlStates.contains(state);
@@ -821,6 +869,18 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
     public String getStatementDelimiter(){
         return statementDelimiter;
+    }
+
+    public String getLineCommentString() {
+        return "--";
+    }
+
+    public String getBlockCommentStart() {
+        return "/*";
+    }
+
+    public String getBlockCommentEnd() {
+        return "*/";
     }
 
 	protected Object getColumnValueTypeUnknow(ResultSet rs,int index) throws SQLException {
