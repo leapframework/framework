@@ -15,32 +15,24 @@
  */
 package leap.db.cp;
 
+import org.junit.Test;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;
 
-import javax.sql.DataSource;
-
-import leap.lang.Randoms;
-
-import org.junit.Test;
-
 public class ConnectionCloseTest extends ConnPoolTestBase {
+
+    private static CountDownLatch opened;
+    private static CountDownLatch closed;
 
 	@Test
 	public void testCloseAll10_10() throws Exception {
-		poolds.setMaxActive(10);
-		
+
 		final int threads = 10;
 		
 		for(int i=0;i<3;i++) {
-			CountDownLatch latch = new CountDownLatch(threads);
-			
-			for(int j=0;j<threads;j++) {
-				OpenCloseThread thread = new OpenCloseThread(poolds, latch);
-				thread.start();
-			}
-			
-			latch.await();
+            openAndClose(10, threads);
 			
 			assertEquals(10,mockds.getNrOfOpenedConnections());
 			assertEquals(0, mockds.getNrOfClosedConnections());
@@ -61,15 +53,8 @@ public class ConnectionCloseTest extends ConnPoolTestBase {
 		final int threads = 15;
 		
 		for(int i=0;i<3;i++) {
-			CountDownLatch latch = new CountDownLatch(threads);
-			
-			for(int j=0;j<threads;j++) {
-				OpenCloseThread thread = new OpenCloseThread(poolds, latch);
-				thread.start();
-			}
-			
-			latch.await();
-			
+            openAndClose(10, threads);
+
 			assertEquals(10,mockds.getNrOfOpenedConnections());
 			assertEquals(0, mockds.getNrOfClosedConnections());
 		}
@@ -85,53 +70,60 @@ public class ConnectionCloseTest extends ConnPoolTestBase {
 	@Test
 	public void testCloseAll10_20() throws Exception {
 		initDefaultDataSource();
-		
+
 		poolds.setMaxActive(10);
-		
+
 		final int threads = 20;
-		
+
 		for(int i=0;i<3;i++) {
-			CountDownLatch latch = new CountDownLatch(threads);
-			
-			for(int j=0;j<threads;j++) {
-				OpenCloseThread thread = new OpenCloseThread(poolds, latch);
-				thread.start();
-			}
-			
-			latch.await();
-			
+            openAndClose(10, threads);
+
 			assertEquals(10,mockds.getNrOfOpenedConnections());
 			assertEquals(0, mockds.getNrOfClosedConnections());
 		}
-		
+
 		assertEquals(10,mockds.getNrOfOpenedConnections());
 		assertEquals(0, mockds.getNrOfClosedConnections());
-		
+
 		poolds.close();
 		assertEquals(10,mockds.getNrOfOpenedConnections());
 		assertEquals(10,mockds.getNrOfClosedConnections());
 	}
+
+    private void openAndClose(int conns, int threads) throws Exception {
+        opened = new CountDownLatch(conns);
+        closed = new CountDownLatch(threads);
+
+        for(int j=0;j<threads;j++) {
+            OpenCloseThread thread = new OpenCloseThread(poolds);
+            thread.start();
+        }
+
+        //wait for all closed.
+        closed.await();
+    }
 	
 	private final class OpenCloseThread extends Thread {
 		
-		private final DataSource     ds;
-		private final CountDownLatch latch;
-		
-		public OpenCloseThread(DataSource ds, CountDownLatch latch) {
+		private final DataSource ds;
+
+		public OpenCloseThread(DataSource ds) {
 			this.ds = ds;
-			this.latch = latch;
 		}
 
 		@Override
         public void run() {
 			try {
 	            try(Connection conn = ds.getConnection()) {
-	            	Thread.sleep(Randoms.nextInt(10, 50));
+                    opened.countDown();
+
+                    //wait for all opened.
+                    opened.await();
 	            }
             } catch (Exception e) {
 	            e.printStackTrace();
             } finally {
-            	latch.countDown();
+            	closed.countDown();
             }
 		}
 		

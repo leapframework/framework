@@ -15,32 +15,24 @@
  */
 package leap.db.cp;
 
-import static leap.db.cp.PooledConnection.STATE_BUSY;
-import static leap.db.cp.PooledConnection.STATE_CLEANUP;
-import static leap.db.cp.PooledConnection.STATE_IDLE;
-
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLTimeoutException;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.locks.AbstractQueuedLongSynchronizer;
-
-import javax.sql.DataSource;
-
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.logging.StackTraceStringBuilder;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLTimeoutException;
+import java.util.List;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.AbstractQueuedLongSynchronizer;
+
+import static leap.db.cp.PooledConnection.*;
 
 class Pool {
 	private static final Log log = LogFactory.get(Pool.class);
@@ -146,7 +138,7 @@ class Pool {
 				return new ProxyConnection(conn);
 			}
 		}catch(InterruptedException e) {
-			throw new SQLException("Interruped while connection borrowing");
+			throw new SQLException("Interrupted while connection borrowing");
 		}
 
 		//Timeout
@@ -276,7 +268,7 @@ class Pool {
 			return;
 		}
 		
-		//Reset transaction isolcation level
+		//Reset transaction isolation level
 		if(!config.hasDefaultTransactionIsolation() && conn.getRealTransactionIsolation() != real.getTransactionIsolation()) {
 			real.setTransactionIsolation(conn.getRealTransactionIsolation());
 		}
@@ -293,7 +285,7 @@ class Pool {
 					log.warn("A potential pending transaction detected, force rollback");
 					conn.rollback();
 				}catch(SQLException e) {
-					log.warn("A SQLException was throwed when rollback on return, {}", e.getMessage(), e);
+					log.warn("A SQLException was threw when rollback on return, {}", e.getMessage(), e);
 				}
 			}
 			
@@ -307,7 +299,7 @@ class Pool {
 				conn.clearWarnings();	
 			}
         } catch (SQLException e) {
-        	log.info("A SQLException was throwed on clear the warnings, {}",e.getMessage(),e);
+        	log.info("A SQLException was threw on clear the warnings, {}",e.getMessage(),e);
         	conn.checkDisconnectAndAbandon(e);
         }
 	}
@@ -349,7 +341,7 @@ class Pool {
 		private final AtomicLong 							 syncState;
 
 		ConnectionPool() {
-			this.list 		  = new CopyOnWriteArrayList<PooledConnection>();
+			this.list 		  = new CopyOnWriteArrayList<>();
 			this.synchronizer = new Synchronizer();
 			this.syncState    = new AtomicLong(1); 
 			this.init();
@@ -429,7 +421,7 @@ class Pool {
 		        	}
 		        }while(true);
 				
-		        //wait for synchronizer's notify.
+		        //wait for synchronizer's notification.
 				if(!synchronizer.tryAcquireSharedNanos(waitingState, TimeUnit.MILLISECONDS.toNanos(timeout))){
 					//time out
 					return null;
@@ -555,7 +547,7 @@ class Pool {
 					try{
 						conn = getConnection();
 					}catch(SQLException e) {
-						;
+						
 					}finally{
 						if(null != conn) {
 							JDBC.closeConnection(conn);
