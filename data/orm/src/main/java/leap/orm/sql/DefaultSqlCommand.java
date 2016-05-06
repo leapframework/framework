@@ -15,8 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.util.List;
-
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
@@ -26,6 +24,8 @@ import leap.lang.Assert;
 import leap.lang.exception.NestedSQLException;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
+
+import java.util.List;
 
 public class DefaultSqlCommand implements SqlCommand {
 	
@@ -93,10 +93,14 @@ public class DefaultSqlCommand implements SqlCommand {
 
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
-		Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
+		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
 		
 		if(clauses.length == 1){
-			return queryClause.createQueryStatement(context, params).executeQuery(reader);
+            if(null != queryClause){
+                return queryClause.createQueryStatement(context, params).executeQuery(reader);
+            }else{
+                return clauses[0].createQueryStatement(context, params).executeQuery(reader);
+            }
 		}else{
 			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
 		}

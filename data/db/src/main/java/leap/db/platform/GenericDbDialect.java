@@ -777,14 +777,14 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
                     //eof
                     if(sql.length() > 0) {
-                        sqls.add(sql.toString());
+                        Collections2.addIfNotEmpty(sqls, sql.toString(), true);
                     }
 
                     break;
                 }
 
                 //delimiter
-                String newDelimiter = parseDelimiter(reader, line);
+                String newDelimiter = parseDelimiter(reader, delimiter, line);
                 if(null != newDelimiter) {
                     delimiter = newDelimiter;
                     continue;
@@ -803,7 +803,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
                             eof = true;
 
                             if(sql.length() > 0) {
-                                sqls.add(sql.toString());
+                                Collections2.addIfNotEmpty(sqls, sql.toString(), true);
                             }
 
                             break;
@@ -844,7 +844,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
                 //found a statement.
                 if(line.endsWith(delimiter)) {
                     sql.append(line.substring(0,line.length() - delimiter.length()));
-                    sqls.add(sql.toString().trim());
+                    Collections2.addIfNotEmpty(sqls, sql.toString(), true);
                     sql.delete(0, sql.length());
                     continue;
                 }
@@ -858,7 +858,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         return sqls;
     }
 
-    protected String parseDelimiter(BufferedReader reader, String line) {
+    protected String parseDelimiter(BufferedReader reader, String delimiter, String line) {
         return null;
     }
 

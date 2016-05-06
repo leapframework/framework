@@ -15,9 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;
@@ -32,13 +29,10 @@ import leap.lang.params.EmptyParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.query.QueryContext;
-import leap.orm.sql.ast.AstNode;
-import leap.orm.sql.ast.ParamReplacement;
-import leap.orm.sql.ast.SqlNodeContainer;
-import leap.orm.sql.ast.SqlOrderBy;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlSelectList;
-import leap.orm.sql.ast.Text;
+import leap.orm.sql.ast.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	
@@ -81,24 +75,24 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	
 	@Override
     public SqlStatement createQueryStatement(QueryContext context, Object params) {
-		assertIsQuery();
-
 		if(log.isDebugEnabled()) {
 			log.debug("Creating query statement for sql : \n {}",sql);
 		}
-		
-		Limit limit = context.getLimit();
-		
-		if(null != limit){
-			createSqlWithoutOrderBy();
-			return createLimitQueryStatement(context, params);
-		}
-		
-		if(!Strings.isEmpty(context.getOrderBy())) {
-			createSqlWithoutOrderBy();
-			return createOrderByQueryStatement(context, params);
-		}
-	    
+
+        if(isQuery()) {
+            Limit limit = context.getLimit();
+
+            if(null != limit){
+                createSqlWithoutOrderBy();
+                return createLimitQueryStatement(context, params);
+            }
+
+            if(!Strings.isEmpty(context.getOrderBy())) {
+                createSqlWithoutOrderBy();
+                return createOrderByQueryStatement(context, params);
+            }
+        }
+
 	    return doCreateStatement(context, params);
     }
 	

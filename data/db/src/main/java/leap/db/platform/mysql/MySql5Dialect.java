@@ -210,13 +210,13 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
-    protected String parseDelimiter(BufferedReader reader, String line) {
+    protected String parseDelimiter(BufferedReader reader, String delimiter, String line) {
 
         if(Strings.startsWithIgnoreCase(line, "delimiter ")) {
             String newDelimiter = Strings.removeStartIgnoreCase(line, "delimiter").trim();
 
-            while(newDelimiter.length() > 0 && newDelimiter.endsWith(getStatementDelimiter())) {
-                newDelimiter = Strings.removeEnd(newDelimiter, getStatementDelimiter());
+            while(newDelimiter.length() > 0 && newDelimiter.endsWith(delimiter)) {
+                newDelimiter = Strings.removeEnd(newDelimiter, delimiter);
             }
 
             if(newDelimiter.length() > 0) {
