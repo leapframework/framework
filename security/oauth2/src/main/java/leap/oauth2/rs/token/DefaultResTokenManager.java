@@ -62,6 +62,9 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
                         this.jwtTokenStore = store;
                         return store;
                     }
+                }else{
+                    store = this.jwtTokenStore;
+                    return store;
                 }
             }
             if(null == bearerTokenStore) {
