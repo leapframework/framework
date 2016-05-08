@@ -9,6 +9,7 @@
 				<xsd:choice minOccurs="0" maxOccurs="unbounded">
 					<xsd:element ref="import" />
 					<xsd:element ref="command" />
+                    <xsd:element ref="fragment" />
 					<xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 				</xsd:choice>
 			</xsd:sequence>
@@ -70,6 +71,24 @@
         			</xsd:attribute>
         		</xsd:extension>
         	</xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="fragment">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:attribute name="key" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="lang" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                if set to true this fragment value will override the exists fragment with same key or name.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:extension>
+            </xsd:simpleContent>
         </xsd:complexType>
     </xsd:element>
 </xsd:schema>

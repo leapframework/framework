@@ -136,6 +136,8 @@ public enum Token {
 	AT_ELSEIF("@ELSEIF"),
 	AT_ELSE("@ELSE"),
 	AT_ENDIF("@ENDIF"),
+
+    AT_INCLUDE("@INCLUDE"),
 	
 	TAG, // @tagname{  .. }
 	
