@@ -46,6 +46,11 @@ public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	 * Returns the user id.
 	 */
 	String getUserId();
+
+	/**
+	 * Returns the user login name.
+	 */
+	String getUsername();
 	
 	/**
 	 * Optional. 

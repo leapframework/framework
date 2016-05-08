@@ -65,6 +65,7 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
          
          .property("client_id",     at.getClientId())
          .property("user_id",       at.getUserId())
+         .property("username",      at.getUsername())
          .property("created",       at.getCreated())
          .property("expires_in",    at.getExpiresIn())
          .propertyOptional("scope", at.getScope());

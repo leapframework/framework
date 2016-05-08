@@ -69,6 +69,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(null != user) {
             at.setUserId(user.getId().toString());
             rt.setUserId(at.getUserId());
+            at.setUsername(user.getLoginName());
         }
 
         //Merge scope.
