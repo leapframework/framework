@@ -35,4 +35,11 @@
           type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
           class="leap.oauth2.rs.token.LocalBearerResAccessTokenStore"/>
 
+    <bean name="jwt"
+          type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
+          class="leap.oauth2.rs.token.JwtBearerResAccessTokenStore">
+        <constructor-arg name="publicKey" value="${jwt.publicKey}">
+        </constructor-arg>
+    </bean>
+
 </beans>

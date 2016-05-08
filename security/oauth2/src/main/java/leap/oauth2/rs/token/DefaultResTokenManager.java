@@ -34,6 +34,7 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
     
     protected Map<String, ResAccessTokenStore> typedTokenStores = new HashMap<>();
     protected ResAccessTokenStore              bearerTokenStore = null;
+    protected ResAccessTokenStore              jwtTokenStore    = null;
     
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {
@@ -54,6 +55,15 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
         ResAccessTokenStore store;
         
         if(token.isBearer()) {
+            if(token instanceof SimpleJwtAccessToken){
+                if(null == jwtTokenStore){
+                    store = factory.getBean(ResBearerAccessTokenStore.class,"jwt");
+                    if(null != store){
+                        this.jwtTokenStore = store;
+                        return store;
+                    }
+                }
+            }
             if(null == bearerTokenStore) {
                 this.bearerTokenStore = factory.tryGetBean(ResBearerAccessTokenStore.class);
                 if(null == bearerTokenStore) {
