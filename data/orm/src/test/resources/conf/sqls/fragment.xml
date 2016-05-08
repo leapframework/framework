@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+   <fragment key="sql.fragment.fragment">
+       last_name = :name and  @if(name != null) first_name=:name @else first_name is null @endif
+   </fragment>
+
+    <command key="sql.fragment.clause.where">
+        select lastName from owners where @include(sql.fragment.fragment) and firstName = :firstName
+    </command>
+</sqls>
