@@ -27,6 +27,7 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
     protected String              token;
     protected String              clientId;
     protected String              userId;
+	protected String 			   username;
 	protected String 			  refreshToken;
 	protected int                 refreshTokenExpiresIn;
 	protected String 			  scope;
@@ -93,5 +94,14 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 			extendedParameters = new LinkedHashMap<>();
 		}
 		extendedParameters.put(name, value);
+	}
+
+	@Override
+	public String getUsername() {
+		return username;
+	}
+
+	public void setUsername(String username) {
+		this.username = username;
 	}
 }
