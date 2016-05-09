@@ -15,20 +15,14 @@
  */
 package leap.db.cp;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import leap.lang.jdbc.ConnectionWrapper;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.logging.StackTraceStringBuilder;
+
+import java.sql.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class PooledConnection extends ConnectionWrapper implements Connection {
 	private static final Log log = LogFactory.get(PooledConnection.class);
@@ -36,6 +30,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	static final int STATE_IDLE = 0;
 	static final int STATE_BUSY = 1;
 	static final int STATE_CLEANUP = 2;
+    static final int STATE_ABANDON = 3;
 	
 	private static final int TRANSACTION_STATE_INIT     = 0;
 	private static final int TRANSACTION_STATE_COMMIT   = 1;
@@ -206,7 +201,14 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	boolean compareStateAndSet(int expectState, int updateState) {
 		return state.compareAndSet(expectState, updateState);
 	}
-	
+
+    /**
+     * Sets the state to {@link #STATE_ABANDON}.
+     */
+    void markAbandon() {
+        state.set(STATE_ABANDON);
+    }
+
 	void abandonReal() {
 		if(null != conn) {
 			log.debug("Abandon the real connection");

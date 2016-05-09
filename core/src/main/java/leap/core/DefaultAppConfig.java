@@ -540,13 +540,17 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	}
 	
 	protected void instrumentClasses() {
+        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext();
+
 		for(AppInstrumentProcessor p : Factory.newInstances(AppInstrumentProcessor.class)){
 			try {
-	            p.instrument(new DefaultAppInstrumentContext(), resources);
+	            p.instrument(context, resources);
             } catch (Throwable e) {	
             	throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
             }
 		}
+
+        context.postInstrumented();
 	}
 	
 	protected void postLoad(){

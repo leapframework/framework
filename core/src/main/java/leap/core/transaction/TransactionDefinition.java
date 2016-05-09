@@ -20,7 +20,7 @@ import java.sql.Connection;
 //from spring framework
 public interface TransactionDefinition {
 	
-	public enum PropagationBehaviour {
+	enum PropagationBehaviour {
 		/**
 		 * Support a current transaction; create a new one if none exists.
 		 * Analogous to the EJB transaction attribute of the same name.
@@ -39,7 +39,7 @@ public interface TransactionDefinition {
 		
 		private final int value;
 		
-		private PropagationBehaviour(int value) {
+		PropagationBehaviour(int value) {
 			this.value = value;
         }
 
@@ -48,7 +48,7 @@ public interface TransactionDefinition {
 		}
 	}
 	
-	public enum IsolationLevel{
+	enum IsolationLevel{
 		
 		/**
 		 * Use the default isolation level of the underlying datastore.

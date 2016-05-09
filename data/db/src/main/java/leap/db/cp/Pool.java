@@ -431,6 +431,15 @@ class Pool {
 			
 			return null;
 		}
+
+        /**
+         * Removes the connection from list and realease all the underlying resources.
+         */
+        public void abandandConnection(PooledConnection conn) {
+            conn.markAbandon();
+            list.remove(conn);
+            conn.closeReal();
+        }
 		
 		/**
 		 * Returns the connection to pool.
@@ -507,9 +516,8 @@ class Pool {
 					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
 							  conn.getBusyDurationMs(), 
 							  new StackTraceStringBuilder(conn.getStackTraceOfThreadOnBorrow()).toString());
-					
-					conn.closeReal();
-					connectionPool.updateToIdleState(conn, STATE_CLEANUP);
+
+                    connectionPool.abandandConnection(conn);
 					continue;
 				}
 				
@@ -547,7 +555,7 @@ class Pool {
 					try{
 						conn = getConnection();
 					}catch(SQLException e) {
-						
+
 					}finally{
 						if(null != conn) {
 							JDBC.closeConnection(conn);

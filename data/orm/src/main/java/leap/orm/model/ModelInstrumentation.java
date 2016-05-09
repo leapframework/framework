@@ -15,30 +15,13 @@
  */
 package leap.orm.model;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
 import leap.lang.Strings;
-import leap.lang.asm.ASM;
-import leap.lang.asm.ClassReader;
-import leap.lang.asm.ClassVisitor;
-import leap.lang.asm.ClassWriter;
-import leap.lang.asm.Label;
-import leap.lang.asm.MethodVisitor;
-import leap.lang.asm.Opcodes;
-import leap.lang.asm.Type;
+import leap.lang.asm.*;
 import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
@@ -49,10 +32,17 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.time.StopWatch;
-import leap.orm.OrmContext;
 import leap.orm.OrmException;
 import leap.orm.annotation.Instrument;
-import leap.orm.mapping.EntityMapping;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 public class ModelInstrumentation implements AppInstrumentProcessor {
 	
@@ -60,8 +50,8 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 	
 	protected static final Type   MODEL_TYPE       = Type.getType(Model.class);
 	protected static final String MODEL_CLASS_NAME = MODEL_TYPE.getInternalName();
-	protected static final String OC_CLASS_NAME    = Type.getInternalName(OrmContext.class);
-	protected static final String EM_CLASS_NAME    = Type.getInternalName(EntityMapping.class);
+	//protected static final String OC_CLASS_NAME    = Type.getInternalName(OrmContext.class);
+	//protected static final String EM_CLASS_NAME    = Type.getInternalName(EntityMapping.class);
 	
 	protected static final ClassNode	MODEL_CLASS;
 	protected static final MethodNode[] DELEGATE_METHODS;
@@ -91,8 +81,6 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 		}
 	}
 	
-	private Set<String> instrumentedClasses;
-	
 	protected List<ModelTransformer> transformers;
 	
 	@Override
@@ -101,9 +89,7 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 		
 		StopWatch sw = StopWatch.startNew();
 		
-		final Set<InstrumentModelClass> instrumentModelClasses = new TreeSet<ModelInstrumentation.InstrumentModelClass>();
-		
-		instrumentedClasses = new HashSet<String>();
+		final Set<InstrumentModelClass> instrumentModelClasses = new TreeSet<>();
 		
 		resources.process((resource) -> {
 			if(resource.exists()){
@@ -158,20 +144,21 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 				}
             }
 		});
-		
-		ModelClassLoader cl = new ModelClassLoader(Classes.getClassLoader());
-		
+
 		//Sorts the model class by inherit levels
 		for(InstrumentModelClass mc : instrumentModelClasses){
 			ClassReader cr = mc.getClassReader();
-			log.debug("Instrument model class '{}'",cr.getClassName());
+
+            if(context.isInstrumentedBy(cr.getClassName(), this.getClass())) {
+                log.info("Model class '{}' already instrumented",cr.getClassName());
+                continue;
+            }
+
+            log.debug("Instrument model class '{}'",cr.getClassName());
 			ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-			instrument(cl, cr,cw);
+			instrument(context, null, cr,cw);
 		}
-		
-		instrumentedClasses.clear();
-		instrumentedClasses = null;
-		
+
 		log.debug("Instrument {} model(s) used {}ms",instrumentModelClasses.size(),sw.getElapsedMilliseconds());
     }
 	
@@ -194,7 +181,7 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 		return null;
 	}
 	
-	protected void instrument(ModelClassLoader cl, ClassReader cr, ClassWriter cw) {
+	protected void instrument(AppInstrumentContext context, ModelClassLoader cl, ClassReader cr, ClassWriter cw) {
 		ClassNode cn = ASM.getClassNode(cr);
 		
 		transformClass(cr,cw, cn);
@@ -203,23 +190,7 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 		cw.visitEnd();
 		byte[] data = cw.toByteArray();
 		
-		try {
-	        cl.defineClass(cr.getClassName().replace('/', '.'), data);
-	        
-	        instrumentedClasses.add(cr.getClassName());
-        } catch (RuntimeException e) {
-        	if(e.getCause() instanceof LinkageError) {
-        		if(instrumentedClasses.contains(cr.getClassName())) {
-            		log.info("Model class '{}' aleady instrumented",cr.getClassName());
-            		return ;
-        		}else{
-        			//TODO: throw exception ?
-        			log.warn("Model class '{}' aleady loaded by another class loader", cr.getClassName());
-        			return;
-        		}
-        	}
-        	throw e;
-        }
+        context.addInstrumentedClass(this.getClass(), cr.getClassName(), data);
 	}
 	
 	protected void transformClass(ClassReader cr,ClassWriter cw, ClassNode cn){
@@ -277,7 +248,7 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 				mg.storeLocal(returnValueIndex);
 			}
 			
-			//--finaly--
+			//--finally--
 			mg.visitLabel(l1);
 			
 			//className.remove()
@@ -342,9 +313,9 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 			try {
 				return (Class<?>)parentDefineClassMethod.invoke(parent, new Object[] {name, bytes, new Integer(0), new Integer(bytes.length)});
 			} catch (InvocationTargetException e){
-				throw new RuntimeException("Error instrucment class '" + name + "', " + e.getTargetException().getMessage(), e.getTargetException());
+				throw new RuntimeException("Error instrument class '" + name + "', " + e.getTargetException().getMessage(), e.getTargetException());
 			} catch (Exception e){
-				throw new RuntimeException("Error instrucment class '" + name + "', " + e.getMessage(), e);
+				throw new RuntimeException("Error instrument class '" + name + "', " + e.getMessage(), e);
 			}
 		}
 	}

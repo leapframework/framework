@@ -15,6 +15,52 @@
  */
 package leap.core.instrument;
 
+import leap.lang.Classes;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class DefaultAppInstrumentContext implements AppInstrumentContext {
 
+    private static final Log log = LogFactory.get(DefaultAppInstrumentContext.class);
+
+    private final Map<String, AppInstrumentClass> instrumentedMap = new LinkedHashMap<>();
+
+    @Override
+    public AppInstrumentClass getInstrumentedClass(String className) {
+        return instrumentedMap.get(className);
+    }
+
+    @Override
+    public void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData) {
+        AppInstrumentClass ic = getInstrumentedClass(className);
+        if(null == ic) {
+            ic = new SimpleAppInstrumentClass(className, classData);
+            ic.addInstrumentedBy(instrumentBy);
+            instrumentedMap.put(className, ic);
+            return;
+        }
+
+        ic.updateClassData(classData);
+        ic.addInstrumentedBy(instrumentBy);
+    }
+
+    public void postInstrumented() {
+        AppInstrumentClassLoader classLoader = new AppInstrumentClassLoader(Classes.getClassLoader());
+
+        for(AppInstrumentClass ic : instrumentedMap.values()) {
+            log.debug("Define the instrumented class '{}'", ic.getClassName());
+            try {
+                classLoader.defineClass(ic.getClassName().replace('/', '.'), ic.getClassData());
+            } catch (RuntimeException e) {
+                if(e.getCause() instanceof LinkageError) {
+                    log.warn("Class '{}' already loaded or instrumented by another class loader", ic.getClassName());
+                    return;
+                }
+                throw e;
+            }
+        }
+    }
 }
