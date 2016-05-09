@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
-package leap.core.transaction;
+package leap.core.instrument;
 
-import leap.core.instrument.AppInstrumentContext;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.lang.resource.ResourceSet;
+import leap.core.AppInitException;
 
-public class TransactionInstrumenttion implements AppInstrumentProcessor {
+public class AppInstrumentException extends AppInitException {
 
-    @Override
-    public void instrument(AppInstrumentContext context, ResourceSet crs) {
-
-
-
-
+    public AppInstrumentException() {
     }
 
+    public AppInstrumentException(String message) {
+        super(message);
+    }
+
+    public AppInstrumentException(Throwable cause) {
+        super(cause);
+    }
+
+    public AppInstrumentException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

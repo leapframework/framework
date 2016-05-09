@@ -15,12 +15,12 @@
  */
 package leap.orm.model;
 
+import leap.core.instrument.AbstractAsmInstrumentProcessor;
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
-import leap.lang.Strings;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.tree.ClassNode;
@@ -30,21 +30,17 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
-import leap.lang.time.StopWatch;
-import leap.orm.OrmException;
 import leap.orm.annotation.Instrument;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
-public class ModelInstrumentation implements AppInstrumentProcessor {
+public class ModelInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
 	
 	private static final Log log = LogFactory.get(ModelInstrumentation.class);
 	
@@ -80,74 +76,51 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
 			IO.close(is);
 		}
 	}
-	
-	protected List<ModelTransformer> transformers;
-	
-	@Override
-    public void instrument(AppInstrumentContext context, ResourceSet resources) {
-		this.transformers = Factory.newInstances(ModelTransformer.class);
-		
-		StopWatch sw = StopWatch.startNew();
-		
-		final Set<InstrumentModelClass> instrumentModelClasses = new TreeSet<>();
-		
-		resources.process((resource) -> {
-			if(resource.exists()){
-				String filename = resource.getFilename();
-				
-				if(null != filename && 
-				   filename.endsWith(Classes.CLASS_FILE_SUFFIX)){
 
-					InputStream is = null;
-					
-					try{
-						is = resource.getInputStream();
-						
-						ClassReader cr = new ClassReader(is);
-						
-						int inheritLevels = 0;
-						
-						if(Modifier.isPublic(cr.getAccess()) && !Modifier.isAbstract(cr.getAccess())){
-							boolean isModel = false;
-							
-							String superName = cr.getSuperName();
-							if(MODEL_CLASS_NAME.equals(superName)){
-								isModel = true;
-							}else if(!superName.equals("java/lang/Object")){
-								for(;;){
-									superName = readSuperName(resource, superName);
-									
-									if(null == superName || superName.equals("java/lang/Object")){
-										break;
-									}
-									
-									inheritLevels++;
-									
-									if(superName.equals(MODEL_CLASS_NAME)){
-										isModel = true;
-										break;
-									}
-								}
-							}
-							
-							if(isModel){
-								instrumentModelClasses.add(new InstrumentModelClass(inheritLevels, cr));
-							}
-						}
-					}catch(IOException e){
-						throw Exceptions.wrap(e);
-					}catch(Exception e){
-						throw new OrmException("Error instrument model '" + resource.getFilename() + "'",e);
-					}finally{
-						IO.close(is);
-					}
-				}
+    protected Set<InstrumentModelClass> instrumentModelClasses;
+	protected List<ModelTransformer>    transformers;
+
+    @Override
+    protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {
+        this.transformers = Factory.newInstances(ModelTransformer.class);
+        this.instrumentModelClasses = new TreeSet<>();
+    }
+
+    @Override
+    protected void processClass(AppInstrumentContext context, ResourceSet rs, Resource resource, ClassReader cr) {
+        int inheritLevels = 0;
+        boolean isModel   = false;
+
+        String superName = cr.getSuperName();
+        if(MODEL_CLASS_NAME.equals(superName)){
+            isModel = true;
+        }else if(!superName.equals("java/lang/Object")){
+            for(;;){
+                superName = readSuperName(resource, superName);
+
+                if(null == superName || superName.equals("java/lang/Object")){
+                    break;
+                }
+
+                inheritLevels++;
+
+                if(superName.equals(MODEL_CLASS_NAME)){
+                    isModel = true;
+                    break;
+                }
             }
-		});
+        }
 
-		//Sorts the model class by inherit levels
-		for(InstrumentModelClass mc : instrumentModelClasses){
-			ClassReader cr = mc.getClassReader();
+        if(isModel){
+            instrumentModelClasses.add(new InstrumentModelClass(inheritLevels, cr));
+        }
+    }
+
+    @Override
+    protected void postInstrument(AppInstrumentContext context, ResourceSet rs) {
+        //Sorts the model class by inherit levels
+        for(InstrumentModelClass mc : instrumentModelClasses){
+            ClassReader cr = mc.getClassReader();
 
             if(context.isInstrumentedBy(cr.getClassName(), this.getClass())) {
                 log.info("Model class '{}' already instrumented",cr.getClassName());
@@ -155,32 +128,11 @@ public class ModelInstrumentation implements AppInstrumentProcessor {
             }
 
             log.debug("Instrument model class '{}'",cr.getClassName());
-			ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-			instrument(context, null, cr,cw);
-		}
-
-		log.debug("Instrument {} model(s) used {}ms",instrumentModelClasses.size(),sw.getElapsedMilliseconds());
+            ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
+            instrument(context, null, cr,cw);
+        }
     }
-	
-	private static String readSuperName(Resource base,String interalClassName){
-		String classUrl = Strings.remove(base.getURLString(), base.getClasspath()) + interalClassName + Classes.CLASS_FILE_SUFFIX;
-		
-		Resource resource = Resources.getResource(classUrl);
-		if(null != resource && resource.exists()){
-			InputStream is = null;
-			try{
-				is = resource.getInputStream();
-				
-				return new ClassReader(is).getSuperName();
-			}catch(IOException e) {
-				throw Exceptions.wrap(e);
-			}finally{
-				IO.close(is);
-			}
-		}
-		return null;
-	}
-	
+
 	protected void instrument(AppInstrumentContext context, ModelClassLoader cl, ClassReader cr, ClassWriter cw) {
 		ClassNode cn = ASM.getClassNode(cr);
 		

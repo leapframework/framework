@@ -15,12 +15,6 @@
  */
 package leap.core.transaction;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Stack;
-
-import javax.sql.DataSource;
-
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.transaction.TransactionDefinition.IsolationLevel;
 import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
@@ -31,15 +25,20 @@ import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Stack;
+
 public class DefaultTransactionManager extends AbstractReadonlyBean implements TransactionManager {
 	
 	private static final Log log = LogFactory.get(DefaultTransactionManager.class);
 	
-	private final ThreadLocal<Stack<DefaultTransaction>> currentTransactions = new ThreadLocal<Stack<DefaultTransaction>>();
+	private final ThreadLocal<Stack<DefaultTransaction>> currentTransactions = new ThreadLocal<>();
 	
 	protected @NotNull DataSource  dataSource;
 	protected PropagationBehaviour defaultPropagationBehaviour = PropagationBehaviour.REQUIRED;
-	protected IsolationLevel       defaultIsolotionLevel       = IsolationLevel.DEFAULT;
+	protected IsolationLevel       defaultIsolationLevel       = IsolationLevel.DEFAULT;
 	
 	public DefaultTransactionManager(){
 		
@@ -58,8 +57,8 @@ public class DefaultTransactionManager extends AbstractReadonlyBean implements T
 		this.defaultPropagationBehaviour = defaultPropagationBehaviour;
 	}
 
-	public void setDefaultIsolotionLevel(IsolationLevel defaultIsolotionLevel) {
-		this.defaultIsolotionLevel = defaultIsolotionLevel;
+	public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
+		this.defaultIsolationLevel = defaultIsolationLevel;
 	}
 
 	@Override
@@ -101,7 +100,7 @@ public class DefaultTransactionManager extends AbstractReadonlyBean implements T
 		if(null == requiredDefinition) {
 			requiredDefinition = new DefaultTransactionDefinition();
 			requiredDefinition.setPropagationBehavior(PropagationBehaviour.REQUIRED);
-			requiredDefinition.setIsolationLevel(this.defaultIsolotionLevel);
+			requiredDefinition.setIsolationLevel(this.defaultIsolationLevel);
 		}
 		return requiredDefinition;
 	}
@@ -110,7 +109,7 @@ public class DefaultTransactionManager extends AbstractReadonlyBean implements T
 		if(null == requiresNewDefinition) {
 			requiresNewDefinition = new DefaultTransactionDefinition();
 			requiresNewDefinition.setPropagationBehavior(PropagationBehaviour.REQUIRES_NEW);
-			requiresNewDefinition.setIsolationLevel(this.defaultIsolotionLevel);
+			requiresNewDefinition.setIsolationLevel(this.defaultIsolationLevel);
 		}
 		return requiresNewDefinition;
 	}
@@ -189,7 +188,7 @@ public class DefaultTransactionManager extends AbstractReadonlyBean implements T
 	protected void pushActiveTransaction(DefaultTransaction tran) {
 		Stack<DefaultTransaction> trans = currentTransactions.get();
 		if(null == trans) {
-			trans = new Stack<DefaultTransactionManager.DefaultTransaction>();
+			trans = new Stack<>();
 			currentTransactions.set(trans);
 		}
 		trans.push(tran);
@@ -239,12 +238,12 @@ public class DefaultTransactionManager extends AbstractReadonlyBean implements T
 		private final int isolationLevel;
 		
 		protected DefaultTransaction() {
-	        this.isolationLevel = DefaultTransactionManager.this.defaultIsolotionLevel.getValue();
+	        this.isolationLevel = DefaultTransactionManager.this.defaultIsolationLevel.getValue();
         }
 		
 		protected DefaultTransaction(TransactionDefinition td) {
 	        this.isolationLevel = td.getIsolationLevel() == null ? 
-	        						DefaultTransactionManager.this.defaultIsolotionLevel.getValue() :
+	        						DefaultTransactionManager.this.defaultIsolationLevel.getValue() :
 	        						td.getIsolationLevel().getValue();
         }
 		

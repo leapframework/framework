@@ -15,22 +15,22 @@
  */
 package leap.core.transaction;
 
-import javax.sql.DataSource;
-
 import leap.core.transaction.TransactionDefinition.IsolationLevel;
 import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
+
+import javax.sql.DataSource;
 
 public class DefaultTransactionManagerFactory implements TransactionManagerFactory {
 	
 	protected PropagationBehaviour defaultPropagationBehaviour = PropagationBehaviour.REQUIRED;
-	protected IsolationLevel       defaultIsolotionLevel       = IsolationLevel.DEFAULT;
+	protected IsolationLevel       defaultIsolationLevel       = IsolationLevel.DEFAULT;
 
 	@Override
 	public TransactionManager createTransactionManager(DataSource dataSource) {
 		DefaultTransactionManager tm = new DefaultTransactionManager(dataSource);
 		
 		tm.setDefaultPropagationBehaviour(defaultPropagationBehaviour);
-		tm.setDefaultIsolotionLevel(defaultIsolotionLevel);
+		tm.setDefaultIsolationLevel(defaultIsolationLevel);
 		
 		return tm;
 	}
@@ -39,8 +39,8 @@ public class DefaultTransactionManagerFactory implements TransactionManagerFacto
 		this.defaultPropagationBehaviour = defaultPropagationBehaviour;
 	}
 
-	public void setDefaultIsolotionLevel(IsolationLevel defaultIsolotionLevel) {
-		this.defaultIsolotionLevel = defaultIsolotionLevel;
+	public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
+		this.defaultIsolationLevel = defaultIsolationLevel;
 	}
 
 }

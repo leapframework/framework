@@ -15,15 +15,6 @@
  */
 package leap.core.transaction;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.WeakHashMap;
-
-import javax.sql.DataSource;
-
 import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.ioc.BeanDefinition;
@@ -34,13 +25,20 @@ import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.WeakHashMap;
+
 /**
  * Transaction management utils.
  */
 public class Transactions {
 	
-	private static final Map<DataSource,TransactionManager> managers = 
-			Collections.synchronizedMap(new WeakHashMap<DataSource, TransactionManager>());
+	private static final Map<DataSource,TransactionManager> managers = Collections.synchronizedMap(new WeakHashMap<>());
 	
 	public static void execute(DataSource dataSource, ConnectionCallback callback) throws NestedSQLException {
 		Args.notNull(dataSource,"dataSource");
