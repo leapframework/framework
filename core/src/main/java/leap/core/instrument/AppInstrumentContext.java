@@ -15,22 +15,9 @@
  */
 package leap.core.instrument;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
+import java.util.Collection;
 
 public interface AppInstrumentContext {
-
-    /**
-     * Returns the input stream of instrumented class or just returns the given if the class was not instrumented.
-     */
-    default InputStream getInstrcumentedOrTheGiven(String className, InputStream is) {
-        AppInstrumentClass ic = getInstrumentedClass(className);
-        if(null == ic) {
-            return is;
-        }else{
-            return new ByteArrayInputStream(ic.getClassData());
-        }
-    }
 
     /**
      * Returns true if the given class name was instrumented by the class.
@@ -39,6 +26,11 @@ public interface AppInstrumentContext {
         AppInstrumentClass ic = getInstrumentedClass(className);
         return null == ic ? false : ic.getAllInstrumentedBy().contains(instrumentedBy);
     }
+
+    /**
+     * Returns the collection contains all the instrumented classes.
+     */
+    Collection<AppInstrumentClass> getAllInstrumentedClasses();
 
     /**
      * Returns the instrumented class or null.

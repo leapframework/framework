@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package leap.core.transaction;
+package tested.transaction;
 
-import leap.core.instrument.AppInstrumentContext;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.lang.resource.ResourceSet;
+import leap.core.annotation.Transactional;
 
-public class TransactionInstrumenttion implements AppInstrumentProcessor {
+public class TransactionalBean {
 
-    @Override
-    public void instrument(AppInstrumentContext context, ResourceSet crs) {
-
-
-
-
+    @Transactional
+    public void doTxSuccess() {
+        System.out.println("do success");
     }
 
+    @Transactional
+    public void doTxFailure() {
+        System.out.println("do failure");
+    }
 }

@@ -34,8 +34,6 @@ import leap.orm.annotation.Instrument;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -129,11 +127,11 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 
             log.debug("Instrument model class '{}'",cr.getClassName());
             ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-            instrument(context, null, cr,cw);
+            instrument(context, cr,cw);
         }
     }
 
-	protected void instrument(AppInstrumentContext context, ModelClassLoader cl, ClassReader cr, ClassWriter cw) {
+	protected void instrument(AppInstrumentContext context, ClassReader cr, ClassWriter cw) {
 		ClassNode cn = ASM.getClassNode(cr);
 		
 		transformClass(cr,cw, cn);
@@ -240,38 +238,6 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/ThreadLocal", "remove", "()V",false);
 	}
 	
-	protected static final class ModelClassLoader extends ClassLoader {
-		
-		private ClassLoader parent;
-		private Method 	    parentDefineClassMethod;
-		
-		protected ModelClassLoader(ClassLoader parent){
-			super(parent);
-			
-			this.parent = parent;
-			
-			try {
-				parentDefineClassMethod = ClassLoader.class.getDeclaredMethod("defineClass", 
-				                                                    new Class[] {String.class, byte[].class, int.class,int.class});
-				
-				parentDefineClassMethod.setAccessible(true);
-			} catch (Exception ignored) {
-			    //do nothing
-			}
-		}
-
-		
-		Class<?> defineClass (String name, byte[] bytes) throws ClassFormatError {
-			try {
-				return (Class<?>)parentDefineClassMethod.invoke(parent, new Object[] {name, bytes, new Integer(0), new Integer(bytes.length)});
-			} catch (InvocationTargetException e){
-				throw new RuntimeException("Error instrument class '" + name + "', " + e.getTargetException().getMessage(), e.getTargetException());
-			} catch (Exception e){
-				throw new RuntimeException("Error instrument class '" + name + "', " + e.getMessage(), e);
-			}
-		}
-	}
-	
 	protected static final class ModelTransformVisitor extends ClassVisitor {
 
 		private final ClassNode				 cn;
@@ -296,7 +262,7 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 					return mv;
 				}
 			}
-			
+
 	        return super.visitMethod(access, name, desc, signature, exceptions);
         }
 	}

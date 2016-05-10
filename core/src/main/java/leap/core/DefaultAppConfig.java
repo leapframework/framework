@@ -18,8 +18,7 @@ package leap.core;
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.core.instrument.DefaultAppInstrumentContext;
+import leap.core.instrument.AppInstrumentation;
 import leap.core.sys.SysPermissionDefinition;
 import leap.lang.*;
 import leap.lang.accessor.SystemPropertyAccessor;
@@ -43,7 +42,7 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static leap.core.AppResources.*;
+import static leap.core.AppResources.CP_APP_PREFIX;
 
 /**
  * A default implementation of {@link AppConfig}
@@ -96,6 +95,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	protected AppPropertyProcessor		    propertyProcessor	= new DefaultPropertyProcessor();
 	protected Map<String, DataSourceConfig> dataSourceConfigs   = new ConcurrentHashMap<>();
 	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
+    protected AppInstrumentation            instrumentation     = Factory.getInstance(AppInstrumentation.class);
 	
 	protected DefaultAppConfig(Object externalContext, Map<String, String> initProperties){
 		this.externalContext = externalContext;
@@ -540,17 +540,8 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	}
 	
 	protected void instrumentClasses() {
-        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext();
-
-		for(AppInstrumentProcessor p : Factory.newInstances(AppInstrumentProcessor.class)){
-			try {
-	            p.instrument(context, resources);
-            } catch (Throwable e) {	
-            	throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
-            }
-		}
-
-        context.postInstrumented();
+        instrumentation.init(this);
+        instrumentation.instrument(resources);
 	}
 	
 	protected void postLoad(){

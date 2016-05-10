@@ -26,11 +26,12 @@ import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
+import leap.lang.time.StopWatch;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
 
@@ -38,6 +39,9 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
 
     @Override
     public void instrument(final AppInstrumentContext context,final ResourceSet rs) {
+
+        final AtomicInteger counter = new AtomicInteger();
+        StopWatch sw = StopWatch.startNew();
 
         preInstrument(context, rs);
 
@@ -59,12 +63,11 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
                             AppInstrumentClass ic = context.getInstrumentedClass(cr.getClassName());
                             if(null != ic) {
                                 log.debug("Class '{}' already instrumented, use the instrumented class instead.", cr.getClassName());
-                                IO.close(is);
-                                is = new ByteArrayInputStream(ic.getClassData());
-                                cr = new ClassReader(is);
+                                cr = new ClassReader(ic.getClassData());
                             }
 
                             processClass(context, rs, resource, cr);
+                            counter.incrementAndGet();
                         }
                     }catch(IOException e){
                         throw Exceptions.wrap(e);
@@ -78,6 +81,8 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         });
 
         postInstrument(context, rs);
+
+        log.debug("Process {} classes by '{}' used {}ms",counter.get(), this.getClass().getName(), sw.getElapsedMilliseconds());
     }
 
     protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {

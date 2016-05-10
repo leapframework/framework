@@ -18,6 +18,7 @@ package leap.core.ioc;
 import leap.core.*;
 import leap.core.annotation.*;
 import leap.core.config.*;
+import leap.core.instrument.AppInstrumentation;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
@@ -82,6 +83,7 @@ public class BeanContainer implements BeanFactory {
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
     protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
+    protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
 
     private AppContext  appContext;
     private BeanFactory beanFactory;
@@ -104,13 +106,13 @@ public class BeanContainer implements BeanFactory {
 	public BeanContainer(PropertyGetter properties){
 		this.placeholderResolver            = new DefaultPlaceholderResolver(properties);
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader();
+		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this);
 	}
 
 	public BeanContainer(AppConfig config){
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader();
+		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
 	}
 	
 	public AppContext getAppContext() {
@@ -139,7 +141,7 @@ public class BeanContainer implements BeanFactory {
 	 */
 	public BeanContainer loadFromResources(Resource[] resources) throws IllegalStateException {
 		ensureContainerNotInited();
-		this.xmlBeanDefinitionLoader.load(this, resources);
+		this.xmlBeanDefinitionLoader.load(resources);
 		return this;
 	}
 	
@@ -203,7 +205,7 @@ public class BeanContainer implements BeanFactory {
     }
 
 	/**
-	 * called after loaded, check and resolve all the beans defintions.
+	 * Called after loaded, check and resolve all the beans definitions.
 	 * 
 	 * <p/>
 	 * 
@@ -244,6 +246,8 @@ public class BeanContainer implements BeanFactory {
 		this.initNonLazyBeans();
 
         this.containerInited = true;
+
+        instrumentation.clear();
 
 		return this;
 	}

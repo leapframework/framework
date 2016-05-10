@@ -17,6 +17,7 @@ package leap.core.ioc;
 
 import leap.core.AppResources;
 import leap.core.el.EL;
+import leap.core.instrument.AppInstrumentation;
 import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
@@ -127,7 +128,19 @@ class XmlBeanDefinitionLoader {
     public static final String REGISTER_BEAN_FACTORY_ELEMENT    = "register-bean-factory";
 
     protected boolean defaultAutoInject = true;
-	
+
+    private final BeanContainer      container;
+    private final AppInstrumentation instrumentation;
+
+    public XmlBeanDefinitionLoader(BeanContainer container) {
+        this(container, null);
+    }
+
+    public XmlBeanDefinitionLoader(BeanContainer container, AppInstrumentation instrumentation) {
+        this.container       = container;
+        this.instrumentation = instrumentation;
+    }
+
     public boolean isDefaultAutoInject() {
 		return defaultAutoInject;
 	}
@@ -136,8 +149,7 @@ class XmlBeanDefinitionLoader {
 		this.defaultAutoInject = defaultAutoInject;
 	}
 
-	public void load(BeanContainer container, Resource[] resources) {
-	    Args.notNull(container,"container");
+	public void load(Resource[] resources) {
 	    Args.notNull(resources,"resources");
 	    
 	    for(Resource resource : resources){
@@ -324,6 +336,10 @@ class XmlBeanDefinitionLoader {
         boolean defaultOverrided = reader.getBooleanAttribute(DEFAULT_OVERRIDED_ATTRIBUTE, false);
 
 		if(!Strings.isEmpty(beanClassName)){
+            if(null != instrumentation) {
+                instrumentation.tryInstrument(beanClassName);
+            }
+
 			try {
 	            bean.setBeanClass(Classes.forName(beanClassName));
             } catch (NestedClassNotFoundException e) {

@@ -15,16 +15,8 @@
  */
 package leap.lang;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import leap.lang.beans.BeanType;
 import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
 import leap.lang.exception.NestedIOException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.io.IO;
@@ -34,17 +26,34 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.resource.SimpleResourceSet;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+
 public class Factory {
 	
-	private static final String PREFIX         = "META-INF/services/";
+	private static final String META_PREFIX    = "META-INF/services/";
+    private static final String APP_PREIFIX    = "/services/";
 	private static final String CLASS_PROPERTY = "class";
+
+    private static Map<Class<?>, Object> singleInstances = new ConcurrentHashMap<>(10);
+
+    public static <T> T getInstance(Class<T> type) {
+        T object = (T)singleInstances.get(type);
+        if(null == object) {
+            object = newInstance(type);
+            singleInstances.put(type, object);
+        }
+        return object;
+    }
 
 	public static <T> T newInstance(Class<T> type) throws ObjectNotFoundException,FactoryException {
 		Args.notNull(type);
 		
 		Resource resource = getSingleClassNameResource(type);
 		if(null == resource){
-			throw new ObjectNotFoundException("no instance of service classs '" + type.getName() + "'");
+			throw new ObjectNotFoundException("no instance of service class '" + type.getName() + "'");
 		}
 		
 		return newInstance(type, resource);
@@ -85,7 +94,7 @@ public class Factory {
 		
 		ResourceSet resources = getAllNamedClassNameResources(type);
 		
-		Map<String,T> instances = new LinkedHashMap<String, T>();
+		Map<String,T> instances = new LinkedHashMap<>();
 		
 		for(Resource resource : resources){
 			instances.put(resource.getFilename(),newInstance(type, resource));
@@ -95,22 +104,22 @@ public class Factory {
 	}
 	
 	private static Resource getSingleClassNameResource(Class<?> type){
-		Resource r = Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + PREFIX + type.getName().replace('.','/'));
+		Resource r = Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + APP_PREIFIX + type.getName());
 		if(r.exists()) {
 			return r;
 		}
-		return Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + PREFIX + type.getName());
+		return Resources.getResource(Urls.CLASSPATH_ONE_URL_PREFIX + META_PREFIX + type.getName());
 	}
 	
 	private static ResourceSet getAllClassNameResources(Class<?> type){
-		ResourceSet rs1 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + PREFIX + type.getName().replace('.','/') + "/?*");
-		ResourceSet rs2 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + PREFIX + type.getName());
+		ResourceSet rs1 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + META_PREFIX + type.getName().replace('.','/') + "/?*");
+		ResourceSet rs2 = Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + META_PREFIX + type.getName());
 		
 		return new SimpleResourceSet(Arrays2.concat(rs1.toResourceArray(), rs2.toResourceArray()));
 	}
 	
 	private static ResourceSet getAllNamedClassNameResources(Class<?> type){
-		return Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + PREFIX + type.getName().replace('.','/') + "/?*");
+		return Resources.scan(Urls.CLASSPATH_ALL_URL_PREFIX + META_PREFIX + type.getName().replace('.','/') + "/?*");
 	}
 	
 	@SuppressWarnings("unchecked")
