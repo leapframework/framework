@@ -15,17 +15,18 @@
  */
 package leap.lang.csv;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.util.List;
-
 import leap.lang.Args;
 import leap.lang.Exceptions;
+import leap.lang.enums.CaseType;
 import leap.lang.exception.NestedIOException;
 import leap.lang.io.IO;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
+
+import java.io.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 
 //Most codes in this package from apache commons-csv
@@ -102,8 +103,58 @@ public class CSV {
 		write(sw,rows);
 		return sw.toString();
 	}
-	
-	protected CSV(){
+
+    public static Map<String, String> readMapFromResources(String location, CaseType toCase, final boolean skipHeader) {
+        return readMapFromResources(new String[]{location}, toCase, skipHeader);
+    }
+
+    public static Map<String, String> readMapFromResources(String[] locations,CaseType toCase,final boolean skipHeader) {
+        final Map<String, String> map = new LinkedHashMap<>();
+
+        readMapFromResources(map, locations, toCase, skipHeader);
+
+        return map;
+    }
+
+    public static void readMapFromResources(final Map<String, String> map, String[] locations,CaseType toCase,final boolean skipHeader) {
+        if(null == toCase){
+            toCase = CaseType.ORIGINAL;
+        }
+
+        final CaseType finalCase = toCase;
+
+        for(Resource resource : Resources.scan(locations)){
+            if(!resource.exists()){
+                continue;
+            }
+
+            Reader reader = null;
+            try{
+                reader = resource.getInputStreamReader();
+                CSV.read(reader,new CsvProcessor() {
+                    @Override
+                    public void process(int rownum, String[] values) throws Exception {
+                        //skip header
+                        if(rownum == 1 && skipHeader){
+                            return;
+                        }
+
+                        //columns : singular,plural
+                        String singular = finalCase.get(values[0]);
+                        String plural   = finalCase.get(values[1]);
+
+                        map.put(singular, plural);
+                        map.put(plural, singular);
+                    }
+                });
+            }finally{
+                IO.close(reader);
+            }
+        }
+    }
+
+
+    protected CSV(){
 		
 	}
 

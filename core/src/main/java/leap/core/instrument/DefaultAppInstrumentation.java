@@ -60,6 +60,10 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
     @Override
     public void init(AppConfig config) {
 
+        for(AppInstrumentProcessor p : processors) {
+            p.init(config);
+        }
+
     }
 
     @Override
