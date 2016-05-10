@@ -26,6 +26,7 @@ import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.IO;
+import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
@@ -85,7 +86,7 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, ResourceSet rs, Resource resource, ClassReader cr) {
+    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
         int inheritLevels = 0;
         boolean isModel   = false;
 
@@ -94,7 +95,7 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
             isModel = true;
         }else if(!superName.equals("java/lang/Object")){
             for(;;){
-                superName = readSuperName(resource, superName);
+                superName = readSuperName(rs, superName);
 
                 if(null == superName || superName.equals("java/lang/Object")){
                     break;

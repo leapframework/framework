@@ -261,6 +261,10 @@ public class ASM {
         cr.accept(new TraceClassVisitor(null, new ASMifier(),out),ClassReader.EXPAND_FRAMES);
 	}
 
+    public static void printASMifiedCode(byte[] data) {
+        printASMifiedCode(data, new PrintWriter(System.out));
+    }
+
     public static void pintASMifiedCode(Class cls) {
         Resource r = Resources.getResource(cls);
 

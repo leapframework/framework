@@ -20,14 +20,14 @@ import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
 
 import javax.sql.DataSource;
 
-public class DefaultTransactionManagerFactory implements TransactionManagerFactory {
+public class LocalTransactionProviderFactory implements TransactionProviderFactory {
 	
 	protected PropagationBehaviour defaultPropagationBehaviour = PropagationBehaviour.REQUIRED;
 	protected IsolationLevel       defaultIsolationLevel       = IsolationLevel.DEFAULT;
 
 	@Override
-	public TransactionManager createTransactionManager(DataSource dataSource) {
-		DefaultTransactionManager tm = new DefaultTransactionManager(dataSource);
+	public TransactionProvider getTransactionProvider(DataSource dataSource) {
+		LocalTransactionProvider tm = new LocalTransactionProvider(dataSource);
 		
 		tm.setDefaultPropagationBehaviour(defaultPropagationBehaviour);
 		tm.setDefaultIsolationLevel(defaultIsolationLevel);

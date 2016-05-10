@@ -17,8 +17,8 @@ package leap.core.transaction;
 
 import javax.sql.DataSource;
 
-public interface TransactionManagerFactory {
+public interface TransactionProviderFactory {
 
-	TransactionManager createTransactionManager(DataSource dataSource);
+	TransactionProvider getTransactionProvider(DataSource dataSource);
 	
 }

@@ -1028,6 +1028,10 @@ public class BeanContainer implements BeanFactory {
 	        if(bean instanceof PostCreateBean){
 	        	((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
 	        }
+
+            if(bean instanceof Initializable) {
+                ((Initializable) bean).init();
+            }
 	        
 	        if(bean instanceof LoadableBean){
 	        	if(!((LoadableBean) bean).load(appContext.getBeanFactory())){

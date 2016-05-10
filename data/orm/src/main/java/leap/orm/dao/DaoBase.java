@@ -24,7 +24,7 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionCallbackWithResult;
-import leap.core.transaction.TransactionManager;
+import leap.core.transaction.TransactionProvider;
 import leap.core.transaction.Transactions;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -42,10 +42,10 @@ import leap.orm.sql.SqlFactory;
 public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBean {
 	protected final Readonly _readonly = new Readonly(this);
 	
-	protected @NotEmpty String      	   name;
-	protected @NotNull  OrmContext   	   ormContext;
-	protected @NotNull  JdbcExecutor 	   jdbcExecutor;
-	protected @NotNull  TransactionManager transactionManager;
+	protected @NotEmpty String              name;
+	protected @NotNull  OrmContext          ormContext;
+	protected @NotNull  JdbcExecutor        jdbcExecutor;
+	protected @NotNull  TransactionProvider transactionProvider;
 	
 	@Override
     public OrmContext getOrmContext() {
@@ -131,22 +131,22 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
 
 	@Override
     public void doTransaction(TransactionCallback callback) {
-		transactionManager.doTransaction(callback);
+		transactionProvider.doTransaction(callback);
     }
 	
 	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback) {
-	    return transactionManager.doTransaction(callback);
+	    return transactionProvider.doTransaction(callback);
     }
 	
 	@Override
     public void doTransaction(TransactionCallback callback, boolean requiresNew) {
-		transactionManager.doTransaction(callback,requiresNew);
+		transactionProvider.doTransaction(callback,requiresNew);
     }
 
 	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
-	    return transactionManager.doTransaction(callback, requiresNew);
+	    return transactionProvider.doTransaction(callback, requiresNew);
     }
 
 	@Override
@@ -157,8 +157,8 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
 			jdbcExecutor = factory.getBean(JdbcExecutorFactory.class).createJdbcExecutor(ormContext);
 		}
 		
-		if(null == transactionManager) {
-			transactionManager = Transactions.getTransactionManager(ormContext.getDataSource());
+		if(null == transactionProvider) {
+			transactionProvider = Transactions.getTransactionManager(ormContext.getDataSource());
 		}
     }
 	

@@ -20,7 +20,9 @@ import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.asm.ClassReader;
+import leap.lang.io.ByteArrayInputStreamSource;
 import leap.lang.io.IO;
+import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
@@ -52,21 +54,24 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
                 if(null != filename &&
                         filename.endsWith(Classes.CLASS_FILE_SUFFIX)){
 
-                    InputStream is = null;
+                    InputStreamSource is = resource;
+                    InputStream       in = null;
 
                     try{
-                        is = resource.getInputStream();
+                        in = resource.getInputStream();
 
-                        ClassReader cr = new ClassReader(is);
+                        ClassReader cr = new ClassReader(in);
 
                         if(acceptsClass(context, rs, cr)) {
                             AppInstrumentClass ic = context.getInstrumentedClass(cr.getClassName());
                             if(null != ic) {
                                 log.debug("Class '{}' already instrumented, use the instrumented class instead.", cr.getClassName());
+
+                                is = new ByteArrayInputStreamSource(ic.getClassData());
                                 cr = new ClassReader(ic.getClassData());
                             }
 
-                            processClass(context, rs, resource, cr);
+                            processClass(context, resource, is, cr);
                             counter.incrementAndGet();
                         }
                     }catch(IOException e){
@@ -74,7 +79,7 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
                     }catch(Exception e){
                         throw new AppInstrumentException("Error instrument class '" + resource.getFilename() + "'",e);
                     }finally{
-                        IO.close(is);
+                        IO.close(in);
                     }
                 }
             }
@@ -97,7 +102,7 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         return Modifier.isPublic(cr.getAccess()) && !Modifier.isAbstract(cr.getAccess());
     }
 
-    protected abstract void processClass(AppInstrumentContext context, ResourceSet rs, Resource resource, ClassReader cr) ;
+    protected abstract void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) ;
 
     /**
      * Reads the internal class of super class.

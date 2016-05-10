@@ -38,13 +38,13 @@ import java.util.WeakHashMap;
  */
 public class Transactions {
 	
-	private static final Map<DataSource,TransactionManager> managers = Collections.synchronizedMap(new WeakHashMap<>());
+	private static final Map<DataSource,TransactionProvider> managers = Collections.synchronizedMap(new WeakHashMap<>());
 	
 	public static void execute(DataSource dataSource, ConnectionCallback callback) throws NestedSQLException {
 		Args.notNull(dataSource,"dataSource");
 		Args.notNull(callback,"callback");
 		
-		TransactionManager tm = getTransactionManager(dataSource);
+		TransactionProvider tm = getTransactionManager(dataSource);
 		
 		Connection connection = null;
 		try{
@@ -61,7 +61,7 @@ public class Transactions {
 		Args.notNull(dataSource,"dataSource");
 		Args.notNull(callback,"callback");
 		
-		TransactionManager tm = getTransactionManager(dataSource);
+		TransactionProvider tm = getTransactionManager(dataSource);
 		
 		Connection connection = null;
 		try{
@@ -95,8 +95,8 @@ public class Transactions {
 		return getTransactionManager(dataSource).closeConnection(connection);
 	}
 	
-	public static TransactionManager getTransactionManager(DataSource dataSource) {
-		TransactionManager manager = managers.get(dataSource);
+	public static TransactionProvider getTransactionManager(DataSource dataSource) {
+		TransactionProvider manager = managers.get(dataSource);
 		
 		if(null == manager){
 			synchronized (managers) {
@@ -115,20 +115,20 @@ public class Transactions {
 		return manager;
 	}
 	
-	protected static TransactionManager tryGetTransactionManager(DataSource dataSource,BeanFactory beanFactory) {
+	protected static TransactionProvider tryGetTransactionManager(DataSource dataSource, BeanFactory beanFactory) {
 		Map<DataSource, BeanDefinition> dataSources = beanFactory.getBeansWithDefinition(DataSource.class);
 		
 		for(Entry<DataSource,BeanDefinition> entry : dataSources.entrySet()){
 			if(entry.getKey() == dataSource || entry.getKey().equals(dataSource)){
 				if(entry.getValue().isPrimary()){
-					TransactionManager tm = beanFactory.tryGetBean(TransactionManager.class);
+					TransactionProvider tm = beanFactory.tryGetBean(TransactionProvider.class);
 					if(null != tm){
 						return tm;
 					}
 				}
 				String name = entry.getValue().getName();
 				if(!Strings.isEmpty(name)){
-					return beanFactory.tryGetBean(TransactionManager.class,name);
+					return beanFactory.tryGetBean(TransactionProvider.class,name);
 				}
 				return null;
 			}
@@ -137,8 +137,8 @@ public class Transactions {
 		return null;
 	}
 	
-	protected static TransactionManager createTransactionManager(DataSource dataSource,BeanFactory beanFactory){
-		return beanFactory.getBean(TransactionManagerFactory.class).createTransactionManager(dataSource);
+	protected static TransactionProvider createTransactionManager(DataSource dataSource, BeanFactory beanFactory){
+		return beanFactory.getBean(TransactionProviderFactory.class).getTransactionProvider(dataSource);
 	}
 
 	protected Transactions(){

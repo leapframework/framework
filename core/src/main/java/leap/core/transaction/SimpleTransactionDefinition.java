@@ -20,7 +20,7 @@ import java.io.Serializable;
 import leap.lang.Args;
 
 //from spring framework
-public class DefaultTransactionDefinition implements TransactionDefinition, Serializable {
+public class SimpleTransactionDefinition implements TransactionDefinition, Serializable {
 	
 	private static final long serialVersionUID = 6664083840731175152L;
 
@@ -43,7 +43,7 @@ public class DefaultTransactionDefinition implements TransactionDefinition, Seri
 	 * @see #setReadOnly
 	 * @see #setName
 	 */
-	public DefaultTransactionDefinition() {
+	public SimpleTransactionDefinition() {
 		
 	}
 
@@ -55,12 +55,12 @@ public class DefaultTransactionDefinition implements TransactionDefinition, Seri
 	 * @see #setReadOnly
 	 * @see #setName
 	 */
-	public DefaultTransactionDefinition(TransactionDefinition other) {
+	public SimpleTransactionDefinition(TransactionDefinition other) {
 		this.propagationBehavior = other.getPropagationBehavior();
 		this.isolationLevel = other.getIsolationLevel();
 	}
 	
-	public DefaultTransactionDefinition(PropagationBehaviour propagationBehavior) {
+	public SimpleTransactionDefinition(PropagationBehaviour propagationBehavior) {
 		Args.notNull(propagationBehavior,"propagationBehavior");
 		this.propagationBehavior = propagationBehavior;
 	}

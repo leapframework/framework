@@ -14,8 +14,11 @@
 	<bean type="leap.core.i18n.MessageReader" class="leap.core.i18n.YamlMessageReader"/>
 
     <!-- transaction beans-->
-    <bean type="leap.core.transaction.TransactionManagerFactory" 
-          class="leap.core.transaction.DefaultTransactionManagerFactory" primary="true"/>
+    <bean type="leap.core.transaction.TransactionProviderFactory"
+          class="leap.core.transaction.LocalTransactionProviderFactory" primary="true"/>
+
+    <bean type="leap.core.transaction.TransactionManager"
+          class="leap.core.transaction.DefaultTransactionManager" primary="true"/>
 
     <!-- event beans -->
     <bean type="leap.core.event.EventManager" class="leap.core.event.DefaultEventManager" primary="true"/>
