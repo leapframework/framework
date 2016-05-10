@@ -16,17 +16,57 @@
 
 package tested.transaction;
 
+import leap.core.annotation.Bean;
 import leap.core.annotation.Transactional;
 
+@Bean
 public class TransactionalBean {
 
     @Transactional
-    public void doTxSuccess() {
+    public void doSuccess() {
         System.out.println("do success");
     }
 
     @Transactional
-    public void doTxFailure() {
-        System.out.println("do failure");
+    public int doSuccessWithReturnValue() {
+        System.out.println("do success");
+        return 0;
+    }
+
+    @Transactional
+    public void doSuccessTryFinally() {
+        try{
+            System.out.println("do success");
+        }finally{
+            System.out.println("do finally");
+        }
+    }
+
+    @Transactional
+    public void doFailure() {
+        throw new RuntimeException("failure");
+    }
+
+    @Transactional
+    public void doFailureTryFinally() {
+        try{
+            throw new RuntimeException("failure");
+        }finally{
+            System.out.println("do finally");
+        }
+    }
+
+    @Transactional
+    public void doFailureNested() {
+        throwRuntimeException();
+    }
+
+    @Transactional
+    public void doFailureThrowable() throws Throwable {
+        throw new Exception();
+    }
+
+    private static void throwRuntimeException() {
+        throw new RuntimeException("failure");
     }
 }

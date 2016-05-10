@@ -16,39 +16,28 @@
 
 package leap.core.transaction;
 
+import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
-import leap.lang.asm.ASM;
-import leap.lang.asm.ClassReader;
-import leap.lang.asm.ClassWriter;
-import leap.lang.resource.Resource;
-import leap.lang.resource.Resources;
+import leap.lang.Try;
 import org.junit.Test;
 import tested.transaction.TransactionalBean;
 
-import java.io.PrintWriter;
-
 public class TransactionTest extends AppTestBase {
 
-    @Test
-    public void testAnnotationWithSuccess() throws Exception {
-        TransactionalBean bean = new TransactionalBean();
-
-        Resource r = Resources.getResource(bean.getClass());
-
-        ClassReader cr = new ClassReader(r.getInputStream());
-        ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-
-        cr.accept(cw, 0);
-
-        ASM.printASMifiedCode(cw.toByteArray(), new PrintWriter(System.out));
-
-        bean.doTxSuccess();
-    }
+    private @Inject TransactionalBean bean;
 
     @Test
-    public void testAnnotationWithFailure() {
-        TransactionalBean bean = new TransactionalBean();
-        bean.doTxFailure();
+    public void testInstrument() throws Exception {
+        System.out.println("");
+
+        bean.doSuccess();
+        bean.doSuccessTryFinally();
+        bean.doSuccessWithReturnValue();
+
+        Try.catchAll(() -> bean.doFailure());
+        Try.catchAll(() -> bean.doFailureTryFinally());
+        Try.catchAll(() -> bean.doFailureNested());
+        Try.catchAll(() -> bean.doFailureThrowable());
     }
 
 }

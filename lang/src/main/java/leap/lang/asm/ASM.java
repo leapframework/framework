@@ -15,28 +15,23 @@
  */
 package leap.lang.asm;
 
+import leap.lang.Arrays2;
+import leap.lang.Classes;
+import leap.lang.Collections2;
+import leap.lang.Try;
+import leap.lang.asm.tree.*;
+import leap.lang.asm.util.*;
+import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
+
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
-
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.asm.tree.AbstractInsnNode;
-import leap.lang.asm.tree.AnnotationNode;
-import leap.lang.asm.tree.ClassNode;
-import leap.lang.asm.tree.FieldNode;
-import leap.lang.asm.tree.InsnNode;
-import leap.lang.asm.tree.MethodNode;
-import leap.lang.asm.util.ASMifier;
-import leap.lang.asm.util.ASMifier1;
-import leap.lang.asm.util.Printer;
-import leap.lang.asm.util.TraceClassVisitor;
-import leap.lang.asm.util.TraceMethodVisitor;
-import leap.lang.exception.ObjectNotFoundException;
 
 /**
  * This class is not from original asm sources.
@@ -265,6 +260,23 @@ public class ASM {
         ClassReader cr = new ClassReader(data);
         cr.accept(new TraceClassVisitor(null, new ASMifier(),out),ClassReader.EXPAND_FRAMES);
 	}
+
+    public static void pintASMifiedCode(Class cls) {
+        Resource r = Resources.getResource(cls);
+
+        Try.throwUnchecked(() -> {
+
+            try(InputStream is = r.getInputStream()) {
+                ClassReader cr = new ClassReader(is);
+                ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
+
+                cr.accept(cw, 0);
+
+                ASM.printASMifiedCode(cw.toByteArray(), new PrintWriter(System.out));
+            }
+
+        });
+    }
 	
 	protected ASM(){
 		

@@ -53,13 +53,9 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
     protected byte[] instrumentClass(ClassNode cn, ClassReader cr) {
         TxClassVisitor visitor = new TxClassVisitor(cn ,new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES));
 
-        cr.accept(visitor, 0);
+        cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
-        byte[] data = visitor.getClassData();
-
-        //ASM.printASMifiedCode(data, new PrintWriter(System.out));
-
-        return data;
+        return visitor.getClassData();
     }
 
     protected static class TxClassVisitor extends ClassVisitor {
@@ -84,6 +80,17 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             return super.visitMethod(access, name, desc, signature, exceptions);
         }
 
+        @Override
+        public void visitEnd() {
+            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE, "tm", "Lleap/core/transaction/TransactionManager;", null, null);
+            {
+                AnnotationVisitor av = fv.visitAnnotation("Lleap/core/annotation/Inject;", true);
+                av.visitEnd();
+            }
+            fv.visitEnd();
+            super.visitEnd();
+        }
+
         public byte[] getClassData() {
             return cw.toByteArray();
         }
@@ -97,6 +104,8 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         private final Label finallyLabel = new Label();
         private final Label catchLabel   = new Label();
 
+        private boolean exit = false;
+
         protected TxMethodVisitor(MethodNode mn, MethodVisitor mv, int access, String name, String desc) {
             super(ASM.API, mv, access, name, desc);
             this.mn = mn;
@@ -105,25 +114,24 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         @Override
         public void visitCode() {
             super.visitCode();
+
             mv.visitLabel(tryLabel);
             onTransactionBegin();
         }
 
         @Override
         public void visitMaxs(int maxStack, int maxLocals) {
-            mv.visitTryCatchBlock(tryLabel, finallyLabel, catchLabel, null);
-            mv.visitLabel(catchLabel);
-
+            mv.visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
+            mv.visitLabel(finallyLabel);
             onTransactionEnd();
-
             mv.visitInsn(Opcodes.ATHROW);
+
             mv.visitMaxs(maxStack, maxLocals);
         }
 
         @Override
         protected void onMethodExit(int opcode) {
             if(opcode != Opcodes.ATHROW) {
-                mv.visitLabel(finallyLabel);
                 onTransactionEnd();
             }
         }

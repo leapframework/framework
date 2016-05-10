@@ -205,7 +205,7 @@ public class BeanContainer implements BeanFactory {
     }
 
 	/**
-	 * Called after loaded, check and resolve all the beans definitions.
+	 * called after loaded, check and resolve all the beans defintions.
 	 * 
 	 * <p/>
 	 * 
@@ -246,8 +246,6 @@ public class BeanContainer implements BeanFactory {
 		this.initNonLazyBeans();
 
         this.containerInited = true;
-
-        instrumentation.clear();
 
 		return this;
 	}
