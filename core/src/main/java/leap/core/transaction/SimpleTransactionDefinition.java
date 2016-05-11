@@ -30,15 +30,15 @@ public class SimpleTransactionDefinition implements TransactionDefinition, Seria
 	/** Prefix for the isolation constants defined in TransactionDefinition */
 	private static final String PREFIX_ISOLATION = "ISOLATION_";
 
-	private PropagationBehaviour propagationBehavior = PropagationBehaviour.REQUIRED;
+	private Propagation propagationBehavior = Propagation.REQUIRED;
 
-	private IsolationLevel isolationLevel = IsolationLevel.DEFAULT;
+	private Isolation isolation = Isolation.DEFAULT;
 
 	/**
 	 * Create a new DefaultTransactionDefinition, with default settings.
 	 * Can be modified through bean property setters.
 	 * @see #setPropagationBehavior
-	 * @see #setIsolationLevel
+	 * @see #setIsolation
 	 * @see #setTimeout
 	 * @see #setReadOnly
 	 * @see #setName
@@ -50,37 +50,37 @@ public class SimpleTransactionDefinition implements TransactionDefinition, Seria
 	/**
 	 * Copy constructor. Definition can be modified through bean property setters.
 	 * @see #setPropagationBehavior
-	 * @see #setIsolationLevel
+	 * @see #setIsolation
 	 * @see #setTimeout
 	 * @see #setReadOnly
 	 * @see #setName
 	 */
 	public SimpleTransactionDefinition(TransactionDefinition other) {
 		this.propagationBehavior = other.getPropagationBehavior();
-		this.isolationLevel = other.getIsolationLevel();
+		this.isolation = other.getIsolation();
 	}
 	
-	public SimpleTransactionDefinition(PropagationBehaviour propagationBehavior) {
+	public SimpleTransactionDefinition(Propagation propagationBehavior) {
 		Args.notNull(propagationBehavior,"propagationBehavior");
 		this.propagationBehavior = propagationBehavior;
 	}
 	
-	public final PropagationBehaviour getPropagationBehavior() {
+	public final Propagation getPropagationBehavior() {
 		return this.propagationBehavior;
 	}
 
-	public final IsolationLevel getIsolationLevel() {
-		return this.isolationLevel;
+	public final Isolation getIsolation() {
+		return this.isolation;
 	}
 	
-	public void setPropagationBehavior(PropagationBehaviour propagationBehavior) {
+	public void setPropagationBehavior(Propagation propagationBehavior) {
 		Args.notNull(propagationBehavior,"propagationBehavior");
 		this.propagationBehavior = propagationBehavior;
 	}
 
-	public void setIsolationLevel(IsolationLevel isolationLevel) {
-		Args.notNull(isolationLevel,"isolationLevel");
-		this.isolationLevel = isolationLevel;
+	public void setIsolation(Isolation isolation) {
+		Args.notNull(isolation,"isolationLevel");
+		this.isolation = isolation;
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class SimpleTransactionDefinition implements TransactionDefinition, Seria
 		StringBuilder result = new StringBuilder();
 		result.append(PREFIX_PROPAGATION + this.propagationBehavior.name());
 		result.append(',');
-		result.append(PREFIX_ISOLATION + this.isolationLevel.name());
+		result.append(PREFIX_ISOLATION + this.isolation.name());
 		return result;
 	}
 }

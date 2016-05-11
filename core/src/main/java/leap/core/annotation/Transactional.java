@@ -15,7 +15,7 @@
  */
 package leap.core.annotation;
 
-import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
+import leap.core.transaction.TransactionDefinition.Propagation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -37,16 +37,16 @@ public @interface Transactional {
     String dataSource() default "";
 	
 	/**
-	 * Set to <code>true</code> means the transaction propagation behaviour is {@link PropagationBehaviour#REQUIRES_NEW}.
+	 * Set to <code>true</code> means the transaction propagation behaviour is {@link Propagation#REQUIRES_NEW}.
 	 * 
 	 * <p>
-	 * Set to <code>false</code> means the transaction propagation behaviour is {@link PropagationBehaviour#REQUIRED}.
+	 * Set to <code>false</code> means the transaction propagation behaviour is {@link Propagation#REQUIRED}.
 	 */
 	boolean requiresNew() default false;
 	
 	/**
 	 * Sets the transaction propagation behaviour.
 	 */
-	PropagationBehaviour propagationBehaviour() default PropagationBehaviour.REQUIRED;
+	Propagation propagationBehaviour() default Propagation.REQUIRED;
 
 }

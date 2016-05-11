@@ -16,8 +16,8 @@
 package leap.core.transaction;
 
 import leap.core.ioc.AbstractReadonlyBean;
-import leap.core.transaction.TransactionDefinition.IsolationLevel;
-import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
+import leap.core.transaction.TransactionDefinition.Isolation;
+import leap.core.transaction.TransactionDefinition.Propagation;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.Args;
 import leap.lang.exception.NestedSQLException;
@@ -34,11 +34,11 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	
 	private static final Log log = LogFactory.get(LocalTransactionProvider.class);
 	
-	private final ThreadLocal<Stack<DefaultTransaction>> currentTransactions = new ThreadLocal<>();
+	private final ThreadLocal<Stack<LocalTransaction>> currentTransactions = new ThreadLocal<>();
 	
 	protected @NotNull DataSource  dataSource;
-	protected PropagationBehaviour defaultPropagationBehaviour = PropagationBehaviour.REQUIRED;
-	protected IsolationLevel       defaultIsolationLevel       = IsolationLevel.DEFAULT;
+	protected Propagation defaultPropagation = Propagation.REQUIRED;
+	protected Isolation   defaultIsolation   = Isolation.DEFAULT;
 	
 	public LocalTransactionProvider(){
 		
@@ -53,12 +53,12 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		this.dataSource = dataSource;
 	}
 	
-	public void setDefaultPropagationBehaviour(PropagationBehaviour defaultPropagationBehaviour) {
-		this.defaultPropagationBehaviour = defaultPropagationBehaviour;
+	public void setDefaultPropagation(Propagation defaultPropagation) {
+		this.defaultPropagation = defaultPropagation;
 	}
 
-	public void setDefaultIsolationLevel(IsolationLevel defaultIsolationLevel) {
-		this.defaultIsolationLevel = defaultIsolationLevel;
+	public void setDefaultIsolation(Isolation defaultIsolation) {
+		this.defaultIsolation = defaultIsolation;
 	}
 
 	@Override
@@ -99,8 +99,8 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	protected TransactionDefinition getRequiredDefinition() {
 		if(null == requiredDefinition) {
 			requiredDefinition = new SimpleTransactionDefinition();
-			requiredDefinition.setPropagationBehavior(PropagationBehaviour.REQUIRED);
-			requiredDefinition.setIsolationLevel(this.defaultIsolationLevel);
+			requiredDefinition.setPropagationBehavior(Propagation.REQUIRED);
+			requiredDefinition.setIsolation(this.defaultIsolation);
 		}
 		return requiredDefinition;
 	}
@@ -108,8 +108,8 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	protected TransactionDefinition getRequiresNewDefinition() {
 		if(null == requiresNewDefinition) {
 			requiresNewDefinition = new SimpleTransactionDefinition();
-			requiresNewDefinition.setPropagationBehavior(PropagationBehaviour.REQUIRES_NEW);
-			requiresNewDefinition.setIsolationLevel(this.defaultIsolationLevel);
+			requiresNewDefinition.setPropagationBehavior(Propagation.REQUIRES_NEW);
+			requiresNewDefinition.setIsolation(this.defaultIsolation);
 		}
 		return requiresNewDefinition;
 	}
@@ -125,16 +125,16 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	 * Return a currently active transaction or create a new one.
 	 */
     protected Transaction getTransaction(TransactionDefinition td) {
-    	if(td.getPropagationBehavior() == PropagationBehaviour.REQUIRES_NEW) {
+    	if(td.getPropagationBehavior() == Propagation.REQUIRES_NEW) {
     		log.debug("Force to Create a new Transaction");
-    		DefaultTransaction trans = new DefaultTransaction(td);
+    		LocalTransaction trans = new LocalTransaction(this,td);
     		pushActiveTransaction(trans);
     		return trans;
     	}else{
-    		DefaultTransaction trans = peekActiveTransaction();
+    		LocalTransaction trans = peekActiveTransaction();
     		if(null == trans){
     			log.debug("No Active Transaction, Creates a new one");
-    			trans = new DefaultTransaction(td);
+    			trans = new LocalTransaction(this,td);
     			pushActiveTransaction(trans);
     		}else{
     			log.debug("Returns an Active Transaction");
@@ -145,7 +145,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 
 	@Override
     public Connection getConnection() throws NestedSQLException {
-		DefaultTransaction transaction = peekActiveTransaction();
+		LocalTransaction transaction = peekActiveTransaction();
 		
         if(transaction == null){
             log.debug("Fetching JDBC Connection from DataSource Non Transactional");
@@ -166,7 +166,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 			return false;
 		}
 		
-		DefaultTransaction transaction = peekActiveTransaction();
+		LocalTransaction transaction = peekActiveTransaction();
 		if(null != transaction && connectionEquals(transaction, connection)){
 			return false;
 		}
@@ -176,8 +176,8 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		return true;
     }
 	
-	protected DefaultTransaction peekActiveTransaction() {
-		Stack<DefaultTransaction> trans = currentTransactions.get();
+	protected LocalTransaction peekActiveTransaction() {
+		Stack<LocalTransaction> trans = currentTransactions.get();
 		if(null == trans || trans.empty()) {
 			return null;
 		}else{
@@ -185,8 +185,8 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		}
 	}
 	
-	protected void pushActiveTransaction(DefaultTransaction tran) {
-		Stack<DefaultTransaction> trans = currentTransactions.get();
+	protected void pushActiveTransaction(LocalTransaction tran) {
+		Stack<LocalTransaction> trans = currentTransactions.get();
 		if(null == trans) {
 			trans = new Stack<>();
 			currentTransactions.set(trans);
@@ -194,8 +194,8 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		trans.push(tran);
 	}
 	
-	protected DefaultTransaction removeActiveTransaction() {
-		Stack<DefaultTransaction> trans = currentTransactions.get();
+	protected LocalTransaction removeActiveTransaction() {
+		Stack<LocalTransaction> trans = currentTransactions.get();
 		if(null == trans || trans.empty()) {
 			throw new IllegalStateException("No active transaction, cannot remove it");
 		}
@@ -214,7 +214,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		JDBC.closeConnection(connection);
 	}
 	
-	protected boolean connectionEquals(DefaultTransaction transaction,Connection parssedInConn){
+	protected boolean connectionEquals(LocalTransaction transaction, Connection parssedInConn){
 		Connection holdedConn = transaction.getConnection();
 		
 		if(null == holdedConn){
@@ -225,195 +225,5 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		// "equals" properly, such as the ones Commons DBCP exposes).		
 		return holdedConn == parssedInConn || holdedConn.equals(parssedInConn);
 	}
-	
-	protected class DefaultTransaction implements Transaction,TransactionStatus {
 
-		private int 	   referenceCount = 0;
-		private Connection connection;
-		private boolean    rollbackOnly;
-		
-		private boolean	   originalAutoCommit;
-		private int		   originalIsolationLevel;
-		
-		private final int isolationLevel;
-		
-		protected DefaultTransaction() {
-	        this.isolationLevel = LocalTransactionProvider.this.defaultIsolationLevel.getValue();
-        }
-		
-		protected DefaultTransaction(TransactionDefinition td) {
-	        this.isolationLevel = td.getIsolationLevel() == null ? 
-	        						LocalTransactionProvider.this.defaultIsolationLevel.getValue() :
-	        						td.getIsolationLevel().getValue();
-        }
-		
-		public int getIsolationLevel() {
-			return isolationLevel;
-		}
-
-		@Override
-        public boolean isNewTransaction() {
-	        return referenceCount <= 1;
-        }
-
-		@Override
-        public void setRollbackOnly() {
-			log.debug("Transaction set to rollback-only");
-	        rollbackOnly = true;
-        }
-
-		@Override
-        public boolean isRollbackOnly() {
-	        return rollbackOnly;
-        }
-
-		@Override
-        public boolean isCompleted() {
-	        return connection == null;
-        }
-
-		public boolean hasConnection(){
-			return null != connection;
-		}
-		
-		public Connection getConnection() {
-			return connection;
-		}
-
-		protected void setConnection(Connection connection) {
-			try {
-				this.originalAutoCommit     = connection.getAutoCommit();
-            	connection.setAutoCommit(false);
-            } catch (SQLException e) {
-            	returnConnectionToDataSource(connection);
-            	throw new NestedSQLException("Error setting connection's 'autoCommit'" + e.getMessage(), e);
-            }		
-			
-			if(isolationLevel != IsolationLevel.DEFAULT.getValue()) {
-				try{
-					this.originalIsolationLevel = connection.getTransactionIsolation();
-	            	if(this.isolationLevel != this.originalIsolationLevel) {
-	            		connection.setTransactionIsolation(this.isolationLevel);
-	            	}
-				}catch(SQLException e){
-	            	returnConnectionToDataSource(connection);
-	            	throw new NestedSQLException("Error setting connection's 'transactionIsolaction'" + e.getMessage(), e);
-				}
-			}
-			
-			this.connection = connection;
-		}
-
-		@Override
-        public void execute(TransactionCallback callback) {
-			begin();
-
-			try{
-				callback.doInTransaction(this);
-			}catch(Throwable e) {
-				setRollbackOnly();
-				log.warn("Error executing transaction, auto rollback", e);
-				
-				if(e instanceof RuntimeException) {
-					throw (RuntimeException)e;
-				}else{
-					throw new TransactionException("Error executing transaction, " + e.getMessage(), e);
-				}
-			}finally{
-				complete();				
-			}
-        }
-
-		@Override
-        public <T> T execute(TransactionCallbackWithResult<T> callback) {
-			begin();
-
-			try{
-				return callback.doInTransaction(this);
-			}catch(Throwable e) {
-				setRollbackOnly();
-				log.warn("Error executing transaction, auto rollback", e);
-				
-				if(e instanceof RuntimeException) {
-					throw (RuntimeException)e;
-				}else{
-					throw new TransactionException("Error executing transaction, " + e.getMessage(), e);
-				}
-			}finally{
-				complete();	
-			}
-        }
-		
-		protected void begin() {
-			increase();
-			
-			if(log.isDebugEnabled()){
-				if(isNewTransaction()){
-					log.debug("Begin a new transaction, referencedCount={}",referenceCount);	
-				}else{
-					log.debug("Join a exists transaction, referencedCount={}",referenceCount);
-				}
-			}
-		}
-
-		protected void complete() {
-			decrease();
-			
-			if(referenceCount == 0) {
-				try{
-					//Connection may be null if no database access in transaction.
-					if(null != connection){
-						if(rollbackOnly){
-							try {
-								log.debug("Rollback transaction, referencedCount={}",referenceCount);
-				                connection.rollback();
-				                connection.setAutoCommit(originalAutoCommit); //Notice: must do the rollback before setAutoCommit
-			                } catch (SQLException e) {
-			                	log.warn("Error rollback transaction, " + e.getMessage(), e);
-			                }
-						}else{
-							try {
-								log.debug("Commit transaction, referencedCount={}",referenceCount);
-			                    connection.commit();
-			                    connection.setAutoCommit(originalAutoCommit);
-			                    
-			                    if(isolationLevel != IsolationLevel.DEFAULT.getValue() && 
-			                       isolationLevel != originalIsolationLevel) {
-			                    	connection.setTransactionIsolation(isolationLevel);
-			                    }
-		                    } catch (SQLException e) {
-		                    	throw new TransactionException("Error commit transaction, " + e.getMessage(), e);
-		                    } 
-						}
-					}
-				}finally{
-					try{
-						removeActiveTransaction();
-					}finally{
-						closeConnection(connection);	
-					}
-				}
-			}else{
-				log.debug("Exit transaction(no rollback or commit), referencedCount={}, rollbackOnly={}", referenceCount,rollbackOnly);
-			}
-		}
-		
-		/**
-		 * Increase the reference count by one because the connection has been requested
-		 */
-		protected void increase() {
-			this.referenceCount++;
-		}
-		
-		/**
-		 * Decrease the reference count by one because the connection has been released
-		 */
-		protected void decrease() {
-			this.referenceCount--;
-		}
-	
-		public int getReferenceCount() {
-			return referenceCount;
-		}
-	}
 }

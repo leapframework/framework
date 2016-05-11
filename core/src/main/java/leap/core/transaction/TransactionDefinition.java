@@ -17,29 +17,26 @@ package leap.core.transaction;
 
 import java.sql.Connection;
 
-//from spring framework
 public interface TransactionDefinition {
-	
-	enum PropagationBehaviour {
+
+    /**
+     * @see <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/annotation/Propagation.html">Spring's Propagation</a>
+     */
+	enum Propagation {
+
 		/**
 		 * Support a current transaction; create a new one if none exists.
-		 * Analogous to the EJB transaction attribute of the same name.
-		 * <p>This is typically the default setting of a transaction definition,
-		 * and typically defines a transaction synchronization scope.
 		 */
 		REQUIRED(0),
 		
 		/**
 		 * Create a new transaction, suspending the current transaction if one exists.
-		 * Analogous to the EJB transaction attribute of the same name.
-		 * <p><b>NOTE:</b> Actual transaction suspension will not work out-of-the-box
-		 * on all transaction managers. 
 		 */
 		REQUIRES_NEW(3);
 		
 		private final int value;
 		
-		PropagationBehaviour(int value) {
+		Propagation(int value) {
 			this.value = value;
         }
 
@@ -47,8 +44,11 @@ public interface TransactionDefinition {
 			return value;
 		}
 	}
-	
-	enum IsolationLevel{
+
+    /**
+     * @see <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/transaction/annotation/Isolation.html">Spring's Isolation</a>
+     */
+	enum Isolation {
 		
 		/**
 		 * Use the default isolation level of the underlying datastore.
@@ -103,7 +103,7 @@ public interface TransactionDefinition {
 		
 		private final int value;
 		
-		private IsolationLevel(int value) {
+		private Isolation(int value) {
 	        this.value = value;
         }
 
@@ -126,7 +126,7 @@ public interface TransactionDefinition {
 	 * @see #PROPAGATION_REQUIRED
 	 * @see org.springframework.transaction.support.TransactionSynchronizationManager#isActualTransactionActive()
 	 */
-	PropagationBehaviour getPropagationBehavior();
+	Propagation getPropagationBehavior();
 
 	/**
 	 * Return the isolation level.
@@ -138,5 +138,5 @@ public interface TransactionDefinition {
 	 * will throw an exception when given any other level than {@link #ISOLATION_DEFAULT}.
 	 * @return the isolation level
 	 */
-	IsolationLevel getIsolationLevel();
+	Isolation getIsolation();
 }
