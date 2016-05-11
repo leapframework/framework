@@ -16,16 +16,14 @@
 package leap.orm.dao;
 
 import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.ioc.PostInjectBean;
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.JdbcExecutor;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.transaction.TransactionCallback;
-import leap.core.transaction.TransactionCallbackWithResult;
-import leap.core.transaction.TransactionProvider;
-import leap.core.transaction.Transactions;
+import leap.core.transaction.*;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.Readonly;
@@ -41,13 +39,14 @@ import leap.orm.sql.SqlFactory;
 
 public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBean {
 	protected final Readonly _readonly = new Readonly(this);
-	
-	protected @NotEmpty String              name;
-	protected @NotNull  OrmContext          ormContext;
-	protected @NotNull  JdbcExecutor        jdbcExecutor;
-	protected @NotNull  TransactionProvider transactionProvider;
-	
-	@Override
+
+    protected @NotEmpty String              name;
+    protected @NotNull  OrmContext          ormContext;
+    protected @NotNull  JdbcExecutor        jdbcExecutor;
+    protected @Inject   TransactionManager  transactionManager;
+    protected @NotNull  TransactionProvider transactionProvider;
+
+    @Override
     public OrmContext getOrmContext() {
 	    return ormContext;
     }
@@ -158,7 +157,7 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
 		}
 		
 		if(null == transactionProvider) {
-			transactionProvider = Transactions.getTransactionManager(ormContext.getDataSource());
+			transactionProvider = transactionManager.getProvider(ormContext.getDataSource());
 		}
     }
 	

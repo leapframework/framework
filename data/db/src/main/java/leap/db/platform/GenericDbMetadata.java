@@ -15,30 +15,20 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
+import leap.db.Db;
+import leap.db.DbAware;
+import leap.db.DbMetadata;
+import leap.db.DbMetadataReader;
+import leap.db.model.*;
+import leap.lang.*;
+import leap.lang.logging.Log;
+
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import leap.core.transaction.Transactions;
-import leap.db.Db;
-import leap.db.DbAware;
-import leap.db.DbMetadata;
-import leap.db.DbMetadataReader;
-import leap.db.model.DbSchema;
-import leap.db.model.DbSchemaName;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Assert;
-import leap.lang.Dates;
-import leap.lang.New;
-import leap.lang.Strings;
-import leap.lang.logging.Log;
 
 public class GenericDbMetadata implements DbMetadata,DbAware {
 	
@@ -166,29 +156,25 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		if(null == cachedExtraSchemaNames){
 			synchronized (cachedExtraSchemaNamesMonitor) {
 	            if(null == cachedExtraSchemaNames){
-	            	Connection connection = null;
-	            	try{
-	            		connection = Transactions.getConnection(db.getDataSource());
-	            		
-	            		List<DbSchemaName> allSchemaNames = New.arrayList(metadataReader.readSchemaNames(connection));
-	            		
-	            		DbSchemaName defaultSchemaName = null;
-	            		
-	            		for(DbSchemaName schemaName : allSchemaNames){
-	            			if(Strings.equalsIgnoreCase(schemaName.getName(), getDefaultSchemaName())){
-	            				defaultSchemaName = schemaName;
-	            				break;
-	            			}
-	            		}
-	            		
-	            		if(null != defaultSchemaName){
-	            			allSchemaNames.remove(defaultSchemaName);
-	            		}
-	            		
-	            		cachedExtraSchemaNames = allSchemaNames.toArray(new DbSchemaName[allSchemaNames.size()]);
-	            	}finally{
-	            		Transactions.closeConnection(connection, db.getDataSource());
-	            	}
+
+                    db.execute((conn) -> {
+                        List<DbSchemaName> allSchemaNames = New.arrayList(metadataReader.readSchemaNames(conn));
+
+                        DbSchemaName defaultSchemaName = null;
+
+                        for(DbSchemaName schemaName : allSchemaNames){
+                            if(Strings.equalsIgnoreCase(schemaName.getName(), getDefaultSchemaName())){
+                                defaultSchemaName = schemaName;
+                                break;
+                            }
+                        }
+
+                        if(null != defaultSchemaName){
+                            allSchemaNames.remove(defaultSchemaName);
+                        }
+
+                        cachedExtraSchemaNames = allSchemaNames.toArray(new DbSchemaName[allSchemaNames.size()]);
+                    });
 	            }
             }
 		}
@@ -216,31 +202,26 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 		
 		String key = Strings.isEmpty(catalog) ? schemaName : catalog + "%" + schemaName;
 		
-		DbSchema schema = null;
-		
 		log.trace("Try to get the schema '{}' from cache...",schemaName);
 		
 		synchronized (cachedSchemasMonitor) {
-			schema = cachedSchemas.get(key);
+			DbSchema cachedSchema = cachedSchemas.get(key);
 			
-			if(null == schema){
+			if(null == cachedSchema){
 				log.debug("Schema '{}' not cached,read from db...",schemaName);
-				Connection connection = null;
-				try{
-					connection = Transactions.getConnection(db.getDataSource());
-					schema = metadataReader.readSchema(connection, catalog, schemaName);
-					cachedSchemas.put(key, schema);
-				}finally{
-					if(null != connection) {
-						Transactions.closeConnection(connection, db.getDataSource());	
-					}
-				}
+
+                final String theSchemaName = schemaName;
+
+                return db.executeWithResult((conn) -> {
+                    DbSchema schema = metadataReader.readSchema(conn, catalog, theSchemaName);
+                    cachedSchemas.put(key, schema);
+                    return schema;
+                });
 			}else{
 				log.trace("Schema '{}' was cached,just return it",schemaName);
+                return cachedSchema;
 			}
 		}
-
-		return schema;
     }
 	
 	@Override

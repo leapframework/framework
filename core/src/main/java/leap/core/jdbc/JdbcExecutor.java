@@ -15,14 +15,14 @@
  */
 package leap.core.jdbc;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import leap.lang.Arrays2;
 import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 public interface JdbcExecutor {
 	
@@ -39,7 +39,14 @@ public interface JdbcExecutor {
 	 * @throws NestedSQLException if an {@link SQLException} throwed.
 	 */
 	<T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException;
-	
+
+    /**
+     * Same as {@link #execute(ConnectionCallbackWithResult)}
+     */
+    default <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
+        return execute(callback);
+    }
+
 	/**
 	 * Execute an update use the given sql statement.
 	 */

@@ -20,10 +20,14 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
+import leap.lang.Exceptions;
 import leap.lang.Initializable;
 import leap.lang.jdbc.ConnectionCallback;
+import leap.lang.jdbc.ConnectionCallbackWithResult;
 
 import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,11 +39,13 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
 
     protected Map<DataSource, TransactionProvider> providers = new ConcurrentHashMap<>(2);
 
-    protected static class ClosableTransactionImpl implements ClosableTransaction {
-        @Override
-        public void close() {
-            System.out.println("close transaction");
+    @Override
+    public TransactionProvider getProvider(DataSource ds) {
+        TransactionProvider tp = providers.get(ds);
+        if(null == tp) {
+            tp = loadProvider(null, ds);
         }
+        return tp;
     }
 
     @Override
@@ -51,6 +57,11 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     @Override
     public void execute(ConnectionCallback callback) {
         execute(dsm.getDefaultDataSource(), callback);
+    }
+
+    @Override
+    public <T> T execute(ConnectionCallbackWithResult<T> callback) {
+        return execute(dsm.getDefaultDataSource(), callback);
     }
 
     @Override
@@ -75,27 +86,53 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
 
     @Override
     public void execute(DataSource ds, ConnectionCallback callback) {
+        TransactionProvider tp = getProvider(ds);
 
+        Connection connection = null;
+        try{
+            connection = tp.getConnection();
+            callback.execute(connection);
+        }catch(SQLException e){
+            Exceptions.wrapAndThrow(e);
+        }finally{
+            tp.closeConnection(connection);
+        }
+    }
+
+    @Override
+    public <T> T execute(DataSource ds, ConnectionCallbackWithResult<T> callback) {
+        TransactionProvider tp = getProvider(ds);
+
+        Connection connection = null;
+        try{
+            connection = tp.getConnection();
+            return callback.execute(connection);
+        }catch(SQLException e){
+            Exceptions.wrapAndThrow(e);
+            return null;
+        }finally{
+            tp.closeConnection(connection);
+        }
     }
 
     @Override
     public void doTransaction(DataSource ds, TransactionCallback callback) {
-
+        getProvider(ds).doTransaction(callback);
     }
 
     @Override
     public <T> T doTransaction(DataSource ds, TransactionCallbackWithResult<T> callback) {
-        return null;
+        return getProvider(ds).doTransaction(callback);
     }
 
     @Override
     public void doTransaction(DataSource ds, TransactionCallback callback, boolean requiresNew) {
-
+        getProvider(ds).doTransaction(callback, requiresNew);
     }
 
     @Override
     public <T> T doTransaction(DataSource ds, TransactionCallbackWithResult<T> callback, boolean requiresNew) {
-        return null;
+        return getProvider(ds).doTransaction(callback, requiresNew);
     }
 
     @Override
@@ -112,20 +149,20 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     public void init() {
         dsm.getAllDataSources().entrySet().forEach((entry) -> loadProvider(entry.getKey(), entry.getValue()));
     }
-    
-    protected TransactionProvider getTransactionProvider(DataSource ds) {
-        TransactionProvider tp = providers.get(ds);
-        if(null == tp) {
-            throw new IllegalStateException("No Transaction Provider for data source '" + ds + "'");
-        }
-        return tp;
-    }
 
-    protected void loadProvider(String name, DataSource ds) {
-        TransactionProvider tp = factory.tryGetBean(TransactionProvider.class, name);
+    protected TransactionProvider loadProvider(String name, DataSource ds) {
+        TransactionProvider tp = null == name ? null : factory.tryGetBean(TransactionProvider.class, name);
         if(null == tp) {
             tp = tpf.getTransactionProvider(ds);
         }
         providers.put(ds, tp);
+        return tp;
+    }
+
+    protected static class ClosableTransactionImpl implements ClosableTransaction {
+        @Override
+        public void close() {
+            System.out.println("close transaction");
+        }
     }
 }

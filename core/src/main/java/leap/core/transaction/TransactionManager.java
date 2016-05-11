@@ -17,6 +17,7 @@
 package leap.core.transaction;
 
 import leap.lang.jdbc.ConnectionCallback;
+import leap.lang.jdbc.ConnectionCallbackWithResult;
 
 import javax.sql.DataSource;
 
@@ -28,12 +29,25 @@ public interface TransactionManager {
     ClosableTransaction begin();
 
     /**
+     * Returns the {@link TransactionProvider} of the given data source.
+     */
+    TransactionProvider getProvider(DataSource ds);
+
+    /**
      * Executes the callback with default datasource.
      *
      * <p/>
      * If an active transaction is exist of the default datasource, the callback will be executed in the transaction.
      */
     void execute(ConnectionCallback callback);
+
+    /**
+     * Executes the callback with default datasource.
+     *
+     * <p/>
+     * If an active transaction is exists of the default datasource, the callback will be executed in the transaction.
+     */
+    <T> T execute(ConnectionCallbackWithResult<T> callback);
 
     /**
      * Executes the callback in a currently active transaction or a new one if no active transaction.
@@ -68,6 +82,14 @@ public interface TransactionManager {
      * If an active transaction is exist of the given datasource, the callback will be executed in the transaction.
      */
     void execute(DataSource ds, ConnectionCallback callback);
+
+    /**
+     * Executes the callback with the given datasource.
+     *
+     * <p/>
+     * If an active transaction is exists of the given datasource, the callback will be execute in the transaction.
+     */
+    <T> T execute(DataSource ds, ConnectionCallbackWithResult<T> callback);
 
     /**
      * Executes the callback in a currently active transaction or a new one if no active transaction.
