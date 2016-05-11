@@ -136,6 +136,14 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         }
     }
 
+    @Override
+    public void remove() {
+        LocalTransaction trans = tp.removeActiveTransaction();
+        if(trans != this) {
+            throw new IllegalStateException("The removed active transaction must be the self");
+        }
+    }
+
     protected void begin() {
         increase();
 

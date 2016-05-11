@@ -16,11 +16,19 @@
 
 package leap.core.transaction;
 
-public interface ClosableTransaction {
+public class SimpleTransactions implements Transactions {
 
-    /**
-     * Close this active transaction.
-     */
-    void close();
+    private final Transaction[] transactions;
+
+    public SimpleTransactions(Transaction[] transactions) {
+        this.transactions = transactions;
+    }
+
+    @Override
+    public void removeAll() {
+        for(Transaction tx : transactions) {
+            tx.remove();
+        }
+    }
 
 }

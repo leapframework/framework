@@ -15,15 +15,6 @@
  */
 package leap.db;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 import leap.core.AppContext;
 import leap.core.ds.DataSourceManager;
 import leap.db.exception.UnsupportedDbPlatformException;
@@ -36,6 +27,14 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.net.Urls;
 
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 public class DbFactory {
 
 	private static final Log log = LogFactory.get(DbFactory.class);
@@ -47,24 +46,24 @@ public class DbFactory {
 	
 	/**
 	 * Returns the cached {@link Db} instance for the default {@link DataSource} managed by {@link DataSourceManager}.
-	 * 
+	 *
 	 * @see DataSourceManager#getDefaultDataSource()
 	 */
 	public static Db getInstance() {
 		DataSourceManager dsm = AppContext.factory().getBean(DataSourceManager.class);
 		return getInstance(DataSourceManager.DEFAULT_DATASOURCE_NAME, dsm.getDefaultDataSource());
 	}
-	
+
 	/**
 	 * Returns the cached {@link Db} instance for the {@link DataSource} managed by {@link DataSourceManager}.
-	 * 
+	 *
 	 * @see DataSourceManager#getDataSource(String)
 	 */
 	public static Db getInstance(String name) throws NestedSQLException,UnsupportedDbPlatformException,ObjectNotFoundException {
 		DataSourceManager dsm = AppContext.factory().getBean(DataSourceManager.class);
 		return getInstance(name, dsm.getDataSource(name));
 	}
-	
+
 	/**
 	 * Returns the cached {@link Db} instance created for the given {@link DataSource}.
 	 * 
@@ -82,7 +81,7 @@ public class DbFactory {
 		Db db = null;
 		
 		if(null == dbs){
-			dbs = Collections.synchronizedMap(new IdentityHashMap<DataSource, Db>(2));
+			dbs = Collections.synchronizedMap(new IdentityHashMap<>(2));
 			context.setAttribute(DB_CACHED_KEY, dbs);
 		}else{
 			db = dbs.get(ds);

@@ -158,7 +158,7 @@ public class GenericDbExecution implements DbExecution {
 	
 	@Override
     public boolean execute() {
-		return db.execute(new ConnectionCallbackWithResult<Boolean>() {
+		return db.executeWithResult(new ConnectionCallbackWithResult<Boolean>() {
 			@Override
             public Boolean execute(Connection connection) throws SQLException {
 	            return GenericDbExecution.this.execute(connection);

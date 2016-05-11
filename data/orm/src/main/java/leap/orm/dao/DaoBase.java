@@ -68,8 +68,8 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
     }
 
 	@Override
-    public <T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-	    return jdbcExecutor.execute(callback);
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
+	    return jdbcExecutor.executeWithResult(callback);
     }
 
 	@Override

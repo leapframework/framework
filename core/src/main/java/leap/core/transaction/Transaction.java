@@ -27,4 +27,10 @@ public interface Transaction {
      */
 	<T> T execute(TransactionCallbackWithResult<T> callback);
 
+    /**
+     * Removes this transaction from current transaction stack.
+     *
+     * @throws IllegalStateException if this transaction is not the active transaction currently.
+     */
+    void remove() throws IllegalStateException;
 }

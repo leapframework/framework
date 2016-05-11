@@ -15,106 +15,38 @@
  */
 package leap.core.transaction;
 
-import java.io.Serializable;
-
 import leap.lang.Args;
 
-//from spring framework
+import java.io.Serializable;
+
 public class SimpleTransactionDefinition implements TransactionDefinition, Serializable {
 	
 	private static final long serialVersionUID = 6664083840731175152L;
 
-	/** Prefix for the propagation constants defined in TransactionDefinition */
-	private static final String PREFIX_PROPAGATION = "PROPAGATION_";
+    protected Propagation propagation = Propagation.REQUIRED;
+    protected Isolation   isolation   = Isolation.DEFAULT;
 
-	/** Prefix for the isolation constants defined in TransactionDefinition */
-	private static final String PREFIX_ISOLATION = "ISOLATION_";
-
-	private Propagation propagationBehavior = Propagation.REQUIRED;
-
-	private Isolation isolation = Isolation.DEFAULT;
-
-	/**
-	 * Create a new DefaultTransactionDefinition, with default settings.
-	 * Can be modified through bean property setters.
-	 * @see #setPropagationBehavior
-	 * @see #setIsolation
-	 * @see #setTimeout
-	 * @see #setReadOnly
-	 * @see #setName
-	 */
-	public SimpleTransactionDefinition() {
-		
-	}
-
-	/**
-	 * Copy constructor. Definition can be modified through bean property setters.
-	 * @see #setPropagationBehavior
-	 * @see #setIsolation
-	 * @see #setTimeout
-	 * @see #setReadOnly
-	 * @see #setName
-	 */
-	public SimpleTransactionDefinition(TransactionDefinition other) {
-		this.propagationBehavior = other.getPropagationBehavior();
-		this.isolation = other.getIsolation();
-	}
-	
-	public SimpleTransactionDefinition(Propagation propagationBehavior) {
-		Args.notNull(propagationBehavior,"propagationBehavior");
-		this.propagationBehavior = propagationBehavior;
-	}
-	
-	public final Propagation getPropagationBehavior() {
-		return this.propagationBehavior;
+	public final Propagation getPropagation() {
+		return this.propagation;
 	}
 
 	public final Isolation getIsolation() {
 		return this.isolation;
 	}
 	
-	public void setPropagationBehavior(Propagation propagationBehavior) {
-		Args.notNull(propagationBehavior,"propagationBehavior");
-		this.propagationBehavior = propagationBehavior;
+	public void setPropagation(Propagation propagation) {
+		Args.notNull(propagation,"propagation");
+		this.propagation = propagation;
 	}
 
 	public void setIsolation(Isolation isolation) {
-		Args.notNull(isolation,"isolationLevel");
+		Args.notNull(isolation,"isolation");
 		this.isolation = isolation;
-	}
-
-	/**
-	 * This implementation compares the {@code toString()} results.
-	 * @see #toString()
-	 */
-	@Override
-	public boolean equals(Object other) {
-		return (other instanceof TransactionDefinition && toString().equals(other.toString()));
-	}
-
-	/**
-	 * This implementation returns {@code toString()}'s hash code.
-	 * @see #toString()
-	 */
-	@Override
-	public int hashCode() {
-		return toString().hashCode();
 	}
 
 	@Override
 	public String toString() {
-		return getDefinitionDescription().toString();
+		return "{propagation:" + propagation + ", isolation:" + isolation + "}";
 	}
 
-	/**
-	 * Return an identifying description for this transaction definition.
-	 * <p>Available to subclasses, for inclusion in their {@code toString()} result.
-	 */
-	protected final StringBuilder getDefinitionDescription() {
-		StringBuilder result = new StringBuilder();
-		result.append(PREFIX_PROPAGATION + this.propagationBehavior.name());
-		result.append(',');
-		result.append(PREFIX_ISOLATION + this.isolation.name());
-		return result;
-	}
 }

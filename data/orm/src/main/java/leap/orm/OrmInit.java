@@ -15,11 +15,6 @@
  */
 package leap.orm;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.sql.DataSource;
-
 import leap.core.AppContext;
 import leap.core.AppContextInitializable;
 import leap.core.BeanFactory;
@@ -31,6 +26,10 @@ import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
 import leap.orm.dmo.DefaultDmo;
 import leap.orm.dmo.Dmo;
+
+import javax.sql.DataSource;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * Class to initialize the default {@OrmContext}, {@link Dao} and {@link Dmo} beans.
@@ -68,11 +67,11 @@ public class OrmInit implements AppContextInitializable,DataSourceListener {
 		dataSourceManager.addListener(this);
 		
 		DataSource       defaultDataSource = dataSourceManager.tryGetDefaultDataSource();
-		Map<String,DataSource> datasources = dataSourceManager.getAllDataSources();
+		Map<String,DataSource> dataSources = dataSourceManager.getAllDataSources();
 		
 		boolean foundPrimary = false;
 		
-		for(Entry<String,DataSource> entry : datasources.entrySet()){
+		for(Entry<String,DataSource> entry : dataSources.entrySet()){
 			
 			boolean primary = false;
 			

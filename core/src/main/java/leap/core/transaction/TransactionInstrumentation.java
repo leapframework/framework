@@ -34,10 +34,13 @@ import java.io.InputStream;
 public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
 
     private static final Type MANAGER_TYPE = Type.getType(TransactionManager.class);
-    private static final Type TRANS_TYPE   = Type.getType(ClosableTransaction.class);
+    private static final Type TRANS_TYPE   = Type.getType(Transactions.class);
     private static final Type INJECT_TYPE  = Type.getType(Inject.class);
 
     private static final String MANAGER_FIELD = "tm";
+    private static final String ACTIVE_ALL    = "activeAllTransactions";
+    private static final String ACTIVE_NAMED  = "activeNamedTransactions";
+    private static final String REMOVE_ALL    = "removeAll";
 
     @Override
     protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
@@ -169,7 +172,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
             mv.visitMethodInsn(INVOKEINTERFACE,
                                MANAGER_TYPE.getInternalName(),
-                               "begin",
+                               ACTIVE_ALL,
                                "()" + TRANS_TYPE.getDescriptor(), true);
 
             newLocal = newLocal(TRANS_TYPE);
@@ -180,7 +183,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             loadLocal(newLocal);
             mv.visitMethodInsn(INVOKEINTERFACE,
                     TRANS_TYPE.getInternalName(),
-                    "close",
+                    REMOVE_ALL,
                     "()V", true);
         }
     }

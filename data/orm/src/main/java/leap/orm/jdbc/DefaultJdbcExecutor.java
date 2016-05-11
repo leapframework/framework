@@ -41,8 +41,8 @@ public class DefaultJdbcExecutor implements JdbcExecutor {
     }
 
 	@Override
-    public <T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-	    return db.execute(callback);
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
+	    return db.executeWithResult(callback);
     }
 
 	@Override

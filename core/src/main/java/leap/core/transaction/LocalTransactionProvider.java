@@ -18,9 +18,11 @@ package leap.core.transaction;
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.transaction.TransactionDefinition.Isolation;
 import leap.core.transaction.TransactionDefinition.Propagation;
-import leap.core.validation.annotations.NotNull;
 import leap.lang.Args;
+import leap.lang.Exceptions;
 import leap.lang.exception.NestedSQLException;
+import leap.lang.jdbc.ConnectionCallback;
+import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -35,33 +37,56 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	private static final Log log = LogFactory.get(LocalTransactionProvider.class);
 	
 	private final ThreadLocal<Stack<LocalTransaction>> currentTransactions = new ThreadLocal<>();
-	
-	protected @NotNull DataSource  dataSource;
+
+    protected DataSource  dataSource;
 	protected Propagation defaultPropagation = Propagation.REQUIRED;
 	protected Isolation   defaultIsolation   = Isolation.DEFAULT;
-	
-	public LocalTransactionProvider(){
-		
-	}
-	
+
+    private SimpleTransactionDefinition requiredDefinition    = null;
+    private SimpleTransactionDefinition requiresNewDefinition = null;
+
 	public LocalTransactionProvider(DataSource dataSource){
 		this.dataSource = dataSource;
 	}
-	
-	public void setDataSource(DataSource dataSource) {
-		checkReadonly();
-		this.dataSource = dataSource;
-	}
-	
-	public void setDefaultPropagation(Propagation defaultPropagation) {
-		this.defaultPropagation = defaultPropagation;
-	}
 
-	public void setDefaultIsolation(Isolation defaultIsolation) {
-		this.defaultIsolation = defaultIsolation;
-	}
+    @Override
+    public Transaction activeTransaction() {
+        return getTransaction(getRequiredDefinition());
+    }
 
-	@Override
+    @Override
+    public Transaction activeTransaction(TransactionDefinition td) {
+        return getTransaction(null == td ? getRequiredDefinition() : td);
+    }
+
+    @Override
+    public void execute(ConnectionCallback callback) {
+        Connection connection = null;
+        try{
+            connection = getConnection();
+            callback.execute(connection);
+        }catch(SQLException e){
+            Exceptions.wrapAndThrow(e);
+        }finally{
+            closeConnection(connection);
+        }
+    }
+
+    @Override
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) {
+        Connection connection = null;
+        try{
+            connection = getConnection();
+            return callback.execute(connection);
+        }catch(SQLException e){
+            Exceptions.wrapAndThrow(e);
+            return null;
+        }finally{
+            closeConnection(connection);
+        }
+    }
+
+    @Override
     public void doTransaction(TransactionCallback callback) {
 		getTransaction(false).execute(callback);
     }
@@ -92,14 +117,19 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		Args.notNull(td,"transaction definition");
 		return getTransaction(td).execute(callback);
     }
-	
-	private SimpleTransactionDefinition requiredDefinition    = null;
-	private SimpleTransactionDefinition requiresNewDefinition = null;
-	
-	protected TransactionDefinition getRequiredDefinition() {
+
+    public void setDefaultPropagation(Propagation defaultPropagation) {
+        this.defaultPropagation = defaultPropagation;
+    }
+
+    public void setDefaultIsolation(Isolation defaultIsolation) {
+        this.defaultIsolation = defaultIsolation;
+    }
+
+    protected TransactionDefinition getRequiredDefinition() {
 		if(null == requiredDefinition) {
 			requiredDefinition = new SimpleTransactionDefinition();
-			requiredDefinition.setPropagationBehavior(Propagation.REQUIRED);
+			requiredDefinition.setPropagation(Propagation.REQUIRED);
 			requiredDefinition.setIsolation(this.defaultIsolation);
 		}
 		return requiredDefinition;
@@ -108,7 +138,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	protected TransactionDefinition getRequiresNewDefinition() {
 		if(null == requiresNewDefinition) {
 			requiresNewDefinition = new SimpleTransactionDefinition();
-			requiresNewDefinition.setPropagationBehavior(Propagation.REQUIRES_NEW);
+			requiresNewDefinition.setPropagation(Propagation.REQUIRES_NEW);
 			requiresNewDefinition.setIsolation(this.defaultIsolation);
 		}
 		return requiresNewDefinition;
@@ -125,7 +155,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	 * Return a currently active transaction or create a new one.
 	 */
     protected Transaction getTransaction(TransactionDefinition td) {
-    	if(td.getPropagationBehavior() == Propagation.REQUIRES_NEW) {
+    	if(td.getPropagation() == Propagation.REQUIRES_NEW) {
     		log.debug("Force to Create a new Transaction");
     		LocalTransaction trans = new LocalTransaction(this,td);
     		pushActiveTransaction(trans);
@@ -214,7 +244,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 		JDBC.closeConnection(connection);
 	}
 	
-	protected boolean connectionEquals(LocalTransaction transaction, Connection parssedInConn){
+	protected boolean connectionEquals(LocalTransaction transaction, Connection passedInConn){
 		Connection holdedConn = transaction.getConnection();
 		
 		if(null == holdedConn){
@@ -223,7 +253,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	
 		// Explicitly check for identity too: for Connection handles that do not implement
 		// "equals" properly, such as the ones Commons DBCP exposes).		
-		return holdedConn == parssedInConn || holdedConn.equals(parssedInConn);
+		return holdedConn == passedInConn || holdedConn.equals(passedInConn);
 	}
 
 }

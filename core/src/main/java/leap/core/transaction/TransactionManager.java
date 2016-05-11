@@ -24,9 +24,24 @@ import javax.sql.DataSource;
 public interface TransactionManager {
 
     /**
-     * Begins a transaction.
+     * Actives the transactions for all datasource(s) with default definition.
      */
-    ClosableTransaction begin();
+    Transactions activeAllTransactions();
+
+    /**
+     * Actives the transactions for all datasource(s) with the given definition.
+     */
+    Transactions activeAllTransactions(TransactionDefinition td);
+
+    /**
+     * Active the transactions for the given datasource(s) with default definition.
+     */
+    Transactions activeNamedTransactions(String[] dataSourceNames);
+
+    /**
+     * Active the transactions for the given datasource(s) with the given definition.
+     */
+    Transactions activeNamedTransactions(String[] dataSourceNames,TransactionDefinition td);
 
     /**
      * Returns the {@link TransactionProvider} of the given data source.
@@ -47,7 +62,7 @@ public interface TransactionManager {
      * <p/>
      * If an active transaction is exists of the default datasource, the callback will be executed in the transaction.
      */
-    <T> T execute(ConnectionCallbackWithResult<T> callback);
+    <T> T executeWithResult(ConnectionCallbackWithResult<T> callback);
 
     /**
      * Executes the callback in a currently active transaction or a new one if no active transaction.
@@ -89,7 +104,7 @@ public interface TransactionManager {
      * <p/>
      * If an active transaction is exists of the given datasource, the callback will be execute in the transaction.
      */
-    <T> T execute(DataSource ds, ConnectionCallbackWithResult<T> callback);
+    <T> T executeWithResult(DataSource ds, ConnectionCallbackWithResult<T> callback);
 
     /**
      * Executes the callback in a currently active transaction or a new one if no active transaction.

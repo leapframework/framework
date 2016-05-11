@@ -38,14 +38,7 @@ public interface JdbcExecutor {
 	 * 
 	 * @throws NestedSQLException if an {@link SQLException} throwed.
 	 */
-	<T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException;
-
-    /**
-     * Same as {@link #execute(ConnectionCallbackWithResult)}
-     */
-    default <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-        return execute(callback);
-    }
+	<T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException;
 
 	/**
 	 * Execute an update use the given sql statement.

@@ -18,12 +18,12 @@ package leap.db.platform;
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.transaction.Transactions;
 import leap.db.*;
 import leap.db.command.*;
 import leap.db.model.*;
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
@@ -152,12 +152,38 @@ public class GenericDb extends DbBase {
 	
 	@Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
-		Transactions.execute(dataSource, callback);
+        if(null != tp) {
+            tp.execute(callback);
+        }else{
+            Connection conn = null;
+            try {
+                conn = dataSource.getConnection();
+
+                callback.execute(conn);
+            }catch(SQLException e) {
+                throw Exceptions.wrap(e);
+            }finally{
+                JDBC.closeConnection(conn);
+            }
+        }
     }
 
 	@Override
-    public <T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-		return Transactions.execute(dataSource, callback);
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
+        if(null != tp) {
+            return tp.executeWithResult(callback);
+        }else{
+            Connection conn = null;
+            try {
+                conn = dataSource.getConnection();
+
+                return callback.execute(conn);
+            }catch(SQLException e) {
+                throw Exceptions.wrap(e);
+            }finally{
+                JDBC.closeConnection(conn);
+            }
+        }
     }
 	
 	@Override

@@ -16,10 +16,38 @@
 package leap.core.transaction;
 
 import leap.lang.exception.NestedSQLException;
+import leap.lang.jdbc.ConnectionCallback;
+import leap.lang.jdbc.ConnectionCallbackWithResult;
 
 import java.sql.Connection;
 
 public interface TransactionProvider {
+
+    /**
+     * Actives a new transaction with the default definition.
+     */
+    Transaction activeTransaction();
+
+    /**
+     * Actives a new transaction with the given definition.
+     */
+    Transaction activeTransaction(TransactionDefinition td);
+
+    /**
+     * Executes the callback.
+     *
+     * <p/>
+     * If an active transaction is exist, the callback will be executed in the transaction.
+     */
+    void execute(ConnectionCallback callback);
+
+    /**
+     * Executes the callback.
+     *
+     * <p/>
+     * If an active transaction is exists, the callback will be executed in the transaction.
+     */
+    <T> T executeWithResult(ConnectionCallbackWithResult<T> callback);
 
 	/**
 	 * Executes the callback in a currently active transaction or a new one if no active transaction.

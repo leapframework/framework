@@ -15,18 +15,18 @@
  */
 package leap.db.cp;
 
-import java.sql.Connection;
-import java.sql.Statement;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import leap.db.Db;
 import leap.db.DbFactory;
 import leap.db.cp.Pool.SimpleThreadFactory;
 import leap.db.cp.Pool.SynchronousExecutor;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+
+import java.sql.Connection;
+import java.sql.Statement;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
 final class PoolUtils {
 	
@@ -113,7 +113,7 @@ final class PoolUtils {
 		try{
 			isMySql = db().isMySql();
 		}catch(Throwable e) {
-			;
+			//do nothing.
 		}
 		
 		if(isMySql) {

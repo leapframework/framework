@@ -908,7 +908,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	}
 	
 	protected boolean testDriverSupportsGetParameterType(){
-		return db.execute(new ConnectionCallbackWithResult<Boolean>() {
+		return db.executeWithResult(new ConnectionCallbackWithResult<Boolean>() {
 			@Override
             public Boolean execute(Connection connection) throws SQLException {
 				PreparedStatement ps = null;

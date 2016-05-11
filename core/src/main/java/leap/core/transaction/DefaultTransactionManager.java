@@ -20,14 +20,13 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
-import leap.lang.Exceptions;
 import leap.lang.Initializable;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 
 import javax.sql.DataSource;
-import java.sql.Connection;
-import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -40,6 +39,36 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     protected Map<DataSource, TransactionProvider> providers = new ConcurrentHashMap<>(2);
 
     @Override
+    public Transactions activeAllTransactions() {
+        return activeAllTransactions(null);
+    }
+
+    @Override
+    public Transactions activeAllTransactions(TransactionDefinition td) {
+        List<Transaction> transactions = new ArrayList<>();
+
+        providers.values().forEach( (tp) -> transactions.add(tp.activeTransaction(td)));
+
+        return new SimpleTransactions(transactions.toArray(new Transaction[transactions.size()]));
+    }
+
+    @Override
+    public Transactions activeNamedTransactions(String[] dataSourceNames) {
+        return activeNamedTransactions(dataSourceNames, null);
+    }
+
+    @Override
+    public Transactions activeNamedTransactions(String[] dataSourceNames, TransactionDefinition td) {
+        List<Transaction> transactions = new ArrayList<>();
+
+        for(String name : dataSourceNames) {
+            transactions.add(providers.get(dsm.getDataSource(name)).activeTransaction(td));
+        }
+
+        return new SimpleTransactions(transactions.toArray(new Transaction[transactions.size()]));
+    }
+
+    @Override
     public TransactionProvider getProvider(DataSource ds) {
         TransactionProvider tp = providers.get(ds);
         if(null == tp) {
@@ -49,19 +78,13 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     }
 
     @Override
-    public ClosableTransaction begin() {
-        System.out.println("begin transaction");
-        return new ClosableTransactionImpl();
-    }
-
-    @Override
     public void execute(ConnectionCallback callback) {
         execute(dsm.getDefaultDataSource(), callback);
     }
 
     @Override
-    public <T> T execute(ConnectionCallbackWithResult<T> callback) {
-        return execute(dsm.getDefaultDataSource(), callback);
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) {
+        return executeWithResult(dsm.getDefaultDataSource(), callback);
     }
 
     @Override
@@ -86,33 +109,12 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
 
     @Override
     public void execute(DataSource ds, ConnectionCallback callback) {
-        TransactionProvider tp = getProvider(ds);
-
-        Connection connection = null;
-        try{
-            connection = tp.getConnection();
-            callback.execute(connection);
-        }catch(SQLException e){
-            Exceptions.wrapAndThrow(e);
-        }finally{
-            tp.closeConnection(connection);
-        }
+        getProvider(ds).execute(callback);
     }
 
     @Override
-    public <T> T execute(DataSource ds, ConnectionCallbackWithResult<T> callback) {
-        TransactionProvider tp = getProvider(ds);
-
-        Connection connection = null;
-        try{
-            connection = tp.getConnection();
-            return callback.execute(connection);
-        }catch(SQLException e){
-            Exceptions.wrapAndThrow(e);
-            return null;
-        }finally{
-            tp.closeConnection(connection);
-        }
+    public <T> T executeWithResult(DataSource ds, ConnectionCallbackWithResult<T> callback) {
+        return getProvider(ds).executeWithResult(callback);
     }
 
     @Override
@@ -159,10 +161,4 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
         return tp;
     }
 
-    protected static class ClosableTransactionImpl implements ClosableTransaction {
-        @Override
-        public void close() {
-            System.out.println("close transaction");
-        }
-    }
 }

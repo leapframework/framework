@@ -15,6 +15,9 @@
  */
 package leap.db;
 
+import leap.core.AppContext;
+import leap.core.transaction.TransactionManager;
+import leap.core.transaction.TransactionProvider;
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
@@ -31,15 +34,16 @@ public abstract class DbBase implements Db {
 	
 	protected final Log log;
 
-	protected final String	     name;
-	protected final String		 description;
-	protected final DbPlatform   platform;
-	protected final DataSource   dataSource;
-	protected final DbDialect    dialect;
-	protected final DbMetadata   metadata;
-	protected final DbComparator comparator;
-	
-	protected DbBase(String name,DbPlatform platform, DataSource dataSource,DbMetadata metadata,DbDialect dialect, DbComparator comparator){
+    protected final String              name;
+    protected final String              description;
+    protected final DbPlatform          platform;
+    protected final DataSource          dataSource;
+    protected final DbDialect           dialect;
+    protected final DbMetadata          metadata;
+    protected final DbComparator        comparator;
+    protected final TransactionProvider tp;
+
+    protected DbBase(String name,DbPlatform platform, DataSource dataSource,DbMetadata metadata,DbDialect dialect, DbComparator comparator){
 		Args.notEmpty(name);
 		Args.notNull(platform);
 		Args.notNull(dataSource);
@@ -54,8 +58,15 @@ public abstract class DbBase implements Db {
 		this.metadata    = metadata;
 		this.dialect     = dialect;
 		this.comparator  = comparator;
+
+        AppContext context = AppContext.tryGetCurrent();
+        if(null != context) {
+            tp = context.getBeanFactory().getBean(TransactionManager.class).getProvider(dataSource);
+        }else{
+            tp = null;
+        }
+
 		this.awareObjects();
-		
 		this.log = getLog(this.getClass());
 
         this.init();
