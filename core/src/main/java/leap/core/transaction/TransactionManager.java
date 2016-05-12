@@ -24,24 +24,24 @@ import javax.sql.DataSource;
 public interface TransactionManager {
 
     /**
-     * Actives the transactions for all datasource(s) with default definition.
+     * Begins the transactions for all datasource(s) with default definition.
      */
-    Transactions activeAllTransactions();
+    Transactions beginTransactionsAll();
 
     /**
-     * Actives the transactions for all datasource(s) with the given definition.
+     * Begins the transactions for all datasource(s) with the given definition.
      */
-    Transactions activeAllTransactions(TransactionDefinition td);
+    Transactions beginTransactionsAll(TransactionDefinition td);
 
     /**
-     * Active the transactions for the given datasource(s) with default definition.
+     * Begins the transactions for the given datasource(s) with default definition.
      */
-    Transactions activeNamedTransactions(String[] dataSourceNames);
+    Transactions beginTransactionsWith(String[] dataSourceNames);
 
     /**
-     * Active the transactions for the given datasource(s) with the given definition.
+     * Begins the transactions for the given datasource(s) with the given definition.
      */
-    Transactions activeNamedTransactions(String[] dataSourceNames,TransactionDefinition td);
+    Transactions beginTransactionsWith(String[] dataSourceNames, TransactionDefinition td);
 
     /**
      * Returns the {@link TransactionProvider} of the given data source.

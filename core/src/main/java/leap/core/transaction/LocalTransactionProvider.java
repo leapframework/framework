@@ -50,13 +50,13 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	}
 
     @Override
-    public Transaction activeTransaction() {
-        return getTransaction(getRequiredDefinition());
+    public Transaction beginTransaction() {
+        return getTransaction(getRequiredDefinition()).begin();
     }
 
     @Override
-    public Transaction activeTransaction(TransactionDefinition td) {
-        return getTransaction(null == td ? getRequiredDefinition() : td);
+    public Transaction beginTransaction(TransactionDefinition td) {
+        return getTransaction(null == td ? getRequiredDefinition() : td).begin();
     }
 
     @Override
@@ -93,7 +93,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 
 	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback) {
-	    return getTransaction(false).execute(callback);
+	    return getTransaction(false).executeWithResult(callback);
     }
 	
 	@Override
@@ -103,7 +103,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 
 	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
-	    return getTransaction(requiresNew).execute(callback);
+	    return getTransaction(requiresNew).executeWithResult(callback);
     }
 	
 	@Override
@@ -115,7 +115,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, TransactionDefinition td) {
 		Args.notNull(td,"transaction definition");
-		return getTransaction(td).execute(callback);
+		return getTransaction(td).executeWithResult(callback);
     }
 
     public void setDefaultPropagation(Propagation defaultPropagation) {
@@ -147,14 +147,14 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
 	/**
 	 * Return a currently active transaction or create a new one.
 	 */
-    protected Transaction getTransaction(boolean requiresNew) {
+    protected LocalTransaction getTransaction(boolean requiresNew) {
     	return requiresNew ? getTransaction(getRequiresNewDefinition()) : getTransaction(getRequiredDefinition());
     }
     
 	/**
 	 * Return a currently active transaction or create a new one.
 	 */
-    protected Transaction getTransaction(TransactionDefinition td) {
+    protected LocalTransaction getTransaction(TransactionDefinition td) {
     	if(td.getPropagation() == Propagation.REQUIRES_NEW) {
     		log.debug("Force to Create a new Transaction");
     		LocalTransaction trans = new LocalTransaction(this,td);
@@ -167,14 +167,13 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
     			trans = new LocalTransaction(this,td);
     			pushActiveTransaction(trans);
     		}else{
-    			log.debug("Returns an Active Transaction");
+    			log.debug("Returns an Nested Transaction");
     		}
-    		return trans;
+            return trans;
     	}
     }
 
-	@Override
-    public Connection getConnection() throws NestedSQLException {
+    protected Connection getConnection() throws NestedSQLException {
 		LocalTransaction transaction = peekActiveTransaction();
 		
         if(transaction == null){
@@ -190,8 +189,7 @@ public class LocalTransactionProvider extends AbstractReadonlyBean implements Tr
         return transaction.getConnection();
     }
 
-	@Override
-    public boolean closeConnection(Connection connection) {
+    protected boolean closeConnection(Connection connection) {
 		if(null == connection){
 			return false;
 		}

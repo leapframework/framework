@@ -65,8 +65,6 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
                         if(acceptsClass(context, rs, cr)) {
                             AppInstrumentClass ic = context.getInstrumentedClass(cr.getClassName());
                             if(null != ic) {
-                                log.debug("Class '{}' already instrumented, use the instrumented class instead.", cr.getClassName());
-
                                 is = new ByteArrayInputStreamSource(ic.getClassData());
                                 cr = new ClassReader(ic.getClassData());
                             }
@@ -86,8 +84,6 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         });
 
         postInstrument(context, rs);
-
-        log.debug("Process {} classes by '{}' used {}ms",counter.get(), this.getClass().getName(), sw.getElapsedMilliseconds());
     }
 
     protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {

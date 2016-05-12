@@ -23,6 +23,8 @@
         <property name="maxActive" 		 value="10"/> 
         <property name="maxWait" 		 value="10000"/>
     </bean>
+
+    <bean class="leap.orm.dao.TransactionBean"/>
     
     <import resource="beans_local.xml" check-existence="false"/>
     

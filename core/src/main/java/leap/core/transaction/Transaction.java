@@ -18,19 +18,16 @@ package leap.core.transaction;
 public interface Transaction {
 
     /**
-     * Executes the callback in transaction.
-     */
-	void execute(TransactionCallback callback);
-
-    /**
-     * Executes the callback in transaction.
-     */
-	<T> T execute(TransactionCallbackWithResult<T> callback);
-
-    /**
-     * Removes this transaction from current transaction stack.
+     * Rollbacks and ends this transaction.
      *
      * @throws IllegalStateException if this transaction is not the active transaction currently.
      */
-    void remove() throws IllegalStateException;
+    void setRollbackOnly() throws IllegalStateException;
+
+    /**
+     * Commits and ends this transaction.
+     *
+     * @throws IllegalStateException if this transaction is not the active transaction currently.
+     */
+    void complete() throws IllegalStateException;
 }

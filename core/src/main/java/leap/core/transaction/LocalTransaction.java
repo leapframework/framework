@@ -96,7 +96,6 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         this.connection = connection;
     }
 
-    @Override
     public void execute(TransactionCallback callback) {
         begin();
 
@@ -116,8 +115,7 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         }
     }
 
-    @Override
-    public <T> T execute(TransactionCallbackWithResult<T> callback) {
+    public <T> T executeWithResult(TransactionCallbackWithResult<T> callback) {
         begin();
 
         try {
@@ -136,15 +134,7 @@ public class LocalTransaction implements Transaction, TransactionStatus {
         }
     }
 
-    @Override
-    public void remove() {
-        LocalTransaction trans = tp.removeActiveTransaction();
-        if(trans != this) {
-            throw new IllegalStateException("The removed active transaction must be the self");
-        }
-    }
-
-    protected void begin() {
+    public LocalTransaction begin() {
         increase();
 
         if (log.isDebugEnabled()) {
@@ -154,9 +144,11 @@ public class LocalTransaction implements Transaction, TransactionStatus {
                 log.debug("Join a exists transaction, referencedCount={}", referenceCount);
             }
         }
+
+        return this;
     }
 
-    protected void complete() {
+    public void complete() {
         decrease();
 
         if (referenceCount == 0) {

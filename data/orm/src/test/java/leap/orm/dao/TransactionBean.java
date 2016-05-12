@@ -14,21 +14,22 @@
  * limitations under the License.
  */
 
-package leap.core.transaction;
+package leap.orm.dao;
 
-/**
- * Wraps a collection of {@link Transaction}.
- */
-public interface Transactions {
+import leap.core.annotation.Transactional;
+import leap.orm.tested.model.petclinic.Owner;
 
-    /**
-     * Sets rollback state all the wrapped transactions.
-     */
-    void setRollbackAllOnly();
+public class TransactionBean {
 
-    /**
-     * Ends (commit or rollback) all the wrapped transactions.
-     */
-    void completeAll();
+    @Transactional
+    public void doSuccess(Owner owner) {
+        owner.create();
+    }
+
+    @Transactional
+    public void doFailure(Owner owner) {
+        owner.create();
+        throw new RuntimeException("Failure");
+    }
 
 }

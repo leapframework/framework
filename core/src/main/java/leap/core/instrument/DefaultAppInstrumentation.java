@@ -59,15 +59,13 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
 
     @Override
     public void init(AppConfig config) {
-
         for(AppInstrumentProcessor p : processors) {
             p.init(config);
         }
-
     }
 
     @Override
-    public void clear() {
+    public void complete() {
         instrumented.clear();
     }
 
@@ -95,7 +93,7 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
 
     @Override
     public boolean tryInstrument(String className) {
-        Resource resource = Resources.getResource("classpath:" + className.replace('.', '/') + ".java");
+        Resource resource = Resources.getResource("classpath:" + className.replace('.', '/') + ".class");
         if(null == resource || !resource.exists()) {
             return false;
         }
@@ -108,7 +106,7 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
         AppInstrumentClassLoader classLoader = new AppInstrumentClassLoader(Classes.getClassLoader());
 
         for(AppInstrumentClass ic : instrumentClasses) {
-            log.debug("Define the instrumented class '{}'", ic.getClassName());
+            log.trace("Define the instrumented class '{}'", ic.getClassName());
 
             String className = ic.getClassName().replace('/','.');
 

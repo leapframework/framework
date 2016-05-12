@@ -51,4 +51,8 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
         ic.updateClassData(classData);
         ic.addInstrumentedBy(instrumentBy);
     }
+
+    public void clear() {
+        instrumentedMap.clear();
+    }
 }

@@ -15,23 +15,20 @@
  */
 package leap.core.transaction;
 
-import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
-
-import java.sql.Connection;
 
 public interface TransactionProvider {
 
     /**
-     * Actives a new transaction with the default definition.
+     * Begins a transaction with the default definition.
      */
-    Transaction activeTransaction();
+    Transaction beginTransaction();
 
     /**
-     * Actives a new transaction with the given definition.
+     * Begins a new transaction with the given definition.
      */
-    Transaction activeTransaction(TransactionDefinition td);
+    Transaction beginTransaction(TransactionDefinition td);
 
     /**
      * Executes the callback.
@@ -84,20 +81,5 @@ public interface TransactionProvider {
 	 * Executes the callback in a currently active transaction or a new one if no active transaction.
 	 */
 	<T> T doTransaction(TransactionCallbackWithResult<T> callback, TransactionDefinition td);
-	
-	/**
-	 * Obtain a Connection from this {@link TransactionProvider}.
-	 */
-	Connection getConnection() throws NestedSQLException;
-	
-	/**
-	 * Close the given {@link Connection} which obained from this {@link TransactionProvider}.
-	 * 
-	 * Returns <code>true</code> if the given connection is closed by this {@link TransactionProvider}.
-	 * 
-	 * <p>
-	 * Returns <code>false</code> if the given connection not closed by this {@link TransactionProvider}.
-	 */
-	boolean closeConnection(Connection connection);
-	
+
 }

@@ -39,30 +39,30 @@ public class DefaultTransactionManager implements TransactionManager, DataSource
     protected Map<DataSource, TransactionProvider> providers = new ConcurrentHashMap<>(2);
 
     @Override
-    public Transactions activeAllTransactions() {
-        return activeAllTransactions(null);
+    public Transactions beginTransactionsAll() {
+        return beginTransactionsAll(null);
     }
 
     @Override
-    public Transactions activeAllTransactions(TransactionDefinition td) {
+    public Transactions beginTransactionsAll(TransactionDefinition td) {
         List<Transaction> transactions = new ArrayList<>();
 
-        providers.values().forEach( (tp) -> transactions.add(tp.activeTransaction(td)));
+        providers.values().forEach( (tp) -> transactions.add(tp.beginTransaction(td)));
 
         return new SimpleTransactions(transactions.toArray(new Transaction[transactions.size()]));
     }
 
     @Override
-    public Transactions activeNamedTransactions(String[] dataSourceNames) {
-        return activeNamedTransactions(dataSourceNames, null);
+    public Transactions beginTransactionsWith(String[] dataSourceNames) {
+        return beginTransactionsWith(dataSourceNames, null);
     }
 
     @Override
-    public Transactions activeNamedTransactions(String[] dataSourceNames, TransactionDefinition td) {
+    public Transactions beginTransactionsWith(String[] dataSourceNames, TransactionDefinition td) {
         List<Transaction> transactions = new ArrayList<>();
 
         for(String name : dataSourceNames) {
-            transactions.add(providers.get(dsm.getDataSource(name)).activeTransaction(td));
+            transactions.add(providers.get(dsm.getDataSource(name)).beginTransaction(td));
         }
 
         return new SimpleTransactions(transactions.toArray(new Transaction[transactions.size()]));

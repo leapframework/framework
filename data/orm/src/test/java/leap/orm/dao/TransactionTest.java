@@ -15,15 +15,18 @@
  */
 package leap.orm.dao;
 
+import leap.core.annotation.Inject;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionStatus;
+import leap.lang.Try;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.team.Team;
-
 import org.junit.Test;
 
 public class TransactionTest extends OrmTestCase {
+
+    protected @Inject TransactionBean bean;
 	
 	@Test
 	public void testCreateAndReleaseTransaction() {
@@ -58,6 +61,17 @@ public class TransactionTest extends OrmTestCase {
 		
 		assertEquals(0, Owner.count());
 	}
+
+    @Test
+    public void testSimpleAnnotation() {
+        deleteAll(Owner.class);
+
+        Try.catchAll(() -> bean.doFailure(new Owner().setFullName("a", "b")));
+        assertEquals(0, Owner.count());
+
+        bean.doSuccess(new Owner().setFullName("a", "b"));
+        assertEquals(1, Owner.count());
+    }
 
 	@Test
 	public void testSimpleCommit() {

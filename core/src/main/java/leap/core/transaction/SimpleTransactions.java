@@ -25,9 +25,16 @@ public class SimpleTransactions implements Transactions {
     }
 
     @Override
-    public void removeAll() {
+    public void setRollbackAllOnly() {
         for(Transaction tx : transactions) {
-            tx.remove();
+            tx.setRollbackOnly();
+        }
+    }
+
+    @Override
+    public void completeAll() {
+        for(Transaction tx : transactions) {
+            tx.complete();
         }
     }
 

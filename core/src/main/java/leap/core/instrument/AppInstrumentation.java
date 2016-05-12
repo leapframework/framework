@@ -43,9 +43,9 @@ public interface AppInstrumentation {
     void init(AppConfig config);
 
     /**
-     * Clears cached instrumentation info.
+     * Completes instrumentation.
      */
-    void clear();
+    void complete();
 
     /**
      * Instrument the classes in the resource set.

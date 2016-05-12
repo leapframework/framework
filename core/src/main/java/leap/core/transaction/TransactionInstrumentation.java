@@ -27,20 +27,25 @@ import leap.lang.asm.commons.AdviceAdapter;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.InputStreamSource;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 
 import java.io.InputStream;
 
 public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
 
+    private static final Log log = LogFactory.get(TransactionInstrumentation.class);
+
     private static final Type MANAGER_TYPE = Type.getType(TransactionManager.class);
     private static final Type TRANS_TYPE   = Type.getType(Transactions.class);
     private static final Type INJECT_TYPE  = Type.getType(Inject.class);
 
-    private static final String MANAGER_FIELD = "tm";
-    private static final String ACTIVE_ALL    = "activeAllTransactions";
-    private static final String ACTIVE_NAMED  = "activeNamedTransactions";
-    private static final String REMOVE_ALL    = "removeAll";
+    private static final String MANAGER_FIELD    = "tm";
+    private static final String BEGIN_ALL        = "beginTransactionsAll";
+    private static final String BEGIN_WITH       = "beginTransactionsWith";
+    private static final String SET_ROLLBACK_ALL = "setRollbackAllOnly";
+    private static final String COMPLETE_ALL     = "completeAll";
 
     @Override
     protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
@@ -57,6 +62,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             }
 
             if(hasTransactionalMethods) {
+                log.info("Instrument Transactional class : {}", cr.getClassName());
                 Try.throwUnchecked(() -> {
                     try(InputStream in = is.getInputStream()) {
                         ClassReader newCr = new ClassReader(in);
@@ -74,7 +80,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
         byte[] data = visitor.getClassData();
 
-        ASM.printASMifiedCode(data);
+        //ASM.printASMifiedCode(data);
 
         return data;
     }
@@ -97,6 +103,8 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             MethodNode mn = ASM.getMethod(cn, name, desc);
 
             if(ASM.isAnnotationPresent(mn, Transactional.class)) {
+                log.debug(" #transactional method : {}", name);
+
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
                 return new TxMethodVisitor(type, mn, mv , access, name, desc);
@@ -142,7 +150,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         public void visitCode() {
             super.visitCode();
 
-            beginTransaction();
+            beginTransactions();
             visitLabel(tryLabel);
         }
 
@@ -150,7 +158,8 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         public void visitMaxs(int maxStack, int maxLocals) {
             visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
             visitLabel(finallyLabel);
-            closeTransaction();
+            setRollbackTransactions();
+            completeTransactions();
             visitInsn(Opcodes.ATHROW);
 
             super.visitMaxs(maxStack, maxLocals);
@@ -159,11 +168,11 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         @Override
         protected void onMethodExit(int opcode) {
             if(opcode != Opcodes.ATHROW) {
-                closeTransaction();
+                completeTransactions();
             }
         }
 
-        protected void beginTransaction() {
+        protected void beginTransactions() {
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitFieldInsn(GETFIELD,
                               type.getInternalName(),
@@ -172,18 +181,26 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
             mv.visitMethodInsn(INVOKEINTERFACE,
                                MANAGER_TYPE.getInternalName(),
-                               ACTIVE_ALL,
+                               BEGIN_ALL,
                                "()" + TRANS_TYPE.getDescriptor(), true);
 
             newLocal = newLocal(TRANS_TYPE);
             storeLocal(newLocal);
         }
 
-        protected void closeTransaction() {
+        protected void setRollbackTransactions() {
             loadLocal(newLocal);
             mv.visitMethodInsn(INVOKEINTERFACE,
                     TRANS_TYPE.getInternalName(),
-                    REMOVE_ALL,
+                    SET_ROLLBACK_ALL,
+                    "()V", true);
+        }
+
+        protected void completeTransactions() {
+            loadLocal(newLocal);
+            mv.visitMethodInsn(INVOKEINTERFACE,
+                    TRANS_TYPE.getInternalName(),
+                    COMPLETE_ALL,
                     "()V", true);
         }
     }

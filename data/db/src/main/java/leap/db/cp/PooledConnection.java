@@ -233,6 +233,11 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	}
 	
 	void closeStatement(Statement proxy,Statement real) throws SQLException {
+        if(((ProxyStatement)proxy).isClosed()) {
+            log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
+            return;
+        }
+
 		try{
 			real.close();	
 			successCloseStatement(proxy);
@@ -241,12 +246,17 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 			throw e;
 		}finally{
 			if(!statements.remove(proxy)){
-				log.error("Invalid state, No open statement found for the closed statement");
+				log.error("Invalid state, No open statement found for the closed statement",new Exception("stack"));
 			}
 		}
 	}
 	
 	void closeStatementOnly(Statement proxy,Statement real) throws SQLException {
+        if(((ProxyStatement)proxy).isClosed()) {
+            log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
+            return;
+        }
+
 		try{
 			real.close();	
 			successCloseStatement(proxy);

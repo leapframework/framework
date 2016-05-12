@@ -15,8 +15,6 @@
  */
 package leap.core.annotation;
 
-import leap.core.transaction.TransactionDefinition.Propagation;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -26,18 +24,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Transactional {
 	
-	/**
-	 * Enables or Disables transaction.
-	 */
-	boolean value() default true;
-
-    /**
-     * Sets the name of datasource.
-     */
-    String dataSource() default "";
-	
-	/**
-	 * Sets the transaction propagation behaviour.
-	 */
-	Propagation propagation() default Propagation.REQUIRED;
 }
