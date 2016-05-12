@@ -48,8 +48,20 @@ public class Try {
         }
     }
 
+    public static <T> T throwUncheckedWithResult(CatchSupplier<T> supplier) {
+        try{
+            return supplier.run();
+        }catch (Throwable e) {
+            throw Exceptions.uncheck(e);
+        }
+    }
+
     public interface CatchRunnable {
         void run() throws Throwable;
+    }
+
+    public interface CatchSupplier<T> {
+        T run() throws Throwable;
     }
     
     protected Try() {

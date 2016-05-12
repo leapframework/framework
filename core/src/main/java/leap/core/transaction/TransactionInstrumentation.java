@@ -24,6 +24,8 @@ import leap.core.instrument.AppInstrumentProcessor;
 import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
+import leap.lang.asm.commons.Method;
+import leap.lang.asm.tree.AnnotationNode;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.InputStreamSource;
@@ -32,20 +34,38 @@ import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 
 import java.io.InputStream;
+import java.util.Map;
 
 public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
 
     private static final Log log = LogFactory.get(TransactionInstrumentation.class);
 
-    private static final Type MANAGER_TYPE = Type.getType(TransactionManager.class);
-    private static final Type TRANS_TYPE   = Type.getType(Transactions.class);
-    private static final Type INJECT_TYPE  = Type.getType(Inject.class);
+    private static final Type MANAGER_TYPE     = Type.getType(TransactionManager.class);
+    private static final Type TRANS_TYPE       = Type.getType(Transactions.class);
+    private static final Type INJECT_TYPE      = Type.getType(Inject.class);
+    private static final Type PROPAGATION_TYPE = Type.getType(TransactionDefinition.Propagation.class);
+    private static final Type TRAN_DEF_TYPE    = Type.getType(SimpleTransactionDefinition.class);
 
-    private static final String MANAGER_FIELD    = "tm";
+    private static final String MANAGER_FIELD    = "$tm";
     private static final String BEGIN_ALL        = "beginTransactionsAll";
     private static final String BEGIN_WITH       = "beginTransactionsWith";
     private static final String SET_ROLLBACK_ALL = "setRollbackAllOnly";
     private static final String COMPLETE_ALL     = "completeAll";
+
+    private static Method TRAN_DEF_INIT_METHOD;
+    private static Method TM_BEGIN_ALL_METHOD;
+
+    static {
+        Try.throwUnchecked(() -> {
+            TRAN_DEF_INIT_METHOD = Method.getMethod(SimpleTransactionDefinition.class
+                                                .getConstructor(TransactionDefinition.Propagation.class));
+
+
+            TM_BEGIN_ALL_METHOD = Method.getMethod(TransactionManager.class
+                                                .getMethod(BEGIN_ALL, TransactionDefinition.class));
+
+        });
+    }
 
     @Override
     protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
@@ -102,12 +122,13 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodNode mn = ASM.getMethod(cn, name, desc);
 
-            if(ASM.isAnnotationPresent(mn, Transactional.class)) {
+            AnnotationNode a = ASM.getAnnotation(mn, Transactional.class);
+            if(null != a) {
                 log.debug(" #transactional method : {}", name);
 
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
-                return new TxMethodVisitor(type, mn, mv , access, name, desc);
+                return new TxMethodVisitor(type, a, mv , access, name, desc);
             }
 
             return super.visitMethod(access, name, desc, signature, exceptions);
@@ -131,19 +152,28 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
     protected static class TxMethodVisitor extends AdviceAdapter {
 
-        private final Type       type;
-        private final MethodNode mn;
+        private final Type           type;
+        private final AnnotationNode annotation;
 
         private final Label tryLabel     = new Label();
         private final Label finallyLabel = new Label();
 
-        private int newLocal = 0;
+        private final TransactionDefinition.Propagation propagation;
 
-        protected TxMethodVisitor(Type type, MethodNode mn, MethodVisitor mv, int access, String name, String desc) {
+        private int tdLocal    = 0;
+        private int transLocal = 0;
+
+        protected TxMethodVisitor(Type type, AnnotationNode a, MethodVisitor mv, int access, String name, String desc) {
             super(ASM.API, mv, access, name, desc);
+            this.type       = type;
+            this.annotation = a;
 
-            this.type = type;
-            this.mn   = mn;
+            Map<String,Object> values = ASM.getAnnotationValues(a);
+            if(!values.isEmpty()) {
+                propagation = (TransactionDefinition.Propagation) values.get("propagation");
+            }else{
+                propagation = TransactionDefinition.Propagation.REQUIRED;
+            }
         }
 
         @Override
@@ -172,24 +202,34 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             }
         }
 
+        protected void newDefinition() {
+            newInstance(TRAN_DEF_TYPE);
+            dup();
+            getStatic(PROPAGATION_TYPE, propagation.name(), PROPAGATION_TYPE);
+            invokeConstructor(TRAN_DEF_TYPE, TRAN_DEF_INIT_METHOD);
+        }
+
         protected void beginTransactions() {
+            //get the field of transaction manager.
             mv.visitVarInsn(Opcodes.ALOAD, 0);
             mv.visitFieldInsn(GETFIELD,
                               type.getInternalName(),
                               MANAGER_FIELD,
                               MANAGER_TYPE.getDescriptor());
 
-            mv.visitMethodInsn(INVOKEINTERFACE,
-                               MANAGER_TYPE.getInternalName(),
-                               BEGIN_ALL,
-                               "()" + TRANS_TYPE.getDescriptor(), true);
+            //create transaction definition.
+            newDefinition();
 
-            newLocal = newLocal(TRANS_TYPE);
-            storeLocal(newLocal);
+            //invoke the begin transaction method.
+            invokeInterface(MANAGER_TYPE, TM_BEGIN_ALL_METHOD);
+
+            //store local variable.
+            transLocal = newLocal(TRANS_TYPE);
+            storeLocal(transLocal);
         }
 
         protected void setRollbackTransactions() {
-            loadLocal(newLocal);
+            loadLocal(transLocal);
             mv.visitMethodInsn(INVOKEINTERFACE,
                     TRANS_TYPE.getInternalName(),
                     SET_ROLLBACK_ALL,
@@ -197,7 +237,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
         }
 
         protected void completeTransactions() {
-            loadLocal(newLocal);
+            loadLocal(transLocal);
             mv.visitMethodInsn(INVOKEINTERFACE,
                     TRANS_TYPE.getInternalName(),
                     COMPLETE_ALL,

@@ -15,10 +15,7 @@
  */
 package leap.lang.asm;
 
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.Try;
+import leap.lang.*;
 import leap.lang.asm.tree.*;
 import leap.lang.asm.util.*;
 import leap.lang.exception.ObjectNotFoundException;
@@ -30,7 +27,9 @@ import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
 
 /**
@@ -145,6 +144,32 @@ public class ASM {
 		
 		return a;
 	}
+
+    public static Map<String,Object> getAnnotationValues(AnnotationNode a) {
+        Map<String,Object> map = new LinkedHashMap<>();
+
+        if(null != a.values) {
+
+            for(int i=0;i<a.values.size();i++) {
+                String name  = (String)a.values.get(i);
+                Object value = a.values.get(i+1);
+
+                if(value instanceof String[]) {
+                    //enum value
+                    String[] array = (String[])value;
+                    Class<? extends Enum> enumType = (Class<? extends Enum>)Classes.forName(Type.getType(array[0]).getClassName());
+
+                    map.put(name, Enums.nameOf(enumType, array[1]));
+                }else{
+                    map.put(name, value);
+                }
+
+                i+=1;
+            }
+        }
+
+        return map;
+    }
 	
 	private static AnnotationNode getAnnotation(List<AnnotationNode> annotations,Class<? extends Annotation> annotationType){
 		String desc = Type.getDescriptor(annotationType);

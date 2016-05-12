@@ -18,16 +18,19 @@ package tested.transaction;
 
 import leap.core.annotation.Bean;
 import leap.core.annotation.Transactional;
+import leap.core.transaction.TransactionDefinition;
 
 @Bean
 public class TransactionalBean {
+
+    //private TransactionManager tm;
 
     @Transactional
     public void doSuccess() {
         System.out.println("do success");
     }
 
-    @Transactional
+    @Transactional(propagation = TransactionDefinition.Propagation.REQUIRES_NEW)
     public int doSuccessWithReturnValue() {
         System.out.println("do success");
         return 0;
@@ -35,6 +38,7 @@ public class TransactionalBean {
 
     @Transactional
     public void doSuccessTryFinally() {
+        //Transactions tx = tm.beginTransactionsAll(new SimpleTransactionDefinition(TransactionDefinition.Propagation.REQUIRED));
         try{
             System.out.println("do success");
         }finally{

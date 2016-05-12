@@ -15,6 +15,8 @@
  */
 package leap.core.annotation;
 
+import leap.core.transaction.TransactionDefinition;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,5 +25,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Transactional {
-	
+
+    TransactionDefinition.Propagation propagation() default TransactionDefinition.Propagation.REQUIRED;
+
 }

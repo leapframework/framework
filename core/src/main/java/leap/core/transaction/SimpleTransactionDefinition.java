@@ -26,7 +26,19 @@ public class SimpleTransactionDefinition implements TransactionDefinition, Seria
     protected Propagation propagation = Propagation.REQUIRED;
     protected Isolation   isolation   = Isolation.DEFAULT;
 
-	public final Propagation getPropagation() {
+    public SimpleTransactionDefinition() {
+    }
+
+    public SimpleTransactionDefinition(Propagation propagation) {
+        this.propagation = propagation;
+    }
+
+    public SimpleTransactionDefinition(Propagation propagation, Isolation isolation) {
+        this.propagation = propagation;
+        this.isolation   = isolation;
+    }
+
+    public final Propagation getPropagation() {
 		return this.propagation;
 	}
 

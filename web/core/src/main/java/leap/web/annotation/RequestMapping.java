@@ -25,10 +25,19 @@ import java.lang.annotation.*;
 @Inherited
 public @interface RequestMapping {
 
+    /**
+     * A jax-rs style path template.
+     */
 	String path() default "";
 
+    /**
+     * Http method, default is mapping to all http methods.
+     */
 	HTTP.Method method() default HTTP.Method.NONE;
-	
+
+    /**
+     * The mapping query string.
+     */
 	String params() default "";
 	
 }
