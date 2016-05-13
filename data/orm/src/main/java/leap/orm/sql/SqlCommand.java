@@ -15,16 +15,17 @@
  */
 package leap.orm.sql;
 
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.db.Db;
 import leap.lang.Sourced;
 import leap.lang.exception.NestedSQLException;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
+
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public interface SqlCommand extends Sourced {
 	
@@ -37,6 +38,11 @@ public interface SqlCommand extends Sourced {
 	String FIND_ALL_COMMAND_NAME   = "findAll";
 	String EXISTS_COMMAND          = "exists";
 	String COUNT_COMMAND           = "count";
+
+    /**
+     * Called after all sql commands was loaded, for preparing execution, such as parsing the sql content.
+     */
+    void prepare(MetadataContext context);
 	
 	/**
 	 * Returns the name of db platform or <code>null</code> if this command supports all db platforms.

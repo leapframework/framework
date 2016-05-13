@@ -19,46 +19,57 @@ import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.db.Db;
-import leap.lang.Args;
 import leap.lang.Assert;
+import leap.lang.Chars;
+import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
-
-import java.util.List;
 
 public class DefaultSqlCommand implements SqlCommand {
 	
 	protected final Object 	    source;
+    protected final String      desc;
 	protected final String	    dbType;
-	protected final SqlClause[] clauses;
-	protected final SqlClause   queryClause;
-	
-	public DefaultSqlCommand(Object source,List<SqlClause> clauses){
-		this(source,null,clauses);
-	}
-	
-	public DefaultSqlCommand(Object source,String dbType,List<SqlClause> clauses){
-		Args.notEmpty(clauses,"clauses");
-		this.source  = source;
-		this.dbType  = dbType;
-		this.clauses = clauses.toArray(new SqlClause[clauses.size()]);
-		this.queryClause = checkQuery();
-	}
-	
-	public DefaultSqlCommand(String source,SqlClause clause){
-		this(source,null,clause);
-	}
-	
-	public DefaultSqlCommand(String source,String dbType, SqlClause clause){
-		Args.notNull(clause,"clause");
-		this.source  = source;
-		this.dbType  = dbType;
-		this.clauses = new SqlClause[]{clause};
-		this.queryClause = checkQuery();
-	}
-	
-	@Override
+    protected final SqlLanguage lang;
+    protected final String      content;
+
+    private boolean prepared;
+
+	protected SqlClause[] clauses;
+	protected SqlClause   queryClause;
+
+    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content) {
+        this.source  = source;
+        this.desc    = desc;
+        this.dbType  = dbType;
+        this.lang    = lang;
+        this.content = content;
+    }
+
+    @Override
+    public void prepare(MetadataContext context) {
+        if(prepared) {
+            return;
+        }
+
+        try {
+            this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
+            this.queryClause = checkQuery();
+        } catch (Exception e) {
+            throw new SqlConfigException("Error parsing sql content in command" + desc + ", source : " + source,e);
+        }
+        prepared = true;
+    }
+
+    protected void mustPrepare(SqlContext context) {
+        if(!prepared) {
+            prepare(context.getOrmContext());
+        }
+    }
+
+    @Override
     public Object getSource() {
 	    return source;
     }
@@ -94,7 +105,9 @@ public class DefaultSqlCommand implements SqlCommand {
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-		
+
+        mustPrepare(context);
+
 		if(clauses.length == 1){
             if(null != queryClause){
                 return queryClause.createQueryStatement(context, params).executeQuery(reader);
@@ -108,8 +121,10 @@ public class DefaultSqlCommand implements SqlCommand {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
+        mustPrepare(context);
+
 		Assert.isTrue(null != queryClause,"This command is not a query, cannot execute count(*) query");
-		
+
 		if(clauses.length == 1){
 			return queryClause.createCountStatement(context, params).executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
 		}else{
@@ -130,6 +145,8 @@ public class DefaultSqlCommand implements SqlCommand {
     }
 
 	protected int doExecuteUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) {
+        mustPrepare(context);
+
 		Assert.isTrue(null == queryClause,"This command is a query, cannot execute update");
 		
 		if(clauses.length == 1){
@@ -140,6 +157,8 @@ public class DefaultSqlCommand implements SqlCommand {
 	}
 	
 	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
+        mustPrepare(context);
+
 		Assert.isTrue(null == queryClause,"This command is a query, cannot execute batch update");
 		
 		if(clauses.length == 1){
@@ -148,7 +167,14 @@ public class DefaultSqlCommand implements SqlCommand {
 			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
 		}
 	}
-	
+
+    protected String prepareSql(MetadataContext context, String content) {
+        if(!Strings.containsIgnoreCase(content, IncludeProcessor.AT_INCLUDE)) {
+            return content;
+        }
+        return new IncludeProcessor(context, content).process();
+    }
+
 	protected SqlClause checkQuery(){
 		SqlClause queryClause = null;
 		
@@ -167,5 +193,106 @@ public class DefaultSqlCommand implements SqlCommand {
     public String toString() {
 		return this.getClass().getSimpleName() + "[" + source + "]";
     }
-	
+
+    protected final class IncludeProcessor {
+
+        private static final String INCLUDE = "include";
+        private static final String AT_INCLUDE = "@" + INCLUDE;
+
+        private final MetadataContext context;
+        private final char[]          chars;
+
+        private int pos;
+
+        public IncludeProcessor(MetadataContext context, String content) {
+            this.context = context;
+            this.chars   = content.toCharArray();
+        }
+
+        public String process() {
+            //@include(key;required=true|false)
+            StringBuilder sb = new StringBuilder(chars.length);
+
+            for(pos=0;pos<chars.length;pos++) {
+
+                char c = chars[pos];
+
+                if(c == '@') {
+                    int mark = pos;
+                    if(nextInclude()) {
+                        String content = scanIncludeContent();
+                        if(null != content) {
+                            SqlFragment fragment = context.getMetadata().tryGetSqlFragment(content);
+                            if(null == fragment) {
+                                throw new SqlConfigException("The included sql fragment '" + content + "' not found in sql '" + desc + "', check " + source);
+                            }
+                            sb.append(fragment.getContent());
+                            continue;
+                        }
+                    }
+
+                    sb.append(Chars.substring(chars, mark, pos));
+                }
+
+                sb.append(c);
+            }
+
+            return sb.toString();
+        }
+
+        protected boolean nextInclude() {
+            int start = pos + 1;
+            if(start == chars.length) {
+                return false;
+            }
+
+            for(pos = start; pos < chars.length; pos++) {
+                char c = chars[pos];
+
+                if(!Character.isLetter(c)) {
+                    if(pos > start) {
+                        String word = Chars.substring(chars, start, pos);
+                        if(Strings.equalsIgnoreCase(INCLUDE, word)) {
+                            return true;
+                        }
+                    }
+
+                    break;
+                }
+            }
+
+            return false;
+        }
+
+        protected String scanIncludeContent() {
+            if(pos == chars.length) {
+                return null;
+            }
+
+            int left = 0;
+            for(; pos < chars.length; pos++) {
+
+                char c = chars[pos];
+
+                if(left > 0) {
+
+                    if(c == ')') {
+                        return Chars.substring(chars, left + 1, pos);
+                    }
+
+                }else{
+                    if(Character.isWhitespace(c)) {
+                        continue;
+                    }
+
+                    if(c == '(') {
+                        left = pos;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+    }
 }

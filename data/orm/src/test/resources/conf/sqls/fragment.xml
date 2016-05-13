@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqls xmlns="http://www.leapframework.org/schema/sqls">
-   <fragment key="sql.fragment.fragment">
-       last_name = :name and  @if(name != null) first_name=:name @else first_name is null @endif
-   </fragment>
+    <fragment key="fragment1">
+        last_name = :name and @if(name != null) first_name=:name @else first_name is null @endif
+    </fragment>
 
-    <command key="sql.fragment.clause.where">
-        select lastName from owners where @include(sql.fragment.fragment) and firstName = :firstName
+    <fragment key="select">
+        select
+    </fragment>
+
+    <fragment key="1=1">
+        1=1
+    </fragment>
+
+    <fragment key=":firstName">
+        :firstName
+    </fragment>
+
+    <command key="testFragmentSimple">
+        select lastName from owners where @include(fragment1) and firstName = :firstName
     </command>
+
+    <command key="testFragmentComplex">
+        @include(select) lastName from owners where @include(1=1) and firstName = @include(:firstName)
+    </command>
+
 </sqls>

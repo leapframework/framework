@@ -15,10 +15,24 @@
  */
 package leap.orm.sql;
 
-import leap.lang.Sourced;
+import leap.lang.Strings;
 
-public interface SqlFragment extends Sourced {
+public class SimpleSqlFragment implements SqlFragment {
+    protected final Object source;
+    protected final String content;
 
-    String getContent();
+    public SimpleSqlFragment(Object source, String content) {
+        this.source  = source;
+        this.content = Strings.trim(content);
+    }
 
+    @Override
+    public Object getSource() {
+        return this.source;
+    }
+
+    @Override
+    public String getContent() {
+        return content;
+    }
 }

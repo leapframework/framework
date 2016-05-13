@@ -15,9 +15,6 @@
  */
 package leap.orm.sql;
 
-import java.io.IOException;
-import java.util.List;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -34,6 +31,8 @@ import leap.lang.xml.XmlReader;
 import leap.orm.OrmMetadata;
 import leap.orm.mapping.EntityMapping;
 
+import java.io.IOException;
+
 public class XmlSqlReader implements SqlReader {
 	
 	private static final Log log = LogFactory.get(XmlSqlReader.class);
@@ -41,7 +40,7 @@ public class XmlSqlReader implements SqlReader {
 	private static final String SQLS_ELEMENT                = "sqls";
 	private static final String IMPORT_ELEMENT              = "import";
 	private static final String COMMAND_ELEMENT             = "command";
-	private static final String FRAGMENT_ELEMENT			  = "fragment";
+	private static final String FRAGMENT_ELEMENT			= "fragment";
 	private static final String RESOURCE_ATTRIBUTE          = "resource";
 	private static final String OVERRIDE_ATTRIBUTE          = "override";
 	private static final String KEY_ATTRIBUTE               = "key";
@@ -121,9 +120,8 @@ public class XmlSqlReader implements SqlReader {
 	}
 
 	private void readSqlFragment(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride) {
-		String key 			= reader.resolveAttribute(KEY_ATTRIBUTE);
-		String langName 	= reader.resolveAttribute(LANG_ATTRIBUTE);
-		String content 		= reader.resolveElementTextAndEnd();
+		String key 	   = reader.resolveAttribute(KEY_ATTRIBUTE);
+		String content = reader.resolveElementTextAndEnd();
 
 		if(Strings.isEmpty(key)){
 			throw new SqlConfigException("'key' attribute must be defined in sql fragment, xml : " + reader.getSource());
@@ -133,27 +131,11 @@ public class XmlSqlReader implements SqlReader {
 		if(Strings.isEmpty(content)){
 			throw new SqlConfigException("The content body of sql fragment " + fragmentDescription + " must not be empty, xml : " + reader.getSource());
 		}
-		log.debug("Loading sql command {} from [{}]",fragmentDescription,reader.getSource());
+		log.debug("Loading sql fragment {} from [{}]",fragmentDescription,reader.getSource());
 
 		OrmMetadata metadata = context.getConfigContext().getMetadata();
 
-		SqlLanguage language = null;
-		if(!Strings.isEmpty(langName)){
-			language = beanFactory.tryGetBean(SqlLanguage.class,langName);
-			if(null == language){
-				throw new SqlConfigException("Sql language '" + langName + "' not found in fragment" + fragmentDescription +", xml : " + reader.getSource());
-			}
-		}else{
-			language = defaultLanguage;
-		}
-		List<SqlClause> clauses;
-		try {
-			clauses = language.parseClauses(context.getConfigContext(),content);
-		} catch (Exception e) {
-			throw new SqlConfigException("Error parsing sql fragment content in fragment" + fragmentDescription + ",xml : " + reader.getSource(),e);
-		}
-		SqlFragment fragment = new DefaultSqlFragment(reader.getSource(),clauses.toArray(new SqlClause[clauses.size()]));
-		metadata.addSqlFragment(key,fragment);
+		metadata.addSqlFragment(key,new SimpleSqlFragment(reader.getSource(),content));
 	}
 
 	protected void readSqlCommand(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride){
@@ -280,16 +262,7 @@ public class XmlSqlReader implements SqlReader {
 		}
 		
 		log.debug("SQL(s) : \n\n  {}\n",content);
-		
-		List<SqlClause> clauses;
-		
-		try {
-			clauses = language.parseClauses(context.getConfigContext(),content);
-        } catch (Exception e) {
-        	throw new SqlConfigException("Error parsing sql content in command" + commandDescription + ",xml : " + reader.getSource(),e);
-        }
-		
-		SqlCommand command = new DefaultSqlCommand(reader.getSource(), dbType, clauses);
+		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content);
 		if(!Strings.isEmpty(key)){
 			metadata.addSqlCommand(key, command);
 		}

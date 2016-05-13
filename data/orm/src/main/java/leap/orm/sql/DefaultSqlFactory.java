@@ -35,10 +35,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	protected @Inject @M SqlLanguage defaultSqlLanguage;
 	
-	public void setDefaultSqlLanguage(SqlLanguage defaultSqlLanguage) {
-		this.defaultSqlLanguage = defaultSqlLanguage;
-	}
-
 	@Override
     public SqlCommand createSqlCommand(MetadataContext context,String sql) {
 	    return createCommand(context,null, null, sql);
@@ -108,7 +104,7 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	protected SqlCommand createCommand(MetadataContext context,@Nullable EntityMapping em,String source,String sql){
 		Args.notEmpty(sql,"sql");
-		return new DefaultSqlCommand(source, defaultSqlLanguage.parseClauses(context,sql));
+		return new DefaultSqlCommand(source, source, null, defaultSqlLanguage, sql);
 	}
 	
 	protected String getInsertSql(MetadataContext context,EntityMapping em){
