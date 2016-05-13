@@ -81,13 +81,14 @@ class DefaultAppConfigLoader {
 	protected Charset defaultCharset;
 	protected Object  externalContext;
 
-	protected final Set<String> additionalPackages = new LinkedHashSet<>();
-	protected final Map<String, String> externalProperties;
-	protected final Map<String, String>           properties  = new LinkedHashMap<>();
-	protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
-	protected final Set<Resource>                 resources   = new HashSet<>();
-	protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
-	protected final Map<String, DataSourceConfig> dataSourceConfigs;
+    protected final Set<String> additionalPackages = new LinkedHashSet<>();
+    protected final Map<String, String> externalProperties;
+    protected final Map<String, String>           properties  = new LinkedHashMap<>();
+    protected final Map<String, List<String>>     arrayProperties = new LinkedHashMap<>();
+    protected final Map<Class<?>, Object>         extensions  = new HashMap<>();
+    protected final Set<Resource>                 resources   = new HashSet<>();
+    protected final List<SysPermissionDefinition> permissions = new ArrayList<>();
+    protected final Map<String, DataSourceConfig> dataSourceConfigs;
 
 	protected final Map<Class<?>, Map<String, SysPermissionDefinition>> typedPermissions = new HashMap<>();
 
@@ -149,6 +150,10 @@ class DefaultAppConfigLoader {
 	protected Map<String, String> getProperties() {
 		return properties;
 	}
+
+    protected Map<String, List<String>> getArrayProperties() {
+        return arrayProperties;
+    }
 	
 	protected Set<Resource> getResources(){
 		return resources;
@@ -196,7 +201,7 @@ class DefaultAppConfigLoader {
 				String resourceUrl = resource.getURL().toString();
 				
 				if(log.isDebugEnabled()){
-	                if(AppContextInitializer.isFrameworkResource(resourceUrl)) {
+	                if(AppResources.isFrameworkResource(resourceUrl)) {
 	                    log.trace("Load config from resource : {}",resourceUrl);
 	                }else{
 	                    log.debug("Load config from resource : {}",resourceUrl);    
@@ -336,7 +341,7 @@ class DefaultAppConfigLoader {
 			
 			if(reader.isStartElement(RESOURCES_ELEMENT)){
 				if(matchProfile(context.getProfile(), reader)){
-					Collections2.addAll(this.resources, Resources.scan(reader.getAttributeRequired(LOCATION_ATTRIBUTE)));
+					Collections2.addAll(this.resources, Resources.scan(reader.getRequiredAttribute(LOCATION_ATTRIBUTE)));
 				}
 				reader.nextToEndElement(RESOURCES_ELEMENT);
 				continue;
@@ -345,7 +350,7 @@ class DefaultAppConfigLoader {
 			if(reader.isStartElement(IMPORT_ELEMENT)){
 				if(matchProfile(context.getProfile(), reader)){
 					boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-					boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverried());
+					boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverrided());
 					String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 					
 					Resource importResource = Resources.getResource(resource,importResourceName);
@@ -467,9 +472,15 @@ class DefaultAppConfigLoader {
 		
 		while(reader.nextWhileNotEnd(PROPERTIES_ELEMENT)){
 			if(reader.isStartElement(PROPERTY_ELEMENT)){
+
+                if(!matchProfile(context.getProfile(), reader)){
+                    reader.nextToEndElement(PROPERTY_ELEMENT);
+                    continue;
+                }
+
 				String  name     = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
 				String  value    = reader.resolveAttribute(VALUE_ATTRIBUTE);
-				boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverried());
+				boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverrided());
 
 				if(Strings.isEmpty(value)){
 					value = reader.resolveElementTextAndEnd();
@@ -489,8 +500,19 @@ class DefaultAppConfigLoader {
 						value = newValue.getValue();	
 					}
 				}
-				
-				properties.put(prefix + name, value);	
+
+                if(key.endsWith("[]")) {
+                    key = key.substring(0, key.length()-2);
+                    List<String> list = arrayProperties.get(key);
+                    if(null == list) {
+                        list = new ArrayList<>();
+                        arrayProperties.put(key, list);
+                    }
+                    list.add(value);
+                }else{
+                    properties.put(key, value);
+                }
+
 				continue;
 			}
 		}
@@ -546,7 +568,7 @@ class DefaultAppConfigLoader {
 	        
 	        SysPermission permObject = (SysPermission)constructor.newInstance(name,actions);
 	        
-			addPermission(new SysPermissionDefinition(reader.getSource(), permType, permObject, granted),context.isDefaultOverried());
+			addPermission(new SysPermissionDefinition(reader.getSource(), permType, permObject, granted),context.isDefaultOverrided());
         } catch (NoSuchMethodException e) {
         	throw new AppConfigException("Permission class '" + className + "' must define the consturstor(String.class,String.class), source : " + reader.getSource());
         } catch (Exception e){
@@ -593,15 +615,15 @@ class DefaultAppConfigLoader {
 	}
 	
 	private final class LoadContext extends MapPropertyAccessor implements AppConfigContext{
-		protected String  	  profile         = null;
-		protected boolean     defaultOverried = false;
+		protected String      profile              = null;
+		protected boolean     defaultOverrided     = false;
 		protected boolean     hasDefaultDataSource = false;
-		protected Set<String> resources       = new HashSet<String>();
+		protected Set<String> resources            = new HashSet<String>();
 		
 		LoadContext(String profile,boolean defaultOverried){
 			super(DefaultAppConfigLoader.this.properties);
 			this.profile = profile;
-			this.defaultOverried = defaultOverried;
+			this.defaultOverrided = defaultOverried;
 		}
 
 		@Override
@@ -610,8 +632,8 @@ class DefaultAppConfigLoader {
         }
 		
 		@Override
-        public boolean isDefaultOverried() {
-	        return defaultOverried;
+        public boolean isDefaultOverrided() {
+	        return defaultOverrided;
         }
 
 		@Override

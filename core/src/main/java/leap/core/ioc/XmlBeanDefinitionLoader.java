@@ -15,27 +15,10 @@
  */
 package leap.core.ioc;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.xml.namespace.QName;
-
-import leap.core.AppContextInitializer;
+import leap.core.AppResources;
 import leap.core.el.EL;
-import leap.lang.Args;
-import leap.lang.Classes;
-import leap.lang.New;
-import leap.lang.Strings;
-import leap.lang.Types;
+import leap.core.instrument.AppInstrumentation;
+import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.lang.el.DefaultElParseContext;
@@ -53,6 +36,12 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
+import javax.xml.namespace.QName;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+
 class XmlBeanDefinitionLoader {
 	
 	private static final Log log = LogFactory.get(XmlBeanDefinitionLoader.class);
@@ -64,189 +53,94 @@ class XmlBeanDefinitionLoader {
 	}
 	
 	static final String RUNTIME_SOURCE = "runtime";
-	
-	public static final String DESCRIPTION_ELEMENT = "description";
-	
-	public static final String ALIAS_ELEMENT = "alias";
-	
-	public static final String IMPORT_ELEMENT = "import";
-	
-	public static final String BEANS_ELEMENT = "beans";
-	
-	public static final String NAME_ATTRIBUTE = "name";
 
-	public static final String INIT_ELEMENT = "init";
-	
-	public static final String BEAN_ELEMENT = "bean";
+    public static final String DESCRIPTION_ELEMENT              = "description";
+    public static final String ALIAS_ELEMENT                    = "alias";
+    public static final String IMPORT_ELEMENT                   = "import";
+    public static final String BEANS_ELEMENT                    = "beans";
+    public static final String NAME_ATTRIBUTE                   = "name";
+    public static final String INIT_ELEMENT                     = "init";
+    public static final String BEAN_ELEMENT                     = "bean";
+    public static final String INVOKE_ELEMENT                   = "invoke";
+    public static final String METHOD_ARG_ELEMENT               = "method-arg";
+    public static final String REF_ELEMENT                      = "ref";
+    public static final String IDREF_ELEMENT                    = "idref";
+    public static final String BEAN_REF_ATTRIBUTE               = "bean";
+	public static final String NAME_REF_ATTRIBUTE               = "name";
+	public static final String TYPE_REF_ATTRIBUTE               = "type";
+    public static final String IF_ATTRIBUTE                     = "if";
+    public static final String IF_PROFILE_ATTRIBUTE             = "if-profile";
+    public static final String IF_CLASS_PRESENT_ATTRIBUTE       = "if-class-present";
+    public static final String IF_SERVLET_ENVIRONMENT_ATTRIBUTE = "if-servlet-environment";
+    public static final String ID_ATTRIBUTE                     = "id";
+    public static final String CLASS_ATTRIBUTE                  = "class";
+    public static final String ALIAS_ATTRIBUTE                  = "alias";
+    public static final String METHOD_ATTRIBUTE                 = "method";
+    public static final String SINGLETON_ATTRIBUTE              = "singleton";
+    public static final String LAZY_INIT_ATTRIBUTE              = "lazy-init";
+    public static final String PRIMARY_ATTRIBUTE                = "primary";
+    public static final String INIT_METHOD_ATTRIBUTE            = "init-method";
+    public static final String DESTROY_METHOD_ATTRIBUTE         = "destroy-method";
+    public static final String FACTORY_METHOD_ATTRIBUTE         = "factory-method";
+    public static final String FACTORY_BEAN_ATTRIBUTE           = "factory-bean";
+    public static final String CONSTRUCTOR_ARG_ELEMENT          = "constructor-arg";
+    public static final String TYPE_ATTRIBUTE                   = "type";
+    public static final String VALUE_TYPE_ATTRIBUTE             = "value-type";
+    public static final String TARGET_TYPE_ATTRIBUTE            = "target-type";
+    public static final String KEY_TYPE_ATTRIBUTE               = "key-type";
+    public static final String PROPERTY_ELEMENT                 = "property";
+    public static final String REF_ATTRIBUTE                    = "ref";
+	public static final String REF_TYPE_ATTRIBUTE               = "ref-type";
+	public static final String REF_NAME_ATTRIBUTE               = "ref-name";
+    public static final String VALUE_ATTRIBUTE                  = "value";
+    public static final String DEFAULT_VALUE_ATTRIBUTE          = "default-value";
+    public static final String VALUE_ELEMENT                    = "value";
+    public static final String CLASS_ELEMENT                    = "value";
+    public static final String NULL_ELEMENT                     = "null";
+    public static final String ARRAY_ELEMENT                    = "array";
+    public static final String LIST_ELEMENT                     = "list";
+    public static final String SET_ELEMENT                      = "set";
+    public static final String MAP_ELEMENT                      = "map";
+    public static final String BEAN_LIST_ELEMENT                = "bean-list";
+    public static final String UTIL_LIST_ELEMENT                = "util-list";
+    public static final String UTIL_SET_ELEMENT                 = "util-set";
+    public static final String UTIL_MAP_ELEMENT                 = "util-map";
+    public static final String ENTRY_ELEMENT                    = "entry";
+    public static final String KEY_ATTRIBUTE                    = "key";
+    public static final String KEY_REF_ATTRIBUTE                = "key-ref";
+    public static final String VALUE_REF_ATTRIBUTE              = "value-ref";
+    public static final String PROPS_ELEMENT                    = "props";
+    public static final String PROP_ELEMENT                     = "prop";
+    public static final String MERGE_ATTRIBUTE                  = "merge";
+    public static final String RESOURCE_ATTRIBUTE               = "resource";
+    public static final String QUALIFIER_ELEMENT                = "qualifier";
+    public static final String QUALIFIER_ATTRIBUTE              = "qualifier";
+    public static final String SORT_ORDER_ATTRIBUTE             = "sort-order";
+    public static final String OVERRIDE_ATTRIBUTE               = "override";
+    public static final String DEFAULT_OVERRIDED_ATTRIBUTE      = "default-overrided";
+    public static final String DEFAULT_LAZY_INIT_ATTRIBUTE      = "default-lazy-init";
+    public static final String DEFAULT_AUTO_INJECT_ATTRIBUTE    = "default-auto-inject";
+    public static final String LIST_CLASS_ATTRIBUTE             = "list-class";
+    public static final String SET_CLASS_ATTRIBUTE              = "set-class";
+    public static final String MAP_CLASS_ATTRIBUTE              = "map-class";
+    public static final String CHECK_EXISTENCE_ATTRIBUTE        = "check-existence";
+    public static final String ADDITIONAL_TYPE_DEF_ELEMENT      = "additional-type-def";
+    public static final String REGISTER_BEAN_FACTORY_ELEMENT    = "register-bean-factory";
 
-	public static final String META_ELEMENT = "meta";
-	
-	public static final String INVOKE_ELEMENT = "invoke";
-	
-	public static final String METHOD_ARG_ELEMENT = "method-arg";
-	
-	public static final String IF_ATTRIBUTE = "if";
-	
-	public static final String IF_PROFILE_ATTRIBUTE = "if-profile";
+    protected boolean defaultAutoInject = true;
 
-	public static final String IF_CLASS_PRESENT_ATTRIBUTE = "if-class-present";
-	
-	public static final String IF_SERVLET_ENVIRONMENT_ATTRIBUTE = "if-servlet-environment";
-	
-	public static final String ID_ATTRIBUTE = "id";
+    private final BeanContainer      container;
+    private final AppInstrumentation instrumentation;
 
-	public static final String PARENT_ATTRIBUTE = "parent";
+    public XmlBeanDefinitionLoader(BeanContainer container) {
+        this(container, null);
+    }
 
-	public static final String CLASS_ATTRIBUTE = "class";
+    public XmlBeanDefinitionLoader(BeanContainer container, AppInstrumentation instrumentation) {
+        this.container       = container;
+        this.instrumentation = instrumentation;
+    }
 
-	public static final String ABSTRACT_ATTRIBUTE = "abstract";
-	
-	public static final String ALIAS_ATTRIBUTE = "alias";
-	
-	public static final String METHOD_ATTRIBUTE = "method";
-	
-	public static final String BEAN_ID_ATTRIBUTE       = "bean-id";
-	public static final String BEAN_TYPE_ATTRIBUTE     = "bean-type";
-	public static final String BEAN_NAME_ATTRIBUTE     = "bean-name";
-	public static final String ALIAS_ID_ATTRIBUTE      = "alias-id";
-	public static final String ALIAS_TYPE_ATTRIBUTE    = "alias-type";
-	public static final String ALIAS_NAME_ATTRIBUTE    = "alias-name";
-	public static final String ALIAS_PRIMARY_ATTRIBUTE = "alias-primary";
-	
-	public static final String SINGLETON_ATTRIBUTE = "singleton";
-
-	public static final String LAZY_INIT_ATTRIBUTE = "lazy-init";
-
-	public static final String AUTO_INJECT_ATTRIBUTE = "auto-inject";
-
-	public static final String PRIMARY_ATTRIBUTE = "primary";
-
-	public static final String DEPENDENCY_CHECK_ATTRIBUTE = "dependency-check";
-
-	public static final String DEPENDS_ON_ATTRIBUTE = "depends-on";
-
-	public static final String INIT_METHOD_ATTRIBUTE = "init-method";
-
-	public static final String DESTROY_METHOD_ATTRIBUTE = "destroy-method";
-
-	public static final String FACTORY_METHOD_ATTRIBUTE = "factory-method";
-
-	public static final String FACTORY_BEAN_ATTRIBUTE = "factory-bean";
-
-	public static final String CONSTRUCTOR_ARG_ELEMENT = "constructor-arg";
-
-	public static final String INDEX_ATTRIBUTE = "index";
-
-	public static final String TYPE_ATTRIBUTE = "type";
-
-	public static final String VALUE_TYPE_ATTRIBUTE = "value-type";
-	
-	public static final String TARGET_TYPE_ATTRIBUTE = "target-type";
-
-	public static final String KEY_TYPE_ATTRIBUTE = "key-type";
-
-	public static final String PROPERTY_ELEMENT = "property";
-	
-	public static final String REF_ATTRIBUTE = "ref";
-
-	public static final String VALUE_ATTRIBUTE = "value";
-	
-	public static final String DEFAULT_VALUE_ATTRIBUTE = "default-value";
-
-	public static final String LOOKUP_METHOD_ELEMENT = "lookup-method";
-
-	public static final String REPLACED_METHOD_ELEMENT = "replaced-method";
-
-	public static final String REPLACER_ATTRIBUTE = "replacer";
-
-	public static final String ARG_TYPE_ELEMENT = "arg-type";
-
-	public static final String ARG_TYPE_MATCH_ATTRIBUTE = "match";
-
-	public static final String REF_ELEMENT = "ref";
-
-	public static final String IDREF_ELEMENT = "idref";
-
-	public static final String BEAN_REF_ATTRIBUTE = "bean";
-
-	public static final String LOCAL_REF_ATTRIBUTE = "local";
-
-	public static final String PARENT_REF_ATTRIBUTE = "parent";
-
-	public static final String VALUE_ELEMENT = "value";
-	
-	public static final String CLASS_ELEMENT = "value";
-
-	public static final String NULL_ELEMENT = "null";
-
-	public static final String ARRAY_ELEMENT = "array";
-	
-	public static final String LIST_ELEMENT = "list";
-
-	public static final String SET_ELEMENT = "set";
-
-	public static final String MAP_ELEMENT = "map";	
-	
-	public static final String BEAN_LIST_ELEMENT = "bean-list";
-	
-	public static final String UTIL_LIST_ELEMENT = "util-list";
-	
-	public static final String UTIL_SET_ELEMENT = "util-set";
-	
-	public static final String UTIL_MAP_ELEMENT = "util-map";
-
-	public static final String ENTRY_ELEMENT = "entry";
-
-	public static final String KEY_ELEMENT = "key";
-
-	public static final String KEY_ATTRIBUTE = "key";
-
-	public static final String KEY_REF_ATTRIBUTE = "key-ref";
-
-	public static final String VALUE_REF_ATTRIBUTE = "value-ref";
-
-	public static final String PROPS_ELEMENT = "props";
-
-	public static final String PROP_ELEMENT = "prop";
-
-	public static final String MERGE_ATTRIBUTE = "merge";
-	
-	public static final String RESOURCE_ATTRIBUTE = "resource";
-
-	public static final String QUALIFIER_ELEMENT = "qualifier";
-
-	public static final String QUALIFIER_ATTRIBUTE = "qualifier";
-	
-	public static final String SORT_ORDER_ATTRIBUTE = "sort-order";
-	
-	public static final String OVERRIDE_ATTRIBUTE = "override";
-
-	public static final String DEFAULT_LAZY_INIT_ATTRIBUTE = "default-lazy-init";
-
-	public static final String DEFAULT_MERGE_ATTRIBUTE = "default-merge";
-
-	public static final String DEFAULT_AUTO_INJECT_ATTRIBUTE = "default-auto-inject";
-
-	public static final String DEFAULT_DEPENDENCY_CHECK_ATTRIBUTE = "default-dependency-check";
-
-	public static final String DEFAULT_INIT_METHOD_ATTRIBUTE = "default-init-method";
-
-	public static final String DEFAULT_DESTROY_METHOD_ATTRIBUTE = "default-destroy-method";
-	
-	public static final String LIST_CLASS_ATTRIBUE = "list-class";
-	
-	public static final String SET_CLASS_ATTRIBUE = "set-class";
-	
-	public static final String MAP_CLASS_ATTRIBUE = "map-class";
-	
-	public static final String CHECK_EXISTENCE_ATTRIBUTE  = "check-existence";
-	
-	public static final String ADDITIONAL_TYPE_DEF_ELEMENT = "additional-type-def";
-	
-	public static final String REGISTER_BEAN_FACTORY_ELEMENT = "register-bean-factory";
-	
-	protected boolean defaultAutoInject = true;
-	
     public boolean isDefaultAutoInject() {
 		return defaultAutoInject;
 	}
@@ -255,14 +149,13 @@ class XmlBeanDefinitionLoader {
 		this.defaultAutoInject = defaultAutoInject;
 	}
 
-	public void load(BeanContainer container, Resource[] resources) {
-	    Args.notNull(container,"container");
+	public void load(Resource[] resources) {
 	    Args.notNull(resources,"resources");
 	    
 	    for(Resource resource : resources){
 	    	if(resource.isReadable()){
 	    	    if(log.isDebugEnabled()) {
-	    	        if(AppContextInitializer.isFrameworkResource(resource.getURLString())) {
+	    	        if(AppResources.isFrameworkResource(resource.getURLString())) {
 	    	            log.trace("Reading beans from resource : {}",resource.getURLString());
 	    	        }else{
 	    	            log.debug("Reading beans from resource : {}",resource.getURLString());        
@@ -336,7 +229,7 @@ class XmlBeanDefinitionLoader {
 	        		
 	        		if(reader.isStartElement(IMPORT_ELEMENT)){
 	        			boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-	        			String importResourceName = reader.getAttributeRequired(RESOURCE_ATTRIBUTE);
+	        			String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 	        			
 	        			Resource importResource = Resources.getResource(resource,importResourceName);
 	        			
@@ -406,12 +299,12 @@ class XmlBeanDefinitionLoader {
 	
 	protected void readInit(BeanContainer container,XmlReader reader,LoaderContext context){
 		container.addInitDefinition(new InitDefinition(reader.getSource(), 
-													   reader.getAttributeRequired(CLASS_ATTRIBUTE),
+													   reader.getRequiredAttribute(CLASS_ATTRIBUTE),
 													   reader.getAttribute(INIT_METHOD_ATTRIBUTE)));
 	}
 	
 	protected AliasDefinition readAlias(BeanContainer container,XmlReader reader,LoaderContext context){
-		String alias = reader.getAttributeRequired(ALIAS_ATTRIBUTE);
+		String alias = reader.getRequiredAttribute(ALIAS_ATTRIBUTE);
 		String id    = reader.getAttribute(ID_ATTRIBUTE);
 		
 		if(!Strings.isEmpty(id)){
@@ -420,8 +313,8 @@ class XmlBeanDefinitionLoader {
 		
 		return new AliasDefinition(reader.getSource(),
 								   alias,
-								   Classes.forName(reader.getAttributeRequired(TYPE_ATTRIBUTE)),
-								   reader.getAttributeRequired(NAME_ATTRIBUTE)
+								   Classes.forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
+								   reader.getRequiredAttribute(NAME_ATTRIBUTE)
 								   );
 	}
 	
@@ -440,8 +333,13 @@ class XmlBeanDefinitionLoader {
 		String qualifierName	 = reader.getAttribute(QUALIFIER_ATTRIBUTE);
 		Integer sortOrder        = reader.getIntegerAttribute(SORT_ORDER_ATTRIBUTE);
 		boolean override         = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
+        boolean defaultOverrided = reader.getBooleanAttribute(DEFAULT_OVERRIDED_ATTRIBUTE, false);
 
 		if(!Strings.isEmpty(beanClassName)){
+            if(null != instrumentation) {
+                instrumentation.tryInstrument(beanClassName);
+            }
+
 			try {
 	            bean.setBeanClass(Classes.forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
@@ -485,6 +383,7 @@ class XmlBeanDefinitionLoader {
 		bean.setLazyInit(boolAttribute(reader,LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
 		bean.setPrimary(boolAttribute(reader,PRIMARY_ATTRIBUTE, false));
 		bean.setOverride(override);
+        bean.setDefaultOverrided(defaultOverrided);
 		
 		if(!Strings.isEmpty(qualifierName)){
 			bean.addQualifier(qualifierName);
@@ -496,7 +395,7 @@ class XmlBeanDefinitionLoader {
 		
 		bean.setFactoryBeanName(reader.getAttribute(FACTORY_BEAN_ATTRIBUTE));
 		bean.setFactoryMethodName(reader.getAttribute(FACTORY_METHOD_ATTRIBUTE));
-		
+		// TODO the property factoryBeanName and factoryMethodName was set but never used,why?
 		if(null == bean.getBeanClass() && Strings.isEmpty(bean.getFactoryBeanName())){
 			throw new BeanDefinitionException("bean's class or factory-bean must be sepcified, bean '" + bean.getIdOrName() + "' in source : " + reader.getSource());
 		}
@@ -670,12 +569,12 @@ class XmlBeanDefinitionLoader {
 					continue;
 				}
 				if(reader.isStartElement(REF_ELEMENT)){
-					values.add(beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE)));
+					values.add(beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE)));
 					continue;
 				}
 				
 				if(reader.isStartElement(IDREF_ELEMENT)){
-					values.add(beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE)));
+					values.add(beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE)));
 					continue;
 				}
 				
@@ -698,7 +597,7 @@ class XmlBeanDefinitionLoader {
 		BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
 		
 		readValuedBeanAttributes(container, reader, context, bean);
-		bean.setBeanClass(classAttribute(reader, LIST_CLASS_ATTRIBUE, false));
+		bean.setBeanClass(classAttribute(reader, LIST_CLASS_ATTRIBUTE, false));
 		bean.setValueDefinition(readList(container, reader, context));
 		bean.getValueDefinition().setDefinedType(bean.getBeanClass());
 		
@@ -713,7 +612,7 @@ class XmlBeanDefinitionLoader {
 		BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
 		
 		readValuedBeanAttributes(container, reader, context, bean);
-		bean.setBeanClass(classAttribute(reader, SET_CLASS_ATTRIBUE, false));
+		bean.setBeanClass(classAttribute(reader, SET_CLASS_ATTRIBUTE, false));
 		bean.setValueDefinition(readSet(container, reader, context));
 		bean.getValueDefinition().setDefinedType(bean.getBeanClass());
 		
@@ -728,7 +627,7 @@ class XmlBeanDefinitionLoader {
 		BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
 		
 		readValuedBeanAttributes(container, reader, context, bean);
-		bean.setBeanClass(classAttribute(reader, MAP_CLASS_ATTRIBUE, false));
+		bean.setBeanClass(classAttribute(reader, MAP_CLASS_ATTRIBUTE, false));
 		bean.setValueDefinition(readMap(container, reader, context));
 		bean.getValueDefinition().setDefinedType(bean.getBeanClass());
 		
@@ -747,7 +646,7 @@ class XmlBeanDefinitionLoader {
     protected void readBeanTypeDef(BeanContainer container, XmlReader reader, LoaderContext context, BeanDefinitionBase bean) {
         TypeDefinitionBase def = new TypeDefinitionBase();
         
-        String   typeClassName = reader.getAttributeRequired(TYPE_ATTRIBUTE);
+        String   typeClassName = reader.getRequiredAttribute(TYPE_ATTRIBUTE);
         Class<?> typeClass     = Classes.tryForName(typeClassName);
         
         if(null == typeClass) {
@@ -771,7 +670,7 @@ class XmlBeanDefinitionLoader {
             throw new BeanDefinitionException("Bean [" + bean + "] must be implements FactoryBean");
         }
         
-        String targetTypeName = reader.getAttributeRequired(TARGET_TYPE_ATTRIBUTE);
+        String targetTypeName = reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE);
         
         if(Strings.isEmpty(targetTypeName)){
             throw new BeanDefinitionException("Attribute '" + TARGET_TYPE_ATTRIBUTE + "' of element '" + REGISTER_BEAN_FACTORY_ELEMENT + "' must not be empty, source : " + reader.getSource());
@@ -800,7 +699,7 @@ class XmlBeanDefinitionLoader {
 		
 		PropertyDefinition prop = new PropertyDefinition();
 		
-		prop.setName(reader.getAttributeRequired(NAME_ATTRIBUTE));
+		prop.setName(reader.getRequiredAttribute(NAME_ATTRIBUTE));
 		prop.setDefaultValue(reader.getAttribute(DEFAULT_VALUE_ATTRIBUTE));
 		prop.setValueDefinition(readValue(container, reader, context,PROPERTY_ELEMENT));
 		prop.setProperty(bean.getBeanClassType().getProperty(prop.getName()));
@@ -821,7 +720,7 @@ class XmlBeanDefinitionLoader {
 	protected void readInvoke(BeanContainer container,XmlReader reader,LoaderContext context,BeanDefinitionBase bean){
 		InvokeDefinition invoke = new InvokeDefinition();
 		
-		String methodName = reader.getAttributeRequired(METHOD_ATTRIBUTE);
+		String methodName = reader.getRequiredAttribute(METHOD_ATTRIBUTE);
 		
 		while(reader.nextWhileNotEnd(INVOKE_ELEMENT)){
 			if(reader.isStartElement(METHOD_ARG_ELEMENT)){
@@ -872,10 +771,23 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		String ref = reader.getAttribute(REF_ATTRIBUTE);
+		String refType = reader.getAttribute(REF_TYPE_ATTRIBUTE);
+		String refName = reader.getAttribute(REF_NAME_ATTRIBUTE);
 		if(!Strings.isEmpty(ref)){
 			return beanReference(context,ref);
 		}
-		
+		if(!Strings.isAllEmpty(refType,refName)){
+			if(Strings.isEmpty(refType) || Strings.isEmpty(refName)){
+				throw new BeanDefinitionException("property's attribute ref-type and ref-name must both empty or both not empty!"
+						+ reader.getElementLocalName() + "' in element '" + elementName + "', source : " + reader.getSource());
+			}
+			try {
+				Class<?> c = Classes.forName(refType);
+				return beanReference(context,c,refName);
+			}catch (NestedClassNotFoundException e){
+				throw new BeanDefinitionException("Invallid class name '" + refType + "', source : " + reader.getSource(), e);
+			}
+		}
 		while(reader.nextWhileNotEnd(elementName)){
 			if(reader.isStartElement()){
 				if(reader.isStartElement(DESCRIPTION_ELEMENT)){
@@ -910,11 +822,25 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		if(reader.isStartElement(REF_ELEMENT)){
-			return beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE));
+			String name = reader.getAttribute(NAME_REF_ATTRIBUTE);
+			String type = reader.getAttribute(TYPE_REF_ATTRIBUTE);
+			String id	= reader.getAttribute(BEAN_REF_ATTRIBUTE);
+			if(!Strings.isEmpty(id)){
+				return beanReference(context,id);
+			}else if(Strings.isNotEmpty(name) && Strings.isNotEmpty(type)){
+				try {
+					Class<?> c = Classes.forName(type);
+					return beanReference(context,c,	name);
+				}catch (NestedClassNotFoundException e){
+					throw new BeanDefinitionException("Invallid class name '" + type + "', source : " + reader.getSource(), e);
+				}
+			}else {
+				throw new BeanDefinitionException("ref element must have id attribute or name attribute and type attribute ,source : " + reader.getSource());
+			}
 		}
 		
 		if(reader.isStartElement(IDREF_ELEMENT)){
-			return beanReference(context,reader.getAttributeRequired(BEAN_REF_ATTRIBUTE));
+			return beanReference(context,reader.getRequiredAttribute(BEAN_REF_ATTRIBUTE));
 		}
 		
 		if(reader.isStartElement(NULL_ELEMENT)){
@@ -1111,7 +1037,7 @@ class XmlBeanDefinitionLoader {
 			
 			if(reader.isStartElement()){
 				if(reader.isStartElement(PROP_ELEMENT)){
-					props.put(reader.getAttributeRequired(KEY_ATTRIBUTE),reader.getElementTextAndEnd());
+					props.put(reader.getRequiredAttribute(KEY_ATTRIBUTE),reader.getElementTextAndEnd());
 				}else{
 					throw new BeanDefinitionException("unsupported child element '" + reader.getElementLocalName() + "' in 'props' element, source : " + reader.getSource());	
 				}
@@ -1136,6 +1062,9 @@ class XmlBeanDefinitionLoader {
 	protected ValueDefinition beanReference(LoaderContext context,String ref){
 		return new ValueDefinition(new BeanReference(ref));
 	}
+	protected ValueDefinition beanReference(LoaderContext context, Class<?> type, String name){
+		return new ValueDefinition(new BeanReference(type,name));
+	}
 	
 	protected Class<?> javaTypeAttribute(XmlReader reader,String name){
 		String className = reader.getAttribute(name);
@@ -1150,7 +1079,7 @@ class XmlBeanDefinitionLoader {
 	}
 	
 	protected static Class<?> classAttribute(XmlReader reader,String name,boolean required){
-		String value = required ? reader.getAttributeRequired(name) : reader.getAttribute(name);
+		String value = required ? reader.getRequiredAttribute(name) : reader.getAttribute(name);
 		
 		if(Strings.isEmpty(value)){
 			return null;

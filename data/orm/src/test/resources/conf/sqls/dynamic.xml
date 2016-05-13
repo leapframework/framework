@@ -9,4 +9,36 @@
         select * from owners where 1=1 {?and last_name like '%$lastName$%'}
     </command>
 
+    <command key="test.sql.dynamic.clause.if">
+        <![CDATA[
+        select * from owners where
+        @if(name != null && name.length() < 4) last_name like :name
+        @elseif (name.length() > 4) last_name = '01'
+        @else last_name = '1' @endif
+        ]]>
+    </command>
+
+    <command key="test.sql.dynamic.clause.nest.if">
+        <![CDATA[
+        select * from owners
+        @if(name != null)
+            @if(name.length() < 3)
+                where
+                last_name like :name
+            @endif
+        @elseif (name != null && name.length() > 4)
+            where
+            last_name = '01'
+        @else
+            where
+            last_name = '1'
+        @endif
+        ]]>
+    </command>
+
+    <command key="test.sql.dynamic.clause.update_with_null_column">
+
+        update owner set address = ? where 1=1;
+
+    </command>
 </sqls>

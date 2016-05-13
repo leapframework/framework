@@ -19,17 +19,11 @@ import leap.core.sys.DefaultSysSecurity;
 import leap.core.sys.SysContext;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
-import leap.lang.Strings;
 import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -38,236 +32,8 @@ public class AppContextInitializer {
 	
 	private static final Log log = LogFactory.get(AppContextInitializer.class);
 	
-	private static ThreadLocal<ResourceSet> initialContext;
-	private static ThreadLocal<AppConfig>   initialAppConfig;
-	private static boolean					initializing;
-	
-	public static final String CLASSPATH_CORE_PREFIX      = "/META-INF/leap/core";
-	public static final String CLASSPATH_FRAMEWORK_PREFIX = "/META-INF/leap/framework";
-	public static final String CLASSPATH_MODULES_PREFIX   = "/META-INF/leap/modules/*";
-	public static final String CLASSPATH_APPSYS_PREFIX    = "/META-INF/conf";
-	public static final String CLASSPATH_APPUSR_PREFIX    = "/conf";
-	
-	private static final String XML_EXT = ".xml";
-
-	private static final String[] FRAMEWORK_CORE_LOCATIONS = new String[]{CLASSPATH_CORE_PREFIX + "/{0}{1}",
-																		  CLASSPATH_CORE_PREFIX + "/{0}/**/*{1}"};
-	
-	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_FRAMEWORK_PREFIX + "/{0}{1}",
-																			  CLASSPATH_FRAMEWORK_PREFIX + "/{0}/**/*{1}"};
-	
-	private static final String[] MODULES_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_MODULES_PREFIX + "/{0}{1}",
-																			  CLASSPATH_MODULES_PREFIX + "/{0}/**/*{1}"};
-
-	private static final String[] APPSYS_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_APPSYS_PREFIX + "/{0}{1}",
-																		   CLASSPATH_APPSYS_PREFIX + "/{0}/**/*{1}"};
-
-	private static final String[] APPUSR_TEMPLATE_LOCATIONS = new String[]{CLASSPATH_APPUSR_PREFIX + "/{0}{1}",
-		   																   CLASSPATH_APPUSR_PREFIX + "/{0}/**/*{1}"};
-
-	private static final String[] FRAMEWORK_CORE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_CORE_PREFIX + "/{0}{1}"};
-	
-	private static final String[] FRAMEWORK_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_FRAMEWORK_PREFIX + "/{0}{1}"};
-	
-	private static final String[] MODULES_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_MODULES_PREFIX + "/{0}{1}"};
-	
-	private static final String[] APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_APPSYS_PREFIX + "/{0}{1}"};
-	
-	private static final String[] APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN = new String[]{CLASSPATH_APPUSR_PREFIX + "/{0}{1}"};
-	
-	private static final String RES_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CLASSPATH_CORE_PREFIX);
-	private static final String RES_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CLASSPATH_FRAMEWORK_PREFIX);
-	private static final String RES_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CLASSPATH_MODULES_PREFIX);
-	private static final String RES_APPSYS_LOCATION    = Strings.format("classpath*:{0}/**/*", CLASSPATH_APPSYS_PREFIX);
-	private static final String RES_APPUSR_LOCATION    = Strings.format("classpath*:{0}/**/*",  CLASSPATH_APPUSR_PREFIX);
-	
-	public static boolean isFrameworkResource(String url) {
-	    return url.contains(CLASSPATH_CORE_PREFIX) || url.contains(CLASSPATH_FRAMEWORK_PREFIX);
-	}
-	
-	public static ResourceSet resources() throws IllegalStateException {
-		if(initialContext != null){
-			ResourceSet resources = initialContext.get();
-			
-			if(null == resources){
-				resources = Resources.scan(RES_CORE_LOCATION,
-						RES_FRAMEWORK_LOCATION,
-						RES_MODULES_LOCATION,
-						RES_APPSYS_LOCATION,
-						RES_APPUSR_LOCATION);
-				initialContext.set(resources);
-			}
-			return resources;
-			
-		}else{
-			return Resources.scan(RES_CORE_LOCATION,
-					RES_FRAMEWORK_LOCATION,
-					RES_MODULES_LOCATION,
-					RES_APPSYS_LOCATION,
-					RES_APPUSR_LOCATION);
-		}
-	}
-	
-	public static Resource getClasspathDirectoryForAppUsr(String name) {
-		return Resources.getResource("classpath:" + CLASSPATH_APPUSR_PREFIX + "/" + name);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForFramework(String xmlResourceName){
-		return searchClasspathResourcesForFramework(xmlResourceName, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForFramework(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS, 	 rs, xmlResourceName, ext);
-		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForFrameworkAndExtOnly(String xmlResourceName){
-		return searchClasspathResourcesForFrameworkAndExtOnly(xmlResourceName, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForFrameworkAndExtOnly(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS, 	 rs, xmlResourceName, ext);
-		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForAppOnly(String xmlResourceName){
-		return searchClasspathResourcesForFrameworkAndExtOnly(xmlResourceName, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForAppOnly(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForAppSysOnly(String xmlResourceName){
-		return searchClasspathResourcesForAppSysOnly(xmlResourceName, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForAppSysOnly(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForAppUsrOnly(String xmlResourceName){
-		return searchClasspathResourcesForAppUsrOnly(xmlResourceName, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForAppUsrOnly(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForFrameworkByPattern(String xmlResourcePattern){
-		return searchClasspathResourcesForFrameworkByPattern(xmlResourcePattern, XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForFrameworkByPattern(String xmlResourcePattern, String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, FRAMEWORK_CORE_LOCATIONS_BY_PATTERN,     rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, FRAMEWORK_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static Resource[] searchClasspathXmlResourcesForExtension(String xmlResourceName){
-		return searchClasspathResourcesForExtension(xmlResourceName,XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForExtension(String xmlResourceName,String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS, rs, xmlResourceName, ext);
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS,    rs, xmlResourceName, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-
-	public static Resource[] searchClasspathXmlResourcesForExtensionByPattern(String xmlResourcePattern){
-		return searchClasspathResourcesForExtensionByPattern(xmlResourcePattern,XML_EXT);
-	}
-	
-	public static Resource[] searchClasspathResourcesForExtensionByPattern(String xmlResourcePattern, String ext){
-		List<Resource> list = new ArrayList<Resource>();
-		
-		ResourceSet rs = resources();
-		
-		searchClassPathResources(list, MODULES_TEMPLATE_LOCATIONS_BY_PATTERN, rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, APPSYS_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
-		searchClassPathResources(list, APPUSR_TEMPLATE_LOCATIONS_BY_PATTERN,    rs, xmlResourcePattern, ext);
-		
-		return list.toArray(new Resource[list.size()]);
-	}
-	
-	public static void loadClasspathXmlResourcesForFramework(String xmlResourceName,Consumer<Resource> processor) {
-		for(Resource resource : searchClasspathXmlResourcesForFramework(xmlResourceName)){
-			processor.accept(resource);
-		}
-	}
-	
-	public static void loadClasspathXmlResourcesForExtension(String xmlResourceName,Consumer<Resource> processor) {
-		for(Resource resource : searchClasspathXmlResourcesForExtension(xmlResourceName)){
-			processor.accept(resource);
-		}
-	}
-	
-	private static void searchClassPathResources(List<Resource> list,
-												 String[] templateLocations, 
-												 ResourceSet rs, 
-												 String resourceName,
-												 String ext){
-		
-		String[] locations = new String[templateLocations.length];
-		
-		for(int i=0; i<locations.length; i++){
-			locations[i] = Strings.format(templateLocations[i],resourceName,ext);
-		}
-		
-		Resource[] resources = rs.searchClasspaths(locations);
-		for(Resource resource : resources){
-			list.add(resource);
-		}
-	}
+	private static ThreadLocal<AppConfig> initialAppConfig;
+	private static boolean				  initializing;
 	
 	public static void initStandalone(){
 		initStandalone(null);
@@ -282,12 +48,13 @@ public class AppContextInitializer {
 			return;
 		}
 		if(AppContext.tryGetCurrent() != null){
-			throw new IllegalStateException("App context aleady initialized");
+			throw new IllegalStateException("App context already initialized");
 		}
 		try{
-			initializing     = true;
-			initialContext   = new InheritableThreadLocal<ResourceSet>();
-			initialAppConfig = new InheritableThreadLocal<AppConfig>();
+			initializing = true;
+			initialAppConfig = new InheritableThreadLocal<>();
+
+            AppResources.onContextInitializing();
 			
 			MapAttributeAccessor attrs = new MapAttributeAccessor();
 			
@@ -312,24 +79,23 @@ public class AppContextInitializer {
 			factory.load(context);
 		
 			onInited(context);
+
+			Runtime.getRuntime().addShutdownHook(new Thread(){
+				@Override
+				public void run() {
+					factory.close();
+				}
+			});
 			
 			log.debug("Standalone app context initialized");
 		}finally{
-			initialContext.remove();
-			initialContext = null;
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing = false;
+            AppResources.onContextInitialized();
 		}
 	}
 	
-	public static void initExternal(Object externalContext,
-									Function<AppConfig,BeanFactory> beanFactoryCreator,
-									Consumer<AppContext> callback){
-		
-		initExternal(externalContext, beanFactoryCreator, callback, null);
-	}
-
 	public static synchronized void initExternal(Object 					     externalContext,
 										  		 Function<AppConfig,BeanFactory> beanFactoryCreator,
 										  		 Consumer<AppContext> 		 	 callback,
@@ -340,13 +106,14 @@ public class AppContextInitializer {
 		}
 		
 		if(AppContext.tryGetCurrent() != null){
-			throw new IllegalStateException("App context aleady initialized");
+			throw new IllegalStateException("App context already initialized");
 		}
 		
 		try{
 			initializing     = true;
-			initialContext   = new InheritableThreadLocal<ResourceSet>();
-			initialAppConfig = new InheritableThreadLocal<AppConfig>();
+			initialAppConfig = new InheritableThreadLocal<>();
+
+            AppResources.onContextInitializing();
 			
 			MapAttributeAccessor attrs = new MapAttributeAccessor();
 			
@@ -371,11 +138,11 @@ public class AppContextInitializer {
 			
 			onInited(context);
 		}finally{
-			initialContext.remove();
-			initialContext = null;
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing   = false;
+
+            AppResources.onContextInitialized();
 		}
 	}
 	
@@ -393,7 +160,7 @@ public class AppContextInitializer {
 		return config;
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
+	protected static DefaultBeanFactory createStandaloneAppFactory(DefaultAppConfig config,BeanFactory externalAppFactory){
 		return new DefaultBeanFactory(config,externalAppFactory);
 	}
 	

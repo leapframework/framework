@@ -15,10 +15,6 @@
  */
 package leap.orm.dao;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -30,11 +26,8 @@ import leap.core.validation.Errors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
 import leap.core.value.Record;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Beans;
-import leap.lang.Readonly;
-import leap.lang.Strings;
+import leap.lang.*;
+import leap.lang.params.ArrayParams;
 import leap.lang.tostring.ToStringBuilder;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
@@ -52,6 +45,10 @@ import leap.orm.validation.EntityValidator;
 import leap.orm.value.Entity;
 import leap.orm.value.EntityBase;
 import leap.orm.value.EntityWrapper;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class DefaultDao extends DaoBase implements PreInjectBean {
@@ -161,7 +158,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(entityClass,"entityClass");
 		Args.notNull(id,"id");
 		
-		return commandFactory().newDeleteCommmand(this,em(entityClass),id).execute();
+		return commandFactory().newDeleteCommand(this,em(entityClass),id).execute();
     }
 	
 	@Override
@@ -169,7 +166,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(entityName,"entityName");
 		Args.notNull(id,"id");
 		
-		return commandFactory().newDeleteCommmand(this,em(entityName),id).execute();
+		return commandFactory().newDeleteCommand(this,em(entityName),id).execute();
     }
 
 	@Override
@@ -177,7 +174,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(em);
 		Args.notNull(id);
 		
-		return commandFactory().newDeleteCommmand(this, em, id).execute();
+		return commandFactory().newDeleteCommand(this, em, id).execute();
     }
 	
     public int deleteAll(Class<?> entityClass) {
@@ -390,7 +387,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	
 	@Override
     public int executeNamedUpdate(String sqlKey, Object[] args) {
-		return ensureGetSqlCommand(sqlKey).executeUpdate(simpleSqlContext, args);
+		return ensureGetSqlCommand(sqlKey).executeUpdate(simpleSqlContext, new ArrayParams(args));
     }
 
 	@Override
@@ -415,6 +412,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	}
 	
 	//--------------------- query ------------------------------------
+	@Override
+	public Query<Record> createQuery(SqlCommand command) {
+		return queryFactory().createQuery(this, Record.class, command);
+	}
+
 	public <T> Query<T> createQuery(Class<T> resultClass, SqlCommand command) {
 	    return queryFactory().createQuery(this, resultClass, command);
 	}

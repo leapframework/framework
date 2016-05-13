@@ -15,10 +15,6 @@
  */
 package leap.core.cache;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.BeanFactory;
 import leap.core.ioc.FactoryBean;
 import leap.core.ioc.PostCreateBean;
@@ -27,6 +23,10 @@ import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultCacheManager implements CacheManager, PostCreateBean, FactoryBean {
 	
@@ -62,7 +62,7 @@ public class DefaultCacheManager implements CacheManager, PostCreateBean, Factor
 		Args.notNull(cache,"cache");
 		
 		if(caches.containsKey(name)){
-			throw new ObjectExistsException("The cache '" + name + "' aleady exists");
+			throw new ObjectExistsException("The cache '" + name + "' already exists");
 		}
 		
 		caches.put(name, cache);
@@ -87,22 +87,17 @@ public class DefaultCacheManager implements CacheManager, PostCreateBean, Factor
     @Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void postCreate(BeanFactory factory) throws Exception {
-		this.caches = new ConcurrentHashMap<String, Cache<?,?>>();
+		this.caches = new ConcurrentHashMap<>();
 		this.caches.putAll((Map)factory.getNamedBeans(Cache.class));
 		log.debug("Found {} managed Cache bean(s)",caches.size());
 	}
 
-	@Override
-    public <T> T getBean(BeanFactory beanFactory, Class<T> type) {
-		return null;
-    }
-	
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getBean(BeanFactory beanFactory, Class<T> type, String name) {
+    public Object getBean(BeanFactory beanFactory, Class type, String name) {
 		if(!Cache.class.equals(type)){
 			throw new IllegalStateException("Cannot get bean type '" + type.getName() + "'");
 		}
-	    return (T)getCache(name);
+	    return getCache(name);
     }
 }

@@ -15,14 +15,6 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
 import leap.db.DbError;
 import leap.db.DbErrors;
 import leap.db.DbExecution;
@@ -32,6 +24,14 @@ import leap.lang.exception.NestedSQLException;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
+
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class GenericDbExecution implements DbExecution {
 	
@@ -158,7 +158,7 @@ public class GenericDbExecution implements DbExecution {
 	
 	@Override
     public boolean execute() {
-		return db.execute(new ConnectionCallbackWithResult<Boolean>() {
+		return db.executeWithResult(new ConnectionCallbackWithResult<Boolean>() {
 			@Override
             public Boolean execute(Connection connection) throws SQLException {
 	            return GenericDbExecution.this.execute(connection);
@@ -179,6 +179,7 @@ public class GenericDbExecution implements DbExecution {
 		
 		try{
 			stmt = connection.createStatement();
+            stmt.setEscapeProcessing(false);
 			
 			log.info("Total {} statement(s)",statements.size());
 			

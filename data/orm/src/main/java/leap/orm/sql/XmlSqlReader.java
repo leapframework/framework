@@ -41,6 +41,7 @@ public class XmlSqlReader implements SqlReader {
 	private static final String SQLS_ELEMENT                = "sqls";
 	private static final String IMPORT_ELEMENT              = "import";
 	private static final String COMMAND_ELEMENT             = "command";
+	private static final String FRAGMENT_ELEMENT			  = "fragment";
 	private static final String RESOURCE_ATTRIBUTE          = "resource";
 	private static final String OVERRIDE_ATTRIBUTE          = "override";
 	private static final String KEY_ATTRIBUTE               = "key";
@@ -105,6 +106,10 @@ public class XmlSqlReader implements SqlReader {
 						readSqlCommand(context, resource, reader, dbType, defaultOverride);
 						continue;
 					}
+					if(reader.isStartElement(FRAGMENT_ELEMENT)){
+						readSqlFragment(context, resource, reader, dbType, defaultOverride);
+						continue;
+					}
 				}
 				break;
 			}
@@ -114,7 +119,43 @@ public class XmlSqlReader implements SqlReader {
 			throw new SqlConfigException("valid root element not found in file : " + resource.getClasspath());
 		}
 	}
-	
+
+	private void readSqlFragment(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride) {
+		String key 			= reader.resolveAttribute(KEY_ATTRIBUTE);
+		String langName 	= reader.resolveAttribute(LANG_ATTRIBUTE);
+		String content 		= reader.resolveElementTextAndEnd();
+
+		if(Strings.isEmpty(key)){
+			throw new SqlConfigException("'key' attribute must be defined in sql fragment, xml : " + reader.getSource());
+		}
+
+		String fragmentDescription = "[ key =" + key + "]";
+		if(Strings.isEmpty(content)){
+			throw new SqlConfigException("The content body of sql fragment " + fragmentDescription + " must not be empty, xml : " + reader.getSource());
+		}
+		log.debug("Loading sql command {} from [{}]",fragmentDescription,reader.getSource());
+
+		OrmMetadata metadata = context.getConfigContext().getMetadata();
+
+		SqlLanguage language = null;
+		if(!Strings.isEmpty(langName)){
+			language = beanFactory.tryGetBean(SqlLanguage.class,langName);
+			if(null == language){
+				throw new SqlConfigException("Sql language '" + langName + "' not found in fragment" + fragmentDescription +", xml : " + reader.getSource());
+			}
+		}else{
+			language = defaultLanguage;
+		}
+		List<SqlClause> clauses;
+		try {
+			clauses = language.parseClauses(context.getConfigContext(),content);
+		} catch (Exception e) {
+			throw new SqlConfigException("Error parsing sql fragment content in fragment" + fragmentDescription + ",xml : " + reader.getSource(),e);
+		}
+		SqlFragment fragment = new DefaultSqlFragment(reader.getSource(),clauses.toArray(new SqlClause[clauses.size()]));
+		metadata.addSqlFragment(key,fragment);
+	}
+
 	protected void readSqlCommand(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride){
 		OrmMetadata metadata = context.getConfigContext().getMetadata();
 		

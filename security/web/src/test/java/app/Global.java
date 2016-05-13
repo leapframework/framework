@@ -23,6 +23,7 @@ import leap.web.config.WebConfigurator;
 import leap.web.security.SecurityConfigurator;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
+import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.csrf.CSRF;
 
 import javax.servlet.ServletException;
@@ -54,7 +55,7 @@ public class Global extends App {
 
 		sc.interceptors().add(new SecurityInterceptor() {
 			@Override
-			public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+			public State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
 				context.getAuthentication().setPermissions("permission2");
 				return State.CONTINUE;
 			}

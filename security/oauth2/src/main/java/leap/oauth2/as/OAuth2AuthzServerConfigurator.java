@@ -138,6 +138,14 @@ public interface OAuth2AuthzServerConfigurator {
 	OAuth2AuthzServerConfigurator setClientCredentialsEnabled(boolean enabled);
 
     /**
+     * Enables or Disables request level scope.
+     *
+     * <p/>
+     * Default is disable.
+     */
+    OAuth2AuthzServerConfigurator setRequestLevelScopeEnabled(boolean enabled);
+
+    /**
      * Enables or Disables password credentials grant type.
      *
      * <p/>

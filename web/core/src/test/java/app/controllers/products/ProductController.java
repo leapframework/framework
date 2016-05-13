@@ -31,5 +31,5 @@ public class ProductController extends ControllerBase {
 	public void find(Product product){
 		json(product);
 	}
-	
+
 }

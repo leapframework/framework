@@ -15,14 +15,15 @@
  */
 package leap.lang.el.spel.ast;
 
-import java.util.List;
-
 import leap.lang.Classes;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.el.ElEvalContext;
 import leap.lang.el.ElParseContext;
 import leap.lang.el.ElParseException;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * T(className).
@@ -33,6 +34,9 @@ public class AstType extends AstExpr {
 			New.arrayList("java.lang",
 						  "java.util",
 						  Classes.getPackageName(Strings.class));//leap.lang
+
+    private static final Set<String> UNSAFED_CLASSES =
+            New.hashSet("java.lang.System");
 	
 	private String   name;
 	private Class<?> cls;
@@ -44,6 +48,10 @@ public class AstType extends AstExpr {
 		if(null == cls){
 			throw new ElParseException("Class name '" + name + "' cannot be resolved");
 		}
+
+        if(UNSAFED_CLASSES.contains(cls.getName())) {
+            throw new ElParseException(("Class '" + cls.getName() + "' is unsafe, cannot use it in el"));
+        }
 	}
 
 	@Override

@@ -15,34 +15,24 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
-import leap.lang.Args;
 import leap.lang.expression.Expression;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
-import leap.orm.sql.SqlContext;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.SqlClauseException;
+import leap.orm.sql.SqlContext;
+
+import java.io.IOException;
 
 public class ExprParamReplacement extends ExprParamBase {
 	
-	private final Scope scope;
-	
-	public ExprParamReplacement(String text, Expression expression, Scope scope) {
-	    super(text, expression);
-	    Args.notNull(scope);
-	    this.scope = scope;
+	public ExprParamReplacement(Scope scope, String text, Expression expression) {
+	    super(scope, text, expression);
     }
 	
 	@Override
     public boolean isReplace() {
 	    return true;
     }
-
-	@Override
-    public Scope getScope() {
-		return scope;
-	}
 
 	@Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {

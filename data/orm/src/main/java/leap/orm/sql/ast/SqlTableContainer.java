@@ -20,7 +20,7 @@ import java.util.List;
 
 public abstract class SqlTableContainer extends SqlNodeContainer {
 	
-	private List<SqlTableSource> tableSources = new ArrayList<SqlTableSource>();
+	private List<SqlTableSource> tableSources = new ArrayList<>();
 	
 	public List<SqlTableSource> getTableSources() {
 		return tableSources;

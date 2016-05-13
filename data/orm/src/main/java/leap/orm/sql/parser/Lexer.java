@@ -130,19 +130,6 @@ public class Lexer {
 	
 	public final void nextChar(){
 		ch = charAt(++pos);
-		
-		//convert SBC case to DBC case
-		switch (ch) {
-			case '，':
-				ch = ',';
-				chars.setCharAt(pos, ch);
-				return;
-			case '；':
-				ch = ';';
-				chars.setCharAt(pos, ch);
-			default:
-				break;
-		}
 	}
 	
 	public final void nextChars(int number){
@@ -309,6 +296,11 @@ public class Lexer {
 		literalStart = pos;
 		literal      = null;
 	}
+
+    protected final void startLiteral(int pos){
+        literalStart = pos;
+        literal      = null;
+    }
 	
 	protected final void endLiteral(){
 		literalEnd = pos;
@@ -378,7 +370,7 @@ public class Lexer {
 		reset();
 		scanToken();	
 	}
-	
+
 	public final boolean nextToChar(char c) {
         if(eof) {
             throw new IllegalStateException("Lexer EOF!");
@@ -775,7 +767,7 @@ public class Lexer {
 	 * Pos must move to the first char after '('
 	 */
 	public final void scanConditionalExpression(){
-		startLiteral();
+        int start = pos;
 
 		int lparens = 0;
 		
@@ -794,9 +786,10 @@ public class Lexer {
 			}
 			nextChar();
 		}
-		
-		endLiteral();
-		
+
+        startLiteral(start);
+        endLiteral();
+
 		if(!hasLiteral()){
 			reportError("Expression can not be emtpy : {0}",describePosition(markPos));
 		}
@@ -1173,20 +1166,35 @@ public class Lexer {
 	@Override
     public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append(_token).append(" : ").append(literal()).append(" \n\n");
-		
-		if(pos >=0 && pos < chars.length()){
+
+        int len = tokenText().length();
+
+        sb.append("Token : ");
+		sb.append(_token).append(" , Pos : ");
+
+
+        int index = pos;
+		if(index >=0 && index <= chars.length()){
+
+            if(index == chars.length()) {
+                index--;
+            }
 			
-			if(pos > 0){
-				sb.append(substring(0,pos));
+			if(index > 0){
+				sb.append(substring(0,index - len ));
 			}
-			sb.append(" --- ");
+
+            sb.append("--> ");
+
+            sb.append(tokenText());
+
+			sb.append(" <-- ");
 			
-			if(pos < chars.length() - 1){
-				sb.append(substring(pos));
+			if(index < chars.length() - 1){
+				sb.append(substring(index));
 			}
 		}
-		
+
 		return sb.toString();
 	}
 	
@@ -1213,17 +1221,18 @@ public class Lexer {
 	}
 	
     private static class SavePoint {
-        private final int    pos;
-        private final char   ch;
-        private final int    markPos;
-        private final int    textPos;
-        private final int    literalStart;
-        private final int    literalEnd;
-        private final String literal;
-        private final Token  prevToken;
-        private final Token  token;
-        private final int    tokenStart;
-        private final Lexer  lexer;
+        private final int     pos;
+        private final char    ch;
+        private final int     markPos;
+        private final int     textPos;
+        private final int     literalStart;
+        private final int     literalEnd;
+        private final String  literal;
+        private final Token   prevToken;
+        private final Token   token;
+        private final int     tokenStart;
+        private final Lexer   lexer;
+        private final boolean eof;
         
         private SavePoint(Lexer lexer){
         	this.lexer = lexer;
@@ -1237,6 +1246,7 @@ public class Lexer {
             this.token = lexer._token;
             this.prevToken = lexer._prevToken;
             this.tokenStart = lexer.tokenStart;
+            this.eof = lexer.eof;
         }
         
         private void restore(){
@@ -1250,6 +1260,7 @@ public class Lexer {
             lexer._token = this.token;
             lexer._prevToken = this.prevToken;
             lexer.tokenStart = this.tokenStart;
+            lexer.eof = this.eof;
         }
     }
 }

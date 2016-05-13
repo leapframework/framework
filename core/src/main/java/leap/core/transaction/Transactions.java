@@ -1,11 +1,11 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,137 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core.transaction;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.WeakHashMap;
-
-import javax.sql.DataSource;
-
-import leap.core.AppContext;
-import leap.core.BeanFactory;
-import leap.core.ioc.BeanDefinition;
-import leap.lang.Args;
-import leap.lang.Exceptions;
-import leap.lang.Strings;
-import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionCallback;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
-
 /**
- * Transaction management utils.
+ * Wraps a collection of {@link Transaction}.
  */
-public class Transactions {
-	
-	private static final Map<DataSource,TransactionManager> managers = 
-			Collections.synchronizedMap(new WeakHashMap<DataSource, TransactionManager>());
-	
-	public static void execute(DataSource dataSource, ConnectionCallback callback) throws NestedSQLException {
-		Args.notNull(dataSource,"dataSource");
-		Args.notNull(callback,"callback");
-		
-		TransactionManager tm = getTransactionManager(dataSource);
-		
-		Connection connection = null;
-		try{
-			connection = tm.getConnection();
-			callback.execute(connection);
-		}catch(SQLException e){
-			Exceptions.wrapAndThrow(e);
-		}finally{
-			tm.closeConnection(connection);
-		}
-	}
-	
-	public static <T> T execute(DataSource dataSource, ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-		Args.notNull(dataSource,"dataSource");
-		Args.notNull(callback,"callback");
-		
-		TransactionManager tm = getTransactionManager(dataSource);
-		
-		Connection connection = null;
-		try{
-			connection = tm.getConnection();
-			return callback.execute(connection);
-		}catch(SQLException e){
-			Exceptions.wrapAndThrow(e);
-			return null;
-		}finally{
-			tm.closeConnection(connection);
-		}
-	}
-	
-	/**
-	 * <font color="red">
-	 * Be careful calling this method, the returned connection must be closed by calling {@link #closeConnection(Connection, DataSource)}.
-	 * 
-	 * <p>
-	 * Recommends to use the {@link #execute(DataSource, ConnectionCallback)} and {@link #execute(DataSource, ConnectionCallbackWithResult)} methods.
-	 * 
-	 * </font>
-	 */
-	public static Connection getConnection(DataSource dataSource) throws NestedSQLException {
-		Args.notNull(dataSource,"dataSource");
-		return getTransactionManager(dataSource).getConnection();
-	}
-	
-	public static boolean closeConnection(Connection connection,DataSource dataSource) {
-		Args.notNull(connection,"connection");
-		Args.notNull(dataSource,"dataSource");
-		return getTransactionManager(dataSource).closeConnection(connection);
-	}
-	
-	public static TransactionManager getTransactionManager(DataSource dataSource) {
-		TransactionManager manager = managers.get(dataSource);
-		
-		if(null == manager){
-			synchronized (managers) {
-				BeanFactory factory = AppContext.factory();
-				
-				manager = tryGetTransactionManager(dataSource, factory);
-				
-				if(null == manager){
-					manager = createTransactionManager(dataSource, factory);
-				}
-				
-				managers.put(dataSource, manager);
-	        }
-		}
-		
-		return manager;
-	}
-	
-	protected static TransactionManager tryGetTransactionManager(DataSource dataSource,BeanFactory beanFactory) {
-		Map<DataSource, BeanDefinition> dataSources = beanFactory.getBeansWithDefinition(DataSource.class);
-		
-		for(Entry<DataSource,BeanDefinition> entry : dataSources.entrySet()){
-			if(entry.getKey() == dataSource || entry.getKey().equals(dataSource)){
-				if(entry.getValue().isPrimary()){
-					TransactionManager tm = beanFactory.tryGetBean(TransactionManager.class);
-					if(null != tm){
-						return tm;
-					}
-				}
-				String name = entry.getValue().getName();
-				if(!Strings.isEmpty(name)){
-					return beanFactory.tryGetBean(TransactionManager.class,name);
-				}
-				return null;
-			}
-		}
-		
-		return null;
-	}
-	
-	protected static TransactionManager createTransactionManager(DataSource dataSource,BeanFactory beanFactory){
-		return beanFactory.getBean(TransactionManagerFactory.class).createTransactionManager(dataSource);
-	}
+public interface Transactions {
 
-	protected Transactions(){
-		
-	}
+    /**
+     * Sets rollback state all the wrapped transactions.
+     */
+    void setRollbackAllOnly();
+
+    /**
+     * Ends (commit or rollback) all the wrapped transactions.
+     */
+    void completeAll();
+
 }

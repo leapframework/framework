@@ -18,15 +18,14 @@ package leap.web.security.login;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
 
 public interface LoginHandler {
     
-    default State handleLoginView(Request request,Response response, SecurityContextHolder context) throws Throwable {
+    default State handleLoginView(Request request,Response response, LoginContext context) throws Throwable {
         return State.CONTINUE;
     }
 	
-	default State handleLoginAuthentication(Request request,Response response, SecurityContextHolder context) throws Throwable {
+	default State handleLoginAuthentication(Request request,Response response, LoginContext context) throws Throwable {
 	    return State.CONTINUE;
 	}
 

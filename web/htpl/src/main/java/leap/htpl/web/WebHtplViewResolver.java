@@ -15,8 +15,6 @@
  */
 package leap.htpl.web;
 
-import java.util.Locale;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.htpl.HtplEngine;
@@ -29,6 +27,8 @@ import leap.lang.servlet.ServletResource;
 import leap.web.App;
 import leap.web.view.AbstractServletResourceViewResolver;
 import leap.web.view.View;
+
+import java.util.Locale;
 
 public class WebHtplViewResolver extends AbstractServletResourceViewResolver implements HtplTemplateResolver {
 
@@ -49,11 +49,11 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 	}
 
 	@Override
-    protected View loadView(String prefix, String suffix, String viewPath, Locale locale, String resourcePath, ServletResource resource) {
+    protected View loadView(String prefix, String suffix, String viewName, Locale locale, String resourcePath, ServletResource resource) {
 		
-		HtplTemplate teamplte = engine.createTemplate(new WebHtplResource(prefix, suffix, resource, locale));
+		HtplTemplate template = engine.createTemplate(new WebHtplResource(prefix, suffix, resource, locale), viewName);
 		
-		WebHtplView view = new WebHtplView(app, viewPath, teamplte);
+		WebHtplView view = new WebHtplView(app, viewName, template);
 		
 		if(Strings.isEmpty(view.getContentType())) {
 			view.setContentType(contentType);	
@@ -97,7 +97,7 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 		ServletResource resource = getLocaleResource(prefix,suffix, templateName, locale);
 		
 		if(null != resource && resource.exists()){
-			return engine.createTemplate(new WebHtplResource(prefix,suffix,resource, locale));
+			return engine.createTemplate(new WebHtplResource(prefix,suffix,resource, locale), templateName);
 		}
 		
 	    return null;

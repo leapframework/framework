@@ -15,12 +15,13 @@
  */
 package leap.lang.el.reflect;
 
-import java.lang.reflect.Method;
-
 import leap.junit.TestBase;
+import leap.lang.reflect.ReflectEnum;
 import leap.lang.reflect.Reflection;
-
 import org.junit.Test;
+
+import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 
 public class ReflectionTest extends TestBase {
 
@@ -33,6 +34,12 @@ public class ReflectionTest extends TestBase {
 		assertEquals("p1",names[0]);
 		assertEquals("val",names[1]);
 	}
+
+    @Test
+    public void testTimeUnitEnum() {
+        ReflectEnum re = ReflectEnum.of(TimeUnit.class);
+        assertNotNull(re);
+    }
 	
 	protected static void forParameterNameTest(String p1,int val) {
 		

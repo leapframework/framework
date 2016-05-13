@@ -18,22 +18,21 @@ package leap.web.security.login;
 import leap.lang.http.HTTP;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
 
 public class DefaultLoginAjaxHandler implements LoginAjaxHandler {
 
     @Override
-    public void promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void promoteLogin(Request request, Response response, LoginContext context) throws Throwable {
         response.setStatus(HTTP.SC_UNAUTHORIZED);
     }
 
     @Override
-    public void handleLoginSuccess(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void handleLoginSuccess(Request request, Response response, LoginContext context) throws Throwable {
         response.setStatus(HTTP.SC_OK);
     }
 
     @Override
-    public void handleLoginFailure(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public void handleLoginFailure(Request request, Response response, LoginContext context) throws Throwable {
         response.setStatus(HTTP.SC_UNAUTHORIZED);
         
         //TODO : error message

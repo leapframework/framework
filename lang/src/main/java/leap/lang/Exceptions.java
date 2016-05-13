@@ -15,14 +15,14 @@
  */
 package leap.lang;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.sql.SQLException;
-import java.util.function.Supplier;
-
 import leap.lang.exception.NestedIOException;
 import leap.lang.exception.NestedSQLException;
 import leap.lang.exception.NestedUnsupportedEncodingException;
+import leap.lang.io.IO;
+
+import java.io.*;
+import java.sql.SQLException;
+import java.util.function.Supplier;
 
 public class Exceptions {
 	
@@ -103,6 +103,18 @@ public class Exceptions {
 	public static UnsupportedOperationException notImplemented() {
 		return new UnsupportedOperationException("Not implemented");
 	}
+
+    public static String getStackTrace(Throwable e) {
+        StringWriter sw = new StringWriter();
+        PrintWriter  pw = new PrintWriter(sw);
+        try{
+            e.printStackTrace(pw);
+            return sw.toString();
+        }finally{
+            IO.close(pw);
+            IO.close(sw);
+        }
+    }
 	
 	protected Exceptions(){
 		

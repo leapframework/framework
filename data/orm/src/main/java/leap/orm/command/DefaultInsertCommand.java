@@ -15,11 +15,10 @@
  */
 package leap.orm.command;
 
-import java.util.Map;
-
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.Db;
 import leap.lang.Args;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.params.Params;
@@ -33,6 +32,8 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.value.Entity;
+
+import java.util.Map;
 
 public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,ValueGeneratorContext,EntityExecutionContext {
 	
@@ -140,7 +141,9 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		SqlCommand command = this.command;
 		
 		if(null == command){
-			command = sf.createInsertCommand(context, em, entity.keySet().toArray(new String[entity.size()]));
+            String[] fields = entity.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
+
+			command = sf.createInsertCommand(context, em, fields);
 		}
 		
 		if(null != handler){

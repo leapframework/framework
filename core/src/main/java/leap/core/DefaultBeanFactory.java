@@ -19,8 +19,11 @@ import leap.core.ioc.BeanContainer;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanDefinitionException;
 import leap.lang.Args;
+import leap.lang.Disposable;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,7 +36,9 @@ import java.util.Map.Entry;
  */
 @SuppressWarnings("unchecked")
 public class DefaultBeanFactory implements BeanFactory {
-	
+
+    private static final Log log = LogFactory.get(DefaultBeanFactory.class);
+
 	protected final AppConfig	config;
 	protected final BeanFactory externalFactory;
 	
@@ -53,10 +58,10 @@ public class DefaultBeanFactory implements BeanFactory {
 	
 	protected DefaultBeanFactory load(AppContext appContext){
 		this.beanContainer.setAppContext(appContext);
-		this.beanContainer.loadFromResources(AppContextInitializer.searchClasspathXmlResourcesForFrameworkAndExtOnly("beans"))
-						  .loadFromResources(AppContextInitializer.searchClasspathXmlResourcesForAppSysOnly("beans"))
+		this.beanContainer.loadFromResources(AppResources.getFMClasspathResourcesForXml("beans"))
+						  .loadFromResources(AppResources.getMetaClasspathResourcesForXml("beans"))
 						  .loadFromClasses(config.getResources().searchClasses())
-						  .loadFromResources(AppContextInitializer.searchClasspathXmlResourcesForAppUsrOnly("beans"))
+						  .loadFromResources(AppResources.getAppClasspathResourcesForXml("beans"))
 						  .init()
 						  .registerShutdownHook();
 		return this;
@@ -419,4 +424,20 @@ public class DefaultBeanFactory implements BeanFactory {
 	    
 	    this.initialized = true;
     }
+
+	public void close(){
+		try{
+			if(null != beanContainer){
+				beanContainer.close();
+			}
+		}finally{
+			if(null != externalFactory && externalFactory instanceof Disposable){
+				try {
+					((Disposable)externalFactory).dispose();
+				} catch (Throwable e) {
+					log.warn("Error disposing external factory",e);
+				}
+			}
+		}
+	}
 }

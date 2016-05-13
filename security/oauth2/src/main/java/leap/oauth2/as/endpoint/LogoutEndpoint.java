@@ -19,8 +19,6 @@ import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
-import leap.oauth2.OAuth2Params;
-import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.endpoint.logout.PostLogoutHandler;
 import leap.web.App;
 import leap.web.Request;
@@ -28,25 +26,26 @@ import leap.web.Response;
 import leap.web.route.Routes;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
+import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationManager;
+import leap.web.theme.ThemeManager;
 import leap.web.view.View;
-import leap.web.view.ViewSource;
 
 public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInterceptor {
     
     protected @Inject AuthenticationManager authcManager;
-    protected @Inject ViewSource            viewSource;
+    protected @Inject ThemeManager          themeManager;
     protected @Inject PostLogoutHandler     postLogoutHandler;
 
     protected View defaultLogoutView;
-    
+
     @Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
         if(config.isEnabled() && config.isSingleLoginEnabled()) {
             sc.interceptors().add(this);
             
             if(!Strings.isEmpty(config.getLogoutView())) {
-                this.defaultLogoutView = viewSource.getView(config.getLogoutView());
+                this.defaultLogoutView = themeManager.getDefaultView(config.getLogoutView());
             }
 
             if(null == defaultLogoutView) {
@@ -56,7 +55,7 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
     }
 
     @Override
-    public State postResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+    public State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(!request.getPath().equals(config.getLogoutEndpointPath())) {
             return State.CONTINUE;
         }
@@ -65,10 +64,7 @@ public class LogoutEndpoint extends AbstractAuthzEndpoint implements SecurityInt
         
         //Do Logout
         authcManager.logoutImmediately(request, response);
-
-        //Handle post logout.
-        postLogoutHandler.handlePostLogout(request, response, context, defaultLogoutView);
-
-        return State.INTERCEPTED;
+        postLogoutHandler.handlePostLogout(request, response, SecurityContextHolder.current().getLogoutContext(), defaultLogoutView);
+        return State.CONTINUE;
     }
 }

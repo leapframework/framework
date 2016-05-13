@@ -21,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * M means mandotary(not null), used in bean injection only.
+ * M means mandatory(not null), used in bean injection only.
  * 
  * <p>
  * The {@link N} annotation means nullable. 

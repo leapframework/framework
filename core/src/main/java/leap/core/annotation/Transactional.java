@@ -15,33 +15,17 @@
  */
 package leap.core.annotation;
 
+import leap.core.transaction.TransactionDefinition;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
-
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Transactional {
-	
-	/**
-	 * Enables or Disables transaction.
-	 */
-	boolean value() default true;
-	
-	/**
-	 * Set to <code>true</code> means the transaction propagation behaviour is {@link PropagationBehaviour#REQUIRES_NEW}.
-	 * 
-	 * <p>
-	 * Set to <code>false</code> means the transaction propagation behaviour is {@link PropagationBehaviour#REQUIRED}.
-	 */
-	boolean requiresNew() default false;
-	
-	/**
-	 * Sets the transaction propagation behaviour.
-	 */
-	PropagationBehaviour propagationBehaviour() default PropagationBehaviour.REQUIRED;
+
+    TransactionDefinition.Propagation propagation() default TransactionDefinition.Propagation.REQUIRED;
 
 }

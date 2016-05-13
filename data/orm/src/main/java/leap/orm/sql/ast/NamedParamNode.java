@@ -16,12 +16,15 @@
 package leap.orm.sql.ast;
 
 import leap.lang.Args;
+import leap.orm.sql.Sql;
 
 public abstract class NamedParamNode extends ParamBase {
 	
 	protected final String name;
 
-	public NamedParamNode(String name) {
+	public NamedParamNode(Sql.Scope scope, String name) {
+        super(scope);
+
 		Args.notEmpty(name);
 		this.name = name;
 	}

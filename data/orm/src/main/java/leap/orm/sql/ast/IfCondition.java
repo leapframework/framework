@@ -15,18 +15,19 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
+import java.io.IOException;
+
 public class IfCondition extends ExprParamBase {
 	
-	public IfCondition(String text, Expression expression) {
-	    super(text, expression);
+	public IfCondition(Sql.Scope scope, String text, Expression expression) {
+	    super(scope, text, expression);
     }
 
 	@Override

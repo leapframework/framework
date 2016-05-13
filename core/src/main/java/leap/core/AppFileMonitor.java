@@ -15,19 +15,23 @@
  */
 package leap.core;
 
-import leap.core.ioc.PostCreateBean;
+import leap.core.annotation.Inject;
 import leap.lang.Disposable;
+import leap.lang.Try;
 import leap.lang.annotation.Internal;
 import leap.lang.io.FileChangeMonitor;
+import leap.lang.io.FileChangeObserver;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
 @Internal
-public class AppFileMonitor extends FileChangeMonitor implements PostCreateBean,Disposable {
+public class AppFileMonitor extends FileChangeMonitor implements Disposable {
 	
 	private static final Log log = LogFactory.get(AppFileMonitor.class);
 
 	public static final long DEFAULT_INTERVAL = 2000; //2 seconds
+
+    private @Inject AppConfig config;
 	
 	public AppFileMonitor() {
 	    super(DEFAULT_INTERVAL);
@@ -36,13 +40,16 @@ public class AppFileMonitor extends FileChangeMonitor implements PostCreateBean,
 	public AppFileMonitor(long interval) {
 	    super(interval);
     }
-	
-	@Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-		if(factory.getAppConfig().isReloadEnabled()) {
-			log.debug("Start app file monitor at interval : " + interval);
-			start();
-		}
+
+    @Override
+    public void addObserver(FileChangeObserver observer) {
+        super.addObserver(observer);
+        if(!running) {
+            if(config.isReloadEnabled()) {
+                log.debug("Start app file monitor at interval : " + interval);
+                Try.throwUnchecked(this::start);
+            }
+        }
     }
 
 	@Override

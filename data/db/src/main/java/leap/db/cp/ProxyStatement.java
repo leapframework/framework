@@ -15,15 +15,15 @@
  */
 package leap.db.cp;
 
+import leap.lang.jdbc.StatementWrapper;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import leap.lang.jdbc.StatementWrapper;
-
 public class ProxyStatement extends StatementWrapper {
-	
+
 	protected final PooledConnection conn;
 
 	protected Thread threadOnCreate;
@@ -32,12 +32,18 @@ public class ProxyStatement extends StatementWrapper {
 	protected long   lastExecutingDurationMs;
 	protected String lastExecutingSql;
 
+    private boolean closed;
+
 	ProxyStatement(PooledConnection conn, Statement stmt) {
 		super(stmt);
 		this.conn = conn;
 		this.threadOnCreate = Thread.currentThread();
 		//this.stackTraceExceptionOnCreate = new IllegalStateException("");
 	}
+
+    public boolean isClosed() {
+        return closed;
+    }
 	
 	public Thread getThreadOnCreate() {
 		return threadOnCreate;
@@ -88,7 +94,8 @@ public class ProxyStatement extends StatementWrapper {
 
 	@Override
     public void close() throws SQLException {
-		conn.closeStatement(this, stmt);
+        conn.closeStatement(this, stmt);
+        closed = true;
     }
 
 	@Override

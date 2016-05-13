@@ -15,7 +15,11 @@
  */
 package leap.web.security;
 
-import leap.core.security.*;
+import leap.core.security.Authentication;
+import leap.core.security.Authorization;
+import leap.core.security.Credentials;
+import leap.core.security.SecurityContext;
+import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -38,6 +42,9 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     protected LoginContext  loginContext;
     protected LogoutContext logoutContext;
 	protected String        authenticationToken;
+	protected boolean		error;
+	protected Object		errorObj;
+	protected String 		identity;
 
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
 		this.config            = config;
@@ -47,6 +54,7 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 	void initContext() {
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
+        request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
     }
 
     static void removeContext(Request request) {
@@ -118,7 +126,9 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     }
 
     protected abstract class AbstractContext implements AuthenticationContext {
-
+    	private boolean       error;
+        private Object		  errorObj;	
+        
 		@Override
         public SecurityConfig getSecurityConfig() {
 	        return config;
@@ -133,13 +143,40 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         public Validation validation() {
 	        return DefaultSecurityContextHolder.this.validation();
         }
+        @Override
+		public Object getErrorObj() {
+			return this.errorObj;
+		}
+
+		@Override
+		public void setErrorObj(Object obj) {
+			this.errorObj = obj;
+		}
+		@Override
+        public boolean isError() {
+	        return error;
+        }
+
+		@Override
+        public void setError(boolean error) {
+			this.error = error;
+        }
+
+		@Override
+		public String getIdentity() {
+			return DefaultSecurityContextHolder.this.identity;
+		}
+
+		@Override
+		public void setIdentity(String identity) {
+			DefaultSecurityContextHolder.this.identity = identity;
+		}
 	}
 
 	protected final class DefaultLoginContext extends AbstractContext implements LoginContext {
 		
         private String        returnUrl;
         private String        loginUrl;
-        private boolean       error;
         private Credentials   credentials;
         private UserPrincipal user;
 
@@ -182,15 +219,6 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		    this.loginUrl = url;
 		}
 		    
-		@Override
-        public boolean isError() {
-	        return error;
-        }
-
-		@Override
-        public void setError(boolean error) {
-			this.error = error;
-        }
 
 		@Override
         public boolean isCredentialsResolved() {
@@ -221,11 +249,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
         public void setUser(UserPrincipal user) {
 			this.user = user;
         }
+
 	}
 	
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {
 
-		private String returnUrl;
+		private String 	returnUrl;
 
 		@Override
 		public String getAuthenticationToken() {
@@ -253,5 +282,36 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		public void setReturnUrl(String returnUrl) {
 			this.returnUrl = returnUrl;
 		}
+
+	}
+
+	@Override
+	public boolean isError() {
+		return error;
+	}
+
+	@Override
+	public void setError(boolean error) {
+		this.error = error;
+	}
+
+	@Override
+	public Object getErrorObj() {
+		return errorObj;
+	}
+
+	@Override
+	public void setErrorObj(Object obj) {
+		this.errorObj = obj;
+	}
+
+	@Override
+	public String getIdentity() {
+		return this.identity;
+	}
+
+	@Override
+	public void setIdentity(String identity) {
+		this.identity = identity;
 	}
 }

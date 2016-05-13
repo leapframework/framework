@@ -15,16 +15,12 @@
  */
 package leap.orm.sql.parser;
 
+import leap.orm.sql.Sql.Scope;
+import leap.orm.sql.ast.*;
+
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlQuery;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlSelectList;
-import leap.orm.sql.ast.SqlTop;
 
 
 /**
@@ -46,9 +42,9 @@ class SqlSelectParser extends SqlQueryParser {
 
 	protected SqlSelect parseSelectBody(){
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			SqlSelect select = parseSelectBody();
-			accept(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 			return select;
 		}
 		
@@ -56,7 +52,7 @@ class SqlSelectParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		accept(Token.SELECT);
+		expect(Token.SELECT).acceptText();
 		
 		//SELECT (ALL | DISTINCT)? (TOP Integer (PERCENT))? selectList
 		parseDistinct(select);
@@ -77,13 +73,13 @@ class SqlSelectParser extends SqlQueryParser {
 	
 	protected void parseDistinct(SqlSelect select){
 		if(lexer.token() == Token.DISTINCT){
-			accept();
+			acceptText();
 			select.setDistinct(true);
 			return;
 		}
 		
 		if(lexer.token() == Token.ALL){
-			accept();
+			acceptText();
 			return;
 		}
 	}
@@ -108,18 +104,18 @@ class SqlSelectParser extends SqlQueryParser {
 	protected void parseSelectList(SqlSelect select){
 		createSavePoint();
 		
-		setScope(Scope.SELECT_LIST);
+		pushScope(Scope.SELECT_LIST);
 		
 		parseSelectItem(select);
 		
 		if(lexer.token() == Token.COMMA){
 			do{
-				accept();
+				acceptText();
 				parseSelectItem(select);
 			}while(lexer.token() == Token.COMMA);
 		}
 		
-		removeScope();
+		popScope();
 		
 		SqlSelectList list = new SqlSelectList(removeSavePoint());
 		select.setSelectList(list);
@@ -141,30 +137,30 @@ class SqlSelectParser extends SqlQueryParser {
 			switch (lexer.token()) {
 				case COMMA:
 				case JOIN:
-					accept();
+					acceptText();
 					break;
 				case LEFT:
 				case RIGHT:
-					accept();
+					acceptText();
 					if(lexer.token() == Token.OUTER){
-						accept();
+						acceptText();
 					}
-					accept(Token.JOIN);
+					expect(Token.JOIN).acceptText();
 					break;
 				case FULL:
-					accept();
+					acceptText();
 					if(lexer.token() == Token.OUTER){
-						accept();
+						acceptText();
 					}
-					accept(Token.JOIN);
+					expect(Token.JOIN).acceptText();
 					break;
 				case INNER:
-					accept();
-					accept(Token.JOIN);
+					acceptText();
+					expect(Token.JOIN).acceptText();
 					break;
 				default:
 					if(lexer.isIdentifier("STRAIGHT_JOIN") || lexer.isIdentifier("CROSS")){
-						accept();
+						acceptText();
 						break;
 					}
 					join = false;
@@ -183,8 +179,8 @@ class SqlSelectParser extends SqlQueryParser {
 		parseTableSource(query);
 		
 		if(lexer.token() == Token.ON) {
-			//Accets 'ON' 
-			accept();
+			//Accepts 'ON'
+			acceptText();
 			
 			parseJoinOnExpr(query);
 		}
@@ -194,7 +190,7 @@ class SqlSelectParser extends SqlQueryParser {
 		new SqlExprParser(this).parseExpr();
 		
 		if(lexer.token() == Token.AND || lexer.token() == Token.OR) {
-			accept();
+			acceptText();
 			
 			if(lexer.token() == Token.EXISTS) {
 				parseExists(query, new AtomicInteger());
@@ -215,7 +211,7 @@ class SqlSelectParser extends SqlQueryParser {
 		}
 		
 		if(lexer.token() == Token.LPAREN){
-			accept();
+			acceptText();
 			
 			//select item : subquery
 			if(lexer.token() == Token.SELECT){
@@ -224,19 +220,19 @@ class SqlSelectParser extends SqlQueryParser {
 				parseSelectItem(select);	
 			}
 			
-			accept(Token.RPAREN);
+			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
 			if(lexer.peekCharSkipWhitespaces() == '('){
-				accept();
-				accept(Token.LPAREN);
+				acceptText();
+				expect(Token.LPAREN).acceptText();
 				parseRestForClosingParen();
-				accept(Token.RPAREN);
+				expect(Token.RPAREN).acceptText();
 				
 				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					accept();
-					accept(Token.LPAREN);
+					acceptText();
+					expect(Token.LPAREN).acceptText();
 					parseRestForClosingParen();
-					accept(Token.RPAREN);
+					expect(Token.RPAREN).acceptText();
 				}
 			}else{
 				parseSqlObjectName();
@@ -250,7 +246,7 @@ class SqlSelectParser extends SqlQueryParser {
 	
 	protected String parseSelectItemAlias(SqlSelect select){
 		if(lexer.token() == Token.AS){
-			accept();
+			acceptText();
 			
 			expects(Token.IDENTIFIER,Token.QUOTED_IDENTIFIER,Token.LITERAL_CHARS);
 			
@@ -258,7 +254,7 @@ class SqlSelectParser extends SqlQueryParser {
 			
 			select.addSelectItemAlias(alias);
 			
-			accept();
+			acceptText();
 			
 			return alias;
 		}
@@ -270,7 +266,7 @@ class SqlSelectParser extends SqlQueryParser {
 			
 			select.addSelectItemAlias(alias);
 			
-			accept();
+			acceptText();
 			
 			return alias;
 		}

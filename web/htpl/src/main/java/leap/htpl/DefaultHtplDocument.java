@@ -15,21 +15,10 @@
  */
 package leap.htpl;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import leap.htpl.ast.Fragment;
-import leap.htpl.ast.Include;
-import leap.htpl.ast.Node;
+import leap.htpl.ast.*;
 import leap.htpl.ast.Node.ProcessCallback;
-import leap.htpl.ast.NodeContainer;
-import leap.htpl.ast.NodeParent;
 import leap.htpl.exception.HtplProcessException;
-import leap.htpl.interceptor.NodeInterceptor;
+import leap.htpl.interceptor.ProcessInterceptor;
 import leap.lang.Args;
 import leap.lang.Exceptions;
 import leap.lang.accessor.AttributeAccessor;
@@ -38,23 +27,27 @@ import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.path.Paths;
 
+import java.util.*;
+import java.util.Map.Entry;
+
 public class DefaultHtplDocument extends AbstractHtplObject implements PropertyGetter,AttributeAccessor, HtplDocument {
 	
 	protected final HtplEngine   engine;
 	protected final HtplResource resource;
-	
-	protected Locale				locale;
-	protected boolean				processed;
-	protected String			    layout;
-	protected String				title;
-	protected Map<String, String>   properties = new HashMap<String, String>();
-	protected Map<String, Object>   attributes = new HashMap<String, Object>();
-	protected Map<String, Fragment> fragments  = new SimpleCaseInsensitiveMap<Fragment>();
-	protected Map<String, HtplTemplate> includedTemplates = new SimpleCaseInsensitiveMap<HtplTemplate>();
-	protected NodeContainer			nodes;
-	protected Node[]			    requiredHeaders;
-	protected NodeInterceptor[]		nodeInterceptors;
-	
+
+    protected Locale               locale;
+    protected boolean              processed;
+    protected String               layout;
+    protected String               title;
+    protected NodeContainer        nodes;
+    protected Node[]               requiredHeaders;
+    protected ProcessInterceptor[] processInterceptors;
+
+    protected Map<String, String>       properties        = new HashMap<>();
+    protected Map<String, Object>       attributes        = new HashMap<>();
+    protected Map<String, Fragment>     fragments         = new SimpleCaseInsensitiveMap<>();
+    protected Map<String, HtplTemplate> includedTemplates = new SimpleCaseInsensitiveMap<>();
+
 	public DefaultHtplDocument(HtplEngine engine, HtplResource resource, Node... nodes){
 		this(engine, resource, new NodeParent(nodes));
 	}
@@ -76,10 +69,10 @@ public class DefaultHtplDocument extends AbstractHtplObject implements PropertyG
 		Args.notNull(resource,"resource");
 		Args.notNull(nodes,"nodes");
 		
-		this.engine  		  = engine;
-		this.resource		  = resource;
-		this.nodes    		  = nodes;
-		this.nodeInterceptors = engine.factory().getBeans(NodeInterceptor.class).toArray(new NodeInterceptor[]{});
+		this.engine  	  = engine;
+		this.resource	  = resource;
+		this.nodes        = nodes;
+		this.processInterceptors = engine.factory().getBeans(ProcessInterceptor.class).toArray(new ProcessInterceptor[]{});
 		
 		if(autoIncludeJsp){
 			this.autoIncludeJsp();	
@@ -97,13 +90,25 @@ public class DefaultHtplDocument extends AbstractHtplObject implements PropertyG
 		if(processed){
 			throw new IllegalStateException("This document is processed");
 		}
-		
-		this.processProperties(engine);
-		this.processNodes(engine);
-		
-		this.processed = true;
+
+        try{
+            for(ProcessInterceptor interceptor : processInterceptors) {
+                interceptor.preProcessDocument(engine, this);
+            }
+
+            this.processProperties(engine);
+            this.processNodes(engine);
+
+            for(ProcessInterceptor interceptor : processInterceptors) {
+                interceptor.postProcessDocument(engine, this);
+            }
+
+        }catch(Throwable e) {
+            throw Exceptions.uncheck(e);
+        }
+
+        this.processed = true;
 		this.lock();
-		
 		return this;
 	}
 	
@@ -298,7 +303,7 @@ public class DefaultHtplDocument extends AbstractHtplObject implements PropertyG
 		clone.putIncludedTemplates(includedTemplates);
 		clone.requiredHeaders = this.requiredHeaders;
 		clone.processed = this.processed;
-		clone.nodeInterceptors = this.nodeInterceptors;
+		clone.processInterceptors = this.processInterceptors;
 		
 		return clone;
 	}
@@ -334,8 +339,8 @@ public class DefaultHtplDocument extends AbstractHtplObject implements PropertyG
 			@Override
 			public void preProcess(Node node) {
 				try {
-	                for(NodeInterceptor pi : nodeInterceptors) {
-	                	pi.preProcess(engine, DefaultHtplDocument.this, node);
+	                for(ProcessInterceptor pi : processInterceptors) {
+	                	pi.preProcessNode(engine, DefaultHtplDocument.this, node);
 	                }
                 } catch (Throwable e) {
                 	Exceptions.uncheckAndThrow(e, () -> new HtplProcessException("Error executing 'preProcsss'" + e.getMessage(), e) );
@@ -343,14 +348,15 @@ public class DefaultHtplDocument extends AbstractHtplObject implements PropertyG
 			}
 			
 			@Override
-			public void postProcess(Node node, Node result) {
+			public Node postProcess(Node node, Node result) {
 				try {
-	                for(NodeInterceptor pi : nodeInterceptors) {
-	                	pi.postProcess(engine, DefaultHtplDocument.this, node, result);
+	                for(ProcessInterceptor pi : processInterceptors) {
+	                	result = pi.postProcessNode(engine, DefaultHtplDocument.this, node, result);
 	                }
                 } catch (Throwable e) {
                 	Exceptions.uncheckAndThrow(e, () -> new HtplProcessException("Error executing 'postProcess'" + e.getMessage(), e) );
                 }
+                return result;
 			}
 		});
 	}

@@ -267,15 +267,15 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 			  .propertyOptional("comment", comment)
 			  .propertyOptional("primaryKeyName", primaryKey == null ? null : primaryKey.getName());
 		
-		writer.array("columns",columns);
+		writer.propertyJsonable("columns",columns);
 
 		if(foreignKeys.length > 0){
 			writer.separator();
-			writer.array("foreignKeys",foreignKeys);
+			writer.propertyJsonable("foreignKeys",foreignKeys);
 		}
 		
 		if(indexes.length > 0){
-			writer.array("indexes",indexes);
+			writer.propertyJsonable("indexes",indexes);
 		}
 		
 		writer.endObject();

@@ -28,6 +28,7 @@ import leap.orm.command.CreateEntityCommand;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
+import leap.web.security.user.UserDetails;
 
 import java.util.Date;
 
@@ -172,7 +173,11 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     
     protected AuthzAccessToken createAccesTokenFromEntity(AuthzAccessTokenEntity entity) {
         SimpleAuthzAccessToken token = new SimpleAuthzAccessToken();
-
+        // add user login name
+        UserDetails ud = sc.getUserStore().loadUserDetailsById(entity.getUserId());
+        if(ud != null){
+            token.setUsername(ud.getLoginName());
+        }
         token.setToken(entity.getToken());
         token.setClientId(entity.getClientId());
         token.setUserId(entity.getUserId());
@@ -199,7 +204,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
 
     protected AuthzLoginToken createLoginTokenFromEntity(AuthzLoginTokenEntity entity) {
         SimpleAuthzLoginToken token = new SimpleAuthzLoginToken();
-
         token.setToken(entity.getToken());
         token.setClientId(entity.getClientId());
         token.setUserId(entity.getUserId());

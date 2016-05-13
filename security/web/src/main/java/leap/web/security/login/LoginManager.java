@@ -15,16 +15,15 @@
  */
 package leap.web.security.login;
 
+import leap.core.security.Authentication;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
-import leap.core.security.Authentication;
 
 public interface LoginManager {
     
-    boolean promoteLogin(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    boolean promoteLogin(Request request, Response response, LoginContext context) throws Throwable;
     
-    boolean handleLoginRequest(Request request, Response response, SecurityContextHolder context) throws Throwable;
+    boolean handleLoginRequest(Request request, Response response, LoginContext context) throws Throwable;
     
     void handleLoginSuccess(Request request, Response response, Authentication authc) throws Throwable;
 }

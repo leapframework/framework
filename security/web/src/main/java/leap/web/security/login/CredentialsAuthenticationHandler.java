@@ -16,14 +16,13 @@
 package leap.web.security.login;
 
 import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
 import leap.core.security.Credentials;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
 import leap.web.Response;
-import leap.web.security.SecurityContextHolder;
-import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationException;
 import leap.web.security.authc.AuthenticationManager;
 
@@ -42,18 +41,17 @@ public class CredentialsAuthenticationHandler implements LoginHandler {
 	}
 
 	@Override
-    public State handleLoginAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
-	    LoginContext sc = context.getLoginContext();
+    public State handleLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
 	    
-		if(!sc.isError()) {
-			Credentials credentials = sc.getCredentials();
+		if(!context.isError()) {
+			Credentials credentials = context.getCredentials();
 			if(null != credentials){
 				try {
 					Authentication authc = 
 					        authenticationManager.authenticate(context, credentials);
 					
 		            if(null != authc){
-		            	sc.setUser(authc.getUser());
+		            	context.setUser(authc.getUser());
 		            }
 		            
 	            } catch (AuthenticationException e) {

@@ -15,7 +15,25 @@
  */
 package leap.orm.sql.ast;
 
+import leap.orm.sql.parser.Token;
+
+import java.util.concurrent.atomic.AtomicInteger;
+
 public class AstUtils {
+
+    public static boolean isAllBlank(Iterable<AstNode> nodes) {
+        for(AstNode node : nodes) {
+            if(! (node instanceof Text)) {
+                return false;
+            }
+
+            Text text = (Text)node;
+            if(!text.isBlank()) {
+                return false;
+            }
+        }
+        return true;
+    }
 	
     @SuppressWarnings("unchecked")
     public static <T extends AstNode> T findFirstNode(AstNode[] nodes, Class<T> type){
@@ -92,7 +110,154 @@ public class AstUtils {
 		}
 		return null;
     }
-    
+
+    public static AstNode prevNode(AstNode[] nodes, int currIndex) {
+        int i = currIndex - 1;
+
+        if( i < 0) {
+            return null;
+        }else{
+            return nodes[i];
+        }
+
+    }
+
+    public static AstNode prevNodeSkipBlank(AstNode[] nodes, AtomicInteger currIndex) {
+        while(true) {
+            int i = currIndex.decrementAndGet();
+
+            if(i < 0) {
+                return null;
+            }
+
+            AstNode n = nodes[i];
+            if(n == null) {
+                return null;
+            }
+
+            if(n instanceof Text && ((Text)n).isBlank()) {
+                continue;
+            }
+
+            return n;
+
+        }
+    }
+
+    public static <T extends AstNode> T prevNode(AstNode[] nodes, int currIndex,Class<T> type) {
+        AstNode node = prevNode(nodes, currIndex);
+
+        if(null == node) {
+            return null;
+        }
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static <T extends AstNode> T prevNodeSkipBlank(AstNode[] nodes, AtomicInteger currIndex,Class<T> type) {
+        AstNode node = prevNodeSkipBlank(nodes, currIndex);
+
+        if(null == node) {
+            return null;
+        }
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static boolean prevToken(AstNode[] nodes, int currIndex, Token token) {
+        SqlToken node = prevNode(nodes, currIndex, SqlToken.class);
+        if(null == node) {
+            return false;
+        }
+
+        if(node.getToken() == token) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static AstNode nextNode(AstNode[] nodes, int currIndex) {
+        int i = currIndex + 1;
+
+        if( i >= nodes.length) {
+            return null;
+        }else{
+            return nodes[i];
+        }
+
+    }
+
+    public static AstNode nextNodeSkipBlank(AstNode[] nodes, AtomicInteger currIndex) {
+        while(true) {
+            int i = currIndex.incrementAndGet();
+
+            if( i >= nodes.length) {
+                return null;
+            }
+
+            AstNode n = nodes[i];
+            if(null == n) {
+                return null;
+            }
+
+            if(n instanceof Text && ((Text)n).isBlank()) {
+                continue;
+            }
+
+            return n;
+        }
+    }
+
+    public static <T extends AstNode> T nextNode(AstNode[] nodes, int currIndex,Class<T> type) {
+        AstNode node = nextNode(nodes, currIndex);
+
+        if(null == node) {
+            return null;
+        }
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static <T extends AstNode> T nextNodeSkipBlank(AstNode[] nodes, AtomicInteger currIndex,Class<T> type) {
+        AstNode node = nextNodeSkipBlank(nodes, currIndex);
+
+        if(null == node) {
+            return null;
+        }
+
+        if(type.isAssignableFrom(node.getClass())) {
+            return (T)node;
+        }else{
+            return null;
+        }
+    }
+
+    public static boolean nextToken(AstNode[] nodes, int currIndex, Token token) {
+        SqlToken node = nextNode(nodes, currIndex, SqlToken.class);
+        if(null == node) {
+            return false;
+        }
+
+        if(node.getToken() == token) {
+            return true;
+        }
+
+        return false;
+    }
+
     protected AstUtils(){
     	
     }

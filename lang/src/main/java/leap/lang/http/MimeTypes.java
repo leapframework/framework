@@ -15,19 +15,6 @@
  */
 package leap.lang.http;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.UnsupportedCharsetException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.activation.FileTypeMap;
-import javax.activation.MimetypesFileTypeMap;
-
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
@@ -35,6 +22,13 @@ import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
+
+import javax.activation.FileTypeMap;
+import javax.activation.MimetypesFileTypeMap;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.UnsupportedCharsetException;
+import java.util.*;
 
 
 public class MimeTypes {
@@ -54,11 +48,13 @@ public class MimeTypes {
 	public static final String   TEXT_PLAIN      = "text/plain";
 	public static final String   TEXT_PLAIN_UTF8 = "text/plain;charset=UTF-8";
 	public static final MimeType TEXT_PLAIN_TYPE = parse(TEXT_PLAIN);
-	
+
 	public static final String   TEXT_HTML       = "text/html";
+	public static final String   TEXT_HTML_UTF8  = "text/html;charset=UTF-8";
 	public static final MimeType TEXT_HTML_TYPE  = parse(TEXT_HTML);
 	
 	public static final String   TEXT_XML        = "text/xml";
+    public static final String   TEXT_XML_UTF8   = "text/xml;charset=UTF-8";
 	public static final MimeType TEXT_XML_TYPE   = parse(TEXT_XML);
 	
 	public static final String   TEXT_CSS      = "text/css";
@@ -70,6 +66,7 @@ public class MimeTypes {
 	public static final MimeType TEXT_JAVASCRIPT_TYPE = parse(TEXT_JAVASCRIPT);
 	
 	public static final String   APPLICATION_JAVASCRIPT      = "application/javascript";
+	public static final String   APPLICATION_JAVASCRIPT_UTF8 = "application/javascript;charset=UTF-8";
 	public static final MimeType APPLICATION_JAVASCRIPT_TYPE = parse(APPLICATION_JAVASCRIPT);
 	
 	public static final String   APPLICATION_JSON      = "application/json";
@@ -77,6 +74,7 @@ public class MimeTypes {
 	public static final MimeType APPLICATION_JSON_TYPE = parse(APPLICATION_JSON);
 	
 	public static final String   APPLICATION_XML      = "application/xml";
+	public static final String   APPLICATION_XML_UTF8 = "application/xml;charset=UTF-8";
 	public static final MimeType APPLICATION_XML_TYPE = parse(APPLICATION_XML);
 	
 	public static final String   APPLICATION_ATOM_XML      = "application/atom+xml";

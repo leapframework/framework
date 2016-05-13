@@ -21,10 +21,12 @@ import leap.core.store.JdbcStore;
 import leap.orm.Orm;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
+import leap.web.security.SecurityConfig;
 
 public abstract class AbstractJdbcAuthzStore implements JdbcStore {
 
-    private @Inject AppConfig config;
+    protected @Inject AppConfig       config;
+    protected @Inject SecurityConfig  sc;
     
     protected Dao dao;
     protected Dmo dmo;

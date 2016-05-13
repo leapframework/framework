@@ -17,7 +17,10 @@ package leap.lang.http.client;
 
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
+import leap.lang.http.HTTP;
 import leap.lang.http.Headers;
+
+import java.io.InputStream;
 
 /**
  * A simple http request interface.
@@ -33,6 +36,11 @@ public interface HttpRequest {
      * Sets a http header.
      */
     HttpRequest setHeader(String name, String value);
+
+    /**
+     * Adds a http header.
+     */
+    HttpRequest addHeader(String name, String value);
     
     /**
      * Sets the content-type header.
@@ -67,7 +75,12 @@ public interface HttpRequest {
      * Sets the content of request body.
      */
     HttpRequest setBody(byte[] data);
-    
+
+    /**
+     * Sets the content of request body.
+     */
+    HttpRequest setBody(InputStream is);
+
     /**
      * Appends a query parameter (name=value) to the url.
      */
@@ -87,5 +100,9 @@ public interface HttpRequest {
      * Sends a POST request.
      */
     HttpResponse post();
-    
+
+    /**
+     * Sends the request with http method.
+     */
+    HttpResponse send(HTTP.Method method);
 }

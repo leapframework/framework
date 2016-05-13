@@ -19,14 +19,17 @@
     <!-- metadata & mapping -->
     <bean type="leap.orm.metadata.OrmMetadataManager" class="leap.orm.metadata.DefaultMetadataManager" primary="true"/>
     <bean type="leap.lang.meta.MTypeFactory"       class="leap.orm.metadata.OrmMTypeFactory"/>
-    
-    
+
     <!-- cannot change the order of following beans for type : MappingLoader -->
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.ClassMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.model.ModelMapper">
     	<additional-type-def type="leap.orm.OrmContextInitializable"/>
     </bean>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.RelationMapper"/>
+    <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.config.ConfigMapper"/>
+
+    <bean type="leap.orm.mapping.config.MappingConfigSource"
+          class="leap.orm.mapping.config.XmlMappingConfigSource" primary="true"/>
     
     <bean type="leap.orm.mapping.MappingProcessor" class="leap.orm.mapping.ClassMappingProcessor"/>
     <bean type="leap.orm.mapping.MappingProcessor" class="leap.orm.mapping.SchemaMappingProcessor"/>
@@ -58,7 +61,7 @@
     <!-- jdbc executor factory -->
     <bean type="leap.orm.jdbc.JdbcExecutorFactory" class="leap.orm.jdbc.DefaultJdbcExecutorFactory" primary="true"/>
     
-    <!-- resultset readers -->
+    <!-- result set readers -->
 	<bean type="leap.orm.reader.EntityReader" class="leap.orm.reader.DefaultEntityReader" primary="true"/>
 	<bean type="leap.orm.reader.RowReader"    class="leap.orm.reader.DefaultRowReader"    primary="true"/>
 
@@ -85,4 +88,7 @@
     
     <!-- linq -->
     <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
+
+    <!-- sharding -->
+    <bean type="leap.orm.sharding.ShardingFactory" class="leap.orm.sharding.DefaultShardingFactory" primary="true"/>
 </beans>

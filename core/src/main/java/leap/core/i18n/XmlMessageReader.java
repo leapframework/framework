@@ -90,7 +90,7 @@ public class XmlMessageReader implements MessageReader {
 					if(reader.isStartElement(IMPORT_ELEMENT)){
 						boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
 						boolean importDefaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, defaultOverride);
-						String importResourceName = reader.getAttributeRequired(RESOURCE_ATTRIBUTE);
+						String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 						
 						Resource importResource = Resources.getResource(resource,importResourceName);
 						

@@ -53,7 +53,7 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
     }
 
     @Override
-	public State preResolveAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
+	public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
 		if (config.isEnabled()) {
             return doPreResolveAuthentication(request, response, context);
 		}

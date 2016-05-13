@@ -19,7 +19,6 @@ import leap.lang.*;
 import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.accessor.TypeInfoGetter;
 import leap.lang.beans.BeanType;
-import leap.web.view.ViewData;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -160,13 +159,6 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		return validators;
 	}
 	
-	/**
-	 * Returns the name for exposing the argument's value to {@link ViewData}.
-	 */
-	public String getViewAttributeName() {
-		return null;
-	}
-
     @Override
     public String toString() {
         return "Argument[name=" + name + ",type=" + type + "]";

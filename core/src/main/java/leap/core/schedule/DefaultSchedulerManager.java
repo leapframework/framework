@@ -20,7 +20,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 
 import leap.lang.Args;
 import leap.lang.Disposable;
-import leap.lang.Run;
+import leap.lang.Try;
 
 public class DefaultSchedulerManager implements SchedulerManager, Disposable {
 
@@ -40,7 +40,7 @@ public class DefaultSchedulerManager implements SchedulerManager, Disposable {
     public void dispose() throws Throwable {
         if(!fixedThreadPoolSchedulers.isEmpty()) {
             for(FixedThreadPoolScheduler scheduler : fixedThreadPoolSchedulers) {
-                Run.catchThrowable(() -> scheduler.dispose()); 
+                Try.catchAll(() -> scheduler.dispose());
             }
         }
     }

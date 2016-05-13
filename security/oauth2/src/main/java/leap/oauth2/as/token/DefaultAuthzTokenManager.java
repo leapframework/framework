@@ -69,10 +69,11 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(null != user) {
             at.setUserId(user.getId().toString());
             rt.setUserId(at.getUserId());
+            at.setUsername(user.getLoginName());
         }
 
         //Merge scope.
-        String scope = mergeScope(client, authc);
+        String scope = config.isRequestLevelScopeEnabled()?mergeScope(client, authc):client.getGrantedScope();
 
         //Scope
         at.setScope(scope);
@@ -100,7 +101,6 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(Strings.isEmpty(authc.getScope())) {
             return client.getGrantedScope();
         }
-
         return client.getGrantedScope() + "," + authc.getScope();
     }
     

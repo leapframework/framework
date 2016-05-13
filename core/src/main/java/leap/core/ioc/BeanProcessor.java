@@ -20,10 +20,23 @@ import leap.core.BeanFactory;
 
 public interface BeanProcessor {
 
+    /**
+     * Called when all {@link BeanProcessor} was created.
+     */
+    default void postCreateProcessors(AppContext context, BeanFactory factory) throws Throwable {
+
+    }
+
+    /**
+     * Called after loading all bean definitions and all {@link BeanProcessor} was created.
+     */
 	default void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
         
     }
-	
+
+    /**
+     * Called when create a bean's instance.
+     */
 	default void postCreateBean(AppContext context, BeanFactory factory, BeanDefinition def, Object bean) throws Throwable {
 
     }

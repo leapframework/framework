@@ -15,16 +15,16 @@
  */
 package leap.orm.dao;
 
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
+import leap.core.value.Record;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedIntIdentity;
 import leap.orm.tested.model.petclinic.Owner;
-
 import org.junit.Test;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 public class DaoTest extends OrmTestCase {
 
@@ -72,5 +72,21 @@ public class DaoTest extends OrmTestCase {
 		assertEquals(1, dao.executeNamedUpdate("simpleInsertOwner1",params));
 		assertEquals(1, Owner.count());
 	}
-	
+	@Test
+	public void testSqlKeyWithMapParams(){
+		Map<String, Object> params = new HashMap<>();
+		params.put("city","city");
+		Dao.get().createNamedQuery("simpleMapParamsSql").params(params).count();
+	}
+
+	@Test
+	public void testSqlIdQueryAdditionalField(){
+		deleteAll(Owner.class);
+		new Owner().set("firstName", "a").set("lastName","b").save();
+		assertEquals(1,Owner.all().size());
+		Record record = dao.createNamedQuery("simpleSqlIdWithAdditionalField").single();
+		assertEquals(new Integer(1),record.getInteger("additional"));
+		assertEquals(new Integer(2),record.getInteger("secondAdditional"));
+	}
+
 }

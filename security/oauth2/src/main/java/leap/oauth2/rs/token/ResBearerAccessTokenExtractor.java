@@ -19,6 +19,7 @@ import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 
+import leap.lang.Strings;
 import leap.lang.http.Headers;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -30,14 +31,21 @@ public class ResBearerAccessTokenExtractor implements ResAccessTokenExtractor {
 	private static final Log log = LogFactory.get(ResBearerAccessTokenExtractor.class);
 
 	@Override
-	public SimpleResAccessToken extractTokenFromRequest(Request request) {
+	public ResAccessToken extractTokenFromRequest(Request request) {
 		String v = extractToken(request.getServletRequest());
 		
 		if(null == v || v.length() == 0) {
 			return null;
 		}
-		
+
+		if(isJwt(v)){
+			return new SimpleJwtAccessToken(OAuth2Constants.BEARER_TYPE,v,request.getParameters());
+		}
 		return new SimpleResAccessToken(OAuth2Constants.BEARER_TYPE, v, request.getParameters());
+	}
+
+	protected boolean isJwt(String token){
+		return Strings.contains(token,".");
 	}
 
 	protected String extractToken(HttpServletRequest request) {

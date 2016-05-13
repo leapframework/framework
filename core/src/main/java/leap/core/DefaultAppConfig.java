@@ -15,11 +15,24 @@
  */
 package leap.core;
 
-import static leap.core.AppContextInitializer.CLASSPATH_APPSYS_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_APPUSR_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_MODULES_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_CORE_PREFIX;
-import static leap.core.AppContextInitializer.CLASSPATH_FRAMEWORK_PREFIX;
+import leap.core.config.*;
+import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceManager;
+import leap.core.instrument.AppInstrumentation;
+import leap.core.sys.SysPermissionDefinition;
+import leap.lang.*;
+import leap.lang.accessor.SystemPropertyAccessor;
+import leap.lang.convert.Converts;
+import leap.lang.io.IO;
+import leap.lang.json.JSON;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.resource.*;
+import leap.lang.security.RSA;
+import leap.lang.security.RSA.RsaKeyPair;
+import leap.lang.text.DefaultPlaceholderResolver;
+import leap.lang.text.PlaceholderResolver;
+import leap.lang.tools.DEV;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,73 +40,42 @@ import java.nio.charset.Charset;
 import java.security.PrivateKey;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
-import leap.core.ds.DataSourceConfig;
-import leap.core.ds.DataSourceManager;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.core.instrument.DefaultAppInstrumentContext;
-import leap.core.sys.SysPermissionDefinition;
-import leap.lang.Charsets;
-import leap.lang.Factory;
-import leap.lang.Maps;
-import leap.lang.Out;
-import leap.lang.Props;
-import leap.lang.Randoms;
-import leap.lang.Strings;
-import leap.lang.accessor.SystemPropertyAccessor;
-import leap.lang.convert.Converts;
-import leap.lang.io.IO;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-import leap.lang.resource.FileResource;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
-import leap.lang.resource.SimpleResourceSet;
-import leap.lang.security.RSA;
-import leap.lang.security.RSA.RsaKeyPair;
-import leap.lang.text.DefaultPlaceholderResolver;
-import leap.lang.text.PlaceholderResolver;
-import leap.lang.tools.DEV;
+import static leap.core.AppResources.CP_APP_PREFIX;
 
 /**
- * a default implementation of {@link AppConfig}
+ * A default implementation of {@link AppConfig}
  */
-public class DefaultAppConfig implements AppConfig {
+public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	
 	private static final Log log = LogFactory.get(DefaultAppConfig.class);
 	
-	private static final String APP_PROFILE_CONFIG_RESOURCE = CLASSPATH_APPUSR_PREFIX + "/profile";
+	private static final String APP_PROFILE_CONFIG_RESOURCE = CP_APP_PREFIX + "/profile";
 	
-	private static final String[] FRAMEWORK_CONFIG_LOCATIONS = new String[]{CLASSPATH_CORE_PREFIX + "/config.xml",
-																			CLASSPATH_CORE_PREFIX + "/config/**/*.xml",
-																		    CLASSPATH_FRAMEWORK_PREFIX + "/config.xml",
-																	        CLASSPATH_FRAMEWORK_PREFIX + "/config/**/*.xml"};
-	
-	private static final String[] EXTENSION_CONFIG_LOCATIONS = new String[]{CLASSPATH_MODULES_PREFIX + "/config.xml",
-																			CLASSPATH_MODULES_PREFIX + "/config/**/*.xml"};
-	
-	private static final String[] APPSYS_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPSYS_PREFIX + "/config.xml",
-																			CLASSPATH_APPSYS_PREFIX + "/config/**/*.xml"};
+	private static final String[] BASE_CONFIG_LOCATIONS = new String[]{
+            CP_APP_PREFIX + "/config.xml"
+    };
 
-	private static final String[] APPBASE_CONFIG_LOCATIONS   = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml"};
-	
-	private static final String[] APPUSR_CONFIG_LOCATIONS    = new String[]{CLASSPATH_APPUSR_PREFIX + "/config.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/config/**/*.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config.xml",
-																			CLASSPATH_APPUSR_PREFIX + "/profiles/{profile}/config/**/*.xml"};
+	private static final String[] APP_CONFIG_LOCATIONS  = new String[]{
+            CP_APP_PREFIX + "/config.xml",
+            CP_APP_PREFIX + "/config/**/*.xml",
+            CP_APP_PREFIX + "/profiles/{profile}/config.xml",
+            CP_APP_PREFIX + "/profiles/{profile}/config/**/*.xml"
+    };
 	
 	//all init properties
-	protected static Set<String> INIT_PROPERTEIS = new HashSet<>();
+	protected static Set<String> INIT_PROPERTIES = new HashSet<>();
 	static {
-		INIT_PROPERTEIS.add(INIT_PROPERTY_PROFILE);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_BASE_PACKAGE);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEBUG);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEFAULT_CHARSET);
-		INIT_PROPERTEIS.add(INIT_PROPERTY_DEFAULT_LOCALE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_PROFILE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_BASE_PACKAGE);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEBUG);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_CHARSET);
+		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 	
 	protected Object					    externalContext     = null;
+    protected PropertyProvider              propertyProvider    = null;
 	protected String						profile				= null;
 	protected Boolean						debug				= null;
 	protected String						basePackage			= null;
@@ -103,15 +85,17 @@ public class DefaultAppConfig implements AppConfig {
 	protected String						secret				= null;
 	protected PrivateKey                    privateKey          = null;
 	protected Map<Class<?>, Object>         extensions          = new HashMap<>();
-	protected Map<String,String>            properties          = new LinkedHashMap<String, String>();
+	protected Map<String,String>            properties          = new ConcurrentHashMap<>();
 	protected Map<String,String>            propertiesReadonly  = Collections.unmodifiableMap(properties);
-	protected List<SysPermissionDefinition> permissions         = new ArrayList<SysPermissionDefinition>();
+    protected Map<String,List<String>>      arrayProperties     = new ConcurrentHashMap<>();
+	protected List<SysPermissionDefinition> permissions         = new ArrayList<>();
 	protected List<SysPermissionDefinition> permissionsReadonly = Collections.unmodifiableList(permissions);
 	protected ResourceSet		            resources           = null;
 	protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
 	protected AppPropertyProcessor		    propertyProcessor	= new DefaultPropertyProcessor();
-	protected Map<String, DataSourceConfig> dataSourceConfigs   = new HashMap<String, DataSourceConfig>();
+	protected Map<String, DataSourceConfig> dataSourceConfigs   = new ConcurrentHashMap<>();
 	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
+    protected AppInstrumentation            instrumentation     = Factory.getInstance(AppInstrumentation.class);
 	
 	protected DefaultAppConfig(Object externalContext, Map<String, String> initProperties){
 		this.externalContext = externalContext;
@@ -119,7 +103,7 @@ public class DefaultAppConfig implements AppConfig {
 		this.placeholderResolver.setIgnoreUnresolvablePlaceholders(true);
 		this.init(initProperties);
 	}
-	
+
 	protected void init(Map<String, String> initProperties){
 		if(null == initProperties){
 			initProperties = new HashMap<>();
@@ -137,7 +121,7 @@ public class DefaultAppConfig implements AppConfig {
 		this.defaultCharset = Maps.get(initProperties, INIT_PROPERTY_DEFAULT_CHARSET, Charset.class);
 		this.defaultLocale  = Maps.get(initProperties, INIT_PROPERTY_DEFAULT_LOCALE, Locale.class);
 		
-		this.properties.putAll(initProperties);
+		loadProperties(initProperties);
 	}
 	
 	protected void loadInitPropertiesFromSystem(Map<String, String> initProperties) {
@@ -164,7 +148,7 @@ public class DefaultAppConfig implements AppConfig {
             initProperties.put(name, System.getProperty(name));
         }
 
-		for(String p : INIT_PROPERTEIS){
+		for(String p : INIT_PROPERTIES){
 			if(!initProperties.containsKey(p)){
 				String v = System.getProperty(p);
 				if(!Strings.isEmpty(v)){
@@ -173,7 +157,11 @@ public class DefaultAppConfig implements AppConfig {
 			}
 		}
 	}
-	
+
+    public void setPropertyProvider(PropertyProvider p)  {
+        this.propertyProvider = p;
+    }
+
 	protected void loadInitPropertiesFromConfig(Map<String, String> initProperties) {
 		PlaceholderResolver pr = new DefaultPlaceholderResolver(initProperties);
 		
@@ -187,6 +175,44 @@ public class DefaultAppConfig implements AppConfig {
 			initProperties.putAll(Props.load(confProperties).toMap(pr));
 		}
 	}
+
+    protected void loadProperty(String name, String value) {
+
+        //array property
+        if(name.endsWith("[]")) {
+            name = name.substring(0, name.length() - 2);
+
+            List<String> values = arrayProperties.get(name);
+            if(null == values){
+                values = new ArrayList<>();
+                arrayProperties.put(name, values);
+            }
+
+            values.add(value);
+        }else{
+            properties.put(name, value);
+        }
+    }
+
+    protected void loadProperties(Map<String,String> map) {
+        for(Entry<String,String> entry : map.entrySet()) {
+            loadProperty(entry.getKey(), entry.getValue());
+        }
+    }
+
+    protected void loadArrayProperties(Map<String, List<String>> map) {
+        for(Entry<String, List<String>> entry : map.entrySet()) {
+            String key = entry.getKey();
+
+            List<String> list = arrayProperties.get(key);
+            if(null == list) {
+                list = new ArrayList<>();
+                arrayProperties.put(key, list);
+            }
+
+            list.addAll(entry.getValue());
+        }
+    }
 	
 	@Override
     public String getProfile() {
@@ -272,12 +298,8 @@ public class DefaultAppConfig implements AppConfig {
 
 	@Override
     public String getProperty(String name) {
-	    return properties.get(name);
-    }
-	
-	@Override
-    public boolean hasProperty(String name) {
-	    return properties.containsKey(name);
+        String v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
+        return null == v ? properties.get(name) : v;
     }
 	
 	@Override
@@ -307,8 +329,88 @@ public class DefaultAppConfig implements AppConfig {
     public int getIntProperty(String name, int defaultValue) {
 	    return Maps.getInteger(properties, name, defaultValue);
     }
-	
-	@Override
+
+    @Override
+    public String[] getArrayProperty(String name) {
+        List<String> values = arrayProperties.get(name);
+
+        return null == values ? null : values.toArray(Arrays2.EMPTY_STRING_ARRAY);
+    }
+
+    @Override
+    public StringProperty getDynaProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaProperty(name);
+        }
+        return new SimpleStringProperty(properties.get(name));
+    }
+
+    @Override
+    public <T> Property<T> getDynaProperty(String name, Class<T> type) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaProperty(name, type);
+        }
+
+        String v = properties.get(name);
+        if(null == v || v.isEmpty()) {
+            return new NullProperty<>();
+        }
+
+        TypeInfo ti = Types.getTypeInfo(type,null);
+        if(ti.isComplexType()) {
+            return new SimpleProperty<>(type, JSON.decode(v, type));
+        }else{
+            return new SimpleProperty<>(type, Converts.convert(v, type));
+        }
+    }
+
+    @Override
+    public IntegerProperty getDynaIntegerProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaIntegerProperty(name);
+        }
+        return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
+    }
+
+    @Override
+    public LongProperty getDynaLongProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaLongProperty(name);
+        }
+        return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
+    }
+
+    @Override
+    public BooleanProperty getDynaBooleanProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaBooleanProperty(name);
+        }
+        return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
+    }
+
+    @Override
+    public DoubleProperty getDynaDoubleProperty(String name) {
+        if(null != propertyProvider) {
+            return propertyProvider.getDynaDoubleProperty(name);
+        }
+        return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
+    }
+
+    @Override
+    public <T> void bindDynaProperty(String name, Class<T> type, Property<T> p) {
+        if(null == p) {
+            return;
+        }
+
+        if(null != propertyProvider) {
+            propertyProvider.bindDynaProperty(name, type, p);
+        }else if(properties.containsKey(name)){
+            p.convert(getProperty(name));
+        }
+
+    }
+
+    @Override
     public ResourceSet getResources() {
 	    return resources;
     }
@@ -323,27 +425,24 @@ public class DefaultAppConfig implements AppConfig {
 		initBaseProperties();
 		
 		//load configs
-		DefaultAppConfigLoader appusrLoader    = load(profiled(APPUSR_CONFIG_LOCATIONS,profile));
-		DefaultAppConfigLoader frameworkLoader = load(FRAMEWORK_CONFIG_LOCATIONS);
-		DefaultAppConfigLoader extensionLoader = load(EXTENSION_CONFIG_LOCATIONS);		
-		DefaultAppConfigLoader appsysLoader    = load(APPSYS_CONFIG_LOCATIONS);
-		
+        DefaultAppConfigLoader fmmLoader = load(AppResources.getFMMClasspathResourcesForXml("config"));
+		DefaultAppConfigLoader appLoader = load(AppResources.getLocClasspathResources(profiled(APP_CONFIG_LOCATIONS,profile)));
+
 		//properties
-		properties.putAll(frameworkLoader.getProperties());
-		properties.putAll(extensionLoader.getProperties());
-		properties.putAll(appsysLoader.getProperties());
-		properties.putAll(appusrLoader.getProperties());
-		
+		loadProperties(fmmLoader.getProperties());
+        loadArrayProperties(fmmLoader.getArrayProperties());
+
+		loadProperties(appLoader.getProperties());
+        loadArrayProperties(appLoader.getArrayProperties());
+
 		//resources
 		try {
-	        Map<String,Resource> urlResourceMap = new HashMap<String, Resource>();
+	        Map<String,Resource> urlResourceMap = new HashMap<>();
 	        
 	        loadBasePackageResources(urlResourceMap,basePackage);
 	        
-	        loadResources(urlResourceMap,frameworkLoader);
-	        loadResources(urlResourceMap,extensionLoader);
-	        loadResources(urlResourceMap,appsysLoader);
-	        loadResources(urlResourceMap,appusrLoader);
+	        loadResources(urlResourceMap, fmmLoader);
+	        loadResources(urlResourceMap, appLoader);
 	        
 	        this.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
         } catch (IOException e) {
@@ -354,10 +453,8 @@ public class DefaultAppConfig implements AppConfig {
 		instrumentClasses();
 		
 		//permissions
-		frameworkLoader.addPermissions(extensionLoader.getPermissions(), true);
-		frameworkLoader.addPermissions(appsysLoader.getPermissions(), true);
-		frameworkLoader.addPermissions(appusrLoader.getPermissions(), true);
-		this.permissions.addAll(frameworkLoader.getPermissions());
+		fmmLoader.addPermissions(appLoader.getPermissions(), true);
+		this.permissions.addAll(fmmLoader.getPermissions());
 		
 		this.postLoad();
 		
@@ -396,7 +493,7 @@ public class DefaultAppConfig implements AppConfig {
 	
 	protected void initBaseProperties(){
 		DefaultAppConfigLoader loader = new DefaultAppConfigLoader(externalContext,properties,dataSourceConfigs,propertyProcessor);
-		Resource[] appBaseConfigFiles = AppContextInitializer.resources().searchClasspaths(APPBASE_CONFIG_LOCATIONS);
+		Resource[] appBaseConfigFiles = AppResources.get().searchClasspaths(BASE_CONFIG_LOCATIONS);
 		if(appBaseConfigFiles.length > 0) {
 			loader.loadBaseProperties(appBaseConfigFiles[0]);	
 		}
@@ -443,13 +540,8 @@ public class DefaultAppConfig implements AppConfig {
 	}
 	
 	protected void instrumentClasses() {
-		for(AppInstrumentProcessor p : Factory.newInstances(AppInstrumentProcessor.class)){
-			try {
-	            p.instrument(new DefaultAppInstrumentContext(), resources);
-            } catch (Throwable e) {	
-            	throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
-            }
-		}
+        instrumentation.init(this);
+        instrumentation.instrument(resources);
 	}
 	
 	protected void postLoad(){
@@ -471,7 +563,7 @@ public class DefaultAppConfig implements AppConfig {
 		    }
 		}
 		
-		//load datasource form prooperties
+		//load datasource form properties
 		new DataSourceConfigPropertiesLoader(properties, dataSourceConfigs).load();
 	}
 	
@@ -506,12 +598,10 @@ public class DefaultAppConfig implements AppConfig {
 		return array;
 	}
 	
-	protected DefaultAppConfigLoader load(String[] locations){
+	protected DefaultAppConfigLoader load(Resource[] resources){
 		DefaultAppConfigLoader loader = new DefaultAppConfigLoader(externalContext,properties,dataSourceConfigs,propertyProcessor);
 		
 		loader.extensions.putAll(this.extensions);
-		
-		Resource[] resources = AppContextInitializer.resources().searchClasspaths(locations);
 		
 		loader.load(profile, resources);
 		
@@ -592,7 +682,7 @@ public class DefaultAppConfig implements AppConfig {
 		}
 		
 		protected void load() {
-			Map<String, DataSourceConfig.Builder> dsMap = new HashMap<String, DataSourceConfig.Builder>();
+			Map<String, DataSourceConfig.Builder> dsMap = new HashMap<>();
 			
 			for(Entry<String, String> entry : properties.entrySet()) {
 				String key = entry.getKey();
@@ -600,7 +690,7 @@ public class DefaultAppConfig implements AppConfig {
 
 				if(key.startsWith(DB_DEFAULT_PREFIX)) {
 					if(dataSourceConfigs.containsKey(DataSourceManager.DEFAULT_DATASOURCE_NAME)) {
-						throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' aleady configed, check property '" + key + "'");
+						throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' already configured, check property '" + key + "'");
 					}
 					
 					DataSourceConfig.Builder conf = dsMap.get(DataSourceManager.DEFAULT_DATASOURCE_NAME);
@@ -621,7 +711,7 @@ public class DefaultAppConfig implements AppConfig {
 						String dataSourceProp = key.substring(dotIndex + 1);
 						
 						if(dataSourceConfigs.containsKey(dataSourceName)) {
-							throw new AppConfigException("DataSource '" + dataSourceName + "' aleady configed, check property '" + key + "'");
+							throw new AppConfigException("DataSource '" + dataSourceName + "' already configured, check property '" + key + "'");
 						}
 						
 						DataSourceConfig.Builder conf = dsMap.get(dataSourceName);

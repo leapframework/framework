@@ -15,10 +15,6 @@
  */
 package leap.htpl;
 
-import java.io.Writer;
-import java.util.Locale;
-import java.util.Map.Entry;
-
 import leap.htpl.ast.Fragment;
 import leap.htpl.ast.Node;
 import leap.htpl.exception.HtplCompileException;
@@ -27,12 +23,16 @@ import leap.htpl.exception.HtplRenderException;
 import leap.lang.Args;
 import leap.lang.Strings;
 
+import java.io.Writer;
+import java.util.Locale;
+import java.util.Map.Entry;
+
 public class DefaultHtplTemplate extends AbstractHtplTemplate implements HtplTemplate {
 	
 	protected final HtplEngine	 engine;
 	protected final HtplResource resource;
 	protected final Locale		 locale;
-	
+
 	protected HtplDocument documentWithoutLayout;
 	protected HtplCompiled compiledWithoutLayout;
 	
@@ -98,6 +98,10 @@ public class DefaultHtplTemplate extends AbstractHtplTemplate implements HtplTem
 	@Override
     public void render(HtplContext context, HtplWriter writer) {
 		try {
+            if(!preRenderTemplate(context, writer)) {
+                return;
+            }
+
 			if(context.isDebug() && null != resource) {
 				String path = resource.isServletResource() ? resource.getServletResource().getPathWithinContext() : resource.getFileName();
 				if(null != path) {
@@ -109,6 +113,9 @@ public class DefaultHtplTemplate extends AbstractHtplTemplate implements HtplTem
 			}else{
 				compiledWithoutLayout.render(this, context, writer);
 			}
+
+            postRenderTemplate(context, writer);
+
         } catch (HtplException e) {
         	throw e;
         } catch (Throwable e){

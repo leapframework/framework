@@ -15,17 +15,19 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.db.DbDialect;
+import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.Sql.Scope;
+
+import java.io.IOException;
 
 /**
  * Object name means : firstName.lastName or firstName.secondaryName.lastName or lastName
  */
 public class SqlObjectName extends SqlObjectNameBase {
-	
+
+    protected EntityMapping entityMapping;
 	protected FieldMapping  fieldMapping;
 	protected SqlObjectName referenceTo;
 	
@@ -37,13 +39,18 @@ public class SqlObjectName extends SqlObjectNameBase {
 		this.scope    = scope;
 		this.lastName = lastName;
 	}
-	
-	public FieldMapping getFieldMapping() {
+
+    public EntityMapping getEntityMapping() {
+        return entityMapping;
+    }
+
+    public FieldMapping getFieldMapping() {
 		return fieldMapping;
 	}
 
-	public void setFieldMapping(FieldMapping fieldMapping) {
-		this.fieldMapping = fieldMapping;
+	public void setFieldMapping(EntityMapping entityMapping, FieldMapping fieldMapping) {
+        this.entityMapping = entityMapping;
+		this.fieldMapping  = fieldMapping;
 	}
 	
 	public SqlObjectName getReferenceTo() {

@@ -58,7 +58,10 @@ public class IfStatement extends DynamicNode {
 
 	@Override
     protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
+		AstNode[] nodes = this.getBodyNodes();
+		for(AstNode node : nodes){
+			node.buildStatement(stm,params);
+		}
     }
 	
 }

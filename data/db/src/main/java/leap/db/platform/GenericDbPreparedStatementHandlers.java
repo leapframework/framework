@@ -15,17 +15,17 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.function.Consumer;
-
 import leap.core.jdbc.PreparedStatementHandlerAdapter;
 import leap.db.Db;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.function.Consumer;
 
 public class GenericDbPreparedStatementHandlers {
 
@@ -55,7 +55,7 @@ public class GenericDbPreparedStatementHandlers {
 					throw new IllegalStateException("No generated key returned after the execution of sql : " + sql);
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
         }
 	}

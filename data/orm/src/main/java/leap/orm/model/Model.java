@@ -15,18 +15,7 @@
  */
 package leap.orm.model;
 
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import leap.core.exception.EmptyRecordsException;
-import leap.core.exception.RecordNotDeletedException;
-import leap.core.exception.RecordNotFoundException;
-import leap.core.exception.RecordNotSavedException;
-import leap.core.exception.TooManyRecordsException;
+import leap.core.exception.*;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionCallbackWithResult;
@@ -64,6 +53,13 @@ import leap.orm.query.CriteriaWhere;
 import leap.orm.query.EntityQuery;
 import leap.orm.query.Query;
 import leap.orm.value.Entity;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
 public abstract class Model implements DynaBean,ValidatableBean {
@@ -392,6 +388,11 @@ public abstract class Model implements DynaBean,ValidatableBean {
 	public static <T extends Model> CriteriaQuery<T> where(String expression,Object... args) {
 		return (CriteriaQuery<T>)query().where(expression, args);
 	}
+
+    @Instrument
+    public static <T extends Model> CriteriaQuery<T> where(String expression,Map<String,Object> params) {
+        return (CriteriaQuery<T>)query().where(expression).params(params);
+    }
 	
 	//------------------ batch -------------------------------------------
 	@Instrument
@@ -1008,7 +1009,7 @@ public abstract class Model implements DynaBean,ValidatableBean {
     }
     
     /**
-     * Can be overried by sub-class to perform customized validation.
+     * Can be overrided by sub-class to perform customized validation.
      */
     protected void doValidate(Errors errors,int maxErrors){
     	

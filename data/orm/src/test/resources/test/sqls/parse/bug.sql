@@ -1,1 +1,1 @@
-SELECT * FROM t {? limit :count	}
+SELECT * FROM sec_user WHERE name=:name

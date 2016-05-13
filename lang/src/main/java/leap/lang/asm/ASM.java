@@ -15,28 +15,22 @@
  */
 package leap.lang.asm;
 
+import leap.lang.*;
+import leap.lang.asm.tree.*;
+import leap.lang.asm.util.*;
+import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
+
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Predicate;
-
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.asm.tree.AbstractInsnNode;
-import leap.lang.asm.tree.AnnotationNode;
-import leap.lang.asm.tree.ClassNode;
-import leap.lang.asm.tree.FieldNode;
-import leap.lang.asm.tree.InsnNode;
-import leap.lang.asm.tree.MethodNode;
-import leap.lang.asm.util.ASMifier;
-import leap.lang.asm.util.ASMifier1;
-import leap.lang.asm.util.Printer;
-import leap.lang.asm.util.TraceClassVisitor;
-import leap.lang.asm.util.TraceMethodVisitor;
-import leap.lang.exception.ObjectNotFoundException;
 
 /**
  * This class is not from original asm sources.
@@ -150,6 +144,32 @@ public class ASM {
 		
 		return a;
 	}
+
+    public static Map<String,Object> getAnnotationValues(AnnotationNode a) {
+        Map<String,Object> map = new LinkedHashMap<>();
+
+        if(null != a.values) {
+
+            for(int i=0;i<a.values.size();i++) {
+                String name  = (String)a.values.get(i);
+                Object value = a.values.get(i+1);
+
+                if(value instanceof String[]) {
+                    //enum value
+                    String[] array = (String[])value;
+                    Class<? extends Enum> enumType = (Class<? extends Enum>)Classes.forName(Type.getType(array[0]).getClassName());
+
+                    map.put(name, Enums.nameOf(enumType, array[1]));
+                }else{
+                    map.put(name, value);
+                }
+
+                i+=1;
+            }
+        }
+
+        return map;
+    }
 	
 	private static AnnotationNode getAnnotation(List<AnnotationNode> annotations,Class<? extends Annotation> annotationType){
 		String desc = Type.getDescriptor(annotationType);
@@ -265,6 +285,27 @@ public class ASM {
         ClassReader cr = new ClassReader(data);
         cr.accept(new TraceClassVisitor(null, new ASMifier(),out),ClassReader.EXPAND_FRAMES);
 	}
+
+    public static void printASMifiedCode(byte[] data) {
+        printASMifiedCode(data, new PrintWriter(System.out));
+    }
+
+    public static void pintASMifiedCode(Class cls) {
+        Resource r = Resources.getResource(cls);
+
+        Try.throwUnchecked(() -> {
+
+            try(InputStream is = r.getInputStream()) {
+                ClassReader cr = new ClassReader(is);
+                ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
+
+                cr.accept(cw, 0);
+
+                ASM.printASMifiedCode(cw.toByteArray(), new PrintWriter(System.out));
+            }
+
+        });
+    }
 	
 	protected ASM(){
 		

@@ -15,13 +15,13 @@
  */
 package leap.htpl.resolver;
 
-import java.util.Locale;
-
 import leap.htpl.HtplEngine;
 import leap.htpl.HtplResource;
 import leap.htpl.HtplTemplate;
 import leap.htpl.HtplTemplateResolver;
 import leap.lang.Locales;
+
+import java.util.Locale;
 
 public abstract class AbstractHtplResolver implements HtplTemplateResolver {
 
@@ -56,7 +56,7 @@ public abstract class AbstractHtplResolver implements HtplTemplateResolver {
 		HtplResource r;
 		for(int i=0;i<locations.length;i++){
 			if((r = tryResolveResource(locations[i])) != null){
-				return engine.createTemplate(r);
+				return engine.createTemplate(r, templateName);
 			}
 		}
 		

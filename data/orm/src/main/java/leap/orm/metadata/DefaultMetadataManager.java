@@ -15,9 +15,6 @@
  */
 package leap.orm.metadata;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -31,18 +28,15 @@ import leap.orm.DefaultOrmMetadata;
 import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.EntityMappingBuilder;
-import leap.orm.mapping.Mapper;
-import leap.orm.mapping.MappingConfigContext;
-import leap.orm.mapping.MappingExistsException;
-import leap.orm.mapping.MappingNotFoundException;
-import leap.orm.mapping.MappingStrategy;
+import leap.orm.mapping.*;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlConfigContext;
 import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlSource;
-import leap.orm.sql.SqlConfigContext;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultMetadataManager implements OrmMetadataManager {
 	
@@ -99,6 +93,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		//create default sql commands for all entities.
 		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
 		    tryCreateDefaultSqlCommands(loadingContext, em);
+            tryCreateTable(loadingContext, em);
 		}
     }
     
@@ -112,6 +107,15 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         tryCreateFindAllCommand(context,em);
         tryCreateExistsCommand(context, em);
         tryCreateCountCommand(context, em);
+    }
+
+    protected void tryCreateTable(MetadataContext context, EntityMapping em) {
+        if(em.isAutoCreateTable()) {
+            if(!context.getDb().checkTableExists(em.getTable())){
+                log.info("Auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
+                context.getDb().cmdCreateTable(em.getTable()).execute();
+            }
+        }
     }
 	
 	protected void tryCreateInsertCommand(MetadataContext context,EntityMapping em) {
@@ -188,14 +192,19 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 	protected static class LoadingContext implements MappingConfigContext,SqlConfigContext {
 		
 		private final OrmContext	 				     ormContext;
-		private final Map<Class<?>,EntityMappingBuilder> classToEntityMappings = new ConcurrentHashMap<Class<?>, EntityMappingBuilder>();
-		private final Map<String,EntityMappingBuilder>   nameToEntityMappings  = new ConcurrentHashMap<String, EntityMappingBuilder>();
+		private final Map<Class<?>,EntityMappingBuilder> classToEntityMappings = new ConcurrentHashMap<>();
+		private final Map<String,EntityMappingBuilder>   nameToEntityMappings  = new ConcurrentHashMap<>();
 		
 		protected LoadingContext(OrmContext ormContext){
 			this.ormContext = ormContext;
 		}
-		
-		@Override
+
+        @Override
+        public String getName() {
+            return ormContext.getName();
+        }
+
+        @Override
         public OrmConfig getConfig() {
 	        return ormContext.getConfig();
         }

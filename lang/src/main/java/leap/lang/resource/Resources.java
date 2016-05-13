@@ -15,6 +15,12 @@
  */
 package leap.lang.resource;
 
+import leap.lang.*;
+import leap.lang.exception.NestedIOException;
+import leap.lang.net.Urls;
+import leap.lang.path.AntPathMatcher;
+import leap.lang.path.PathMatcher;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -22,16 +28,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
-import leap.lang.Args;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.Exceptions;
-import leap.lang.New;
-import leap.lang.exception.NestedIOException;
-import leap.lang.net.Urls;
-import leap.lang.path.AntPathMatcher;
-import leap.lang.path.PathMatcher;
 
 /**
  * spring style resource utils.
@@ -96,6 +92,13 @@ public class Resources {
 		Args.notEmpty(path,"path");
 		return new SimpleFileResource(new File(path));
 	}
+
+    /**
+     * Returns the resource of the given class.
+     */
+    public static Resource getResource(Class<?> cls) {
+        return getResource(cls, Classes.getClassFileName(cls));
+    }
 	
 	/**
 	 * get the resource in the given class's package.

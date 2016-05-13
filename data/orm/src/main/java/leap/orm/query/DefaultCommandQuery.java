@@ -49,7 +49,7 @@ public class DefaultCommandQuery<T> extends AbstractQuery<T> {
 
 	@Override
     protected QueryResult<T> executeQuery(QueryContext qc) {
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListRow(dao.getOrmContext(), targetType, resultClass);
+		ResultSetReader<List<T>> reader = ResultSetReaders.forListRow(dao.getOrmContext(), targetType, resultClass, command);
 		
 	    return new DefaultQueryResult<T>(command.toString(),command.executeQuery(qc, params, reader));
     }

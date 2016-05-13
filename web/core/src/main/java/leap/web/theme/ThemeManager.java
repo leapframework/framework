@@ -17,9 +17,10 @@ package leap.web.theme;
 
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.Request;
+import leap.web.view.View;
 
 public interface ThemeManager {
-	
+
 	/**
 	 * Returns the {@link Theme} which match the given name.
 	 * 
@@ -36,5 +37,18 @@ public interface ThemeManager {
 	 * Resolving current theme from http request.
 	 */
 	Theme resolveTheme(Request request) throws Throwable;
+
+    /**
+     * Returns the view in default theme.
+     *
+     * <p/>
+     * If no default theme exists, returns the view from default {@link leap.web.view.ViewSource}.
+     */
+    View getDefaultView(String viewName);
+
+    /**
+     * Returns the default theme or null if no default theme exists.
+     */
+	Theme getDefaultTheme();
 	
 }

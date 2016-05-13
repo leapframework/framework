@@ -15,31 +15,27 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-
 import leap.lang.Args;
 import leap.lang.jdbc.JDBC;
 import leap.lang.params.Params;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
-import leap.orm.sql.NamedSqlParameter;
-import leap.orm.sql.PreparedBatchSqlStatementBuilder;
-import leap.orm.sql.Sql;
-import leap.orm.sql.SqlContext;
-import leap.orm.sql.SqlStatementBuilder;
+import leap.orm.sql.*;
 import leap.orm.sql.parser.Token;
+
+import java.io.IOException;
 
 public class ParamPlaceholder extends NamedParamNode {
 	
 	private final Token  token;
 	
-	public ParamPlaceholder(Token token,String name) {
-		super(name);
+	public ParamPlaceholder(Sql.Scope scope, Token token, String name) {
+		super(scope, name);
 		Args.notNull(token);
 	    this.token = token;
     }
 	
-	protected Object param(SqlStatementBuilder stm, Params params){
+	public Object eval(SqlStatementBuilder stm, Params params){
 		if(params.isIndexed()) {
 			if(params.contains(name)) {
 				return params.get(name);

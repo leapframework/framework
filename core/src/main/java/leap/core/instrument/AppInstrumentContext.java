@@ -15,8 +15,31 @@
  */
 package leap.core.instrument;
 
+import java.util.Collection;
+
 public interface AppInstrumentContext {
 
-	
-	
+    /**
+     * Returns true if the given class name was instrumented by the class.
+     */
+    default boolean isInstrumentedBy(String className, Class<?> instrumentedBy) {
+        AppInstrumentClass ic = getInstrumentedClass(className);
+        return null == ic ? false : ic.getAllInstrumentedBy().contains(instrumentedBy);
+    }
+
+    /**
+     * Returns the collection contains all the instrumented classes.
+     */
+    Collection<AppInstrumentClass> getAllInstrumentedClasses();
+
+    /**
+     * Returns the instrumented class or null.
+     */
+    AppInstrumentClass getInstrumentedClass(String className);
+
+    /**
+     * Puts the instrumented class to context.
+     */
+    void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData);
+
 }

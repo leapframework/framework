@@ -17,10 +17,10 @@ package leap.web.security.authc;
 
 import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
-import leap.core.validation.ValidationContext;
 import leap.web.security.SecurityConfig;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 
-public interface AuthenticationContext extends ValidationContext {
+public interface AuthenticationContext extends CredentialsAuthenticationContext {
 
 	/**
 	 * Returns {@link SecurityConfig}.
@@ -51,4 +51,5 @@ public interface AuthenticationContext extends ValidationContext {
 	 * Sets the authentication token.
      */
 	void setAuthenticationToken(String token);
+	
 }

@@ -15,29 +15,29 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.Strings;
+import leap.lang.http.Headers;
+import leap.lang.http.MimeType;
+import leap.lang.http.MimeTypes;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.List;
 import java.util.Map;
-
-import leap.lang.Strings;
-import leap.lang.http.Headers;
-import leap.lang.http.MimeType;
-import leap.lang.http.MimeTypes;
+import java.util.function.BiConsumer;
 
 public class JdkHttpResponse implements HttpResponse {
 
     protected final JdkHttpClient  client;
     protected final JdkHttpRequest request;
-    
-    protected int                       status;
-    protected String                    reason;
-    protected Map<String, List<String>> headers;
-    protected byte[]                    bytes;
 
-    protected MimeType contentType;
+    protected int         status;
+    protected String      reason;
+    protected HttpHeaders headers;
+    protected byte[]      bytes;
+    protected MimeType    contentType;
     
     protected JdkHttpResponse(JdkHttpClient client, JdkHttpRequest request, HttpURLConnection conn) throws IOException {
         this.client  = client;
@@ -75,7 +75,7 @@ public class JdkHttpResponse implements HttpResponse {
     }
 
     @Override
-    public Map<String, List<String>> getHeaders() {
+    public HttpHeaders getHeaders() {
         return headers;
     }
 
@@ -98,6 +98,11 @@ public class JdkHttpResponse implements HttpResponse {
         return Strings.newString(getBytes(), charset());
     }
 
+    @Override
+    public void forEachHeaders(BiConsumer<String, String> func) {
+        headers.forEach(func);
+    }
+
     protected String charset() {
         MimeType mt = getContentType();
         if(null != mt && !Strings.isEmpty(mt.getCharset())) {
@@ -108,9 +113,22 @@ public class JdkHttpResponse implements HttpResponse {
     }
     
     protected void init(HttpURLConnection conn) throws IOException {
-        status  = conn.getResponseCode();
+        status = conn.getResponseCode();
         reason = conn.getResponseMessage();
-        headers = conn.getHeaderFields();
+
+        headers = new SimpleHttpHeaders();
+
+        for(Map.Entry<String,List<String>> entry : conn.getHeaderFields().entrySet()) {
+            String name = entry.getKey();
+            if(null == name) {
+                continue;
+            }
+
+            for(String value : entry.getValue()) {
+                headers.add(name, value);
+            }
+        }
+
         bytes = readBody(conn);
     }
     

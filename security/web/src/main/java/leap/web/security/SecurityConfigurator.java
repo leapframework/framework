@@ -17,6 +17,7 @@
 package leap.web.security;
 
 import leap.core.ioc.BeanList;
+import leap.core.security.crypto.PasswordEncoder;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
@@ -98,6 +99,11 @@ public interface SecurityConfigurator {
 	 * Sets the default implementation of {@link UserStore}.
 	 */
 	SecurityConfigurator setUserStore(UserStore userStore);
+
+    /**
+     * Sets the default implementation of {@link PasswordEncoder}.
+     */
+    SecurityConfigurator setPasswordEncoder(PasswordEncoder pe);
 	
 	/**
 	 * Enables or Disables remember me.

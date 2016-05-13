@@ -15,21 +15,6 @@
  */
 package leap.lang.http.client;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -46,6 +31,18 @@ import leap.lang.time.StopWatch;
 import leap.lang.value.ImmutableNamedValue;
 import leap.lang.value.NamedValue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.nio.charset.Charset;
+import java.util.*;
+import java.util.Map.Entry;
+
 public class JdkHttpRequest implements HttpRequest {
     
     private static final Log log = LogFactory.get(JdkHttpRequest.class);
@@ -54,8 +51,8 @@ public class JdkHttpRequest implements HttpRequest {
     protected final String        url;
     protected final boolean       ssl;
     
-    protected final Map<String, String>      cookies = new LinkedHashMap<String, String>();
-    protected final Map<String, String>      headers = new LinkedHashMap<String, String>();
+    protected final Map<String, String>      cookies     = new LinkedHashMap<>();
+    protected final SimpleHttpHeaders        headers     = new SimpleHttpHeaders();
     protected final QueryStringBuilder       queryParams = new QueryStringBuilder();
     protected final List<NamedValue<String>> formParams  = new ArrayList<>();
     
@@ -98,7 +95,14 @@ public class JdkHttpRequest implements HttpRequest {
     @Override
     public HttpRequest setHeader(String name, String value) {
         Args.notEmpty(name, "name");
-        headers.put(name, value);
+        headers.set(name, value);
+        return this;
+    }
+
+    @Override
+    public HttpRequest addHeader(String name, String value) {
+        Args.notEmpty(name);
+        headers.add(name, value);
         return this;
     }
 
@@ -124,6 +128,13 @@ public class JdkHttpRequest implements HttpRequest {
     }
 
     @Override
+    public HttpRequest setBody(InputStream is) {
+        Args.notNull(is);
+        this.content = is;
+        return this;
+    }
+
+    @Override
     public HttpResponse get() {
         return send(HTTP.Method.GET);
     }
@@ -132,21 +143,21 @@ public class JdkHttpRequest implements HttpRequest {
     public HttpResponse post() {
         return send(HTTP.Method.POST);
     }
-    
-    protected boolean hasHeader(String name) {
-        return headers.containsKey(name);
-    }
-    
-    protected JdkHttpResponse send(HTTP.Method m) {
+
+    public JdkHttpResponse send(HTTP.Method m) {
         String connUrl = url;
-        
+
         if(!queryParams.isEmpty()) {
             connUrl = Urls.appendQueryString(connUrl, queryParams.build());
         }
-        
+
         return doSend(m, connUrl);
     }
-    
+
+    protected boolean hasHeader(String name) {
+        return headers.exists(name);
+    }
+
     protected JdkHttpResponse doSend(HTTP.Method m, String connUrl) {
         try {
             log.debug("Sending '{}' request to url : {}", m, connUrl);
@@ -211,11 +222,7 @@ public class JdkHttpRequest implements HttpRequest {
     }
     
     protected void setHeaders(HttpURLConnection conn) throws IOException {
-        if(!headers.isEmpty()) {
-            for(Entry<String, String> header : headers.entrySet()) {
-                conn.addRequestProperty(header.getKey(), header.getValue());
-            }
-        }
+        headers.forEach((name,value) -> conn.addRequestProperty(name, value));
     }
     
     protected void setCookies(HttpURLConnection conn) throws IOException {
@@ -262,5 +269,5 @@ public class JdkHttpRequest implements HttpRequest {
         }
         return new ByteArrayInputStream(Strings.getBytesUtf8(content.toString()));
     }
- 
+
 }

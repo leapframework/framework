@@ -15,46 +15,12 @@
  */
 package leap.db.platform;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-
-import javax.sql.DataSource;
-
 import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
-import leap.core.transaction.Transactions;
-import leap.db.Db;
-import leap.db.DbBase;
-import leap.db.DbComparator;
-import leap.db.DbExecution;
-import leap.db.DbMetadata;
-import leap.db.DbPlatform;
-import leap.db.command.AlterTable;
-import leap.db.command.CreateColumn;
-import leap.db.command.CreateForeignKey;
-import leap.db.command.CreateIndex;
-import leap.db.command.CreatePrimaryKey;
-import leap.db.command.CreateSequence;
-import leap.db.command.CreateTable;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropSchema;
-import leap.db.command.DropSequence;
-import leap.db.command.DropTable;
-import leap.db.command.RenameColumn;
-import leap.db.model.DbColumn;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
+import leap.db.*;
+import leap.db.command.*;
+import leap.db.model.*;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Exceptions;
@@ -66,6 +32,9 @@ import leap.lang.jdbc.JDBC;
 import leap.lang.jdbc.JdbcTypes;
 import leap.lang.logging.Log;
 import leap.lang.time.StopWatch;
+
+import javax.sql.DataSource;
+import java.sql.*;
 
 public class GenericDb extends DbBase {
 	
@@ -82,16 +51,6 @@ public class GenericDb extends DbBase {
 	    return (GenericDbDialect)super.getDialect();
     }
 
-    protected Connection getConnection() throws NestedSQLException {
-    	return Transactions.getConnection(dataSource);
-    }
-    
-    protected void closeConnection(Connection connection) {
-    	if(null != connection){
-    		Transactions.closeConnection(connection, dataSource);	
-    	}
-    }
-	
 	@Override
     public boolean checkTableExists(String tableName) throws NestedSQLException {
 	    return metadata.tryGetTable(tableName) != null;
@@ -193,12 +152,38 @@ public class GenericDb extends DbBase {
 	
 	@Override
     public void execute(ConnectionCallback callback) throws NestedSQLException {
-		Transactions.execute(dataSource, callback);
+        if(null != tp) {
+            tp.execute(callback);
+        }else{
+            Connection conn = null;
+            try {
+                conn = dataSource.getConnection();
+
+                callback.execute(conn);
+            }catch(SQLException e) {
+                throw Exceptions.wrap(e);
+            }finally{
+                JDBC.closeConnection(conn);
+            }
+        }
     }
 
 	@Override
-    public <T> T execute(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
-		return Transactions.execute(dataSource, callback);
+    public <T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException {
+        if(null != tp) {
+            return tp.executeWithResult(callback);
+        }else{
+            Connection conn = null;
+            try {
+                conn = dataSource.getConnection();
+
+                return callback.execute(conn);
+            }catch(SQLException e) {
+                throw Exceptions.wrap(e);
+            }finally{
+                JDBC.closeConnection(conn);
+            }
+        }
     }
 	
 	@Override
@@ -207,37 +192,19 @@ public class GenericDb extends DbBase {
     }
 
 	@Override
-    public int executeUpdate(String sql, Object[] args) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeUpdate(connection, sql, args);
-		}finally{
-			closeConnection(connection);
-		}
+    public int executeUpdate(final String sql, final Object[] args) throws NestedSQLException {
+        return executeWithResult((conn) -> executeUpdate(conn, sql, args));
     }
 	
 	@Override
     public int executeUpdate(String sql, Object[] args, int[] types) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeUpdate(connection, sql, args, types);
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> executeUpdate(conn, sql, args, types));
     }
 	
     @Override
     @SuppressWarnings("unchecked")
     public int executeUpdate(String sql, Object[] args, int[] types, PreparedStatementHandler<?> handler) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeUpdate(connection, sql, args, types,(PreparedStatementHandler<Db>)handler);
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> executeUpdate(conn, sql, args, types,(PreparedStatementHandler<Db>)handler));
     }
 
 	@Override
@@ -275,92 +242,50 @@ public class GenericDb extends DbBase {
 			return Arrays2.EMPTY_INT_ARRAY;
 		}
 
-		Connection connection = null;
-		try{
-			connection = getConnection();
+        return executeWithResult((conn) -> {
+            Statement stmt = conn.createStatement();
 
-			Statement stmt = connection.createStatement();
-			
-			for(String sql : sqls) {
-				if(Strings.isEmpty(sql)) {
-					throw  new IllegalArgumentException("Sql content must not be empty in the sql array");	
-				}
-				stmt.addBatch(sql);
-			}
-			
-			return stmt.executeBatch();
-		}catch(SQLException e){
-			throw Exceptions.wrap(e);
-		}finally{
-			closeConnection(connection);
-		}
+            for(String sql : sqls) {
+                if(Strings.isEmpty(sql)) {
+                    throw  new IllegalArgumentException("Sql content must not be empty in the sql array");
+                }
+                stmt.addBatch(sql);
+            }
+
+            return stmt.executeBatch();
+        });
+
     }
 
 	@Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return doExecuteBatchUpdate(connection, sql, batchArgs, null, null);	
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, null, null));
     }
 
 	@Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return doExecuteBatchUpdate(connection, sql, batchArgs, types, null);	
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, types, null));
     }
 	
     @Override
     @SuppressWarnings("unchecked")
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types, BatchPreparedStatementHandler<?> handler) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return doExecuteBatchUpdate(connection, sql, batchArgs, types, (BatchPreparedStatementHandler<Db>)handler);	
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, types, (BatchPreparedStatementHandler<Db>)handler));
     }
 
 	@Override
     public <T> T executeQuery(String sql, ResultSetReader<T> reader) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeQuery(connection, sql, Arrays2.EMPTY_OBJECT_ARRAY, reader);
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> executeQuery(conn, sql, Arrays2.EMPTY_OBJECT_ARRAY, reader));
     }
 
 	@Override
     public <T> T executeQuery(String sql, Object[] args, ResultSetReader<T> reader) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeQuery(connection, sql, args, Arrays2.EMPTY_INT_ARRAY, reader);
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> executeQuery(conn, sql, args, Arrays2.EMPTY_INT_ARRAY, reader));
     }
 
 	@Override
     public <T> T executeQuery(String sql, Object[] args, int[] types, ResultSetReader<T> reader) throws NestedSQLException {
-		Connection connection = null;
-		try{
-			connection = getConnection();
-			return executeQuery(connection, sql, args, types, reader);
-		}finally{
-			closeConnection(connection);
-		}
+        return executeWithResult((conn) -> executeQuery(conn, sql, args, types, reader));
     }
 
 	@Override
@@ -382,7 +307,7 @@ public class GenericDb extends DbBase {
 		return doExecuteQuery(connection, sql, args, types, reader);
     }
 
-	protected int doExecuteUpdate(Connection connection, String sql, Object[] args, int[] types, PreparedStatementHandler<Db> handler) throws NestedSQLException {
+    protected int doExecuteUpdate(Connection connection, String sql, Object[] args, int[] types, PreparedStatementHandler<Db> handler) throws NestedSQLException {
 		PreparedStatement ps = null;
 		
 		try{

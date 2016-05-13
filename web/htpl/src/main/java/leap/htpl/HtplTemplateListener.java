@@ -15,6 +15,9 @@
  */
 package leap.htpl;
 
+/**
+ * Template level listener.
+ */
 public interface HtplTemplateListener {
 
 	void onTemplateReloaded(HtplTemplate template);

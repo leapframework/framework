@@ -43,4 +43,20 @@ public class OrmModelsConfigs {
 	public OrmModelsConfig getModelsConfig(String name) {
 		return modelsMap.get(name);
 	}
+
+    public void removeBasePackage(String p) {
+        for(OrmModelsConfig c : modelsMap.values()) {
+            if(c.removeBasePackage(p)){
+                return;
+            }
+        }
+    }
+
+    public void removeClassName(String cn) {
+        for(OrmModelsConfig c : modelsMap.values()) {
+            if(c.removeClassName(cn)){
+                return;
+            }
+        }
+    }
 }

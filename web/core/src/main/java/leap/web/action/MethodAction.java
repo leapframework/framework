@@ -15,10 +15,6 @@
  */
 package leap.web.action;
 
-import leap.core.annotation.Transactional;
-import leap.core.transaction.DefaultTransactionDefinition;
-import leap.core.transaction.TransactionDefinition;
-import leap.core.transaction.TransactionDefinition.PropagationBehaviour;
 import leap.lang.Args;
 import leap.lang.New;
 import leap.lang.reflect.ReflectException;
@@ -37,7 +33,6 @@ public class MethodAction implements Action {
 	private final Argument[]			 arguments;
 	private final boolean				 hasReturnValue;
 	private final boolean				 hasArguments;
-	private final TransactionDefinition  transactionDefinition;
 	private final ActionInterceptor[]    interceptors;
 	private final Annotation[]			 mergedAnnotations;
 	
@@ -54,7 +49,6 @@ public class MethodAction implements Action {
 		this.hasReturnValue        = method.hasReturnValue();
 		this.hasArguments          = arguments.length > 0;
 		this.interceptors	       = null == interceptors ? EMPTY_INTERCEPTORS : interceptors;
-		this.transactionDefinition = resolveTransactionDefinition();
 		this.mergedAnnotations     = mergeAnnotations();
 		
 		/*
@@ -149,14 +143,6 @@ public class MethodAction implements Action {
 		return null;
     }
 	
-    public boolean isTransactional() {
-		return null != transactionDefinition;
-	}
-
-    public TransactionDefinition getTransactionDefinition() {
-		return transactionDefinition;
-	}
-	
 	@Override
     public String toString() {
         return n(method.getDeclaringClass()) + "." + method.getName();
@@ -194,24 +180,6 @@ public class MethodAction implements Action {
 		}
 		
 		return list.toArray(new Annotation[list.size()]);
-	}
-	
-	protected TransactionDefinition resolveTransactionDefinition() {
-		Transactional conf = searchAnnotation(Transactional.class);
-		
-		if(null != conf && conf.value()) {
-			DefaultTransactionDefinition td = new DefaultTransactionDefinition();
-			
-			if(conf.requiresNew()) {
-				td.setPropagationBehavior(PropagationBehaviour.REQUIRES_NEW);
-			}else{
-				td.setPropagationBehavior(conf.propagationBehaviour());	
-			}
-			
-			return td;
-		}
-		
-		return null;
 	}
 	
 	protected void handleExecuteError(ActionContext context, Throwable e){

@@ -108,6 +108,8 @@ public interface OAuth2AuthzServerConfig {
      */
     boolean isPasswordCredentialsEnabled();
 
+	boolean isRequestLevelScopeEnabled();
+
     /**
      * Returns <code>true</code> if authorization code flow enabled.
      *

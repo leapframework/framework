@@ -125,7 +125,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 
 	@Override
     public DbExecution execute() {
-		return db.execute(new ConnectionCallbackWithResult<DbExecution>() {
+		return db.executeWithResult(new ConnectionCallbackWithResult<DbExecution>() {
 			@Override
             public DbExecution execute(Connection connection) throws SQLException {
 	            return GenericDbCommands.this.execute(connection);
@@ -161,7 +161,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
         }
 
 		public DbExecution execute(){
-			return db.execute(new ConnectionCallbackWithResult<DbExecution>() {
+			return db.executeWithResult(new ConnectionCallbackWithResult<DbExecution>() {
 				@Override
                 public DbExecution execute(Connection connection) throws SQLException {
 	                return GenericDbCommand.this.execute(connection);

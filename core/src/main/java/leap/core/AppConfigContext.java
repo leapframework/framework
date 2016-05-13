@@ -15,13 +15,13 @@
  */
 package leap.core;
 
-import java.util.Map;
-
 import leap.core.ds.DataSourceConfig;
 import leap.lang.accessor.PropertyAccessor;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
+
+import java.util.Map;
 
 /**
  * A context object used in {@link AppConfigProcessor}.
@@ -30,7 +30,7 @@ public interface AppConfigContext extends PropertyAccessor {
 	
 	String getProfile();
 	
-	boolean isDefaultOverried();
+	boolean isDefaultOverrided();
 	
 	Object getExternalContext();
 	

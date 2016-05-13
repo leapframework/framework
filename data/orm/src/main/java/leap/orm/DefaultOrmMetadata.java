@@ -15,11 +15,6 @@
  */
 package leap.orm;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ioc.AbstractReadonlyBean;
@@ -33,7 +28,13 @@ import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.SequenceMapping;
 import leap.orm.model.Model;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlFragment;
 import leap.orm.sql.SqlNotFoundException;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetadata {
 	
@@ -43,13 +44,15 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	private final Object _entityLock = new Object();
 	private final Object _sqlLock    = new Object();
 	
-	protected final Map<Class<?>,EntityMapping> classToEntityMappings  = new ConcurrentHashMap<Class<?>, EntityMapping>();
-	protected final Map<Class<?>,EntityMapping> modelToEntityMappings  = new ConcurrentHashMap<Class<?>, EntityMapping>();
-	protected final Map<String,EntityMapping>   nameToEntityMappings   = new ConcurrentHashMap<String, EntityMapping>();
-	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<String, EntityMapping>();
-	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<String, SqlCommand>();
-	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<String, SequenceMapping>();
-	
+	protected final Map<Class<?>,EntityMapping> classToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<Class<?>,EntityMapping> modelToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<String,EntityMapping>   nameToEntityMappings   = new ConcurrentHashMap<>();
+	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<>();
+	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<>();
+	protected final Map<String,SqlFragment>     keyToSqlFragments      = new ConcurrentHashMap<>();
+	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
+    protected final Map<String,EntityMapping>   shardingEntityMappings = new ConcurrentHashMap<>();
+
 	protected @Inject @M Domains domains;
 	
 	@Override
@@ -132,6 +135,15 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
     }
 
 	@Override
+	public SqlFragment getSqlFragment(String key) throws ObjectNotFoundException {
+		SqlFragment fragment = tryGetSqlFragment(key);
+		if(null == fragment){
+			throwFragmentNotFound(key);
+		}
+		return fragment;
+	}
+
+	@Override
     public SqlCommand getSqlCommand(Class<?> entityClass, String commandName) throws ObjectNotFoundException {
 		SqlCommand cmd = tryGetSqlCommand(entityClass, commandName);
 		
@@ -172,7 +184,20 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	    return tableToEntityMappings.get(tableName.toLowerCase());
     }
 
-	@Override
+    @Override
+    public EntityMapping tryGetEntityMappingByShardingTableName(String tableName) {
+        for(EntityMapping em : shardingEntityMappings.values()) {
+
+            if(em.isShardingTable(tableName)) {
+                return em;
+            }
+
+        }
+
+        return null;
+    }
+
+    @Override
     public SequenceMapping tryGetSequenceMapping(String sequenceName) {
 		Args.notEmpty(sequenceName,"sequence name");
 	    return nameToSequenceMappings.get(sequenceName.toLowerCase());
@@ -183,7 +208,13 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 		Args.notEmpty(key,"command key");
 	    return keyToSqlCommands.get(key);
     }
-	
+
+	@Override
+	public SqlFragment tryGetSqlFragment(String key) {
+		Args.notEmpty(key,"fragment key");
+		return keyToSqlFragments.get(key);
+	}
+
 	@Override
     public SqlCommand tryGetSqlCommand(Class<?> entityClass, String commandName) {
 		Args.notNull(entityClass,"entity class");
@@ -217,6 +248,10 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			
 			nameToEntityMappings.put(em.getEntityName().toLowerCase(), em);
 			tableToEntityMappings.put(em.getTableName().toLowerCase(), em);
+
+            if(em.isSharding()) {
+                shardingEntityMappings.put(em.getEntityName().toLowerCase(), em);
+            }
         }
     }
 	
@@ -233,6 +268,7 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			}
 			
 			nameToEntityMappings.remove(entityNameKey);
+            shardingEntityMappings.remove(entityNameKey);
 			
 			if(null != entityClass){
 				classToEntityMappings.remove(entityClass);
@@ -286,10 +322,22 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			if(keyToSqlCommands.containsKey(key)){
 				throw new ObjectExistsException("sql command '" + key + "' aleady exists");
 			}
-			keyToSqlCommands.put(key, cmd); 
+			keyToSqlCommands.put(key, cmd);
         }
     }
-	
+
+	@Override
+	public void addSqlFragment(String key, SqlFragment fragment) throws ObjectExistsException {
+		Args.notEmpty(key,"fragment key");
+		Args.notNull(fragment,"sql fragment");
+		synchronized (_sqlLock) {
+			if(keyToSqlFragments.containsKey(key)){
+				throw new ObjectExistsException("sql fragment '" + key + "' aleady exists");
+			}
+			keyToSqlFragments.put(key, fragment);
+		}
+	}
+
 	@Override
     public void addSqlCommand(EntityMapping entityMapping, String commandName, SqlCommand cmd) throws ObjectExistsException {
 		Args.notNull(entityMapping,"entity mapping");
@@ -358,7 +406,11 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	protected static void throwSqlNotFound(String key) {
 		throw new SqlNotFoundException("Sql commmand '" + key + "' not found");
 	}
-	
+
+	protected static void throwFragmentNotFound(String key) {
+		throw new SqlNotFoundException("Sql fragment '" + key + "' not found");
+	}
+
 	protected static void throwSqlNotFound(String entityName,String commandName) {
 		throw new SqlNotFoundException("Sql commmand '" + commandName + "' not defined for entity '" + entityName + "'");
 	}

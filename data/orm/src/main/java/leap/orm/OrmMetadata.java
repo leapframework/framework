@@ -15,8 +15,6 @@
  */
 package leap.orm;
 
-import java.util.List;
-
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.domain.Domains;
@@ -24,6 +22,9 @@ import leap.orm.domain.FieldDomain;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.SequenceMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlFragment;
+
+import java.util.List;
 
 public interface OrmMetadata {
 	
@@ -95,11 +96,18 @@ public interface OrmMetadata {
 	
 	/**
 	 * Returns the {@link SqlCommand} for the given command key.
-	 * 
+	 *
 	 * @throws ObjectNotFoundException if sql command does not exists.
 	 */
 	SqlCommand getSqlCommand(String key) throws ObjectNotFoundException;
-	
+
+	/**
+	 * Returns the {@link SqlFragment} for the given command key.
+	 *
+	 * @throws ObjectNotFoundException if sql fragment does not exists.
+	 */
+	SqlFragment getSqlFragment(String key) throws ObjectNotFoundException;
+
 	/**
 	 * Returns the {@link SqlCommand} for the given entity type's <code>class</code> and the command name.
 	 * 
@@ -138,6 +146,11 @@ public interface OrmMetadata {
 	 */
 	EntityMapping tryGetEntityMappingByTableName(String tableName);
 
+    /**
+     * Returns the {@link EntityMapping} for given sharding table name (ignore case).
+     */
+    EntityMapping tryGetEntityMappingByShardingTableName(String tableName);
+
 	/**
 	 * Returns the {@link SequenceMapping} for the given name (ignore case).
 	 * 
@@ -153,6 +166,14 @@ public interface OrmMetadata {
 	 * Returns <code>null</code> if sql command does not exists.
 	 */
 	SqlCommand tryGetSqlCommand(String key);
+
+	/**
+	 * Returns the {@link SqlFragment} for the given fragment key.
+	 *
+	 * <p>
+	 * Returns <code>null</code> if sql fragment does not exists.
+	 */
+	SqlFragment tryGetSqlFragment(String key);
 	
 	/**
 	 * Returns the {@link SqlCommand} for the given entity <code>class</code> and the command name.
@@ -202,7 +223,15 @@ public interface OrmMetadata {
 	 * Throws {@link ObjectExistsException} if the key exists.
 	 */
 	void addSqlCommand(String key,SqlCommand cmd) throws ObjectExistsException;
-	
+
+	/**
+	 * Adds a new {@link SqlFragment} object to this metadata.
+	 *
+	 * <p>
+	 * Throws {@link ObjectExistsException} if the key exists.
+	 */
+	void addSqlFragment(String key, SqlFragment fragment) throws ObjectExistsException;
+
 	/**
 	 * Adds a new {@link SqlCommand} objects to this metadata.
 	 */

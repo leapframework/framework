@@ -15,8 +15,6 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.List;
-
 import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.lang.Strings;
@@ -28,15 +26,11 @@ import leap.lang.resource.Resources;
 import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.Sql.Scope;
-import leap.orm.sql.ast.AstUtils;
-import leap.orm.sql.ast.SqlAllColumns;
-import leap.orm.sql.ast.SqlObjectName;
-import leap.orm.sql.ast.SqlSelect;
-import leap.orm.sql.ast.SqlTableName;
-import leap.orm.sql.ast.SqlTop;
-
+import leap.orm.sql.ast.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.List;
 
 
 @ContextualIgnore
@@ -61,7 +55,17 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 		SqlSelect subQuery = select.findLastNode(SqlSelect.class);
 		assertNotNull(subQuery);
 	}
-	
+
+    @Test
+    public void testSimpleAndExpr() {
+        assertParse("select * from t where a = 1 and b is null");
+    }
+
+    @Test
+    public void testSimpleSelect() {
+        assertParse("select * from t where lastName = :lastName");
+    }
+
 	@Test
 	public void testSimpleJoin() {
 		assertParse("select * from t join t1 on t.id = t1.id");
@@ -84,7 +88,7 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 	}
 	
     @Test
-    public void testDyanmicWithParams() {
+    public void testDynamicWithParams() {
         assertParse("select * from t {?limit :count;nullable:true}");
         
         split("select * from t {?limit :count; nullable:true}");
@@ -126,6 +130,26 @@ public class SqlParserMoreTest extends SqlParserTestCase {
 			}
 		}
 	}
+
+    @Test
+    @Contextual
+    public void testDynamicFromResources() throws Exception{
+        for(Resource res : Resources.scan("classpath:/test/sqls/dynamic/**/*.sql")){
+            String text = res.getContent();
+
+            log.info("Split sqls in '{}'",res.getFilename());
+
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s) in '{}'",sqls.size(),res.getFilename());
+
+            for(int i=0;i<sqls.size();i++){
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}",(i+1),sql);
+                assertParse(sql);
+            }
+        }
+    }
 	
 	@Test
 	@Contextual

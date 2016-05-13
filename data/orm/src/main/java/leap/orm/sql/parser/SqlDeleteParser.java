@@ -29,7 +29,7 @@ public class SqlDeleteParser extends SqlQueryParser {
 
 		suspendNodes();
 		
-		accept(Token.DELETE);
+		expect(Token.DELETE).acceptText();
 		
 		parseRestStopAt(Token.FROM);
 		

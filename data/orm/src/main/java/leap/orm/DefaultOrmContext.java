@@ -15,8 +15,6 @@
  */
 package leap.orm;
 
-import javax.sql.DataSource;
-
 import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -40,6 +38,8 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+
+import javax.sql.DataSource;
 
 public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBean,PostInjectBean,MetadataContext {
 	
@@ -202,10 +202,12 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
     	for(OrmContextInitializable init : beanFactory.getBeans(OrmContextInitializable.class)){
     		init.postInitialize(this);
     	}
+
     }
 
 	@Override
     public String toString() {
 	    return this.getClass().getSimpleName() + "(" + getName() + ")";
     }
+
 }

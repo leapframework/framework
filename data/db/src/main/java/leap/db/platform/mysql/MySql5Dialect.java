@@ -15,6 +15,7 @@
  */
 package leap.db.platform.mysql;
 
+import java.io.BufferedReader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -206,5 +207,23 @@ public class MySql5Dialect extends GenericDbDialect {
 	@Override
     protected String getCloseQuoteString() {
 	    return "`";
+    }
+
+    @Override
+    protected String parseDelimiter(BufferedReader reader, String delimiter, String line) {
+
+        if(Strings.startsWithIgnoreCase(line, "delimiter ")) {
+            String newDelimiter = Strings.removeStartIgnoreCase(line, "delimiter").trim();
+
+            while(newDelimiter.length() > 0 && newDelimiter.endsWith(delimiter)) {
+                newDelimiter = Strings.removeEnd(newDelimiter, delimiter);
+            }
+
+            if(newDelimiter.length() > 0) {
+                return newDelimiter;
+            }
+        }
+
+        return null;
     }
 }

@@ -19,7 +19,7 @@ import java.util.List;
 
 import leap.junit.contexual.Contextual;
 import leap.orm.sql.Sql;
-import leap.orm.sql.ast.IfCaluse;
+import leap.orm.sql.ast.IfClause;
 import leap.orm.sql.ast.ParamPlaceholder;
 import leap.orm.sql.ast.SqlOrderBy;
 
@@ -163,7 +163,7 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 					 "where 1 = 1";
 		Sql sql = sql(text);
 		assertEquals(text, sql.toString());
-		IfCaluse clause = sql.findLastNode(IfCaluse.class);
+		IfClause clause = sql.findLastNode(IfClause.class);
 		assertEquals(1,clause.getIfStatements().length);
 		
 		text = "select * from table \n" +
@@ -176,7 +176,7 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 			  "@endif where 1=0";
 		sql = sql(text);
 		assertEquals(text, sql.toString());
-		clause = sql.findLastNode(IfCaluse.class);
+		clause = sql.findLastNode(IfClause.class);
 		assertEquals(2,clause.getIfStatements().length);
 	}
 	

@@ -15,8 +15,6 @@
  */
 package leap.web.security.csrf;
 
-import java.util.Map;
-
 import leap.core.annotation.Inject;
 import leap.core.web.RequestBase;
 import leap.htpl.HtplContext;
@@ -25,11 +23,13 @@ import leap.htpl.HtplEngine;
 import leap.htpl.ast.Element;
 import leap.htpl.ast.If;
 import leap.htpl.ast.IfCondition;
-import leap.htpl.interceptor.ElementInterceptor;
+import leap.htpl.interceptor.ElementProcessInterceptor;
 import leap.lang.expression.AbstractExpression;
 import leap.web.security.SecurityConfig;
 
-public class CsrfFormInterceptor extends ElementInterceptor {
+import java.util.Map;
+
+public class CsrfFormInterceptor extends ElementProcessInterceptor {
 
 	protected @Inject SecurityConfig config;
 

@@ -15,22 +15,19 @@
  */
 package leap.orm.mapping;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
-import leap.lang.Buildable;
-import leap.lang.Builders;
-import leap.lang.Comparators;
-import leap.lang.New;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
+import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	 
@@ -41,7 +38,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected String					   tablePrefix;
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
-	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<FieldMappingBuilder>();
+    protected boolean                      autoCreateTable;
+	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
 	protected EntityExecutionInterceptor   updateInterceptor;
 	protected EntityExecutionInterceptor   deleteInterceptor;
@@ -51,6 +49,9 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected DbTable					   physicalTable;
 	protected List<EntityValidator>        validators;
 	protected List<RelationMappingBuilder> relationMappings;
+    protected boolean                      sharding;
+    protected boolean                      autoCreateShardingTable;
+    protected ShardingAlgorithm            shardingAlgorithm;
 	
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
@@ -159,7 +160,16 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	public List<FieldMappingBuilder> getFieldMappings() {
+    public boolean isAutoCreateTable() {
+        return autoCreateTable;
+    }
+
+    public EntityMappingBuilder setAutoCreateTable(boolean autoCreateTable) {
+        this.autoCreateTable = autoCreateTable;
+        return this;
+    }
+
+    public List<FieldMappingBuilder> getFieldMappings() {
 		return fieldMappings;
 	}
 	
@@ -333,7 +343,34 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	@Override
+    public boolean isSharding() {
+        return sharding;
+    }
+
+    public EntityMappingBuilder setSharding(boolean sharding) {
+        this.sharding = sharding;
+        return this;
+    }
+
+    public boolean isAutoCreateShardingTable() {
+        return autoCreateShardingTable;
+    }
+
+    public EntityMappingBuilder setAutoCreateShardingTable(boolean autoCreateShardingTable) {
+        this.autoCreateShardingTable = autoCreateShardingTable;
+        return this;
+    }
+
+    public ShardingAlgorithm getShardingAlgorithm() {
+        return shardingAlgorithm;
+    }
+
+    public EntityMappingBuilder setShardingAlgorithm(ShardingAlgorithm shardingAlgorithm) {
+        this.shardingAlgorithm = shardingAlgorithm;
+        return this;
+    }
+
+    @Override
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 		
@@ -343,7 +380,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations);
+	    						 domain,modelClass,validators,relations, autoCreateTable,
+                                 sharding, autoCreateShardingTable, shardingAlgorithm);
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {

@@ -123,6 +123,13 @@ public interface Query<T> {
 	default PageResult<T> pageResult(int index,int size) {
 		return pageResult(Page.indexOf(index, size));
 	}
+
+	/**
+	 * Returns true if the result has records, or returns false if no records.
+     */
+	default boolean exists() {
+		return firstOrNull() != null;
+	}
 	
 	/**
 	 * Executes a count(*) query and returns the total count of records.
