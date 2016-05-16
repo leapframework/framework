@@ -16,20 +16,16 @@
 
 package leap.lang.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
-
 import leap.lang.Args;
 import leap.lang.Exceptions;
 import leap.lang.net.NET;
 import leap.lang.net.Urls;
 import leap.lang.path.Paths;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
 
 public class UrlResource extends AbstractFileResolvingResource {
 
@@ -37,12 +33,18 @@ public class UrlResource extends AbstractFileResolvingResource {
 	private final URL cleanedUrl;
 	private final URI uri;
 	private final String classpath;
+    private String classpathPrefix;
 
-	public UrlResource(URL url) {
+    public UrlResource(URL url) {
+        this(url, null);
+    }
+
+	public UrlResource(URL url, String classpathPrefix) {
 		Args.notNull(url, "url");
 		this.url = url;
 		this.cleanedUrl = getCleanedUrl(this.url, url.toString());
 		this.uri = null;
+        this.classpathPrefix = classpathPrefix;
 		this.classpath = determinateClasspath();
 	}
 
@@ -69,7 +71,15 @@ public class UrlResource extends AbstractFileResolvingResource {
 			if (separatorIndex != -1) {
 				return urlString.substring(separatorIndex+2);
 			}
-		}
+		}else if(null != classpathPrefix){
+            if(Urls.isFileUrl(url)) {
+                String urlString = url.toString();
+                int separatorIndex = urlString.indexOf(classpathPrefix);
+                if (separatorIndex != -1) {
+                    return urlString.substring(separatorIndex);
+                }
+            }
+        }
 		return null;
 	}
 
@@ -133,7 +143,7 @@ public class UrlResource extends AbstractFileResolvingResource {
 		if (relativePath.startsWith("/")) {
 			relativePath = relativePath.substring(1);
 		}
-		return new UrlResource(new URL(this.url, relativePath));
+		return new UrlResource(new URL(this.url, relativePath),classpathPrefix);
 	}
 
 	@Override

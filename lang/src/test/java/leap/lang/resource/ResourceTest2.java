@@ -16,29 +16,20 @@
 
 package leap.lang.resource;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashSet;
-
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.io.IO;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class ResourceTests {
+import java.io.*;
+import java.util.HashSet;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.*;
+
+public class ResourceTest2 {
 	
 	private static final String ROOT_PATH = Classes.getPackageResourcePath(Strings.class);
 

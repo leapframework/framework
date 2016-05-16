@@ -176,7 +176,7 @@ public abstract class DbBase implements Db {
                 //exists -> META-INF/conf/db/{name}/filename_{type}.sql
                 //r      -> META-INF/conf/db/{name}/filename.sql
 
-                String cp = Strings.removeEnd(untyped.getClasspath(),"sql");
+                String cp = Strings.removeEnd(untyped.getClasspath(),".sql");
                 if((cp + "_" + getType().toLowerCase() + ".sql").equals(typed.getClasspath())) {
                     exists = true;
                     break;

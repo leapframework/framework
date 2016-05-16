@@ -16,25 +16,6 @@
 
 package leap.lang.resource;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.net.JarURLConnection;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
-
 import leap.lang.Args;
 import leap.lang.New;
 import leap.lang.Strings;
@@ -47,6 +28,21 @@ import leap.lang.path.AntPathMatcher;
 import leap.lang.path.PathMatcher;
 import leap.lang.path.Paths;
 import leap.lang.reflect.Reflection;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.net.JarURLConnection;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.*;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 /**
  * A {@link ResourceScanner} implementation that is able to resolve a specified resource location path into one
@@ -291,16 +287,16 @@ class DefaultResourceScanner implements ResourceScanner {
 			path = path.substring(1);
 		}
 		Enumeration<URL> resourceUrls = getClassLoader().getResources(path);
-		Set<Resource> result = new LinkedHashSet<Resource>(16);
+		Set<Resource> result = new LinkedHashSet<>(16);
 		while (resourceUrls.hasMoreElements()) {
 			URL url = resourceUrls.nextElement();
-			result.add(convertClassLoaderURL(url));
+			result.add(convertClassLoaderURL(url,location));
 		}
 		return result.toArray(new Resource[result.size()]);
 	}
 
-	protected Resource convertClassLoaderURL(URL url) {
-		return new UrlResource(url);
+	protected Resource convertClassLoaderURL(URL url, String classPathPrefix) {
+		return new UrlResource(url, classPathPrefix);
 	}
 	
 	protected String getResourceLocation(Resource resource) throws IOException{
