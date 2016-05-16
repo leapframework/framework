@@ -27,15 +27,25 @@ import java.util.Map;
  * A context object used in {@link AppConfigProcessor}.
  */
 public interface AppConfigContext extends PropertyAccessor {
-	
+
+    /**
+     * Returns current profile's name.
+     */
 	String getProfile();
-	
+
+    /**
+     * Returns true if the config property is overrided by default.
+     */
 	boolean isDefaultOverrided();
-	
-	Object getExternalContext();
-	
+
+    /**
+     * Returns the config extension or null if not exists.
+     */
 	<T> T getExtension(Class<T> type);
-	
+
+    /**
+     * Returns the config extension of creates a new one if not exists.
+     */
 	default <T> T getOrCreateExtension(Class<T> type) {
 		T e = getExtension(type);
 		if(null == e) {
@@ -44,20 +54,44 @@ public interface AppConfigContext extends PropertyAccessor {
 		}
 		return e;
 	}
-	
+
+    /**
+     * Sets the config extension.
+     */
 	<T> void setExtension(T extension);
-	
+
+    /**
+     * Sets the config extension.
+     */
 	<T> void setExtension(Class<T> type, T extension);
-	
+
+    /**
+     * Adds a managed resource.
+     */
 	void addResource(Resource r);
-	
+
+    /**
+     * Adds a managed resource set.
+     */
 	void addResources(ResourceSet rs);
-	
+
+    /**
+     * Returns true if the app already has a default configuration of data source.
+     */
 	boolean hasDefaultDataSourceConfig();
-	
+
+    /**
+     * Returns true if the app already has a named configuration of data source.
+     */
 	boolean hasDataSourceConfig(String name);
-	
+
+    /**
+     * Sets the configuration of data source.
+     */
 	void setDataSourceConfig(String name,DataSourceConfig conf);
-	
+
+    /**
+     * Returns all the data source configurations.
+     */
 	Map<String,DataSourceConfig> getDataSourceConfigs();
 }

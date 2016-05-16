@@ -446,7 +446,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	        
 	        this.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
         } catch (IOException e) {
-        	throw new AppConfigException("Unexpected IOException occured : " + e.getMessage(), e);
+        	throw new AppConfigException("Unexpected IOException : " + e.getMessage(), e);
         }
 		
 		//instrument classes.
@@ -495,7 +495,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		DefaultAppConfigLoader loader = new DefaultAppConfigLoader(externalContext,properties,dataSourceConfigs,propertyProcessor);
 		Resource[] appBaseConfigFiles = AppResources.get().searchClasspaths(BASE_CONFIG_LOCATIONS);
 		if(appBaseConfigFiles.length > 0) {
-			loader.loadBaseProperties(appBaseConfigFiles[0]);	
+			loader.loadBaseProperties(profile,appBaseConfigFiles[0]);
 		}
 		
 		//base package
