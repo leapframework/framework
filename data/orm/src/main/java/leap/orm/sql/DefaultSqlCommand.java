@@ -23,29 +23,35 @@ import leap.lang.Assert;
 import leap.lang.Chars;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 
 public class DefaultSqlCommand implements SqlCommand {
+
+    private static final Log log = LogFactory.get(DefaultSqlCommand.class);
 	
-	protected final Object 	    source;
-    protected final String      desc;
-	protected final String	    dbType;
-    protected final SqlLanguage lang;
-    protected final String      content;
+	protected final Object 	         source;
+    protected final String             desc;
+	protected final String	             dbType;
+    protected final SqlLanguage        lang;
+    protected final String             content;
+    protected final DefaultSqlIdentity identity;
 
     private boolean prepared;
 
 	protected SqlClause[] clauses;
 	protected SqlClause   queryClause;
 
-    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content) {
+    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, DefaultSqlIdentity identity) {
         this.source  = source;
         this.desc    = desc;
         this.dbType  = dbType;
         this.lang    = lang;
         this.content = content;
+        this.identity   = identity;
     }
 
     @Override
@@ -94,18 +100,26 @@ public class DefaultSqlCommand implements SqlCommand {
 
 	@Override
     public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
+        if(identity != null){
+            log.debug("sql identity:{}",identity.identity());
+        }
 		return doExecuteUpdate(context, params, null);
     }
 	
 	@Override
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
+        if(identity != null){
+            log.debug("sql identity:{}",identity.identity());
+        }
 	    return doExecuteUpdate(context, params, psHandler);
     }
 
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-
+        if(identity != null){
+            log.debug("sql identity:{}",identity.identity());
+        }
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -121,6 +135,9 @@ public class DefaultSqlCommand implements SqlCommand {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
+        if(identity != null){
+            log.debug("sql identity:{}",identity.identity());
+        }
         mustPrepare(context);
 
 		Assert.isTrue(null != queryClause,"This command is not a query, cannot execute count(*) query");
@@ -157,6 +174,9 @@ public class DefaultSqlCommand implements SqlCommand {
 	}
 	
 	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
+        if(identity != null){
+            log.debug("sql identity:{}",identity.identity());
+        }
         mustPrepare(context);
 
 		Assert.isTrue(null == queryClause,"This command is a query, cannot execute batch update");

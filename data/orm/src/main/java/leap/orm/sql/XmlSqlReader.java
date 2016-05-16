@@ -262,7 +262,7 @@ public class XmlSqlReader implements SqlReader {
 		}
 		
 		log.debug("SQL(s) : \n\n  {}\n",content);
-		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content);
+		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content, new DefaultSqlIdentity(key,name,entityName,entityClassName));
 		if(!Strings.isEmpty(key)){
 			metadata.addSqlCommand(key, command);
 		}
