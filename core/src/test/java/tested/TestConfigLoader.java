@@ -14,14 +14,26 @@
  * limitations under the License.
  */
 
-package leap.core;
+package tested;
 
-import leap.lang.resource.Resource;
+import leap.core.AppConfigContext;
+import leap.core.AppConfigLoader;
 
-public interface AppConfigReader {
+public class TestConfigLoader implements AppConfigLoader {
 
-    boolean readBase(AppConfigContext context, Resource resource);
+    protected String prop1;
 
-    boolean readFully(AppConfigContext context, Resource resource);
+    public String getProp1() {
+        return prop1;
+    }
+
+    public void setProp1(String prop1) {
+        this.prop1 = prop1;
+    }
+
+    @Override
+    public void loadConfig(AppConfigContext context) {
+        context.setProperty("testConfigLoader.prop1", prop1);
+    }
 
 }

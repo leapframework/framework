@@ -18,13 +18,17 @@ package leap.core;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.instrument.AppInstrumentation;
-import leap.core.sys.SysPermissionDefinition;
+import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.accessor.SystemPropertyAccessor;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -90,7 +94,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //Create loader for the configuration.
         Loader loader = createLoader(externalContext, initProperties, profile);
 
-        //Loading configs
+        //Load config
         DefaultAppConfig config = loader.load();
 
         //post loading.
@@ -122,25 +126,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         Properties props = System.getProperties();
         for(Object key : props.keySet()) {
             String name = key.toString();
-
-            //TODO : ignore unnecessary properties.
-
-            if(name.startsWith("sun.")){
-                continue;
-            }
-
-            if(name.startsWith("com.oracle.")){
-                continue;
-            }
-
-            if(name.startsWith("awt.")) {
-                continue;
-            }
-
-            if(name.startsWith("idea.")) {
-                continue;
-            }
-
             initProperties.put(name, System.getProperty(name));
         }
 
@@ -327,12 +312,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final DefaultAppConfig           config;
         final DefaultPlaceholderResolver placeholderResolver;
 
-        protected final Set<String>                                         additionalPackages = new LinkedHashSet<>();
-        protected final Map<String, String>                                 properties         = new LinkedHashMap<>();
-        protected final Map<String, List<String>>                           arrayProperties    = new LinkedHashMap<>();
-        protected final Set<Resource>                                       resources          = new HashSet<>();
-        protected final List<SysPermissionDefinition>                       permissions        = new ArrayList<>();
-        protected final Map<Class<?>, Map<String, SysPermissionDefinition>> typedPermissions   = new HashMap<>();
+        protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
+        protected final Map<String, String>                          properties         = new LinkedHashMap<>();
+        protected final Map<String, List<String>>                    arrayProperties    = new LinkedHashMap<>();
+        protected final Set<Resource>                                resources          = new HashSet<>();
+        protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
+        protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
+        protected final List<AppConfigLoaderDef>                      externalLoaders    = new ArrayList<>();
 
         Loader(Object externalContext, Map<String,String> initProperties, String profile) {
             this.externalContext = externalContext;
@@ -356,9 +342,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected DefaultAppConfig load() {
             init();
 
-            loadBaseProperties(new ConfigContext(this, false));
+            loadBase(new ConfigContext(this, false));
 
-            loadAllConfig(new ConfigContext(this, false));
+            loadDefault(new ConfigContext(this, false));
+
+            loadExternal(new ConfigContext(this, false));
+
+            complete();
 
             return config;
         }
@@ -371,7 +361,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             config.loadProperties(initProperties);
         }
 
-        protected void loadBaseProperties(ConfigContext context){
+        protected void loadBase(ConfigContext context){
             Resource[] appBaseConfigFiles = AppResources.get().searchClasspaths(BASE_CONFIG_LOCATIONS);
             if(appBaseConfigFiles.length > 0) {
                 parent.loadBaseConfig(context, appBaseConfigFiles);
@@ -410,12 +400,44 @@ public class DefaultAppConfigSource implements AppConfigSource {
             config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
         }
 
-        protected void loadAllConfig(ConfigContext context) {
+        protected void loadDefault(ConfigContext context) {
             Resource[] fmmResources = AppResources.getFMMClasspathResourcesForXml("config");
             Resource[] appResources = AppResources.getLocClasspathResources(config.getProfiled(APP_CONFIG_LOCATIONS));
-
             parent.loadFullConfig(context, Arrays2.concat(fmmResources, appResources));
+        }
 
+        protected void loadExternal(ConfigContext context) {
+
+            for(AppConfigLoaderDef def : externalLoaders) {
+                Class<?> cls = Classes.tryForName(def.getClassName());
+                if(null == cls) {
+                    throw new AppConfigException("The config loader class '" + def.getClassName() + "' not found, check your config");
+                }
+
+                if(!AppConfigLoader.class.isAssignableFrom(cls)) {
+                    throw new AppConfigException("The config loader class '" + def.getClassName() + "' must implements interface '" + AppConfigLoader.class.getName() + "'");
+                }
+
+                AppConfigLoader obj = (AppConfigLoader)Reflection.newInstance(cls);
+
+                BeanType bt = BeanType.of(cls);
+
+                for(Map.Entry<String,String> prop : def.getProperties().entrySet()) {
+                    String name  = prop.getKey();
+                    String value = placeholderResolver.resolveString(prop.getValue());
+
+                    if(!Strings.isEmpty(value)) {
+                        BeanProperty bp = bt.getProperty(name);
+                        bp.setValue(obj, Converts.convert(value, bp.getType(), bp.getGenericType()));
+                    }
+                }
+
+                log.debug("Load config by loader : {}", cls.getSimpleName());
+                obj.loadConfig(context);
+            }
+        }
+
+        protected void complete() {
             //properties
             config.loadProperties(this.properties);
             config.loadArrayProperties(this.arrayProperties);
@@ -459,16 +481,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
 
-        protected void addPermissions(List<SysPermissionDefinition> permissions,boolean override){
-            for(SysPermissionDefinition permission : permissions){
+        protected void addPermissions(List<SysPermissionDef> permissions, boolean override){
+            for(SysPermissionDef permission : permissions){
                 addPermission(permission, override);
             }
         }
 
-        protected void addPermission(SysPermissionDefinition permission,boolean override){
-            Map<String,SysPermissionDefinition> typesPermissionsMap = typedPermissions.get(permission.getPermType());
+        protected void addPermission(SysPermissionDef permission, boolean override){
+            Map<String,SysPermissionDef> typesPermissionsMap = typedPermissions.get(permission.getPermType());
 
-            SysPermissionDefinition exists = null;
+            SysPermissionDef exists = null;
 
             if(null == typesPermissionsMap){
                 typesPermissionsMap = new HashMap<>();
@@ -489,7 +511,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext extends MapPropertyAccessor implements AppConfigReaderContext {
+    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext {
 
         protected final Loader           loader;
         protected final DefaultAppConfig config;
@@ -511,7 +533,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public boolean isDefaultOverrided() {
+        public boolean isDefaultOverride() {
             return defaultOverrided;
         }
 
@@ -576,17 +598,17 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public List<SysPermissionDefinition> getPermissions() {
+        public List<SysPermissionDef> getPermissions() {
             return loader.permissions;
         }
 
         @Override
-        public void addPermission(SysPermissionDefinition p, boolean override) {
+        public void addPermission(SysPermissionDef p, boolean override) {
             loader.addPermission(p, override);
         }
 
         @Override
-        public void readImportedResource(Resource resource, boolean override) {
+        public void importResource(Resource resource, boolean override) {
             loadFullConfig(new ConfigContext(loader, override), resource);
         }
 
@@ -669,6 +691,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         @Override
         public Map<String, DataSourceConfig> getDataSourceConfigs() {
             return config.dataSourceConfigs;
+        }
+
+        @Override
+        public void addConfigLoader(AppConfigLoaderDef cl) {
+            loader.externalLoaders.add(cl);
         }
     }
 

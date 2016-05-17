@@ -18,9 +18,9 @@ package leap.lang.el;
 public interface ElEvalContext extends ElContext {
 	
 	/**
-	 * Returns the external context object or <code>null</code>
+	 * Returns the root object or <code>null</code>
 	 */
-	Object getExternalContext();
+	Object getRoot();
 	
 	/**
 	 * Returns the resolved variable or <code>null</code>.

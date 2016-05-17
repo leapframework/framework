@@ -13,15 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.core.config;
 
-package leap.core;
+import leap.core.junit.AppTestBase;
+import org.junit.Test;
 
-import leap.lang.resource.Resource;
+public class PlaceholderTest extends AppTestBase {
 
-public interface AppConfigReader {
-
-    boolean readBase(AppConfigContext context, Resource resource);
-
-    boolean readFully(AppConfigContext context, Resource resource);
+    @Test
+    public void testPlaceholder() {
+        assertEquals("${notExistProperty}", config.getProperty("testNotExistPlaceholder"));
+    }
 
 }

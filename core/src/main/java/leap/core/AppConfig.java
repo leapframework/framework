@@ -17,7 +17,7 @@ package leap.core;
 
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
-import leap.core.sys.SysPermissionDefinition;
+import leap.core.sys.SysPermissionDef;
 import leap.lang.Charsets;
 import leap.lang.Locales;
 import leap.lang.accessor.PropertyGetter;
@@ -239,5 +239,5 @@ public interface AppConfig extends PropertyGetter {
     /**
      * Returns all the sys permissions.
      */
-    List<SysPermissionDefinition> getPermissions();
+    List<SysPermissionDef> getPermissions();
 }

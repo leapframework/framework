@@ -16,12 +16,12 @@
 
 package leap.core;
 
-import leap.lang.resource.Resource;
+import java.util.Map;
 
-public interface AppConfigReader {
+public interface AppConfigLoaderDef {
 
-    boolean readBase(AppConfigContext context, Resource resource);
+    String getClassName();
 
-    boolean readFully(AppConfigContext context, Resource resource);
+    Map<String,String> getProperties();
 
 }

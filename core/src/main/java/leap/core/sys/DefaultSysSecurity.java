@@ -79,8 +79,8 @@ public class DefaultSysSecurity implements SysSecurity {
 		}
     }
 
-	protected void init(List<SysPermissionDefinition> permissionDefinitions){
-		for(SysPermissionDefinition pd : permissionDefinitions){
+	protected void init(List<SysPermissionDef> permissionDefinitions){
+		for(SysPermissionDef pd : permissionDefinitions){
 			
 			Permissions permissions = typedPermissions.get(pd.getPermType());
 			if(null == permissions){

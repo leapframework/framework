@@ -57,7 +57,7 @@ public class AstFunction extends AstInvocable {
 	    	
 	    	if(null == func){
     			if(null == prefix){
-	    			Object root = context.getExternalContext();
+	    			Object root = context.getRoot();
 	    			if(null != root){
 	    				ElMethod m = context.resolveMethod(root, root.getClass(), name, args);
 	    				if(null != m){

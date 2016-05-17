@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <property name="testIf.prop2.enabled" value="true"/>
+    <property name="testIf.prop3.enabled" value="0"/>
+
+    <config if="true">
+        <property name="testIf.prop1" value="ifVal1"/>
+    </config>
+
+    <config if="properties['testIf.prop2.enabled']">
+        <property name="testIf.prop2" value="ifVal2"/>
+    </config>
+
+    <config if="properties['testIf.prop3.enabled']">
+        <property name="testIf.prop3" value="ifVal3"/>
+    </config>
+
+    <config if-profile="production">
+    	<properties>
+    		<property name="testProfile.shouldNotExists" value="1"/>
+    	</properties>
+    </config>
+    
+    <config if-profile="development">
+    	<properties>
+    		<property name="testProfile.shouldBeExists" value="1"/>
+    	</properties>
+    </config>
+    
+</config>

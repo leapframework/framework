@@ -17,7 +17,7 @@ package leap.core;
 
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
-import leap.core.sys.SysPermissionDefinition;
+import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
@@ -59,17 +59,17 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	protected Locale						defaultLocale		= null;
 	protected Charset						defaultCharset      = null;
 	protected boolean						reloadEnabled		= false;
-	protected String						secret				= null;
-	protected PrivateKey                    privateKey          = null;
-	protected Map<Class<?>, Object>         extensions          = new HashMap<>();
-	protected Map<String,String>            properties          = new ConcurrentHashMap<>();
-	protected Map<String,String>            propertiesReadonly  = Collections.unmodifiableMap(properties);
-    protected Map<String,List<String>>      arrayProperties     = new ConcurrentHashMap<>();
-	protected List<SysPermissionDefinition> permissions         = new ArrayList<>();
-	protected List<SysPermissionDefinition> permissionsReadonly = Collections.unmodifiableList(permissions);
-	protected ResourceSet		            resources           = null;
-	protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
-	protected Map<String, DataSourceConfig> dataSourceConfigs   = new ConcurrentHashMap<>();
+	protected String                        secret                    = null;
+	protected PrivateKey                    privateKey                = null;
+	protected Map<Class<?>, Object>         extensions                = new HashMap<>();
+	protected Map<String,String>            properties                = new ConcurrentHashMap<>();
+	protected Map<String,String>            propertiesReadonly        = Collections.unmodifiableMap(properties);
+    protected Map<String,List<String>>      arrayProperties           = new ConcurrentHashMap<>();
+	protected List<SysPermissionDef>        permissions               = new ArrayList<>();
+	protected List<SysPermissionDef>        permissionsReadonly       = Collections.unmodifiableList(permissions);
+	protected ResourceSet                   resources                 = null;
+	protected DefaultPlaceholderResolver    placeholderResolver       = new DefaultPlaceholderResolver(this);
+	protected Map<String, DataSourceConfig> dataSourceConfigs         = new ConcurrentHashMap<>();
 	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
 
     public DefaultAppConfig(String profile) {
@@ -185,7 +185,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
-    public List<SysPermissionDefinition> getPermissions() {
+    public List<SysPermissionDef> getPermissions() {
 	    return permissionsReadonly;
     }
 

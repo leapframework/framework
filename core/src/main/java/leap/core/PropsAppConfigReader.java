@@ -28,7 +28,7 @@ import java.util.Properties;
 public class PropsAppConfigReader implements AppConfigReader {
 
     @Override
-    public boolean readBase(AppConfigReaderContext context, Resource resource) {
+    public boolean readBase(AppConfigContext context, Resource resource) {
         String filename = resource.getFilename();
 
         if(Strings.endsWithIgnoreCase(filename, ".properties") || Strings.endsWithIgnoreCase(filename,".properties.xml")) {
@@ -40,7 +40,7 @@ public class PropsAppConfigReader implements AppConfigReader {
     }
 
     @Override
-    public boolean readFully(AppConfigReaderContext context, Resource resource) {
+    public boolean readFully(AppConfigContext context, Resource resource) {
         String filename = resource.getFilename();
 
         if(Strings.endsWithIgnoreCase(filename, ".properties") || Strings.endsWithIgnoreCase(filename,".properties.xml")) {
@@ -51,7 +51,7 @@ public class PropsAppConfigReader implements AppConfigReader {
         return false;
     }
 
-    protected void readBase(AppConfigReaderContext context, Properties props) {
+    protected void readBase(AppConfigContext context, Properties props) {
         String basePackage = props.getProperty(AppConfig.INIT_PROPERTY_BASE_PACKAGE);
         if(!Strings.isEmpty(basePackage)) {
             context.setBasePackage(basePackage);
@@ -73,7 +73,7 @@ public class PropsAppConfigReader implements AppConfigReader {
         }
     }
 
-    protected void readFully(AppConfigReaderContext context, Properties props) {
+    protected void readFully(AppConfigContext context, Properties props) {
         props.forEach((k,v) -> context.getProperties().put((String)k, (String)v));
     }
 

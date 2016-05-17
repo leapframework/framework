@@ -1121,11 +1121,11 @@ class XmlBeanDefinitionLoader {
 			try {
 	            Expression expression = SPEL.createExpression(parseContext,expressionText);
 
-	            Map<String, Object> vars = new HashMap<String, Object>();
+	            Map<String, Object> vars = new HashMap<>();
 	            vars.put("config",container.getAppConfig());
 	            vars.put("debug", container.getAppConfig().isDebug());
 	            
-	            return EL.test(expression, vars);
+	            return EL.test(expression.getValue(vars), true);
             } catch (Exception e) {
             	throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
             }

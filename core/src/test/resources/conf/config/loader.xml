@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-    <import resource="not_exists.xml" check-existence="false"/>
-    
+    <loader class="tested.TestConfigLoader">
+        <property name="prop1" value="value1"/>
+    </loader>
+
 </config>

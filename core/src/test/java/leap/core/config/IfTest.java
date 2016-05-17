@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.core.config;
 
-package leap.core;
+import leap.core.junit.AppTestBase;
+import org.junit.Test;
 
-import leap.lang.resource.Resource;
+public class IfTest extends AppTestBase {
 
-public interface AppConfigReader {
+    @Test
+    public void testIfExpression() {
+        assertEquals("ifVal1", config.getProperty("testIf.prop1"));
+        assertEquals("ifVal2", config.getProperty("testIf.prop2"));
+        assertNull(config.getProperty("testIf.prop3"));
+    }
 
-    boolean readBase(AppConfigContext context, Resource resource);
-
-    boolean readFully(AppConfigContext context, Resource resource);
+    @Test
+    public void testIfProfile(){
+        assertEquals("1", config.getProperty("testProfile.shouldBeExists"));
+        assertNull(config.getProperty("testProfile.shouldNotExists"));
+    }
 
 }

@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config;
 
-import leap.lang.resource.Resource;
+import leap.core.junit.AppTestBase;
+import org.junit.Test;
 
-public interface AppConfigReader {
+public class ProcessorTest extends AppTestBase {
 
-    boolean readBase(AppConfigContext context, Resource resource);
-
-    boolean readFully(AppConfigContext context, Resource resource);
+    @Test
+    public void testDupProcessor() {
+        assertEquals("abcdabcd",config.getProperty("testProcessor.prop1"));
+    }
 
 }
