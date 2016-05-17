@@ -15,13 +15,13 @@
  */
 package leap.lang.text;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.Strings;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyGetter;
+
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 
 public class DefaultPlaceholderResolver implements PlaceholderResolver {
@@ -88,16 +88,12 @@ public class DefaultPlaceholderResolver implements PlaceholderResolver {
 			return value;
 		}
 		
-		if(value.equals("${notExistProeprty}")) {
-		    System.out.println();
-		}
-		
 		int startIndex = value.indexOf(placeholderPrefix);
 		if(startIndex < 0){
 			return value;
 		}
 		
-		return parseStringValue(value, new HashSet<String>(), startIndex);
+		return parseStringValue(value, new HashSet<>(), startIndex);
 	}
 	
 	@Override

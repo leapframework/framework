@@ -193,6 +193,16 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="config-loader">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="class" type="xsd:string" use="required"/>
+            <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="permissions">
         <xsd:complexType>
             <xsd:sequence>

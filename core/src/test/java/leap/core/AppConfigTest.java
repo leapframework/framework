@@ -16,8 +16,6 @@
 package leap.core;
 
 import leap.core.junit.AppTestBase;
-import leap.lang.resource.Resources;
-
 import org.junit.Test;
 
 public class AppConfigTest extends AppTestBase {
@@ -57,17 +55,18 @@ public class AppConfigTest extends AppTestBase {
 		assertEquals("1", config.getProperty("testProfile.shouldBeExists"));
 		assertNull(config.getProperty("testProfile.shouldNotExists"));
 	}
-	
+
+    /*
 	@Test
 	public void testImportNotCheckExistence(){
-		DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
+		DefaultAppConfigSource loader = new DefaultAppConfigSource();
 		loader.load(Resources.getResource("classpath:/test/notcheck_existence.xml"));
 	}
 	
 	@Test
 	public void testImportCheckExistence(){
 		try {
-	        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
+	        DefaultAppConfigSource loader = new DefaultAppConfigSource();
 	        loader.load(Resources.getResource("classpath:/test/check_existence.xml"));
 	        fail("should throw exception");
         } catch (AppConfigException e) {
@@ -78,7 +77,7 @@ public class AppConfigTest extends AppTestBase {
 	@Test
 	public void testOverridePropertyCheck(){
 		try {
-	        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
+	        DefaultAppConfigSource loader = new DefaultAppConfigSource();
 	        loader.load(Resources.getResource("classpath:/test/not_override.xml"));
 	        fail("should throw exception");
         } catch (AppConfigException e) {
@@ -88,11 +87,12 @@ public class AppConfigTest extends AppTestBase {
 	
 	@Test
 	public void testOverrideProperty(){
-        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
+        DefaultAppConfigSource loader = new DefaultAppConfigSource();
         loader.load(Resources.getResource("classpath:/test/override.xml"));
         assertEquals("v1_", loader.getProperties().get("p1"));
 	}
-	
+	*/
+
 	@Test
 	public void testPropertiesPrefix() {
 		AppConfig config = AppContext.config();
@@ -109,4 +109,10 @@ public class AppConfigTest extends AppTestBase {
 	public void testGetPrivateKey() {
 	    assertNotNull(config.ensureGetPrivateKey());
 	}
+
+    @Test
+    public void testLoadFromConfigProperties() {
+        assertEquals("a", config.getProperty("props.prop1"));
+        assertEquals("b", config.getProperty("props.prop2"));
+    }
 }

@@ -39,6 +39,11 @@ public interface AppConfigContext extends PropertyAccessor {
 	boolean isDefaultOverrided();
 
     /**
+     * Puts all the config properties.
+     */
+    void putProperties(Map<String,String> props);
+
+    /**
      * Returns the config extension or null if not exists.
      */
 	<T> T getExtension(Class<T> type);

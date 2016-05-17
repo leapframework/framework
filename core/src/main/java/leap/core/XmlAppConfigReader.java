@@ -176,7 +176,6 @@ public class XmlAppConfigReader implements AppConfigReader {
         }
     }
 
-
     private void readConfig(AppConfigReaderContext context,Resource resource, XmlReader reader) {
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(CONFIG_ELEMENT);
@@ -193,41 +192,6 @@ public class XmlAppConfigReader implements AppConfigReader {
             if(reader.isStartElement(CONFIG_ELEMENT)){
                 readConfig(context, resource, reader);
                 reader.next();
-                continue;
-            }
-
-            if(reader.isStartElement(DEBUG_ELEMENT)){
-                String debugValue = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(debugValue)){
-                    context.setDebug(Converts.toBoolean(debugValue));
-                }
-                continue;
-            }
-
-            if(reader.isStartElement(BASE_PACKAGE_ELEMENT)){
-                context.setBasePackage(reader.resolveElementTextAndEnd());
-                continue;
-            }
-
-            if(reader.isStartElement(DEFAULT_LOCALE)){
-                if(null != context.getDefaultLocale()){
-                    throw new AppConfigException("default-locale already defined as '" + context.getDefaultLocale().toString() + "', duplicated config in xml : " + reader.getSource());
-                }
-                String defaultLocaleString = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(defaultLocaleString)){
-                    context.setDefaultLocale(Locales.forName(defaultLocaleString));
-                }
-                continue;
-            }
-
-            if(reader.isStartElement(DEFAULT_ENCODING)){
-                if(null != context.getDefaultLocale()){
-                    throw new AppConfigException("default-charset already defined as '" + context.getDefaultCharset().name() + "', duplicated config in xml : " + reader.getSource());
-                }
-                String defaultEncodingName = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(defaultEncodingName)){
-                    context.setDefaultCharset(Charsets.forName(defaultEncodingName));
-                }
                 continue;
             }
 

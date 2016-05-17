@@ -17,6 +17,7 @@ package leap.core;
 
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
+import leap.core.sys.SysPermissionDefinition;
 import leap.lang.Charsets;
 import leap.lang.Locales;
 import leap.lang.accessor.PropertyGetter;
@@ -25,6 +26,7 @@ import leap.lang.text.PlaceholderResolver;
 
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -233,4 +235,9 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns a {@link PlaceholderResolver} to resolve string value.
 	 */
 	PlaceholderResolver getPlaceholderResolver();
+
+    /**
+     * Returns all the sys permissions.
+     */
+    List<SysPermissionDefinition> getPermissions();
 }

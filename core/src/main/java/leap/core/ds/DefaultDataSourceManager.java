@@ -15,15 +15,6 @@
  */
 package leap.core.ds;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.sql.DataSource;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
@@ -33,6 +24,14 @@ import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean {
 	
@@ -218,7 +217,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     public void postCreate(BeanFactory factory) throws Throwable {
 		this.allDataSources = new ConcurrentHashMap<>(factory.getNamedBeans(DataSource.class));
 		
-		//Create datasources from config.
+		//Create datasource(s) from config.
 		createDataSourcesFromConfig(factory, allDataSources);
 		
 		if(null == this.defaultDataSource) {
