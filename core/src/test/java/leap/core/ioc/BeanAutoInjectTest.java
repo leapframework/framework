@@ -20,6 +20,7 @@ import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.CoreTestCase;
 import leap.core.annotation.Inject;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import tested.beans.RefBean;
 import tested.beans.TAutoInjectBean;
@@ -35,6 +36,11 @@ public class BeanAutoInjectTest extends CoreTestCase {
     protected @Inject(name = "autoInjectRefAttr")    RefBean         autoInjectAttr;
     protected @Inject(name = "refBean")              RefBean         refBean;
 
+    @BeforeClass
+    public static void checkStaticInjection() {
+        assertNotNull(factory);
+    }
+
     @Test
     public void testTestCaseInject() {
         assertNotNull(config);
@@ -49,7 +55,6 @@ public class BeanAutoInjectTest extends CoreTestCase {
     @Test
     public void testInjectStatusField() {
         assertSame(config, autoInjectBean.config);
-        assertNotNull(factory);
     }
 
     @Test

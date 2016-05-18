@@ -171,7 +171,37 @@ public class BeanContainer implements BeanFactory {
 		
 	    return bean;
     }
-	
+
+    @Override
+    public void injectStatic(Class<?> cls) throws BeanException {
+        BeanDefinitionBase bd = createBeanDefinition(cls);
+
+        ReflectClass rc = ReflectClass.of(cls);
+
+        BeanFactory factory = null != beanFactory ? beanFactory : this;
+
+        for (ReflectField rf : rc.getFields()) {
+            if (rf.isStatic() && rf.isAnnotationPresent(Inject.class)) {
+                try {
+                    //skip when bean value already set.
+                    if (null != rf.getValue(null)) {
+                        continue;
+                    }
+
+                    Object injectedBean = resolveInjectValue(factory, bd, rf.getName(), rf.getType(), rf.getGenericType(), rf.getAnnotations());
+
+                    if (null != injectedBean) {
+                        rf.setValue(null, injectedBean);
+                    }
+                } catch (Exception e) {
+                    log.error("Error injecting static field '{}' in class '{}'", rf.getName(), cls.getName(), e);
+                    throw e;
+                }
+            }
+        }
+
+    }
+
     protected void validateFields(Object bean) {
         validateFields(null, bean);
     }
