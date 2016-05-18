@@ -15,24 +15,16 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.*;
+
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import leap.lang.Arrays2;
-import leap.lang.Classes;
-import leap.lang.Named;
-import leap.lang.Predicates;
-import leap.lang.Strings;
 
 public class ReflectClass implements Named {
 	
@@ -156,8 +148,8 @@ public class ReflectClass implements Named {
 		return constructors;
 	}
 	
-	public ReflectConstructor getConstructor(){
-		return getConstructor((Class<?>[])null);
+	public ReflectConstructor getDefaultConstructor(){
+		return defaultConstructor;
 	}
 	
 	public ReflectConstructor getConstructor(Class<?>... parameterTypes) {

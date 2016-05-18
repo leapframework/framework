@@ -1520,31 +1520,42 @@ public class BeanContainer implements BeanFactory {
 		List<ArgumentDefinition> constructorArguments = bd.getConstructorArguments();
 		if(constructorArguments.isEmpty()){
             ReflectClass rc = ReflectClass.of(beanClass);
-            if(rc.hasDefaultConstructor()) {
-                bean = rc.newInstance();
-            }else{
-                if(rc.getConstructors().length == 1) {
-                    ReflectConstructor c = rc.getConstructors()[0];
-                    Object[] args = new Object[c.getParameters().length];
 
-                    for(int i=0;i<args.length;i++) {
-                        ReflectParameter p = c.getParameters()[i];
-
-                        if(p.isAnnotationPresent(Inject.class)) {
-                            args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
-                            continue;
-                        }
-
-                        ConfigProperty a = p.getAnnotation(ConfigProperty.class);
-                        if(null != a) {
-                            args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
-                            continue;
-                        }
-                    }
-                    return c.newInstance(args);
-                }else{
-                    throw new BeanCreationException("Cannot create bean without default constructor, check the bean : " + bd);
+            ReflectConstructor dc = null;
+            for(ReflectConstructor c : rc.getConstructors()) {
+                if(c.getReflectedConstructor().isAnnotationPresent(DefaultConstructor.class)) {
+                    dc = c;
+                    break;
                 }
+            }
+            if(null == dc) {
+                if(rc.hasDefaultConstructor()) {
+                    dc = rc.getDefaultConstructor();
+                }else if(rc.getConstructors().length == 1) {
+                    dc = rc.getConstructors()[0];
+                }
+            }
+
+            if(null != dc) {
+                Object[] args = new Object[dc.getParameters().length];
+
+                for(int i=0;i<args.length;i++) {
+                    ReflectParameter p = dc.getParameters()[i];
+
+                    if(p.isAnnotationPresent(Inject.class)) {
+                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
+                        continue;
+                    }
+
+                    ConfigProperty a = p.getAnnotation(ConfigProperty.class);
+                    if(null != a) {
+                        args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
+                        continue;
+                    }
+                }
+                return dc.newInstance(args);
+            }else{
+                throw new BeanCreationException("Cannot create bean without default constructor, check the bean : " + bd);
             }
 		}else{
 			bean = Reflection.newInstance(bd.getConstructor(),doResolveArgs(bd, constructorArguments));
