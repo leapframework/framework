@@ -27,9 +27,11 @@ public class BeanIfTest extends CoreTestCase {
         assertNotNull(beanFactory.tryGetBean("testIfBeanTrue1"));
         assertNotNull(beanFactory.tryGetBean("testIfBeanTrue2"));
         assertNotNull(beanFactory.tryGetBean("testIfBeanTrue3"));
+        assertNotNull(beanFactory.tryGetBean("testIfBeanTrue4"));
 
         assertNull(beanFactory.tryGetBean("testIfBeanFalse1"));
         assertNull(beanFactory.tryGetBean("testIfBeanFalse2"));
+        assertNull(beanFactory.tryGetBean("testIfBeanFalse3"));
     }
 
     @Test

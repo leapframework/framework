@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
+    <!-- for bean's if-->
+    <property name="testIfBeanTrue4.enabled"  value="true"/>
+    <property name="testIfBeanFalse3.enabled" value="0"/>
+
+    <!-- for config's if -->
     <property name="testIf.prop2.enabled" value="true"/>
     <property name="testIf.prop3.enabled" value="0"/>
 
