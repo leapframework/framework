@@ -15,6 +15,8 @@
  */
 package leap.lang.logging;
 
+import leap.lang.Classes;
+
 final class SlfLog implements Log {
 	
 	private final org.slf4j.Logger logger;
@@ -61,7 +63,7 @@ final class SlfLog implements Log {
 	
 	public void trace(String msg, Throwable throwable) {
 		if(isTraceEnabled()){
-			logger.trace(msg,throwable);	
+			logger.trace(msg,throwable);
 		}
     }
 	
@@ -188,4 +190,15 @@ final class SlfLog implements Log {
 			logger.info("null input in logging");	
 		}
 	}
+
+    static void init() {
+        if(null != Classes.tryForName("ch.qos.logback.classic.LoggerContext")) {
+            initLogback();
+        }
+    }
+
+    private static void initLogback() {
+        ch.qos.logback.classic.LoggerContext lc = (ch.qos.logback.classic.LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
+        lc.getFrameworkPackages().add(Classes.getPackageName(LogFactory.class));
+    }
 }
