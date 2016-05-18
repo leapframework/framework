@@ -15,23 +15,14 @@
  */
 package leap.core.ds;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Properties;
-import java.util.Set;
-
-import leap.lang.Args;
-import leap.lang.Classes;
-import leap.lang.Enums;
-import leap.lang.Maps;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.extension.ExProperties;
 import leap.lang.jdbc.TransactionIsolation;
+
+import java.util.*;
+import java.util.Map.Entry;
 
 public class DataSourceConfig {
 	//DataSource class name
@@ -139,6 +130,12 @@ public class DataSourceConfig {
 	    
 	    this.allMap              		 = null == properties ? Collections.EMPTY_MAP : Collections.unmodifiableMap(properties);
 	    this.extMap	   			 	     = extraceExtProperties(properties);
+    }
+
+    public boolean isValid() {
+        return  !Strings.isEmpty(this.jdbcUrl) ||
+                !Strings.isEmpty(this.driverClassName) ||
+                !Strings.isEmpty(this.dataSourceJndiName);
     }
 	
 	public boolean isDefault() {

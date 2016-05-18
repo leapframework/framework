@@ -297,7 +297,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             if(!dsMap.isEmpty()) {
                 for(Map.Entry<String, DataSourceConfig.Builder> entry : dsMap.entrySet()) {
-                    dataSourceConfigs.put(entry.getKey(), entry.getValue().build());
+                    DataSourceConfig c = entry.getValue().build();
+
+                    if(c.isValid()) {
+                        dataSourceConfigs.put(entry.getKey(), c);
+                    }
                 }
             }
         }
