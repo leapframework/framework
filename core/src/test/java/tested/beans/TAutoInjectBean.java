@@ -15,13 +15,16 @@
  */
 package tested.beans;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.lang.Lazy;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class TAutoInjectBean {
+
+    public static @Inject AppConfig config;
 
 	public @Inject Lazy<TPrimaryBean1>       lazyPrimaryBean;
 	public @Inject Lazy<List<TPrimaryBean1>> lazyPrimaryBeans;

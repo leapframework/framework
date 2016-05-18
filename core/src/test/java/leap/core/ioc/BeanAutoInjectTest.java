@@ -17,6 +17,7 @@
 package leap.core.ioc;
 
 import leap.core.AppConfig;
+import leap.core.BeanFactory;
 import leap.core.CoreTestCase;
 import leap.core.annotation.Inject;
 import org.junit.Test;
@@ -25,11 +26,14 @@ import tested.beans.TAutoInjectBean;
 
 public class BeanAutoInjectTest extends CoreTestCase {
 
+    protected static @Inject BeanFactory factory;
+
     protected @Inject AppConfig config;
 
-    protected @Inject(name = "autoInjectRefElement") RefBean autoInjectElement;
-    protected @Inject(name = "autoInjectRefAttr") RefBean autoInjectAttr;
-    protected @Inject(name = "refBean") RefBean refBean;
+    protected @Inject                                TAutoInjectBean autoInjectBean;
+    protected @Inject(name = "autoInjectRefElement") RefBean         autoInjectElement;
+    protected @Inject(name = "autoInjectRefAttr")    RefBean         autoInjectAttr;
+    protected @Inject(name = "refBean")              RefBean         refBean;
 
     @Test
     public void testTestCaseInject() {
@@ -38,10 +42,16 @@ public class BeanAutoInjectTest extends CoreTestCase {
 
     @Test
     public void testInjectPrivateField() {
-        TAutoInjectBean bean = factory.getBean(TAutoInjectBean.class);
-        assertNotNull(bean.nonGetterGetPrivateInjectPrimaryBean());
-        assertNull(bean.nonGetterGetNotInjectPrimaryBean());
+        assertNotNull(autoInjectBean.nonGetterGetPrivateInjectPrimaryBean());
+        assertNull(autoInjectBean.nonGetterGetNotInjectPrimaryBean());
     }
+
+    @Test
+    public void testInjectStatusField() {
+        assertSame(config, autoInjectBean.config);
+        assertNotNull(factory);
+    }
+
     @Test
     public void testXMLRefWithTypeAndName(){
         assertNotNull(autoInjectElement);
