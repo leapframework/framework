@@ -21,8 +21,13 @@ import org.junit.Test;
 public class LoaderTest extends AppTestBase {
 
     @Test
-    public void testLoaderProperties() {
+    public void testSimpleLoaderProperties() {
         assertEquals("value1",config.getProperty("testConfigLoader.prop1"));
+    }
+
+    @Test
+    public void testDbLoaderProperties() {
+        assertEquals("db.val1",config.getProperty("db.key1"));
     }
 
 }

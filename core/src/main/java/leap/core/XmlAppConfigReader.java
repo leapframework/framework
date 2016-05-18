@@ -486,7 +486,15 @@ public class XmlAppConfigReader implements AppConfigReader {
             if(reader.isStartElement(PROPERTY_ELEMENT)){
                 String  name  = reader.getAttribute(NAME_ATTRIBUTE);
                 String  value = reader.getAttribute(VALUE_ATTRIBUTE);
+
+                if(Strings.isEmpty(value)) {
+                    value = reader.getElementTextAndEnd();
+                }else{
+                    reader.nextToEndElement(PROPERTY_ELEMENT);
+                }
+
                 def.getProperties().put(name, value);
+
                 continue;
             }
         }
