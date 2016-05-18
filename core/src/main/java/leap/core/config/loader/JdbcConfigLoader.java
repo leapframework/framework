@@ -32,17 +32,11 @@ public class JdbcConfigLoader implements AppConfigLoader {
 
     private static final Log log = LogFactory.get(JdbcConfigLoader.class);
 
-    public static final String DEFAULT_KEY_COLUMN   = "key";
-    public static final String DEFAULT_VALUE_COLUMN = "value";
-
     protected @NotEmpty String driverClassName;
     protected @NotEmpty String jdbcUrl;
     protected @NotEmpty String username;
     protected @NotEmpty String password;
     protected @NotEmpty String sql;
-
-    protected @NotEmpty String keyColumn   = DEFAULT_KEY_COLUMN;
-    protected @NotEmpty String valueColumn = DEFAULT_VALUE_COLUMN;
 
     @Override
     public void loadConfig(AppConfigContext context) {
@@ -65,8 +59,8 @@ public class JdbcConfigLoader implements AppConfigLoader {
                 int count = 0;
 
                 while (rs.next()) {
-                    String key   = rs.getString(keyColumn);
-                    String value = rs.getString(valueColumn);
+                    String key   = rs.getString(1);
+                    String value = rs.getString(2);
                     context.setProperty(key, value);
 
                     count++;
@@ -99,13 +93,5 @@ public class JdbcConfigLoader implements AppConfigLoader {
 
     public void setSql(String sql) {
         this.sql = sql;
-    }
-
-    public void setKeyColumn(String keyColumn) {
-        this.keyColumn = keyColumn;
-    }
-
-    public void setValueColumn(String valueColumn) {
-        this.valueColumn = valueColumn;
     }
 }
