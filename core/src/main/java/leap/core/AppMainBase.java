@@ -17,11 +17,15 @@ package leap.core;
 
 public abstract class AppMainBase {
 	
-	protected static final AppContext context;
+	protected static final AppContext  context;
+    protected static final AppConfig   config;
+    protected static final BeanFactory factory;
 	
 	static {
 		AppContext.initStandalone();
 		context = AppContext.current();
+        config  = context.getConfig();
+        factory = context.getBeanFactory();
 	}
 
 }
