@@ -151,16 +151,62 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns the configured property value as the given type, or returns the default value if empty.
 	 */
 	<T> T getProperty(String name,Class<T> type,T defaultValue);
+
+    /**
+     * Returns the property value as {@link Boolean} type.
+     */
+    default boolean getBooleanProperty(String name) {
+        return getBooleanProperty(name, false);
+    }
 	
 	/**
 	 * Returns the property value as {@link Boolean} type.
 	 */
-	boolean getBooleanProperty(String name,boolean defaultValue);
+	default boolean getBooleanProperty(String name,boolean defaultValue) {
+        return getProperty(name, Boolean.class, defaultValue);
+    }
+
+    /**
+     * Returns the property value as {@link Integer} type.
+     */
+    default int getIntProperty(String name) {
+        return getIntProperty(name, 0);
+    }
 	
 	/**
-	 * Returns the property value as {@link Integer} type.hj
+	 * Returns the property value as {@link Integer} type.
 	 */
-	int getIntProperty(String name,int defaultValue);
+	default int getIntProperty(String name,int defaultValue) {
+        return getProperty(name, Integer.class, defaultValue);
+    }
+
+    /**
+     * Returns the property value as {@link Long} type.
+     */
+    default long getLongProperty(String name) {
+        return getLongProperty(name, 0L);
+    }
+
+    /**
+     * Returns the property value as {@link Long} type.
+     */
+    default long getLongProperty(String name, long defaultValue) {
+        return getProperty(name, Long.class, defaultValue);
+    }
+
+    /**
+     * Returns the property value as {@link Double} type.
+     */
+    default double getDoubleProperty(String name) {
+        return getDoubleProperty(name, 0.0d);
+    }
+
+    /**
+     * Returns the property value as {@link Double} type.
+     */
+    default double getDoubleProperty(String name, double defaultValue) {
+        return getProperty(name, Double.class, defaultValue);
+    }
 
     /**
      * An array property is ends with chars <code>[]</code>.

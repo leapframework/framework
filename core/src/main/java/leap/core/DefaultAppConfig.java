@@ -225,16 +225,6 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	    return Strings.isEmpty(v) ? defaultValue : Converts.convert(v, type);
     }
 
-	@Override
-    public boolean getBooleanProperty(String name, boolean defaultValue) {
-	    return Maps.getBoolean(properties, name, defaultValue);
-    }
-
-	@Override
-    public int getIntProperty(String name, int defaultValue) {
-	    return Maps.getInteger(properties, name, defaultValue);
-    }
-
     @Override
     public String[] getArrayProperty(String name) {
         List<String> values = arrayProperties.get(name);
