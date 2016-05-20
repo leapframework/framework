@@ -15,11 +15,11 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.Strings;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-
-import leap.lang.Strings;
 
 public class ReflectConstructor extends ReflectMember {
 
@@ -58,7 +58,7 @@ public class ReflectConstructor extends ReflectMember {
         	}
         	
         	throw new ReflectException(Strings.format(
-        			"Error newInstance in constructor '{0}'({1})", getName(), s.toString()),e);
+        			"Error newInstance in constructor '{0}({1})'", getDeclaringClass().getSimpleName(), s.toString()),e);
         }
 	}
 	

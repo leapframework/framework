@@ -194,7 +194,7 @@ public class BeanContainer implements BeanFactory {
                         rf.setValue(null, injectedBean);
                     }
                 } catch (Exception e) {
-                    log.error("Error injecting static field '{}' in class '{}'", rf.getName(), cls.getName(), e);
+                    log.error("Error injecting static field '{}' in class '{}' : {}", rf.getName(), cls.getName(), e.getMessage());
                     throw e;
                 }
             }
@@ -1347,7 +1347,7 @@ public class BeanContainer implements BeanFactory {
                         bp.setValue(bean, injectedBean);
                     } 
                 } catch (Exception e) {
-                    log.error("Error injecting property '{}' in bean '{}'", bp.getName(), bd, e);
+                    log.error("Error injecting property '{}' in bean '{}' : {}", bp.getName(), bd, e.getMessage());
                     throw e;
                 }
             }
@@ -1367,7 +1367,7 @@ public class BeanContainer implements BeanFactory {
                         rf.setValue(bean, injectedBean);
                     }
                 } catch (Exception e) {
-                    log.error("Error injecting field '{}' in bean '{}'", rf.getName(), bd, e);
+                    log.error("Error injecting field '{}' in bean '{}' : {}", rf.getName(), bd, e.getMessage());
                     throw e;
                 }
             }
