@@ -519,16 +519,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected final Loader           loader;
         protected final DefaultAppConfig config;
-        protected final boolean          defaultOverrided;
+        protected final boolean          defaultOverride;
 
         protected boolean     hasDefaultDataSource = false;
         protected Set<String> resources            = new HashSet<>();
 
-        ConfigContext(Loader loader, boolean defaultOverried){
+        ConfigContext(Loader loader, boolean defaultOverride){
             super(loader.properties);
             this.loader = loader;
             this.config = loader.config;
-            this.defaultOverrided = defaultOverried;
+            this.defaultOverride = defaultOverride;
         }
 
         @Override
@@ -538,7 +538,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         @Override
         public boolean isDefaultOverride() {
-            return defaultOverrided;
+            return defaultOverride;
         }
 
         @Override

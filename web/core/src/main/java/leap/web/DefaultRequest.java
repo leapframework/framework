@@ -15,32 +15,12 @@
  */
 package leap.web;
 
-import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
-
 import leap.core.AppContext;
 import leap.core.AppException;
 import leap.core.Session;
 import leap.core.i18n.MessageSource;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
-import leap.web.assets.AssetSource;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Exceptions;
@@ -54,10 +34,23 @@ import leap.lang.http.MimeTypes;
 import leap.lang.http.QueryStringParser;
 import leap.lang.tostring.ToStringBuilder;
 import leap.web.action.ActionContext;
+import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
 import leap.web.format.FormatManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.Map.Entry;
 
 public class DefaultRequest extends Request {
 
@@ -65,11 +58,11 @@ public class DefaultRequest extends Request {
     protected final WebConfig      config;
     protected final AppHandler     handler;
     protected final Response       response;
-    protected final String         overridedMethod;
+    protected final String         overrideMethod;
     protected final String         method;
     protected final String         path;
-    protected final Params         params = new SimpleParams();
     protected final RequestWrapper req;
+    protected final Params         params = new SimpleParams();
 
     private String                     lowercaseRequestPath;
     private String                     serverUrl;
@@ -106,8 +99,8 @@ public class DefaultRequest extends Request {
 		this.handler		 = handler;
 		this.response		 = response;
 		this.req             = servletRequest;
-		this.overridedMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
-		this.method			 = Strings.upperCase(Strings.isEmpty(overridedMethod) ? req.getMethod() : overridedMethod);
+		this.overrideMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+		this.method			 = Strings.upperCase(Strings.isEmpty(overrideMethod) ? req.getMethod() : overrideMethod);
 		this.path    		 = extractRequestPath();
 		this.locale          = req.getLocale();
 		this.resolveServicePath(path);
@@ -373,8 +366,8 @@ public class DefaultRequest extends Request {
     }
 
 	@Override
-    public String getOverridedMethod() {
-	    return overridedMethod;
+    public String getOverrideMethod() {
+	    return overrideMethod;
     }
 
 	@Override

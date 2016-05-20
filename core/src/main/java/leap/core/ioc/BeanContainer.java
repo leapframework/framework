@@ -1999,7 +1999,7 @@ public class BeanContainer implements BeanFactory {
                 String key = beanType.getName() + "$" + def.getName();
                 if(!def.isOverride()) {
                     BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
-                    if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverrided()){
+                    if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
                         throw new BeanDefinitionException("Found duplicated bean name '" + bd.getName() + 
                                                           "' for type '" + beanType.getName() + 
                                                           "' in resource : " + bd.getSource() + " with exists bean " + existsBeanDefinition);
@@ -2012,7 +2012,7 @@ public class BeanContainer implements BeanFactory {
             if(def.isPrimary()){
                 if(!def.isOverride()) {
                     BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
-                    if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverrided()){
+                    if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
                         throw new BeanDefinitionException("Found duplicated primary bean " + bd + 
                                                           " for type '" + beanType.getName() + 
                                                           "' with exists bean " + existsBeanDefinition.getSource());
