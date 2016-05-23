@@ -15,11 +15,6 @@
  */
 package leap.orm.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.annotation.Internal;
 import leap.lang.beans.BeanType;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
@@ -30,11 +25,16 @@ import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.validation.FieldValidator;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 @Internal
 public class ModelRegistry {
-	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<OrmContext>();
-	private static final Map<String, ModelInfo>        modelInfos	   = new HashMap<String, ModelRegistry.ModelInfo>();
-	private static final Map<String, ModelContext>     modelContexts   = new HashMap<String, ModelRegistry.ModelContext>();
+	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
+	private static final Map<String, ModelInfo>        modelInfos	   = new HashMap<>();
+	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
 	
 	public static OrmContext getThreadLocalContext(){
 		return localOrmContext.get();

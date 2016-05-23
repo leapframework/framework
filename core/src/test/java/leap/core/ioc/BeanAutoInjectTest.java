@@ -53,6 +53,11 @@ public class BeanAutoInjectTest extends CoreTestCase {
     }
 
     @Test
+    public void testInjectNotWritableProperty() {
+        assertNotNull(autoInjectBean.getPrimaryBean1());
+    }
+
+    @Test
     public void testInjectStatusField() {
         assertSame(config, autoInjectBean.config);
     }

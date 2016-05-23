@@ -9,6 +9,9 @@
     
     <!-- factory -->
     <bean type="leap.orm.OrmFactory" class="leap.orm.DefaultOrmFactory" primary="true"/>
+
+    <!-- injector -->
+    <bean type="leap.core.ioc.BeanInjector" class="leap.orm.dao.DaoCommandInjector"/>
     
     <!-- domains -->
     <bean type="leap.orm.domain.Domains"       class="leap.orm.domain.DefaultDomains" primary="true"/>
@@ -91,4 +94,5 @@
 
     <!-- sharding -->
     <bean type="leap.orm.sharding.ShardingFactory" class="leap.orm.sharding.DefaultShardingFactory" primary="true"/>
+
 </beans>

@@ -20,6 +20,7 @@ import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.db.Db;
 import leap.lang.Sourced;
+import leap.lang.annotation.Nullable;
 import leap.lang.exception.NestedSQLException;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
@@ -76,7 +77,7 @@ public interface SqlCommand extends Sourced {
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
-	int executeUpdate(SqlContext context,Object params) throws IllegalStateException, NestedSQLException;
+	int executeUpdate(SqlContext context,@Nullable Object params) throws IllegalStateException, NestedSQLException;
 	
 	/**
 	 * Executes update and returns the affected rows.

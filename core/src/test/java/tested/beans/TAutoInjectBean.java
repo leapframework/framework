@@ -28,6 +28,8 @@ public class TAutoInjectBean {
 
 	public @Inject Lazy<TPrimaryBean1>       lazyPrimaryBean;
 	public @Inject Lazy<List<TPrimaryBean1>> lazyPrimaryBeans;
+
+    private TPrimaryBean1 primaryBean1;
 	
 	protected @Inject List<TAnnotationBeanType> abeans = new ArrayList<TAnnotationBeanType>();
 	
@@ -45,4 +47,9 @@ public class TAutoInjectBean {
 	public List<TAnnotationBeanType> abeans() {
 	    return abeans;
 	}
+
+    @Inject
+    public TPrimaryBean1 getPrimaryBean1() {
+        return primaryBean1;
+    }
 }

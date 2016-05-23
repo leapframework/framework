@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.lang.reflect;
 
-import leap.lang.accessor.AnnotationsGetter;
+package leap.core.annotation;
 
-import java.lang.reflect.Type;
+import java.lang.annotation.*;
 
-public interface ReflectValued extends AnnotationsGetter {
-
-    String getName();
-
-    Class<?> getType();
-
-    Type getGenericType();
-
-    default Object getRawValue(Object bean) {
-        return getValue(bean);
-    }
-
-    Object getValue(Object bean);
-
-    void setValue(Object bean, Object value);
-
-}
+@Target({ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface AInject { }

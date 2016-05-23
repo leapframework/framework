@@ -76,8 +76,10 @@ public class BeanContainer implements BeanFactory {
     private Map<Class<?>, Map<?, BeanDefinition>> typedInstances = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                 primaryBeans   = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>       postProcessorBeans = new ArrayList<>();
+    protected List<BeanDefinitionBase>       processorBeans = new ArrayList<>();
+    protected List<BeanDefinitionBase>       injectorBeans  = new ArrayList<>();
     protected BeanProcessor[]                processors;
+    protected BeanInjector[]                 injectors;
     protected List<BeanFactoryInitializable> beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
@@ -950,12 +952,20 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	protected void resolveAfterLoading() {
-		//bean post processors
-		List<BeanProcessor> postProcessorList = new ArrayList<>();
-		for(BeanDefinitionBase bd : postProcessorBeans){
-			postProcessorList.add((BeanProcessor)doGetBean(bd));
+        //bean injector.
+        List<BeanInjector> injectorList = new ArrayList<>();
+        for(BeanDefinitionBase bd : injectorBeans) {
+            injectorList.add((BeanInjector)doGetBean(bd));
+        }
+        this.injectors = injectorList.toArray(new BeanInjector[0]);
+
+        //bean post processors
+		List<BeanProcessor> processorList = new ArrayList<>();
+		for(BeanDefinitionBase bd : processorBeans){
+			processorList.add((BeanProcessor)doGetBean(bd));
 		}
-		this.processors = postProcessorList.toArray(new BeanProcessor[]{});
+		this.processors = processorList.toArray(new BeanProcessor[]{});
+
 
 		//create factory beans
 		for(BeanDefinitionBase bd : typedFactoryDefinitions.values()){
@@ -1324,32 +1334,21 @@ public class BeanContainer implements BeanFactory {
         }
 
         for (BeanProperty bp : bt.getProperties()) {
-            if (bp.isWritable()) {
-                Inject inject = bp.getAnnotation(Inject.class);
-                if (null == inject || !inject.value()) {
-                    continue;
-                }
 
-                //Skip simple type
-                if (Types.isSimpleType(bp.getType(), bp.getGenericType())) {
-                    continue;
-                }
+            Object injectedValue = resolveInjectValue(bd, bean, bt, bp);
 
+            if(null != injectedValue) {
                 log.trace("Injecting property '{}'", bp.getName());
 
                 try {
-                    //skip when bean value already set.
-                    if (null != bp.getReflectField() && !bp.getType().isPrimitive()) {
-                        if (null != bp.getReflectField().getValue(bean)) {
-                            continue;
+                    if(bp.isWritable()) {
+                        bp.setValue(bean, injectedValue);
+                    }else{
+                        if(!bp.isField()) {
+                            throw new BeanCreationException("Cannot inject not writable property '" + bp.getName() + "' in bean '" + bd + "'");
                         }
+                        bp.getReflectField().setValue(bean, injectedValue);
                     }
-
-                    Object injectedBean = resolveInjectValue(factory, bd, bp.getName(), bp.getType(), bp.getGenericType(), bp.getAnnotations());
-
-                    if (null != injectedBean) {
-                        bp.setValue(bean, injectedBean);
-                    } 
                 } catch (Exception e) {
                     log.error("Error injecting property '{}' in bean '{}' : {}", bp.getName(), bd, e.getMessage());
                     throw e;
@@ -1358,29 +1357,55 @@ public class BeanContainer implements BeanFactory {
         }
 
         for (ReflectField rf : bt.getReflectClass().getFields()) {
-            if (rf.isAnnotationPresent(Inject.class)) {
+
+            Object injectedValue = resolveInjectValue(bd, bean, bt, rf);
+
+            if(null != injectedValue) {
                 try {
-                    //skip when bean value already set.
-                    if (null != rf.getValue(bean)) {
-                        continue;
-                    }
-
-                    Object injectedBean = resolveInjectValue(factory, bd, rf.getName(), rf.getType(), rf.getGenericType(), rf.getAnnotations());
-
-                    if (null != injectedBean) {
-                        rf.setValue(bean, injectedBean);
-                    }
+                        rf.setValue(bean, injectedValue);
                 } catch (Exception e) {
                     log.error("Error injecting field '{}' in bean '{}' : {}", rf.getName(), bd, e.getMessage());
                     throw e;
                 }
             }
+
         }
 
         if (bean instanceof PostInjectBean) {
             ((PostInjectBean) bean).postInject(factory);
         }
 	}
+
+    protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
+
+        Inject inject = v.getAnnotation(Inject.class);
+
+        if (null == inject || !inject.value()) {
+            if(null != injectors && injectors.length > 0) {
+                for(Annotation a : v.getAnnotations()) {
+                    if(a.annotationType().isAnnotationPresent(AInject.class)) {
+
+                        for(BeanInjector injector : injectors) {
+                            if(injector.supports(a)) {
+                                return injector.resolveInjectValue(bd, bean, bt, v, a);
+                            }
+                        }
+
+                    }
+                }
+            }
+            return null;
+        }
+
+        //skip when bean value already set.
+        if (!v.getType().isPrimitive()) {
+            if (null != v.getRawValue(bean)) {
+                return null;
+            }
+        }
+
+        return resolveInjectValue(beanFactory, bd, v.getName(), v.getType(), v.getGenericType(), v.getAnnotations());
+    }
 	
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations) {
@@ -1994,7 +2019,12 @@ public class BeanContainer implements BeanFactory {
 	        Class<?> beanType = def.getType();
 	        
             if(beanType.equals(BeanProcessor.class)){
-                postProcessorBeans.add(bd);
+                processorBeans.add(bd);
+                continue;
+            }
+
+            if(beanType.equals(BeanInjector.class)) {
+                injectorBeans.add(bd);
                 continue;
             }
             
