@@ -15,11 +15,6 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
 import leap.core.jdbc.SimpleScalarReader;
@@ -41,6 +36,11 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlStatement;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
 	
@@ -220,7 +220,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	@Override
     public int update(Map<String, Object> fields) {
 		Args.notEmpty(fields,"update fields");
-		String sql = builder.buildUpdateSql(fields, params);
+		String sql = builder.buildUpdateSql(fields, paramsMap());
 		SqlStatement statement = createUpdateStatement(this,sql);
 	    return statement.executeUpdate();
     }
@@ -255,7 +255,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		if(null != whereParameters){
 			return clause.createQueryStatement(qc, whereParameters);
 		}else{
-			return clause.createQueryStatement(qc, params);
+			return clause.createQueryStatement(qc, params());
 		}
 	}
 	
@@ -264,9 +264,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		
 		Object updateParams = null;
 		if(null == whereParameters) {
-			updateParams = params;
+			updateParams = params();
 		}else {
-			updateParams = new MapArrayParams(params, whereParameters.array());
+			updateParams = new MapArrayParams(paramsMap(), whereParameters.array());
 		}
 		
 		return clause.createUpdateStatement(qc, updateParams);
