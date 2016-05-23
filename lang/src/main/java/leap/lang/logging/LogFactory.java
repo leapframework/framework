@@ -17,19 +17,19 @@ package leap.lang.logging;
 
 public final class LogFactory {
 	
-	private static final boolean slflog;
-	private static final StdLog  stdlog = new StdLog();
+	private static final boolean slf4j;
+	private static final StdLog  std = new StdLog();
 	
 	static {
-		slflog = forName("org.slf4j.impl.StaticLoggerBinder");
+		slf4j = slf4j();
 	}
 
 	public static Log get(String name) {
-		return slflog ? getSlf4jLogger(name) : stdlog;
+		return slf4j ? getSlf4jLogger(name) : std;
 	}
 	
 	public static Log get(Class<?> clazz) {
-		return slflog ? getSlf4jLogger(clazz) : stdlog;
+		return slf4j ? getSlf4jLogger(clazz) : std;
 	}
 	
 	private static Log getSlf4jLogger(String name){
@@ -55,4 +55,16 @@ public final class LogFactory {
         	return false;
         }
 	}
+
+    private static boolean slf4j() {
+        boolean slf4j = forName("org.slf4j.impl.StaticLoggerBinder");
+
+        if(slf4j) {
+            SlfLog.init();
+        }
+
+        return slf4j;
+    }
+
+
 }

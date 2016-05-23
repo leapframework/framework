@@ -15,11 +15,11 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.Strings;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
-
-import leap.lang.Strings;
 
 public class ReflectConstructor extends ReflectMember {
 
@@ -58,12 +58,12 @@ public class ReflectConstructor extends ReflectMember {
         	}
         	
         	throw new ReflectException(Strings.format(
-        			"Error newInstance in constructor '{0}'({1})", getName(), s.toString()),e);
+        			"Error newInstance in constructor '{0}({1})'", getDeclaringClass().getSimpleName(), s.toString()),e);
         }
 	}
 	
 	private void initialize(){
-		this.setAccessiable();
+		this.setAccessible();
 
 		this.parameters = new ReflectParameter[reflectedConstructor.getParameterTypes().length];
 		
@@ -71,7 +71,7 @@ public class ReflectConstructor extends ReflectMember {
 			String[] names = Reflection.getParameterNames(reflectedConstructor);
 
 			if(null == names){
-				names = createUnknowParameterNames(parameters.length);
+				names = createUnknownParameterNames(parameters.length);
 			}
 
 			if(reflectedConstructor.getDeclaringClass().isEnum() && reflectedConstructor.getGenericParameterTypes().length != this.parameters.length){
@@ -104,7 +104,7 @@ public class ReflectConstructor extends ReflectMember {
 		}
 	}
 	
-	private void setAccessiable(){
+	private void setAccessible(){
 		try {
 	        this.reflectedConstructor.setAccessible(true);
         } catch (SecurityException e) {
@@ -117,7 +117,7 @@ public class ReflectConstructor extends ReflectMember {
 		return reflectedConstructor.toString();
     }
 	
-	private static String[] createUnknowParameterNames(int length){
+	private static String[] createUnknownParameterNames(int length){
 		String[] names = new String[length];
 		
 		for(int i=0;i<length;i++){

@@ -26,7 +26,7 @@ public enum LogLevel implements Valued<Integer>{
 	
 	private final int value;
 	
-	private LogLevel(int value) {
+	LogLevel(int value) {
 		this.value = value;
     }
 

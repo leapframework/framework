@@ -36,8 +36,8 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected BeanType                 beanClassType;
     protected Method                   initMethod;
     protected Method                   destroyMethod;
-    protected boolean                  override         = true;
-    protected boolean                  defaultOverrided = false;
+    protected boolean override        = true;
+    protected boolean defaultOverride = false;
     protected boolean                  singleton;
     protected boolean                  lazyInit;
     protected boolean                  primary;
@@ -180,12 +180,12 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		this.override = overried;
 	}
 
-    public boolean isDefaultOverrided() {
-        return defaultOverrided;
+    public boolean isDefaultOverride() {
+        return defaultOverride;
     }
 
-    public void setDefaultOverrided(boolean defaultOverrided) {
-        this.defaultOverrided = defaultOverrided;
+    public void setDefaultOverride(boolean defaultOverride) {
+        this.defaultOverride = defaultOverride;
     }
 
     public boolean isLazyInit() {

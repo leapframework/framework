@@ -15,11 +15,6 @@
  */
 package leap.db;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.sql.DataSource;
-
 import leap.core.AppContext;
 import leap.core.ds.DataSourceManager;
 import leap.core.junit.AppTestBase;
@@ -27,9 +22,12 @@ import leap.junit.contexual.ContextualProvider;
 import leap.junit.contexual.ContextualRule;
 import leap.lang.Confirm;
 import leap.lang.Maps;
-
 import org.junit.Rule;
 import org.junit.runner.Description;
+
+import javax.sql.DataSource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class DbTestCase extends AppTestBase {
 	
@@ -41,7 +39,7 @@ public abstract class DbTestCase extends AppTestBase {
 	    DataSourceManager dsm = AppContext.factory().getBean(DataSourceManager.class);
 	    
 		dataSources = dsm.getAllDataSources();
-		dbs         = new ConcurrentHashMap<String, Db>(dataSources.size());
+		dbs         = new ConcurrentHashMap<>(dataSources.size());
 		
 		for(String name : dataSources.keySet()){
 			dbs.put(name, DbFactory.getInstance(name,dataSources.get(name)));
@@ -52,15 +50,10 @@ public abstract class DbTestCase extends AppTestBase {
 		defaultDb = dbs.get(defaultDbName);
 		
 		//drop all schema objects
-		Confirm.execute(new Runnable(){
-
-			@Override
-            public void run() {
-				for(Db db : dbs.values()){
-					db.cmdDropSchema(db.getMetadata().getDefaultSchemaName()).execute();   
-				}
+		Confirm.execute(() -> {
+            for(Db db : dbs.values()){
+                db.cmdDropSchema(db.getMetadata().getDefaultSchemaName()).execute();
             }
-			
 		});
 	}
 	

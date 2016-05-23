@@ -15,20 +15,20 @@
  */
 package leap.core.sys;
 
+import leap.core.AppConfig;
+import leap.lang.Args;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import leap.core.DefaultAppConfig;
-import leap.lang.Args;
 
 public class DefaultSysSecurity implements SysSecurity {
 	
 	protected Map<SysPermission,Boolean> cachedResults    = new ConcurrentHashMap<SysPermission, Boolean>();
 	protected Map<Class<?>,Permissions>  typedPermissions = new ConcurrentHashMap<Class<?>,Permissions>();
 	
-	public DefaultSysSecurity(DefaultAppConfig config){
+	public DefaultSysSecurity(AppConfig config){
 		this.init(config.getPermissions());
 	}
 
@@ -79,8 +79,8 @@ public class DefaultSysSecurity implements SysSecurity {
 		}
     }
 
-	protected void init(List<SysPermissionDefinition> permissionDefinitions){
-		for(SysPermissionDefinition pd : permissionDefinitions){
+	protected void init(List<SysPermissionDef> permissionDefinitions){
+		for(SysPermissionDef pd : permissionDefinitions){
 			
 			Permissions permissions = typedPermissions.get(pd.getPermType());
 			if(null == permissions){

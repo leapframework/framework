@@ -15,8 +15,6 @@
  */
 package leap.lang.el.spel.ast;
 
-import java.util.Map;
-
 import leap.lang.Beans;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
@@ -24,6 +22,8 @@ import leap.lang.el.ElEvalContext;
 import leap.lang.el.ElException;
 import leap.lang.el.ElPropertyResolver;
 import leap.lang.el.ElTypes;
+
+import java.util.Map;
 
 public class AstItem extends AstExpr {
 	private AstExpr array;
@@ -63,13 +63,13 @@ public class AstItem extends AstExpr {
 		
 		int type = ElTypes.resolveTypeByVal(i);
 		if(type == ElTypes.STRING){
-			Object a = array.eval(context);
+			Object a = null == array ? context.getRoot() : array.eval(context);
 			if(null == a){
 				return null;
 			}
 			return getProperty(context, a, (String)i);
 		}else {
-			Object a = array.eval(context);
+			Object a = null == array ? context.getRoot() : array.eval(context);
 			if(null == a){
 				throw new ElException(context.getMessage("el.errors.nullArrayValue", this.toString()));
 			}

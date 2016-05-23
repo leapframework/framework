@@ -7,6 +7,6 @@
     	<username>sa</username>
     	<maxActive>2</maxActive>
     </datasource>
-    
+
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 </config>

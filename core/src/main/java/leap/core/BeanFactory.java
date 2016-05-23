@@ -44,6 +44,11 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * Returns the given bean itself.
 	 */
 	<T> T inject(T bean) throws BeanException;
+
+    /**
+     * Injects the static fields of the given class.
+     */
+    void injectStatic(Class<?> cls) throws BeanException;
 	
 	/**
 	 * Validates the given bean, throws a {@link BeanException} if error. 

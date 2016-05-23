@@ -31,6 +31,8 @@ public class TConfigBean {
     @ConfigProperty("stringProperty1")
     protected String rawStringProperty2;
 
+    protected String rawStringProperty3;
+
     public Property<String>  stringProperty1;
     public Property<Integer> integerProperty1;
     public Property<Boolean> booleanProperty1;
@@ -49,6 +51,11 @@ public class TConfigBean {
 
     public String getPublicRawStringProperty2() {
         return rawStringProperty2;
+    }
+
+    @ConfigProperty("stringProperty1")
+    public String getRawStringProperty3() {
+        return rawStringProperty3;
     }
 
     public static final class CProp {

@@ -15,8 +15,6 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-
 import leap.core.exception.TooManyRecordsException;
 import leap.core.jdbc.ResultSetReader;
 import leap.core.jdbc.SimpleScalarReader;
@@ -26,6 +24,8 @@ import leap.core.value.Scalars;
 import leap.orm.dao.Dao;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlCommand;
+
+import java.util.List;
 
 public class DefaultCommandQuery<T> extends AbstractQuery<T> {
 	
@@ -44,23 +44,23 @@ public class DefaultCommandQuery<T> extends AbstractQuery<T> {
 	
 	@Override
     public long count() {
-	    return command.executeCount(this, params);
+	    return command.executeCount(this, params());
     }
 
 	@Override
     protected QueryResult<T> executeQuery(QueryContext qc) {
 		ResultSetReader<List<T>> reader = ResultSetReaders.forListRow(dao.getOrmContext(), targetType, resultClass, command);
 		
-	    return new DefaultQueryResult<T>(command.toString(),command.executeQuery(qc, params, reader));
+	    return new DefaultQueryResult<T>(command.toString(),command.executeQuery(qc, params(), reader));
     }
 
 	@Override
     protected Scalar executeQueryForScalar(QueryContext context) throws TooManyRecordsException {
-	    return command.executeQuery(context, params, SimpleScalarReader.DEFAULT_INSTANCE);
+	    return command.executeQuery(context, params(), SimpleScalarReader.DEFAULT_INSTANCE);
     }
 
 	@Override
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
-	    return command.executeQuery(context, params, SimpleScalarsReader.DEFAULT_INSTANCE);
+	    return command.executeQuery(context, params(), SimpleScalarsReader.DEFAULT_INSTANCE);
     }
 }

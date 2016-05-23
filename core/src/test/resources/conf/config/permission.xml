@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <permissions>
+        <grant class="tested.perms.TestPermission" name="*" actions="create"/>
+    </permissions>
+
+</config>

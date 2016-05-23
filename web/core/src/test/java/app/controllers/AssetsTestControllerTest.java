@@ -19,9 +19,8 @@ import leap.core.AppContext;
 import leap.lang.io.IO;
 import leap.lang.net.Urls;
 import leap.lang.resource.FileResource;
-import leap.web.assets.AssetStrategy;
 import leap.web.WebTestCase;
-
+import leap.web.assets.AssetStrategy;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -85,6 +84,8 @@ public class AssetsTestControllerTest extends WebTestCase {
 
         IO.writeString(file1.getFile(), "var i=0;");
         IO.writeString(file2.getFile(), "var i=0;");
+
+        System.out.println("file : " + file1.getURLString());
 
         String url1 = url("/upload/1.js");
         String url2 = url("/external_assets_js1.js");

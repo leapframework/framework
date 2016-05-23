@@ -20,8 +20,8 @@ import leap.lang.resource.Resource;
 
 public interface AppConfigReader {
 
-    boolean readBase(AppConfigReaderContext context, Resource resource);
+    boolean readBase(AppConfigContext context, Resource resource);
 
-    boolean readFully(AppConfigReaderContext context, Resource resource);
+    boolean readFully(AppConfigContext context, Resource resource);
 
 }

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties>
+        <property name="testConfigProperty" value="t"/>
+        <property name="test.prop1" value="test.val1" override="true"/>
+        <property name="test.prop2">
+            test.val2
+        </property>
+    </properties>
+
+    <property name="test.prop3" value="test.val3"/>
+    <property name="testNotExistPlaceholder" value="${notExistProperty}"/>
+
+    <properties prefix="test1">
+        <property name="prop1" value="test1.val1"/>
+    </properties>
+
+    <properties prefix="test2_">
+        <property name="prop1" value="test2.val1"/>
+    </properties>
+
+</config>

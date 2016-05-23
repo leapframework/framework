@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
-    <bean type="tested.beans.TPrimaryBeanType1" class="tested.beans.TPrimaryBean1" primary="true" default-overrided="true"/>
+    <bean type="tested.beans.TPrimaryBeanType1" class="tested.beans.TPrimaryBean1" primary="true" default-override="true"/>
 
 </beans>

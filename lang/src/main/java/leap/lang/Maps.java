@@ -15,11 +15,12 @@
  */
 package leap.lang;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import leap.lang.convert.Converts;
 import leap.lang.text.PlaceholderResolver;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
 public class Maps {
@@ -47,29 +48,34 @@ public class Maps {
 		
 		return null;
 	}
-	
+
+    public static <T> T get(Map map, Object key) {
+        Object v = null == map ? null : map.get(key);
+        return null == v ? null : (T)v;
+    }
+
 	public static <T> T get(Map map, Object key, Class<T> type) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, type);
 	}
-	
+
 	public static <T> T get(Map map, Object key, Class<T> type, T defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, type);
 	}
 	
 	public static String getString(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map, key);
 		return null == v ? null : Converts.toString(v); 
 	}
 	
 	public static String getString(Map map,Object key,String defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.toString(v); 
 	}
 	
 	public static String getStringRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -82,17 +88,17 @@ public class Maps {
 	}
 	
 	public static Integer getInteger(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, Integer.class);
 	}
 	
 	public static Integer getInteger(Map map,Object key,Integer defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, Integer.class);
 	}
 	
 	public static Integer getIntegerRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -100,17 +106,17 @@ public class Maps {
 	}
 	
 	public static Long getLong(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, Long.class);
 	}
 	
 	public static Long getLong(Map map,Object key,Long defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, Long.class);
 	}
 	
 	public static Long getLongRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -118,17 +124,17 @@ public class Maps {
 	}
 	
 	public static Boolean getBoolean(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, Boolean.class);
 	}
 	
 	public static Boolean getBoolean(Map map,Object key,Boolean defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, Boolean.class);
 	}
 	
 	public static Boolean getBooleanRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -136,17 +142,17 @@ public class Maps {
 	}
 	
 	public static Float getFloat(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, Float.class);
 	}
 	
 	public static Float getFloat(Map map,Object key,Float defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, Float.class);
 	}
 	
 	public static Float getFloatRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -154,17 +160,17 @@ public class Maps {
 	}
 	
 	public static Double getDouble(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, Double.class);
 	}
 	
 	public static Double getDouble(Map map,Object key,Double defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, Double.class);
 	}
 	
 	public static Double getDoubleRequired(Map map,Object key) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
@@ -172,12 +178,12 @@ public class Maps {
 	}
 	
 	public static <T> T getValue(Map map,Object key,Class<T> targetType) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? null : Converts.convert(v, targetType);
 	}
 	
 	public static <T> T getValue(Map map,Object key,Class<T> targetType,T defaultValue) {
-		Object v = map.get(key);
+		Object v = get(map,key);
 		return null == v ? defaultValue : Converts.convert(v, targetType);
 	}
 	
@@ -186,12 +192,22 @@ public class Maps {
 		if(String.class == targetType){
 			return (T)getStringRequired(map, key);
 		}
-		Object v = map.get(key);
+		Object v = get(map,key);
 		if(null == v){
 			throw new IllegalStateException("The key '" + key + "' must be exists in map");
 		}
 		return Converts.convert(v, targetType);
 	}
+
+    public static <T> void accept(Map map, Object key, Class<T> type, Consumer<T> consumer) {
+        Object v = get(map,key);
+
+        T r = null == v ? null : Converts.convert(v, type);
+
+        if(!Objects2.isEmpty(r)) {
+            consumer.accept(r);
+        }
+    }
 	
 	public static void resolveValues(Map<String, String> map, PlaceholderResolver pr) {
 		if(null != map && null != pr) {

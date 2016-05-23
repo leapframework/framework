@@ -18,14 +18,14 @@ package leap.core.sys;
 import leap.lang.Args;
 import leap.lang.Sourced;
 
-public class SysPermissionDefinition implements Sourced {
+public class SysPermissionDef implements Sourced {
 
 	private final Object   						 source;
 	private final Class<? extends SysPermission> permType;
 	private final SysPermission 				 permObject;
 	private final boolean  					     granted;
 	
-	public SysPermissionDefinition(Object source, Class<? extends SysPermission> permType,SysPermission permObject, boolean granted) {
+	public SysPermissionDef(Object source, Class<? extends SysPermission> permType, SysPermission permObject, boolean granted) {
 	    Args.notNull(permType);
 	    Args.notNull(permObject);
 	    

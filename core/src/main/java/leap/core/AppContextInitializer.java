@@ -34,7 +34,9 @@ public class AppContextInitializer {
 	
 	private static ThreadLocal<AppConfig> initialAppConfig;
 	private static boolean				  initializing;
-	
+
+    private static AppConfigSource configSource = Factory.getInstance(AppConfigSource.class);
+
 	public static void initStandalone(){
 		initStandalone(null);
 	}
@@ -60,7 +62,7 @@ public class AppContextInitializer {
 			
 			log.debug("Initializing standalone app context...");
 			
-			DefaultAppConfig config = loadDefaultAppConfig(attrs, null, initProperties);
+			AppConfig config = loadDefaultAppConfig(attrs, null, initProperties);
 			
 			initialAppConfig.set(config);
 			
@@ -119,7 +121,7 @@ public class AppContextInitializer {
 			
 			//log.info("Initializing app context");
 			
-			DefaultAppConfig config = loadDefaultAppConfig(attrs, externalContext, initProperties);
+			AppConfig config = loadDefaultAppConfig(attrs, externalContext, initProperties);
 			
 			initialAppConfig.set(config);
 			
@@ -146,8 +148,8 @@ public class AppContextInitializer {
 		}
 	}
 	
-	protected static DefaultAppConfig loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
-		DefaultAppConfig config = new DefaultAppConfig(externalContext, initProperties).load();
+	protected static AppConfig loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
+        AppConfig config = configSource.loadConfiguration(externalContext, initProperties);
 		
 		for(AppConfigInitializable o : Factory.newInstances(AppConfigInitializable.class)){
 			try {
@@ -160,11 +162,11 @@ public class AppContextInitializer {
 		return config;
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(DefaultAppConfig config,BeanFactory externalAppFactory){
+	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
 		return new DefaultBeanFactory(config,externalAppFactory);
 	}
 	
-	protected static void initSysContext(AppContext appContext,DefaultAppConfig config){
+	protected static void initSysContext(AppContext appContext,AppConfig config){
 		appContext.setAttribute(SysContext.SYS_CONTEXT_ATTRIBUTE_KEY, new SysContext(new DefaultSysSecurity(config)));
 	}
 	

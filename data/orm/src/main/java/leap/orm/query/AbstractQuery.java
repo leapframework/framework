@@ -42,8 +42,10 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 	protected final Dao		            dao;
 	protected final EntityMapping       em;
 	protected final Class<T>            targetType;
-	protected final Map<String, Object> params = new HashMap<>();
-	
+
+	private final Map<String, Object> paramsMap = new HashMap<>();
+    private Params params;
+
 	protected Limit  limit;
 	protected String orderBy;
 	protected String groupBy;
@@ -60,6 +62,15 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 		this.targetType = targetType;
 		this.em 		= entityMapping;
 	}
+
+    //todo : optimize
+    protected Object params() {
+        return null != params ? params : paramsMap;
+    }
+
+    protected Map<String,Object> paramsMap() {
+        return paramsMap;
+    }
 	
 	@Override
     public EntityMapping getPrimaryEntityMapping() {
@@ -68,30 +79,28 @@ public abstract class AbstractQuery<T> implements Query<T>,QueryContext {
 
 	@Override
     public Query<T> param(String name, Object value) {
-		params.put(name, value);
+		paramsMap.put(name, value);
 	    return this;
     }
 
 	@Override
     public Query<T> params(Map<String, Object> params) {
 		if(null != params){
-			this.params.putAll(params);
+			this.paramsMap.putAll(params);
 		}
 	    return this;
     }
 	
     @Override
     public Query<T> params(Params params) {
-    	if(null != params){
-    		this.params.putAll(params.map());
-    	}
+        this.params = params;
 	    return this;
     }
 
 	@Override
     public Query<T> params(DynaBean bean) {
 		if(null != bean){
-			this.params.putAll(bean.getProperties());
+			this.paramsMap.putAll(bean.getProperties());
 		}
 	    return this;
     }

@@ -15,13 +15,33 @@
  */
 package leap.core;
 
+import leap.lang.Try;
+
 public abstract class AppMainBase {
 	
-	protected static final AppContext context;
+	protected static final AppContext  context;
+    protected static final AppConfig   config;
+    protected static final BeanFactory factory;
 	
 	static {
 		AppContext.initStandalone();
 		context = AppContext.current();
+        config  = context.getConfig();
+        factory = context.getBeanFactory();
 	}
+
+    /**
+     * Executes the main.
+     */
+    protected static void main(Class<? extends AppMainBase> mainClass, Object[] args) {
+        Try.throwUnchecked(() -> factory.createBean(mainClass).run(args));
+    }
+
+    /**
+     * Called by the {@link #main(Class, Object[])}.
+     */
+    protected void run(Object[] args) throws Throwable {
+
+    }
 
 }

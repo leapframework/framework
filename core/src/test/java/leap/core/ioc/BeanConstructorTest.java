@@ -20,7 +20,8 @@ import leap.core.AppContext;
 import leap.core.CoreTestCase;
 import org.junit.Test;
 import tested.beans.TBean;
-import tested.beans.TConstructorBean;
+import tested.beans.TConstructorBean1;
+import tested.beans.TConstructorBean2;
 
 public class BeanConstructorTest extends CoreTestCase {
 
@@ -38,7 +39,15 @@ public class BeanConstructorTest extends CoreTestCase {
 
     @Test
     public void testNoPublicConstructor() {
-        TConstructorBean bean = beanFactory.getBean(TConstructorBean.class);
+        TConstructorBean1 bean = beanFactory.getBean(TConstructorBean1.class);
+
+        assertNotNull(bean.getBean());
+        assertNotEmpty(bean.getTestConfigProperty());
+    }
+
+    @Test
+    public void testDefaultConstructor() {
+        TConstructorBean2 bean = beanFactory.getBean(TConstructorBean2.class);
 
         assertNotNull(bean.getBean());
         assertNotEmpty(bean.getTestConfigProperty());

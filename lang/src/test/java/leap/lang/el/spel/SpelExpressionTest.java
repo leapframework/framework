@@ -15,14 +15,12 @@
  */
 package leap.lang.el.spel;
 
+import leap.lang.New;
+import leap.lang.expression.ExpressionException;
+import org.junit.Test;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import leap.lang.New;
-import leap.lang.el.spel.SPEL;
-import leap.lang.expression.ExpressionException;
-
-import org.junit.Test;
 
 public class SpelExpressionTest extends SpelTestCase {
 
@@ -51,7 +49,7 @@ public class SpelExpressionTest extends SpelTestCase {
 		m.put("a", a);
 		m.put("s", "str");
 		
-		Map<String, Object> vars = new HashMap<String, Object>();
+		Map<String, Object> vars = new HashMap<>();
 		vars.put("a", a);
 		vars.put("m", m);
 		vars.put("index", 0);
@@ -64,6 +62,12 @@ public class SpelExpressionTest extends SpelTestCase {
 		assertEquals("str", eval("m['s']",vars));
 		assertEquals("str", eval("m[p]",vars));
 	}
+
+    @Test
+    public void testProperty() {
+        Map<String,Object> m = New.hashMap("a","b");
+        assertEquals("b", eval("['a']", m));
+    }
 	
 	@Test
 	public void testStaticField() {

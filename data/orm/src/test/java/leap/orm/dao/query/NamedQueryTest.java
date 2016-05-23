@@ -15,12 +15,11 @@
  */
 package leap.orm.dao.query;
 
-import java.util.Map;
-
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
-
 import org.junit.Test;
+
+import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
 	@Test
@@ -28,6 +27,7 @@ public class NamedQueryTest extends OrmTestCase {
 		deleteAll(Owner.class);
 
 		assertTrue(dao.createNamedQuery(Owner.class, "findByLastName").param("lastName", "test").result().isEmpty());
+        assertTrue(dao.createNamedQuery("findOwnerByLastUseJdbcPlaceholder").param("test").result().isEmpty());
 
 		Owner older = dmo.getDataFactory().generate(Owner.class);
 		older.setLastName("test");
@@ -41,7 +41,7 @@ public class NamedQueryTest extends OrmTestCase {
 	}
 
 	@Test
-	public void testFindOwenrsByLastNameForMap() {
+	public void testFindOwnersByLastNameForMap() {
 		deleteAll(Owner.class);
 
 		assertTrue(dao.createNamedQuery("findOwnerByLastName").param("lastName", "test").result().isEmpty());

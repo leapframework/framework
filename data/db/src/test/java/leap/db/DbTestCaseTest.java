@@ -15,6 +15,7 @@
  */
 package leap.db;
 
+import leap.core.AppContext;
 import leap.junit.contexual.Contextual;
 import org.junit.Test;
 
@@ -40,6 +41,12 @@ public class DbTestCaseTest extends DbTestCase {
     @Contextual("not_exists_db")
     public void testNotExistsDb() {
 
+    }
+
+    @Test
+    public void testInitBeans() {
+        Db db = AppContext.factory().getBean(Db.class);
+        assertNotNull(db);
     }
 
     /*

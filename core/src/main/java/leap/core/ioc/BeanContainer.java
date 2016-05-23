@@ -171,7 +171,37 @@ public class BeanContainer implements BeanFactory {
 		
 	    return bean;
     }
-	
+
+    @Override
+    public void injectStatic(Class<?> cls) throws BeanException {
+        BeanDefinitionBase bd = createBeanDefinition(cls);
+
+        ReflectClass rc = ReflectClass.of(cls);
+
+        BeanFactory factory = null != beanFactory ? beanFactory : this;
+
+        for (ReflectField rf : rc.getFields()) {
+            if (rf.isStatic() && rf.isAnnotationPresent(Inject.class)) {
+                try {
+                    //skip when bean value already set.
+                    if (null != rf.getValue(null)) {
+                        continue;
+                    }
+
+                    Object injectedBean = resolveInjectValue(factory, bd, rf.getName(), rf.getType(), rf.getGenericType(), rf.getAnnotations());
+
+                    if (null != injectedBean) {
+                        rf.setValue(null, injectedBean);
+                    }
+                } catch (Exception e) {
+                    log.error("Error injecting static field '{}' in class '{}' : {}", rf.getName(), cls.getName(), e.getMessage());
+                    throw e;
+                }
+            }
+        }
+
+    }
+
     protected void validateFields(Object bean) {
         validateFields(null, bean);
     }
@@ -1118,16 +1148,20 @@ public class BeanContainer implements BeanFactory {
             Set<ReflectField> done = new HashSet<>();
 			
 			for(BeanProperty bp : bt.getProperties()){
-				if(!bp.isWritable()) {
-					continue;
-				}
-
                 ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
                 if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
                     continue;
                 }
 
-                doBeanConfigure(bean, bp, keyPrefix, a);
+                if(bp.isWritable()) {
+                    doBeanConfigure(bean, bp, keyPrefix, a);
+                }else{
+                    ReflectField rf = bp.getReflectField();
+                    if(null == rf) {
+                        throw new BeanCreationException("The property '" + bp.getName() + "' in class '" + bt.getReflectClass() + "' is not writable!");
+                    }
+                    doBeanConfigure(bean, rf, keyPrefix, a);
+                }
 
                 if(null != bp.getReflectField()) {
                     done.add(bp.getReflectField());
@@ -1317,7 +1351,7 @@ public class BeanContainer implements BeanFactory {
                         bp.setValue(bean, injectedBean);
                     } 
                 } catch (Exception e) {
-                    log.error("Error injecting property '{}' in bean '{}'", bp.getName(), bd, e);
+                    log.error("Error injecting property '{}' in bean '{}' : {}", bp.getName(), bd, e.getMessage());
                     throw e;
                 }
             }
@@ -1337,7 +1371,7 @@ public class BeanContainer implements BeanFactory {
                         rf.setValue(bean, injectedBean);
                     }
                 } catch (Exception e) {
-                    log.error("Error injecting field '{}' in bean '{}'", rf.getName(), bd, e);
+                    log.error("Error injecting field '{}' in bean '{}' : {}", rf.getName(), bd, e.getMessage());
                     throw e;
                 }
             }
@@ -1520,31 +1554,42 @@ public class BeanContainer implements BeanFactory {
 		List<ArgumentDefinition> constructorArguments = bd.getConstructorArguments();
 		if(constructorArguments.isEmpty()){
             ReflectClass rc = ReflectClass.of(beanClass);
-            if(rc.hasDefaultConstructor()) {
-                bean = rc.newInstance();
-            }else{
-                if(rc.getConstructors().length == 1) {
-                    ReflectConstructor c = rc.getConstructors()[0];
-                    Object[] args = new Object[c.getParameters().length];
 
-                    for(int i=0;i<args.length;i++) {
-                        ReflectParameter p = c.getParameters()[i];
-
-                        if(p.isAnnotationPresent(Inject.class)) {
-                            args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
-                            continue;
-                        }
-
-                        ConfigProperty a = p.getAnnotation(ConfigProperty.class);
-                        if(null != a) {
-                            args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
-                            continue;
-                        }
-                    }
-                    return c.newInstance(args);
-                }else{
-                    throw new BeanCreationException("Cannot create bean without default constructor, check the bean : " + bd);
+            ReflectConstructor dc = null;
+            for(ReflectConstructor c : rc.getConstructors()) {
+                if(c.getReflectedConstructor().isAnnotationPresent(DefaultConstructor.class)) {
+                    dc = c;
+                    break;
                 }
+            }
+            if(null == dc) {
+                if(rc.hasDefaultConstructor()) {
+                    dc = rc.getDefaultConstructor();
+                }else if(rc.getConstructors().length == 1) {
+                    dc = rc.getConstructors()[0];
+                }
+            }
+
+            if(null != dc) {
+                Object[] args = new Object[dc.getParameters().length];
+
+                for(int i=0;i<args.length;i++) {
+                    ReflectParameter p = dc.getParameters()[i];
+
+                    if(p.isAnnotationPresent(Inject.class)) {
+                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
+                        continue;
+                    }
+
+                    ConfigProperty a = p.getAnnotation(ConfigProperty.class);
+                    if(null != a) {
+                        args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
+                        continue;
+                    }
+                }
+                return dc.newInstance(args);
+            }else{
+                throw new BeanCreationException("Cannot create bean without default constructor, check the bean : " + bd);
             }
 		}else{
 			bean = Reflection.newInstance(bd.getConstructor(),doResolveArgs(bd, constructorArguments));
@@ -1958,7 +2003,7 @@ public class BeanContainer implements BeanFactory {
                 String key = beanType.getName() + "$" + def.getName();
                 if(!def.isOverride()) {
                     BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
-                    if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverrided()){
+                    if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
                         throw new BeanDefinitionException("Found duplicated bean name '" + bd.getName() + 
                                                           "' for type '" + beanType.getName() + 
                                                           "' in resource : " + bd.getSource() + " with exists bean " + existsBeanDefinition);
@@ -1971,7 +2016,7 @@ public class BeanContainer implements BeanFactory {
             if(def.isPrimary()){
                 if(!def.isOverride()) {
                     BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
-                    if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverrided()){
+                    if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
                         throw new BeanDefinitionException("Found duplicated primary bean " + bd + 
                                                           " for type '" + beanType.getName() + 
                                                           "' with exists bean " + existsBeanDefinition.getSource());
