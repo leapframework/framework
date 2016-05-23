@@ -15,8 +15,9 @@
  */
 package leap.orm.mapping;
 
+import leap.core.AppConfig;
 import leap.core.BeanFactory;
-import leap.core.BeanFactoryAware;
+import leap.core.annotation.Inject;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -36,14 +37,10 @@ import leap.orm.metadata.MetadataException;
 
 import java.lang.annotation.Annotation;
 
-public class ClassMappingProcessor extends MappingProcessorAdapter implements MappingProcessor,BeanFactoryAware {
-	
-	protected @NotNull BeanFactory beanFactory;
-	
-	@Override
-    public void setBeanFactory(BeanFactory beanFactory) {
-		this.beanFactory = beanFactory;
-    }
+public class ClassMappingProcessor extends MappingProcessorAdapter implements MappingProcessor {
+
+    protected @Inject AppConfig   config;
+	protected @Inject BeanFactory factory;
 
 	@Override
     public void preMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
@@ -104,7 +101,14 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 	
 	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Table a){
 		if(null != a){
-            String name = Strings.firstNotEmpty(a.name(), a.value());
+            String name = null;
+            String configName = a.configName();
+            if(!Strings.isEmpty(configName)) {
+                name = config.getProperty(configName);
+            }
+            if(Strings.isEmpty(name)) {
+                name = Strings.firstNotEmpty(a.name(), a.value());
+            }
             if(!Strings.isEmpty(name)) {
                 emb.setTableName(name);
                 emb.setTableNameDeclared(true);
@@ -295,7 +299,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			if(a.generate()) {
 				String generatorName = a.generator();
 				if(!Strings.isEmpty(generatorName)){
-					fmb.setIdGenerator(beanFactory.getBean(IdGenerator.class,generatorName));
+					fmb.setIdGenerator(factory.getBean(IdGenerator.class,generatorName));
 				}
 			}
 			

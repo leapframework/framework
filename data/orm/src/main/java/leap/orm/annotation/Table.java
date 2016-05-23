@@ -36,6 +36,18 @@ public @interface Table {
     String name() default "";
 
     /**
+     * The config's property name of table's name.
+     *
+     * <p/>
+     * If both the {@link #name()} and {@link #configName()} are specified,
+     *
+     * the config property will be checked and used first,
+     *
+     * if the property does not exists, the {@link #name()} will be used.
+     */
+    String configName() default "";
+
+    /**
      * If true will auto create the table if not exists.
      */
     boolean autoCreate() default false;
