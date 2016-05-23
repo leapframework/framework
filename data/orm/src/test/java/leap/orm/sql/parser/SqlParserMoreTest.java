@@ -106,7 +106,8 @@ public class SqlParserMoreTest extends SqlParserTestCase {
             for (int i = 0; i < sqls.size(); i++) {
                 String sql = Strings.trim(sqls.get(i));
                 log.debug("  Sql {} \n {}", (i + 1), sql);
-                assertParse(sql);
+                Sql result = assertParse(sql);
+				log.info(result.toString());
             }
 		}
 	}

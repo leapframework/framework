@@ -1,5 +1,7 @@
 select * from t where id in('','12345'); -- bug : empty '' literal_chars
 
+select (:price * num) from owners; -- bug: error parsing semc in select body
+
 -- error parsing row_number() over(partition by r.c1) 
 select row_number() over (partition by r.c1) rn from ( 			    
 	select * from t

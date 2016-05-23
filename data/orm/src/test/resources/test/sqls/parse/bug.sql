@@ -1,1 +1,1 @@
-SELECT * FROM sec_user WHERE name=:name
+select (:price * num) from owners
