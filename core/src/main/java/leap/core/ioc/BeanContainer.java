@@ -1148,16 +1148,20 @@ public class BeanContainer implements BeanFactory {
             Set<ReflectField> done = new HashSet<>();
 			
 			for(BeanProperty bp : bt.getProperties()){
-				if(!bp.isWritable()) {
-					continue;
-				}
-
                 ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
                 if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
                     continue;
                 }
 
-                doBeanConfigure(bean, bp, keyPrefix, a);
+                if(bp.isWritable()) {
+                    doBeanConfigure(bean, bp, keyPrefix, a);
+                }else{
+                    ReflectField rf = bp.getReflectField();
+                    if(null == rf) {
+                        throw new BeanCreationException("The property '" + bp.getName() + "' in class '" + bt.getReflectClass() + "' is not writable!");
+                    }
+                    doBeanConfigure(bean, rf, keyPrefix, a);
+                }
 
                 if(null != bp.getReflectField()) {
                     done.add(bp.getReflectField());

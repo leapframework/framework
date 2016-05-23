@@ -35,6 +35,7 @@ public class BeanConfigTest extends CoreTestCase {
 
         assertEquals("s1", bean.rawStringProperty1);
         assertEquals("s1", bean.getPublicRawStringProperty2());
+        assertEquals("s1", bean.getRawStringProperty3());
         assertEquals("s1", bean.stringProperty1.get());
         assertEquals("s2", bean.stringProperty2.get());
 
