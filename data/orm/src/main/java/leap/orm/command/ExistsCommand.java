@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface ExistsCommand extends DaoCommand {
+public interface ExistsCommand {
 
 	boolean execute();
 	

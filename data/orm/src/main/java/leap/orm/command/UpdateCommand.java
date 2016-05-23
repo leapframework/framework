@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.Map;
 
-public interface UpdateCommand extends DaoCommand {
+public interface UpdateCommand {
 	
 	UpdateCommand id(Object id);
 	

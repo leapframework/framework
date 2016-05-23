@@ -19,7 +19,7 @@ import java.util.List;
 
 import leap.core.exception.TooManyRecordsException;
 
-public interface FindListCommand<T> extends DaoCommand{
+public interface FindListCommand<T> {
 	
 	/**
 	 * Executes this command and returns an entity list.

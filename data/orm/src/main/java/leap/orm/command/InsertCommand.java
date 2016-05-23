@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.Map;
 
-public interface InsertCommand extends DaoCommand {
+public interface InsertCommand {
 	
 	Object getGeneratedId();
 	

@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface DeleteCommand extends DaoCommand {
+public interface DeleteCommand {
 
 	int execute();
 	

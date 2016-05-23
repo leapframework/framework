@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import java.util.List;
 
-public interface FindAllCommand<T> extends DaoCommand {
+public interface FindAllCommand<T> {
 
 	List<T> execute();
 	

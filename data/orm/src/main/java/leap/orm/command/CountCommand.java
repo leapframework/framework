@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface CountCommand extends DaoCommand {
+public interface CountCommand {
 	
 	long execute();
 

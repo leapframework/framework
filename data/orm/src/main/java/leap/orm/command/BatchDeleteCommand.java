@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface BatchDeleteCommand extends DaoCommand {
+public interface BatchDeleteCommand {
 	
 	int[] execute();
 
