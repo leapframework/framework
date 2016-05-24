@@ -19,11 +19,9 @@ import leap.junit.TestBase;
 import leap.lang.Strings;
 import leap.lang.http.HTTP.Method;
 import leap.webunit.client.THttpClient;
-import leap.webunit.client.THttpClientImpl;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;
 import leap.webunit.server.TWebServer;
-import org.junit.BeforeClass;
 import org.junit.runner.RunWith;
 
 import javax.servlet.ServletContext;
@@ -31,43 +29,12 @@ import javax.servlet.ServletContext;
 @RunWith(WebTestRunner.class)
 public abstract class WebTestBase extends TestBase {
 	
-    private static THttpClient httpClient;
-    private static THttpClient httpsClient;
+    static THttpClient httpClient;
+    static THttpClient httpsClient;
 
-    protected static int            httpPort  = TWebServer.DEFAULT_HTTP_PORT;
-    protected static int            httpsPort = TWebServer.DEFAULT_HTTPS_PORT;
     protected static TWebServer     server;
     protected static ServletContext rootServletContext;
 	protected static boolean        defaultHttps;
-	protected static boolean        duplicateRootContext;
-	
-    @BeforeClass
-    public static void startServer() {
-        synchronized (WebTestBase.class) {
-            if(null == httpClient) {
-                httpClient = new THttpClientImpl(httpPort);
-            }
-            
-            if(null == httpsClient) {
-                httpsClient = new THttpClientImpl(httpsPort, true);
-            }
-            
-            if (null == server) {
-                server = new TWebServer(httpPort, httpsPort, true);
-
-                if(duplicateRootContext) {
-                    server.duplicateContext("", "/root");
-                }
-                
-                server.start();
-
-                httpClient.addContextPaths(server.getContextPaths());
-                httpsClient.addContextPaths(server.getContextPaths());
-            }
-        }
-        
-        rootServletContext = server.tryGetServletContext("");
-    }
 
     /**
      * Returns the {@link THttpClient} with base url <code>https://localhost:port</code>.

@@ -76,6 +76,10 @@ public class TWebServer {
 	private final Map<String,WebAppContext> contexts = new ConcurrentHashMap<>();
 	
 	private leap.lang.resource.FileResource currentDir;
+
+    public TWebServer(){
+        this(DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT, true);
+    }
 	
 	public TWebServer(int httpPort){
 		this(httpPort, DEFAULT_HTTPS_PORT, true);
