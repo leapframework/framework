@@ -39,6 +39,13 @@ public class BeanConfigTest extends CoreTestCase {
         assertEquals("s1", bean.stringProperty1.get());
         assertEquals("s2", bean.stringProperty2.get());
 
+        assertEquals(10, bean.getIntPropertyWithDefaultValue());
+        assertEquals("ok", bean.getStrPropertyWithDefaultValue());
+        assertTrue(bean.isBoolPropertyWithDefaultValue());
+        assertEquals(2, bean.getArrayPropertyWithDefaultValue().length);
+        assertEquals("a", bean.getArrayPropertyWithDefaultValue()[0]);
+        assertEquals("b", bean.getArrayPropertyWithDefaultValue()[1]);
+
         assertEquals(1, bean.integerProperty1.get().intValue());
         assertEquals(2, bean.integerProperty2.get().intValue());
 

@@ -49,6 +49,31 @@ public class TConfigBean {
     public @ConfigProperty CProp    complexProperty2;
     public @ConfigProperty String[] arrayProperty1;
 
+    protected int intPropertyWithDefaultValue;
+    protected String strPropertyWithDefaultValue;
+    protected boolean boolPropertyWithDefaultValue;
+    protected String[] arrayPropertyWithDefaultValue;
+
+    @ConfigProperty(key = "not_exists_property", defaultValue = "10")
+    public int getIntPropertyWithDefaultValue() {
+        return intPropertyWithDefaultValue;
+    }
+
+    @ConfigProperty(key = "not_exists_property", defaultValue = "ok")
+    public String getStrPropertyWithDefaultValue() {
+        return strPropertyWithDefaultValue;
+    }
+
+    @ConfigProperty(defaultValue = "true")
+    public boolean isBoolPropertyWithDefaultValue() {
+        return boolPropertyWithDefaultValue;
+    }
+
+    @ConfigProperty(value = "not_exists_property", defaultValue = "a,b")
+    public String[] getArrayPropertyWithDefaultValue() {
+        return arrayPropertyWithDefaultValue;
+    }
+
     public String getPublicRawStringProperty2() {
         return rawStringProperty2;
     }

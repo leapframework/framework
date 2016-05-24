@@ -1202,31 +1202,47 @@ public class BeanContainer implements BeanFactory {
 
 
     protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
-        if(null != a && a.value().length > 0) {
-            for(String key : a.value()) {
-                if(doBeanConfigure(bean, v, keyPrefix + key)) {
-                    break;
-                }
-            }
-        }else{
-            if(doBeanConfigure(bean, v, keyPrefix + v.getName())) {
-                return;
+
+        String defaultValue = null == a ? null : a.defaultValue();
+
+        if(null != a) {
+            String[] keys = a.key();
+            if(keys.length == 0) {
+                keys = a.value();
             }
 
-            if(doBeanConfigure(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()))) {
+            if(keys.length > 0) {
+                for(String key : keys) {
+                    if(doBeanConfigureByKey(bean, v, keyPrefix + key, defaultValue)) {
+                        break;
+                    }
+                }
                 return;
             }
         }
+
+        if(doBeanConfigureByKey(bean, v, keyPrefix + v.getName(), defaultValue)) {
+            return;
+        }
+
+        if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()), defaultValue)) {
+            return;
+        }
     }
-	
-	protected boolean doBeanConfigure(Object bean, ReflectValued v, String key) {
+
+	protected boolean doBeanConfigureByKey(Object bean, ReflectValued v, String key, String defaultValue) {
         if(Property.class.isAssignableFrom(v.getType())) {
-            doBeanConfigureDynaProperty(bean, v, key);
+            doBeanConfigureDynaProperty(bean, v, key, defaultValue);
             return true;
         }
 
         if(v.getType().isArray()) {
             String[] array = getAppConfig().getArrayProperty(key);
+
+            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
+                array = Converts.convert(defaultValue, String[].class);
+            }
+
             if(null != array) {
                 v.setValue(bean, array);
                 return true;
@@ -1235,6 +1251,11 @@ public class BeanContainer implements BeanFactory {
 
         if(List.class.equals(v.getType())) {
             String[] array = getAppConfig().getArrayProperty(key);
+
+            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
+                array = Converts.convert(defaultValue, String[].class);
+            }
+
             if(null != array) {
                 List<String> list = new ArrayList<>();
                 Collections2.addAll(list, array);
@@ -1245,6 +1266,11 @@ public class BeanContainer implements BeanFactory {
 
         if(Set.class.equals(v.getType())) {
             String[] array = getAppConfig().getArrayProperty(key);
+
+            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
+                array = Converts.convert(defaultValue, String[].class);
+            }
+
             if(null != array) {
                 Set<String> set = new LinkedHashSet<>();
                 Collections2.addAll(set, array);
@@ -1254,6 +1280,11 @@ public class BeanContainer implements BeanFactory {
         }
 
         String prop = getAppConfig().getProperty(key);
+
+        if(Strings.isEmpty(prop) && !Strings.isEmpty(defaultValue)) {
+            prop = defaultValue;
+        }
+
         if(null != prop) {
             if(prop.length() > 0) {
                 try {
@@ -1275,7 +1306,7 @@ public class BeanContainer implements BeanFactory {
 		return false;
 	}
 
-    protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key) {
+    protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key, String defaultValue) {
         AppConfig config = getAppConfig();
 
         Class<?> type  = v.getType();
@@ -1318,6 +1349,8 @@ public class BeanContainer implements BeanFactory {
 
         if(null != value) {
             v.setValue(bean, value);
+        }else if(!Strings.isEmpty(defaultValue)) {
+            v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
         }
     }
 
