@@ -1,48 +1,16 @@
 package leap.lang.el.spel.parser;
 
-import static leap.lang.el.spel.ast.AstBinary.ADD_ASSIGN;
-import static leap.lang.el.spel.ast.AstBinary.AND;
-import static leap.lang.el.spel.ast.AstBinary.ASSIGN;
-import static leap.lang.el.spel.ast.AstBinary.BIT_AND;
-import static leap.lang.el.spel.ast.AstBinary.BIT_OR;
-import static leap.lang.el.spel.ast.AstBinary.BIT_XOR;
-import static leap.lang.el.spel.ast.AstBinary.DIV;
-import static leap.lang.el.spel.ast.AstBinary.EQ;
-import static leap.lang.el.spel.ast.AstBinary.GE;
-import static leap.lang.el.spel.ast.AstBinary.GT;
-import static leap.lang.el.spel.ast.AstBinary.INSTANCE_OF;
-import static leap.lang.el.spel.ast.AstBinary.LE;
-import static leap.lang.el.spel.ast.AstBinary.LSHIFT;
-import static leap.lang.el.spel.ast.AstBinary.LT;
-import static leap.lang.el.spel.ast.AstBinary.MOD;
-import static leap.lang.el.spel.ast.AstBinary.MUL;
-import static leap.lang.el.spel.ast.AstBinary.NE;
-import static leap.lang.el.spel.ast.AstBinary.OR;
-import static leap.lang.el.spel.ast.AstBinary.RSHIFT;
-import static leap.lang.el.spel.ast.AstBinary.SUB;
+import leap.lang.el.DefaultElParseContext;
+import leap.lang.el.ElParseContext;
+import leap.lang.el.ElParseException;
+import leap.lang.el.spel.ast.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import leap.lang.el.DefaultElParseContext;
-import leap.lang.el.ElParseContext;
-import leap.lang.el.ElParseException;
-import leap.lang.el.spel.ast.AstBinary;
-import leap.lang.el.spel.ast.AstBoolean;
-import leap.lang.el.spel.ast.AstChoice;
-import leap.lang.el.spel.ast.AstExpr;
-import leap.lang.el.spel.ast.AstFunction;
-import leap.lang.el.spel.ast.AstIdentifier;
-import leap.lang.el.spel.ast.AstItem;
-import leap.lang.el.spel.ast.AstMethod;
-import leap.lang.el.spel.ast.AstNull;
-import leap.lang.el.spel.ast.AstNumber;
-import leap.lang.el.spel.ast.AstProperty;
-import leap.lang.el.spel.ast.AstString;
-import leap.lang.el.spel.ast.AstType;
-import leap.lang.el.spel.ast.AstUnary;
+import static leap.lang.el.spel.ast.AstBinary.*;
 
 //take from alibaba simple el project
 public class Parser {
@@ -551,6 +519,12 @@ public class Parser {
             	primaryExpr = new AstNumber(Long.decode(lexer.hexStringWithPrefix()));
             	lexer.nextToken();
             	break;
+            case LBRACKET:
+                lexer.nextToken();
+                AstExpr indexExpr = expr();
+                accept(Token.RBRACKET);
+                primaryExpr = new AstItem(null, indexExpr);
+                break;
             case ERROR:
             	throw new ElParseException("Error parse expression at pos " + lexer.pos() + ", character '" + lexer.buf[lexer.pos()] + "'");
             default:

@@ -36,8 +36,8 @@ public class ClasspathSqlSource implements SqlSource {
 	
 	private static final Log log = LogFactory.get(ClasspathSqlSource.class);
 	
-    protected @Inject @M AppFileMonitor     fileMonitor;
-    protected @Inject @M SqlReader[] readers;
+    protected @Inject @M AppFileMonitor fileMonitor;
+    protected @Inject @M SqlReader[]    readers;
 	
 	@Override
     public void loadSqlCommands(SqlConfigContext context) throws SqlConfigException, SqlClauseException {
@@ -110,7 +110,7 @@ public class ClasspathSqlSource implements SqlSource {
 	}
 	
 	private final class LoadContext implements SqlReaderContext {
-		private final Set<String> 	   resources = new HashSet<String>();
+		private final Set<String> 	   resources = new HashSet<>();
 		private final SqlConfigContext configContext;
 		private final boolean		   defaultOverride;
 		

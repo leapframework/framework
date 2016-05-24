@@ -39,7 +39,13 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
 		DEV.setCurrentTestClass(klass);
     }
 
-	@Override
+    @Override
+    protected void collectInitializationErrors(List<Throwable> errors) {
+        factory.injectStatic(getTestClass().getJavaClass());
+        super.collectInitializationErrors(errors);
+    }
+
+    @Override
     protected void validateInstanceMethods(List<Throwable> errors) {        
 		validatePublicVoidNoArgMethods(After.class, false, errors);
 		validatePublicVoidNoArgMethods(Before.class, false, errors);

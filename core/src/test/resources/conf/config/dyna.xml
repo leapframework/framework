@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties prefix="pbean">
+        <property name="stringProperty1"  value="s1"/>
+        <property name="stringProperty2"  value="s2"/>
+        <property name="integerProperty1" value="1"/>
+        <property name="integerProperty2" value="2"/>
+        <property name="longProperty1"    value="11"/>
+        <property name="longProperty2"    value="12"/>
+        <property name="booleanProperty1" value="false"/>
+        <property name="booleanProperty2" value="true"/>
+        <property name="doubleProperty1"  value="1.1"/>
+        <property name="doubleProperty2"  value="1.2"/>
+        <property name="arrayProperty1[]" value="a"/>
+        <property name="arrayProperty1[]" value="b"/>
+        <property name="arrayProperty1[]" value="c"/>
+        <property name="complexProperty1" value="{name:n1, value:100}"/>
+        <property name="complexProperty2" value="{name:n2, value:200}"/>
+    </properties>
+
+</config>

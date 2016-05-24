@@ -91,6 +91,14 @@ public class DynamicSqlTest extends OrmTestCase {
 		assertEquals(nameEq01,1L);
 		deleteAll(Owner.class);
 	}
+	@Test
+	public void testSelectItemSemSql(){
+		deleteAll(Owner.class);
+		new Owner().setFullName("a", "01").save();
+		new Owner().setFullName("b", "1").save();
+		int result = dao.createSqlQuery("select (:price * (SELECT count(1) FROM owners)) AS num FROM owners").param("price",2).first().getInteger("num");
+		assertEquals(4,result);
+	}
 
     @Test
     public void testUpdateColumnWithNullValue() {

@@ -17,7 +17,7 @@ package leap.orm.command;
 
 import leap.core.exception.TooManyRecordsException;
 
-public interface FindCommand<T> extends DaoCommand{
+public interface FindCommand<T> {
 	
 	/**
 	 * Executes this command and returns an object represents an entity.

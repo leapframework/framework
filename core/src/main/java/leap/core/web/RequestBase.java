@@ -128,14 +128,14 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * Returns a upper case http method .
 	 * 
 	 * <p>
-	 * Returns the overried http method if exists.
+	 * Returns the override http method if exists.
 	 */
 	public abstract String getMethod();
 	
 	/**
 	 * Returns the http method defined in the header <code>X-HTTP-Method-Override</code>.
 	 */
-	public abstract String getOverridedMethod();
+	public abstract String getOverrideMethod();
 	
 	/**
 	 * Returns the raw http method in {@link HttpServletRequest}

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -17,15 +17,22 @@ package tested.beans;
 
 import leap.core.annotation.Bean;
 import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.DefaultConstructor;
 import leap.core.annotation.Inject;
 
 @Bean
-public class TConstructorBean {
+public class TConstructorBean2 {
 
     private final TAnnotationBean2 bean;
     private final String           testConfigProperty;
 
-    public TConstructorBean(@Inject TAnnotationBean2 bean, @ConfigProperty String testConfigProperty) {
+    public TConstructorBean2() {
+        this.bean = null;
+        this.testConfigProperty = null;
+    }
+
+    @DefaultConstructor
+    public TConstructorBean2(@Inject TAnnotationBean2 bean, @ConfigProperty String testConfigProperty) {
         this.bean = bean;
         this.testConfigProperty = testConfigProperty;
     }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean class="tested.beans.TPropBean">
+
+        <property name="prop1" value="${test.prop1}"/>
+        <property name="prop2" value="${not_exists}"/>
+
+    </bean>
+
+</beans>

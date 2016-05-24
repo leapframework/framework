@@ -15,11 +15,10 @@
  */
 package leap.db.cp;
 
-import java.util.Properties;
+import leap.lang.jdbc.TransactionIsolation;
 
 import javax.sql.DataSource;
-
-import leap.lang.jdbc.TransactionIsolation;
+import java.util.Properties;
 
 public class PoolProperties {
 	
@@ -360,9 +359,9 @@ public class PoolProperties {
 		
 		if(maxIdle >= 0) {
 			validateRange("maxIdle", maxIdle, 1, maxActive);
-			validateRange("minIdle", minIdle, 1, maxIdle);
+			validateRange("minIdle", minIdle, 0, maxIdle);
 		}else{
-			validateRange("minIdle", minIdle, 1, maxActive);
+			validateRange("minIdle", minIdle, 0, maxActive);
 		}
 	}
 	

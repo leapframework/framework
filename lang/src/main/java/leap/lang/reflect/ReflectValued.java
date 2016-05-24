@@ -15,15 +15,21 @@
  */
 package leap.lang.reflect;
 
+import leap.lang.accessor.AnnotationsGetter;
+
 import java.lang.reflect.Type;
 
-public interface ReflectValued {
+public interface ReflectValued extends AnnotationsGetter {
 
     String getName();
 
     Class<?> getType();
 
     Type getGenericType();
+
+    default Object getRawValue(Object bean) {
+        return getValue(bean);
+    }
 
     Object getValue(Object bean);
 

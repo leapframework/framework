@@ -15,6 +15,9 @@
  */
 package leap.db.cp;
 
+import leap.lang.Args;
+
+import javax.sql.DataSource;
 import java.io.Closeable;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -22,10 +25,6 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
 import java.util.logging.Logger;
-
-import javax.sql.DataSource;
-
-import leap.lang.Args;
 
 public class PooledDataSource extends PoolProperties implements DataSource, Closeable {
 
@@ -58,7 +57,7 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 	
 	public void init() {
 		if(null != pool) {
-			throw new IllegalStateException("Pool aleady inited");
+			throw new IllegalStateException("Pool already initialized!");
 		}
 		pool();
 	}

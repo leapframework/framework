@@ -86,8 +86,17 @@ public class DefaultBeanFactory implements BeanFactory {
 		this.beanContainer.inject(bean);
 		return bean;
     }
-	
-	@Override
+
+    @Override
+    public void injectStatic(Class<?> cls) throws BeanException {
+        Args.notNull(cls, "class");
+        if(null != externalFactory) {
+            externalFactory.injectStatic(cls);
+        }
+        beanContainer.injectStatic(cls);
+    }
+
+    @Override
     public <T> T validate(T bean) throws BeanException {
 		Args.notNull(bean,"bean");
 		if(null != externalFactory){

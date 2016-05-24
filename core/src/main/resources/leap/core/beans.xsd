@@ -102,7 +102,7 @@
 	    <xsd:attribute name="auto-inject" default="false"/>
 	    <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
         <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"/>
-        <xsd:attribute name="default-overrided" type="xsd:boolean" use="optional" default="false"/>
+        <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
 	    <xsd:attribute name="init-method" type="xsd:string"/>
         <xsd:attribute name="destroy-method" type="xsd:string"/>
         <xsd:attribute name="sort-order" type="xsd:integer" default="100"/>

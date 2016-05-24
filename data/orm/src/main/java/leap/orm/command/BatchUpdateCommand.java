@@ -15,7 +15,7 @@
  */
 package leap.orm.command;
 
-public interface BatchUpdateCommand extends DaoCommand {
+public interface BatchUpdateCommand {
 
     int[] execute();
 

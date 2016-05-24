@@ -22,7 +22,7 @@ import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.sql.SqlContext;
 
-public abstract class AbstractDaoCommand implements SqlContext,DaoCommand {
+public abstract class AbstractDaoCommand implements SqlContext {
 
 	protected final Dao         dao;
 	protected final OrmContext  context;

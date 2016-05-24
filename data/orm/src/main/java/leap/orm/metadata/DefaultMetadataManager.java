@@ -87,14 +87,19 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		for(SqlSource commandSource : sqlSources){
 			commandSource.loadSqlCommands(loadingContext);
 		}
-		
+
 		log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
-		
+
 		//create default sql commands for all entities.
 		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
 		    tryCreateDefaultSqlCommands(loadingContext, em);
             tryCreateTable(loadingContext, em);
 		}
+
+        //preparing sql commands.
+        for(SqlCommand command : context.getMetadata().getSqlCommandSnapshotList()) {
+            command.prepare(context);
+        }
     }
     
     protected void tryCreateDefaultSqlCommands(MetadataContext context, EntityMapping em) {

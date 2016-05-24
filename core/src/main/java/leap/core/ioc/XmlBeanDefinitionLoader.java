@@ -66,8 +66,8 @@ class XmlBeanDefinitionLoader {
     public static final String REF_ELEMENT                      = "ref";
     public static final String IDREF_ELEMENT                    = "idref";
     public static final String BEAN_REF_ATTRIBUTE               = "bean";
-	public static final String NAME_REF_ATTRIBUTE               = "name";
-	public static final String TYPE_REF_ATTRIBUTE               = "type";
+    public static final String NAME_REF_ATTRIBUTE               = "name";
+    public static final String TYPE_REF_ATTRIBUTE               = "type";
     public static final String IF_ATTRIBUTE                     = "if";
     public static final String IF_PROFILE_ATTRIBUTE             = "if-profile";
     public static final String IF_CLASS_PRESENT_ATTRIBUTE       = "if-class-present";
@@ -90,8 +90,8 @@ class XmlBeanDefinitionLoader {
     public static final String KEY_TYPE_ATTRIBUTE               = "key-type";
     public static final String PROPERTY_ELEMENT                 = "property";
     public static final String REF_ATTRIBUTE                    = "ref";
-	public static final String REF_TYPE_ATTRIBUTE               = "ref-type";
-	public static final String REF_NAME_ATTRIBUTE               = "ref-name";
+    public static final String REF_TYPE_ATTRIBUTE               = "ref-type";
+    public static final String REF_NAME_ATTRIBUTE               = "ref-name";
     public static final String VALUE_ATTRIBUTE                  = "value";
     public static final String DEFAULT_VALUE_ATTRIBUTE          = "default-value";
     public static final String VALUE_ELEMENT                    = "value";
@@ -117,7 +117,7 @@ class XmlBeanDefinitionLoader {
     public static final String QUALIFIER_ATTRIBUTE              = "qualifier";
     public static final String SORT_ORDER_ATTRIBUTE             = "sort-order";
     public static final String OVERRIDE_ATTRIBUTE               = "override";
-    public static final String DEFAULT_OVERRIDED_ATTRIBUTE      = "default-overrided";
+    public static final String DEFAULT_OVERRIDE_ATTRIBUTE       = "default-override";
     public static final String DEFAULT_LAZY_INIT_ATTRIBUTE      = "default-lazy-init";
     public static final String DEFAULT_AUTO_INJECT_ATTRIBUTE    = "default-auto-inject";
     public static final String LIST_CLASS_ATTRIBUTE             = "list-class";
@@ -326,14 +326,14 @@ class XmlBeanDefinitionLoader {
 		bean.setId(reader.getAttribute(ID_ATTRIBUTE));
 		bean.setName(reader.getAttribute(NAME_ATTRIBUTE));
 		
-		String beanClassName     = reader.getAttribute(CLASS_ATTRIBUTE);
+		String beanClassName     = reader.getRequiredAttribute(CLASS_ATTRIBUTE);
 		String typeClassName     = reader.getAttribute(TYPE_ATTRIBUTE);
 		String initMethodName    = reader.getAttribute(INIT_METHOD_ATTRIBUTE);
 		String destroyMethodName = reader.getAttribute(DESTROY_METHOD_ATTRIBUTE);
 		String qualifierName	 = reader.getAttribute(QUALIFIER_ATTRIBUTE);
 		Integer sortOrder        = reader.getIntegerAttribute(SORT_ORDER_ATTRIBUTE);
 		boolean override         = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
-        boolean defaultOverrided = reader.getBooleanAttribute(DEFAULT_OVERRIDED_ATTRIBUTE, false);
+        boolean defaultOverride  = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, false);
 
 		if(!Strings.isEmpty(beanClassName)){
             if(null != instrumentation) {
@@ -383,7 +383,7 @@ class XmlBeanDefinitionLoader {
 		bean.setLazyInit(boolAttribute(reader,LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
 		bean.setPrimary(boolAttribute(reader,PRIMARY_ATTRIBUTE, false));
 		bean.setOverride(override);
-        bean.setDefaultOverrided(defaultOverrided);
+        bean.setDefaultOverride(defaultOverride);
 		
 		if(!Strings.isEmpty(qualifierName)){
 			bean.addQualifier(qualifierName);
@@ -397,7 +397,7 @@ class XmlBeanDefinitionLoader {
 		bean.setFactoryMethodName(reader.getAttribute(FACTORY_METHOD_ATTRIBUTE));
 		// TODO the property factoryBeanName and factoryMethodName was set but never used,why?
 		if(null == bean.getBeanClass() && Strings.isEmpty(bean.getFactoryBeanName())){
-			throw new BeanDefinitionException("bean's class or factory-bean must be sepcified, bean '" + bean.getIdOrName() + "' in source : " + reader.getSource());
+			throw new BeanDefinitionException("bean's class or factory-bean must be specified, bean '" + bean.getIdOrName() + "' in source : " + reader.getSource());
 		}
 		
 		if(Strings.isEmpty(bean.getFactoryBeanName()) && !Strings.isEmpty(bean.getFactoryMethodName())){
@@ -1121,11 +1121,11 @@ class XmlBeanDefinitionLoader {
 			try {
 	            Expression expression = SPEL.createExpression(parseContext,expressionText);
 
-	            Map<String, Object> vars = new HashMap<String, Object>();
+	            Map<String, Object> vars = new HashMap<>();
 	            vars.put("config",container.getAppConfig());
 	            vars.put("debug", container.getAppConfig().isDebug());
 	            
-	            return EL.test(expression, vars);
+	            return EL.test(expression.getValue(vars), true);
             } catch (Exception e) {
             	throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
             }

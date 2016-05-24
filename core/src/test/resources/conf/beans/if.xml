@@ -8,7 +8,11 @@
 	
 	<beans if="true">
 	    <bean id="testIfBeanTrue3" class="tested.beans.TBean"/>
-	</beans>	
+	</beans>
+
+    <beans if="config.properties['testIfBeanTrue4.enabled']">
+        <bean id="testIfBeanTrue4" class="tested.beans.TBean"/>
+    </beans>
 	
 	<beans if="false">
 	    <bean id="testIfBeanFalse1" class="tested.beans.TBean"/>
@@ -17,6 +21,10 @@
 	<beans if="false">
 	    <bean id="testIfBeanFalse2" class="tested.beans.TBean"/>
 	</beans>
+
+    <beans if="config.properties['testIfBeanFalse3.enabled']">
+        <bean id="testIfBeanFalse3" class="tested.beans.TBean"/>
+    </beans>
 
     <beans if-profile="production">
         <bean id="testProfile.shouldNotCreated" class="tested.beans.TBean"/>

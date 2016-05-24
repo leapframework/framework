@@ -51,7 +51,7 @@ public abstract class AbstractElEvalContext extends AbstractElContext implements
     }
     
 	@Override
-    public Object getExternalContext() {
+    public Object getRoot() {
 	    return ctx;
     }
 

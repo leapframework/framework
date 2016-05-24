@@ -16,12 +16,15 @@
                     <xsd:element ref="resources"/>
                     <xsd:element ref="import"/>
                     <xsd:element ref="properties"/>
+                    <xsd:element ref="property"/>
                     <xsd:element ref="datasource"/>
                     <xsd:element ref="permissions"/>
+                    <xsd:element ref="loader"/>
                     <xsd:element ref="config"/>
 			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 			    </xsd:choice>
-			</xsd:sequence>    
+			</xsd:sequence>
+            <xsd:attribute name="if" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
@@ -186,10 +189,39 @@
     <xsd:element name="properties">
         <xsd:complexType>
         	<xsd:sequence>
-        		<xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
+        		<xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
         	</xsd:sequence>
         	<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
         	<xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="property">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:attribute name="name" type="xsd:string" use="required"/>
+                    <xsd:attribute name="value" type="xsd:string" use="optional"/>
+                    <xsd:attribute name="override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                    if set to true this property value will override the exists property with same name.
+                                ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="if-profile" use="optional"/>
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="loader">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="class" type="xsd:string" use="required"/>
+            <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
 
@@ -206,23 +238,6 @@
     </xsd:element>
     
     <!-- types -->
-    <xsd:complexType name="Property">
-        <xsd:simpleContent>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string" use="required"/>
-                <xsd:attribute name="value" type="xsd:string" use="optional"/>
-                <xsd:attribute name="override" type="xsd:boolean">
-                    <xsd:annotation>
-                        <xsd:documentation><![CDATA[
-                                if set to true this property value will override the exists property with same name.
-                            ]]></xsd:documentation>
-                    </xsd:annotation>
-                </xsd:attribute>
-                <xsd:attribute name="if-profile" use="optional"/>
-            </xsd:extension>
-        </xsd:simpleContent>
-    </xsd:complexType>
-
     <xsd:complexType name="DataSourceConfig">
         <xsd:sequence>
             <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
@@ -250,7 +265,7 @@
             <xsd:element name="maxActive" type="xsd:int" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="maxIdle" type="xsd:int" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="minIdle" type="xsd:int" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="property" type="Property" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="optional" />
         <xsd:attribute name="type" type="xsd:string"/>

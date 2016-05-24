@@ -15,15 +15,13 @@
  */
 package leap.db.cp;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.junit.Test;
-
 import leap.db.mock.MockDriver;
 import leap.junit.TestBase;
+import org.junit.Test;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class DriverDataSourceTest extends TestBase {
 
@@ -51,7 +49,7 @@ public class DriverDataSourceTest extends TestBase {
 	public void testDriverError() throws SQLException {
 		
 		try(PooledDataSource ds = new PooledDataSource()){
-			ds.setDriverClassName("com.example.UnknowDriver");
+			ds.setDriverClassName("com.example.UnknownDriver");
 			ds.setJdbcUrl("jdbc:err:db");
 		
 	        try {

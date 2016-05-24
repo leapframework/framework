@@ -15,19 +15,18 @@
  */
 package leap.lang.resource;
 
+import leap.junit.concurrent.ConcurrentTestCase;
+import leap.lang.Classes;
+import org.junit.Test;
+
 import java.io.File;
 import java.util.function.Predicate;
 
-import leap.junit.concurrent.ConcurrentTestCase;
-import leap.lang.Classes;
-
-import org.junit.Test;
-
-public class ResourcesTest extends ConcurrentTestCase {
+public class ResourceTest1 extends ConcurrentTestCase {
 	
 	@Test
 	public void testGetClasspathResourceFile() throws Exception {
-		Resource r = Resources.getResource(Classes.getClassResourcePath(ResourcesTest.class));
+		Resource r = Resources.getResource(Classes.getClassResourcePath(ResourceTest1.class));
 		assertNotNull(r);
 		
 		File file = r.getFile();
@@ -38,7 +37,7 @@ public class ResourcesTest extends ConcurrentTestCase {
 	
 	@Test
 	public void testGetClasspathResourceDir() throws Exception {
-		Resource r = Resources.getResource(Classes.getPackageResourcePath(ResourcesTest.class));
+		Resource r = Resources.getResource(Classes.getPackageResourcePath(ResourceTest1.class));
 		assertNotNull(r);
 		
 		File file = r.getFile();
@@ -52,10 +51,19 @@ public class ResourcesTest extends ConcurrentTestCase {
 		Resource res = Resources.getResource(Resource.class,"Resource.class");
 		assertNotNull(res);
 		assertTrue(res.exists());
+        assertNotNull(res.getClasspath());
 	}
+
+    @Test
+    public void testClasspath() {
+        ResourceSet rs = Resources.scan("classpath*:META-INF/leap/test/r2.file");
+        assertEquals(1,rs.size());
+        Resource res = rs.toResourceArray()[0];
+        assertEquals("META-INF/leap/test/r2.file", res.getClasspath());
+    }
 	
 	@Test
-	public void testScanResorucesSinglePattern(){
+	public void testScanResourcesSinglePattern(){
 		ResourceSet rs = Resources.scan("classpath*:/junit/textui/*.class");
 		assertFalse(rs.isEmpty());
 		assertEquals(3, rs.size());
@@ -75,7 +83,7 @@ public class ResourcesTest extends ConcurrentTestCase {
 	}
 	
 	@Test
-	public void testScanResorucesMultiPatterns(){
+	public void testScanResourcesMultiPatterns(){
 		ResourceSet rs = Resources.scan("classpath*:/junit/textui/*.class","classpath*:/leap/test/**/*.class","classpath*:/META-INF/leap/test/**/*.*");
 		assertFalse(rs.isEmpty());
 		assertEquals(3 + 4 + 4, rs.size());

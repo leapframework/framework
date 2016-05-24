@@ -15,8 +15,6 @@
  */
 package leap.core.el;
 
-import java.util.Map;
-
 import leap.core.AppContext;
 import leap.lang.Objects2;
 import leap.lang.Strings;
@@ -24,6 +22,8 @@ import leap.lang.convert.Converts;
 import leap.lang.el.ElException;
 import leap.lang.expression.Expression;
 import leap.lang.expression.ValuedExpression;
+
+import java.util.Map;
 
 public class EL {
 
@@ -246,24 +246,35 @@ public class EL {
 	 * Tests the given value is <code>true</code> or <code>false</code>
 	 */
 	public static boolean test(Object v){
-		if(null == v){
-			return false;
-		}
-		
-		if(v instanceof Boolean){
-			return (Boolean)v;
-		}
-		
-		if(v instanceof Number){
-			Number n = (Number)v;
-			if(n.floatValue() == 0.0f || n.intValue() == 0){
-				return false;
-			}
-			return true;
-		}
-		
-		return !Objects2.isEmpty(v);
+        return test(v, false);
 	}
+
+    /**
+     * Tests the given value is <code>true</code> or <code>false</code>
+     */
+    public static boolean test(Object v, boolean convertStringToBoolean){
+        if(null == v){
+            return false;
+        }
+
+        if(v instanceof Boolean){
+            return (Boolean)v;
+        }
+
+        if(v instanceof Number){
+            Number n = (Number)v;
+            if(n.floatValue() == 0.0f || n.intValue() == 0){
+                return false;
+            }
+            return true;
+        }
+
+        if(convertStringToBoolean && v instanceof String) {
+            return Converts.toBoolean((String)v, false);
+        }
+
+        return !Objects2.isEmpty(v);
+    }
 	
 	protected EL() {
 		

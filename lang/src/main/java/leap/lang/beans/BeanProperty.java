@@ -128,8 +128,13 @@ public class BeanProperty implements Named,TypeInfoGetter,AnnotationsGetter,Refl
 	public Method getGetter(){
 		return null != getter ? getter.getReflectedMethod() : null;
 	}
-	
-	public Object getValue(Object bean) {
+
+    @Override
+    public Object getRawValue(Object bean) {
+        return null != field ? field.getValue(bean) : getValue(bean);
+    }
+
+    public Object getValue(Object bean) {
 		if(!readable){
 			throw new IllegalStateException("Property '" + name + "' of '" + beanType.getBeanClass().getName() + "' not readable");
 		}

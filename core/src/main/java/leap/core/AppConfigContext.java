@@ -16,26 +16,107 @@
 package leap.core;
 
 import leap.core.ds.DataSourceConfig;
+import leap.core.sys.SysPermissionDef;
 import leap.lang.accessor.PropertyAccessor;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
+import leap.lang.text.PlaceholderResolver;
 
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * A context object used in {@link AppConfigProcessor}.
+ * The context interface for {@link AppConfigProcessor}.
  */
 public interface AppConfigContext extends PropertyAccessor {
-	
+
+    /**
+     * Returns true if the config property is override by default.
+     */
+    boolean isDefaultOverride();
+
+    /**
+     * Returns current profile's name.
+     */
 	String getProfile();
-	
-	boolean isDefaultOverrided();
-	
-	Object getExternalContext();
-	
+
+    /**
+     * Returns the {@link AppConfig#INIT_PROPERTY_DEBUG} property or null.
+     */
+    Boolean getDebug();
+
+    /**
+     * Returns the {@link AppConfig#INIT_PROPERTY_BASE_PACKAGE} property or null.
+     */
+    String getBasePackage();
+
+    /**
+     * Returns the {@link AppConfig#INIT_PROPERTY_DEFAULT_LOCALE} property or null.
+     */
+    Locale getDefaultLocale();
+
+    /**
+     * Returns the {@link AppConfig#INIT_PROPERTY_DEFAULT_CHARSET} property or null.
+     */
+    Charset getDefaultCharset();
+
+    /**
+     * Sets the {@link AppConfig#INIT_PROPERTY_DEBUG} property.
+     */
+    void setDebug(boolean debug);
+
+    /**
+     * Sets the {@link AppConfig#INIT_PROPERTY_BASE_PACKAGE} property.
+     */
+    void setBasePackage(String bp);
+
+    /**
+     * Sets the {@link AppConfig#INIT_PROPERTY_DEFAULT_LOCALE} property.
+     */
+    void setDefaultLocale(Locale locale);
+
+    /**
+     * Sets the {@link AppConfig#INIT_PROPERTY_DEFAULT_CHARSET} property.
+     */
+    void setDefaultCharset(Charset charset);
+
+    /**
+     * Returns a mutable map contains the properties.
+     */
+    Map<String,String> getProperties();
+
+    /**
+     * Returns true if the property exists.
+     */
+    boolean hasProperty(String name);
+
+    /**
+     * Puts all the config properties.
+     */
+    void putProperties(Map<String,String> props);
+
+    /**
+     * Return a mutable map contains the array properties.
+     */
+    Map<String,List<String>> getArrayProperties();
+
+    /**
+     * Returns true if the array property exists.
+     */
+    boolean hasArrayProperty(String name);
+
+    /**
+     * Returns the config extension or null if not exists.
+     */
 	<T> T getExtension(Class<T> type);
-	
+
+    /**
+     * Returns the config extension of creates a new one if not exists.
+     */
 	default <T> T getOrCreateExtension(Class<T> type) {
 		T e = getExtension(type);
 		if(null == e) {
@@ -44,20 +125,79 @@ public interface AppConfigContext extends PropertyAccessor {
 		}
 		return e;
 	}
-	
+
+    /**
+     * Sets the config extension.
+     */
 	<T> void setExtension(T extension);
-	
+
+    /**
+     * Sets the config extension.
+     */
 	<T> void setExtension(Class<T> type, T extension);
-	
+
+    /**
+     * Adds a managed resource.
+     */
 	void addResource(Resource r);
-	
+
+    /**
+     * Adds a managed resource set.
+     */
 	void addResources(ResourceSet rs);
-	
+
+    /**
+     * Returns true if the app already has a default configuration of data source.
+     */
 	boolean hasDefaultDataSourceConfig();
-	
+
+    /**
+     * Returns true if the app already has a named configuration of data source.
+     */
 	boolean hasDataSourceConfig(String name);
-	
+
+    /**
+     * Sets the configuration of data source.
+     */
 	void setDataSourceConfig(String name,DataSourceConfig conf);
-	
+
+    /**
+     * Returns all the data source configurations.
+     */
 	Map<String,DataSourceConfig> getDataSourceConfigs();
+
+    /**
+     * Returns a mutable set contains all the additional packages.
+     */
+    Set<String> getAdditionalPackages();
+
+    /**
+     * Returns all the {@link SysPermissionDef}.
+     */
+    List<SysPermissionDef> getPermissions();
+
+    /**
+     * Adds a {@link SysPermissionDef}.
+     */
+    void addPermission(SysPermissionDef p, boolean override);
+
+    /**
+     * Adds an {@link AppConfigLoaderDef}.
+     */
+    void addConfigLoader(AppConfigLoaderDef loader);
+
+    /**
+     * Imports a config resource.
+     */
+    void importResource(Resource resource, boolean override);
+
+    /**
+     * Returns the {@link PlaceholderResolver}.
+     */
+    PlaceholderResolver getPlaceholderResolver();
+
+    /**
+     * Returns the {@link AppPropertyProcessor} or null.
+     */
+    AppPropertyProcessor getPropertyProcessor();
 }

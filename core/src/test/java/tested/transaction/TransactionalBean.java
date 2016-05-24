@@ -23,8 +23,6 @@ import leap.core.transaction.TransactionDefinition;
 @Bean
 public class TransactionalBean {
 
-    //private TransactionManager tm;
-
     @Transactional
     public void doSuccess() {
         System.out.println("do success");
@@ -38,7 +36,6 @@ public class TransactionalBean {
 
     @Transactional
     public void doSuccessTryFinally() {
-        //Transactions tx = tm.beginTransactionsAll(new SimpleTransactionDefinition(TransactionDefinition.Propagation.REQUIRED));
         try{
             System.out.println("do success");
         }finally{
@@ -67,7 +64,7 @@ public class TransactionalBean {
 
     @Transactional
     public void doFailureThrowable() throws Throwable {
-        throw new Exception();
+        throw new Exception("failure");
     }
 
     private static void throwRuntimeException() {

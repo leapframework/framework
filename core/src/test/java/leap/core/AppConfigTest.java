@@ -16,8 +16,6 @@
 package leap.core;
 
 import leap.core.junit.AppTestBase;
-import leap.lang.resource.Resources;
-
 import org.junit.Test;
 
 public class AppConfigTest extends AppTestBase {
@@ -32,81 +30,13 @@ public class AppConfigTest extends AppTestBase {
 		assertNotNull(config.getDefaultCharset());
 		assertNotNull(config.getDefaultLocale());
 		assertTrue(config.isReloadEnabled());
-		assertEquals("sys.val1", config.getProperty("sys.prop1"));
-		assertEquals("imp.val1", config.getProperty("imp.prop1"));
-		assertEquals("test.val1",config.getProperty("test.prop1"));
-		assertEquals("test.val2",config.getProperty("test.prop2"));
-		assertEquals("test.val3",config.getProperty("test.prop3"));
-		
+
 		assertTrue(config.getResources().size() > 5);
 	}
-	
-	@Test
-	public void testPlaceholder() {
-	    assertEquals("${notExistProperty}", config.getProperty("testNotExistPlaceholder"));
-	}
-	
-	@Test
-	public void testPropertyProcessor() {
-		assertEquals("abcdabcd",config.getProperty("test3.prop1"));
-	}
-	
-	@Test
-	public void testProfile(){
-		AppConfig config = AppContext.config();
-		assertEquals("1", config.getProperty("testProfile.shouldBeExists"));
-		assertNull(config.getProperty("testProfile.shouldNotExists"));
-	}
-	
-	@Test
-	public void testImportNotCheckExistence(){
-		DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
-		loader.load(Resources.getResource("classpath:/test/notcheck_existence.xml"));
-	}
-	
-	@Test
-	public void testImportCheckExistence(){
-		try {
-	        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
-	        loader.load(Resources.getResource("classpath:/test/check_existence.xml"));
-	        fail("should throw exception");
-        } catch (AppConfigException e) {
-        	assertTrue(e.getMessage().contains("not exists"));
-        }
-	}
-	
-	@Test
-	public void testOverridePropertyCheck(){
-		try {
-	        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
-	        loader.load(Resources.getResource("classpath:/test/not_override.xml"));
-	        fail("should throw exception");
-        } catch (AppConfigException e) {
-        	assertTrue(e.getMessage().contains("duplicated"));
-        }
-	}
-	
-	@Test
-	public void testOverrideProperty(){
-        DefaultAppConfigLoader loader = new DefaultAppConfigLoader();
-        loader.load(Resources.getResource("classpath:/test/override.xml"));
-        assertEquals("v1_", loader.getProperties().get("p1"));
-	}
-	
-	@Test
-	public void testPropertiesPrefix() {
-		AppConfig config = AppContext.config();
-		assertEquals("test1.val1",config.getProperty("test1.prop1"));
-		assertEquals("test2.val1",config.getProperty("test2_prop1"));
-	}
-	
-	@Test
-	public void testDataSourcePropertiesConfig() {
-		
-	}
-	
-	@Test
-	public void testGetPrivateKey() {
-	    assertNotNull(config.ensureGetPrivateKey());
-	}
+
+    @Test
+    public void testGetPrivateKey() {
+        assertNotNull(config.ensureGetPrivateKey());
+    }
+
 }

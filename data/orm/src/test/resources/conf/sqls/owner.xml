@@ -20,7 +20,12 @@
     <command key="simpleMapParamsSql">
         select * from owners where city = :city;
     </command>
+
     <command key="simpleSqlIdWithAdditionalField">
         select owners.*,1 as additional,2 secondAdditional from owners;
+    </command>
+
+    <command key="findOwnerByLastUseJdbcPlaceholder">
+        select * from owners where last_name = ?
     </command>
 </sqls>

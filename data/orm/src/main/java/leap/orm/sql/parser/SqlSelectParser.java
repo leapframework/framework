@@ -212,14 +212,14 @@ class SqlSelectParser extends SqlQueryParser {
 		
 		if(lexer.token() == Token.LPAREN){
 			acceptText();
-			
-			//select item : subquery
-			if(lexer.token() == Token.SELECT){
-				parseSelect();
-			}else{
-				parseSelectItem(select);	
+			while(lexer.token() != Token.RPAREN && lexer.token() != Token.FROM){
+				//select item : subquery
+				if(lexer.token() == Token.SELECT){
+					parseSelect();
+				}else{
+					parseSelectItem(select);
+				}
 			}
-			
 			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
 			if(lexer.peekCharSkipWhitespaces() == '('){

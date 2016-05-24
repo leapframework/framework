@@ -411,10 +411,6 @@ public class SqlParser extends SqlParserBase {
 			// @if(..) .. @elseif(..) .. @else .. @endif;
 			parseIfClause();
 			return true;
-		}else if(token == Token.AT_INCLUDE){
-			// @include(..)
-			parseInclude();
-			return true;
 		}else if(token == Token.TAG){
 			// @name{...}
 			parseTag();
@@ -653,14 +649,6 @@ public class SqlParser extends SqlParserBase {
 		acceptNode(new IfClause(ifStatements.toArray(new IfStatement[ifStatements.size()]),elseStatement));
 	}
 
-	protected void parseInclude(){
-		//TODO implement @include()
-		lexer.nextChar();
-		lexer.scanConditionalExpression();
-		IncludeClause includeClause = new IncludeClause(lexer.literal());
-		acceptNode(includeClause);
-	}
-	
 	protected final IfStatement createIfStatement(Token token, IfCondition condition,List<AstNode> bodyNodes){
 		return new IfStatement(token, condition, bodyNodes.toArray(new AstNode[bodyNodes.size()]));
 	}
