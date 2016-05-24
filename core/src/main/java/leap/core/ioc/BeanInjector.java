@@ -20,13 +20,14 @@ import leap.lang.beans.BeanType;
 import leap.lang.reflect.ReflectValued;
 
 import java.lang.annotation.Annotation;
+import java.util.Set;
 
 public interface BeanInjector {
 
     /**
-     * Returns true if thsi injector supports the annotation.
+     * Returns the supported annotation types.
      */
-    boolean supports(Annotation a);
+    Set<Class<? extends Annotation>> getSupportedAnnotationTypes();
 
     /**
      * Returns the injected value or null.

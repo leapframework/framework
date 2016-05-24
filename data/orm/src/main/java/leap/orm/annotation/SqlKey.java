@@ -14,11 +14,18 @@
  * limitations under the License.
  */
 
-package leap.core.annotation;
+package leap.orm.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.ANNOTATION_TYPE})
+@Target({ElementType.FIELD,ElementType.METHOD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface AInject { }
+public @interface SqlKey {
+
+    /**
+     * The key of command.
+     */
+    String value();
+
+}

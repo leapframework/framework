@@ -20,23 +20,25 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanInjector;
 import leap.lang.Lazy;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.beans.BeanCreationException;
 import leap.lang.beans.BeanType;
 import leap.lang.reflect.ReflectValued;
-import leap.orm.annotation.Command;
+import leap.orm.annotation.SqlKey;
 import leap.orm.sql.SqlCommand;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
 
 public class DaoCommandInjector implements BeanInjector {
 
     protected @Inject Lazy<List<Dao>> daos;
 
     @Override
-    public boolean supports(Annotation a) {
-        return a.annotationType().equals(Command.class);
+    public Set<Class<? extends Annotation>> getSupportedAnnotationTypes() {
+        return New.hashSet(SqlKey.class);
     }
 
     @Override
@@ -45,11 +47,11 @@ public class DaoCommandInjector implements BeanInjector {
             throw new BeanCreationException("The type of '" + v + "' must be '" + DaoCommand.class + "' in bean '" + bean + "'");
         }
 
-        Command c = (Command)a;
+        SqlKey c = (SqlKey)a;
 
         String key = c.value();
         if(Strings.isEmpty(key)) {
-            throw new BeanCreationException("The key of '" + Command.class + "' must not be empty, check the bean : " + bd);
+            throw new BeanCreationException("The value of '" + SqlKey.class + "' must not be empty, check the bean : " + bd);
         }
 
         for(Dao dao : daos.get()) {

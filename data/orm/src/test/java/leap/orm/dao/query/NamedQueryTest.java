@@ -16,7 +16,7 @@
 package leap.orm.dao.query;
 
 import leap.orm.OrmTestCase;
-import leap.orm.annotation.Command;
+import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
 import leap.orm.tested.model.petclinic.Owner;
 import org.junit.Test;
@@ -25,7 +25,7 @@ import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
 
-    protected @Command("findOwnerByLastUseJdbcPlaceholder") DaoCommand findByLastNameCmd;
+    protected @SqlKey("findOwnerByLastUseJdbcPlaceholder") DaoCommand findByLastNameCmd;
 
 	@Test
 	public void testFindOwnersByLastName() {

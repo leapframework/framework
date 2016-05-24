@@ -79,7 +79,7 @@ public class BeanContainer implements BeanFactory {
     protected List<BeanDefinitionBase>       processorBeans = new ArrayList<>();
     protected List<BeanDefinitionBase>       injectorBeans  = new ArrayList<>();
     protected BeanProcessor[]                processors;
-    protected BeanInjector[]                 injectors;
+    protected Map<Class<? extends Annotation>, BeanInjector>  injectors = new HashMap<>();
     protected List<BeanFactoryInitializable> beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
@@ -955,9 +955,9 @@ public class BeanContainer implements BeanFactory {
         //bean injector.
         List<BeanInjector> injectorList = new ArrayList<>();
         for(BeanDefinitionBase bd : injectorBeans) {
-            injectorList.add((BeanInjector)doGetBean(bd));
+            BeanInjector injector = (BeanInjector)doGetBean(bd);
+            injector.getSupportedAnnotationTypes().forEach((c) -> injectors.put(c, injector));
         }
-        this.injectors = injectorList.toArray(new BeanInjector[0]);
 
         //bean post processors
 		List<BeanProcessor> processorList = new ArrayList<>();
@@ -1381,16 +1381,11 @@ public class BeanContainer implements BeanFactory {
         Inject inject = v.getAnnotation(Inject.class);
 
         if (null == inject || !inject.value()) {
-            if(null != injectors && injectors.length > 0) {
+            if(!injectors.isEmpty()) {
                 for(Annotation a : v.getAnnotations()) {
-                    if(a.annotationType().isAnnotationPresent(AInject.class)) {
-
-                        for(BeanInjector injector : injectors) {
-                            if(injector.supports(a)) {
-                                return injector.resolveInjectValue(bd, bean, bt, v, a);
-                            }
-                        }
-
+                    BeanInjector injector = injectors.get(a.annotationType());
+                    if(null != injector) {
+                        return injector.resolveInjectValue(bd, bean, bt, v, a);
                     }
                 }
             }
