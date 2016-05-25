@@ -26,6 +26,7 @@
 			</xsd:sequence>
             <xsd:attribute name="if" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+            <xsd:attribute name="default-override" use="optional" type="xsd:boolean"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
 	</xsd:element>

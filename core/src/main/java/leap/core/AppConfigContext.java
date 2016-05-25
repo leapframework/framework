@@ -40,6 +40,16 @@ public interface AppConfigContext extends PropertyAccessor {
     boolean isDefaultOverride();
 
     /**
+     * Sets the default override.
+     */
+    void setDefaultOverride(boolean b);
+
+    /**
+     * Resets the default override to original value.
+     */
+    void resetDefaultOverride();
+
+    /**
      * Returns current profile's name.
      */
 	String getProfile();

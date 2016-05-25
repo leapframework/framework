@@ -140,7 +140,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
     }
 
     protected String initProfile(Object externalContext, Map<String, String> initProperties){
-        String profile = null;
+        String profile = initProperties.get(AppConfig.SYS_PROPERTY_PROFILE);
+        if(!Strings.isEmpty(profile)) {
+            return profile;
+        }
 
         //read from config file
         Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
@@ -164,9 +167,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected String autoDetectProfileName(Object externalContext){
         //Auto detect development environment (maven environment)
         if(DEV.isDevProject(externalContext)){
-            return AppProfile.DEVELOPMENT.getName();
+            return AppConfig.DEVELOPMENT_PROFILE;
         }else{
-            return AppConfig.DEFAULT_PROFILE;
+            return AppConfig.PRODUCTION_PROFILE;
         }
     }
 
@@ -378,7 +381,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //debug
             if(null == config.debug){
-                config.debug = AppProfile.DEVELOPMENT.matches(config.getProfile()) ? true : false;
+                config.debug = AppConfig.DEVELOPMENT_PROFILE.equals(config.getProfile()) ? true : false;
             }
 
             //default locale
@@ -519,8 +522,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected final Loader           loader;
         protected final DefaultAppConfig config;
-        protected final boolean          defaultOverride;
+        protected final boolean          originalDefaultOverride;
 
+        protected boolean     defaultOverride;
         protected boolean     hasDefaultDataSource = false;
         protected Set<String> resources            = new HashSet<>();
 
@@ -528,6 +532,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             super(loader.properties);
             this.loader = loader;
             this.config = loader.config;
+            this.originalDefaultOverride = defaultOverride;
             this.defaultOverride = defaultOverride;
         }
 
@@ -539,6 +544,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
         @Override
         public boolean isDefaultOverride() {
             return defaultOverride;
+        }
+
+        @Override
+        public void setDefaultOverride(boolean b) {
+            this.defaultOverride = b;
+        }
+
+        @Override
+        public void resetDefaultOverride() {
+            this.defaultOverride = originalDefaultOverride;
         }
 
         @Override

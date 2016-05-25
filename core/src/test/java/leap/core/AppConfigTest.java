@@ -25,7 +25,7 @@ public class AppConfigTest extends AppTestBase {
 		AppConfig config = AppContext.config();
 		assertNotNull(config);
 		assertNotNull(config.getProfile());
-		assertEquals(AppProfile.DEVELOPMENT.getName(), config.getProfile());
+		assertEquals(AppConfig.DEVELOPMENT_PROFILE, config.getProfile());
 		assertTrue(config.isDebug());
 		assertNotNull(config.getDefaultCharset());
 		assertNotNull(config.getDefaultLocale());

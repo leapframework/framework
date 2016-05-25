@@ -15,15 +15,15 @@
  */
 package leap.core;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.ds.DataSourceManager;
 import leap.core.i18n.MessageSource;
 import leap.lang.Classes;
 import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.AttributeGetter;
 import leap.lang.beans.NoSuchBeanException;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Global context object of an application.
@@ -167,7 +167,7 @@ public class AppContext implements AttributeAccessor {
 	protected final AppConfig		   config;
 	protected final BeanFactory		   beanFactory;
 	protected final Object 			   externalContext;
-	protected final Map<String,Object> attributes = new ConcurrentHashMap<String, Object>(10);
+	protected final Map<String,Object> attributes = new ConcurrentHashMap<>(10);
 	
 	protected AppHome		home;
 	protected MessageSource messageSource;

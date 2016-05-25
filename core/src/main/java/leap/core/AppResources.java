@@ -22,8 +22,7 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Internal
 public class AppResources {
@@ -86,8 +85,32 @@ public class AppResources {
     private static final String CP_META_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_META_PREFIX);
     private static final String CP_APP_LOCATION       = Strings.format("classpath*:{0}/**/*", CP_APP_PREFIX);
 
+    private static Map<AppConfig, AppResources> instances = new IdentityHashMap<>();
+
+    public static AppResources get(AppConfig config) {
+        AppResources inst = instances.get(config);
+        if(null == inst) {
+            throw new IllegalStateException("No resources for app config '" + config + "'");
+        }
+        return inst;
+    }
+
+    static AppResources create(AppConfig config) {
+        AppResources inst = new AppResources(config.getProfile());
+
+        instances.put(config, inst);
+
+        return inst;
+    }
+
     public static boolean isFrameworkResource(String url) {
         return url.contains(CP_CORE_PREFIX) || url.contains(CP_FRAMEWORK_PREFIX);
+    }
+
+    private final String profile;
+
+    private AppResources(String profile) {
+        this.profile = profile;
     }
 
     /**
@@ -99,10 +122,10 @@ public class AppResources {
 
             if(null == resources){
                 resources = Resources.scan(CP_CORE_LOCATION,
-                                            CP_FRAMEWORK_LOCATION,
-                                            CP_MODULES_LOCATION,
-                                            CP_META_LOCATION,
-                                            CP_APP_LOCATION);
+                                           CP_FRAMEWORK_LOCATION,
+                                           CP_MODULES_LOCATION,
+                                           CP_META_LOCATION,
+                                           CP_APP_LOCATION);
                 ctx.set(resources);
             }
             return resources;

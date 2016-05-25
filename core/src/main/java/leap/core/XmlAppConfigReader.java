@@ -140,7 +140,18 @@ public class XmlAppConfigReader implements AppConfigReader {
             while(reader.next()){
                 if(reader.isStartElement(CONFIG_ELEMENT)){
                     foundValidRootElement = true;
+
+                    Boolean defaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE);
+                    if(null != defaultOverride) {
+                        context.setDefaultOverride(defaultOverride);
+                    }
+
                     readConfig(context,resource,reader);
+
+                    if(null != defaultOverride) {
+                        context.resetDefaultOverride();
+                    }
+
                     break;
                 }
             }
@@ -155,6 +166,7 @@ public class XmlAppConfigReader implements AppConfigReader {
 
     private void readBaseProperties(AppConfigContext context, Resource resource, XmlReader reader) {
         while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
+
             if(reader.isStartElement(BASE_PACKAGE_ELEMENT)){
                 context.setBasePackage(reader.resolveElementTextAndEnd());
                 continue;
@@ -169,9 +181,6 @@ public class XmlAppConfigReader implements AppConfigReader {
             }
 
             if(reader.isStartElement(DEFAULT_LOCALE_ELEMENT)){
-                if(null != context.getDefaultLocale()){
-                    throw new AppConfigException("default-locale already defined as '" + context.getDefaultLocale().toString() + "', duplicated config in xml : " + reader.getSource());
-                }
                 String defaultLocaleString = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(defaultLocaleString)){
                      context.setDefaultLocale(Locales.forName(defaultLocaleString));
@@ -180,9 +189,6 @@ public class XmlAppConfigReader implements AppConfigReader {
             }
 
             if(reader.isStartElement(DEFAULT_ENCODING_ELEMENT)){
-                if(null != context.getDefaultCharset()){
-                    throw new AppConfigException("default-charset already defined as '" + context.getDefaultCharset().name() + "', duplicated config in xml : " + reader.getSource());
-                }
                 String defaultEncodingName = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(defaultEncodingName)){
                     context.setDefaultCharset(Charsets.forName(defaultEncodingName));
@@ -204,6 +210,7 @@ public class XmlAppConfigReader implements AppConfigReader {
         }
 
         while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
+
             //extension element
             if(reader.isStartElement() && !DEFAULT_NAMESPACE_URI.equals(reader.getElementName().getNamespaceURI())){
                 processExtensionElement(context,reader);

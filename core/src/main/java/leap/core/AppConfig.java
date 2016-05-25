@@ -32,6 +32,7 @@ import java.util.Map;
 
 public interface AppConfig extends PropertyGetter {
 
+    String SYS_PROPERTY_PROFILE          = "app.profile";
     String INIT_PROPERTY_PROFILE         = "profile";
     String INIT_PROPERTY_DEBUG           = "debug";
     String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
@@ -43,7 +44,8 @@ public interface AppConfig extends PropertyGetter {
     String PROPERTY_HOME           = "home";
     String PROPERTY_RELOAD_ENABLED = "reload-enabled";
 
-    String  DEFAULT_PROFILE      = "production";
+    String  DEVELOPMENT_PROFILE  = "development";
+    String  PRODUCTION_PROFILE   = "production";
     String  DEFAULT_BASE_PACKAGE = "app";
     Locale  DEFAULT_LOCALE       = Locales.DEFAULT_LOCALE;
     Charset DEFAULT_CHARSET      = Charsets.UTF_8;
