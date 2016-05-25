@@ -15,6 +15,7 @@
  */
 package leap.core.ioc;
 
+import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.el.EL;
 import leap.core.instrument.AppInstrumentation;
@@ -149,20 +150,19 @@ class XmlBeanDefinitionLoader {
 		this.defaultAutoInject = defaultAutoInject;
 	}
 
-	public void load(Resource[] resources) {
+	public void load(AppResource[] resources) {
 	    Args.notNull(resources,"resources");
 	    
-	    for(Resource resource : resources){
-	    	if(resource.isReadable()){
-	    	    if(log.isDebugEnabled()) {
-	    	        if(AppResources.isFrameworkResource(resource.getURLString())) {
-	    	            log.trace("Reading beans from resource : {}",resource.getURLString());
-	    	        }else{
-	    	            log.debug("Reading beans from resource : {}",resource.getURLString());        
-	    	        }
-	    	    }
-	    		readDefinitions(container,resource);	
-	    	}
+	    for(AppResource ar : resources){
+            Resource resource = ar.getResource();
+            if(log.isDebugEnabled()) {
+                if(AppResources.isFrameworkResource(resource.getURLString())) {
+                    log.trace("Reading beans from resource : {}",resource.getURLString());
+                }else{
+                    log.debug("Reading beans from resource : {}",resource.getURLString());
+                }
+            }
+            readDefinitions(container,resource, ar.isDefaultOverride());
 	    }
     }
     
@@ -199,12 +199,16 @@ class XmlBeanDefinitionLoader {
     	return bd;
     }
 	
-	protected void readDefinitions(BeanContainer container,Resource resource){
+	protected void readDefinitions(BeanContainer container,Resource resource, boolean defaultOverride){
+        if(!Strings.endsWithIgnoreCase(resource.getFilename(),".xml")) {
+            return;
+        }
+
 		XmlReader reader = null;
 		try{
 			reader = XML.createReader(resource);
 			if(reader.nextToStartElement(BEANS_ELEMENT)){
-				readBeans(container, resource, reader, new LoaderContext());
+				readBeans(container, resource, reader, new LoaderContext(defaultOverride));
 			}
 		}finally{
 			IO.close(reader);
@@ -229,6 +233,7 @@ class XmlBeanDefinitionLoader {
 	        		
 	        		if(reader.isStartElement(IMPORT_ELEMENT)){
 	        			boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
+                        Boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE);
 	        			String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 	        			
 	        			Resource importResource = Resources.getResource(resource,importResourceName);
@@ -238,7 +243,12 @@ class XmlBeanDefinitionLoader {
 	        					throw new BeanDefinitionException("the import resource '" + importResourceName + "' not exists");
 	        				}
 	        			}else{
-	        				readDefinitions(container,importResource);
+                            if(null != override) {
+                                readDefinitions(container, importResource, override);
+                            }else{
+                                readDefinitions(container,importResource, context.defaultOverride);
+                            }
+
 	        			}
 	        			continue;
 	        		}
@@ -1148,5 +1158,9 @@ class XmlBeanDefinitionLoader {
 		public boolean defaultAutoInject = XmlBeanDefinitionLoader.this.defaultAutoInject;
 		public boolean defaultLazyInit = true;
 		public boolean defaultOverride = false;
-	}
+
+        public LoaderContext(boolean defaultOverride) {
+            this.defaultOverride = defaultOverride;
+        }
+    }
 }

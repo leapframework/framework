@@ -99,6 +99,34 @@ public class AppResources {
         return inst;
     }
 
+    public static Resource[] convertTo(AppResource[] resources) {
+        Resource[] rs = new Resource[resources.length];
+        for(int i=0;i<rs.length;i++) {
+            rs[i] = resources[i].getResource();
+        }
+        return rs;
+    }
+
+    public static AppResource[] convertFrom(ResourceSet resources) {
+        return convertFrom(resources.toResourceArray(), false);
+    }
+
+    public static AppResource[] convertFrom(ResourceSet resources, boolean defaultOverride) {
+        return convertFrom(resources.toResourceArray(), defaultOverride);
+    }
+
+    public static AppResource[] convertFrom(Resource[] resources) {
+        return convertFrom(resources, false);
+    }
+
+    public static AppResource[] convertFrom(Resource[] resources, boolean defaultOverride) {
+        AppResource[] ars = new AppResource[resources.length];
+        for(int i=0;i<ars.length;i++) {
+            ars[i] = new SimpleAppResource(resources[i], defaultOverride);
+        }
+        return ars;
+    }
+
     static void destroy(AppConfig config) {
         AppResources inst = instances.get(config);
         if(null != inst) {
@@ -151,32 +179,41 @@ public class AppResources {
 
         List<String> patterns = new ArrayList<>();
 
+        //{0}{1} -> {name}{suffix}
+
+        final String filePattern = "/{0}{1}";
+        final String dirPattern  = "/{0}/**/*{1}";
+
         //add fixed search patterns.
-        patterns.add(CP_CORE_PREFIX      + "/{0}.*");
-        patterns.add(CP_CORE_PREFIX      + "/{0}/**/*");
-        patterns.add(CP_FRAMEWORK_PREFIX + "/{0}.*");
-        patterns.add(CP_FRAMEWORK_PREFIX + "/{0}/**/*");
-        patterns.add(CP_MODULES_PREFIX   + "/{0}.*");
-        patterns.add(CP_MODULES_PREFIX   + "/{0}/**/*");
-        patterns.add(CP_META_PREFIX      + "/{0}.*");
-        patterns.add(CP_META_PREFIX      + "/{0}/**/*");
-        patterns.add(CP_APP_PREFIX       + "/{0}.*");
-        patterns.add(CP_APP_PREFIX       + "/{0}/**/*");
+        patterns.add(CP_CORE_PREFIX      + filePattern);
+        patterns.add(CP_CORE_PREFIX      + dirPattern);
+        patterns.add(CP_FRAMEWORK_PREFIX + filePattern);
+        patterns.add(CP_FRAMEWORK_PREFIX + dirPattern);
+        patterns.add(CP_MODULES_PREFIX   + filePattern);
+        patterns.add(CP_MODULES_PREFIX   + dirPattern);
+        patterns.add(CP_META_PREFIX      + filePattern);
+        patterns.add(CP_META_PREFIX      + dirPattern);
+        patterns.add(CP_APP_PREFIX       + filePattern);
+        patterns.add(CP_APP_PREFIX       + dirPattern);
 
         //add profile search patterns.
-        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + "/{0}.*");
-        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + "/{0}/**/*");
+        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + filePattern);
+        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + dirPattern);
 
         //add local search patterns. (only for development profile).
         if(devProfile) {
-            patterns.add(CP_APP_PREFIX + "-local/{0}.*");
-            patterns.add(CP_APP_PREFIX + "-local/{0}/**/*");
+            patterns.add(CP_APP_PREFIX + "-local"  + filePattern);
+            patterns.add(CP_APP_PREFIX + "-local"  + dirPattern);
         }
 
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
     }
 
     protected void add(Resource resource, boolean defaultOverride) {
+        if(!resource.isReadable()) {
+            return;
+        }
+
         String url = resource.getURLString();
 
         AppResource old = resources.get(url);
@@ -214,12 +251,54 @@ public class AppResources {
     }
 
     public AppResource[] search(String name) {
-        return searchClasspathResources(defaultSearchPatterns, name);
+        return searchClasspathResources(defaultSearchPatterns, name, ".*");
     }
 
-    public AppResource[] searchConfFiles(String[] filenames) {
+    public AppResource[] search(String name, String suffix) {
+        return searchClasspathResources(defaultSearchPatterns, name, suffix);
+    }
+
+    public AppResource[] searchAppFiles(String[] filenamePatterns) {
         List<String> patterns = new ArrayList<>();
 
+        addAppFiles(patterns, filenamePatterns);
+
+        return searchClasspathResources(patterns.toArray(new String[0]));
+    }
+
+    public AppResource[] searchAllFiles(String[] filenamePatterns) {
+        List<String> patterns = new ArrayList<>();
+
+        addCFMMFiles(patterns, filenamePatterns);
+        addAppFiles(patterns,  filenamePatterns);
+
+        return searchClasspathResources(patterns.toArray(new String[0]));
+    }
+
+    //CFMM -> core, framework, module, meta
+    private void addCFMMFiles(List<String> patterns, String[] filenames) {
+        // core
+        for(String filename : filenames) {
+            patterns.add(CP_CORE_PREFIX + "/" + filename);
+        }
+
+        // framework
+        for(String filename : filenames) {
+            patterns.add(CP_FRAMEWORK_PREFIX + "/" + filename);
+        }
+
+        // modules
+        for(String filename : filenames) {
+            patterns.add(CP_MODULES_PREFIX + "/" + filename);
+        }
+
+        // meta
+        for(String filename : filenames) {
+            patterns.add(CP_META_PREFIX + "/" + filename);
+        }
+    }
+
+    private void addAppFiles(List<String> patterns, String[] filenames) {
         // conf/{filename}
         for(String filename : filenames) {
             patterns.add(CP_APP_PREFIX + "/" + filename);
@@ -236,16 +315,14 @@ public class AppResources {
                 patterns.add(CP_APP_PREFIX +  "-local/" + filename);
             }
         }
-
-        return searchClasspathResources(patterns.toArray(new String[0]));
     }
 
-    private AppResource[] searchClasspathResources(String[] patterns, String name){
+    private AppResource[] searchClasspathResources(String[] patterns, String name, String suffix){
 
         String[] namedPatterns = new String[patterns.length];
 
         for(int i = 0; i< namedPatterns.length; i++){
-            namedPatterns[i] = Strings.format(patterns[i],name);
+            namedPatterns[i] = Strings.format(patterns[i],name, suffix);
         }
 
         return searchClasspathResources(namedPatterns);
@@ -257,21 +334,21 @@ public class AppResources {
 
         final PathMatcher matcher = Resources.getPathMatcher();
 
-        for(AppResource r : resources.values()){
+        for(String namedPattern : patterns){
+            if(namedPattern.startsWith("/")){
+                namedPattern = namedPattern.substring(1);
+            }
 
-            if(null != r.getResource().getClasspath()) {
+            for(AppResource r  : resources.values()) {
+                if(null != r.getResource().getClasspath()) {
+                    String cp = r.getResource().getClasspath();
 
-                for(String namedPattern : patterns){
-                    if(namedPattern.startsWith("/")){
-                        namedPattern = namedPattern.substring(1);
-                    }
-
-                    if(matcher.match(namedPattern, r.getResource().getClasspath())) {
+                    if(matcher.match(namedPattern, cp)) {
                         list.add(r);
-                        break;
                     }
                 }
             }
+
         }
 
         return list.toArray(new AppResource[0]);
@@ -280,7 +357,7 @@ public class AppResources {
     /**
      * Returns all the resource(s).
      */
-    public static ResourceSet get() {
+    static ResourceSet get() {
         if(ctx != null){
             ResourceSet resources = ctx.get();
 
@@ -307,120 +384,7 @@ public class AppResources {
         return Resources.getResource("classpath:" + CP_APP_PREFIX + "/" + name);
     }
 
-    public static Resource[] getLocClasspathResources(String[] locations) {
-        List<Resource> list = new ArrayList<>();
 
-        ResourceSet rs = get();
-
-        Resource[] resources = rs.searchClasspaths(locations);
-        for(Resource resource : resources){
-            list.add(resource);
-        }
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    public static Resource[] getAllClasspathResources(String name, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_FRAMEWORK_TEMPLATES, rs, name, ext);
-        searchClasspathResources(list, CP_MODULES_TEMPLATES,   rs, name, ext);
-        searchClasspathResources(list, CP_META_TEMPLATES,      rs, name, ext);
-        searchClasspathResources(list, CP_APP_TEMPLATES,       rs, name, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    public static Resource[] getAllClasspathResourcesForXml(String name){
-        return getAllClasspathResources(name, XML_EXT);
-    }
-
-    public static Resource[] getAllClasspathResourcesWithPattern(String pattern, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_CORE_TEMPLATES_FOR_PATTERN,      rs, pattern, ext);
-        searchClasspathResources(list, CP_FRAMEWORK_TEMPLATES_FOR_PATTERN, rs, pattern, ext);
-        searchClasspathResources(list, CP_MODULES_TEMPLATES_FOR_PATTERN,   rs, pattern, ext);
-        searchClasspathResources(list, CP_META_TEMPLATES_FOR_PATTERN,      rs, pattern, ext);
-        searchClasspathResources(list, CP_APP_TEMPLATES_FOR_PATTERN,       rs, pattern, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    /**
-     * FM -> Framework, Module.
-     */
-    public static Resource[] getFMClasspathResources(String name, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_FRAMEWORK_TEMPLATES, rs, name, ext);
-        searchClasspathResources(list, CP_MODULES_TEMPLATES,   rs, name, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    /**
-     * FM -> Framework and Module.
-     */
-    public static Resource[] getFMClasspathResourcesForXml(String name){
-        return getFMClasspathResources(name, XML_EXT);
-    }
-
-    /**
-     * FMM -> Framework, Module, Meta.
-     */
-    public static Resource[] getFMMClasspathResourcesForXml(String name){
-        return getFMMClasspathResources(name, XML_EXT);
-    }
-
-    /**
-     * FMM -> Framework, Module, Meta.
-     */
-    public static Resource[] getFMMClasspathResources(String name, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_FRAMEWORK_TEMPLATES, rs, name, ext);
-        searchClasspathResources(list, CP_MODULES_TEMPLATES,   rs, name, ext);
-        searchClasspathResources(list, CP_META_TEMPLATES,      rs, name, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    public static Resource[] getMetaClasspathResources(String name, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_META_TEMPLATES, rs, name, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    public static Resource[] getMetaClasspathResourcesForXml(String name){
-        return getMetaClasspathResources(name, XML_EXT);
-    }
-
-    public static Resource[] getAppClasspathResources(String name, String ext){
-        List<Resource> list = new ArrayList<>();
-
-        ResourceSet rs = get();
-
-        searchClasspathResources(list, CP_APP_TEMPLATES, rs, name, ext);
-
-        return list.toArray(new Resource[list.size()]);
-    }
-
-    public static Resource[] getAppClasspathResourcesForXml(String xmlResourceName){
-        return getAppClasspathResources(xmlResourceName, XML_EXT);
-    }
 
     static void onContextInitializing() {
         ctx = new InheritableThreadLocal<>();

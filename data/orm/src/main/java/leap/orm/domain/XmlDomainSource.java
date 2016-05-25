@@ -15,9 +15,8 @@
  */
 package leap.orm.domain;
 
-import leap.core.AppConfig;
-import leap.core.AppConfigException;
-import leap.core.AppResources;
+import leap.core.*;
+import leap.core.annotation.Inject;
 import leap.core.el.EL;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
@@ -62,19 +61,18 @@ public class XmlDomainSource implements DomainSource {
 	private static final String UPDATE_VALUE_ATTRIBUTE        = "update-value";
 	private static final String DEFAULT_VALUE_ATTRIBUTE       = "default-value";
 	private static final String AUTO_MAPPING_ATTRIBUTE        = "auto-mapping";
+
+    protected @Inject AppConfig config;
 	
 	@Override
     public void loadDomains(DomainConfigContext context) {
-		loadDomains(context, AppResources.getAllClasspathResourcesForXml("domains"));
+		loadDomains(new LoadContext(context), AppResources.get(config).search("domains"));
     }
 	
-	protected void loadDomains(DomainConfigContext context,Resource[] resources){
-		loadDomains(new LoadContext(context), false, resources);
-	}
-	
-	protected void loadDomains(LoadContext context,boolean override,Resource... resources){
+	protected void loadDomains(LoadContext context, AppResource... resources){
 		for(int i=0;i<resources.length;i++){
-			Resource resource = resources[i];
+            AppResource ar = resources[i];
+			Resource resource = ar.getResource();
 			
 			if(resource.isReadable() && resource.exists()){
 				XmlReader reader = null;
@@ -89,8 +87,10 @@ public class XmlDomainSource implements DomainSource {
 					
 					reader = XML.createReader(resource);
 					reader.setPlaceholderResolver(context.config.getPlaceholderResolver());
-					
-					loadDomains(context,resource,reader, false);
+
+                    context.setDefaultOverride(ar.isDefaultOverride());
+					loadDomains(context,resource,reader);
+                    context.resetDefaultOverride();
 				}catch(DomainConfigException e){
 					throw e;
 				}catch(Exception e){
@@ -102,7 +102,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void loadDomains(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride){
+	protected void loadDomains(LoadContext context, Resource resource, XmlReader reader){
 		boolean foundValidRootElement = false;
 		
 		while(reader.next()){
@@ -111,13 +111,13 @@ public class XmlDomainSource implements DomainSource {
 				
 				Boolean defaultOverrideAttribute = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE);
 				if(null != defaultOverrideAttribute){
-					defaultOverride = defaultOverrideAttribute;
+					context.setDefaultOverride(defaultOverrideAttribute);
 				}
 				
 				while(reader.next()){
 					if(reader.isStartElement(IMPORT_ELEMENT)){
 						boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, defaultOverride);
+						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
 						String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 						
 						Resource importResource = Resources.getResource(resource,importResourceName);
@@ -127,29 +127,30 @@ public class XmlDomainSource implements DomainSource {
 								throw new DomainConfigException("the import resource '" + importResourceName + "' not exists");	
 							}
 						}else{
-							loadDomains(context,override,importResource);
+                            LoadContext importContext = new LoadContext(context.configContext);
+							loadDomains(importContext, new SimpleAppResource(importResource, override));
 							reader.nextToEndElement(IMPORT_ELEMENT);
 						}
 						continue;
 					}
 					
 					if(reader.isStartElement(ENTITY_DOMAIN_ELEMENT)){
-						readEntity(context, resource, reader, defaultOverride);
+						readEntity(context, resource, reader);
 						continue;
 					}
 					
 					if(reader.isStartElement(ENTITY_DOMAIN_ALIAS_ELEMENT)){
-						readEntityAlias(context, resource, reader, defaultOverride);
+						readEntityAlias(context, resource, reader);
 						continue;
 					}
 					
 					if(reader.isStartElement(FIELD_DOMAIN_ELEMENT)){
-						readDomain(context, resource, reader, defaultOverride, null);
+						readDomain(context, resource, reader, null);
 						continue;
 					}
 					
 					if(reader.isStartElement(FIELD_DOMAIN_ALIAS_ELEMENT)){
-						readDomainAlias(context, resource, reader, defaultOverride);
+						readDomainAlias(context, resource, reader);
 						continue;
 					}
 					
@@ -163,7 +164,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void readEntity(LoadContext context,Resource resource,XmlReader reader,boolean defaultOverride){
+	protected void readEntity(LoadContext context,Resource resource,XmlReader reader){
 		String name = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
 		
 		EntityDomain exists = context.configContext.tryGetEntityDomain(name);
@@ -188,7 +189,7 @@ public class XmlDomainSource implements DomainSource {
 			}
 			
 			if(reader.isStartElement(FIELD_DOMAIN_ELEMENT)){
-				readDomain(context, resource, reader, defaultOverride, entity);
+				readDomain(context, resource, reader, entity);
 				continue;
 			}
 			
@@ -201,7 +202,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void readEntityAlias(LoadContext context,Resource resource,XmlReader reader, boolean defaultOverride){
+	protected void readEntityAlias(LoadContext context,Resource resource,XmlReader reader){
 		String       entityName = reader.resolveRequiredAttribute(DOMAIN_ATTRIBUTE);
 		EntityDomain entity     = context.configContext.tryGetEntityDomain(entityName);
 		
@@ -218,7 +219,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void readDomain(LoadContext context,Resource resource,XmlReader reader, boolean defaultOverride, EntityDomain entityDomain){
+	protected void readDomain(LoadContext context,Resource resource,XmlReader reader, EntityDomain entityDomain){
 		String  entityName   = reader.resolveAttribute(ENTITY_DOMAIN_ATTRIBUTE);
 		String  name         = reader.resolveAttribute(NAME_ATTRIBUTE);
 		String  typeName     = reader.resolveAttribute(TYPE_ATTRIBUTE);
@@ -232,7 +233,7 @@ public class XmlDomainSource implements DomainSource {
 		String  insertValue  = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
 		boolean	autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING_ATTRIBUTE,false);
-		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
+		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
 		
 		if(!Strings.isEmpty(entityName)){
 			entityDomain = context.configContext.tryGetEntityDomain(entityName);
@@ -311,7 +312,7 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void readDomainAlias(LoadContext context,Resource resource,XmlReader reader, boolean defaultOverride){
+	protected void readDomainAlias(LoadContext context,Resource resource,XmlReader reader){
 		String domainName = reader.resolveRequiredAttribute(DOMAIN_ATTRIBUTE);
 		FieldDomain domain     = context.configContext.tryGetFieldDomain(domainName);
 		
@@ -343,14 +344,31 @@ public class XmlDomainSource implements DomainSource {
 	}
 	
 	private final class LoadContext {
-		private final Set<String>         resources = new HashSet<String>();
+		private final Set<String>         resources = new HashSet<>();
 		private final DomainConfigContext configContext;
 		private final AppConfig			  config;
+        private final boolean             originalDefaultOverride;
+
+        private boolean defaultOverride;
 		
 		private LoadContext(DomainConfigContext context){
 			this.configContext = context;
 			this.config		   = context.getAppConfig();
+            this.originalDefaultOverride = false;
+            this.defaultOverride = false;
 		}
+
+        public boolean isDefaultOverride() {
+            return defaultOverride;
+        }
+
+        public void setDefaultOverride(boolean b) {
+            this.defaultOverride = b;
+        }
+
+        public void resetDefaultOverride() {
+            this.defaultOverride = originalDefaultOverride;
+        }
 	}
 	
 }

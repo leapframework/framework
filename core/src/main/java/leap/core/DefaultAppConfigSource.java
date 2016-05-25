@@ -383,7 +383,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadBase(ConfigContext context){
-            AppResource[] appBaseConfigFiles = appResources.searchConfFiles(BASE_CONFIG_FILENAMES);
+            AppResource[] appBaseConfigFiles = appResources.searchAppFiles(BASE_CONFIG_FILENAMES);
             if(appBaseConfigFiles.length > 0) {
                 parent.loadBaseConfig(context, appBaseConfigFiles);
             }

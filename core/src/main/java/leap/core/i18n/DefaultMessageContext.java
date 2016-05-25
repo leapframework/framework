@@ -23,9 +23,11 @@ import java.util.Set;
 
 public class DefaultMessageContext implements MessageContext {
 	
-	private boolean 			 defaultOverride;
 	private Set<String> 		 resourceUrls = new HashSet<>();
-	private Map<String, Message> messages     = new HashMap<String, Message>();
+	private Map<String, Message> messages     = new HashMap<>();
+
+    private boolean              originalDefaultOverride;
+    private boolean 			 defaultOverride;
 	
 	public DefaultMessageContext() {
 	    super();
@@ -33,10 +35,12 @@ public class DefaultMessageContext implements MessageContext {
 	
 	public DefaultMessageContext(boolean defaultOverride){
 		this.defaultOverride = defaultOverride;
+        this.originalDefaultOverride = defaultOverride;
 	}
 	
 	public DefaultMessageContext(boolean defaultOverride,Map<String, Message> messages){
 		this.defaultOverride = defaultOverride;
+        this.originalDefaultOverride = defaultOverride;
 		this.messages        = messages;
 	}
 
@@ -45,7 +49,17 @@ public class DefaultMessageContext implements MessageContext {
 		return defaultOverride;
 	}
 
-	@Override
+    @Override
+    public void setDefaultOverride(boolean b) {
+        this.defaultOverride = b;
+    }
+
+    @Override
+    public void resetDefaultOverride() {
+        this.defaultOverride = originalDefaultOverride;
+    }
+
+    @Override
 	public boolean containsResourceUrl(String url) {
 		return resourceUrls.contains(url);
 	}

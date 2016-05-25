@@ -18,7 +18,7 @@ package leap.core;
 
 import leap.lang.resource.Resource;
 
-final class SimpleAppResource implements AppResource {
+public final class SimpleAppResource implements AppResource {
 
     private final Resource resource;
     private final boolean  defaultOverride;

@@ -16,10 +16,10 @@
 
 package leap.core.ioc;
 
+import leap.core.AppResources;
 import leap.core.CoreTestCase;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyAccessor;
-import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import org.junit.Test;
@@ -60,7 +60,7 @@ public class BeanContainerTest extends CoreTestCase {
         BeanContainer container = new BeanContainer(props);
         ResourceSet resources = Resources.scan("classpath:/test/beans.xml");
 
-        container.loadFromResources(resources.toArray(Resource.class)).init();
+        container.loadFromResources(AppResources.convertFrom(resources)).init();
 
         assertTrue(TInitedClass.inited);
 

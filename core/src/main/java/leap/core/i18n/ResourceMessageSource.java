@@ -15,17 +15,17 @@
  */
 package leap.core.i18n;
 
+import leap.core.AppConfig;
+import leap.core.AppConfigAware;
+import leap.core.AppResource;
+import leap.core.annotation.Inject;
+import leap.core.validation.annotations.NotNull;
+import leap.lang.Strings;
+
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import leap.core.AppConfig;
-import leap.core.AppConfigAware;
-import leap.core.annotation.Inject;
-import leap.core.validation.annotations.NotNull;
-import leap.lang.Strings;
-import leap.lang.resource.Resource;
 
 public class ResourceMessageSource extends AbstractMessageSource implements AppConfigAware {
 	
@@ -51,7 +51,7 @@ public class ResourceMessageSource extends AbstractMessageSource implements AppC
 		Map<String, Message> localeMessages = cachedLocaleMessages.get(locale);
 		if(null == localeMessages){
 			synchronized (this.cachedLocaleMessages) {
-				localeMessages = new ConcurrentHashMap<String, Message>();
+				localeMessages = new ConcurrentHashMap<>();
 				cachedLocaleMessages.put(locale, localeMessages);
 			}			
 		}
@@ -101,23 +101,25 @@ public class ResourceMessageSource extends AbstractMessageSource implements AppC
 		return messages.get(key);
 	}
 	
-	public ResourceMessageSource readFromResources(Resource... resources) {
+	public ResourceMessageSource readFromResources(AppResource... resources) {
 		if(resources.length > 0){
 			MessageContext context = new DefaultMessageContext(false, messages);
-			for(Resource resource : resources){
+			for(AppResource resource : resources){
 				readFromResource(context, resource);
 			}
 		}
 		return this;
 	}
 	
-	protected void readFromResource(MessageContext context, Resource resource){
-		if(null != resource){
+	protected void readFromResource(MessageContext context, AppResource ar){
+		if(null != ar){
+            context.setDefaultOverride(ar.isDefaultOverride());
 			for(MessageReader reader : readers){
-				if(reader.read(context,resource)){
-					return;
+				if(reader.read(context,ar.getResource())){
+					break;
 				}
 			}
+            context.resetDefaultOverride();
 		}
 	}
 }

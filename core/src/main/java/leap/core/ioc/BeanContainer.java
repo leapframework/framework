@@ -32,7 +32,6 @@ import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
-import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
@@ -141,12 +140,12 @@ public class BeanContainer implements BeanFactory {
 	 * 
 	 * throws {@link IllegalStateException} if this container aleady finish loading.
 	 */
-	public BeanContainer loadFromResources(Resource[] resources) throws IllegalStateException {
+	public BeanContainer loadFromResources(AppResource[] resources) throws IllegalStateException {
 		ensureContainerNotInited();
 		this.xmlBeanDefinitionLoader.load(resources);
 		return this;
 	}
-	
+
 	public BeanContainer loadFromClasses(Class<?>[] classes) throws IllegalStateException{
 		ensureContainerNotInited();
 		this.annotationBeanDefinitionLoader.load(this,classes);

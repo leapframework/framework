@@ -21,7 +21,11 @@ import java.util.Locale;
 public interface MessageContext {
 	
 	boolean isDefaultOverride();
-	
+
+    void setDefaultOverride(boolean b);
+
+    void resetDefaultOverride();
+
 	boolean containsResourceUrl(String url);
 	
 	void addResourceUrl(String url);

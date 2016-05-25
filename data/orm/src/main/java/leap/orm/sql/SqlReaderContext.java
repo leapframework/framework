@@ -26,4 +26,8 @@ public interface SqlReaderContext {
 	boolean acceptDbType(String dbType);
 	
 	boolean isDefaultOverride();
+
+    void setDefaultOverride(boolean defaultOverride);
+
+    void resetDefaultOverride();
 }

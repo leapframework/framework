@@ -16,6 +16,7 @@
 package leap.web.theme;
 
 import leap.core.AppConfigException;
+import leap.core.AppResources;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.cache.CacheManager;
@@ -27,7 +28,6 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
-import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
@@ -144,7 +144,9 @@ public class DefaultThemeManager implements ThemeManager,PostCreateBean {
 			ResourceSet rs = Resources.scan(messagesDir, "**/*.*");
 			if(!rs.isEmpty()){
 				MessageSource themeMessageSource = 
-						app.factory().createBean(ResourceMessageSource.class).readFromResources(rs.toArray(Resource.class));
+						app.factory()
+                                .createBean(ResourceMessageSource.class)
+                                .readFromResources(AppResources.convertFrom(rs, true));
 				return new ThemeOrDefaultMessageSource(themeMessageSource,app.getMessageSource());
 			}
 		}

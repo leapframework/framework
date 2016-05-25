@@ -57,11 +57,11 @@ public class DefaultBeanFactory implements BeanFactory {
 	}
 	
 	protected DefaultBeanFactory load(AppContext appContext){
+        AppResources resources = AppResources.get(appContext.getConfig());
+
 		this.beanContainer.setAppContext(appContext);
-		this.beanContainer.loadFromResources(AppResources.getFMClasspathResourcesForXml("beans"))
-						  .loadFromResources(AppResources.getMetaClasspathResourcesForXml("beans"))
-						  .loadFromClasses(config.getResources().searchClasses())
-						  .loadFromResources(AppResources.getAppClasspathResourcesForXml("beans"))
+		this.beanContainer.loadFromClasses(config.getResources().searchClasses())
+                          .loadFromResources(resources.search("beans"))
 						  .init()
 						  .registerShutdownHook();
 		return this;
