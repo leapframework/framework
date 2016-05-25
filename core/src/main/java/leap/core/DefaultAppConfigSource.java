@@ -48,20 +48,22 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
 	private static final Log log = LogFactory.get(DefaultAppConfigSource.class);
 
-    protected static final String APP_PROFILE_CONFIG_RESOURCE = CP_APP_PREFIX + "/profile";
+    protected static final String APP_PROFILE_CONFIG_RESOURCE = "classpath:/profile";
 
     protected static final String[] BASE_CONFIG_LOCATIONS = new String[]{
             CP_APP_PREFIX + "/config.properties",
             CP_APP_PREFIX + "/config.xml"
     };
 
+    protected static final String[] BASE_CONFIG_FILENAMES = new String[] {"init.properties", "config.properties", "config.xml"};
+
     protected static final String[] APP_CONFIG_LOCATIONS  = new String[]{
             CP_APP_PREFIX + "/config.properties",
             CP_APP_PREFIX + "/config.xml",
             CP_APP_PREFIX + "/config/**/*",
-            CP_APP_PREFIX + "/profiles/{profile}/config.properties",
-            CP_APP_PREFIX + "/profiles/{profile}/config.xml",
-            CP_APP_PREFIX + "/profiles/{profile}/config/**/*"
+            CP_APP_PREFIX + "-{profile}/config.properties",
+            CP_APP_PREFIX + "-{profile}/config.xml",
+            CP_APP_PREFIX + "-{profile}/config/**/*"
     };
 
     //all init properties
@@ -145,15 +147,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
             return profile;
         }
 
-        //read from config file
-        Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
-        if(null != r && r.exists()){
-            profile = Strings.trim(r.getContent());
-        }
-
         //read from init properties
         if(Strings.isEmpty(profile)){
             profile = initProperties.get(AppConfig.INIT_PROPERTY_PROFILE);
+        }
+
+        //read from file
+        Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
+        if(null != r && r.exists() && !r.isDirectory()){
+            profile = Strings.trim(r.getContent());
+            if(profile.startsWith("${") && profile.endsWith("}")) {
+                profile = initProperties.get(profile.substring(1,profile.length() - 1));
+            }
         }
 
         //auto detect profile name
@@ -167,9 +172,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected String autoDetectProfileName(Object externalContext){
         //Auto detect development environment (maven environment)
         if(DEV.isDevProject(externalContext)){
-            return AppConfig.DEVELOPMENT_PROFILE;
+            return AppConfig.PROFILE_DEVELOPMENT;
         }else{
-            return AppConfig.PRODUCTION_PROFILE;
+            return AppConfig.PROFILE_PRODUCTION;
         }
     }
 
@@ -177,17 +182,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
         return new Loader(externalContext, initProperties, profile);
     }
 
-    protected void loadBaseConfig(ConfigContext context, Resource... resources) {
+    protected void loadBaseConfig(ConfigContext context, AppResource... resources) {
         loadConfig(context, true, resources);
     }
 
-    protected void loadFullConfig(ConfigContext context, Resource... resources) {
+    protected void loadFullConfig(ConfigContext context, AppResource... resources) {
         loadConfig(context, false, resources);
     }
 
-    private void loadConfig(ConfigContext context, boolean base, Resource... resources){
-        for(Resource resource : resources){
+    private void loadConfig(ConfigContext context, boolean base, AppResource... resources){
+        for(AppResource ar : resources){
             try{
+                Resource resource  = ar.getResource();
                 String resourceUrl = resource.getURL().toString();
 
                 if(log.isDebugEnabled()){
@@ -204,6 +210,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 context.resources.add(resourceUrl);
 
+                context.setDefaultOverride(ar.isDefaultOverride());
                 for(AppConfigReader reader : readers) {
                     if(base) {
                         if(reader.readBase(context, resource)) {
@@ -215,6 +222,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                         }
                     }
                 }
+                context.resetDefaultOverride();
 
             }catch(IOException e) {
                 throw new AppConfigException("I/O Exception",e);
@@ -318,6 +326,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final Map<String, String>        initProperties;
         final DefaultAppConfig           config;
         final DefaultPlaceholderResolver placeholderResolver;
+        final AppResources               appResources;
 
         protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
         protected final Map<String, String>                          properties         = new LinkedHashMap<>();
@@ -325,12 +334,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final Set<Resource>                                resources          = new HashSet<>();
         protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
         protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
-        protected final List<AppConfigLoaderDef>                      externalLoaders    = new ArrayList<>();
+        protected final List<AppConfigLoaderDef>                     externalLoaders    = new ArrayList<>();
 
         Loader(Object externalContext, Map<String,String> initProperties, String profile) {
             this.externalContext = externalContext;
             this.initProperties  = initProperties;
             this.config          = new DefaultAppConfig(profile);
+            this.appResources    = AppResources.create(config);
 
             this.placeholderResolver = new DefaultPlaceholderResolver(new PropertyGetter() {
                 @Override
@@ -349,12 +359,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected DefaultAppConfig load() {
             init();
 
+            //Load base properties.
             loadBase(new ConfigContext(this, false));
 
+            //Load configuration from default locations.
             loadDefault(new ConfigContext(this, false));
 
+            //Load configuration by external loaders.
             loadExternal(new ConfigContext(this, false));
 
+            //complete loading configuration.
             complete();
 
             return config;
@@ -369,7 +383,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadBase(ConfigContext context){
-            Resource[] appBaseConfigFiles = AppResources.get().searchClasspaths(BASE_CONFIG_LOCATIONS);
+            AppResource[] appBaseConfigFiles = appResources.searchConfFiles(BASE_CONFIG_FILENAMES);
             if(appBaseConfigFiles.length > 0) {
                 parent.loadBaseConfig(context, appBaseConfigFiles);
             }
@@ -381,7 +395,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //debug
             if(null == config.debug){
-                config.debug = AppConfig.DEVELOPMENT_PROFILE.equals(config.getProfile()) ? true : false;
+                config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
             }
 
             //default locale
@@ -408,9 +422,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadDefault(ConfigContext context) {
-            Resource[] fmmResources = AppResources.getFMMClasspathResourcesForXml("config");
-            Resource[] appResources = AppResources.getLocClasspathResources(config.getProfiled(APP_CONFIG_LOCATIONS));
-            parent.loadFullConfig(context, Arrays2.concat(fmmResources, appResources));
+            AppResource[] files = appResources.search("config");
+            if(files.length > 0) {
+                parent.loadFullConfig(context, files);
+            }
         }
 
         protected void loadExternal(ConfigContext context) {
@@ -628,7 +643,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         @Override
         public void importResource(Resource resource, boolean override) {
-            loadFullConfig(new ConfigContext(loader, override), resource);
+            loadFullConfig(new ConfigContext(loader, override), new SimpleAppResource(resource, override));
         }
 
         @Override

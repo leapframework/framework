@@ -26,11 +26,11 @@
         <bean id="testIfBeanFalse3" class="tested.beans.TBean"/>
     </beans>
 
-    <beans if-profile="production">
+    <beans if-profile="prod">
         <bean id="testProfile.shouldNotCreated" class="tested.beans.TBean"/>
     </beans>
 
-    <beans if-profile="development">
+    <beans if-profile="dev">
         <bean id="testProfile.shouldBeCreated" class="tested.beans.TBean"/>
     </beans>
 

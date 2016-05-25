@@ -21,13 +21,13 @@
         <property name="testIf.prop3" value="ifVal3"/>
     </config>
 
-    <config if-profile="production">
+    <config if-profile="prod">
     	<properties>
     		<property name="testProfile.shouldNotExists" value="1"/>
     	</properties>
     </config>
     
-    <config if-profile="development">
+    <config if-profile="dev">
     	<properties>
     		<property name="testProfile.shouldBeExists" value="1"/>
     	</properties>

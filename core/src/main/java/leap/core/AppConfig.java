@@ -44,8 +44,8 @@ public interface AppConfig extends PropertyGetter {
     String PROPERTY_HOME           = "home";
     String PROPERTY_RELOAD_ENABLED = "reload-enabled";
 
-    String  DEVELOPMENT_PROFILE  = "development";
-    String  PRODUCTION_PROFILE   = "production";
+    String  PROFILE_DEVELOPMENT  = "dev";
+    String  PROFILE_PRODUCTION   = "prod";
     String  DEFAULT_BASE_PACKAGE = "app";
     Locale  DEFAULT_LOCALE       = Locales.DEFAULT_LOCALE;
     Charset DEFAULT_CHARSET      = Charsets.UTF_8;

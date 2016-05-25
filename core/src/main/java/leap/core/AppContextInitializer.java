@@ -52,6 +52,7 @@ public class AppContextInitializer {
 		if(AppContext.tryGetCurrent() != null){
 			throw new IllegalStateException("App context already initialized");
 		}
+        AppConfig config = null;
 		try{
 			initializing = true;
 			initialAppConfig = new InheritableThreadLocal<>();
@@ -62,7 +63,7 @@ public class AppContextInitializer {
 			
 			log.debug("Initializing standalone app context...");
 			
-			AppConfig config = loadDefaultAppConfig(attrs, null, initProperties);
+			config = loadDefaultAppConfig(attrs, null, initProperties);
 			
 			initialAppConfig.set(config);
 			
@@ -94,6 +95,11 @@ public class AppContextInitializer {
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing = false;
+
+            if(null != config) {
+                AppResources.destroy(config);
+            }
+
             AppResources.onContextInitialized();
 		}
 	}
@@ -110,7 +116,8 @@ public class AppContextInitializer {
 		if(AppContext.tryGetCurrent() != null){
 			throw new IllegalStateException("App context already initialized");
 		}
-		
+
+        AppConfig config = null;
 		try{
 			initializing     = true;
 			initialAppConfig = new InheritableThreadLocal<>();
@@ -121,7 +128,7 @@ public class AppContextInitializer {
 			
 			//log.info("Initializing app context");
 			
-			AppConfig config = loadDefaultAppConfig(attrs, externalContext, initProperties);
+			config = loadDefaultAppConfig(attrs, externalContext, initProperties);
 			
 			initialAppConfig.set(config);
 			
@@ -143,6 +150,10 @@ public class AppContextInitializer {
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing   = false;
+
+            if(null != config) {
+                AppResources.destroy(config);
+            }
 
             AppResources.onContextInitialized();
 		}

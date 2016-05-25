@@ -16,6 +16,10 @@
 
 package leap.lang.resource;
 
+import leap.lang.Charsets;
+import leap.lang.exception.NestedIOException;
+import leap.lang.io.InputStreamSource;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,10 +27,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.nio.charset.Charset;
-
-import leap.lang.Charsets;
-import leap.lang.exception.NestedIOException;
-import leap.lang.io.InputStreamSource;
 
 /**
  * Interface for a resource descriptor that abstracts from the actual
@@ -92,6 +92,13 @@ public interface Resource extends InputStreamSource {
 	 * Returns whether this resources is a {@link File}.
 	 */
 	boolean isFile();
+
+    /**
+     * Returns true if the resource is a directory.
+     */
+    default boolean isDirectory() {
+        return isFile() && getFile().isDirectory();
+    }
 
 	/**
 	 * Return a URL handle for this resource.
