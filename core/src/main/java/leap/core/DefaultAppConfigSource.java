@@ -152,18 +152,24 @@ public class DefaultAppConfigSource implements AppConfigSource {
             profile = initProperties.get(AppConfig.INIT_PROPERTY_PROFILE);
         }
 
-        //read from file
-        Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
-        if(null != r && r.exists() && !r.isDirectory()){
-            profile = Strings.trim(r.getContent());
-            if(profile.startsWith("${") && profile.endsWith("}")) {
-                profile = initProperties.get(profile.substring(1,profile.length() - 1));
-            }
-        }
-
         //auto detect profile name
         if(Strings.isEmpty(profile)){
             profile = autoDetectProfileName(externalContext);
+        }
+
+        if(Strings.isEmpty(profile)) {
+            //read from file
+            Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
+            if(null != r && r.exists() && !r.isDirectory()){
+                profile = Strings.trim(r.getContent());
+                if(profile.startsWith("${") && profile.endsWith("}")) {
+                    profile = initProperties.get(profile.substring(1,profile.length() - 1));
+                }
+            }
+        }
+
+        if(Strings.isEmpty(profile)) {
+            profile = AppConfig.PROFILE_PRODUCTION;
         }
 
         return profile;
@@ -174,7 +180,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         if(DEV.isDevProject(externalContext)){
             return AppConfig.PROFILE_DEVELOPMENT;
         }else{
-            return AppConfig.PROFILE_PRODUCTION;
+            return null;
         }
     }
 

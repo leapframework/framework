@@ -174,9 +174,16 @@ public interface Resource extends InputStreamSource {
 	 * @throws IllegalStateException if error calling {@link #getFile()}.
 	 */
 	String getFilepath() throws IllegalStateException;
+
+    /**
+     * Returns true if the class path is exists.
+     */
+    default boolean hasClasspath() {
+        return null != getClasspath();
+    }
 	
 	/**
-	 * Returns the class path of this resoure.
+	 * Returns the class path of this resource.
 	 * 
 	 * <p/>
 	 * 

@@ -40,16 +40,20 @@ public class AppContextInitializer {
 	public static void initStandalone(){
 		initStandalone(null);
 	}
-	
+
+    public static AppContext newStandalone(){
+        return initStandalone(null,true);
+    }
+
 	public static void initStandalone(BeanFactory externalAppFactory){
-		initStandalone(externalAppFactory, null);
+		initStandalone(externalAppFactory, true);
 	}
-	
-	public static synchronized void initStandalone(BeanFactory externalAppFactory,Map<String, String> initProperties){
+
+	protected static synchronized AppContext initStandalone(BeanFactory externalAppFactory,boolean createNew){
 		if(initializing){
-			return;
+			return null;
 		}
-		if(AppContext.tryGetCurrent() != null){
+		if(!createNew && AppContext.tryGetCurrent() != null){
 			throw new IllegalStateException("App context already initialized");
 		}
         AppConfig config = null;
@@ -57,17 +61,15 @@ public class AppContextInitializer {
 			initializing = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-            AppResources.onContextInitializing();
-			
 			MapAttributeAccessor attrs = new MapAttributeAccessor();
 			
 			log.debug("Initializing standalone app context...");
 			
-			config = loadDefaultAppConfig(attrs, null, initProperties);
+			config = loadDefaultAppConfig(attrs, null, null);
 			
 			initialAppConfig.set(config);
 			
-			DefaultBeanFactory factory  = createStandaloneAppFactory(config,externalAppFactory);
+			DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
 			
 			//register bean 
 			factory.setPrimaryBean(AppConfig.class, config);
@@ -89,8 +91,10 @@ public class AppContextInitializer {
 					factory.close();
 				}
 			});
-			
+
 			log.debug("Standalone app context initialized");
+
+            return context;
 		}finally{
 			initialAppConfig.remove();
 			initialAppConfig = null;
@@ -99,8 +103,6 @@ public class AppContextInitializer {
             if(null != config) {
                 AppResources.destroy(config);
             }
-
-            AppResources.onContextInitialized();
 		}
 	}
 	
@@ -122,8 +124,6 @@ public class AppContextInitializer {
 			initializing     = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-            AppResources.onContextInitializing();
-			
 			MapAttributeAccessor attrs = new MapAttributeAccessor();
 			
 			//log.info("Initializing app context");
@@ -154,8 +154,6 @@ public class AppContextInitializer {
             if(null != config) {
                 AppResources.destroy(config);
             }
-
-            AppResources.onContextInitialized();
 		}
 	}
 	

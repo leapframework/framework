@@ -28,9 +28,7 @@ import java.util.*;
 @Internal
 public class AppResources {
 
-    private static ThreadLocal<ResourceSet> ctx;
-
-    private static final String XML_EXT = ".xml";
+    private static final String PROFILE_SEPERATOR = "_";
 
     static final String CP_CORE_PREFIX      = "/META-INF/leap/core";
     static final String CP_FRAMEWORK_PREFIX = "/META-INF/leap/framework";
@@ -38,56 +36,14 @@ public class AppResources {
     static final String CP_META_PREFIX      = "/META-INF/conf";
     static final String CP_APP_PREFIX       = "/conf";
 
-    private static final String[] CP_FRAMEWORK_TEMPLATES = new String[]{
-            CP_CORE_PREFIX + "/{0}{1}",
-            CP_CORE_PREFIX + "/{0}/**/*{1}",
-            CP_FRAMEWORK_PREFIX + "/{0}{1}",
-            CP_FRAMEWORK_PREFIX + "/{0}/**/*{1}"
-    };
-
-    private static final String[] CP_MODULES_TEMPLATES = new String[]{
-            CP_MODULES_PREFIX + "/{0}{1}",
-            CP_MODULES_PREFIX + "/{0}/**/*{1}"
-    };
-
-    private static final String[] CP_META_TEMPLATES = new String[]{
-            CP_META_PREFIX + "/{0}{1}",
-            CP_META_PREFIX + "/{0}/**/*{1}"
-    };
-
-    private static final String[] CP_APP_TEMPLATES = new String[]{
-            CP_APP_PREFIX + "/{0}{1}",
-            CP_APP_PREFIX + "/{0}/**/*{1}"
-    };
-
-    private static final String[] CP_CORE_TEMPLATES_FOR_PATTERN = new String[]{
-            CP_CORE_PREFIX + "/{0}{1}"
-    };
-
-    private static final String[] CP_FRAMEWORK_TEMPLATES_FOR_PATTERN = new String[]{
-            CP_FRAMEWORK_PREFIX + "/{0}{1}"
-    };
-
-    private static final String[] CP_MODULES_TEMPLATES_FOR_PATTERN = new String[]{
-            CP_MODULES_PREFIX + "/{0}{1}"
-    };
-
-    private static final String[] CP_META_TEMPLATES_FOR_PATTERN = new String[]{
-            CP_META_PREFIX + "/{0}{1}"
-    };
-
-    private static final String[] CP_APP_TEMPLATES_FOR_PATTERN = new String[]{
-            CP_APP_PREFIX + "/{0}{1}"
-    };
-
     private static final String CP_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_CORE_PREFIX);
     private static final String CP_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CP_FRAMEWORK_PREFIX);
     private static final String CP_MODULES_LOCATION   = Strings.format("classpath*:{0}/**/*", CP_MODULES_PREFIX);
     private static final String CP_META_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_META_PREFIX);
     private static final String CP_APP_LOCATION       = Strings.format("classpath*:{0}/**/*", CP_APP_PREFIX);
 
-    private static final String CP_PROFILE_LOCATION   = Strings.format("classpath*:{0}-{profile}/**/*", CP_APP_PREFIX);
-    private static final String CP_LOCAL_LOCATION     = Strings.format("classpath*:{0}-local/**/*",     CP_APP_PREFIX);
+    private static final String CP_PROFILE_LOCATION   = Strings.format("classpath*:{0}" + PROFILE_SEPERATOR + "{profile}/**/*", CP_APP_PREFIX);
+    private static final String CP_LOCAL_LOCATION     = Strings.format("classpath*:{0}" + PROFILE_SEPERATOR + "local/**/*",     CP_APP_PREFIX);
 
     private static final Map<AppConfig, AppResources> instances = new IdentityHashMap<>();
 
@@ -148,7 +104,7 @@ public class AppResources {
     }
 
     private final DefaultAppConfig         config;
-    private final Map<String, AppResource> resources = new LinkedHashMap<>();
+    private final Map<String, AppResource> classpathResources = new LinkedHashMap<>();
     private final boolean                  devProfile;
 
     private String[] defaultSearchPatterns;
@@ -197,13 +153,13 @@ public class AppResources {
         patterns.add(CP_APP_PREFIX       + dirPattern);
 
         //add profile search patterns.
-        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + filePattern);
-        patterns.add(CP_APP_PREFIX + "-" + config.getProfile() + dirPattern);
+        patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + filePattern);
+        patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + dirPattern);
 
         //add local search patterns. (only for development profile).
         if(devProfile) {
-            patterns.add(CP_APP_PREFIX + "-local"  + filePattern);
-            patterns.add(CP_APP_PREFIX + "-local"  + dirPattern);
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local"  + filePattern);
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local"  + dirPattern);
         }
 
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
@@ -214,17 +170,37 @@ public class AppResources {
             return;
         }
 
-        String url = resource.getURLString();
+        String key = null != resource.getClasspath() ? resource.getClasspath() : resource.getURLString();
 
-        AppResource old = resources.get(url);
+        AppResource old = classpathResources.get(key);
         if(null != old) {
 
-            String oldClassPath = old.getResource().getClasspath();
-            String newClassPath = resource.getClasspath();
-
             boolean override = false;
-            if(Strings.startsWith(oldClassPath, "/conf/") && oldClassPath.equals(newClassPath)) {
-                override = true;
+
+            if(old.getResource().isFile() && resource.isFile()) {
+
+                String oldClassPath = old.getResource().getClasspath();
+                String newClassPath = resource.getClasspath();
+
+                if((Strings.startsWith(oldClassPath, "conf/") || Strings.startsWith(oldClassPath, "conf" + PROFILE_SEPERATOR)) && oldClassPath.equals(newClassPath)) {
+
+                    boolean newTestResource = isTestResource(resource);
+
+                    if(devProfile) {
+
+                        if(newTestResource) {
+                            override = true;
+                        }
+
+                    }else{
+
+                        if(!newTestResource) {
+                            override = true;
+                        }
+
+                    }
+                }
+
             }
 
             if(!override) {
@@ -232,15 +208,19 @@ public class AppResources {
             }
         }
 
-        resources.put(url, new SimpleAppResource(resource, defaultOverride));
+        classpathResources.put(key, new SimpleAppResource(resource, defaultOverride));
+    }
+
+    private boolean isTestResource(Resource resource) {
+        return resource.getURLString().indexOf("/test-classes/") > 0;
     }
 
     protected void clear() {
-        resources.clear();
+        classpathResources.clear();
     }
 
     private static final String extractProfile(String url) {
-        int index0 = url.lastIndexOf("/conf-");
+        int index0 = url.lastIndexOf("/conf" + PROFILE_SEPERATOR);
         if(index0 > 0) {
             int index1 = url.indexOf('/', index0+1);
             if(index1 > index0) {
@@ -306,13 +286,13 @@ public class AppResources {
 
         // conf-{profile}/{filename}
         for(String filename : filenames) {
-            patterns.add(CP_APP_PREFIX +  "-" + config.getProfile() + "/" + filename);
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + "/" + filename);
         }
 
         // conf-local/{filename}
         if(devProfile) {
             for(String filename : filenames) {
-                patterns.add(CP_APP_PREFIX +  "-local/" + filename);
+                patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local/" + filename);
             }
         }
     }
@@ -339,7 +319,7 @@ public class AppResources {
                 namedPattern = namedPattern.substring(1);
             }
 
-            for(AppResource r  : resources.values()) {
+            for(AppResource r  : classpathResources.values()) {
                 if(null != r.getResource().getClasspath()) {
                     String cp = r.getResource().getClasspath();
 
@@ -354,63 +334,8 @@ public class AppResources {
         return list.toArray(new AppResource[0]);
     }
 
-    /**
-     * Returns all the resource(s).
-     */
-    static ResourceSet get() {
-        if(ctx != null){
-            ResourceSet resources = ctx.get();
-
-            if(null == resources){
-                resources = Resources.scan(CP_CORE_LOCATION,
-                                           CP_FRAMEWORK_LOCATION,
-                                           CP_MODULES_LOCATION,
-                                           CP_META_LOCATION,
-                                           CP_APP_LOCATION);
-                ctx.set(resources);
-            }
-            return resources;
-
-        }else{
-            return Resources.scan(CP_CORE_LOCATION,
-                                    CP_FRAMEWORK_LOCATION,
-                                    CP_MODULES_LOCATION,
-                                    CP_META_LOCATION,
-                                    CP_APP_LOCATION);
-        }
-    }
-
     public static Resource getAppClasspathDirectory(String name) {
         return Resources.getResource("classpath:" + CP_APP_PREFIX + "/" + name);
-    }
-
-
-
-    static void onContextInitializing() {
-        ctx = new InheritableThreadLocal<>();
-    }
-
-    static void onContextInitialized() {
-        ctx.remove();
-        ctx = null;
-    }
-
-    private static void searchClasspathResources(List<Resource> list,
-                                                 String[] templateLocations,
-                                                 ResourceSet rs,
-                                                 String resourceName,
-                                                 String ext){
-
-        String[] locations = new String[templateLocations.length];
-
-        for(int i=0; i<locations.length; i++){
-            locations[i] = Strings.format(templateLocations[i],resourceName,ext);
-        }
-
-        Resource[] resources = rs.searchClasspaths(locations);
-        for(Resource resource : resources){
-            list.add(resource);
-        }
     }
 
 }

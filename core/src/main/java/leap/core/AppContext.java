@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class AppContext implements AttributeAccessor {
 	public static final String APP_CONTEXT_ATTRIBUTE = AppContext.class.getName();
 	
-	private static ThreadLocal<AppContext> threadlocal = new InheritableThreadLocal<AppContext>();
+	private static ThreadLocal<AppContext> threadlocal = new InheritableThreadLocal<>();
 	private static AppContext              standalone  = null;
 	
 	private static boolean foundServletContext;
