@@ -18,10 +18,25 @@ package leap.core;
 
 import leap.lang.resource.Resource;
 
+/**
+ * For app resource loading, such as config, beans, etc...
+ */
 public interface AppResource {
 
+    /**
+     * Returns the wrapped resource.
+     */
     Resource getResource();
 
+    /**
+     * Returns true if default override.
+     */
     boolean isDefaultOverride();
 
+    /**
+     * Returns true if the resources is a classpath resource.
+     */
+    default boolean isClasspath() {
+        return getResource().hasClasspath();
+    }
 }

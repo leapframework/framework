@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-import app.beans.DemoBean;
-import app.beans.DemoBeanDev;
-import app.beans.DemoBeanProd;
-import app.beans.DemoBeanTest;
+import app.beans.*;
 import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.AppContextInitializer;
@@ -41,6 +38,8 @@ public class ConfigTest extends TestBase {
 
     protected static AppConfig   config;
     protected static BeanFactory factory;
+    protected static MetaBean1   metaBean1;
+    protected static MetaBean2   metaBean2;
     protected static DemoBean    demoBean;
     protected static DemoBean[]  demoBeans;
     protected static String      expectedProfile;
@@ -61,6 +60,8 @@ public class ConfigTest extends TestBase {
 
         for(String profile : profiles) {
             System.setProperty(AppConfig.SYS_PROPERTY_PROFILE, profile);
+
+            System.out.println("set profile : " + profile);
             contexts.put(profile, AppContextInitializer.newStandalone());
         }
     }
@@ -81,6 +82,8 @@ public class ConfigTest extends TestBase {
 
             config    = context.getConfig();
             factory   = context.getBeanFactory();
+            metaBean1 = factory.getBean(MetaBean1.class);
+            metaBean2 = factory.tryGetBean(MetaBean2.class);
             demoBean  = factory.getBean(DemoBean.class);
             demoBeans = factory.getBeans(DemoBean.class).toArray(new DemoBean[0]);
         }
@@ -90,6 +93,17 @@ public class ConfigTest extends TestBase {
     public void testProfile() {
         System.out.println("Expected profile : " + expectedProfile);
         assertEquals(expectedProfile, config.getProfile());
+    }
+
+    @Test
+    public void testMetaInf() {
+        assertNotNull(metaBean1);
+        assertEquals("val", config.getProperty("meta.prop1"));
+
+        if(isDev()) {
+            assertNotNull(metaBean2);
+            assertEquals("val", config.getProperty("meta.prop2"));
+        }
     }
 
     @Test

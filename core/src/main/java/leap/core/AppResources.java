@@ -18,6 +18,8 @@ package leap.core;
 
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.path.PathMatcher;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
@@ -28,7 +30,9 @@ import java.util.*;
 @Internal
 public class AppResources {
 
-    private static final String PROFILE_SEPERATOR = "_";
+    private static final Log log = LogFactory.get(AppResources.class);
+
+    private static final String PROFILE_SEPARATOR = "_";
 
     static final String CP_CORE_PREFIX      = "/META-INF/leap/core";
     static final String CP_FRAMEWORK_PREFIX = "/META-INF/leap/framework";
@@ -42,8 +46,8 @@ public class AppResources {
     private static final String CP_META_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_META_PREFIX);
     private static final String CP_APP_LOCATION       = Strings.format("classpath*:{0}/**/*", CP_APP_PREFIX);
 
-    private static final String CP_PROFILE_LOCATION   = Strings.format("classpath*:{0}" + PROFILE_SEPERATOR + "{profile}/**/*", CP_APP_PREFIX);
-    private static final String CP_LOCAL_LOCATION     = Strings.format("classpath*:{0}" + PROFILE_SEPERATOR + "local/**/*",     CP_APP_PREFIX);
+    private static final String CP_PROFILE_LOCATION   = Strings.format("classpath*:{0}" + PROFILE_SEPARATOR + "{profile}/**/*", CP_APP_PREFIX);
+    private static final String CP_LOCAL_LOCATION     = Strings.format("classpath*:{0}" + PROFILE_SEPARATOR + "local/**/*",     CP_APP_PREFIX);
 
     private static final Map<AppConfig, AppResources> instances = new IdentityHashMap<>();
 
@@ -104,14 +108,15 @@ public class AppResources {
     }
 
     private final DefaultAppConfig         config;
-    private final Map<String, AppResource> classpathResources = new LinkedHashMap<>();
-    private final boolean                  devProfile;
+    private final Map<String, Resource>    confClasspathResources = new HashMap<>();
+    private final Map<String, AppResource> allResources           = new LinkedHashMap<>();
+    private final boolean dev;
 
     private String[] defaultSearchPatterns;
 
     private AppResources(DefaultAppConfig config) {
         this.config = config;
-        this.devProfile = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
+        this.dev = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
 
         init();
     }
@@ -129,7 +134,7 @@ public class AppResources {
         Resources.scan(config.getProfiled(new String[]{CP_PROFILE_LOCATION})).forEach((r) -> add(r, true));
 
         //load local resources(only for development profile).
-        if(devProfile) {
+        if(dev) {
             Resources.scan(CP_LOCAL_LOCATION).forEach((r) -> add(r, true));
         }
 
@@ -153,13 +158,13 @@ public class AppResources {
         patterns.add(CP_APP_PREFIX       + dirPattern);
 
         //add profile search patterns.
-        patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + filePattern);
-        patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + dirPattern);
+        patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + config.getProfile() + filePattern);
+        patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + config.getProfile() + dirPattern);
 
         //add local search patterns. (only for development profile).
-        if(devProfile) {
-            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local"  + filePattern);
-            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local"  + dirPattern);
+        if(dev) {
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local"  + filePattern);
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local"  + dirPattern);
         }
 
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
@@ -170,45 +175,77 @@ public class AppResources {
             return;
         }
 
-        String key = null != resource.getClasspath() ? resource.getClasspath() : resource.getURLString();
+        String url = resource.getURLString();
+        if(allResources.containsKey(url)) {
+            return;
+        }
 
-        AppResource old = classpathResources.get(key);
-        if(null != old) {
+        //config files not in classpath or exists in jar allows multi.
+        if(!resource.hasClasspath() || !resource.isFile()) {
+            doAdd(resource, defaultOverride);
+            return;
+        }
 
-            boolean override = false;
+        String classpath = resource.getClasspath();
+        if(!isAppResource(classpath)) {
+            doAdd(resource, defaultOverride);
+            return;
+        }
 
-            if(old.getResource().isFile() && resource.isFile()) {
+        ////conf/* does not allows multi resources with the same classpath.
+        Resource old = confClasspathResources.get(classpath);
+        if(null == old) {
+            doAdd(resource, defaultOverride);
+            confClasspathResources.put(classpath, resource);
+            return;
+        }
 
-                String oldClassPath = old.getResource().getClasspath();
-                String newClassPath = resource.getClasspath();
+        //check should ignore or override the old one.
+        if(dev) {
 
-                if((Strings.startsWith(oldClassPath, "conf/") || Strings.startsWith(oldClassPath, "conf" + PROFILE_SEPERATOR)) && oldClassPath.equals(newClassPath)) {
+            //in dev environment, the test resource should override the main resource.
+            if(isTestResource(resource)) {
+                removeAndAdd(old, resource, defaultOverride);
 
-                    boolean newTestResource = isTestResource(resource);
-
-                    if(devProfile) {
-
-                        if(newTestResource) {
-                            override = true;
-                        }
-
-                    }else{
-
-                        if(!newTestResource) {
-                            override = true;
-                        }
-
-                    }
-                }
-
+                confClasspathResources.put(classpath, resource);
+                return;
+            }else{
+                //ignore
             }
 
-            if(!override) {
+        }else{
+
+            //in non-dev environment, if old one is test resource, it will be removed and use new one.
+            if(isTestResource(old)) {
+                removeAndAdd(old, resource, defaultOverride);
+                confClasspathResources.put(classpath, resource);
                 return;
+            }
+
+            //in non-dev environment, if old one not a test resource, use the old resource, just do nothing.
+            if(log.isInfoEnabled()) {
+                log.info("Ignore resource [{}], another one already loaded : {}",
+                        resource.getURLString(),
+                        old.getURLString());
+            }else{
+                System.out.println("Ignore resource [" + resource.getURLString() +
+                                    "], another one already loaded : " + old.getURLString());
             }
         }
 
-        classpathResources.put(key, new SimpleAppResource(resource, defaultOverride));
+    }
+
+    private void doAdd(Resource resource, boolean defaultOverride) {
+        allResources.put(resource.getURLString(), new SimpleAppResource(resource, defaultOverride));
+    }
+
+    private void removeAndAdd(Resource oldOne, Resource newOne, boolean defaultOverride) {
+        allResources.remove(oldOne.getURLString());
+        doAdd(newOne,defaultOverride);
+    }
+
+    private boolean isAppResource(String cp) {
+        return (Strings.startsWith(cp, "conf/") || Strings.startsWith(cp, "conf" + PROFILE_SEPARATOR));
     }
 
     private boolean isTestResource(Resource resource) {
@@ -216,11 +253,12 @@ public class AppResources {
     }
 
     protected void clear() {
-        classpathResources.clear();
+        confClasspathResources.clear();
+        allResources.clear();
     }
 
     private static final String extractProfile(String url) {
-        int index0 = url.lastIndexOf("/conf" + PROFILE_SEPERATOR);
+        int index0 = url.lastIndexOf("/conf" + PROFILE_SEPARATOR);
         if(index0 > 0) {
             int index1 = url.indexOf('/', index0+1);
             if(index1 > index0) {
@@ -286,13 +324,13 @@ public class AppResources {
 
         // conf-{profile}/{filename}
         for(String filename : filenames) {
-            patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + config.getProfile() + "/" + filename);
+            patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + config.getProfile() + "/" + filename);
         }
 
         // conf-local/{filename}
-        if(devProfile) {
+        if(dev) {
             for(String filename : filenames) {
-                patterns.add(CP_APP_PREFIX + PROFILE_SEPERATOR + "local/" + filename);
+                patterns.add(CP_APP_PREFIX + PROFILE_SEPARATOR + "local/" + filename);
             }
         }
     }
@@ -319,7 +357,7 @@ public class AppResources {
                 namedPattern = namedPattern.substring(1);
             }
 
-            for(AppResource r  : classpathResources.values()) {
+            for(AppResource r  : allResources.values()) {
                 if(null != r.getResource().getClasspath()) {
                     String cp = r.getResource().getClasspath();
 
