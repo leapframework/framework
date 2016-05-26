@@ -30,9 +30,6 @@
             <properties>
                 <app.profile>prod</app.profile>
             </properties>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
         </profile>
 
     </profiles>

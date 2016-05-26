@@ -6,10 +6,8 @@
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %level %C:%line - %msg%n</pattern>
 		</encoder>
 	</appender>
-
-    <logger name="leap" level="DEBUG"/>
   
-	<root level="WARN">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT" />
 	</root>
 </configuration>

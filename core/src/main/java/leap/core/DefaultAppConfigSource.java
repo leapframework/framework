@@ -42,29 +42,15 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 import static leap.core.AppConfig.*;
-import static leap.core.AppResources.CP_APP_PREFIX;
 
 public class DefaultAppConfigSource implements AppConfigSource {
 
 	private static final Log log = LogFactory.get(DefaultAppConfigSource.class);
 
-    protected static final String APP_PROFILE_CONFIG_RESOURCE = "classpath:/profile";
-
-    protected static final String[] BASE_CONFIG_LOCATIONS = new String[]{
-            CP_APP_PREFIX + "/config.properties",
-            CP_APP_PREFIX + "/config.xml"
-    };
+    protected static final String APP_PROFILE_CONFIG_RESOURCE       = "classpath:/profile";
+    protected static final String APP_PROFILE_LOCAL_CONFIG_RESOURCE = "classpath:/profile_local";
 
     protected static final String[] BASE_CONFIG_FILENAMES = new String[] {"init.properties", "config.properties", "config.xml"};
-
-    protected static final String[] APP_CONFIG_LOCATIONS  = new String[]{
-            CP_APP_PREFIX + "/config.properties",
-            CP_APP_PREFIX + "/config.xml",
-            CP_APP_PREFIX + "/config/**/*",
-            CP_APP_PREFIX + "-{profile}/config.properties",
-            CP_APP_PREFIX + "-{profile}/config.xml",
-            CP_APP_PREFIX + "-{profile}/config/**/*"
-    };
 
     //all init properties
     protected static Set<String> INIT_PROPERTIES = new HashSet<>();
@@ -152,20 +138,19 @@ public class DefaultAppConfigSource implements AppConfigSource {
             profile = initProperties.get(AppConfig.INIT_PROPERTY_PROFILE);
         }
 
-        //auto detect profile name
-        if(Strings.isEmpty(profile)){
-            profile = autoDetectProfileName(externalContext);
+        if(Strings.isEmpty(profile)) {
+            //read from local profile file
+            profile = readProfileFile(initProperties, APP_PROFILE_LOCAL_CONFIG_RESOURCE);
         }
 
         if(Strings.isEmpty(profile)) {
-            //read from file
-            Resource r = Resources.getResource(APP_PROFILE_CONFIG_RESOURCE);
-            if(null != r && r.exists() && !r.isDirectory()){
-                profile = Strings.trim(r.getContent());
-                if(profile.startsWith("${") && profile.endsWith("}")) {
-                    profile = initProperties.get(profile.substring(1,profile.length() - 1));
-                }
-            }
+            //read from default profile file
+            profile = readProfileFile(initProperties, APP_PROFILE_CONFIG_RESOURCE);
+        }
+
+        //auto detect profile name
+        if(Strings.isEmpty(profile)){
+            profile = autoDetectProfileName(externalContext);
         }
 
         if(Strings.isEmpty(profile)) {
@@ -173,6 +158,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         return profile;
+    }
+
+    protected String readProfileFile(Map<String,String> initProperties, String location) {
+        Resource r = Resources.getResource(location);
+        if(null != r && r.exists() && !r.isDirectory()){
+            String profile = Strings.trim(r.getContent());
+            if(profile.startsWith("${") && profile.endsWith("}")) {
+                profile = initProperties.get(profile.substring(1,profile.length() - 1));
+            }
+            return profile;
+        }
+        return null;
     }
 
     protected String autoDetectProfileName(Object externalContext){
