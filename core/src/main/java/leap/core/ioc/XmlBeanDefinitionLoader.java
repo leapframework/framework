@@ -120,7 +120,6 @@ class XmlBeanDefinitionLoader {
     public static final String OVERRIDE_ATTRIBUTE               = "override";
     public static final String DEFAULT_OVERRIDE_ATTRIBUTE       = "default-override";
     public static final String DEFAULT_LAZY_INIT_ATTRIBUTE      = "default-lazy-init";
-    public static final String DEFAULT_AUTO_INJECT_ATTRIBUTE    = "default-auto-inject";
     public static final String LIST_CLASS_ATTRIBUTE             = "list-class";
     public static final String SET_CLASS_ATTRIBUTE              = "set-class";
     public static final String MAP_CLASS_ATTRIBUTE              = "map-class";
@@ -222,7 +221,6 @@ class XmlBeanDefinitionLoader {
 				return;
 			}
 			
-	        context.defaultAutoInject = boolAttribute(reader,DEFAULT_AUTO_INJECT_ATTRIBUTE,true);
 	        context.defaultLazyInit = reader.getBooleanAttribute(DEFAULT_LAZY_INIT_ATTRIBUTE, true);
 	        
 	        while(reader.nextWhileNotEnd(BEANS_ELEMENT)){
@@ -893,7 +891,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		List<ValueDefinition> values = new ArrayList<ValueDefinition>();
+		List<ValueDefinition> values = new ArrayList<>();
 		
 		while(reader.nextWhileNotEnd(ARRAY_ELEMENT)){
 			if(reader.isStartElement()){
@@ -1155,7 +1153,6 @@ class XmlBeanDefinitionLoader {
 	}
 	
 	public class LoaderContext {
-		public boolean defaultAutoInject = XmlBeanDefinitionLoader.this.defaultAutoInject;
 		public boolean defaultLazyInit = true;
 		public boolean defaultOverride = false;
 
