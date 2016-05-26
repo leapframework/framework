@@ -180,17 +180,20 @@ public class AppResources {
             return;
         }
 
-        //config files not in classpath or exists in jar allows multi.
-        if(!resource.hasClasspath() || !resource.isFile()) {
+        //config files not in classpath allows multi.
+        if(!resource.hasClasspath()) {
             doAdd(resource, defaultOverride);
             return;
         }
 
+        //only conf[-?]/* does not allows multi.
         String classpath = resource.getClasspath();
         if(!isAppResource(classpath)) {
             doAdd(resource, defaultOverride);
             return;
         }
+
+        log.debug("Found conf resource : {}", url);
 
         ////conf/* does not allows multi resources with the same classpath.
         Resource old = confClasspathResources.get(classpath);
