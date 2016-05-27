@@ -18,10 +18,7 @@ package leap.orm.sql;
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Objects2;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.ArrayParams;
@@ -29,6 +26,7 @@ import leap.lang.params.EmptyParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.query.QueryContext;
+import leap.orm.sql.Sql.Type;
 import leap.orm.sql.ast.*;
 
 import java.util.ArrayList;
@@ -180,17 +178,23 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	}
 	
 	protected void createSqlWithoutOrderByComplex() {
-		SqlSelect select = (SqlSelect)sql.nodes()[0];
-		
-		List<AstNode> nodes = createSqlNodesWithoutOrderBy(select.getNodes());
-		
-		SqlSelect countSelect = new SqlSelect();
-		countSelect.setDistinct(select.isDistinct());
-		countSelect.setTop(select.getTop());
-		countSelect.setAlias(select.getAlias());
-		countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
-		
-		sqlWithoutOrderBy = new Sql(sql.type(), new AstNode[]{countSelect});
+		AstNode[] astNodes = sql.nodes();
+		List<AstNode> selects = New.arrayList();
+		for(AstNode node : astNodes){
+			if(node instanceof SqlSelect){
+				SqlSelect select = (SqlSelect)node;
+				List<AstNode> nodes = createSqlNodesWithoutOrderBy(select.getNodes());
+				SqlSelect countSelect = new SqlSelect();
+				countSelect.setDistinct(select.isDistinct());
+				countSelect.setTop(select.getTop());
+				countSelect.setAlias(select.getAlias());
+				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+				selects.add(countSelect);
+			}else {
+				selects.add(node);
+			}
+		}
+		sqlWithoutOrderBy = new Sql(sql.type(), selects.toArray(new AstNode[selects.size()]));
 		sqlWithoutOrderByString = sqlWithoutOrderBy.toString();
 	}
 	
@@ -325,7 +329,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			Sql sql = null;
 			
 			if(Strings.isEmpty(orderBy)) {
-				sql = sqlWithoutOrderBy;
+				sql = mergeMultipleSelect(sqlWithoutOrderBy);
 			}else{
 				//TODO : optimize
 				String sqlWithOrderBy = null;
@@ -349,7 +353,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 		@Override
         public String getSqlWithoutOrderBy(Db db) {
-			return sqlWithoutOrderByString;
+			return mergeMultipleSelect(sqlWithoutOrderBy).toSql();
 			/*
 			for(int i=0;i<sql.nodes().length;i++){
 				buildSqlStatement(sql.nodes()[i],statement,parameters);
@@ -358,7 +362,26 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	        return statement.getSql().toString();
 	        */
         }
-		
+
+		protected Sql mergeMultipleSelect(Sql sqlWithoutOrderBy){
+			Sql sql = null;
+			if(sqlWithoutOrderBy.nodes().length > 1){
+				SqlSelect select = new SqlSelect();
+				String tableName = "t";
+				List<AstNode> nodes = New.arrayList();
+				nodes.add(new Text("select "));
+				nodes.add(new SqlAllColumns(tableName));
+				nodes.add(new Text(" from (\n\t\t"));
+				Collections2.addAll(nodes,sqlWithoutOrderBy.nodes());
+				nodes.add(new Text("\n\t) "+tableName));
+				select.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+				sql = new Sql(Type.SELECT,new AstNode[]{select});
+			}else{
+				sql = sqlWithoutOrderBy;
+			}
+			return sql;
+		}
+
 		protected void buildSqlStatement(AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
 			
 			if(node instanceof SqlOrderBy){

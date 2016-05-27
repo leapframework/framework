@@ -240,6 +240,7 @@ abstract class SqlQueryParser extends SqlParser {
             } 
             
             new SqlSelectParser(this).parseSelectBody();
+            parseUnion();
             return;
         }
 
