@@ -25,14 +25,13 @@ import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
 
-    protected @SqlKey("findOwnerByLastUseJdbcPlaceholder") DaoCommand findByLastNameCmd;
+    protected @SqlKey("findOwnerByLastNameWithAlias") DaoCommand findOwnerByLastNameWithAlias;
 
 	@Test
 	public void testFindOwnersByLastName() {
 		deleteAll(Owner.class);
 
 		assertTrue(dao.createNamedQuery(Owner.class, "findByLastName").param("lastName", "test").result().isEmpty());
-        assertTrue(findByLastNameCmd.createQuery(new Object[]{"test"}).result().isEmpty());
 
 		Owner older = dmo.getDataFactory().generate(Owner.class);
 		older.setLastName("test");
@@ -44,6 +43,16 @@ public class NamedQueryTest extends OrmTestCase {
 
 		compareFields(older, newer.fields());
 	}
+
+    @Test
+    public void testFindOwnerByLastNameWithAlias() {
+        deleteAll(Owner.class);
+
+        new Owner().setFullName("a", "b").create();
+
+        Owner found = findOwnerByLastNameWithAlias.createQuery(Owner.class, new Object[]{"b"}).first();
+        assertEquals("a", found.getFirstName());
+    }
 
 	@Test
 	public void testFindOwnersByLastNameForMap() {

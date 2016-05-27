@@ -4,6 +4,10 @@
     <command key="findOwnerByLastName" entity-name="Owner" name="findByLastName">
         select * from owners where last_name like :lastName
     </command>
+
+    <command key="findOwnerByLastNameWithAlias">
+        select first_name as FIRST_NAME from owners where last_name = ?
+    </command>
     
     <command key="findOwnerByLastNameSimple" entity-name="Owner" name="findByLastNameSimple" lang="dynamic:simple">
         select * from owners where last_name like :lastName
@@ -25,7 +29,4 @@
         select owners.*,1 as additional,2 secondAdditional from owners;
     </command>
 
-    <command key="findOwnerByLastUseJdbcPlaceholder">
-        select * from owners where last_name = ?
-    </command>
 </sqls>

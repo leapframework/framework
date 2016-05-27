@@ -15,14 +15,6 @@
  */
 package leap.orm.reader;
 
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.core.exception.TooManyRecordsException;
 import leap.core.value.Record;
 import leap.core.value.SimpleRecord;
@@ -36,8 +28,15 @@ import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.DynamicSqlClause;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
-import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.SqlSelect;
+
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DefaultRowReader implements RowReader {
 	
@@ -143,8 +142,10 @@ public class DefaultRowReader implements RowReader {
 		for(int i=0;i<columns.length;i++){
 			ResultColumn column = columns[i];
 			BeanProperty     bp = null;
-			
-			bp = beanType.tryGetProperty(column.fieldName, true);
+
+            String name = context.getNamingStrategy().columnToFieldName(column.fieldName);
+
+			bp = beanType.tryGetProperty(name, true);
 			
 			if(null != bp){
 				bp.setValue(bean, dialect.getColumnValue(rs, i+1, column.columnType));
@@ -175,8 +176,10 @@ public class DefaultRowReader implements RowReader {
 			c.columnName  = rsm.getColumnName(i);
 			c.columnLabel = rsm.getColumnLabel(i);
 			c.columnType  = rsm.getColumnType(i);
+
 			boolean isAlias = false;
-			if(command.isQuery() && command.getQueryClause() instanceof DynamicSqlClause){
+
+            if(command.isQuery() && command.getQueryClause() instanceof DynamicSqlClause){
 				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getQueryClause();
 				Sql sql = sqlClause.getSql();
 				if(sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
@@ -187,9 +190,11 @@ public class DefaultRowReader implements RowReader {
 					}
 				}
 			}
+
 			if(!isAlias){
-				c.fieldName   = ns.columnToFieldName(c.columnLabel);
+				c.fieldName = ns.columnToFieldName(c.columnLabel);
 			}
+
 			columns[i-1] = c;
 		}
 		return columns;
