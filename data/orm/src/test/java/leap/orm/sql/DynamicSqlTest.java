@@ -153,4 +153,11 @@ public class DynamicSqlTest extends OrmTestCase {
 		assertEquals(2,records.size());
 		assertEquals("c",records.get(0).get("name"));
 	}
+	@Test
+	public void testFragmentNseting(){
+		Owner.deleteAll();
+		new Owner().setFullName("a","1").save();
+		Record owner = dao.createNamedQuery("nestingIncludeSql").param("firstName","a").single();
+		assertEquals("1",owner.get("lastName"));
+	}
 }
