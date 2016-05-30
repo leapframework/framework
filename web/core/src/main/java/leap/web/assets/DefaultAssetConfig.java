@@ -169,7 +169,7 @@ public class DefaultAssetConfig implements AssetConfig, AssetConfigurator, AppCo
 
 	@ConfigProperty
 	public AssetConfigurator setPublishDirectory(String dir) {
-		this.publishDirectory = dir;
+		this.publishDirectory = Paths.suffixWithSlash(dir);
         return this;
 	}
 

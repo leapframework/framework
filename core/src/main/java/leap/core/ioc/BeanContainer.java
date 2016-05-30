@@ -430,7 +430,7 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException,BeanException {
-    	T bean = tryGetBean(type);
+    	T bean = (T) tryGetBean(type);
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No primary bean for type '" + type.getName() + "'");
@@ -511,7 +511,7 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> T getBean(Class<? super T> type, String name) throws NoSuchBeanException, BeanException {
-		T bean = tryGetBean(type, name);
+		T bean = (T) tryGetBean(type, name);
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No bean named '" + name + "' for type '" + type.getName() + "'");
