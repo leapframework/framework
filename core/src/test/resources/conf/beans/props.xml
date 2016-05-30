@@ -8,4 +8,58 @@
 
     </bean>
 
+    <bean id="testBean" class="tested.beans.TBean">
+        <property name="string" value="string1"/>
+
+        <property name="int1" value="${notExistsConfigProperty}" default-value="100"/>
+
+        <property name="int2" value="${notExistsConfigProperty:1000}"/>
+
+        <property name="simpleBean" ref="simpleBean"/>
+
+        <property name="listString">
+            <list>
+                <value>${placeholder1}</value>
+                <value>str2</value>
+            </list>
+        </property>
+
+        <property name="listObject">
+            <list>
+                <value type="java.lang.Integer">1</value>
+                <ref bean="simpleBean"/>
+            </list>
+        </property>
+
+        <property name="properties">
+            <props>
+                <prop key="p1">s1</prop>
+                <prop key="p2">s2</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="testBean1" class="tested.beans.TBean">
+        <property name="simpleBean">
+            <bean class="tested.beans.NopBean"/>
+        </property>
+        <property name="string" value="string1"/>
+        <property name="map">
+            <map>
+                <entry key="a" value="1"/>
+                <entry key="b" value="2"/>
+                <entry key="c">
+                    <map>
+                        <entry key="d" value="3"/>
+                    </map>
+                </entry>
+                <entry key="f">
+                    <map>
+                        <entry key="g" value="4"/>
+                    </map>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
 </beans>
