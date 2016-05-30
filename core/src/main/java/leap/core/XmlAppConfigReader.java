@@ -18,16 +18,12 @@ package leap.core;
 
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
-import leap.core.el.EL;
-import leap.core.ioc.BeanDefinitionException;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.convert.Converts;
 import leap.lang.el.DefaultElParseContext;
 import leap.lang.el.ElClasses;
-import leap.lang.el.spel.SPEL;
-import leap.lang.expression.Expression;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -38,9 +34,7 @@ import leap.lang.xml.XmlReader;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 public class XmlAppConfigReader implements AppConfigReader {
 
@@ -68,9 +62,7 @@ public class XmlAppConfigReader implements AppConfigReader {
     private static final String GRANT_ELEMENT               = "grant";
     private static final String DENY_ELEMENT                = "deny";
     private static final String RESOURCES_ELEMENT           = "resources";
-    private static final String CONFIG_LOADER_ELEMENT       = "loader";
     private static final String RESOURCE_ATTRIBUTE          = "resource";
-    private static final String IF_ATTRIBUTE                = "if";
     private static final String IF_PROFILE_ATTRIBUTE        = "if-profile";
     private static final String OVERRIDE_ATTRIBUTE          = "override";
     private static final String PREFIX_ATTRIBUTE            = "prefix";
@@ -204,11 +196,6 @@ public class XmlAppConfigReader implements AppConfigReader {
             return;
         }
 
-        if(!testIfExpression(context, reader)) {
-            reader.nextToEndElement(CONFIG_ELEMENT);
-            return;
-        }
-
         while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
 
             //extension element
@@ -277,10 +264,6 @@ public class XmlAppConfigReader implements AppConfigReader {
             if(reader.isStartElement(PERMISSIONS_ELEMENT)){
                 readPermissions(context, resource, reader);
                 continue;
-            }
-
-            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
-                readConfigLoader(context, resource, reader);
             }
         }
     }
@@ -479,75 +462,12 @@ public class XmlAppConfigReader implements AppConfigReader {
         }
     }
 
-    protected void readConfigLoader(AppConfigContext context,Resource resource,XmlReader reader){
-        if(!matchProfile(context.getProfile(), reader)){
-            reader.nextToEndElement(CONFIG_LOADER_ELEMENT);
-            return;
-        }
-
-        String className = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
-
-        SimpleAppConfigLoaderDef def = new SimpleAppConfigLoaderDef(className);
-
-        while(reader.nextWhileNotEnd(CONFIG_LOADER_ELEMENT)){
-            if(reader.isStartElement(PROPERTY_ELEMENT)){
-                String  name  = reader.getAttribute(NAME_ATTRIBUTE);
-                String  value = reader.getAttribute(VALUE_ATTRIBUTE);
-
-                if(Strings.isEmpty(value)) {
-                    value = reader.getElementTextAndEnd();
-                }else{
-                    reader.nextToEndElement(PROPERTY_ELEMENT);
-                }
-
-                def.getProperties().put(name, value);
-
-                continue;
-            }
-        }
-
-        context.addConfigLoader(def);
-    }
-
-    protected static boolean testIfExpression(AppConfigContext context, XmlReader element){
-        String expressionText = element.getAttribute(IF_ATTRIBUTE);
-        if(!Strings.isEmpty(expressionText)){
-            try {
-                Expression expression = SPEL.createExpression(parseContext,expressionText);
-                return EL.test(expression.getValue(context), true);
-            } catch (Exception e) {
-                throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
-            }
-        }
-        return true;
-    }
-
     protected static boolean matchProfile(String profile, XmlReader element) {
         String profileName = element.getAttribute(IF_PROFILE_ATTRIBUTE);
         if(!Strings.isEmpty(profileName)){
             return Strings.equalsIgnoreCase(profile, profileName);
         }else{
             return true;
-        }
-    }
-
-    protected static final class SimpleAppConfigLoaderDef implements AppConfigLoaderDef {
-
-        private final String              className;
-        private final Map<String, String> properties = new LinkedHashMap<>();
-
-        public SimpleAppConfigLoaderDef(String className) {
-            this.className = className;
-        }
-
-        @Override
-        public String getClassName() {
-            return className;
-        }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return properties;
         }
     }
 }

@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.config;
 
-import leap.core.junit.AppTestBase;
-import org.junit.Test;
+package leap.core;
 
-public class IfTest extends AppTestBase {
+public class DefaultAppConfigurator implements AppConfigurator {
 
-    @Test
-    public void testIfProfile(){
-        assertEquals("1", config.getProperty("testProfile.shouldBeExists"));
-        assertNull(config.getProperty("testProfile.shouldNotExists"));
+    private final DefaultAppConfig config;
+
+    public DefaultAppConfigurator(DefaultAppConfig config) {
+        this.config = config;
     }
 
+    @Override
+    public AppConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public AppConfigurator setProperty(String name, String value) {
+        value = config.getPlaceholderResolver().resolveString(value);
+
+        config.loadProperty(name, value);
+
+        return this;
+    }
 }

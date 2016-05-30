@@ -23,12 +23,8 @@ import leap.lang.*;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.accessor.SystemPropertyAccessor;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
-import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -68,7 +64,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
 
     @Override
-    public AppConfig loadConfiguration(Object externalContext, Map<String, String> initProperties) {
+    public AppConfigurator loadConfiguration(Object externalContext, Map<String, String> initProperties) {
         if(null == initProperties) {
             initProperties = new LinkedHashMap<>();
         }
@@ -91,7 +87,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //instrument
         instrumentClasses(config);
 
-        return config;
+        return new DefaultAppConfigurator(config);
     }
 
     protected void postLoad(DefaultAppConfig config) {
@@ -368,9 +364,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
             //Load configuration from default locations.
             loadDefault(new ConfigContext(this, false));
 
-            //Load configuration by external loaders.
-            loadExternal(new ConfigContext(this, false));
-
             //complete loading configuration.
             complete();
 
@@ -428,37 +421,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
             AppResource[] files = appResources.search("config");
             if(files.length > 0) {
                 parent.loadFullConfig(context, files);
-            }
-        }
-
-        protected void loadExternal(ConfigContext context) {
-
-            for(AppConfigLoaderDef def : externalLoaders) {
-                Class<?> cls = Classes.tryForName(def.getClassName());
-                if(null == cls) {
-                    throw new AppConfigException("The config loader class '" + def.getClassName() + "' not found, check your config");
-                }
-
-                if(!AppConfigLoader.class.isAssignableFrom(cls)) {
-                    throw new AppConfigException("The config loader class '" + def.getClassName() + "' must implements interface '" + AppConfigLoader.class.getName() + "'");
-                }
-
-                AppConfigLoader obj = (AppConfigLoader)Reflection.newInstance(cls);
-
-                BeanType bt = BeanType.of(cls);
-
-                for(Map.Entry<String,String> prop : def.getProperties().entrySet()) {
-                    String name  = prop.getKey();
-                    String value = placeholderResolver.resolveString(prop.getValue());
-
-                    if(!Strings.isEmpty(value)) {
-                        BeanProperty bp = bt.getProperty(name);
-                        bp.setValue(obj, Converts.convert(value, bp.getType(), bp.getGenericType()));
-                    }
-                }
-
-                log.debug("Load config by loader : {}", cls.getSimpleName());
-                obj.loadConfig(context);
             }
         }
 

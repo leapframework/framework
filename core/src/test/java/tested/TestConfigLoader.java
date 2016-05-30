@@ -16,8 +16,8 @@
 
 package tested;
 
-import leap.core.AppConfigContext;
 import leap.core.AppConfigLoader;
+import leap.core.AppConfigurator;
 
 public class TestConfigLoader implements AppConfigLoader {
 
@@ -32,8 +32,8 @@ public class TestConfigLoader implements AppConfigLoader {
     }
 
     @Override
-    public void loadConfig(AppConfigContext context) {
-        context.setProperty("testConfigLoader.prop1", prop1);
+    public void loadConfig(AppConfigurator configurator) {
+        configurator.setProperty("testConfigLoader.prop1", prop1);
     }
 
 }

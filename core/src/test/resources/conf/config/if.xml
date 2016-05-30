@@ -5,22 +5,6 @@
     <property name="testIfBeanTrue4.enabled"  value="true"/>
     <property name="testIfBeanFalse3.enabled" value="0"/>
 
-    <!-- for config's if -->
-    <property name="testIf.prop2.enabled" value="true"/>
-    <property name="testIf.prop3.enabled" value="0"/>
-
-    <config if="true">
-        <property name="testIf.prop1" value="ifVal1"/>
-    </config>
-
-    <config if="properties['testIf.prop2.enabled']">
-        <property name="testIf.prop2" value="ifVal2"/>
-    </config>
-
-    <config if="properties['testIf.prop3.enabled']">
-        <property name="testIf.prop3" value="ifVal3"/>
-    </config>
-
     <config if-profile="prod">
     	<properties>
     		<property name="testProfile.shouldNotExists" value="1"/>

@@ -65,11 +65,12 @@ public class AppContextInitializer {
 			
 			log.debug("Initializing standalone app context...");
 			
-			config = loadDefaultAppConfig(attrs, null, null);
+			AppConfigurator configurator = loadDefaultAppConfig(attrs, null, null);
+            config = configurator.getConfig();
 			
 			initialAppConfig.set(config);
 			
-			DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
+			DefaultBeanFactory factory = createStandaloneAppFactory(configurator,externalAppFactory);
 			
 			//register bean 
 			factory.setPrimaryBean(AppConfig.class, config);
@@ -105,13 +106,13 @@ public class AppContextInitializer {
             }
 		}
 	}
-	
-	public static synchronized void initExternal(Object 					     externalContext,
-										  		 Function<AppConfig,BeanFactory> beanFactoryCreator,
-										  		 Consumer<AppContext> 		 	 callback,
-										  		 Map<String, String>          	 initProperties){
-		
-		if(initializing){
+
+    public static synchronized void initExternal(Object externalContext,
+                                                 Function<AppConfigurator, BeanFactory> beanFactoryCreator,
+                                                 Consumer<AppContext> callback,
+                                                 Map<String, String> initProperties) {
+
+        if(initializing){
 			return;
 		}
 		
@@ -128,11 +129,12 @@ public class AppContextInitializer {
 			
 			//log.info("Initializing app context");
 			
-			config = loadDefaultAppConfig(attrs, externalContext, initProperties);
+			AppConfigurator configurator = loadDefaultAppConfig(attrs, externalContext, initProperties);
+            config = configurator.getConfig();
 			
 			initialAppConfig.set(config);
 			
-			BeanFactory factory = beanFactoryCreator.apply(config);
+			BeanFactory factory = beanFactoryCreator.apply(configurator);
 			
 			//register bean
 			factory.setPrimaryBean(AppConfig.class, config);
@@ -157,21 +159,11 @@ public class AppContextInitializer {
 		}
 	}
 	
-	protected static AppConfig loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
-        AppConfig config = configSource.loadConfiguration(externalContext, initProperties);
-		
-		for(AppConfigInitializable o : Factory.newInstances(AppConfigInitializable.class)){
-			try {
-	            o.postInit(attrs, config);
-            } catch (Throwable e) {	
-            	throw new AppInitException("Error calling object '" + o + "', " + e.getMessage(), e);
-            }
-		}
-		
-		return config;
+	protected static AppConfigurator loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
+        return configSource.loadConfiguration(externalContext, initProperties);
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
+	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfigurator config,BeanFactory externalAppFactory){
 		return new DefaultBeanFactory(config,externalAppFactory);
 	}
 	

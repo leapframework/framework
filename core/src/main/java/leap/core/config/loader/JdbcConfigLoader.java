@@ -15,8 +15,8 @@
  */
 package leap.core.config.loader;
 
-import leap.core.AppConfigContext;
 import leap.core.AppConfigLoader;
+import leap.core.AppConfigurator;
 import leap.core.validation.annotations.NotEmpty;
 import leap.lang.Try;
 import leap.lang.jdbc.JDBC;
@@ -35,11 +35,11 @@ public class JdbcConfigLoader implements AppConfigLoader {
     protected @NotEmpty String driverClassName;
     protected @NotEmpty String jdbcUrl;
     protected @NotEmpty String username;
-    protected @NotEmpty String password;
+    protected           String password;
     protected @NotEmpty String sql;
 
     @Override
-    public void loadConfig(AppConfigContext context) {
+    public void loadConfig(AppConfigurator configurator) {
         Try.throwUnchecked(() -> {
             log.info("Loading config from db : {}", jdbcUrl);
 
@@ -61,7 +61,7 @@ public class JdbcConfigLoader implements AppConfigLoader {
                 while (rs.next()) {
                     String key   = rs.getString(1);
                     String value = rs.getString(2);
-                    context.setProperty(key, value);
+                    configurator.setProperty(key, value);
 
                     count++;
                 }

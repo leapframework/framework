@@ -24,7 +24,6 @@ import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
 import leap.lang.*;
 import leap.lang.Comparators;
-import leap.lang.accessor.PropertyGetter;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
@@ -33,7 +32,6 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
 import leap.lang.resource.ResourceSet;
-import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.Closeable;
@@ -86,11 +84,13 @@ public class BeanContainer implements BeanFactory {
     protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
     protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
 
-    private AppContext  appContext;
-    private BeanFactory beanFactory;
-    private boolean     initializing;
-    private boolean     containerInited;
-    private boolean     appInited;
+    private AppConfigurator configurator;
+    private AppConfig       config;
+    private AppContext      appContext;
+    private BeanFactory     beanFactory;
+    private boolean         initializing;
+    private boolean         containerInited;
+    private boolean         appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -104,13 +104,9 @@ public class BeanContainer implements BeanFactory {
 	/** Synchronization monitor for the "refresh" and "destroy" */
 	private final Object startupShutdownMonitor = new Object();
 
-	public BeanContainer(PropertyGetter properties){
-		this.placeholderResolver            = new DefaultPlaceholderResolver(properties);
-		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this);
-	}
-
-	public BeanContainer(AppConfig config){
+	public BeanContainer(AppConfigurator configurator){
+        this.configurator                   = configurator;
+        this.config                         = configurator.getConfig();
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
 		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
@@ -271,6 +267,11 @@ public class BeanContainer implements BeanFactory {
         AppConfig config = getAppConfig();
         if(config instanceof AppConfigBase) {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
+        }
+
+        //load app configurations.
+        for(AppConfigLoader loader : getBeans(AppConfigLoader.class)) {
+            loader.loadConfig(configurator);
         }
 
 		this.initBeanFactoryInitializableBeans();

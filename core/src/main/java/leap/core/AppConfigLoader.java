@@ -21,6 +21,6 @@ public interface AppConfigLoader {
     /**
      * Loads the config.
      */
-    void loadConfig(AppConfigContext context);
+    void loadConfig(AppConfigurator configurator);
 
 }

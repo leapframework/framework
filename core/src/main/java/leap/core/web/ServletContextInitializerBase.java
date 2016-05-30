@@ -72,7 +72,7 @@ public abstract class ServletContextInitializerBase {
 		onAppContextReady(appContext);
 	}
 	
-	protected void onAppConfigReady(AppConfig config, Map<String, String> initParams) {
+	protected void onAppConfigReady(AppConfigurator config, Map<String, String> initParams) {
 		
 	}
 	
@@ -99,7 +99,7 @@ public abstract class ServletContextInitializerBase {
 	
 	protected final class ServletBeanFactory extends DefaultBeanFactory {
 
-		public ServletBeanFactory(AppConfig config, BeanFactory externalFactory) {
+		public ServletBeanFactory(AppConfigurator config, BeanFactory externalFactory) {
 			super(config, externalFactory);
 		}
 		

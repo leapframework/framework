@@ -19,12 +19,10 @@
                     <xsd:element ref="property"/>
                     <xsd:element ref="datasource"/>
                     <xsd:element ref="permissions"/>
-                    <xsd:element ref="loader"/>
                     <xsd:element ref="config"/>
 			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 			    </xsd:choice>
 			</xsd:sequence>
-            <xsd:attribute name="if" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
             <xsd:attribute name="default-override" use="optional" type="xsd:boolean"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
@@ -213,16 +211,6 @@
                     <xsd:attribute name="if-profile" use="optional"/>
                 </xsd:extension>
             </xsd:simpleContent>
-        </xsd:complexType>
-    </xsd:element>
-
-    <xsd:element name="loader">
-        <xsd:complexType>
-            <xsd:sequence>
-                <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
-            </xsd:sequence>
-            <xsd:attribute name="class" type="xsd:string" use="required"/>
-            <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
         </xsd:complexType>
     </xsd:element>
 
