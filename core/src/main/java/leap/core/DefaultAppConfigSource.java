@@ -333,7 +333,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final Set<Resource>                                resources          = new HashSet<>();
         protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
         protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
-        protected final List<AppConfigLoaderDef>                     externalLoaders    = new ArrayList<>();
 
         Loader(Object externalContext, Map<String,String> initProperties, String profile) {
             this.externalContext = externalContext;
@@ -692,10 +691,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
             return config.dataSourceConfigs;
         }
 
-        @Override
-        public void addConfigLoader(AppConfigLoaderDef cl) {
-            loader.externalLoaders.add(cl);
-        }
     }
 
 }

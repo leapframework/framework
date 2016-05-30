@@ -192,11 +192,6 @@ public interface AppConfigContext extends PropertyAccessor {
     void addPermission(SysPermissionDef p, boolean override);
 
     /**
-     * Adds an {@link AppConfigLoaderDef}.
-     */
-    void addConfigLoader(AppConfigLoaderDef loader);
-
-    /**
      * Imports a config resource.
      */
     void importResource(Resource resource, boolean override);

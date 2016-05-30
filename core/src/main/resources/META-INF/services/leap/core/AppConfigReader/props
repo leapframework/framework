@@ -1,1 +1,1 @@
-class=leap.core.PropsAppConfigReader
+class=leap.core.config.reader.PropsConfigReader

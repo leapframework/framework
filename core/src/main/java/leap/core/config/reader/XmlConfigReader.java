@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config.reader;
 
+import leap.core.AppConfigContext;
+import leap.core.AppConfigException;
+import leap.core.AppConfigProcessor;
+import leap.core.AppConfigReader;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.sys.SysPermission;
@@ -36,9 +40,12 @@ import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
-public class XmlAppConfigReader implements AppConfigReader {
+/**
+ * Reads .xml file.
+ */
+public class XmlConfigReader implements AppConfigReader {
 
-    private static final Log log = LogFactory.get(XmlAppConfigReader.class);
+    private static final Log log = LogFactory.get(XmlConfigReader.class);
 
     private static final DefaultElParseContext parseContext = new DefaultElParseContext();
     static {

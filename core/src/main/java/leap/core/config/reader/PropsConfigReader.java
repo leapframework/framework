@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config.reader;
 
+import leap.core.AppConfig;
+import leap.core.AppConfigContext;
+import leap.core.AppConfigReader;
 import leap.lang.Charsets;
 import leap.lang.Locales;
 import leap.lang.Props;
@@ -25,7 +28,10 @@ import leap.lang.resource.Resource;
 
 import java.util.Properties;
 
-public class PropsAppConfigReader implements AppConfigReader {
+/**
+ * Reads .properties file.
+ */
+public class PropsConfigReader implements AppConfigReader {
 
     @Override
     public boolean readBase(AppConfigContext context, Resource resource) {
