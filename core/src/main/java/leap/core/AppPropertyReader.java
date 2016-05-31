@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core;
 
-import leap.lang.Out;
+import leap.lang.resource.Resource;
 
-public interface AppPropertyProcessor {
-	
-	/**
-	 * Returns <code>true</code> if the value changed.
-	 */
-	boolean process(String name, String value, Out<String> newValue);
+public interface AppPropertyReader {
+
+    /**
+     * Reads the properties in the given resource.
+     *
+     * <p/>
+     * Returns true if the resource was read by this reader.
+     */
+    boolean readProperties(AppPropertyContext context, Resource resource);
+
 
 }

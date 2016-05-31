@@ -15,11 +15,9 @@
  */
 package leap.web.config;
 
-import java.util.Iterator;
-
-import leap.core.AppConfigContext;
 import leap.core.AppConfigException;
 import leap.core.AppConfigProcessor;
+import leap.core.AppConfigContext;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
@@ -27,6 +25,8 @@ import leap.lang.xml.XmlReader;
 import leap.web.assets.AssetConfigExtension;
 import leap.web.cors.CorsConfig;
 import leap.web.error.ErrorsConfig;
+
+import java.util.Iterator;
 
 @Internal
 public class WebConfigProcessor implements AppConfigProcessor {

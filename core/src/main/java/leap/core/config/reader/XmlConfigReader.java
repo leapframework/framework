@@ -43,7 +43,7 @@ import java.util.List;
 /**
  * Reads .xml file.
  */
-public class XmlConfigReader implements AppConfigReader {
+public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigReader {
 
     private static final Log log = LogFactory.get(XmlConfigReader.class);
 
@@ -52,36 +52,6 @@ public class XmlConfigReader implements AppConfigReader {
         parseContext.setFunction("classes:isPresent", ElClasses.createFunction(Classes.class, "isPresent(java.lang.String)"));
         parseContext.setFunction("strings:isEmpty",   ElClasses.createFunction(Strings.class, "isEmpty(java.lang.String)"));
     }
-
-    public static final String DEFAULT_NAMESPACE_URI = "http://www.leapframework.org/schema/config";
-
-    private static final String CONFIG_ELEMENT              = "config";
-    private static final String BASE_PACKAGE_ELEMENT        = "base-package";
-    private static final String ADDITIONAL_PACKAGES_ELEMENT = "additional-packages";
-    private static final String DEBUG_ELEMENT               = "debug";
-    private static final String DEFAULT_LOCALE_ELEMENT      = "default-locale";
-    private static final String DEFAULT_ENCODING_ELEMENT    = "default-charset";
-    private static final String DATASOURCE_ELEMENT          = "datasource";
-    private static final String IMPORT_ELEMENT              = "import";
-    private static final String PROPERTIES_ELEMENT          = "properties";
-    private static final String PROPERTY_ELEMENT            = "property";
-    private static final String PERMISSIONS_ELEMENT         = "permissions";
-    private static final String GRANT_ELEMENT               = "grant";
-    private static final String DENY_ELEMENT                = "deny";
-    private static final String RESOURCES_ELEMENT           = "resources";
-    private static final String RESOURCE_ATTRIBUTE          = "resource";
-    private static final String IF_PROFILE_ATTRIBUTE        = "if-profile";
-    private static final String OVERRIDE_ATTRIBUTE          = "override";
-    private static final String PREFIX_ATTRIBUTE            = "prefix";
-    private static final String TYPE_ATTRIBUTE              = "type";
-    private static final String DEFAULT_ATTRIBUTE           = "default";
-    private static final String CLASS_ATTRIBUTE             = "class";
-    private static final String ACTIONS_ATTRIBUTE           = "actions";
-    private static final String CHECK_EXISTENCE_ATTRIBUTE   = "check-existence";
-    private static final String DEFAULT_OVERRIDE_ATTRIBUTE  = "default-override";
-    private static final String NAME_ATTRIBUTE              = "name";
-    private static final String VALUE_ATTRIBUTE             = "value";
-    private static final String LOCATION_ATTRIBUTE          = "location";
 
     private static final List<AppConfigProcessor> processors = Factory.newInstances(AppConfigProcessor.class);
 
@@ -232,26 +202,11 @@ public class XmlConfigReader implements AppConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(IMPORT_ELEMENT)){
-                if(matchProfile(context.getProfile(), reader)){
-                    boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-                    boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,context.isDefaultOverride());
-                    String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
-
-                    Resource importResource = Resources.getResource(resource,importResourceName);
-
-                    if(null == importResource || !importResource.exists()){
-                        if(checkExistence){
-                            throw new AppConfigException("the import resource '" + importResourceName + "' not exists");
-                        }
-                    }else{
-                        context.importResource(importResource, override);
-                    }
-                }
-                reader.nextToEndElement(IMPORT_ELEMENT);
+            if(importResource(context, resource, reader)) {
                 continue;
             }
 
+            /*
             if(reader.isStartElement(PROPERTIES_ELEMENT)){
                 readProperties(context, resource, reader);
                 continue;
@@ -261,6 +216,7 @@ public class XmlConfigReader implements AppConfigReader {
                 readProperty(context, resource, reader, "");
                 continue;
             }
+            */
 
             if(reader.isStartElement(DATASOURCE_ELEMENT)) {
                 readDataSource(context, resource, reader);
@@ -458,15 +414,6 @@ public class XmlConfigReader implements AppConfigReader {
             throw new AppConfigException("Permission class '" + className + "' must define the constructor(String.class,String.class), source : " + reader.getSource());
         } catch (Exception e){
             throw new AppConfigException("Error creating permission instance of class '" + className + ", source : " + reader.getSource(),e);
-        }
-    }
-
-    protected static boolean matchProfile(String profile, XmlReader element) {
-        String profileName = element.getAttribute(IF_PROFILE_ATTRIBUTE);
-        if(!Strings.isEmpty(profileName)){
-            return Strings.equalsIgnoreCase(profile, profileName);
-        }else{
-            return true;
         }
     }
 }

@@ -74,6 +74,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
     public DefaultAppConfig(String profile) {
         this.profile = profile;
+        this.properties.put(INIT_PROPERTY_PROFILE, profile);
     }
 
     public void setPropertyProvider(PropertyProvider p)  {

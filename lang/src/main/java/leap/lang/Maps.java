@@ -199,13 +199,16 @@ public class Maps {
 		return Converts.convert(v, targetType);
 	}
 
-    public static <T> void accept(Map map, Object key, Class<T> type, Consumer<T> consumer) {
+    public static <T> boolean accept(Map map, Object key, Class<T> type, Consumer<T> consumer) {
         Object v = get(map,key);
 
         T r = null == v ? null : Converts.convert(v, type);
 
         if(!Objects2.isEmpty(r)) {
             consumer.accept(r);
+            return true;
+        }else{
+            return false;
         }
     }
 	

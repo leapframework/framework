@@ -13,15 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core;
 
-import leap.lang.Out;
+import java.util.Map;
 
-public interface AppPropertyProcessor {
-	
-	/**
-	 * Returns <code>true</code> if the value changed.
-	 */
-	boolean process(String name, String value, Out<String> newValue);
+/**
+ * The context for {@link AppPropertyReader}.
+ */
+public interface AppPropertyContext extends AppConfigContextBase {
+
+    /**
+     * Returns true if the property exists.
+     */
+    boolean hasProperty(String name);
+
+    /**
+     * Sets the property.
+     */
+    void putProperty(Object source, String name, String value);
+
+    /**
+     * Puts all the properties.
+     */
+    void putProperties(Object source, Map<String,String> props);
+
+    /**
+     * Adds a loader.
+     */
+    void addLoader(AppPropertyLoader loader);
 
 }

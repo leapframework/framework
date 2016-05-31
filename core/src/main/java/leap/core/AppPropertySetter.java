@@ -13,15 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core;
 
-import leap.lang.Out;
+public interface AppPropertySetter {
 
-public interface AppPropertyProcessor {
-	
-	/**
-	 * Returns <code>true</code> if the value changed.
-	 */
-	boolean process(String name, String value, Out<String> newValue);
 
 }

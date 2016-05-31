@@ -46,8 +46,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected static final String APP_PROFILE_CONFIG_RESOURCE       = "classpath:/profile";
     protected static final String APP_PROFILE_LOCAL_CONFIG_RESOURCE = "classpath:/profile_local";
 
-    protected static final String[] BASE_CONFIG_FILENAMES = new String[] {"init.properties", "config.properties", "config.xml"};
-
     //all init properties
     protected static Set<String> INIT_PROPERTIES = new HashSet<>();
     static {
@@ -58,7 +56,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_LOCALE);
     }
 
-    private static final List<AppConfigReader> readers = Factory.newInstances(AppConfigReader.class);
+    private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
+    private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
 
     protected AppPropertyProcessor propertyProcessor = new PropertyProcessorWrapper();
     protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
@@ -75,7 +74,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //init profile
         String profile = initProfile(externalContext, initProperties);
 
-        //Create loader for the configuration.
+        //Create loader for loading the configuration.
         Loader loader = createLoader(externalContext, initProperties, profile);
 
         //Load config
@@ -134,7 +133,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
             profile = initProperties.get(AppConfig.INIT_PROPERTY_PROFILE);
         }
 
-        if(Strings.isEmpty(profile)) {
+        //Read local profile file if running in dev project.
+        if(Strings.isEmpty(profile) && DEV.isDevProject(externalContext)) {
             //read from local profile file
             profile = readProfileFile(initProperties, APP_PROFILE_LOCAL_CONFIG_RESOURCE);
         }
@@ -181,15 +181,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         return new Loader(externalContext, initProperties, profile);
     }
 
-    protected void loadBaseConfig(ConfigContext context, AppResource... resources) {
-        loadConfig(context, true, resources);
-    }
-
-    protected void loadFullConfig(ConfigContext context, AppResource... resources) {
-        loadConfig(context, false, resources);
-    }
-
-    private void loadConfig(ConfigContext context, boolean base, AppResource... resources){
+    protected void loadProperties(ConfigContext context, AppResource... resources) {
         for(AppResource ar : resources){
             try{
                 Resource resource  = ar.getResource();
@@ -197,9 +189,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 if(log.isDebugEnabled()){
                     if(AppResources.isFrameworkResource(resourceUrl)) {
-                        log.trace("Loading {} config from : {}", base ? "base" : "full", resourceUrl);
+                        log.trace("Loading properties from : {}", resourceUrl);
                     }else{
-                        log.debug("Loading {} config from : {}", base ? "base" : "full", resourceUrl);
+                        log.debug("Loading properties from : {}", resourceUrl);
                     }
                 }
 
@@ -210,110 +202,48 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 context.resources.add(resourceUrl);
 
                 context.setDefaultOverride(ar.isDefaultOverride());
-                for(AppConfigReader reader : readers) {
-                    if(base) {
-                        if(reader.readBase(context, resource)) {
-                            break;
-                        }
-                    }else{
-                        if(reader.readFully(context, resource)) {
-                            break;
-                        }
+                for(AppPropertyReader reader : propertyReaders) {
+                    if(reader.readProperties(context, resource)) {
+                        break;
                     }
                 }
                 context.resetDefaultOverride();
-
             }catch(IOException e) {
                 throw new AppConfigException("I/O Exception",e);
             }
         }
     }
 
-    protected static class PropertyProcessorWrapper implements AppPropertyProcessor {
+    private void loadConfig(ConfigContext context, AppResource... resources){
+        for(AppResource ar : resources){
+            try{
+                Resource resource  = ar.getResource();
+                String resourceUrl = resource.getURL().toString();
 
-        private final AppPropertyProcessor[] processors =
-                Factory.newInstances(AppPropertyProcessor.class).toArray(new AppPropertyProcessor[]{});
-
-        @Override
-        public boolean process(String name, String value, Out<String> newValue) {
-            if(processors.length > 0) {
-                for(int i=0;i<processors.length;i++) {
-                    AppPropertyProcessor p = processors[i];
-                    if(p.process(name, value, newValue)) {
-                        return true;
+                if(log.isDebugEnabled()){
+                    if(AppResources.isFrameworkResource(resourceUrl)) {
+                        log.trace("Loading config from : {}", resourceUrl);
+                    }else{
+                        log.debug("Loading config from : {}", resourceUrl);
                     }
                 }
-            }
-            return false;
-        }
-    }
 
-    protected static class DataSourceConfigPropertiesLoader {
-        protected static final String DB_DEFAULT_PREFIX = "db.";
-        protected static final String DB_NAMED_PREFIX   = "db_";
-
-        protected final Map<String, String>           properties;
-        protected final Map<String, DataSourceConfig> dataSourceConfigs;
-
-        public DataSourceConfigPropertiesLoader(Map<String, String> properties, Map<String, DataSourceConfig> dataSourceConfigs) {
-            this.properties = properties;
-            this.dataSourceConfigs = dataSourceConfigs;
-        }
-
-        protected void load() {
-            Map<String, DataSourceConfig.Builder> dsMap = new HashMap<>();
-
-            for(Map.Entry<String, String> entry : properties.entrySet()) {
-                String key = entry.getKey();
-                String val = entry.getValue();
-
-                if(key.startsWith(DB_DEFAULT_PREFIX)) {
-                    if(dataSourceConfigs.containsKey(DataSourceManager.DEFAULT_DATASOURCE_NAME)) {
-                        throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' already configured, check property '" + key + "'");
-                    }
-
-                    DataSourceConfig.Builder conf = dsMap.get(DataSourceManager.DEFAULT_DATASOURCE_NAME);
-                    if(null == conf) {
-                        conf = new DataSourceConfig.Builder();
-                        conf.setDefault(true);
-                        dsMap.put(DataSourceManager.DEFAULT_DATASOURCE_NAME, conf);
-                    }
-
-                    conf.setProperty(key.substring(DB_DEFAULT_PREFIX.length()), val);
-                    continue;
+                if(context.resources.contains(resourceUrl)){
+                    throw new AppConfigException("Cycle importing detected of '" + resourceUrl + "', please check your config : " + resourceUrl);
                 }
 
-                if(key.startsWith(DB_NAMED_PREFIX)) {
-                    int dotIndex = key.indexOf(DB_NAMED_PREFIX.length(), '.');
-                    if(dotIndex > 0) {
+                context.resources.add(resourceUrl);
 
-                        String dataSourceName = key.substring(DB_NAMED_PREFIX.length(), dotIndex);
-                        String dataSourceProp = key.substring(dotIndex + 1);
-
-                        if(dataSourceConfigs.containsKey(dataSourceName)) {
-                            throw new AppConfigException("DataSource '" + dataSourceName + "' already configured, check property '" + key + "'");
-                        }
-
-                        DataSourceConfig.Builder conf = dsMap.get(dataSourceName);
-                        if(null == conf) {
-                            conf = new DataSourceConfig.Builder();
-                            dsMap.put(dataSourceName, conf);
-                        }
-
-                        conf.setProperty(dataSourceProp, val);
-                        continue;
+                context.setDefaultOverride(ar.isDefaultOverride());
+                for(AppConfigReader reader : configReaders) {
+                    if(reader.readFully(context, resource)) {
+                        break;
                     }
                 }
-            }
+                context.resetDefaultOverride();
 
-            if(!dsMap.isEmpty()) {
-                for(Map.Entry<String, DataSourceConfig.Builder> entry : dsMap.entrySet()) {
-                    DataSourceConfig c = entry.getValue().build();
-
-                    if(c.isValid()) {
-                        dataSourceConfigs.put(entry.getKey(), c);
-                    }
-                }
+            }catch(IOException e) {
+                throw new AppConfigException("I/O Exception",e);
             }
         }
     }
@@ -326,9 +256,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final Map<String, String>        initProperties;
         final DefaultAppConfig           config;
         final AppResources               appResources;
+        final AppResource[]              configResources;
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
-
 
         protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
         protected final Map<String, String>                          properties         = new ConcurrentHashMap<>();
@@ -343,21 +273,19 @@ public class DefaultAppConfigSource implements AppConfigSource {
             this.initProperties  = initProperties;
             this.config          = new DefaultAppConfig(profile);
             this.appResources    = AppResources.create(config);
+            this.configResources = appResources.search("config");
 
             this.resolver = new DefaultPlaceholderResolver(this::resolveProperty);
-
             this.resolver.setEmptyUnresolvablePlaceholders(false);
             this.resolver.setIgnoreUnresolvablePlaceholders(true);
         }
 
         protected DefaultAppConfig load() {
-            init();
+            //load properties
+            loadProperties(new ConfigContext(this, false, true));
 
-            //Load base properties.
-            loadBase(new ConfigContext(this, false));
-
-            //Load configuration from default locations.
-            loadDefault(new ConfigContext(this, false));
+            //Load configuration.
+            loadConfig(new ConfigContext(this, false, false));
 
             //complete loading configuration.
             complete();
@@ -365,38 +293,39 @@ public class DefaultAppConfigSource implements AppConfigSource {
             return config;
         }
 
-        protected void init() {
-            Maps.accept(initProperties, AppConfig.INIT_PROPERTY_BASE_PACKAGE,    String.class,  (p) -> config.basePackage = p);
-            Maps.accept(initProperties, AppConfig.INIT_PROPERTY_DEBUG,           Boolean.class, (d) -> config.debug = d);
-            Maps.accept(initProperties, AppConfig.INIT_PROPERTY_DEFAULT_CHARSET, Charset.class, (c) -> config.defaultCharset = c);
-            Maps.accept(initProperties, AppConfig.INIT_PROPERTY_DEFAULT_LOCALE,  Locale.class,  (l) -> config.defaultLocale = l);
-            config.loadProperties(initProperties);
-        }
+        protected void loadProperties(ConfigContext context) {
+            parent.loadProperties(context, configResources);
 
-        protected void loadBase(ConfigContext context){
-            AppResource[] appBaseConfigFiles = appResources.searchAppFiles(BASE_CONFIG_FILENAMES);
-            if(appBaseConfigFiles.length > 0) {
-                parent.loadBaseConfig(context, appBaseConfigFiles);
-            }
+            //external properties overrides the configured properties.
+            properties.putAll(initProperties);
+
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_BASE_PACKAGE,    String.class,  (p) -> config.basePackage = p);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEBUG,           Boolean.class, (d) -> config.debug = d);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_CHARSET, Charset.class, (c) -> config.defaultCharset = c);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_LOCALE,  Locale.class,  (l) -> config.defaultLocale = l);
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
                 config.basePackage = DEFAULT_BASE_PACKAGE;
+                config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
             }
 
             //debug
             if(null == config.debug){
                 config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
+                config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
             }
 
             //default locale
             if(null == config.defaultLocale){
                 config.defaultLocale = DEFAULT_LOCALE;
+                config.properties.put(INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString());
             }
 
             //default charset
             if(null == config.defaultCharset){
                 config.defaultCharset = DEFAULT_CHARSET;
+                config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
             }
 
             log.info("{}:{}, {}:{}, {}:{}, {}:{}",
@@ -405,25 +334,21 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString(),
                     INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
 
-            config.properties.put(INIT_PROPERTY_PROFILE,config.profile);
-            config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
-            config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
-            config.properties.put(INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString());
-            config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
+            //todo : load by loaders.
+
+            resolveProperties();
+            processProperties();
         }
 
-        protected void loadDefault(ConfigContext context) {
+        protected void loadConfig(ConfigContext context) {
             AppResource[] files = appResources.search("config");
             if(files.length > 0) {
-                parent.loadFullConfig(context, files);
+                parent.loadConfig(context, files);
             }
         }
 
         protected void complete() {
-            resolve();
-            process();
-
-            //properties
+            //Apply all the properties to config object.
             config.loadProperties(this.properties);
             config.loadArrayProperties(this.arrayProperties);
 
@@ -445,7 +370,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             log.info("Load {} properties",config.properties.size());
         }
 
-        protected void process() {
+        protected void processProperties() {
             Out<String> out = new Out<>();
             for(Map.Entry<String, String> p : this.properties.entrySet()) {
                 String name  = p.getKey();
@@ -504,7 +429,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             return value;
         }
 
-        protected void resolve() {
+        protected void resolveProperties() {
             resolveProperties(this.properties);
 
             for(Map.Entry<String,List<String>> p : arrayProperties.entrySet()) {
@@ -601,8 +526,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext {
+    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext,AppPropertyContext {
 
+        protected final boolean          forProperty;
         protected final Loader           loader;
         protected final DefaultAppConfig config;
         protected final boolean          originalDefaultOverride;
@@ -611,12 +537,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected boolean     hasDefaultDataSource = false;
         protected Set<String> resources            = new HashSet<>();
 
-        ConfigContext(Loader loader, boolean defaultOverride){
+        ConfigContext(Loader loader, boolean defaultOverride, boolean forProperty){
             super(loader.properties);
             this.loader = loader;
             this.config = loader.config;
             this.originalDefaultOverride = defaultOverride;
             this.defaultOverride = defaultOverride;
+            this.forProperty = forProperty;
         }
 
         @Override
@@ -711,14 +638,45 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         @Override
         public void importResource(Resource resource, boolean override) {
-            loadFullConfig(new ConfigContext(loader, override), new SimpleAppResource(resource, override));
+            AppResource ar = new SimpleAppResource(resource, override);
+
+            if(forProperty) {
+                loadProperties(new ConfigContext(loader, override, true),  ar);
+            }else{
+                loadConfig(new ConfigContext(loader, override, false), ar);
+            }
         }
 
         @Override
         public void putProperties(Map<String, String> props) {
             if(null != props) {
-                loader.properties.putAll(props);
+                props.forEach((k,v) -> putProperty(null, k, v));
             }
+        }
+
+        @Override
+        public void putProperty(Object source, String name, String value) {
+            if(name.endsWith("[]")) {
+                name = name.substring(0, name.length()-2);
+                List<String> list = loader.arrayProperties.get(name);
+                if(null == list) {
+                    list = new ArrayList<>();
+                    loader.arrayProperties.put(name, list);
+                }
+                list.add(value);
+            }else{
+                loader.properties.put(name, value);
+            }
+        }
+
+        @Override
+        public void putProperties(Object source, Map<String, String> props) {
+            this.putProperties(props);
+        }
+
+        @Override
+        public void addLoader(AppPropertyLoader loader) {
+            //todo :
         }
 
         @Override
@@ -783,6 +741,95 @@ public class DefaultAppConfigSource implements AppConfigSource {
         @Override
         public PlaceholderResolver getPlaceholderResolver() {
             return loader.resolver;
+        }
+    }
+
+    protected static class PropertyProcessorWrapper implements AppPropertyProcessor {
+
+        private final AppPropertyProcessor[] processors =
+                Factory.newInstances(AppPropertyProcessor.class).toArray(new AppPropertyProcessor[]{});
+
+        @Override
+        public boolean process(String name, String value, Out<String> newValue) {
+            if(processors.length > 0) {
+                for(int i=0;i<processors.length;i++) {
+                    AppPropertyProcessor p = processors[i];
+                    if(p.process(name, value, newValue)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+    }
+
+    protected static class DataSourceConfigPropertiesLoader {
+        protected static final String DB_DEFAULT_PREFIX = "db.";
+        protected static final String DB_NAMED_PREFIX   = "db_";
+
+        protected final Map<String, String>           properties;
+        protected final Map<String, DataSourceConfig> dataSourceConfigs;
+
+        public DataSourceConfigPropertiesLoader(Map<String, String> properties, Map<String, DataSourceConfig> dataSourceConfigs) {
+            this.properties = properties;
+            this.dataSourceConfigs = dataSourceConfigs;
+        }
+
+        protected void load() {
+            Map<String, DataSourceConfig.Builder> dsMap = new HashMap<>();
+
+            for(Map.Entry<String, String> entry : properties.entrySet()) {
+                String key = entry.getKey();
+                String val = entry.getValue();
+
+                if(key.startsWith(DB_DEFAULT_PREFIX)) {
+                    if(dataSourceConfigs.containsKey(DataSourceManager.DEFAULT_DATASOURCE_NAME)) {
+                        throw new AppConfigException("DataSource '" + DataSourceManager.DEFAULT_DATASOURCE_NAME + "' already configured, check property '" + key + "'");
+                    }
+
+                    DataSourceConfig.Builder conf = dsMap.get(DataSourceManager.DEFAULT_DATASOURCE_NAME);
+                    if(null == conf) {
+                        conf = new DataSourceConfig.Builder();
+                        conf.setDefault(true);
+                        dsMap.put(DataSourceManager.DEFAULT_DATASOURCE_NAME, conf);
+                    }
+
+                    conf.setProperty(key.substring(DB_DEFAULT_PREFIX.length()), val);
+                    continue;
+                }
+
+                if(key.startsWith(DB_NAMED_PREFIX)) {
+                    int dotIndex = key.indexOf(DB_NAMED_PREFIX.length(), '.');
+                    if(dotIndex > 0) {
+
+                        String dataSourceName = key.substring(DB_NAMED_PREFIX.length(), dotIndex);
+                        String dataSourceProp = key.substring(dotIndex + 1);
+
+                        if(dataSourceConfigs.containsKey(dataSourceName)) {
+                            throw new AppConfigException("DataSource '" + dataSourceName + "' already configured, check property '" + key + "'");
+                        }
+
+                        DataSourceConfig.Builder conf = dsMap.get(dataSourceName);
+                        if(null == conf) {
+                            conf = new DataSourceConfig.Builder();
+                            dsMap.put(dataSourceName, conf);
+                        }
+
+                        conf.setProperty(dataSourceProp, val);
+                        continue;
+                    }
+                }
+            }
+
+            if(!dsMap.isEmpty()) {
+                for(Map.Entry<String, DataSourceConfig.Builder> entry : dsMap.entrySet()) {
+                    DataSourceConfig c = entry.getValue().build();
+
+                    if(c.isValid()) {
+                        dataSourceConfigs.put(entry.getKey(), c);
+                    }
+                }
+            }
         }
     }
 

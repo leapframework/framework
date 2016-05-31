@@ -1,11 +1,11 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -32,27 +32,7 @@ import java.util.Set;
 /**
  * The context interface for {@link AppConfigProcessor} and {@link AppConfigReader}.
  */
-public interface AppConfigContext extends PropertyAccessor {
-
-    /**
-     * Returns true if the config property is override by default.
-     */
-    boolean isDefaultOverride();
-
-    /**
-     * Sets the default override.
-     */
-    void setDefaultOverride(boolean b);
-
-    /**
-     * Resets the default override to original value.
-     */
-    void resetDefaultOverride();
-
-    /**
-     * Returns current profile's name.
-     */
-	String getProfile();
+public interface AppConfigContext extends AppConfigContextBase, PropertyAccessor {
 
     /**
      * Returns the {@link AppConfig#INIT_PROPERTY_DEBUG} property or null.
@@ -185,11 +165,6 @@ public interface AppConfigContext extends PropertyAccessor {
      * Adds a {@link SysPermissionDef}.
      */
     void addPermission(SysPermissionDef p, boolean override);
-
-    /**
-     * Imports a config resource.
-     */
-    void importResource(Resource resource, boolean override);
 
     //todo :
     PlaceholderResolver getPlaceholderResolver();

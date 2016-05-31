@@ -13,15 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package leap.core;
 
-import leap.lang.Out;
+import leap.lang.resource.Resource;
 
-public interface AppPropertyProcessor {
-	
-	/**
-	 * Returns <code>true</code> if the value changed.
-	 */
-	boolean process(String name, String value, Out<String> newValue);
+public interface AppConfigContextBase {
+
+    /**
+     * Returns true if the config property is override by default.
+     */
+    boolean isDefaultOverride();
+
+    /**
+     * Sets the default override.
+     */
+    void setDefaultOverride(boolean b);
+
+    /**
+     * Resets the default override to original value.
+     */
+    void resetDefaultOverride();
+
+    /**
+     * Returns current profile's name.
+     */
+    String getProfile();
+
+    /**
+     * Imports a config resource.
+     */
+    void importResource(Resource resource, boolean override);
 
 }

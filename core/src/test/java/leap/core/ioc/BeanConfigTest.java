@@ -62,7 +62,7 @@ public class BeanConfigTest extends CoreTestCase {
 
         String[] arrayProperty1 = bean.arrayProperty1;
         assertNotNull(arrayProperty1);
-        assertEquals(3, arrayProperty1.length);
+        assertEquals(3,   arrayProperty1.length);
         assertEquals("a", arrayProperty1[0]);
         assertEquals("b", arrayProperty1[1]);
         assertEquals("c", arrayProperty1[2]);
