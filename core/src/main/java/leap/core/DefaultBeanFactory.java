@@ -39,18 +39,16 @@ public class DefaultBeanFactory implements BeanFactory {
 
     private static final Log log = LogFactory.get(DefaultBeanFactory.class);
 
-    protected final AppConfigurator configurator;
     protected final AppConfig       config;
     protected final BeanFactory     externalFactory;
 
     protected boolean		initialized;
 	protected BeanContainer beanContainer;
 	
-	protected DefaultBeanFactory(AppConfigurator configurator,BeanFactory externalFactory){
-        this.configurator    = configurator;
-		this.config	         = configurator.getConfig();
+	protected DefaultBeanFactory(AppConfig config,BeanFactory externalFactory){
+		this.config	         = config;
 		this.externalFactory = externalFactory;
-		this.beanContainer   = new BeanContainer(configurator);
+		this.beanContainer   = new BeanContainer(config);
 	}
 	
 	public DefaultBeanFactory addInitializableBean(BeanFactoryInitializable bean){

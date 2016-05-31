@@ -153,15 +153,15 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
     }
 	
 	@Override
-    protected void onAppConfigReady(AppConfigurator config,Map<String, String> initParams) {
+    protected void onAppConfigReady(AppConfig config,Map<String, String> initParams) {
 		this.basePath = initParams.getOrDefault(App.INIT_PARAM_BASE_PATH, App.DEFAULT_BASE_PATH);
 		
-		this.app = scanGlobalObject(servletContext, config.getConfig());
+		this.app = scanGlobalObject(servletContext, config);
 		if(null == app){
 			app = new App();
 		}
 		
-		app.onConfigReady(config.getConfig(), servletContext, basePath);
+		app.onConfigReady(config, servletContext, basePath);
 		servletContext.setAttribute(APP_ATTR_NAME, app);
 	}
 	

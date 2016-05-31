@@ -20,6 +20,6 @@ import java.util.Map;
 
 public interface AppConfigSource {
 
-    AppConfigurator loadConfiguration(Object externalContext, Map<String,String> initProperties);
+    AppConfig loadConfiguration(Object externalContext, Map<String,String> initProperties);
 
 }

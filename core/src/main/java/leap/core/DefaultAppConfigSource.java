@@ -67,7 +67,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
 
     @Override
-    public AppConfigurator loadConfiguration(Object externalContext, Map<String, String> initProperties) {
+    public AppConfig loadConfiguration(Object externalContext, Map<String, String> initProperties) {
         if(null == initProperties) {
             initProperties = new LinkedHashMap<>();
         }
@@ -90,7 +90,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //instrument
         instrumentClasses(config);
 
-        return new DefaultAppConfigurator(config);
+        return config;
     }
 
     protected void postLoad(DefaultAppConfig config) {

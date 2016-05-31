@@ -88,7 +88,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
 		List<Sql> sqls = cache.get(key);
 		if(null == sqls) {
-			log.debug("Parsing sql :\n {}", sql);
+			log.trace("Parsing sql :\n {}", sql);
 			sqls = createParser(sql).sqls();
 
             if(smart()) {

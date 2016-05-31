@@ -84,7 +84,6 @@ public class BeanContainer implements BeanFactory {
     protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
     protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
 
-    private AppConfigurator configurator;
     private AppConfig       config;
     private AppContext      appContext;
     private BeanFactory     beanFactory;
@@ -104,9 +103,8 @@ public class BeanContainer implements BeanFactory {
 	/** Synchronization monitor for the "refresh" and "destroy" */
 	private final Object startupShutdownMonitor = new Object();
 
-	public BeanContainer(AppConfigurator configurator){
-        this.configurator                   = configurator;
-        this.config                         = configurator.getConfig();
+	public BeanContainer(AppConfig config){
+        this.config                         = config;
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
 		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
