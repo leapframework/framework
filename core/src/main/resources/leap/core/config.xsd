@@ -19,6 +19,7 @@
                     <xsd:element ref="property"/>
                     <xsd:element ref="datasource"/>
                     <xsd:element ref="permissions"/>
+                    <xsd:element ref="loader"/>
                     <xsd:element ref="config"/>
 			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 			    </xsd:choice>
@@ -211,6 +212,18 @@
                     <xsd:attribute name="if-profile" use="optional"/>
                 </xsd:extension>
             </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="loader">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+            <xsd:attribute name="class" type="xsd:string" use="required"/>
+            <xsd:attribute name="if-property" use="optional" type="xsd:string"/>
+            <xsd:attribute name="if-profile"  use="optional" type="xsd:string"/>
+            <xsd:attribute name="sort-order" use="optional" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
 

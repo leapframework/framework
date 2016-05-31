@@ -14,26 +14,27 @@
  * limitations under the License.
  */
 
-package tested;
+package leap.core;
 
-import leap.core.AppConfigLoader;
-import leap.core.AppConfigurator;
+import leap.lang.Ordered;
 
-public class TestConfigLoader implements AppConfigLoader {
+import java.util.Map;
 
-    protected String prop1;
+public interface AppPropertyLoaderConfig extends Ordered {
 
-    public String getProp1() {
-        return prop1;
-    }
+    /**
+     * Loads the config, return true if enabled.
+     */
+    boolean load(Map<String,String> properties);
 
-    public void setProp1(String prop1) {
-        this.prop1 = prop1;
-    }
+    /**
+     * The class name of object.
+     */
+    String getClassName();
 
-    @Override
-    public void loadConfig(AppConfigurator configurator) {
-        configurator.setProperty("testConfigLoader.prop1", prop1);
-    }
+    /**
+     * The property values of object.
+     */
+    Map<String,String> getProperties();
 
 }

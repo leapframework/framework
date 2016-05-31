@@ -16,19 +16,24 @@
 
 package leap.core.config.reader;
 
-import leap.core.AppConfig;
-import leap.core.AppConfigException;
-import leap.core.AppPropertyContext;
-import leap.core.AppPropertyReader;
+import leap.core.*;
+import leap.core.el.EL;
 import leap.lang.Strings;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropertyReader {
 
     protected static final String DEFAULT_CHARSET_ELEMENT = "default-charset";
+    protected static final String CONFIG_LOADER_ELEMENT   = "loader";
+    protected static final String IF_PROPERTY_ATTRIBUTE   = "if-property";
+    protected static final String SORT_ORDER_ATTRIBUTE    = "sort-order";
 
     @Override
     public boolean readProperties(AppPropertyContext context, Resource resource) {
@@ -131,6 +136,11 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 continue;
             }
 
+            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
+                readLoader(context, resource, reader);
+                continue;
+            }
+
             if(reader.isStartElement(PROPERTIES_ELEMENT)) {
                 readProperties(context, resource, reader);
                 continue;
@@ -189,5 +199,85 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
         String key = prefix + name;
         context.putProperty(resource, key, value);
+    }
+
+    protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader){
+        if(!matchProfile(context.getProfile(), reader)){
+            reader.nextToEndElement(CONFIG_LOADER_ELEMENT);
+            return;
+        }
+
+        String ifProperty = reader.resolveAttribute(IF_PROPERTY_ATTRIBUTE);
+        String className  = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
+        int    sortOrder  = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
+
+        Function<Map<String,String>, Boolean> enabled = null;
+        if(!Strings.isEmpty(ifProperty)) {
+            int index = ifProperty.indexOf("==");
+            if(index > 0) {
+                String name  = ifProperty.substring(0, index).trim();
+                String value = ifProperty.substring(index + 2).trim();
+                enabled = (props) -> {
+                    return value.equals(props.get(name));
+                };
+            }else{
+                enabled = (props) -> {
+                     return EL.test(props.get(ifProperty), true);
+                };
+            }
+        }
+
+        LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
+
+        while(reader.nextWhileNotEnd(CONFIG_LOADER_ELEMENT)){
+            if(reader.isStartElement(PROPERTY_ELEMENT)){
+                String  name  = reader.getAttribute(NAME_ATTRIBUTE);
+                String  value = reader.getAttribute(VALUE_ATTRIBUTE);
+
+                if(Strings.isEmpty(value)) {
+                    value = reader.getElementTextAndEnd();
+                }else{
+                    reader.nextToEndElement(PROPERTY_ELEMENT);
+                }
+
+                loader.getProperties().put(name, value);
+
+                continue;
+            }
+        }
+
+        context.addLoader(loader);
+    }
+
+    protected static class LoaderConfig implements AppPropertyLoaderConfig {
+
+        private final Function<Map<String,String>, Boolean> enabled;
+        private final int                                   order;
+        private final String                                className;
+        private final Map<String, String>                   properties = new LinkedHashMap<>();
+
+        public LoaderConfig(String className, Function<Map<String,String>, Boolean> enabled, int order) {
+            this.className = className;
+            this.enabled   = enabled;
+            this.order     = order;
+        }
+
+        @Override
+        public boolean load(Map<String, String> properties) {
+            return null == enabled ? true : enabled.apply(properties);
+        }
+
+        @Override
+        public int getSortOrder() {
+            return order;
+        }
+
+        public String getClassName() {
+            return className;
+        }
+
+        public Map<String, String> getProperties() {
+            return properties;
+        }
     }
 }

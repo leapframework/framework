@@ -18,5 +18,14 @@ package leap.core;
 
 public interface AppPropertySetter {
 
+    /**
+     * Returns true if the property exists.
+     */
+    boolean hasProperty(String name);
+
+    /**
+     * Sets the property.
+     */
+    void setProperty(String name, String value);
 
 }

@@ -15,8 +15,8 @@
  */
 package leap.core.config.loader;
 
-import leap.core.AppConfigLoader;
-import leap.core.AppConfigurator;
+import leap.core.AppPropertyLoader;
+import leap.core.AppPropertySetter;
 import leap.core.validation.annotations.NotEmpty;
 import leap.lang.Try;
 import leap.lang.jdbc.JDBC;
@@ -28,9 +28,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class JdbcConfigLoader implements AppConfigLoader {
+public class JdbcPropertyLoader implements AppPropertyLoader {
 
-    private static final Log log = LogFactory.get(JdbcConfigLoader.class);
+    private static final Log log = LogFactory.get(JdbcPropertyLoader.class);
 
     protected @NotEmpty String driverClassName;
     protected @NotEmpty String jdbcUrl;
@@ -39,7 +39,7 @@ public class JdbcConfigLoader implements AppConfigLoader {
     protected @NotEmpty String sql;
 
     @Override
-    public void loadConfig(AppConfigurator configurator) {
+    public void loadProperties(AppPropertySetter props) {
         Try.throwUnchecked(() -> {
             log.info("Loading config from db : {}", jdbcUrl);
 
@@ -61,7 +61,7 @@ public class JdbcConfigLoader implements AppConfigLoader {
                 while (rs.next()) {
                     String key   = rs.getString(1);
                     String value = rs.getString(2);
-                    configurator.setProperty(key, value);
+                    props.setProperty(key, value);
 
                     count++;
                 }

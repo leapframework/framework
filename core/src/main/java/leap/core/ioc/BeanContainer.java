@@ -269,11 +269,6 @@ public class BeanContainer implements BeanFactory {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-        //load app configurations.
-        for(AppConfigLoader loader : getBeans(AppConfigLoader.class)) {
-            loader.loadConfig(configurator);
-        }
-
 		this.initBeanFactoryInitializableBeans();
 		this.initNonLazyBeans();
 

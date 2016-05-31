@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-package leap.core;
+package tested;
 
-public interface AppConfigLoader {
+import leap.core.AppPropertyLoader;
+import leap.core.AppPropertySetter;
 
-    /**
-     * Loads the config.
-     */
-    void loadConfig(AppConfigurator configurator);
+public class TestPropertyLoader implements AppPropertyLoader {
+
+    protected String name;
+    protected String value;
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public void loadProperties(AppPropertySetter props) {
+        props.setProperty("testConfigLoader." + name, value);
+    }
 
 }

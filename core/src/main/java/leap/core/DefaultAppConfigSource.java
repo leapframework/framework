@@ -22,8 +22,12 @@ import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.SystemPropertyAccessor;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -267,6 +271,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
         protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
         protected final Map<String, DataSourceConfig.Builder>        dataSourceConfigs  = new HashMap<>();
+        protected final Set<AppPropertyLoaderConfig>                 propertyLoaders;
 
         Loader(Object externalContext, Map<String,String> initProperties, String profile) {
             this.externalContext = externalContext;
@@ -278,11 +283,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
             this.resolver = new DefaultPlaceholderResolver(this::resolveProperty);
             this.resolver.setEmptyUnresolvablePlaceholders(false);
             this.resolver.setIgnoreUnresolvablePlaceholders(true);
+
+            this.propertyLoaders = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
         }
 
         protected DefaultAppConfig load() {
-            //load properties
-            loadProperties(new ConfigContext(this, false, true));
+            //load local properties
+            loadLocalProperties(new ConfigContext(this, false, true));
+
+            //load external properties.
+            loadExternalProperties(new ConfigContext(this, false, true));
 
             //Load configuration.
             loadConfig(new ConfigContext(this, false, false));
@@ -293,7 +303,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             return config;
         }
 
-        protected void loadProperties(ConfigContext context) {
+        protected void loadLocalProperties(ConfigContext context) {
             parent.loadProperties(context, configResources);
 
             //external properties overrides the configured properties.
@@ -334,7 +344,47 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString(),
                     INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
 
-            //todo : load by loaders.
+            resolveProperties();
+            processProperties();
+        }
+
+        protected void loadExternalProperties(ConfigContext context) {
+
+            for(AppPropertyLoaderConfig conf : propertyLoaders) {
+
+                if(!conf.load(this.properties)) {
+                    log.info("Property loader '{}' disabled", conf.getClassName());
+                    continue;
+                }
+
+                Class<?> cls = Classes.tryForName(conf.getClassName());
+                if(null == cls) {
+                    throw new AppConfigException("The property loader class '" + conf.getClassName() +
+                                                 "' not found, check your config");
+                }
+
+                if(!AppPropertyLoader.class.isAssignableFrom(cls)) {
+                    throw new AppConfigException("The loader class '" + conf.getClassName() +
+                                                 "' must implements interface '" + AppPropertyLoader.class.getName() + "'");
+                }
+
+                AppPropertyLoader loader = (AppPropertyLoader) Reflection.newInstance(cls);
+
+                BeanType bt = BeanType.of(cls);
+
+                for(Map.Entry<String,String> prop : conf.getProperties().entrySet()) {
+                    String name  = prop.getKey();
+                    String value = resolver.resolveString(prop.getValue());
+
+                    if(!Strings.isEmpty(value)) {
+                        BeanProperty bp = bt.getProperty(name);
+                        bp.setValue(loader, Converts.convert(value, bp.getType(), bp.getGenericType()));
+                    }
+                }
+
+                log.info("Load properties by loader : {}", cls.getSimpleName());
+                loader.loadProperties(context);
+            }
 
             resolveProperties();
             processProperties();
@@ -526,7 +576,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext,AppPropertyContext {
+    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext,AppPropertyContext,AppPropertySetter {
 
         protected final boolean          forProperty;
         protected final Loader           loader;
@@ -675,8 +725,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public void addLoader(AppPropertyLoader loader) {
-            //todo :
+        public void addLoader(AppPropertyLoaderConfig config) {
+            Args.notNull(config);
+            loader.propertyLoaders.add(config);
         }
 
         @Override

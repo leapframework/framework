@@ -39,8 +39,8 @@ public interface AppPropertyContext extends AppConfigContextBase {
     void putProperties(Object source, Map<String,String> props);
 
     /**
-     * Adds a loader.
+     * Adds a loader's config.
      */
-    void addLoader(AppPropertyLoader loader);
+    void addLoader(AppPropertyLoaderConfig loader);
 
 }
