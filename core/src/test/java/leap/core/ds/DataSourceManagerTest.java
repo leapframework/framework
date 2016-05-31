@@ -15,16 +15,13 @@
  */
 package leap.core.ds;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import javax.sql.DataSource;
-
-import org.junit.Test;
-
 import leap.core.junit.AppTestBase;
 import leap.lang.Exceptions;
-import leap.lang.exception.ObjectNotFoundException;
+import org.junit.Test;
+
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public class DataSourceManagerTest extends AppTestBase {
 	
@@ -36,20 +33,6 @@ public class DataSourceManagerTest extends AppTestBase {
 	}
 
 	@Test
-	public void testDefaultConfiguration() {
-		assertNull(dsm.tryGetDefaultDataSource());
-
-		try {
-	        dsm.getDefaultDataSource();
-	        fail("Should throw exception");
-        } catch (ObjectNotFoundException e) {
-
-        }
-		
-		assertTrue(dsm.getAllDataSources().isEmpty());
-	}
-	
-	@Test
 	public void testCreateDataSource() {
 		DataSourceConfig p = 
 				DataSourceConfig.createBuilder()
@@ -59,7 +42,7 @@ public class DataSourceManagerTest extends AppTestBase {
 		
 		DataSource ds = null;
 		try {
-			ds = dsm.createDataSource(p);
+			ds = dsm.createDataSource("test", p);
 			assertNotNull(ds);
 			
 	        try(Connection connection = ds.getConnection()){
@@ -70,6 +53,8 @@ public class DataSourceManagerTest extends AppTestBase {
         }
 		
 		dsm.destroyDataSource(ds);
+
+        assertNull(dsm.tryGetDataSource("test"));
 	}
 
 }

@@ -275,6 +275,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     DataSourceConfig.Builder conf = dsMap.get(DataSourceManager.DEFAULT_DATASOURCE_NAME);
                     if(null == conf) {
                         conf = new DataSourceConfig.Builder();
+                        conf.setDefault(true);
                         dsMap.put(DataSourceManager.DEFAULT_DATASOURCE_NAME, conf);
                     }
 

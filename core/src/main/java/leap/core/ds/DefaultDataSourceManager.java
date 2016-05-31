@@ -177,13 +177,32 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	
 	@Override
     public boolean tryDestroyDataSource(DataSource ds) {
-		for(DataSourceFactory f : dataSourceFactories){
-			if(f.tryDestroyDataSource(ds)){
-				return true;
-			}
-		}
-		
-		return unpooledDataSourceFactory.tryDestroyDataSource(ds);
+        try {
+            for (DataSourceFactory f : dataSourceFactories) {
+                if (f.tryDestroyDataSource(ds)) {
+                    return true;
+                }
+            }
+
+            return unpooledDataSourceFactory.tryDestroyDataSource(ds);
+        }finally{
+            String name = null;
+            for(Entry<String, DataSource> entry : allDataSources.entrySet()) {
+                if(entry.getValue() == ds) {
+                    name = entry.getKey();
+                    break;
+                }
+            }
+
+            if(null != name) {
+                allDataSources.remove(name);
+                notifyDataSourceDestroyed(name, ds);
+            }
+
+            if(ds == defaultDataSource) {
+                defaultDataSource = null;
+            }
+        }
     }
 	
 	@Override
@@ -215,9 +234,10 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
-		this.allDataSources = new ConcurrentHashMap<>(factory.getNamedBeans(DataSource.class));
+        this.defaultDataSource = factory.tryGetBean(DataSource.class);
+		this.allDataSources    = new ConcurrentHashMap<>(factory.getNamedBeans(DataSource.class));
 		
-		//Create datasource(s) from config.
+		//Create dataSource(s) from config.
 		createDataSourcesFromConfig(factory, allDataSources);
 		
 		if(null == this.defaultDataSource) {
@@ -245,13 +265,14 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	
 	protected void createDataSourcesFromConfig(BeanFactory factory,  Map<String, DataSource> dataSourcesMap) {
 		for(Entry<String, DataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
-			String name = entry.getKey();
-			if(dataSourcesMap.containsKey(name)) {
+			String           name = entry.getKey();
+            DataSourceConfig conf = entry.getValue();
+
+			if(dataSourcesMap.containsKey(name) || (conf.isDefault() && null != this.defaultDataSource)) {
 				continue;
 			}
+
 			try {
-			    DataSourceConfig conf = entry.getValue();
-			    
 			    DataSource ds = createDataSource(conf);
 			    
 	            dataSourcesMap.put(entry.getKey(), ds);
@@ -264,7 +285,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	                }
 	            }
             } catch (SQLException e) {
-            	throw new AppConfigException("Error creating datasource '" + entry.getKey() + ", " + e.getMessage(), e);
+            	throw new AppConfigException("Error creating dataSource '" + entry.getKey() + ", " + e.getMessage(), e);
             }
 		}
 	}
