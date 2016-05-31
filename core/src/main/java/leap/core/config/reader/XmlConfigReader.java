@@ -127,7 +127,6 @@ public class XmlConfigReader implements AppConfigReader {
         }
     }
 
-
     protected void readFullXml(AppConfigContext context, Resource resource) {
         XmlReader reader = null;
         try{
@@ -342,7 +341,7 @@ public class XmlConfigReader implements AppConfigReader {
             }
         }
 
-        context.setDataSourceConfig(dataSourceName, conf.build());
+        context.setDataSourceConfig(dataSourceName, conf);
     }
 
     private void readProperties(AppConfigContext context,Resource resource, XmlReader reader){
@@ -390,13 +389,6 @@ public class XmlConfigReader implements AppConfigReader {
         }
 
         String key = prefix + name;
-
-        if(null != context.getPropertyProcessor()){
-            Out<String> newValue = new Out<>();
-            if(context.getPropertyProcessor().process(key, value, newValue)) {
-                value = newValue.getValue();
-            }
-        }
 
         if(key.endsWith("[]")) {
             key = key.substring(0, key.length()-2);

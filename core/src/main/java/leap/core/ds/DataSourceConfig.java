@@ -348,7 +348,7 @@ public class DataSourceConfig {
 		
 		private String dataSourceType;
 		private boolean _default;
-		private final Map<String, String> map = new LinkedHashMap<>();
+		private final Map<String, String> properties = new LinkedHashMap<>();
 		
 		public Builder(){
 			
@@ -363,19 +363,33 @@ public class DataSourceConfig {
 		
 		public Builder(Map<String, String> properties){
 			if(null != properties){
-				this.map.putAll(properties);
+				this.properties.putAll(properties);
 			}
 		}
 		
 		public Builder(Properties properties){
 			if(null != properties){
-				this.map.putAll(ExProperties.create(properties).toMap());
+				this.properties.putAll(ExProperties.create(properties).toMap());
 			}
 		}
 		
 		public String getDataSourceType() {
 			return dataSourceType;
 		}
+
+        public boolean isDefault() {
+            return _default;
+        }
+
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+
+        public Builder setProperties(Map<String,String> map) {
+            this.properties.clear();
+            this.properties.putAll(map);
+            return this;
+        }
 
 		public Builder setDataSourceType(String dataSourceType) {
 			this.dataSourceType = dataSourceType;
@@ -403,7 +417,7 @@ public class DataSourceConfig {
 		}
 		
 		public Builder setProperty(String name, String value){
-			map.put(name, value);
+			properties.put(name, value);
 			return this;
 		}
 		
@@ -413,7 +427,7 @@ public class DataSourceConfig {
 		}
 		
 		public DataSourceConfig build() {
-			return new DataSourceConfig(dataSourceType,_default,map);
+			return new DataSourceConfig(dataSourceType,_default, properties);
 		}
 	}
 }

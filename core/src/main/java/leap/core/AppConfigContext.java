@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * The context interface for {@link AppConfigProcessor}.
+ * The context interface for {@link AppConfigProcessor} and {@link AppConfigReader}.
  */
 public interface AppConfigContext extends PropertyAccessor {
 
@@ -169,12 +169,7 @@ public interface AppConfigContext extends PropertyAccessor {
     /**
      * Sets the configuration of data source.
      */
-	void setDataSourceConfig(String name,DataSourceConfig conf);
-
-    /**
-     * Returns all the data source configurations.
-     */
-	Map<String,DataSourceConfig> getDataSourceConfigs();
+	void setDataSourceConfig(String name,DataSourceConfig.Builder conf);
 
     /**
      * Returns a mutable set contains all the additional packages.
@@ -196,13 +191,6 @@ public interface AppConfigContext extends PropertyAccessor {
      */
     void importResource(Resource resource, boolean override);
 
-    /**
-     * Returns the {@link PlaceholderResolver}.
-     */
+    //todo :
     PlaceholderResolver getPlaceholderResolver();
-
-    /**
-     * Returns the {@link AppPropertyProcessor} or null.
-     */
-    AppPropertyProcessor getPropertyProcessor();
 }

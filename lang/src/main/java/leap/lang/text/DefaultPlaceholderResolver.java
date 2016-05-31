@@ -82,7 +82,12 @@ public class DefaultPlaceholderResolver implements PlaceholderResolver {
 		this.emptyUnresolvablePlaceholders = emptyUnresolvablePlaceholders;
 	}
 
-	@Override
+    @Override
+    public boolean hasPlaceholder(String value) {
+        return null != value && value.startsWith(placeholderPrefix) && value.endsWith(placeholderSuffix);
+    }
+
+    @Override
 	public String resolveString(String value) {
 		if(Strings.isEmpty(value)){
 			return value;
