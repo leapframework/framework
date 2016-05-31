@@ -139,6 +139,8 @@ public class ConfigTest extends TestBase {
         if(isTest()) {
             assertEquals("test", env);
             assertEquals("val", config.getProperty("prop"));
+            assertEquals("b", config.getProperty("prop1"));
+            assertEquals("b", config.getProperty("prop2"));
             return;
         }
 
