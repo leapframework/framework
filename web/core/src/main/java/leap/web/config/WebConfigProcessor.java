@@ -16,8 +16,8 @@
 package leap.web.config;
 
 import leap.core.AppConfigException;
-import leap.core.AppConfigProcessor;
-import leap.core.AppConfigContext;
+import leap.core.config.AppConfigProcessor;
+import leap.core.config.AppConfigContext;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;

@@ -14,12 +14,35 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config;
 
-import leap.core.config.dyna.PropertyProvider;
+import leap.lang.resource.Resource;
 
-public abstract class AppConfigBase implements AppConfig {
+public interface AppConfigContextBase {
 
-    public abstract void setPropertyProvider(PropertyProvider pp);
+    /**
+     * Returns true if the config property is override by default.
+     */
+    boolean isDefaultOverride();
+
+    /**
+     * Sets the default override.
+     */
+    void setDefaultOverride(boolean b);
+
+    /**
+     * Resets the default override to original value.
+     */
+    void resetDefaultOverride();
+
+    /**
+     * Returns current profile's name.
+     */
+    String getProfile();
+
+    /**
+     * Imports a config resource.
+     */
+    void importResource(Resource resource, boolean override);
 
 }

@@ -14,12 +14,27 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config;
 
-import leap.core.config.dyna.PropertyProvider;
+import leap.lang.Ordered;
 
-public abstract class AppConfigBase implements AppConfig {
+import java.util.Map;
 
-    public abstract void setPropertyProvider(PropertyProvider pp);
+public interface AppPropertyLoaderConfig extends Ordered {
+
+    /**
+     * Loads the config, return true if enabled.
+     */
+    boolean load(Map<String,String> properties);
+
+    /**
+     * The class name of object.
+     */
+    String getClassName();
+
+    /**
+     * The property values of object.
+     */
+    Map<String,String> getProperties();
 
 }

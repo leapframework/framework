@@ -15,6 +15,7 @@
  */
 package leap.core;
 
+import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.instrument.AppInstrumentation;
@@ -271,7 +272,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
         protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
         protected final Map<String, DataSourceConfig.Builder>        dataSourceConfigs  = new HashMap<>();
-        protected final Set<AppPropertyLoaderConfig>                 propertyLoaders;
+        protected final Set<AppPropertyLoaderConfig> propertyLoaders;
 
         Loader(Object externalContext, Map<String,String> initProperties, String profile) {
             this.externalContext = externalContext;

@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.core.config;
 
-package leap.core;
+import leap.core.AppConfigException;
+import leap.lang.xml.XmlReader;
 
-import leap.core.config.dyna.PropertyProvider;
+public interface AppConfigProcessor {
+	
+	/**
+	 * Returns the namespace uri of this extension.
+	 * 
+	 * i.e. http://sample.com/config/extension
+	 */
+	String getNamespaceURI();
 
-public abstract class AppConfigBase implements AppConfig {
-
-    public abstract void setPropertyProvider(PropertyProvider pp);
-
+	/**
+	 * Processes current xml element in the {@link XmlReader}.
+	 */
+	void processElement(AppConfigContext context, XmlReader reader) throws AppConfigException;
+	
 }

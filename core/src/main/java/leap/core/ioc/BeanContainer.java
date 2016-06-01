@@ -17,7 +17,7 @@ package leap.core.ioc;
 
 import leap.core.*;
 import leap.core.annotation.*;
-import leap.core.config.*;
+import leap.core.config.dyna.*;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;

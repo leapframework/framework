@@ -14,12 +14,30 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config.dyna;
 
-import leap.core.config.dyna.PropertyProvider;
+import java.util.function.Consumer;
 
-public abstract class AppConfigBase implements AppConfig {
+public abstract class AbstractProperty<T> implements Property<T> {
 
-    public abstract void setPropertyProvider(PropertyProvider pp);
+    protected Consumer<T> callback;
+    protected T           value;
 
+    @Override
+    public T get() {
+        return value;
+    }
+
+    @Override
+    public void set(T value) {
+        this.value = value;
+        if(null != callback) {
+            callback.accept(value);
+        }
+    }
+
+    @Override
+    public void onChanged(Consumer<T> callback) {
+        this.callback = callback;
+    }
 }

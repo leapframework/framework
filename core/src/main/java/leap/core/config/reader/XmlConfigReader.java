@@ -16,10 +16,10 @@
 
 package leap.core.config.reader;
 
-import leap.core.AppConfigContext;
+import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
-import leap.core.AppConfigProcessor;
-import leap.core.AppConfigReader;
+import leap.core.config.AppConfigProcessor;
+import leap.core.config.AppConfigReader;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.sys.SysPermission;

@@ -15,8 +15,8 @@
  */
 package leap.core.config.loader;
 
-import leap.core.AppPropertyLoader;
-import leap.core.AppPropertySetter;
+import leap.core.config.AppPropertyLoader;
+import leap.core.config.AppPropertySetter;
 import leap.core.validation.annotations.NotEmpty;
 import leap.lang.Try;
 import leap.lang.jdbc.JDBC;

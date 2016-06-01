@@ -14,12 +14,33 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config;
 
-import leap.core.config.dyna.PropertyProvider;
+import java.util.Map;
 
-public abstract class AppConfigBase implements AppConfig {
+/**
+ * The context for {@link AppPropertyReader}.
+ */
+public interface AppPropertyContext extends AppConfigContextBase {
 
-    public abstract void setPropertyProvider(PropertyProvider pp);
+    /**
+     * Returns true if the property exists.
+     */
+    boolean hasProperty(String name);
+
+    /**
+     * Sets the property.
+     */
+    void putProperty(Object source, String name, String value);
+
+    /**
+     * Puts all the properties.
+     */
+    void putProperties(Object source, Map<String,String> props);
+
+    /**
+     * Adds a loader's config.
+     */
+    void addLoader(AppPropertyLoaderConfig loader);
 
 }

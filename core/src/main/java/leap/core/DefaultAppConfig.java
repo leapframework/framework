@@ -15,7 +15,7 @@
  */
 package leap.core;
 
-import leap.core.config.*;
+import leap.core.config.dyna.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
@@ -52,16 +52,16 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 
-    protected PropertyProvider              propertyProvider    = null;
-	protected String						profile				= null;
-	protected Boolean						debug				= null;
-	protected String						basePackage			= null;
-	protected Locale						defaultLocale		= null;
-	protected Charset						defaultCharset      = null;
-	protected boolean						reloadEnabled		= false;
-	protected String                        secret                    = null;
-	protected PrivateKey                    privateKey                = null;
-	protected Map<Class<?>, Object>         extensions                = new HashMap<>();
+    protected PropertyProvider      propertyProvider = null;
+	protected String                profile          = null;
+	protected Boolean               debug            = null;
+	protected String                basePackage      = null;
+	protected Locale                defaultLocale    = null;
+	protected Charset               defaultCharset   = null;
+	protected boolean               reloadEnabled    = false;
+	protected String                secret           = null;
+	protected PrivateKey            privateKey       = null;
+	protected Map<Class<?>, Object> extensions       = new HashMap<>();
 	protected Map<String,String>            properties                = new ConcurrentHashMap<>();
 	protected Map<String,String>            propertiesReadonly        = Collections.unmodifiableMap(properties);
     protected Map<String,List<String>>      arrayProperties           = new ConcurrentHashMap<>();

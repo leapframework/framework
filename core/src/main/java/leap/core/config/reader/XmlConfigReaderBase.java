@@ -16,7 +16,7 @@
 
 package leap.core.config.reader;
 
-import leap.core.AppConfigContextBase;
+import leap.core.config.AppConfigContextBase;
 import leap.core.AppConfigException;
 import leap.lang.Classes;
 import leap.lang.Strings;

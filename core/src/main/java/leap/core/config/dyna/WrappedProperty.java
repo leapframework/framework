@@ -14,12 +14,35 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config.dyna;
 
-import leap.core.config.dyna.PropertyProvider;
+import java.util.function.Consumer;
 
-public abstract class AppConfigBase implements AppConfig {
+public class WrappedProperty<T> implements Property<T> {
 
-    public abstract void setPropertyProvider(PropertyProvider pp);
+    private final Property<T> wrapped;
 
+    public WrappedProperty(Property<T> wrapped) {
+        this.wrapped = wrapped;
+    }
+
+    @Override
+    public T get() {
+        return wrapped.get();
+    }
+
+    @Override
+    public void set(T value) {
+        wrapped.set(value);
+    }
+
+    @Override
+    public void convert(String s) {
+        wrapped.convert(s);
+    }
+
+    @Override
+    public void onChanged(Consumer<T> callback) {
+        wrapped.onChanged(callback);
+    }
 }

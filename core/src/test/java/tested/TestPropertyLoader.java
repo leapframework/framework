@@ -16,8 +16,8 @@
 
 package tested;
 
-import leap.core.AppPropertyLoader;
-import leap.core.AppPropertySetter;
+import leap.core.config.AppPropertyLoader;
+import leap.core.config.AppPropertySetter;
 
 public class TestPropertyLoader implements AppPropertyLoader {
 

@@ -19,7 +19,7 @@ package tested.beans;
 import leap.core.annotation.Bean;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
-import leap.core.config.*;
+import leap.core.config.dyna.*;
 
 @Bean
 @Configurable(prefix="pbean")

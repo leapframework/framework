@@ -16,8 +16,8 @@
 
 package leap.core.config.reader;
 
-import leap.core.AppPropertyContext;
-import leap.core.AppPropertyReader;
+import leap.core.config.AppPropertyContext;
+import leap.core.config.AppPropertyReader;
 import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.resource.Resource;
