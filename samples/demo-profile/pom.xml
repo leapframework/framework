@@ -12,27 +12,121 @@
     <profiles>
 
         <profile>
-            <id>dev</id>
+            <id>test1</id>
             <properties>
-                <app.profile>dev</app.profile>
+                <app.profile>test1</app.profile>
             </properties>
+            <build>
+                <filters>
+                    <filter>src/main/resources/profile</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                            <exclude>conf_*/</exclude>
+                            <exclude>profile_local</exclude>
+                        </excludes>
+                        <filtering>true</filtering>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <includes>
+                            <include>conf_${app.profile}/</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </build>
         </profile>
 
         <profile>
-            <id>test</id>
+            <id>test2</id>
             <properties>
-                <app.profile>test</app.profile>
+                <app.profile>test2</app.profile>
             </properties>
+            <build>
+                <filters>
+                    <filter>src/main/resources/profile</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                            <exclude>conf_*/</exclude>
+                            <exclude>profile_local</exclude>
+                        </excludes>
+                        <filtering>true</filtering>
+                    </resource>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <includes>
+                            <include>conf_${app.profile}/</include>
+                        </includes>
+                    </resource>
+                </resources>
+            </build>
         </profile>
 
+        <!-- for default package -->
         <profile>
             <id>prod</id>
-            <properties>
-                <app.profile>prod</app.profile>
-            </properties>
+            <build>
+                <filters>
+                    <filter>src/main/resources/profile</filter>
+                </filters>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                            <exclude>conf_*/</exclude>
+                            <exclude>profile_local</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </testResource>
+                </testResources>
+            </build>
         </profile>
 
+        <!-- for default compile or running test case, don't need to activate it explicitly -->
+        <profile>
+            <id>default_for_compile_only</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </resource>
+                </resources>
+                <testResources>
+                    <testResource>
+                        <directory>src/test/resources</directory>
+                        <excludes>
+                            <exclude>**/*.java</exclude>
+                        </excludes>
+                    </testResource>
+                </testResources>
+            </build>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
     </profiles>
+
+    <build>
+
+    </build>
 
     <properties>
         <maven.javadoc.skip>true</maven.javadoc.skip>
@@ -40,33 +134,6 @@
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.install.skip>true</maven.install.skip>
     </properties>
-
-    <build>
-
-        <filters>
-            <filter>src/main/resources/profile</filter>
-        </filters>
-
-        <resources>
-
-            <resource>
-                <directory>src/main/resources</directory>
-                <excludes>
-                    <exclude>**/*.java</exclude>
-                    <exclude>conf_*/</exclude>
-                </excludes>
-                <filtering>true</filtering>
-            </resource>
-
-            <resource>
-                <directory>src/main/resources</directory>
-                <includes>
-                    <include>conf_${app.profile}/</include>
-                </includes>
-            </resource>
-
-        </resources>
-    </build>
 
     <dependencies>
 		<dependency>

@@ -21,27 +21,13 @@ import app.beans.DemoBeanTest;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
-import leap.lang.Strings;
 import org.junit.Test;
 
 public class ConfigTest extends AppTestBase {
 
+    protected @Inject AppConfig  config;
     protected @Inject DemoBean   demoBean;
     protected @Inject DemoBean[] demoBeans;
-
-    private static String expectedProfile;
-    static {
-        expectedProfile = System.getProperty(AppConfig.SYS_PROPERTY_PROFILE);
-        if(Strings.isEmpty(expectedProfile)) {
-            expectedProfile = AppConfig.PROFILE_DEVELOPMENT;
-        }
-    }
-
-    @Test
-    public void testProfile() {
-        System.out.println("Expected profile : " + expectedProfile);
-        assertEquals(expectedProfile, config.getProfile());
-    }
 
     @Test
     public void testDemoBean() {
@@ -53,7 +39,13 @@ public class ConfigTest extends AppTestBase {
             return;
         }
 
-        if(isTest()) {
+        if(isTest1()) {
+            assertTrue(demoBean instanceof DemoBeanTest);
+            assertEquals(1, demoBeans.length);
+            return;
+        }
+
+        if(isTest2()) {
             assertTrue(demoBean instanceof DemoBeanTest);
             assertEquals(1, demoBeans.length);
             return;
@@ -73,8 +65,14 @@ public class ConfigTest extends AppTestBase {
             return;
         }
 
-        if(isTest()) {
-            assertEquals("test", env);
+        if(isTest1()) {
+            assertEquals("test1", env);
+            assertEquals("val", config.getProperty("prop"));
+            return;
+        }
+
+        if(isTest2()) {
+            assertEquals("test2", env);
             assertEquals("val", config.getProperty("prop"));
             return;
         }
@@ -83,16 +81,19 @@ public class ConfigTest extends AppTestBase {
         assertEquals("val", config.getProperty("prop"));
     }
 
-    private boolean isTest() {
-        return expectedProfile.equals("test");
+    private boolean isTest1() {
+        return config.getProfile().equals("test1");
+    }
+
+    private boolean isTest2() {
+        return config.getProfile().equals("test2");
     }
 
     private boolean isProd() {
-        return expectedProfile.equals("prod");
+        return config.getProfile().equals("prod");
     }
 
     private boolean isDev() {
-        return expectedProfile.equals("dev");
+        return config.getProfile().equals("dev");
     }
-
 }
