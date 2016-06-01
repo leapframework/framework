@@ -61,7 +61,7 @@ public class ConfigTest extends AppTestBase {
 
         if(isDev()) {
             assertEquals("local", env);
-            assertNull(config.getProperty("prop"));
+            assertEquals("val", config.getProperty("prop"));
             return;
         }
 

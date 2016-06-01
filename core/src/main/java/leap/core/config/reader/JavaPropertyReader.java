@@ -16,6 +16,7 @@
 
 package leap.core.config.reader;
 
+import leap.core.AppConfigException;
 import leap.core.config.AppPropertyContext;
 import leap.core.config.AppPropertyReader;
 import leap.lang.Props;
@@ -32,7 +33,15 @@ public class JavaPropertyReader implements AppPropertyReader {
            Strings.endsWithIgnoreCase(filename,".properties.xml")) {
 
             Props.load(resource).forEach(
-                    (n,v) -> context.putProperty(resource,(String)n,(String)v)
+
+                    (key, value) -> {
+
+                        checkDuplicateProperty(context, resource, (String)key);
+
+                        context.putProperty(resource, (String)key , (String)value);
+
+                    }
+
             );
 
             return true;
@@ -42,4 +51,10 @@ public class JavaPropertyReader implements AppPropertyReader {
         return false;
     }
 
+
+    protected void checkDuplicateProperty(AppPropertyContext context, Resource resource, String name) {
+        if(!context.isDefaultOverride() && context.hasProperty(name)) {
+            throw new AppConfigException("Found duplicated property '" + name + "', check config : " + resource);
+        }
+    }
 }

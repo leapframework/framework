@@ -16,12 +16,13 @@
 
 package leap.core;
 
+import leap.lang.Ordered;
 import leap.lang.resource.Resource;
 
 /**
  * For app resource loading, such as config, beans, etc...
  */
-public interface AppResource {
+public interface AppResource extends Ordered {
 
     /**
      * Returns the wrapped resource.

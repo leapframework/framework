@@ -22,14 +22,25 @@ public final class SimpleAppResource implements AppResource {
 
     private final Resource resource;
     private final boolean  defaultOverride;
+    private final int      order;
 
     public SimpleAppResource(Resource resource) {
         this(resource, false);
     }
 
     public SimpleAppResource(Resource resource, boolean defaultOverride) {
+        this(resource, defaultOverride, Integer.MAX_VALUE);
+    }
+
+    public SimpleAppResource(Resource resource, boolean defaultOverride, int order) {
         this.resource = resource;
         this.defaultOverride = defaultOverride;
+        this.order = order;
+    }
+
+    @Override
+    public int getSortOrder() {
+        return order;
     }
 
     @Override

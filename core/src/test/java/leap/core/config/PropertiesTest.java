@@ -44,4 +44,10 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("b", config.getProperty("props.prop2"));
     }
 
+    @Test
+    public void testLoadOrderAndOverride() {
+        assertEquals("prop1_override", config.getProperty("testOrder.prop1"));
+        assertEquals("prop2_override", config.getProperty("testOrder.prop2"));
+        assertEquals("prop3_override", config.getProperty("testOrder.prop3"));
+    }
 }

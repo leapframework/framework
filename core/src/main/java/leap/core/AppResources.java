@@ -16,11 +16,13 @@
 
 package leap.core;
 
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.net.Urls;
 import leap.lang.path.PathMatcher;
+import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -34,11 +36,11 @@ public class AppResources {
 
     private static final String PROFILE_SEPARATOR = "_";
 
-    static final String CP_CORE_PREFIX      = "/META-INF/leap/core";
-    static final String CP_FRAMEWORK_PREFIX = "/META-INF/leap/framework";
-    static final String CP_MODULES_PREFIX   = "/META-INF/leap/modules/*";
-    static final String CP_META_PREFIX      = "/META-INF/conf";
-    static final String CP_APP_PREFIX       = "/conf";
+    static final String CP_CORE_PREFIX      = "META-INF/leap/core";
+    static final String CP_FRAMEWORK_PREFIX = "META-INF/leap/framework";
+    static final String CP_MODULES_PREFIX   = "META-INF/leap/modules/*";
+    static final String CP_META_PREFIX      = "META-INF/conf";
+    static final String CP_APP_PREFIX       = "conf";
 
     private static final String CP_CORE_LOCATION      = Strings.format("classpath*:{0}/**/*", CP_CORE_PREFIX);
     private static final String CP_FRAMEWORK_LOCATION = Strings.format("classpath*:{0}/**/*", CP_FRAMEWORK_PREFIX);
@@ -103,13 +105,48 @@ public class AppResources {
         return inst;
     }
 
-    public static boolean isFrameworkResource(String url) {
+    public static boolean isFrameworkAndCoreResource(String url) {
         return url.contains(CP_CORE_PREFIX) || url.contains(CP_FRAMEWORK_PREFIX);
     }
 
+    protected static boolean isCoreResource(String cp) {
+        return null != cp && cp.startsWith(CP_CORE_PREFIX);
+    }
+
+    protected static boolean isFrameworkResource(String cp) {
+        return null != cp && cp.startsWith(CP_FRAMEWORK_PREFIX);
+    }
+
+    protected static boolean isModuleResource(String cp) {
+        return null != cp && cp.startsWith(CP_MODULES_PREFIX);
+    }
+
+    protected static boolean isMetaResource(String cp) {
+        return null != cp && cp.startsWith(CP_META_PREFIX);
+    }
+
+    protected static boolean isAppResource(String cp) {
+        return null != cp &&
+                (cp.startsWith(CP_APP_PREFIX) || cp.startsWith(CP_APP_PREFIX + PROFILE_SEPARATOR));
+    }
+
+    protected static boolean isAppProfiledResource(String cp) {
+        return null != cp && cp.startsWith(CP_APP_PREFIX + PROFILE_SEPARATOR);
+    }
+
+    protected static boolean isJarResource(Resource resource) {
+        return Try.throwUncheckedWithResult(() -> Urls.isJarUrl(resource.getURL()));
+    }
+
+    protected static boolean isTestResource(Resource resource) {
+        return resource.getURLString().indexOf("/test-classes/") > 0;
+    }
+
     private final DefaultAppConfig         config;
-    private final Map<String, Resource>    confClasspathResources = new HashMap<>();
-    private final Map<String, AppResource> allResources           = new LinkedHashMap<>();
+    //private final Map<String, Resource>    confClasspathResources = new HashMap<>();
+    //private final Map<String, AppResource> allResources           = new HashMap<>();
+    private final Set<String>              resourceUrls           = new HashSet<>();
+    private final Set<AppResource>         sortedResources        = new TreeSet<>(new ResourceComparator());
     private final boolean dev;
 
     private String[] defaultSearchPatterns;
@@ -122,20 +159,32 @@ public class AppResources {
     }
 
     protected void init() {
-
         //load fixed resources.
-        Resources.scan(CP_CORE_LOCATION).forEach((r) -> add(r, false));
-        Resources.scan(CP_FRAMEWORK_LOCATION).forEach((r) -> add(r, false));
-        Resources.scan(CP_MODULES_LOCATION).forEach((r) -> add(r, false));
-        Resources.scan(CP_META_LOCATION).forEach((r) -> add(r, false));
-        Resources.scan(CP_APP_LOCATION).forEach((r) -> add(r, false));
+        Resources.scan(CP_CORE_LOCATION).forEach(this::add);
+        Resources.scan(CP_FRAMEWORK_LOCATION).forEach(this::add);
+        Resources.scan(CP_MODULES_LOCATION).forEach(this::add);
+        Resources.scan(CP_META_LOCATION).forEach(this::add);
+
+        Resources.scan(CP_APP_LOCATION).forEach(this::add);
 
         //load profile resources.
-        Resources.scan(config.getProfiled(new String[]{CP_PROFILE_LOCATION})).forEach((r) -> add(r, true));
+        Resources.scan(config.getProfiled(new String[]{CP_PROFILE_LOCATION})).forEach(this::add);
 
         //load local resources(only for development profile).
         if(dev) {
-            Resources.scan(CP_LOCAL_LOCATION).forEach((r) -> add(r, true));
+            Resources.scan(CP_LOCAL_LOCATION).forEach(this::add);
+        }
+
+        if(log.isDebugEnabled()) {
+            for(AppResource ar : sortedResources) {
+
+                Resource r = ar.getResource();
+                if(isMetaResource(r.getClasspath()) || isAppResource(r.getClasspath())) {
+                    log.debug("Found conf resource : {}", r.getURLString());
+                }else{
+                    log.trace("Found conf resource : {}", r.getURLString());
+                }
+            }
         }
 
         List<String> patterns = new ArrayList<>();
@@ -170,105 +219,101 @@ public class AppResources {
         this.defaultSearchPatterns = patterns.toArray(new String[0]);
     }
 
-    protected void add(Resource resource, boolean defaultOverride) {
+    protected int resolveSortOrder(Resource resource) {
+        /* sort oders :
+
+                core         : 0
+                framework    : 1
+                modules      : 2
+                meta         : 3
+
+                jar:conf     : 4
+                jar:conf_*   : 5
+
+                main:conf    : 6
+                main:conf_*  : 7
+
+                test:conf    : 8
+                test:conf_*  : 9
+         */
+
+        int order = Integer.MAX_VALUE;
+
+        String cp = resource.getClasspath();
+        if(null != cp) {
+            if(isCoreResource(cp)) {
+                order = 0;
+            }else if(isFrameworkResource(cp)) {
+                order = 1;
+            }else if(isModuleResource(cp)) {
+                order = 2;
+            }else if(isMetaResource(cp)) {
+                order = 3;
+            }else if(isAppResource(cp)) {
+
+                if(isJarResource(resource)) {
+                    order = 4;
+                }else if(isTestResource(resource)) {
+                    order = 8;
+                }else {
+                    order = 6;
+                }
+
+                if(isAppProfiledResource(cp)) {
+                    order += 1;
+                }
+            }
+        }
+
+        return order;
+    }
+
+    protected boolean resolveDefaultOverride(Resource resource) {
+        boolean defaultOverride = false;
+
+        String cp = resource.getClasspath();
+        if (null != cp) {
+            if (isAppResource(cp) && isTestResource(resource)) {
+                defaultOverride = true;
+            }
+        }
+
+        return defaultOverride;
+    }
+
+    protected void add(Resource resource) {
         if(!resource.isReadable()) {
             return;
         }
 
+        if(resource.isFile() && resource.getFile().isDirectory()) {
+            return;
+        }
+
         String url = resource.getURLString();
-        if(allResources.containsKey(url)) {
+        if(resourceUrls.contains(url)) {
             return;
         }
 
-        //config files not in classpath allows multi.
-        if(!resource.hasClasspath()) {
-            doAdd(resource, defaultOverride);
+        //in non-dev environment, the test resources should not be loaded.
+        if(!dev && isTestResource(resource)) {
             return;
         }
 
-        //only conf[-?]/* does not allows multi.
-        String classpath = resource.getClasspath();
-        if(!isAppResource(classpath)) {
-            doAdd(resource, defaultOverride);
-            return;
-        }
+        int order = resolveSortOrder(resource);
+        boolean defaultOverride = resolveDefaultOverride(resource);
 
-        log.debug("Found conf resource : {}", url);
-
-        ////conf/* does not allows multi resources with the same classpath.
-        Resource old = confClasspathResources.get(classpath);
-        if(null == old) {
-            doAdd(resource, defaultOverride);
-            confClasspathResources.put(classpath, resource);
-            return;
-        }
-
-        //check should ignore or override the old one.
-        if(dev) {
-
-            //in dev environment, the test resource should override the main resource.
-            if(isTestResource(resource)) {
-                removeAndAdd(old, resource, defaultOverride);
-
-                confClasspathResources.put(classpath, resource);
-                return;
-            }else{
-                //ignore
-            }
-
-        }else{
-
-            //in non-dev environment, if old one is test resource, it will be removed and use new one.
-            if(isTestResource(old)) {
-                removeAndAdd(old, resource, defaultOverride);
-                confClasspathResources.put(classpath, resource);
-                return;
-            }
-
-            //in non-dev environment, if old one not a test resource, use the old resource, just do nothing.
-            if(log.isInfoEnabled()) {
-                log.info("Ignore resource [{}], another one already loaded : {}",
-                        resource.getURLString(),
-                        old.getURLString());
-            }else{
-                System.out.println("Ignore resource [" + resource.getURLString() +
-                                    "], another one already loaded : " + old.getURLString());
-            }
-        }
-
+        doAdd(resource, defaultOverride, order);
     }
 
-    private void doAdd(Resource resource, boolean defaultOverride) {
-        allResources.put(resource.getURLString(), new SimpleAppResource(resource, defaultOverride));
-    }
-
-    private void removeAndAdd(Resource oldOne, Resource newOne, boolean defaultOverride) {
-        allResources.remove(oldOne.getURLString());
-        doAdd(newOne,defaultOverride);
-    }
-
-    private boolean isAppResource(String cp) {
-        return (Strings.startsWith(cp, "conf/") || Strings.startsWith(cp, "conf" + PROFILE_SEPARATOR));
-    }
-
-    private boolean isTestResource(Resource resource) {
-        return resource.getURLString().indexOf("/test-classes/") > 0;
+    private void doAdd(Resource resource, boolean defaultOverride, int order) {
+        resourceUrls.add(resource.getURLString());
+        sortedResources.add(new SimpleAppResource(resource, defaultOverride, order));
     }
 
     protected void clear() {
-        confClasspathResources.clear();
-        allResources.clear();
-    }
-
-    private static final String extractProfile(String url) {
-        int index0 = url.lastIndexOf("/conf" + PROFILE_SEPARATOR);
-        if(index0 > 0) {
-            int index1 = url.indexOf('/', index0+1);
-            if(index1 > index0) {
-                return url.substring(index0,index1);
-            }
-        }
-        return null;
+        resourceUrls.clear();
+        sortedResources.clear();
     }
 
     public AppResource[] search(String name) {
@@ -350,8 +395,7 @@ public class AppResources {
     }
 
     public AppResource[] searchClasspathResources(String[] patterns){
-
-        List<AppResource> list = new ArrayList<>();
+        Set<AppResource> set = new TreeSet<>(new ResourceComparator());
 
         final PathMatcher matcher = Resources.getPathMatcher();
 
@@ -360,23 +404,72 @@ public class AppResources {
                 namedPattern = namedPattern.substring(1);
             }
 
-            for(AppResource r  : allResources.values()) {
+            for(AppResource r  : sortedResources) {
                 if(null != r.getResource().getClasspath()) {
                     String cp = r.getResource().getClasspath();
 
                     if(matcher.match(namedPattern, cp)) {
-                        list.add(r);
+                        set.add(r);
                     }
                 }
             }
 
         }
 
-        return list.toArray(new AppResource[0]);
+        return set.toArray(new AppResource[0]);
     }
 
     public static Resource getAppClasspathDirectory(String name) {
         return Resources.getResource("classpath:" + CP_APP_PREFIX + "/" + name);
+    }
+
+    protected static final class ResourceComparator implements Comparator<AppResource> {
+
+        @Override
+        public int compare(AppResource o1, AppResource o2) {
+            if(o1 == o2) {
+                return 1;
+            }
+
+            if(o1.getSortOrder() > o2.getSortOrder()) {
+                return 1;
+            }
+
+            if(o1.getSortOrder() < o2.getSortOrder()) {
+                return -1;
+            }
+
+            Resource r1 = o1.getResource();
+            Resource r2 = o2.getResource();
+
+            if(r1.hasClasspath() && r2.hasClasspath()) {
+                return comparePaths(r1.getClasspath(), r2.getClasspath());
+            }else{
+                return r1.getURLString().length() > r2.getURLString().length() ? -1 : 1;
+            }
+        }
+
+        private int comparePaths(String p1, String p2) {
+            String dir1 = Paths.getDirPath(p1);
+            String dir2 = Paths.getDirPath(p2);
+
+            String file1 = Paths.getFileName(p1);
+            String file2 = Paths.getFileName(p2);
+
+            if(dir1.equals(dir2)) {
+                return result(file1.compareTo(file2));
+            }else if(dir1.startsWith(dir2)) {
+                return -1;
+            }else if(dir2.startsWith(dir1)) {
+                return 1;
+            }else {
+                return result(dir1.compareTo(dir2));
+            }
+        }
+
+        private int result(int r) {
+            return r == 0 ? -1 : r;
+        }
     }
 
 }

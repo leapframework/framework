@@ -195,7 +195,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 String resourceUrl = resource.getURL().toString();
 
                 if(log.isDebugEnabled()){
-                    if(AppResources.isFrameworkResource(resourceUrl)) {
+                    if(AppResources.isFrameworkAndCoreResource(resourceUrl)) {
                         log.trace("Loading properties from : {}", resourceUrl);
                     }else{
                         log.debug("Loading properties from : {}", resourceUrl);
@@ -228,7 +228,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 String resourceUrl = resource.getURL().toString();
 
                 if(log.isDebugEnabled()){
-                    if(AppResources.isFrameworkResource(resourceUrl)) {
+                    if(AppResources.isFrameworkAndCoreResource(resourceUrl)) {
                         log.trace("Loading config from : {}", resourceUrl);
                     }else{
                         log.debug("Loading config from : {}", resourceUrl);

@@ -7,4 +7,6 @@
     
     <resources location="classpath:/tested/**/*"/>
 
+    <property name="testOrder.prop3" value="prop3_override" override="true"/>
+
 </config>

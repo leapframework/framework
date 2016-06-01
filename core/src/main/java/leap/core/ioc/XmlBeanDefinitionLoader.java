@@ -155,7 +155,7 @@ class XmlBeanDefinitionLoader {
 	    for(AppResource ar : resources){
             Resource resource = ar.getResource();
             if(log.isDebugEnabled()) {
-                if(AppResources.isFrameworkResource(resource.getURLString())) {
+                if(AppResources.isFrameworkAndCoreResource(resource.getURLString())) {
                     log.trace("Reading beans from resource : {}",resource.getURLString());
                 }else{
                     log.debug("Reading beans from resource : {}",resource.getURLString());
