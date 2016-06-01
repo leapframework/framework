@@ -63,7 +63,7 @@ public class AppContextInitializer {
 
 			MapAttributeAccessor attrs = new MapAttributeAccessor();
 			
-			log.debug("Initializing standalone app context...");
+			log.debug("Starting standalone app...");
 			
 			config = loadDefaultAppConfig(attrs, null, null);
 
@@ -92,7 +92,7 @@ public class AppContextInitializer {
 				}
 			});
 
-			log.debug("Standalone app context initialized");
+			log.debug("Standalone app started!!!");
 
             return context;
 		}finally{

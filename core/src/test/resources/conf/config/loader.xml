@@ -10,23 +10,23 @@
     <property name="tested.TestConfigLoader2.enabled" value="false"/>
     <property name="loader.type"                      value="jdbc"/>
 
-    <loader class="tested.TestPropertyLoader" if-property="tested.TestConfigLoader1.enabled">
+    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader1.enabled']">
         <property name="name"  value="prop1"/>
         <property name="value" value="value1"/>
     </loader>
 
-    <loader class="tested.TestPropertyLoader" if-property="tested.TestConfigLoader2.enabled">
+    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader2.enabled']">
         <property name="name"  value="prop2"/>
         <property name="value" value="value2"/>
     </loader>
 
-    <loader class="tested.TestPropertyLoader" if-property="tested.TestConfigLoader1.enabled">
+    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader1.enabled']">
         <property name="name"  value="prop3"/>
         <property name="value" value="${db.key1}"/>
     </loader>
 
     <loader class="leap.core.config.loader.JdbcPropertyLoader"
-            if-property="loader.type == jdbc"
+            if="properties['loader.type'] == 'jdbc'"
             sort-order="1">
         <property name="driverClassName" value="${h2.driverClassName}"/>
         <property name="jdbcUrl"         value="${h2.jdbcUrl}"/>

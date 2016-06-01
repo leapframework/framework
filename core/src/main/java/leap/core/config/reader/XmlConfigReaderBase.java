@@ -18,12 +18,21 @@ package leap.core.config.reader;
 
 import leap.core.AppConfigContextBase;
 import leap.core.AppConfigException;
+import leap.lang.Classes;
 import leap.lang.Strings;
+import leap.lang.el.DefaultElParseContext;
+import leap.lang.el.ElClasses;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XmlReader;
 
 public abstract class XmlConfigReaderBase {
+
+    protected static final DefaultElParseContext parseContext = new DefaultElParseContext();
+    static {
+        parseContext.setFunction("classes:isPresent", ElClasses.createFunction(Classes.class, "isPresent(java.lang.String)"));
+        parseContext.setFunction("strings:isEmpty",   ElClasses.createFunction(Strings.class, "isEmpty(java.lang.String)"));
+    }
 
     public static final String DEFAULT_NAMESPACE_URI = "http://www.leapframework.org/schema/config";
 
@@ -32,7 +41,8 @@ public abstract class XmlConfigReaderBase {
     protected static final String ADDITIONAL_PACKAGES_ELEMENT = "additional-packages";
     protected static final String DEBUG_ELEMENT               = "debug";
     protected static final String DEFAULT_LOCALE_ELEMENT      = "default-locale";
-    protected static final String DEFAULT_ENCODING_ELEMENT    = "default-charset";
+    protected static final String DEFAULT_CHARSET_ELEMENT     = "default-charset";
+    protected static final String CONFIG_LOADER_ELEMENT       = "loader";
     protected static final String DATASOURCE_ELEMENT          = "datasource";
     protected static final String IMPORT_ELEMENT              = "import";
     protected static final String PROPERTIES_ELEMENT          = "properties";
@@ -54,6 +64,8 @@ public abstract class XmlConfigReaderBase {
     protected static final String NAME_ATTRIBUTE              = "name";
     protected static final String VALUE_ATTRIBUTE             = "value";
     protected static final String LOCATION_ATTRIBUTE          = "location";
+    protected static final String IF_ATTRIBUTE                = "if";
+    protected static final String SORT_ORDER_ATTRIBUTE        = "sort-order";
 
     protected boolean importResource(AppConfigContextBase context, Resource parent, XmlReader reader) {
         if(reader.isStartElement(IMPORT_ELEMENT)){

@@ -221,7 +221,7 @@
                 <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
             <xsd:attribute name="class" type="xsd:string" use="required"/>
-            <xsd:attribute name="if-property" use="optional" type="xsd:string"/>
+            <xsd:attribute name="if" use="optional" type="xsd:string"/>
             <xsd:attribute name="if-profile"  use="optional" type="xsd:string"/>
             <xsd:attribute name="sort-order" use="optional" type="xsd:int"/>
         </xsd:complexType>

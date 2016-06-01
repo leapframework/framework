@@ -82,7 +82,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
             }
 
             if(hasTransactionalMethods) {
-                log.info("Instrument Transactional class : {}", cr.getClassName());
+                log.debug("Instrument Transactional class : {}", cr.getClassName());
                 Try.throwUnchecked(() -> {
                     try(InputStream in = is.getInputStream()) {
                         ClassReader newCr = new ClassReader(in);
@@ -124,7 +124,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
             AnnotationNode a = ASM.getAnnotation(mn, Transactional.class);
             if(null != a) {
-                log.debug(" #transactional method : {}", name);
+                log.trace(" #transactional method : {}", name);
 
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 

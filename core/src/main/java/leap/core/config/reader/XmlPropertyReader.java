@@ -18,7 +18,10 @@ package leap.core.config.reader;
 
 import leap.core.*;
 import leap.core.el.EL;
+import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.el.spel.SPEL;
+import leap.lang.expression.Expression;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
@@ -30,12 +33,7 @@ import java.util.function.Function;
 
 public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropertyReader {
 
-    protected static final String DEFAULT_CHARSET_ELEMENT = "default-charset";
-    protected static final String CONFIG_LOADER_ELEMENT   = "loader";
-    protected static final String IF_PROPERTY_ATTRIBUTE   = "if-property";
-    protected static final String SORT_ORDER_ATTRIBUTE    = "sort-order";
 
-    @Override
     public boolean readProperties(AppPropertyContext context, Resource resource) {
         if(Strings.endsWithIgnoreCase(resource.getFilename(), ".xml")) {
             doReadProperties(context, resource);
@@ -207,24 +205,17 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             return;
         }
 
-        String ifProperty = reader.resolveAttribute(IF_PROPERTY_ATTRIBUTE);
-        String className  = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
-        int    sortOrder  = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
+        String ifExpression = reader.resolveAttribute(IF_ATTRIBUTE);
+        String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
+        int    sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
 
         Function<Map<String,String>, Boolean> enabled = null;
-        if(!Strings.isEmpty(ifProperty)) {
-            int index = ifProperty.indexOf("==");
-            if(index > 0) {
-                String name  = ifProperty.substring(0, index).trim();
-                String value = ifProperty.substring(index + 2).trim();
-                enabled = (props) -> {
-                    return value.equals(props.get(name));
-                };
-            }else{
-                enabled = (props) -> {
-                     return EL.test(props.get(ifProperty), true);
-                };
-            }
+        if(!Strings.isEmpty(ifExpression)) {
+            Expression expression = SPEL.createExpression(parseContext, ifExpression);
+            enabled = (props) -> {
+                Map<String,Object> vars = New.hashMap("properties", props);
+                return EL.test(expression.getValue(vars), true);
+            };
         }
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);

@@ -24,10 +24,10 @@ import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDef;
-import leap.lang.*;
-import leap.lang.convert.Converts;
-import leap.lang.el.DefaultElParseContext;
-import leap.lang.el.ElClasses;
+import leap.lang.Classes;
+import leap.lang.Collections2;
+import leap.lang.Factory;
+import leap.lang.Strings;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -47,54 +47,15 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
     private static final Log log = LogFactory.get(XmlConfigReader.class);
 
-    private static final DefaultElParseContext parseContext = new DefaultElParseContext();
-    static {
-        parseContext.setFunction("classes:isPresent", ElClasses.createFunction(Classes.class, "isPresent(java.lang.String)"));
-        parseContext.setFunction("strings:isEmpty",   ElClasses.createFunction(Strings.class, "isEmpty(java.lang.String)"));
-    }
-
     private static final List<AppConfigProcessor> processors = Factory.newInstances(AppConfigProcessor.class);
 
     @Override
-    public boolean readBase(AppConfigContext context, Resource resource) {
-        if(Strings.endsWithIgnoreCase(resource.getFilename(), ".xml")) {
-            readBaseXml(context, resource);
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public boolean readFully(AppConfigContext context, Resource resource) {
+    public boolean readConfig(AppConfigContext context, Resource resource) {
         if(Strings.endsWithIgnoreCase(resource.getFilename(), ".xml")) {
             readFullXml(context, resource);
             return true;
         }
         return false;
-    }
-
-    protected void readBaseXml(AppConfigContext context, Resource resource) {
-        XmlReader reader = null;
-        try{
-            reader = XML.createReader(resource);
-            reader.setPlaceholderResolver(context.getPlaceholderResolver());
-
-            boolean foundValidRootElement = false;
-
-            while(reader.next()){
-                if(reader.isStartElement(CONFIG_ELEMENT)){
-                    foundValidRootElement = true;
-                    readBaseProperties(context,resource,reader);
-                    break;
-                }
-            }
-
-            if(!foundValidRootElement){
-                throw new AppConfigException("No valid root element found in file : " + resource.getClasspath());
-            }
-        }finally{
-            IO.close(reader);
-        }
     }
 
     protected void readFullXml(AppConfigContext context, Resource resource) {
@@ -133,37 +94,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
     }
 
     private void readBaseProperties(AppConfigContext context, Resource resource, XmlReader reader) {
-        while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
 
-            if(reader.isStartElement(BASE_PACKAGE_ELEMENT)){
-                context.setBasePackage(reader.resolveElementTextAndEnd());
-                continue;
-            }
-
-            if(reader.isStartElement(DEBUG_ELEMENT)){
-                String debugValue = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(debugValue)){
-                    context.setDebug(Converts.toBoolean(debugValue));
-                }
-                continue;
-            }
-
-            if(reader.isStartElement(DEFAULT_LOCALE_ELEMENT)){
-                String defaultLocaleString = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(defaultLocaleString)){
-                     context.setDefaultLocale(Locales.forName(defaultLocaleString));
-                }
-                continue;
-            }
-
-            if(reader.isStartElement(DEFAULT_ENCODING_ELEMENT)){
-                String defaultEncodingName = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(defaultEncodingName)){
-                    context.setDefaultCharset(Charsets.forName(defaultEncodingName));
-                }
-                continue;
-            }
-        }
     }
 
     private void readConfig(AppConfigContext context,Resource resource, XmlReader reader) {

@@ -23,9 +23,7 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
-import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,46 +31,6 @@ import java.util.Set;
  * The context interface for {@link AppConfigProcessor} and {@link AppConfigReader}.
  */
 public interface AppConfigContext extends AppConfigContextBase, PropertyAccessor {
-
-    /**
-     * Returns the {@link AppConfig#INIT_PROPERTY_DEBUG} property or null.
-     */
-    Boolean getDebug();
-
-    /**
-     * Returns the {@link AppConfig#INIT_PROPERTY_BASE_PACKAGE} property or null.
-     */
-    String getBasePackage();
-
-    /**
-     * Returns the {@link AppConfig#INIT_PROPERTY_DEFAULT_LOCALE} property or null.
-     */
-    Locale getDefaultLocale();
-
-    /**
-     * Returns the {@link AppConfig#INIT_PROPERTY_DEFAULT_CHARSET} property or null.
-     */
-    Charset getDefaultCharset();
-
-    /**
-     * Sets the {@link AppConfig#INIT_PROPERTY_DEBUG} property.
-     */
-    void setDebug(boolean debug);
-
-    /**
-     * Sets the {@link AppConfig#INIT_PROPERTY_BASE_PACKAGE} property.
-     */
-    void setBasePackage(String bp);
-
-    /**
-     * Sets the {@link AppConfig#INIT_PROPERTY_DEFAULT_LOCALE} property.
-     */
-    void setDefaultLocale(Locale locale);
-
-    /**
-     * Sets the {@link AppConfig#INIT_PROPERTY_DEFAULT_CHARSET} property.
-     */
-    void setDefaultCharset(Charset charset);
 
     /**
      * Returns a mutable map contains the properties.

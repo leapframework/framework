@@ -240,7 +240,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 context.setDefaultOverride(ar.isDefaultOverride());
                 for(AppConfigReader reader : configReaders) {
-                    if(reader.readFully(context, resource)) {
+                    if(reader.readConfig(context, resource)) {
                         break;
                     }
                 }
@@ -614,46 +614,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         @Override
         public void resetDefaultOverride() {
             this.defaultOverride = originalDefaultOverride;
-        }
-
-        @Override
-        public Boolean getDebug() {
-            return config.debug;
-        }
-
-        @Override
-        public void setDebug(boolean debug) {
-            config.debug = debug;
-        }
-
-        @Override
-        public String getBasePackage() {
-            return config.basePackage;
-        }
-
-        @Override
-        public void setBasePackage(String bp) {
-            config.basePackage = bp;
-        }
-
-        @Override
-        public Locale getDefaultLocale() {
-            return config.defaultLocale;
-        }
-
-        @Override
-        public void setDefaultLocale(Locale locale) {
-            config.defaultLocale = locale;
-        }
-
-        @Override
-        public Charset getDefaultCharset() {
-            return config.defaultCharset;
-        }
-
-        @Override
-        public void setDefaultCharset(Charset charset) {
-            config.defaultCharset = charset;
         }
 
         @Override
