@@ -21,6 +21,7 @@ import leap.core.ds.DataSourceManager;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
+import leap.lang.Comparators;
 import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.beans.BeanProperty;
@@ -43,6 +44,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static leap.core.AppConfig.*;
+import static leap.core.AppConfig.INIT_PROPERTY_DEFAULT_CHARSET;
 
 public class DefaultAppConfigSource implements AppConfigSource {
 
@@ -306,47 +308,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected void loadLocalProperties(ConfigContext context) {
             parent.loadProperties(context, configResources);
-
-            //external properties overrides the configured properties.
-            properties.putAll(initProperties);
-
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_BASE_PACKAGE,    String.class,  (p) -> config.basePackage = p);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEBUG,           Boolean.class, (d) -> config.debug = d);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_CHARSET, Charset.class, (c) -> config.defaultCharset = c);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_LOCALE,  Locale.class,  (l) -> config.defaultLocale = l);
-
-            //base package
-            if(Strings.isEmpty(config.basePackage)){
-                config.basePackage = DEFAULT_BASE_PACKAGE;
-                config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
-            }
-
-            //debug
-            if(null == config.debug){
-                config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
-                config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
-            }
-
-            //default locale
-            if(null == config.defaultLocale){
-                config.defaultLocale = DEFAULT_LOCALE;
-                config.properties.put(INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString());
-            }
-
-            //default charset
-            if(null == config.defaultCharset){
-                config.defaultCharset = DEFAULT_CHARSET;
-                config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
-            }
-
-            log.info("{}:{}, {}:{}, {}:{}, {}:{}",
-                    INIT_PROPERTY_PROFILE,config.profile,
-                    INIT_PROPERTY_BASE_PACKAGE,config.basePackage,
-                    INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString(),
-                    INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
-
-            resolveProperties();
-            processProperties();
         }
 
         protected void loadExternalProperties(ConfigContext context) {
@@ -386,6 +347,44 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 log.info("Load properties by loader : {}", cls.getSimpleName());
                 loader.loadProperties(context);
             }
+
+            //external properties overrides the configured properties.
+            properties.putAll(initProperties);
+
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_BASE_PACKAGE,    String.class,  (p) -> config.basePackage = p);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEBUG,           Boolean.class, (d) -> config.debug = d);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_CHARSET, Charset.class, (c) -> config.defaultCharset = c);
+            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_LOCALE,  Locale.class,  (l) -> config.defaultLocale = l);
+
+            //base package
+            if(Strings.isEmpty(config.basePackage)){
+                config.basePackage = DEFAULT_BASE_PACKAGE;
+                config.properties.put(INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
+            }
+
+            //debug
+            if(null == config.debug){
+                config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
+                config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
+            }
+
+            //default locale
+            if(null == config.defaultLocale){
+                config.defaultLocale = DEFAULT_LOCALE;
+                config.properties.put(INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString());
+            }
+
+            //default charset
+            if(null == config.defaultCharset){
+                config.defaultCharset = DEFAULT_CHARSET;
+                config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
+            }
+
+            log.info("{}:{}, {}:{}, {}:{}, {}:{}",
+                    INIT_PROPERTY_PROFILE,config.profile,
+                    INIT_PROPERTY_BASE_PACKAGE,config.basePackage,
+                    INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString(),
+                    INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
 
             resolveProperties();
             processProperties();

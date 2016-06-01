@@ -25,6 +25,9 @@
         <property name="value" value="${db.key1}"/>
     </loader>
 
+    <property name="db.key1"                 value="abcd"/>
+    <property name="testLoader.placeholder1" value="${db.key1}"/>
+
     <loader class="leap.core.config.loader.JdbcPropertyLoader"
             if="properties['loader.type'] == 'jdbc'"
             sort-order="1">

@@ -32,4 +32,9 @@ public class LoaderTest extends AppTestBase {
         assertEquals("db.val1",config.getProperty("db.key1"));
     }
 
+    @Test
+    public void testPlaceholder() {
+        assertEquals("db.val1", config.getProperty("testLoader.placeholder1"));
+    }
 }
+
