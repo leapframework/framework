@@ -41,7 +41,7 @@ public class JdbcPropertyLoader implements AppPropertyLoader {
     @Override
     public void loadProperties(AppPropertySetter props) {
         Try.throwUnchecked(() -> {
-            log.info("Loading config from db : {}", jdbcUrl);
+            log.info("Load properties from db : {}", jdbcUrl);
 
             Class.forName(driverClassName);
 
@@ -49,10 +49,11 @@ public class JdbcPropertyLoader implements AppPropertyLoader {
             ResultSet  rs   = null;
             Connection conn = null;
             try {
-                sql = sql.trim();
-                log.debug("  sql : {}", sql);
-
+                log.debug("Obtain connection...");
                 conn = DriverManager.getConnection(jdbcUrl, username, password);
+
+                log.debug("Execute sql : {}", sql);
+
                 stmt = conn.createStatement();
                 rs   = stmt.executeQuery(sql);
 
@@ -66,7 +67,7 @@ public class JdbcPropertyLoader implements AppPropertyLoader {
                     count++;
                 }
 
-                log.info("Load {} properties from db success!", count);
+                log.info("Load {} properties from db!", count);
             } finally {
                 JDBC.closeResultSetOnly(rs);
                 JDBC.closeStatementOnly(stmt);
