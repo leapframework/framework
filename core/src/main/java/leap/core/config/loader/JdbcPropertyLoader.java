@@ -49,10 +49,10 @@ public class JdbcPropertyLoader implements AppPropertyLoader {
             ResultSet  rs   = null;
             Connection conn = null;
             try {
-                log.debug("Obtain connection...");
+                log.debug("Obtain db connection...");
                 conn = DriverManager.getConnection(jdbcUrl, username, password);
 
-                log.debug("Execute sql : {}", sql);
+                log.debug("Execute sql ->\n{}\n", sql);
 
                 stmt = conn.createStatement();
                 rs   = stmt.executeQuery(sql);
