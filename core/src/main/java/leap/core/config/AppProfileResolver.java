@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.config;
 
 import java.util.Map;
 
-public interface AppConfigSource {
+public interface AppProfileResolver {
 
-    AppConfig loadConfiguration(Object externalContext, Map<String,String> externalProperties);
+    String resolveProfile(Object externalContext, Map<String,String> externalProperties);
 
 }

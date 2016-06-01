@@ -36,7 +36,6 @@ import leap.lang.resource.Resources;
 import leap.lang.resource.SimpleResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
-import leap.lang.tools.DEV;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -44,14 +43,10 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static leap.core.AppConfig.*;
-import static leap.core.AppConfig.INIT_PROPERTY_DEFAULT_CHARSET;
 
 public class DefaultAppConfigSource implements AppConfigSource {
 
 	private static final Log log = LogFactory.get(DefaultAppConfigSource.class);
-
-    protected static final String APP_PROFILE_CONFIG_RESOURCE       = "classpath:/profile";
-    protected static final String APP_PROFILE_LOCAL_CONFIG_RESOURCE = "classpath:/profile_local";
 
     //all init properties
     protected static Set<String> INIT_PROPERTIES = new HashSet<>();
@@ -63,6 +58,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_LOCALE);
     }
 
+    private static final AppProfileResolver      profileResolver = Factory.newInstance(AppProfileResolver.class);
     private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
     private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
 
@@ -70,19 +66,19 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
 
     @Override
-    public AppConfig loadConfiguration(Object externalContext, Map<String, String> initProperties) {
-        if(null == initProperties) {
-            initProperties = new LinkedHashMap<>();
+    public AppConfig loadConfiguration(Object externalContext, Map<String, String> externalProperties) {
+        if(null == externalProperties) {
+            externalProperties = new LinkedHashMap<>();
         }
 
-        //load init properties from system environment.
-        loadInitPropertiesFromSystem(externalContext, initProperties);
+        //resolve profile
+        String profile = profileResolver.resolveProfile(externalContext, externalProperties);
 
-        //init profile
-        String profile = initProfile(externalContext, initProperties);
+        //load init properties from system environment.
+        loadInitPropertiesFromSystem(externalContext, externalProperties);
 
         //Create loader for loading the configuration.
-        Loader loader = createLoader(externalContext, initProperties, profile);
+        Loader loader = createLoader(externalContext, externalProperties, profile);
 
         //Load config
         DefaultAppConfig config = loader.load();
@@ -126,61 +122,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     initProperties.put(p, v);
                 }
             }
-        }
-    }
-
-    protected String initProfile(Object externalContext, Map<String, String> initProperties){
-        String profile = initProperties.get(AppConfig.SYS_PROPERTY_PROFILE);
-        if(!Strings.isEmpty(profile)) {
-            return profile;
-        }
-
-        //read from init properties
-        if(Strings.isEmpty(profile)){
-            profile = initProperties.get(AppConfig.INIT_PROPERTY_PROFILE);
-        }
-
-        //Read local profile file if running in dev project.
-        if(Strings.isEmpty(profile) && DEV.isDevProject(externalContext)) {
-            //read from local profile file
-            profile = readProfileFile(initProperties, APP_PROFILE_LOCAL_CONFIG_RESOURCE);
-        }
-
-        if(Strings.isEmpty(profile)) {
-            //read from default profile file
-            profile = readProfileFile(initProperties, APP_PROFILE_CONFIG_RESOURCE);
-        }
-
-        //auto detect profile name
-        if(Strings.isEmpty(profile)){
-            profile = autoDetectProfileName(externalContext);
-        }
-
-        if(Strings.isEmpty(profile)) {
-            profile = AppConfig.PROFILE_PRODUCTION;
-        }
-
-        return profile;
-    }
-
-    protected String readProfileFile(Map<String,String> initProperties, String location) {
-        Resource r = Resources.getResource(location);
-        if(null != r && r.exists() && !r.isDirectory()){
-            String profile = Strings.trim(r.getContent());
-            if(profile.startsWith("${") && profile.endsWith("}")) {
-                profile = initProperties.get(profile.substring(1,profile.length() - 1));
-            }
-            return profile;
-        }
-        return null;
-    }
-
-    protected String autoDetectProfileName(Object externalContext){
-        //Auto detect development environment (maven environment)
-        if(DEV.isDevProject(externalContext)){
-            return AppConfig.PROFILE_DEVELOPMENT;
-        }else{
-            return null;
         }
     }
 
