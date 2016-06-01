@@ -20,6 +20,7 @@ import leap.lang.*;
 import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogUtils;
 import leap.lang.net.Urls;
 import leap.lang.path.PathMatcher;
 import leap.lang.path.Paths;
@@ -142,19 +143,16 @@ public class AppResources {
         return resource.getURLString().indexOf("/test-classes/") > 0;
     }
 
-    private final DefaultAppConfig         config;
-    //private final Map<String, Resource>    confClasspathResources = new HashMap<>();
-    //private final Map<String, AppResource> allResources           = new HashMap<>();
-    private final Set<String>              resourceUrls           = new HashSet<>();
-    private final Set<AppResource>         sortedResources        = new TreeSet<>(new ResourceComparator());
+    private final DefaultAppConfig config;
+    private final Set<String>      resourceUrls    = new HashSet<>();
+    private final Set<AppResource> sortedResources = new TreeSet<>(new ResourceComparator());
     private final boolean dev;
 
     private String[] defaultSearchPatterns;
 
     private AppResources(DefaultAppConfig config) {
         this.config = config;
-        this.dev = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
-
+        this.dev    = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
         init();
     }
 
@@ -180,9 +178,9 @@ public class AppResources {
 
                 Resource r = ar.getResource();
                 if(isMetaResource(r.getClasspath()) || isAppResource(r.getClasspath())) {
-                    log.debug("Found conf resource : {}", r.getURLString());
+                    log.debug("Found conf file : {}", LogUtils.getUrl(r));
                 }else{
-                    log.trace("Found conf resource : {}", r.getURLString());
+                    log.trace("Found conf file : {}", LogUtils.getUrl(r));
                 }
             }
         }

@@ -31,6 +31,7 @@ import leap.lang.expression.Expression;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogUtils;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
@@ -156,9 +157,9 @@ class XmlBeanDefinitionLoader {
             Resource resource = ar.getResource();
             if(log.isDebugEnabled()) {
                 if(AppResources.isFrameworkAndCoreResource(resource.getURLString())) {
-                    log.trace("Reading beans from resource : {}",resource.getURLString());
+                    log.trace("Load beans : {}", LogUtils.getUrl(resource));
                 }else{
-                    log.debug("Reading beans from resource : {}",resource.getURLString());
+                    log.debug("Load beans : {}", LogUtils.getUrl(resource));
                 }
             }
             readDefinitions(container,resource, ar.isDefaultOverride());

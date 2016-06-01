@@ -92,7 +92,7 @@ public class AppContextInitializer {
 				}
 			});
 
-			log.debug("Standalone app started!!!");
+			log.debug("Standalone app started!!!\n\n");
 
             return context;
 		}finally{

@@ -29,6 +29,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogUtils;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
@@ -74,6 +75,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //resolve profile
         String profile = profileResolver.resolveProfile(externalContext, externalProperties);
 
+        log.info("\n\n   *** app profile : {} ***\n", profile);
+
         //load init properties from system environment.
         loadInitPropertiesFromSystem(externalContext, externalProperties);
 
@@ -114,15 +117,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
             String name = key.toString();
             initProperties.put(name, System.getProperty(name));
         }
-
-        for(String p : INIT_PROPERTIES){
-            if(!initProperties.containsKey(p)){
-                String v = System.getProperty(p);
-                if(!Strings.isEmpty(v)){
-                    initProperties.put(p, v);
-                }
-            }
-        }
     }
 
     protected Loader createLoader(Object externalContext, Map<String,String> initProperties, String profile) {
@@ -137,9 +131,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 if(log.isDebugEnabled()){
                     if(AppResources.isFrameworkAndCoreResource(resourceUrl)) {
-                        log.trace("Loading properties from : {}", resourceUrl);
+                        log.trace("Load properties : {}", LogUtils.getUrl(resource));
                     }else{
-                        log.debug("Loading properties from : {}", resourceUrl);
+                        log.debug("Load properties : {}", LogUtils.getUrl(resource));
                     }
                 }
 
@@ -170,9 +164,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 if(log.isDebugEnabled()){
                     if(AppResources.isFrameworkAndCoreResource(resourceUrl)) {
-                        log.trace("Loading config from : {}", resourceUrl);
+                        log.trace("Load config : {}", LogUtils.getUrl(resource));
                     }else{
-                        log.debug("Loading config from : {}", resourceUrl);
+                        log.debug("Load config : {}", LogUtils.getUrl(resource));
                     }
                 }
 
@@ -321,12 +315,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 config.properties.put(INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
             }
 
-            log.info("{}:{}, {}:{}, {}:{}, {}:{}",
-                    INIT_PROPERTY_PROFILE,config.profile,
-                    INIT_PROPERTY_BASE_PACKAGE,config.basePackage,
-                    INIT_PROPERTY_DEFAULT_LOCALE,config.defaultLocale.toString(),
-                    INIT_PROPERTY_DEFAULT_CHARSET,config.defaultCharset.name());
-
             resolveProperties();
             processProperties();
         }
@@ -343,6 +331,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
             config.loadProperties(this.properties);
             config.loadArrayProperties(this.arrayProperties);
 
+            log.info("\n\n   *** {} : {} ***\n",INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
+            log.info("Total {} properties (includes system properties)",config.properties.size());
+
             //resources
             try {
                 Map<String,Resource> urlResourceMap = new HashMap<>();
@@ -357,8 +348,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //permissions
             config.permissions.addAll(permissions);
-
-            log.info("Load {} properties",config.properties.size());
         }
 
         protected void processProperties() {

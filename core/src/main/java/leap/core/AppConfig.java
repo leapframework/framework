@@ -56,6 +56,11 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns current profile name.
 	 */
 	String getProfile();
+
+    /**
+     * Returns true if the profile is {@link #PROFILE_DEVELOPMENT}.
+     */
+    boolean isDev();
 	
 	/**
 	 * Returns <code>true</code> if current app is running in debug mode. 

@@ -123,8 +123,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public String getProfile() {
 	    return profile;
     }
-	
-	@Override
+
+    @Override
+    public boolean isDev() {
+        return PROFILE_DEVELOPMENT.equals(profile);
+    }
+
+    @Override
     public boolean isDebug() {
 	    return debug;
     }

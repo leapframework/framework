@@ -15,8 +15,6 @@
  */
 package leap.core;
 
-import java.io.File;
-
 import leap.core.ioc.PostCreateBean;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.Strings;
@@ -26,6 +24,8 @@ import leap.lang.resource.FileResource;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
+
+import java.io.File;
 
 public class DefaultAppHome implements AppHome, PostCreateBean {
 	
@@ -64,8 +64,11 @@ public class DefaultAppHome implements AppHome, PostCreateBean {
 		this.config  = factory.getAppConfig();
 		
 		initHomeDirectory();
-		
-		log.info("App Home : {}",dir.getFilepath());
+
+        if(log.isInfoEnabled()) {
+            log.info("\n\n   *** app home : {} ***\n", dir.getFilepath());
+        }
+
     }
 	
 	protected void initHomeDirectory() throws Throwable {
