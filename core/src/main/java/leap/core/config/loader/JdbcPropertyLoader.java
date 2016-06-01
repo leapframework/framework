@@ -62,7 +62,7 @@ public class JdbcPropertyLoader implements AppPropertyLoader {
                 while (rs.next()) {
                     String key   = rs.getString(1);
                     String value = rs.getString(2);
-                    props.setProperty(key, value);
+                    props.putProperty(this, key, value);
 
                     count++;
                 }

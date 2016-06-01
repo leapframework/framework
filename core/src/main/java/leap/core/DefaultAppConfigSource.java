@@ -22,7 +22,6 @@ import leap.core.instrument.AppInstrumentation;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
-import leap.lang.accessor.MapPropertyAccessor;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -39,6 +38,8 @@ import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
     }
 
     private static final AppProfileResolver      profileResolver = Factory.newInstance(AppProfileResolver.class);
+    private static final AppPropertyPrinter      propertyPrinter = Factory.newInstance(AppPropertyPrinter.class);
     private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
     private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
 
@@ -78,10 +80,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
         log.info("\n\n   *** app profile : {} ***\n", profile);
 
         //load init properties from system environment.
-        loadInitPropertiesFromSystem(externalContext, externalProperties);
+        Map<String, AppProperty> initProperties = initProperties(externalProperties);
 
         //Create loader for loading the configuration.
-        Loader loader = createLoader(externalContext, externalProperties, profile);
+        Loader loader = createLoader(externalContext, initProperties, profile);
 
         //Load config
         DefaultAppConfig config = loader.load();
@@ -95,10 +97,26 @@ public class DefaultAppConfigSource implements AppConfigSource {
         return config;
     }
 
-    protected void postLoad(DefaultAppConfig config) {
-        //load datasource form properties
-        new DataSourceConfigPropertiesLoader(config.properties, config.dataSourceConfigs).load();
+    private Map<String, AppProperty> initProperties(Map<String, String> externalProperties) {
+        Map<String, AppProperty> props = new HashMap<>();
+        if(null != externalProperties) {
+            if(!externalProperties.isEmpty()) {
+                Maps.resolveValues(externalProperties, new DefaultPlaceholderResolver(SystemPropertyAccessor.INSTANCE));
+            }
+            externalProperties.forEach((k,v) -> props.put(k, new SimpleAppProperty("<external>", k, v)));
+        }
 
+        Properties sysProps = System.getProperties();
+        for(Object key : sysProps.keySet()) {
+            String name = key.toString();
+            props.put(name, new SimpleAppProperty("<system>", name, System.getProperty(name), true));
+        }
+
+        return props;
+    }
+
+    protected void postLoad(DefaultAppConfig config) {
+        new DataSourceConfigPropertiesLoader(config.properties, config.dataSourceConfigs).load();
         config.postLoad();
     }
 
@@ -107,20 +125,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
         instrumentation.instrument(config.resources);
     }
 
-    protected void loadInitPropertiesFromSystem(Object externalContext, Map<String, String> initProperties) {
-        if(!initProperties.isEmpty()) {
-            Maps.resolveValues(initProperties, new DefaultPlaceholderResolver(SystemPropertyAccessor.INSTANCE));
-        }
-
-        Properties props = System.getProperties();
-        for(Object key : props.keySet()) {
-            String name = key.toString();
-            initProperties.put(name, System.getProperty(name));
-        }
-    }
-
-    protected Loader createLoader(Object externalContext, Map<String,String> initProperties, String profile) {
-        return new Loader(externalContext, initProperties, profile);
+    protected Loader createLoader(Object externalContext, Map<String, AppProperty> props, String profile) {
+        return new Loader(externalContext, props, profile);
     }
 
     protected void loadProperties(ConfigContext context, AppResource... resources) {
@@ -195,7 +201,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final DefaultAppConfigSource parent = DefaultAppConfigSource.this;
 
         final Object                     externalContext;
-        final Map<String, String>        initProperties;
+        final Map<String, AppProperty>   initProperties;
         final DefaultAppConfig           config;
         final AppResources               appResources;
         final AppResource[]              configResources;
@@ -203,7 +209,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final DefaultPlaceholderResolver resolver;
 
         protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
-        protected final Map<String, String>                          properties         = new ConcurrentHashMap<>();
+        protected final Map<String, AppProperty>                     properties         = new ConcurrentHashMap<>();
         protected final Map<String, List<String>>                    arrayProperties    = new ConcurrentHashMap<>();
         protected final Set<Resource>                                resources          = new HashSet<>();
         protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
@@ -211,9 +217,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final Map<String, DataSourceConfig.Builder>        dataSourceConfigs  = new HashMap<>();
         protected final Set<AppPropertyLoaderConfig> propertyLoaders;
 
-        Loader(Object externalContext, Map<String,String> initProperties, String profile) {
+        Loader(Object externalContext, Map<String,AppProperty> props, String profile) {
             this.externalContext = externalContext;
-            this.initProperties  = initProperties;
+            this.initProperties  = props;
             this.config          = new DefaultAppConfig(profile);
             this.appResources    = AppResources.create(config);
             this.configResources = appResources.search("config");
@@ -247,9 +253,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected void loadExternalProperties(ConfigContext context) {
 
+            Map<String,String> props = getPropertiesMap();
+
             for(AppPropertyLoaderConfig conf : propertyLoaders) {
 
-                if(!conf.load(this.properties)) {
+                if(!conf.load(props)) {
                     log.info("Property loader '{}' disabled", conf.getClassName());
                     continue;
                 }
@@ -286,10 +294,30 @@ public class DefaultAppConfigSource implements AppConfigSource {
             //external properties overrides the configured properties.
             properties.putAll(initProperties);
 
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_BASE_PACKAGE,    String.class,  (p) -> config.basePackage = p);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEBUG,           Boolean.class, (d) -> config.debug = d);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_CHARSET, Charset.class, (c) -> config.defaultCharset = c);
-            Maps.accept(properties, AppConfig.INIT_PROPERTY_DEFAULT_LOCALE,  Locale.class,  (l) -> config.defaultLocale = l);
+            if(properties.containsKey(INIT_PROPERTY_BASE_PACKAGE)) {
+                config.basePackage = properties.get(INIT_PROPERTY_BASE_PACKAGE).getValue();
+            }
+
+            if(properties.containsKey(INIT_PROPERTY_DEBUG)) {
+                String value = properties.get(INIT_PROPERTY_DEBUG).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.debug = Converts.toBoolean(value);
+                }
+            }
+
+            if(properties.containsKey(INIT_PROPERTY_DEFAULT_CHARSET)) {
+                String value = properties.get(INIT_PROPERTY_DEFAULT_CHARSET).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.defaultCharset = Converts.convert(value, Charset.class);
+                }
+            }
+
+            if(properties.containsKey(INIT_PROPERTY_DEFAULT_LOCALE)) {
+                String value = properties.get(INIT_PROPERTY_DEFAULT_LOCALE).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.defaultLocale = Converts.convert(value, Locale.class);
+                }
+            }
 
             //base package
             if(Strings.isEmpty(config.basePackage)){
@@ -326,13 +354,20 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
 
+        protected Map<String, String> getPropertiesMap() {
+            Map<String,String> props = new HashMap<>();
+            properties.forEach((k,p) -> props.put(p.getName(), p.getValue()));
+            return props;
+        }
+
         protected void complete() {
             //Apply all the properties to config object.
-            config.loadProperties(this.properties);
+            config.loadProperties(getPropertiesMap());
             config.loadArrayProperties(this.arrayProperties);
 
             log.info("\n\n   *** {} : {} ***\n",INIT_PROPERTY_BASE_PACKAGE,config.basePackage);
-            log.info("Total {} properties (includes system properties)",config.properties.size());
+            log.info("Load {} properties (includes system)",config.properties.size());
+            printProperties();
 
             //resources
             try {
@@ -348,17 +383,28 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //permissions
             config.permissions.addAll(permissions);
+
+            properties.clear();
+            arrayProperties.clear();
+        }
+
+        protected void printProperties(){
+            if(log.isDebugEnabled()){
+                StringWriter msg = new StringWriter();
+                PrintWriter writer = new PrintWriter(msg);
+                propertyPrinter.printProperties(this.properties.values(), writer);
+                log.debug("Print properties (excludes system) : \n\n{}",msg.toString());
+            }
         }
 
         protected void processProperties() {
             Out<String> out = new Out<>();
-            for(Map.Entry<String, String> p : this.properties.entrySet()) {
-                String name  = p.getKey();
-                String value = p.getValue();
+            for(Map.Entry<String, AppProperty> entry : this.properties.entrySet()) {
+                String      name = entry.getKey();
+                AppProperty prop = entry.getValue();
 
-                if(propertyProcessor.process(name, value, out)) {
-                    value = out.getValue();
-                    this.properties.put(name, value);
+                if(propertyProcessor.process(name, prop.getValue(), out)) {
+                    prop.updateProcessedValue(out.getValue());
                 }
             }
 
@@ -382,7 +428,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     arrayProperties.put(name, values);
                 }
             }
+        }
 
+        protected void putProperty(Object source, String name, String value) {
+            properties.put(name, new SimpleAppProperty(source, name, value));
         }
 
         protected String resolveProperty(String name) {
@@ -392,16 +441,19 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             resolvingProperties.add(name);
 
-            String value = properties.get(name);
+            AppProperty p = properties.get(name);
+            if(null == p) {
+                p = initProperties.get(name);
+            }
+
+            String value = null == p ? null : p.getValue();
 
             if(resolver.hasPlaceholder(value)) {
                 String newValue = resolver.resolveString(value);
                 if(!newValue.equals(value)) {
-                    properties.put(name,newValue);
                     value = newValue;
+                    p.updateResolvedValue(newValue);
                 }
-            }else if(null == value) {
-                value = initProperties.get(name);
             }
 
             resolvingProperties.remove(name);
@@ -410,7 +462,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void resolveProperties() {
-            resolveProperties(this.properties);
+            resolveObjectProperties(properties);
 
             for(Map.Entry<String,List<String>> p : arrayProperties.entrySet()) {
                 String name = p.getKey();
@@ -433,7 +485,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 Map<String, String> resolvedProperties = new ConcurrentHashMap<>(c.getProperties());
 
-                resolveProperties(resolvedProperties);
+                resolveStringProperties(resolvedProperties);
 
                 c.setProperties(resolvedProperties);
 
@@ -441,7 +493,21 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
 
-        protected void resolveProperties(Map<String, String> properties) {
+        protected void resolveObjectProperties(Map<String, AppProperty> properties) {
+            for(Map.Entry<String,AppProperty> entry : properties.entrySet()) {
+                AppProperty prop = entry.getValue();
+
+                String value = prop.getValue();
+                if(resolver.hasPlaceholder(value)) {
+                    String newValue = resolver.resolveString(value);
+                    if (!newValue.equals(value)) {
+                        prop.updateResolvedValue(newValue);
+                    }
+                }
+            }
+        }
+
+        protected void resolveStringProperties(Map<String, String> properties) {
             for(Map.Entry<String,String> p : properties.entrySet()) {
                 String name  = p.getKey();
                 String value = p.getValue();
@@ -506,7 +572,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext extends MapPropertyAccessor implements AppConfigContext,AppPropertyContext,AppPropertySetter {
+    protected class ConfigContext implements AppConfigContext,AppPropertyContext,AppPropertySetter {
 
         protected final boolean          forProperty;
         protected final Loader           loader;
@@ -518,7 +584,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected Set<String> resources            = new HashSet<>();
 
         ConfigContext(Loader loader, boolean defaultOverride, boolean forProperty){
-            super(loader.properties);
             this.loader = loader;
             this.config = loader.config;
             this.originalDefaultOverride = defaultOverride;
@@ -547,23 +612,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
+        public boolean hasProperty(String name) {
+            return loader.properties.containsKey(name) || loader.arrayProperties.containsKey(name);
+        }
+
+        @Override
         public Set<String> getAdditionalPackages() {
             return loader.additionalPackages;
-        }
-
-        @Override
-        public Map<String, String> getProperties() {
-            return properties;
-        }
-
-        @Override
-        public Map<String, List<String>> getArrayProperties() {
-            return loader.arrayProperties;
-        }
-
-        @Override
-        public boolean hasArrayProperty(String name) {
-            return loader.arrayProperties.containsKey(name);
         }
 
         @Override
@@ -588,13 +643,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public void putProperties(Map<String, String> props) {
-            if(null != props) {
-                props.forEach((k,v) -> putProperty(null, k, v));
-            }
-        }
-
-        @Override
         public void putProperty(Object source, String name, String value) {
             if(name.endsWith("[]")) {
                 name = name.substring(0, name.length()-2);
@@ -605,13 +653,15 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
                 list.add(value);
             }else{
-                loader.properties.put(name, value);
+                loader.putProperty(source, name, value);
             }
         }
 
         @Override
         public void putProperties(Object source, Map<String, String> props) {
-            this.putProperties(props);
+            if(null != props) {
+                props.forEach((k,v) -> putProperty(source, k, v));
+            }
         }
 
         @Override

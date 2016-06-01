@@ -18,6 +18,8 @@ package leap.core.config;
 
 import leap.lang.resource.Resource;
 
+import java.util.Map;
+
 public interface AppConfigContextBase {
 
     /**
@@ -39,6 +41,21 @@ public interface AppConfigContextBase {
      * Returns current profile's name.
      */
     String getProfile();
+
+    /**
+     * Returns true if the property exists.
+     */
+    boolean hasProperty(String name);
+
+    /**
+     * Sets the property.
+     */
+    void putProperty(Object source, String name, String value);
+
+    /**
+     * Puts all the properties.
+     */
+    void putProperties(Object source, Map<String,String> props);
 
     /**
      * Imports a config resource.

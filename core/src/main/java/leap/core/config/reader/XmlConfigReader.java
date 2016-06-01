@@ -16,8 +16,8 @@
 
 package leap.core.config.reader;
 
-import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
+import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.AppConfigReader;
 import leap.core.ds.DataSourceConfig;
@@ -37,7 +37,6 @@ import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -93,10 +92,6 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         }
     }
 
-    private void readBaseProperties(AppConfigContext context, Resource resource, XmlReader reader) {
-
-    }
-
     private void readConfig(AppConfigContext context,Resource resource, XmlReader reader) {
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(CONFIG_ELEMENT);
@@ -136,18 +131,6 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
             if(importResource(context, resource, reader)) {
                 continue;
             }
-
-            /*
-            if(reader.isStartElement(PROPERTIES_ELEMENT)){
-                readProperties(context, resource, reader);
-                continue;
-            }
-
-            if(reader.isStartElement(PROPERTY_ELEMENT)) {
-                readProperty(context, resource, reader, "");
-                continue;
-            }
-            */
 
             if(reader.isStartElement(DATASOURCE_ELEMENT)) {
                 readDataSource(context, resource, reader);
@@ -229,65 +212,6 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         }
 
         context.setDataSourceConfig(dataSourceName, conf);
-    }
-
-    private void readProperties(AppConfigContext context,Resource resource, XmlReader reader){
-        if(!matchProfile(context.getProfile(), reader)){
-            reader.nextToEndElement(PROPERTIES_ELEMENT);
-            return;
-        }
-
-        String prefix = reader.resolveAttribute(PREFIX_ATTRIBUTE);
-        if(!Strings.isEmpty(prefix)) {
-            char c = prefix.charAt(prefix.length() - 1);
-            if(Character.isLetterOrDigit(c)) {
-                prefix = prefix + ".";
-            }
-        }else{
-            prefix = Strings.EMPTY;
-        }
-
-        while(reader.nextWhileNotEnd(PROPERTIES_ELEMENT)){
-            if(reader.isStartElement(PROPERTY_ELEMENT)){
-                readProperty(context, resource, reader, prefix);
-                continue;
-            }
-        }
-    }
-
-    private void readProperty(AppConfigContext context, Resource resource, XmlReader reader, String prefix) {
-        if(!matchProfile(context.getProfile(), reader)){
-            reader.nextToEndElement(PROPERTY_ELEMENT);
-            return;
-        }
-
-        String  name     = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
-        String  value    = reader.resolveAttribute(VALUE_ATTRIBUTE);
-        boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
-
-        if(Strings.isEmpty(value)){
-            value = reader.resolveElementTextAndEnd();
-        }else{
-            reader.nextToEndElement(PROPERTY_ELEMENT);
-        }
-
-        if(!override && context.hasProperty(name)){
-            throw new AppConfigException("Found duplicated property '" + name + "' in resource : " + resource.getClasspath());
-        }
-
-        String key = prefix + name;
-
-        if(key.endsWith("[]")) {
-            key = key.substring(0, key.length()-2);
-            List<String> list = context.getArrayProperties().get(key);
-            if(null == list) {
-                list = new ArrayList<>();
-                context.getArrayProperties().put(key, list);
-            }
-            list.add(value);
-        }else{
-            context.getProperties().put(key, value);
-        }
     }
 
     private void readPermissions(AppConfigContext context,Resource resource,XmlReader reader){

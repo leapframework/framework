@@ -26,6 +26,6 @@ public interface AppPropertySetter {
     /**
      * Sets the property.
      */
-    void setProperty(String name, String value);
+    void putProperty(Object source, String name, String value);
 
 }

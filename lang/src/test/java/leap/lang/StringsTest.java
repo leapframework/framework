@@ -75,4 +75,10 @@ public class StringsTest extends ConcurrentTestCase {
 		assertArrayEquals(Strings.splitWhitespaces("  1 2  "), new String[]{"1","2"});
 		assertArrayEquals(Strings.splitWhitespaces("  1  2  "), new String[]{"1","2"});
 	}
+
+    @Test
+    public void testRight() {
+        assertEquals("a", Strings.right("a", 10));
+        assertEquals("cde", Strings.right("abcde", 3));
+    }
 }

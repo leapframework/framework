@@ -17,45 +17,18 @@ package leap.core.config;
 
 import leap.core.ds.DataSourceConfig;
 import leap.core.sys.SysPermissionDef;
-import leap.lang.accessor.PropertyAccessor;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * The context interface for {@link AppConfigProcessor} and {@link AppConfigReader}.
  */
-public interface AppConfigContext extends AppConfigContextBase, PropertyAccessor {
-
-    /**
-     * Returns a mutable map contains the properties.
-     */
-    Map<String,String> getProperties();
-
-    /**
-     * Returns true if the property exists.
-     */
-    boolean hasProperty(String name);
-
-    /**
-     * Puts all the config properties.
-     */
-    void putProperties(Map<String,String> props);
-
-    /**
-     * Return a mutable map contains the array properties.
-     */
-    Map<String,List<String>> getArrayProperties();
-
-    /**
-     * Returns true if the array property exists.
-     */
-    boolean hasArrayProperty(String name);
+public interface AppConfigContext extends AppConfigContextBase {
 
     /**
      * Returns the config extension or null if not exists.

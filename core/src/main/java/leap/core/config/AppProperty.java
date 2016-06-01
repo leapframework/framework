@@ -24,4 +24,11 @@ public interface AppProperty {
 
     String getValue();
 
+    String getUnprocessedValue();
+
+    void updateResolvedValue(String value);
+
+    void updateProcessedValue(String value);
+
+    boolean isSystem();
 }

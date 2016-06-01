@@ -34,7 +34,7 @@ public class TestPropertyLoader implements AppPropertyLoader {
 
     @Override
     public void loadProperties(AppPropertySetter props) {
-        props.setProperty("testConfigLoader." + name, value);
+        props.putProperty(this, "testConfigLoader." + name, value);
     }
 
 }

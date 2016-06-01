@@ -85,7 +85,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
         reader.getAttributeNames().forEachRemaining((name) -> {
             String value = reader.resolveAttribute(name);
             if(!Strings.isEmpty(value)) {
-                context.setProperty(WebConfigurator.CONFIG_PREFIX + name, value);
+                context.putProperty(WebConfigProcessor.class, WebConfigurator.CONFIG_PREFIX + name, value);
             }
         });
 
@@ -168,7 +168,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 				String name  = attrs.next();
 				String value = reader.resolveAttribute(name);
 				
-				context.setProperty(CorsConfig.CONFIX_PREFIX + "." + name, value);
+				context.putProperty(WebConfigProcessor.class, CorsConfig.CONFIX_PREFIX + "." + name, value);
 			}while(attrs.hasNext());
 		}
 	}

@@ -28,7 +28,17 @@ import java.util.TreeMap;
 
 public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
-    protected static final String COLUMN_SEPARATOR = "  ";
+    protected static final String COLUMN_SEPARATOR = " ";
+
+    protected boolean printSystem;
+
+    public boolean isPrintSystem() {
+        return printSystem;
+    }
+
+    public void setPrintSystem(boolean printSystem) {
+        this.printSystem = printSystem;
+    }
 
     @Override
     public void printProperties(Collection<AppProperty> props, PrintWriter writer) {
@@ -47,6 +57,10 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
     protected void prepare(Collection<AppProperty> props, PrintInfo info) {
         props.forEach(p -> {
+
+            if(!printSystem && p.isSystem()) {
+                return;
+            }
 
             PrintProperty pp = toPrintProperty(p);
 
@@ -70,36 +84,40 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         StringBuilder line = new StringBuilder();
         line.append(Strings.repeat('-', nameFormat.maxChars())).append(COLUMN_SEPARATOR)
                 .append(Strings.repeat('-', valueFormat.maxChars())).append(COLUMN_SEPARATOR)
-                .append(Strings.repeat('-', sourceFormat.maxChars())).append(COLUMN_SEPARATOR);
+                .append(Strings.repeat('-', sourceFormat.maxChars()));
 
         writer.println(line.toString());
     }
 
     protected void printProperty(PrintWriter writer, PrintFormat nameFormat, PrintFormat valueFormat, PrintFormat sourceFormat, PrintProperty p){
-        StringBuilder rule = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-        rule.append(nameFormat.format(p.name)).append(COLUMN_SEPARATOR);
-        rule.append(valueFormat.format(p.value)).append(COLUMN_SEPARATOR);
-        rule.append(sourceFormat.format(p.source)).append(COLUMN_SEPARATOR);
+        sb.append(nameFormat.format(p.name)).append(COLUMN_SEPARATOR);
+        sb.append(valueFormat.format(p.value)).append(COLUMN_SEPARATOR);
+        sb.append(sourceFormat.format(p.source));
 
-        writer.println(rule.toString());
+        writer.println(sb.toString());
     }
 
     protected PrintProperty toPrintProperty(AppProperty p) {
         PrintProperty pp = new PrintProperty();
 
         pp.name  = p.getName();
-        pp.value = p.getValue();
+        pp.value = Strings.abbreviate(p.getUnprocessedValue(), 30, "..");
 
         if(null == p.getSource()) {
             pp.source = "(n/a)";
         }else if(p.getSource() instanceof Resource) {
             pp.source = LogUtils.getUrl((Resource)p.getSource());
         }else if(p.getSource() instanceof Class) {
-            pp.source = ((Class)p.getSource()).getSimpleName();
+            pp.source = ((Class) p.getSource()).getSimpleName();
+        }else if(p.getSource() instanceof String) {
+            pp.source = (String)p.getSource();
         }else {
-            pp.source = p.getSource().toString();
+            pp.source = p.getSource().getClass().getSimpleName();
         }
+
+        pp.source = Strings.right(pp.source, 65);
 
         return pp;
     }

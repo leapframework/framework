@@ -1287,6 +1287,19 @@ public class Strings {
 		}
 		return string.substring(0, len);
 	}
+
+    public static String right(String string, int len) {
+        if (string == null) {
+            return EMPTY;
+        }
+        if (len < 0) {
+            return EMPTY;
+        }
+        if (string.length() <= len) {
+            return string;
+        }
+        return string.substring(string.length() - len);
+    }
 	
     // Abbreviating
     //-----------------------------------------------------------------------
@@ -1322,7 +1335,11 @@ public class Strings {
      * @throws IllegalArgumentException if the width is too small
      */
     public static String abbreviate(String str, int maxWidth) {
-        return abbreviate(str, 0, maxWidth);
+        return abbreviate(str, 0, maxWidth, "...");
+    }
+
+    public static String abbreviate(String str, int maxWidth, String abrevMarker) {
+        return abbreviate(str, 0, maxWidth, abrevMarker);
     }
     
     /**
@@ -1372,7 +1389,7 @@ public class Strings {
      * @return abbreviated String, {@code null} if null String input
      * @throws IllegalArgumentException if the width is too small
      */
-    static String abbreviate(String str, int offset, int maxWidth) {
+    static String abbreviate(String str, int offset, int maxWidth, String abrevMarker) {
         if (str == null) {
             return null;
         }
@@ -1388,7 +1405,6 @@ public class Strings {
         if (str.length() - offset < maxWidth - 3) {
             offset = str.length() - (maxWidth - 3);
         }
-        final String abrevMarker = "...";
         if (offset <= 4) {
             return str.substring(0, maxWidth - 3) + abrevMarker;
         }
