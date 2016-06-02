@@ -152,7 +152,7 @@ class XmlBeanDefinitionLoader {
 
 	public void load(AppResource[] resources) {
 	    Args.notNull(resources,"resources");
-	    
+
 	    for(AppResource ar : resources){
             Resource resource = ar.getResource();
             if(log.isDebugEnabled()) {

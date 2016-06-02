@@ -31,7 +31,6 @@ import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
-import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.Closeable;
@@ -77,7 +76,6 @@ public class BeanContainer implements BeanFactory {
     protected List<BeanDefinitionBase>       injectorBeans  = new ArrayList<>();
     protected BeanProcessor[]                processors;
     protected Map<Class<? extends Annotation>, BeanInjector>  injectors = new HashMap<>();
-    protected List<BeanFactoryInitializable> beanFactoryInitializables = new ArrayList<>();
 
     protected final PlaceholderResolver                        placeholderResolver;
     protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
@@ -123,28 +121,26 @@ public class BeanContainer implements BeanFactory {
 		this.beanFactory = appContext.getBeanFactory();
 	}
 	
-	public void addInitializableBean(BeanFactoryInitializable bean){
-		this.beanFactoryInitializables.add(bean);
-	}
-	
-	/**
-	 * Loads all the beans definitions from the given {@link ResourceSet}.
-	 * 
-	 * <p/>
-	 * 
-	 * throws {@link IllegalStateException} if this container aleady finish loading.
-	 */
-	public BeanContainer loadFromResources(AppResource[] resources) throws IllegalStateException {
-		ensureContainerNotInited();
-		this.xmlBeanDefinitionLoader.load(resources);
-		return this;
-	}
-
 	public BeanContainer loadFromClasses(Class<?>[] classes) throws IllegalStateException{
+        log.debug("Load beans from {} classes",classes.length);
 		ensureContainerNotInited();
 		this.annotationBeanDefinitionLoader.load(this,classes);
 		return this;
 	}
+
+    /**
+     * Loads all the beans definitions from the given resources.
+     *
+     * <p/>
+     *
+     * throws {@link IllegalStateException} if this container already finish loading.
+     */
+    public BeanContainer loadFromResources(AppResource[] resources) throws IllegalStateException {
+        log.debug("Load beans from {} resources", resources.length);
+        ensureContainerNotInited();
+        this.xmlBeanDefinitionLoader.load(resources);
+        return this;
+    }
 	
 	@Override
     public <T> T inject(T bean) throws BeanException {
@@ -267,7 +263,6 @@ public class BeanContainer implements BeanFactory {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-		this.initBeanFactoryInitializableBeans();
 		this.initNonLazyBeans();
 
         this.containerInited = true;
@@ -931,17 +926,6 @@ public class BeanContainer implements BeanFactory {
                 }
 	        }
 		}
-	}
-	
-	protected void initBeanFactoryInitializableBeans(){
-		//bean factory initializables
-		for(BeanFactoryInitializable initializable : beanFactoryInitializables){
-			try {
-	            initializable.postInit(appContext, beanFactory);
-            } catch (Throwable e) {
-            	Exceptions.uncheckAndThrow(e);
-            }
-		}		
 	}
 	
 	protected void resolveAfterLoading() {

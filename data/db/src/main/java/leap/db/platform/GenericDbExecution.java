@@ -21,7 +21,6 @@ import leap.db.DbExecution;
 import leap.lang.Args;
 import leap.lang.Assert;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 
@@ -38,7 +37,7 @@ public class GenericDbExecution implements DbExecution {
 	protected final Log log;
 
 	protected final GenericDb                db;
-	protected final List<GenericDbStatement> statements = new ArrayList<GenericDbStatement>();
+	protected final List<GenericDbStatement> statements = new ArrayList<>();
 	private   final List<GenericDbStatement> statementsImmutableView = Collections.unmodifiableList(statements);
 	
 	protected boolean throwExceptionWhileExecuting = true;
@@ -114,7 +113,7 @@ public class GenericDbExecution implements DbExecution {
 
 	@Override
     public List<DbError> errors() throws IllegalStateException {
-		List<DbError> errors = new ArrayList<DbError>();
+		List<DbError> errors = new ArrayList<>();
 		
 		for(GenericDbStatement statement : statements){
 			if(statement.isError()){
@@ -158,19 +157,14 @@ public class GenericDbExecution implements DbExecution {
 	
 	@Override
     public boolean execute() {
-		return db.executeWithResult(new ConnectionCallbackWithResult<Boolean>() {
-			@Override
-            public Boolean execute(Connection connection) throws SQLException {
-	            return GenericDbExecution.this.execute(connection);
-            }
-		});
+		return db.executeWithResult(this::execute);
     }
 
     @Override
     @SuppressWarnings("resource")
     public synchronized boolean execute(Connection connection) {
 		Args.notNull(connection,"connection");
-		Assert.isTrue(nrOfExecuted == -1,"this execution aleady executed");
+		Assert.isTrue(nrOfExecuted == -1,"this execution already executed");
 		Statement stmt = null;
 		
 		nrOfErrors    = 0;
@@ -190,12 +184,12 @@ public class GenericDbExecution implements DbExecution {
 				
 				nrOfExecuted++;
 				
-				log.info("Executing [{}] statement : \n\n{}\n ", nrOfExecuted, sql);
-				
+				log.trace("Executing [{}] statement : \n\n{}\n ", nrOfExecuted, sql);
+
 				try{
 					int affected = stmt.executeUpdate(sql);
 					
-					log.info("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
+					log.debug("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
 					
 					nrOfSuccesses++;
 					dbStatement.success(affected);
@@ -205,11 +199,12 @@ public class GenericDbExecution implements DbExecution {
 					//TODO : resolve error
 					dbStatement.error(new DbError(DbErrors.UNRESOLVED, e.getMessage(),e));
 					
-					log.warn("Statement [{}] failed, error : {}",nrOfExecuted,e.getMessage(),e);
-					
 					if(throwExceptionWhileExecuting){
+                        log.error("Statement [{}] failed, error : {}  \n  SQL -> \n {}",nrOfExecuted,e.getMessage(),sql, e);
 						throw new NestedSQLException(e);
-					}
+					}else{
+                        log.warn("Statement [{}] failed, error : {}  \n  SQL -> \n {}",nrOfExecuted,e.getMessage(),sql, e);
+                    }
 					
 					if(!continueOnError){
 						break;

@@ -51,11 +51,6 @@ public class DefaultBeanFactory implements BeanFactory {
 		this.beanContainer   = new BeanContainer(config);
 	}
 	
-	public DefaultBeanFactory addInitializableBean(BeanFactoryInitializable bean){
-		beanContainer.addInitializableBean(bean);
-		return this;
-	}
-	
 	protected DefaultBeanFactory load(AppContext appContext){
         AppResources resources = AppResources.get(appContext.getConfig());
 

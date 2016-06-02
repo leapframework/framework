@@ -48,6 +48,14 @@ public class LogUtils {
 
         if(url.startsWith(USER_DIR_WITH_PREFIX)) {
             url = "." + url.substring(USER_DIR_WITH_PREFIX.length());
+        }else if(url.startsWith(Urls.PROTOCOL_JAR + ":")) {
+            int index = url.indexOf(".jar!/");
+            if(index > 0) {
+                int start = url.lastIndexOf('/', index);
+                if(start > 0) {
+                    return url.substring(start + 1);
+                }
+            }
         }
 
         return url;
