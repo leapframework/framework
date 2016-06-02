@@ -74,7 +74,8 @@ public class JsonFormatWriter implements FormatWriter {
 		if(null == defaultJsonSettings) {
 			defaultJsonSettings = new JsonSettings(defaultJsonConfig.isDefaultSerializationKeyQuoted(),
 												   defaultJsonConfig.isDefaultSerializationIgnoreNull(),
-												   defaultJsonConfig.isDefaultSerializationIgnoreEmpty());
+												   defaultJsonConfig.isDefaultSerializationIgnoreEmpty(),
+												   defaultJsonConfig.getDefaultNamingStyle());
 		}
 		return defaultJsonSettings;
 	}
