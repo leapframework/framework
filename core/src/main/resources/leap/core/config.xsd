@@ -188,11 +188,15 @@
     
     <xsd:element name="properties">
         <xsd:complexType>
-        	<xsd:sequence>
-        		<xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
-        	</xsd:sequence>
-        	<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
-        	<xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+            <xsd:complexContent>
+            <xsd:extension base="xsd:string">
+                <xsd:sequence>
+                    <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                </xsd:sequence>
+                <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+                <xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+            </xsd:extension>
+            </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
 

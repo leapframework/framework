@@ -16,15 +16,18 @@
 
 package leap.core.config.reader;
 
-import leap.core.*;
+import leap.core.AppConfig;
+import leap.core.AppConfigException;
 import leap.core.config.AppPropertyContext;
 import leap.core.config.AppPropertyLoaderConfig;
 import leap.core.config.AppPropertyReader;
 import leap.core.el.EL;
 import leap.lang.New;
+import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.el.spel.SPEL;
 import leap.lang.expression.Expression;
+import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
@@ -170,10 +173,31 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             prefix = Strings.EMPTY;
         }
 
+        StringBuilder chars      = new StringBuilder();
+        boolean       hasElement = false;
         while(reader.nextWhileNotEnd(PROPERTIES_ELEMENT)){
+            if(reader.isCharacters()) {
+                chars.append(reader.getCharacters());
+                continue;
+            }
+
             if(reader.isStartElement(PROPERTY_ELEMENT)){
+                hasElement = true;
                 readProperty(context, resource, reader, prefix);
                 continue;
+            }
+        }
+
+        if(!hasElement) {
+            String text = chars.toString().trim();
+            if(text.length() > 0) {
+                ExProperties props = Props.loadKeyValues(text);
+
+                final String finalPrefix = prefix;
+                props.forEach((k,v) -> {
+                    String key = finalPrefix + k;
+                    context.putProperty(resource, key, (String)v);
+                });
             }
         }
     }

@@ -15,9 +15,7 @@
  */
 package leap.lang.xml;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.Iterator;
+import leap.lang.io.IO;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -25,8 +23,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.ProcessingInstruction;
 import javax.xml.stream.events.XMLEvent;
-
-import leap.lang.io.IO;
+import java.io.IOException;
+import java.io.Reader;
+import java.util.Iterator;
 
 final class XmlReaderStax extends XmlReaderBase implements XmlReader {
 	private final Reader         in;
@@ -44,9 +43,24 @@ final class XmlReaderStax extends XmlReaderBase implements XmlReader {
         if(null != sourceLocation){
         	this.source = sourceLocation;	
         }
-    }    
-    
-	public boolean isEndElement() {
+    }
+
+    @Override
+    public XMLEvent event() {
+        return event;
+    }
+
+    @Override
+    public boolean isCharacters() {
+        return event.isCharacters();
+    }
+
+    @Override
+    public String getCharacters() {
+        return event.asCharacters().getData();
+    }
+
+    public boolean isEndElement() {
 	    return null != event && event.isEndElement();
     }
 

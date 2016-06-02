@@ -50,4 +50,14 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("prop2_override", config.getProperty("testOrder.prop2"));
         assertEquals("prop3_override", config.getProperty("testOrder.prop3"));
     }
+
+    @Test
+    public void testKeyValuePropertiesFromXml() {
+        assertEquals("1", config.getProperty("testKeyValue1"));
+        assertEquals("2", config.getProperty("testKeyValue2"));
+        assertEquals("3", config.getProperty("testKeyValue3"));
+
+        assertEquals("1", config.getProperty("testKeyValue.prop1"));
+        assertEquals("2", config.getProperty("testKeyValue.prop2"));
+    }
 }
