@@ -28,7 +28,14 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
     protected static final String COLUMN_SEPARATOR = " ";
 
-    protected boolean printSystem = true;
+    protected static final Set<String> DEFAULT_SECRET_WORDS = new HashSet<>();
+    static {
+        DEFAULT_SECRET_WORDS.add("password");
+        DEFAULT_SECRET_WORDS.add("secret");
+    }
+
+    protected boolean     printSystem  = true;
+    protected Set<String> secrectWords = new HashSet<>(DEFAULT_SECRET_WORDS);
 
     public boolean isPrintSystem() {
         return printSystem;
@@ -100,8 +107,10 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
     protected PrintProperty toPrintProperty(AppProperty p) {
         PrintProperty pp = new PrintProperty();
 
+        String value = protectSecret(p.getName(), p.getUnprocessedValue());
+
         pp.name  = p.getName();
-        pp.value = Strings.replace(Strings.abbreviate(p.getUnprocessedValue(), 30, ".."),"\n","\\n");
+        pp.value = Strings.replace(Strings.abbreviate(value, 30, ".."),"\n","\\n");
 
         if(null == p.getSource()) {
             pp.source = "(n/a)";
@@ -133,6 +142,38 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         String  value;
         String  source;
         boolean system;
+    }
+
+    protected String protectSecret(String name, String value) {
+        if(value.length() == 0) {
+            return value;
+        }
+
+        boolean isSecret = false;
+
+        for(String word : secrectWords) {
+            if(Strings.containsIgnoreCase(name, word)) {
+                isSecret = true;
+                break;
+            }
+        }
+
+        if(isSecret) {
+
+            if(value.length() == 1) {
+                return "*";
+            }else if(value.length() == 2){
+                return value.substring(0,1) + "*";
+            }else if(value.length() == 3) {
+                return value.substring(0,2) + "*";
+            }else {
+                int startLen = Math.min(6, value.length() - 3);
+                return value.substring(0,3) + Strings.repeat('*', startLen);
+            }
+
+        }
+
+        return value;
     }
 
     protected static final class PrintPropertyComparator implements Comparator<PrintProperty> {
