@@ -56,9 +56,11 @@ public class StringsTest extends ConcurrentTestCase {
 	public void testCamel() {
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world",'_'));
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world_",'_'));
-		
+		assertEquals("HelloWorld",Strings.upperCamel("helloWorld",'_'));
+
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world",'_'));
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world_",'_'));
+		assertEquals("helloWorld",Strings.lowerCamel("HelloWorld",'_'));
 	}
 	
 	@Test
