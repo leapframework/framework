@@ -22,15 +22,13 @@ import leap.lang.resource.Resource;
 import leap.lang.text.PrintFormat;
 
 import java.io.PrintWriter;
-import java.util.Collection;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
     protected static final String COLUMN_SEPARATOR = " ";
 
-    protected boolean printSystem;
+    protected boolean printSystem = true;
 
     public boolean isPrintSystem() {
         return printSystem;
@@ -52,7 +50,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
 
         printHeader(writer, nameFormat, valueFormat, sourceFormat);
 
-        info.props.forEach((k,p) -> printProperty(writer, nameFormat, valueFormat, sourceFormat, p));
+        info.props.forEach((p) -> printProperty(writer, nameFormat, valueFormat, sourceFormat, p));
     }
 
     protected void prepare(Collection<AppProperty> props, PrintInfo info) {
@@ -68,7 +66,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
             info.maxValueLength  = Math.max(info.maxValueLength,  pp.value.length());
             info.maxSourceLength = Math.max(info.maxSourceLength, pp.source.length());
 
-            info.props.put(p.getName(), pp);
+            info.props.add(pp);
         });
     }
 
@@ -103,7 +101,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         PrintProperty pp = new PrintProperty();
 
         pp.name  = p.getName();
-        pp.value = Strings.abbreviate(p.getUnprocessedValue(), 30, "..");
+        pp.value = Strings.replace(Strings.abbreviate(p.getUnprocessedValue(), 30, ".."),"\n","\\n");
 
         if(null == p.getSource()) {
             pp.source = "(n/a)";
@@ -118,6 +116,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         }
 
         pp.source = Strings.right(pp.source, 65);
+        pp.system = p.isSystem();
 
         return pp;
     }
@@ -126,13 +125,26 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         int maxNameLength;
         int maxValueLength;
         int maxSourceLength;
-        Map<String, PrintProperty> props = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        Set<PrintProperty> props = new TreeSet<>(new PrintPropertyComparator());
     }
 
     protected static final class PrintProperty {
-        String name;
-        String value;
-        String source;
+        String  name;
+        String  value;
+        String  source;
+        boolean system;
     }
 
+    protected static final class PrintPropertyComparator implements Comparator<PrintProperty> {
+        @Override
+        public int compare(PrintProperty o1, PrintProperty o2) {
+            if(o1.system && !o2.system) {
+                return -1;
+            }else if(o2.system && !o1.system) {
+                return 1;
+            }
+
+            return String.CASE_INSENSITIVE_ORDER.compare(o1.name, o2.name);
+        }
+    }
 }
