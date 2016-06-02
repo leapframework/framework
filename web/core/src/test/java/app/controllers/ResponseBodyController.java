@@ -15,11 +15,15 @@
  */
 package app.controllers;
 
+import leap.lang.New;
 import leap.lang.enums.Bool;
+import leap.lang.naming.NamingStyles;
 import leap.web.action.ControllerBase;
 import leap.web.json.JsonSerialize;
 import app.models.Model1;
 import app.models.products.Product;
+
+import java.util.Map;
 
 public class ResponseBodyController extends ControllerBase {
 
@@ -41,7 +45,14 @@ public class ResponseBodyController extends ControllerBase {
 		
 		return product;
 	}
-	
+	@JsonSerialize(namingStyle = NamingStyles.NAME_LOWER_UNDERSCORE)
+	public Map<String, Object> getMapWithLowerUnderscore(){
+		Map<String, Object> map = New.hashMap("userId","userId");
+		map.put("userProperty",New.hashMap("userName","userName"));
+
+		return map;
+	}
+
 	public Product product(Product product) {
 		return product;
 	}
