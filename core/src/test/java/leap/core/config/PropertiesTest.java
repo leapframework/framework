@@ -56,6 +56,8 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("1", config.getProperty("testKeyValue1"));
         assertEquals("2", config.getProperty("testKeyValue2"));
         assertEquals("3", config.getProperty("testKeyValue3"));
+        assertEquals("",  config.getProperty("testKeyValue4"));
+        assertNull(config.getProperty("testKeyValue5"));
 
         assertEquals("1", config.getProperty("testKeyValue.prop1"));
         assertEquals("2", config.getProperty("testKeyValue.prop2"));

@@ -6,6 +6,8 @@
         testKeyValue2=2
 
         testKeyValue3=3
+        testKeyValue4 =
+        #testKeyValue5 = 5
     </properties>
 
     <properties prefix="testKeyValue">
