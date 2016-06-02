@@ -131,7 +131,7 @@ public class XmlSqlReader implements SqlReader {
 		if(Strings.isEmpty(content)){
 			throw new SqlConfigException("The content body of sql fragment " + fragmentDescription + " must not be empty, xml : " + reader.getSource());
 		}
-		log.debug("Loading sql fragment {} from [{}]",fragmentDescription,reader.getSource());
+		log.debug("Load sql fragment {} from [{}]",fragmentDescription,reader.getSource());
 
 		OrmMetadata metadata = context.getConfigContext().getMetadata();
 
@@ -168,7 +168,7 @@ public class XmlSqlReader implements SqlReader {
 		
 		String commandDescription = "[" + (Strings.isEmpty(key) ? "name=" + name + ",entity-class=" + entityClassName + ",entity-name=" + entityName : "key=" + key ) + "]";
 		
-		log.debug("Loading sql command {} from [{}]",commandDescription,reader.getSource());
+		log.debug("Load sql command {} from [{}]",commandDescription,reader.getSource());
 		
 		if(Strings.isEmpty(content = Strings.trim(content))){
 			throw new SqlConfigException("The content body of sql command" + commandDescription + " must not be empty, xml : " + reader.getSource());
@@ -261,7 +261,7 @@ public class XmlSqlReader implements SqlReader {
 			language = defaultLanguage;
 		}
 		
-		log.debug("SQL(s) : \n\n  {}\n",content);
+		log.trace("SQL(s) : \n\n  {}\n",content);
 		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content, new DefaultSqlIdentity(key,name,entityName,entityClassName));
 		if(!Strings.isEmpty(key)){
 			metadata.addSqlCommand(key, command);

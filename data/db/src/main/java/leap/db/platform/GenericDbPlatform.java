@@ -15,17 +15,6 @@
  */
 package leap.db.platform;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Function;
-
-import javax.sql.DataSource;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.LocalizeKey;
@@ -40,6 +29,16 @@ import leap.lang.exception.NestedIOException;
 import leap.lang.json.JSON;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
+
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.io.Reader;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Function;
 
 @LocalizeKey("db.platform")
 public abstract class GenericDbPlatform extends DbPlatformBase implements PostCreateBean {
@@ -90,7 +89,7 @@ public abstract class GenericDbPlatform extends DbPlatformBase implements PostCr
 		
 		metadataReader.init(dialect);
 		
-	    return createDb(name, ds, metadata, dialect,comparator);
+	    return createDb(name, ds, jdbcMetadata, metadata, dialect,comparator);
     }
 	
 	protected abstract GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException;
@@ -112,8 +111,8 @@ public abstract class GenericDbPlatform extends DbPlatformBase implements PostCr
 		return new GenericDbComparator();
 	}
 	
-	protected GenericDb createDb(String name,DataSource ds,GenericDbMetadata metadata,GenericDbDialect dialect, GenericDbComparator comparator) {
-		return new GenericDb(name, this, ds, metadata, dialect, comparator);
+	protected GenericDb createDb(String name,DataSource ds, DatabaseMetaData dmd, GenericDbMetadata metadata,GenericDbDialect dialect, GenericDbComparator comparator) {
+		return new GenericDb(name, ds, dmd, this, metadata, dialect, comparator);
 	}
 	
 	@Override

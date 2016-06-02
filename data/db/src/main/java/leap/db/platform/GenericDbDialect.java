@@ -42,15 +42,15 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	protected Log log;
 
-	private final Map<Class<?>, Method> schemaChangeMethods = new ConcurrentHashMap<Class<?>, Method>();
+	private final Map<Class<?>, Method> schemaChangeMethods = new ConcurrentHashMap<>();
 	
-    protected final Set<String>   		 sqlKeyWords              = new HashSet<String>();
-    protected final Set<String>   		 pseudoColumns            = new HashSet<String>(5);
-    protected final Set<String>   		 systemSchemas            = new HashSet<String>(5);
-    protected final Set<String>   		 dummyTables              = new HashSet<String>(5);
+    protected final Set<String>   		 sqlKeyWords              = new HashSet<>();
+    protected final Set<String>   		 pseudoColumns            = new HashSet<>(5);
+    protected final Set<String>   		 systemSchemas            = new HashSet<>(5);
+    protected final Set<String>   		 dummyTables              = new HashSet<>(5);
     protected final DbColumnTypes 		 columnTypes              = new DbColumnTypes();
-    protected final Set<DbCascadeAction> supportedOnDeleteActions = new HashSet<DbCascadeAction>(5);
-    protected final Set<String>          disconnectSqlStates      = new HashSet<String>(10);
+    protected final Set<DbCascadeAction> supportedOnDeleteActions = new HashSet<>(5);
+    protected final Set<String>          disconnectSqlStates      = new HashSet<>(10);
     
     protected GenericDb   		db;
 	protected GenericDbMetadata metadata;
