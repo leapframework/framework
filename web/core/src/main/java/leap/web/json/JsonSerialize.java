@@ -15,13 +15,10 @@
  */
 package leap.web.json;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
 import leap.lang.enums.Bool;
+import leap.lang.naming.NamingStyle;
+
+import java.lang.annotation.*;
 
 @Target({ElementType.METHOD,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
@@ -33,5 +30,7 @@ public @interface JsonSerialize {
 	Bool ignoreNull() default Bool.NONE;
 	
 	Bool ignoreEmpty() default Bool.NONE;
-	
+
+	String namingStyle() default "";
+
 }

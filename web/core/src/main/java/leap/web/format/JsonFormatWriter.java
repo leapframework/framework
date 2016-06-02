@@ -15,13 +15,17 @@
  */
 package leap.web.format;
 
+import leap.core.AppContext;
 import leap.core.annotation.Inject;
 import leap.lang.Classes;
+import leap.lang.Strings;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.lang.json.JsonStringable;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.naming.NamingStyle;
+import leap.lang.naming.NamingStyles;
 import leap.web.json.JsonConfig;
 import leap.web.json.JsonSerialize;
 
@@ -79,7 +83,18 @@ public class JsonFormatWriter implements FormatWriter {
 		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
-		
-		return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty);
+		NamingStyle ns;
+		if(Strings.isEmpty(a.namingStyle())){
+			ns = getDefaultJsonSettings().getNamingStyle();
+		}else {
+			ns = NamingStyles.get(a.namingStyle());
+			if(ns == null){
+				ns = NamingStyles.get(a.namingStyle(), AppContext.factory());
+			}
+			if(ns == null){
+				throw new IllegalArgumentException("NamingStyle not found:"+a.namingStyle());
+			}
+		}
+		return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty,ns);
 	}
 }

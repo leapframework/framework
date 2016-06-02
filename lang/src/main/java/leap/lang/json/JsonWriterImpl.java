@@ -609,7 +609,7 @@ public class JsonWriterImpl implements JsonWriter {
         	}
         	
         	if(keyQuoted){
-        		out.append(DOUBLE_QUOTE).append(key).append(DOUBLE_QUOTE);   
+        		out.append(DOUBLE_QUOTE).append(key).append(DOUBLE_QUOTE);
         	}else{
         		out.append(key);	
         	}
