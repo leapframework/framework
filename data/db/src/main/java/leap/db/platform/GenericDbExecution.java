@@ -175,7 +175,7 @@ public class GenericDbExecution implements DbExecution {
 			stmt = connection.createStatement();
             stmt.setEscapeProcessing(false);
 			
-			log.info("Total {} statement(s)",statements.size());
+			log.info("Executing {} statement(s)...",statements.size());
 			
 			for(int i=0;i<statements.size();i++){
 				GenericDbStatement dbStatement = statements.get(i);
@@ -189,7 +189,7 @@ public class GenericDbExecution implements DbExecution {
 				try{
 					int affected = stmt.executeUpdate(sql);
 					
-					log.debug("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
+					log.trace("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
 					
 					nrOfSuccesses++;
 					dbStatement.success(affected);
@@ -212,7 +212,7 @@ public class GenericDbExecution implements DbExecution {
 				}
 			}
 			
-			log.info("All finished : {} executed, {} successes, {} errors",nrOfExecuted,nrOfSuccesses,nrOfErrors);
+			log.info("All executed : {} executed, {} successes, {} errors",nrOfExecuted,nrOfSuccesses,nrOfErrors);
 		}catch(SQLException e){
 			throw new NestedSQLException("Error executing this execution : " + e.getMessage(), e);
 		}finally{
