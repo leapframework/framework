@@ -16,7 +16,6 @@
 package leap.core;
 
 import leap.core.config.dyna.*;
-import leap.core.ds.DataSourceConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.convert.Converts;
@@ -52,25 +51,23 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
 
-    protected PropertyProvider      propertyProvider = null;
-	protected String                profile          = null;
-	protected Boolean               debug            = null;
-	protected String                basePackage      = null;
-	protected Locale                defaultLocale    = null;
-	protected Charset               defaultCharset   = null;
-	protected boolean               reloadEnabled    = false;
-	protected String                secret           = null;
-	protected PrivateKey            privateKey       = null;
-	protected Map<Class<?>, Object> extensions       = new HashMap<>();
-	protected Map<String,String>            properties                = new ConcurrentHashMap<>();
-	protected Map<String,String>            propertiesReadonly        = Collections.unmodifiableMap(properties);
-    protected Map<String,List<String>>      arrayProperties           = new ConcurrentHashMap<>();
-	protected List<SysPermissionDef>        permissions               = new ArrayList<>();
-	protected List<SysPermissionDef>        permissionsReadonly       = Collections.unmodifiableList(permissions);
-	protected ResourceSet                   resources                 = null;
-	protected DefaultPlaceholderResolver    placeholderResolver       = new DefaultPlaceholderResolver(this);
-	protected Map<String, DataSourceConfig> dataSourceConfigs         = new ConcurrentHashMap<>();
-	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
+    protected PropertyProvider              propertyProvider    = null;
+    protected String                        profile             = null;
+    protected Boolean                       debug               = null;
+    protected String                        basePackage         = null;
+    protected Locale                        defaultLocale       = null;
+    protected Charset                       defaultCharset      = null;
+    protected boolean                       reloadEnabled       = false;
+    protected String                        secret              = null;
+    protected PrivateKey                    privateKey          = null;
+    protected Map<Class<?>, Object>         extensions          = new HashMap<>();
+    protected Map<String, String>           properties          = new ConcurrentHashMap<>();
+    protected Map<String, String>           propertiesReadonly  = Collections.unmodifiableMap(properties);
+    protected Map<String, List<String>>     arrayProperties     = new ConcurrentHashMap<>();
+    protected List<SysPermissionDef>        permissions         = new ArrayList<>();
+    protected List<SysPermissionDef>        permissionsReadonly = Collections.unmodifiableList(permissions);
+    protected ResourceSet                   resources           = null;
+    protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
 
     public DefaultAppConfig(String profile) {
         this.profile = profile;
@@ -178,11 +175,6 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
             privateKey = loadOrGeneratePrivateKey();
         }
         return privateKey;
-    }
-
-    @Override
-    public Map<String, DataSourceConfig> getDataSourceConfigs() {
-	    return dataSourceConfigsReadonly;
     }
 
 	@Override

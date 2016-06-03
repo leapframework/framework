@@ -20,8 +20,6 @@ import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.AppConfigReader;
-import leap.core.ds.DataSourceConfig;
-import leap.core.ds.DataSourceManager;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.Classes;
@@ -132,10 +130,12 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                 continue;
             }
 
+            /*
             if(reader.isStartElement(DATASOURCE_ELEMENT)) {
                 readDataSource(context, resource, reader);
                 continue;
             }
+            */
 
             if(reader.isStartElement(PERMISSIONS_ELEMENT)){
                 readPermissions(context, resource, reader);
@@ -159,6 +159,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         throw new AppConfigException("Namespace uri '" + nsURI + "' not supported, check your config : " + reader.getSource());
     }
 
+    /*
     private void readDataSource(AppConfigContext context,Resource resource, XmlReader reader){
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(DATASOURCE_ELEMENT);
@@ -213,6 +214,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
         context.setDataSourceConfig(dataSourceName, conf);
     }
+    */
 
     private void readPermissions(AppConfigContext context,Resource resource,XmlReader reader){
         if(!matchProfile(context.getProfile(), reader)){

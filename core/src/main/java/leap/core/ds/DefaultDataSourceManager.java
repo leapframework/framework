@@ -16,7 +16,6 @@
 package leap.core.ds;
 
 import leap.core.AppConfig;
-import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -47,7 +46,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	@Override
     public void addListener(DataSourceListener listener) {
 		if(listeners.contains(listener)){
-			throw new ObjectExistsException("The listener aleady exists");
+			throw new ObjectExistsException("The listener already exists");
 		}
 		listeners.add(listener);
 	}
@@ -69,7 +68,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     @Override
     public DataSource getDefaultDataSource() {
 		if(null == defaultDataSource){
-			throw new ObjectNotFoundException("No default datasource defined");
+			throw new ObjectNotFoundException("No default dataSource defined");
 		}
 	    return defaultDataSource;
     }
@@ -110,7 +109,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){
-				throw new ObjectExistsException("Default datasource aleady exists");
+				throw new ObjectExistsException("Default dataSource already exists");
 			}
 
 			DataSource ds = createDataSource(conf);
@@ -128,7 +127,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     public DataSource createDataSource(String name, DataSourceConfig props) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(allDataSources.containsKey(name)){
-				throw new ObjectExistsException("DataSource '" + name + "' aleady exists");
+				throw new ObjectExistsException("DataSource '" + name + "' already exists");
 			}
 			
 			DataSource ds = createDataSource(props);
@@ -171,7 +170,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	@Override
     public void destroyDataSource(DataSource ds) throws UnsupportedOperationException {
 		if(!tryDestroyDataSource(ds)){
-			throw new UnsupportedOperationException("The given datasource does not supported");
+			throw new UnsupportedOperationException("The given dataSource does not supported");
 		}
     }
 	
@@ -238,7 +237,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		this.allDataSources    = new ConcurrentHashMap<>(factory.getNamedBeans(DataSource.class));
 		
 		//Create dataSource(s) from config.
-		createDataSourcesFromConfig(factory, allDataSources);
+		//createDataSourcesFromConfig(factory, allDataSources);
 		
 		if(null == this.defaultDataSource) {
 		    this.defaultDataSource = factory.tryGetBean(DataSource.class);    
@@ -262,7 +261,8 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		
 		this.allDataSourcesImmutableView = Collections.unmodifiableMap(allDataSources);
     }
-	
+
+    /*
 	protected void createDataSourcesFromConfig(BeanFactory factory,  Map<String, DataSource> dataSourcesMap) {
 		for(Entry<String, DataSourceConfig> entry : config.getDataSourceConfigs().entrySet()) {
 			String           name = entry.getKey();
@@ -289,4 +289,5 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
             }
 		}
 	}
+	*/
 }

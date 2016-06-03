@@ -17,7 +17,7 @@
                     <xsd:element ref="import"/>
                     <xsd:element ref="properties"/>
                     <xsd:element ref="property"/>
-                    <xsd:element ref="datasource"/>
+                    <!--<xsd:element ref="datasource"/>-->
                     <xsd:element ref="permissions"/>
                     <xsd:element ref="loader"/>
                     <xsd:element ref="config"/>
@@ -125,7 +125,7 @@
         </xsd:complexType>
     </xsd:element>
     
-    <xsd:element name="datasource" type="DataSourceConfig"/>
+    <!--<xsd:element name="datasource" type="DataSourceConfig"/>-->
     
     <xsd:element name="resources">
         <xsd:annotation>
@@ -244,6 +244,7 @@
     </xsd:element>
     
     <!-- types -->
+    <!--
     <xsd:complexType name="DataSourceConfig">
         <xsd:sequence>
             <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
@@ -278,7 +279,8 @@
         <xsd:attribute name="default" type="xsd:boolean" use="optional" default="false"/>
         <xsd:attribute name="if-profile" use="optional" />
     </xsd:complexType>
-
+    -->
+    
     <xsd:complexType name="Permission">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">

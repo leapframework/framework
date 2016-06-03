@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-    <datasource name="h2" default="true">
-    	<driverClassName>${h2.driverClassName}</driverClassName>
-    	<jdbcUrl>${h2.jdbcUrl}</jdbcUrl>
-    	<username>sa</username>
-    	<maxActive>2</maxActive>
-    </datasource>
+    <properties>
+        h2.driverClassName = org.h2.Driver
+        h2.url             = jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE
+        h2.username        = sa
+    </properties>
 
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
+
 </config>

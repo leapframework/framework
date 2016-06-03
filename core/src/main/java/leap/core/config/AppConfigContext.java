@@ -15,7 +15,6 @@
  */
 package leap.core.config;
 
-import leap.core.ds.DataSourceConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
@@ -66,21 +65,6 @@ public interface AppConfigContext extends AppConfigContextBase {
      * Adds a managed resource set.
      */
 	void addResources(ResourceSet rs);
-
-    /**
-     * Returns true if the app already has a default configuration of data source.
-     */
-	boolean hasDefaultDataSourceConfig();
-
-    /**
-     * Returns true if the app already has a named configuration of data source.
-     */
-	boolean hasDataSourceConfig(String name);
-
-    /**
-     * Sets the configuration of data source.
-     */
-	void setDataSourceConfig(String name,DataSourceConfig.Builder conf);
 
     /**
      * Returns a mutable set contains all the additional packages.

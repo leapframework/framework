@@ -17,7 +17,6 @@ package leap.core;
 
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
-import leap.core.ds.DataSourceManager;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
@@ -116,7 +115,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
     }
 
     protected void postLoad(DefaultAppConfig config) {
-        new DataSourceConfigPropertiesLoader(config.properties, config.dataSourceConfigs).load();
         config.postLoad();
     }
 
@@ -707,35 +705,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public boolean hasDefaultDataSourceConfig() {
-            return hasDefaultDataSource;
-        }
-
-        @Override
-        public boolean hasDataSourceConfig(String name) {
-            return loader.dataSourceConfigs.containsKey(name);
-        }
-
-        @Override
-        public void setDataSourceConfig(String name, DataSourceConfig.Builder conf) {
-            loader.dataSourceConfigs.put(name, conf);
-
-            if(conf.isDefault()) {
-
-                if (hasDefaultDataSource) {
-                    throw new AppConfigException("Default DataSource already exists");
-                }
-
-                this.hasDefaultDataSource = true;
-            }
-            /* build datasource in here? */
-            Map<String, String> resolvedProperties = new ConcurrentHashMap<>(conf.getProperties());
-            loader.resolveStringProperties(resolvedProperties);
-            conf.setProperties(resolvedProperties);
-            config.dataSourceConfigs.put(name, conf.build());
-        }
-
-        @Override
         public PlaceholderResolver getPlaceholderResolver() {
             return loader.resolver;
         }
@@ -760,6 +729,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
+    /*
     protected static class DataSourceConfigPropertiesLoader {
         protected static final String DB_DEFAULT_PREFIX = "db.";
         protected static final String DB_NAMED_PREFIX   = "db_";
@@ -829,5 +799,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
             }
         }
     }
+    */
 
 }

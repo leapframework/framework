@@ -18,7 +18,6 @@ package leap.core;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.dyna.*;
-import leap.core.ds.DataSourceConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.Charsets;
 import leap.lang.Locales;
@@ -271,11 +270,6 @@ public interface AppConfig extends PropertyGetter {
      */
     <T> void bindDynaProperty(String name, Class<T> type, Property<T> p);
 
-	/**
-	 * Returns the map contains all the data source configs.
-	 */
-	Map<String, DataSourceConfig> getDataSourceConfigs();
-	
 	/**
 	 * Returns an immutable map contains all the configured properties.
 	 */

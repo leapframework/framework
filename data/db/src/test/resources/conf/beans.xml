@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
-	<!-- 
     <bean name="h2" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" primary="true">
         <property name="driverClassName" value="${h2.driverClassName}" />
         <property name="jdbcUrl"         value="${h2.url}" />
@@ -9,7 +8,6 @@
         <property name="password"        value="${h2.password}" />
         <property name="maxActive"		 value="2"/>
     </bean>
-    -->
 
     <!--
     <bean name="derby" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
