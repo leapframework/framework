@@ -27,6 +27,8 @@ import java.util.Map;
 
 import leap.junit.concurrent.ConcurrentTestCase;
 
+import leap.lang.naming.NamingStyle;
+import leap.lang.naming.NamingStyles;
 import org.junit.Test;
 
 public class JSONEncodeTest extends ConcurrentTestCase {
@@ -154,6 +156,11 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		List<?> jsonArray3 = (List<?>)jsonArrayArray[2];
 		assertEquals(1, jsonArray3.size());
 	}
+	@Test
+	public void testNamingStyle(){
+		String json = "{\"user_id\":\"1\",\"user_name\":\"xx\"}";
+		assertEquals(json, encodeUpperCamelSytle(new NamingStyleBean("1","xx")));
+	}
 	
 	private static String encode(Object value){
 		return JSON.encode(value);
@@ -161,6 +168,9 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 	
 	private static String encodeNonKeyQuoted(Object value){
 		return JSON.encode(value,new JsonSettings.Builder().setKeyQuoted(false).build());
+	}
+	private static String encodeUpperCamelSytle(Object value){
+		return JSON.encode(value,new JsonSettings.Builder().setNamingStyle(NamingStyles.LOWER_UNDERSCORE).build());
 	}
 	
 	private static enum Color {
@@ -288,7 +298,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 			this.parent = parent;
 		}
 	}
-	
+
 	static final class NamedBean {
 		
 		public String id;
@@ -303,6 +313,16 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		public NamedBean(String id,String name){
 			this.id   = id;
 			this.name = name;
+		}
+	}
+
+	static final class NamingStyleBean{
+		public String userId;
+		public String userName;
+
+		public NamingStyleBean(String userId, String userName) {
+			this.userId = userId;
+			this.userName = userName;
 		}
 	}
 }

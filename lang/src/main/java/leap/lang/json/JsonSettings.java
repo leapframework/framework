@@ -15,6 +15,9 @@
  */
 package leap.lang.json;
 
+import leap.lang.naming.NamingStyle;
+import leap.lang.naming.NamingStyles;
+
 public class JsonSettings {
 	
 	public static JsonSettings MAX = new Builder().build();
@@ -26,13 +29,17 @@ public class JsonSettings {
     private final boolean keyQuoted;
     private final boolean ignoreNull;
     private final boolean ignoreEmpty;
+	private final NamingStyle namingStyle;
     
     public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreEmpty) {
-    	this.keyQuoted   = keyQuoted;
-    	this.ignoreNull  = ignoreNull;
-    	this.ignoreEmpty = ignoreEmpty;
+    	this(keyQuoted,ignoreNull,ignoreEmpty,NamingStyles.RAW);
     }
-
+	public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreEmpty,NamingStyle namingStyle) {
+		this.keyQuoted   = keyQuoted;
+		this.ignoreNull  = ignoreNull;
+		this.ignoreEmpty = ignoreEmpty;
+		this.namingStyle = namingStyle;
+	}
 	public boolean isKeyQuoted() {
 		return keyQuoted;
 	}
@@ -44,12 +51,16 @@ public class JsonSettings {
 	public boolean isIgnoreEmpty() {
 		return ignoreEmpty;
 	}
-	
+
+	public NamingStyle getNamingStyle(){
+		return this.namingStyle;
+	}
 	public static final class Builder {
 		
 		private boolean keyQuoted  = true;
 		private boolean ignoreNull  = false;
 		private boolean ignoreEmpty = false;
+		private NamingStyle namingStyle = NamingStyles.RAW;
 		
 		public Builder() {
 	        super();
@@ -82,8 +93,17 @@ public class JsonSettings {
 			return this;
 		}
 
+		public NamingStyle getNamingStyle() {
+			return namingStyle;
+		}
+
+		public Builder setNamingStyle(NamingStyle namingStyle) {
+			this.namingStyle = namingStyle;
+			return this;
+		}
+
 		public JsonSettings build(){
-			return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty);
+			return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty,namingStyle);
 		}
 	}
 }

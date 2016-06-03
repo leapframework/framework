@@ -64,6 +64,7 @@ class JsonEncoderImpl implements JsonEncoder {
     		JsonWriter writer = JSON.writer(out)
     								.setIgnoreNull(settings.isIgnoreNull())
     								.setKeyQuoted(settings.isKeyQuoted())
+                                    .setNamingStyle(settings.getNamingStyle())
     								.create();
     		
     		if(value instanceof JsonStringable) {
@@ -307,7 +308,7 @@ class JsonEncoderImpl implements JsonEncoder {
     }
 
     private void encodeNamedValue(String name, Object value, JsonWriter writer) {
-        writer.key(name);
+        writer.keyUseNamingStyle(name);
         encode(name,value, writer);
     }
 }

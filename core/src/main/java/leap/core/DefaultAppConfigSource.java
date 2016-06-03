@@ -478,7 +478,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     }
                 }
             }
-
+            /*
             for(Map.Entry<String,DataSourceConfig.Builder> entry : dataSourceConfigs.entrySet()) {
                 String name = entry.getKey();
                 DataSourceConfig.Builder c = entry.getValue();
@@ -491,6 +491,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 config.dataSourceConfigs.put(name, c.build());
             }
+            */
         }
 
         protected void resolveObjectProperties(Map<String, AppProperty> properties) {
@@ -727,6 +728,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 this.hasDefaultDataSource = true;
             }
+            /* build datasource in here? */
+            Map<String, String> resolvedProperties = new ConcurrentHashMap<>(conf.getProperties());
+            loader.resolveStringProperties(resolvedProperties);
+            conf.setProperties(resolvedProperties);
+            config.dataSourceConfigs.put(name, conf.build());
         }
 
         @Override

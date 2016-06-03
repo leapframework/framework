@@ -983,9 +983,9 @@ public class Strings {
 		StringBuilder out   = new StringBuilder(string.length());
 		for (String part : parts) {
 			if (out.length() == 0) {
-				out.append(part.toLowerCase());
+				out.append(part.substring(0, 1).toLowerCase() + part.substring(1));
 			}else{
-				out.append(part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase());
+				out.append(part.substring(0, 1).toUpperCase() + part.substring(1));
 			}
 		}
 		return out.toString();
@@ -1021,7 +1021,7 @@ public class Strings {
 		String[] parts 	  = split(string,seperator);
 		StringBuilder out = new StringBuilder();
 		for (String part : parts) {
-			out.append(part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase());
+			out.append(part.substring(0, 1).toUpperCase() + part.substring(1));
 		}
 		return out.toString();
 	}

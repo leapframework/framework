@@ -15,6 +15,8 @@
  */
 package leap.web.json;
 
+import leap.lang.naming.NamingStyle;
+
 public interface JsonConfig {
 
 	boolean isDefaultSerializationKeyQuoted();
@@ -26,5 +28,7 @@ public interface JsonConfig {
 	boolean isJsonpEnabled();
 	
 	String getJsonpParameter();
-	
+
+	NamingStyle getDefaultNamingStyle();
+
 }
