@@ -28,6 +28,7 @@ import java.util.*;
 class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinitionConfigurator {
 	
 	protected final Object source;
+    protected final Object singletonLock = new Object();
 	
     protected String                   id;
     protected String                   name;
@@ -66,7 +67,11 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		this.source = source;
 	}
 
-	@Override
+    public Object getSingletonLock() {
+        return singletonLock;
+    }
+
+    @Override
 	public BeanDefinition definition() {
 		return this;
 	}

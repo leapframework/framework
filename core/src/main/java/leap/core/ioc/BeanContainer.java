@@ -971,11 +971,17 @@ public class BeanContainer implements BeanFactory {
 	protected Object doGetBean(BeanDefinitionBase bd){
 		if(bd.isSingleton()){
 			Object instance = bd.getSingletonInstance();
-			if(null != instance){
-				return instance;
-			}
-		}
-		return doCreateBean(bd);
+            if(null == instance) {
+                synchronized (bd.getSingletonLock()) {
+                    if(null == (instance = bd.getSingletonInstance())) {
+                        instance = doCreateBean(bd);
+                    }
+                }
+            }
+            return instance;
+		}else{
+            return doCreateBean(bd);
+        }
 	}
 	
 	protected Object doCreateBean(BeanDefinitionBase bd){
