@@ -2,8 +2,8 @@
 <config xmlns="http://www.leapframework.org/schema/config">
 
     <properties>
-        testKeyValue1 = 1
-        testKeyValue2=2
+        testKeyValue1 = 1#comment
+        testKeyValue2=2 #comment
 
         testKeyValue3=3
         testKeyValue4 =

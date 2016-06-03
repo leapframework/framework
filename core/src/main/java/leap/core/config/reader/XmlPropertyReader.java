@@ -195,8 +195,15 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
                 final String finalPrefix = prefix;
                 props.forEach((k,v) -> {
-                    String key = finalPrefix + k;
-                    context.putProperty(resource, key, (String)v);
+                    String key   = finalPrefix + k;
+                    String value = (String)v;
+
+                    int sharpIndex = value.indexOf('#');
+                    if(sharpIndex > 0) {
+                        value = value.substring(0,sharpIndex).trim();
+                    }
+
+                    context.putProperty(resource, key, value);
                 });
             }
         }
