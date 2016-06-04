@@ -165,6 +165,20 @@ class XmlBeanDefinitionLoader {
             readDefinitions(container,resource, ar.isDefaultOverride());
 	    }
     }
+
+    protected Class<?> forName(String className) {
+        if(null != instrumentation) {
+            instrumentation.tryInstrument(className, true);
+        }
+        return Classes.forName(className);
+    }
+
+    protected Class<?> tryForName(String className) {
+        if(null != instrumentation) {
+            instrumentation.tryInstrument(className, true);
+        }
+        return Classes.tryForName(className);
+    }
     
     public BeanDefinitionBase create(String id,boolean lazyInit, Class<?> beanClass,Object... constructorArguments){
     	return create(id, null, false, null, lazyInit, beanClass, constructorArguments);
@@ -322,7 +336,7 @@ class XmlBeanDefinitionLoader {
 		
 		return new AliasDefinition(reader.getSource(),
 								   alias,
-								   Classes.forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
+								   forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
 								   reader.getRequiredAttribute(NAME_ATTRIBUTE)
 								   );
 	}
@@ -345,12 +359,8 @@ class XmlBeanDefinitionLoader {
         boolean defaultOverride  = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, false);
 
 		if(!Strings.isEmpty(beanClassName)){
-            if(null != instrumentation) {
-                instrumentation.tryInstrument(beanClassName);
-            }
-
 			try {
-	            bean.setBeanClass(Classes.forName(beanClassName));
+	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
 				throw new BeanDefinitionException("Error resolving bean class '" + beanClassName + "' , source : " + reader.getSource(), e);
             }
@@ -373,7 +383,7 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		if(!Strings.isEmpty(typeClassName)){
-			Class<?> type = Classes.tryForName(typeClassName);
+			Class<?> type = tryForName(typeClassName);
 			
 			if(null == type){
 				throw new BeanDefinitionException("bean's type class '" + typeClassName + "' not found, source : " + reader.getSource());	
@@ -656,7 +666,7 @@ class XmlBeanDefinitionLoader {
         TypeDefinitionBase def = new TypeDefinitionBase();
         
         String   typeClassName = reader.getRequiredAttribute(TYPE_ATTRIBUTE);
-        Class<?> typeClass     = Classes.tryForName(typeClassName);
+        Class<?> typeClass     = tryForName(typeClassName);
         
         if(null == typeClass) {
             throw new BeanDefinitionException("Class '" + typeClassName + "' not found, check source : " + bean.getSource());
@@ -685,7 +695,7 @@ class XmlBeanDefinitionLoader {
             throw new BeanDefinitionException("Attribute '" + TARGET_TYPE_ATTRIBUTE + "' of element '" + REGISTER_BEAN_FACTORY_ELEMENT + "' must not be empty, source : " + reader.getSource());
         }
         
-        Class<?> targetType = Classes.tryForName(targetTypeName);
+        Class<?> targetType = tryForName(targetTypeName);
         if(null == targetType){
             throw new BeanDefinitionException("Target type '" + targetTypeName + "' not found, source : " + reader.getSource());
         }
@@ -791,7 +801,7 @@ class XmlBeanDefinitionLoader {
 						+ reader.getElementLocalName() + "' in element '" + elementName + "', source : " + reader.getSource());
 			}
 			try {
-				Class<?> c = Classes.forName(refType);
+				Class<?> c = forName(refType);
 				return beanReference(context,c,refName);
 			}catch (NestedClassNotFoundException e){
 				throw new BeanDefinitionException("Invallid class name '" + refType + "', source : " + reader.getSource(), e);
@@ -823,7 +833,7 @@ class XmlBeanDefinitionLoader {
 				return null;
 			}
 			try {
-		        Class<?> c = Classes.forName(className);
+		        Class<?> c = forName(className);
 		        return resolvedValue(c);
 	        } catch (ObjectNotFoundException e) {
 	        	throw new BeanDefinitionException("Invallid class name '" + className + "', source : " + reader.getSource(), e);
@@ -838,7 +848,7 @@ class XmlBeanDefinitionLoader {
 				return beanReference(context,id);
 			}else if(Strings.isNotEmpty(name) && Strings.isNotEmpty(type)){
 				try {
-					Class<?> c = Classes.forName(type);
+					Class<?> c = forName(type);
 					return beanReference(context,c,	name);
 				}catch (NestedClassNotFoundException e){
 					throw new BeanDefinitionException("Invallid class name '" + type + "', source : " + reader.getSource(), e);
@@ -917,7 +927,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		List<ValueDefinition> values = new ArrayList<ValueDefinition>();
+		List<ValueDefinition> values = new ArrayList<>();
 		
 		final QName elementName = reader.getElementName();
 		
@@ -941,7 +951,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		Set<ValueDefinition> values = new LinkedHashSet<ValueDefinition>();
+		Set<ValueDefinition> values = new LinkedHashSet<>();
 		
 		final QName elementName = reader.getElementName();
 		
@@ -1087,14 +1097,14 @@ class XmlBeanDefinitionLoader {
         }
 	}
 	
-	protected static Class<?> classAttribute(XmlReader reader,String name,boolean required){
+	protected Class<?> classAttribute(XmlReader reader,String name,boolean required){
 		String value = required ? reader.getRequiredAttribute(name) : reader.getAttribute(name);
 		
 		if(Strings.isEmpty(value)){
 			return null;
 		}
 		
-		Class<?> clazz = Classes.tryForName(value);
+		Class<?> clazz = tryForName(value);
 		if(null == clazz){
 			throw new BeanDefinitionException("invalid class name '" + value + "' in source : " + reader.getSource() + ", line number : " + reader.getLineNumber());
 		}

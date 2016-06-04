@@ -14,30 +14,20 @@
  * limitations under the License.
  */
 
-package leap.core.transaction;
+package leap.core.monitor;
 
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
-import leap.lang.Try;
 import org.junit.Test;
-import tested.beans.TransactionalBean;
+import tested.beans.TMonitorBean;
 
-public class TransactionTest extends AppTestBase {
+public class MethodMonitorTest extends AppTestBase {
 
-    private @Inject TransactionalBean bean;
+    private @Inject TMonitorBean bean;
 
     @Test
-    public void testInstrument() throws Exception {
-        System.out.println("");
-
-        bean.doSuccess();
-        bean.doSuccessTryFinally();
-        bean.doSuccessWithReturnValue();
-
-        Try.catchAll(() -> bean.doFailure());
-        Try.catchAll(() -> bean.doFailureTryFinally());
-        Try.catchAll(() -> bean.doFailureNested());
-        Try.catchAll(() -> bean.doFailureThrowable());
+    public void testSimple() {
+        bean.test(1, "a");
     }
 
 }

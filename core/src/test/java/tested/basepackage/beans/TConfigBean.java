@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package tested.beans;
+package tested.basepackage.beans;
 
 import leap.core.annotation.Bean;
 import leap.core.annotation.ConfigProperty;

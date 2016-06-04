@@ -1410,7 +1410,8 @@ public class BeanContainer implements BeanFactory {
 
         //skip when bean value already set.
         if (!v.getType().isPrimitive()) {
-            if (null != v.getRawValue(bean)) {
+            Object rawValue = v.getRawValue(bean);
+            if (null != rawValue && !(rawValue instanceof DummyBean)) {
                 return null;
             }
         }

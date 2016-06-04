@@ -46,7 +46,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
     private static final Type PROPAGATION_TYPE = Type.getType(TransactionDefinition.Propagation.class);
     private static final Type TRAN_DEF_TYPE    = Type.getType(SimpleTransactionDefinition.class);
 
-    private static final String MANAGER_FIELD    = "$tm";
+    private static final String MANAGER_FIELD    = "$$transactionManager";
     private static final String BEGIN_ALL        = "beginTransactionsAll";
     private static final String BEGIN_WITH       = "beginTransactionsWith";
     private static final String SET_ROLLBACK_ALL = "setRollbackAllOnly";
@@ -68,9 +68,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
-        ClassNode cn = ASM.getClassNode(cr);
-
+    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
         if(null != cn.methods) {
             boolean hasTransactionalMethods = false;
 

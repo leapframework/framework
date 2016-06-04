@@ -62,4 +62,8 @@ public interface AppInstrumentation {
      */
     boolean tryInstrument(String className);
 
+    /**
+     * Instrument the given class name if exists.
+     */
+    boolean tryInstrument(String className, boolean isBeanClass);
 }

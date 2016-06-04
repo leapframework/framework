@@ -86,7 +86,7 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
+    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
         int inheritLevels = 0;
         boolean isModel   = false;
 

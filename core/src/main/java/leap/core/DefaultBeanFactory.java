@@ -55,8 +55,8 @@ public class DefaultBeanFactory implements BeanFactory {
         AppResources resources = AppResources.get(appContext.getConfig());
 
 		this.beanContainer.setAppContext(appContext);
-		this.beanContainer.loadFromClasses(config.getResources().searchClasses())
-                          .loadFromResources(resources.search("beans"))
+		this.beanContainer.loadFromResources(resources.search("beans"))
+                          .loadFromClasses(config.getResources().searchClasses())
 						  .init()
 						  .registerShutdownHook();
 		return this;

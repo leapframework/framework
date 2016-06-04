@@ -56,4 +56,7 @@
         <property name="defaultConnectTimeout" value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
         <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>
     </bean>
+
+    <!-- monitor -->
+    <bean type="leap.core.monitor.MonitorProvider" class="leap.core.monitor.SimpleMonitorProvider" primary="true"/>
 </beans>
