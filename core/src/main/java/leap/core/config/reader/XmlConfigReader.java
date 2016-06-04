@@ -80,6 +80,11 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
                     break;
                 }
+
+                if(reader.isStartElement(PROPERTIES_ELEMENT)) {
+                    //ignore the properties config file.
+                    return;
+                }
             }
 
             if(!foundValidRootElement){

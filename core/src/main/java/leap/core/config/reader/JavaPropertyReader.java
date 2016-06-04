@@ -33,28 +33,24 @@ public class JavaPropertyReader implements AppPropertyReader {
            Strings.endsWithIgnoreCase(filename,".properties.xml")) {
 
             Props.load(resource).forEach(
-
-                    (key, value) -> {
-
-                        checkDuplicateProperty(context, resource, (String)key);
-
-                        context.putProperty(resource, (String)key , (String)value);
-
-                    }
-
+                (key, value) -> putProperty(context, resource, (String)key, (String)value)
             );
 
             return true;
-
         }
 
         return false;
     }
-
 
     protected void checkDuplicateProperty(AppPropertyContext context, Resource resource, String name) {
         if(!context.isDefaultOverride() && context.hasProperty(name)) {
             throw new AppConfigException("Found duplicated property '" + name + "', check config : " + resource);
         }
     }
+
+    protected void putProperty(AppPropertyContext context, Resource resource, String key, String value) {
+        checkDuplicateProperty(context, resource, key);
+        context.putProperty(resource, key ,value);
+    }
+
 }

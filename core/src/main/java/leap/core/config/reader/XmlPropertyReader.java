@@ -72,6 +72,14 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
                     break;
                 }
+
+                if(reader.isStartElement(PROPERTIES_ELEMENT)) {
+                    foundValidRootElement = true;
+
+                    readProperties(context, resource, reader);
+
+                    break;
+                }
             }
 
             if(!foundValidRootElement){
