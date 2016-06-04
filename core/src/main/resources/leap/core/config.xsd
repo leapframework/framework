@@ -192,6 +192,7 @@
             <xsd:extension base="xsd:string">
                 <xsd:sequence>
                     <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
                 </xsd:sequence>
                 <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
                 <xsd:attribute name="prefix" type="xsd:string" use="optional"/>

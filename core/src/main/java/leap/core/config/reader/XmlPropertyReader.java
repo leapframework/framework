@@ -194,6 +194,17 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 readProperty(context, resource, reader, prefix);
                 continue;
             }
+
+            if(reader.isStartElement()) {
+                hasElement = true;
+
+                String name  = reader.getElementLocalName();
+                String value = reader.getElementTextAndEnd();
+
+                String key = prefix + name;
+                putProperty(context, resource, key, value, context.isDefaultOverride());
+                continue;
+            }
         }
 
         if(!hasElement) {
@@ -211,10 +222,17 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                         value = value.substring(0,sharpIndex).trim();
                     }
 
-                    context.putProperty(resource, key, value);
+                    putProperty(context, resource, key, value, context.isDefaultOverride());
                 });
             }
         }
+    }
+
+    protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
+        if(!override && context.hasProperty(key)) {
+            throw new AppConfigException("Found duplicated property '" + key + "' in resource : " + resource.getClasspath());
+        }
+        context.putProperty(resource, key, value);
     }
 
     protected void readProperty(AppPropertyContext context, Resource resource, XmlReader reader, String prefix) {
@@ -233,12 +251,8 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             reader.nextToEndElement(PROPERTY_ELEMENT);
         }
 
-        if(!override && context.hasProperty(name)){
-            throw new AppConfigException("Found duplicated property '" + name + "' in resource : " + resource.getClasspath());
-        }
-
         String key = prefix + name;
-        context.putProperty(resource, key, value);
+        putProperty(context, resource, key, value, override);
     }
 
     protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader){

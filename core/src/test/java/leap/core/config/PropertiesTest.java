@@ -69,4 +69,12 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("a", config.getProperty("props_root.prop1"));
         assertEquals("b", config.getProperty("props_root.prop2"));
     }
+
+    @Test
+    public void testXmlElementProperties() {
+        assertEquals("a", config.getProperty("testElementProps.prop1"));
+        assertEquals("b", config.getProperty("testElementProps.prop2"));
+        assertEquals("c", config.getProperty("testElementProps.prop3"));
+        assertEquals("d", config.getProperty("testElementProps.prop4"));
+    }
 }
