@@ -27,7 +27,6 @@ import leap.lang.Comparators;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
-import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
@@ -82,12 +81,13 @@ public class BeanContainer implements BeanFactory {
     protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
     protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
 
-    private AppConfig       config;
-    private AppContext      appContext;
-    private BeanFactory     beanFactory;
-    private boolean         initializing;
-    private boolean         containerInited;
-    private boolean         appInited;
+    private AppConfig        config;
+    private AppContext       appContext;
+    private BeanFactory      beanFactory;
+    private BeanConfigurator beanConfigurator;
+    private boolean          initializing;
+    private boolean          containerInited;
+    private boolean          appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -103,6 +103,7 @@ public class BeanContainer implements BeanFactory {
 
 	public BeanContainer(AppConfig config){
         this.config                         = config;
+        this.beanConfigurator               = new BeanConfigurator(config);
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
 		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
@@ -1129,213 +1130,10 @@ public class BeanContainer implements BeanFactory {
 	protected void doBeanConfigure(BeanDefinitionBase bd, Object bean) throws Throwable {
 		if(null != bd && bd.isConfigurable()) {
 			BeanType bt = null == bd ? BeanType.of(bean.getClass()) : bd.getBeanClassType();
-			
-			String keyPrefix = bd.getConfigurationPrefix();
-			if(!Strings.isEmpty(keyPrefix)) {
-				char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
-				if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
-					keyPrefix = keyPrefix + ".";
-				}
-			}
 
-            Set<ReflectField> done = new HashSet<>();
-			
-			for(BeanProperty bp : bt.getProperties()){
-                ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
-                if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
-                    continue;
-                }
-
-                if(bp.isWritable()) {
-                    doBeanConfigure(bean, bp, keyPrefix, a);
-                }else{
-                    ReflectField rf = bp.getReflectField();
-                    if(null == rf) {
-                        throw new BeanCreationException("The property '" + bp.getName() + "' in class '" + bt.getReflectClass() + "' is not writable!");
-                    }
-                    doBeanConfigure(bean, rf, keyPrefix, a);
-                }
-
-                if(null != bp.getReflectField()) {
-                    done.add(bp.getReflectField());
-                }
-			}
-
-            for(ReflectField field : bt.getReflectClass().getFields()) {
-                if(done.contains(field)) {
-                    continue;
-                }
-
-                if(Property.class.isAssignableFrom(field.getType())) {
-                    doBeanConfigure(bean, field, keyPrefix, field.getAnnotation(ConfigProperty.class));
-                    continue;
-                }
-
-                ConfigProperty a = field.getAnnotation(ConfigProperty.class);
-                if(null == a) {
-                    continue;
-                }
-
-                doBeanConfigure(bean, field, keyPrefix, a);
-            }
-
-            done.clear();
+            beanConfigurator.configure(bean, bt, bd.getConfigurationPrefix());
 		}
 	}
-
-
-    protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
-
-        String defaultValue = null == a ? null : a.defaultValue();
-
-        if(null != a) {
-            String[] keys = a.key();
-            if(keys.length == 0) {
-                keys = a.value();
-            }
-
-            if(keys.length > 0) {
-                for(String key : keys) {
-                    if(doBeanConfigureByKey(bean, v, keyPrefix + key, defaultValue)) {
-                        break;
-                    }
-                }
-                return;
-            }
-        }
-
-        if(doBeanConfigureByKey(bean, v, keyPrefix + v.getName(), defaultValue)) {
-            return;
-        }
-
-        if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()), defaultValue)) {
-            return;
-        }
-    }
-
-	protected boolean doBeanConfigureByKey(Object bean, ReflectValued v, String key, String defaultValue) {
-        if(Property.class.isAssignableFrom(v.getType())) {
-            doBeanConfigureDynaProperty(bean, v, key, defaultValue);
-            return true;
-        }
-
-        if(v.getType().isArray()) {
-            String[] array = getAppConfig().getArrayProperty(key);
-
-            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
-                array = Converts.convert(defaultValue, String[].class);
-            }
-
-            if(null != array) {
-                v.setValue(bean, array);
-                return true;
-            }
-        }
-
-        if(List.class.equals(v.getType())) {
-            String[] array = getAppConfig().getArrayProperty(key);
-
-            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
-                array = Converts.convert(defaultValue, String[].class);
-            }
-
-            if(null != array) {
-                List<String> list = new ArrayList<>();
-                Collections2.addAll(list, array);
-                v.setValue(bean, list);
-                return true;
-            }
-        }
-
-        if(Set.class.equals(v.getType())) {
-            String[] array = getAppConfig().getArrayProperty(key);
-
-            if((null == array || array.length == 0) && !Strings.isEmpty(defaultValue)) {
-                array = Converts.convert(defaultValue, String[].class);
-            }
-
-            if(null != array) {
-                Set<String> set = new LinkedHashSet<>();
-                Collections2.addAll(set, array);
-                v.setValue(bean, set);
-                return true;
-            }
-        }
-
-        String prop = getAppConfig().getProperty(key);
-
-        if(Strings.isEmpty(prop) && !Strings.isEmpty(defaultValue)) {
-            prop = defaultValue;
-        }
-
-        if(null != prop) {
-            if(prop.length() > 0) {
-                try {
-                    Object value;
-                    if(Classes.isSimpleValueType(v.getType())) {
-                        value = Converts.convert(prop, v.getType(), v.getGenericType());
-                    }else{
-                        value = JSON.decode(prop, v.getType());
-                    }
-                    v.setValue(bean, value);
-                } catch (Exception e) {
-                    throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
-                            "' using config key '" + key + "', " + e.getMessage(), e);
-                }
-            }
-			return true;
-		}
-
-		return false;
-	}
-
-    protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key, String defaultValue) {
-        AppConfig config = getAppConfig();
-
-        Class<?> type  = v.getType();
-        Property value = (Property)v.getValue(bean);
-
-        if(null != value) {
-            config.bindDynaProperty(key, type, value);
-            return;
-        }
-
-        if(type.equals(StringProperty.class)) {
-
-            value = config.getDynaProperty(key);
-
-        }else if(type.equals(IntegerProperty.class)) {
-
-            value = config.getDynaIntegerProperty(key);
-
-        }else if(type.equals(LongProperty.class)) {
-
-            value = config.getDynaLongProperty(key);
-
-        }else if(type.equals(BooleanProperty.class)) {
-
-            value = config.getDynaBooleanProperty(key);
-
-        }else if(type.equals(DoubleProperty.class)) {
-
-            value = config.getDynaDoubleProperty(key);
-
-        }else if(type.equals(Property.class)){
-
-            Class<?> valueType = Types.getActualTypeArgument(v.getGenericType());
-
-            value = config.getDynaProperty(key, valueType);
-
-        }else{
-            throw new IllegalStateException("Not supported property type '" + type + "'");
-        }
-
-        if(null != value) {
-            v.setValue(bean, value);
-        }else if(!Strings.isEmpty(defaultValue)) {
-            v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
-        }
-    }
 
     protected void doBeanInjection(BeanDefinitionBase bd,Object bean) throws Throwable {
         BeanFactory factory = null != beanFactory ? beanFactory : this;

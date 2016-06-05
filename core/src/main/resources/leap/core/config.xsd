@@ -232,6 +232,13 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="monitor">
+        <xsd:complexType>
+            <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="method-threshold" type="xsd:integer" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="permissions">
         <xsd:complexType>
             <xsd:sequence>
