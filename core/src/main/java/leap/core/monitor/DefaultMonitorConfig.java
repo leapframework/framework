@@ -16,11 +16,31 @@
 
 package leap.core.monitor;
 
-public class DefaultMonitorConfig implements MonitorConfig {
+import leap.core.annotation.Configurable;
+import leap.core.ioc.ConfigBean;
+
+@Configurable(prefix = "app.monitor")
+public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
+
+    protected boolean enabled;
+    protected int     methodThreshold = DEFAULT_METHOD_THRESHOLD;
 
     @Override
     public boolean isEnabled() {
-        return false;
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    @Override
+    public int getMethodThreshold() {
+        return methodThreshold;
+    }
+
+    public void setMethodThreshold(int methodThreshold) {
+        this.methodThreshold = methodThreshold;
     }
 
 }

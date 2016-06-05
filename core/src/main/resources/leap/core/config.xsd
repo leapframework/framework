@@ -13,6 +13,7 @@
                 <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-charset" minOccurs="0" maxOccurs="1"/>
 			    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="monitor"/>
                     <xsd:element ref="resources"/>
                     <xsd:element ref="import"/>
                     <xsd:element ref="properties"/>

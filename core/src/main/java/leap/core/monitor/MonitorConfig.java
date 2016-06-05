@@ -18,7 +18,15 @@ package leap.core.monitor;
 
 public interface MonitorConfig {
 
+    int DEFAULT_METHOD_THRESHOLD = 50;
+
+    /**
+     * Returns true if monitoring is enabled.
+     */
     boolean isEnabled();
 
-
+    /**
+     * Returns the threshold of milli-seconds for reporting method execution times.
+     */
+    int getMethodThreshold();
 }

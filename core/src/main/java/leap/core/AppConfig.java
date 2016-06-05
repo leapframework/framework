@@ -131,7 +131,12 @@ public interface AppConfig extends PropertyGetter {
 	 * @see AppConfigProcessor
 	 */
 	<T> T getExtension(Class<T> type);
-	
+
+    /**
+     * Returns all the config extensions.
+     */
+    Map<Class<?>, Object> getExtensions();
+
 	/**
 	 * Removes and returns a config extension object for the given type or <code>null</code> if no extension.
 	 * 

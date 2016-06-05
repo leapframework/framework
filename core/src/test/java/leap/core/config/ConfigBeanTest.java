@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package tested.beans;
+package leap.core.config;
 
-import leap.core.annotation.Monitored;
-import leap.lang.Threads;
+import leap.core.annotation.Inject;
+import leap.core.junit.AppTestBase;
+import leap.core.monitor.MonitorConfig;
+import org.junit.Test;
 
-public class TMonitorBean {
+public class ConfigBeanTest extends AppTestBase {
 
-    public void test(int i, String s) {
-        Threads.sleep(2);
-        test1();
-    }
+    protected @Inject MonitorConfig mc;
 
-    @Monitored
-    protected void test1() {
-        Threads.sleep(2);
+    @Test
+    public void testMonitorConfigBean() {
+        assertNotNull(mc);
     }
 
 }

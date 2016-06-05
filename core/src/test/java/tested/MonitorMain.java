@@ -18,6 +18,8 @@ package tested;
 
 import leap.lang.time.StopWatch;
 
+import java.util.Stack;
+
 public class MonitorMain {
 
     public static void main(String[] args) {
@@ -57,7 +59,19 @@ public class MonitorMain {
     }
 
     private static void doSomethingWithMonitor() {
-        Monitor monitor = new Monitor("className","methodName", new Object[]{1,2,3,4});
+        Monitor monitor = new Monitor("className","methodName1", new Object[]{1,2,3,4});
+        try{
+            monitor.start();
+
+            doSomethingWithMonitor1();
+
+        }finally {
+            monitor.stop();
+        }
+    }
+
+    private static void doSomethingWithMonitor1() {
+        Monitor monitor = new Monitor("className","methodName2", new Object[]{1,2,3,4});
         try{
             monitor.start();
 
@@ -74,12 +88,15 @@ public class MonitorMain {
 
     private static class Monitor {
 
-        private final String  className;
+        private static final ThreadLocal<Stack<Monitor>> local = new ThreadLocal<>();
+
+        private final String   className;
         private final String   methodName;
         private final Object[] args;
 
         private long start;
         private long time;
+        private boolean root;
 
         public Monitor(String className, String methodName, Object[] args) {
             this.className  = className;
@@ -89,6 +106,14 @@ public class MonitorMain {
 
         public void start() {
             start = System.currentTimeMillis();
+
+            Stack<Monitor> stack = local.get();
+            if(null == stack) {
+                stack = new Stack<>();
+                local.set(stack);
+                this.root = true;
+            }
+            stack.add(this);
         }
 
         public void error(Throwable e) {
@@ -97,6 +122,18 @@ public class MonitorMain {
 
         public void stop() {
             time = System.currentTimeMillis() - start;
+
+            Stack<Monitor> stack = local.get();
+            if(null != stack) {
+                if(time < 50) {
+                    stack.pop();
+                }
+
+                if(root) {
+                    stack.clear();
+                    local.set(null);
+                }
+            }
         }
     }
 

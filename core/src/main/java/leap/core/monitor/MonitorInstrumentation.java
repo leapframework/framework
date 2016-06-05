@@ -16,6 +16,7 @@
 
 package leap.core.monitor;
 
+import leap.core.AppConfig;
 import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
 import leap.core.annotation.Monitored;
@@ -31,6 +32,7 @@ import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
+import leap.lang.resource.ResourceSet;
 
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
@@ -63,6 +65,21 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
                             .getMethod(START_MONITOR,String.class,String.class));
 
         });
+    }
+
+    private MonitorConfig mc;
+
+    @Override
+    public void init(AppConfig config) {
+        this.mc = config.getExtension(MonitorConfig.class);
+    }
+
+    @Override
+    protected boolean preInstrument(AppInstrumentContext context, ResourceSet rs) {
+        if(null == mc || !mc.isEnabled()) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -260,7 +277,7 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
 
             //Call startMethodMonitor
             mv.visitLdcInsn(type.getClassName()); //classname
-            mv.visitLdcInsn(mn.desc);             //methodDesc
+            mv.visitLdcInsn(mn.name);             //methodDesc
 
             if(argumentTypes.length > 0) {
                 loadArgArray();

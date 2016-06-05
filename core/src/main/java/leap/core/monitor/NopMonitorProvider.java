@@ -22,7 +22,7 @@ public class NopMonitorProvider implements MonitorProvider,DummyBean {
 
     public static final MonitorProvider INSTANCE = new NopMonitorProvider();
 
-    private final MethodMonitor mm = new NopMethodMonitor();
+    final MethodMonitor mm = new NopMethodMonitor();
 
     private NopMonitorProvider() {
 
@@ -38,7 +38,7 @@ public class NopMonitorProvider implements MonitorProvider,DummyBean {
         return mm;
     }
 
-    private static final class NopMethodMonitor implements MethodMonitor {
+    static final class NopMethodMonitor implements MethodMonitor {
         @Override
         public void error(Throwable e) {
         }

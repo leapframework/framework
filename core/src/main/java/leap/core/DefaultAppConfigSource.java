@@ -18,6 +18,9 @@ package leap.core;
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.instrument.AppInstrumentation;
+import leap.core.ioc.ConfigBean;
+import leap.core.monitor.DefaultMonitorConfig;
+import leap.core.monitor.MonitorConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
@@ -99,6 +102,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
     @Override
     public void registerBeans(AppConfig config, BeanFactory factory) {
         factory.setPrimaryBean(AppConfig.class, config);
+
+        for(Map.Entry<Class<?>, Object> extension : config.getExtensions().entrySet()) {
+
+            Class<?> type = extension.getKey();
+            Object   inst = extension.getValue();
+
+            if(inst instanceof ConfigBean) {
+                factory.setPrimaryBean(type, factory.inject(inst));
+            }
+        }
     }
 
     private Map<String, AppProperty> initProperties(Map<String, String> externalProperties) {
@@ -234,7 +247,14 @@ public class DefaultAppConfigSource implements AppConfigSource {
             this.propertyLoaders = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
         }
 
+        protected void init() {
+            //todo : hard code
+            config.extensions.put(MonitorConfig.class, new DefaultMonitorConfig());
+        }
+
         protected DefaultAppConfig load() {
+            init();
+
             //load local properties
             loadLocalProperties(new ConfigContext(this, false, true));
 

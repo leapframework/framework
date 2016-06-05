@@ -51,6 +51,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String GRANT_ELEMENT               = "grant";
     protected static final String DENY_ELEMENT                = "deny";
     protected static final String RESOURCES_ELEMENT           = "resources";
+    protected static final String MONITOR_ELEMENT             = "monitor";
     protected static final String RESOURCE_ATTRIBUTE          = "resource";
     protected static final String IF_PROFILE_ATTRIBUTE        = "if-profile";
     protected static final String OVERRIDE_ATTRIBUTE          = "override";
@@ -66,6 +67,8 @@ public abstract class XmlConfigReaderBase {
     protected static final String LOCATION_ATTRIBUTE          = "location";
     protected static final String IF_ATTRIBUTE                = "if";
     protected static final String SORT_ORDER_ATTRIBUTE        = "sort-order";
+    protected static final String ENABLED_ATTRIBUTE           = "enabled";
+    protected static final String METHOD_THRESHOLD_ATTRIBUTE  = "method-threshold";
 
     protected boolean importResource(AppConfigContextBase context, Resource parent, XmlReader reader) {
         if(reader.isStartElement(IMPORT_ELEMENT)){

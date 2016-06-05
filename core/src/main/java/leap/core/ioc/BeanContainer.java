@@ -112,11 +112,11 @@ public class BeanContainer implements BeanFactory {
 	public AppContext getAppContext() {
 		return appContext;
 	}
-	
-	public AppConfig getAppConfig(){
-		return appContext == null ? null : appContext.getConfig();
-	}
 
+    public AppConfig getAppConfig() {
+        return config;
+    }
+	
 	public void setAppContext(AppContext appContext){
 		this.appContext  = appContext;
 		this.beanFactory = appContext.getBeanFactory();
@@ -126,6 +126,7 @@ public class BeanContainer implements BeanFactory {
         log.debug("Load beans from {} classes",classes.length);
 		ensureContainerNotInited();
 		this.annotationBeanDefinitionLoader.load(this,classes);
+        instrumentation.complete();
 		return this;
 	}
 
@@ -259,7 +260,6 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-        AppConfig config = getAppConfig();
         if(config instanceof AppConfigBase) {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
@@ -548,9 +548,8 @@ public class BeanContainer implements BeanFactory {
 		
 		return null;
     }
-    
-	@Override
-    public <T> void setPrimaryBean(Class<T> type, T bean) {
+
+    public void setPrimaryBean(Class<?> type, Object bean) {
 		Args.notNull(type,"type");
 		Args.notNull(bean,"bean");
 		primaryBeans.put(type, bean);

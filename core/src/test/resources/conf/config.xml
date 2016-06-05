@@ -9,4 +9,5 @@
 
     <property name="testOrder.prop3" value="prop3_override" override="true"/>
 
+    <monitor enabled="true" method-threshold="1"/>
 </config>

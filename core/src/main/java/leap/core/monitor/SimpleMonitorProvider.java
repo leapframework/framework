@@ -16,9 +16,12 @@
 
 package leap.core.monitor;
 
+import leap.core.annotation.Inject;
 import leap.lang.Arrays2;
 
 public class SimpleMonitorProvider implements MonitorProvider {
+
+    protected @Inject MonitorConfig config;
 
     @Override
     public MethodMonitor startMethodMonitor(String className, String methodDesc) {
@@ -27,7 +30,7 @@ public class SimpleMonitorProvider implements MonitorProvider {
 
     @Override
     public MethodMonitor startMethodMonitor(String className, String methodDesc, Object[] args) {
-        return new SimpleMethodMonitor(className, methodDesc, args);
+        return new SimpleMethodMonitor(this, className, methodDesc, args);
     }
 
 }

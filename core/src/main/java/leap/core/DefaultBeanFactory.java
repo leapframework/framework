@@ -288,12 +288,12 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 	
 	@Override
-    public <T> void setPrimaryBean(Class<T> type, T bean) {
-		if(null != externalFactory && externalFactory.tryGetBean(type) != null){
-			externalFactory.setPrimaryBean(type, bean);
-		}else{
-			beanContainer.setPrimaryBean(type, bean);
-		}
+    public void setPrimaryBean(Class<?> type, Object bean) {
+        if(!type.isAssignableFrom(bean.getClass())) {
+            throw new IllegalStateException("The bean '" + bean + "' must be instance of the type '" + type + "'");
+        }
+
+        beanContainer.setPrimaryBean(type, bean);
     }
 
 	@Override

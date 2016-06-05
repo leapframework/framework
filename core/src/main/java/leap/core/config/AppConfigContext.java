@@ -47,6 +47,18 @@ public interface AppConfigContext extends AppConfigContextBase {
 	}
 
     /**
+     * Returns the config extension of creates a new one if not exists.
+     */
+    default <T> T getOrCreateExtension(Class<? super T> type, Class<T> instanceType) {
+        T e = (T)getExtension(type);
+        if(null == e) {
+            e = Reflection.newInstance(instanceType);
+            setExtension(type, e);
+        }
+        return e;
+    }
+
+    /**
      * Sets the config extension.
      */
 	<T> void setExtension(T extension);

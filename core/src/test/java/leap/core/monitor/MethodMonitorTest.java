@@ -27,7 +27,9 @@ public class MethodMonitorTest extends AppTestBase {
 
     @Test
     public void testSimple() {
-        bean.test(1, "a");
+        for(int i=0;i<10;i++) {
+            bean.test(1, "a");
+        }
     }
 
 }

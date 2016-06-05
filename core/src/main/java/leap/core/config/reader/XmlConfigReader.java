@@ -20,6 +20,8 @@ import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.AppConfigReader;
+import leap.core.monitor.DefaultMonitorConfig;
+import leap.core.monitor.MonitorConfig;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.Classes;
@@ -146,6 +148,11 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                 readPermissions(context, resource, reader);
                 continue;
             }
+
+            if(reader.isStartElement(MONITOR_ELEMENT)) {
+                readMonitor(context, resource, reader);
+                continue;
+            }
         }
     }
 
@@ -220,6 +227,23 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         context.setDataSourceConfig(dataSourceName, conf);
     }
     */
+
+    private void readMonitor(AppConfigContext context, Resource resource, XmlReader reader) {
+        DefaultMonitorConfig config = context.getOrCreateExtension(MonitorConfig.class, DefaultMonitorConfig.class);
+
+        Boolean enabled   = reader.getBooleanAttribute(ENABLED_ATTRIBUTE);
+        Integer threshold = reader.getIntegerAttribute(METHOD_THRESHOLD_ATTRIBUTE);
+
+        if(null != enabled) {
+            config.setEnabled(enabled);
+        }
+
+        if(null != threshold) {
+            config.setMethodThreshold(threshold);
+        }
+
+        reader.nextToEndElement();
+    }
 
     private void readPermissions(AppConfigContext context,Resource resource,XmlReader reader){
         if(!matchProfile(context.getProfile(), reader)){

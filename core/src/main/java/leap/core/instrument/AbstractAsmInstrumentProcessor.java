@@ -45,7 +45,9 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
 
         final AtomicInteger counter = new AtomicInteger();
 
-        preInstrument(context, rs);
+        if(!preInstrument(context, rs)){
+            return;
+        }
 
         rs.process((resource) -> {
             if(resource.exists()){
@@ -91,8 +93,8 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         postInstrument(context, rs);
     }
 
-    protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {
-
+    protected boolean preInstrument(AppInstrumentContext context, ResourceSet rs) {
+        return true;
     }
 
     protected void postInstrument(AppInstrumentContext context, ResourceSet rs) {
