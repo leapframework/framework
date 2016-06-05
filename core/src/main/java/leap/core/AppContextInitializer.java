@@ -19,7 +19,6 @@ import leap.core.sys.DefaultSysSecurity;
 import leap.core.sys.SysContext;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
-import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -65,14 +64,14 @@ public class AppContextInitializer {
 			
 			log.debug("Starting standalone app...");
 			
-			config = loadDefaultAppConfig(attrs, null, null);
+			config = configSource.loadConfig(null, null);
 
 			initialAppConfig.set(config);
 			
 			DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
 			
-			//register bean 
-			factory.setPrimaryBean(AppConfig.class, config);
+			//register beans
+			configSource.registerBeans(config, factory);
 			
 			AppContext context = new AppContext(attrs.map(), config, factory, null);
 			
@@ -128,14 +127,14 @@ public class AppContextInitializer {
 			
 			//log.info("Initializing app context");
 			
-			config = loadDefaultAppConfig(attrs, externalContext, initProperties);
+			config = configSource.loadConfig(externalContext, initProperties);
 
 			initialAppConfig.set(config);
 			
 			BeanFactory factory = beanFactoryCreator.apply(config);
 			
 			//register bean
-			factory.setPrimaryBean(AppConfig.class, config);
+			configSource.registerBeans(config, factory);
 			
 			AppContext context = new AppContext(attrs.map(),config, factory, externalContext);
 			
@@ -155,10 +154,6 @@ public class AppContextInitializer {
                 AppResources.destroy(config);
             }
 		}
-	}
-	
-	protected static AppConfig loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
-        return configSource.loadConfiguration(externalContext, initProperties);
 	}
 	
 	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){

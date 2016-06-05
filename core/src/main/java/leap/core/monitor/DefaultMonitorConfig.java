@@ -14,19 +14,13 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.monitor;
 
-import java.util.Map;
+public class DefaultMonitorConfig implements MonitorConfig {
 
-public interface AppConfigSource {
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
 
-    /**
-     * Loads the configuration.
-     */
-    AppConfig loadConfig(Object externalContext, Map<String,String> externalProperties);
-
-    /**
-     * Init configuration beans.
-     */
-    void registerBeans(AppConfig config, BeanFactory factory);
 }

@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-package leap.core;
+package leap.core.monitor;
 
-import java.util.Map;
+public interface MonitorConfig {
 
-public interface AppConfigSource {
+    boolean isEnabled();
 
-    /**
-     * Loads the configuration.
-     */
-    AppConfig loadConfig(Object externalContext, Map<String,String> externalProperties);
 
-    /**
-     * Init configuration beans.
-     */
-    void registerBeans(AppConfig config, BeanFactory factory);
 }

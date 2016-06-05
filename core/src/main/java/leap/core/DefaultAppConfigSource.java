@@ -68,7 +68,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
     protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
 
     @Override
-    public AppConfig loadConfiguration(Object externalContext, Map<String, String> externalProperties) {
+    public AppConfig loadConfig(Object externalContext, Map<String, String> externalProperties) {
         if(null == externalProperties) {
             externalProperties = new LinkedHashMap<>();
         }
@@ -94,6 +94,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         instrumentClasses(config);
 
         return config;
+    }
+
+    @Override
+    public void registerBeans(AppConfig config, BeanFactory factory) {
+        factory.setPrimaryBean(AppConfig.class, config);
     }
 
     private Map<String, AppProperty> initProperties(Map<String, String> externalProperties) {
