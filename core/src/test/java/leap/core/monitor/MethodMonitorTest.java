@@ -18,6 +18,7 @@ package leap.core.monitor;
 
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
+import leap.lang.Try;
 import org.junit.Test;
 import tested.beans.TMonitorBean;
 
@@ -28,7 +29,7 @@ public class MethodMonitorTest extends AppTestBase {
     @Test
     public void testSimple() {
         for(int i=0;i<10;i++) {
-            bean.test(1, "a");
+            Try.catchAll(() -> bean.test(1, "a"));
         }
     }
 

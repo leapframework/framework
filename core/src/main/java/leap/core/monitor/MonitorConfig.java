@@ -26,6 +26,11 @@ public interface MonitorConfig {
     boolean isEnabled();
 
     /**
+     * Returns true if report the error.
+     */
+    boolean isReportError();
+
+    /**
      * Returns the threshold of milli-seconds for reporting method execution times.
      */
     int getMethodThreshold();

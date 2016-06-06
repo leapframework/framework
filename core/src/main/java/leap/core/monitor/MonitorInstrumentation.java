@@ -252,9 +252,15 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
         @Override
         public void visitMaxs(int maxStack, int maxLocals) {
             visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
+
             visitLabel(finallyLabel);
-            notifyMonitorError();
+
+            int errLocal = newLocal(Type.getType(Throwable.class));
+            storeLocal(errLocal);
+
+            notifyMonitorError(errLocal);
             exitMonitor();
+            loadLocal(errLocal);
             visitInsn(Opcodes.ATHROW);
 
             super.visitMaxs(maxStack, maxLocals);
@@ -291,12 +297,13 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
             storeLocal(monitorLocal);
         }
 
-        protected void notifyMonitorError() {
+        protected void notifyMonitorError(int errLocal) {
             loadLocal(monitorLocal);
+            loadLocal(errLocal);
             mv.visitMethodInsn(INVOKEINTERFACE,
                     MONITOR_TYPE.getInternalName(),
                     ERROR,
-                    "()V", true);
+                    "(Ljava/lang/Throwable;)V", true);
         }
 
         protected void exitMonitor() {

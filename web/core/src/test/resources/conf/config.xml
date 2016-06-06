@@ -19,6 +19,10 @@
         </web:errors>
     </web:mvc>
 
+    <!-- check class loading problem
+    <monitor enabled="true"/>
+    -->
+
     <web:assets>
         <web:folder location="${java.io.tmpdir}/upload" path-prefix="/upload"/>
     </web:assets>

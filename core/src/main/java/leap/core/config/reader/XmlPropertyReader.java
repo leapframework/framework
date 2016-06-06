@@ -29,6 +29,7 @@ import leap.lang.el.spel.SPEL;
 import leap.lang.expression.Expression;
 import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
+import leap.lang.logging.LogUtils;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
@@ -243,7 +244,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
     protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
         if(!override && context.hasProperty(key)) {
-            throw new AppConfigException("Found duplicated property '" + key + "' in resource : " + resource.getClasspath());
+            throw new AppConfigException("Found duplicate property '" + key + "' in resource : " + LogUtils.getUrl(resource));
         }
         context.putProperty(resource, key, value);
     }
@@ -275,20 +276,8 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             return;
         }
 
-        //String ifExpression = reader.resolveAttribute(IF_ATTRIBUTE);
         String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
         int    sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
-
-        /*
-        Function<Map<String,String>, Boolean> enabled = null;
-        if(!Strings.isEmpty(ifExpression)) {
-            Expression expression = SPEL.createExpression(parseContext, ifExpression);
-            enabled = (props) -> {
-                Map<String,Object> vars = New.hashMap("properties", props);
-                return EL.test(expression.getValue(vars), true);
-            };
-        }
-        */
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
 

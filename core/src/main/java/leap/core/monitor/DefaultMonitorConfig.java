@@ -23,6 +23,7 @@ import leap.core.ioc.ConfigBean;
 public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
 
     protected boolean enabled;
+    protected boolean reportError;
     protected int     methodThreshold = DEFAULT_METHOD_THRESHOLD;
 
     @Override
@@ -32,6 +33,15 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    @Override
+    public boolean isReportError() {
+        return reportError;
+    }
+
+    public void setReportError(boolean reportError) {
+        this.reportError = reportError;
     }
 
     @Override

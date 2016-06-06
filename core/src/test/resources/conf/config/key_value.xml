@@ -5,7 +5,7 @@
         testKeyValue1 = 1#comment
         testKeyValue2=2 #comment
 
-        testKeyValue3=3
+        testKeyValue3=3<!--comment-->
         testKeyValue4 =
         #testKeyValue5 = 5
     </properties>
@@ -14,6 +14,8 @@
 
         #comment test
         prop1=1
+
+        <!-- comment -->
         prop2=2
 
     </properties>

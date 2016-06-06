@@ -30,10 +30,10 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     private static final int MAX_DEPTH = 10;
 
-    private final SimpleMonitorProvider provider;
-    private final String                className;
-    private final String                methodDesc;
-    private final Object[]              args;
+    private final MonitorConfig config;
+    private final String        className;
+    private final String        methodDesc;
+    private final Object[]      args;
 
     private List<SimpleMethodMonitor> stack;
     private boolean   root;
@@ -42,7 +42,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
     private Throwable error;
 
     public SimpleMethodMonitor(SimpleMonitorProvider provider, String className, String methodDesc, Object[] args) {
-        this.provider   = provider;
+        this.config     = provider.config;
         this.className  = className;
         this.methodDesc = methodDesc;
         this.args       = args;
@@ -64,8 +64,11 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     @Override
     public void error(Throwable e) {
-        //todo : log error?
         this.error = e;
+
+        if(config.isReportError() && log.isInfoEnabled()) {
+            log.error("Report error at method : {}.{}", className, methodDesc, e);
+        }
     }
 
     @Override
@@ -75,7 +78,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
             if(root) {
 
-                if(duration >= provider.config.getMethodThreshold()) {
+                if(duration >= config.getMethodThreshold()) {
                     logExecutions();
                 }
 
@@ -95,7 +98,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
         int len = Math.min(stack.size(), MAX_DEPTH);
 
-        final int threshold = provider.config.getMethodThreshold();
+        final int threshold = config.getMethodThreshold();
         for(int i=0;i<len;i++) {
             SimpleMethodMonitor monitor = stack.get(i);
 

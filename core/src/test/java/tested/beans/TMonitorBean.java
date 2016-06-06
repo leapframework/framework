@@ -29,6 +29,7 @@ public class TMonitorBean {
     @Monitored
     protected void test1() {
         Threads.sleep(2);
+        throw new RuntimeException("err");
     }
 
 }

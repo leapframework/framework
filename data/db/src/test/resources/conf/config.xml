@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
+    <monitor enabled="true"/>
+
     <properties>
         h2.driverClassName = org.h2.Driver
         h2.url             = jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE
