@@ -71,6 +71,12 @@ public class DefaultAppProfileResolver implements AppProfileResolver {
 
             String profile = Strings.trim(r.getContent());
 
+            //comment
+            if(profile.startsWith("#")) {
+                return null;
+            }
+
+            //system variable
             if(profile.startsWith("${") && profile.endsWith("}")) {
 
                 String prop = profile.substring(1,profile.length() - 1);
