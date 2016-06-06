@@ -19,7 +19,9 @@ package leap.core.instrument;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
+import leap.lang.asm.ASM;
 import leap.lang.asm.ClassReader;
+import leap.lang.asm.tree.ClassNode;
 import leap.lang.io.ByteArrayInputStreamSource;
 import leap.lang.io.IO;
 import leap.lang.io.InputStreamSource;
@@ -28,7 +30,6 @@ import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
-import leap.lang.time.StopWatch;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -43,9 +44,10 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
     public void instrument(final AppInstrumentContext context,final ResourceSet rs) {
 
         final AtomicInteger counter = new AtomicInteger();
-        StopWatch sw = StopWatch.startNew();
 
-        preInstrument(context, rs);
+        if(!preInstrument(context, rs)){
+            return;
+        }
 
         rs.process((resource) -> {
             if(resource.exists()){
@@ -63,13 +65,18 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
                         ClassReader cr = new ClassReader(in);
 
                         if(acceptsClass(context, rs, cr)) {
+                            if(context.isInstrumentedBy(cr.getClassName(), this.getClass())) {
+                                return;
+                            }
+
                             AppInstrumentClass ic = context.getInstrumentedClass(cr.getClassName());
                             if(null != ic) {
                                 is = new ByteArrayInputStreamSource(ic.getClassData());
                                 cr = new ClassReader(ic.getClassData());
                             }
 
-                            processClass(context, resource, is, cr);
+                            //todo : optimize performance?
+                            processClass(context, resource, is, cr, ASM.getClassNode(cr));
                             counter.incrementAndGet();
                         }
                     }catch(IOException e){
@@ -86,8 +93,8 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         postInstrument(context, rs);
     }
 
-    protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {
-
+    protected boolean preInstrument(AppInstrumentContext context, ResourceSet rs) {
+        return true;
     }
 
     protected void postInstrument(AppInstrumentContext context, ResourceSet rs) {
@@ -98,7 +105,7 @@ public abstract class AbstractAsmInstrumentProcessor implements AppInstrumentPro
         return Modifier.isPublic(cr.getAccess()) && !Modifier.isAbstract(cr.getAccess());
     }
 
-    protected abstract void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) ;
+    protected abstract void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) ;
 
     /**
      * Reads the internal class of super class.

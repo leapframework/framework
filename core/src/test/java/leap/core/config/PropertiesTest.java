@@ -40,8 +40,9 @@ public class PropertiesTest extends AppTestBase {
 
     @Test
     public void testPropertiesFile() {
-        assertEquals("a", config.getProperty("props.prop1"));
-        assertEquals("b", config.getProperty("props.prop2"));
+        assertEquals("a", config.getProperty("props.prop"));
+        assertEquals("b", config.getProperty("props.prop1"));
+        assertEquals("c", config.getProperty("props.prop2"));
     }
 
     @Test
@@ -61,5 +62,21 @@ public class PropertiesTest extends AppTestBase {
 
         assertEquals("1", config.getProperty("testKeyValue.prop1"));
         assertEquals("2", config.getProperty("testKeyValue.prop2"));
+    }
+
+    @Test
+    public void testPropertiesRoot() {
+        assertEquals("a", config.getProperty("props_root.prop1"));
+        assertEquals("b", config.getProperty("props_root.prop2"));
+    }
+
+    @Test
+    public void testXmlElementProperties() {
+        assertEquals("a", config.getProperty("testElementProps.prop1"));
+        assertEquals("b", config.getProperty("testElementProps.prop2"));
+        assertEquals("c", config.getProperty("testElementProps.prop3"));
+        assertEquals("d", config.getProperty("testElementProps.prop4"));
+        assertEquals("e", config.getProperty("testElementProps.prop5"));
+        assertEquals("f", config.getProperty("testElementProps.prop6"));
     }
 }

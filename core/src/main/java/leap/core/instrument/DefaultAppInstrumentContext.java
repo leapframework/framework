@@ -26,7 +26,21 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
 
     private static final Log log = LogFactory.get(DefaultAppInstrumentContext.class);
 
+    private final boolean bean;
     private final Map<String, AppInstrumentClass> instrumentedMap = new LinkedHashMap<>();
+
+    public DefaultAppInstrumentContext() {
+        this(false);
+    }
+
+    public DefaultAppInstrumentContext(boolean bean) {
+        this.bean = bean;
+    }
+
+    @Override
+    public boolean isBeanClass() {
+        return bean;
+    }
 
     @Override
     public Collection<AppInstrumentClass> getAllInstrumentedClasses() {

@@ -22,12 +22,18 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.text.PlaceholderResolver;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
  * The context interface for {@link AppConfigProcessor} and {@link AppConfigReader}.
  */
 public interface AppConfigContext extends AppConfigContextBase {
+
+    /**
+     * Returns an immutable view of current properties.
+     */
+    Map<String,String> getProperties();
 
     /**
      * Returns the config extension or null if not exists.
@@ -45,6 +51,18 @@ public interface AppConfigContext extends AppConfigContextBase {
 		}
 		return e;
 	}
+
+    /**
+     * Returns the config extension of creates a new one if not exists.
+     */
+    default <T> T getOrCreateExtension(Class<? super T> type, Class<T> instanceType) {
+        T e = (T)getExtension(type);
+        if(null == e) {
+            e = Reflection.newInstance(instanceType);
+            setExtension(type, e);
+        }
+        return e;
+    }
 
     /**
      * Sets the config extension.

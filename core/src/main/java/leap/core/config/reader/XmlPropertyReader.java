@@ -29,6 +29,7 @@ import leap.lang.el.spel.SPEL;
 import leap.lang.expression.Expression;
 import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
+import leap.lang.logging.LogUtils;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
@@ -69,6 +70,14 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                     if(null != defaultOverride) {
                         context.resetDefaultOverride();
                     }
+
+                    break;
+                }
+
+                if(reader.isStartElement(PROPERTIES_ELEMENT)) {
+                    foundValidRootElement = true;
+
+                    readProperties(context, resource, reader);
 
                     break;
                 }
@@ -136,15 +145,6 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 continue;
             }
 
-            if(importResource(context, resource, reader)) {
-                continue;
-            }
-
-            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
-                readLoader(context, resource, reader);
-                continue;
-            }
-
             if(reader.isStartElement(PROPERTIES_ELEMENT)) {
                 readProperties(context, resource, reader);
                 continue;
@@ -152,6 +152,28 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
             if(reader.isStartElement(PROPERTY_ELEMENT)) {
                 readProperty(context, resource, reader, "");
+                continue;
+            }
+
+            if(importResource(context, resource, reader)) {
+                continue;
+            }
+
+            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
+                readLoader(context, resource, reader, null);
+                continue;
+            }
+
+            if(reader.isStartElement(IF_ELEMENT)) {
+                Function<Map<String,String>, Boolean> ifExpr = createIfFunction(reader);
+
+                while(reader.nextWhileNotEnd(IF_ELEMENT)) {
+
+                    if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
+                        readLoader(context, resource, reader, ifExpr);
+                        continue;
+                    }
+                }
                 continue;
             }
         }
@@ -186,6 +208,17 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 readProperty(context, resource, reader, prefix);
                 continue;
             }
+
+            if(reader.isStartElement()) {
+                hasElement = true;
+
+                String name  = reader.getElementLocalName();
+                String value = reader.getElementTextAndEnd();
+
+                String key = prefix + name;
+                putProperty(context, resource, key, value, context.isDefaultOverride());
+                continue;
+            }
         }
 
         if(!hasElement) {
@@ -203,10 +236,17 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                         value = value.substring(0,sharpIndex).trim();
                     }
 
-                    context.putProperty(resource, key, value);
+                    putProperty(context, resource, key, value, context.isDefaultOverride());
                 });
             }
         }
+    }
+
+    protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
+        if(!override && context.hasProperty(key)) {
+            throw new AppConfigException("Found duplicate property '" + key + "' in resource : " + LogUtils.getUrl(resource));
+        }
+        context.putProperty(resource, key, value);
     }
 
     protected void readProperty(AppPropertyContext context, Resource resource, XmlReader reader, String prefix) {
@@ -225,32 +265,19 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             reader.nextToEndElement(PROPERTY_ELEMENT);
         }
 
-        if(!override && context.hasProperty(name)){
-            throw new AppConfigException("Found duplicated property '" + name + "' in resource : " + resource.getClasspath());
-        }
-
         String key = prefix + name;
-        context.putProperty(resource, key, value);
+        putProperty(context, resource, key, value, override);
     }
 
-    protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader){
+    protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader,
+                              Function<Map<String,String>, Boolean> enabled){
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(CONFIG_LOADER_ELEMENT);
             return;
         }
 
-        String ifExpression = reader.resolveAttribute(IF_ATTRIBUTE);
         String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
         int    sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
-
-        Function<Map<String,String>, Boolean> enabled = null;
-        if(!Strings.isEmpty(ifExpression)) {
-            Expression expression = SPEL.createExpression(parseContext, ifExpression);
-            enabled = (props) -> {
-                Map<String,Object> vars = New.hashMap("properties", props);
-                return EL.test(expression.getValue(vars), true);
-            };
-        }
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
 
@@ -272,6 +299,16 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
 
         context.addLoader(loader);
+    }
+
+    protected Function<Map<String,String>, Boolean> createIfFunction(XmlReader reader) {
+        String expr = reader.getRequiredAttribute(EXPR_ATTRIBUTE);
+
+        Expression expression = SPEL.createExpression(parseContext, expr);
+        return (props) -> {
+            Map<String,Object> vars = New.hashMap("properties", props);
+            return EL.test(expression.getValue(vars), true);
+        };
     }
 
     protected static class LoaderConfig implements AppPropertyLoaderConfig {

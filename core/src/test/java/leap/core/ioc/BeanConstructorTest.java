@@ -20,8 +20,8 @@ import leap.core.AppContext;
 import leap.core.CoreTestCase;
 import org.junit.Test;
 import tested.beans.TBean;
-import tested.beans.TConstructorBean1;
-import tested.beans.TConstructorBean2;
+import tested.basepackage.beans.TConstructorBean1;
+import tested.basepackage.beans.TConstructorBean2;
 
 public class BeanConstructorTest extends CoreTestCase {
 

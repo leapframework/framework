@@ -20,7 +20,7 @@ import leap.lang.resource.ResourceSet;
 
 public interface AppInstrumentProcessor {
 
-    default void init(AppConfig conifg) {
+    default void init(AppConfig config) {
 
     }
 	

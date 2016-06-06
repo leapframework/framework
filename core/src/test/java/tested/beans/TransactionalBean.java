@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-package tested.transaction;
+package tested.beans;
 
-import leap.core.annotation.Bean;
 import leap.core.annotation.Transactional;
 import leap.core.transaction.TransactionDefinition;
 
-@Bean
 public class TransactionalBean {
 
     @Transactional

@@ -231,7 +231,7 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	/**
 	 * Updates the primary bean of the given type as the given instance. 
 	 */
-	<T> void setPrimaryBean(Class<T> type, T bean);
+	void setPrimaryBean(Class<?> type, Object bean);
 	
 	/**
 	 * Returns <code>true</code> if the bean identified by the given id is singleton.

@@ -207,7 +207,10 @@ public class AppBootstrap extends ServletContextInitializerBase implements Servl
 
             for(BeanDefinition bootable : bootables) {
                 try{
-                    ((AppBootable)bootable.getSingletonInstance()).onAppStopped(app, servletContext);
+                    AppBootable bean = ((AppBootable)bootable.getSingletonInstance());
+                    if(null != bean) {
+                        bean.onAppStopped(app, servletContext);
+                    }
                 }catch(Throwable e) {
                     log.warn("Error invoke onAppStopped on bootable bean, {}", e.getMessage(), e);
                 }

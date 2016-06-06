@@ -44,10 +44,7 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.resource.SimpleResourceSet;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class DefaultAppInstrumentation implements AppInstrumentation {
 
@@ -55,7 +52,8 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
 
     private final List<AppInstrumentProcessor> processors = Factory.newInstances(AppInstrumentProcessor.class);
 
-    private Set<String> instrumented = new HashSet<>();
+    private Set<String>          instrumented = new HashSet<>();
+    private Map<String, Boolean> processed    = new HashMap<>();
 
     @Override
     public void init(AppConfig config) {
@@ -66,22 +64,13 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
 
     @Override
     public void complete() {
+        processed.clear();
         instrumented.clear();
     }
 
     @Override
     public void instrument(ResourceSet rs) {
-        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext();
-
-        for(AppInstrumentProcessor p : processors){
-            try {
-                p.instrument(context, rs);
-            } catch (Throwable e) {
-                throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
-            }
-        }
-
-        postInstrumented(context.getAllInstrumentedClasses());
+        instrument(rs, false);
     }
 
     @Override
@@ -93,13 +82,39 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
 
     @Override
     public boolean tryInstrument(String className) {
+        return tryInstrument(className, false);
+    }
+
+    @Override
+    public boolean tryInstrument(String className, boolean isBeanClass) {
+        Boolean exists = processed.get(className);
+        if(null != exists) {
+            return exists;
+        }
+
         Resource resource = Resources.getResource("classpath:" + className.replace('.', '/') + ".class");
         if(null == resource || !resource.exists()) {
+            processed.put(className, false);
             return false;
         }
 
-        instrument(new SimpleResourceSet(new Resource[]{resource}));
+        instrument(new SimpleResourceSet(new Resource[]{resource}), isBeanClass);
+        processed.put(className, true);
         return true;
+    }
+
+    public void instrument(ResourceSet rs, boolean isBeanClass) {
+        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext(isBeanClass);
+
+        for(AppInstrumentProcessor p : processors){
+            try {
+                p.instrument(context, rs);
+            } catch (Throwable e) {
+                throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
+            }
+        }
+
+        postInstrumented(context.getAllInstrumentedClasses());
     }
 
     public void postInstrumented(Collection<AppInstrumentClass> instrumentClasses) {

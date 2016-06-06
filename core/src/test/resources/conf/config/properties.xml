@@ -20,4 +20,23 @@
         <property name="prop1" value="test2.val1"/>
     </properties>
 
+    <properties>
+        <testElementProps.prop1>a</testElementProps.prop1>
+        <testElementProps.prop2> b </testElementProps.prop2>
+        <testElementProps.prop3>
+            <!-- comment -->
+            c
+        </testElementProps.prop3>
+        <testElementProps.prop4>
+            <!-- comment -->
+            d
+            <!-- comment -->
+        </testElementProps.prop4>
+    </properties>
+
+    <properties prefix="testElementProps">
+        <prop5>e</prop5>
+        <prop6>f</prop6>
+    </properties>
+
 </config>

@@ -27,6 +27,8 @@
 		<orm:package name="tested.model"/>
 		<orm:class   name="leap.orm.tested.model.Model3"/>
     </orm:models>
-      
+
+    <monitor enabled="true"/>
+
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 </config>   

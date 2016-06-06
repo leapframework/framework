@@ -61,6 +61,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected String                        secret              = null;
     protected PrivateKey                    privateKey          = null;
     protected Map<Class<?>, Object>         extensions          = new HashMap<>();
+    protected Map<Class<?>, Object>         extensionsReadonly  = Collections.unmodifiableMap(extensions);
     protected Map<String, String>           properties          = new ConcurrentHashMap<>();
     protected Map<String, String>           propertiesReadonly  = Collections.unmodifiableMap(properties);
     protected Map<String, List<String>>     arrayProperties     = new ConcurrentHashMap<>();
@@ -192,8 +193,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public <T> T getExtension(Class<T> type) {
 	    return (T)extensions.get(type);
     }
-    
-	@Override
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensionsReadonly;
+    }
+
+    @Override
 	@SuppressWarnings("unchecked")
     public <T> T removeExtension(Class<T> type) {
 	    return (T)extensions.remove(type);

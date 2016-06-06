@@ -21,6 +21,9 @@ import leap.core.variable.Variable;
 import leap.junit.concurrent.Concurrent;
 import leap.lang.Lazy;
 import org.junit.Test;
+import tested.basepackage.beans.TAnnotationBean1;
+import tested.basepackage.beans.TAnnotationBean2;
+import tested.basepackage.beans.TAnnotationBeanType;
 import tested.beans.*;
 import tested.variables.NowVariable1;
 

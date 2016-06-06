@@ -42,6 +42,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String DEBUG_ELEMENT               = "debug";
     protected static final String DEFAULT_LOCALE_ELEMENT      = "default-locale";
     protected static final String DEFAULT_CHARSET_ELEMENT     = "default-charset";
+    protected static final String IF_ELEMENT                  = "if";
     protected static final String CONFIG_LOADER_ELEMENT       = "loader";
     protected static final String DATASOURCE_ELEMENT          = "datasource";
     protected static final String IMPORT_ELEMENT              = "import";
@@ -51,6 +52,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String GRANT_ELEMENT               = "grant";
     protected static final String DENY_ELEMENT                = "deny";
     protected static final String RESOURCES_ELEMENT           = "resources";
+    protected static final String MONITOR_ELEMENT             = "monitor";
     protected static final String RESOURCE_ATTRIBUTE          = "resource";
     protected static final String IF_PROFILE_ATTRIBUTE        = "if-profile";
     protected static final String OVERRIDE_ATTRIBUTE          = "override";
@@ -66,6 +68,10 @@ public abstract class XmlConfigReaderBase {
     protected static final String LOCATION_ATTRIBUTE          = "location";
     protected static final String IF_ATTRIBUTE                = "if";
     protected static final String SORT_ORDER_ATTRIBUTE        = "sort-order";
+    protected static final String ENABLED_ATTRIBUTE           = "enabled";
+    protected static final String METHOD_THRESHOLD_ATTRIBUTE  = "method-threshold";
+    protected static final String EXPR_ATTRIBUTE              = "expr";
+    protected static final String REPORT_ERROR_ATTRIBUTE      = "report-error";
 
     protected boolean importResource(AppConfigContextBase context, Resource parent, XmlReader reader) {
         if(reader.isStartElement(IMPORT_ELEMENT)){

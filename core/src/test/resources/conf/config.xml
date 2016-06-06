@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-	<base-package>tested</base-package>
+	<base-package>tested.basepackage</base-package>
 
     <import resource="../imp/imp.config.xml"/>
-    
-    <resources location="classpath:/tested/**/*"/>
+
+    <resources location="classpath:tested/**/*"/>
 
     <property name="testOrder.prop3" value="prop3_override" override="true"/>
 
+    <if expr="true">
+        <monitor enabled="true" method-threshold="1"/>
+    </if>
 </config>

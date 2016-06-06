@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,28 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tested.beans;
 
-import leap.core.annotation.Bean;
-import leap.core.annotation.ConfigProperty;
+package leap.core.monitor;
+
 import leap.core.annotation.Inject;
+import leap.lang.Arrays2;
 
-@Bean
-public class TConstructorBean1 {
+public class SimpleMonitorProvider implements MonitorProvider {
 
-    private final TAnnotationBean2 bean;
-    private final String           testConfigProperty;
+    protected @Inject MonitorConfig config;
 
-    public TConstructorBean1(@Inject TAnnotationBean2 bean, @ConfigProperty String testConfigProperty) {
-        this.bean = bean;
-        this.testConfigProperty = testConfigProperty;
+    @Override
+    public MethodMonitor startMethodMonitor(String className, String methodDesc) {
+        return startMethodMonitor(className, methodDesc, Arrays2.EMPTY_OBJECT_ARRAY);
     }
 
-    public TAnnotationBean2 getBean() {
-        return bean;
+    @Override
+    public MethodMonitor startMethodMonitor(String className, String methodDesc, Object[] args) {
+        return new SimpleMethodMonitor(this, className, methodDesc, args);
     }
 
-    public String getTestConfigProperty() {
-        return testConfigProperty;
-    }
 }

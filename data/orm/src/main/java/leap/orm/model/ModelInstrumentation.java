@@ -80,13 +80,14 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 	protected List<ModelTransformer>    transformers;
 
     @Override
-    protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {
+    protected boolean preInstrument(AppInstrumentContext context, ResourceSet rs) {
         this.transformers = Factory.newInstances(ModelTransformer.class);
         this.instrumentModelClasses = new TreeSet<>();
+        return true;
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
+    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
         int inheritLevels = 0;
         boolean isModel   = false;
 

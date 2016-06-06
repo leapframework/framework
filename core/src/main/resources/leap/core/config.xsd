@@ -13,13 +13,15 @@
                 <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-charset" minOccurs="0" maxOccurs="1"/>
 			    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element ref="resources"/>
-                    <xsd:element ref="import"/>
-                    <xsd:element ref="properties"/>
                     <xsd:element ref="property"/>
+                    <xsd:element ref="properties"/>
+                    <xsd:element ref="import"/>
+                    <xsd:element ref="resources"/>
+                    <xsd:element ref="if"/>
+                    <xsd:element ref="monitor"/>
+                    <xsd:element ref="loader"/>
                     <!--<xsd:element ref="datasource"/>-->
                     <xsd:element ref="permissions"/>
-                    <xsd:element ref="loader"/>
                     <xsd:element ref="config"/>
 			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 			    </xsd:choice>
@@ -192,6 +194,7 @@
             <xsd:extension base="xsd:string">
                 <xsd:sequence>
                     <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
                 </xsd:sequence>
                 <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
                 <xsd:attribute name="prefix" type="xsd:string" use="optional"/>
@@ -219,15 +222,36 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="if">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="loader"/>
+                    <xsd:element ref="monitor"/>
+                    <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="expr" use="required" type="xsd:string"/>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="loader">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
             <xsd:attribute name="class" type="xsd:string" use="required"/>
-            <xsd:attribute name="if" use="optional" type="xsd:string"/>
             <xsd:attribute name="if-profile"  use="optional" type="xsd:string"/>
             <xsd:attribute name="sort-order" use="optional" type="xsd:int"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="monitor">
+        <xsd:complexType>
+            <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="report-error" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="method-threshold" type="xsd:integer" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 

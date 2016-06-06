@@ -74,7 +74,21 @@ public class ASM {
 		}
 		return false;
 	}
-	
+
+    public static boolean isAnnotationPresent(ClassNode n,Class<? extends Annotation> annotationType) {
+        if(null == n.visibleAnnotations){
+            return false;
+        }
+
+        String desc = Type.getDescriptor(annotationType);
+        for(AnnotationNode an : n.visibleAnnotations){
+            if(an.desc.equals(desc)){
+                return true;
+            }
+        }
+        return false;
+    }
+
 	public static ClassNode getClassNode(ClassReader cr){
 		ClassNode cn = new ClassNode();
 		cr.accept(cn, 0);
