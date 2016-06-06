@@ -55,8 +55,8 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 		OAuth2Params params = new RequestOAuth2Params(request);
 
 	    for(TokenInfoHandler h : handlers) {
-	        
-	        if(h.handleTokenInfoRequest(request, response, params)) {
+
+			if(h.handleTokenInfoRequest(request, response, params)) {
 	            return;
 	        }
 	        

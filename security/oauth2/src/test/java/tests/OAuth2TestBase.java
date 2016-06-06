@@ -245,6 +245,10 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	protected void assertLogin() {
 	    ajaxGet("/check_login_state").assertContentEquals("OK");
 	}
+
+    protected boolean isLogin(){
+        return "OK".equalsIgnoreCase(ajaxGet("/check_login_state").getContent());
+    }
 	
    protected void assertLogin(String username) {
         forGet("/check_login_state").addQueryParam("username", username).ajax().get().assertContentEquals("OK");
@@ -287,6 +291,6 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
 
     protected void logoutAuthzServer() {
-        logout("/server");
+        logout("/server/oauth2");
     }
 }

@@ -15,8 +15,6 @@
  */
 package leap.oauth2.wac;
 
-import java.io.PrintWriter;
-
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.QueryStringBuilder;
@@ -27,21 +25,22 @@ import leap.lang.net.Urls;
 import leap.lang.servlet.Servlets;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
+import leap.oauth2.proxy.UserAgentForwardedResolver;
 import leap.oauth2.wac.auth.WacResponseHandler;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfigurator;
-import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.login.LoginContext;
-import leap.web.security.login.LoginManager;
 import leap.web.security.logout.LogoutContext;
 import leap.web.security.logout.LogoutManager;
 import leap.web.view.View;
 import leap.web.view.ViewSource;
+
+import java.io.PrintWriter;
 
 public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, AppInitializable {
 
@@ -53,6 +52,7 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
     protected @Inject AuthenticationManager am;
     protected @Inject LogoutManager         lom;
     protected @Inject WacResponseHandler[]  handlers;
+    protected @Inject UserAgentForwardedResolver proxyResolver;
     
     protected String redirectPath;
     protected String logoutPath;
@@ -210,9 +210,18 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         if(!config.getClientRedirectUri().startsWith("/")) {
             url = config.getClientRedirectUri();
         }else{
-            url = request.getContextUrl() + config.getClientRedirectUri();
+            if(proxyResolver.isProxyRequest(request)){
+                String contextUrl = proxyResolver.resolveUserAgentForwarded(request);
+                if(!Strings.isEmpty(contextUrl)){
+                    url = contextUrl + config.getClientRedirectUri();
+                }else{
+                    url = request.getContextUrl() + config.getClientRedirectUri();
+                }
+            }else{
+                url = request.getContextUrl() + config.getClientRedirectUri();
+            }
         }
-        
+
         url = Urls.appendQueryString(url, "oauth2_redirect=1&" + sc.config().getReturnUrlParameterName() + "=" + Urls.encode(request.getUriWithQueryString()));
         
         return url;

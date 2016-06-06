@@ -22,8 +22,9 @@ public class ClientAppLoginTest extends OAuth2TestBase {
 
     @Test
     public void testSingleLogin() {
-        logoutAuthzServer();
-
+        if(isLogin()) {
+            logoutAuthzServer();
+        }
         String redirectUrl1 = get("/clientapp1").assertRedirect().getLocation();
         assertEquals(redirectUrl1, "https://localhost:8443/server/oauth2/authorize?" +
                                   "response_type=id_token&client_id=app1" +
