@@ -42,6 +42,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String DEBUG_ELEMENT               = "debug";
     protected static final String DEFAULT_LOCALE_ELEMENT      = "default-locale";
     protected static final String DEFAULT_CHARSET_ELEMENT     = "default-charset";
+    protected static final String IF_ELEMENT                  = "if";
     protected static final String CONFIG_LOADER_ELEMENT       = "loader";
     protected static final String DATASOURCE_ELEMENT          = "datasource";
     protected static final String IMPORT_ELEMENT              = "import";
@@ -69,6 +70,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String SORT_ORDER_ATTRIBUTE        = "sort-order";
     protected static final String ENABLED_ATTRIBUTE           = "enabled";
     protected static final String METHOD_THRESHOLD_ATTRIBUTE  = "method-threshold";
+    protected static final String EXPR_ATTRIBUTE              = "expr";
 
     protected boolean importResource(AppConfigContextBase context, Resource parent, XmlReader reader) {
         if(reader.isStartElement(IMPORT_ELEMENT)){

@@ -10,32 +10,41 @@
     <property name="tested.TestConfigLoader2.enabled" value="false"/>
     <property name="loader.type"                      value="jdbc"/>
 
-    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader1.enabled']">
-        <property name="name"  value="prop1"/>
-        <property name="value" value="value1"/>
-    </loader>
+    <if expr="properties['tested.TestConfigLoader1.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop1"/>
+            <property name="value" value="value1"/>
+        </loader>
+    </if>
 
-    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader2.enabled']">
-        <property name="name"  value="prop2"/>
-        <property name="value" value="value2"/>
-    </loader>
+    <if expr="properties['tested.TestConfigLoader2.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop2"/>
+            <property name="value" value="value2"/>
+        </loader>
+    </if>
 
-    <loader class="tested.TestPropertyLoader" if="properties['tested.TestConfigLoader1.enabled']">
-        <property name="name"  value="prop3"/>
-        <property name="value" value="${db.key1}"/>
-    </loader>
+    <if expr="properties['tested.TestConfigLoader1.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop3"/>
+            <property name="value" value="${db.key1}"/>
+        </loader>
+    </if>
 
     <property name="db.key1"                 value="abcd"/>
     <property name="testLoader.placeholder1" value="${db.key1}"/>
 
-    <loader class="leap.core.config.loader.JdbcPropertyLoader"
-            if="properties['loader.type'] == 'jdbc'"
-            sort-order="1">
-        <property name="driverClassName" value="${h2.driverClassName}"/>
-        <property name="jdbcUrl"         value="${h2.jdbcUrl}"/>
-        <property name="username"        value="sa"/>
-        <property name="sql">
-            select key_ key, value_ value from sys_config
-        </property>
-    </loader>
+    <if expr="properties['loader.type'] == 'jdbc'">
+
+        <loader class="leap.core.config.loader.JdbcPropertyLoader" sort-order="1">
+            <property name="driverClassName" value="${h2.driverClassName}"/>
+            <property name="jdbcUrl"         value="${h2.jdbcUrl}"/>
+            <property name="username"        value="sa"/>
+            <property name="sql">
+                select key_ key, value_ value from sys_config
+            </property>
+        </loader>
+
+    </if>
+
 </config>

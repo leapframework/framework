@@ -695,6 +695,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
+        public Map<String, String> getProperties() {
+            return loader.getPropertiesMap();
+        }
+
+        @Override
         @SuppressWarnings("unchecked")
         public <T> T getExtension(Class<T> type) {
             return (T)config.extensions.get(type);

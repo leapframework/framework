@@ -144,15 +144,6 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 continue;
             }
 
-            if(importResource(context, resource, reader)) {
-                continue;
-            }
-
-            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
-                readLoader(context, resource, reader);
-                continue;
-            }
-
             if(reader.isStartElement(PROPERTIES_ELEMENT)) {
                 readProperties(context, resource, reader);
                 continue;
@@ -160,6 +151,28 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
             if(reader.isStartElement(PROPERTY_ELEMENT)) {
                 readProperty(context, resource, reader, "");
+                continue;
+            }
+
+            if(importResource(context, resource, reader)) {
+                continue;
+            }
+
+            if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
+                readLoader(context, resource, reader, null);
+                continue;
+            }
+
+            if(reader.isStartElement(IF_ELEMENT)) {
+                Function<Map<String,String>, Boolean> ifExpr = createIfFunction(reader);
+
+                while(reader.nextWhileNotEnd(IF_ELEMENT)) {
+
+                    if(reader.isStartElement(CONFIG_LOADER_ELEMENT)) {
+                        readLoader(context, resource, reader, ifExpr);
+                        continue;
+                    }
+                }
                 continue;
             }
         }
@@ -255,16 +268,18 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         putProperty(context, resource, key, value, override);
     }
 
-    protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader){
+    protected void readLoader(AppPropertyContext context, Resource resource, XmlReader reader,
+                              Function<Map<String,String>, Boolean> enabled){
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(CONFIG_LOADER_ELEMENT);
             return;
         }
 
-        String ifExpression = reader.resolveAttribute(IF_ATTRIBUTE);
+        //String ifExpression = reader.resolveAttribute(IF_ATTRIBUTE);
         String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
         int    sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
 
+        /*
         Function<Map<String,String>, Boolean> enabled = null;
         if(!Strings.isEmpty(ifExpression)) {
             Expression expression = SPEL.createExpression(parseContext, ifExpression);
@@ -273,6 +288,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 return EL.test(expression.getValue(vars), true);
             };
         }
+        */
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
 
@@ -294,6 +310,16 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
 
         context.addLoader(loader);
+    }
+
+    protected Function<Map<String,String>, Boolean> createIfFunction(XmlReader reader) {
+        String expr = reader.getRequiredAttribute(EXPR_ATTRIBUTE);
+
+        Expression expression = SPEL.createExpression(parseContext, expr);
+        return (props) -> {
+            Map<String,Object> vars = New.hashMap("properties", props);
+            return EL.test(expression.getValue(vars), true);
+        };
     }
 
     protected static class LoaderConfig implements AppPropertyLoaderConfig {

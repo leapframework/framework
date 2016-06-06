@@ -20,14 +20,14 @@ import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.AppConfigReader;
+import leap.core.el.EL;
 import leap.core.monitor.DefaultMonitorConfig;
 import leap.core.monitor.MonitorConfig;
 import leap.core.sys.SysPermission;
 import leap.core.sys.SysPermissionDef;
-import leap.lang.Classes;
-import leap.lang.Collections2;
-import leap.lang.Factory;
-import leap.lang.Strings;
+import leap.lang.*;
+import leap.lang.el.spel.SPEL;
+import leap.lang.expression.Expression;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -38,6 +38,7 @@ import leap.lang.xml.XmlReader;
 
 import java.lang.reflect.Constructor;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Reads .xml file.
@@ -151,6 +152,31 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
             if(reader.isStartElement(MONITOR_ELEMENT)) {
                 readMonitor(context, resource, reader);
+                continue;
+            }
+
+            if(reader.isStartElement(IF_ELEMENT)) {
+
+                if(testIfElement(context, reader)) {
+
+                    while(reader.nextWhileNotEnd(IF_ELEMENT)) {
+
+                        if(reader.isStartElement(MONITOR_ELEMENT)) {
+                            readMonitor(context, resource, reader);
+                            continue;
+                        }
+
+                        if(reader.isStartElement(PERMISSIONS_ELEMENT)) {
+                            readPermissions(context, resource, reader);
+                            continue;
+                        }
+
+                    }
+
+                }else{
+                    reader.nextToEndElement(IF_ELEMENT);
+                }
+
                 continue;
             }
         }
@@ -300,6 +326,18 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
             throw new AppConfigException("Permission class '" + className + "' must define the constructor(String.class,String.class), source : " + reader.getSource());
         } catch (Exception e){
             throw new AppConfigException("Error creating permission instance of class '" + className + ", source : " + reader.getSource(),e);
+        }
+    }
+
+    private boolean testIfElement(AppConfigContext context, XmlReader reader) {
+        String expressionText = reader.getRequiredAttribute(EXPR_ATTRIBUTE);
+        try {
+            Expression expression = SPEL.createExpression(parseContext,expressionText);
+            Map<String,Object> vars = New.hashMap("properties", context.getProperties());
+
+            return EL.test(expression.getValue(vars), true);
+        } catch (Exception e) {
+            throw new AppConfigException("Error testing if expression '" + expressionText + "' at " + reader.getCurrentLocation(), e);
         }
     }
 }
