@@ -76,5 +76,7 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("b", config.getProperty("testElementProps.prop2"));
         assertEquals("c", config.getProperty("testElementProps.prop3"));
         assertEquals("d", config.getProperty("testElementProps.prop4"));
+        assertEquals("e", config.getProperty("testElementProps.prop5"));
+        assertEquals("f", config.getProperty("testElementProps.prop6"));
     }
 }

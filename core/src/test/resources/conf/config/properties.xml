@@ -34,4 +34,9 @@
         </testElementProps.prop4>
     </properties>
 
+    <properties prefix="testElementProps">
+        <prop5>e</prop5>
+        <prop6>f</prop6>
+    </properties>
+
 </config>
