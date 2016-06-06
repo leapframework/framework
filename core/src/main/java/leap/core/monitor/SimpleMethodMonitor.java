@@ -16,6 +16,8 @@
 
 package leap.core.monitor;
 
+import leap.lang.Classes;
+import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
@@ -24,7 +26,8 @@ import java.util.List;
 
 public class SimpleMethodMonitor implements MethodMonitor {
 
-    private static final Log log = LogFactory.get(SimpleMethodMonitor.class);
+    private static final Log SLOW_LOG = LogFactory.get("applog.monitor.slow");
+    private static final Log ERR_LOG  = LogFactory.get("applog.monitor.error");
 
     private static final ThreadLocal<List<SimpleMethodMonitor>> local = new ThreadLocal<>();
 
@@ -39,7 +42,6 @@ public class SimpleMethodMonitor implements MethodMonitor {
     private boolean   root;
     private long      start;
     private long      duration;
-    private Throwable error;
 
     public SimpleMethodMonitor(SimpleMonitorProvider provider, String className, String methodDesc, Object[] args) {
         this.config     = provider.config;
@@ -50,7 +52,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
     }
 
     protected void start() {
-        if(log.isInfoEnabled()) {
+        if(SLOW_LOG.isInfoEnabled()) {
             stack = local.get();
             if(stack == null) {
                 this.root = true;
@@ -64,16 +66,14 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     @Override
     public void error(Throwable e) {
-        this.error = e;
-
-        if(config.isReportError() && log.isInfoEnabled()) {
-            log.error("Report error at method : {}.{}", className, methodDesc, e);
+        if(config.isReportError() && ERR_LOG.isInfoEnabled()) {
+            ERR_LOG.info("Error at : {}.{}", className, methodDesc, e);
         }
     }
 
     @Override
     public void exit() {
-        if(log.isInfoEnabled()) {
+        if(SLOW_LOG.isInfoEnabled()) {
             duration = System.currentTimeMillis() - start;
 
             if(root) {
@@ -90,9 +90,12 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     private void logExecutions() {
         /*
-            class#method 100
-              class#method 50
-                class#method 30
+            className.methodName 100
+                arg0 :
+                arg1 :
+
+              className.methodName 50
+                className.methodName 30
          */
         StringBuilder s = new StringBuilder(100);
 
@@ -107,15 +110,75 @@ public class SimpleMethodMonitor implements MethodMonitor {
             }
 
             if(i > 0) {
-                s.append('\n');
+                s.append("\n  ");
                 for(int j=0;j<i;j++) {
-                    s.append("  ");
+                    s.append("..");
                 }
+            }else{
+                s.append("  ");
             }
-            s.append(monitor.className).append('#').append(monitor.methodDesc).append(' ').append(monitor.duration);
+
+            s.append(monitor.className)
+                    .append('.')
+                    .append(monitor.methodDesc)
+                    .append(' ')
+                    .append(monitor.duration);
+
+            if(config.isReportArgs() && null != args && args.length > 0) {
+
+                s.append("\n");
+
+                for(int j=0;j<args.length;j++) {
+                    Object v = args[j];
+
+                    if(j > 0) {
+                        s.append("\n");
+                    }
+
+                    if(i > 0) {
+
+                        s.append("  ");
+                        for(int k=0;k<i;k++) {
+                            s.append("  ");
+                        }
+                        s.append("  ");
+
+                    }else{
+                        s.append("    ");
+                    }
+
+                    s.append(j).append(" : ");
+
+                    if(null == v) {
+                        s.append("(null)");
+                    }else{
+                        String str;
+
+                        Class<?> c = v.getClass();
+                        if(Classes.isSimpleValueType(c)) {
+                            str = v.toString();
+                        }else {
+                            str = "(obj:" +
+                                    (Strings.isEmpty(c.getSimpleName()) ? c.getName() : c.getSimpleName()) +
+                                    ")";
+                        }
+
+                        str = Strings.abbreviateMiddle(str, 50);
+                        str = Strings.replace(str, "\n", "");
+
+                        if(str.length() == 0) {
+                            str = "(empty)";
+                        }
+
+                        s.append(str);
+                    }
+                }
+
+                s.append("\n");
+            }
         }
 
-        log.warn("Report slow methods :\n{}", s);
+        SLOW_LOG.info("Slow Execution ({}ms) : \n\n{}\n", duration, s);
     }
 
 }

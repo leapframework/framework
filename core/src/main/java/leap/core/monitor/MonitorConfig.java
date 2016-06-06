@@ -31,6 +31,11 @@ public interface MonitorConfig {
     boolean isReportError();
 
     /**
+     * Returns true if report the method arguments.
+     */
+    boolean isReportArgs();
+
+    /**
      * Returns the threshold of milli-seconds for reporting method execution times.
      */
     int getMethodThreshold();

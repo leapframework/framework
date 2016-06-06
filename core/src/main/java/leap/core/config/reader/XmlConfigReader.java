@@ -259,6 +259,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
         Boolean enabled     = reader.getBooleanAttribute(ENABLED_ATTRIBUTE);
         Boolean reportError = reader.getBooleanAttribute(REPORT_ERROR_ATTRIBUTE);
+        Boolean reportArgs  = reader.getBooleanAttribute(REPORT_ARGS_ATTRIBUTE);
         Integer threshold   = reader.getIntegerAttribute(METHOD_THRESHOLD_ATTRIBUTE);
 
         if(null != enabled) {
@@ -267,6 +268,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
         if(null != reportError) {
             config.setReportError(reportError);
+        }
+
+        if(null != reportArgs) {
+            config.setReportArgs(reportArgs);
         }
 
         if(null != threshold) {

@@ -72,6 +72,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String METHOD_THRESHOLD_ATTRIBUTE  = "method-threshold";
     protected static final String EXPR_ATTRIBUTE              = "expr";
     protected static final String REPORT_ERROR_ATTRIBUTE      = "report-error";
+    protected static final String REPORT_ARGS_ATTRIBUTE       = "report-args";
 
     protected boolean importResource(AppConfigContextBase context, Resource parent, XmlReader reader) {
         if(reader.isStartElement(IMPORT_ELEMENT)){
