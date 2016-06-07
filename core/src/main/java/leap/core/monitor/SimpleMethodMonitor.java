@@ -66,7 +66,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     @Override
     public void error(Throwable e) {
-        if(config.isReportError() && ERR_LOG.isInfoEnabled()) {
+        if(root && config.isReportError() && ERR_LOG.isInfoEnabled()) {
             ERR_LOG.info("Error at : {}.{}", className, methodDesc, e);
         }
     }
