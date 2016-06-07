@@ -127,11 +127,11 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
             return true;
         }
 
-        if(ASM.isConstructor(mn)) {
+        if(ASM.isConstructor(mn) || ASM.isStaticInit(mn)) {
             return false;
         }
 
-        if(!Modifier.isPublic(mn.access) || Modifier.isStatic(mn.access)) {
+        if(Modifier.isStatic(mn.access)) {
             return false;
         }
 
