@@ -14,38 +14,24 @@
  * limitations under the License.
  */
 
-package tested.beans;
+package tested;
 
-import leap.core.annotation.Monitored;
-import leap.lang.Threads;
+import leap.core.AppMainBase;
+import leap.core.annotation.Inject;
+import tested.beans.TMonitorBean;
 
-public class TMonitorBean {
+public class MethodMonitorTestMain extends AppMainBase {
 
-    public void test(int i, String s) {
-        Threads.sleep(2);
-        test1();
+    public static void main(String[] args) {
+        AppMainBase.main(MethodMonitorTestMain.class, args);
     }
 
-    @Monitored
-    protected void test1() {
-        Threads.sleep(2);
-        throw new RuntimeException("err");
-    }
+    private @Inject TMonitorBean bean;
 
-    public void root() {
-        Threads.sleep(10);
-        nest1(10);
-        nest1(12);
-        nest2(15);
-    }
+    @Override
+    protected void run(Object[] args) throws Throwable {
 
-    public void nest1(long sleep) {
-        Threads.sleep(sleep);
-        nest2(sleep);
-    }
+        bean.root();
 
-    public void nest2(long sleep) {
-        Threads.sleep(sleep);
     }
-
 }
