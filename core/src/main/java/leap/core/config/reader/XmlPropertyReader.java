@@ -185,6 +185,9 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             return;
         }
 
+        boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE,context.isDefaultOverride());
+        context.setDefaultOverride(override);
+
         String prefix = reader.resolveAttribute(PREFIX_ATTRIBUTE);
         if(!Strings.isEmpty(prefix)) {
             char c = prefix.charAt(prefix.length() - 1);
@@ -240,6 +243,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 });
             }
         }
+        context.resetDefaultOverride();
     }
 
     protected void putProperty(AppPropertyContext context, Resource resource, String key, String value, boolean override) {
