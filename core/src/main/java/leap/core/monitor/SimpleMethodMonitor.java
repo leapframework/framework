@@ -124,6 +124,8 @@ public class SimpleMethodMonitor implements MethodMonitor {
                     .append(' ')
                     .append(monitor.duration);
 
+            Object[] args = monitor.args;
+
             if(config.isReportArgs() && null != args && args.length > 0) {
 
                 s.append("\n");
