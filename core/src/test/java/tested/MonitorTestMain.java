@@ -20,18 +20,20 @@ import leap.core.AppMainBase;
 import leap.core.annotation.Inject;
 import tested.beans.TMonitorBean;
 
-public class MethodMonitorTestMain extends AppMainBase {
+public class MonitorTestMain extends AppMainBase {
 
     public static void main(String[] args) {
-        AppMainBase.main(MethodMonitorTestMain.class, args);
+        AppMainBase.main(MonitorTestMain.class, args);
     }
 
     private @Inject TMonitorBean bean;
 
     @Override
     protected void run(Object[] args) throws Throwable {
+        System.out.println("\n\n\n");
 
-        bean.root();
+        bean.root(10);
 
     }
+
 }

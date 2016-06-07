@@ -257,10 +257,11 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
     private void readMonitor(AppConfigContext context, Resource resource, XmlReader reader) {
         DefaultMonitorConfig config = context.getOrCreateExtension(MonitorConfig.class, DefaultMonitorConfig.class);
 
-        Boolean enabled     = reader.getBooleanAttribute(ENABLED_ATTRIBUTE);
-        Boolean reportError = reader.getBooleanAttribute(REPORT_ERROR_ATTRIBUTE);
-        Boolean reportArgs  = reader.getBooleanAttribute(REPORT_ARGS_ATTRIBUTE);
-        Integer threshold   = reader.getIntegerAttribute(METHOD_THRESHOLD_ATTRIBUTE);
+        Boolean enabled          = reader.getBooleanAttribute(ENABLED_ATTRIBUTE);
+        Boolean reportError      = reader.getBooleanAttribute(REPORT_ERROR_ATTRIBUTE);
+        Boolean reportArgs       = reader.getBooleanAttribute(REPORT_ARGS_ATTRIBUTE);
+        Boolean reportLineNumber = reader.getBooleanAttribute(REPORT_LINE_NUMBER_ATTRIBUTE);
+        Integer threshold        = reader.getIntegerAttribute(METHOD_THRESHOLD_ATTRIBUTE);
 
         if(null != enabled) {
             config.setEnabled(enabled);
@@ -272,6 +273,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
         if(null != reportArgs) {
             config.setReportArgs(reportArgs);
+        }
+
+        if(null != reportLineNumber) {
+            config.setReportLineNumber(reportLineNumber);
         }
 
         if(null != threshold) {

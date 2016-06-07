@@ -21,6 +21,8 @@ import leap.lang.Arrays2;
 
 public class SimpleMonitorProvider implements MonitorProvider {
 
+    private static MethodMonitor NOP_METHOD_MONITOR = new NopMonitorProvider.NopMethodMonitor();
+
     protected @Inject MonitorConfig config;
 
     @Override
@@ -30,7 +32,9 @@ public class SimpleMonitorProvider implements MonitorProvider {
 
     @Override
     public MethodMonitor startMethodMonitor(String className, String methodDesc, Object[] args) {
-        return new SimpleMethodMonitor(this, className, methodDesc, args);
+        return config.isEnabled() ?
+                    new SimpleMethodMonitor(this, className, methodDesc, args) :
+                    NOP_METHOD_MONITOR;
     }
 
 }

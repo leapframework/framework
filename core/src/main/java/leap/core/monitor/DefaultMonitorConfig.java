@@ -25,6 +25,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
     protected boolean enabled;
     protected boolean reportError;
     protected boolean reportArgs;
+    protected boolean reportLineNumber;
     protected int     methodThreshold = DEFAULT_METHOD_THRESHOLD;
 
     @Override
@@ -52,6 +53,15 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
 
     public void setReportArgs(boolean reportArgs) {
         this.reportArgs = reportArgs;
+    }
+
+    @Override
+    public boolean isReportLineNumber() {
+        return reportLineNumber;
+    }
+
+    public void setReportLineNumber(boolean reportLineNumber) {
+        this.reportLineNumber = reportLineNumber;
     }
 
     @Override

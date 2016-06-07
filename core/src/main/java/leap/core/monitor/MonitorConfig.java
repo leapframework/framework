@@ -36,6 +36,11 @@ public interface MonitorConfig {
     boolean isReportArgs();
 
     /**
+     * Returns true if report the line number.
+     */
+    boolean isReportLineNumber();
+
+    /**
      * Returns the threshold of milli-seconds for reporting method execution times.
      */
     int getMethodThreshold();

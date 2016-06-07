@@ -32,11 +32,14 @@ public class TMonitorBean {
         throw new RuntimeException("err");
     }
 
-    public void root() {
-        Threads.sleep(10);
-        nest1(10);
-        nest1(12);
-        nest2(15);
+    public void root(long sleep) {
+        Threads.sleep(sleep);
+        nest1(sleep * 2);
+        nest1(sleep * 2);
+        nest2(sleep * 3);
+        for(int i=0;i<5;i++) {
+            nest1(sleep);
+        }
     }
 
     public void nest1(long sleep) {
@@ -48,4 +51,31 @@ public class TMonitorBean {
         Threads.sleep(sleep);
     }
 
+    /**
+     * Total 50 method calls.
+     */
+    public void perfRoot() {
+        perfNest1();
+        perfNest3();
+    }
+
+    public void perfNest1() {
+        for(int i=0;i<12;i++) {
+            perfNest2();
+        }
+    }
+
+    public void perfNest2() {
+
+    }
+
+    public void perfNest3() {
+        for(int i=0;i<35;i++) {
+            perfNest4();
+        }
+    }
+
+    public void perfNest4() {
+
+    }
 }

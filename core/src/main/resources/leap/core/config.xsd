@@ -252,6 +252,7 @@
             <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
             <xsd:attribute name="report-error" type="xsd:boolean" use="optional"/>
             <xsd:attribute name="report-args" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="report-line-number" type="xsd:boolean" use="optional"/>
             <xsd:attribute name="method-threshold" type="xsd:integer" use="optional"/>
         </xsd:complexType>
     </xsd:element>

@@ -26,6 +26,8 @@ import java.util.List;
 
 public class SimpleMethodMonitor implements MethodMonitor {
 
+    private static final String PKG = Classes.getPackageName(SimpleMethodMonitor.class);
+
     private static final Log SLOW_LOG = LogFactory.get("applog.monitor.slow");
     private static final Log ERR_LOG  = LogFactory.get("applog.monitor.error");
 
@@ -43,12 +45,36 @@ public class SimpleMethodMonitor implements MethodMonitor {
     private long      start;
     private long      duration;
 
+    private String callerClassName;
+    private int    callerLineNumber;
+
     public SimpleMethodMonitor(SimpleMonitorProvider provider, String className, String methodDesc, Object[] args) {
         this.config     = provider.config;
         this.className  = className;
         this.methodDesc = methodDesc;
         this.args       = args;
         this.start();
+    }
+
+    protected void resolveLineNumber() {
+        if(config.isReportLineNumber()) {
+            StackTraceElement[] stes = new Throwable().getStackTrace();
+            for(int i=0;i<stes.length;i++) {
+                StackTraceElement ste = stes[i];
+                if(ste.getClassName().startsWith(PKG)) {
+                    continue;
+                }
+
+                if(i < stes.length - 1) {
+                    ste = stes[i+1];
+                    callerClassName  = ste.getClassName();
+                    callerLineNumber = ste.getLineNumber();
+                    break;
+                }else{
+                    break;
+                }
+            }
+        }
     }
 
     protected void start() {
@@ -80,6 +106,10 @@ public class SimpleMethodMonitor implements MethodMonitor {
             duration = System.currentTimeMillis() - start;
 
             stack.exit(this);
+
+            if(duration >= config.getMethodThreshold()) {
+                resolveLineNumber();
+            }
 
             if(isRoot()) {
 
@@ -140,22 +170,23 @@ public class SimpleMethodMonitor implements MethodMonitor {
          */
             StringBuilder s = new StringBuilder(100);
 
-            int len = Math.min(len(), MAX_DEPTH);
-
             final int threshold = config.getMethodThreshold();
-            for(int i=0;i<len;i++) {
+            for(int i=0;i<methods.size();i++) {
                 SimpleMethodMonitor method = get(i);
 
                 if(method.duration < threshold) {
-                    break;
+                    continue;
                 }
 
                 int level = method.level;
+                if(level > MAX_DEPTH) {
+                    continue;
+                }
 
                 if(i > 0) {
                     s.append("\n  ");
                     for(int j=0;j<level;j++) {
-                        s.append("...");
+                        s.append(".. ");
                     }
                 }else{
                     s.append("  ");
@@ -163,9 +194,13 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
                 s.append(method.className)
                         .append('.')
-                        .append(method.methodDesc)
-                        .append(' ')
-                        .append(method.duration);
+                        .append(method.methodDesc);
+
+                if(null != method.callerClassName) {
+                    s.append(" (at ").append(method.callerClassName).append(":").append(method.callerLineNumber).append(")");
+                }
+
+                s.append("  ").append(method.duration).append("ms");
 
                 Object[] args = method.args;
 
@@ -174,25 +209,26 @@ public class SimpleMethodMonitor implements MethodMonitor {
                     s.append("\n");
 
                     for(int j=0;j<args.length;j++) {
-                        Object v = args[j];
 
                         if(j > 0) {
                             s.append("\n");
                         }
 
-                        if(i > 0) {
+                        if(level > 0) {
 
-                            s.append("  ");
+                            s.append("   ");
                             for(int k=0;k<level;k++) {
                                 s.append("   ");
                             }
                             s.append("  ");
 
                         }else{
-                            s.append("    ");
+                            s.append("     ");
                         }
 
-                        s.append(j).append(" : ");
+                        s.append("p").append(j).append(" = ");
+
+                        Object v = args[j];
 
                         if(null == v) {
                             s.append("(null)");
