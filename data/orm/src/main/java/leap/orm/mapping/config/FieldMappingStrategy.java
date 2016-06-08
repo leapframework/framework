@@ -18,7 +18,7 @@ package leap.orm.mapping.config;
 
 public enum FieldMappingStrategy {
 
-    MANDATORY,
+    ALWAYS,
 
     IF_FIELD_NOT_EXISTS,
 

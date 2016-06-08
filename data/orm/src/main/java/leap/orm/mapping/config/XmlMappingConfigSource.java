@@ -303,7 +303,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     protected FieldMappingStrategy readFieldMappingStrategy(XmlReader reader) {
         String v = reader.getAttribute(MAPPING_STRATEGY_ATTRIBUTE);
         if(Strings.isEmpty(v)) {
-            return FieldMappingStrategy.MANDATORY;
+            return FieldMappingStrategy.ALWAYS;
         }else{
             return Enums.nameOf(FieldMappingStrategy.class, v);
         }

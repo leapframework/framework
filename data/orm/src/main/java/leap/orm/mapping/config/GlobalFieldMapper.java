@@ -16,10 +16,7 @@
 
 package leap.orm.mapping.config;
 
-import leap.orm.mapping.EntityMappingBuilder;
-import leap.orm.mapping.FieldMappingBuilder;
-import leap.orm.mapping.MappingConfigContext;
-import leap.orm.mapping.MappingConfigException;
+import leap.orm.mapping.*;
 
 class GlobalFieldMapper {
 
@@ -34,25 +31,28 @@ class GlobalFieldMapper {
     protected void processGlobalField(MappingConfigContext context, GlobalFieldMappingConfig gf) {
         for(EntityMappingBuilder em : context.getEntityMappings()) {
 
-            if(isIncluded(context, em, gf) && shoudMapping(context, em, gf)) {
+            if(isIncluded(context, em, gf) && shouldMapping(context, em, gf)) {
 
-                applyGlobalField(context, em, gf.getField());
+                applyGlobalField(context, gf, em, gf.getField());
 
             }
         }
     }
 
-    protected void applyGlobalField(MappingConfigContext context, EntityMappingBuilder em, FieldMappingBuilder fm) {
-        if(em.findFieldMappingByName(fm.getFieldName()) != null) {
-            throw new MappingConfigException("Cannot apply global field '" + fm.getFieldName() +
-                    "' to entity '" + em.getEntityName() +
-                    "', the field already exists!");
+    protected void applyGlobalField(MappingConfigContext context,
+                                    GlobalFieldMappingConfig gf,
+                                    EntityMappingBuilder em,
+                                    FieldMappingBuilder fm) {
+
+        FieldMappingBuilder old = em.findFieldMappingByName(fm.getFieldName());
+        if(null != old) {
+            old.mergedWithGlobalField(fm);
+        }else{
+            FieldMappingBuilder real =
+                    context.getMappingStrategy().createFieldMappingByTemplate(context, em, fm);
+
+            em.addFieldMapping(real);
         }
-
-        FieldMappingBuilder real =
-                context.getMappingStrategy().createFieldMappingByTemplate(context, em, fm);
-
-        em.addFieldMapping(real);
     }
 
     protected boolean isIncluded(MappingConfigContext context, EntityMappingBuilder em, GlobalFieldMappingConfig gf) {
@@ -94,10 +94,10 @@ class GlobalFieldMapper {
         return true;
     }
 
-    protected boolean shoudMapping(MappingConfigContext context, EntityMappingBuilder em, FieldMappingConfig fc) {
+    protected boolean shouldMapping(MappingConfigContext context, EntityMappingBuilder em, FieldMappingConfig fc) {
         FieldMappingStrategy strategy = fc.getStrategy();
 
-        if(strategy == FieldMappingStrategy.MANDATORY) {
+        if(strategy == FieldMappingStrategy.ALWAYS) {
             return true;
         }
 

@@ -114,7 +114,86 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.sortOrder = template.sortOrder;
         this.reservedMetaFieldName = template.reservedMetaFieldName;
     }
-	
+
+    public void mergedWithGlobalField(FieldMappingBuilder fm) {
+
+        if(null != fm.dataType) {
+            this.dataType = fm.dataType;
+        }
+
+        if(null != fm.metaFieldName) {
+            this.metaFieldName = fm.metaFieldName;
+        }
+
+        if(null != fm.idGenerator) {
+            this.idGenerator = fm.idGenerator;
+        }
+
+        if(null != fm.nullable) {
+            this.nullable = fm.nullable;
+        }
+
+        if(null != fm.maxLength) {
+            this.maxLength = fm.maxLength;
+        }
+
+        if(null != fm.precision) {
+            this.precision = fm.precision;
+        }
+
+        if(null != fm.scale) {
+            this.scale = fm.scale;
+        }
+
+        if(null != fm.defaultValue) {
+            this.defaultValue = fm.defaultValue;
+        }
+
+        if(null != fm.defaultValueExpression) {
+            this.defaultValueExpression = fm.defaultValueExpression;
+        }
+
+        if(null != fm.insert) {
+            this.insert = fm.insert;
+        }
+
+        if(null != fm.update) {
+            this.update = fm.update;
+        }
+
+        if(null != fm.where) {
+            this.where = fm.where;
+        }
+
+        if(null != fm.insertValue) {
+            this.insertValue = fm.insertValue;
+        }
+
+        if(null != fm.updateValue) {
+            this.updateValue = fm.updateValue;
+        }
+
+        if(null != fm.whereValue) {
+            this.whereValue = fm.whereValue;
+        }
+
+        if(null != fm.whereIf) {
+            this.whereIf = fm.whereIf;
+        }
+
+        if(null != fm.domain) {
+            this.domain = fm.domain;
+        }
+
+        if(null != fm.validators) {
+            this.validators = null == fm.validators ? null : new ArrayList<>(fm.validators);
+        }
+
+        if(null != fm.reservedMetaFieldName) {
+            this.reservedMetaFieldName = fm.reservedMetaFieldName;
+        }
+    }
+
 	public String getFieldName() {
 		return fieldName;
 	}
