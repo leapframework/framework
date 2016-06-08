@@ -16,7 +16,6 @@
 
 import app.beans.DemoBean;
 import app.beans.DemoBeanDev;
-import app.beans.DemoBeanProd;
 import app.beans.DemoBeanTest;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
@@ -40,19 +39,19 @@ public class ConfigTest extends AppTestBase {
         }
 
         if(isTest1()) {
-            assertTrue(demoBean instanceof DemoBeanTest);
-            assertEquals(1, demoBeans.length);
+            assertTrue(demoBean instanceof DemoBeanDev);
+            assertEquals(2, demoBeans.length);
             return;
         }
 
         if(isTest2()) {
             assertTrue(demoBean instanceof DemoBeanTest);
-            assertEquals(1, demoBeans.length);
+            assertEquals(2, demoBeans.length);
             return;
         }
 
-        assertEquals(1, demoBeans.length);
-        assertTrue(demoBean instanceof DemoBeanProd);
+        assertEquals(2, demoBeans.length);
+        assertTrue(demoBean instanceof DemoBeanDev);
     }
 
     @Test
@@ -62,23 +61,35 @@ public class ConfigTest extends AppTestBase {
         if(isDev()) {
             assertEquals("local", env);
             assertEquals("val", config.getProperty("prop"));
+            assertNotEmpty(config.getProperty("dev"));
+            assertEmpty(config.getProperty("test1"));
+            assertEmpty(config.getProperty("test2"));
             return;
         }
 
         if(isTest1()) {
-            assertEquals("test1", env);
+            assertEquals("dev", env);
             assertEquals("val", config.getProperty("prop"));
+            assertNotEmpty(config.getProperty("test1"));
+            assertNotEmpty(config.getProperty("dev"));
+            assertEmpty(config.getProperty("test2"));
             return;
         }
 
         if(isTest2()) {
             assertEquals("test2", env);
             assertEquals("val", config.getProperty("prop"));
+            assertNotEmpty(config.getProperty("test2"));
+            assertNotEmpty(config.getProperty("dev"));
+            assertEmpty(config.getProperty("test1"));
             return;
         }
 
-        assertEquals("prod", env);
+        assertEquals("dev", env);
         assertEquals("val", config.getProperty("prop"));
+        assertNotEmpty(config.getProperty("dev"));
+        assertEmpty(config.getProperty("test1"));
+        assertEmpty(config.getProperty("test2"));
     }
 
     private boolean isTest1() {

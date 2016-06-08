@@ -3,4 +3,6 @@
 
     <property name="env" value="test2" override="true"/>
 
+    <property name="test2" value="1"/>
+
 </config>

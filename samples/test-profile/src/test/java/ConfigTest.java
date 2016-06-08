@@ -100,10 +100,8 @@ public class ConfigTest extends TestBase {
         assertNotNull(metaBean1);
         assertEquals("val", config.getProperty("meta.prop1"));
 
-        if(isDev()) {
-            assertNotNull(metaBean2);
-            assertEquals("val", config.getProperty("meta.prop2"));
-        }
+        assertNotNull(metaBean2);
+        assertEquals("val", config.getProperty("meta.prop2"));
     }
 
     @Test
@@ -118,12 +116,12 @@ public class ConfigTest extends TestBase {
 
         if(isTest()) {
             assertTrue(demoBean instanceof DemoBeanTest);
-            assertEquals(1, demoBeans.length);
+            assertEquals(2, demoBeans.length);
             return;
         }
 
-        assertEquals(1, demoBeans.length);
-        assertTrue(demoBean instanceof DemoBeanProd);
+        assertEquals(2, demoBeans.length);
+        assertTrue(demoBean instanceof DemoBeanDev);
     }
 
     @Test
@@ -144,7 +142,7 @@ public class ConfigTest extends TestBase {
             return;
         }
 
-        assertEquals("prod", env);
+        assertEquals("dev", env);
         assertEquals("val", config.getProperty("prop"));
     }
 

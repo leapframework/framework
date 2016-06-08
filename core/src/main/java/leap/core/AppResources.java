@@ -294,9 +294,11 @@ public class AppResources {
         }
 
         //in non-dev environment, the test resources should not be loaded.
+        /*
         if(!dev && isTestResource(resource)) {
             return;
         }
+        */
 
         int order = resolveSortOrder(resource);
         boolean defaultOverride = resolveDefaultOverride(resource);
