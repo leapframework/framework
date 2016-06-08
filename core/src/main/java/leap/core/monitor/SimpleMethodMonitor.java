@@ -46,6 +46,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
     private long      duration;
 
     private String callerClassName;
+    private String callerMethodName;
     private int    callerLineNumber;
 
     public SimpleMethodMonitor(SimpleMonitorProvider provider, String className, String methodDesc, Object[] args) {
@@ -68,7 +69,14 @@ public class SimpleMethodMonitor implements MethodMonitor {
                 if(i < stes.length - 1) {
                     ste = stes[i+1];
                     callerClassName  = ste.getClassName();
+                    callerMethodName = ste.getMethodName();
                     callerLineNumber = ste.getLineNumber();
+
+                    int dotIndex = callerClassName.lastIndexOf('.');
+                    if(dotIndex > 0) {
+                        callerClassName = callerClassName.substring(dotIndex + 1);
+                    }
+
                     break;
                 }else{
                     break;
@@ -197,7 +205,11 @@ public class SimpleMethodMonitor implements MethodMonitor {
                         .append(method.methodDesc);
 
                 if(null != method.callerClassName) {
-                    s.append(" (at ").append(method.callerClassName).append(":").append(method.callerLineNumber).append(")");
+                    s.append(" (at ")
+                            .append(method.callerClassName)
+                            .append(":")
+                            .append(method.callerLineNumber)
+                            .append(")");
                 }
 
                 s.append("  ").append(method.duration).append("ms");
