@@ -602,6 +602,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         protected final Loader           loader;
         protected final DefaultAppConfig config;
         protected final boolean          originalDefaultOverride;
+        protected final Stack<Boolean>   defaultOverrideStack = new Stack<>();
 
         protected boolean     defaultOverride;
         protected boolean     hasDefaultDataSource = false;
@@ -628,11 +629,16 @@ public class DefaultAppConfigSource implements AppConfigSource {
         @Override
         public void setDefaultOverride(boolean b) {
             this.defaultOverride = b;
+            defaultOverrideStack.add(b);
         }
 
         @Override
         public void resetDefaultOverride() {
-            this.defaultOverride = originalDefaultOverride;
+            if(defaultOverrideStack.isEmpty()) {
+                this.defaultOverride = originalDefaultOverride;
+            }else{
+                this.defaultOverride = defaultOverrideStack.pop();
+            }
         }
 
         @Override

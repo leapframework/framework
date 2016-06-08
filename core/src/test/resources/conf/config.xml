@@ -9,6 +9,8 @@
 
     <property name="testOrder.prop3" value="prop3_override" override="true"/>
 
+    <property name="testOverrideByTestConfig" value="2"/>
+
     <if expr="true">
         <monitor enabled="true" report-args="true" report-line-number="true" method-threshold="10"/>
     </if>
