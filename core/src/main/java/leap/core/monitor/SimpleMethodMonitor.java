@@ -103,8 +103,20 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
     @Override
     public void error(Throwable e) {
-        if(isRoot() && config.isReportError() && ERR_LOG.isInfoEnabled()) {
-            ERR_LOG.info("Error at : {}.{}", className, methodDesc, e);
+        if(config.isReportError() && isRoot()) {
+            if(ERR_LOG.isInfoEnabled()) {
+
+                if(config.isReportLineNumber()) {
+                    resolveLineNumber();
+
+                    ERR_LOG.info("Error Execution in {}.{} (at {}:{})",
+                                 className, methodDesc,
+                                 callerClassName, callerLineNumber, e);
+
+                }else{
+                    ERR_LOG.info("Error Execution in {}.{}", className, methodDesc, e);
+                }
+            }
         }
     }
 

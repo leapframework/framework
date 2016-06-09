@@ -7,6 +7,14 @@
 		</encoder>
 	</appender>
 
+    <appender name="FILE_ERROR_REPORT" class="ch.qos.logback.core.FileAppender">
+        <file>./target/error_report.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
     <appender name="FILE_SLOW_REPORT" class="ch.qos.logback.core.FileAppender">
         <file>./target/slow_report.log</file>
         <append>false</append>
@@ -26,8 +34,11 @@
         <appender-ref ref="FILE_SLOW_REPORT"/>
     </logger>
 
-    <logger name="leap"   level="TRACE"/>
-    <logger name="applog" level="DEBUG"/>
+    <logger name="applog.monitor.error" level="INFO" additivity="false">
+        <appender-ref ref="FILE_ERROR_REPORT"/>
+    </logger>
+
+    <logger name="leap" level="TRACE"/>
 
 	<root level="WARN">
 		<appender-ref ref="STDOUT" />

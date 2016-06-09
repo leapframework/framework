@@ -16,19 +16,17 @@
 
 package tested.beans;
 
-import leap.core.annotation.Monitored;
 import leap.lang.Threads;
 
 public class TMonitorBean {
 
     public void test(int i, String s) {
-        Threads.sleep(2);
+        Threads.sleep(5);
         test1();
     }
 
-    @Monitored
     protected void test1() {
-        Threads.sleep(2);
+        Threads.sleep(10);
         throw new RuntimeException("err");
     }
 
