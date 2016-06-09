@@ -29,8 +29,6 @@ import leap.lang.asm.commons.Method;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.InputStreamSource;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 
@@ -38,8 +36,6 @@ import java.io.InputStream;
 import java.lang.reflect.Modifier;
 
 public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
-
-    private static final Log log = LogFactory.get(MonitorInstrumentation.class);
 
     private static final Type NOP_PROVIDER_TYPE = Type.getType(NopMonitorProvider.class);
     private static final Type PROVIDER_TYPE     = Type.getType(MonitorProvider.class);
@@ -68,10 +64,12 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
     }
 
     private MonitorConfig mc;
+    private String        basePackage;
 
     @Override
     public void init(AppConfig config) {
-        this.mc = config.getExtension(MonitorConfig.class);
+        this.mc          = config.getExtension(MonitorConfig.class);
+        this.basePackage = config.getBasePackage().replace('.','/') + '/';
     }
 
     @Override
@@ -89,7 +87,9 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
             isBean = true;
         }
 
-        if(isBean) {
+        boolean isBasePackage = cr.getClassName().startsWith(basePackage);
+
+        if(isBean || isBasePackage) {
             boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
 
             if(!isMonitored) {
@@ -109,7 +109,6 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
             }
 
             if(isMonitored){
-//                log.debug("Instrument Monitored class : {}", cr.getClassName());
                 Try.throwUnchecked(() -> {
                     try(InputStream in = is.getInputStream()) {
                         ClassReader newCr = new ClassReader(in);
