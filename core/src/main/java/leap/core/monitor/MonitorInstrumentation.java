@@ -17,10 +17,9 @@
 package leap.core.monitor;
 
 import leap.core.AppConfig;
-import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
 import leap.core.annotation.Monitored;
-import leap.core.instrument.AbstractAsmInstrumentProcessor;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.core.instrument.AppInstrumentContext;
 import leap.lang.Try;
 import leap.lang.asm.*;
@@ -30,12 +29,11 @@ import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.InputStreamSource;
 import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
 
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
 
-public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
+public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
     private static final Type NOP_PROVIDER_TYPE = Type.getType(NopMonitorProvider.class);
     private static final Type PROVIDER_TYPE     = Type.getType(MonitorProvider.class);
@@ -64,16 +62,14 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
     }
 
     private MonitorConfig mc;
-    private String        basePackage;
 
     @Override
     public void init(AppConfig config) {
-        this.mc          = config.getExtension(MonitorConfig.class);
-        this.basePackage = config.getBasePackage().replace('.','/') + '/';
+        this.mc = config.getExtension(MonitorConfig.class);
     }
 
     @Override
-    protected boolean preInstrument(AppInstrumentContext context, ResourceSet rs) {
+    protected boolean preInstrument(AppInstrumentContext context) {
         if(null == mc || !mc.isEnabled()) {
             return false;
         }
@@ -82,42 +78,32 @@ public class MonitorInstrumentation extends AbstractAsmInstrumentProcessor {
 
     @Override
     protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
-        boolean isBean = context.isBeanClass();
-        if(!isBean && ASM.isAnnotationPresent(cn, Bean.class)) {
-            isBean = true;
-        }
+        boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
 
-        boolean isBasePackage = cr.getClassName().startsWith(basePackage);
-
-        if(isBean || isBasePackage) {
-            boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
-
-            if(!isMonitored) {
-                boolean isFrameworkClass = cr.getClassName().startsWith("leap/");
-                if(isFrameworkClass) {
-                    return;
-                }
-
-                for(MethodNode mn : cn.methods) {
-
-                    if(isMonitored(mn)) {
-                        isMonitored = true;
-                        break;
-                    }
-
-                }
+        if(!isMonitored) {
+            boolean isIgnore = isFrameworkClass(cr.getClassName());
+            if(isIgnore) {
+                return;
             }
 
-            if(isMonitored){
-                Try.throwUnchecked(() -> {
-                    try(InputStream in = is.getInputStream()) {
-                        ClassReader newCr = new ClassReader(in);
-                        context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr));
-                    }
-                });
+            for(MethodNode mn : cn.methods) {
+
+                if(isMonitored(mn)) {
+                    isMonitored = true;
+                    break;
+                }
+
             }
         }
 
+        if(isMonitored){
+            Try.throwUnchecked(() -> {
+                try(InputStream in = is.getInputStream()) {
+                    ClassReader newCr = new ClassReader(in);
+                    context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr), false);
+                }
+            });
+        }
     }
 
     protected static boolean isMonitored(MethodNode mn) {

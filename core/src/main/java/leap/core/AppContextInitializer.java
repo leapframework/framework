@@ -17,9 +17,9 @@ package leap.core;
 
 import leap.core.sys.DefaultSysSecurity;
 import leap.core.sys.SysContext;
+import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
-import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
@@ -33,8 +33,6 @@ public class AppContextInitializer {
 	
 	private static ThreadLocal<AppConfig> initialAppConfig;
 	private static boolean				  initializing;
-
-    private static AppConfigSource configSource = Factory.getInstance(AppConfigSource.class);
 
 	public static void initStandalone(){
 		initStandalone(null);
@@ -60,40 +58,41 @@ public class AppContextInitializer {
 			initializing = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-			MapAttributeAccessor attrs = new MapAttributeAccessor();
-			
 			log.debug("Starting standalone app...");
-			
-			config = configSource.loadConfig(null, null);
+
+            AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
+			config = cs.loadConfig(null, null);
 
 			initialAppConfig.set(config);
-			
-			DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
-			
-			//register beans
-			configSource.registerBeans(config, factory);
-			
-			AppContext context = new AppContext(attrs.map(), config, factory, null);
-			
-			initSysContext(context,config);
-			
-			AppContext.setStandalone(context);
-			RequestContext.setStandalone(new StandaloneRequestContext());
-			
-			factory.load(context);
-		
-			onInited(context);
 
-			Runtime.getRuntime().addShutdownHook(new Thread(){
-				@Override
-				public void run() {
-					factory.close();
-				}
-			});
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            Thread.currentThread().setContextClassLoader(appCl);
+            try{
+                DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
 
-			log.debug("Standalone app started!!!\n\n");
+                //register beans
+                cs.registerBeans(config, factory);
 
-            return context;
+                AppContext context = new AppContext(config, factory, null);
+
+                initSysContext(context,config);
+
+                AppContext.setStandalone(context);
+                RequestContext.setStandalone(new StandaloneRequestContext());
+
+                factory.load(context);
+
+                onInited(context);
+
+                log.debug("Standalone app started!!!\n\n");
+
+                return context;
+            }finally {
+                appCl.done();
+                Thread.currentThread().setContextClassLoader(ctxCl);
+            }
 		}finally{
 			initialAppConfig.remove();
 			initialAppConfig = null;
@@ -123,28 +122,37 @@ public class AppContextInitializer {
 			initializing     = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-			MapAttributeAccessor attrs = new MapAttributeAccessor();
-			
 			//log.info("Initializing app context");
-			
-			config = configSource.loadConfig(externalContext, initProperties);
 
-			initialAppConfig.set(config);
-			
-			BeanFactory factory = beanFactoryCreator.apply(config);
-			
-			//register bean
-			configSource.registerBeans(config, factory);
-			
-			AppContext context = new AppContext(attrs.map(),config, factory, externalContext);
-			
-			initSysContext(context,config);
-			
-			AppContext.setCurrent(context);
-			
-			callback.accept(context);
-			
-			onInited(context);
+            AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
+            config = cs.loadConfig(externalContext, initProperties);
+
+            initialAppConfig.set(config);
+
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            Thread.currentThread().setContextClassLoader(appCl);
+
+            try {
+                BeanFactory factory = beanFactoryCreator.apply(config);
+
+                //register bean
+                cs.registerBeans(config, factory);
+
+                AppContext context = new AppContext(config, factory, externalContext);
+
+                initSysContext(context, config);
+
+                AppContext.setCurrent(context);
+
+                callback.accept(context);
+
+                onInited(context);
+            }finally {
+                appCl.done();
+                Thread.currentThread().setContextClassLoader(ctxCl);
+            }
 		}finally{
 			initialAppConfig.remove();
 			initialAppConfig = null;

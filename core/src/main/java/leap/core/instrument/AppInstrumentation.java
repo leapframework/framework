@@ -33,7 +33,7 @@
 package leap.core.instrument;
 
 import leap.core.AppConfig;
-import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resource;
 
 public interface AppInstrumentation {
 
@@ -43,27 +43,7 @@ public interface AppInstrumentation {
     void init(AppConfig config);
 
     /**
-     * Completes instrumentation.
+     * Try instrument the class, returns the instrumented class info or null.
      */
-    void complete();
-
-    /**
-     * Instrument the classes in the resource set.
-     */
-    void instrument(ResourceSet rs);
-
-    /**
-     * Instrument the given class name.
-     */
-    void instrument(String className);
-
-    /**
-     * Instrument the given class name if exists.
-     */
-    boolean tryInstrument(String className);
-
-    /**
-     * Instrument the given class name if exists.
-     */
-    boolean tryInstrument(String className, boolean isBeanClass);
+    AppInstrumentClass tryInstrument(Resource r, byte[] bytes);
 }

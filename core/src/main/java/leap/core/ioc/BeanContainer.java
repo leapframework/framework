@@ -17,8 +17,7 @@ package leap.core.ioc;
 
 import leap.core.*;
 import leap.core.annotation.*;
-import leap.core.config.dyna.*;
-import leap.core.instrument.AppInstrumentation;
+import leap.core.config.dyna.PropertyProvider;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
@@ -45,6 +44,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 
 @Internal
+@SuppressWarnings("unchecked")
 public class BeanContainer implements BeanFactory {
 	
 	private static final Log log = LogFactory.get(BeanContainer.class);
@@ -54,40 +54,38 @@ public class BeanContainer implements BeanFactory {
 	
 	private static final BeanDefinitionBase NULL_BD = new BeanDefinitionBase(null);
 
-    protected Set<InitDefinition>                    initDefinitions           = new CopyOnWriteArraySet<>();
-    protected Set<BeanDefinitionBase>                allBeanDefinitions        = new CopyOnWriteArraySet<>();
-    protected Map<String, BeanDefinitionBase>        identifiedBeanDefinitions = new HashMap<>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>> beanTypeDefinitions       = new HashMap<>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>> beanClassDefinitions      = new HashMap<>();
-    protected Map<String, BeanListDefinition>        beanListDefinitions       = new HashMap<>();
-    protected Map<Class<?>, FactoryBean>             typedFactoryBeans         = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>      typedFactoryDefinitions   = new HashMap<>();
-    protected Map<String, BeanDefinitionBase>        namedBeanDefinitions      = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>      primaryBeanDefinitions    = new HashMap<>();
-    protected Map<String, AliasDefinition>           aliasDefinitions          = new HashMap<>();
+    protected final PlaceholderResolver            placeholderResolver;
+    protected final AnnotationBeanDefinitionLoader annotationBeanDefinitionLoader;
+    protected final XmlBeanDefinitionLoader        xmlBeanDefinitionLoader;
+
+    protected Set<InitDefinition>                            initDefinitions           = new CopyOnWriteArraySet<>();
+    protected Set<BeanDefinitionBase>                        allBeanDefinitions        = new CopyOnWriteArraySet<>();
+    protected Map<String, BeanDefinitionBase>                identifiedBeanDefinitions = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>         beanTypeDefinitions       = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>         beanClassDefinitions      = new HashMap<>();
+    protected Map<String, BeanListDefinition>                beanListDefinitions       = new HashMap<>();
+    protected Map<Class<?>, FactoryBean>                     typedFactoryBeans         = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>              typedFactoryDefinitions   = new HashMap<>();
+    protected Map<String, BeanDefinitionBase>                namedBeanDefinitions      = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>              primaryBeanDefinitions    = new HashMap<>();
+    protected Map<String, AliasDefinition>                   aliasDefinitions          = new HashMap<>();
+    protected List<BeanDefinitionBase>                       processorBeans            = new ArrayList<>();
+    protected List<BeanDefinitionBase>                       injectorBeans             = new ArrayList<>();
+    protected Map<Class<? extends Annotation>, BeanInjector> injectors                 = new HashMap<>();
 
     private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<?, BeanDefinition>> typedInstances = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                 primaryBeans   = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>       processorBeans = new ArrayList<>();
-    protected List<BeanDefinitionBase>       injectorBeans  = new ArrayList<>();
-    protected BeanProcessor[]                processors;
-    protected Map<Class<? extends Annotation>, BeanInjector>  injectors = new HashMap<>();
-
-    protected final PlaceholderResolver                        placeholderResolver;
-    protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
-    protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
-    protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
-
-    private AppConfig        config;
-    private AppContext       appContext;
-    private BeanFactory      beanFactory;
-    private BeanConfigurator beanConfigurator;
-    private boolean          initializing;
-    private boolean          containerInited;
-    private boolean          appInited;
+    private   AppConfig        config;
+    private   AppContext       appContext;
+    private   BeanFactory      beanFactory;
+    private   BeanConfigurator beanConfigurator;
+    protected BeanProcessor[]  processors;
+    private   boolean          initializing;
+    private   boolean          containerInited;
+    private   boolean          appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -106,7 +104,7 @@ public class BeanContainer implements BeanFactory {
         this.beanConfigurator               = new BeanConfigurator(config);
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
+		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this);
 	}
 	
 	public AppContext getAppContext() {
@@ -126,7 +124,6 @@ public class BeanContainer implements BeanFactory {
         log.debug("Load beans from {} classes",classes.length);
 		ensureContainerNotInited();
 		this.annotationBeanDefinitionLoader.load(this,classes);
-        instrumentation.complete();
 		return this;
 	}
 
@@ -294,7 +291,6 @@ public class BeanContainer implements BeanFactory {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void addBean(T bean) {
 		addBean((Class<T>)bean.getClass(),bean,true);
     }
@@ -367,38 +363,9 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> T createBean(Class<T> cls) throws BeanException {
         return (T)doCreateBean(createBeanDefinition(cls));
-        /*
-
-		try {
-	        T bean = Reflection.newInstance(cls);
-	        
-	        inject(bean);
-	        
-	        if(bean instanceof PostCreateBean){
-	        	((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
-	        }
-	        
-	        doBeanValidation(bean);
-	        
-	        return bean;
-		} catch (BeanException e){
-			throw e;
-        } catch (Throwable e) {
-        	throw new BeanCreationException("Error creating instance of '" + cls.getName() + "', " + e.getMessage(), e);
-        }
-        */
-    }
-
-    public <T> T createBean(String id) throws NoSuchBeanException, BeanException {
-		T bean = tryCreateBean(id);
-		if(null == bean){
-			throw new NoSuchBeanException("No such bean '"  + id + "'");
-		}
-	    return bean;
     }
 
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(String id) throws BeanException {
 		Args.notEmpty(id,"bean id");
 		BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
@@ -441,7 +408,6 @@ public class BeanContainer implements BeanFactory {
     }
 
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(Class<? super T> type) throws BeanException {
 		Args.notNull(type,"bean type");
 		
@@ -462,7 +428,6 @@ public class BeanContainer implements BeanFactory {
 		return null;
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryGetBeanExplicitly(Class<? super T> type) throws BeanException {
         Args.notNull(type, "bean type");
 
@@ -483,7 +448,6 @@ public class BeanContainer implements BeanFactory {
         return (T)doGetBean(bd);
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type) throws BeanException {
 		Args.notNull(type,"bean type");
 		BeanDefinitionBase bd = findPrimaryBeanDefinition(type);
@@ -521,7 +485,6 @@ public class BeanContainer implements BeanFactory {
     }
 	
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(Class<? super T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
 		Args.notNull(name,"bean name");
@@ -535,7 +498,6 @@ public class BeanContainer implements BeanFactory {
 		return null;
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
 		Args.notNull(name,"bean name");
@@ -556,7 +518,6 @@ public class BeanContainer implements BeanFactory {
     }
 
 	@Override
-    @SuppressWarnings("unchecked")
     public <T> List<T> getBeans(Class<? super T> type) throws BeanException {
     	List<T> beans = (List<T>)typedBeansMap.get(type);
     	
@@ -588,7 +549,6 @@ public class BeanContainer implements BeanFactory {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     public <T> List<T> getBeans(Class<? super T> type, String qualifier) throws BeanException {
     	String key = type.getName() + "$" + qualifier;
     	
@@ -648,7 +608,6 @@ public class BeanContainer implements BeanFactory {
     }
 	
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Map<T, BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException {
 		Map<T,BeanDefinition> beans = (Map<T,BeanDefinition>)typedInstances.get(type);
 		
@@ -715,6 +674,7 @@ public class BeanContainer implements BeanFactory {
 					doClose();
 				}
 			};
+            this.shutdownHook.setName("ShutdownHook-BeanFactory");
 			Runtime.getRuntime().addShutdownHook(this.shutdownHook);
 		}		
 	}

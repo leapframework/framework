@@ -18,7 +18,7 @@ package leap.core.transaction;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.Transactional;
-import leap.core.instrument.AbstractAsmInstrumentProcessor;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
 import leap.lang.Try;
@@ -36,7 +36,7 @@ import leap.lang.resource.Resource;
 import java.io.InputStream;
 import java.util.Map;
 
-public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
+public class TransactionInstrumentation extends AsmInstrumentProcessor implements AppInstrumentProcessor {
 
     private static final Log log = LogFactory.get(TransactionInstrumentation.class);
 
@@ -48,7 +48,6 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
 
     private static final String MANAGER_FIELD    = "$$transactionManager";
     private static final String BEGIN_ALL        = "beginTransactionsAll";
-    private static final String BEGIN_WITH       = "beginTransactionsWith";
     private static final String SET_ROLLBACK_ALL = "setRollbackAllOnly";
     private static final String COMPLETE_ALL     = "completeAll";
 
@@ -84,7 +83,7 @@ public class TransactionInstrumentation extends AbstractAsmInstrumentProcessor i
                 Try.throwUnchecked(() -> {
                     try(InputStream in = is.getInputStream()) {
                         ClassReader newCr = new ClassReader(in);
-                        context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr));
+                        context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr), true);
                     }
                 });
             }

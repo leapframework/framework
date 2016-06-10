@@ -21,14 +21,29 @@ import java.util.Set;
 public interface AppInstrumentClass {
 
     /**
-     * Returns the instrumented class name.
+     * Returns the class name.
      */
     String getClassName();
+
+    /**
+     * Returns the instrumented class name as internal class format.
+     */
+    String getInternalClassName();
 
     /**
      * Returns the bytes of class.
      */
     byte[] getClassData();
+
+    /**
+     * Returns true if the class must be instrumented.
+     */
+    boolean isEnsure();
+
+    /**
+     * Make the class ensure be instrumented.
+     */
+    void makeEnsure();
 
     /**
      * Updates the class data to the newly.

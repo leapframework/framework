@@ -22,12 +22,16 @@ import java.util.Set;
 public class SimpleAppInstrumentClass implements AppInstrumentClass {
 
     private final String  className;
+    private final String  internalClassName;
     private byte[]        classData;
+    private boolean       ensure;
     private Set<Class<?>> instrumentedBySet = new LinkedHashSet<>(2);
 
-    public SimpleAppInstrumentClass(String className, byte[] classData) {
-        this.className = className;
+    public SimpleAppInstrumentClass(String internalClassName, byte[] classData, boolean ensure) {
+        this.internalClassName = internalClassName;
+        this.className         = internalClassName.replace('/', '.');
         this.classData = classData;
+        this.ensure    = ensure;
     }
 
     @Override
@@ -36,8 +40,23 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     }
 
     @Override
+    public String getInternalClassName() {
+        return internalClassName;
+    }
+
+    @Override
     public byte[] getClassData() {
         return classData;
+    }
+
+    @Override
+    public boolean isEnsure() {
+        return ensure;
+    }
+
+    @Override
+    public void makeEnsure() {
+        this.ensure = true;
     }
 
     @Override

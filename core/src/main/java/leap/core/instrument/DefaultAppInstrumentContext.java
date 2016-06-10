@@ -53,10 +53,10 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
     }
 
     @Override
-    public void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData) {
+    public void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData, boolean ensure) {
         AppInstrumentClass ic = getInstrumentedClass(className);
         if(null == ic) {
-            ic = new SimpleAppInstrumentClass(className, classData);
+            ic = new SimpleAppInstrumentClass(className, classData, ensure);
             ic.addInstrumentedBy(instrumentBy);
             instrumentedMap.put(className, ic);
             return;
@@ -64,6 +64,10 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
 
         ic.updateClassData(classData);
         ic.addInstrumentedBy(instrumentBy);
+
+        if(ensure) {
+            ic.makeEnsure();
+        }
     }
 
     public void clear() {

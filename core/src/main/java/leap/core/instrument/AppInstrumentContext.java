@@ -45,6 +45,6 @@ public interface AppInstrumentContext {
     /**
      * Puts the instrumented class to context.
      */
-    void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData);
+    void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData, boolean ensure);
 
 }

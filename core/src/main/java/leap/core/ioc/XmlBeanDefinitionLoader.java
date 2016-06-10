@@ -15,10 +15,10 @@
  */
 package leap.core.ioc;
 
+import leap.core.AppClassLoader;
 import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.el.EL;
-import leap.core.instrument.AppInstrumentation;
 import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
@@ -130,16 +130,10 @@ class XmlBeanDefinitionLoader {
 
     protected boolean defaultAutoInject = true;
 
-    private final BeanContainer      container;
-    private final AppInstrumentation instrumentation;
+    private final BeanContainer container;
 
     public XmlBeanDefinitionLoader(BeanContainer container) {
-        this(container, null);
-    }
-
-    public XmlBeanDefinitionLoader(BeanContainer container, AppInstrumentation instrumentation) {
-        this.container       = container;
-        this.instrumentation = instrumentation;
+        this.container = container;
     }
 
     public boolean isDefaultAutoInject() {
@@ -167,16 +161,10 @@ class XmlBeanDefinitionLoader {
     }
 
     protected Class<?> forName(String className) {
-        if(null != instrumentation) {
-            instrumentation.tryInstrument(className, true);
-        }
         return Classes.forName(className);
     }
 
     protected Class<?> tryForName(String className) {
-        if(null != instrumentation) {
-            instrumentation.tryInstrument(className, true);
-        }
         return Classes.tryForName(className);
     }
     
@@ -360,6 +348,10 @@ class XmlBeanDefinitionLoader {
 
 		if(!Strings.isEmpty(beanClassName)){
 			try {
+                if(beanClassName.endsWith("TransactionBean")) {
+                    System.out.println();
+                }
+                AppClassLoader.addBeanClass(beanClassName);
 	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
 				throw new BeanDefinitionException("Error resolving bean class '" + beanClassName + "' , source : " + reader.getSource(), e);

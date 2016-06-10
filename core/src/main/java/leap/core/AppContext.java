@@ -171,14 +171,13 @@ public class AppContext implements AttributeAccessor {
 	
 	protected AppHome		home;
 	protected MessageSource messageSource;
-	
-	protected AppContext(Map<String, Object> attrs, AppConfig config,BeanFactory beanFactory,Object externalContext){
-		this.config			 = config;
-		this.beanFactory     = beanFactory;
-		this.externalContext = externalContext;
-		this.setAttributes(attrs);
-	}
-	
+
+    protected AppContext(AppConfig config,BeanFactory beanFactory,Object externalContext){
+        this.config			 = config;
+        this.beanFactory     = beanFactory;
+        this.externalContext = externalContext;
+    }
+
 	public AppHome getHome() {
 		return home;
 	}

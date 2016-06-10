@@ -93,9 +93,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         //post loading.
         postLoad(config);
 
-        //instrument
-        instrumentClasses(config);
-
         return config;
     }
 
@@ -134,11 +131,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
     protected void postLoad(DefaultAppConfig config) {
         config.postLoad();
-    }
-
-    protected void instrumentClasses(DefaultAppConfig config) {
-        instrumentation.init(config);
-        instrumentation.instrument(config.resources);
     }
 
     protected Loader createLoader(Object externalContext, Map<String, AppProperty> props, String profile) {
