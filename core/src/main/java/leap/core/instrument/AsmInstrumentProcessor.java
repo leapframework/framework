@@ -16,6 +16,7 @@
 
 package leap.core.instrument;
 
+import leap.core.annotation.Bean;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
@@ -34,8 +35,8 @@ import java.lang.reflect.Modifier;
 
 public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
 
-    protected boolean isFrameworkClass(String internalClassName) {
-        return internalClassName.startsWith("leap/");
+    protected boolean isFrameworkClass(ClassInfo ci) {
+        return ci.cr.getClassName().startsWith("leap/");
     }
 
     @Override
@@ -57,10 +58,28 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
                 if(null != ic) {
                     is = new ByteArrayInputStreamSource(ic.getClassData());
                     cr = new ClassReader(ic.getClassData());
+                }else{
+                    ic = context.newInstrumentedClass(cr.getClassName());
                 }
 
+                ClassNode cn = ASM.getClassNode(cr);
+
+                ClassInfo ci = new ClassInfo();
+                ci.rs = resource;
+                ci.is = is;
+                ci.cr = cr;
+                ci.cn = cn;
+
                 //todo : optimize performance?
-                processClass(context, resource, is, cr, ASM.getClassNode(cr));
+                processClass(context, ic, ci);
+
+                if(null == ic) {
+                    ic = context.getInstrumentedClass(cr.getClassName());
+                }
+
+                if(null != ic && !ic.isBeanDeclared()) {
+                    ic.setBeanDeclared(ASM.isAnnotationPresent(cn, Bean.class));
+                }
             }
         }catch(Exception e){
             throw new AppInstrumentException("Error instrument class '" + resource.getFilename() + "'",e);
@@ -81,7 +100,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
         return Modifier.isPublic(cr.getAccess()) && !Modifier.isAbstract(cr.getAccess());
     }
 
-    protected abstract void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) ;
+    protected abstract void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) ;
 
     /**
      * Reads the internal class of super class.
@@ -104,5 +123,12 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
         }
 
         return null;
+    }
+
+    protected static final class ClassInfo {
+        public Resource          rs;
+        public InputStreamSource is;
+        public ClassReader       cr;
+        public ClassNode         cn;
     }
 }

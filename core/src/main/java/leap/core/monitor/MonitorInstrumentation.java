@@ -19,16 +19,15 @@ package leap.core.monitor;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.annotation.Monitored;
-import leap.core.instrument.AsmInstrumentProcessor;
+import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
 import leap.lang.asm.commons.Method;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
-import leap.lang.io.InputStreamSource;
-import leap.lang.resource.Resource;
 
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
@@ -77,14 +76,22 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+        ClassNode cn = ci.cn;
+
         boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
 
         if(!isMonitored) {
-            boolean isIgnore = isFrameworkClass(cr.getClassName());
+            boolean isIgnore = isFrameworkClass(ci);
             if(isIgnore) {
                 return;
             }
+
+            //todo : only bean class will be monitored.
+//            boolean isBean = ASM.isAnnotationPresent(ci.cn, Bean.class) || AppClassLoader.isBeanClass(ic.getClassName());
+//            if(!isBean) {
+//                return;
+//            }
 
             for(MethodNode mn : cn.methods) {
 
@@ -98,9 +105,8 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
         if(isMonitored){
             Try.throwUnchecked(() -> {
-                try(InputStream in = is.getInputStream()) {
-                    ClassReader newCr = new ClassReader(in);
-                    context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr), false);
+                try(InputStream in = ci.is.getInputStream()) {
+                    context.updateInstrumented(ic, this.getClass(), instrumentClass(cn, new ClassReader(in)), false);
                 }
             });
         }

@@ -15,32 +15,13 @@
  */
 package leap.core.instrument;
 
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DefaultAppInstrumentContext implements AppInstrumentContext {
 
-    private static final Log log = LogFactory.get(DefaultAppInstrumentContext.class);
-
-    private final boolean bean;
     private final Map<String, AppInstrumentClass> instrumentedMap = new LinkedHashMap<>();
-
-    public DefaultAppInstrumentContext() {
-        this(false);
-    }
-
-    public DefaultAppInstrumentContext(boolean bean) {
-        this.bean = bean;
-    }
-
-    @Override
-    public boolean isBeanClass() {
-        return bean;
-    }
 
     @Override
     public Collection<AppInstrumentClass> getAllInstrumentedClasses() {
@@ -53,17 +34,20 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
     }
 
     @Override
-    public void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData, boolean ensure) {
-        AppInstrumentClass ic = getInstrumentedClass(className);
-        if(null == ic) {
-            ic = new SimpleAppInstrumentClass(className, classData, ensure);
-            ic.addInstrumentedBy(instrumentBy);
-            instrumentedMap.put(className, ic);
-            return;
+    public AppInstrumentClass newInstrumentedClass(String internalClassName) {
+        return new SimpleAppInstrumentClass(internalClassName);
+    }
+
+    @Override
+    public void updateInstrumented(AppInstrumentClass ic, Class<?> instrumentedBy, byte[] classData, boolean ensure) {
+        SimpleAppInstrumentClass sic = (SimpleAppInstrumentClass)ic;
+
+        if(!instrumentedMap.containsValue(ic)) {
+            instrumentedMap.put(ic.getInternalClassName(), ic);
         }
 
-        ic.updateClassData(classData);
-        ic.addInstrumentedBy(instrumentBy);
+        sic.updateClassData(classData);
+        sic.addInstrumentedBy(instrumentedBy);
 
         if(ensure) {
             ic.makeEnsure();

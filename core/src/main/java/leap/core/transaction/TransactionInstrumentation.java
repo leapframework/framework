@@ -18,9 +18,10 @@ package leap.core.transaction;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.Transactional;
-import leap.core.instrument.AsmInstrumentProcessor;
+import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
@@ -28,10 +29,8 @@ import leap.lang.asm.commons.Method;
 import leap.lang.asm.tree.AnnotationNode;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
-import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.Resource;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -67,7 +66,8 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+        ClassNode cn = ci.cn;
         if(null != cn.methods) {
             boolean hasTransactionalMethods = false;
 
@@ -79,11 +79,10 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
             }
 
             if(hasTransactionalMethods) {
-                log.debug("Instrument Transactional class : {}", cr.getClassName());
+                log.debug("Instrument Transactional class : {}", ic.getClassName());
                 Try.throwUnchecked(() -> {
-                    try(InputStream in = is.getInputStream()) {
-                        ClassReader newCr = new ClassReader(in);
-                        context.addInstrumentedClass(this.getClass(), cr.getClassName(), instrumentClass(cn, newCr), true);
+                    try(InputStream in = ci.is.getInputStream()) {
+                        context.updateInstrumented(ic, this.getClass(), instrumentClass(ci.cn, new ClassReader(in)), true);
                     }
                 });
             }
@@ -91,15 +90,11 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
     }
 
     protected byte[] instrumentClass(ClassNode cn, ClassReader cr) {
-        TxClassVisitor visitor = new TxClassVisitor(cn ,new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES));
+        TxClassVisitor visitor = new TxClassVisitor(cn, new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES));
 
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
-        byte[] data = visitor.getClassData();
-
-        //ASM.printASMifiedCode(data);
-
-        return data;
+        return visitor.getClassData();
     }
 
     protected static class TxClassVisitor extends ClassVisitor {

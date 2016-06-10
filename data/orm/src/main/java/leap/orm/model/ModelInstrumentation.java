@@ -15,9 +15,10 @@
  */
 package leap.orm.model;
 
-import leap.core.instrument.AsmInstrumentProcessor;
+import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
@@ -26,10 +27,8 @@ import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.IO;
-import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.Resource;
 import leap.orm.annotation.Instrument;
 
 import java.io.IOException;
@@ -74,15 +73,15 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 	protected List<ModelTransformer> transformers = Factory.newInstances(ModelTransformer.class);
 
     @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr, ClassNode cn) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
         boolean isModel = false;
 
-        String superName = cr.getSuperName();
+        String superName = ci.cr.getSuperName();
         if(MODEL_CLASS_NAME.equals(superName)){
             isModel = true;
         }else if(!superName.equals("java/lang/Object")){
             for(;;){
-                superName = readSuperName(rs, superName);
+                superName = readSuperName(ci.rs, superName);
 
                 if(null == superName || superName.equals("java/lang/Object")){
                     break;
@@ -96,12 +95,12 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
         }
 
         if(isModel){
-            ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-            instrument(context, cr,cw);
+            ClassWriter cw = new ClassWriter(ci.cr,ClassWriter.COMPUTE_FRAMES);
+            instrument(context, ic, ci.cr, cw);
         }
     }
 
-	protected void instrument(AppInstrumentContext context, ClassReader cr, ClassWriter cw) {
+	protected void instrument(AppInstrumentContext context, AppInstrumentClass ic, ClassReader cr, ClassWriter cw) {
 		ClassNode cn = ASM.getClassNode(cr);
 		
 		transformClass(cr,cw, cn);
@@ -109,8 +108,8 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 		
 		cw.visitEnd();
 		byte[] data = cw.toByteArray();
-		
-        context.addInstrumentedClass(this.getClass(), cr.getClassName(), data, false);
+
+        context.updateInstrumented(ic, this.getClass(), data, false);
 	}
 	
 	protected void transformClass(ClassReader cr,ClassWriter cw, ClassNode cn){

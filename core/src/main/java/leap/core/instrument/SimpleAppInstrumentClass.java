@@ -25,13 +25,12 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     private final String  internalClassName;
     private byte[]        classData;
     private boolean       ensure;
+    private boolean       beanDeclared;
     private Set<Class<?>> instrumentedBySet = new LinkedHashSet<>(2);
 
-    public SimpleAppInstrumentClass(String internalClassName, byte[] classData, boolean ensure) {
+    SimpleAppInstrumentClass(String internalClassName) {
         this.internalClassName = internalClassName;
         this.className         = internalClassName.replace('/', '.');
-        this.classData = classData;
-        this.ensure    = ensure;
     }
 
     @Override
@@ -55,13 +54,18 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     }
 
     @Override
-    public void makeEnsure() {
-        this.ensure = true;
+    public boolean isBeanDeclared() {
+        return beanDeclared;
     }
 
     @Override
-    public void updateClassData(byte[] data) {
-        classData = data;
+    public void setBeanDeclared(boolean b) {
+        this.beanDeclared = b;
+    }
+
+    @Override
+    public void makeEnsure() {
+        this.ensure = true;
     }
 
     @Override
@@ -69,7 +73,10 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
         return instrumentedBySet;
     }
 
-    @Override
+    public void updateClassData(byte[] data) {
+        classData = data;
+    }
+
     public void addInstrumentedBy(Class<?> cls) {
         instrumentedBySet.add(cls);
     }

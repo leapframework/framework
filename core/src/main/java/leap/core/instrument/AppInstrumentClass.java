@@ -46,17 +46,18 @@ public interface AppInstrumentClass {
     void makeEnsure();
 
     /**
-     * Updates the class data to the newly.
+     * Returns true if the class is declared as a managed bean.
      */
-    void updateClassData(byte[] data);
+    boolean isBeanDeclared();
+
+    /**
+     * Sets the class is delcared as a managed bean.
+     */
+    void setBeanDeclared(boolean b);
 
     /**
      * Returns a set contains all the classes which the class instrumented by..
      */
     Set<Class<?>> getAllInstrumentedBy();
 
-    /**
-     * Adds an instrumented by.
-     */
-    void addInstrumentedBy(Class<?> cls);
 }

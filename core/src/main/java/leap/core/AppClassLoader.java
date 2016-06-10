@@ -67,12 +67,8 @@ public class AppClassLoader extends ClassLoader {
     private final Set<String>        loaded          = new HashSet<>();
     private final String             basePackage;
 
-    /**
-     * if the classloader should delegate first to the parent
-     * classloader (standard java behaviour) or false if the classloader
-     * should first try to load from WEB-INF/lib or WEB-INF/classes (servlet spec recommendation).
-     */
-    private boolean parentLoaderPriority = true;
+    private boolean parentLoaderPriority  = true;
+    private boolean alwaysUseParentLoader = true;
     private Method  parentLoaderDefineClass;
 
     public AppClassLoader(ClassLoader parent, AppConfig config) {
@@ -101,9 +97,6 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private void loadAllClasses() {
-
-        log.debug("Loading all app classes...");
-
         config.getResources().forEach(resource -> {
 
             if(resource.exists()) {
@@ -120,8 +113,6 @@ public class AppClassLoader extends ClassLoader {
                 }
             }
         });
-
-        log.debug("Loading all app classes done");
     }
 
     @Override
@@ -176,18 +167,23 @@ public class AppClassLoader extends ClassLoader {
             byte[] bytes = IO.readByteArray(is);
 
             //try instrument the class.
-            AppInstrumentClass instrumented = instrumentation.tryInstrument(resource, bytes);
+            AppInstrumentClass ic = instrumentation.tryInstrument(resource, bytes);
 
-            if(null != instrumented) {
-                name  = instrumented.getClassName();
-                bytes = instrumented.getClassData();
+            if(null != ic) {
+                name  = ic.getClassName();
+                bytes = ic.getClassData();
+
+                if(!alwaysUseParentLoader && (ic.isBeanDeclared() || isBeanClass(name))) {
+                    log.trace("Defining instrumented bean class '{}' use app loader", name);
+                    return defineClass(name, bytes, 0, bytes.length);
+                }
             }
 
             if(!parentLoaderPriority) {
                 log.trace("Defining instrumented class '{}' use app loader", name);
                 return defineClass(name, bytes, 0, bytes.length);
             }else{
-                if(null == instrumented) {
+                if(null == ic) {
                     return null;
                 }
 
@@ -200,7 +196,7 @@ public class AppClassLoader extends ClassLoader {
                     Throwable cause = e.getCause();
 
                     if(cause instanceof  LinkageError) {
-                        if (instrumented.isEnsure()) {
+                        if (ic.isEnsure()) {
                             throw new IllegalStateException("Class '" + name + "' already loaded by '" +
                                     parent.getClass().getName() + "', cannot instrument it!");
                         } else {
