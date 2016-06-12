@@ -141,7 +141,7 @@ class SqlWhereProcessor {
         list.add(new Text(" "));
 
         if(null != fm.getWhereIf()) {
-            nodes.add(new ConditionalNode(fm.getWhereIf(), nodes.toArray(new AstNode[0])));
+            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
         }else{
             nodes.addAll(list);
         }

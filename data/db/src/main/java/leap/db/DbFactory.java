@@ -117,6 +117,7 @@ public class DbFactory {
 		Connection connection = null;
 		
 		try{
+            log.debug("Fetching connection from dataSource '{}'...", ds);
 			connection = ds.getConnection();
 			DatabaseMetaData dm = connection.getMetaData();
 			
