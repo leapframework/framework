@@ -79,6 +79,8 @@ public class BeanConfigTest extends CoreTestCase {
 
         //no field property
         assertEquals("1", bean.testNotFieldProperty1);
+        assertEquals("2", bean.testNotFieldProperty2);
+        assertEquals("3", bean.testNotFieldProperty3);
     }
 
 }

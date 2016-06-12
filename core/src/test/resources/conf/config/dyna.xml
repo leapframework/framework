@@ -18,6 +18,8 @@
         <property name="complexProperty1" value="{name:n1, value:100}"/>
         <property name="complexProperty2" value="{name:n2, value:200}"/>
         <property name="noFieldProperty1" value="1"/>
+        <property name="noFieldProperty2" value="2"/>
+        <property name="noFieldProperty3" value="3"/>
     </properties>
 
 </config>

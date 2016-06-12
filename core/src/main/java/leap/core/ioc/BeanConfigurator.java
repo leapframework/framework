@@ -29,8 +29,12 @@ import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.lang.json.JSON;
 import leap.lang.reflect.ReflectField;
+import leap.lang.reflect.ReflectMethod;
+import leap.lang.reflect.ReflectParameter;
 import leap.lang.reflect.ReflectValued;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class BeanConfigurator {
@@ -90,6 +94,19 @@ public class BeanConfigurator {
             }
 
             doBeanConfigure(bean, field, keyPrefix, a);
+        }
+
+        for(ReflectMethod m : bt.getReflectClass().getMethods()) {
+            if(m.isSetterMethod() || m.isGetterMethod()) {
+                continue;
+            }
+
+            if(m.getParameters().length == 1) {
+                ConfigProperty a = m.getAnnotation(ConfigProperty.class);
+                if(null != a) {
+                    doBeanConfigure(bean, new MethodReflectValued(bean, m), keyPrefix, a);
+                }
+            }
         }
 
         done.clear();
@@ -244,6 +261,49 @@ public class BeanConfigurator {
             v.setValue(bean, value);
         }else if(!Strings.isEmpty(defaultValue)) {
             v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
+        }
+    }
+
+    protected final class MethodReflectValued implements ReflectValued {
+
+        private final Object           o;
+        private final ReflectMethod    m;
+        private final ReflectParameter p;
+
+        public MethodReflectValued(Object o, ReflectMethod m) {
+            this.o = o;
+            this.m = m;
+            this.p = m.getParameters()[0];
+        }
+
+        @Override
+        public String getName() {
+            return p.getName();
+        }
+
+        @Override
+        public Class<?> getType() {
+            return p.getType();
+        }
+
+        @Override
+        public Type getGenericType() {
+            return p.getGenericType();
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            return p.getAnnotations();
+        }
+
+        @Override
+        public Object getValue(Object bean) {
+            return null;
+        }
+
+        @Override
+        public void setValue(Object bean, Object value) {
+            m.invoke(o, value);
         }
     }
     
