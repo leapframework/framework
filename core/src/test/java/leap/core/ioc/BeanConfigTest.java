@@ -19,7 +19,7 @@ package leap.core.ioc;
 import leap.core.CoreTestCase;
 import leap.core.config.dyna.Property;
 import org.junit.Test;
-import tested.basepackage.beans.TConfigBean;
+import tested.base.beans.TConfigBean;
 
 public class BeanConfigTest extends CoreTestCase {
 

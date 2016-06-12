@@ -21,7 +21,17 @@ import java.util.Map;
 
 public class DefaultAppInstrumentContext implements AppInstrumentContext {
 
+    private final ClassLoader                     classLoader;
     private final Map<String, AppInstrumentClass> instrumentedMap = new LinkedHashMap<>();
+
+    public DefaultAppInstrumentContext(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    @Override
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
 
     @Override
     public Collection<AppInstrumentClass> getAllInstrumentedClasses() {

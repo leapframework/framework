@@ -56,8 +56,8 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
     }
 
     @Override
-    public AppInstrumentClass tryInstrument(Resource r, byte[] bytes) {
-        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext();
+    public AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes) {
+        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext(loader);
 
         for(AppInstrumentProcessor p : processors){
             try {

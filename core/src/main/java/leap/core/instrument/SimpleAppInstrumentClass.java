@@ -16,6 +16,8 @@
 
 package leap.core.instrument;
 
+import leap.lang.asm.Type;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -30,7 +32,7 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
 
     SimpleAppInstrumentClass(String internalClassName) {
         this.internalClassName = internalClassName;
-        this.className         = internalClassName.replace('/', '.');
+        this.className         = Type.getObjectType(internalClassName).getClassName();
     }
 
     @Override

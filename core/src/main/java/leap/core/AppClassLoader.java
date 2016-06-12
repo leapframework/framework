@@ -18,6 +18,8 @@ package leap.core;
 
 import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentation;
+import leap.core.instrument.ClassDependency;
+import leap.core.instrument.ClassDependencyResolver;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
@@ -33,6 +35,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,15 +65,19 @@ public class AppClassLoader extends ClassLoader {
         return names.contains(name);
     }
 
-    private final ClassLoader        parent;
-    private final AppConfig          config;
-    private final AppInstrumentation instrumentation = Factory.newInstance(AppInstrumentation.class);
-    private final Set<String>        loaded          = new HashSet<>();
-    private final String             basePackage;
+    private final ClassLoader parent;
+    private final AppConfig   config;
+    private final String      basePackage;
+
+    private final Set<String>             loadedUrls         = new HashSet<>();
+    private final Set<String>             loadedNames        = new HashSet<>();
+    private final AppInstrumentation      instrumentation    = Factory.newInstance(AppInstrumentation.class);
+    private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
 
     private boolean parentLoaderPriority  = true;
     private boolean alwaysUseParentLoader = true;
     private Method  parentLoaderDefineClass;
+    private Method  parentFindLoadedClass;
 
     public AppClassLoader(ClassLoader parent, AppConfig config) {
         this.parent      = parent;
@@ -80,8 +88,11 @@ public class AppClassLoader extends ClassLoader {
             parentLoaderDefineClass =
                     ClassLoader.class.getDeclaredMethod("defineClass",
                         new Class[] {String.class, byte[].class, int.class,int.class});
-
             parentLoaderDefineClass.setAccessible(true);
+
+            parentFindLoadedClass =
+                    ClassLoader.class.getDeclaredMethod("findLoadedClass", String.class);
+            parentFindLoadedClass.setAccessible(true);
         } catch (Exception e) {
             throw Exceptions.uncheck(e);
         }
@@ -92,11 +103,28 @@ public class AppClassLoader extends ClassLoader {
     }
 
     void done() {
-        loaded.clear();
+        loadedUrls.clear();
+        loadedNames.clear();
         beanClassNamesLocal.remove();
     }
 
+    @Override
+    public URL getResource(String name) {
+        return parent.getResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        return parent.getResources(name);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        return parent.getResourceAsStream(name);
+    }
+
     private void loadAllClasses() {
+        log.debug("Try instrument all classes in app configured resources.");
         config.getResources().forEach(resource -> {
 
             if(resource.exists()) {
@@ -106,7 +134,7 @@ public class AppClassLoader extends ClassLoader {
                         filename.endsWith(Classes.CLASS_FILE_SUFFIX)) {
 
                     try {
-                        findClass("", resource);
+                        findClass(null, resource);
                     } catch (ClassNotFoundException e) {
                         throw new NestedClassNotFoundException(e);
                     }
@@ -122,6 +150,8 @@ public class AppClassLoader extends ClassLoader {
 
     @Override
     protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        log.trace("Loading class '{}'...", name);
+
         Class<?> c = findLoadedClass(name);
 
         if (null == c) {
@@ -129,6 +159,7 @@ public class AppClassLoader extends ClassLoader {
         }
 
         if (null == c) {
+            log.trace("Load class '{}' by parent loader", name);
             c = parent.loadClass(name);
         }
 
@@ -141,6 +172,17 @@ public class AppClassLoader extends ClassLoader {
 
     @Override
     protected Class<?> findClass(final String name) throws ClassNotFoundException {
+        if(loadedNames.contains(name)) {
+            return null;
+        }else{
+            loadedNames.add(name);
+        }
+
+        if(isParentLoaded(name)) {
+            log.trace("Class '{}' already loaded by parent", name);
+            return null;
+        }
+
         if(isIgnore(name)) {
             return null;
         }
@@ -155,10 +197,8 @@ public class AppClassLoader extends ClassLoader {
 
     private Class<?> findClass(String name, Resource resource) throws ClassNotFoundException {
         String url = resource.getURLString();
-        if(loaded.contains(url)) {
+        if(loadedUrls.contains(url)) {
             return null;
-        }else{
-            loaded.add(url);
         }
 
         InputStream is = null;
@@ -166,8 +206,33 @@ public class AppClassLoader extends ClassLoader {
             is = resource.getInputStream();
             byte[] bytes = IO.readByteArray(is);
 
+            ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
+
+            if(null != dep.getSuperClassName()) {
+                log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
+                findClass(dep.getSuperClassName());
+            }
+
+            if(!dep.getDependentClassNames().isEmpty()) {
+
+                log.trace("Loading {} dependent classes of '{}'...",
+                            dep.getDependentClassNames().size(),
+                            dep.getClassName());
+
+                for(String depClassName : dep.getDependentClassNames()) {
+                    log.trace("Loading dependent class '{}'", depClassName);
+                    findClass(depClassName);
+                }
+
+            }
+
             //try instrument the class.
-            AppInstrumentClass ic = instrumentation.tryInstrument(resource, bytes);
+            AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, bytes);
+            if(null == ic && null == name) {
+                return null;
+            }
+
+            loadedUrls.add(url);
 
             if(null != ic) {
                 name  = ic.getClassName();
@@ -214,6 +279,14 @@ public class AppClassLoader extends ClassLoader {
             throw new ClassNotFoundException(name, e);
         }finally{
             IO.close(is);
+        }
+    }
+
+    private boolean isParentLoaded(String className) {
+        try {
+            return null != parentFindLoadedClass.invoke(parent, className);
+        } catch (Exception e) {
+            throw Exceptions.uncheck(e);
         }
     }
 

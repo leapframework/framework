@@ -101,6 +101,10 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
                 }
 
             }
+
+            if(!isMonitored) {
+                log.trace("Ignore class '{}', can't found any monitored method(s).", ic.getClassName());
+            }
         }
 
         if(isMonitored){

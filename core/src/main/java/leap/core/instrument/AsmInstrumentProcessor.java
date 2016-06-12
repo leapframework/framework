@@ -26,6 +26,8 @@ import leap.lang.asm.tree.ClassNode;
 import leap.lang.io.ByteArrayInputStreamSource;
 import leap.lang.io.IO;
 import leap.lang.io.InputStreamSource;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 
@@ -34,6 +36,8 @@ import java.io.InputStream;
 import java.lang.reflect.Modifier;
 
 public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
+
+    protected final Log log = LogFactory.get(this.getClass());
 
     protected boolean isFrameworkClass(ClassInfo ci) {
         return ci.cr.getClassName().startsWith("leap/");
@@ -45,7 +49,6 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
             return;
         }
 
-        InputStreamSource is = new ByteArrayInputStreamSource(bytes);
         try{
             ClassReader cr = new ClassReader(bytes);
 
@@ -54,6 +57,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
                     return;
                 }
 
+                InputStreamSource  is = new ByteArrayInputStreamSource(bytes);
                 AppInstrumentClass ic = context.getInstrumentedClass(cr.getClassName());
                 if(null != ic) {
                     is = new ByteArrayInputStreamSource(ic.getClassData());

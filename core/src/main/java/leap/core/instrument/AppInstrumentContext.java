@@ -20,6 +20,11 @@ import java.util.Collection;
 public interface AppInstrumentContext {
 
     /**
+     * Returns true class loader for instrumentation.
+     */
+    ClassLoader getClassLoader();
+
+    /**
      * Returns true if the given class name was instrumented by the class.
      */
     default boolean isInstrumentedBy(String className, Class<?> instrumentedBy) {

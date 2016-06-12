@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-	<base-package>tested.basepackage</base-package>
+	<base-package>tested.base</base-package>
 
     <import resource="../imp/imp.config.xml"/>
 

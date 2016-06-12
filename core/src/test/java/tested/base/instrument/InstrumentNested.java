@@ -13,28 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tested.basepackage.beans;
 
-import leap.core.annotation.Bean;
-import leap.core.annotation.ConfigProperty;
-import leap.core.annotation.Inject;
+package tested.base.instrument;
 
-@Bean
-public class TConstructorBean1 {
+import leap.core.annotation.Monitored;
 
-    private final TAnnotationBean2 bean;
-    private final String           testConfigProperty;
+@Monitored
+public class InstrumentNested {
 
-    public TConstructorBean1(@Inject TAnnotationBean2 bean, @ConfigProperty String testConfigProperty) {
-        this.bean = bean;
-        this.testConfigProperty = testConfigProperty;
+    public void test() {
+
     }
 
-    public TAnnotationBean2 getBean() {
-        return bean;
-    }
-
-    public String getTestConfigProperty() {
-        return testConfigProperty;
-    }
 }

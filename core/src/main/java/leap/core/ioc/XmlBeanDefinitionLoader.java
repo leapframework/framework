@@ -349,6 +349,7 @@ class XmlBeanDefinitionLoader {
 		if(!Strings.isEmpty(beanClassName)){
 			try {
                 AppClassLoader.addBeanClass(beanClassName);
+                log.trace("Resolving bean class '{}'...", beanClassName);
 	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
 				throw new BeanDefinitionException("Error resolving bean class '" + beanClassName + "' , source : " + reader.getSource(), e);

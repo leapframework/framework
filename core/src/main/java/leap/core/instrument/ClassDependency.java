@@ -14,4 +14,24 @@
  * limitations under the License.
  */
 
-package tested.basepackage;
+package leap.core.instrument;
+
+import java.util.Set;
+
+public interface ClassDependency {
+
+    /**
+     * Returns the class name.
+     */
+    String getClassName();
+
+    /**
+     * Returns the super class name or returns null if the super class is {@link Object}.
+     */
+    String getSuperClassName();
+
+    /**
+     * Returns all the dependent class names.
+     */
+    Set<String> getDependentClassNames();
+}

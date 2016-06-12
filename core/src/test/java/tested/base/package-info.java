@@ -13,11 +13,5 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tested.basepackage.beans;
 
-import leap.core.annotation.Bean;
-
-@Bean(primary=true)
-public class TAnnotationBean2 {
-
-}
+package tested.base;

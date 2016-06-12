@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tested.basepackage.beans;
+package tested.base.beans;
 
 import leap.core.annotation.Bean;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.DefaultConstructor;
 import leap.core.annotation.Inject;
-import tested.basepackage.beans.TAnnotationBean2;
 
 @Bean
 public class TConstructorBean2 {
