@@ -147,7 +147,7 @@ public class AppClassLoader extends ClassLoader {
 
         Resource resource = Resources.getResource("classpath:" + name.replace('.', '/') + ".class");
         if(null == resource || !resource.exists()) {
-            throw new ClassNotFoundException(name);
+            return null;
         }
 
         return findClass(name, resource);
