@@ -348,9 +348,6 @@ class XmlBeanDefinitionLoader {
 
 		if(!Strings.isEmpty(beanClassName)){
 			try {
-                if(beanClassName.endsWith("TransactionBean")) {
-                    System.out.println();
-                }
                 AppClassLoader.addBeanClass(beanClassName);
 	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {

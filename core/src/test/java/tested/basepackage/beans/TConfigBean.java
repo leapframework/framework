@@ -54,6 +54,10 @@ public class TConfigBean {
     protected boolean boolPropertyWithDefaultValue;
     protected String[] arrayPropertyWithDefaultValue;
 
+    public String testNotFieldProperty1;
+    public String testNotFieldProperty2;
+    public String testNotFieldProperty3;
+
     @ConfigProperty(key = "not_exists_property", defaultValue = "10")
     public int getIntPropertyWithDefaultValue() {
         return intPropertyWithDefaultValue;
@@ -81,6 +85,22 @@ public class TConfigBean {
     @ConfigProperty("stringProperty1")
     public String getRawStringProperty3() {
         return rawStringProperty3;
+    }
+
+    @ConfigProperty("noFieldProperty1")
+    public void setNoFieldProperty(String v) {
+        this.testNotFieldProperty1 = v;
+    }
+
+    @ConfigProperty("noFieldProperty2")
+    public void doConfigNoFieldProperty(String v) {
+        this.testNotFieldProperty2 = v;
+    }
+
+    @ConfigProperty("noFieldProperty3")
+    public TConfigBean setConfigNoFieldProperty(String v) {
+        this.testNotFieldProperty3 = v;
+        return this;
     }
 
     public static final class CProp {

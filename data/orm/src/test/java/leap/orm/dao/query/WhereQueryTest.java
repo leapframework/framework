@@ -34,6 +34,7 @@ public class WhereQueryTest extends OrmTestCase {
         assertEquals("1",ECodeModel.<ECodeModel>where("1=1").first().getName());
 
         assertEquals("1",ECodeModel.<ECodeModel>where("name = ?", "1").first().getName());
+        assertNull(ECodeModel.<ECodeModel>where("name = :name", New.hashMap("ecode",null)).orderBy("name asc").firstOrNull());
 
         assertEquals(1,ECodeModel.where("ecode = ?", "t1").count());
         assertEquals("2",ECodeModel.<ECodeModel>where("ecode = ?", "t1").first().getName());
