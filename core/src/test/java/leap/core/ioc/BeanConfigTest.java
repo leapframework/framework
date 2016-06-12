@@ -76,6 +76,9 @@ public class BeanConfigTest extends CoreTestCase {
         assertNotNull(cprop2);
         assertEquals("n2", cprop2.name);
         assertEquals(200, cprop2.value);
+
+        //no field property
+        assertEquals("1", bean.testNotFieldProperty1);
     }
 
 }
