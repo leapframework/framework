@@ -39,6 +39,8 @@ public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
     @Token
     @Column("refresh_token")
     protected String refreshToken;
+
+    protected Boolean authenticated;
     
     @Column
     @Scope
@@ -92,4 +94,11 @@ public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
         this.scope = scope;
     }
 
+    public Boolean getAuthenticated() {
+        return authenticated;
+    }
+
+    public void setAuthenticated(Boolean authenticated) {
+        this.authenticated = authenticated;
+    }
 }

@@ -154,6 +154,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         entity.setRefreshToken(token.getRefreshToken());
         entity.setTimeExpirable(token);
         entity.setScope(token.getScope());
+        entity.setAuthenticated(token.isAuthenticated());
         
         return entity;
     }
@@ -185,7 +186,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         token.setScope(entity.getScope());
         token.setCreated(entity.getCreatedMs());
         token.setExpiresIn(entity.getExpiresIn());
-        
+        token.setAuthenticated(entity.getAuthenticated());
         return token;
     }
     

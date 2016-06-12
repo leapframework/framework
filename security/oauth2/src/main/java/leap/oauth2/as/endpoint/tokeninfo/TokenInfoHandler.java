@@ -15,7 +15,9 @@
  */
 package leap.oauth2.as.endpoint.tokeninfo;
 
+import leap.lang.Out;
 import leap.oauth2.OAuth2Params;
+import leap.oauth2.as.token.AuthzAccessToken;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -24,6 +26,6 @@ public interface TokenInfoHandler {
     /**
      * Returns <code>true</code> if handled.
      */
-    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable;
+    boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params, Out<AuthzAccessToken> at) throws Throwable;
 
 }

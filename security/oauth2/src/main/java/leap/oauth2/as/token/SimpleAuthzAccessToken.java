@@ -31,6 +31,7 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 	protected String 			  refreshToken;
 	protected int                 refreshTokenExpiresIn;
 	protected String 			  scope;
+	protected Boolean				authenticated = false;
 	protected Map<String, Object> extendedParameters;
 
 	public String getToken() {
@@ -83,6 +84,19 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 
     public Map<String, Object> getExtendedParameters() {
 		return extendedParameters;
+	}
+
+	@Override
+	public boolean isAuthenticated() {
+		return authenticated;
+	}
+
+	public Boolean getAuthenticated() {
+		return authenticated;
+	}
+
+	public void setAuthenticated(Boolean authenticated) {
+		this.authenticated = authenticated;
 	}
 
 	public void setExtendedParameters(Map<String, Object> extendedParameters) {

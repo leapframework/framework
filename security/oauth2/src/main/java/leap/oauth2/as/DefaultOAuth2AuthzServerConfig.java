@@ -499,14 +499,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.privateKey = privateKey;
         return this;
     }
-
-    public OAuth2AuthzServerConfigurator setPrivateKey(String privateKey) {
+    @ConfigProperty
+    public void setPrivateKeyStr(String privateKey) {
         if(Strings.isEmpty(privateKey)) {
             this.privateKey = null;
         }else{
             this.privateKey = RSA.decodePrivateKey(privateKey);
         }
-        return this;
     }
 
     @Override

@@ -39,7 +39,6 @@ public class DefaultAuthzClientValidator implements AuthzClientValidator {
             OAuth2Errors.invalidClient(response, "invalid client id");
             return null;
         }
-        
         return client;
     }
 
