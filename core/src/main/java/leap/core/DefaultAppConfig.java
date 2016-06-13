@@ -32,6 +32,7 @@ import leap.lang.text.PlaceholderResolver;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -60,6 +61,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected boolean                       reloadEnabled       = false;
     protected String                        secret              = null;
     protected PrivateKey                    privateKey          = null;
+    protected PublicKey                     publicKey           = null;
     protected Map<Class<?>, Object>         extensions          = new HashMap<>();
     protected Map<Class<?>, Object>         extensionsReadonly  = Collections.unmodifiableMap(extensions);
     protected Map<String, String>           properties          = new ConcurrentHashMap<>();
@@ -178,7 +180,15 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         return privateKey;
     }
 
-	@Override
+    @Override
+    public PublicKey ensureGetPublicKey() {
+        if(null == publicKey) {
+            publicKey = loadOrGeneratePublicKey();
+        }
+        return publicKey;
+    }
+
+    @Override
 	public Map<String, String> getProperties() {
 	    return propertiesReadonly;
     }
@@ -368,43 +378,59 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	}
 	
 	protected PrivateKey loadOrGeneratePrivateKey() {
+        String keyContent = generateOrGetKeyFileContent();
+        int index0 = keyContent.indexOf('#',1) + 1;
+        int index1 = keyContent.indexOf('#',index0);
+        String base64PrivateKey = keyContent.substring(index0, index1).trim();
+        return RSA.decodePrivateKey(base64PrivateKey);
+	}
+
+    protected PublicKey loadOrGeneratePublicKey(){
+        String keyContent = generateOrGetKeyFileContent();
+        int index0 = keyContent.indexOf('#',1) + 1;
+        int index1 = keyContent.indexOf('#',index0)+1;
+        int index2 = keyContent.indexOf('#',index1)+1;
+        String base64PublicKey = keyContent.substring(index2).trim();
+        return RSA.decodePublicKey(base64PublicKey);
+    }
+
+    protected String generateOrGetKeyFileContent(){
         FileResource userDir   = Resources.createFileResource(System.getProperty("user.dir"));
         FileResource targetDir = userDir.createRelative("./target");
-        
+
         File keyFile = targetDir.exists() ? targetDir.createRelative("./.rsa_key").getFile() : userDir.createRelative("./.rsa_key").getFile();
-	    
+
+        if(keyFile.exists()){
+            String keyContent = Strings.trim(IO.readString(keyFile, Charsets.UTF_8));
+            if(Strings.isEmpty(keyContent)){
+                keyContent = writeKeyContent(keyFile);
+            }
+            return keyContent;
+        }
+        return writeKeyContent(keyFile);
+    }
+
+    protected String writeKeyContent(File file){
         /*
         #base64 rsa private key#
-        
+
         ...
-        
+
         #base64 rsa public key#
-        
+
         ...
-        
+
          */
-        
-        if(keyFile.exists()) {
-            String keyContent = Strings.trim(IO.readString(keyFile, Charsets.UTF_8));
-            if(!Strings.isEmpty(keyContent)) {
-                int index0 = keyContent.indexOf('#',1) + 1;
-                int index1 = keyContent.indexOf('#',index0);
-                
-                String base64PrivateKey = keyContent.substring(index0, index1).trim();
-                return RSA.decodePrivateKey(base64PrivateKey);
-            }
-        }
-        
         RsaKeyPair kp = RSA.generateKeyPair();
         StringBuilder content = new StringBuilder();
         content.append("#base64 rsa private key#\n")
-               .append(kp.getBase64PrivateKey())
-               .append("\n\n")
-               .append("#base64 rsa public key#\n")
-               .append(kp.getBase64PublicKey());
+                .append(kp.getBase64PrivateKey())
+                .append("\n\n")
+                .append("#base64 rsa public key#\n")
+                .append(kp.getBase64PublicKey());
 
-        IO.writeString(keyFile, content.toString(), Charsets.UTF_8);
-        
-	    return kp.getPrivateKey();
-	}
+        IO.writeString(file, content.toString(), Charsets.UTF_8);
+        return content.toString();
+    }
+
 }
