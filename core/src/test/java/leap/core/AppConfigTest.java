@@ -16,7 +16,16 @@
 package leap.core;
 
 import leap.core.junit.AppTestBase;
+import leap.core.security.token.jwt.RsaSigner;
+import leap.core.security.token.jwt.RsaVerifier;
+import leap.lang.New;
 import org.junit.Test;
+
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.util.Map;
 
 public class AppConfigTest extends AppTestBase {
 
@@ -36,7 +45,17 @@ public class AppConfigTest extends AppTestBase {
 
     @Test
     public void testGetPrivateKey() {
-        assertNotNull(config.ensureGetPrivateKey());
+		PrivateKey privateKey = config.ensureGetPrivateKey();
+		PublicKey  publicKey  = config.ensureGetPublicKey();
+        assertNotNull(privateKey);
+		assertNotNull(publicKey);
+		RsaSigner signer = new RsaSigner((RSAPrivateKey)privateKey);
+		RsaVerifier verifier = new RsaVerifier((RSAPublicKey)publicKey);
+		Map<String, Object> claim = New.hashMap("name", "admin", "password", "11111");
+		String str = signer.sign(claim);
+		Map<String, Object> pased = verifier.verify(str);
+		assertEquals(claim.get("name"),pased.get("name"));
+		assertEquals(claim.get("password"),pased.get("password"));
     }
 
 }

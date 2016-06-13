@@ -27,6 +27,7 @@ import leap.lang.text.PlaceholderResolver;
 
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -123,7 +124,15 @@ public interface AppConfig extends PropertyGetter {
 	 * Generates (or loads from saved key store) a private key if not exists.
 	 */
 	PrivateKey ensureGetPrivateKey();
-	
+
+	/**
+	 * Return the public key if exists.
+	 *
+	 * <p>
+	 * Generates (or loads from saved key store) a public key if not exists.
+	 */
+	PublicKey ensureGetPublicKey();
+
 	/**
 	 * Returns a config extension object for the given type or <code>null</code> if no extension.
 	 * 
