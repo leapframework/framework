@@ -25,7 +25,9 @@ import java.util.function.Function;
 
 public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
 
-	protected AstNode[] nodes;
+    private static final AstNode[] EMPTY_NODES = new AstNode[0];
+
+	protected AstNode[] nodes = EMPTY_NODES;
 	
 	public SqlNodeContainer(){
 

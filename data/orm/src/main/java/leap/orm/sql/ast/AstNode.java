@@ -83,6 +83,9 @@ public abstract class AstNode {
 		toString_(buf);
     }
 
+    /**
+     * Returns true if continue.
+     */
     public boolean traverse(Function<AstNode, Boolean> visitor) {
         return visitor.apply(this);
     }

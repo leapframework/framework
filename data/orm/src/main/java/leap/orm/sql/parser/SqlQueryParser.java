@@ -77,7 +77,9 @@ abstract class SqlQueryParser extends SqlParser {
             parseWhereExpression(query, new SqlWhere());
             popScope();
 			return true;
-		}
+		}else{
+            addNode(new SqlWhere(query));
+        }
 		return false;
 	}
 

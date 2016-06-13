@@ -365,7 +365,7 @@ public class GenericDb extends DbBase {
 		ResultSet rs = null;
 		try{
 			if(log.isDebugEnabled()){
-				log.debug("Executing Sql Update -> \n\n SQL  : {}\n ARGS : {}\n",sql,getDisplayString(args, types));
+				log.debug("Executing Sql Query -> \n\n SQL  : {}\n ARGS : {}\n",sql,getDisplayString(args, types));
 			}
 			
 			StopWatch sw = StopWatch.startNew();

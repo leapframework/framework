@@ -60,6 +60,10 @@ public class DefaultSqlCommand implements SqlCommand {
             return;
         }
 
+        if(null != source && "classpath:conf/sqls/where.xml".equals(source.toString())) {
+            System.out.println();
+        }
+
         try {
             this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
             this.queryClause = checkQuery();

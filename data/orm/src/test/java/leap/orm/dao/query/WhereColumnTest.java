@@ -16,16 +16,23 @@
 
 package leap.orm.dao.query;
 
+import leap.junit.contexual.Contextual;
+import leap.lang.Confirm;
 import leap.lang.New;
 import leap.orm.OrmTestCase;
+import leap.orm.annotation.SqlKey;
+import leap.orm.dao.DaoCommand;
 import leap.orm.tested.model.ECodeModel;
 import org.junit.Test;
 
-public class WhereQueryTest extends OrmTestCase {
+public class WhereColumnTest extends OrmTestCase {
+
+    @SqlKey("testSingleWhereColumn.ECodeModel.all")
+    private DaoCommand selectAllCommand;
 
     @Test
-    public void testSingleWhereField() {
-        ECodeModel.deleteAll();
+    public void testSingleWhereQuery() {
+        Confirm.execute( () -> dmo.truncate(ECodeModel.class));
 
         ECodeModel o1 = new ECodeModel("1").create();
         ECodeModel o2 = new ECodeModel("2").set("ecode","t1").create();
@@ -52,4 +59,20 @@ public class WhereQueryTest extends OrmTestCase {
         assertNull(ECodeModel.<ECodeModel>where("ecode = ?", "t1").firstOrNull());
     }
 
+    @Test
+    @Contextual("h2")
+    public void testSingleNamedQuery() {
+        Confirm.execute( () -> dmo.truncate(ECodeModel.class));
+
+        ECodeModel o1 = new ECodeModel("1").create();
+        ECodeModel o2 = new ECodeModel("2").set("ecode","t1").create();
+
+        assertEquals(1, ECodeModel.query("testSingleWhereColumn.ECodeModel.all").orderBy("ecode asc").list().size());
+    }
+
+    @Test
+    @Contextual("h2")
+    public void testComplexQuery() {
+        ECodeModel.query("testSingleWhereColumn.ECodeModel.complexQuery").list();
+    }
 }
