@@ -39,6 +39,12 @@
 
             -->
         </property>
+        <property name="publicKeyStr">
+                MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP
+                fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb
+                WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1
+                VeJXqKBlEhsNckYIGQIDAQAB
+        </property>
     </properties>
 
     <import resource="config_local.xml" check-existence="false" default-override="true"/>

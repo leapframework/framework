@@ -23,7 +23,9 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.net.Urls;
 import leap.oauth2.as.OAuth2AuthzServerConfigurator;
+import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientBuilder;
+import leap.oauth2.as.client.SimpleAuthzClient;
 import leap.oauth2.as.store.AuthzInMemoryStore;
 import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
@@ -42,6 +44,7 @@ import leap.web.security.csrf.CSRF;
 public class Global extends App {
 	public static final String TEST_CLIENT_ID                   = "test";
 	public static final String TEST_CLIENT_SECRET               = "test_secret";
+	public static final String TEST_CLIENT_GRANTED_SCOPE		= "admin:test";
 	public static final String TEST_CLIENT_REDIRECT_URI         = "/oauth2/redirect_uri";
 	public static final String TEST_CLIENT_REDIRECT_URI_ENCODED = Urls.encode(TEST_CLIENT_REDIRECT_URI);
 
@@ -83,8 +86,10 @@ public class Global extends App {
 	    
 	    //Enables in-memory store for testing.
 	    AuthzInMemoryStore ms = c.inMemoryStore();
-	    
-	    ms.addClient(TEST_CLIENT_ID, TEST_CLIENT_SECRET, TEST_CLIENT_REDIRECT_URI);
+		AuthzClient testClient = new AuthzClientBuilder(Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET)
+				.setRedirectUri(Global.TEST_CLIENT_REDIRECT_URI).build();
+		((SimpleAuthzClient)testClient).setGrantedScope(Global.TEST_CLIENT_GRANTED_SCOPE);
+	    ms.addClient(testClient);
 	    
 	    ms.addClient(new AuthzClientBuilder("app2", "app2_secret").setRedirectUriPattern("http*://*/app2/oauth2_redirect").build());
 	    ms.addClient(new AuthzClientBuilder("app3", "app3_secret").setRedirectUriPattern("http*://*/app3/auth_redirect").build());

@@ -72,6 +72,7 @@ public class Global extends App implements OAuth2TestData {
         Client testClient = new Client();
         testClient.setId(app.Global.TEST_CLIENT_ID);
         testClient.setSecret(app.Global.TEST_CLIENT_SECRET);
+        testClient.setGrantedScope(app.Global.TEST_CLIENT_GRANTED_SCOPE);
         testClient.setRedirectUri(app.Global.TEST_CLIENT_REDIRECT_URI);
         testClient.create();
         

@@ -142,6 +142,8 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 		map.put("username",at.getUsername());
 		map.put("scope", at.getScope());
 		map.put("expires_in", at.getExpiresIn());
+		map.put("expires",at.getCreated()+at.getExpiresIn()*1000L);
+
 		return map;
 	}
 

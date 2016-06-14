@@ -158,12 +158,24 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByPassword(String username, String password) {
-        String tokenUri = serverContextPath + TOKEN_ENDPOINT + 
-                "?grant_type=password&username=" + Urls.encode(username) + 
-                "&password=" + Urls.encode(password) + 
-                "&client_id=" + Global.TEST_CLIENT_ID;
-        
+        return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID);
+    }
+
+    protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId) {
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
+                "?grant_type=password&username=" + Urls.encode(username) +
+                "&password=" + Urls.encode(password) +
+                "&client_id=" + Urls.encode(clientId);
+
         return resp(post(tokenUri), new TokenResponse());
+    }
+
+    protected TokenResponse obtainAccessTokenByTokenClient(String accesstoken, String clientId, String clientSecret){
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
+                "?grant_type=token_client&access_token=" + Urls.encode(accesstoken) +
+                "&client_id=" + Urls.encode(clientId) +
+                "&client_secret="+Urls.encode(clientSecret);
+        return resp(post(tokenUri),new TokenResponse());
     }
     
     protected TokenResponse obtainAccessTokenByClient(String clientId, String clientSecret) {

@@ -13,13 +13,11 @@
 
 package leap.oauth2.as.endpoint.token;
 
-import com.sun.corba.se.impl.io.ObjectStreamClass;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
 import leap.core.security.token.jwt.RsaVerifier;
-import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -30,7 +28,6 @@ import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
-import leap.oauth2.as.client.AuthzClientValidator;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.oauth2.as.token.SimpleAuthzAccessToken;
@@ -117,6 +114,7 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
         Object username = claims.get("username");
         Object scope = claims.get("scope");
         Object expiresIn = claims.get("expires_in");
+        Object expires = claims.get("expires");
         if(username == null){
             OAuth2Errors.invalidToken(response,"jwt token must contain username");
             return null;
@@ -128,11 +126,13 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
         String userLoginId = Objects.toString(username);
         String userScope = scope==null?"": Objects.toString(scope);
         Integer atExpiresIn = 0;
+        Long atExpires = 0L;
         try {
             atExpiresIn = Integer.parseInt(Objects.toString(expiresIn));
+            atExpires = Long.parseLong(Objects.toString(expires));
         } catch (NumberFormatException e) {
             log.debug("authenticate jwt token error",e);
-            OAuth2Errors.invalidToken(response,"expires_in is not an integer");
+            OAuth2Errors.invalidToken(response,"expires_in is not an integer or expires is not an long");
             return null;
         }
         Authentication authentication = userManager.createAuthenticationByUsername(userLoginId).get();
@@ -146,9 +146,8 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
         accessToken.setUserId(authentication.getUser().getIdAsString());
         accessToken.setExpiresIn(atExpiresIn);
         accessToken.setScope(userScope);
-
-        if(accessToken.isExpired()){
-            OAuth2Errors.invalidToken(response, "access_token is expired");
+        if(System.currentTimeMillis() > atExpires){
+            OAuth2Errors.invalidToken(response, "jwt_token is expired");
             return null;
         }
         return createAuthenticatedAccessToken(request,response,accessToken,params,client);
@@ -164,6 +163,10 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
         if(accessToken.isExpired()){
             OAuth2Errors.invalidToken(response, "access_token is expired");
             tokenManager.removeAccessToken(accessToken);
+            return null;
+        }
+        if(!Strings.equals(accessToken.getClientId(), client.getId())){
+            OAuth2Errors.invalidToken(response, "this access_token is not for the client:"+client.getId());
             return null;
         }
         return createAuthenticatedAccessToken(request,response,accessToken,params,client);

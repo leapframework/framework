@@ -64,6 +64,9 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(null != client) {
             at.setClientId(client.getId());
             rt.setClientId(client.getId());
+            if(client.isAuthenticated()){
+                at.setAuthenticated(client.isAuthenticated());
+            }
         }
         
         if(null != user) {

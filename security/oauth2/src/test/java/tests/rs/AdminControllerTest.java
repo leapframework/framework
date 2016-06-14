@@ -15,6 +15,7 @@
  */
 package tests.rs;
 
+import app.Global;
 import org.junit.Test;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
@@ -42,6 +43,14 @@ public class AdminControllerTest extends OAuth2TestBase {
         withAccessToken(forGet("/resapp/admin/status"), token1.accessToken).send().assertOk();
         withAccessToken(forGet("/resapp/admin/status"), token2.accessToken).send().assertFailure();
 
+    }
+    @Test
+    public void testClientTokenGrantedScope(){
+        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
+        TokenResponse token2 = obtainAccessTokenByTokenClient(token1.accessToken,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+
+        withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
+        withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
     }
     
 }

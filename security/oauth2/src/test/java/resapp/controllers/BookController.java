@@ -15,9 +15,9 @@
  */
 package resapp.controllers;
 
-import tested.models.Book;
 import leap.web.annotation.Path;
 import leap.web.annotation.http.GET;
+import tested.models.Book;
 
 public class BookController {
 
@@ -29,5 +29,4 @@ public class BookController {
 		}
 		return null;
 	}
-	
 }
