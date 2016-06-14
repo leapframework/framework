@@ -24,6 +24,7 @@ import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder1;
 import leap.junit.contexual.Contextual;
 
+import leap.lang.exception.NestedSQLException;
 import org.junit.Test;
 
 public class ColumnTest extends DbTestCase {
@@ -42,7 +43,6 @@ public class ColumnTest extends DbTestCase {
 		DbTableBuilder1 table = new DbTableBuilder1("test_column_comment")
 								.addColumn(col1)
 								.addColumn(col2);
-
 		//test column comment for create table
 		db.cmdCreateTable(table.build()).execute();
 		

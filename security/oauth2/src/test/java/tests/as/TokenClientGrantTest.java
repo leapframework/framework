@@ -15,7 +15,9 @@ import java.util.Map;
 public class TokenClientGrantTest extends OAuth2TestBase {
     @Test
     public void testAuthenticateTokenClient(){
-        logout();
+        if(isLogin()) {
+            logoutAuthzServer();
+        }
         TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID);
         assertFalse(token.isError());
         TokenInfoResponse userToken = testAccessTokenInfo(token);
@@ -30,7 +32,9 @@ public class TokenClientGrantTest extends OAuth2TestBase {
     }
     @Test
     public void testAuthenticateTokenClientWithJwtToken(){
-        logout();
+        if(isLogin()) {
+            logoutAuthzServer();
+        }
         TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID);
         JwtTokenResponse jwt = obtainAccessTokenInfoWithJwtResponse(token.accessToken);
         assertNotEmpty(jwt.jwtToken);
