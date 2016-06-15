@@ -1108,10 +1108,6 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     protected DbColumnType getColumnType(DbColumn column) {
         JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());
         
-        if(Types.BINARY == column.getTypeCode()) {
-            System.out.println();
-        }
-        
         DbColumnType columnType = columnTypes.get(jdbcType.getCode(),column.getLength());
         
         if(null == columnType){

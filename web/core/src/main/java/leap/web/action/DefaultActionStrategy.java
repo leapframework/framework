@@ -122,10 +122,6 @@ public class DefaultActionStrategy implements ActionStrategy {
 			return controller;
 		}
 
-        if(cls.getName().equals("app.controllers.HomeController")) {
-            System.out.println();
-        }
-
         try {
         	return factory.createBean(cls);
         } catch (Exception e) {
