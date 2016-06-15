@@ -19,8 +19,10 @@ import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
 import leap.orm.tested.model.petclinic.Owner;
+import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
@@ -71,6 +73,22 @@ public class NamedQueryTest extends OrmTestCase {
 
         newer = dao.createNamedQuery("findOwnerByLastNameSimple").params(older).single();
         compareFields(older, newer);
+	}
+	@Test
+	public void testQueryWithResultClass(){
+		Product.deleteAll();
+		Product p = new Product();
+		p.setId("id");
+		p.setTypeId(1);
+		p.create();
+		List<Product> prdts = dao.createNamedQuery("queryProductWithResultClass",Product.class).list();
+		prdts.forEach((prdt)->{
+			assertNotNull(prdt.getId());
+		});
+		prdts = dao.createSqlQuery(Product.class,"select * from product").list();
+		prdts.forEach((prdt)->{
+			assertNotNull(prdt.getId());
+		});
 	}
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {

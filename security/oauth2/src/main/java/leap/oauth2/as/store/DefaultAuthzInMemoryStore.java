@@ -21,7 +21,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import leap.core.el.BeansPropertyResolver;
 import leap.lang.Args;
+import leap.lang.Beans;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+import leap.lang.convert.BeanConverter;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.as.client.AuthzClient;
@@ -48,7 +53,10 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
 
     @Override
     public AuthzClient loadClient(String clientId) {
-        return clients.get(clientId);
+        AuthzClient authzClient = clients.get(clientId);
+        SimpleAuthzClient client = new SimpleAuthzClient();
+        Beans.copyProperties(authzClient,client);
+        return  client;
     }
 
     @Override

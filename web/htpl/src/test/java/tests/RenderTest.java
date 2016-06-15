@@ -33,7 +33,10 @@ package tests;
 
 import leap.lang.New;
 
+import leap.lang.Strings;
 import org.junit.Test;
+
+import java.io.File;
 
 public class RenderTest extends HtplTestCase {
 
@@ -272,6 +275,6 @@ public class RenderTest extends HtplTestCase {
 	public void testBlankLineBeforeEndBody() {
 		assertRender("<html><body>Hello</body></html>");
 		assertRender("<html><body>\nHello\n</body></html>");
-		get("/test/simple.html?$debug=false").assertContentEquals("<html>\n<body>\nHello\n</body>\n</html>");
+		assertEquals(get("/test/simple.html?$debug=false").getContent().replaceAll("\r","").replaceAll("\n",""),"<html><body>Hello</body></html>");
 	}
 }
