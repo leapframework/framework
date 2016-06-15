@@ -24,9 +24,9 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
 
     protected boolean enabled;
     protected boolean reportError;
-    protected boolean reportArgs;
-    protected boolean reportLineNumber;
-    protected int     methodThreshold = DEFAULT_METHOD_THRESHOLD;
+    protected boolean reportArgs       = true;
+    protected boolean reportLineNumber = true;
+    protected int     methodThreshold  = DEFAULT_METHOD_THRESHOLD;
 
     @Override
     public boolean isEnabled() {

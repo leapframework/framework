@@ -21,8 +21,7 @@ import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class SimpleMethodMonitor implements MethodMonitor {
 
@@ -49,11 +48,15 @@ public class SimpleMethodMonitor implements MethodMonitor {
     private String callerMethodName;
     private int    callerLineNumber;
 
+    private final String               key;
+    private final Map<String, Integer> counts = new HashMap<>(5);
+
     public SimpleMethodMonitor(SimpleMonitorProvider provider, String className, String methodDesc, Object[] args) {
         this.config     = provider.config;
         this.className  = className;
         this.methodDesc = methodDesc;
         this.args       = args;
+        this.key        = className + "#" + methodDesc;
         this.start();
     }
 
@@ -149,9 +152,10 @@ public class SimpleMethodMonitor implements MethodMonitor {
     }
 
     protected static final class CallStack {
-        MonitorConfig             config;
-        int                       level   = 0;
-        List<SimpleMethodMonitor> methods = new ArrayList<>(5);
+        MonitorConfig              config;
+        int                        level   = 0;
+        List<SimpleMethodMonitor>  methods = new ArrayList<>(20);
+        Stack<SimpleMethodMonitor> parents = new Stack<>();
 
         CallStack(MonitorConfig config) {
             this.config = config;
@@ -166,6 +170,20 @@ public class SimpleMethodMonitor implements MethodMonitor {
         }
 
         void start(SimpleMethodMonitor method) {
+
+            //todo:
+//            if(level > 0) {
+//                SimpleMethodMonitor parent = parents.peek();
+//                Integer count = parent.counts.get(method.key);
+//                if(null == count) {
+//                    count = 1;
+//                }else{
+//                    count = count + 1;
+//                }
+//                parent.counts.put(method.key, count);
+//            }
+
+            parents.add(method);
             method.level = level;
             methods.add(method);
             level++;
@@ -173,6 +191,7 @@ public class SimpleMethodMonitor implements MethodMonitor {
 
         void exit(SimpleMethodMonitor method) {
             level--;
+            parents.pop();
         }
 
         void release() {
