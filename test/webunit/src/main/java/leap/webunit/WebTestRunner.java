@@ -22,7 +22,10 @@ import leap.webunit.client.THttpClientImpl;
 import leap.webunit.server.TWebServer;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import javax.servlet.ServletContext;
@@ -91,6 +94,15 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
         WebTestBase.rootServletContext = rootServletContext;
         WebTestBase.httpClient = httpClient;
         WebTestBase.httpsClient = httpsClient;
+    }
+
+    @Override
+    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+        Description description = describeChild(method);
+        System.out.println();
+        System.out.println("============== Running test case : " + description + " ==============");
+        System.out.println();
+        super.runChild(method, notifier);
     }
 
     protected void collectInitializationErrors(List<Throwable> errors) {
