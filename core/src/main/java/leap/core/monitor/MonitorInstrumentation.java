@@ -110,7 +110,10 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         if(isMonitored){
             Try.throwUnchecked(() -> {
                 try(InputStream in = ci.is.getInputStream()) {
-                    context.updateInstrumented(ic, this.getClass(), instrumentClass(cn, new ClassReader(in)), false);
+
+                    byte[] bytes = instrumentClass(cn, new ClassReader(in));
+
+                    context.updateInstrumented(ic, this.getClass(), bytes , false);
                 }
             });
         }

@@ -17,6 +17,11 @@
 package leap.core.config.reader;
 
 import leap.core.AppConfigException;
+import leap.core.aop.AopConfig;
+import leap.core.aop.DefaultAopConfig;
+import leap.core.aop.config.DefaultMethodInterceptionConfig;
+import leap.core.aop.config.DefaultMethodInterceptorConfig;
+import leap.core.aop.matcher.AnnotationMethodMatcher;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.core.config.AppConfigReader;
@@ -36,6 +41,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Map;
@@ -155,6 +161,11 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                 continue;
             }
 
+            if(reader.isStartElement(AOP_ELEMENT)) {
+                readAop(context, resource, reader);
+                continue;
+            }
+
             if(reader.isStartElement(IF_ELEMENT)) {
 
                 if(testIfElement(context, reader)) {
@@ -171,6 +182,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                             continue;
                         }
 
+                        if(reader.isStartElement(AOP_ELEMENT)) {
+                            readAop(context, resource, reader);
+                            continue;
+                        }
                     }
 
                 }else{
@@ -284,6 +299,86 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         }
 
         reader.nextToEndElement();
+    }
+
+    private void readAop(AppConfigContext context, Resource resource, XmlReader reader) {
+        if(!matchProfile(context.getProfile(), reader)){
+            reader.nextToEndElement(PERMISSIONS_ELEMENT);
+            return;
+        }
+
+        DefaultAopConfig config = context.getOrCreateExtension(AopConfig.class, DefaultAopConfig.class);
+
+        Boolean enabled = reader.getBooleanAttribute(ENABLED_ATTRIBUTE);
+
+        while(reader.nextWhileNotEnd(AOP_ELEMENT)) {
+
+            if(reader.isStartElement(METHOD_INTERCEPTION_ELEMENT)) {
+                readMethodInterception(context, resource, reader, config);
+                continue;
+            }
+
+        }
+
+        if(null != enabled) {
+            config.setEnabled(enabled);
+        }
+    }
+
+    private void readMethodInterception(AppConfigContext context, Resource resource, XmlReader reader, DefaultAopConfig aop) {
+        if(!matchProfile(context.getProfile(), reader)){
+            reader.nextToEndElement(PERMISSIONS_ELEMENT);
+            return;
+        }
+
+        DefaultMethodInterceptionConfig interception = new DefaultMethodInterceptionConfig();
+
+        while(reader.nextWhileNotEnd(METHOD_INTERCEPTION_ELEMENT)) {
+
+            if(reader.isStartElement(INTERCEPTOR_ELEMENT)) {
+
+                String beanName  = reader.getAttribute(NAME_ATTRIBUTE);
+                String className = reader.getAttribute(CLASS_ATTRIBUTE);
+
+                if(Strings.isEmpty(beanName) && Strings.isEmpty(className)) {
+                    throw new AppConfigException("The attr '" + NAME_ATTRIBUTE +
+                                                 "' or '" + CLASS_ATTRIBUTE + "' must not be empty in element '" +
+                                                 INTERCEPTOR_ELEMENT + "', at '" + reader.getCurrentLocation() + "'");
+                }
+
+                interception.setInterceptor(new DefaultMethodInterceptorConfig(beanName, className));
+                continue;
+            }
+
+            if(reader.isStartElement(MATHES_ELEMENT)) {
+
+                while(reader.nextWhileNotEnd(MATHES_ELEMENT)) {
+
+                    if(reader.isStartElement(ANNOTATION_ELEMENT)) {
+                        readAnnotationMatcher(reader, interception);
+                        continue;
+                    }
+
+                }
+
+            }
+
+        }
+
+        if(null != interception.getInterceptor()) {
+            aop.addMethodInterception(interception);
+        }
+    }
+
+    private void readAnnotationMatcher(XmlReader reader, DefaultMethodInterceptionConfig interception) {
+        String typeName = reader.resolveRequiredAttribute(TYPE_ATTRIBUTE);
+
+        Class<? extends Annotation> type = (Class<? extends Annotation>)Classes.tryForName(typeName);
+        if(null == type) {
+            throw new AppConfigException("The annotation type '" + typeName + "' not found at : " + reader.getCurrentLocation());
+        }
+
+        interception.addMatcher(new AnnotationMethodMatcher(type));
     }
 
     private void readPermissions(AppConfigContext context,Resource resource,XmlReader reader){

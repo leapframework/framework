@@ -208,7 +208,7 @@ public class AppClassLoader extends ClassLoader {
 
             ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
 
-            if(null != dep.getSuperClassName()) {
+            if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
                 log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
                 findClass(dep.getSuperClassName());
             }
@@ -259,6 +259,10 @@ public class AppClassLoader extends ClassLoader {
                     return (Class<?>) parentLoaderDefineClass.invoke(parent, args);
                 }catch(InvocationTargetException e) {
                     Throwable cause = e.getCause();
+
+                    if(cause instanceof ClassFormatError) {
+                        throw new IllegalStateException("Instrument error of '" + name + "'", cause);
+                    }
 
                     if(cause instanceof  LinkageError) {
                         if (ic.isEnsure()) {

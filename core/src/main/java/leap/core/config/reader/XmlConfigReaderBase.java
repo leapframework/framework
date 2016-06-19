@@ -53,6 +53,11 @@ public abstract class XmlConfigReaderBase {
     protected static final String DENY_ELEMENT                 = "deny";
     protected static final String RESOURCES_ELEMENT            = "resources";
     protected static final String MONITOR_ELEMENT              = "monitor";
+    protected static final String AOP_ELEMENT                  = "aop";
+    protected static final String METHOD_INTERCEPTION_ELEMENT  = "method-interception";
+    protected static final String INTERCEPTOR_ELEMENT          = "interceptor";
+    protected static final String MATHES_ELEMENT               = "matches";
+    protected static final String ANNOTATION_ELEMENT           = "annotation";
     protected static final String RESOURCE_ATTRIBUTE           = "resource";
     protected static final String IF_PROFILE_ATTRIBUTE         = "if-profile";
     protected static final String OVERRIDE_ATTRIBUTE           = "override";

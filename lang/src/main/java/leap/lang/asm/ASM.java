@@ -197,6 +197,10 @@ public class ASM {
 		}
 		return null;
 	}
+
+    public static String getObjectTypeDescriptor(String className) {
+        return "L" + className.replace('.','/') + ";";
+    }
 	
 	public static Class<?> getClassType(String internalName) {
 		return getClassType(Type.getObjectType(internalName));
