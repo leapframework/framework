@@ -20,12 +20,12 @@ public class DefaultAopProvider implements AopProvider {
 
     @Override
     public void run(MethodInterception interception) throws Throwable {
-        new SimpleMethodInvocation(interception).execute();
+        interception.execute();
     }
 
     @Override
     public <T> T runWithResult(MethodInterception interception) throws Throwable {
-        return (T)new SimpleMethodInvocation(interception).execute();
+        return (T)interception.execute();
     }
 
 }

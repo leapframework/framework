@@ -16,113 +16,101 @@
 
 package leap.core.aop;
 
-import leap.core.aop.MethodInterception;
-import leap.core.aop.MethodInterceptor;
+import leap.lang.Arrays2;
 
+import java.lang.reflect.Method;
 import java.util.function.Supplier;
 
 public class SimpleMethodInterception implements MethodInterception {
 
-    private final String              className;
-    private final String              methodName;
-    private final String              methodDesc;
     private final Object              object;
+    private final Method              method;
     private final Object[]            arguments;
     private final MethodInterceptor[] interceptors;
     private final Runnable            runnable;
     private final Supplier            supplier;
 
-    public SimpleMethodInterception(String className, String methodName, String methodDesc,
-                                    Object object,
+    private int index  = 0;
+
+    public SimpleMethodInterception(Object object,Method method,
                                     MethodInterceptor[] interceptors,
                                     Runnable runnable) {
 
-        this.className = className;
-        this.methodName = methodName;
-        this.methodDesc = methodDesc;
         this.object = object;
-        this.arguments = null;
+        this.method = method;
+        this.arguments = Arrays2.EMPTY_OBJECT_ARRAY;
         this.interceptors = interceptors;
         this.runnable = runnable;
         this.supplier = null;
     }
 
-    public SimpleMethodInterception(String className, String methodName, String methodDesc,
-                                    Object object, Object[] arguments,
+    public SimpleMethodInterception(Object object, Method method, Object[] arguments,
                                     MethodInterceptor[] interceptors,
                                     Runnable runnable) {
 
-        this.className = className;
-        this.methodName = methodName;
-        this.methodDesc = methodDesc;
         this.object = object;
+        this.method = method;
         this.arguments = arguments;
         this.interceptors = interceptors;
         this.runnable = runnable;
         this.supplier = null;
     }
 
-    public SimpleMethodInterception(String className, String methodName, String methodDesc,
-                                    Object object,
+    public SimpleMethodInterception(Object object,Method method,
                                     MethodInterceptor[] interceptors,
                                     Supplier supplier) {
 
-        this.className = className;
-        this.methodName = methodName;
-        this.methodDesc = methodDesc;
         this.object = object;
-        this.arguments = null;
+        this.method = method;
+        this.arguments = Arrays2.EMPTY_OBJECT_ARRAY;
         this.interceptors = interceptors;
         this.runnable = null;
         this.supplier = supplier;
     }
 
-    public SimpleMethodInterception(String className, String methodName, String methodDesc,
-                                    Object object, Object[] arguments,
+    public SimpleMethodInterception(Object object, Method method, Object[] arguments,
                                     MethodInterceptor[] interceptors,
                                     Supplier supplier) {
 
-        this.className = className;
-        this.methodName = methodName;
-        this.methodDesc = methodDesc;
         this.object = object;
+        this.method = method;
         this.arguments = arguments;
         this.interceptors = interceptors;
         this.runnable = null;
         this.supplier = supplier;
-    }
-
-    @Override
-    public boolean hasReturnValue() {
-        return null != supplier;
-    }
-
-    public String getClassName() {
-        return className;
-    }
-
-    public String getMethodName() {
-        return methodName;
-    }
-
-    public String getMethodDesc() {
-        return methodDesc;
     }
 
     public Object getObject() {
         return object;
     }
 
+    @Override
+    public Method getMethod() {
+        return method;
+    }
+
     public Object[] getArguments() {
         return arguments;
     }
 
+    @Override
     public MethodInterceptor[] getInterceptors() {
         return interceptors;
     }
 
     @Override
-    public Object execute() {
+    public Object execute() throws Throwable {
+        if(index < interceptors.length) {
+            MethodInterceptor interceptor = interceptors[index];
+            index++;
+            return interceptor.invoke(this);
+        }else{
+            return executeMethod();
+        }
+    }
+
+    @Override
+    public Object executeMethod() {
         if(null != supplier) {
             return supplier.get();
         }else{

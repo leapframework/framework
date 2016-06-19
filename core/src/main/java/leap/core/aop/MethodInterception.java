@@ -16,25 +16,13 @@
 
 package leap.core.aop;
 
-public interface MethodInterception {
+import leap.lang.annotation.Internal;
 
-    boolean hasReturnValue();
-
-    String getClassName();
-
-    String getMethodName();
-
-    String getMethodDesc();
-
-    Object getObject();
-
-    Object[] getArguments();
+@Internal
+public interface MethodInterception extends MethodInvocation {
 
     MethodInterceptor[] getInterceptors();
 
-    /**
-     * Executes the method.
-     */
-    Object execute();
+    Object executeMethod();
 
 }

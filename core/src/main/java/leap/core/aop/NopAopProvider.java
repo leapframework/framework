@@ -25,12 +25,12 @@ public class NopAopProvider implements AopProvider {
     }
 
     @Override
-    public void run(MethodInterception interception) {
-        interception.execute();
+    public void run(MethodInterception interception) throws Throwable {
+        interception.executeMethod();
     }
 
     @Override
-    public <T> T runWithResult(MethodInterception interception) {
-        return (T)interception.execute();
+    public <T> T runWithResult(MethodInterception interception) throws Throwable {
+        return (T)interception.executeMethod();
     }
 }
