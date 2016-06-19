@@ -62,4 +62,12 @@ public class MethodInterceptionTest extends AppTestBase {
         }
     }
 
+    @Test
+    public void testNested() {
+        interceptor1.resetInterceptedCount();
+
+        bean.perfRoot();
+
+        assertEquals(50, interceptor1.getInterceptedCount());
+    }
 }

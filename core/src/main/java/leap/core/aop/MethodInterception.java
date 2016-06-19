@@ -23,6 +23,6 @@ public interface MethodInterception extends MethodInvocation {
 
     MethodInterceptor[] getInterceptors();
 
-    Object executeMethod();
+    Object executeRaw();
 
 }

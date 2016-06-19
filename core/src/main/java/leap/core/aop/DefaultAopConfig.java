@@ -16,14 +16,18 @@
 
 package leap.core.aop;
 
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.core.aop.config.MethodInterceptionConfig;
 import leap.core.aop.config.MethodInterceptorConfig;
 import leap.core.aop.matcher.MethodInfo;
+import leap.core.ioc.ConfigBean;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultAopConfig implements AopConfig {
+@Configurable(prefix = "app.aop")
+public class DefaultAopConfig implements AopConfig, ConfigBean {
 
     protected boolean enabled = true;
 
@@ -33,6 +37,7 @@ public class DefaultAopConfig implements AopConfig {
         return enabled;
     }
 
+    @ConfigProperty
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

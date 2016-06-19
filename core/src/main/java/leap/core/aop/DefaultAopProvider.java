@@ -16,16 +16,28 @@
 
 package leap.core.aop;
 
+import leap.core.annotation.Inject;
+
 public class DefaultAopProvider implements AopProvider {
+
+    protected @Inject AopConfig config;
 
     @Override
     public void run(MethodInterception interception) throws Throwable {
-        interception.execute();
+        if(config.isEnabled()) {
+            interception.execute();
+        }else{
+            interception.executeRaw();
+        }
     }
 
     @Override
     public <T> T runWithResult(MethodInterception interception) throws Throwable {
-        return (T)interception.execute();
+        if(config.isEnabled()) {
+            return (T)interception.execute();
+        }else{
+            return (T)interception.executeRaw();
+        }
     }
 
 }

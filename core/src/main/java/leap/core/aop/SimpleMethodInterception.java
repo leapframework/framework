@@ -105,12 +105,12 @@ public class SimpleMethodInterception implements MethodInterception {
             index++;
             return interceptor.invoke(this);
         }else{
-            return executeMethod();
+            return executeRaw();
         }
     }
 
     @Override
-    public Object executeMethod() {
+    public Object executeRaw() {
         if(null != supplier) {
             return supplier.get();
         }else{

@@ -51,4 +51,36 @@ public class TAopBean {
         throw new IOException("ha ha ha");
     }
 
+    /**
+     * Total 50 method calls.
+     */
+    @TIntercepted
+    public void perfRoot() {
+        perfNest1();
+        perfNest3();
+    }
+
+    @TIntercepted
+    public void perfNest1() {
+        for(int i=0;i<12;i++) {
+            perfNest2();
+        }
+    }
+
+    @TIntercepted
+    public void perfNest2() {
+
+    }
+
+    @TIntercepted
+    public void perfNest3() {
+        for(int i=0;i<35;i++) {
+            perfNest4();
+        }
+    }
+
+    @TIntercepted
+    public void perfNest4() {
+
+    }
 }

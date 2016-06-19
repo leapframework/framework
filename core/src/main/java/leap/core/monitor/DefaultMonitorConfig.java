@@ -16,6 +16,7 @@
 
 package leap.core.monitor;
 
+import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.ioc.ConfigBean;
 
@@ -33,6 +34,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
         return enabled;
     }
 
+    @ConfigProperty
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -42,6 +44,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
         return reportError;
     }
 
+    @ConfigProperty
     public void setReportError(boolean reportError) {
         this.reportError = reportError;
     }
@@ -51,6 +54,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
         return reportArgs;
     }
 
+    @ConfigProperty
     public void setReportArgs(boolean reportArgs) {
         this.reportArgs = reportArgs;
     }
@@ -60,6 +64,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
         return reportLineNumber;
     }
 
+    @ConfigProperty
     public void setReportLineNumber(boolean reportLineNumber) {
         this.reportLineNumber = reportLineNumber;
     }
@@ -69,6 +74,7 @@ public class DefaultMonitorConfig implements MonitorConfig, ConfigBean {
         return methodThreshold;
     }
 
+    @ConfigProperty
     public void setMethodThreshold(int methodThreshold) {
         this.methodThreshold = methodThreshold;
     }
