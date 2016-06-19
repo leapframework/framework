@@ -20,16 +20,46 @@ import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
 import org.junit.Test;
 import tested.aop.TAopBean;
+import tested.aop.TAopInterceptor1;
+import tested.aop.TAopInterceptor2;
+
+import java.io.IOException;
 
 public class MethodInterceptionTest extends AppTestBase {
 
-    protected @Inject TAopBean bean;
+    protected @Inject TAopBean         bean;
+    protected @Inject TAopInterceptor1 interceptor1;
+    protected @Inject TAopInterceptor2 interceptor2;
 
     @Test
     public void testHelloInterceptor() throws Exception {
-        bean.hello();
+        interceptor1.resetInterceptedCount();
+        interceptor2.resetInterceptedCount();
 
-        assertEquals("hello aop", bean.getHello());
+        assertNull(bean.getLastHello());
+        bean.hello();
+        assertEquals("Hello aop", bean.getLastHello());
+        assertEquals(1, interceptor1.getInterceptedCount());
+        assertEquals(1, interceptor2.getInterceptedCount());
+
+        assertEquals("hello aop$intercepted",   bean.getHello());
+        assertEquals("hello world$intercepted", bean.getHello("world"));
+
+        assertEquals(3, interceptor1.getInterceptedCount());
+        assertEquals(3, interceptor2.getInterceptedCount());
+    }
+
+    @Test
+    public void testException() {
+        try {
+            bean.testException("hello");
+
+            fail("Should throw exception");
+        }catch(IOException e) {
+            fail("Should not throw I/O exception");
+        }catch(Exception e) {
+            assertEquals("Just a test", e.getMessage());
+        }
     }
 
 }

@@ -208,7 +208,7 @@ public class BeanContainer implements BeanFactory {
         if((field.isAnnotationPresent(NotNull.class) || field.isAnnotationPresent(M.class)) && 
             null == field.getValue(bean)){
             
-            throw new BeanException("Field '" + field.getName() + "' must not null in bean " + (null == d ? bean : d));
+            throw new BeanException("Field '" + field.getName() + "'(" + field.getType() + ") must not null in bean " + (null == d ? bean : d));
         }
         
         if((field.isAnnotationPresent(NotEmpty.class) || field.isAnnotationPresent(R.class) ) && 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package leap.core.aop.interception;
+package leap.core.aop;
 
 import java.lang.reflect.Method;
 
@@ -50,6 +50,6 @@ public interface MethodInvocation {
      * <p/>
      * Executes the intercepted method if no next interceptor(s).
      */
-    Object execute();
+    Object execute() throws Throwable;
 
 }

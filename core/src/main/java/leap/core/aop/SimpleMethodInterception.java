@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-package leap.core.aop.interception;
+package leap.core.aop;
+
+import leap.core.aop.MethodInterception;
+import leap.core.aop.MethodInterceptor;
 
 import java.util.function.Supplier;
 
@@ -89,6 +92,11 @@ public class SimpleMethodInterception implements MethodInterception {
         this.supplier = supplier;
     }
 
+    @Override
+    public boolean hasReturnValue() {
+        return null != supplier;
+    }
+
     public String getClassName() {
         return className;
     }
@@ -114,12 +122,12 @@ public class SimpleMethodInterception implements MethodInterception {
     }
 
     @Override
-    public Runnable getRunnable() {
-        return runnable;
-    }
-
-    @Override
-    public <T> Supplier<T> getSupplier() {
-        return (Supplier<T>)supplier;
+    public Object execute() {
+        if(null != supplier) {
+            return supplier.get();
+        }else{
+            runnable.run();
+            return null;
+        }
     }
 }

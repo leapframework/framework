@@ -16,17 +16,16 @@
 
 package leap.core.aop;
 
-import leap.core.aop.interception.MethodInterception;
-
 public class DefaultAopProvider implements AopProvider {
 
     @Override
-    public void run(MethodInterception interception) {
-        interception.getRunnable().run();
+    public void run(MethodInterception interception) throws Throwable {
+        new SimpleMethodInvocation(interception).execute();
     }
 
     @Override
-    public <T> T runWithResult(MethodInterception interception) {
-        return (T)interception.getSupplier().get();
+    public <T> T runWithResult(MethodInterception interception) throws Throwable {
+        return (T)new SimpleMethodInvocation(interception).execute();
     }
+
 }

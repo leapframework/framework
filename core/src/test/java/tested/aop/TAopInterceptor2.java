@@ -14,30 +14,35 @@
  * limitations under the License.
  */
 
-package leap.core.aop.interception;
+package tested.aop;
 
-import java.lang.reflect.Method;
+import leap.core.aop.MethodInterceptor;
+import leap.core.aop.MethodInvocation;
 
-public class SimpleMethodInvocation implements MethodInvocation {
+public class TAopInterceptor2 implements MethodInterceptor {
 
-    @Override
-    public Object getObject() {
-        return null;
-    }
+    private int interceptedCount = 0;
 
     @Override
-    public Method getMethod() {
-        return null;
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+
+        interceptedCount++;
+
+        Object o = invocation.execute();
+
+        if(o instanceof String) {
+            return o + "$intercepted";
+        }else{
+            return o;
+        }
+
     }
 
-    @Override
-    public Object[] getArguments() {
-        return new Object[0];
+    public int getInterceptedCount() {
+        return interceptedCount;
     }
 
-    @Override
-    public Object execute() {
-        return null;
+    public void resetInterceptedCount() {
+        interceptedCount = 0;
     }
-
 }

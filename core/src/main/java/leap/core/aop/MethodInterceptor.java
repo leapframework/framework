@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package leap.core.aop.interception;
+package leap.core.aop;
 
 public interface MethodInterceptor {
 

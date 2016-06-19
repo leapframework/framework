@@ -18,10 +18,8 @@ package leap.core.aop;
 
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
+import leap.core.annotation.M;
 import leap.core.aop.config.MethodInterceptorConfig;
-import leap.core.aop.interception.MethodInterception;
-import leap.core.aop.interception.MethodInterceptor;
-import leap.core.aop.interception.SimpleMethodInterception;
 import leap.core.aop.matcher.AsmMethodInfo;
 import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
@@ -49,12 +47,16 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
     private static final Type PROVIDER_TYPE            = Type.getType(AopProvider.class);
     private static final Type INTERCEPTOR_TYPE         = Type.getType(MethodInterceptor.class);
-    private static final Type INJECT_TYPE              = Type.getType(Inject.class);
     private static final Type SIMPLE_INTERCEPTION_TYPE = Type.getType(SimpleMethodInterception.class);
     private static final Type RUNNABLE_TYPE            = Type.getType(Runnable.class);
     private static final Type SUPPLIER_TYPE            = Type.getType(Supplier.class);
+    private static final Type INJECT_TYPE              = Type.getType(Inject.class);
+    private static final Type MANDATORY_TYPE           = Type.getType(M.class);
     private static final Type LAMBDA_FACTORY_TYPE      = Type.getType(LambdaMetafactory.class);
+    private static final Type LOOKUP_TYPE              = Type.getType(MethodHandles.Lookup.class);
+    private static final Type HANDLES_TYPE             = Type.getType(MethodHandles.class);
 
+    private static final String LOOKUP_NAME              = "Lookup";
     private static final String PROVIDER_FIELD           = "$$aopProvider";
     private static final String INTERCEPTOR_FIELD_PREFIX = "$$aopInterceptor$";
 
@@ -174,8 +176,6 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
                     byte[] bytes = instrumentClass(cn, new ClassReader(in), methods);
 
-                    ASM.printASMifiedCode(bytes);
-
                     context.updateInstrumented(ic, this.getClass(), bytes, true);
                 }
             });
@@ -258,15 +258,6 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             return null;
         }
 
-        private List<MethodInterceptorConfig> getInterceptors(MethodNode m) {
-            for(AopMethod am : methods) {
-                if(am.getMethod() == m) {
-                    return am.interceptors;
-                }
-            }
-            return null;
-        }
-
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodNode mn = ASM.getMethod(cn, name, desc);
@@ -277,17 +268,12 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                 String newName = name + "$aop";
 
                 visitInterceptedMethod(am, newName);
-                visitLambdaMethod(am, newName);
 
                 return super.visitMethod(access, newName, desc, signature, exceptions);
             }else{
                 return super.visitMethod(access, name, desc, signature, exceptions);
             }
         }
-
-        private static final Type   LOOKUP_TYPE  = Type.getType(MethodHandles.Lookup.class);
-        private static final String LOOKUP_NAME  = "Lookup";
-        private static final Type   HANDLES_TYPE = Type.getType(MethodHandles.class);
 
         private boolean lambadaInnerClassVisited;
 
@@ -324,6 +310,10 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                     AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
                     av.visitEnd();
                 }
+                {
+                    AnnotationVisitor av = fv.visitAnnotation(MANDATORY_TYPE.getDescriptor(), true);
+                    av.visitEnd();
+                }
             }
 
             for(Map.Entry<String,String> field : nameInterceptorFields.entrySet()) {
@@ -332,6 +322,10 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                 {
                     AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
                     av.visit("name", field.getKey());
+                    av.visitEnd();
+                }
+                {
+                    AnnotationVisitor av = fv.visitAnnotation(MANDATORY_TYPE.getDescriptor(), true);
                     av.visitEnd();
                 }
             }
@@ -356,9 +350,9 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             mv.visitCode();
 
             List<MethodInterceptorConfig> interceptors = am.interceptors;
-            Type[] argumentTypes = ASM.getArgumentTypes(m);
 
             boolean hasReturnValue = ASM.hasReturnValue(m);
+            Type[]  argumentTypes  = ASM.getArgumentTypes(m);
 
             mv.visitTypeInsn(NEW, SIMPLE_INTERCEPTION_TYPE.getInternalName());
             mv.visitInsn(DUP);
@@ -399,10 +393,16 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                                     METHOD_METADATA_FACTORY.getName(),
                                     METHOD_METADATA_FACTORY.getDescriptor());
 
+            List<Type> types = new ArrayList<>();
+            types.add(type);
+            for(Type at : argumentTypes) {
+                types.add(at);
+            }
+
             Object[] bsmArgs;
 
             if(hasReturnValue) {
-                final String desc = "(" + type.getDescriptor() + ")" + SUPPLIER_TYPE.getDescriptor();
+                Method method = new Method("t", SUPPLIER_TYPE, types.toArray(new Type[0]));
 
                 bsmArgs = new Object[]{
                         Type.getType("()Ljava/lang/Object;"),
@@ -410,9 +410,9 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                         Type.getType("()Ljava/lang/Object;")
                 };
 
-                mv.invokeDynamic("get", desc, bsm, bsmArgs);
+                mv.invokeDynamic("get", method.getDescriptor(), bsm, bsmArgs);
             }else{
-                final String desc = "(" + type.getDescriptor() + ")" + RUNNABLE_TYPE.getDescriptor();
+                Method method = new Method("t", RUNNABLE_TYPE, types.toArray(new Type[0]));
 
                 bsmArgs = new Object[]{
                         Type.getType("()V"),
@@ -420,7 +420,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                         Type.getType("()V")
                 };
 
-                mv.invokeDynamic("run", desc, bsm, bsmArgs);
+                mv.invokeDynamic("run", method.getDescriptor(), bsm, bsmArgs);
             }
 
             //call constructor
@@ -452,27 +452,6 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                 mv.checkCast(ASM.getReturnType(m));
             }
 
-            mv.returnValue();
-
-            mv.visitMaxs(0,0);
-            mv.visitEnd();
-        }
-
-        protected void visitLambdaMethod(AopMethod am, String newName) {
-            MethodNode m = am.getMethod();
-
-            int    access = Opcodes.ACC_PRIVATE + Opcodes.ACC_SYNTHETIC;
-            String name   = "lambda$" + newName;
-
-            MethodVisitor real = cw.visitMethod(access, name, m.desc, null,
-                    m.exceptions == null ? null : m.exceptions.toArray(Arrays2.EMPTY_STRING_ARRAY));
-
-            GeneratorAdapter mv = new GeneratorAdapter(real, access, name, m.desc);
-
-            mv.visitCode();
-
-            mv.loadThis();
-            mv.invokeVirtual(type, new Method(newName, m.desc));
             mv.returnValue();
 
             mv.visitMaxs(0,0);

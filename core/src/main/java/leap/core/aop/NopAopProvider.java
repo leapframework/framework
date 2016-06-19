@@ -16,8 +16,6 @@
 
 package leap.core.aop;
 
-import leap.core.aop.interception.MethodInterception;
-
 public class NopAopProvider implements AopProvider {
 
     public static AopProvider INSTANCE = new NopAopProvider();
@@ -28,11 +26,11 @@ public class NopAopProvider implements AopProvider {
 
     @Override
     public void run(MethodInterception interception) {
-        interception.getRunnable().run();
+        interception.execute();
     }
 
     @Override
     public <T> T runWithResult(MethodInterception interception) {
-        return (T)interception.getSupplier().get();
+        return (T)interception.execute();
     }
 }

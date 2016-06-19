@@ -20,14 +20,35 @@ import java.io.IOException;
 
 public class TAopBean {
 
+    private String lastHello;
+
+    public String getLastHello() {
+        return lastHello;
+    }
+
     @TIntercepted
-    public void hello() throws IOException {
-        System.out.println("Hello aop");
+    public void hello() {
+        lastHello = "Hello aop";
+    }
+
+    @TIntercepted
+    public void hello(int i) {
+        lastHello = "Hello aop";
     }
 
     @TIntercepted
     public String getHello() {
         return "hello aop";
+    }
+
+    @TIntercepted
+    public String getHello(String name) {
+        return "hello " + name;
+    }
+
+    @TException
+    public String testException(String s) throws IOException {
+        throw new IOException("ha ha ha");
     }
 
 }

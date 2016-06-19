@@ -16,14 +16,14 @@
 
 package tested.aop;
 
-import leap.core.aop.interception.MethodInterceptor;
-import leap.core.aop.interception.MethodInvocation;
+import leap.core.aop.MethodInterceptor;
+import leap.core.aop.MethodInvocation;
 
-public class TAopInterceptor implements MethodInterceptor {
+public class TAopInterceptor3 implements MethodInterceptor {
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
-        return invocation.execute();
+        throw new Exception("Just a test");
     }
 
 }

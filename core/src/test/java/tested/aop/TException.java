@@ -14,18 +14,14 @@
  * limitations under the License.
  */
 
-package leap.core.aop;
+package tested.aop;
 
-public interface AopProvider {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    /**
-     * Returns the interception.
-     */
-    void run(MethodInterception interception) throws Throwable;
-
-    /**
-     * Runs the interception and returns the value.
-     */
-    <T> T runWithResult(MethodInterception interception) throws Throwable;
-
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface TException {
 }

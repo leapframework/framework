@@ -16,16 +16,25 @@
 
 package leap.core.aop;
 
-public interface AopProvider {
+public interface MethodInterception {
+
+    boolean hasReturnValue();
+
+    String getClassName();
+
+    String getMethodName();
+
+    String getMethodDesc();
+
+    Object getObject();
+
+    Object[] getArguments();
+
+    MethodInterceptor[] getInterceptors();
 
     /**
-     * Returns the interception.
+     * Executes the method.
      */
-    void run(MethodInterception interception) throws Throwable;
-
-    /**
-     * Runs the interception and returns the value.
-     */
-    <T> T runWithResult(MethodInterception interception) throws Throwable;
+    Object execute();
 
 }

@@ -14,4 +14,26 @@
  * limitations under the License.
  */
 
-package leap.core.aop;
+package tested.aop;
+
+import leap.core.aop.MethodInterceptor;
+import leap.core.aop.MethodInvocation;
+
+public class TAopInterceptor1 implements MethodInterceptor {
+
+    private int interceptedCount = 0;
+
+    @Override
+    public Object invoke(MethodInvocation invocation) throws Throwable {
+        interceptedCount++;
+        return invocation.execute();
+    }
+
+    public int getInterceptedCount() {
+        return interceptedCount;
+    }
+
+    public void resetInterceptedCount() {
+        interceptedCount = 0;
+    }
+}
