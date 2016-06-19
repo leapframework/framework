@@ -24,4 +24,9 @@ public class DefaultAopProvider implements AopProvider {
     public void run(MethodInterception interception) {
         interception.getRunnable().run();
     }
+
+    @Override
+    public <T> T runWithResult(MethodInterception interception) {
+        return (T)interception.getSupplier().get();
+    }
 }

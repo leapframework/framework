@@ -1,5 +1,7 @@
 package leap.core.aop.interception;
 
+import java.util.function.Supplier;
+
 public interface MethodInterception {
 
     String getClassName();
@@ -15,4 +17,6 @@ public interface MethodInterception {
     MethodInterceptor[] getInterceptors();
 
     Runnable getRunnable();
+
+    <T> Supplier<T> getSupplier();
 }

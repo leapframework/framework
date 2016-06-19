@@ -16,6 +16,8 @@
 
 package leap.core.aop.interception;
 
+import java.util.function.Supplier;
+
 public class SimpleMethodInterception implements MethodInterception {
 
     private final String              className;
@@ -25,6 +27,7 @@ public class SimpleMethodInterception implements MethodInterception {
     private final Object[]            arguments;
     private final MethodInterceptor[] interceptors;
     private final Runnable            runnable;
+    private final Supplier            supplier;
 
     public SimpleMethodInterception(String className, String methodName, String methodDesc,
                                     Object object,
@@ -38,6 +41,7 @@ public class SimpleMethodInterception implements MethodInterception {
         this.arguments = null;
         this.interceptors = interceptors;
         this.runnable = runnable;
+        this.supplier = null;
     }
 
     public SimpleMethodInterception(String className, String methodName, String methodDesc,
@@ -52,6 +56,37 @@ public class SimpleMethodInterception implements MethodInterception {
         this.arguments = arguments;
         this.interceptors = interceptors;
         this.runnable = runnable;
+        this.supplier = null;
+    }
+
+    public SimpleMethodInterception(String className, String methodName, String methodDesc,
+                                    Object object,
+                                    MethodInterceptor[] interceptors,
+                                    Supplier supplier) {
+
+        this.className = className;
+        this.methodName = methodName;
+        this.methodDesc = methodDesc;
+        this.object = object;
+        this.arguments = null;
+        this.interceptors = interceptors;
+        this.runnable = null;
+        this.supplier = supplier;
+    }
+
+    public SimpleMethodInterception(String className, String methodName, String methodDesc,
+                                    Object object, Object[] arguments,
+                                    MethodInterceptor[] interceptors,
+                                    Supplier supplier) {
+
+        this.className = className;
+        this.methodName = methodName;
+        this.methodDesc = methodDesc;
+        this.object = object;
+        this.arguments = arguments;
+        this.interceptors = interceptors;
+        this.runnable = null;
+        this.supplier = supplier;
     }
 
     public String getClassName() {
@@ -81,5 +116,10 @@ public class SimpleMethodInterception implements MethodInterception {
     @Override
     public Runnable getRunnable() {
         return runnable;
+    }
+
+    @Override
+    public <T> Supplier<T> getSupplier() {
+        return (Supplier<T>)supplier;
     }
 }

@@ -59,9 +59,12 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
     private static final String INTERCEPTOR_FIELD_PREFIX = "$$aopInterceptor$";
 
     private static final Method METHOD_METADATA_FACTORY;
-    private static final Method METHOD_PROVIDER_RUN;
+    private static final Method METHOD_PROVIDER_RUN1;
+    private static final Method METHOD_PROVIDER_RUN2;
     private static final Method INTERCEPTION_CONSTRUCTOR1;
     private static final Method INTERCEPTION_CONSTRUCTOR2;
+    private static final Method INTERCEPTION_CONSTRUCTOR3;
+    private static final Method INTERCEPTION_CONSTRUCTOR4;
 
     static {
         try {
@@ -87,13 +90,32 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                             .getConstructor(String.class, String.class, String. class,
                                     Object.class, Object[].class, MethodInterceptor[].class, Runnable.class);
 
+            java.lang.reflect.Constructor c3 =
+                    SimpleMethodInterception.class
+                            .getConstructor(String.class, String.class, String. class,
+                                    Object.class, MethodInterceptor[].class, Supplier.class);
+
+            java.lang.reflect.Constructor c4 =
+                    SimpleMethodInterception.class
+                            .getConstructor(String.class, String.class, String. class,
+                                    Object.class, Object[].class, MethodInterceptor[].class, Supplier.class);
+
+
             INTERCEPTION_CONSTRUCTOR1 = Method.getMethod(c1);
             INTERCEPTION_CONSTRUCTOR2 = Method.getMethod(c2);
+            INTERCEPTION_CONSTRUCTOR3 = Method.getMethod(c3);
+            INTERCEPTION_CONSTRUCTOR4 = Method.getMethod(c4);
 
-            java.lang.reflect.Method run =
+            java.lang.reflect.Method run1 =
                     AopProvider.class
                             .getMethod("run", MethodInterception.class);
-            METHOD_PROVIDER_RUN = Method.getMethod(run);
+
+            java.lang.reflect.Method run2 =
+                    AopProvider.class
+                            .getMethod("runWithResult", MethodInterception.class);
+
+            METHOD_PROVIDER_RUN1 = Method.getMethod(run1);
+            METHOD_PROVIDER_RUN2 = Method.getMethod(run2);
 
         }catch(NoSuchMethodException e) {
             throw new IllegalStateException(e);
@@ -336,76 +358,101 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             List<MethodInterceptorConfig> interceptors = am.interceptors;
             Type[] argumentTypes = ASM.getArgumentTypes(m);
 
-            if(ASM.hasReturnValue(m)) {
-                //todo :
+            boolean hasReturnValue = ASM.hasReturnValue(m);
+
+            mv.visitTypeInsn(NEW, SIMPLE_INTERCEPTION_TYPE.getInternalName());
+            mv.visitInsn(DUP);
+            mv.visitLdcInsn("cls");  //className
+            mv.visitLdcInsn("name"); //methodName
+            mv.visitLdcInsn("desc"); //methodDesc
+
+            //object
+            mv.loadThis();
+
+            //args
+            if(argumentTypes.length > 0) {
+                mv.loadArgArray();
+            }
+
+            //interceptors
+            mv.push(interceptors.size());
+            mv.newArray(INTERCEPTOR_TYPE);
+            for(int i=0;i<interceptors.size();i++) {
+                MethodInterceptorConfig interceptor = interceptors.get(i);
+
+                mv.dup();
+                mv.push(i);
+                mv.loadThis();
+                mv.getField(type, getFieldName(interceptor), getFieldType(interceptor));
+                mv.arrayStore(INTERCEPTOR_TYPE);
+            }
+
+            //runnable with lambada
+            mv.loadThis();
+            if(argumentTypes.length > 0) {
+                mv.loadArgs();
+            }
+
+
+            Handle bsm = new Handle(Opcodes.H_INVOKESTATIC,
+                                    LAMBDA_FACTORY_TYPE.getInternalName(),
+                                    METHOD_METADATA_FACTORY.getName(),
+                                    METHOD_METADATA_FACTORY.getDescriptor());
+
+            Object[] bsmArgs;
+
+            if(hasReturnValue) {
+                final String desc = "(" + type.getDescriptor() + ")" + SUPPLIER_TYPE.getDescriptor();
+
+                bsmArgs = new Object[]{
+                        Type.getType("()Ljava/lang/Object;"),
+                        new Handle(Opcodes.H_INVOKESPECIAL, type.getInternalName(), newName, m.desc),
+                        Type.getType("()Ljava/lang/Object;")
+                };
+
+                mv.invokeDynamic("get", desc, bsm, bsmArgs);
             }else{
-                mv.visitTypeInsn(NEW, SIMPLE_INTERCEPTION_TYPE.getInternalName());
-                mv.visitInsn(DUP);
-                mv.visitLdcInsn("cls");  //className
-                mv.visitLdcInsn("name"); //methodName
-                mv.visitLdcInsn("desc"); //methodDesc
-
-                //object
-                mv.loadThis();
-
-                //args
-                if(argumentTypes.length > 0) {
-                    mv.loadArgArray();
-                }
-
-                //interceptors
-                mv.push(interceptors.size());
-                mv.newArray(INTERCEPTOR_TYPE);
-                for(int i=0;i<interceptors.size();i++) {
-                    MethodInterceptorConfig interceptor = interceptors.get(i);
-
-                    mv.dup();
-                    mv.push(i);
-                    mv.loadThis();
-                    mv.getField(type, getFieldName(interceptor), getFieldType(interceptor));
-                    mv.arrayStore(INTERCEPTOR_TYPE);
-                }
-
-                //runnable with lambada
-                mv.loadThis();
-                if(argumentTypes.length > 0) {
-                    mv.loadArgs();
-                }
-
                 final String desc = "(" + type.getDescriptor() + ")" + RUNNABLE_TYPE.getDescriptor();
 
-                Handle bsm = new Handle(Opcodes.H_INVOKESTATIC,
-                                        LAMBDA_FACTORY_TYPE.getInternalName(),
-                                        METHOD_METADATA_FACTORY.getName(),
-                                        METHOD_METADATA_FACTORY.getDescriptor());
-
-                Object[] bsmArgs = new Object[]{
+                bsmArgs = new Object[]{
                         Type.getType("()V"),
                         new Handle(Opcodes.H_INVOKESPECIAL, type.getInternalName(), newName, m.desc),
                         Type.getType("()V")
                 };
 
                 mv.invokeDynamic("run", desc, bsm, bsmArgs);
+            }
 
-                //call constructor
+            //call constructor
+            if(!hasReturnValue) {
                 if(argumentTypes.length == 0) {
                     mv.invokeConstructor(SIMPLE_INTERCEPTION_TYPE, INTERCEPTION_CONSTRUCTOR1);
                 }else{
                     mv.invokeConstructor(SIMPLE_INTERCEPTION_TYPE, INTERCEPTION_CONSTRUCTOR2);
                 }
-
-                //store the interception
-                int local = mv.newLocal(INTERCEPTOR_TYPE);
-                mv.storeLocal(local);
-
-                //call provider.run
-                mv.loadThis();
-                mv.getField(type, PROVIDER_FIELD, PROVIDER_TYPE);
-                mv.loadLocal(local);
-                mv.invokeInterface(PROVIDER_TYPE, METHOD_PROVIDER_RUN);
-
-                mv.returnValue();
+            }else{
+                if(argumentTypes.length == 0) {
+                    mv.invokeConstructor(SIMPLE_INTERCEPTION_TYPE, INTERCEPTION_CONSTRUCTOR3);
+                }else{
+                    mv.invokeConstructor(SIMPLE_INTERCEPTION_TYPE, INTERCEPTION_CONSTRUCTOR4);
+                }
             }
+
+            //store the interception
+            int local = mv.newLocal(INTERCEPTOR_TYPE);
+            mv.storeLocal(local);
+
+            //call provider.run or runWithResult if has return value.
+            mv.loadThis();
+            mv.getField(type, PROVIDER_FIELD, PROVIDER_TYPE);
+            mv.loadLocal(local);
+            mv.invokeInterface(PROVIDER_TYPE, !hasReturnValue ? METHOD_PROVIDER_RUN1 : METHOD_PROVIDER_RUN2);
+
+            if(hasReturnValue) {
+                mv.checkCast(ASM.getReturnType(m));
+            }
+
+            mv.returnValue();
 
             mv.visitMaxs(0,0);
             mv.visitEnd();
@@ -424,13 +471,9 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
             mv.visitCode();
 
-            if(ASM.hasReturnValue(m)) {
-                //todo :
-            }else{
-                mv.loadThis();
-                mv.invokeVirtual(type, new Method(newName, m.desc));
-                mv.returnValue();
-            }
+            mv.loadThis();
+            mv.invokeVirtual(type, new Method(newName, m.desc));
+            mv.returnValue();
 
             mv.visitMaxs(0,0);
             mv.visitEnd();

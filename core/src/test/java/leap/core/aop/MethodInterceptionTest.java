@@ -26,8 +26,10 @@ public class MethodInterceptionTest extends AppTestBase {
     protected @Inject TAopBean bean;
 
     @Test
-    public void testSimpleMethodInterception() throws Exception {
+    public void testHelloInterceptor() throws Exception {
         bean.hello();
+
+        assertEquals("hello aop", bean.getHello());
     }
 
 }

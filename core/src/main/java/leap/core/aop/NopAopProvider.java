@@ -31,4 +31,8 @@ public class NopAopProvider implements AopProvider {
         interception.getRunnable().run();
     }
 
+    @Override
+    public <T> T runWithResult(MethodInterception interception) {
+        return (T)interception.getSupplier().get();
+    }
 }

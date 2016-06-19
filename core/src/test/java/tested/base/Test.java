@@ -29,51 +29,18 @@ public class Test {
     private @Inject                TAopInterceptor   interceptor1;
     private @Inject(name = "test") MethodInterceptor interceptor2;
 
-    public void run(Runnable runnable) {
-
-    }
-
-    public void run1(Object o) {
-
-    }
-
-    public void t1() {
-        Object[] a = new MethodInterceptor[]{interceptor1, interceptor2};
-    }
-
-    public void t2() {
-        run(() -> t1());
-    }
-
-    public void t3() {
-        run1(new Object());
-    }
-
-    public void m1(int i,String s) {
-        MethodInterception interception =
-                new SimpleMethodInterception("cls","name","desc",
-                                             this,new Object[]{i,s},
-                                             new MethodInterceptor[]{interceptor1},
-                                             () -> m1$aop(i,s));
-
-        //aopProvider.run(interception);
-    }
-
-    public void m1$aop(int i, String s) {
-
-    }
-
-    public void m2() {
+    public String m3() {
         MethodInterception interception =
                 new SimpleMethodInterception("cls","name","desc",
                         this,
                         new MethodInterceptor[]{interceptor1},
-                        () -> m2$aop());
+                        () -> m3$aop());
 
-        //aopProvider.run(interception);
+        return aopProvider.runWithResult(interception);
     }
 
-    private void m2$aop() {
-
+    private String m3$aop() {
+        return "hello";
     }
+
 }

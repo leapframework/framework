@@ -25,4 +25,9 @@ public class TAopBean {
         System.out.println("Hello aop");
     }
 
+    @TIntercepted
+    public String getHello() {
+        return "hello aop";
+    }
+
 }

@@ -20,6 +20,8 @@ import leap.core.aop.interception.MethodInterception;
 
 public interface AopProvider {
 
-    void run(MethodInterception interception) ;
+    void run(MethodInterception interception);
+
+    <T> T runWithResult(MethodInterception interception);
 
 }
