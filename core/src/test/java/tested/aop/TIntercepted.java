@@ -16,6 +16,8 @@
 
 package tested.aop;
 
+import leap.lang.enums.Bool;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -24,5 +26,13 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TIntercepted {
+
+    String s() default "";
+
+    Bool b() default Bool.TRUE;
+
+    Class<?> c() default Object.class;
+
+    int i() default 0;
 
 }

@@ -30,6 +30,7 @@ import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.commons.Method;
+import leap.lang.asm.tree.AnnotationNode;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 
@@ -319,6 +320,19 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                     m.exceptions == null ? null : m.exceptions.toArray(Arrays2.EMPTY_STRING_ARRAY));
 
             GeneratorAdapter mv = new GeneratorAdapter(real, m.access, m.name, m.desc);
+
+            if(null != m.visibleAnnotations) {
+                for (AnnotationNode an : m.visibleAnnotations) {
+                    AnnotationVisitor av = mv.visitAnnotation(an.desc, true);
+                    an.accept(av);
+                }
+            }
+            if(null != m.invisibleAnnotations) {
+                for (AnnotationNode an : m.invisibleAnnotations) {
+                    AnnotationVisitor av = mv.visitAnnotation(an.desc, true);
+                    an.accept(av);
+                }
+            }
 
             mv.visitCode();
 

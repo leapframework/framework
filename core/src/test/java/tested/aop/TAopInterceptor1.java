@@ -22,10 +22,14 @@ import leap.core.aop.MethodInvocation;
 public class TAopInterceptor1 implements MethodInterceptor {
 
     private int interceptedCount = 0;
+    private MethodInvocation lastInvocation;
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         interceptedCount++;
+
+        lastInvocation = invocation;
+
         return invocation.execute();
     }
 
@@ -35,5 +39,13 @@ public class TAopInterceptor1 implements MethodInterceptor {
 
     public void resetInterceptedCount() {
         interceptedCount = 0;
+    }
+
+    public MethodInvocation getLastInvocation() {
+        return lastInvocation;
+    }
+
+    public void resetLastInvocation() {
+        this.lastInvocation = null;
     }
 }

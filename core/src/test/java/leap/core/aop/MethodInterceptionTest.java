@@ -18,12 +18,15 @@ package leap.core.aop;
 
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
+import leap.lang.enums.Bool;
 import org.junit.Test;
 import tested.aop.TAopBean;
 import tested.aop.TAopInterceptor1;
 import tested.aop.TAopInterceptor2;
+import tested.aop.TIntercepted;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 
 public class MethodInterceptionTest extends AppTestBase {
 
@@ -41,6 +44,16 @@ public class MethodInterceptionTest extends AppTestBase {
         assertEquals("Hello aop", bean.getLastHello());
         assertEquals(1, interceptor1.getInterceptedCount());
         assertEquals(1, interceptor2.getInterceptedCount());
+
+        MethodInvocation invocation = interceptor1.getLastInvocation();
+        assertNotNull(invocation);
+        Method method = invocation.getMethod();
+        TIntercepted a = method.getAnnotation(TIntercepted.class);
+        assertNotNull(a);
+        assertEquals("s",a.s());
+        assertEquals(Bool.FALSE, a.b());
+        assertEquals(TAopBean.class, a.c());
+        assertEquals(10, a.i());
 
         assertEquals("hello aop$intercepted",   bean.getHello());
         assertEquals("hello world$intercepted", bean.getHello("world"));

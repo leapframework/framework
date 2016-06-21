@@ -16,6 +16,8 @@
 
 package tested.aop;
 
+import leap.lang.enums.Bool;
+
 import java.io.IOException;
 
 public class TAopBean {
@@ -26,7 +28,7 @@ public class TAopBean {
         return lastHello;
     }
 
-    @TIntercepted
+    @TIntercepted(s="s", b = Bool.FALSE, c = TAopBean.class, i = 10)
     public void hello() {
         lastHello = "Hello aop";
     }
