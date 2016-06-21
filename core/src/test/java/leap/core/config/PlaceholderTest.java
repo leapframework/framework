@@ -40,5 +40,11 @@ public class PlaceholderTest extends AppTestBase {
         assertEquals("a", values[0]);
 
     }
+
+    @Test
+    public void testPlaceholderInProperties() {
+        assertEquals("a",   config.getProperty("placeholder.prop1"));
+        assertEquals("a.b", config.getProperty("placeholder.prop2"));
+    }
 }
 

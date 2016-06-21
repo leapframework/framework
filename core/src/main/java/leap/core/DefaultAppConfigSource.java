@@ -19,8 +19,6 @@ import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.ioc.ConfigBean;
-import leap.core.monitor.DefaultMonitorConfig;
-import leap.core.monitor.MonitorConfig;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
@@ -240,8 +238,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void init() {
-            //todo : hard code
-            config.extensions.put(MonitorConfig.class, new DefaultMonitorConfig());
+
         }
 
         protected DefaultAppConfig load() {
@@ -518,20 +515,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     String newValue = resolver.resolveString(value);
                     if (!newValue.equals(value)) {
                         prop.updateResolvedValue(newValue);
-                    }
-                }
-            }
-        }
-
-        protected void resolveStringProperties(Map<String, String> properties) {
-            for(Map.Entry<String,String> p : properties.entrySet()) {
-                String name  = p.getKey();
-                String value = p.getValue();
-
-                if(resolver.hasPlaceholder(value)) {
-                    String newValue = resolver.resolveString(value);
-                    if (!newValue.equals(value)) {
-                        properties.put(name, newValue);
                     }
                 }
             }

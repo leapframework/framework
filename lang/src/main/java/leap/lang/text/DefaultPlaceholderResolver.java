@@ -84,7 +84,21 @@ public class DefaultPlaceholderResolver implements PlaceholderResolver {
 
     @Override
     public boolean hasPlaceholder(String value) {
-        return null != value && value.startsWith(placeholderPrefix) && value.endsWith(placeholderSuffix);
+        if(null == value) {
+            return false;
+        }
+
+        int prefix = value.indexOf(placeholderPrefix);
+        if(prefix < 0) {
+            return false;
+        }
+
+        int suffix = value.indexOf(placeholderSuffix, prefix + placeholderPrefix.length());
+        if(suffix < 0) {
+            return false;
+        }
+
+        return true;
     }
 
     @Override
