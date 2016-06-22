@@ -21,6 +21,7 @@ import leap.lang.asm.signature.SignatureReader;
 import leap.lang.asm.signature.SignatureVisitor;
 import leap.lang.resource.Resource;
 
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -114,6 +115,11 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
         @Override
         public FieldVisitor visitField(final int access, final String name,
                                        final String desc, final String signature, final Object value) {
+
+            if(!Modifier.isStatic(access)) {
+                return null;
+            }
+
             if (signature == null) {
                 addDesc(desc);
             } else {
@@ -128,6 +134,11 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
         @Override
         public MethodVisitor visitMethod(final int access, final String name,
                                          final String desc, final String signature, final String[] exceptions) {
+
+            if(!ASM.STATIC_INIT_NAME.equals(name)) {
+                return null;
+            }
+
             if (signature == null) {
                 addMethodDesc(desc);
             } else {
@@ -153,7 +164,7 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
             @Override
             public void visitEnum(final String name, final String desc,
                                   final String value) {
-                addDesc(desc);
+                //addDesc(desc);
             }
 
             @Override

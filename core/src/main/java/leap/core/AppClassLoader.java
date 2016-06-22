@@ -73,6 +73,7 @@ public class AppClassLoader extends ClassLoader {
     private final Set<String>             loadedNames        = new HashSet<>();
     private final AppInstrumentation      instrumentation    = Factory.newInstance(AppInstrumentation.class);
     private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
+    private final Set<String>             instrumenting      = new HashSet<>();
 
     private boolean parentLoaderPriority  = true;
     private boolean alwaysUseParentLoader = true;
@@ -105,6 +106,7 @@ public class AppClassLoader extends ClassLoader {
     void done() {
         loadedUrls.clear();
         loadedNames.clear();
+        instrumenting.clear();
         beanClassNamesLocal.remove();
     }
 
@@ -134,7 +136,7 @@ public class AppClassLoader extends ClassLoader {
                         filename.endsWith(Classes.CLASS_FILE_SUFFIX)) {
 
                     try {
-                        findClass(null, resource);
+                        instrumentClass(null, resource, true);
                     } catch (ClassNotFoundException e) {
                         throw new NestedClassNotFoundException(e);
                     }
@@ -183,6 +185,10 @@ public class AppClassLoader extends ClassLoader {
             return null;
         }
 
+        return instrumentClass(name);
+    }
+
+    private Class<?> instrumentClass(String name) throws ClassNotFoundException {
         if(isIgnore(name)) {
             return null;
         }
@@ -192,10 +198,21 @@ public class AppClassLoader extends ClassLoader {
             return null;
         }
 
-        return findClass(name, resource);
+        if(instrumenting.contains(name)) {
+            log.info("Found cyclic instrumenting class '{}'", name);
+            return instrumentClass(name, resource, false);
+        }
+
+        instrumenting.add(name);
+
+        Class<?> c = instrumentClass(name, resource, true);
+
+        instrumenting.remove(name);
+
+        return c;
     }
 
-    private Class<?> findClass(String name, Resource resource) throws ClassNotFoundException {
+    private Class<?> instrumentClass(String name, Resource resource, boolean depFirst) throws ClassNotFoundException {
         String url = resource.getURLString();
         if(loadedUrls.contains(url)) {
             return null;
@@ -206,24 +223,30 @@ public class AppClassLoader extends ClassLoader {
             is = resource.getInputStream();
             byte[] bytes = IO.readByteArray(is);
 
-            ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
+            if(depFirst) {
+                ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
 
-            if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
-                log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
-                findClass(dep.getSuperClassName());
-            }
+                if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
+                    log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
+                    instrumentClass(dep.getSuperClassName());
+                }
 
-            if(!dep.getDependentClassNames().isEmpty()) {
+                if(!dep.getDependentClassNames().isEmpty()) {
 
-                log.trace("Loading {} dependent classes of '{}'...",
+                    log.trace("Loading {} dependent classes of '{}'...",
                             dep.getDependentClassNames().size(),
                             dep.getClassName());
 
-                for(String depClassName : dep.getDependentClassNames()) {
-                    log.trace("Loading dependent class '{}'", depClassName);
-                    findClass(depClassName);
+                    for(String depClassName : dep.getDependentClassNames()) {
+                        log.trace("Loading dependent class '{}'", depClassName);
+                        instrumentClass(depClassName);
+                    }
+
                 }
 
+                if(loadedUrls.contains(url)){
+                    return null;
+                }
             }
 
             //try instrument the class.
