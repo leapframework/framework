@@ -18,6 +18,8 @@ package leap.orm.dao.query;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
+import leap.orm.tested.model.file.Directory;
+import leap.orm.tested.model.file.File;
 import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
@@ -90,6 +92,18 @@ public class NamedQueryTest extends OrmTestCase {
 			assertNotNull(prdt.getId());
 		});
 	}
+	@Test
+	public void testQueryDirSqlWithResultFile(){
+		dao.deleteAll(Directory.class);
+		dao.deleteAll(File.class);
+		Directory dir = new Directory();
+		dir.setName("dir1");
+		dir.setScopeId("dir");
+		dao.cmdInsert(Directory.class).setAll(dir).execute();
+		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
+		assertEquals(1,files.size());
+		assertEquals("dir",files.get(0).getScopeId());
+	}
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {
         Map<String, Object> olderFields = older.fields();
@@ -105,4 +119,6 @@ public class NamedQueryTest extends OrmTestCase {
 
         assertMapEquals(olderFields, newerFields);
 	}
+
+
 }

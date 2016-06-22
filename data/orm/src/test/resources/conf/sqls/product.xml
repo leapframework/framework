@@ -3,4 +3,7 @@
     <command key="queryProductWithResultClass">
         select * from product
     </command>
+    <command key="queryDirSqlWithResultFile">
+        select dir_id,dir_name,scope_id from Directory
+    </command>
 </sqls>

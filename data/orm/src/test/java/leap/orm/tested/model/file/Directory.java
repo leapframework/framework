@@ -35,6 +35,8 @@ public class Directory {
 
 	protected Boolean deleted;
 
+	protected String scopeId;
+
 	public String getId() {
 		return id;
 	}
@@ -65,5 +67,13 @@ public class Directory {
 
 	public void setDeleted(Boolean deleted) {
 		this.deleted = deleted;
+	}
+
+	public String getScopeId() {
+		return scopeId;
+	}
+
+	public void setScopeId(String scopeId) {
+		this.scopeId = scopeId;
 	}
 }
