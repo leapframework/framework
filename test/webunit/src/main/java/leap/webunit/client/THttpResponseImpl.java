@@ -152,7 +152,7 @@ class THttpResponseImpl implements THttpResponse {
 		if(null == content){
 			try {
 		        HttpEntity entity = httpResponse.getEntity();
-		        content = null == entity ? null : IO.readString(entity.getContent(), charset());
+		        content = null == entity ? null : IO.readStringAndClose(entity.getContent(), charset());
 	        } catch (IOException e) {
 	        	throw Exceptions.wrap("Error reading response body", e);
 	        }

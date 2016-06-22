@@ -60,6 +60,7 @@ public class JdkHttpRequest implements HttpRequest {
     protected int         readTimeout;
     protected Charset     charset;
     protected InputStream content;
+    protected HTTP.Method method;
     
     private boolean form;
     
@@ -73,8 +74,8 @@ public class JdkHttpRequest implements HttpRequest {
         this.ssl = Strings.startsWithIgnoreCase(url, HttpClient.PREFIX_HTTPS);
         
         this.connectTimeout = client.getDefaultConnectTimeout();
-        this.readTimeout = client.getDefaultReadTimeout();
-        this.charset     = client.getDefaultCharset();
+        this.readTimeout    = client.getDefaultReadTimeout();
+        this.charset        = client.getDefaultCharset();
     }
     
     public int getConnectTimeout() {
@@ -119,7 +120,13 @@ public class JdkHttpRequest implements HttpRequest {
         formParams.add(new ImmutableNamedValue<String>(name, value));
         return this;
     }
-    
+
+    @Override
+    public HttpRequest setMethod(HTTP.Method method) {
+        this.method = method;
+        return this;
+    }
+
     @Override
     public HttpRequest setBody(byte[] data) {
         Args.notNull(data, "data");
@@ -144,14 +151,24 @@ public class JdkHttpRequest implements HttpRequest {
         return send(HTTP.Method.POST);
     }
 
-    public JdkHttpResponse send(HTTP.Method m) {
+    @Override
+    public HttpResponse send() {
         String connUrl = url;
 
         if(!queryParams.isEmpty()) {
             connUrl = Urls.appendQueryString(connUrl, queryParams.build());
         }
 
-        return doSend(m, connUrl);
+        if(null == method) {
+            if(form || null != content) {
+                method = HTTP.Method.POST;
+            }else{
+                method = HTTP.Method.GET;
+            }
+        }
+
+        return doSend(method, connUrl);
+
     }
 
     protected boolean hasHeader(String name) {

@@ -52,10 +52,18 @@
     <bean type="leap.core.validation.BeanValidator" 	class="leap.core.validation.DefaultBeanValidator" primary="true"/>
 
     <bean type="leap.core.web.path.PathTemplateFactory" class="leap.core.web.path.JerseyPathTemplateFactory" primary="true"/>
-    <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.JdkHttpClient" primary="true">
-        <property name="defaultConnectTimeout" value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
-        <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>
-    </bean>
+
+    <!-- http client -->
+    <beans if-class-present="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+        <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.apache.ApacheHttpClient" primary="true"/>
+    </beans>
+
+    <beans if-class-not-present="org.apache.http.impl.conn.PoolingHttpClientConnectionManager">
+        <bean type="leap.lang.http.client.HttpClient" class="leap.lang.http.client.JdkHttpClient" primary="true">
+            <property name="defaultConnectTimeout" value="${httpClient.defaultConnectTimeout}" default-value="30000"/>
+            <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>
+        </bean>
+    </beans>
 
     <!-- aop -->
     <bean type="leap.core.aop.AopProvider" class="leap.core.aop.DefaultAopProvider" primary="true"/>

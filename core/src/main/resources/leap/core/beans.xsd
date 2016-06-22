@@ -37,6 +37,7 @@
 			<xsd:attribute name="if" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-class-present" use="optional" type="xsd:string"/>
+            <xsd:attribute name="if-class-not-present" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-servlet-environment" use="optional" type="xsd:boolean"/>
 			<xsd:attribute name="default-lazy-init" default="true" type="xsd:boolean"/>
 

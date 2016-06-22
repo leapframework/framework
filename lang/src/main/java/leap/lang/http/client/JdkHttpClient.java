@@ -15,69 +15,22 @@
  */
 package leap.lang.http.client;
 
-import java.nio.charset.Charset;
-import java.security.SecureRandom;
-import java.security.cert.X509Certificate;
-
-import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 
-import leap.lang.Charsets;
+public class JdkHttpClient extends AbstractHttpClient {
 
-public class JdkHttpClient implements HttpClient {
-    
     static {
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){  
-            public X509Certificate[] getAcceptedIssuers(){return null;}  
-            public void checkClientTrusted(X509Certificate[] certs, String authType){}  
-            public void checkServerTrusted(X509Certificate[] certs, String authType){}  
-        }}; 
-        
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String arg0, SSLSession arg1) {
-                return true;
-            }
-        }); 
-        try {
-            SSLContext sc = SSLContext.getInstance("TLS");  
-            sc.init(null, trustAllCerts, new SecureRandom());  
-            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        } 
-    }
-    
-    protected int     defaultConnectTimeout = 30 * 1000;
-    protected int     defaultReadTimeout    = 30 * 1000;
-    protected Charset defaultCharset        = Charsets.UTF_8;
-    
-    public int getDefaultConnectTimeout() {
-        return defaultConnectTimeout;
+        HttpsURLConnection.setDefaultSSLSocketFactory(SSL_CONTEXT.getSocketFactory());
     }
 
-    public void setDefaultConnectTimeout(int defaultConnectTimeout) {
-        this.defaultConnectTimeout = defaultConnectTimeout;
-    }
-    
+    protected int defaultReadTimeout = 30 * 1000;
+
     public int getDefaultReadTimeout() {
         return defaultReadTimeout;
     }
 
     public void setDefaultReadTimeout(int defaultReadTimeout) {
         this.defaultReadTimeout = defaultReadTimeout;
-    }
-    
-    public Charset getDefaultCharset() {
-        return defaultCharset;
-    }
-
-    public void setDefaultCharset(Charset defaultCharset) {
-        this.defaultCharset = defaultCharset;
     }
 
     @Override
