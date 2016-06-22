@@ -37,10 +37,11 @@ public class DefaultAuthzClientAuthenticator implements AuthzClientAuthenticator
             return true;
         }
         
-        if(!Strings.equals(client.getSecret(), clientSecret)) {
+        if(!client.acceptsSecret(clientSecret)) {
             return false;
         }
-        
+
+        client.setAuthenticated(Boolean.TRUE);
         out.set(client);
         return true;
     }

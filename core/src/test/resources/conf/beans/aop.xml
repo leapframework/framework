@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean class="tested.aop.TAopBean"/>
+
+    <bean class="tested.aop.TAopInterceptor1"/>
+
+    <bean name="interceptor2" type="leap.core.aop.MethodInterceptor"
+          class="tested.aop.TAopInterceptor2"/>
+
+    <bean class="tested.aop.TAopInterceptor3"/>
+</beans>

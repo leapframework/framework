@@ -131,7 +131,6 @@ public abstract class AbstractAssetResource implements AssetResource {
         if (Strings.isEmpty(dir)) {
             throw new AssetException("The publish directory must not be empty in asset configuration");
         }
-
         File file = new File(Paths.applyRelative(dir, this.clientUrl));
         if (!file.exists()) {
             log.debug("Publish asset '{}' to '{}'", serverPath, file.getAbsolutePath());

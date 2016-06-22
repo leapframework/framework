@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<properties>
+
+    props_root.prop1 = a
+    props_root.prop2 = b #comment
+
+</properties>

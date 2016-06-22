@@ -10,7 +10,7 @@
 	    <bean id="testIfBeanTrue3" class="tested.beans.TBean"/>
 	</beans>
 
-    <beans if="config.properties['testIfBeanTrue4.enabled']">
+    <beans if="properties['testIfBeanTrue4.enabled']">
         <bean id="testIfBeanTrue4" class="tested.beans.TBean"/>
     </beans>
 	
@@ -22,15 +22,15 @@
 	    <bean id="testIfBeanFalse2" class="tested.beans.TBean"/>
 	</beans>
 
-    <beans if="config.properties['testIfBeanFalse3.enabled']">
+    <beans if="properties['testIfBeanFalse3.enabled']">
         <bean id="testIfBeanFalse3" class="tested.beans.TBean"/>
     </beans>
 
-    <beans if-profile="production">
+    <beans if-profile="prod">
         <bean id="testProfile.shouldNotCreated" class="tested.beans.TBean"/>
     </beans>
 
-    <beans if-profile="development">
+    <beans if-profile="dev">
         <bean id="testProfile.shouldBeCreated" class="tested.beans.TBean"/>
     </beans>
 

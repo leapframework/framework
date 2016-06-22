@@ -15,13 +15,16 @@
  */
 package leap.core.ds;
 
-import javax.sql.DataSource;
-
+import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
-
 import org.junit.Test;
 
+import javax.sql.DataSource;
+
 public class DataSourceBeanTest extends AppTestBase {
+
+    private @Inject DataSource        ds;
+    private @Inject DataSourceManager dsm;
 	
 	@Test
 	public void testTomcatJdbcDataSourceBean() {
@@ -31,6 +34,12 @@ public class DataSourceBeanTest extends AppTestBase {
 		assertTrue(ds instanceof org.apache.tomcat.jdbc.pool.DataSource);
 		
 	}
-	
+
+    @Test
+    public void testDefaultDataSourceBean() {
+        assertNotNull(ds);
+        assertSame(ds, dsm.getDefaultDataSource());
+
+    }
 
 }

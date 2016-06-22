@@ -16,14 +16,14 @@
 package leap.core.instrument;
 
 import leap.core.AppConfig;
-import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resource;
 
 public interface AppInstrumentProcessor {
 
-    default void init(AppConfig conifg) {
+    default void init(AppConfig config) {
 
     }
 	
-	void instrument(AppInstrumentContext context, ResourceSet crs);
+    void instrument(AppInstrumentContext context, Resource resource, byte[] bytes);
 
 }

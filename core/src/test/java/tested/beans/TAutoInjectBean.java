@@ -18,6 +18,7 @@ package tested.beans;
 import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.lang.Lazy;
+import tested.base.beans.TAnnotationBeanType;
 
 import java.util.ArrayList;
 import java.util.List;

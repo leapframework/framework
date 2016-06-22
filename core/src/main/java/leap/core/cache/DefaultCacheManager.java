@@ -89,7 +89,7 @@ public class DefaultCacheManager implements CacheManager, PostCreateBean, Factor
     public void postCreate(BeanFactory factory) throws Exception {
 		this.caches = new ConcurrentHashMap<>();
 		this.caches.putAll((Map)factory.getNamedBeans(Cache.class));
-		log.debug("Found {} managed Cache bean(s)",caches.size());
+		log.trace("Found {} managed Cache bean(s)",caches.size());
 	}
 
     @Override

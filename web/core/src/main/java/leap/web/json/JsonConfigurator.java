@@ -15,6 +15,9 @@
  */
 package leap.web.json;
 
+import leap.core.validation.annotations.NotNull;
+import leap.lang.naming.NamingStyle;
+
 public interface JsonConfigurator {
 	
 	String DEFAULT_JSONP_PARAMETER = "callback";
@@ -26,6 +29,8 @@ public interface JsonConfigurator {
 	JsonConfigurator setDefaultSerializationIgnoreNull(boolean ignoreNull);
 	
 	JsonConfigurator setDefaultSerializationIgnoreEmpty(boolean ignoreEmpty);
+
+	JsonConfigurator setDefaultNamingStyle(NamingStyle namingStyle);
 	
 	JsonConfigurator setJsonpEnabled(boolean enabled);
 	

@@ -16,6 +16,7 @@
 package leap.oauth2.as;
 
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 import leap.core.AppConfig;
 import leap.oauth2.as.client.AuthzClientStore;
@@ -99,6 +100,14 @@ public interface OAuth2AuthzServerConfig {
      * Default is <code>true</code>.
      */
 	boolean isClientCredentialsEnabled();
+
+	/**
+	 * Returns <code>true</code> if token client grant type is allowed.
+	 *
+	 * <p/>
+	 * Default is <code>true</code>.
+	 */
+	boolean isTokenClientEnabled();
 
     /**
      * Returns <code>true</code> if password credentials grant type is allowed.
@@ -241,6 +250,14 @@ public interface OAuth2AuthzServerConfig {
 	 *  Returns <code>null</code> if the private key not configured.
 	 */
 	PrivateKey getPrivateKey();
+
+	/**
+	 * Returns the global public key of authz server.
+	 *
+	 *  <p>
+	 *  Returns <code>null</code> if the public key not configured.
+	 */
+	PublicKey getPublicKey();
 	
 	/**
 	 * Returns the global private key of authz server.

@@ -46,7 +46,7 @@ public class AppFileMonitor extends FileChangeMonitor implements Disposable {
         super.addObserver(observer);
         if(!running) {
             if(config.isReloadEnabled()) {
-                log.debug("Start app file monitor at interval : " + interval);
+                log.trace("Start app file monitor at interval : " + interval);
                 Try.throwUnchecked(this::start);
             }
         }
@@ -55,7 +55,7 @@ public class AppFileMonitor extends FileChangeMonitor implements Disposable {
 	@Override
     public void dispose() throws Throwable {
 		if(running){
-			log.debug("Stop app file monitor");
+			log.trace("Stop app file monitor");
 			stop();	
 		}
     }

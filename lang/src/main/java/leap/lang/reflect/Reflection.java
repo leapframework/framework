@@ -44,7 +44,7 @@ public class Reflection {
 	}
 	
 	/**
-	 * create a new instance of the given classs.
+	 * create a new instance of the given class.
 	 */
 	public static <T> T newInstance(Class<T> clazz){
 		return ReflectClass.of(clazz).newInstance();

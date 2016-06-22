@@ -21,9 +21,14 @@ import java.util.Set;
 public interface AppInstrumentClass {
 
     /**
-     * Returns the instrumented class name.
+     * Returns the class name.
      */
     String getClassName();
+
+    /**
+     * Returns the instrumented class name as internal class format.
+     */
+    String getInternalClassName();
 
     /**
      * Returns the bytes of class.
@@ -31,17 +36,28 @@ public interface AppInstrumentClass {
     byte[] getClassData();
 
     /**
-     * Updates the class data to the newly.
+     * Returns true if the class must be instrumented.
      */
-    void updateClassData(byte[] data);
+    boolean isEnsure();
+
+    /**
+     * Make the class ensure be instrumented.
+     */
+    void makeEnsure();
+
+    /**
+     * Returns true if the class is declared as a managed bean.
+     */
+    boolean isBeanDeclared();
+
+    /**
+     * Sets the class is delcared as a managed bean.
+     */
+    void setBeanDeclared(boolean b);
 
     /**
      * Returns a set contains all the classes which the class instrumented by..
      */
     Set<Class<?>> getAllInstrumentedBy();
 
-    /**
-     * Adds an instrumented by.
-     */
-    void addInstrumentedBy(Class<?> cls);
 }

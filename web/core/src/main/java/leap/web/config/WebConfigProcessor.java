@@ -15,11 +15,9 @@
  */
 package leap.web.config;
 
-import java.util.Iterator;
-
-import leap.core.AppConfigContext;
 import leap.core.AppConfigException;
-import leap.core.AppConfigProcessor;
+import leap.core.config.AppConfigProcessor;
+import leap.core.config.AppConfigContext;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
@@ -27,6 +25,8 @@ import leap.lang.xml.XmlReader;
 import leap.web.assets.AssetConfigExtension;
 import leap.web.cors.CorsConfig;
 import leap.web.error.ErrorsConfig;
+
+import java.util.Iterator;
 
 @Internal
 public class WebConfigProcessor implements AppConfigProcessor {
@@ -85,7 +85,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
         reader.getAttributeNames().forEachRemaining((name) -> {
             String value = reader.resolveAttribute(name);
             if(!Strings.isEmpty(value)) {
-                context.setProperty(WebConfigurator.CONFIG_PREFIX + name, value);
+                context.putProperty(WebConfigProcessor.class, WebConfigurator.CONFIG_PREFIX + name, value);
             }
         });
 
@@ -168,7 +168,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 				String name  = attrs.next();
 				String value = reader.resolveAttribute(name);
 				
-				context.setProperty(CorsConfig.CONFIX_PREFIX + "." + name, value);
+				context.putProperty(WebConfigProcessor.class, CorsConfig.CONFIX_PREFIX + "." + name, value);
 			}while(attrs.hasNext());
 		}
 	}

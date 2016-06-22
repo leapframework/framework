@@ -3,4 +3,6 @@
 
     <bean class="tested.beans.TNonSingletonBean" singleton="false"/>
 
+    <bean class="tested.beans.TConcurrentBean"/>
+
 </beans>

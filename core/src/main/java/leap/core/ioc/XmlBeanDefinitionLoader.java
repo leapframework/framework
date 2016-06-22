@@ -15,9 +15,10 @@
  */
 package leap.core.ioc;
 
+import leap.core.AppClassLoader;
+import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.el.EL;
-import leap.core.instrument.AppInstrumentation;
 import leap.lang.*;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
@@ -30,6 +31,7 @@ import leap.lang.expression.Expression;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogUtils;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
@@ -119,7 +121,6 @@ class XmlBeanDefinitionLoader {
     public static final String OVERRIDE_ATTRIBUTE               = "override";
     public static final String DEFAULT_OVERRIDE_ATTRIBUTE       = "default-override";
     public static final String DEFAULT_LAZY_INIT_ATTRIBUTE      = "default-lazy-init";
-    public static final String DEFAULT_AUTO_INJECT_ATTRIBUTE    = "default-auto-inject";
     public static final String LIST_CLASS_ATTRIBUTE             = "list-class";
     public static final String SET_CLASS_ATTRIBUTE              = "set-class";
     public static final String MAP_CLASS_ATTRIBUTE              = "map-class";
@@ -129,16 +130,10 @@ class XmlBeanDefinitionLoader {
 
     protected boolean defaultAutoInject = true;
 
-    private final BeanContainer      container;
-    private final AppInstrumentation instrumentation;
+    private final BeanContainer container;
 
     public XmlBeanDefinitionLoader(BeanContainer container) {
-        this(container, null);
-    }
-
-    public XmlBeanDefinitionLoader(BeanContainer container, AppInstrumentation instrumentation) {
-        this.container       = container;
-        this.instrumentation = instrumentation;
+        this.container = container;
     }
 
     public boolean isDefaultAutoInject() {
@@ -149,21 +144,28 @@ class XmlBeanDefinitionLoader {
 		this.defaultAutoInject = defaultAutoInject;
 	}
 
-	public void load(Resource[] resources) {
+	public void load(AppResource[] resources) {
 	    Args.notNull(resources,"resources");
-	    
-	    for(Resource resource : resources){
-	    	if(resource.isReadable()){
-	    	    if(log.isDebugEnabled()) {
-	    	        if(AppResources.isFrameworkResource(resource.getURLString())) {
-	    	            log.trace("Reading beans from resource : {}",resource.getURLString());
-	    	        }else{
-	    	            log.debug("Reading beans from resource : {}",resource.getURLString());        
-	    	        }
-	    	    }
-	    		readDefinitions(container,resource);	
-	    	}
+
+	    for(AppResource ar : resources){
+            Resource resource = ar.getResource();
+            if(log.isDebugEnabled()) {
+                if(AppResources.isFrameworkAndCoreResource(resource.getURLString())) {
+                    log.trace("Load beans : {}", LogUtils.getUrl(resource));
+                }else{
+                    log.debug("Load beans : {}", LogUtils.getUrl(resource));
+                }
+            }
+            readDefinitions(container,resource, ar.isDefaultOverride());
 	    }
+    }
+
+    protected Class<?> forName(String className) {
+        return Classes.forName(className);
+    }
+
+    protected Class<?> tryForName(String className) {
+        return Classes.tryForName(className);
     }
     
     public BeanDefinitionBase create(String id,boolean lazyInit, Class<?> beanClass,Object... constructorArguments){
@@ -199,12 +201,16 @@ class XmlBeanDefinitionLoader {
     	return bd;
     }
 	
-	protected void readDefinitions(BeanContainer container,Resource resource){
+	protected void readDefinitions(BeanContainer container,Resource resource, boolean defaultOverride){
+        if(!Strings.endsWithIgnoreCase(resource.getFilename(),".xml")) {
+            return;
+        }
+
 		XmlReader reader = null;
 		try{
 			reader = XML.createReader(resource);
 			if(reader.nextToStartElement(BEANS_ELEMENT)){
-				readBeans(container, resource, reader, new LoaderContext());
+				readBeans(container, resource, reader, new LoaderContext(defaultOverride));
 			}
 		}finally{
 			IO.close(reader);
@@ -218,7 +224,6 @@ class XmlBeanDefinitionLoader {
 				return;
 			}
 			
-	        context.defaultAutoInject = boolAttribute(reader,DEFAULT_AUTO_INJECT_ATTRIBUTE,true);
 	        context.defaultLazyInit = reader.getBooleanAttribute(DEFAULT_LAZY_INIT_ATTRIBUTE, true);
 	        
 	        while(reader.nextWhileNotEnd(BEANS_ELEMENT)){
@@ -229,6 +234,7 @@ class XmlBeanDefinitionLoader {
 	        		
 	        		if(reader.isStartElement(IMPORT_ELEMENT)){
 	        			boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
+                        Boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE);
 	        			String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 	        			
 	        			Resource importResource = Resources.getResource(resource,importResourceName);
@@ -238,7 +244,12 @@ class XmlBeanDefinitionLoader {
 	        					throw new BeanDefinitionException("the import resource '" + importResourceName + "' not exists");
 	        				}
 	        			}else{
-	        				readDefinitions(container,importResource);
+                            if(null != override) {
+                                readDefinitions(container, importResource, override);
+                            }else{
+                                readDefinitions(container,importResource, context.defaultOverride);
+                            }
+
 	        			}
 	        			continue;
 	        		}
@@ -313,7 +324,7 @@ class XmlBeanDefinitionLoader {
 		
 		return new AliasDefinition(reader.getSource(),
 								   alias,
-								   Classes.forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
+								   forName(reader.getRequiredAttribute(TYPE_ATTRIBUTE)),
 								   reader.getRequiredAttribute(NAME_ATTRIBUTE)
 								   );
 	}
@@ -336,12 +347,10 @@ class XmlBeanDefinitionLoader {
         boolean defaultOverride  = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, false);
 
 		if(!Strings.isEmpty(beanClassName)){
-            if(null != instrumentation) {
-                instrumentation.tryInstrument(beanClassName);
-            }
-
 			try {
-	            bean.setBeanClass(Classes.forName(beanClassName));
+                AppClassLoader.addBeanClass(beanClassName);
+                log.trace("Resolving bean class '{}'...", beanClassName);
+	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
 				throw new BeanDefinitionException("Error resolving bean class '" + beanClassName + "' , source : " + reader.getSource(), e);
             }
@@ -364,7 +373,7 @@ class XmlBeanDefinitionLoader {
 		}
 		
 		if(!Strings.isEmpty(typeClassName)){
-			Class<?> type = Classes.tryForName(typeClassName);
+			Class<?> type = tryForName(typeClassName);
 			
 			if(null == type){
 				throw new BeanDefinitionException("bean's type class '" + typeClassName + "' not found, source : " + reader.getSource());	
@@ -647,7 +656,7 @@ class XmlBeanDefinitionLoader {
         TypeDefinitionBase def = new TypeDefinitionBase();
         
         String   typeClassName = reader.getRequiredAttribute(TYPE_ATTRIBUTE);
-        Class<?> typeClass     = Classes.tryForName(typeClassName);
+        Class<?> typeClass     = tryForName(typeClassName);
         
         if(null == typeClass) {
             throw new BeanDefinitionException("Class '" + typeClassName + "' not found, check source : " + bean.getSource());
@@ -676,7 +685,7 @@ class XmlBeanDefinitionLoader {
             throw new BeanDefinitionException("Attribute '" + TARGET_TYPE_ATTRIBUTE + "' of element '" + REGISTER_BEAN_FACTORY_ELEMENT + "' must not be empty, source : " + reader.getSource());
         }
         
-        Class<?> targetType = Classes.tryForName(targetTypeName);
+        Class<?> targetType = tryForName(targetTypeName);
         if(null == targetType){
             throw new BeanDefinitionException("Target type '" + targetTypeName + "' not found, source : " + reader.getSource());
         }
@@ -782,7 +791,7 @@ class XmlBeanDefinitionLoader {
 						+ reader.getElementLocalName() + "' in element '" + elementName + "', source : " + reader.getSource());
 			}
 			try {
-				Class<?> c = Classes.forName(refType);
+				Class<?> c = forName(refType);
 				return beanReference(context,c,refName);
 			}catch (NestedClassNotFoundException e){
 				throw new BeanDefinitionException("Invallid class name '" + refType + "', source : " + reader.getSource(), e);
@@ -814,7 +823,7 @@ class XmlBeanDefinitionLoader {
 				return null;
 			}
 			try {
-		        Class<?> c = Classes.forName(className);
+		        Class<?> c = forName(className);
 		        return resolvedValue(c);
 	        } catch (ObjectNotFoundException e) {
 	        	throw new BeanDefinitionException("Invallid class name '" + className + "', source : " + reader.getSource(), e);
@@ -829,7 +838,7 @@ class XmlBeanDefinitionLoader {
 				return beanReference(context,id);
 			}else if(Strings.isNotEmpty(name) && Strings.isNotEmpty(type)){
 				try {
-					Class<?> c = Classes.forName(type);
+					Class<?> c = forName(type);
 					return beanReference(context,c,	name);
 				}catch (NestedClassNotFoundException e){
 					throw new BeanDefinitionException("Invallid class name '" + type + "', source : " + reader.getSource(), e);
@@ -883,7 +892,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		List<ValueDefinition> values = new ArrayList<ValueDefinition>();
+		List<ValueDefinition> values = new ArrayList<>();
 		
 		while(reader.nextWhileNotEnd(ARRAY_ELEMENT)){
 			if(reader.isStartElement()){
@@ -908,7 +917,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		List<ValueDefinition> values = new ArrayList<ValueDefinition>();
+		List<ValueDefinition> values = new ArrayList<>();
 		
 		final QName elementName = reader.getElementName();
 		
@@ -932,7 +941,7 @@ class XmlBeanDefinitionLoader {
 		boolean  merge     = boolAttribute(reader, MERGE_ATTRIBUTE, false);
 		Class<?> valueType = javaTypeAttribute(reader, VALUE_TYPE_ATTRIBUTE);
 		
-		Set<ValueDefinition> values = new LinkedHashSet<ValueDefinition>();
+		Set<ValueDefinition> values = new LinkedHashSet<>();
 		
 		final QName elementName = reader.getElementName();
 		
@@ -1078,14 +1087,14 @@ class XmlBeanDefinitionLoader {
         }
 	}
 	
-	protected static Class<?> classAttribute(XmlReader reader,String name,boolean required){
+	protected Class<?> classAttribute(XmlReader reader,String name,boolean required){
 		String value = required ? reader.getRequiredAttribute(name) : reader.getAttribute(name);
 		
 		if(Strings.isEmpty(value)){
 			return null;
 		}
 		
-		Class<?> clazz = Classes.tryForName(value);
+		Class<?> clazz = tryForName(value);
 		if(null == clazz){
 			throw new BeanDefinitionException("invalid class name '" + value + "' in source : " + reader.getSource() + ", line number : " + reader.getLineNumber());
 		}
@@ -1120,12 +1129,7 @@ class XmlBeanDefinitionLoader {
 		if(!Strings.isEmpty(expressionText)){
 			try {
 	            Expression expression = SPEL.createExpression(parseContext,expressionText);
-
-	            Map<String, Object> vars = new HashMap<>();
-	            vars.put("config",container.getAppConfig());
-	            vars.put("debug", container.getAppConfig().isDebug());
-	            
-	            return EL.test(expression.getValue(vars), true);
+	            return EL.test(expression.getValue(container.getAppConfig()), true);
             } catch (Exception e) {
             	throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
             }
@@ -1145,8 +1149,11 @@ class XmlBeanDefinitionLoader {
 	}
 	
 	public class LoaderContext {
-		public boolean defaultAutoInject = XmlBeanDefinitionLoader.this.defaultAutoInject;
 		public boolean defaultLazyInit = true;
 		public boolean defaultOverride = false;
-	}
+
+        public LoaderContext(boolean defaultOverride) {
+            this.defaultOverride = defaultOverride;
+        }
+    }
 }

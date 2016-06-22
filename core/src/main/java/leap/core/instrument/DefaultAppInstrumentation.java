@@ -34,28 +34,19 @@ package leap.core.instrument;
 
 import leap.core.AppConfig;
 import leap.core.AppInitException;
-import leap.lang.Classes;
 import leap.lang.Factory;
-import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
-import leap.lang.resource.SimpleResourceSet;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultAppInstrumentation implements AppInstrumentation {
 
     private static final Log log = LogFactory.get(DefaultAppInstrumentation.class);
 
     private final List<AppInstrumentProcessor> processors = Factory.newInstances(AppInstrumentProcessor.class);
-
-    private Set<String> instrumented = new HashSet<>();
 
     @Override
     public void init(AppConfig config) {
@@ -65,73 +56,41 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
     }
 
     @Override
-    public void complete() {
-        instrumented.clear();
-    }
-
-    @Override
-    public void instrument(ResourceSet rs) {
-        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext();
+    public AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes) {
+        DefaultAppInstrumentContext context = new DefaultAppInstrumentContext(loader);
 
         for(AppInstrumentProcessor p : processors){
             try {
-                p.instrument(context, rs);
+                p.instrument(context, r, bytes);
             } catch (Throwable e) {
                 throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
             }
         }
 
-        postInstrumented(context.getAllInstrumentedClasses());
-    }
+        AppInstrumentClass ic = null;
+        if(!context.getAllInstrumentedClasses().isEmpty()){
+            ic = context.getAllInstrumentedClasses().iterator().next();
 
-    @Override
-    public void instrument(String className) {
-        if(!tryInstrument(className)) {
-            throw new ObjectNotFoundException("The resource of class name '" + className + "' not found");
-        }
-    }
-
-    @Override
-    public boolean tryInstrument(String className) {
-        Resource resource = Resources.getResource("classpath:" + className.replace('.', '/') + ".class");
-        if(null == resource || !resource.exists()) {
-            return false;
-        }
-
-        instrument(new SimpleResourceSet(new Resource[]{resource}));
-        return true;
-    }
-
-    public void postInstrumented(Collection<AppInstrumentClass> instrumentClasses) {
-        AppInstrumentClassLoader classLoader = new AppInstrumentClassLoader(Classes.getClassLoader());
-
-        for(AppInstrumentClass ic : instrumentClasses) {
-            log.trace("Define the instrumented class '{}'", ic.getClassName());
-
-            String className = ic.getClassName().replace('/','.');
-
-            if(instrumented.contains(className)) {
-                log.info("Class '{}' already instrumented", className);
-                continue;
-            }
-
-            instrumented.add(className);
-            try {
-                classLoader.defineClass(className, ic.getClassData());
-            } catch (RuntimeException e) {
-                Throwable cause = e.getCause();
-
-                if(cause instanceof ClassFormatError) {
-                    throw e;
-                }
-
-                if(cause instanceof LinkageError) {
-                    log.warn("Class '{}' already loaded or instrumented by another class loader", ic.getClassName());
-                    continue;
-                }
-
-                throw e;
+            if(log.isDebugEnabled()) {
+                log.debug("Instrument '{}' by [ {} ]",
+                          ic.getClassName(),
+                          getInstrumentedBy(ic.getAllInstrumentedBy()));
             }
         }
+        return ic;
     }
+
+    private String getInstrumentedBy(Set<Class<?>> classes) {
+        StringBuilder s = new StringBuilder();
+
+        final AtomicInteger i = new AtomicInteger(-1);
+        classes.forEach(c -> {
+            if(i.incrementAndGet() > 0) {
+                s.append(" , ");
+            }
+            s.append(c.getSimpleName());
+        });
+        return s.toString();
+    }
+
 }

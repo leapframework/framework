@@ -29,5 +29,8 @@ public class AdminController {
     public void status() {
 
     }
-    
+    @Permissions("admin:test")
+    public void test(){
+
+    }
 }

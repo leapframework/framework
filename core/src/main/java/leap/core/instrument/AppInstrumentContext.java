@@ -20,6 +20,11 @@ import java.util.Collection;
 public interface AppInstrumentContext {
 
     /**
+     * Returns true class loader for instrumentation.
+     */
+    ClassLoader getClassLoader();
+
+    /**
      * Returns true if the given class name was instrumented by the class.
      */
     default boolean isInstrumentedBy(String className, Class<?> instrumentedBy) {
@@ -35,11 +40,16 @@ public interface AppInstrumentContext {
     /**
      * Returns the instrumented class or null.
      */
-    AppInstrumentClass getInstrumentedClass(String className);
+    AppInstrumentClass getInstrumentedClass(String internalClassName);
 
     /**
-     * Puts the instrumented class to context.
+     * Creates a new {@link AppInstrumentClass}.
      */
-    void addInstrumentedClass(Class<?> instrumentBy, String className, byte[] classData);
+    AppInstrumentClass newInstrumentedClass(String internalClassName);
+
+    /**
+     * Updates the instrumented class data.
+     */
+    void updateInstrumented(AppInstrumentClass cls, Class<?> instrumentedBy, byte[] classData, boolean ensure);
 
 }

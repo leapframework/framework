@@ -42,8 +42,13 @@ public abstract class ExprParamBase extends ParamBase {
 	public Expression getExpression() {
 		return expression;
 	}
-	
-	@Override
+
+    @Override
+    public Object eval(SqlStatementBuilder stm, Params params) {
+        return getParameterValue(stm, params);
+    }
+
+    @Override
     protected Object getParameterValue(SqlStatementBuilder stm, Params params) {
 		return expression.getValue(stm.context(),params.map());
     }

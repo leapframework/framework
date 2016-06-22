@@ -15,9 +15,10 @@
  */
 package leap.orm.model;
 
-import leap.core.instrument.AbstractAsmInstrumentProcessor;
+import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
 import leap.core.instrument.AppInstrumentProcessor;
+import leap.core.instrument.AsmInstrumentProcessor;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
@@ -26,28 +27,21 @@ import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 import leap.lang.io.IO;
-import leap.lang.io.InputStreamSource;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
 import leap.orm.annotation.Instrument;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
 
-public class ModelInstrumentation extends AbstractAsmInstrumentProcessor implements AppInstrumentProcessor {
+public class ModelInstrumentation extends AsmInstrumentProcessor implements AppInstrumentProcessor {
 	
 	private static final Log log = LogFactory.get(ModelInstrumentation.class);
 	
 	protected static final Type   MODEL_TYPE       = Type.getType(Model.class);
 	protected static final String MODEL_CLASS_NAME = MODEL_TYPE.getInternalName();
-	//protected static final String OC_CLASS_NAME    = Type.getInternalName(OrmContext.class);
-	//protected static final String EM_CLASS_NAME    = Type.getInternalName(EntityMapping.class);
-	
+
 	protected static final ClassNode	MODEL_CLASS;
 	protected static final MethodNode[] DELEGATE_METHODS;
 	
@@ -76,32 +70,22 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 		}
 	}
 
-    protected Set<InstrumentModelClass> instrumentModelClasses;
-	protected List<ModelTransformer>    transformers;
+	protected List<ModelTransformer> transformers = Factory.newInstances(ModelTransformer.class);
 
     @Override
-    protected void preInstrument(AppInstrumentContext context, ResourceSet rs) {
-        this.transformers = Factory.newInstances(ModelTransformer.class);
-        this.instrumentModelClasses = new TreeSet<>();
-    }
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+        boolean isModel = false;
 
-    @Override
-    protected void processClass(AppInstrumentContext context, Resource rs, InputStreamSource is, ClassReader cr) {
-        int inheritLevels = 0;
-        boolean isModel   = false;
-
-        String superName = cr.getSuperName();
+        String superName = ci.cr.getSuperName();
         if(MODEL_CLASS_NAME.equals(superName)){
             isModel = true;
         }else if(!superName.equals("java/lang/Object")){
             for(;;){
-                superName = readSuperName(rs, superName);
+                superName = readSuperName(ci.rs, superName);
 
                 if(null == superName || superName.equals("java/lang/Object")){
                     break;
                 }
-
-                inheritLevels++;
 
                 if(superName.equals(MODEL_CLASS_NAME)){
                     isModel = true;
@@ -111,28 +95,12 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
         }
 
         if(isModel){
-            instrumentModelClasses.add(new InstrumentModelClass(inheritLevels, cr));
+            ClassWriter cw = new ClassWriter(ci.cr,ClassWriter.COMPUTE_FRAMES);
+            instrument(context, ic, ci.cr, cw);
         }
     }
 
-    @Override
-    protected void postInstrument(AppInstrumentContext context, ResourceSet rs) {
-        //Sorts the model class by inherit levels
-        for(InstrumentModelClass mc : instrumentModelClasses){
-            ClassReader cr = mc.getClassReader();
-
-            if(context.isInstrumentedBy(cr.getClassName(), this.getClass())) {
-                log.info("Model class '{}' already instrumented",cr.getClassName());
-                continue;
-            }
-
-            log.debug("Instrument model class '{}'",cr.getClassName());
-            ClassWriter cw = new ClassWriter(cr,ClassWriter.COMPUTE_FRAMES);
-            instrument(context, cr,cw);
-        }
-    }
-
-	protected void instrument(AppInstrumentContext context, ClassReader cr, ClassWriter cw) {
+	protected void instrument(AppInstrumentContext context, AppInstrumentClass ic, ClassReader cr, ClassWriter cw) {
 		ClassNode cn = ASM.getClassNode(cr);
 		
 		transformClass(cr,cw, cn);
@@ -140,8 +108,8 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 		
 		cw.visitEnd();
 		byte[] data = cw.toByteArray();
-		
-        context.addInstrumentedClass(this.getClass(), cr.getClassName(), data);
+
+        context.updateInstrumented(ic, this.getClass(), data, false);
 	}
 	
 	protected void transformClass(ClassReader cr,ClassWriter cw, ClassNode cn){
@@ -267,28 +235,5 @@ public class ModelInstrumentation extends AbstractAsmInstrumentProcessor impleme
 	        return super.visitMethod(access, name, desc, signature, exceptions);
         }
 	}
-	
-	private static class InstrumentModelClass implements Comparable<InstrumentModelClass> {
-		
-		private final int 		  inheritLevels;
-		private final ClassReader classReader;
-		
-		private InstrumentModelClass(int ineritLevels,ClassReader classReader){
-			this.inheritLevels = ineritLevels;
-			this.classReader   = classReader;
-		}
-		
-		public ClassReader getClassReader() {
-			return classReader;
-		}
 
-		@Override
-        public int compareTo(InstrumentModelClass o) {
-	        if(this.inheritLevels < o.inheritLevels){
-	        	return -1;
-	        }
-	        return 1;
-        }
-		
-	}
 }

@@ -18,7 +18,6 @@ package leap.webunit;
 import leap.lang.jsoup.nodes.Document;
 import leap.lang.jsoup.nodes.Element;
 import leap.webunit.client.THttpResponse;
-
 import org.junit.Test;
 
 public class BaseTest extends WebTestBase {

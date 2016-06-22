@@ -482,7 +482,7 @@ public abstract class Model implements DynaBean,ValidatableBean {
 		className.set(name);
 	}
 	
-	//-------------------- non-satic members ------------------------
+	//-------------------- non-static members ------------------------
 	protected EntityMapping 	  em;
 	protected Dao	        	  dao;
 	protected Map<String, Object> fields = new WrappedCaseInsensitiveMap<Object>();

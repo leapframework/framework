@@ -16,10 +16,35 @@
 package clientapp1.controllers;
 
 
+import leap.core.annotation.Inject;
+import leap.lang.New;
+import leap.oauth2.proxy.UserAgentForwardedResolver;
+import leap.web.Request;
+import leap.web.security.user.InMemoryUserStore.User;
+
+import java.util.Map;
+
 public class HomeController {
+
+    private @Inject UserAgentForwardedResolver userAgentForwardedResolver;
 
     public String index() {
         return "It works!";
+    }
+
+    public Map<String, String> proxyServer(Request request){
+        Map<String, String> map = New.hashMap();
+        boolean isProxy = userAgentForwardedResolver.isProxyRequest(request);
+        String host = userAgentForwardedResolver.resolveUserAgentForwarded(request);
+        String ip   = userAgentForwardedResolver.resolveUserAgentRealIp(request);
+        String serverName = userAgentForwardedResolver.resolveProxyServerName(request);
+        String protocol = userAgentForwardedResolver.resolveProtocol(request);
+        map.put("isProxy",String.valueOf(isProxy));
+        map.put("host",host);
+        map.put("ip",ip);
+        map.put("serverName",serverName);
+        map.put("protocol",protocol);
+        return map;
     }
     
 }

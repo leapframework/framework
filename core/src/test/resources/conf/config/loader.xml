@@ -1,22 +1,50 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/config">
 
-    <loader class="tested.TestConfigLoader">
-        <property name="prop1" value="value1"/>
-    </loader>
-
     <properties prefix="h2">
         <property name="driverClassName" value="org.h2.Driver"/>
         <property name="jdbcUrl"         value="jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'"/>
     </properties>
 
-    <loader class="leap.core.config.loader.JdbcConfigLoader">
-        <property name="driverClassName" value="${h2.driverClassName}"/>
-        <property name="jdbcUrl"         value="${h2.jdbcUrl}"/>
-        <property name="username"        value="sa"/>
-        <property name="sql">
-            select key_ key, value_ value from sys_config
-        </property>
-    </loader>
+    <property name="tested.TestConfigLoader1.enabled" value="true"/>
+    <property name="tested.TestConfigLoader2.enabled" value="false"/>
+    <property name="loader.type"                      value="jdbc"/>
+
+    <if expr="properties['tested.TestConfigLoader1.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop1"/>
+            <property name="value" value="value1"/>
+        </loader>
+    </if>
+
+    <if expr="properties['tested.TestConfigLoader2.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop2"/>
+            <property name="value" value="value2"/>
+        </loader>
+    </if>
+
+    <if expr="properties['tested.TestConfigLoader1.enabled']">
+        <loader class="tested.TestPropertyLoader">
+            <property name="name"  value="prop3"/>
+            <property name="value" value="${db.key1}"/>
+        </loader>
+    </if>
+
+    <property name="db.key1"                 value="abcd"/>
+    <property name="testLoader.placeholder1" value="${db.key1}"/>
+
+    <if expr="properties['loader.type'] == 'jdbc'">
+
+        <loader class="leap.core.config.loader.JdbcPropertyLoader" sort-order="1">
+            <property name="driverClassName" value="${h2.driverClassName}"/>
+            <property name="jdbcUrl"         value="${h2.jdbcUrl}"/>
+            <property name="username"        value="sa"/>
+            <property name="sql">
+                select key_ key, value_ value from sys_config
+            </property>
+        </loader>
+
+    </if>
 
 </config>

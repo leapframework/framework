@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <models xmlns="http://www.leapframework.org/schema/models">
- 
+
+
     <global-field name="ecode" column="ecode" jdbc-type="varchar" length="100" nullable="false"
-                  insert="true" update="false" where="true" insert-value="${'t'}" where-value="${'t'}">
+                  insert="true" update="false" where="true" where-if="${true}" insert-value="${'t'}" where-value="${'t'}">
 
         <included-entities>ECodeModel</included-entities>
 

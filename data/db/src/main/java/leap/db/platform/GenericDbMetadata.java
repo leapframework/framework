@@ -297,6 +297,7 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
             @Override
             public void run() {
                 try {
+					Thread.sleep(100);
                     getSchema();
                 } catch (Throwable e) {
                 	log.info("Error reading schema : {}",e.getMessage(),e);

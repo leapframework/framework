@@ -15,8 +15,11 @@
  */
 package leap.core.meta;
 
+import leap.core.AppConfig;
+import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Patterns;
 import leap.lang.Props;
@@ -36,8 +39,10 @@ public class DefaultMPatternSource implements MPatternSource,PostCreateBean {
 	private static final String REGEX_SUFFIX = ".regex";
 	private static final String FLAGS_SUFFIX = ".flags";
 
+    protected @Inject AppConfig config;
+
 	protected Map<String, MPattern> patterns = new SimpleCaseInsensitiveMap<>();
-	
+
 	@Override
 	public MPattern getPattern(String name) throws ObjectNotFoundException {
 		MPattern p = patterns.get(name);
@@ -54,12 +59,12 @@ public class DefaultMPatternSource implements MPatternSource,PostCreateBean {
 
 	@Override
     public void postCreate(BeanFactory beanFactory) throws Throwable {
-		loadPatterns(AppResources.getAllClasspathResources("patterns", ".properties"));
+		loadPatterns(AppResources.get(config).search("patterns", ".properties"));
     }
 
-	private void loadPatterns(Resource[] rs) {
-		for(Resource r : rs){
-			loadPatterns(r);
+	private void loadPatterns(AppResource[] rs) {
+		for(AppResource r : rs){
+			loadPatterns(r.getResource());
 		}
 	}
 	

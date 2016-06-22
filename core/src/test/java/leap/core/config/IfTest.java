@@ -21,13 +21,6 @@ import org.junit.Test;
 public class IfTest extends AppTestBase {
 
     @Test
-    public void testIfExpression() {
-        assertEquals("ifVal1", config.getProperty("testIf.prop1"));
-        assertEquals("ifVal2", config.getProperty("testIf.prop2"));
-        assertNull(config.getProperty("testIf.prop3"));
-    }
-
-    @Test
     public void testIfProfile(){
         assertEquals("1", config.getProperty("testProfile.shouldBeExists"));
         assertNull(config.getProperty("testProfile.shouldNotExists"));

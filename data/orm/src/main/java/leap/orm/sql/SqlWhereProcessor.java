@@ -66,6 +66,10 @@ class SqlWhereProcessor {
             sql.traverse((node) -> {
 
                 if(node instanceof SqlWhere) {
+                    SqlWhere where = (SqlWhere)node;
+                    if(!where.getQuery().getTableSources().contains(tables.get(0))) {
+                        return true;
+                    }
 
                     //todo : take the first one only
                     SqlTableSource ts = tables.get(0);
@@ -98,15 +102,19 @@ class SqlWhereProcessor {
 
                         List<AstNode> nodes = new ArrayList<>();
 
-                        //where ( original expression ) and (...)
-                        nodes.add(new Text(olds[0].toString()).append(" ("));
-                        for(int i=1;i<olds.length;i++) {
-                            nodes.add(olds[i]);
+                        if(olds.length > 0) {
+                            //where ( original expression ) and (...)
+                            nodes.add(new Text(olds[0].toString()).append(" ("));
+                            for (int i = 1; i < olds.length; i++) {
+                                nodes.add(olds[i]);
+                            }
+                            nodes.add(new Text(" )"));
+                        }else {
+                            nodes.add(new Text(" where 1=1 "));
                         }
-                        nodes.add(new Text(" )"));
 
                         String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                        if(whereFields.length == 1 && whereFields[0].getWhereIf() == null) {
+                        if(whereFields.length == 1) {
                             addWhereFieldNode(nodes, whereFields[0], alias);
                         }else{
                             nodes.add(new Text(" and ( 1=1"));
@@ -138,9 +146,10 @@ class SqlWhereProcessor {
 
         list.add(new Text(alias + "." + fm.getColumnName() + " = "));
         list.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
+        list.add(new Text(" "));
 
         if(null != fm.getWhereIf()) {
-            nodes.add(new ConditionalNode(fm.getWhereIf(), nodes.toArray(new AstNode[0])));
+            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
         }else{
             nodes.addAll(list);
         }

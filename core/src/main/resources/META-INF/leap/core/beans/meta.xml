@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
-
-	<bean type="leap.core.meta.MPatternSource" class="leap.core.meta.DefaultMPatternSource" primary="true"/>
-	<bean type="leap.core.meta.MTypeManager"   class="leap.core.meta.DefaultMTypeManager"   primary="true"/>
-	
-</beans>

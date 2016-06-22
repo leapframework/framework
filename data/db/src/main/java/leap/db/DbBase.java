@@ -19,7 +19,10 @@ import leap.core.AppContext;
 import leap.core.transaction.TransactionManager;
 import leap.core.transaction.TransactionProvider;
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
+import leap.lang.Try;
+import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.resource.Resource;
@@ -27,13 +30,14 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 
 import javax.sql.DataSource;
+import java.sql.DatabaseMetaData;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public abstract class DbBase implements Db {
-	
-	protected final Log log;
 
+    protected final String              server;
+    protected final Log                 log;
     protected final String              name;
     protected final String              description;
     protected final DbPlatform          platform;
@@ -43,25 +47,29 @@ public abstract class DbBase implements Db {
     protected final DbComparator        comparator;
     protected final TransactionProvider tp;
 
-    protected DbBase(String name,DbPlatform platform, DataSource dataSource,DbMetadata metadata,DbDialect dialect, DbComparator comparator){
+    protected DbBase(String name, DataSource ds, DatabaseMetaData md,
+                     DbPlatform platform, DbMetadata metadata, DbDialect dialect, DbComparator comparator){
+
 		Args.notEmpty(name);
+        Args.notNull(ds);
+        Args.notNull(md);
 		Args.notNull(platform);
-		Args.notNull(dataSource);
 		Args.notNull(metadata);
 		Args.notNull(dialect);
 		Args.notNull(comparator);
 		
 		this.name        = name;
+        this.server      = extractServerFromJdbcUrl(md);
 		this.description = metadata.getProductName() + " " + metadata.getProductVersion();
 		this.platform	 = platform;
-		this.dataSource  = dataSource;
+		this.dataSource  = ds;
 		this.metadata    = metadata;
 		this.dialect     = dialect;
 		this.comparator  = comparator;
 
         AppContext context = AppContext.tryGetCurrent();
         if(null != context) {
-            tp = context.getBeanFactory().getBean(TransactionManager.class).getProvider(dataSource);
+            tp = context.getBeanFactory().getBean(TransactionManager.class).getProvider(ds);
         }else{
             tp = null;
         }
@@ -113,7 +121,10 @@ public abstract class DbBase implements Db {
     }
 	
 	public Log getLog(Class<?> cls){
-		return LogFactory.get(cls.getName() + "(" + platform.getName() + ":" + name + ")"); 
+        //leap.db.cls(type:host:port)
+        String name = Classes.getPackageName(DbBase.class) + "." + cls.getSimpleName() +
+                      "(" + platform.getName().toLowerCase() + (null == server ? ")" : (":" + server + ")"));
+		return LogFactory.get(name);
 	}
 
     protected void awareObjects(){
@@ -205,5 +216,13 @@ public abstract class DbBase implements Db {
         }
 
         return null;
+    }
+
+    protected static String extractServerFromJdbcUrl(DatabaseMetaData md) {
+        return Try.throwUncheckedWithResult(() -> {
+
+            return JDBC.tryExtractServerString(md.getURL());
+
+        });
     }
 }

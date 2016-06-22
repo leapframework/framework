@@ -21,6 +21,8 @@ import leap.orm.query.Query;
 import leap.orm.tested.model.petclinic.Owner;
 import org.junit.Test;
 
+import java.util.List;
+
 public class DynamicSqlTest extends OrmTestCase {
 	
 	@Test
@@ -106,4 +108,56 @@ public class DynamicSqlTest extends OrmTestCase {
         dao.executeNamedUpdate("test.sql.dynamic.clause.update_with_null_column", new Object[]{null});
 
     }
+
+	@Test
+	public void testFragmentAndUnionWithLimit(){
+		Owner.deleteAll();
+		new Owner().setFullName("a", "1").save();
+		new Owner().setFullName("b", "2").save();
+		new Owner().setFullName("c", "3").save();
+		List<Record> records = dao.createNamedQuery("union_include")
+				.param("name1","a")
+				.param("name2","b")
+				.param("name3","c")
+				.limit(2).list();
+		assertEquals(2,records.size());
+	}
+	@Test
+	public void testFragmentAndUnionWithOrder(){
+		Owner.deleteAll();
+		new Owner().setFullName("a", "1").save();
+		new Owner().setFullName("b", "2").save();
+		new Owner().setFullName("c", "3").save();
+		List<Record> records = dao.createNamedQuery("union_include")
+				.param("name1","a")
+				.param("name2","b")
+				.param("name3","c")
+				.orderBy("name DESC ")
+				.list();
+		assertEquals(3,records.size());
+		assertEquals("c",records.get(0).get("name"));
+	}
+	@Test
+	public void testFragmentAndUnionWithOrderAndLimit(){
+		Owner.deleteAll();
+		new Owner().setFullName("a", "1").save();
+		new Owner().setFullName("b", "2").save();
+		new Owner().setFullName("c", "3").save();
+		List<Record> records = dao.createNamedQuery("union_include")
+				.param("name1","a")
+				.param("name2","b")
+				.param("name3","c")
+				.orderBy("name DESC ")
+				.limit(2)
+				.list();
+		assertEquals(2,records.size());
+		assertEquals("c",records.get(0).get("name"));
+	}
+	@Test
+	public void testFragmentNseting(){
+		Owner.deleteAll();
+		new Owner().setFullName("a","1").save();
+		Record owner = dao.createNamedQuery("nestingIncludeSql").param("firstName","a").single();
+		assertEquals("1",owner.get("lastName"));
+	}
 }

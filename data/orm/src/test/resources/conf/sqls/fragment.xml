@@ -24,4 +24,32 @@
         @include(select) lastName from owners where @include(1=1) and firstName = @include(:firstName)
     </command>
 
+    <command key="nestingIncludeSql">
+        select * from owners @include(containIncludeFragment)
+    </command>
+
+    <fragment key="containIncludeFragment">
+        where @include(nestFragment)
+    </fragment>
+
+    <fragment key="nestFragment">
+        firstName=:firstName
+    </fragment>
+
+    <command key="union_include">
+        @include(select_name1)
+        union
+        @include(select_name2)
+        union
+        @include(select_name3)
+    </command>
+    <fragment key="select_name1">
+        select firstName as name from owners where firstName = :name1
+    </fragment>
+    <fragment key="select_name2">
+        select firstName as name from owners where firstName = :name2
+    </fragment>
+    <fragment key="select_name3">
+        select firstName as name from owners where firstName = :name3
+    </fragment>
 </sqls>

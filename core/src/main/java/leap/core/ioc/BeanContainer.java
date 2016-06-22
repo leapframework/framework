@@ -17,24 +17,18 @@ package leap.core.ioc;
 
 import leap.core.*;
 import leap.core.annotation.*;
-import leap.core.config.*;
-import leap.core.instrument.AppInstrumentation;
+import leap.core.config.dyna.PropertyProvider;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
 import leap.lang.*;
 import leap.lang.Comparators;
-import leap.lang.accessor.PropertyGetter;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
-import leap.lang.json.JSON;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.*;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
 
 import java.io.Closeable;
@@ -50,6 +44,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.Supplier;
 
 @Internal
+@SuppressWarnings("unchecked")
 public class BeanContainer implements BeanFactory {
 	
 	private static final Log log = LogFactory.get(BeanContainer.class);
@@ -59,39 +54,38 @@ public class BeanContainer implements BeanFactory {
 	
 	private static final BeanDefinitionBase NULL_BD = new BeanDefinitionBase(null);
 
-    protected Set<InitDefinition>                    initDefinitions           = new CopyOnWriteArraySet<>();
-    protected Set<BeanDefinitionBase>                allBeanDefinitions        = new CopyOnWriteArraySet<>();
-    protected Map<String, BeanDefinitionBase>        identifiedBeanDefinitions = new HashMap<>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>> beanTypeDefinitions       = new HashMap<>();
-    protected Map<Class<?>, Set<BeanDefinitionBase>> beanClassDefinitions      = new HashMap<>();
-    protected Map<String, BeanListDefinition>        beanListDefinitions       = new HashMap<>();
-    protected Map<Class<?>, FactoryBean>             typedFactoryBeans         = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>      typedFactoryDefinitions   = new HashMap<>();
-    protected Map<String, BeanDefinitionBase>        namedBeanDefinitions      = new HashMap<>();
-    protected Map<Class<?>, BeanDefinitionBase>      primaryBeanDefinitions    = new HashMap<>();
-    protected Map<String, AliasDefinition>           aliasDefinitions          = new HashMap<>();
+    protected final PlaceholderResolver            placeholderResolver;
+    protected final AnnotationBeanDefinitionLoader annotationBeanDefinitionLoader;
+    protected final XmlBeanDefinitionLoader        xmlBeanDefinitionLoader;
+
+    protected Set<InitDefinition>                            initDefinitions           = new CopyOnWriteArraySet<>();
+    protected Set<BeanDefinitionBase>                        allBeanDefinitions        = new CopyOnWriteArraySet<>();
+    protected Map<String, BeanDefinitionBase>                identifiedBeanDefinitions = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>         beanTypeDefinitions       = new HashMap<>();
+    protected Map<Class<?>, Set<BeanDefinitionBase>>         beanClassDefinitions      = new HashMap<>();
+    protected Map<String, BeanListDefinition>                beanListDefinitions       = new HashMap<>();
+    protected Map<Class<?>, FactoryBean>                     typedFactoryBeans         = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>              typedFactoryDefinitions   = new HashMap<>();
+    protected Map<String, BeanDefinitionBase>                namedBeanDefinitions      = new HashMap<>();
+    protected Map<Class<?>, BeanDefinitionBase>              primaryBeanDefinitions    = new HashMap<>();
+    protected Map<String, AliasDefinition>                   aliasDefinitions          = new HashMap<>();
+    protected List<BeanDefinitionBase>                       processorBeans            = new ArrayList<>();
+    protected List<BeanDefinitionBase>                       injectorBeans             = new ArrayList<>();
+    protected Map<Class<? extends Annotation>, BeanInjector> injectors                 = new HashMap<>();
 
     private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<?, BeanDefinition>> typedInstances = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                 primaryBeans   = new ConcurrentHashMap<>();
 
-    protected List<BeanDefinitionBase>       processorBeans = new ArrayList<>();
-    protected List<BeanDefinitionBase>       injectorBeans  = new ArrayList<>();
-    protected BeanProcessor[]                processors;
-    protected Map<Class<? extends Annotation>, BeanInjector>  injectors = new HashMap<>();
-    protected List<BeanFactoryInitializable> beanFactoryInitializables = new ArrayList<>();
-
-    protected final PlaceholderResolver                        placeholderResolver;
-    protected final AnnotationBeanDefinitionLoader             annotationBeanDefinitionLoader;
-    protected final XmlBeanDefinitionLoader                    xmlBeanDefinitionLoader;
-    protected final AppInstrumentation                         instrumentation = Factory.getInstance(AppInstrumentation.class);
-
-    private AppContext  appContext;
-    private BeanFactory beanFactory;
-    private boolean     initializing;
-    private boolean     containerInited;
-    private boolean     appInited;
+    private   AppConfig        config;
+    private   AppContext       appContext;
+    private   BeanFactory      beanFactory;
+    private   BeanConfigurator beanConfigurator;
+    protected BeanProcessor[]  processors;
+    private   boolean          initializing;
+    private   boolean          containerInited;
+    private   boolean          appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -105,53 +99,47 @@ public class BeanContainer implements BeanFactory {
 	/** Synchronization monitor for the "refresh" and "destroy" */
 	private final Object startupShutdownMonitor = new Object();
 
-	public BeanContainer(PropertyGetter properties){
-		this.placeholderResolver            = new DefaultPlaceholderResolver(properties);
-		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this);
-	}
-
 	public BeanContainer(AppConfig config){
+        this.config                         = config;
+        this.beanConfigurator               = new BeanConfigurator(config);
 		this.placeholderResolver            = config.getPlaceholderResolver();
 		this.annotationBeanDefinitionLoader = new AnnotationBeanDefinitionLoader();
-		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this, instrumentation);
+		this.xmlBeanDefinitionLoader        = new XmlBeanDefinitionLoader(this);
 	}
 	
 	public AppContext getAppContext() {
 		return appContext;
 	}
-	
-	public AppConfig getAppConfig(){
-		return appContext == null ? null : appContext.getConfig();
-	}
 
+    public AppConfig getAppConfig() {
+        return config;
+    }
+	
 	public void setAppContext(AppContext appContext){
 		this.appContext  = appContext;
 		this.beanFactory = appContext.getBeanFactory();
 	}
 	
-	public void addInitializableBean(BeanFactoryInitializable bean){
-		this.beanFactoryInitializables.add(bean);
-	}
-	
-	/**
-	 * Loads all the beans definitions from the given {@link ResourceSet}.
-	 * 
-	 * <p/>
-	 * 
-	 * throws {@link IllegalStateException} if this container aleady finish loading.
-	 */
-	public BeanContainer loadFromResources(Resource[] resources) throws IllegalStateException {
-		ensureContainerNotInited();
-		this.xmlBeanDefinitionLoader.load(resources);
-		return this;
-	}
-	
 	public BeanContainer loadFromClasses(Class<?>[] classes) throws IllegalStateException{
+        log.debug("Load beans from {} classes",classes.length);
 		ensureContainerNotInited();
 		this.annotationBeanDefinitionLoader.load(this,classes);
 		return this;
 	}
+
+    /**
+     * Loads all the beans definitions from the given resources.
+     *
+     * <p/>
+     *
+     * throws {@link IllegalStateException} if this container already finish loading.
+     */
+    public BeanContainer loadFromResources(AppResource[] resources) throws IllegalStateException {
+        log.debug("Load beans from {} resources", resources.length);
+        ensureContainerNotInited();
+        this.xmlBeanDefinitionLoader.load(resources);
+        return this;
+    }
 	
 	@Override
     public <T> T inject(T bean) throws BeanException {
@@ -220,7 +208,7 @@ public class BeanContainer implements BeanFactory {
         if((field.isAnnotationPresent(NotNull.class) || field.isAnnotationPresent(M.class)) && 
             null == field.getValue(bean)){
             
-            throw new BeanException("Field '" + field.getName() + "' must not null in bean " + (null == d ? bean : d));
+            throw new BeanException("Field '" + field.getName() + "'(" + field.getType() + ") must not null in bean " + (null == d ? bean : d));
         }
         
         if((field.isAnnotationPresent(NotEmpty.class) || field.isAnnotationPresent(R.class) ) && 
@@ -269,12 +257,10 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-        AppConfig config = getAppConfig();
         if(config instanceof AppConfigBase) {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-		this.initBeanFactoryInitializableBeans();
 		this.initNonLazyBeans();
 
         this.containerInited = true;
@@ -305,7 +291,6 @@ public class BeanContainer implements BeanFactory {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     public <T> void addBean(T bean) {
 		addBean((Class<T>)bean.getClass(),bean,true);
     }
@@ -378,38 +363,9 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> T createBean(Class<T> cls) throws BeanException {
         return (T)doCreateBean(createBeanDefinition(cls));
-        /*
-
-		try {
-	        T bean = Reflection.newInstance(cls);
-	        
-	        inject(bean);
-	        
-	        if(bean instanceof PostCreateBean){
-	        	((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
-	        }
-	        
-	        doBeanValidation(bean);
-	        
-	        return bean;
-		} catch (BeanException e){
-			throw e;
-        } catch (Throwable e) {
-        	throw new BeanCreationException("Error creating instance of '" + cls.getName() + "', " + e.getMessage(), e);
-        }
-        */
-    }
-
-    public <T> T createBean(String id) throws NoSuchBeanException, BeanException {
-		T bean = tryCreateBean(id);
-		if(null == bean){
-			throw new NoSuchBeanException("No such bean '"  + id + "'");
-		}
-	    return bean;
     }
 
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(String id) throws BeanException {
 		Args.notEmpty(id,"bean id");
 		BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
@@ -431,7 +387,7 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException,BeanException {
-    	T bean = tryGetBean(type);
+    	T bean = (T) tryGetBean(type);
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No primary bean for type '" + type.getName() + "'");
@@ -452,7 +408,6 @@ public class BeanContainer implements BeanFactory {
     }
 
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(Class<? super T> type) throws BeanException {
 		Args.notNull(type,"bean type");
 		
@@ -473,7 +428,6 @@ public class BeanContainer implements BeanFactory {
 		return null;
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryGetBeanExplicitly(Class<? super T> type) throws BeanException {
         Args.notNull(type, "bean type");
 
@@ -494,7 +448,6 @@ public class BeanContainer implements BeanFactory {
         return (T)doGetBean(bd);
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type) throws BeanException {
 		Args.notNull(type,"bean type");
 		BeanDefinitionBase bd = findPrimaryBeanDefinition(type);
@@ -512,7 +465,7 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> T getBean(Class<? super T> type, String name) throws NoSuchBeanException, BeanException {
-		T bean = tryGetBean(type, name);
+		T bean = (T) tryGetBean(type, name);
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No bean named '" + name + "' for type '" + type.getName() + "'");
@@ -532,7 +485,6 @@ public class BeanContainer implements BeanFactory {
     }
 	
 	@Override
-	@SuppressWarnings("unchecked")
     public <T> T tryGetBean(Class<? super T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
 		Args.notNull(name,"bean name");
@@ -546,7 +498,6 @@ public class BeanContainer implements BeanFactory {
 		return null;
     }
 	
-    @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(Class<T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
 		Args.notNull(name,"bean name");
@@ -559,16 +510,14 @@ public class BeanContainer implements BeanFactory {
 		
 		return null;
     }
-    
-	@Override
-    public <T> void setPrimaryBean(Class<T> type, T bean) {
+
+    public void setPrimaryBean(Class<?> type, Object bean) {
 		Args.notNull(type,"type");
 		Args.notNull(bean,"bean");
 		primaryBeans.put(type, bean);
     }
 
 	@Override
-    @SuppressWarnings("unchecked")
     public <T> List<T> getBeans(Class<? super T> type) throws BeanException {
     	List<T> beans = (List<T>)typedBeansMap.get(type);
     	
@@ -600,7 +549,6 @@ public class BeanContainer implements BeanFactory {
     }
     
     @Override
-    @SuppressWarnings("unchecked")
     public <T> List<T> getBeans(Class<? super T> type, String qualifier) throws BeanException {
     	String key = type.getName() + "$" + qualifier;
     	
@@ -660,7 +608,6 @@ public class BeanContainer implements BeanFactory {
     }
 	
     @Override
-    @SuppressWarnings("unchecked")
     public <T> Map<T, BeanDefinition> getBeansWithDefinition(Class<? super T> type) throws BeanException {
 		Map<T,BeanDefinition> beans = (Map<T,BeanDefinition>)typedInstances.get(type);
 		
@@ -727,6 +674,7 @@ public class BeanContainer implements BeanFactory {
 					doClose();
 				}
 			};
+            this.shutdownHook.setName("ShutdownHook-BeanFactory");
 			Runtime.getRuntime().addShutdownHook(this.shutdownHook);
 		}		
 	}
@@ -940,17 +888,6 @@ public class BeanContainer implements BeanFactory {
 		}
 	}
 	
-	protected void initBeanFactoryInitializableBeans(){
-		//bean factory initializables
-		for(BeanFactoryInitializable initializable : beanFactoryInitializables){
-			try {
-	            initializable.postInit(appContext, beanFactory);
-            } catch (Throwable e) {
-            	Exceptions.uncheckAndThrow(e);
-            }
-		}		
-	}
-	
 	protected void resolveAfterLoading() {
         //bean injector.
         List<BeanInjector> injectorList = new ArrayList<>();
@@ -994,11 +931,17 @@ public class BeanContainer implements BeanFactory {
 	protected Object doGetBean(BeanDefinitionBase bd){
 		if(bd.isSingleton()){
 			Object instance = bd.getSingletonInstance();
-			if(null != instance){
-				return instance;
-			}
-		}
-		return doCreateBean(bd);
+            if(null == instance) {
+                synchronized (bd.getSingletonLock()) {
+                    if(null == (instance = bd.getSingletonInstance())) {
+                        instance = doCreateBean(bd);
+                    }
+                }
+            }
+            return instance;
+		}else{
+            return doCreateBean(bd);
+        }
 	}
 	
 	protected Object doCreateBean(BeanDefinitionBase bd){
@@ -1146,180 +1089,10 @@ public class BeanContainer implements BeanFactory {
 	protected void doBeanConfigure(BeanDefinitionBase bd, Object bean) throws Throwable {
 		if(null != bd && bd.isConfigurable()) {
 			BeanType bt = null == bd ? BeanType.of(bean.getClass()) : bd.getBeanClassType();
-			
-			String keyPrefix = bd.getConfigurationPrefix();
-			if(!Strings.isEmpty(keyPrefix)) {
-				char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
-				if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
-					keyPrefix = keyPrefix + ".";
-				}
-			}
 
-            Set<ReflectField> done = new HashSet<>();
-			
-			for(BeanProperty bp : bt.getProperties()){
-                ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
-                if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
-                    continue;
-                }
-
-                if(bp.isWritable()) {
-                    doBeanConfigure(bean, bp, keyPrefix, a);
-                }else{
-                    ReflectField rf = bp.getReflectField();
-                    if(null == rf) {
-                        throw new BeanCreationException("The property '" + bp.getName() + "' in class '" + bt.getReflectClass() + "' is not writable!");
-                    }
-                    doBeanConfigure(bean, rf, keyPrefix, a);
-                }
-
-                if(null != bp.getReflectField()) {
-                    done.add(bp.getReflectField());
-                }
-			}
-
-            for(ReflectField field : bt.getReflectClass().getFields()) {
-                if(done.contains(field)) {
-                    continue;
-                }
-
-                if(Property.class.isAssignableFrom(field.getType())) {
-                    doBeanConfigure(bean, field, keyPrefix, field.getAnnotation(ConfigProperty.class));
-                    continue;
-                }
-
-                ConfigProperty a = field.getAnnotation(ConfigProperty.class);
-                if(null == a) {
-                    continue;
-                }
-
-                doBeanConfigure(bean, field, keyPrefix, a);
-            }
-
-            done.clear();
+            beanConfigurator.configure(bean, bt, bd.getConfigurationPrefix());
 		}
 	}
-
-
-    protected void doBeanConfigure(Object bean, ReflectValued v, String keyPrefix, ConfigProperty a) {
-        if(null != a && a.value().length > 0) {
-            for(String key : a.value()) {
-                if(doBeanConfigure(bean, v, keyPrefix + key)) {
-                    break;
-                }
-            }
-        }else{
-            if(doBeanConfigure(bean, v, keyPrefix + v.getName())) {
-                return;
-            }
-
-            if(doBeanConfigure(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()))) {
-                return;
-            }
-        }
-    }
-	
-	protected boolean doBeanConfigure(Object bean, ReflectValued v, String key) {
-        if(Property.class.isAssignableFrom(v.getType())) {
-            doBeanConfigureDynaProperty(bean, v, key);
-            return true;
-        }
-
-        if(v.getType().isArray()) {
-            String[] array = getAppConfig().getArrayProperty(key);
-            if(null != array) {
-                v.setValue(bean, array);
-                return true;
-            }
-        }
-
-        if(List.class.equals(v.getType())) {
-            String[] array = getAppConfig().getArrayProperty(key);
-            if(null != array) {
-                List<String> list = new ArrayList<>();
-                Collections2.addAll(list, array);
-                v.setValue(bean, list);
-                return true;
-            }
-        }
-
-        if(Set.class.equals(v.getType())) {
-            String[] array = getAppConfig().getArrayProperty(key);
-            if(null != array) {
-                Set<String> set = new LinkedHashSet<>();
-                Collections2.addAll(set, array);
-                v.setValue(bean, set);
-                return true;
-            }
-        }
-
-        String prop = getAppConfig().getProperty(key);
-        if(null != prop) {
-            if(prop.length() > 0) {
-                try {
-                    Object value;
-                    if(Classes.isSimpleValueType(v.getType())) {
-                        value = Converts.convert(prop, v.getType(), v.getGenericType());
-                    }else{
-                        value = JSON.decode(prop, v.getType());
-                    }
-                    v.setValue(bean, value);
-                } catch (Exception e) {
-                    throw new BeanCreationException("Error configure property '" + bean.getClass().getName() + "#" + v.getName() +
-                            "' using config key '" + key + "', " + e.getMessage(), e);
-                }
-            }
-			return true;
-		}
-
-		return false;
-	}
-
-    protected void doBeanConfigureDynaProperty(Object bean, ReflectValued v, String key) {
-        AppConfig config = getAppConfig();
-
-        Class<?> type  = v.getType();
-        Property value = (Property)v.getValue(bean);
-
-        if(null != value) {
-            config.bindDynaProperty(key, type, value);
-            return;
-        }
-
-        if(type.equals(StringProperty.class)) {
-
-            value = config.getDynaProperty(key);
-
-        }else if(type.equals(IntegerProperty.class)) {
-
-            value = config.getDynaIntegerProperty(key);
-
-        }else if(type.equals(LongProperty.class)) {
-
-            value = config.getDynaLongProperty(key);
-
-        }else if(type.equals(BooleanProperty.class)) {
-
-            value = config.getDynaBooleanProperty(key);
-
-        }else if(type.equals(DoubleProperty.class)) {
-
-            value = config.getDynaDoubleProperty(key);
-
-        }else if(type.equals(Property.class)){
-
-            Class<?> valueType = Types.getActualTypeArgument(v.getGenericType());
-
-            value = config.getDynaProperty(key, valueType);
-
-        }else{
-            throw new IllegalStateException("Not supported property type '" + type + "'");
-        }
-
-        if(null != value) {
-            v.setValue(bean, value);
-        }
-    }
 
     protected void doBeanInjection(BeanDefinitionBase bd,Object bean) throws Throwable {
         BeanFactory factory = null != beanFactory ? beanFactory : this;
@@ -1394,7 +1167,8 @@ public class BeanContainer implements BeanFactory {
 
         //skip when bean value already set.
         if (!v.getType().isPrimitive()) {
-            if (null != v.getRawValue(bean)) {
+            Object rawValue = v.getRawValue(bean);
+            if (null != rawValue && !(rawValue instanceof DummyBean)) {
                 return null;
             }
         }

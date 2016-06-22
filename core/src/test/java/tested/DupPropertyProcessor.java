@@ -15,7 +15,7 @@
  */
 package tested;
 
-import leap.core.AppPropertyProcessor;
+import leap.core.config.AppPropertyProcessor;
 import leap.lang.Out;
 
 public class DupPropertyProcessor implements AppPropertyProcessor {

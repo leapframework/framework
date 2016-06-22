@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright 2016 the original author or authors.
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~       http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <util-list id="listBean" value-type="java.lang.Integer">
+        <value>1</value>
+        <value>2</value>
+    </util-list>
+
+    <util-set id="setBean" value-type="java.lang.Integer">
+        <value>1</value>
+        <value>2</value>
+    </util-set>
+
+    <util-map id="mapBean">
+        <entry key="k1" value="v1"/>
+        <entry key="k2">
+            <value>v2</value>
+        </entry>
+    </util-map>
+
+    <util-map id="mapMap">
+        <entry key="k1" value="v1"/>
+        <entry key="k2">
+            <value>v2</value>
+        </entry>
+    </util-map>
+
+</beans>

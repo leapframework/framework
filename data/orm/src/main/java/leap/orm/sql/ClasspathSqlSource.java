@@ -15,9 +15,7 @@
  */
 package leap.orm.sql;
 
-import leap.core.AppConfigException;
-import leap.core.AppFileMonitor;
-import leap.core.AppResources;
+import leap.core.*;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Strings;
@@ -35,14 +33,15 @@ import java.util.Set;
 public class ClasspathSqlSource implements SqlSource {
 	
 	private static final Log log = LogFactory.get(ClasspathSqlSource.class);
-	
+
+    protected @Inject @M AppConfig      config;
     protected @Inject @M AppFileMonitor fileMonitor;
     protected @Inject @M SqlReader[]    readers;
 	
 	@Override
     public void loadSqlCommands(SqlConfigContext context) throws SqlConfigException, SqlClauseException {
 		//load all sqls
-		loadSqls(context, AppResources.getAllClasspathResourcesForXml("sqls"));
+		loadSqls(context, AppResources.get(config).search("sqls"));
 		
 		Resource dir = AppResources.getAppClasspathDirectory("sqls");
 		if(dir.isFile()) {
@@ -50,7 +49,7 @@ public class ClasspathSqlSource implements SqlSource {
 		}
     }
 	
-	protected void loadSqls(SqlConfigContext context,Resource[] resources){
+	protected void loadSqls(SqlConfigContext context,AppResource[] resources){
 		loadSqls(new LoadContext(context,false), resources);
 	}
 	
@@ -61,14 +60,14 @@ public class ClasspathSqlSource implements SqlSource {
             public void onFileCreate(FileChangeObserver observer, File file) {
 				log.info("Sql file '" + file.getAbsolutePath() + "' was created, load it");
 				Resource r = Resources.createFileResource(file);
-				loadSqls(new LoadContext(context, true), r);
+				loadSqls(new LoadContext(context, true), new SimpleAppResource(r));
 			}
 
 			@Override
             public void onFileChange(FileChangeObserver observer, File file) {
 				log.info("Sql file '" + file.getAbsolutePath() + "' was changed, reload it");
 				Resource r = Resources.createFileResource(file);
-				loadSqls(new LoadContext(context, true), r);
+				loadSqls(new LoadContext(context, true), new SimpleAppResource(r));
 			}
 
 			@Override
@@ -81,9 +80,10 @@ public class ClasspathSqlSource implements SqlSource {
 		fileMonitor.addObserver(observer);
 	}
 	
-	protected void loadSqls(SqlReaderContext context,Resource... resources){
+	protected void loadSqls(SqlReaderContext context,AppResource... resources){
 		for(int i=0;i<resources.length;i++){
-			Resource resource = resources[i];
+            AppResource ar = resources[i];
+			Resource resource = ar.getResource();
 			
 			if(resource.isReadable() && resource.exists()){
 				try{
@@ -94,12 +94,16 @@ public class ClasspathSqlSource implements SqlSource {
 					}
 
 					context.getResourceUrls().add(resourceUrl);
-					
+
+                    context.setDefaultOverride(ar.isDefaultOverride());
+
 					for(SqlReader reader : readers) {
 						if(reader.readSqlCommands(context, resource)) {
 							break;
 						}
 					}
+
+                    context.resetDefaultOverride();
 				}catch(SqlConfigException e){
 					throw e;
 				}catch(Exception e){
@@ -112,10 +116,13 @@ public class ClasspathSqlSource implements SqlSource {
 	private final class LoadContext implements SqlReaderContext {
 		private final Set<String> 	   resources = new HashSet<>();
 		private final SqlConfigContext configContext;
-		private final boolean		   defaultOverride;
+        private final boolean          originalDefaultOverride;
+
+		private boolean defaultOverride;
 		
 		private LoadContext(SqlConfigContext context, boolean defaultOverride){
 			this.configContext   = context;
+            this.originalDefaultOverride = defaultOverride;
 			this.defaultOverride = defaultOverride;
 		}
 		
@@ -134,7 +141,17 @@ public class ClasspathSqlSource implements SqlSource {
 	        return defaultOverride;
         }
 
-		public boolean acceptDbType(String dbType){
+        @Override
+        public void setDefaultOverride(boolean defaultOverride) {
+            this.defaultOverride = defaultOverride;
+        }
+
+        @Override
+        public void resetDefaultOverride() {
+            this.defaultOverride = originalDefaultOverride;
+        }
+
+        public boolean acceptDbType(String dbType){
 			return Strings.isEmpty(dbType) || configContext.getDb().getType().equalsIgnoreCase(dbType);
 		}
 	}

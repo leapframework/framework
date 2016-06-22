@@ -15,9 +15,6 @@
  */
 package leap.core;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.ds.DataSourceManager;
 import leap.core.i18n.MessageSource;
 import leap.lang.Classes;
@@ -25,13 +22,16 @@ import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.AttributeGetter;
 import leap.lang.beans.NoSuchBeanException;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
  * Global context object of an application.
  */
 public class AppContext implements AttributeAccessor {
 	public static final String APP_CONTEXT_ATTRIBUTE = AppContext.class.getName();
 	
-	private static ThreadLocal<AppContext> threadlocal = new InheritableThreadLocal<AppContext>();
+	private static ThreadLocal<AppContext> threadlocal = new InheritableThreadLocal<>();
 	private static AppContext              standalone  = null;
 	
 	private static boolean foundServletContext;
@@ -167,18 +167,17 @@ public class AppContext implements AttributeAccessor {
 	protected final AppConfig		   config;
 	protected final BeanFactory		   beanFactory;
 	protected final Object 			   externalContext;
-	protected final Map<String,Object> attributes = new ConcurrentHashMap<String, Object>(10);
+	protected final Map<String,Object> attributes = new ConcurrentHashMap<>(10);
 	
 	protected AppHome		home;
 	protected MessageSource messageSource;
-	
-	protected AppContext(Map<String, Object> attrs, AppConfig config,BeanFactory beanFactory,Object externalContext){
-		this.config			 = config;
-		this.beanFactory     = beanFactory;
-		this.externalContext = externalContext;
-		this.setAttributes(attrs);
-	}
-	
+
+    protected AppContext(AppConfig config,BeanFactory beanFactory,Object externalContext){
+        this.config			 = config;
+        this.beanFactory     = beanFactory;
+        this.externalContext = externalContext;
+    }
+
 	public AppHome getHome() {
 		return home;
 	}

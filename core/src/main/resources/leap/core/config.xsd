@@ -13,19 +13,22 @@
                 <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-charset" minOccurs="0" maxOccurs="1"/>
 			    <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                    <xsd:element ref="resources"/>
-                    <xsd:element ref="import"/>
-                    <xsd:element ref="properties"/>
                     <xsd:element ref="property"/>
-                    <xsd:element ref="datasource"/>
-                    <xsd:element ref="permissions"/>
+                    <xsd:element ref="properties"/>
+                    <xsd:element ref="import"/>
+                    <xsd:element ref="resources"/>
+                    <xsd:element ref="if"/>
+                    <xsd:element ref="monitor"/>
+                    <xsd:element ref="aop"/>
                     <xsd:element ref="loader"/>
+                    <!--<xsd:element ref="datasource"/>-->
+                    <xsd:element ref="permissions"/>
                     <xsd:element ref="config"/>
 			        <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
 			    </xsd:choice>
 			</xsd:sequence>
-            <xsd:attribute name="if" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+            <xsd:attribute name="default-override" use="optional" type="xsd:boolean"/>
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -125,7 +128,7 @@
         </xsd:complexType>
     </xsd:element>
     
-    <xsd:element name="datasource" type="DataSourceConfig"/>
+    <!--<xsd:element name="datasource" type="DataSourceConfig"/>-->
     
     <xsd:element name="resources">
         <xsd:annotation>
@@ -188,11 +191,16 @@
     
     <xsd:element name="properties">
         <xsd:complexType>
-        	<xsd:sequence>
-        		<xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
-        	</xsd:sequence>
-        	<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
-        	<xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+            <xsd:complexContent>
+            <xsd:extension base="xsd:string">
+                <xsd:sequence>
+                    <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                </xsd:sequence>
+                <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+                <xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+            </xsd:extension>
+            </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
 
@@ -215,15 +223,90 @@
         </xsd:complexType>
     </xsd:element>
 
+    <xsd:element name="if">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="loader"/>
+                    <xsd:element ref="monitor"/>
+                    <xsd:element ref="aop"/>
+                    <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="expr" use="required" type="xsd:string"/>
+            <xsd:anyAttribute namespace="##other" processContents="lax"/>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="loader">
         <xsd:complexType>
             <xsd:sequence>
                 <xsd:element ref="property" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:sequence>
             <xsd:attribute name="class" type="xsd:string" use="required"/>
-            <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
+            <xsd:attribute name="if-profile"  use="optional" type="xsd:string"/>
+            <xsd:attribute name="sort-order" use="optional" type="xsd:int"/>
         </xsd:complexType>
     </xsd:element>
+
+    <xsd:element name="monitor">
+        <xsd:complexType>
+            <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="report-error" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="report-args" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="report-line-number" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="method-threshold" type="xsd:integer" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="aop">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element ref="method-interception"/>
+                </xsd:choice>
+            </xsd:sequence>
+            <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
+
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="method-interception">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="interceptor" type="MethodInterceptor" minOccurs="1" maxOccurs="1"/>
+                <xsd:element name="matches"     type="MethodMatches"     minOccurs="1" maxOccurs="1"/>
+            </xsd:sequence>
+            <xsd:attribute name="enabled" type="xsd:boolean" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="MethodInterceptor">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name"  type="xsd:string" use="optional"/>
+                <xsd:attribute name="class" type="xsd:string" use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="MethodMatches">
+        <xsd:complexContent>
+            <xsd:extension base="xsd:anyType">
+                <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                    <xsd:element name="annotation" type="AnnotationMatcher"/>
+                </xsd:choice>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="AnnotationMatcher">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="type" type="xsd:string" use="required"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
 
     <xsd:element name="permissions">
         <xsd:complexType>
@@ -238,6 +321,7 @@
     </xsd:element>
     
     <!-- types -->
+    <!--
     <xsd:complexType name="DataSourceConfig">
         <xsd:sequence>
             <xsd:element name="dataSourceClassName" type="xsd:string" minOccurs="0" maxOccurs="1" />
@@ -272,7 +356,8 @@
         <xsd:attribute name="default" type="xsd:boolean" use="optional" default="false"/>
         <xsd:attribute name="if-profile" use="optional" />
     </xsd:complexType>
-
+    -->
+    
     <xsd:complexType name="Permission">
         <xsd:simpleContent>
             <xsd:extension base="xsd:string">

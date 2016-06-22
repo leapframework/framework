@@ -15,8 +15,7 @@
  */
 package leap.core;
 
-import leap.core.config.*;
-import leap.core.ds.DataSourceConfig;
+import leap.core.config.dyna.*;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.convert.Converts;
@@ -33,6 +32,7 @@ import leap.lang.text.PlaceholderResolver;
 import java.io.File;
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,27 +53,28 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	}
 
     protected PropertyProvider              propertyProvider    = null;
-	protected String						profile				= null;
-	protected Boolean						debug				= null;
-	protected String						basePackage			= null;
-	protected Locale						defaultLocale		= null;
-	protected Charset						defaultCharset      = null;
-	protected boolean						reloadEnabled		= false;
-	protected String                        secret                    = null;
-	protected PrivateKey                    privateKey                = null;
-	protected Map<Class<?>, Object>         extensions                = new HashMap<>();
-	protected Map<String,String>            properties                = new ConcurrentHashMap<>();
-	protected Map<String,String>            propertiesReadonly        = Collections.unmodifiableMap(properties);
-    protected Map<String,List<String>>      arrayProperties           = new ConcurrentHashMap<>();
-	protected List<SysPermissionDef>        permissions               = new ArrayList<>();
-	protected List<SysPermissionDef>        permissionsReadonly       = Collections.unmodifiableList(permissions);
-	protected ResourceSet                   resources                 = null;
-	protected DefaultPlaceholderResolver    placeholderResolver       = new DefaultPlaceholderResolver(this);
-	protected Map<String, DataSourceConfig> dataSourceConfigs         = new ConcurrentHashMap<>();
-	protected Map<String, DataSourceConfig> dataSourceConfigsReadonly = Collections.unmodifiableMap(dataSourceConfigs);
+    protected String                        profile             = null;
+    protected Boolean                       debug               = null;
+    protected String                        basePackage         = null;
+    protected Locale                        defaultLocale       = null;
+    protected Charset                       defaultCharset      = null;
+    protected boolean                       reloadEnabled       = false;
+    protected String                        secret              = null;
+    protected PrivateKey                    privateKey          = null;
+    protected PublicKey                     publicKey           = null;
+    protected Map<Class<?>, Object>         extensions          = new HashMap<>();
+    protected Map<Class<?>, Object>         extensionsReadonly  = Collections.unmodifiableMap(extensions);
+    protected Map<String, String>           properties          = new ConcurrentHashMap<>();
+    protected Map<String, String>           propertiesReadonly  = Collections.unmodifiableMap(properties);
+    protected Map<String, List<String>>     arrayProperties     = new ConcurrentHashMap<>();
+    protected List<SysPermissionDef>        permissions         = new ArrayList<>();
+    protected List<SysPermissionDef>        permissionsReadonly = Collections.unmodifiableList(permissions);
+    protected ResourceSet                   resources           = null;
+    protected DefaultPlaceholderResolver    placeholderResolver = new DefaultPlaceholderResolver(this);
 
     public DefaultAppConfig(String profile) {
         this.profile = profile;
+        this.properties.put(INIT_PROPERTY_PROFILE, profile);
     }
 
     public void setPropertyProvider(PropertyProvider p)  {
@@ -122,8 +123,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public String getProfile() {
 	    return profile;
     }
-	
-	@Override
+
+    @Override
+    public boolean isDev() {
+        return PROFILE_DEVELOPMENT.equals(profile);
+    }
+
+    @Override
     public boolean isDebug() {
 	    return debug;
     }
@@ -175,11 +181,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     }
 
     @Override
-    public Map<String, DataSourceConfig> getDataSourceConfigs() {
-	    return dataSourceConfigsReadonly;
+    public PublicKey ensureGetPublicKey() {
+        if(null == publicKey) {
+            publicKey = loadOrGeneratePublicKey();
+        }
+        return publicKey;
     }
 
-	@Override
+    @Override
 	public Map<String, String> getProperties() {
 	    return propertiesReadonly;
     }
@@ -194,8 +203,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public <T> T getExtension(Class<T> type) {
 	    return (T)extensions.get(type);
     }
-    
-	@Override
+
+    @Override
+    public Map<Class<?>, Object> getExtensions() {
+        return extensionsReadonly;
+    }
+
+    @Override
 	@SuppressWarnings("unchecked")
     public <T> T removeExtension(Class<T> type) {
 	    return (T)extensions.remove(type);
@@ -364,43 +378,59 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	}
 	
 	protected PrivateKey loadOrGeneratePrivateKey() {
+        String keyContent = generateOrGetKeyFileContent();
+        int index0 = keyContent.indexOf('#',1) + 1;
+        int index1 = keyContent.indexOf('#',index0);
+        String base64PrivateKey = keyContent.substring(index0, index1).trim();
+        return RSA.decodePrivateKey(base64PrivateKey);
+	}
+
+    protected PublicKey loadOrGeneratePublicKey(){
+        String keyContent = generateOrGetKeyFileContent();
+        int index0 = keyContent.indexOf('#',1) + 1;
+        int index1 = keyContent.indexOf('#',index0)+1;
+        int index2 = keyContent.indexOf('#',index1)+1;
+        String base64PublicKey = keyContent.substring(index2).trim();
+        return RSA.decodePublicKey(base64PublicKey);
+    }
+
+    protected String generateOrGetKeyFileContent(){
         FileResource userDir   = Resources.createFileResource(System.getProperty("user.dir"));
         FileResource targetDir = userDir.createRelative("./target");
-        
+
         File keyFile = targetDir.exists() ? targetDir.createRelative("./.rsa_key").getFile() : userDir.createRelative("./.rsa_key").getFile();
-	    
+
+        if(keyFile.exists()){
+            String keyContent = Strings.trim(IO.readString(keyFile, Charsets.UTF_8));
+            if(Strings.isEmpty(keyContent)){
+                keyContent = writeKeyContent(keyFile);
+            }
+            return keyContent;
+        }
+        return writeKeyContent(keyFile);
+    }
+
+    protected String writeKeyContent(File file){
         /*
         #base64 rsa private key#
-        
+
         ...
-        
+
         #base64 rsa public key#
-        
+
         ...
-        
+
          */
-        
-        if(keyFile.exists()) {
-            String keyContent = Strings.trim(IO.readString(keyFile, Charsets.UTF_8));
-            if(!Strings.isEmpty(keyContent)) {
-                int index0 = keyContent.indexOf('#',1) + 1;
-                int index1 = keyContent.indexOf('#',index0);
-                
-                String base64PrivateKey = keyContent.substring(index0, index1).trim();
-                return RSA.decodePrivateKey(base64PrivateKey);
-            }
-        }
-        
         RsaKeyPair kp = RSA.generateKeyPair();
         StringBuilder content = new StringBuilder();
         content.append("#base64 rsa private key#\n")
-               .append(kp.getBase64PrivateKey())
-               .append("\n\n")
-               .append("#base64 rsa public key#\n")
-               .append(kp.getBase64PublicKey());
+                .append(kp.getBase64PrivateKey())
+                .append("\n\n")
+                .append("#base64 rsa public key#\n")
+                .append(kp.getBase64PublicKey());
 
-        IO.writeString(keyFile, content.toString(), Charsets.UTF_8);
-        
-	    return kp.getPrivateKey();
-	}
+        IO.writeString(file, content.toString(), Charsets.UTF_8);
+        return content.toString();
+    }
+
 }

@@ -21,8 +21,30 @@ import org.junit.Test;
 public class PlaceholderTest extends AppTestBase {
 
     @Test
-    public void testPlaceholder() {
+    public void testNotExistsPlaceholder() {
         assertEquals("${notExistProperty}", config.getProperty("testNotExistPlaceholder"));
     }
 
+    @Test
+    public void testPlaceholderValue() {
+        assertEquals("a", config.getProperty("placeholder1"));
+        assertEquals("a", config.getProperty("placeholder2"));
+        assertEquals("a", config.getProperty("placeholder3"));
+        assertEquals("a", config.getProperty("placeholder4"));
+    }
+
+    @Test
+    public void testPlaceholderInArrayProperty() {
+
+        String[] values = config.getArrayProperty("arrayPlaceholder1");
+        assertEquals("a", values[0]);
+
+    }
+
+    @Test
+    public void testPlaceholderInProperties() {
+        assertEquals("a",   config.getProperty("placeholder.prop1"));
+        assertEquals("a.b", config.getProperty("placeholder.prop2"));
+    }
 }
+

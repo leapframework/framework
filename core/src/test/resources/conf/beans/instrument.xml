@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean class="tested.beans.TransactionalBean"/>
+
+    <bean class="tested.beans.TMonitorBean"/>
+
+</beans>

@@ -15,9 +15,9 @@
  */
 package leap.orm.config;
 
-import leap.core.AppConfigContext;
+import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
-import leap.core.AppConfigProcessor;
+import leap.core.config.AppConfigProcessor;
 import leap.lang.Strings;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XmlReader;

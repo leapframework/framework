@@ -17,10 +17,9 @@ package leap.core;
 
 import leap.core.sys.DefaultSysSecurity;
 import leap.core.sys.SysContext;
+import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
-import leap.lang.accessor.AttributeAccessor;
-import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
@@ -35,131 +34,134 @@ public class AppContextInitializer {
 	private static ThreadLocal<AppConfig> initialAppConfig;
 	private static boolean				  initializing;
 
-    private static AppConfigSource configSource = Factory.getInstance(AppConfigSource.class);
-
 	public static void initStandalone(){
 		initStandalone(null);
 	}
-	
+
+    public static AppContext newStandalone(){
+        return initStandalone(null,true);
+    }
+
 	public static void initStandalone(BeanFactory externalAppFactory){
-		initStandalone(externalAppFactory, null);
+		initStandalone(externalAppFactory, true);
 	}
-	
-	public static synchronized void initStandalone(BeanFactory externalAppFactory,Map<String, String> initProperties){
+
+	protected static synchronized AppContext initStandalone(BeanFactory externalAppFactory,boolean createNew){
 		if(initializing){
-			return;
+			return null;
 		}
-		if(AppContext.tryGetCurrent() != null){
+		if(!createNew && AppContext.tryGetCurrent() != null){
 			throw new IllegalStateException("App context already initialized");
 		}
+        AppConfig config = null;
 		try{
 			initializing = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-            AppResources.onContextInitializing();
-			
-			MapAttributeAccessor attrs = new MapAttributeAccessor();
-			
-			log.debug("Initializing standalone app context...");
-			
-			AppConfig config = loadDefaultAppConfig(attrs, null, initProperties);
-			
-			initialAppConfig.set(config);
-			
-			DefaultBeanFactory factory  = createStandaloneAppFactory(config,externalAppFactory);
-			
-			//register bean 
-			factory.setPrimaryBean(AppConfig.class, config);
-			
-			AppContext context = new AppContext(attrs.map(), config, factory, null);
-			
-			initSysContext(context,config);
-			
-			AppContext.setStandalone(context);
-			RequestContext.setStandalone(new StandaloneRequestContext());
-			
-			factory.load(context);
-		
-			onInited(context);
+			log.debug("Starting standalone app...");
 
-			Runtime.getRuntime().addShutdownHook(new Thread(){
-				@Override
-				public void run() {
-					factory.close();
-				}
-			});
-			
-			log.debug("Standalone app context initialized");
+            AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
+			config = cs.loadConfig(null, null);
+
+			initialAppConfig.set(config);
+
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            Thread.currentThread().setContextClassLoader(appCl);
+            try{
+                DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
+
+                //register beans
+                cs.registerBeans(config, factory);
+
+                AppContext context = new AppContext(config, factory, null);
+
+                initSysContext(context,config);
+
+                AppContext.setStandalone(context);
+                RequestContext.setStandalone(new StandaloneRequestContext());
+
+                factory.load(context);
+
+                onInited(context);
+
+                log.debug("Standalone app started!!!\n\n");
+
+                return context;
+            }finally {
+                appCl.done();
+                Thread.currentThread().setContextClassLoader(ctxCl);
+            }
 		}finally{
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing = false;
-            AppResources.onContextInitialized();
+
+            if(null != config) {
+                AppResources.destroy(config);
+            }
 		}
 	}
-	
-	public static synchronized void initExternal(Object 					     externalContext,
-										  		 Function<AppConfig,BeanFactory> beanFactoryCreator,
-										  		 Consumer<AppContext> 		 	 callback,
-										  		 Map<String, String>          	 initProperties){
-		
-		if(initializing){
+
+    public static synchronized void initExternal(Object externalContext,
+                                                 Function<AppConfig, BeanFactory> beanFactoryCreator,
+                                                 Consumer<AppContext> callback,
+                                                 Map<String, String> initProperties) {
+
+        if(initializing){
 			return;
 		}
 		
 		if(AppContext.tryGetCurrent() != null){
 			throw new IllegalStateException("App context already initialized");
 		}
-		
+
+        AppConfig config = null;
 		try{
 			initializing     = true;
 			initialAppConfig = new InheritableThreadLocal<>();
 
-            AppResources.onContextInitializing();
-			
-			MapAttributeAccessor attrs = new MapAttributeAccessor();
-			
 			//log.info("Initializing app context");
-			
-			AppConfig config = loadDefaultAppConfig(attrs, externalContext, initProperties);
-			
-			initialAppConfig.set(config);
-			
-			BeanFactory factory = beanFactoryCreator.apply(config);
-			
-			//register bean
-			factory.setPrimaryBean(AppConfig.class, config);
-			
-			AppContext context = new AppContext(attrs.map(),config, factory, externalContext);
-			
-			initSysContext(context,config);
-			
-			AppContext.setCurrent(context);
-			
-			callback.accept(context);
-			
-			onInited(context);
+
+            AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
+            config = cs.loadConfig(externalContext, initProperties);
+
+            initialAppConfig.set(config);
+
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            Thread.currentThread().setContextClassLoader(appCl);
+
+            try {
+                BeanFactory factory = beanFactoryCreator.apply(config);
+
+                //register bean
+                cs.registerBeans(config, factory);
+
+                AppContext context = new AppContext(config, factory, externalContext);
+
+                initSysContext(context, config);
+
+                AppContext.setCurrent(context);
+
+                callback.accept(context);
+
+                onInited(context);
+            }finally {
+                appCl.done();
+                Thread.currentThread().setContextClassLoader(ctxCl);
+            }
 		}finally{
 			initialAppConfig.remove();
 			initialAppConfig = null;
 			initializing   = false;
 
-            AppResources.onContextInitialized();
-		}
-	}
-	
-	protected static AppConfig loadDefaultAppConfig(AttributeAccessor attrs, Object externalContext, Map<String, String> initProperties){
-        AppConfig config = configSource.loadConfiguration(externalContext, initProperties);
-		
-		for(AppConfigInitializable o : Factory.newInstances(AppConfigInitializable.class)){
-			try {
-	            o.postInit(attrs, config);
-            } catch (Throwable e) {	
-            	throw new AppInitException("Error calling object '" + o + "', " + e.getMessage(), e);
+            if(null != config) {
+                AppResources.destroy(config);
             }
 		}
-		
-		return config;
 	}
 	
 	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){

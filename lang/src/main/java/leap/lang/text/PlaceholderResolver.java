@@ -16,8 +16,21 @@
 package leap.lang.text;
 
 public interface PlaceholderResolver {
-	
+
+    /**
+     * Returns true if the given value contains placeholder.
+     */
+    boolean hasPlaceholder(String value);
+
+    /**
+     * Replaces the placeholder with resolved value.
+     */
 	String resolveString(String value);
 
+    /**
+     * Replaces the placeholder with resolved value
+     *
+     * or returns the default value if the placeholder cannot be resolved.
+     */
 	String resolveString(String value, String defaultValue);
 }

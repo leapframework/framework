@@ -93,4 +93,10 @@ public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	default boolean isClientOnly() {
 	    return null != getClientId() && null == getUserId();
 	}
+
+	/**
+	 * Returns <code>true</code> if the client is authenticated.
+	 * @return
+	 */
+	boolean isAuthenticated();
 }

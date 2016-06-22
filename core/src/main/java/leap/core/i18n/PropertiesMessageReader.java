@@ -15,17 +15,17 @@
  */
 package leap.core.i18n;
 
-import java.io.Reader;
-import java.nio.charset.Charset;
-import java.util.Locale;
-import java.util.Properties;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.AppConfigException;
 import leap.lang.Locales;
 import leap.lang.Strings;
 import leap.lang.resource.Resource;
+
+import java.io.Reader;
+import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.Properties;
 
 public class PropertiesMessageReader implements MessageReader,AppConfigAware {
 	
@@ -47,20 +47,21 @@ public class PropertiesMessageReader implements MessageReader,AppConfigAware {
 	protected void readMessages(MessageContext context,Resource resource) {
 		Properties props = new Properties();
 		try {
-			String localeName = null; 
-			if(null == localeName){
-				localeName = Locales.extractFromFilename(resource.getFilename());
-			}
-			Locale locale = Strings.isEmpty(localeName) ? null : Locales.forName(localeName);
-			
-			try(Reader reader = resource.getInputStreamReader(charset)){
-				props.load(reader);	
-			}
-	        
-	        for(Object key : props.keySet()){
-	        	readMessage(context, resource, locale, props, (String)key);
-	        }
-	        
+            String localeName = null;
+            if (null == localeName) {
+                localeName = Locales.extractFromFilename(resource.getFilename());
+            }
+            Locale locale = Strings.isEmpty(localeName) ? null : Locales.forName(localeName);
+
+            try (Reader reader = resource.getInputStreamReader(charset)) {
+                props.load(reader);
+            }
+
+            for (Object key : props.keySet()) {
+                readMessage(context, resource, locale, props, (String) key);
+            }
+        } catch (AppConfigException e) {
+            throw e;
         } catch (Exception e) {
         	throw new AppConfigException("Error reading messages from properties resource [" + 
         							    resource.getURLString() + "], " + e.getMessage(), e);
@@ -72,7 +73,7 @@ public class PropertiesMessageReader implements MessageReader,AppConfigAware {
 		
 		if(null != message){
 			throw new AppConfigException("Message key '" + name + "' in locale '" + locale + 
-										 "' aleady exists in '" + message.getSource() + 
+										 "' already exists in '" + message.getSource() +
 										 "', check the file : " + resource.getURLString());	
 		}
 		

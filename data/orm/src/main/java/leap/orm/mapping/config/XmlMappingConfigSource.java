@@ -15,9 +15,7 @@
  */
 package leap.orm.mapping.config;
 
-import leap.core.AppConfig;
-import leap.core.AppConfigException;
-import leap.core.AppResources;
+import leap.core.*;
 import leap.core.annotation.Inject;
 import leap.core.el.EL;
 import leap.db.model.DbColumnBuilder;
@@ -92,18 +90,21 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     @Override
     public MappingConfig load(OrmContext context) {
         if(!loaded) {
-            load(context, AppResources.getAllClasspathResourcesForXml("models"));
+            AppResources resources = AppResources.get(appConfig);
+            load(context, resources.search("models"));
             loaded = true;
         }
         return this;
     }
 
-    protected void load(OrmContext context, Resource[] rs) {
-        load(new LoadContext(context), false, rs);
+    protected void load(OrmContext context, AppResource[] rs) {
+        load(new LoadContext(context), rs);
     }
 
-    protected void load(LoadContext context, boolean defaultOverride, Resource... resources) {
-        for(Resource resource : resources){
+    protected void load(LoadContext context, AppResource... resources) {
+        for(AppResource ar : resources){
+
+            Resource resource = ar.getResource();
 
             if(resource.isReadable() && resource.exists()){
                 XmlReader reader = null;
@@ -119,7 +120,9 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                     reader = XML.createReader(resource);
                     reader.setPlaceholderResolver(appConfig.getPlaceholderResolver());
 
-                    loadModels(context,resource,reader, false);
+                    context.setDefaultOverride(ar.isDefaultOverride());
+                    loadModels(context,resource,reader);
+                    context.resetDefaultOverride();
                 }catch(RuntimeException e){
                     throw e;
                 }catch(Exception e){
@@ -131,7 +134,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         }
     }
 
-    protected void loadModels(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
+    protected void loadModels(LoadContext context, Resource resource, XmlReader reader) {
 
         boolean foundValidRootElement = false;
 
@@ -141,13 +144,13 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
 
                 Boolean defaultOverrideAttribute = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE);
                 if(null != defaultOverrideAttribute){
-                    defaultOverride = defaultOverrideAttribute;
+                    context.setDefaultOverride(defaultOverrideAttribute);
                 }
 
                 while(reader.next()){
                     if(reader.isStartElement(IMPORT_ELEMENT)){
-                        boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-                        boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, defaultOverride);
+                        boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE,  true);
+                        boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
                         String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
 
                         Resource importResource = Resources.getResource(resource,importResourceName);
@@ -157,19 +160,20 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                                 throw new DomainConfigException("the import resource '" + importResourceName + "' not exists");
                             }
                         }else{
-                            load(context,override,importResource);
+                            LoadContext importContext = new LoadContext(context.context);
+                            load(importContext, new SimpleAppResource(importResource, override));
                             reader.nextToEndElement(IMPORT_ELEMENT);
                         }
                         continue;
                     }
 
                     if(reader.isStartElement(GLOBAL_FIELD_ELEMENT)) {
-                        loadGlobalField(context, resource, reader, defaultOverride);
+                        loadGlobalField(context, resource, reader);
                         continue;
                     }
 
                     if(reader.isStartElement(SHARDING_ELEMENT)) {
-                        loadSharding(context, resource, reader, defaultOverride);
+                        loadSharding(context, resource, reader);
                         continue;
                     }
 
@@ -187,8 +191,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             throw new MappingConfigException("valid root element not found in file : " + resource.getClasspath());
         }
     }
-    protected void loadGlobalField(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
-        FieldMappingBuilder  field    = readFieldMapping(reader, defaultOverride);
+    protected void loadGlobalField(LoadContext context, Resource resource, XmlReader reader) {
+        FieldMappingBuilder  field    = readFieldMapping(reader, context.isDefaultOverride());
         FieldMappingStrategy strategy = readFieldMappingStrategy(reader);
 
         GlobalFieldMappingConfig gf = new GlobalFieldMappingConfig(field, strategy);
@@ -209,7 +213,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         globalFields.add(gf);
     }
 
-    private void loadSharding(LoadContext context, Resource resource, XmlReader reader, boolean defaultOverride) {
+    private void loadSharding(LoadContext context, Resource resource, XmlReader reader) {
 
         String entity           = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
         String shardingField    = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
@@ -299,7 +303,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     protected FieldMappingStrategy readFieldMappingStrategy(XmlReader reader) {
         String v = reader.getAttribute(MAPPING_STRATEGY_ATTRIBUTE);
         if(Strings.isEmpty(v)) {
-            return FieldMappingStrategy.MANDATORY;
+            return FieldMappingStrategy.ALWAYS;
         }else{
             return Enums.nameOf(FieldMappingStrategy.class, v);
         }
@@ -309,8 +313,23 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         private final OrmContext  context;
         private final Set<String> resources = new HashSet<>();
 
+        private boolean originalDefaultOverride;
+        private boolean defaultOverride;
+
         private LoadContext(OrmContext context){
             this.context = context;
+        }
+
+        public boolean isDefaultOverride() {
+            return defaultOverride;
+        }
+
+        public void setDefaultOverride(boolean b) {
+            this.defaultOverride = b;
+        }
+
+        public void resetDefaultOverride() {
+            this.defaultOverride = originalDefaultOverride;
         }
     }
 

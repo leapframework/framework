@@ -6,8 +6,39 @@
 			<pattern>%d{HH:mm:ss.SSS} [%thread] %level %C:%line - %msg%n</pattern>
 		</encoder>
 	</appender>
-  
-	<logger name="leap" level="TRACE"/>
+
+    <appender name="FILE_ERROR_REPORT" class="ch.qos.logback.core.FileAppender">
+        <file>./target/error_report.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE_SLOW_REPORT" class="ch.qos.logback.core.FileAppender">
+        <file>./target/slow_report.log</file>
+        <append>false</append>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="STDOUT_SLOW_REPORT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="applog.monitor.slow" level="INFO" additivity="false">
+        <appender-ref ref="STDOUT_SLOW_REPORT"/>
+        <appender-ref ref="FILE_SLOW_REPORT"/>
+    </logger>
+
+    <logger name="applog.monitor.error" level="INFO" additivity="false">
+        <appender-ref ref="FILE_ERROR_REPORT"/>
+    </logger>
+
+    <logger name="leap" level="TRACE"/>
 
 	<root level="WARN">
 		<appender-ref ref="STDOUT" />

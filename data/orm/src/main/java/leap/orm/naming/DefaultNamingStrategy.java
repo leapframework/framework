@@ -245,7 +245,7 @@ public class DefaultNamingStrategy implements NamingStrategy,PostCreateBean {
 	@Override
     public String columnToFieldName(String columnName) {
 		if(columnName.indexOf('_') >= 0){
-			return Strings.lowerCamel(columnName,'_');
+			return Strings.lowerCamel(columnName.toLowerCase(),'_');
 		}else{
 			return columnName;
 		}

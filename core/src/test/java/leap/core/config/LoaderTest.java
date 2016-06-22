@@ -23,6 +23,8 @@ public class LoaderTest extends AppTestBase {
     @Test
     public void testSimpleLoaderProperties() {
         assertEquals("value1",config.getProperty("testConfigLoader.prop1"));
+        assertNull(config.getProperty("testConfigLoader.prop2"));
+        assertEquals("db.val1", config.getProperty("testConfigLoader.prop3"));
     }
 
     @Test
@@ -30,4 +32,9 @@ public class LoaderTest extends AppTestBase {
         assertEquals("db.val1",config.getProperty("db.key1"));
     }
 
+    @Test
+    public void testPlaceholder() {
+        assertEquals("db.val1", config.getProperty("testLoader.placeholder1"));
+    }
 }
+

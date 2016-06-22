@@ -16,18 +16,23 @@
 
 package leap.core.instrument;
 
+import leap.lang.asm.Type;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class SimpleAppInstrumentClass implements AppInstrumentClass {
 
     private final String  className;
+    private final String  internalClassName;
     private byte[]        classData;
+    private boolean       ensure;
+    private boolean       beanDeclared;
     private Set<Class<?>> instrumentedBySet = new LinkedHashSet<>(2);
 
-    public SimpleAppInstrumentClass(String className, byte[] classData) {
-        this.className = className;
-        this.classData = classData;
+    SimpleAppInstrumentClass(String internalClassName) {
+        this.internalClassName = internalClassName;
+        this.className         = Type.getObjectType(internalClassName).getClassName();
     }
 
     @Override
@@ -36,13 +41,33 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     }
 
     @Override
+    public String getInternalClassName() {
+        return internalClassName;
+    }
+
+    @Override
     public byte[] getClassData() {
         return classData;
     }
 
     @Override
-    public void updateClassData(byte[] data) {
-        classData = data;
+    public boolean isEnsure() {
+        return ensure;
+    }
+
+    @Override
+    public boolean isBeanDeclared() {
+        return beanDeclared;
+    }
+
+    @Override
+    public void setBeanDeclared(boolean b) {
+        this.beanDeclared = b;
+    }
+
+    @Override
+    public void makeEnsure() {
+        this.ensure = true;
     }
 
     @Override
@@ -50,7 +75,10 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
         return instrumentedBySet;
     }
 
-    @Override
+    public void updateClassData(byte[] data) {
+        classData = data;
+    }
+
     public void addInstrumentedBy(Class<?> cls) {
         instrumentedBySet.add(cls);
     }

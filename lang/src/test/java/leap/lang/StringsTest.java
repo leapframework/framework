@@ -56,9 +56,11 @@ public class StringsTest extends ConcurrentTestCase {
 	public void testCamel() {
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world",'_'));
 		assertEquals("HelloWorld",Strings.upperCamel("hello_world_",'_'));
-		
+		assertEquals("HelloWorld",Strings.upperCamel("helloWorld",'_'));
+
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world",'_'));
 		assertEquals("helloWorld",Strings.lowerCamel("hello_world_",'_'));
+		assertEquals("helloWorld",Strings.lowerCamel("HelloWorld",'_'));
 	}
 	
 	@Test
@@ -75,4 +77,10 @@ public class StringsTest extends ConcurrentTestCase {
 		assertArrayEquals(Strings.splitWhitespaces("  1 2  "), new String[]{"1","2"});
 		assertArrayEquals(Strings.splitWhitespaces("  1  2  "), new String[]{"1","2"});
 	}
+
+    @Test
+    public void testRight() {
+        assertEquals("a", Strings.right("a", 10));
+        assertEquals("cde", Strings.right("abcde", 3));
+    }
 }

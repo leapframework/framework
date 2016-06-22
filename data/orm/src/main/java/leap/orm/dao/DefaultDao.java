@@ -430,6 +430,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     public <T> Query<T> createSqlQuery(Class<T> resultClass, String sql) {
 		Args.notNull(resultClass,"resultClass");
 		Args.notEmpty(sql,"sql");
+
+		if(isEntityClass(resultClass)){
+			return this.createSqlQuery(metadata().getEntityMapping(resultClass),resultClass,sql);
+		}
+
 		return queryFactory().createQuery(this, resultClass, sql);
     }	
 	
@@ -474,7 +479,11 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     public <T> Query<T> createNamedQuery(String queryName, Class<T> resultClass) {
 		Args.notEmpty(queryName,"query name");
 		Args.notNull(resultClass,"result class");
-		
+
+		if(isEntityClass(resultClass)){
+			return this.createNamedQuery(resultClass,queryName);
+		}
+
 		SqlCommand command = metadata().tryGetSqlCommand(queryName);
 		if(null == command){
 			throw new SqlNotFoundException("Query '" + queryName + "' not found");
@@ -804,5 +813,9 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	        return null;
         }
 	}
-	
+
+	protected boolean isEntityClass(Class<?> clzz){
+		return metadata().tryGetEntityMapping(clzz)!=null;
+	}
+
 }

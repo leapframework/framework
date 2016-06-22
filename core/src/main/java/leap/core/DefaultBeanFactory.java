@@ -39,10 +39,10 @@ public class DefaultBeanFactory implements BeanFactory {
 
     private static final Log log = LogFactory.get(DefaultBeanFactory.class);
 
-	protected final AppConfig	config;
-	protected final BeanFactory externalFactory;
-	
-	protected boolean		initialized;
+    protected final AppConfig       config;
+    protected final BeanFactory     externalFactory;
+
+    protected boolean		initialized;
 	protected BeanContainer beanContainer;
 	
 	protected DefaultBeanFactory(AppConfig config,BeanFactory externalFactory){
@@ -51,17 +51,12 @@ public class DefaultBeanFactory implements BeanFactory {
 		this.beanContainer   = new BeanContainer(config);
 	}
 	
-	public DefaultBeanFactory addInitializableBean(BeanFactoryInitializable bean){
-		beanContainer.addInitializableBean(bean);
-		return this;
-	}
-	
 	protected DefaultBeanFactory load(AppContext appContext){
+        AppResources resources = AppResources.get(appContext.getConfig());
+
 		this.beanContainer.setAppContext(appContext);
-		this.beanContainer.loadFromResources(AppResources.getFMClasspathResourcesForXml("beans"))
-						  .loadFromResources(AppResources.getMetaClasspathResourcesForXml("beans"))
-						  .loadFromClasses(config.getResources().searchClasses())
-						  .loadFromResources(AppResources.getAppClasspathResourcesForXml("beans"))
+		this.beanContainer.loadFromResources(resources.search("beans"))
+                          .loadFromClasses(config.getResources().searchClasses())
 						  .init()
 						  .registerShutdownHook();
 		return this;
@@ -293,12 +288,12 @@ public class DefaultBeanFactory implements BeanFactory {
     }
 	
 	@Override
-    public <T> void setPrimaryBean(Class<T> type, T bean) {
-		if(null != externalFactory && externalFactory.tryGetBean(type) != null){
-			externalFactory.setPrimaryBean(type, bean);
-		}else{
-			beanContainer.setPrimaryBean(type, bean);
-		}
+    public void setPrimaryBean(Class<?> type, Object bean) {
+        if(!type.isAssignableFrom(bean.getClass())) {
+            throw new IllegalStateException("The bean '" + bean + "' must be instance of the type '" + type + "'");
+        }
+
+        beanContainer.setPrimaryBean(type, bean);
     }
 
 	@Override

@@ -27,4 +27,14 @@ public @interface ConfigProperty {
      */
     String[] value() default {};
 
+    /**
+     * The config property's key, same as {@link #value()}.
+     */
+    String[] key() default {};
+
+    /**
+     * The default value.
+     */
+    String defaultValue() default "";
+
 }

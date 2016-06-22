@@ -20,6 +20,14 @@ public class SqlWhere extends SqlNodeContainer {
 
     protected SqlQuery query;
 
+    public SqlWhere() {
+
+    }
+
+    public SqlWhere(SqlQuery query) {
+        this.query = query;
+    }
+
     public SqlQuery getQuery() {
         return query;
     }

@@ -15,8 +15,9 @@
  */
 package leap.core;
 
-import leap.core.config.*;
-import leap.core.ds.DataSourceConfig;
+import leap.core.config.AppConfigContext;
+import leap.core.config.AppConfigProcessor;
+import leap.core.config.dyna.*;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.Charsets;
 import leap.lang.Locales;
@@ -26,12 +27,14 @@ import leap.lang.text.PlaceholderResolver;
 
 import java.nio.charset.Charset;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 public interface AppConfig extends PropertyGetter {
 
+    String SYS_PROPERTY_PROFILE          = "app.profile";
     String INIT_PROPERTY_PROFILE         = "profile";
     String INIT_PROPERTY_DEBUG           = "debug";
     String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
@@ -43,7 +46,8 @@ public interface AppConfig extends PropertyGetter {
     String PROPERTY_HOME           = "home";
     String PROPERTY_RELOAD_ENABLED = "reload-enabled";
 
-    String  DEFAULT_PROFILE      = "production";
+    String  PROFILE_DEVELOPMENT  = "dev";
+    String  PROFILE_PRODUCTION   = "prod";
     String  DEFAULT_BASE_PACKAGE = "app";
     Locale  DEFAULT_LOCALE       = Locales.DEFAULT_LOCALE;
     Charset DEFAULT_CHARSET      = Charsets.UTF_8;
@@ -52,6 +56,11 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns current profile name.
 	 */
 	String getProfile();
+
+    /**
+     * Returns true if the profile is {@link #PROFILE_DEVELOPMENT}.
+     */
+    boolean isDev();
 	
 	/**
 	 * Returns <code>true</code> if current app is running in debug mode. 
@@ -115,7 +124,15 @@ public interface AppConfig extends PropertyGetter {
 	 * Generates (or loads from saved key store) a private key if not exists.
 	 */
 	PrivateKey ensureGetPrivateKey();
-	
+
+	/**
+	 * Return the public key if exists.
+	 *
+	 * <p>
+	 * Generates (or loads from saved key store) a public key if not exists.
+	 */
+	PublicKey ensureGetPublicKey();
+
 	/**
 	 * Returns a config extension object for the given type or <code>null</code> if no extension.
 	 * 
@@ -123,7 +140,12 @@ public interface AppConfig extends PropertyGetter {
 	 * @see AppConfigProcessor
 	 */
 	<T> T getExtension(Class<T> type);
-	
+
+    /**
+     * Returns all the config extensions.
+     */
+    Map<Class<?>, Object> getExtensions();
+
 	/**
 	 * Removes and returns a config extension object for the given type or <code>null</code> if no extension.
 	 * 
@@ -262,11 +284,6 @@ public interface AppConfig extends PropertyGetter {
      */
     <T> void bindDynaProperty(String name, Class<T> type, Property<T> p);
 
-	/**
-	 * Returns the map contains all the data source configs.
-	 */
-	Map<String, DataSourceConfig> getDataSourceConfigs();
-	
 	/**
 	 * Returns an immutable map contains all the configured properties.
 	 */

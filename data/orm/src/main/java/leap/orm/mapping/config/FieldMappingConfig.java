@@ -23,7 +23,7 @@ public class FieldMappingConfig {
     private final FieldMappingStrategy strategy;
 
     public FieldMappingConfig(FieldMappingBuilder field) {
-        this(field, FieldMappingStrategy.MANDATORY);
+        this(field, FieldMappingStrategy.ALWAYS);
     }
 
     public FieldMappingConfig(FieldMappingBuilder field, FieldMappingStrategy strategy) {

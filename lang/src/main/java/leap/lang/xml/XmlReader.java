@@ -19,7 +19,12 @@ public interface XmlReader extends Closeable,Sourced {
 	 * Returns a string indicates the {@link Sourced} and current line number of this reader.
 	 */
 	String getCurrentLocation();
-	
+
+    /**
+     * Returns current event.
+     */
+    XMLEvent event();
+
 	/**
 	 * Sets to <code>true</code> will trim all the string value returned by this reader.
 	 * 
@@ -64,6 +69,13 @@ public interface XmlReader extends Closeable,Sourced {
      * @see #getProcessingInstructionTarget()
      */
     boolean isProcessingInstruction(String target);
+
+    /**
+     * @see XMLEvent#isCharacters()
+     */
+    boolean isCharacters();
+
+    String getCharacters();
     
     /**
      * @see XMLEvent#isStartElement()

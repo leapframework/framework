@@ -53,6 +53,6 @@ public class TimeExpirableSeconds implements TimeExpirable {
 
     @Override
     public boolean isExpired() {
-        return (System.currentTimeMillis() - created) >= (expiresIn * 1000l);
+        return (System.currentTimeMillis() - created) >= (expiresIn * 1000L);
     }
 }

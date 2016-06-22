@@ -16,7 +16,7 @@
 
 package leap.core;
 
-import leap.core.config.PropertyProvider;
+import leap.core.config.dyna.PropertyProvider;
 
 public abstract class AppConfigBase implements AppConfig {
 

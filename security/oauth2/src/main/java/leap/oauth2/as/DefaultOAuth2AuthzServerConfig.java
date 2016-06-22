@@ -36,6 +36,7 @@ import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
 import java.security.PrivateKey;
+import java.security.PublicKey;
 
 @Configurable(prefix="oauth2.as")
 public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, OAuth2AuthzServerConfigurator, AppInitializable {
@@ -66,6 +67,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    authorizationCodeEnabled        = true;
     protected boolean    implicitGrantEnabled            = true;
     protected boolean    clientCredentialsEnabled        = true;
+    protected boolean    tokenClientEnabled              = true;
     protected boolean    requestLevelScopeEnabled        = false;
     protected String     tokenEndpointPath               = DEFAULT_TOKEN_ENDPOINT_PATH;
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
@@ -84,6 +86,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected int        defaultLoginSessionExpires      = DEFAULT_LOGIN_SESSION_EXPIRES;
     protected String     jdbcDataSourceName              = null;
     protected PrivateKey privateKey                      = null;
+    protected PublicKey  publicKey                       = null;
 
 	private boolean hasDataSources;
 
@@ -194,7 +197,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	    return clientCredentialsEnabled;
     }
 
-	@Override
+    @Override
+    public boolean isTokenClientEnabled() {
+        return tokenClientEnabled;
+    }
+
+    @Override
     public boolean isAuthorizationCodeEnabled() {
 	    return authorizationCodeEnabled;
     }
@@ -329,6 +337,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		this.clientCredentialsEnabled = clientCredentialsEnabled;
 		return this;
 	}
+    @ConfigProperty
+    public OAuth2AuthzServerConfigurator setTokenClientEnabled(boolean tokenClientEnabled){
+        this.tokenClientEnabled = tokenClientEnabled;
+        return this;
+    }
 
     @ConfigProperty
     public OAuth2AuthzServerConfigurator setRequestLevelScopeEnabled(boolean enabled) {
@@ -436,7 +449,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public PrivateKey getPrivateKey() {
         return privateKey;
     }
-    
+
+    @Override
+    public PublicKey getPublicKey() {
+        return publicKey;
+    }
     @Override
     public PrivateKey ensureGetPrivateKey() {
         if(null == privateKey) {
@@ -500,13 +517,27 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return this;
     }
 
-    public OAuth2AuthzServerConfigurator setPrivateKey(String privateKey) {
+    public OAuth2AuthzServerConfigurator setPublicKey(PublicKey publicKey) {
+        this.publicKey = publicKey;
+        return this;
+    }
+
+    @ConfigProperty
+    public void setPrivateKeyStr(String privateKey) {
         if(Strings.isEmpty(privateKey)) {
             this.privateKey = null;
         }else{
             this.privateKey = RSA.decodePrivateKey(privateKey);
         }
-        return this;
+    }
+
+    @ConfigProperty
+    public void setPublicKeyStr(String publicKey) {
+        if(Strings.isEmpty(publicKey)) {
+            this.publicKey = null;
+        }else{
+            this.publicKey = RSA.decodePublicKey(publicKey);
+        }
     }
 
     @Override

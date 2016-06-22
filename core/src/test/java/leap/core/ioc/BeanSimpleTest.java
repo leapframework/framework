@@ -18,12 +18,17 @@ package leap.core.ioc;
 import leap.core.CoreTestCase;
 import leap.core.cache.Cache;
 import leap.core.variable.Variable;
+import leap.junit.concurrent.Concurrent;
 import leap.lang.Lazy;
 import org.junit.Test;
+import tested.base.beans.TAnnotationBean1;
+import tested.base.beans.TAnnotationBean2;
+import tested.base.beans.TAnnotationBeanType;
 import tested.beans.*;
 import tested.variables.NowVariable1;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BeanSimpleTest extends CoreTestCase {
 
@@ -84,5 +89,18 @@ public class BeanSimpleTest extends CoreTestCase {
         assertEquals(NowVariable1.class,factory.getBean(Variable.class,"now").getClass());
     }
 
+    private static final List<Object> concurrentBeans = new CopyOnWriteArrayList<>();
+
+    @Test
+    @Concurrent
+    public void testConcurrentGetBean() {
+        concurrentBeans.add(factory.getBean(TConcurrentBean.class));
+
+        if(concurrentBeans.size() > 1) {
+            for(int i=1;i<concurrentBeans.size();i++){
+                assertSame(concurrentBeans.get(i), concurrentBeans.get(i-1));
+            }
+        }
+    }
 	
 }

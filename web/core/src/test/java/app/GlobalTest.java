@@ -15,6 +15,8 @@
  */
 package app;
 
+import leap.core.AppConfig;
+import leap.core.annotation.Inject;
 import org.junit.Test;
 
 import leap.junit.contexual.Contextual;
@@ -23,8 +25,11 @@ import leap.web.WebTestCase;
 @Contextual
 public class GlobalTest extends WebTestCase {
 
+    protected static @Inject AppConfig config;
+
 	@Test
 	public void testGlobalLoaded(){
+        assertNotNull(config);
 		assertNotNull(app);
 		assertEquals(app.getClass().getName(), Global.class.getName());
 	}

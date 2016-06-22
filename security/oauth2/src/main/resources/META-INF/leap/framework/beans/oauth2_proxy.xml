@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+    <bean type="leap.oauth2.proxy.UserAgentForwardedResolver"
+          class="leap.oauth2.proxy.XForwardedResolver"/>
+</beans>

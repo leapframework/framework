@@ -19,20 +19,21 @@ import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
 import leap.orm.tested.model.petclinic.Owner;
+import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
 
-    protected @SqlKey("findOwnerByLastUseJdbcPlaceholder") DaoCommand findByLastNameCmd;
+    protected @SqlKey("findOwnerByLastNameWithAlias") DaoCommand findOwnerByLastNameWithAlias;
 
 	@Test
 	public void testFindOwnersByLastName() {
 		deleteAll(Owner.class);
 
 		assertTrue(dao.createNamedQuery(Owner.class, "findByLastName").param("lastName", "test").result().isEmpty());
-        assertTrue(findByLastNameCmd.createQuery(new Object[]{"test"}).result().isEmpty());
 
 		Owner older = dmo.getDataFactory().generate(Owner.class);
 		older.setLastName("test");
@@ -44,6 +45,16 @@ public class NamedQueryTest extends OrmTestCase {
 
 		compareFields(older, newer.fields());
 	}
+
+    @Test
+    public void testFindOwnerByLastNameWithAlias() {
+        deleteAll(Owner.class);
+
+        new Owner().setFullName("a", "b").create();
+
+        Owner found = findOwnerByLastNameWithAlias.createQuery(Owner.class, new Object[]{"b"}).first();
+        assertEquals("a", found.getFirstName());
+    }
 
 	@Test
 	public void testFindOwnersByLastNameForMap() {
@@ -62,6 +73,22 @@ public class NamedQueryTest extends OrmTestCase {
 
         newer = dao.createNamedQuery("findOwnerByLastNameSimple").params(older).single();
         compareFields(older, newer);
+	}
+	@Test
+	public void testQueryWithResultClass(){
+		Product.deleteAll();
+		Product p = new Product();
+		p.setId("id");
+		p.setTypeId(1);
+		p.create();
+		List<Product> prdts = dao.createNamedQuery("queryProductWithResultClass",Product.class).list();
+		prdts.forEach((prdt)->{
+			assertNotNull(prdt.getId());
+		});
+		prdts = dao.createSqlQuery(Product.class,"select * from product").list();
+		prdts.forEach((prdt)->{
+			assertNotNull(prdt.getId());
+		});
 	}
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {

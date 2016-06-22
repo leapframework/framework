@@ -22,6 +22,8 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
 import leap.orm.dmo.DefaultDmo;
@@ -39,6 +41,8 @@ import java.util.Map.Entry;
  * This class must be configured in the beans configuration.
  */
 public class OrmInit implements AppContextInitializable,DataSourceListener {
+
+    private static final Log log = LogFactory.get(OrmInit.class);
 	
     protected @Inject @M BeanFactory       beanFactory;
     protected @Inject @M DataSourceManager dataSourceManager;
@@ -65,7 +69,9 @@ public class OrmInit implements AppContextInitializable,DataSourceListener {
 	@Override
     public void postInit(AppContext context) throws Exception {
 		dataSourceManager.addListener(this);
-		
+
+        log.debug("Lookup all dataSource(s)...");
+
 		DataSource       defaultDataSource = dataSourceManager.tryGetDefaultDataSource();
 		Map<String,DataSource> dataSources = dataSourceManager.getAllDataSources();
 		
@@ -79,11 +85,14 @@ public class OrmInit implements AppContextInitializable,DataSourceListener {
 				primary = true;
 				foundPrimary = true;
 			}
-			
+
+            log.debug("Init orm beans for dataSource '{}'",  entry.getKey());
+
 			initOrmBeans(beanFactory, entry.getValue(), entry.getKey(), primary);
 		}
 		
 		if(!foundPrimary && null != defaultDataSource){
+            log.debug("Init orm beans for default dataSource");
 			initOrmBeans(beanFactory, defaultDataSource, Orm.DEFAULT_NAME, true);
 		}
 		

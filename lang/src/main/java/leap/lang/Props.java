@@ -15,26 +15,19 @@
  */
 package leap.lang;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.util.Enumeration;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.convert.Converts;
 import leap.lang.exception.NestedIOException;
 import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.Enumeration;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Properties;
 
 
 /**
@@ -62,7 +55,21 @@ public class Props {
         } catch (IOException e) {
         	throw new NestedIOException("Error loading properties from resource '" + r.getDescription() + "', " + e.getMessage(), e);
         }
-	}	
+	}
+
+    public static ExProperties loadKeyValues(String content) {
+        ExProperties props = new ExProperties();
+
+        if(null != content) {
+            Try.throwUnchecked(() -> {
+                try(Reader reader = new StringReader(content)) {
+                    props.load(reader);
+                }
+            });
+        }
+
+        return props;
+    }
 	
 	/**
 	 * Reads the given properties file.

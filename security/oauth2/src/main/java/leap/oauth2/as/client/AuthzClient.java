@@ -90,4 +90,19 @@ public interface AuthzClient {
 	 * Returns <code>true</code> if the client accepts the given uri as logout uri.
      */
 	boolean acceptsLogoutUri(String uri);
+
+	/**
+	 * Returns <code>true</code> if the client has been authenticated.
+	 */
+	boolean isAuthenticated();
+	/**
+	 * Returns <code>true</code> if the client accepts the given secret as secret.
+	 */
+	boolean acceptsSecret(String secret);
+
+	/**
+	 * tr
+	 * @param authenticated
+     */
+	void setAuthenticated(boolean authenticated);
 }

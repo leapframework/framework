@@ -17,9 +17,9 @@
 package leap.core.ioc;
 
 import leap.core.CoreTestCase;
-import leap.core.config.Property;
+import leap.core.config.dyna.Property;
 import org.junit.Test;
-import tested.beans.TConfigBean;
+import tested.base.beans.TConfigBean;
 
 public class BeanConfigTest extends CoreTestCase {
 
@@ -39,6 +39,13 @@ public class BeanConfigTest extends CoreTestCase {
         assertEquals("s1", bean.stringProperty1.get());
         assertEquals("s2", bean.stringProperty2.get());
 
+        assertEquals(10, bean.getIntPropertyWithDefaultValue());
+        assertEquals("ok", bean.getStrPropertyWithDefaultValue());
+        assertTrue(bean.isBoolPropertyWithDefaultValue());
+        assertEquals(2, bean.getArrayPropertyWithDefaultValue().length);
+        assertEquals("a", bean.getArrayPropertyWithDefaultValue()[0]);
+        assertEquals("b", bean.getArrayPropertyWithDefaultValue()[1]);
+
         assertEquals(1, bean.integerProperty1.get().intValue());
         assertEquals(2, bean.integerProperty2.get().intValue());
 
@@ -55,7 +62,7 @@ public class BeanConfigTest extends CoreTestCase {
 
         String[] arrayProperty1 = bean.arrayProperty1;
         assertNotNull(arrayProperty1);
-        assertEquals(3, arrayProperty1.length);
+        assertEquals(3,   arrayProperty1.length);
         assertEquals("a", arrayProperty1[0]);
         assertEquals("b", arrayProperty1[1]);
         assertEquals("c", arrayProperty1[2]);
@@ -69,6 +76,11 @@ public class BeanConfigTest extends CoreTestCase {
         assertNotNull(cprop2);
         assertEquals("n2", cprop2.name);
         assertEquals(200, cprop2.value);
+
+        //no field property
+        assertEquals("1", bean.testNotFieldProperty1);
+        assertEquals("2", bean.testNotFieldProperty2);
+        assertEquals("3", bean.testNotFieldProperty3);
     }
 
 }

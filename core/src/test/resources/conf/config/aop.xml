@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <aop>
+
+        <method-interception>
+            <interceptor class="tested.aop.TAopInterceptor1"/>
+            <matches>
+                <annotation type="tested.aop.TIntercepted"/>
+            </matches>
+        </method-interception>
+
+        <method-interception>
+            <interceptor name="interceptor2"/>
+            <matches>
+                <annotation type="tested.aop.TIntercepted"/>
+            </matches>
+        </method-interception>
+
+        <method-interception>
+            <interceptor class="tested.aop.TAopInterceptor3"/>
+            <matches>
+                <annotation type="tested.aop.TException"/>
+            </matches>
+        </method-interception>
+
+    </aop>
+
+</config>

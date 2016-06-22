@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <property name="env" value="test2" override="true"/>
+
+    <property name="test2" value="1"/>
+
+</config>

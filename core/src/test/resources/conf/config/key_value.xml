@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties>
+        testKeyValue1 = 1#comment
+        testKeyValue2=2 #comment
+
+        testKeyValue3=3<!--comment-->
+        testKeyValue4 =
+        #testKeyValue5 = 5
+    </properties>
+
+    <properties prefix="testKeyValue">
+
+        #comment test
+        prop1=1
+
+        <!-- comment -->
+        prop2=2
+
+    </properties>
+
+</config>

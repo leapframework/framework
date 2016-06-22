@@ -39,8 +39,7 @@
 			<xsd:attribute name="if-class-present" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-servlet-environment" use="optional" type="xsd:boolean"/>
 			<xsd:attribute name="default-lazy-init" default="true" type="xsd:boolean"/>
-			<xsd:attribute name="default-auto-inject" default="false" type="xsd:boolean"/>
-			
+
 			<xsd:anyAttribute namespace="##other" processContents="lax"/>
 		</xsd:complexType>
 	</xsd:element>
@@ -98,8 +97,7 @@
 	    <xsd:attribute name="if" type="xsd:string"/>
 	    <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 	    <xsd:attribute name="singleton" type="xsd:boolean"/>
-	    <xsd:attribute name="lazy-init" default="default" type="defaultable-boolean"/>
-	    <xsd:attribute name="auto-inject" default="false"/>
+	    <xsd:attribute name="lazy-init" type="xsd:boolean" default="true"/>
 	    <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
         <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"/>
         <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
@@ -239,7 +237,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="listOrSetType">
-					<xsd:attribute name="merge" default="default" type="defaultable-boolean"/>
+					<xsd:attribute name="merge" default="false" type="xsd:boolean"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -249,7 +247,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="listOrSetType">
-					<xsd:attribute name="merge" default="default" type="defaultable-boolean"/>
+					<xsd:attribute name="merge" default="false" type="xsd:boolean"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -259,7 +257,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="listOrSetType">
-					<xsd:attribute name="merge" default="default" type="defaultable-boolean"/>
+					<xsd:attribute name="merge" default="false" type="xsd:boolean"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -269,7 +267,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="baseMapType">
-					<xsd:attribute name="merge" default="default" type="defaultable-boolean"/>
+					<xsd:attribute name="merge" default="false" type="xsd:boolean"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -281,7 +279,7 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:extension base="propsType">
-					<xsd:attribute name="merge" default="default" type="defaultable-boolean"/>
+					<xsd:attribute name="merge" default="false" type="xsd:boolean"/>
 				</xsd:extension>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -398,8 +396,8 @@
 		<xsd:attribute name="ref-type" type="xsd:string"/>
 		<xsd:attribute name="ref-name" type="xsd:string"/>
 		<xsd:attribute name="value" type="xsd:string"/>
-		<xsd:attribute name="default-value" type="xsd:string"></xsd:attribute>
-		<xsd:attribute name="if" type="xsd:string"></xsd:attribute>
+		<xsd:attribute name="default-value" type="xsd:string"/>
+		<xsd:attribute name="if" type="xsd:string"/>
 		<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 	</xsd:complexType>
 
@@ -459,13 +457,4 @@
 			</xsd:extension>
 		</xsd:complexContent>
 	</xsd:complexType>
-
-	<!-- simple internal types -->
-	<xsd:simpleType name="defaultable-boolean">
-		<xsd:restriction base="xsd:NMTOKEN">
-			<xsd:enumeration value="default"/>
-			<xsd:enumeration value="true"/>
-			<xsd:enumeration value="false"/>
-		</xsd:restriction>
-	</xsd:simpleType>
 </xsd:schema>

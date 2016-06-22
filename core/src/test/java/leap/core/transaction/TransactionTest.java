@@ -20,7 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
 import leap.lang.Try;
 import org.junit.Test;
-import tested.transaction.TransactionalBean;
+import tested.beans.TransactionalBean;
 
 public class TransactionTest extends AppTestBase {
 

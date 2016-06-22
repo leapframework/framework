@@ -20,7 +20,10 @@ import leap.core.BeanFactory;
 import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.runner.Description;
+import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
 import java.util.List;
@@ -37,6 +40,15 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
 	    super(klass);
 
 		DEV.setCurrentTestClass(klass);
+    }
+
+    @Override
+    protected void runChild(FrameworkMethod method, RunNotifier notifier) {
+        Description description = describeChild(method);
+        System.out.println();
+        System.out.println("============== Running test case : " + description + " ==============");
+        System.out.println();
+        super.runChild(method, notifier);
     }
 
     @Override

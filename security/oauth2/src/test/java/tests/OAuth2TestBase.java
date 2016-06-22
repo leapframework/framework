@@ -15,9 +15,12 @@
  */
 package tests;
 
+import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
+import leap.core.security.token.jwt.JwtVerifier;
+import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.http.Headers;
@@ -25,6 +28,7 @@ import leap.lang.http.QueryString;
 import leap.lang.http.QueryStringParser;
 import leap.lang.naming.NamingStyles;
 import leap.lang.net.Urls;
+import leap.lang.security.RSA;
 import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.webunit.WebTestBaseContextual;
 import leap.webunit.client.THttpRequest;
@@ -37,10 +41,19 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     public static final String TOKEN_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_TOKEN_ENDPOINT_PATH;
     public static final String TOKENINFO_ENDPOINT = OAuth2AuthzServerConfigurator.DEFAULT_TOKENINFO_ENDPOINT_PATH;
     public static final String LOGOUT_ENDPOINT    = OAuth2AuthzServerConfigurator.DEFAULT_LOGOUT_ENDPOINT_PATH;
-    
+
+    public static final String PUBLIC_KEY         =
+            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP\n" +
+            "fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb\n" +
+            "WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1\n" +
+            "VeJXqKBlEhsNckYIGQIDAQAB";
+
+    public static JwtVerifier verifier;
+
     static {
         defaultHttps = true;
-    
+        RSAPublicKey publicKey = RSA.decodePublicKey(PUBLIC_KEY);
+        verifier = new RsaVerifier(publicKey);
         /*
         Dmo.get().cmdUpgradeSchema().execute();
         
@@ -145,12 +158,24 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByPassword(String username, String password) {
-        String tokenUri = serverContextPath + TOKEN_ENDPOINT + 
-                "?grant_type=password&username=" + Urls.encode(username) + 
-                "&password=" + Urls.encode(password) + 
-                "&client_id=" + Global.TEST_CLIENT_ID;
-        
+        return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID);
+    }
+
+    protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId) {
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
+                "?grant_type=password&username=" + Urls.encode(username) +
+                "&password=" + Urls.encode(password) +
+                "&client_id=" + Urls.encode(clientId);
+
         return resp(post(tokenUri), new TokenResponse());
+    }
+
+    protected TokenResponse obtainAccessTokenByTokenClient(String accesstoken, String clientId, String clientSecret){
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
+                "?grant_type=token_client&access_token=" + Urls.encode(accesstoken) +
+                "&client_id=" + Urls.encode(clientId) +
+                "&client_secret="+Urls.encode(clientSecret);
+        return resp(post(tokenUri),new TokenResponse());
     }
     
     protected TokenResponse obtainAccessTokenByClient(String clientId, String clientSecret) {
@@ -214,17 +239,26 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 
         return resp(get(uri), new TokenInfoResponse());
     }
-    
+    protected JwtTokenResponse obtainAccessTokenInfoWithJwtResponse(String accessToken) {
+        String uri = serverContextPath + TOKENINFO_ENDPOINT + "?access_token=" + accessToken + "&response_type=jwt";
+        JwtTokenResponse token = resp(get(uri), new JwtTokenResponse());
+        return token;
+    }
+
     protected TokenInfoResponse testAccessTokenInfo(TokenResponse token) {
         TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
         
-        assertNotEmpty(info.clientId);
         assertNotEmpty(info.userId);
         assertEquals(token.expiresIn, info.expiresIn);
         
         return info;
     }
-    
+
+    protected JwtTokenResponse testJwtResponseAccessTokenInfo(TokenResponse token){
+        JwtTokenResponse info = obtainAccessTokenInfoWithJwtResponse(token.accessToken);
+        return info;
+    }
+
     protected TokenInfoResponse testClientOnlyAccessTokenInfo(TokenResponse token) {
         TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
         
@@ -245,6 +279,10 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	protected void assertLogin() {
 	    ajaxGet("/check_login_state").assertContentEquals("OK");
 	}
+
+    protected boolean isLogin(){
+        return "OK".equalsIgnoreCase(ajaxGet("/check_login_state").getContent());
+    }
 	
    protected void assertLogin(String username) {
         forGet("/check_login_state").addQueryParam("username", username).ajax().get().assertContentEquals("OK");
@@ -287,6 +325,6 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
 
     protected void logoutAuthzServer() {
-        logout("/server");
+        logout("/server/oauth2");
     }
 }

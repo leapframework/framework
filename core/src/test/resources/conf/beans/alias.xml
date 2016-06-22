@@ -3,4 +3,6 @@
 
    	<alias alias="testAlias" type="leap.core.cache.Cache" name="test"/>
 
+    <alias id="testBean" alias="testBeanAlias1"/>
+
 </beans>

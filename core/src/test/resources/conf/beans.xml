@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
+    <bean id="simpleBean" class="tested.beans.NopBean"/>
+
     <bean name="test" type="leap.core.cache.Cache" class="leap.core.cache.SimpleLRUCache">
         <constructor-arg value="1024"/>
     </bean>

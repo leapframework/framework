@@ -15,9 +15,9 @@
  */
 package leap.web.security;
 
-import leap.core.AppConfigContext;
+import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
-import leap.core.AppConfigProcessor;
+import leap.core.config.AppConfigProcessor;
 import leap.lang.annotation.Internal;
 import leap.lang.xml.XmlReader;
 

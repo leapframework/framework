@@ -8,5 +8,9 @@
     <properties>
         <property name="test.prop1" value="sys.val"/>
     </properties>
-    
+
+    <properties>
+        <property name="testOverrideByTestConfig" value="1"/>
+    </properties>
+
 </config>

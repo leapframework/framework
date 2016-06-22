@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <property name="testOrder.prop1" value="prop1_override" override="true"/>
+
+</config>

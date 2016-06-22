@@ -64,6 +64,9 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(null != client) {
             at.setClientId(client.getId());
             rt.setClientId(client.getId());
+            if(client.isAuthenticated()){
+                at.setAuthenticated(client.isAuthenticated());
+            }
         }
         
         if(null != user) {
@@ -73,12 +76,22 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         }
 
         //Merge scope.
-        String scope = config.isRequestLevelScopeEnabled()?mergeScope(client, authc):client.getGrantedScope();
+        String scope = null;
+        if(client != null){
+            if(config.isRequestLevelScopeEnabled()){
+                scope = mergeScope(client, authc);
+            }else if(client.isAuthenticated()){
+                scope = client.getGrantedScope();
+            }
+        }
 
         //Scope
         at.setScope(scope);
         rt.setScope(scope);
-        
+
+        //Client Authenticated
+        at.setAuthenticated(authc.getClientDetails().isAuthenticated());
+
         //Store the token
         config.getTokenStore().saveAccessToken(at);
         
@@ -90,6 +103,9 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
     }
 
     protected String mergeScope(AuthzClient client, AuthzAuthentication authc) {
+        if(!client.isAuthenticated()){
+            return authc.getScope();
+        }
         if(Strings.isEmpty(client.getGrantedScope()) && Strings.isEmpty(authc.getScope())) {
             return null;
         }

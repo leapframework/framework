@@ -18,6 +18,7 @@ package leap.oauth2.as.endpoint.tokeninfo;
 import java.util.Map.Entry;
 
 import leap.core.annotation.Inject;
+import leap.lang.Out;
 import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonWriter;
 import leap.oauth2.OAuth2Errors;
@@ -32,7 +33,7 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
     protected @Inject AuthzTokenManager tokenManager;
 
     @Override
-    public boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params) throws Throwable {
+    public boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params, Out<AuthzAccessToken> out) throws Throwable {
         String accessToken = params.getAccessToken();
         if(null != accessToken) {
             if(accessToken.isEmpty()) {
@@ -47,7 +48,7 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
                 OAuth2Errors.invalidRequest(response, "invalid token");
                 tokenManager.removeAccessToken(at);
             }else{
-                writeTokenInfo(request, response, at);    
+                out.set(at);
             }
             
             return true;
@@ -55,28 +56,4 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
         
         return false;
     }
-    
-    protected void writeTokenInfo(Request request, Response response, AuthzAccessToken at) {
-        response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
-        
-        JsonWriter w = response.getJsonWriter();
-        
-        w.startObject()
-         
-         .property("client_id",     at.getClientId())
-         .property("user_id",       at.getUserId())
-         .property("username",      at.getUsername())
-         .property("created",       at.getCreated())
-         .property("expires_in",    at.getExpiresIn())
-         .propertyOptional("scope", at.getScope());
-         
-         if(at.hasExtendedParameters()) {
-             for(Entry<String, Object> entry : at.getExtendedParameters().entrySet()) {
-                 w.propertyOptional(entry.getKey(), entry.getValue());
-             }
-         }
-         
-        w.endObject();
-    }
-
 }

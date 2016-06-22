@@ -25,4 +25,55 @@
         <constructor-arg value="${not_exists_config_property}" default-value="defaultStringValue"/>
     </bean>
 
+    <bean id="testBeanWithCollectionConstructor" class="tested.beans.TBean">
+        <constructor-arg>
+            <list>
+                <value>string1</value>
+                <value>string2</value>
+            </list>
+        </constructor-arg>
+        <constructor-arg>
+            <map>
+                <entry key="bean1" value-ref="testBean1">
+                </entry>
+                <entry key="bean2" value-ref="testBeanWithConstructor">
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="testBeanWithConstructorArgRefConstructor" class="tested.beans.TBean">
+        <constructor-arg ref="testBeanWithCollectionConstructor" type="tested.beans.TBean"/>
+        <constructor-arg ref="testBeanWithConstructor"/>
+    </bean>
+
+    <bean id="testBeanWithConstructorArgRefConstructor1" class="tested.beans.TBean">
+        <constructor-arg ref="listBean" type="java.util.List"/>
+        <constructor-arg ref="mapMap" type="java.util.Map"/>
+    </bean>
+
+    <bean id="testBeanWithDefinedBeanConstructor" class="tested.beans.TBean">
+        <constructor-arg>
+            <bean class="tested.beans.TBean">
+                <property name="string" value="testBeanWithDefinedBeanConstructor"/>
+            </bean>
+        </constructor-arg>
+    </bean>
+
+    <bean id="testBeanWithLoadOverConstructor" class="tested.beans.TBean">
+        <constructor-arg>
+            <map>
+                <entry key="bean1" value-ref="testBean1">
+                </entry>
+                <entry key="bean2" value-ref="testBeanWithConstructor">
+                </entry>
+            </map>
+        </constructor-arg>
+    </bean>
+
+    <bean id="testBeanWithConstructor" class="tested.beans.TBean">
+        <constructor-arg value="string1"/>
+        <property name="string" value="string1"/>
+    </bean>
+
 </beans>

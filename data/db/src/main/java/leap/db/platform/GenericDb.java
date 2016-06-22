@@ -38,8 +38,9 @@ import java.sql.*;
 
 public class GenericDb extends DbBase {
 	
-	public GenericDb(String name,DbPlatform platform, DataSource dataSource, DbMetadata metadata, GenericDbDialect dialect, DbComparator comparator) {
-	    super(name, platform, dataSource, metadata, dialect, comparator);
+	public GenericDb(String name, DataSource dataSource, DatabaseMetaData md,
+                     DbPlatform platform,  DbMetadata metadata, GenericDbDialect dialect, DbComparator comparator) {
+	    super(name, dataSource, md, platform, metadata, dialect, comparator);
     }
 	
 	public Log log(){
@@ -364,7 +365,7 @@ public class GenericDb extends DbBase {
 		ResultSet rs = null;
 		try{
 			if(log.isDebugEnabled()){
-				log.debug("Executing Sql Update -> \n\n SQL  : {}\n ARGS : {}\n",sql,getDisplayString(args, types));
+				log.debug("Executing Sql Query -> \n\n SQL  : {}\n ARGS : {}\n",sql,getDisplayString(args, types));
 			}
 			
 			StopWatch sw = StopWatch.startNew();

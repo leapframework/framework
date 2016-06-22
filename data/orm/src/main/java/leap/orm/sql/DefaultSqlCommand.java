@@ -246,7 +246,12 @@ public class DefaultSqlCommand implements SqlCommand {
                             if(null == fragment) {
                                 throw new SqlConfigException("The included sql fragment '" + content + "' not found in sql '" + desc + "', check " + source);
                             }
-                            sb.append(fragment.getContent());
+                            String fragmentContent = fragment.getContent();
+                            if(!Strings.containsIgnoreCase(fragmentContent, IncludeProcessor.AT_INCLUDE)) {
+                                sb.append(fragmentContent);
+                            }else{
+                                sb.append(new IncludeProcessor(context,fragmentContent).process());
+                            }
                             continue;
                         }
                     }

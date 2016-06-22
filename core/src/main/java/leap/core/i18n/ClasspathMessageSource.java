@@ -15,20 +15,26 @@
  */
 package leap.core.i18n;
 
+import leap.core.AppConfig;
+import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.BeanFactory;
+import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Arrays2;
-import leap.lang.resource.Resource;
 
 public class ClasspathMessageSource extends ResourceMessageSource implements MessageSource,PostCreateBean {
 
+    protected @Inject AppConfig config;
+
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
-		Resource[] resources =
-				Arrays2.concat(AppResources.getAllClasspathResources("messages",".*"),
-                               AppResources.getAllClasspathResourcesWithPattern("messages_*",".*"));
-	
+        AppResources ars = AppResources.get(config);
+
+        AppResource[] resources =
+                Arrays2.concat(ars.search("messages"),
+                               ars.searchAllFiles(new String[]{"messages_*.*"}));
+
 		super.readFromResources(resources);
     }
 

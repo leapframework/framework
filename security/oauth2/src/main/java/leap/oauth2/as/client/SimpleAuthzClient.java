@@ -15,6 +15,7 @@
  */
 package leap.oauth2.as.client;
 
+import leap.lang.Strings;
 import leap.lang.net.Urls;
 import leap.lang.path.PathPattern;
 
@@ -33,6 +34,7 @@ public class SimpleAuthzClient implements AuthzClient {
     protected Boolean     allowLoginToken;
     protected String      grantedScope;
     protected Boolean     enabled;
+    protected Boolean     authenticated = false;
     
     public String getId() {
         return id;
@@ -187,5 +189,24 @@ public class SimpleAuthzClient implements AuthzClient {
         }
 
         return false;
+    }
+
+    @Override
+    public boolean acceptsSecret(String secret) {
+        return Strings.equals(secret,this.secret);
+    }
+
+    @Override
+    public boolean isAuthenticated() {
+        return authenticated;
+    }
+
+    public Boolean getAuthenticated() {
+        return authenticated;
+    }
+
+    @Override
+    public void setAuthenticated(boolean authenticated) {
+        this.authenticated = authenticated;
     }
 }

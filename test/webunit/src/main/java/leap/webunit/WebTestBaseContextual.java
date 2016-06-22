@@ -17,13 +17,14 @@ package leap.webunit;
 
 import leap.junit.contexual.ContextualProvider;
 import leap.junit.contexual.ContextualRule;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.runner.Description;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@RunWith(WebTestRunnerContextual.class)
 public abstract class WebTestBaseContextual extends WebTestBase {
 	
 	private static final List<String> contextPaths = new ArrayList<>();
@@ -32,13 +33,7 @@ public abstract class WebTestBaseContextual extends WebTestBase {
 		contextPaths.add("");
 		contextPaths.add("/root");
 	}
-	
-    @BeforeClass
-    public static void startServer() {
-        duplicateRootContext = true;
-        WebTestBase.startServer();
-    }
-	
+
 	@Rule
 	public final ContextualRule contextualRule = new ContextualRule(new ContextualProvider() {
 		@Override

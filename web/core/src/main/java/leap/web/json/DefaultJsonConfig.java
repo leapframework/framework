@@ -18,6 +18,8 @@ package leap.web.json;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.lang.Args;
+import leap.lang.naming.NamingStyle;
+import leap.lang.naming.NamingStyles;
 
 @Configurable(prefix="webmvc.json")
 public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
@@ -25,7 +27,8 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 	protected boolean defaultSerializationKeyQuoted   = true;
 	protected boolean defaultSerializationIgnoreNull  = false;
 	protected boolean defaultSerializationIgnoreEmpty = false;
-	protected boolean jsonpEnabled					  = true;
+	protected boolean jsonpEnabled					= true;
+	protected NamingStyle namingStyle					= NamingStyles.RAW;
 	protected String  jsonpParameter				  = DEFAULT_JSONP_PARAMETER;
 	
 	public DefaultJsonConfig() {
@@ -67,6 +70,15 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		return this;
 	}
 
+	@Override
+	public JsonConfigurator setDefaultNamingStyle(NamingStyle namingStyle) {
+		if(namingStyle == null){
+			throw new IllegalArgumentException("default naming style can not be null!");
+		}
+		this.namingStyle = namingStyle;
+		return this;
+	}
+
 	@ConfigProperty
 	public JsonConfigurator setJsonpEnabled(boolean enabled) {
 		this.jsonpEnabled = enabled;
@@ -89,4 +101,9 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
     public String getJsonpParameter() {
 	    return jsonpParameter;
     }
+
+	@Override
+	public NamingStyle getDefaultNamingStyle() {
+		return namingStyle;
+	}
 }

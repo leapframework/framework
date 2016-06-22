@@ -392,5 +392,8 @@
 		<module>security/oauth2</module>
 		<module>assembly/fw</module>
 		<module>archetype/webapp-quickstart</module>
+        <module>samples/test-profile</module>
+        <module>samples/test-profile1</module>
+        <module>samples/demo-profile</module>
 	</modules>
 </project>
