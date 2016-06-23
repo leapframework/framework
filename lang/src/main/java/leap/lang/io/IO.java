@@ -15,27 +15,14 @@
  */
 package leap.lang.io;
 
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.nio.charset.Charset;
-import java.nio.charset.UnsupportedCharsetException;
-
 import leap.lang.Charsets;
 import leap.lang.Exceptions;
 import leap.lang.annotation.Nullable;
 import leap.lang.exception.NestedIOException;
+
+import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.UnsupportedCharsetException;
 
 /**
  * io utils
@@ -149,6 +136,14 @@ public class IO {
 		copy(input, output);
 		return output.toByteArray();
 	}
+
+    public static byte[] readByteArrayAndClose(InputStream is) {
+        try{
+            return readByteArray(is);
+        }finally{
+            close(is);
+        }
+    }
 	
 	public static byte[] readByteArray(File file) {
 		FileInputStream in = null;
@@ -175,7 +170,16 @@ public class IO {
 			close(writer);
 		}
 	}
-	
+
+    public static byte[] readByteArrayAndClose(Reader reader) {
+        try{
+            return readByteArray(reader);
+        }finally{
+            close(reader);
+        }
+    }
+
+
 	/**
 	 * Get contents of an <code>InputStream</code> as a <code>byte[]</code>. Use this method instead of
 	 * <code>toByteArray(InputStream)</code> when <code>InputStream</code> size is known. <b>NOTE:</b> the method checks
@@ -272,6 +276,14 @@ public class IO {
 		return sw.toString();
 	}
 
+    public static String readStringAndClose(InputStream is, Charset charset) {
+        try{
+            return readString(is, charset);
+        }finally{
+            close(is);
+        }
+    }
+
 	/**
 	 * Get the contents of a <code>Reader</code> as a String.
 	 * <p>
@@ -282,11 +294,19 @@ public class IO {
 	 * @throws NullPointerException if the input is null
 	 * @throws NestedIOException if an I/O error occurs
 	 */
-	public static String readString(Reader input) throws IOException {
+	public static String readString(Reader input) throws NestedIOException {
 		StringWriter sw = new StringWriter();
 		copy(input, sw);
 		return sw.toString();
 	}
+
+    public static String readStringAndClose(Reader reader) {
+        try{
+            return readString(reader);
+        }finally{
+            close(reader);
+        }
+    }
 
     /**
      * Writes the string to the output file using default charset.

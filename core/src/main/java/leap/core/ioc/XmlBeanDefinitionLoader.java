@@ -73,6 +73,7 @@ class XmlBeanDefinitionLoader {
     public static final String IF_ATTRIBUTE                     = "if";
     public static final String IF_PROFILE_ATTRIBUTE             = "if-profile";
     public static final String IF_CLASS_PRESENT_ATTRIBUTE       = "if-class-present";
+    public static final String IF_CLASS_NOT_PRESENT_ATTRIBUTE   = "if-class-not-present";
     public static final String IF_SERVLET_ENVIRONMENT_ATTRIBUTE = "if-servlet-environment";
     public static final String ID_ATTRIBUTE                     = "id";
     public static final String CLASS_ATTRIBUTE                  = "class";
@@ -1139,6 +1140,11 @@ class XmlBeanDefinitionLoader {
 		if(!Strings.isEmpty(className)){
 			return Classes.isPresent(className);
 		}
+
+        className = element.getAttribute(IF_CLASS_NOT_PRESENT_ATTRIBUTE);
+        if(!Strings.isEmpty(className)) {
+            return !Classes.isPresent(className);
+        }
 		
 		boolean ifServletEnvironment = element.getBooleanAttribute(IF_SERVLET_ENVIRONMENT_ATTRIBUTE, false);
 		if(ifServletEnvironment){

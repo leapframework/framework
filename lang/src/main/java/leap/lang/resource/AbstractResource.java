@@ -16,21 +16,17 @@
 
 package leap.lang.resource;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
-
 import leap.lang.Charsets;
 import leap.lang.Exceptions;
 import leap.lang.exception.NestedIOException;
 import leap.lang.io.IO;
 import leap.lang.net.Urls;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
 
 /**
  * Convenience base class for {@link Resource} implementations,
@@ -69,8 +65,6 @@ public abstract class AbstractResource implements Resource {
 		try {
 			r = getInputStreamReader();
 	        return IO.readString(r);
-        } catch (IOException e) {
-        	throw Exceptions.wrap(e);
         }finally{
         	IO.close(r);
         }

@@ -21,6 +21,13 @@
 	<!-- dependencies configuration -->
 	<dependencies>
         <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpmime</artifactId>
+            <version>${httpclient.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-junit</artifactId>
 			<version>${project.version}</version>
@@ -44,5 +51,6 @@
 			<version>${juel.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 </project>

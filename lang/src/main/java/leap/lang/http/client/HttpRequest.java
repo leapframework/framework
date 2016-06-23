@@ -63,13 +63,18 @@ public interface HttpRequest {
         setContentType(ContentTypes.APPLICATION_JSON_UTF8);
         return setBody(json);
     }
-    
+
     /**
      * Sets the content of request body.
      */
     default HttpRequest setBody(String data) {
         return setBody(Strings.getBytesUtf8(data));
     }
+
+    /**
+     * Sets the request method.
+     */
+    HttpRequest setMethod(HTTP.Method method);
     
     /**
      * Sets the content of request body.
@@ -87,22 +92,40 @@ public interface HttpRequest {
     HttpRequest addQueryParam(String name, String value);
     
     /**
-     * Adds a form prameter (must use POST to send the reqest).
+     * Adds a form parameter (must use POST to send the request).
      */
     HttpRequest addFormParam(String name, String value);
     
     /**
-     * Sends a GET reqeust.
+     * Sends a GET request.
      */
-    HttpResponse get();
+    default HttpResponse get() {
+        return send(HTTP.Method.GET);
+    }
     
     /**
      * Sends a POST request.
      */
-    HttpResponse post();
+    default HttpResponse post() {
+        return send(HTTP.Method.POST);
+    }
 
     /**
      * Sends the request with http method.
      */
-    HttpResponse send(HTTP.Method method);
+    default HttpResponse send(HTTP.Method method) {
+        return setMethod(method).send();
+    }
+
+    /**
+     * Sends the request.
+     */
+    HttpResponse send();
+
+    /**
+     * Sends the request and callback the response handler later.
+     */
+    default HttpRequest send(HttpResponseHandler responseHandler) {
+        throw new IllegalStateException("Not supported");
+    }
 }
