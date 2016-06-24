@@ -18,7 +18,6 @@ package leap.lang.http.client.apache;
 
 import leap.lang.Arrays2;
 import leap.lang.Charsets;
-import leap.lang.Exceptions;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
 import leap.lang.http.client.HttpHeaders;
@@ -30,6 +29,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.function.BiConsumer;
 
@@ -114,35 +114,33 @@ public class ApacheHttpResponse implements HttpResponse {
         return contentType;
     }
 
+    public long getContentLength(){
+        HttpEntity entity = response.getEntity();
+        return null == entity ? -1L : entity.getContentLength();
+    }
+
     @Override
-    public byte[] getBytes() {
+    public byte[] getBytes() throws IOException{
         if(null == bytes){
-            try {
-                HttpEntity entity = response.getEntity();
-                bytes = null == entity ? null : IO.readByteArrayAndClose(entity.getContent());
-            } catch (IOException e) {
-                throw Exceptions.wrap("Error reading response body", e);
-            }
+            HttpEntity entity = response.getEntity();
+            bytes = null == entity ? null : IO.readByteArrayAndClose(entity.getContent());
         }
         return bytes;
     }
 
     @Override
-    public String getString() {
+    public String getString() throws IOException {
         if(null == content){
-            try {
-                HttpEntity entity = response.getEntity();
-                content = null == entity ? null : IO.readStringAndClose(entity.getContent(), charset());
-            } catch (IOException e) {
-                throw Exceptions.wrap("Error reading response body", e);
-            }
+            HttpEntity entity = response.getEntity();
+            content = null == entity ? null : IO.readStringAndClose(entity.getContent(), charset());
         }
         return content;
     }
 
-    public long getContentLength(){
+    @Override
+    public InputStream getInputStream() throws IOException{
         HttpEntity entity = response.getEntity();
-        return null == entity ? -1L : entity.getContentLength();
+        return null == entity ? null : entity.getContent();
     }
 
     private Charset charset(){

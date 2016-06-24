@@ -20,7 +20,7 @@ import leap.lang.http.HTTP;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
-import leap.lang.http.client.HttpResponseHandler;
+import leap.lang.http.client.HttpHandler;
 import leap.lang.http.exception.HttpException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -34,6 +34,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.entity.ByteArrayEntity;
 import org.apache.http.entity.InputStreamEntity;
+import org.apache.http.impl.execchain.RequestAbortedException;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.message.HeaderGroup;
@@ -141,11 +142,12 @@ public class ApacheHttpRequest implements HttpRequest {
     }
 
     @Override
-    public HttpRequest send(HttpResponseHandler handler) {
-
+    public void send(HttpHandler handler) {
         String url = buildRequestUrl();
         try {
             newRequest(url);
+
+            handler.beforeRequest(this);
 
             log.debug("Sending '{}' request to '{}'...", method, url);
 
@@ -153,18 +155,19 @@ public class ApacheHttpRequest implements HttpRequest {
 
                 ApacheHttpResponse response = new ApacheHttpResponse(r);
 
-                if(log.isDebugEnabled()) {
+                if (log.isDebugEnabled()) {
                     log.debug("Handling response : [status={}, content-type='{}', content-length={}]",
                             response.getStatus(),
                             response.getContentType(),
                             response.getContentLength());
                 }
 
-                handler.handleResponse(response);
+                handler.afterResponse(this, response);
 
                 return null;
             });
-
+        } catch (RequestAbortedException e) {
+            handler.afterAborted(this);
         } catch (Exception e) {
             throw new HttpException("Error send http request : " + e.getMessage(),e);
         }finally{
@@ -172,8 +175,22 @@ public class ApacheHttpRequest implements HttpRequest {
                 request.releaseConnection();
             }
         }
+    }
 
-        return this;
+    @Override
+    public boolean isAborted() {
+        if(null != request) {
+            return request.isAborted();
+        }else{
+            return false;
+        }
+    }
+
+    @Override
+    public void abort() {
+        if(null != request) {
+            request.abort();
+        }
     }
 
     protected String buildRequestUrl(){
@@ -195,8 +212,14 @@ public class ApacheHttpRequest implements HttpRequest {
             entity = new UrlEncodedFormEntity(formParams, charset);
         }
 
-        if(null != entity && method == null) {
-            method = HTTP.Method.POST;
+        if(null == method) {
+
+            if(null != entity) {
+                method = HTTP.Method.POST;
+            }else{
+                method = HTTP.Method.GET;
+            }
+
         }
     }
 

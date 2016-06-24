@@ -30,8 +30,9 @@ import java.util.function.BiConsumer;
 
 public class JdkHttpResponse implements HttpResponse {
 
-    protected final JdkHttpClient  client;
-    protected final JdkHttpRequest request;
+    protected final JdkHttpClient     client;
+    protected final JdkHttpRequest    request;
+    protected final HttpURLConnection conn;
 
     protected int         status;
     protected String      reason;
@@ -42,8 +43,9 @@ public class JdkHttpResponse implements HttpResponse {
     protected JdkHttpResponse(JdkHttpClient client, JdkHttpRequest request, HttpURLConnection conn) throws IOException {
         this.client  = client;
         this.request = request;
+        this.conn    = conn;
         
-        init(conn);
+        init();
     }
     
     @Override
@@ -88,13 +90,16 @@ public class JdkHttpResponse implements HttpResponse {
         }
         return contentType;
     }
-    
+
     @Override
-    public byte[] getBytes() {
+    public byte[] getBytes() throws IOException{
+        if(null == bytes){
+            bytes = readBody();
+        }
         return bytes;
     }
     
-    public String getString() {
+    public String getString() throws IOException{
         return Strings.newString(getBytes(), charset());
     }
 
@@ -112,7 +117,7 @@ public class JdkHttpResponse implements HttpResponse {
         }
     }
     
-    protected void init(HttpURLConnection conn) throws IOException {
+    protected void init() throws IOException {
         status = conn.getResponseCode();
         reason = conn.getResponseMessage();
 
@@ -128,32 +133,35 @@ public class JdkHttpResponse implements HttpResponse {
                 headers.add(name, value);
             }
         }
-
-        bytes = readBody(conn);
     }
-    
-    protected byte[] readBody(HttpURLConnection conn) throws IOException {
-        final InputStream input;
+
+    @Override
+    public InputStream getInputStream() throws IOException {
         if (conn.getResponseCode() >= HttpURLConnection.HTTP_BAD_REQUEST) {
-            input = conn.getErrorStream();
+            return conn.getErrorStream();
         } else {
-            input = conn.getInputStream();
+            return conn.getInputStream();
         }
-        final byte[] body;
-        if (input == null) {
-            body = new byte[0];
-        } else {
-            try {
-                final byte[] buffer = new byte[8192];
-                final ByteArrayOutputStream output = new ByteArrayOutputStream();
-                for (int bytes = input.read(buffer); bytes != -1; bytes = input.read(buffer)) {
-                    output.write(buffer, 0, bytes);
+    }
+
+    protected byte[] readBody() throws IOException {
+        try(InputStream input = getInputStream()) {
+            final byte[] body;
+            if (input == null) {
+                body = new byte[0];
+            } else {
+                try {
+                    final byte[] buffer = new byte[8192];
+                    final ByteArrayOutputStream output = new ByteArrayOutputStream();
+                    for (int bytes = input.read(buffer); bytes != -1; bytes = input.read(buffer)) {
+                        output.write(buffer, 0, bytes);
+                    }
+                    body = output.toByteArray();
+                } finally {
+                    input.close();
                 }
-                body = output.toByteArray();
-            } finally {
-                input.close();
             }
+            return body;
         }
-        return body;
     }
 }

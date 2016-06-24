@@ -123,9 +123,17 @@ public interface HttpRequest {
     HttpResponse send();
 
     /**
-     * Sends the request and callback the response handler later.
+     * Sends the request and callback the handler later.
      */
-    default HttpRequest send(HttpResponseHandler responseHandler) {
-        throw new IllegalStateException("Not supported");
-    }
+    void send(HttpHandler handler);
+
+    /**
+     * Returns true if the request has been aborted.
+     */
+    boolean isAborted();
+
+    /**
+     * Aborts the request.
+     */
+    void abort();
 }

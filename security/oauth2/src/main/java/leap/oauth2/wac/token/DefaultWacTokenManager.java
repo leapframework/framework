@@ -15,12 +15,11 @@
  */
 package leap.oauth2.wac.token;
 
-import java.util.Map;
-import java.util.UUID;
-
 import leap.core.Session;
 import leap.core.annotation.Inject;
+import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
+import leap.lang.Exceptions;
 import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
@@ -29,10 +28,13 @@ import leap.oauth2.AuthorizationCodeInvalidException;
 import leap.oauth2.ObtainAccessTokenFailedException;
 import leap.oauth2.RefreshAccessTokenFailedException;
 import leap.oauth2.RefreshTokenInvalidException;
-import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.oauth2.wac.OAuth2AccessToken;
+import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.web.Request;
-import leap.core.security.Authentication;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
 
 public class DefaultWacTokenManager implements WacTokenManager {
     
@@ -52,19 +54,24 @@ public class DefaultWacTokenManager implements WacTokenManager {
         
         HttpResponse resp = req.post();
         if(resp.isOk()) {
-            Map<String, Object> map = JSON.decodeToMap(resp.getString());
-            
+            Map<String, Object> map = null;
+            try {
+                map = JSON.decodeToMap(resp.getString());
+            } catch (IOException e) {
+                throw Exceptions.uncheck(e);
+            }
+
             if(!map.containsKey("error")) {
                 SimpleWacAccessToken at = new SimpleWacAccessToken();
-                
+
                 at.setCreated(System.currentTimeMillis());
                 at.setToken((String)map.get("access_token"));
                 at.setRefreshToken((String)map.get("refresh_token"));
                 at.setExpiresIn((Integer)map.get("expires_in"));
                 at.setUserId(authc.getUser().getIdAsString());
-                
+
                 saveAccessToken(request, at);
-                
+
                 return at;
             }else{
                 throw new AuthorizationCodeInvalidException("Cannot obtain access token, authorization code may be invalid : " +
@@ -99,25 +106,33 @@ public class DefaultWacTokenManager implements WacTokenManager {
         
         HttpResponse resp = req.post();
         if(resp.isOk()) {
-            Map<String, Object> map = JSON.decodeToMap(resp.getString());
-            
-            if(!map.containsKey("error")) {
-                SimpleWacAccessToken at = new SimpleWacAccessToken();
-                
-                at.setCreated(System.currentTimeMillis());
-                at.setToken((String)map.get("access_token"));
-                at.setRefreshToken((String)map.get("refresh_token"));
-                at.setExpiresIn((Integer)map.get("expires_in"));
-                at.setUserId(old.getUserId());
-                
-                saveAccessToken(request, at);
-                
-                return at;
-            }else{
-                if(config.getTokenStore() != null) {
-                    config.getTokenStore().removeAccessToken(request, old);
+
+            try {
+                String content = resp.getString();
+
+                Map<String, Object> map = JSON.decodeToMap(content);
+
+                if(!map.containsKey("error")) {
+                    SimpleWacAccessToken at = new SimpleWacAccessToken();
+
+                    at.setCreated(System.currentTimeMillis());
+                    at.setToken((String)map.get("access_token"));
+                    at.setRefreshToken((String)map.get("refresh_token"));
+                    at.setExpiresIn((Integer)map.get("expires_in"));
+                    at.setUserId(old.getUserId());
+
+                    saveAccessToken(request, at);
+
+                    return at;
+                }else{
+                    if(config.getTokenStore() != null) {
+                        config.getTokenStore().removeAccessToken(request, old);
+                    }
+                    throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
                 }
-                throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
+
+            } catch (IOException e) {
+                throw Exceptions.uncheck(e);
             }
         }
 

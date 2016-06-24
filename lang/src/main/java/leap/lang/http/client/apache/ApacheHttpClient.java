@@ -75,8 +75,6 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
     @Override
     public HttpRequest request(String url) {
-        init();
-
         return new ApacheHttpRequest(this, url);
     }
 
@@ -94,6 +92,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
     public void dispose() throws Throwable {
         if(null != httpClient) {
             log.info("Close http client");
+            this.init = false;
             httpClient.close();
         }
     }
