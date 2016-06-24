@@ -242,7 +242,7 @@ public class DefaultAppInitializer implements AppInitializer {
 			try {
 				View view = resolveView(app, defaultViewName);
 				if(null != view){
-					route.setDefaultView(resolveView(app, defaultViewName));
+					route.setDefaultView(view);
 					route.setDefaultViewName(defaultViewName);
 					break;
 				}else if(null == route.getDefaultViewName()){

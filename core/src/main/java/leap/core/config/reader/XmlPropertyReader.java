@@ -119,6 +119,16 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 continue;
             }
 
+            if(reader.isStartElement(LAZY_TEMPLATE_ELEMENT)){
+                String lazy = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(lazy)){
+                    context.putProperty(resource,
+                            AppConfig.INIT_PROPERTY_LAZY_TEMPLATE,
+                            lazy);
+                }
+                continue;
+            }
+
             if(reader.isStartElement(DEFAULT_LOCALE_ELEMENT)){
                 String defaultLocale = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(defaultLocale)){

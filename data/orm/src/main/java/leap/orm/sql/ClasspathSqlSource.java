@@ -52,11 +52,10 @@ public class ClasspathSqlSource implements SqlSource {
 			try {
 				if(Urls.isFileUrl(resource.getResource().getURL())){
 					fileMonitor.addObserver(new FileChangeObserver(resource.getResource().getFile()));
-                }else if(Urls.isJarUrl(resource.getResource().getURL())){
-					// TODO how to monitor jar file?
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				log.error(e);
+				throw new RuntimeException(e);
 			}
 		}
 
