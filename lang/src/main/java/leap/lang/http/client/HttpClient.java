@@ -15,6 +15,10 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.Charsets;
+
+import java.nio.charset.Charset;
+
 /**
  * A simple http client interface.
  * 
@@ -25,6 +29,13 @@ public interface HttpClient {
     
     String PREFIX_HTTP  = "http://";
     String PREFIX_HTTPS = "https://";
+
+    /**
+     * Returns the default charset.
+     */
+    default Charset getDefaultCharset() {
+        return Charsets.UTF_8;
+    }
 
     /**
      * Creates a new http request of the given url.

@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Contextual {
-	public String value() default "";
+	String value() default "";
 	
-	public String[] values() default {};
+	String[] values() default {};
 }

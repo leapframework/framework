@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-public class JdkHttpRequest implements HttpRequest {
+class JdkHttpRequest implements HttpRequest {
     
     private static final Log log = LogFactory.get(JdkHttpRequest.class);
     
@@ -83,13 +83,18 @@ public class JdkHttpRequest implements HttpRequest {
         this.readTimeout    = client.getDefaultReadTimeout();
         this.charset        = client.getDefaultCharset();
     }
-    
-    public int getConnectTimeout() {
-        return connectTimeout;
+
+    @Override
+    public boolean isAborted() {
+        return aborted;
     }
 
-    public void setConnectTimeout(int connectTimeout) {
-        this.connectTimeout = connectTimeout;
+    @Override
+    public void abort() {
+        if(null != conn) {
+            aborted = true;
+            conn.disconnect();
+        }
     }
 
     @Override
@@ -159,7 +164,7 @@ public class JdkHttpRequest implements HttpRequest {
 
     @Override
     public HttpResponse send() {
-        return doSend(method, initConnUrl());
+        return doSend(method, initConnUrl(), true);
     }
 
     @Override
@@ -168,7 +173,7 @@ public class JdkHttpRequest implements HttpRequest {
 
         handler.beforeRequest(this);
         try {
-            handler.afterResponse(this, doSend(method, connUrl));
+            handler.afterResponse(this, doSend(method, connUrl, false));
         } catch (Exception e) {
             if(aborted) {
                 handler.afterAborted(this);
@@ -177,19 +182,8 @@ public class JdkHttpRequest implements HttpRequest {
             }else{
                 throw new HttpException(e);
             }
-        }
-    }
-
-    @Override
-    public boolean isAborted() {
-        return aborted;
-    }
-
-    @Override
-    public void abort() {
-        if(null != conn) {
-            aborted = true;
-            conn.disconnect();
+        }finally{
+            Try.catchAll(conn::disconnect);
         }
     }
 
@@ -215,7 +209,7 @@ public class JdkHttpRequest implements HttpRequest {
         return headers.exists(name);
     }
 
-    protected JdkHttpResponse doSend(HTTP.Method m, String connUrl) {
+    protected JdkHttpResponse doSend(HTTP.Method m, String connUrl, boolean immediately) {
         try {
             log.debug("Sending '{}' request to url : {}", m, connUrl);
             
@@ -256,16 +250,17 @@ public class JdkHttpRequest implements HttpRequest {
             }
             
             log.debug("Response used {}ms", sw.getElapsedMilliseconds());
-            return new JdkHttpResponse(client, this, conn);
+            return new JdkHttpResponse(client, this, immediately);
         } catch (MalformedURLException e) {
             throw new HttpException("Invalid url : " + e.getMessage(), e);
         } catch (IOException e) {
             throw new HttpIOException(e);
         } finally {
-            Try.catchAll(conn::disconnect);
+            if(immediately) {
+                Try.catchAll(conn::disconnect);
+            }
         }
     }
-
 
     protected void setConnParams(HttpURLConnection conn, HTTP.Method m) throws IOException {
         if(connectTimeout > 0) {

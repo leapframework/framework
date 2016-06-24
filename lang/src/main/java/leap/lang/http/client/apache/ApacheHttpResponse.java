@@ -17,44 +17,47 @@
 package leap.lang.http.client.apache;
 
 import leap.lang.Arrays2;
-import leap.lang.Charsets;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
+import leap.lang.http.client.AbstractHttpResponse;
 import leap.lang.http.client.HttpHeaders;
 import leap.lang.http.client.HttpResponse;
 import leap.lang.http.client.SimpleHttpHeaders;
-import leap.lang.io.IO;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
-import org.apache.http.StatusLine;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.Charset;
 import java.util.function.BiConsumer;
 
-public class ApacheHttpResponse implements HttpResponse {
+public class ApacheHttpResponse extends AbstractHttpResponse implements HttpResponse {
 
+    private final ApacheHttpRequest            request;
     private final org.apache.http.HttpResponse response;
 
-    private MimeType contentType;
-    private String	 content;
-    private byte[]   bytes;
+    public ApacheHttpResponse(ApacheHttpClient client,
+                              ApacheHttpRequest request,
+                              org.apache.http.HttpResponse response,
+                              boolean immediately) throws IOException{
+        super(client);
 
-    public ApacheHttpResponse(org.apache.http.HttpResponse response) {
+        this.request  = request;
         this.response = response;
+
+        if(immediately) {
+            readHead();
+            readBody();
+        }
     }
 
     @Override
-    public int getStatus() {
-        StatusLine statusLine = response.getStatusLine();
-        return null == statusLine ? null : statusLine.getStatusCode();
-    }
-
-    @Override
-    public String getReason() {
-        StatusLine statusLine = response.getStatusLine();
-        return null == statusLine ? null : statusLine.getReasonPhrase();
+    public void forEachHeaders(BiConsumer<String, String> func) {
+        Header[] headers = response.getAllHeaders();
+        if(null != headers){
+            for(Header header : headers) {
+                func.accept(header.getName(), header.getValue());
+            }
+        }
     }
 
     @Override
@@ -80,24 +83,16 @@ public class ApacheHttpResponse implements HttpResponse {
 
     @Override
     public HttpHeaders getHeaders() {
-        Header[] headers = response.getAllHeaders();
-        SimpleHttpHeaders httpHeaders = new SimpleHttpHeaders();
-        if(null != headers){
-            for(Header header : headers) {
-                httpHeaders.add(header.getName(), header.getValue());
+        if(null == headers) {
+            Header[] rawHeaders = response.getAllHeaders();
+            headers = new SimpleHttpHeaders();
+            if(null != headers){
+                for(Header header : rawHeaders) {
+                    headers.add(header.getName(), header.getValue());
+                }
             }
         }
-        return httpHeaders;
-    }
-
-    @Override
-    public void forEachHeaders(BiConsumer<String, String> func) {
-        Header[] headers = response.getAllHeaders();
-        if(null != headers){
-            for(Header header : headers) {
-                func.accept(header.getName(), header.getValue());
-            }
-        }
+        return headers;
     }
 
     @Override
@@ -110,43 +105,22 @@ public class ApacheHttpResponse implements HttpResponse {
                 contentType = MimeTypes.parse(header.getValue());
             }
         }
-
         return contentType;
+    }
+
+    @Override
+    protected InputStream getUnderlyingInputStream() throws IOException {
+        HttpEntity entity = response.getEntity();
+        return null == entity ? null : entity.getContent();
+    }
+
+    @Override
+    protected void readHead() {
+        status = response.getStatusLine().getStatusCode();
     }
 
     public long getContentLength(){
         HttpEntity entity = response.getEntity();
         return null == entity ? -1L : entity.getContentLength();
-    }
-
-    @Override
-    public byte[] getBytes() throws IOException{
-        if(null == bytes){
-            HttpEntity entity = response.getEntity();
-            bytes = null == entity ? null : IO.readByteArrayAndClose(entity.getContent());
-        }
-        return bytes;
-    }
-
-    @Override
-    public String getString() throws IOException {
-        if(null == content){
-            HttpEntity entity = response.getEntity();
-            content = null == entity ? null : IO.readStringAndClose(entity.getContent(), charset());
-        }
-        return content;
-    }
-
-    @Override
-    public InputStream getInputStream() throws IOException{
-        HttpEntity entity = response.getEntity();
-        return null == entity ? null : entity.getContent();
-    }
-
-    private Charset charset(){
-        MimeType contentType = getContentType();
-        String   charset     = null == contentType ? null : contentType.getCharset();
-
-        return null == charset ? Charsets.UTF_8 : Charsets.forName(charset);
     }
 }

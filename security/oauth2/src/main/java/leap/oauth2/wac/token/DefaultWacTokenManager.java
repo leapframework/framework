@@ -19,7 +19,6 @@ import leap.core.Session;
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
-import leap.lang.Exceptions;
 import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
@@ -32,7 +31,6 @@ import leap.oauth2.wac.OAuth2AccessToken;
 import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.web.Request;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -54,12 +52,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
         
         HttpResponse resp = req.post();
         if(resp.isOk()) {
-            Map<String, Object> map = null;
-            try {
-                map = JSON.decodeToMap(resp.getString());
-            } catch (IOException e) {
-                throw Exceptions.uncheck(e);
-            }
+            Map<String, Object> map = JSON.decodeToMap(resp.getString());
 
             if(!map.containsKey("error")) {
                 SimpleWacAccessToken at = new SimpleWacAccessToken();
@@ -106,33 +99,27 @@ public class DefaultWacTokenManager implements WacTokenManager {
         
         HttpResponse resp = req.post();
         if(resp.isOk()) {
+            String content = resp.getString();
 
-            try {
-                String content = resp.getString();
+            Map<String, Object> map = JSON.decodeToMap(content);
 
-                Map<String, Object> map = JSON.decodeToMap(content);
+            if(!map.containsKey("error")) {
+                SimpleWacAccessToken at = new SimpleWacAccessToken();
 
-                if(!map.containsKey("error")) {
-                    SimpleWacAccessToken at = new SimpleWacAccessToken();
+                at.setCreated(System.currentTimeMillis());
+                at.setToken((String)map.get("access_token"));
+                at.setRefreshToken((String)map.get("refresh_token"));
+                at.setExpiresIn((Integer)map.get("expires_in"));
+                at.setUserId(old.getUserId());
 
-                    at.setCreated(System.currentTimeMillis());
-                    at.setToken((String)map.get("access_token"));
-                    at.setRefreshToken((String)map.get("refresh_token"));
-                    at.setExpiresIn((Integer)map.get("expires_in"));
-                    at.setUserId(old.getUserId());
+                saveAccessToken(request, at);
 
-                    saveAccessToken(request, at);
-
-                    return at;
-                }else{
-                    if(config.getTokenStore() != null) {
-                        config.getTokenStore().removeAccessToken(request, old);
-                    }
-                    throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
+                return at;
+            }else{
+                if(config.getTokenStore() != null) {
+                    config.getTokenStore().removeAccessToken(request, old);
                 }
-
-            } catch (IOException e) {
-                throw Exceptions.uncheck(e);
+                throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
             }
         }
 
