@@ -45,9 +45,13 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
     @Override
     protected void runChild(FrameworkMethod method, RunNotifier notifier) {
         Description description = describeChild(method);
+
+        System.out.println();
         System.out.println();
         System.out.println("============== Running test case : " + description + " ==============");
         System.out.println();
+        System.out.println();
+
         super.runChild(method, notifier);
     }
 

@@ -169,7 +169,10 @@ public class ApacheHttpRequest implements HttpRequest {
         } catch (RequestAbortedException e) {
             handler.afterAborted(this);
         } catch (Exception e) {
-            throw new HttpException("Error send http request : " + e.getMessage(),e);
+            if(e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            }
+            throw new HttpException(e.getMessage(),e);
         }finally{
             if(null != request) {
                 request.releaseConnection();
