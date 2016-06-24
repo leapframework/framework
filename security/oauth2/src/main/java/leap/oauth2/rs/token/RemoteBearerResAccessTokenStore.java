@@ -16,6 +16,7 @@
 package leap.oauth2.rs.token;
 
 import leap.core.annotation.Inject;
+import leap.lang.Exceptions;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -29,6 +30,7 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore {
@@ -54,8 +56,13 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         HttpResponse response = request.get();
         
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
-            String content = response.getString();
-            
+            String content = null;
+            try {
+                content = response.getString();
+            } catch (IOException e) {
+                throw Exceptions.uncheck(e);
+            }
+
             log.debug("Received response : {}", content);
             
             try {

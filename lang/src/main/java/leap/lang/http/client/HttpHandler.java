@@ -18,8 +18,25 @@ package leap.lang.http.client;
 
 import java.io.IOException;
 
-public interface HttpResponseHandler {
+public interface HttpHandler {
 
-    void handleResponse(HttpResponse response) throws IOException;
+    /**
+     * Before sending request.
+     */
+    default void beforeRequest(HttpRequest request) {
+
+    }
+
+    /**
+     * After the request has been aborted.
+     */
+    default void afterAborted(HttpRequest request) {
+
+    }
+
+    /**
+     * After received the response.
+     */
+    void afterResponse(HttpRequest request, HttpResponse response) throws IOException;
 
 }

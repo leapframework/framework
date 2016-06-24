@@ -18,6 +18,8 @@ package leap.lang.http.client;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeType;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.function.BiConsumer;
 
@@ -81,24 +83,6 @@ public interface HttpResponse {
      * Returns the headers.
      */
     HttpHeaders getHeaders();
-    
-    /**
-     * Returns the content-type header as {@link MimeType}.
-     * 
-     * <p>
-     * Returns <code>null</code> if the header not exists or the value is empty.
-     */
-    MimeType getContentType();
-    
-    /**
-     * Returns the response body as byte array.
-     */
-    byte[] getBytes();
-
-    /**
-     * Returns the response body as string.
-     */
-    String getString();
 
     /**
      * Executes the function for each header.
@@ -107,4 +91,35 @@ public interface HttpResponse {
      * The input arguments are (name,value)
      */
     void forEachHeaders(BiConsumer<String,String> func);
+
+    /**
+     * Returns the content-type header as {@link MimeType}.
+     * 
+     * <p>
+     * Returns <code>null</code> if the header not exists or the value is empty.
+     */
+    MimeType getContentType();
+
+    /**
+     * Returns the content's charset or null if not specified.
+     */
+    default String getCharset() {
+        MimeType contentType = getContentType();
+        return null == contentType ? null : contentType.getCharset();
+    }
+    
+    /**
+     * Returns the response content as byte array.
+     */
+    byte[] getBytes() throws IOException;
+
+    /**
+     * Returns the response content as string.
+     */
+    String getString() throws IOException;
+
+    /**
+     * Returns the response content as {@link InputStream}.
+     */
+    InputStream getInputStream() throws IOException;
 }

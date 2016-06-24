@@ -17,6 +17,7 @@ package leap.lang.http.client;
 
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.Try;
 import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP;
 import leap.lang.http.Headers;
@@ -40,7 +41,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.nio.charset.Charset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 public class JdkHttpRequest implements HttpRequest {
@@ -55,15 +59,17 @@ public class JdkHttpRequest implements HttpRequest {
     protected final SimpleHttpHeaders        headers     = new SimpleHttpHeaders();
     protected final QueryStringBuilder       queryParams = new QueryStringBuilder();
     protected final List<NamedValue<String>> formParams  = new ArrayList<>();
-    
-    protected int         connectTimeout;
-    protected int         readTimeout;
-    protected Charset     charset;
-    protected InputStream content;
-    protected HTTP.Method method;
+
+    protected int               connectTimeout;
+    protected int               readTimeout;
+    protected Charset           charset;
+    protected InputStream       content;
+    protected HTTP.Method       method;
+    protected HttpURLConnection conn;
     
     private boolean form;
-    
+    private boolean aborted;
+
     protected JdkHttpRequest(JdkHttpClient client, String url) {
         Args.notEmpty(url, "url");
         Args.assertTrue(Strings.startsWithIgnoreCase(url, HttpClient.PREFIX_HTTP) ||
@@ -153,6 +159,41 @@ public class JdkHttpRequest implements HttpRequest {
 
     @Override
     public HttpResponse send() {
+        return doSend(method, initConnUrl());
+    }
+
+    @Override
+    public void send(HttpHandler handler) {
+        String connUrl = initConnUrl();
+
+        handler.beforeRequest(this);
+        try {
+            handler.afterResponse(this, doSend(method, connUrl));
+        } catch (Exception e) {
+            if(aborted) {
+                handler.afterAborted(this);
+            }else if(e instanceof RuntimeException) {
+                throw (RuntimeException)e;
+            }else{
+                throw new HttpException(e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isAborted() {
+        return aborted;
+    }
+
+    @Override
+    public void abort() {
+        if(null != conn) {
+            aborted = true;
+            conn.disconnect();
+        }
+    }
+
+    protected String initConnUrl() {
         String connUrl = url;
 
         if(!queryParams.isEmpty()) {
@@ -167,8 +208,7 @@ public class JdkHttpRequest implements HttpRequest {
             }
         }
 
-        return doSend(method, connUrl);
-
+        return connUrl;
     }
 
     protected boolean hasHeader(String name) {
@@ -187,12 +227,12 @@ public class JdkHttpRequest implements HttpRequest {
                                                 "' instead of expected HttpURLConnection");
             }
             
-            final HttpURLConnection conn = (HttpURLConnection)raw;
+            conn = (HttpURLConnection)raw;
             
             setConnParams(conn, m);
             setHeaders(conn);
             setCookies(conn);
-            
+
             if(m == HTTP.Method.POST || m == HTTP.Method.PUT || m == HTTP.Method.PATCH) {
                 conn.setDoOutput(true);
                 
@@ -215,15 +255,18 @@ public class JdkHttpRequest implements HttpRequest {
                 }
             }
             
-            log.debug("Responsed, used {}ms", sw.getElapsedMilliseconds());
+            log.debug("Response used {}ms", sw.getElapsedMilliseconds());
             return new JdkHttpResponse(client, this, conn);
         } catch (MalformedURLException e) {
             throw new HttpException("Invalid url : " + e.getMessage(), e);
         } catch (IOException e) {
             throw new HttpIOException(e);
+        } finally {
+            Try.catchAll(conn::disconnect);
         }
     }
-    
+
+
     protected void setConnParams(HttpURLConnection conn, HTTP.Method m) throws IOException {
         if(connectTimeout > 0) {
             conn.setConnectTimeout(connectTimeout);

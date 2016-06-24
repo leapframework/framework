@@ -23,6 +23,7 @@ import leap.lang.http.client.HttpRequest;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
@@ -33,6 +34,9 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.protocol.HttpContext;
+
+import java.io.IOException;
 
 public class ApacheHttpClient extends AbstractHttpClient implements Initializable,Disposable {
 
@@ -75,8 +79,6 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
     @Override
     public HttpRequest request(String url) {
-        init();
-
         return new ApacheHttpRequest(this, url);
     }
 
@@ -94,6 +96,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
     public void dispose() throws Throwable {
         if(null != httpClient) {
             log.info("Close http client");
+            this.init = false;
             httpClient.close();
         }
     }
@@ -124,6 +127,13 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
 
             cm.setDefaultConnectionConfig(cc);
         }
+
+        cb.setRetryHandler(new HttpRequestRetryHandler() {
+            @Override
+            public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
+                return false;
+            }
+        });
 
         cb.setConnectionManager(cm);
         cb.setDefaultRequestConfig(requestConfig);
