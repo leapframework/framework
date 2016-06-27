@@ -15,24 +15,38 @@
  */
 package leap.lang.http.client;
 
+import leap.lang.Arrays2;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeType;
+import leap.lang.http.exception.HttpIOException;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
  * A simple http response interface.
  */
 public interface HttpResponse {
+
+    interface ContentReader<T> {
+        T read(InputStream is) throws IOException;
+    }
     
     /**
      * Returns <code>true</code> if the response status is 200.
      */
     default boolean isOk() {
         return getStatus() == HTTP.SC_OK;
+    }
+
+    /**
+     * Returns true if the response status is 2xx;
+     */
+    default boolean is2xx() {
+        return getStatus() >= 200 && getStatus() < 300;
     }
     
     /**
@@ -50,6 +64,16 @@ public interface HttpResponse {
     }
 
     /**
+     * Executes the function for each header.
+     *
+     * <p/>
+     * The input arguments are (name,value)
+     */
+    default void forEachHeaders(BiConsumer<String,String> func) {
+        getHeaders().forEach(func);
+    }
+
+    /**
      * Returns the response status.
      * 
      * @see HttpURLConnection#getResponseCode()
@@ -57,19 +81,18 @@ public interface HttpResponse {
     int getStatus();
     
     /**
-     * Returns the response message or <code>null</code>.
-     * 
-     * @see HttpURLConnection#getResponseMessage()
-     */
-    String getReason();
-    
-    /**
      * Returns the first header value of the name.
      * 
      * <p>
      * Returns <code>null</code> if the header not exists.
      */
-    String getHeader(String name);
+    default String getHeader(String name) {
+        List<String> values = getHeaders().get(name);
+        if(null == values || values.isEmpty()) {
+            return null;
+        }
+        return values.get(0);
+    }
     
     /**
      * Returns all the header values of the name.
@@ -77,20 +100,18 @@ public interface HttpResponse {
      * <p>
      * Returns <code>null</code> if the header not exists.
      */
-    String[] getHeaderValues(String name);
+    default String[] getHeaderValues(String name) {
+        List<String> values = getHeaders().get(name);
+        if(null == values || values.isEmpty()) {
+            return null;
+        }
+        return values.toArray(Arrays2.EMPTY_STRING_ARRAY);
+    }
     
     /**
      * Returns the headers.
      */
     HttpHeaders getHeaders();
-
-    /**
-     * Executes the function for each header.
-     *
-     * <p/>
-     * The input arguments are (name,value)
-     */
-    void forEachHeaders(BiConsumer<String,String> func);
 
     /**
      * Returns the content-type header as {@link MimeType}.
@@ -109,17 +130,30 @@ public interface HttpResponse {
     }
     
     /**
-     * Returns the response content as byte array.
+     * Returns the content of response as byte array.
      */
-    byte[] getBytes() throws IOException;
+    byte[] getBytes() throws HttpIOException;
 
     /**
-     * Returns the response content as string.
+     * Returns the content of response as string.
      */
-    String getString() throws IOException;
+    String getString() throws HttpIOException;
 
     /**
-     * Returns the response content as {@link InputStream}.
+     * Returns the content of response as {@link InputStream}.
      */
-    InputStream getInputStream() throws IOException;
+    InputStream getInputStream() throws HttpIOException;
+
+    /**
+     * Reads the input stream by the given reader.
+     */
+    default <T> T readInputStream(ContentReader<T> reader) throws HttpIOException {
+        try {
+            try(InputStream is = getInputStream()) {
+                return null == is ? null : reader.read(is);
+            }
+        } catch (IOException e) {
+            throw new HttpIOException(e);
+        }
+    }
 }

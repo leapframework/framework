@@ -26,7 +26,17 @@ import java.io.InputStream;
  * A simple http request interface.
  */
 public interface HttpRequest {
-    
+
+    /**
+     * Returns true if the request has been aborted.
+     */
+    boolean isAborted();
+
+    /**
+     * Aborts the request.
+     */
+    void abort();
+
     /**
      * Sets a http cookie.
      */
@@ -127,13 +137,4 @@ public interface HttpRequest {
      */
     void send(HttpHandler handler);
 
-    /**
-     * Returns true if the request has been aborted.
-     */
-    boolean isAborted();
-
-    /**
-     * Aborts the request.
-     */
-    void abort();
 }

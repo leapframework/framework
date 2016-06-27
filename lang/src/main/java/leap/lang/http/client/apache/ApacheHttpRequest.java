@@ -48,9 +48,10 @@ public class ApacheHttpRequest implements HttpRequest {
 
     private static final Log log = LogFactory.get(ApacheHttpRequest.class);
 
-    private final HttpClient client;
-    private final Charset    charset;
-    private final String     uri;
+    private final ApacheHttpClient client;
+    private final HttpClient       rawClient;
+    private final Charset          charset;
+    private final String           uri;
 
     private final HeaderGroup         headers     = new HeaderGroup();
     private final QueryStringBuilder  queryString = new QueryStringBuilder();
@@ -63,9 +64,26 @@ public class ApacheHttpRequest implements HttpRequest {
     private HttpEntity      entity;
 
     ApacheHttpRequest(ApacheHttpClient client, String url) {
-        this.client  = client.getHttpClient();
-        this.charset = client.getDefaultCharset();
-        this.uri     = url;
+        this.client    = client;
+        this.rawClient = client.getHttpClient();
+        this.charset   = client.getDefaultCharset();
+        this.uri       = url;
+    }
+
+    @Override
+    public boolean isAborted() {
+        if(null != request) {
+            return request.isAborted();
+        }else{
+            return false;
+        }
+    }
+
+    @Override
+    public void abort() {
+        if(null != request) {
+            request.abort();
+        }
     }
 
     @Override
@@ -123,7 +141,9 @@ public class ApacheHttpRequest implements HttpRequest {
 
             log.debug("Sending '{}' request to '{}'...", method, url);
 
-            ApacheHttpResponse response = new ApacheHttpResponse(client.execute(request) );
+            org.apache.http.HttpResponse rawResponse = rawClient.execute(request);
+
+            ApacheHttpResponse response = new ApacheHttpResponse(client, this, rawResponse, true);
 
             if(log.isDebugEnabled()) {
                 log.debug("Response result : [status={}, content-type='{}', content-length={}]",
@@ -131,13 +151,10 @@ public class ApacheHttpRequest implements HttpRequest {
                         response.getContentType(),
                         response.getContentLength());
             }
+
             return response;
         } catch (Exception e) {
             throw new HttpException("Error send http request : " + e.getMessage(),e);
-        }finally{
-            if(null != request) {
-                request.releaseConnection();
-            }
         }
     }
 
@@ -151,9 +168,9 @@ public class ApacheHttpRequest implements HttpRequest {
 
             log.debug("Sending '{}' request to '{}'...", method, url);
 
-            client.execute(request, r -> {
+            rawClient.execute(request, r -> {
 
-                ApacheHttpResponse response = new ApacheHttpResponse(r);
+                ApacheHttpResponse response = new ApacheHttpResponse(client, this, r, false);
 
                 if (log.isDebugEnabled()) {
                     log.debug("Handling response : [status={}, content-type='{}', content-length={}]",
@@ -163,7 +180,6 @@ public class ApacheHttpRequest implements HttpRequest {
                 }
 
                 handler.afterResponse(this, response);
-
                 return null;
             });
         } catch (RequestAbortedException e) {
@@ -174,25 +190,13 @@ public class ApacheHttpRequest implements HttpRequest {
             }
             throw new HttpException(e.getMessage(),e);
         }finally{
-            if(null != request) {
-                request.releaseConnection();
-            }
+            release();
         }
     }
 
-    @Override
-    public boolean isAborted() {
+    public void release() {
         if(null != request) {
-            return request.isAborted();
-        }else{
-            return false;
-        }
-    }
-
-    @Override
-    public void abort() {
-        if(null != request) {
-            request.abort();
+            request.releaseConnection();
         }
     }
 
