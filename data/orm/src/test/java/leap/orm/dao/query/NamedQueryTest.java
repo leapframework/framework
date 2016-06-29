@@ -127,5 +127,4 @@ public class NamedQueryTest extends OrmTestCase {
         assertMapEquals(olderFields, newerFields);
 	}
 
-
 }
