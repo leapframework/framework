@@ -15,6 +15,7 @@
  */
 package leap.orm.dao.query;
 
+import leap.junit.contexual.Contextual;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
@@ -106,8 +107,9 @@ public class NamedQueryTest extends OrmTestCase {
 		assertEquals("dir",files.get(0).getScopeId());
 	}
 	@Test
+	@Contextual("mysql")
 	public void testBracketsExpression(){
-//		dao.createNamedQuery("testBracketsExpression").list();
+		dao.createNamedQuery("testBracketsExpression").list();
 	}
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {
