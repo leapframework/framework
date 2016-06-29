@@ -100,9 +100,9 @@ public abstract class ServletContextInitializerBase {
 	protected final class ServletBeanFactory extends DefaultBeanFactory {
 
 		public ServletBeanFactory(AppConfig config, BeanFactory externalFactory) {
-			super(config, externalFactory);
+            super.init(config, externalFactory);
 		}
-		
+
 		@Override
         protected DefaultBeanFactory load(AppContext appContext) {
 	        return super.load(appContext);

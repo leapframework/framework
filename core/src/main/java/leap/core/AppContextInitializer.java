@@ -67,10 +67,10 @@ public class AppContextInitializer {
 
             ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
             ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            AppClassLoader appCl  = AppClassLoader.init(parent, config);
             Thread.currentThread().setContextClassLoader(appCl);
             try{
-                DefaultBeanFactory factory = createStandaloneAppFactory(config,externalAppFactory);
+                BeanFactoryInternal factory = createStandaloneAppFactory(config,externalAppFactory);
 
                 //register beans
                 cs.registerBeans(config, factory);
@@ -131,7 +131,7 @@ public class AppContextInitializer {
 
             ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
             ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = new AppClassLoader(parent, config);
+            AppClassLoader appCl  = AppClassLoader.init(parent, config);
             Thread.currentThread().setContextClassLoader(appCl);
 
             try {
@@ -164,8 +164,10 @@ public class AppContextInitializer {
 		}
 	}
 	
-	protected static DefaultBeanFactory createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
-		return new DefaultBeanFactory(config,externalAppFactory);
+	protected static BeanFactoryInternal createStandaloneAppFactory(AppConfig config,BeanFactory externalAppFactory){
+		BeanFactoryInternal factory = Factory.newInstance(BeanFactoryInternal.class);
+        factory.init(config,externalAppFactory);
+        return factory;
 	}
 	
 	protected static void initSysContext(AppContext appContext,AppConfig config){

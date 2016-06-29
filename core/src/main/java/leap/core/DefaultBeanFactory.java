@@ -35,23 +35,28 @@ import java.util.Map.Entry;
  * A default implementation of {@link BeanFactory}
  */
 @SuppressWarnings("unchecked")
-public class DefaultBeanFactory implements BeanFactory {
+public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFactory {
 
     private static final Log log = LogFactory.get(DefaultBeanFactory.class);
 
-    protected final AppConfig       config;
-    protected final BeanFactory     externalFactory;
+    protected AppConfig     config;
+    protected BeanFactory   externalFactory;
+    protected boolean       initialized;
+    protected BeanContainer beanContainer;
 
-    protected boolean		initialized;
-	protected BeanContainer beanContainer;
+    public DefaultBeanFactory() {
+
+    }
 	
-	protected DefaultBeanFactory(AppConfig config,BeanFactory externalFactory){
-		this.config	         = config;
-		this.externalFactory = externalFactory;
-		this.beanContainer   = new BeanContainer(config);
-	}
-	
-	protected DefaultBeanFactory load(AppContext appContext){
+    @Override
+    protected BeanFactoryInternal init(AppConfig config, BeanFactory externalFactory) {
+        this.config	         = config;
+        this.externalFactory = externalFactory;
+        this.beanContainer   = new BeanContainer(config);
+        return this;
+    }
+
+    protected DefaultBeanFactory load(AppContext appContext){
         AppResources resources = AppResources.get(appContext.getConfig());
 
 		this.beanContainer.setAppContext(appContext);
@@ -423,7 +428,7 @@ public class DefaultBeanFactory implements BeanFactory {
 	@Override
     public void postInit(AppContext context) throws Exception {
 	    if(initialized){
-	    	throw new IllegalStateException("BeanFactory aleady initialized");
+	    	throw new IllegalStateException("BeanFactory already initialized");
 	    }
 	    
 	    this.initialized = true;
