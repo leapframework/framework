@@ -75,8 +75,7 @@ public class AppClassLoader extends ClassLoader {
     private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
     private final Set<String>             instrumenting      = new HashSet<>();
 
-    private boolean parentLoaderPriority  = true;
-    private boolean alwaysUseParentLoader = true;
+    private boolean useParent = true;
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
 
@@ -257,22 +256,12 @@ public class AppClassLoader extends ClassLoader {
 
             loadedUrls.add(url);
 
-            if(null != ic) {
-                name  = ic.getClassName();
-                bytes = ic.getClassData();
-
-                if(!alwaysUseParentLoader && (ic.isBeanDeclared() || isBeanClass(name))) {
-                    log.trace("Defining instrumented bean class '{}' use app loader", name);
-                    return defineClass(name, bytes, 0, bytes.length);
-                }
-            }
-
-            if(!parentLoaderPriority) {
-                log.trace("Defining instrumented class '{}' use app loader", name);
-                return defineClass(name, bytes, 0, bytes.length);
-            }else{
+            if(useParent) {
                 if(null == ic) {
                     return null;
+                }else{
+                    name  = ic.getClassName();
+                    bytes = ic.getClassData();
                 }
 
                 log.trace("Defining instrumented class '{}' use parent loader", name);
@@ -301,6 +290,13 @@ public class AppClassLoader extends ClassLoader {
                 }catch(Exception e) {
                     throw new ClassNotFoundException(name, e);
                 }
+            }else{
+                if(null != ic) {
+                    name  = ic.getClassName();
+                    bytes = ic.getClassData();
+                }
+                log.trace("Defining instrumented class '{}' use app loader", name);
+                return defineClass(name, bytes, 0, bytes.length);
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);

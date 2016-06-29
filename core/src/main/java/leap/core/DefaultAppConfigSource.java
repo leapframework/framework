@@ -17,7 +17,6 @@ package leap.core;
 
 import leap.core.config.*;
 import leap.core.ds.DataSourceConfig;
-import leap.core.instrument.AppInstrumentation;
 import leap.core.ioc.ConfigBean;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
@@ -66,7 +65,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
     private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
 
     protected AppPropertyProcessor propertyProcessor = new PropertyProcessorWrapper();
-    protected AppInstrumentation   instrumentation   = Factory.getInstance(AppInstrumentation.class);
 
     @Override
     public AppConfig loadConfig(Object externalContext, Map<String, String> externalProperties) {
