@@ -24,6 +24,7 @@ import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
@@ -103,6 +104,10 @@ public class NamedQueryTest extends OrmTestCase {
 		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
 		assertEquals(1,files.size());
 		assertEquals("dir",files.get(0).getScopeId());
+	}
+	@Test
+	public void testBracketsExpression(){
+//		dao.createNamedQuery("testBracketsExpression").list();
 	}
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {

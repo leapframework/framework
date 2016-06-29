@@ -201,6 +201,11 @@ class SqlSelectParser extends SqlQueryParser {
 	}
 	
 	protected void parseSelectItem(SqlSelect select){
+
+		if(lexer.token() == Token.RPAREN){
+			return;
+		}
+
 		if(lexer.token() == Token.STAR){
 			acceptNode(new SqlAllColumns());
 			return;
@@ -212,7 +217,7 @@ class SqlSelectParser extends SqlQueryParser {
 		
 		if(lexer.token() == Token.LPAREN){
 			acceptText();
-			while(lexer.token() != Token.RPAREN && lexer.token() != Token.FROM){
+ 			while(lexer.token() != Token.RPAREN && lexer.token() != Token.FROM){
 				//select item : subquery
 				if(lexer.token() == Token.SELECT){
 					parseSelect();

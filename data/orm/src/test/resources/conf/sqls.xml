@@ -17,4 +17,10 @@
         {call t_query_sp(:p1)}
     </command>
 
+    <command key="testBracketsExpression">
+        <![CDATA[
+        SELECT (112 & 16=16) AS f FROM Owner
+        ]]>
+    </command>
+
 </sqls>
