@@ -8,6 +8,7 @@
 		<xsd:complexType>
 			<xsd:sequence>
 				<xsd:element ref="debug" minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="lazy-template" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="base-package" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="additional-packages" minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="default-locale" minOccurs="0" maxOccurs="1"/>
@@ -85,6 +86,25 @@
                                 Specifies the debug mode, the value is 'true' or 'false'
                             ]]></xsd:documentation>
                         </xsd:annotation>                     
+                </xsd:extension>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="lazy-template">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies the app's template load mode
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                                Specifies the template load mode, the value is 'true' or 'false'
+                            ]]></xsd:documentation>
+                    </xsd:annotation>
                 </xsd:extension>
             </xsd:simpleContent>
         </xsd:complexType>

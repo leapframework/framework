@@ -19,6 +19,7 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.htpl.HtplEngine;
 import leap.htpl.HtplTemplate;
+import leap.htpl.HtplTemplateLazyCreator;
 import leap.htpl.HtplTemplateResolver;
 import leap.lang.Strings;
 import leap.lang.http.ContentTypes;
@@ -50,11 +51,17 @@ public class WebHtplViewResolver extends AbstractServletResourceViewResolver imp
 
 	@Override
     protected View loadView(String prefix, String suffix, String viewName, Locale locale, String resourcePath, ServletResource resource) {
-		
-		HtplTemplate template = engine.createTemplate(new WebHtplResource(prefix, suffix, resource, locale), viewName);
-		
-		WebHtplView view = new WebHtplView(app, viewName, template);
-		
+
+		boolean isDebug = app.config().isDebug();
+		boolean isLazy  = app.config().isLazyTemplate();
+		WebHtplView view;
+		if(isDebug && isLazy){
+			view = new WebHtplView(app, viewName, new HtplTemplateLazyCreator(engine, viewName, new WebHtplResource(prefix, suffix, resource, locale)));
+		}else{
+			HtplTemplate template = engine.createTemplate(new WebHtplResource(prefix, suffix, resource, locale), viewName);
+			view = new WebHtplView(app, viewName, template);
+		}
+
 		if(Strings.isEmpty(view.getContentType())) {
 			view.setContentType(contentType);	
 		}

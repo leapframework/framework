@@ -37,6 +37,7 @@ public interface AppConfig extends PropertyGetter {
     String SYS_PROPERTY_PROFILE          = "app.profile";
     String INIT_PROPERTY_PROFILE         = "profile";
     String INIT_PROPERTY_DEBUG           = "debug";
+	String INIT_PROPERTY_LAZY_TEMPLATE	 = "lazy-template";
     String INIT_PROPERTY_BASE_PACKAGE    = "base-package";
     String INIT_PROPERTY_DEFAULT_CHARSET = "default-charset";
     String INIT_PROPERTY_DEFAULT_LOCALE  = "default-locale";
@@ -66,7 +67,11 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns <code>true</code> if current app is running in debug mode. 
 	 */
 	boolean isDebug();
-	
+
+	/**
+	 * Returns <code>true</code> if current app is running in lazy template mode.
+	 */
+	boolean isLazyTemplate();
 	/**
 	 * Returns the base package name of current application, i.e. <code>com.example</code>
 	 * 

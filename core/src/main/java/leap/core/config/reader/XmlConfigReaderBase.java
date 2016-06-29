@@ -40,6 +40,7 @@ public abstract class XmlConfigReaderBase {
     protected static final String BASE_PACKAGE_ELEMENT         = "base-package";
     protected static final String ADDITIONAL_PACKAGES_ELEMENT  = "additional-packages";
     protected static final String DEBUG_ELEMENT                = "debug";
+    protected static final String LAZY_TEMPLATE_ELEMENT        = "lazy-template";
     protected static final String DEFAULT_LOCALE_ELEMENT       = "default-locale";
     protected static final String DEFAULT_CHARSET_ELEMENT      = "default-charset";
     protected static final String IF_ELEMENT                   = "if";

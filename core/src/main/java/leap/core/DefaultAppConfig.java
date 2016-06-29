@@ -48,6 +48,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 		INIT_PROPERTIES.add(INIT_PROPERTY_PROFILE);
 		INIT_PROPERTIES.add(INIT_PROPERTY_BASE_PACKAGE);
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEBUG);
+        INIT_PROPERTIES.add(INIT_PROPERTY_LAZY_TEMPLATE);
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_CHARSET);
 		INIT_PROPERTIES.add(INIT_PROPERTY_DEFAULT_LOCALE);
 	}
@@ -55,6 +56,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected PropertyProvider              propertyProvider    = null;
     protected String                        profile             = null;
     protected Boolean                       debug               = null;
+    protected Boolean                       lazyTemplate        = null;
     protected String                        basePackage         = null;
     protected Locale                        defaultLocale       = null;
     protected Charset                       defaultCharset      = null;
@@ -133,8 +135,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     public boolean isDebug() {
 	    return debug;
     }
-	
-	@Override
+
+    @Override
+    public boolean isLazyTemplate() {
+        return lazyTemplate;
+    }
+
+    @Override
 	public String getBasePackage() {
 		return basePackage;
 	}

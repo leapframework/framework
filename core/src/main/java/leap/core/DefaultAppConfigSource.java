@@ -55,6 +55,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_PROFILE);
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_BASE_PACKAGE);
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEBUG);
+        INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_LAZY_TEMPLATE);
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_CHARSET);
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_LOCALE);
     }
@@ -315,6 +316,13 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 }
             }
 
+            if(properties.containsKey(INIT_PROPERTY_LAZY_TEMPLATE)) {
+                String value = properties.get(INIT_PROPERTY_LAZY_TEMPLATE).getValue();
+                if(!Strings.isEmpty(value)) {
+                    config.lazyTemplate = Converts.toBoolean(value);
+                }
+            }
+
             if(properties.containsKey(INIT_PROPERTY_DEFAULT_CHARSET)) {
                 String value = properties.get(INIT_PROPERTY_DEFAULT_CHARSET).getValue();
                 if(!Strings.isEmpty(value)) {
@@ -339,6 +347,12 @@ public class DefaultAppConfigSource implements AppConfigSource {
             if(null == config.debug){
                 config.debug = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile()) ? true : false;
                 config.properties.put(INIT_PROPERTY_DEBUG,String.valueOf(config.debug));
+            }
+
+            //lazyTemplate
+            if(null == config.lazyTemplate){
+                config.lazyTemplate = false;
+                config.properties.put(INIT_PROPERTY_LAZY_TEMPLATE,String.valueOf(config.lazyTemplate));
             }
 
             //default locale

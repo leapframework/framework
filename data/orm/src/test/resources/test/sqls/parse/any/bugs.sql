@@ -1,3 +1,6 @@
+
+SELECT (112&16=16) AS f FROM test; -- bug: error parsing semc in select body
+
 select * from t where id in('','12345'); -- bug : empty '' literal_chars
 
 select (:price * num) from owners; -- bug: error parsing semc in select body
