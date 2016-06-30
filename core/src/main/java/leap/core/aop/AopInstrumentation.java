@@ -179,6 +179,12 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             log.trace("Ignore class '{}', can't found any intercepted method(s).", ic.getClassName());
             return;
         } else {
+
+            if(cn.version < 52) {
+                log.warn("Cannot instrument class '{}' of version '{}' for aop",ic.getClassName(), cn.version);
+                return;
+            }
+
             Try.throwUnchecked(() -> {
                 try (InputStream in = ci.is.getInputStream()) {
 

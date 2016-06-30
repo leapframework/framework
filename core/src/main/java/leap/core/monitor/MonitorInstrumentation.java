@@ -80,6 +80,11 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
     protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
         ClassNode cn = ci.cn;
 
+        if(cn.version < 51) {
+            log.trace("Skip class '{}', version < 51", ic.getClassName());
+            return;
+        }
+
         boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
 
         if(!isMonitored) {
@@ -206,8 +211,10 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
             fv.visitEnd();
 
             if(!visitStaticInit) {
-                MethodVisitor real = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-                ClinitMethodVisitor mv = new ClinitMethodVisitor(real, ACC_STATIC, "<clinit>", "()V");
+                int access = ACC_STATIC;
+
+                MethodVisitor real = cw.visitMethod(access, "<clinit>", "()V", null, null);
+                ClinitMethodVisitor mv = new ClinitMethodVisitor(real, access, "<clinit>", "()V");
                 mv.visitCode();
                 mv.returnValue();
                 mv.visitMaxs(0,0);

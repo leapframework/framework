@@ -15,8 +15,10 @@
  */
 package leap.core.junit;
 
+import leap.core.AppClassLoader;
 import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.Description;
@@ -28,25 +30,32 @@ import org.junit.runners.model.InitializationError;
 import java.util.List;
 
 public class AppTestRunner extends BlockJUnit4ClassRunner {
+
+    private static boolean useAppClassLoader = false;
     
     final static BeanFactory factory;
 	
 	static {
-//        AppClassLoader.dontUseParent();
+        if(useAppClassLoader){
+            AppClassLoader.dontUseParent();
+        }
 		factory = AppContext.initStandalone().getBeanFactory();
 	}
 
     private static Class<?> loadTestClass(Class<?> klass) throws InitializationError {
-        return klass;
-//         try{
-//             Class<?> c = AppClassLoader.get().loadClass(klass.getName());
-//
-//             DEV.setCurrentTestClass(c);
-//
-//             return c;
-//         }catch(Exception e) {
-//             throw new InitializationError(e);
-//         }
+        if (!useAppClassLoader) {
+            return klass;
+        }
+
+        try {
+            Class<?> c = AppClassLoader.get().loadClass(klass.getName());
+
+            DEV.setCurrentTestClass(c);
+
+            return c;
+        } catch (Exception e) {
+            throw new InitializationError(e);
+        }
     }
 
 	public AppTestRunner(Class<?> klass) throws InitializationError {
