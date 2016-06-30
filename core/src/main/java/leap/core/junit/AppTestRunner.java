@@ -17,7 +17,6 @@ package leap.core.junit;
 
 import leap.core.AppContext;
 import leap.core.BeanFactory;
-import leap.lang.tools.DEV;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.runner.Description;
@@ -37,10 +36,26 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
         factory = AppContext.initStandalone().getBeanFactory();
 	}
 
-	public AppTestRunner(Class<?> klass) throws InitializationError {
-	    super(klass);
+    private static Class<?> loadTestClass(Class<?> klass) throws InitializationError {
+        return klass;
+//         try{
+//             Class<?> c = AppClassLoader.get().loadClass(klass.getName());
+//
+//             DEV.setCurrentTestClass(c);
+//
+//             return c;
+//         }catch(Exception e) {
+//             throw new InitializationError(e);
+//         }
+    }
 
-		DEV.setCurrentTestClass(klass);
+	public AppTestRunner(Class<?> klass) throws InitializationError {
+	    super(loadTestClass(klass));
+    }
+
+    @Override
+    protected List<FrameworkMethod> getChildren() {
+        return super.getChildren();
     }
 
     @Override

@@ -297,7 +297,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             if(ASM.isStaticInit(mn)) {
                 visitStaticInit = true;
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-                return new ReflectionMethodsVisitor(mv, access, name, desc);
+                return new ClinitMethodVisitor(mv, access, name, desc);
             }
 
             AopMethod am = isIntercepted(mn);
@@ -430,8 +430,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             mv.storeLocal(local);
 
             //call provider.run or runWithResult if has return value.
-            mv.loadThis();
-            mv.getField(type, PROVIDER_FIELD, PROVIDER_TYPE);
+            mv.getStatic(type, PROVIDER_FIELD, PROVIDER_TYPE);
             mv.loadLocal(local);
             mv.invokeInterface(PROVIDER_TYPE, !hasReturnValue ? METHOD_PROVIDER_RUN1 : METHOD_PROVIDER_RUN2);
 
@@ -453,7 +452,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
             if(!visitStaticInit) {
                 MethodVisitor real = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
-                ReflectionMethodsVisitor mv = new ReflectionMethodsVisitor(real, ACC_STATIC, "<clinit>", "()V");
+                ClinitMethodVisitor mv = new ClinitMethodVisitor(real, ACC_STATIC, "<clinit>", "()V");
                 mv.visitCode();
                 mv.returnValue();
                 mv.visitMaxs(0,0);
@@ -461,11 +460,9 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             }
 
             //visit fields
-            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE, PROVIDER_FIELD, PROVIDER_TYPE.getDescriptor(), null, null);
-            {
-                AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
-                av.visitEnd();
-            }
+            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_FINAL + Opcodes.ACC_STATIC,
+                                            PROVIDER_FIELD,
+                                            PROVIDER_TYPE.getDescriptor(), null, null);
             fv.visitEnd();
 
             for(Map.Entry<String,String> field : classInterceptorFields.entrySet()) {
@@ -505,15 +502,20 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             super.visitEnd();
         }
 
-        protected final class ReflectionMethodsVisitor extends GeneratorAdapter {
+        protected final class ClinitMethodVisitor extends GeneratorAdapter {
 
-            public ReflectionMethodsVisitor(MethodVisitor mv, int access, String name, String desc) {
+            public ClinitMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
                 super(ASM.API, mv, access, name, desc);
             }
 
             @Override
             public void visitCode() {
                 super.visitCode();
+
+                mv.visitLdcInsn(PROVIDER_TYPE);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "leap/lang/Factory", "getInstance", "(Ljava/lang/Class;)Ljava/lang/Object;", false);
+                checkCast(PROVIDER_TYPE);
+                putStatic(type, PROVIDER_FIELD, PROVIDER_TYPE);
 
                 for(AopMethod am : methods) {
                     MethodNode m     = am.getMethod();

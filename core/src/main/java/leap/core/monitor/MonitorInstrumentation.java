@@ -17,7 +17,6 @@
 package leap.core.monitor;
 
 import leap.core.AppConfig;
-import leap.core.annotation.Inject;
 import leap.core.annotation.Monitored;
 import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentContext;
@@ -25,6 +24,7 @@ import leap.core.instrument.AsmInstrumentProcessor;
 import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
+import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.commons.Method;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
@@ -32,12 +32,13 @@ import leap.lang.asm.tree.MethodNode;
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
 
+import static leap.lang.asm.Opcodes.ACC_STATIC;
+
 public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
     private static final Type NOP_PROVIDER_TYPE = Type.getType(NopMonitorProvider.class);
     private static final Type PROVIDER_TYPE     = Type.getType(MonitorProvider.class);
     private static final Type MONITOR_TYPE      = Type.getType(MethodMonitor.class);
-    private static final Type INJECT_TYPE       = Type.getType(Inject.class);
 
     private static final String PROVIDER_FIELD = "$$monitorProvider";
     private static final String START_MONITOR  = "startMethodMonitor";
@@ -165,6 +166,8 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         private final ClassWriter cw;
         private final Type        type;
 
+        private boolean visitStaticInit;
+
         public MonitoredClassVisitor(ClassNode cn, ClassWriter cw) {
             super(ASM.API, cw);
             this.cn = cn;
@@ -176,12 +179,19 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodNode mn = ASM.getMethod(cn, name, desc);
 
-            if(ASM.isConstructor(mn)) {
+            if(ASM.isStaticInit(mn)) {
+                visitStaticInit = true;
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-                return new InitMethodVisitor(type, mv, access, name, desc);
-            } else if(isMonitored(mn)) {
-                MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+                return new ClinitMethodVisitor(mv, access, name, desc);
+            }
 
+//            if(ASM.isConstructor(mn)) {
+//                MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+//                return new InitMethodVisitor(type, mv, access, name, desc);
+//            }
+
+            if(isMonitored(mn)) {
+                MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
                 return new MonitoredMethodVisitor(type, mn, mv , access, name, desc);
             }
 
@@ -190,17 +200,42 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
         @Override
         public void visitEnd() {
-            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE, PROVIDER_FIELD, PROVIDER_TYPE.getDescriptor(), null, null);
-            {
-                AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
-                av.visitEnd();
-            }
+            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_FINAL + Opcodes.ACC_STATIC,
+                                            PROVIDER_FIELD,
+                                            PROVIDER_TYPE.getDescriptor(), null, null);
             fv.visitEnd();
+
+            if(!visitStaticInit) {
+                MethodVisitor real = cw.visitMethod(ACC_STATIC, "<clinit>", "()V", null, null);
+                ClinitMethodVisitor mv = new ClinitMethodVisitor(real, ACC_STATIC, "<clinit>", "()V");
+                mv.visitCode();
+                mv.returnValue();
+                mv.visitMaxs(0,0);
+                mv.visitEnd();
+            }
+
             super.visitEnd();
         }
 
         public byte[] getClassData() {
             return cw.toByteArray();
+        }
+
+        protected final class ClinitMethodVisitor extends GeneratorAdapter {
+
+            public ClinitMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
+                super(ASM.API, mv, access, name, desc);
+            }
+
+            @Override
+            public void visitCode() {
+                super.visitCode();
+
+                mv.visitLdcInsn(PROVIDER_TYPE);
+                mv.visitMethodInsn(Opcodes.INVOKESTATIC, "leap/lang/Factory", "getInstance", "(Ljava/lang/Class;)Ljava/lang/Object;", false);
+                checkCast(PROVIDER_TYPE);
+                putStatic(type, PROVIDER_FIELD, PROVIDER_TYPE);
+            }
         }
     }
 
@@ -273,11 +308,7 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
         protected void startMonitor() {
             //get the field of monitor provider.
-            mv.visitVarInsn(Opcodes.ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD,
-                    type.getInternalName(),
-                    PROVIDER_FIELD,
-                    PROVIDER_TYPE.getDescriptor());
+            getStatic(type,PROVIDER_FIELD,PROVIDER_TYPE);
 
             //Call startMethodMonitor
             mv.visitLdcInsn(type.getClassName()); //classname

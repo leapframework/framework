@@ -47,6 +47,23 @@ public class AppClassLoader extends ClassLoader {
 
     private static final ThreadLocal<Set<String>> beanClassNamesLocal = new ThreadLocal<>();
 
+    private static ThreadLocal<Boolean> useParentLocal;
+    private static AppClassLoader       INSTANCE;
+
+    public static void dontUseParent() {
+        useParentLocal = new ThreadLocal<>();
+        useParentLocal.set(false);
+    }
+
+    public static AppClassLoader get() {
+        return INSTANCE;
+    }
+
+    static AppClassLoader init(ClassLoader parent, AppConfig config)  {
+        INSTANCE = new AppClassLoader(parent, config);
+        return INSTANCE;
+    }
+
     public static void addBeanClass(String name) {
         Set<String> names = beanClassNamesLocal.get();
         if(null == names) {
@@ -75,15 +92,18 @@ public class AppClassLoader extends ClassLoader {
     private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
     private final Set<String>             instrumenting      = new HashSet<>();
 
-    private boolean parentLoaderPriority  = true;
-    private boolean alwaysUseParentLoader = true;
+    private boolean useParent = true;
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
 
-    public AppClassLoader(ClassLoader parent, AppConfig config) {
+    private AppClassLoader(ClassLoader parent, AppConfig config) {
         this.parent      = parent;
         this.config      = config;
         this.basePackage = config.getBasePackage() + ".";
+
+        if(null != useParentLocal) {
+            this.useParent = useParentLocal.get();
+        }
 
         try {
             parentLoaderDefineClass =
@@ -180,7 +200,7 @@ public class AppClassLoader extends ClassLoader {
             loadedNames.add(name);
         }
 
-        if(isParentLoaded(name)) {
+        if(useParent && isParentLoaded(name)) {
             log.trace("Class '{}' already loaded by parent", name);
             return null;
         }
@@ -223,7 +243,7 @@ public class AppClassLoader extends ClassLoader {
             is = resource.getInputStream();
             byte[] bytes = IO.readByteArray(is);
 
-            if(depFirst) {
+            if(useParent && depFirst) {
                 ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
 
                 if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
@@ -257,22 +277,12 @@ public class AppClassLoader extends ClassLoader {
 
             loadedUrls.add(url);
 
-            if(null != ic) {
-                name  = ic.getClassName();
-                bytes = ic.getClassData();
-
-                if(!alwaysUseParentLoader && (ic.isBeanDeclared() || isBeanClass(name))) {
-                    log.trace("Defining instrumented bean class '{}' use app loader", name);
-                    return defineClass(name, bytes, 0, bytes.length);
-                }
-            }
-
-            if(!parentLoaderPriority) {
-                log.trace("Defining instrumented class '{}' use app loader", name);
-                return defineClass(name, bytes, 0, bytes.length);
-            }else{
+            if(useParent) {
                 if(null == ic) {
                     return null;
+                }else{
+                    name  = ic.getClassName();
+                    bytes = ic.getClassData();
                 }
 
                 log.trace("Defining instrumented class '{}' use parent loader", name);
@@ -301,6 +311,13 @@ public class AppClassLoader extends ClassLoader {
                 }catch(Exception e) {
                     throw new ClassNotFoundException(name, e);
                 }
+            }else{
+                if(null != ic) {
+                    name  = ic.getClassName();
+                    bytes = ic.getClassData();
+                }
+                log.trace("Defining class '{}' use app loader", name);
+                return defineClass(name, bytes, 0, bytes.length);
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);
@@ -317,9 +334,38 @@ public class AppClassLoader extends ClassLoader {
         }
     }
 
+    private static final Set<String>  SYSTEM_PACKAGES    = new HashSet<>();
+    private static final Set<String>  FRAMEWORK_PACKAGES = new HashSet<>();
+    private static final Set<String>  FRAMEWORK_CLASSES  = new HashSet<>();
+    static {
+        SYSTEM_PACKAGES.add("java");
+        SYSTEM_PACKAGES.add("sun");
+        SYSTEM_PACKAGES.add("org.junit.");
+
+        FRAMEWORK_PACKAGES.add("leap.junit.");
+        FRAMEWORK_PACKAGES.add("leap.lang.");
+        FRAMEWORK_PACKAGES.add("leap.core.");
+    }
+
     protected boolean isIgnore(String name) {
-        if(name.startsWith("java")) {
+        for(String p : SYSTEM_PACKAGES) {
+            if(name.startsWith(p)) {
+                return true;
+            }
+        }
+
+        for(String p : FRAMEWORK_PACKAGES) {
+            if(name.startsWith(p)) {
+                return true;
+            }
+        }
+
+        if(FRAMEWORK_CLASSES.contains(name)) {
             return true;
+        }
+
+        if(!useParent) {
+            return false;
         }
 
         if(isBeanClass(name)) {

@@ -16,14 +16,21 @@
 
 package leap.core.monitor;
 
-import leap.core.annotation.Inject;
+import leap.core.AppContext;
 import leap.lang.Arrays2;
 
 public class SimpleMonitorProvider implements MonitorProvider {
 
     private static MethodMonitor NOP_METHOD_MONITOR = new NopMonitorProvider.NopMethodMonitor();
 
-    protected @Inject MonitorConfig config;
+    protected MonitorConfig config;
+
+    public SimpleMonitorProvider() {
+        AppContext context = AppContext.tryGetCurrent();
+        if(null != context) {
+            config = context.getConfig().getExtension(MonitorConfig.class);
+        }
+    }
 
     @Override
     public MethodMonitor startMethodMonitor(String className, String methodDesc) {
@@ -32,7 +39,7 @@ public class SimpleMonitorProvider implements MonitorProvider {
 
     @Override
     public MethodMonitor startMethodMonitor(String className, String methodDesc, Object[] args) {
-        return config.isEnabled() ?
+        return null != config && config.isEnabled() ?
                     new SimpleMethodMonitor(this, className, methodDesc, args) :
                     NOP_METHOD_MONITOR;
     }
