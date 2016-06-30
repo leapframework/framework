@@ -33,7 +33,8 @@ public class AppTestRunner extends BlockJUnit4ClassRunner {
     final static BeanFactory factory;
 	
 	static {
-		factory = AppContext.initStandalone().getBeanFactory();
+        System.out.println("Run static block AppTestRunner");
+        factory = AppContext.initStandalone().getBeanFactory();
 	}
 
 	public AppTestRunner(Class<?> klass) throws InitializationError {

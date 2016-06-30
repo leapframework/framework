@@ -826,7 +826,7 @@ public abstract class Model implements DynaBean,ValidatableBean {
     
     private Map<String, Object> getUpdateFields() {
     	Map<String, Object> map = new HashMap<String, Object>();
-    	
+
     	for(FieldMapping fm : em.getFieldMappings()) {
     		if(fm.isPrimaryKey() || !fm.isUpdate()) {
     			continue;
@@ -921,6 +921,7 @@ public abstract class Model implements DynaBean,ValidatableBean {
 	
 	@SuppressWarnings("rawtypes")
 	protected void doSetId(Object id){
+		_init();
 		String[] keyNames = em.getKeyFieldNames();
 		if(keyNames.length == 1){
 			doSet(keyNames[0],id);

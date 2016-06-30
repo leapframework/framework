@@ -27,12 +27,25 @@ import org.junit.Test;
  * Created by kael on 2016/6/29.
  */
 public class InstrumentTest extends OrmTestCase {
+    private static int count = 0;
     @Test
-    public void testClassLoad(){
-        test(new ModelClass());
+    public void testClassLoad1(){
+        System.out.println(count++);
+        test(ModelClass.newInstance());
     }
 
     private void test(AbstractClass a){
+        if(a != null){
+            ClassLoader c = a.getClass().getClassLoader();
+            for(;c != null && c.getParent() != c;){
+                System.out.println(c.getClass().getName());
+                c = c.getParent();
+            }
+            a.doSetId("test");
+            a.tryDelete();
+        }else{
+            System.out.println("null");
+        }
 
     }
 }
