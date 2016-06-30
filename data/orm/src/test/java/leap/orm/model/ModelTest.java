@@ -62,5 +62,11 @@ public class ModelTest extends OrmTestCase {
 		m.create();
 		assertNotNull(ModelWithId4.find(1));
 	}
+	@Test
+	public void testModelDoSetId(){
+		ModelWithId4 m = new ModelWithId4();
+		m.doSetId(3);
+		assertEquals(3,m.getId());
+	}
 	
 }

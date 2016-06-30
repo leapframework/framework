@@ -19,6 +19,7 @@ import java.util.List;
 
 import leap.core.el.ElConfig;
 import leap.core.el.ExpressionLanguage;
+import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
