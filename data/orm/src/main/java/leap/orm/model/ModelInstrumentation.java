@@ -73,6 +73,11 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 	protected List<ModelTransformer> transformers = Factory.newInstances(ModelTransformer.class);
 
     @Override
+    public boolean supportsMethodBodyOnly() {
+        return false;
+    }
+
+    @Override
     protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
         boolean isModel = false;
 

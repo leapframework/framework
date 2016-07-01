@@ -168,6 +168,9 @@
                             <file.encoding>UTF-8</file.encoding>
                             <org.apache.jasper.compiler.disablejsr199>true</org.apache.jasper.compiler.disablejsr199>
                         </systemPropertyVariables>
+                        <additionalClasspathElements>
+                            <additionalClasspathElement>${java.home}/../lib/tools.jar</additionalClasspathElement>
+                        </additionalClasspathElements>
                     </configuration>
 				</plugin>
 

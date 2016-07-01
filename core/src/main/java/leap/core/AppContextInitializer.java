@@ -20,6 +20,7 @@ import leap.core.sys.SysContext;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
+import leap.lang.annotation.Internal;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 
@@ -27,12 +28,22 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+@Internal
 public class AppContextInitializer {
 	
 	private static final Log log = LogFactory.get(AppContextInitializer.class);
-	
+
 	private static ThreadLocal<AppConfig> initialAppConfig;
 	private static boolean				  initializing;
+    private static boolean                testing;
+
+    public static boolean isTesting() {
+        return testing;
+    }
+
+    public static void markTesting() {
+        testing = true;
+    }
 
     public static AppConfig getInitialConfig() {
         return null == initialAppConfig ? null : initialAppConfig.get();

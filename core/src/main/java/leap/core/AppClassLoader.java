@@ -48,6 +48,11 @@ public class AppClassLoader extends ClassLoader {
 
     private static ThreadLocal<AppClassLoader> instanceLocal;
 
+    @Internal
+    public static AppClassLoader get() {
+        return instanceLocal == null ? null : instanceLocal.get();
+    }
+
     static AppClassLoader init(ClassLoader parent)  {
         if(null == instanceLocal) {
             instanceLocal = new ThreadLocal<>();
@@ -82,15 +87,20 @@ public class AppClassLoader extends ClassLoader {
     private final ClassDependencyResolver           dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
     private final Set<String>                       instrumenting      = new HashSet<>();
     private final Map<Class<?>, AppInstrumentClass> redefineClasses    = new LinkedHashMap<>();
+    private final Map<String, AppInstrumentClass>   failedClasses      = new HashMap<>();
 
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
 
     private AppConfig config;
     private String    basePackage;
+    private boolean   testing;
+
+    private RedefineClassLoader redefineClassLoader;
 
     private AppClassLoader(ClassLoader parent) {
-        this.parent = parent;
+        this.parent  = parent;
+        this.testing = AppContextInitializer.isTesting();
 
         try {
             parentLoaderDefineClass =
@@ -113,45 +123,6 @@ public class AppClassLoader extends ClassLoader {
         loadAllClasses();
     }
 
-    void done() {
-        redefine();
-        loadedUrls.clear();
-        loadedNames.clear();
-        instrumenting.clear();
-        beanClassNamesLocal.remove();
-    }
-
-    private void redefine() {
-        if(!redefineClasses.isEmpty()) {
-            if(!Agent.redefine(redefineClasses)){
-                for(AppInstrumentClass ic : redefineClasses.values()) {
-                    if (ic.isEnsure()) {
-                        throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
-                                parent.getClass().getName() + "', cannot instrument it!");
-                    } else {
-                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", ic.getClassName());
-                    }
-                }
-            }
-            redefineClasses.clear();
-        }
-    }
-
-    @Override
-    public URL getResource(String name) {
-        return parent.getResource(name);
-    }
-
-    @Override
-    public Enumeration<URL> getResources(String name) throws IOException {
-        return parent.getResources(name);
-    }
-
-    @Override
-    public InputStream getResourceAsStream(String name) {
-        return parent.getResourceAsStream(name);
-    }
-
     private void loadAllClasses() {
         log.debug("Try instrument all classes in app configured resources.");
         config.getResources().forEach(resource -> {
@@ -170,6 +141,68 @@ public class AppClassLoader extends ClassLoader {
                 }
             }
         });
+    }
+
+    void done() {
+        redefine();
+        loadedUrls.clear();
+        loadedNames.clear();
+        instrumenting.clear();
+        beanClassNamesLocal.remove();
+    }
+
+    @Internal
+    public boolean hasFailedClasses() {
+        return !failedClasses.isEmpty();
+    }
+
+    @Internal
+    public Class<?> redefineTestClass(Class<?> c) {
+        if (null == redefineClassLoader) {
+            redefineClassLoader = new RedefineClassLoader();
+        }
+        return redefineClassLoader.redefineTestClass(c);
+    }
+
+    private void redefine() {
+        if(!redefineClasses.isEmpty()) {
+            log.warn("Redefining {} classes by agent...", redefineClasses.size());
+            //redefine by agent.
+            if(!Agent.redefine(redefineClasses)){
+                log.warn("Agent redefine failed!");
+                for(AppInstrumentClass ic : redefineClasses.values()) {
+                    if (ic.isEnsure()) {
+                        throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
+                                parent.getClass().getName() + "', cannot instrument it!");
+                    } else {
+                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", ic.getClassName());
+                    }
+                }
+            }
+            redefineClasses.clear();
+        }
+    }
+
+    private void onInstrumentFailed(Resource resource, byte[] rawBytes, AppInstrumentClass ic) {
+        if(!testing) {
+            throw new IllegalStateException("Cannot instrument class '" + ic.getClassName() + "', check the class loading!");
+        }
+        failedClasses.put(ic.getClassName(), ic);
+    }
+
+    @Override
+    public URL getResource(String name) {
+        return parent.getResource(name);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        return parent.getResources(name);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        return parent.getResourceAsStream(name);
     }
 
     @Override
@@ -245,10 +278,8 @@ public class AppClassLoader extends ClassLoader {
             return null;
         }
 
-        InputStream is = null;
         try {
-            is = resource.getInputStream();
-            byte[] rawBytes = IO.readByteArray(is);
+            byte[] rawBytes = IO.readByteArrayAndClose(resource.getInputStream());
 
             if(depFirst) {
                 ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, rawBytes);
@@ -311,11 +342,16 @@ public class AppClassLoader extends ClassLoader {
 
                 if(cause instanceof  LinkageError) {
                     if(null != ic && ic.shouldRedefine()) {
-                        log.info("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-                        if(!ic.isInstrumentedMethodBodyOnly()) {
-                            ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
+                        if(ic.supportsInstrumentMethodBodyOnly()) {
+                            log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
+                            if(!ic.isInstrumentedMethodBodyOnly()) {
+                                ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
+                            }
+                            redefineClasses.put(parent.loadClass(name), ic);
+                        }else{
+                            log.warn("Instrument failed, class '{}'", name);
+                            onInstrumentFailed(resource, rawBytes, ic);
                         }
-                        redefineClasses.put(parent.loadClass(name), ic);
                     }else{
                         if(null != ic && ic.isEnsure()) {
                             throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
@@ -333,8 +369,6 @@ public class AppClassLoader extends ClassLoader {
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);
-        }finally{
-            IO.close(is);
         }
     }
 
@@ -385,5 +419,90 @@ public class AppClassLoader extends ClassLoader {
         }
 
         return true;
+    }
+
+    private final class RedefineClassLoader extends ClassLoader {
+
+        private boolean failedRedefined;
+
+        public Class<?> redefineTestClass(Class<?> c) {
+            if(!failedRedefined) {
+                log.warn("Redefine {} failed classes!", failedClasses.size());
+                for(AppInstrumentClass ic : failedClasses.values()) {
+                    log.warn("  redefine failed class '{}'", ic.getClassName());
+                    defineClass(ic.getClassName(), ic.getClassData(), 0, ic.getClassData().length);
+                }
+                failedRedefined = true;
+            }
+
+            Class<?> redefined = redefineClass(c.getName());
+            return null == redefined ? c : redefined;
+        }
+
+        private boolean isTestResource(Resource resource) {
+            return resource.getURLString().indexOf("/test-classes/") > 0;
+        }
+
+        private Class<?> redefineClass(String name) {
+            Class<?> c = findLoadedClass(name);
+            if(null != c) {
+                return null;
+            }
+
+            Resource resource = Resources.getResource("classpath:" + name.replace('.', '/') + ".class");
+            if(null == resource || !resource.exists()) {
+                return null;
+            }
+
+            if(!isTestResource(resource)) {
+                return null;
+            }
+
+            try{
+                byte[] bytes = IO.readByteArrayAndClose(resource.getInputStream());
+
+                ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
+
+                boolean shouldRedefine = false;
+                for(String depClassName : dep.getDependentClassNames()) {
+                    if(failedClasses.containsKey(depClassName)) {
+                        shouldRedefine = true;
+                        break;
+                    }
+                }
+
+                if(!shouldRedefine) {
+                    return null;
+                }
+
+                log.warn("Redefining test class '{}'...",name);
+
+                if(null != dep.getSuperClassName()) {
+                    log.warn("Redefine super class '{}'", dep.getSuperClassName());
+                    redefineClass(dep.getSuperClassName());
+                }
+
+                for(String innerClassName : dep.getInnerClassNames()) {
+                    log.warn("Redefine inner class '{}'", innerClassName);
+                    redefineClass(innerClassName);
+                }
+
+                //            String packageName = Classes.getPackageName(name);
+                //            for(String depClassName : dep.getDependentClassNames()) {
+                //                String depPackageName = Classes.getPackageName(depClassName);
+                //                if(Strings.equals(packageName, depPackageName)) {
+                //
+                //                    if(null != redefineClass(depClassName)) {
+                //
+                //                    }
+                //                }
+                //            }
+
+                return defineClass(name, bytes, 0, bytes.length);
+            }catch(IOException e) {
+                throw new IllegalStateException("Error redefine class '" + name + "'", e);
+            }
+        }
+
     }
 }

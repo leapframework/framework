@@ -32,6 +32,13 @@ public interface AppInstrumentProcessor {
     }
 
     /**
+     * Returns true if the processor supports change the method body only.
+     */
+    default boolean supportsMethodBodyOnly() {
+        return true;
+    }
+
+    /**
      * Returns true if the instrumented class should be redefined if define by class loader failed.
      */
     default boolean shouldRedefine() {

@@ -17,11 +17,14 @@
 package leap.agent;
 
 import com.sun.tools.attach.VirtualMachine;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 import java.lang.management.ManagementFactory;
 import java.net.URL;
 
 public class SunJdkAgentLoader {
+    private static final Log log = LogFactory.get(SunJdkAgentLoader.class);
 
     private static String jarUrl;
 
@@ -34,7 +37,7 @@ public class SunJdkAgentLoader {
         if(index > 0) {
             jarUrl = file.substring(5,index + 4);
         }else{
-            System.err.println("Agent jar file not found, cannot redefine classes!!!");
+            log.error("Agent jar file not found, cannot redefine classes!!!");
         }
     }
 
@@ -52,8 +55,7 @@ public class SunJdkAgentLoader {
 
             return true;
         }catch(Exception e) {
-            System.err.println("Error loading agent : " + e.getMessage());
-            e.printStackTrace();
+            log.error("Error loading agent : {}" + e.getMessage(), e);
             return false;
         }
     }

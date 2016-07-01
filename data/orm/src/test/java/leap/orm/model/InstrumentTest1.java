@@ -21,10 +21,7 @@ import leap.orm.tested.model.instrument.AbstractModel;
 import leap.orm.tested.model.instrument.SubModel;
 import org.junit.Test;
 
-/**
- * Created by kael on 2016/6/29.
- */
-public class InstrumentTest extends OrmTestCase {
+public class InstrumentTest1 extends OrmTestCase {
 
     @Test
     public void testInstrumentSubModel(){

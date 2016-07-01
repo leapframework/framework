@@ -44,6 +44,13 @@ public class DEV {
         return testClass.get();
     }
 
+    /**
+     * Returns true if running test case.
+     */
+    public static boolean isRunningTest() {
+        return null != getCurrentTestClass();
+    }
+
 	/**
 	 * Returns <code>true</code> if running in development project.
      */

@@ -16,11 +16,16 @@
 
 package leap.agent;
 
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+
 import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
 import java.util.Map;
 
 public class Agent {
+
+    private static final Log log = LogFactory.get(Agent.class);
 
     private static Map<Class<?>,? extends InstrumentClass> redefineClasses;
     private static boolean                                 redefined;
@@ -39,18 +44,15 @@ public class Agent {
     public static void agentmain(String args, Instrumentation inst) throws Exception {
         if(null != redefineClasses) {
 
-            System.out.println();
-            System.out.println("Redefine " + redefineClasses.size() + " classes!!!");
-            System.out.println();
+            log.info("Redefine {} classes!!!",redefineClasses.size());
 
             for(Map.Entry<Class<?>,? extends InstrumentClass> entry : redefineClasses.entrySet()) {
                 Class<?> c = entry.getKey();
                 InstrumentClass ic = entry.getValue();
 
-                System.out.println("  do redefine '" + c.getName() + "'");
+                log.info("  do redefine '{}'", c.getName());
 
                 inst.redefineClasses(new ClassDefinition(c, ic.getClassData()));
-
             }
 
             redefined = true;

@@ -85,4 +85,16 @@ public interface AppInstrumentClass extends InstrumentClass {
         }
         return false;
     }
+
+    /**
+     * Returns true if all the instrument processors supports method body only instrumentation.
+     */
+    default boolean supportsInstrumentMethodBodyOnly() {
+        for(AppInstrumentProcessor p : getAllInstrumentedBy()) {
+            if(!p.supportsMethodBodyOnly()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

@@ -14,33 +14,25 @@
  * limitations under the License.
  */
 
-package leap.agent;
+package leap.orm.model;
 
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
+import leap.orm.OrmTestCase;
+import leap.orm.tested.model.instrument.AbstractModel;
+import leap.orm.tested.model.instrument.SubModel;
+import org.junit.Test;
 
-class AgentLoader {
+public class InstrumentTest2 extends OrmTestCase {
 
-    private static final Log log = LogFactory.get(AgentLoader.class);
+    @Test
+    public void testInstrumentSubModel(){
+        //This method will cause the class of 'SubModel' loaded by class loader immediately.
+        defineClassImmediately(new SubModel());
 
-    private static boolean sunJdk;
-
-    static {
-        try{
-            Class.forName("com.sun.tools.attach.VirtualMachine");
-            sunJdk = true;
-        }catch(Exception e) {
-            log.error("No tools.jar in classpath, cannot load agent!");
-            sunJdk = false;
-        }
+        assertNotNull(SubModel.dao());
     }
 
-    static boolean load() {
-        if(sunJdk) {
-            return SunJdkAgentLoader.load();
-        }else{
-            return false;
-        }
-    }
+    //Don't removes the method, for testing.
+    protected void defineClassImmediately(AbstractModel model) {
 
+    }
 }
