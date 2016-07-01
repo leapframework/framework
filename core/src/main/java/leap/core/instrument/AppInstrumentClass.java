@@ -16,9 +16,11 @@
 
 package leap.core.instrument;
 
+import leap.agent.InstrumentClass;
+
 import java.util.Set;
 
-public interface AppInstrumentClass {
+public interface AppInstrumentClass extends InstrumentClass {
 
     /**
      * Returns the class name.

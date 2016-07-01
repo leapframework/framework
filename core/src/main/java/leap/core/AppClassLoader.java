@@ -16,6 +16,7 @@
 
 package leap.core;
 
+import leap.agent.Agent;
 import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.instrument.ClassDependency;
@@ -36,9 +37,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Internal
 public class AppClassLoader extends ClassLoader {
@@ -77,11 +76,12 @@ public class AppClassLoader extends ClassLoader {
 
     private final ClassLoader parent;
 
-    private final Set<String>             loadedUrls         = new HashSet<>();
-    private final Set<String>             loadedNames        = new HashSet<>();
-    private final AppInstrumentation      instrumentation    = Factory.newInstance(AppInstrumentation.class);
-    private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
-    private final Set<String>             instrumenting      = new HashSet<>();
+    private final Set<String>                       loadedUrls         = new HashSet<>();
+    private final Set<String>                       loadedNames        = new HashSet<>();
+    private final AppInstrumentation                instrumentation    = Factory.newInstance(AppInstrumentation.class);
+    private final ClassDependencyResolver           dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
+    private final Set<String>                       instrumenting      = new HashSet<>();
+    private final Map<Class<?>, AppInstrumentClass> retransformClasses = new LinkedHashMap<>();
 
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
@@ -114,10 +114,27 @@ public class AppClassLoader extends ClassLoader {
     }
 
     void done() {
+        retranform();
         loadedUrls.clear();
         loadedNames.clear();
         instrumenting.clear();
         beanClassNamesLocal.remove();
+    }
+
+    private void retranform() {
+        if(!retransformClasses.isEmpty()) {
+            if(!Agent.retransform(retransformClasses)){
+                for(AppInstrumentClass ic : retransformClasses.values()) {
+                    if (ic.isEnsure()) {
+                        throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
+                                parent.getClass().getName() + "', cannot instrument it!");
+                    } else {
+                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", ic.getClassName());
+                    }
+                }
+            }
+            retransformClasses.clear();
+        }
     }
 
     @Override
@@ -287,14 +304,17 @@ public class AppClassLoader extends ClassLoader {
                 }
 
                 if(cause instanceof  LinkageError) {
+                    log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
+                    retransformClasses.put(parent.loadClass(name), ic);
+                    return null;
 
-                    if (ic.isEnsure()) {
-                        throw new IllegalStateException("Class '" + name + "' already loaded by '" +
-                                parent.getClass().getName() + "', cannot instrument it!");
-                    } else {
-                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-                        return null;
-                    }
+//                    if (ic.isEnsure()) {
+//                        throw new IllegalStateException("Class '" + name + "' already loaded by '" +
+//                                parent.getClass().getName() + "', cannot instrument it!");
+//                    } else {
+//                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
+//                        return null;
+//                    }
                 }else{
                     throw new ClassNotFoundException(name, cause);
                 }

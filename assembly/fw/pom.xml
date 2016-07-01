@@ -47,6 +47,11 @@
     </reporting>     
     
 	<dependencies>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-agent</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-lang</artifactId>

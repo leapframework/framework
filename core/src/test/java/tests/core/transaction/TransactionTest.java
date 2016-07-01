@@ -18,31 +18,33 @@ package tests.core.transaction;
 
 import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
+import leap.lang.Try;
+import org.junit.Test;
 import tested.beans.TransactionalBean;
+import tested.beans.TransactionalBeanBase;
 
 public class TransactionTest extends AppTestBase {
 
     private @Inject TransactionalBean bean;
 
-//    @Test
-//    @Ignore
-//    public void testInstrument() throws Exception {
-//        //This method will cause the class of 'TransactionalBean' loaded by class loader immediately.
-//        defineClassImmediately(bean);
-//
-//        bean.doSuccess();
-//        bean.doSuccessTryFinally();
-//        bean.doSuccessWithReturnValue();
-//
-//        Try.catchAll(() -> bean.doFailure());
-//        Try.catchAll(() -> bean.doFailureTryFinally());
-//        Try.catchAll(() -> bean.doFailureNested());
-//        Try.catchAll(() -> bean.doFailureThrowable());
-//    }
-//
-//    //Don't removes the method, for testing.
-//    protected void defineClassImmediately(TransactionalBeanBase bean) {
-//
-//    }
+    @Test
+    public void testInstrument() throws Exception {
+        //This method will cause the class of 'TransactionalBean' loaded by class loader immediately.
+        defineClassImmediately(bean);
+
+        bean.doSuccess();
+        bean.doSuccessTryFinally();
+        bean.doSuccessWithReturnValue();
+
+        Try.catchAll(() -> bean.doFailure());
+        Try.catchAll(() -> bean.doFailureTryFinally());
+        Try.catchAll(() -> bean.doFailureNested());
+        Try.catchAll(() -> bean.doFailureThrowable());
+    }
+
+    //Don't removes the method, for testing.
+    protected void defineClassImmediately(TransactionalBeanBase bean) {
+
+    }
 
 }

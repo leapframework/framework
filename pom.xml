@@ -371,6 +371,7 @@
     </dependencies>
 	
 	<modules>
+        <module>agent</module>
 		<module>lang</module>
 		<module>core</module>	    
 		<module>data/db</module>
