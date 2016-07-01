@@ -14,29 +14,8 @@
  * limitations under the License.
  */
 
-package leap.core.instrument;
+package tested.beans;
 
-import java.util.Set;
+public abstract class TransactionalBeanBase {
 
-public interface ClassDependency {
-
-    /**
-     * Returns the class name.
-     */
-    String getClassName();
-
-    /**
-     * Returns the super class name or returns null if the super class is {@link Object}.
-     */
-    String getSuperClassName();
-
-    /**
-     * Returns the inner class names.
-     */
-    Set<String> getInnerClassNames();
-
-    /**
-     * Returns all the dependent class names (includes the inner class names).
-     */
-    Set<String> getDependentClassNames();
 }

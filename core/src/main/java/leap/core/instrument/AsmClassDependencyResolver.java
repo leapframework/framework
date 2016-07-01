@@ -21,7 +21,6 @@ import leap.lang.asm.signature.SignatureReader;
 import leap.lang.asm.signature.SignatureVisitor;
 import leap.lang.resource.Resource;
 
-import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -40,19 +39,24 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
                                 null :
                                 Type.getObjectType(cr.getSuperName()).getClassName();
 
-        return new SimpleClassDependency(className, superName, visitor.classes);
+        return new SimpleClassDependency(className, superName, visitor.innerClasses, visitor.allClasses);
     }
 
     protected static class SimpleClassDependency implements ClassDependency {
 
         private final String      className;
         private final String      superClassName;
-        private final Set<String> depdendentClassNames;
+        private final Set<String> innerClassNames;
+        private final Set<String> depClassNames;
 
-        public SimpleClassDependency(String className, String superClassName, Set<String> depdendentClassNames) {
-            this.className            = className;
-            this.superClassName       = superClassName;
-            this.depdendentClassNames = depdendentClassNames;
+        public SimpleClassDependency(String className,
+                                     String superClassName,
+                                     Set<String> innerClassNames,
+                                     Set<String> depClassNames) {
+            this.className       = className;
+            this.superClassName  = superClassName;
+            this.innerClassNames = innerClassNames;
+            this.depClassNames   = depClassNames;
         }
 
         @Override
@@ -66,8 +70,13 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
         }
 
         @Override
+        public Set<String> getInnerClassNames() {
+            return innerClassNames;
+        }
+
+        @Override
         public Set<String> getDependentClassNames() {
-            return depdendentClassNames;
+            return depClassNames;
         }
     }
 
@@ -76,7 +85,8 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
      */
     protected static class DependencyVisitor extends ClassVisitor {
 
-        final Set<String> classes = new HashSet<>();
+        final Set<String> allClasses   = new HashSet<>();
+        final Set<String> innerClasses = new HashSet<>();
 
         String className;
 
@@ -113,12 +123,20 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
         }
 
         @Override
+        public void visitInnerClass(String name, String outerName, String innerName, int access) {
+            if(!this.className.equals(name) && name.startsWith(this.className + "$")) {
+                innerClasses.add(Type.getObjectType(name).getClassName());
+            }
+            super.visitInnerClass(name, outerName, innerName, access);
+        }
+
+        @Override
         public FieldVisitor visitField(final int access, final String name,
                                        final String desc, final String signature, final Object value) {
 
-            if(!Modifier.isStatic(access)) {
-                return null;
-            }
+//            if(!Modifier.isStatic(access)) {
+//                return null;
+//            }
 
             if (signature == null) {
                 addDesc(desc);
@@ -135,9 +153,9 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
         public MethodVisitor visitMethod(final int access, final String name,
                                          final String desc, final String signature, final String[] exceptions) {
 
-            if(!ASM.STATIC_INIT_NAME.equals(name)) {
-                return null;
-            }
+//            if(!ASM.STATIC_INIT_NAME.equals(name)) {
+//                return null;
+//            }
 
             if (signature == null) {
                 addMethodDesc(desc);
@@ -347,7 +365,7 @@ public class AsmClassDependencyResolver implements ClassDependencyResolver {
                 return;
             }
 
-            classes.add(Type.getObjectType(name).getClassName());
+            allClasses.add(Type.getObjectType(name).getClassName());
         }
 
         void addInternalName(final String name) {

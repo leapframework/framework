@@ -19,7 +19,7 @@ package tested.beans;
 import leap.core.annotation.Transactional;
 import leap.core.transaction.TransactionDefinition;
 
-public class TransactionalBean {
+public class TransactionalBean extends TransactionalBeanBase {
 
     @Transactional
     public void doSuccess() {

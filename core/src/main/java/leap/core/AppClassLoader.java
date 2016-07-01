@@ -47,21 +47,14 @@ public class AppClassLoader extends ClassLoader {
 
     private static final ThreadLocal<Set<String>> beanClassNamesLocal = new ThreadLocal<>();
 
-    private static ThreadLocal<Boolean> useParentLocal;
-    private static AppClassLoader       INSTANCE;
+    private static ThreadLocal<AppClassLoader> instanceLocal;
 
-    public static void dontUseParent() {
-        useParentLocal = new ThreadLocal<>();
-        useParentLocal.set(false);
-    }
-
-    public static AppClassLoader get() {
-        return INSTANCE;
-    }
-
-    static AppClassLoader init(ClassLoader parent, AppConfig config)  {
-        INSTANCE = new AppClassLoader(parent, config);
-        return INSTANCE;
+    static AppClassLoader init(ClassLoader parent)  {
+        if(null == instanceLocal) {
+            instanceLocal = new ThreadLocal<>();
+        }
+        instanceLocal.set(new AppClassLoader(parent));
+        return instanceLocal.get();
     }
 
     public static void addBeanClass(String name) {
@@ -83,8 +76,6 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private final ClassLoader parent;
-    private final AppConfig   config;
-    private final String      basePackage;
 
     private final Set<String>             loadedUrls         = new HashSet<>();
     private final Set<String>             loadedNames        = new HashSet<>();
@@ -92,18 +83,14 @@ public class AppClassLoader extends ClassLoader {
     private final ClassDependencyResolver dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
     private final Set<String>             instrumenting      = new HashSet<>();
 
-    private boolean useParent = true;
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
 
-    private AppClassLoader(ClassLoader parent, AppConfig config) {
-        this.parent      = parent;
-        this.config      = config;
-        this.basePackage = config.getBasePackage() + ".";
+    private AppConfig config;
+    private String    basePackage;
 
-        if(null != useParentLocal) {
-            this.useParent = useParentLocal.get();
-        }
+    private AppClassLoader(ClassLoader parent) {
+        this.parent = parent;
 
         try {
             parentLoaderDefineClass =
@@ -117,9 +104,12 @@ public class AppClassLoader extends ClassLoader {
         } catch (Exception e) {
             throw Exceptions.uncheck(e);
         }
+    }
 
+    void load(AppConfig config) {
+        this.config      = config;
+        this.basePackage = config.getBasePackage() + ".";
         instrumentation.init(config);
-
         loadAllClasses();
     }
 
@@ -200,7 +190,7 @@ public class AppClassLoader extends ClassLoader {
             loadedNames.add(name);
         }
 
-        if(useParent && isParentLoaded(name)) {
+        if(isParentLoaded(name)) {
             log.trace("Class '{}' already loaded by parent", name);
             return null;
         }
@@ -219,7 +209,7 @@ public class AppClassLoader extends ClassLoader {
         }
 
         if(instrumenting.contains(name)) {
-            log.info("Found cyclic instrumenting class '{}'", name);
+            log.debug("Found cyclic instrumenting class '{}'", name);
             return instrumentClass(name, resource, false);
         }
 
@@ -243,7 +233,7 @@ public class AppClassLoader extends ClassLoader {
             is = resource.getInputStream();
             byte[] bytes = IO.readByteArray(is);
 
-            if(useParent && depFirst) {
+            if(depFirst) {
                 ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
 
                 if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
@@ -277,47 +267,39 @@ public class AppClassLoader extends ClassLoader {
 
             loadedUrls.add(url);
 
-            if(useParent) {
-                if(null == ic) {
-                    return null;
-                }else{
-                    name  = ic.getClassName();
-                    bytes = ic.getClassData();
-                }
-
-                log.trace("Defining instrumented class '{}' use parent loader", name);
-                Object[] args = new Object[]{name, bytes, 0, bytes.length};
-
-                try {
-                    return (Class<?>) parentLoaderDefineClass.invoke(parent, args);
-                }catch(InvocationTargetException e) {
-                    Throwable cause = e.getCause();
-
-                    if(cause instanceof ClassFormatError) {
-                        throw new IllegalStateException("Instrument error of '" + name + "'", cause);
-                    }
-
-                    if(cause instanceof  LinkageError) {
-                        if (ic.isEnsure()) {
-                            throw new IllegalStateException("Class '" + name + "' already loaded by '" +
-                                    parent.getClass().getName() + "', cannot instrument it!");
-                        } else {
-                            log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-                            return null;
-                        }
-                    }else{
-                        throw new ClassNotFoundException(name, cause);
-                    }
-                }catch(Exception e) {
-                    throw new ClassNotFoundException(name, e);
-                }
+            if(null == ic) {
+                return null;
             }else{
-                if(null != ic) {
-                    name  = ic.getClassName();
-                    bytes = ic.getClassData();
+                name  = ic.getClassName();
+                bytes = ic.getClassData();
+            }
+
+            log.trace("Defining instrumented class '{}' use parent loader", name);
+            Object[] args = new Object[]{name, bytes, 0, bytes.length};
+
+            try {
+                return (Class<?>) parentLoaderDefineClass.invoke(parent, args);
+            }catch(InvocationTargetException e) {
+                Throwable cause = e.getCause();
+
+                if(cause instanceof ClassFormatError) {
+                    throw new IllegalStateException("Instrument error of '" + name + "'", cause);
                 }
-                log.trace("Defining class '{}' use app loader", name);
-                return defineClass(name, bytes, 0, bytes.length);
+
+                if(cause instanceof  LinkageError) {
+
+                    if (ic.isEnsure()) {
+                        throw new IllegalStateException("Class '" + name + "' already loaded by '" +
+                                parent.getClass().getName() + "', cannot instrument it!");
+                    } else {
+                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
+                        return null;
+                    }
+                }else{
+                    throw new ClassNotFoundException(name, cause);
+                }
+            }catch(Exception e) {
+                throw new ClassNotFoundException(name, e);
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);
@@ -364,15 +346,11 @@ public class AppClassLoader extends ClassLoader {
             return true;
         }
 
-        if(!useParent) {
-            return false;
-        }
-
         if(isBeanClass(name)) {
             return false;
         }
 
-        if(name.startsWith(basePackage)) {
+        if(null != basePackage && name.startsWith(basePackage)) {
             return false;
         }
 

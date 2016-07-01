@@ -31,12 +31,16 @@ public class ClassMapper implements Mapper {
 		ResourceSet resources = config.getResources();
 		
 		resources.processClasses((cls) -> {
-			
-			if(mappingStrategy.isExplicitEntity(context,cls) && 
-			   mappingStrategy.isContextModel(context.getOrmContext(), cls)){
-				context.addEntityMapping(mappingStrategy.createEntityClassMapping(context, cls));
-			}
-		});		
+
+			if(mappingStrategy.isExplicitEntity(context,cls)){
+
+                if(!mappingStrategy.isContextModel(context.getOrmContext(), cls)) {
+                    return;
+                }
+
+                context.addEntityMapping(mappingStrategy.createEntityClassMapping(context, cls));
+            }
+		});
 		
     }
 	

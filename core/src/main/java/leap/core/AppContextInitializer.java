@@ -59,16 +59,16 @@ public class AppContextInitializer {
 			initialAppConfig = new InheritableThreadLocal<>();
 
 			log.debug("Starting standalone app...");
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = AppClassLoader.init(parent);
+            Thread.currentThread().setContextClassLoader(appCl);
 
             AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
 			config = cs.loadConfig(null, null);
 
 			initialAppConfig.set(config);
-
-            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
-            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = AppClassLoader.init(parent, config);
-            Thread.currentThread().setContextClassLoader(appCl);
+            appCl.load(config);
             try{
                 BeanFactoryInternal factory = createStandaloneAppFactory(config,externalAppFactory);
 
@@ -123,17 +123,17 @@ public class AppContextInitializer {
 			initialAppConfig = new InheritableThreadLocal<>();
 
 			//log.info("Initializing app context");
+            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
+            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
+            AppClassLoader appCl  = AppClassLoader.init(parent);
+            Thread.currentThread().setContextClassLoader(appCl);
+
 
             AppConfigSource cs = Factory.newInstance(AppConfigSource.class);
             config = cs.loadConfig(externalContext, initProperties);
 
             initialAppConfig.set(config);
-
-            ClassLoader parent = Classes.getClassLoader(AppContextInitializer.class);
-            ClassLoader ctxCl  = Thread.currentThread().getContextClassLoader();
-            AppClassLoader appCl  = AppClassLoader.init(parent, config);
-            Thread.currentThread().setContextClassLoader(appCl);
-
+            appCl.load(config);
             try {
                 BeanFactory factory = beanFactoryCreator.apply(config);
 
