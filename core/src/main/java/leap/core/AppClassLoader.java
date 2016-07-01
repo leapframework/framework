@@ -282,6 +282,11 @@ public class AppClassLoader extends ClassLoader {
                 return null;
             }
 
+            if(null == ic && isParentLoaded(name)) {
+                log.trace("Class '{}' already loaded, do nothing", name);
+                return null;
+            }
+
             loadedUrls.add(url);
 
             byte[] bytes;
@@ -305,14 +310,14 @@ public class AppClassLoader extends ClassLoader {
                 }
 
                 if(cause instanceof  LinkageError) {
-                    if(ic.shouldRedefine()) {
+                    if(null != ic && ic.shouldRedefine()) {
                         log.info("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
                         if(!ic.isInstrumentedMethodBodyOnly()) {
                             ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
                         }
                         redefineClasses.put(parent.loadClass(name), ic);
                     }else{
-                        if(ic.isEnsure()) {
+                        if(null != ic && ic.isEnsure()) {
                             throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
                                     parent.getClass().getName() + "', cannot instrument it!");
                         }else{

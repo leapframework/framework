@@ -23,5 +23,6 @@ import leap.orm.model.Model;
 /**
  * Created by kael on 2016/6/29.
  */
-public abstract class AbstractClass extends Model implements RootInterface {
+public abstract class AbstractModel extends Model {
+
 }

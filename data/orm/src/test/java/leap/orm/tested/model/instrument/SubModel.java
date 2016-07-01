@@ -14,28 +14,33 @@
  * limitations under the License.
  */
 
-package leap.orm.model;
+package leap.orm.tested.model.instrument;
 
-import leap.orm.OrmTestCase;
-import leap.orm.tested.model.instrument.AbstractModel;
-import leap.orm.tested.model.instrument.SubModel;
-import org.junit.Test;
+import leap.orm.annotation.Id;
 
 /**
  * Created by kael on 2016/6/29.
  */
-public class InstrumentTest extends OrmTestCase {
+public class SubModel extends AbstractModel {
 
-    @Test
-    public void testInstrumentSubModel(){
-        //This method will cause the class of 'SubModel' loaded by class loader immediately.
-        defineClassImmediately(new SubModel());
+    @Id
+    private String id;
 
-        assertNotNull(SubModel.dao());
+    private String name;
+
+    public String getId() {
+        return id;
     }
 
-    //Don't removes the method, for testing.
-    protected void defineClassImmediately(AbstractModel model) {
+    public void setId(String id) {
+        this.id = id;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

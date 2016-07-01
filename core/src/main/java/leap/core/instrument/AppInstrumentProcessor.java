@@ -24,14 +24,28 @@ public interface AppInstrumentProcessor {
 
     }
 
+    /**
+     * Returns true if the processor changes the method body only.
+     */
     default boolean isMethodBodyOnly() {
         return false;
     }
 
+    /**
+     * Returns true if the instrumented class should be redefined if define by class loader failed.
+     */
     default boolean shouldRedefine() {
         return true;
     }
 
+    /**
+     * Instrument the class.
+     *
+     * @param context the {@link AppInstrumentContext}.
+     * @param resource the resource of the instrument class.
+     * @param bytes the byte codes of the instrument class.
+     * @param methodBodyOnly if true, the processor must use a mechanism which changes the method body only.
+     */
     void instrument(AppInstrumentContext context, Resource resource, byte[] bytes, boolean methodBodyOnly);
 
 }
