@@ -80,7 +80,7 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
                 Try.throwUnchecked(() -> {
                     try(InputStream in = ci.is.getInputStream()) {
                         context.updateInstrumented(ic,
-                                this.getClass(),
+                                this,
                                 instrumentClass(ci.cn, new ClassReader(in), true),
                                 true);
                     }

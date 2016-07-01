@@ -49,7 +49,7 @@ public class DefaultAppInstrumentContext implements AppInstrumentContext {
     }
 
     @Override
-    public void updateInstrumented(AppInstrumentClass ic, Class<?> instrumentedBy, byte[] classData, boolean ensure) {
+    public void updateInstrumented(AppInstrumentClass ic, AppInstrumentProcessor instrumentedBy, byte[] classData, boolean ensure) {
         SimpleAppInstrumentClass sic = (SimpleAppInstrumentClass)ic;
 
         if(!instrumentedMap.containsValue(ic)) {

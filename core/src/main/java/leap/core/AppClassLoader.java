@@ -306,7 +306,11 @@ public class AppClassLoader extends ClassLoader {
 
                 if(cause instanceof  LinkageError) {
                     log.info("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-                    ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
+
+                    if(!ic.isInstrumentedMethodBodyOnly()) {
+                        ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
+                    }
+
                     redefineClasses.put(parent.loadClass(name), ic);
                     return null;
                 }else{

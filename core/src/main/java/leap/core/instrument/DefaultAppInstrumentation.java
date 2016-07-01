@@ -81,7 +81,7 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
     }
 
 
-    private String getInstrumentedBy(Set<Class<?>> classes) {
+    private String getInstrumentedBy(Set<AppInstrumentProcessor> classes) {
         StringBuilder s = new StringBuilder();
 
         final AtomicInteger i = new AtomicInteger(-1);
@@ -89,7 +89,7 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
             if(i.incrementAndGet() > 0) {
                 s.append(" , ");
             }
-            s.append(c.getSimpleName());
+            s.append(c.getClass().getSimpleName());
         });
         return s.toString();
     }

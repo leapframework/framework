@@ -190,7 +190,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
 
                     byte[] bytes = instrumentClass(cn, new ClassReader(in), methods);
 
-                    context.updateInstrumented(ic, this.getClass(), bytes, true);
+                    context.updateInstrumented(ic, this, bytes, true);
                 }
             });
         }

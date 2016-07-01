@@ -119,7 +119,7 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
                     byte[] bytes = instrumentClass(cn, new ClassReader(in));
 
-                    context.updateInstrumented(ic, this.getClass(), bytes , false);
+                    context.updateInstrumented(ic, this, bytes , false);
                 }
             });
         }

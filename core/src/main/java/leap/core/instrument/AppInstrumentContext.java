@@ -50,6 +50,6 @@ public interface AppInstrumentContext {
     /**
      * Updates the instrumented class data.
      */
-    void updateInstrumented(AppInstrumentClass cls, Class<?> instrumentedBy, byte[] classData, boolean ensure);
+    void updateInstrumented(AppInstrumentClass cls, AppInstrumentProcessor instrumentedBy, byte[] classData, boolean ensure);
 
 }

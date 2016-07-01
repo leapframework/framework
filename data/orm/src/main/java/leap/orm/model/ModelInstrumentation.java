@@ -109,7 +109,7 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 		cw.visitEnd();
 		byte[] data = cw.toByteArray();
 
-        context.updateInstrumented(ic, this.getClass(), data, false);
+        context.updateInstrumented(ic, this, data, false);
 	}
 	
 	protected void transformClass(ClassReader cr,ClassWriter cw, ClassNode cn){

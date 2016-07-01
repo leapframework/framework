@@ -28,7 +28,8 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     private byte[]        classData;
     private boolean       ensure;
     private boolean       beanDeclared;
-    private Set<Class<?>> instrumentedBySet = new LinkedHashSet<>(2);
+
+    private Set<AppInstrumentProcessor> instrumentedBySet = new LinkedHashSet<>(2);
 
     SimpleAppInstrumentClass(String internalClassName) {
         this.internalClassName = internalClassName;
@@ -71,7 +72,7 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
     }
 
     @Override
-    public Set<Class<?>> getAllInstrumentedBy() {
+    public Set<AppInstrumentProcessor> getAllInstrumentedBy() {
         return instrumentedBySet;
     }
 
@@ -79,7 +80,7 @@ public class SimpleAppInstrumentClass implements AppInstrumentClass {
         classData = data;
     }
 
-    public void addInstrumentedBy(Class<?> cls) {
-        instrumentedBySet.add(cls);
+    public void addInstrumentedBy(AppInstrumentProcessor p) {
+        instrumentedBySet.add(p);
     }
 }

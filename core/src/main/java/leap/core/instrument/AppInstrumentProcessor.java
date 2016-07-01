@@ -24,6 +24,10 @@ public interface AppInstrumentProcessor {
 
     }
 
+    default boolean isMethodBodyOnly() {
+        return false;
+    }
+
     void instrument(AppInstrumentContext context, Resource resource, byte[] bytes, boolean methodBodyOnly);
 
 }

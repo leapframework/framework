@@ -60,6 +60,17 @@ public interface AppInstrumentClass extends InstrumentClass {
     /**
      * Returns a set contains all the classes which the class instrumented by..
      */
-    Set<Class<?>> getAllInstrumentedBy();
+    Set<AppInstrumentProcessor> getAllInstrumentedBy();
 
+    /**
+     * Returns true if the class has been instrumented in method body only.
+     */
+    default boolean isInstrumentedMethodBodyOnly() {
+        for(AppInstrumentProcessor p : getAllInstrumentedBy()) {
+            if(!p.isMethodBodyOnly()) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
