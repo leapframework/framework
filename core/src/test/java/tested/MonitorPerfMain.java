@@ -18,6 +18,7 @@ package tested;
 
 import leap.core.AppMainBase;
 import leap.core.annotation.Inject;
+import leap.core.annotation.Monitored;
 import leap.core.monitor.DefaultMonitorConfig;
 import leap.core.monitor.MonitorConfig;
 import leap.lang.time.StopWatch;
@@ -26,6 +27,7 @@ import tested.beans.TMonitorBean;
 import java.math.BigDecimal;
 import java.util.concurrent.TimeUnit;
 
+@Monitored(false)
 public class MonitorPerfMain extends AppMainBase {
 
     public static void main(String[] args) {

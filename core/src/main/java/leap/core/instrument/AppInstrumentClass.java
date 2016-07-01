@@ -73,4 +73,16 @@ public interface AppInstrumentClass extends InstrumentClass {
         }
         return true;
     }
+
+    /**
+     * Returns true if the class should be redefined if instrument failed.
+     */
+    default boolean shouldRedefine() {
+        for(AppInstrumentProcessor p : getAllInstrumentedBy()) {
+            if(p.shouldRedefine()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

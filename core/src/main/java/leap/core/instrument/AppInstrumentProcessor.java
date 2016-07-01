@@ -28,6 +28,10 @@ public interface AppInstrumentProcessor {
         return false;
     }
 
+    default boolean shouldRedefine() {
+        return true;
+    }
+
     void instrument(AppInstrumentContext context, Resource resource, byte[] bytes, boolean methodBodyOnly);
 
 }

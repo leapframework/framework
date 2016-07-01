@@ -10,6 +10,6 @@
     <property name="testOrder.prop3" value="prop3_override" override="true"/>
 
     <if expr="true">
-        <monitor enabled="false" report-error="true" report-args="true" report-line-number="true" method-threshold="10"/>
+        <monitor enabled="true" report-error="true" report-args="true" report-line-number="true" method-threshold="10"/>
     </if>
 </config>

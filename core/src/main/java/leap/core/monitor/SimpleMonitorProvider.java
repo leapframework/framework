@@ -16,19 +16,26 @@
 
 package leap.core.monitor;
 
-import leap.core.AppContext;
+import leap.core.AppConfig;
+import leap.core.AppContextInitializer;
 import leap.lang.Arrays2;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 public class SimpleMonitorProvider implements MonitorProvider {
+
+    private static final Log log = LogFactory.get(SimpleMethodMonitor.class);
 
     private static MethodMonitor NOP_METHOD_MONITOR = new NopMonitorProvider.NopMethodMonitor();
 
     protected MonitorConfig config;
 
     public SimpleMonitorProvider() {
-        AppContext context = AppContext.tryGetCurrent();
-        if(null != context) {
-            config = context.getConfig().getExtension(MonitorConfig.class);
+        AppConfig appConfig = AppContextInitializer.getInitialConfig();
+        if(null == appConfig) {
+            log.warn("App config not found, monitoring disabled!!!");
+        }else{
+            config = appConfig.getExtension(MonitorConfig.class);
         }
     }
 

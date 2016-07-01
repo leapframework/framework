@@ -148,6 +148,16 @@ public class ASM {
 		}
 		return methods.toArray(new MethodNode[methods.size()]);
 	}
+
+    public static AnnotationNode getAnnotation(ClassNode m,Class<? extends Annotation> annotationType) {
+        AnnotationNode a = getAnnotation(m.visibleAnnotations, annotationType);
+
+        if(null == a){
+            a = getAnnotation(m.invisibleAnnotations, annotationType);
+        }
+
+        return a;
+    }
 	
 	public static AnnotationNode getAnnotation(MethodNode m,Class<? extends Annotation> annotationType) {
 		AnnotationNode a = getAnnotation(m.visibleAnnotations, annotationType);

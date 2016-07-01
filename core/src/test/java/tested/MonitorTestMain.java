@@ -18,8 +18,10 @@ package tested;
 
 import leap.core.AppMainBase;
 import leap.core.annotation.Inject;
+import leap.core.annotation.Monitored;
 import tested.beans.TMonitorBean;
 
+@Monitored(false)
 public class MonitorTestMain extends AppMainBase {
 
     public static void main(String[] args) {

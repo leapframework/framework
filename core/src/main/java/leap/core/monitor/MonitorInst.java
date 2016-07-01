@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.core.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package leap.core.monitor;
 
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Monitored {
+import leap.lang.Factory;
+import leap.lang.asm.Type;
 
-    /**
-     * Enables or Disables monitor.
-     */
-    boolean value() default true;
+/**
+ * For monitor instrumentation only.
+ */
+public abstract class MonitorInst {
+
+    public static final Type            TYPE     = Type.getType(MonitorInst.class);
+    public static final MonitorProvider PROVIDER = Factory.newInstance(MonitorProvider.class);
 
 }

@@ -26,19 +26,18 @@ import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
 import leap.lang.asm.commons.GeneratorAdapter;
 import leap.lang.asm.commons.Method;
+import leap.lang.asm.tree.AnnotationNode;
 import leap.lang.asm.tree.ClassNode;
 import leap.lang.asm.tree.MethodNode;
 
 import java.io.InputStream;
 import java.lang.reflect.Modifier;
-
-import static leap.lang.asm.Opcodes.ACC_STATIC;
+import java.util.Map;
 
 public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
-    private static final Type NOP_PROVIDER_TYPE = Type.getType(NopMonitorProvider.class);
-    private static final Type PROVIDER_TYPE     = Type.getType(MonitorProvider.class);
-    private static final Type MONITOR_TYPE      = Type.getType(MethodMonitor.class);
+    private static final Type PROVIDER_TYPE = Type.getType(MonitorProvider.class);
+    private static final Type MONITOR_TYPE  = Type.getType(MethodMonitor.class);
 
     private static final String PROVIDER_FIELD = "$$monitorProvider";
     private static final String START_MONITOR  = "startMethodMonitor";
@@ -64,6 +63,11 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
     private MonitorConfig mc;
 
     @Override
+    public boolean isMethodBodyOnly() {
+        return true;
+    }
+
+    @Override
     public void init(AppConfig config) {
         this.mc = config.getExtension(MonitorConfig.class);
     }
@@ -85,9 +89,21 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
             return;
         }
 
-        boolean isMonitored = ASM.isAnnotationPresent(cn, Monitored.class);
+        boolean isMonitorDeclared = false;
+        AnnotationNode a = ASM.getAnnotation(cn, Monitored.class);
+        if(null != a) {
+            isMonitorDeclared = true;
+            Map<String,Object> params = ASM.getAnnotationValues(a);
+            if(!params.isEmpty()) {
+                Boolean value = (Boolean)params.get("value");
+                if(null != value && !value) {
+                    log.trace("Skip class '{}', disabled", ic.getClassName());
+                    return;
+                }
+            }
+        }
 
-        if(!isMonitored) {
+        if(!isMonitorDeclared) {
             boolean isIgnore = isFrameworkClass(ci);
             if(isIgnore) {
                 return;
@@ -102,22 +118,26 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
             for(MethodNode mn : cn.methods) {
 
                 if(isMonitored(mn)) {
-                    isMonitored = true;
+                    isMonitorDeclared = true;
                     break;
                 }
 
             }
 
-            if(!isMonitored) {
+            if(!isMonitorDeclared) {
                 log.trace("Ignore class '{}', can't found any monitored method(s).", ic.getClassName());
             }
         }
 
-        if(isMonitored){
+        if(isMonitorDeclared){
             Try.throwUnchecked(() -> {
                 try(InputStream in = ci.is.getInputStream()) {
 
-                    byte[] bytes = instrumentClass(cn, new ClassReader(in));
+                    byte[] bytes = instrumentClass(cn, new ClassReader(in), true);
+
+                    if(methodBodyOnly) {
+                        ASM.printASMifiedCode(bytes);
+                    }
 
                     context.updateInstrumented(ic, this, bytes , false);
                 }
@@ -155,8 +175,9 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         return true;
     }
 
-    protected byte[] instrumentClass(ClassNode cn, ClassReader cr) {
-        MonitoredClassVisitor visitor = new MonitoredClassVisitor(cn ,new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES));
+    protected byte[] instrumentClass(ClassNode cn, ClassReader cr, boolean methodBodyOnly) {
+        MonitoredClassVisitor visitor =
+                new MonitoredClassVisitor(cn ,new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES), methodBodyOnly);
 
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
@@ -172,28 +193,25 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         private final Type        type;
 
         private boolean visitStaticInit;
+        private boolean methodBodyOnly;
 
-        public MonitoredClassVisitor(ClassNode cn, ClassWriter cw) {
+        public MonitoredClassVisitor(ClassNode cn, ClassWriter cw, boolean methodBodyOnly) {
             super(ASM.API, cw);
             this.cn = cn;
             this.cw = cw;
             this.type = Type.getObjectType(cn.name);
+            this.methodBodyOnly = methodBodyOnly;
         }
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodNode mn = ASM.getMethod(cn, name, desc);
 
-            if(ASM.isStaticInit(mn)) {
+            if(!methodBodyOnly && ASM.isStaticInit(mn)) {
                 visitStaticInit = true;
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
                 return new ClinitMethodVisitor(mv, access, name, desc);
             }
-
-//            if(ASM.isConstructor(mn)) {
-//                MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-//                return new InitMethodVisitor(type, mv, access, name, desc);
-//            }
 
             if(isMonitored(mn)) {
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
@@ -205,22 +223,23 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
 
         @Override
         public void visitEnd() {
-            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_FINAL + Opcodes.ACC_STATIC,
-                                            PROVIDER_FIELD,
-                                            PROVIDER_TYPE.getDescriptor(), null, null);
-            fv.visitEnd();
+            if(!methodBodyOnly) {
+                FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE + Opcodes.ACC_FINAL + Opcodes.ACC_STATIC,
+                        PROVIDER_FIELD,
+                        PROVIDER_TYPE.getDescriptor(), null, null);
+                fv.visitEnd();
 
-            if(!visitStaticInit) {
-                int access = ACC_STATIC;
+                if (!visitStaticInit) {
+                    int access = Opcodes.ACC_STATIC;
 
-                MethodVisitor real = cw.visitMethod(access, "<clinit>", "()V", null, null);
-                ClinitMethodVisitor mv = new ClinitMethodVisitor(real, access, "<clinit>", "()V");
-                mv.visitCode();
-                mv.returnValue();
-                mv.visitMaxs(0,0);
-                mv.visitEnd();
+                    MethodVisitor real = cw.visitMethod(access, "<clinit>", "()V", null, null);
+                    ClinitMethodVisitor mv = new ClinitMethodVisitor(real, access, "<clinit>", "()V");
+                    mv.visitCode();
+                    mv.returnValue();
+                    mv.visitMaxs(0, 0);
+                    mv.visitEnd();
+                }
             }
-
             super.visitEnd();
         }
 
@@ -229,7 +248,6 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
         }
 
         protected final class ClinitMethodVisitor extends GeneratorAdapter {
-
             public ClinitMethodVisitor(MethodVisitor mv, int access, String name, String desc) {
                 super(ASM.API, mv, access, name, desc);
             }
@@ -244,111 +262,99 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
                 putStatic(type, PROVIDER_FIELD, PROVIDER_TYPE);
             }
         }
-    }
 
-    protected static class InitMethodVisitor extends AdviceAdapter {
+        protected class MonitoredMethodVisitor extends AdviceAdapter {
 
-        private final Type type;
+            private final Type       type;
+            private final MethodNode mn;
+            private final Type[]     argumentTypes;
+            private final Label      tryLabel     = new Label();
+            private final Label      finallyLabel = new Label();
 
-        public InitMethodVisitor(Type type, MethodVisitor mv, int access, String name, String desc) {
-            super(ASM.API, mv, access, name, desc);
-            this.type = type;
-        }
+            private int monitorLocal = 0;
 
-        @Override
-        public void visitCode() {
-            super.visitCode();
-            mv.visitVarInsn(ALOAD, 0);
-            getStatic(NOP_PROVIDER_TYPE, "INSTANCE", PROVIDER_TYPE);
-            putField(type, PROVIDER_FIELD, PROVIDER_TYPE);
-        }
-    }
+            protected MonitoredMethodVisitor(Type type, MethodNode mn, MethodVisitor mv, int access, String name, String desc) {
+                super(ASM.API, mv, access, name, desc);
+                this.type = type;
+                this.mn   = mn;
+                this.argumentTypes = ASM.getArgumentTypes(mn);
+            }
 
-    protected static class MonitoredMethodVisitor extends AdviceAdapter {
+            @Override
+            public void visitCode() {
+                super.visitCode();
 
-        private final Type       type;
-        private final MethodNode mn;
-        private final Type[]     argumentTypes;
-        private final Label      tryLabel     = new Label();
-        private final Label      finallyLabel = new Label();
+                startMonitor();
+                visitLabel(tryLabel);
+            }
 
-        private int monitorLocal = 0;
+            @Override
+            public void visitMaxs(int maxStack, int maxLocals) {
+                visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
 
-        protected MonitoredMethodVisitor(Type type, MethodNode mn, MethodVisitor mv, int access, String name, String desc) {
-            super(ASM.API, mv, access, name, desc);
-            this.type = type;
-            this.mn   = mn;
-            this.argumentTypes = ASM.getArgumentTypes(mn);
-        }
+                visitLabel(finallyLabel);
 
-        @Override
-        public void visitCode() {
-            super.visitCode();
+                int errLocal = newLocal(Type.getType(Throwable.class));
+                storeLocal(errLocal);
 
-            startMonitor();
-            visitLabel(tryLabel);
-        }
-
-        @Override
-        public void visitMaxs(int maxStack, int maxLocals) {
-            visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
-
-            visitLabel(finallyLabel);
-
-            int errLocal = newLocal(Type.getType(Throwable.class));
-            storeLocal(errLocal);
-
-            notifyMonitorError(errLocal);
-            exitMonitor();
-            loadLocal(errLocal);
-            visitInsn(Opcodes.ATHROW);
-
-            super.visitMaxs(maxStack, maxLocals);
-        }
-
-        @Override
-        protected void onMethodExit(int opcode) {
-            if(opcode != Opcodes.ATHROW) {
+                notifyMonitorError(errLocal);
                 exitMonitor();
+                loadLocal(errLocal);
+                visitInsn(Opcodes.ATHROW);
+
+                super.visitMaxs(maxStack, maxLocals);
+            }
+
+            @Override
+            protected void onMethodExit(int opcode) {
+                if(opcode != Opcodes.ATHROW) {
+                    exitMonitor();
+                }
+            }
+
+            protected void startMonitor() {
+                //get the field of monitor provider.
+                if(!methodBodyOnly) {
+                    getStatic(type,PROVIDER_FIELD,PROVIDER_TYPE);
+                }else{
+                    getStatic(MonitorInst.TYPE,"PROVIDER",PROVIDER_TYPE);
+                }
+
+                //Call startMethodMonitor
+                mv.visitLdcInsn(type.getClassName()); //classname
+                mv.visitLdcInsn(mn.name);             //methodDesc
+
+                if(argumentTypes.length > 0) {
+                    loadArgArray();
+                    invokeInterface(PROVIDER_TYPE, START_MONITOR_METHOD_WITH_ARGS);
+                }else{
+                    invokeInterface(PROVIDER_TYPE, START_MONITOR_METHOD_NO_ARGS);
+                }
+
+                //store local variable.
+                monitorLocal = newLocal(MONITOR_TYPE);
+                storeLocal(monitorLocal);
+            }
+
+            protected void notifyMonitorError(int errLocal) {
+                loadLocal(monitorLocal);
+                loadLocal(errLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE,
+                        MONITOR_TYPE.getInternalName(),
+                        ERROR,
+                        "(Ljava/lang/Throwable;)V", true);
+            }
+
+            protected void exitMonitor() {
+                loadLocal(monitorLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE,
+                        MONITOR_TYPE.getInternalName(),
+                        EXIT,
+                        "()V", true);
             }
         }
 
-        protected void startMonitor() {
-            //get the field of monitor provider.
-            getStatic(type,PROVIDER_FIELD,PROVIDER_TYPE);
-
-            //Call startMethodMonitor
-            mv.visitLdcInsn(type.getClassName()); //classname
-            mv.visitLdcInsn(mn.name);             //methodDesc
-
-            if(argumentTypes.length > 0) {
-                loadArgArray();
-                invokeInterface(PROVIDER_TYPE, START_MONITOR_METHOD_WITH_ARGS);
-            }else{
-                invokeInterface(PROVIDER_TYPE, START_MONITOR_METHOD_NO_ARGS);
-            }
-
-            //store local variable.
-            monitorLocal = newLocal(MONITOR_TYPE);
-            storeLocal(monitorLocal);
-        }
-
-        protected void notifyMonitorError(int errLocal) {
-            loadLocal(monitorLocal);
-            loadLocal(errLocal);
-            mv.visitMethodInsn(INVOKEINTERFACE,
-                    MONITOR_TYPE.getInternalName(),
-                    ERROR,
-                    "(Ljava/lang/Throwable;)V", true);
-        }
-
-        protected void exitMonitor() {
-            loadLocal(monitorLocal);
-            mv.visitMethodInsn(INVOKEINTERFACE,
-                    MONITOR_TYPE.getInternalName(),
-                    EXIT,
-                    "()V", true);
-        }
     }
+
 
 }
