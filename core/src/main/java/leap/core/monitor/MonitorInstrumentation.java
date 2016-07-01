@@ -77,7 +77,7 @@ public class MonitorInstrumentation extends AsmInstrumentProcessor {
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
         ClassNode cn = ci.cn;
 
         if(cn.version < 51) {

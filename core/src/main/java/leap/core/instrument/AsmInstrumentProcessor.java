@@ -44,7 +44,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
     }
 
     @Override
-    public void instrument(AppInstrumentContext context, Resource resource, byte[] bytes) {
+    public void instrument(AppInstrumentContext context, Resource resource, byte[] bytes, boolean methodBodyOnly) {
         if(!preInstrument(context)){
             return;
         }
@@ -75,7 +75,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
                 ci.cn = cn;
 
                 //todo : optimize performance?
-                processClass(context, ic, ci);
+                processClass(context, ic, ci, methodBodyOnly);
 
                 if(null == ic) {
                     ic = context.getInstrumentedClass(cr.getClassName());
@@ -104,7 +104,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
         return Modifier.isPublic(cr.getAccess()) && !Modifier.isAbstract(cr.getAccess());
     }
 
-    protected abstract void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) ;
+    protected abstract void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) ;
 
     /**
      * Reads the internal class of super class.

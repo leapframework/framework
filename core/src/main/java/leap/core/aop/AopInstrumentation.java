@@ -57,7 +57,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
     private static final Type LOOKUP_TYPE              = Type.getType(MethodHandles.Lookup.class);
     private static final Type HANDLES_TYPE             = Type.getType(MethodHandles.class);
     private static final Type METHOD_TYPE              = Type.getType(java.lang.reflect.Method.class);
-    private static final Type CLASS_TYPE = Type.getType(Class.class);
+    private static final Type CLASS_TYPE               = Type.getType(Class.class);
 
     private static final String LOOKUP_NAME              = "Lookup";
     private static final String PROVIDER_FIELD           = "$$aopProvider";
@@ -148,7 +148,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
         ClassNode cn = ci.cn;
 
         boolean isIgnore = isFrameworkClass(ci);

@@ -73,7 +73,7 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 	protected List<ModelTransformer> transformers = Factory.newInstances(ModelTransformer.class);
 
     @Override
-    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
         boolean isModel = false;
 
         String superName = ci.cr.getSuperName();

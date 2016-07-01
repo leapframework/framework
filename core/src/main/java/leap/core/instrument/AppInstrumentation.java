@@ -45,5 +45,6 @@ public interface AppInstrumentation {
     /**
      * Try instrument the class, returns the instrumented class info or null.
      */
-    AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes);
+    AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes, boolean methodBodyOnly);
+
 }

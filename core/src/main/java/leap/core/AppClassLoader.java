@@ -81,7 +81,7 @@ public class AppClassLoader extends ClassLoader {
     private final AppInstrumentation                instrumentation    = Factory.newInstance(AppInstrumentation.class);
     private final ClassDependencyResolver           dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
     private final Set<String>                       instrumenting      = new HashSet<>();
-    private final Map<Class<?>, AppInstrumentClass> retransformClasses = new LinkedHashMap<>();
+    private final Map<Class<?>, AppInstrumentClass> redefineClasses    = new LinkedHashMap<>();
 
     private Method  parentLoaderDefineClass;
     private Method  parentFindLoadedClass;
@@ -114,17 +114,17 @@ public class AppClassLoader extends ClassLoader {
     }
 
     void done() {
-        retranform();
+        redefine();
         loadedUrls.clear();
         loadedNames.clear();
         instrumenting.clear();
         beanClassNamesLocal.remove();
     }
 
-    private void retranform() {
-        if(!retransformClasses.isEmpty()) {
-            if(!Agent.retransform(retransformClasses)){
-                for(AppInstrumentClass ic : retransformClasses.values()) {
+    private void redefine() {
+        if(!redefineClasses.isEmpty()) {
+            if(!Agent.redefine(redefineClasses)){
+                for(AppInstrumentClass ic : redefineClasses.values()) {
                     if (ic.isEnsure()) {
                         throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
                                 parent.getClass().getName() + "', cannot instrument it!");
@@ -133,7 +133,7 @@ public class AppClassLoader extends ClassLoader {
                     }
                 }
             }
-            retransformClasses.clear();
+            redefineClasses.clear();
         }
     }
 
@@ -248,10 +248,10 @@ public class AppClassLoader extends ClassLoader {
         InputStream is = null;
         try {
             is = resource.getInputStream();
-            byte[] bytes = IO.readByteArray(is);
+            byte[] rawBytes = IO.readByteArray(is);
 
             if(depFirst) {
-                ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, bytes);
+                ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, rawBytes);
 
                 if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
                     log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
@@ -277,15 +277,16 @@ public class AppClassLoader extends ClassLoader {
             }
 
             //try instrument the class.
-            AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, bytes);
+            AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, rawBytes, false);
             if(null == ic && null == name) {
                 return null;
             }
 
             loadedUrls.add(url);
 
+            byte[] bytes;
             if(null == ic) {
-                return null;
+                bytes = rawBytes;
             }else{
                 name  = ic.getClassName();
                 bytes = ic.getClassData();
@@ -304,17 +305,10 @@ public class AppClassLoader extends ClassLoader {
                 }
 
                 if(cause instanceof  LinkageError) {
-                    log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-                    retransformClasses.put(parent.loadClass(name), ic);
+                    log.info("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
+                    ic = instrumentation.tryInstrument(this, resource, rawBytes, true);
+                    redefineClasses.put(parent.loadClass(name), ic);
                     return null;
-
-//                    if (ic.isEnsure()) {
-//                        throw new IllegalStateException("Class '" + name + "' already loaded by '" +
-//                                parent.getClass().getName() + "', cannot instrument it!");
-//                    } else {
-//                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
-//                        return null;
-//                    }
                 }else{
                     throw new ClassNotFoundException(name, cause);
                 }

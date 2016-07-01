@@ -14,27 +14,30 @@
  * limitations under the License.
  */
 
-package leap.agent;
+package leap.core.transaction;
 
-class AgentLoader {
+import leap.core.AppContext;
+import leap.lang.Exceptions;
+import leap.lang.asm.Type;
+import leap.lang.asm.commons.Method;
 
-    private static boolean sunJdk;
+/**
+ * For instrumentation only.
+ */
+public abstract class TxInst {
+
+    public static final Type   TYPE = Type.getType(TxInst.class);
+    public static final Method MANAGER;
 
     static {
         try{
-            Class.forName("com.sun.tools.attach.VirtualMachine");
-            sunJdk = true;
+            MANAGER = Method.getMethod(TxInst.class.getMethod("manager"));
         }catch(Exception e) {
-            sunJdk = false;
+            throw Exceptions.uncheck(e);
         }
     }
 
-    static boolean load() {
-        if(sunJdk) {
-            return SunJdkAgentLoader.load();
-        }else{
-            return false;
-        }
+    public static TransactionManager manager() {
+        return AppContext.getBean(TransactionManager.class);
     }
-
 }

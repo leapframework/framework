@@ -16,68 +16,44 @@
 
 package leap.agent;
 
-import java.lang.instrument.ClassFileTransformer;
-import java.lang.instrument.IllegalClassFormatException;
+import java.lang.instrument.ClassDefinition;
 import java.lang.instrument.Instrumentation;
-import java.security.ProtectionDomain;
-import java.util.HashMap;
 import java.util.Map;
 
 public class Agent {
 
-    private static Map<Class<?>,? extends InstrumentClass> retransformClasses;
-    private static boolean                                 retranformed;
+    private static Map<Class<?>,? extends InstrumentClass> redefineClasses;
+    private static boolean                                 redefined;
 
-    public static boolean retransform(Map<Class<?>,? extends InstrumentClass> classes) {
-        retranformed = false;
-        retransformClasses = classes;
+    public static boolean redefine(Map<Class<?>,? extends InstrumentClass> classes) {
+        redefined = false;
+        redefineClasses = classes;
 
         if(!AgentLoader.load()){
             return false;
         }
 
-        return retranformed;
+        return redefined;
     }
 
     public static void agentmain(String args, Instrumentation inst) throws Exception {
-        if(null != retransformClasses) {
+        if(null != redefineClasses) {
 
             System.out.println();
-            System.out.println("Retransform " + retransformClasses.size() + " classes!!!");
+            System.out.println("Redefine " + redefineClasses.size() + " classes!!!");
             System.out.println();
 
-            final ClassTransformer transformer = new ClassTransformer(retransformClasses);
-            inst.addTransformer(transformer, true);
+            for(Map.Entry<Class<?>,? extends InstrumentClass> entry : redefineClasses.entrySet()) {
+                Class<?> c = entry.getKey();
+                InstrumentClass ic = entry.getValue();
 
-            for(Class<?> c : retransformClasses.keySet()) {
-                inst.retransformClasses(c);
+                System.out.println("  do redefine '" + c.getName() + "'");
+
+                inst.redefineClasses(new ClassDefinition(c, ic.getClassData()));
+
             }
 
-            inst.removeTransformer(transformer);
-            retranformed = true;
-        }
-    }
-
-    private static final class ClassTransformer implements ClassFileTransformer {
-
-        private final Map<String,byte[]> classes;
-
-        public ClassTransformer(Map<Class<?>,? extends InstrumentClass> classes) {
-            this.classes = new HashMap<>(classes.size());
-            for(Map.Entry<Class<?>,? extends InstrumentClass> entry : classes.entrySet()) {
-                this.classes.put(entry.getKey().getName().replace('.','/'), entry.getValue().getClassData());
-            }
-        }
-
-        @Override
-        public byte[] transform(ClassLoader loader,
-                                String className,
-                                Class<?> classBeingRedefined,
-                                ProtectionDomain protectionDomain,
-                                byte[] classfileBuffer) throws IllegalClassFormatException {
-
-            System.out.println("  do retransform '" + className + "'");
-            return classes.get(className);
+            redefined = true;
         }
     }
 

@@ -56,12 +56,12 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
     }
 
     @Override
-    public AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes) {
+    public AppInstrumentClass tryInstrument(ClassLoader loader, Resource r, byte[] bytes, boolean methodBodyOnly) {
         DefaultAppInstrumentContext context = new DefaultAppInstrumentContext(loader);
 
         for(AppInstrumentProcessor p : processors){
             try {
-                p.instrument(context, r, bytes);
+                p.instrument(context, r, bytes, methodBodyOnly);
             } catch (Throwable e) {
                 throw new AppInitException("Error calling instrument processor '" + p + "', " + e.getMessage(), e);
             }
@@ -79,6 +79,7 @@ public class DefaultAppInstrumentation implements AppInstrumentation {
         }
         return ic;
     }
+
 
     private String getInstrumentedBy(Set<Class<?>> classes) {
         StringBuilder s = new StringBuilder();

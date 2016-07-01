@@ -23,7 +23,7 @@ public interface AppInstrumentProcessor {
     default void init(AppConfig config) {
 
     }
-	
-    void instrument(AppInstrumentContext context, Resource resource, byte[] bytes);
+
+    void instrument(AppInstrumentContext context, Resource resource, byte[] bytes, boolean methodBodyOnly);
 
 }

@@ -18,10 +18,7 @@ package leap.core.transaction;
 
 import leap.core.annotation.Inject;
 import leap.core.annotation.Transactional;
-import leap.core.instrument.AppInstrumentClass;
-import leap.core.instrument.AppInstrumentContext;
-import leap.core.instrument.AppInstrumentProcessor;
-import leap.core.instrument.AsmInstrumentProcessor;
+import leap.core.instrument.*;
 import leap.lang.Try;
 import leap.lang.asm.*;
 import leap.lang.asm.commons.AdviceAdapter;
@@ -56,17 +53,17 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
     static {
         Try.throwUnchecked(() -> {
             TRAN_DEF_INIT_METHOD = Method.getMethod(SimpleTransactionDefinition.class
-                                                .getConstructor(TransactionDefinition.Propagation.class));
+                    .getConstructor(TransactionDefinition.Propagation.class));
 
 
             TM_BEGIN_ALL_METHOD = Method.getMethod(TransactionManager.class
-                                                .getMethod(BEGIN_ALL, TransactionDefinition.class));
+                    .getMethod(BEGIN_ALL, TransactionDefinition.class));
 
         });
     }
 
     @Override
-    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci) {
+    protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
         ClassNode cn = ci.cn;
         if(null != cn.methods) {
             boolean hasTransactionalMethods = false;
@@ -82,15 +79,18 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
                 log.debug("Instrument Transactional class : {}", ic.getClassName());
                 Try.throwUnchecked(() -> {
                     try(InputStream in = ci.is.getInputStream()) {
-                        context.updateInstrumented(ic, this.getClass(), instrumentClass(ci.cn, new ClassReader(in)), true);
+                        context.updateInstrumented(ic,
+                                this.getClass(),
+                                instrumentClass(ci.cn, new ClassReader(in), true),
+                                true);
                     }
                 });
             }
         }
     }
 
-    protected byte[] instrumentClass(ClassNode cn, ClassReader cr) {
-        TxClassVisitor visitor = new TxClassVisitor(cn, new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES));
+    protected byte[] instrumentClass(ClassNode cn, ClassReader cr, boolean methodBodyOnly) {
+        TxClassVisitor visitor = new TxClassVisitor(cn, new ClassWriter(cr, ClassWriter.COMPUTE_FRAMES), methodBodyOnly);
 
         cr.accept(visitor, ClassReader.EXPAND_FRAMES);
 
@@ -102,12 +102,14 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
         private final ClassNode   cn;
         private final ClassWriter cw;
         private final Type        type;
+        private final boolean     methodBodyOnly;
 
-        public TxClassVisitor(ClassNode cn, ClassWriter cw) {
+        public TxClassVisitor(ClassNode cn, ClassWriter cw, boolean methodBodyOnly) {
             super(ASM.API, cw);
             this.cn = cn;
             this.cw = cw;
             this.type = Type.getObjectType(cn.name);
+            this.methodBodyOnly = methodBodyOnly;
         }
 
         @Override
@@ -120,7 +122,7 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
 
                 MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
 
-                return new TxMethodVisitor(type, a, mv , access, name, desc);
+                return new TxMethodVisitor(a, mv , access, name, desc);
             }
 
             return super.visitMethod(access, name, desc, signature, exceptions);
@@ -128,112 +130,118 @@ public class TransactionInstrumentation extends AsmInstrumentProcessor implement
 
         @Override
         public void visitEnd() {
-            FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE, MANAGER_FIELD, MANAGER_TYPE.getDescriptor(), null, null);
-            {
-                AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
-                av.visitEnd();
+            if(!methodBodyOnly) {
+                FieldVisitor fv = cw.visitField(Opcodes.ACC_PRIVATE, MANAGER_FIELD, MANAGER_TYPE.getDescriptor(), null, null);
+                {
+                    AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
+                    av.visitEnd();
+                }
+                fv.visitEnd();
             }
-            fv.visitEnd();
             super.visitEnd();
         }
 
         public byte[] getClassData() {
             return cw.toByteArray();
         }
-    }
 
-    protected static class TxMethodVisitor extends AdviceAdapter {
+        protected class TxMethodVisitor extends AdviceAdapter {
 
-        private final Type           type;
-        private final AnnotationNode annotation;
+            private final Label tryLabel     = new Label();
+            private final Label finallyLabel = new Label();
 
-        private final Label tryLabel     = new Label();
-        private final Label finallyLabel = new Label();
+            private final TransactionDefinition.Propagation propagation;
 
-        private final TransactionDefinition.Propagation propagation;
+            private int transLocal = 0;
 
-        private int tdLocal    = 0;
-        private int transLocal = 0;
+            protected TxMethodVisitor(AnnotationNode a, MethodVisitor mv, int access, String name, String desc) {
+                super(ASM.API, mv, access, name, desc);
 
-        protected TxMethodVisitor(Type type, AnnotationNode a, MethodVisitor mv, int access, String name, String desc) {
-            super(ASM.API, mv, access, name, desc);
-            this.type       = type;
-            this.annotation = a;
-
-            Map<String,Object> values = ASM.getAnnotationValues(a);
-            if(!values.isEmpty()) {
-                propagation = (TransactionDefinition.Propagation) values.get("propagation");
-            }else{
-                propagation = TransactionDefinition.Propagation.REQUIRED;
+                Map<String,Object> values = ASM.getAnnotationValues(a);
+                if(!values.isEmpty()) {
+                    propagation = (TransactionDefinition.Propagation) values.get("propagation");
+                }else{
+                    propagation = TransactionDefinition.Propagation.REQUIRED;
+                }
             }
-        }
 
-        @Override
-        public void visitCode() {
-            super.visitCode();
+            @Override
+            public void visitCode() {
+                super.visitCode();
 
-            beginTransactions();
-            visitLabel(tryLabel);
-        }
+                beginTransactions();
+                visitLabel(tryLabel);
+            }
 
-        @Override
-        public void visitMaxs(int maxStack, int maxLocals) {
-            visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
-            visitLabel(finallyLabel);
-            setRollbackTransactions();
-            completeTransactions();
-            visitInsn(Opcodes.ATHROW);
-
-            super.visitMaxs(maxStack, maxLocals);
-        }
-
-        @Override
-        protected void onMethodExit(int opcode) {
-            if(opcode != Opcodes.ATHROW) {
+            @Override
+            public void visitMaxs(int maxStack, int maxLocals) {
+                visitTryCatchBlock(tryLabel, finallyLabel, finallyLabel, null);
+                visitLabel(finallyLabel);
+                setRollbackTransactions();
                 completeTransactions();
+                visitInsn(Opcodes.ATHROW);
+
+                super.visitMaxs(maxStack, maxLocals);
+            }
+
+            @Override
+            protected void onMethodExit(int opcode) {
+                if(opcode != Opcodes.ATHROW) {
+                    completeTransactions();
+                }
+            }
+
+            protected void newDefinition() {
+                newInstance(TRAN_DEF_TYPE);
+                dup();
+                getStatic(PROPAGATION_TYPE, propagation.name(), PROPAGATION_TYPE);
+                invokeConstructor(TRAN_DEF_TYPE, TRAN_DEF_INIT_METHOD);
+            }
+
+            protected void getTransactionManager() {
+                if(!methodBodyOnly) {
+                    mv.visitVarInsn(Opcodes.ALOAD, 0);
+                    mv.visitFieldInsn(GETFIELD,
+                            type.getInternalName(),
+                            MANAGER_FIELD,
+                            MANAGER_TYPE.getDescriptor());
+                }else{
+                    invokeStatic(TxInst.TYPE,TxInst.MANAGER);
+                }
+            }
+
+            protected void beginTransactions() {
+                //get the instance of transaction manager.
+                getTransactionManager();
+
+                //create transaction definition.
+                newDefinition();
+
+                //invoke the begin transaction method.
+                invokeInterface(MANAGER_TYPE, TM_BEGIN_ALL_METHOD);
+
+                //store local variable.
+                transLocal = newLocal(TRANS_TYPE);
+                storeLocal(transLocal);
+            }
+
+            protected void setRollbackTransactions() {
+                loadLocal(transLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE,
+                        TRANS_TYPE.getInternalName(),
+                        SET_ROLLBACK_ALL,
+                        "()V", true);
+            }
+
+            protected void completeTransactions() {
+                loadLocal(transLocal);
+                mv.visitMethodInsn(INVOKEINTERFACE,
+                        TRANS_TYPE.getInternalName(),
+                        COMPLETE_ALL,
+                        "()V", true);
             }
         }
-
-        protected void newDefinition() {
-            newInstance(TRAN_DEF_TYPE);
-            dup();
-            getStatic(PROPAGATION_TYPE, propagation.name(), PROPAGATION_TYPE);
-            invokeConstructor(TRAN_DEF_TYPE, TRAN_DEF_INIT_METHOD);
-        }
-
-        protected void beginTransactions() {
-            //get the field of transaction manager.
-            mv.visitVarInsn(Opcodes.ALOAD, 0);
-            mv.visitFieldInsn(GETFIELD,
-                              type.getInternalName(),
-                              MANAGER_FIELD,
-                              MANAGER_TYPE.getDescriptor());
-
-            //create transaction definition.
-            newDefinition();
-
-            //invoke the begin transaction method.
-            invokeInterface(MANAGER_TYPE, TM_BEGIN_ALL_METHOD);
-
-            //store local variable.
-            transLocal = newLocal(TRANS_TYPE);
-            storeLocal(transLocal);
-        }
-
-        protected void setRollbackTransactions() {
-            loadLocal(transLocal);
-            mv.visitMethodInsn(INVOKEINTERFACE,
-                    TRANS_TYPE.getInternalName(),
-                    SET_ROLLBACK_ALL,
-                    "()V", true);
-        }
-
-        protected void completeTransactions() {
-            loadLocal(transLocal);
-            mv.visitMethodInsn(INVOKEINTERFACE,
-                    TRANS_TYPE.getInternalName(),
-                    COMPLETE_ALL,
-                    "()V", true);
-        }
     }
+
+
 }
