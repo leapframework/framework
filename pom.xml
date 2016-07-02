@@ -374,17 +374,15 @@
     </dependencies>
 	
 	<modules>
-        <module>agent</module>
-		<module>lang</module>
-		<module>core</module>	    
+        <module>base/junit</module>
+        <module>base/lang</module>
+        <module>base/agent</module>
+		<module>base/core</module>
+        <module>base/test-profile</module>
+        <module>base/test-profile1</module>
 		<module>data/db</module>
 		<module>data/orm</module>
         <module>data/orm-test-resources</module>
-        <module>test/junit</module>
-        <module>test/webunit</module>
-		<module>test/webunit-jsp</module>
-		<module>test/webunit-test1</module>
-        <module>test/webunit-test2</module>
 		<module>web/core</module>
 		<module>web/api</module>
 		<module>web/htpl</module>
@@ -392,12 +390,14 @@
 		<module>web/test-module</module>
 		<module>web/test-webapp</module>
 		<module>web/test-webapp1</module>
+        <module>web/webunit</module>
+        <module>web/webunit-jsp</module>
+        <module>web/webunit-test1</module>
+        <module>web/webunit-test2</module>
 		<module>security/web</module>
 		<module>security/oauth2</module>
 		<module>assembly/fw</module>
 		<module>archetype/webapp-quickstart</module>
-        <module>samples/test-profile</module>
-        <module>samples/test-profile1</module>
         <module>samples/demo-profile</module>
 	</modules>
 </project>

@@ -218,8 +218,7 @@ public class AppResources {
     }
 
     protected int resolveSortOrder(Resource resource) {
-        /* sort oders :
-
+        /* sort orders :
                 core         : 0
                 framework    : 1
                 modules      : 2
