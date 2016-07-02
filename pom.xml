@@ -380,6 +380,7 @@
 		<module>base/core</module>
         <module>base/test-profile</module>
         <module>base/test-profile1</module>
+        <module>base/test-profile2</module>
 		<module>data/db</module>
 		<module>data/orm</module>
         <module>data/orm-test-resources</module>

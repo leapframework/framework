@@ -104,12 +104,6 @@
         <maven.install.skip>true</maven.install.skip>
     </properties>
 
-    <build>
-
-
-
-    </build>
-
     <dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
