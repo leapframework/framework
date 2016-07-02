@@ -180,7 +180,7 @@ public class DefaultEntityReader implements EntityReader {
 				continue;
 			}
 			
-			if(Strings.equals(cm.getColumnName(), cm.getColumnLabel())) {
+			if(Strings.equalsIgnoreCase(cm.getColumnName(), cm.getColumnLabel())) {
 				map.put(fm.getFieldName(), value);
 			}else{
 				map.put(cm.getColumnLabel(), value);

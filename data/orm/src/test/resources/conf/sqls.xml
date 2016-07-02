@@ -22,5 +22,7 @@
         SELECT (112 & 16=16) AS f FROM Owner
         ]]>
     </command>
-
+    <command key="testUpperCaseSqlWithLowerCaseField">
+        SELECT PRDT_ID FROM Product
+    </command>
 </sqls>

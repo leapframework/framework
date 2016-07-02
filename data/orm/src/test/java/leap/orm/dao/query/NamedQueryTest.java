@@ -111,6 +111,16 @@ public class NamedQueryTest extends OrmTestCase {
 	public void testBracketsExpression(){
 		dao.createNamedQuery("testBracketsExpression").list();
 	}
+	@Test
+	public void testUpperCaseSqlWithLowerCaseField(){
+		Product.deleteAll();
+		Product product = new Product();
+		product.create();
+		List<Product> products = Product.<Product>query("testUpperCaseSqlWithLowerCaseField").list();
+		assertEquals(1,products.size());
+		assertEquals(product.getId(),products.get(0).getId());
+	}
+
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {
         Map<String, Object> olderFields = older.fields();
