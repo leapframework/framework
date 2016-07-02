@@ -245,7 +245,7 @@ public class TWebServer {
      * Returns all servlet contexts.
      */
 	public Map<String,ServletContext> getServletContexts(){
-		Map<String, ServletContext> servletContexts = new LinkedHashMap<String, ServletContext>();
+		Map<String, ServletContext> servletContexts = new LinkedHashMap<>();
 
 		for(Entry<String, WebAppContext> entry : contexts.entrySet()){
 			servletContexts.put(entry.getKey(), entry.getValue().getServletContext());
@@ -300,7 +300,7 @@ public class TWebServer {
 		
         try {
     		//set base resources
-    		List<Resource> resources = new ArrayList<Resource>();
+    		List<Resource> resources = new ArrayList<>();
 
         	//web app dir
 	        resources.add(new FileResource(dir.toURI().toURL()));
@@ -345,10 +345,13 @@ public class TWebServer {
 		
 		WebAppContext duplicateContext = new WebAppContext();
 		duplicateContext.setContextPath(duplicateContextPath);
-		duplicateContext.setBaseResource(context.getBaseResource());
-		duplicateContext.setClassLoader(duplicateContext.getClassLoader());
-		duplicateContext.setErrorHandler(duplicateContext.getErrorHandler());
-		
+        duplicateContext.setClassLoader(context.getClassLoader());
+        duplicateContext.setParentLoaderPriority(context.isParentLoaderPriority());
+		duplicateContext.setServer(server);
+		duplicateContext.setErrorHandler(context.getErrorHandler());
+        duplicateContext.setBaseResource(context.getBaseResource());
+        duplicateContext.setThrowUnavailableOnStartupException(context.isThrowUnavailableOnStartupException());
+
 		contexts.put(duplicateContextPath, duplicateContext);
 		
 		return this;

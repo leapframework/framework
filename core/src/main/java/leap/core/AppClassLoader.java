@@ -46,7 +46,8 @@ public class AppClassLoader extends ClassLoader {
 
     private static final ThreadLocal<Set<String>> beanClassNamesLocal = new ThreadLocal<>();
 
-    private static ThreadLocal<AppClassLoader> instanceLocal;
+    private static ThreadLocal<AppClassLoader>     instanceLocal;
+    private static Map<ClassLoader,AppClassLoader> instances = new IdentityHashMap<>();
 
     @Internal
     public static AppClassLoader get() {
@@ -57,8 +58,13 @@ public class AppClassLoader extends ClassLoader {
         if(null == instanceLocal) {
             instanceLocal = new ThreadLocal<>();
         }
-        instanceLocal.set(new AppClassLoader(parent));
-        return instanceLocal.get();
+        AppClassLoader inst = instances.get(parent);
+        if(null == inst) {
+            inst = new AppClassLoader(parent);
+            instances.put(parent, inst);
+        }
+        instanceLocal.set(inst);
+        return inst;
     }
 
     public static void addBeanClass(String name) {
@@ -144,11 +150,17 @@ public class AppClassLoader extends ClassLoader {
     }
 
     void done() {
+        //todo : clear loaded classes info.
         redefine();
-        loadedUrls.clear();
-        loadedNames.clear();
+        //loadedUrls.clear();
+        //loadedNames.clear();
         instrumenting.clear();
         beanClassNamesLocal.remove();
+    }
+
+    public void clear() {
+        loadedUrls.clear();
+        loadedNames.clear();
     }
 
     @Internal

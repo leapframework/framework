@@ -16,6 +16,7 @@
 package leap.webunit;
 
 import leap.core.AppContext;
+import leap.core.AppContextInitializer;
 import leap.lang.tools.DEV;
 import leap.webunit.client.THttpClient;
 import leap.webunit.client.THttpClientImpl;
@@ -66,6 +67,8 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
             }
 
             if (null == server) {
+                AppContextInitializer.markTesting();
+
                 server = new TWebServer(httpPort, httpsPort, true);
 
                 if(duplicateRootContext) {

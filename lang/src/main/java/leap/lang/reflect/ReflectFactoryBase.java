@@ -41,9 +41,10 @@ public abstract class ReflectFactoryBase implements ReflectFactory {
 	        if(clazz.isSynthetic()){
 	        	return false;
 	        }
-	        
+
+            //todo :
 	        String className = clazz.getName();
-	        if(className.startsWith("java.") || className.startsWith("sun.")){
+	        if(className.startsWith("java") || className.startsWith("sun.")){
 	        	return false;
 	        }
 	        
