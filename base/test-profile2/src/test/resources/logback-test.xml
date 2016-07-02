@@ -3,17 +3,11 @@
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<encoder>
 			<!-- do not add line number output , it will slow down the execution speed -->
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %level %logger{36} - %msg%n</pattern>
+			<pattern>%d{HH:mm:ss.SSS} [%thread] %level %C:%line - %msg%n</pattern>
 		</encoder>
 	</appender>
-  
-	<logger name="leap"      level="DEBUG"/>
-	<logger name="leap.web"  level="TRACE"/>
-    <logger name="leap.core" level="TRACE"/>
-	
-	<!-- 
-	<logger name="org.eclipse.jetty" level="DEBUG"/>
-    -->
+
+    <logger name="leap" level="DEBUG"/>
   
 	<root level="WARN">
 		<appender-ref ref="STDOUT" />
