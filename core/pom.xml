@@ -31,6 +31,7 @@
             <artifactId>leap-agent</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- for testing only
         <dependency>
             <groupId>org.leapframework</groupId>
             <artifactId>leap-agent</artifactId>
@@ -38,6 +39,7 @@
             <scope>system</scope>
             <systemPath>${basedir}/lib/leap-agent.jar</systemPath>
         </dependency>
+        -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

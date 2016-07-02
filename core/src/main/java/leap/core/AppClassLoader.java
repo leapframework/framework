@@ -158,11 +158,6 @@ public class AppClassLoader extends ClassLoader {
         beanClassNamesLocal.remove();
     }
 
-    public void clear() {
-        loadedUrls.clear();
-        loadedNames.clear();
-    }
-
     @Internal
     public boolean hasFailedClasses() {
         return !failedClasses.isEmpty();
@@ -173,7 +168,7 @@ public class AppClassLoader extends ClassLoader {
         if (null == redefineClassLoader) {
             redefineClassLoader = new RedefineClassLoader();
         }
-        return redefineClassLoader.redefineTestClass(c);
+        return redefineClassLoader.redefineClass(c);
     }
 
     private void redefine() {
@@ -181,14 +176,21 @@ public class AppClassLoader extends ClassLoader {
             log.warn("Redefining {} classes by agent...", redefineClasses.size());
             //redefine by agent.
             if(!Agent.redefine(redefineClasses)){
-                log.warn("Agent redefine failed!");
-                for(AppInstrumentClass ic : redefineClasses.values()) {
-                    if (ic.isEnsure()) {
-                        throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
-                                parent.getClass().getName() + "', cannot instrument it!");
-                    } else {
-                        log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", ic.getClassName());
+                if(!testing) {
+                    log.warn("Agent redefine failed!");
+                    for (AppInstrumentClass ic : redefineClasses.values()) {
+                        if (ic.isEnsure()) {
+                            throw new IllegalStateException("Class '" + ic.getClassName() + "' already loaded by '" +
+                                    parent.getClass().getName() + "', cannot instrument it!");
+                        } else {
+                            log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", ic.getClassName());
+                        }
                     }
+                }else{
+                    log.warn("Redefine by agent failed, redefine by class loader.");
+                    redefineClasses.forEach((c, ic) -> {
+                        redefineFailedClass(ic);
+                    });
                 }
             }
             redefineClasses.clear();
@@ -199,7 +201,16 @@ public class AppClassLoader extends ClassLoader {
         if(!testing) {
             throw new IllegalStateException("Cannot instrument class '" + ic.getClassName() + "', check the class loading!");
         }
+        redefineFailedClass(ic);
         failedClasses.put(ic.getClassName(), ic);
+    }
+
+    private void redefineFailedClass(AppInstrumentClass ic) {
+        if (null == redefineClassLoader) {
+            redefineClassLoader = new RedefineClassLoader();
+        }
+        log.warn("Redefine failed class '{}' by class loader!", ic.getClassName());
+        redefineClassLoader.defineClass(ic.getClassName(), ic.getClassData());
     }
 
     @Override
@@ -435,18 +446,11 @@ public class AppClassLoader extends ClassLoader {
 
     private final class RedefineClassLoader extends ClassLoader {
 
-        private boolean failedRedefined;
+        public void defineClass(String name, byte[] bytes) {
+            defineClass(name, bytes, 0 ,bytes.length);
+        }
 
-        public Class<?> redefineTestClass(Class<?> c) {
-            if(!failedRedefined) {
-                log.warn("Redefine {} failed classes!", failedClasses.size());
-                for(AppInstrumentClass ic : failedClasses.values()) {
-                    log.warn("  redefine failed class '{}'", ic.getClassName());
-                    defineClass(ic.getClassName(), ic.getClassData(), 0, ic.getClassData().length);
-                }
-                failedRedefined = true;
-            }
-
+        public Class<?> redefineClass(Class<?> c) {
             Class<?> redefined = redefineClass(c.getName());
             return null == redefined ? c : redefined;
         }
