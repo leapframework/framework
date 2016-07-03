@@ -32,6 +32,9 @@ import leap.lang.beans.DynaBean;
 import leap.lang.collection.WrappedCaseInsensitiveMap;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
+import leap.lang.json.JsonIgnore;
+import leap.lang.json.JsonStringable;
+import leap.lang.json.JsonWriter;
 import leap.lang.params.NamedParamsBase;
 import leap.lang.params.Params;
 import leap.lang.tostring.ToStringBuilder;
@@ -62,7 +65,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
-public abstract class Model implements DynaBean,ValidatableBean {
+public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	
 	//This variable will be accessed by sub-model-class in the instrumented code, cannot change to private modifier.
 	protected static final ThreadLocal<String> className = new ThreadLocal<String>();
@@ -525,7 +528,7 @@ public abstract class Model implements DynaBean,ValidatableBean {
     }
     
     public Map<String, Object> fields() {
-		Map<String, Object> map = new WrappedCaseInsensitiveMap<Object>();
+		Map<String, Object> map = new WrappedCaseInsensitiveMap<>();
 		
 		map.putAll(fields);
 		
@@ -1059,7 +1062,28 @@ public abstract class Model implements DynaBean,ValidatableBean {
             }
 		};
     }
-    
+
+    //-----json--------
+    @Override
+    public void toJson(JsonWriter w) {
+        Map<String, Object> map = new WrappedCaseInsensitiveMap<>();
+        map.putAll(fields);
+
+        BeanProperty[] props = beanType().getProperties();
+        for(int i=0;i<props.length;i++){
+            BeanProperty p = props[i];
+            if(p.isField()) {
+                if(p.isAnnotationPresent(JsonIgnore.class)) {
+                    map.remove(p.getName());
+                }else{
+                    map.put(p.getName(), p.getValue(this));
+                }
+            }
+        }
+
+        w.map(map);
+    }
+
     //----implements DyanBean ---
 	@Override
     public Object getProperty(String name) {
