@@ -16,6 +16,7 @@
 
 package leap.agent;
 
+import leap.lang.instrument.InstrumentClass;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 

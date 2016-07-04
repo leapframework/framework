@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package leap.agent;
+package leap.lang.instrument;
 
 public interface InstrumentClass {
 

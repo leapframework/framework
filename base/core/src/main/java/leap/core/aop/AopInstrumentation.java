@@ -135,6 +135,11 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
     private AopConfig config;
 
     @Override
+    public boolean supportsMethodBodyOnly() {
+        return false;
+    }
+
+    @Override
     public void init(AppConfig config) {
         this.config = config.getExtension(AopConfig.class);
     }

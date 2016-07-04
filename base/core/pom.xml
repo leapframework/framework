@@ -30,6 +30,7 @@
             <groupId>org.leapframework</groupId>
             <artifactId>leap-agent</artifactId>
             <version>${project.version}</version>
+            <scope>provided</scope>
         </dependency>
         <!-- for testing only
         <dependency>

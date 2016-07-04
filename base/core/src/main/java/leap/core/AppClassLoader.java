@@ -16,7 +16,6 @@
 
 package leap.core;
 
-import leap.agent.Agent;
 import leap.core.instrument.AppInstrumentClass;
 import leap.core.instrument.AppInstrumentation;
 import leap.core.instrument.ClassDependency;
@@ -175,7 +174,7 @@ public class AppClassLoader extends ClassLoader {
         if(!redefineClasses.isEmpty()) {
             log.warn("Redefining {} classes by agent...", redefineClasses.size());
             //redefine by agent.
-            if(!Agent.redefine(redefineClasses)){
+            if(!redefineByAgent()){
                 if(!testing) {
                     log.warn("Agent redefine failed!");
                     for (AppInstrumentClass ic : redefineClasses.values()) {
@@ -211,6 +210,13 @@ public class AppClassLoader extends ClassLoader {
         }
         log.warn("Redefine failed class '{}' by class loader!", ic.getClassName());
         redefineClassLoader.defineClass(ic.getClassName(), ic.getClassData());
+    }
+
+    private boolean redefineByAgent() {
+        if(Classes.isPresent("leap.agent.Agent")) {
+            return leap.agent.Agent.redefine(redefineClasses);
+        }
+        return false;
     }
 
     @Override

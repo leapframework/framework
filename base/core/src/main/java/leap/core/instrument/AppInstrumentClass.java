@@ -16,7 +16,7 @@
 
 package leap.core.instrument;
 
-import leap.agent.InstrumentClass;
+import leap.lang.instrument.InstrumentClass;
 
 import java.util.Set;
 
