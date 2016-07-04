@@ -24,6 +24,7 @@
                     <xsd:element ref="init"/>
 					<xsd:element ref="bean"/>
 					<xsd:element ref="beans"/>
+                    <xsd:element ref="bean-proxy"/>
 					<xsd:element ref="bean-list"/>
 					<xsd:element ref="util-list"/>
 					<xsd:element ref="util-set"/>
@@ -131,6 +132,17 @@
 			</xsd:complexContent>
 		</xsd:complexType>
 	</xsd:element>
+
+    <xsd:element name="bean-proxy">
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:extension base="identifiedType">
+                    <xsd:group ref="beanElements" />
+                    <xsd:attributeGroup ref="beanAttributes" />
+                </xsd:extension>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
 
 	<xsd:element name="constructor-arg" type="argumentType"/>
 	<xsd:element name="additional-type-def" type="typeDefType"/>

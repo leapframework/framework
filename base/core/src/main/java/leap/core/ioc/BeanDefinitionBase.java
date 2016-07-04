@@ -59,6 +59,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected ValueDefinition          valueDefinition;
 	
 	protected Object singletonInstance;
+    protected Object proxyInstance;
 	protected int    sortOrder = DEFAULT_SORT_ORDER;
 
     protected boolean inited;
@@ -293,6 +294,13 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	public boolean isValued(){
 		return null != valueDefinition;
 	}
+
+    /**
+     * Returns the proxy instance or the singleton instance.
+     */
+    public Object getInstance() {
+        return null != proxyInstance ? proxyInstance : singletonInstance;
+    }
 	
 	public Object getSingletonInstance() {
 		return singletonInstance;
@@ -301,8 +309,20 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	protected void setSingletonInstance(Object resolvedValue) {
 		this.singletonInstance = resolvedValue;
 	}
-	
-	public boolean isListBean(){
+
+    public boolean hasProxy() {
+        return null != proxyInstance;
+    }
+
+    public Object getProxyInstance() {
+        return proxyInstance;
+    }
+
+    public void setProxyInstance(Object proxyInstance) {
+        this.proxyInstance = proxyInstance;
+    }
+
+    public boolean isListBean(){
 		return isTypeOf(List.class);
 	}
 	

@@ -104,6 +104,7 @@ class XmlBeanDefinitionLoader {
     public static final String LIST_ELEMENT                     = "list";
     public static final String SET_ELEMENT                      = "set";
     public static final String MAP_ELEMENT                      = "map";
+    public static final String BEAN_PROXY_ELEMENT               = "bean-proxy";
     public static final String BEAN_LIST_ELEMENT                = "bean-list";
     public static final String UTIL_LIST_ELEMENT                = "util-list";
     public static final String UTIL_SET_ELEMENT                 = "util-set";
@@ -268,10 +269,18 @@ class XmlBeanDefinitionLoader {
 	        		if(reader.isStartElement(BEAN_ELEMENT)){
 	        			BeanDefinitionBase bd = readBean(container, reader, context);
 	        			if(null != bd){
-	        				container.addBeanDefinition(bd);	
+	        				container.addBeanDefinition(bd);
 	        			}
 	        			continue;
 	        		}
+
+                    if(reader.isStartElement(BEAN_PROXY_ELEMENT)){
+                        BeanDefinitionBase bd = readBean(container, reader, context, true);
+                        if(null != bd){
+                            container.addBeanDefinition(bd, true);
+                        }
+                        continue;
+                    }
 	        		
 	        		if(reader.isStartElement(BEAN_LIST_ELEMENT)){
 	        			processBeanList(container, reader, context);
@@ -329,8 +338,12 @@ class XmlBeanDefinitionLoader {
 								   reader.getRequiredAttribute(NAME_ATTRIBUTE)
 								   );
 	}
+
+    protected BeanDefinitionBase readBean(BeanContainer container,XmlReader reader,LoaderContext context){
+        return readBean(container, reader, context, false);
+    }
 	
-	protected BeanDefinitionBase readBean(BeanContainer container,XmlReader reader,LoaderContext context){
+	protected BeanDefinitionBase readBean(BeanContainer container,XmlReader reader,LoaderContext context, boolean proxy){
 		boolean loadThis = matchProfileAndTestIfExpression(container, reader);
 		
 		BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
@@ -420,7 +433,7 @@ class XmlBeanDefinitionLoader {
 			}
 		}
 		
-		while(reader.nextWhileNotEnd(BEAN_ELEMENT)){
+		while(reader.nextWhileNotEnd(proxy ? BEAN_PROXY_ELEMENT : BEAN_ELEMENT)){
 			if(reader.isStartElement()){
 			    if(reader.isStartElement(ADDITIONAL_TYPE_DEF_ELEMENT)) {
 			        readBeanTypeDef(container, reader, context, bean);
