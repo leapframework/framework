@@ -1445,7 +1445,7 @@ public class Strings {
      * @param length the length to abbreviate {@code str} to.
      * @return the abbreviated String if the above criteria is met, or the original String supplied for abbreviation.
      */
-    static String abbreviateMiddle(String str, String middle, int length) {
+    public static String abbreviateMiddle(String str, String middle, int length) {
         if (isEmpty(str) || isEmpty(middle)) {
             return str;
         }
@@ -1464,7 +1464,30 @@ public class Strings {
         builder.append(str.substring(endOffset));
 
         return builder.toString();
-    }   	
+    }
+
+    public static String abbreviatePrefix(String str, int prefixLength, int length, String abrevMarker) {
+        if (isEmpty(str) || isEmpty(abrevMarker)) {
+            return str;
+        }
+
+        if (length >= str.length() || prefixLength > str.length()) {
+            return str;
+        }
+
+        int fullPrefixLength = prefixLength + abrevMarker.length();
+
+        StringBuilder builder = new StringBuilder(length);
+        builder.append(str.substring(0, prefixLength));
+        builder.append(abrevMarker);
+
+        if(fullPrefixLength < length) {
+            int startOffset = str.length() - length + fullPrefixLength;
+            builder.append(str.substring(startOffset));
+        }
+
+        return builder.toString();
+    }
 	
     /**
      * <p>Returns padding using the specified delimiter repeated

@@ -17,12 +17,13 @@
 package leap.lang.logging;
 
 import leap.lang.net.Urls;
+import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 
 public class LogUtils {
 
     private static final String USER_DIR             = System.getProperty("user.dir");
-    private static final String USER_DIR_WITH_PREFIX = Urls.FILE_URL_PREFIX + System.getProperty("user.dir");
+    private static final String USER_DIR_WITH_PREFIX = Urls.FILE_URL_PREFIX + Paths.normalize(System.getProperty("user.dir"));
 
     public static String getFilePath(String path) {
         if(null == path) {
@@ -44,8 +45,13 @@ public class LogUtils {
             return null;
         }
 
-        String url = r.getURLString();
+        return getUrl(r.getURLString());
+    }
 
+    /**
+     * Returns the url for logging.
+     */
+    public static String getUrl(String url) {
         if(url.startsWith(USER_DIR_WITH_PREFIX)) {
             url = "." + url.substring(USER_DIR_WITH_PREFIX.length());
         }else if(url.startsWith(Urls.PROTOCOL_JAR + ":")) {
@@ -57,7 +63,6 @@ public class LogUtils {
                 }
             }
         }
-
         return url;
     }
 

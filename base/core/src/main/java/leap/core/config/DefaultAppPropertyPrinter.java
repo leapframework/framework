@@ -110,7 +110,9 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
         String value = protectSecret(p.getName(), p.getUnprocessedValue());
 
         pp.name  = p.getName();
-        pp.value = Strings.replace(Strings.abbreviate(value, 30, ".."),"\n","\\n");
+        pp.value = Strings.abbreviateMiddle(value, "...", 50);
+        pp.value = Strings.replace(pp.value, "\r", "\\r");
+        pp.value = Strings.replace(pp.value, "\n", "\\n");
 
         if(null == p.getSource()) {
             pp.source = "(n/a)";
@@ -124,7 +126,7 @@ public class DefaultAppPropertyPrinter implements AppPropertyPrinter {
             pp.source = p.getSource().getClass().getSimpleName();
         }
 
-        pp.source = Strings.right(pp.source, 65);
+        pp.source = Strings.abbreviatePrefix(pp.source, 10, 80, "...");
         pp.system = p.isSystem();
 
         return pp;

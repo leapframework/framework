@@ -83,4 +83,20 @@ public class StringsTest extends ConcurrentTestCase {
         assertEquals("a", Strings.right("a", 10));
         assertEquals("cde", Strings.right("abcde", 3));
     }
+
+    @Test
+    public void testAbbreviatePrefix() {
+        String marker1 = ".";
+        String marker2 = "..";
+        String marker3 = "...";
+
+        assertEquals("ab.ghijk", Strings.abbreviatePrefix("abcdefghijk", 2, 8, marker1));
+        assertEquals("ab..hijk", Strings.abbreviatePrefix("abcdefghijk", 2, 8, marker2));
+        assertEquals("ab...ijk", Strings.abbreviatePrefix("abcdefghijk", 2, 8, marker3));
+
+        assertEquals("abcdefghijk", Strings.abbreviatePrefix("abcdefghijk", 2, 11, marker3));
+        assertEquals("abcdefghijk", Strings.abbreviatePrefix("abcdefghijk", 2, 12, marker3));
+
+        assertEquals("abc...hijk", Strings.abbreviatePrefix("abcdefghijk", 3, 10, marker3));
+    }
 }
