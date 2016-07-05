@@ -24,7 +24,7 @@
 	</distributionManagement>
 	
 	<scm>
-		<developerConnection>scm:git:https://github.com/leapframework/framework.git</developerConnection>
+		<developerConnection>scm:git:git@github.com:leapframework/framework.git</developerConnection>
 		<tag>v@{project.version}</tag>
 	</scm>
 	
