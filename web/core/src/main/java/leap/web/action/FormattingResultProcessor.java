@@ -72,14 +72,16 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
         }
 
 		ResponseFormat format = resolveResponseFormat(context);
+
+		if(null == format){
+			format = formatManager.getDefaultResponseFormat();
+		}
+
 		if(null == format && null != view){
 			result.render(view);
 			return;
 		}
-		
-		if(null == format){
-			format = formatManager.getDefaultResponseFormat();
-		}
+
         result.render(format.getContent(context,returnValue));
     }
 

@@ -27,6 +27,8 @@ public class File extends Model {
 	
 	@Column("dir_id")
 	protected String  directoryId;
+
+	protected String scopeId;
 	
 	public String getId() {
 		return id;
@@ -66,5 +68,13 @@ public class File extends Model {
 
 	public void setDirectoryId(String directoryId) {
 		this.directoryId = directoryId;
+	}
+
+	public String getScopeId() {
+		return scopeId;
+	}
+
+	public void setScopeId(String scopeId) {
+		this.scopeId = scopeId;
 	}
 }

@@ -15,13 +15,17 @@
  */
 package leap.orm.dao.query;
 
+import leap.junit.contexual.Contextual;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
+import leap.orm.tested.model.file.Directory;
+import leap.orm.tested.model.file.File;
 import leap.orm.tested.model.petclinic.Owner;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
+import java.sql.Statement;
 import java.util.List;
 import java.util.Map;
 
@@ -90,6 +94,33 @@ public class NamedQueryTest extends OrmTestCase {
 			assertNotNull(prdt.getId());
 		});
 	}
+	@Test
+	public void testQueryDirSqlWithResultFile(){
+		dao.deleteAll(Directory.class);
+		dao.deleteAll(File.class);
+		Directory dir = new Directory();
+		dir.setName("dir1");
+		dir.setScopeId("dir");
+		dao.cmdInsert(Directory.class).setAll(dir).execute();
+		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
+		assertEquals(1,files.size());
+		assertEquals("dir",files.get(0).getScopeId());
+	}
+	@Test
+	@Contextual("mysql")
+	public void testBracketsExpression(){
+		dao.createNamedQuery("testBracketsExpression").list();
+	}
+	@Test
+	public void testUpperCaseSqlWithLowerCaseField(){
+		Product.deleteAll();
+		Product product = new Product();
+		product.create();
+		List<Product> products = Product.<Product>query("testUpperCaseSqlWithLowerCaseField").list();
+		assertEquals(1,products.size());
+		assertEquals(product.getId(),products.get(0).getId());
+	}
+
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {
         Map<String, Object> olderFields = older.fields();
@@ -105,4 +136,5 @@ public class NamedQueryTest extends OrmTestCase {
 
         assertMapEquals(olderFields, newerFields);
 	}
+
 }

@@ -24,6 +24,7 @@ import leap.orm.tested.model.ModelWithId1;
 import leap.orm.tested.model.ModelWithId2;
 import leap.orm.tested.model.ModelWithId3;
 
+import leap.orm.tested.model.petclinic.DataTypeModel;
 import org.junit.Test;
 
 public class ModelIdTest extends OrmTestCase {
@@ -172,5 +173,15 @@ public class ModelIdTest extends OrmTestCase {
 		
 		List<ModelWithId3> models = ModelWithId3.findList(new Object[]{id1,id2});
 		assertEquals(2,models.size());
+	}
+	@Test
+	public void testDataTypeRead(){
+		DataTypeModel.deleteAll();
+		DataTypeModel dtm = new DataTypeModel();
+		dtm.setLongType(1000000000000000000L);
+		dtm.create();
+		List<DataTypeModel> dtms = DataTypeModel.all();
+		assertEquals(1,dtms.size());
+		assertEquals(dtm.getLongType(),dtms.get(0).getLongType());
 	}
 }

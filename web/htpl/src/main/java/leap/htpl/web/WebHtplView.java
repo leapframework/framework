@@ -16,6 +16,7 @@
 package leap.htpl.web;
 
 import leap.htpl.HtplTemplate;
+import leap.htpl.HtplTemplateLazyCreator;
 import leap.lang.Args;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -29,16 +30,26 @@ public class WebHtplView extends AbstractView {
 	
 	private static final Log log = LogFactory.get(WebHtplView.class);
 	
-	protected final HtplTemplate template;
+	protected HtplTemplate template;
+	protected HtplTemplateLazyCreator creator;
 	
 	public WebHtplView(App app, String path, HtplTemplate template) {
 		super(app, path);
 		Args.notNull(template,"template");
 		this.template = template;
 	}
-	
+
+	public WebHtplView(App app, String path, HtplTemplateLazyCreator layzCreator) {
+		super(app, path);
+		Args.notNull(layzCreator,"layzCreator");
+		creator = layzCreator;
+	}
+
 	@Override
     protected void doRender(Request request, Response response, ViewData data) throws Exception {
+		if(template == null){
+			template = creator.create();
+		}
 		WebHtplContext context = new WebHtplContext(template.getEngine(), template, request);
 		context.setErrors(request.getValidation().errors());
 		

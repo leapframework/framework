@@ -97,6 +97,8 @@ class SqlExprParser extends SqlParser {
 		final Token token = lexer.token();
 		
 		switch (token) {
+			case RPAREN:
+				return;
 			case LPAREN:
 				acceptText();
 				parseExprLparenToken();

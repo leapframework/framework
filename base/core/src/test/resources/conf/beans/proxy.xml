@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" primary="true"/>
+
+    <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" name="bean1"/>
+    <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" name="bean2"/>
+
+    <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" id="testProxyBean1"/>
+    <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" id="testProxyBean2"/>
+
+    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" primary="true"/>
+    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" name="bean1"/>
+    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" id="testProxyBean2"/>
+
+</beans>

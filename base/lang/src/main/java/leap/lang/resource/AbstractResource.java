@@ -1,0 +1,280 @@
+/*
+ * Copyright 2002-2012 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package leap.lang.resource;
+
+import leap.lang.Charsets;
+import leap.lang.Exceptions;
+import leap.lang.exception.NestedIOException;
+import leap.lang.io.IO;
+import leap.lang.net.Urls;
+
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.nio.charset.Charset;
+
+/**
+ * Convenience base class for {@link Resource} implementations,
+ * pre-implementing typical behavior.
+ *
+ * <p>The "exists" method will check whether a File or InputStream can
+ * be opened; "isOpen" will always return false; "getURL" and "getFile"
+ * throw an exception; and "toString" will return the description.
+ *
+ * @author Juergen Hoeller
+ */
+public abstract class AbstractResource implements Resource {
+	
+	@Override
+    public InputStreamReader getInputStreamReader() throws NestedIOException {
+	    return getInputStreamReader(Charsets.defaultCharset());
+    }
+
+	@Override
+    public InputStreamReader getInputStreamReader(Charset charset) {
+		InputStreamReader reader = null;
+		
+		try{
+			reader = new InputStreamReader(getInputStream(),Charsets.get(charset));
+		}catch(IOException e){
+			IO.close(reader);
+			throw Exceptions.wrap(e);
+		}
+		
+	    return reader;
+    }
+	
+	@Override
+    public String getContent() throws NestedIOException {
+		InputStreamReader r = null;
+		try {
+			r = getInputStreamReader();
+	        return IO.readString(r);
+        }finally{
+        	IO.close(r);
+        }
+    }
+
+	/**
+	 * This implementation checks whether a File can be opened,
+	 * falling back to whether an InputStream can be opened.
+	 * This will cover both directories and content resources.
+	 */
+	public boolean exists() {
+		// Try file existence: can we find the file in the file system?
+		try {
+			return getFile().exists();
+		}
+		catch (Exception ex) {
+			// Fall back to stream existence: can we open the stream?
+			try {
+				InputStream is = getInputStream();
+				is.close();
+				return true;
+			}
+			catch (Throwable isEx) {
+				return false;
+			}
+		}
+	}
+
+	/**
+	 * This implementation always returns <code>true</code>.
+	 */
+	public boolean isReadable() {
+		return true;
+	}
+
+	/**
+	 * This implementation always returns <code>false</code>.
+	 */
+	public boolean isOpen() {
+		return false;
+	}
+	
+	@Override
+    public boolean isFile() {
+		try {
+	        File file = getFile();
+	        return null != file;
+        } catch (IllegalStateException|NestedIOException e) {
+        	return false;
+        }
+    }
+
+	/**
+	 * This implementation throws a FileNotFoundException, assuming
+	 * that the resource cannot be resolved to a URL.
+	 */
+	public URL getURL() throws IOException {
+		throw new FileNotFoundException(getDescription() + " cannot be resolved to URL");
+	}
+	
+	@Override
+    public String getURLString() throws IllegalStateException {
+		try {
+	        return getURL().toExternalForm();
+        } catch (IOException e) {
+        	throw new IllegalStateException("Error calling getURL()",e);
+        }
+    }
+
+	/**
+	 * This implementation builds a URI based on the URL returned
+	 * by {@link #getURL()}.
+	 */
+	public URI getURI() throws IOException {
+		URL url = getURL();
+		try {
+			return Urls.toURI(url);
+		}
+		catch (URISyntaxException ex) {
+			throw new IOException("Invalid URI [" + url + "]", ex);
+		}
+	}
+
+	/**
+	 * This implementation throws a {@link IllegalStateException}, assuming
+	 * that the resource cannot be resolved to an absolute file path.
+	 */
+	public File getFile() {
+		throw new IllegalStateException(getDescription() + " cannot be resolved to absolute file path");
+	}
+
+	/**
+	 * This implementation reads the entire InputStream to calculate the
+	 * content length. Subclasses will almost always be able to provide
+	 * a more optimal version of this, e.g. checking a File length.
+	 * @see #getInputStream()
+	 */
+	public long contentLength() throws IOException {
+		InputStream is = getInputStream();
+		try {
+			long size = 0;
+			byte[] buf = new byte[255];
+			int read;
+			while ((read = is.read(buf)) != -1) {
+				size += read;
+			}
+			return size;
+		}
+		finally {
+			try {
+				is.close();
+			}
+			catch (IOException ex) {
+			}
+		}
+	}
+
+	/**
+	 * This implementation checks the timestamp of the underlying File,
+	 * if available.
+	 * @see #getFileForLastModifiedCheck()
+	 */
+	public long lastModified() throws IOException {
+		long lastModified = getFileForLastModifiedCheck().lastModified();
+		if (lastModified == 0L) {
+			throw new FileNotFoundException(getDescription() +
+					" cannot be resolved in the file system for resolving its last-modified timestamp");
+		}
+		return lastModified;
+	}
+
+	/**
+	 * Determine the File to use for timestamp checking.
+	 * <p>The default implementation delegates to {@link #getFile()}.
+	 * @return the File to use for timestamp checking (never <code>null</code>)
+	 * @throws IOException if the resource cannot be resolved as absolute
+	 * file path, i.e. if the resource is not available in a file system
+	 */
+	protected File getFileForLastModifiedCheck() throws IOException {
+		return getFile();
+	}
+
+	/**
+	 * This implementation throws a FileNotFoundException, assuming
+	 * that relative resources cannot be created for this resource.
+	 */
+	public Resource createRelative(String relativePath) throws IOException {
+		throw new FileNotFoundException("Cannot create a relative resource for " + getDescription());
+	}
+
+	@Override
+    public FileResource toFileResource() {
+		if(!isFile()){ 
+			throw new IllegalStateException("Cannot convert non 'file' to to FileResource");
+		}
+		
+		if(this instanceof FileResource){
+			return (FileResource)this;
+		}
+		
+		try {
+	        return new SimpleFileResource(getFile());
+        } catch (IllegalStateException|NestedIOException e) {
+        	throw new IllegalStateException("Cannot convert to FileResource, " + e.getMessage(), e);
+        }
+    }
+
+	/**
+	 * This implementation always returns <code>null</code>,
+	 * assuming that this resource type does not have a filename.
+	 */
+	public String getFilename() throws IllegalStateException {
+		return null;
+	}
+	
+	@Override
+    public String getFilepath() {
+		return getFile().getAbsolutePath();
+    }
+
+	@Override
+    public String getClasspath() {
+	    return null;
+    }
+
+	/**
+	 * This implementation returns the description of this resource.
+	 * @see #getDescription()
+	 */
+	@Override
+	public String toString() {
+		return getDescription();
+	}
+
+	/**
+	 * This implementation compares description strings.
+	 * @see #getDescription()
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return (obj == this ||
+		    (obj instanceof Resource && ((Resource) obj).getDescription().equals(getDescription())));
+	}
+
+	/**
+	 * This implementation returns the description's hash code.
+	 * @see #getDescription()
+	 */
+	@Override
+	public int hashCode() {
+		return getDescription().hashCode();
+	}
+}

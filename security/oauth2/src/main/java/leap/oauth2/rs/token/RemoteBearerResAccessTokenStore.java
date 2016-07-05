@@ -55,7 +55,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
             String content = response.getString();
-            
+
             log.debug("Received response : {}", content);
             
             try {

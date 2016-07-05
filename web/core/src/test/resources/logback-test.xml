@@ -7,8 +7,9 @@
 		</encoder>
 	</appender>
   
-	<logger name="leap"     level="DEBUG"/>
-	<logger name="leap.mvc" level="TRACE"/>
+	<logger name="leap"      level="DEBUG"/>
+	<logger name="leap.web"  level="TRACE"/>
+    <logger name="leap.core" level="TRACE"/>
 	
 	<!-- 
 	<logger name="org.eclipse.jetty" level="DEBUG"/>

@@ -122,6 +122,14 @@ public interface Route extends RouteBase, Sourced {
 	View getDefaultView();
 
 	/**
+	 * Returns a view name for rendering the result of action.
+	 *
+	 * <p>
+	 * Returns <code>null</code> if no view exists for the action.
+	 */
+	String getDefaultViewName();
+
+	/**
 	 * Returns the controller's path or <code>null</code>
 	 */
 	String getControllerPath();

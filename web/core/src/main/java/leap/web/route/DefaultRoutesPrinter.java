@@ -107,8 +107,8 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 		rule.append(pathFormat.format(getPathDescription(route))).append("   ");
 		rule.append(actionFormat.format(getActionDescription(route))).append("   ");
 		
-		if(null != route.getDefaultView()){
-			rule.append(route.getDefaultView().toString());
+		if(null != route.getDefaultViewName()){
+			rule.append(route.getDefaultViewName());
 		}else{
 			rule.append("(none)");
 		}

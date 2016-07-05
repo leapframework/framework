@@ -1,0 +1,3 @@
+Agent-Class: leap.agent.Agent
+Can-Redefine-Classes: true
+Can-Retransform-Classes: true

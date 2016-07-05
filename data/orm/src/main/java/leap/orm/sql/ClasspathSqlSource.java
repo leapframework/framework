@@ -23,10 +23,12 @@ import leap.lang.io.FileChangeListenerAdaptor;
 import leap.lang.io.FileChangeObserver;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.net.Urls;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -41,8 +43,23 @@ public class ClasspathSqlSource implements SqlSource {
 	@Override
     public void loadSqlCommands(SqlConfigContext context) throws SqlConfigException, SqlClauseException {
 		//load all sqls
-		loadSqls(context, AppResources.get(config).search("sqls"));
-		
+
+		AppResource resources[] = AppResources.get(config).search("sqls");
+
+		loadSqls(context, resources);
+
+		for(AppResource resource : resources){
+			try {
+				if(Urls.isFileUrl(resource.getResource().getURL())){
+					fileMonitor.addObserver(new FileChangeObserver(resource.getResource().getFile()));
+				}
+			} catch (IOException e) {
+				log.error(e);
+				throw new RuntimeException(e);
+			}
+		}
+
+
 		Resource dir = AppResources.getAppClasspathDirectory("sqls");
 		if(dir.isFile()) {
             monitorSqls(context, dir.getFile());

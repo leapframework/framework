@@ -63,6 +63,8 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
     @Override
     public void loadMetadata(final OrmContext context) throws MetadataException {
+        log.debug("Loading metadata for orm context '{}'...", context.getName());
+
 		LoadingContext loadingContext = new LoadingContext(context);
 		
 		StopWatch sw = StopWatch.startNew();
