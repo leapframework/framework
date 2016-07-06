@@ -58,37 +58,40 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
 
     protected static void startServer() {
         synchronized (WebTestRunner.class) {
-            if(null == httpClient) {
-                httpClient = new THttpClientImpl(httpPort);
-            }
-
-            if(null == httpsClient) {
-                httpsClient = new THttpClientImpl(httpsPort, true);
-            }
-
-            if (null == server) {
-                AppContextInitializer.markTesting();
-
-                server = new TWebServer(httpPort, httpsPort, true);
-
-                if(duplicateRootContext) {
-                    server.duplicateContext("", "/root");
+            if(null == server) {
+                if(null == httpClient) {
+                    httpClient = new THttpClientImpl(httpPort);
                 }
 
-                server.start();
+                if(null == httpsClient) {
+                    httpsClient = new THttpClientImpl(httpsPort, true);
+                }
 
-                httpClient.addContextPaths(server.getContextPaths());
-                httpsClient.addContextPaths(server.getContextPaths());
+                if (null == server) {
+
+                    AppContextInitializer.markTesting();
+
+                    server = new TWebServer(httpPort, httpsPort, true);
+
+                    if(duplicateRootContext) {
+                        server.duplicateContext("", "/root");
+                    }
+
+                    server.start();
+
+                    httpClient.addContextPaths(server.getContextPaths());
+                    httpsClient.addContextPaths(server.getContextPaths());
+                }
+
+                rootServletContext = server.tryGetServletContext("");
+                if(null != rootServletContext) {
+                    context = AppContext.get(rootServletContext);
+                }else if(server.getServletContexts().size() == 1){
+                    context = AppContext.get(server.getServletContexts().values());
+                }
+
+                setup();
             }
-
-            rootServletContext = server.tryGetServletContext("");
-            if(null != rootServletContext) {
-                context = AppContext.get(rootServletContext);
-            }else if(server.getServletContexts().size() == 1){
-                context = AppContext.get(server.getServletContexts().values());
-            }
-
-            setup();
         }
     }
 

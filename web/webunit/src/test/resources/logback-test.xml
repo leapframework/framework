@@ -7,8 +7,8 @@
 		</encoder>
 	</appender>
   
-	<logger name="leap"              level="DEBUG"/>
-	<logger name="leap.junit.web"    level="TRACE"/>
+	<logger name="leap"          level="DEBUG"/>
+	<logger name="leap.webunit"  level="TRACE"/>
 
 	<root level="WARN">
 		<appender-ref ref="STDOUT" />
