@@ -62,9 +62,13 @@ public class CriteriaQueryTest extends OrmTestCase {
 		assertEquals(2,owners.size());
 		
 		//test null or empty in parameter
+		assertTrue(Owner.<Owner>query().where("address not in :address").list().isEmpty());
 		assertTrue(Owner.<Owner>query().where("id not in :ids").list().isEmpty());
 		assertTrue(Owner.<Owner>query().where("id not in :ids").param("ids",new Object[]{}).list().isEmpty());
-		
+		assertTrue(Owner.<Owner>query().where("id not in :ids").param("ids",new Object[]{""}).list().isEmpty());
+
+
+
 		owners = Owner.<Owner>where().cnd("id","in",ids).q().orderByIdAsc().list();
 		assertEquals(2,owners.size());
 		assertEquals("a 0",owners.get(0).getFullName());
