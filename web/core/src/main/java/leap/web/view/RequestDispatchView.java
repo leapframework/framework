@@ -73,7 +73,7 @@ public class RequestDispatchView extends AbstractServletResourceView {
 		if(null != characterEncoding) {
 			response.setCharacterEncoding(characterEncoding);
 		}
-		
+		String contentType = getContentType(request);
 		if(!Strings.isEmpty(contentType)) {
 			SetContentTypeResponse lctr = new SetContentTypeResponse(response.getServletResponse(), contentType);
 			response.setServletResponse(lctr);
