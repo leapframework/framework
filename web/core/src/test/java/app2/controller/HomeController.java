@@ -16,13 +16,16 @@
 package app2.controller;
 
 import app.models.products.Product;
+import leap.web.Results;
 
 public class HomeController {
 
 	public void index() {
 		System.out.println("");
 	}
-	
+	public void index2() {
+		Results.renderView("/index.jsp");
+	}
 	public Product getProduct() {
 		Product product = new Product();
 		

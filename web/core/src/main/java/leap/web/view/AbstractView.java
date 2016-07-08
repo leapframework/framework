@@ -44,6 +44,7 @@ public abstract class AbstractView implements View {
 	protected String returnValueAttribute = DEFAULT_RETURN_VALUE_ATTRIBUTE;
 	protected String errorsAttribute      = DEFAULT_ERRORS_ATTRIBUTE;
 	protected String contentType;
+	protected String defaultContentType;
 	protected String characterEncoding;
 	
 	protected AbstractView(App app, String path) {
@@ -67,6 +68,11 @@ public abstract class AbstractView implements View {
 	}
 	
 	public String getContentType() {
+		if(Strings.endsWith(this.path,".jsp")
+				&& Strings.equals(this.contentType, MimeTypes.APPLICATION_OCTET_STREAM)
+				&& Strings.isNotEmpty(this.defaultContentType)){
+			return defaultContentType;
+		}
 		return contentType;
 	}
 
@@ -80,7 +86,7 @@ public abstract class AbstractView implements View {
 
 	@Override
 	public String getContentType(Request request) {
-		return contentType;
+		return getContentType();
 	}
 	
 	@Override
@@ -113,16 +119,14 @@ public abstract class AbstractView implements View {
 		
 		// Expose helpers as request attributes, if any.
 		exposeHelpers(request);
-		
+
 		renderAndSetContentType(request, response, data);
     }
 	
 	protected void renderAndSetContentType(Request request, Response response, ViewData data) throws Exception {
 		// Set content-type and charset encoding.
-		if(null != contentType){
-			response.setContentType(contentType);
-		}
-		
+		response.setContentType(getContentType());
+
 		if(null != characterEncoding){
 			response.setCharacterEncoding(characterEncoding);
 		}
