@@ -107,13 +107,13 @@ public abstract class ParamBase extends AstNode {
 					int i=0;
 					for(Object item : c){
 						//if(null != item && !"".equals(item)){}
-	    					if(i > 0){
-	    						stm.append(',');
-	    					}
-	    					stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
-	    					stm.addParameter("".equals(item)?null:item);
-	    					
-	    					i++;
+						if(i > 0){
+							stm.append(',');
+						}
+						stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
+						stm.addParameter(item);
+
+						i++;
 
 					}
 				}

@@ -154,7 +154,7 @@ public class DefaultEntityReader implements EntityReader {
 				if(null != fm){
 					bp = beanType.tryGetProperty(fm.getFieldName());
 				}else{
-					bp = getBeanProeprtyByColumn(context,beanType, cm);
+					bp = getBeanPropertyByColumn(context,beanType, cm);
 				}
 			}
 			
@@ -203,7 +203,7 @@ public class DefaultEntityReader implements EntityReader {
 		return value;
 	}
 
-	protected BeanProperty getBeanProeprtyByColumn(OrmContext context, BeanType beanType,ResultColumnMapping cm){
+	protected BeanProperty getBeanPropertyByColumn(OrmContext context, BeanType beanType,ResultColumnMapping cm){
 		Map<String, Object> mappings = beanColumnMappings.get(beanType.getBeanClass());
 		
 		String columnName = cm.getColumnLabel();
@@ -213,7 +213,7 @@ public class DefaultEntityReader implements EntityReader {
 			beanColumnMappings.put(beanType.getBeanClass(), mappings);
 		}else{
 			Object bp = mappings.get(columnName);
-			if(null != bp){
+			if(null != bp){;
 				if(Null.is(bp)){
 					return null;
 				}

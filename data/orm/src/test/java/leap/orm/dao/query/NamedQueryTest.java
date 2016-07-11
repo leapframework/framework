@@ -100,7 +100,7 @@ public class NamedQueryTest extends OrmTestCase {
 		dao.deleteAll(File.class);
 		Directory dir = new Directory();
 		dir.setName("dir1");
-		dir.setScopeId("dir");
+		dir.setScopeId("scopeId");
 		dao.cmdInsert(Directory.class).setAll(dir).execute();
 		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
 		assertEquals(1,files.size());

@@ -24,7 +24,7 @@ public class File extends Model {
 	protected String  name;
 	protected Boolean deleted;
 	protected String  principalId;
-	
+
 	@Column("dir_id")
 	protected String  directoryId;
 
