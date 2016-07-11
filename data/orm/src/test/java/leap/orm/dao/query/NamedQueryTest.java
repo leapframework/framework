@@ -94,17 +94,20 @@ public class NamedQueryTest extends OrmTestCase {
 			assertNotNull(prdt.getId());
 		});
 	}
+
 	@Test
 	public void testQueryDirSqlWithResultFile(){
 		dao.deleteAll(Directory.class);
 		dao.deleteAll(File.class);
 		Directory dir = new Directory();
-		dir.setName("dir1");
+		dir.setName("name");
 		dir.setScopeId("scopeId");
 		dao.cmdInsert(Directory.class).setAll(dir).execute();
 		List<File> files = dao.createNamedQuery("queryDirSqlWithResultFile",File.class).list();
 		assertEquals(1,files.size());
-		assertEquals("dir",files.get(0).getScopeId());
+		assertEquals(dir.getScopeId(),files.get(0).getDirectoryId());
+		assertEquals(dir.getName(),files.get(0).getScopeId());
+		assertEquals(dir.getId(),files.get(0).getId());
 	}
 	@Test
 	@Contextual("mysql")
