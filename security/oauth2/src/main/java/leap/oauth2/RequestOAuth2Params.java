@@ -17,6 +17,7 @@ package leap.oauth2;
 
 import java.util.Map;
 
+import leap.lang.Strings;
 import leap.web.Request;
 
 public class RequestOAuth2Params implements OAuth2Params {
@@ -49,4 +50,12 @@ public class RequestOAuth2Params implements OAuth2Params {
 	    return request.getParameters();
     }
 
+	@Override
+	public String getResourceServerId() {
+		String rsId = request.getHeader(RS_ID);
+		if(Strings.isEmpty(rsId)){
+			rsId = getParameter(RS_ID);
+		}
+		return rsId;
+	}
 }
