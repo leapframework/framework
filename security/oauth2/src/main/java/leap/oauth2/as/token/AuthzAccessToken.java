@@ -73,7 +73,12 @@ public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	/**
 	 * Optional.
 	 */
-	String getScope(); 
+	String getScope();
+
+	/**
+	 * Optional.
+     */
+	void setScope(String scope);
 	
 	/**
 	 * Optional.

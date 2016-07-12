@@ -35,6 +35,8 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	protected boolean               enabled;
 	protected AuthzServerMode		authzServerMode = AuthzServerMode.NONE;
 	protected String                remoteTokenInfoEndpointUrl;
+	protected String 				resourceServerId;
+	protected String 				resourceServerSecret;
 	protected Cache<String, Object> cachedInterceptUrls;
 
 	@Override
@@ -110,4 +112,26 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
             }
         }
     }
+
+	@Override
+	public String getResourceServerId() {
+		return resourceServerId;
+	}
+
+	@Override
+	public String getResourceServerSecret() {
+		return resourceServerSecret;
+	}
+
+	@Override
+	public OAuth2ResServerConfigurator setResourceServerId(String resourceServerId) {
+		this.resourceServerId = resourceServerId;
+		return this;
+	}
+
+	@Override
+	public OAuth2ResServerConfigurator setResourceServerSecret(String resourceServerSecret) {
+		this.resourceServerSecret = resourceServerSecret;
+		return this;
+	}
 }
