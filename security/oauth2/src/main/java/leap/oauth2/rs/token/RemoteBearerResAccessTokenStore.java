@@ -28,6 +28,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.wac.OAuth2WebAppConfig;
 
 import java.util.Map;
 
@@ -47,8 +48,11 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         if(null == config.getRemoteTokenInfoEndpointUrl()) {
             throw new IllegalStateException("The tokenInfoEndpointUrl must not be configured when use remote authz server");
         }
-
+        if(null == config.getResourceServerId()){
+            throw new IllegalStateException("The resource server id must not be configured when use remote authz server");
+        }
         HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
+                                         .addHeader("rs_id",config.getResourceServerId())
                                          .addQueryParam("access_token", credentials.getToken());
 
         HttpResponse response = request.get();

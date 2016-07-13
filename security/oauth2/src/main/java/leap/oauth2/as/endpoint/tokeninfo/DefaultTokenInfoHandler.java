@@ -15,22 +15,21 @@
  */
 package leap.oauth2.as.endpoint.tokeninfo;
 
-import java.util.Map.Entry;
-
 import leap.core.annotation.Inject;
 import leap.lang.Out;
-import leap.lang.http.ContentTypes;
-import leap.lang.json.JsonWriter;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
+import leap.oauth2.as.token.ScopeFilter;
+import leap.oauth2.as.token.ScopeMerger;
 import leap.web.Request;
 import leap.web.Response;
 
 public class DefaultTokenInfoHandler implements TokenInfoHandler {
     
     protected @Inject AuthzTokenManager tokenManager;
+    protected @Inject ScopeFilter[] filters;
 
     @Override
     public boolean handleTokenInfoRequest(Request request, Response response, OAuth2Params params, Out<AuthzAccessToken> out) throws Throwable {
@@ -48,6 +47,13 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
                 OAuth2Errors.invalidRequest(response, "invalid token");
                 tokenManager.removeAccessToken(at);
             }else{
+                if(filters != null && filters.length > 0){
+                    String scope = at.getScope();
+                    for(ScopeFilter filter : filters){
+                        scope = filter.filter(at, scope, params.getResourceServerId());
+                    }
+                    at.setScope(scope);
+                }
                 out.set(at);
             }
             

@@ -15,6 +15,7 @@
  */
 package app.controllers;
 
+import app.models.StringableModel;
 import leap.lang.New;
 import leap.lang.enums.Bool;
 import leap.lang.naming.NamingStyles;
@@ -51,6 +52,13 @@ public class ResponseBodyController extends ControllerBase {
 		map.put("userProperty",New.hashMap("userName","userName"));
 
 		return map;
+	}
+
+	@JsonSerialize(namingStyle = NamingStyles.NAME_LOWER_UNDERSCORE)
+	public StringableModel getJsonStringableWithLowerUnderscore(){
+		StringableModel sm = new StringableModel();
+		sm.setLowerCamel("lowerUnderScore");
+		return sm;
 	}
 
 	public Product product(Product product) {

@@ -82,5 +82,20 @@ public interface OAuth2ResServerConfigurator {
 	 * Valid when use remote authz server.
      */
 	OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url);
-	
+
+	/**
+	 * Sets the resource server Id of this server in oauth2 authorization server.
+	 *
+	 * <p/>
+	 * use when use remote authz server to validate access token.
+	 */
+	OAuth2ResServerConfigurator setResourceServerId(String resourceServerId);
+
+	/**
+	 * Sets the resource server secret of this server in oauth2 authorization server.
+	 *
+	 * <p/>
+	 * use when use remote authz server to validate access token.
+	 */
+	OAuth2ResServerConfigurator setResourceServerSecret(String resourceServerSecret);
 }

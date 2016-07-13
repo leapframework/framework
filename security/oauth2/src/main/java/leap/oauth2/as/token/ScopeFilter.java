@@ -18,20 +18,17 @@
 
 package leap.oauth2.as.token;
 
-import leap.oauth2.as.authc.AuthzAuthentication;
-import leap.oauth2.as.client.AuthzClient;
-
 /**
  * Created by kael on 2016/7/12.
  */
-public interface ScopeMerger {
-    /**
-     * merge client scope and user scope as access token scope
-     * @param client client
-     * @param authc user authentication
-     * @param scope existing scope
-     * @return
-     */
-    String merge(AuthzClient client, AuthzAuthentication authc, String scope);
+public interface ScopeFilter {
 
+    /**
+     * filter the scope of this access token, the return string where be set to this access token
+     * @param at the access token
+     * @param rawScope rawScope
+     * @param rsId the resource server id of this tokeninfo request
+     * @return new scope
+     */
+    String filter(AuthzAccessToken at, String rawScope, String rsId);
 }

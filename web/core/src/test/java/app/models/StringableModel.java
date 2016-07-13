@@ -16,22 +16,33 @@
  *
  */
 
-package leap.oauth2.as.token;
+package app.models;
 
-import leap.oauth2.as.authc.AuthzAuthentication;
-import leap.oauth2.as.client.AuthzClient;
+import leap.lang.collection.WrappedCaseInsensitiveMap;
+import leap.lang.json.JsonStringable;
+import leap.lang.json.JsonWriter;
+
+import java.util.Map;
 
 /**
  * Created by kael on 2016/7/12.
  */
-public interface ScopeMerger {
-    /**
-     * merge client scope and user scope as access token scope
-     * @param client client
-     * @param authc user authentication
-     * @param scope existing scope
-     * @return
-     */
-    String merge(AuthzClient client, AuthzAuthentication authc, String scope);
+public class StringableModel implements JsonStringable {
 
+    private String lowerCamel;
+
+    @Override
+    public void toJson(JsonWriter w) {
+        Map<String, Object> map = new WrappedCaseInsensitiveMap<>();
+        map.put("lowerCamel",getLowerCamel());
+        w.map(map);
+    }
+
+    public String getLowerCamel() {
+        return lowerCamel;
+    }
+
+    public void setLowerCamel(String lowerCamel) {
+        this.lowerCamel = lowerCamel;
+    }
 }
