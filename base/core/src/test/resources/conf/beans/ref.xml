@@ -8,11 +8,26 @@
 	</bean>
 
 	<bean name="autoInjectRefAttr" type="tested.beans.RefBean" class="tested.beans.RefBean">
-		<property name="refBean" ref-type="tested.beans.RefBean" ref-name="refBean">
-		</property>
+		<property name="refBean" ref-type="tested.beans.RefBean" ref-name="refBean"/>
 	</bean>
 
 	<bean name="refBean" type="tested.beans.RefBean" class="tested.beans.RefBean">
 		<property name="name" value="refbean"/>
+
+        <property name="refPrimaryBean1" ref-type="tested.beans.TPrimaryBeanType1"/>
+        <property name="refPrimaryBean2">
+            <ref type="tested.beans.TPrimaryBeanType2"/>
+        </property>
 	</bean>
+
+    <bean class="tested.beans.TRefListBean" primary="true"/>
+    <bean id="testListBeanRefId"     class="tested.beans.TRefListBean"/>
+    <bean name="testListBeanRefName" class="tested.beans.TRefListBean"/>
+
+    <bean-list type="tested.beans.TRefListBean">
+        <ref type="tested.beans.TRefListBean"/>
+        <ref id="testListBeanRefId"/>
+        <ref type="tested.beans.TRefListBean" name="testListBeanRefName"/>
+    </bean-list>
+
 </beans>

@@ -43,13 +43,13 @@
     </bean>
 
     <bean id="testBeanWithConstructorArgRefConstructor" class="tested.beans.TBean">
-        <constructor-arg ref="testBeanWithCollectionConstructor" type="tested.beans.TBean"/>
-        <constructor-arg ref="testBeanWithConstructor"/>
+        <constructor-arg ref-id="testBeanWithCollectionConstructor" type="tested.beans.TBean"/>
+        <constructor-arg ref-id="testBeanWithConstructor"/>
     </bean>
 
     <bean id="testBeanWithConstructorArgRefConstructor1" class="tested.beans.TBean">
-        <constructor-arg ref="listBean" type="java.util.List"/>
-        <constructor-arg ref="mapMap" type="java.util.Map"/>
+        <constructor-arg ref-id="listBean" type="java.util.List"/>
+        <constructor-arg ref-id="mapMap" type="java.util.Map"/>
     </bean>
 
     <bean id="testBeanWithDefinedBeanConstructor" class="tested.beans.TBean">

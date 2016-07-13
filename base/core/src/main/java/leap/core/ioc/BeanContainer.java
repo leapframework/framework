@@ -750,10 +750,12 @@ public class BeanContainer implements BeanFactory {
 		if(Strings.isNotEmpty(br.getTargetId())){
 			return findBeanDefinition(br.getTargetId());
 		}
-		if(Strings.isNotEmpty(br.getBeanName()) || null != br.getBeanType()){
-			return findBeanOrAliasDefinition(br.getBeanType(),br.getBeanName());
-		}
-		return null;
+
+        if(Strings.isEmpty(br.getBeanName())) {
+            return findPrimaryBeanDefinition(br.getBeanType());
+        }else{
+            return findBeanOrAliasDefinition(br.getBeanType(),br.getBeanName());
+        }
 	}
 
 	protected BeanDefinitionBase findBeanDefinition(String id){
@@ -1464,7 +1466,19 @@ public class BeanContainer implements BeanFactory {
     }
     
     protected Object doGetBeanReferenceInstance(BeanReference br){
-    	throw new IllegalStateException("Not supported yet");
+        BeanDefinitionBase referenced = findBeanDefinition(br);
+
+        if(referenced == null){
+            throw new BeanDefinitionException("The referenced bean not exists : " + br);
+        }
+
+        br.setTargetBeanDefinition(referenced);
+
+        Object bean = doGetBean(referenced);
+        if(null == bean) {
+            throw new BeanCreationException("The referenced bean '" + referenced + "' not exists!");
+        }
+        return bean;
     }
     
 	@SuppressWarnings({ "rawtypes", "unused" })
@@ -1715,32 +1729,17 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	protected Supplier<Object> createBeanReferenceValue(BeanDefinitionBase bd,final BeanReference br){
-		BeanDefinition referenced = findBeanDefinition(br);
+		final BeanDefinitionBase referenced = findBeanDefinition(br);
 		if(referenced == null){
 			throw new BeanDefinitionException("The referenced bean '" + br.getTargetId() + "' not exists, please check the bean : " + bd);
 		}
 		br.setTargetBeanDefinition(referenced);
 		
-		return new Supplier<Object>() {
-			@Override
-            public Object get() {
-				if(Strings.isNotEmpty(br.getTargetId())){
-					return BeanContainer.this.getBean(br.getTargetId());
-				}if(Strings.isNotEmpty(br.getBeanName()) && null!=br.getBeanType()){
-					return BeanContainer.this.getBean(br.getBeanType(),br.getBeanName());
-				}
-				return null;
-            }
-		};
+		return () -> this.doGetBean(referenced);
 	}
 	
 	protected Supplier<Object> createBeanValue(BeanDefinition bd,final BeanDefinitionBase value){
-		return new Supplier<Object>() {
-			@Override
-            public Object get() {
-	            return BeanContainer.this.doBeanCreation(value);
-            }
-		};
+		return () -> doBeanCreation(value);
 	}
 	
 	protected BeanCreationException errorCreateBean(BeanDefinitionBase bd,Throwable e){

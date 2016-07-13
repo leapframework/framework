@@ -15,7 +15,7 @@
 
         <property name="int2" value="${notExistsConfigProperty:1000}"/>
 
-        <property name="simpleBean" ref="simpleBean"/>
+        <property name="simpleBean" ref-id="simpleBean"/>
 
         <property name="listString">
             <list>
@@ -27,7 +27,7 @@
         <property name="listObject">
             <list>
                 <value type="java.lang.Integer">1</value>
-                <ref bean="simpleBean"/>
+                <ref id="simpleBean"/>
             </list>
         </property>
 

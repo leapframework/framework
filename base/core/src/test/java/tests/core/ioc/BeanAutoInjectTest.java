@@ -18,23 +18,18 @@ package tests.core.ioc;
 
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
-import tests.core.CoreTestCase;
 import leap.core.annotation.Inject;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import tested.beans.RefBean;
 import tested.beans.TAutoInjectBean;
+import tests.core.CoreTestCase;
 
 public class BeanAutoInjectTest extends CoreTestCase {
 
     protected static @Inject BeanFactory factory;
 
-    protected @Inject AppConfig config;
-
-    protected @Inject                                TAutoInjectBean autoInjectBean;
-    protected @Inject(name = "autoInjectRefElement") RefBean         autoInjectElement;
-    protected @Inject(name = "autoInjectRefAttr")    RefBean         autoInjectAttr;
-    protected @Inject(name = "refBean")              RefBean         refBean;
+    protected @Inject AppConfig       config;
+    protected @Inject TAutoInjectBean autoInjectBean;
 
     @BeforeClass
     public static void checkStaticInjection() {
@@ -58,21 +53,8 @@ public class BeanAutoInjectTest extends CoreTestCase {
     }
 
     @Test
-    public void testInjectStatusField() {
+    public void testInjectStaticField() {
         assertSame(config, autoInjectBean.config);
-    }
-
-    @Test
-    public void testXMLRefWithTypeAndName(){
-        assertNotNull(autoInjectElement);
-        assertNotNull(autoInjectElement.getRefBean());
-        assertEquals(autoInjectElement.getRefBean().getName(),"refbean");
-        assertTrue(autoInjectElement.getRefBean() == refBean);
-
-        assertNotNull(autoInjectAttr);
-        assertNotNull(autoInjectAttr.getRefBean());
-        assertEquals(autoInjectAttr.getRefBean().getName(),"refbean");
-        assertTrue(autoInjectAttr.getRefBean() == refBean);
     }
 
 }
