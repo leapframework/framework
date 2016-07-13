@@ -129,7 +129,12 @@ public class AutoIdGenerator implements IdGenerator {
 	
 	protected void mappingUUID(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.setValueGenerator(uuidGenerator);
-		fmb.getColumn().setLength(uuidLength);
+		int length = uuidLength;
+		int columnLength = fmb.getColumn().getLength()==null?0:fmb.getColumn().getLength();
+		if(columnLength > length){
+			length = columnLength;
+		}
+		fmb.getColumn().setLength(length);
 	}
 	
 	protected void setSequenceProeprties(MetadataContext context,
