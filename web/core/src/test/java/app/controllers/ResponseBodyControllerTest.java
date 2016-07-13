@@ -54,14 +54,22 @@ public class ResponseBodyControllerTest extends WebTestCase {
 		Map<String, Object> map = JSON.decodeToMap(json);
 		assertFalse(map.containsKey("summary"));
 	}
+
 	@Test
 	public void testGetMapWithLowerUnderscore(){
+		String json = get("/response_body/get_json_stringable_with_lower_underscore").getContent();
+		Map<String, Object> map = JSON.decodeToMap(json);
+		assertEquals("lowerUnderScore", map.get("lower_camel"));
+	}
+
+	@Test
+	public void testGetMapWithLowerCamel(){
 		String json = get("/response_body/get_map_with_lower_underscore").getContent();
 		Map<String, Object> map = JSON.decodeToMap(json);
 		assertEquals("userId", map.get("user_id"));
 		assertEquals("userName", ((Map<String, Object>)map.get("user_property")).get("user_name"));
 	}
-	
+
 	@Test
 	public void testGetModel1() {
 		String json = get("/response_body/get_model1").getContent();

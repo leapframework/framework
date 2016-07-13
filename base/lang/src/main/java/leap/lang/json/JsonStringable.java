@@ -27,6 +27,19 @@ public interface JsonStringable {
 		toJson(JSON.writer(out).setIgnoreNull(true).create());
 	}
 
+	default void toJson(Appendable out, JsonSettings settings){
+		if(settings == null){
+			toJson(out);
+			return;
+		}
+		JsonWriter writer = JSON.writer(out)
+				.setIgnoreNull(settings.isIgnoreNull())
+				.setKeyQuoted(settings.isKeyQuoted())
+				.setNamingStyle(settings.getNamingStyle())
+				.create();
+		toJson(writer);
+	}
+
 	void toJson(JsonWriter w);
 	
 }
