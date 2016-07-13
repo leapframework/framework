@@ -129,10 +129,9 @@ public class AutoIdGenerator implements IdGenerator {
 	
 	protected void mappingUUID(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.setValueGenerator(uuidGenerator);
-		int length = uuidLength;
-		int columnLength = fmb.getColumn().getLength()==null?0:fmb.getColumn().getLength();
-		if(columnLength > length){
-			length = columnLength;
+		int length = fmb.getColumn().getLength() == null?uuidLength:fmb.getColumn().getLength();
+		if(length < uuidLength){
+			throw new IllegalStateException("the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must longer than " + uuidLength);
 		}
 		fmb.getColumn().setLength(length);
 	}

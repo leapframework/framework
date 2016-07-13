@@ -22,13 +22,12 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
-import leap.orm.annotation.Column;
-import leap.orm.annotation.ColumnType;
-import leap.orm.annotation.NonColumn;
-import leap.orm.annotation.Entity;
+import leap.orm.annotation.*;
 
 @Entity
 public class TestedEntity {
+	@Id
+	@Column(length = 50)
 	private String    	  id;
 	private char      	  char1;
 	private Character 	  char2;
