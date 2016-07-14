@@ -16,6 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.AppClassLoader;
+import leap.core.AppConfig;
 import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.el.EL;
@@ -1161,7 +1162,13 @@ class XmlBeanDefinitionLoader {
 			try {
 	            Expression expression = SPEL.createExpression(parseContext,expressionText);
 
-                boolean result = EL.test(expression.getValue(container.getAppConfig()), true);
+                AppConfig config = container.getAppConfig();
+
+                Map<String,Object> vars = New.hashMap();
+                vars.put("config",     config);
+                vars.put("properties", config.getProperties());
+
+                boolean result = EL.test(expression.getValue(vars), true);
 
                 return not ? !result : result;
             } catch (Exception e) {
