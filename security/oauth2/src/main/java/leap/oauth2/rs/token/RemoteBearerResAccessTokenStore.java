@@ -48,13 +48,11 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         if(null == config.getRemoteTokenInfoEndpointUrl()) {
             throw new IllegalStateException("The tokenInfoEndpointUrl must not be configured when use remote authz server");
         }
-        if(null == config.getResourceServerId()){
-            throw new IllegalStateException("The resource server id must not be configured when use remote authz server");
-        }
         HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
-                                         .addHeader("rs_id",config.getResourceServerId())
                                          .addQueryParam("access_token", credentials.getToken());
-
+        if(null != config.getResourceServerId()){
+            request.addHeader("rs_id",config.getResourceServerId());
+        }
         HttpResponse response = request.get();
         
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){

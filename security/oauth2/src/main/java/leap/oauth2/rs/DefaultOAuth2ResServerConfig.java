@@ -129,7 +129,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 		return this;
 	}
 
-	@Override
+	@ConfigProperty
 	public OAuth2ResServerConfigurator setResourceServerSecret(String resourceServerSecret) {
 		this.resourceServerSecret = resourceServerSecret;
 		return this;
