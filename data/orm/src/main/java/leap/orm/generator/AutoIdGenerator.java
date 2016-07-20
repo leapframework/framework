@@ -99,7 +99,7 @@ public class AutoIdGenerator implements IdGenerator {
 	protected void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
 		SequenceMappingBuilder seq = new SequenceMappingBuilder();
 		
-		setSequenceProeprties(context, emb, fmb, seq);
+		setSequenceProperties(context, emb, fmb, seq);
 		
 		fmb.setSequenceName(seq.getName());
 		
@@ -131,12 +131,13 @@ public class AutoIdGenerator implements IdGenerator {
 		fmb.setValueGenerator(uuidGenerator);
 		int length = fmb.getColumn().getLength() == null?uuidLength:fmb.getColumn().getLength();
 		if(length < uuidLength){
-			throw new IllegalStateException("the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must longer than " + uuidLength);
+			String warnInfo = "the column of field `"+fmb.getFieldName()+"` in "+emb.getEntityName()+" is an uuid field, it's length must longer than " + uuidLength;
+			log.warn(warnInfo);
 		}
 		fmb.getColumn().setLength(length);
 	}
 	
-	protected void setSequenceProeprties(MetadataContext context,
+	protected void setSequenceProperties(MetadataContext context,
 										 EntityMappingBuilder emb,FieldMappingBuilder fmb,SequenceMappingBuilder seq){
 	
 		Sequence a = fmb.getBeanProperty() != null ? fmb.getBeanProperty().getAnnotation(Sequence.class) : null;

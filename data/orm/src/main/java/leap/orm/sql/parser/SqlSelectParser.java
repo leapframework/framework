@@ -212,9 +212,10 @@ class SqlSelectParser extends SqlQueryParser {
 		}
 		
 		if(parseSpecialToken()){
+			parseSelectItemAlias(select);
 			return;
 		}
-		
+
 		if(lexer.token() == Token.LPAREN){
 			acceptText();
  			while(lexer.token() != Token.RPAREN && lexer.token() != Token.FROM){
