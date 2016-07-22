@@ -63,6 +63,7 @@ public class BeanContainer implements BeanFactory {
     protected BeanDefinitions                                bpds                = new BeanDefinitions(); //proxy defs
     protected Map<String, BeanListDefinition>                beanListDefinitions = new HashMap<>();
     protected List<BeanDefinitionBase>                       processorBeans      = new ArrayList<>();
+    protected List<BeanDefinitionBase>                       initializableBeans  = new ArrayList<>();
     protected List<BeanDefinitionBase>                       injectorBeans       = new ArrayList<>();
     protected Map<Class<? extends Annotation>, BeanInjector> injectors           = new HashMap<>();
 
@@ -71,14 +72,15 @@ public class BeanContainer implements BeanFactory {
     private Map<Class<?>, Map<?, BeanDefinition>> typedInstances = new ConcurrentHashMap<>();
     private Map<Class<?>, Object>                 primaryBeans   = new ConcurrentHashMap<>();
 
-    private   AppConfig        config;
-    private   AppContext       appContext;
-    private   BeanFactory      beanFactory;
-    private   BeanConfigurator beanConfigurator;
-    protected BeanProcessor[]  processors;
-    private   boolean          initializing;
-    private   boolean          containerInited;
-    private   boolean          appInited;
+    private   AppConfig                  config;
+    private   AppContext                 appContext;
+    private   BeanFactory                beanFactory;
+    private   BeanConfigurator           beanConfigurator;
+    protected BeanFactoryInitializable[] initializables;
+    protected BeanProcessor[]            processors;
+    private   boolean                    initializing;
+    private   boolean                    containerInited;
+    private   boolean                    appInited;
 
 	/** Flag that indicates whether this container has been closed already */
 	private boolean closed = false;
@@ -250,9 +252,21 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
+        if(null != initializables) {
+            for(BeanFactoryInitializable initializable : initializables) {
+                try{
+                    initializable.postInit(getAppConfig(), this);
+                }catch (Throwable e) {
+                    throw new AppInitException(e.getMessage(), e);
+                }
+            }
+        }
+
         if(config instanceof AppConfigBase) {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
+
+
 
 		this.initNonLazyBeans();
 
@@ -882,22 +896,30 @@ public class BeanContainer implements BeanFactory {
 	        }
 		}
 	}
-	
-	protected void resolveAfterLoading() {
+
+    @Override
+    public String toString() {
+        return super.toString();
+    }
+
+    protected void resolveAfterLoading() {
         //bean injector.
-        List<BeanInjector> injectorList = new ArrayList<>();
         for(BeanDefinitionBase bd : injectorBeans) {
             BeanInjector injector = (BeanInjector)doGetBean(bd);
             injector.getSupportedAnnotationTypes().forEach((c) -> injectors.put(c, injector));
         }
 
-        //bean post processors
+        //bean processors
 		List<BeanProcessor> processorList = new ArrayList<>();
 		for(BeanDefinitionBase bd : processorBeans){
 			processorList.add((BeanProcessor)doGetBean(bd));
 		}
 		this.processors = processorList.toArray(new BeanProcessor[]{});
 
+        //bean factory initializable beans
+        List<BeanFactoryInitializable> initializableList = new ArrayList<>();
+        initializableBeans.forEach(bd -> initializableList.add((BeanFactoryInitializable)doGetBean(bd)));
+        this.initializables = initializableList.toArray(new BeanFactoryInitializable[0]);
 
 		//create factory beans
 		for(BeanDefinitionBase bd : bds.typedFactoryDefinitions.values()){
@@ -1827,12 +1849,14 @@ public class BeanContainer implements BeanFactory {
 	        
             if(beanType.equals(BeanProcessor.class)){
                 processorBeans.add(bd);
-                continue;
             }
 
             if(beanType.equals(BeanInjector.class)) {
                 injectorBeans.add(bd);
-                continue;
+            }
+
+            if(beanType.equals(BeanFactoryInitializable.class)) {
+                initializableBeans.add(bd);
             }
             
             //add to named bean definition collection
@@ -1871,7 +1895,7 @@ public class BeanContainer implements BeanFactory {
             typeSet.add(bd);
 	    }
 
-        //add to bean class definition collection
+        //Add to bean class definition collection
         Set<BeanDefinitionBase> clsSet = bds.beanClassDefinitions.get(bd.getBeanClass());
         if(null == clsSet){
             clsSet = new HashSet<>(1);
