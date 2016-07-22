@@ -5,7 +5,7 @@ import java.util.Set;
 import leap.lang.Ordered;
 import leap.lang.Sourced;
 
-public interface BeanDefinition extends Sourced,Ordered {
+public interface BeanDefinition extends TypeDefinition, Sourced,Ordered {
 	
 	int DEFAULT_SORT_ORDER = 100;
 
@@ -15,19 +15,9 @@ public interface BeanDefinition extends Sourced,Ordered {
 	String getId();
 
     /**
-     * Optional. Returns the bean name.
-     */
-	String getName();
-
-    /**
      * Returns the defined class of bean.
      */
     Class<?> getBeanClass();
-
-    /**
-     * Returns <code>true</code> if the bean is a primary bean.
-     */
-	boolean isPrimary();
 
     /**
      * Returns <code>true</code> if the bean is singleton.
@@ -40,9 +30,19 @@ public interface BeanDefinition extends Sourced,Ordered {
     boolean isLazyInit();
 
     /**
-     * Returns <code>true</code> if the bean already inited.
+     * Returns <code>true</code> if the bean already inited(the instance has be created).
      */
     boolean isInited();
+
+    /**
+     * Returns <code>true</code> if the bean is configurable.
+     */
+    boolean isConfigurable();
+
+    /**
+     * Returns the key prefix of configuration properties.
+     */
+    String getConfigurationPrefix();
 
     /**
      * Returns an immutable {@link Set} contains the qualifiers
@@ -53,4 +53,5 @@ public interface BeanDefinition extends Sourced,Ordered {
      * Returns the instance of bean if singleton.
      */
     Object getSingletonInstance();
+
 }

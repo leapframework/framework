@@ -15,10 +15,29 @@
  */
 package leap.core.ioc;
 
+/**
+ * The configurator of {@link BeanDefinition}.
+ */
 public interface BeanDefinitionConfigurator {
 
+    /**
+     * Returns the definition.
+     */
     BeanDefinition definition();
 
-    void setLazyInit(boolean lazyInit);
+    /**
+     * Sets lazy init of the bean.
+     */
+    void setLazyInit(boolean b);
+
+    /**
+     * Sets configurable of bean.
+     */
+    void setConfigurable(boolean b);
+
+    /**
+     * Sets the key prefix of configuration properties.
+     */
+    void setConfigurationPrefix(String prefix);
 
 }

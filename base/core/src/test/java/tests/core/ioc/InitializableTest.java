@@ -16,17 +16,22 @@
 
 package tests.core.ioc;
 
+import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
 import org.junit.Test;
 import tested.init.TestingBeanFactoryInitializable;
 
 public class InitializableTest extends AppTestBase {
 
+    private @Inject TestingBeanFactoryInitializable.TestingBean testingBean;
+
     @Test
     public void testBeanFactoryInitializable() {
 
         assertTrue(TestingBeanFactoryInitializable.called);
 
+        assertNotNull(testingBean);
+        assertEquals("b", testingBean.prop1);
     }
 
 }

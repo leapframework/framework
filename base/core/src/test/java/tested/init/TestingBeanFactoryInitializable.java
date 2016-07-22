@@ -19,14 +19,28 @@ package tested.init;
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.BeanFactoryInitializable;
+import leap.core.annotation.ConfigProperty;
+import leap.core.ioc.BeanDefinitionConfigurator;
+import leap.core.ioc.BeanDefinitions;
 
 public class TestingBeanFactoryInitializable implements BeanFactoryInitializable {
 
     public static boolean called;
 
     @Override
-    public void postInit(AppConfig config, BeanFactory factory) throws Throwable {
+    public void postInit(AppConfig config, BeanFactory factory, BeanDefinitions definitions) throws Throwable {
         called = true;
+
+        BeanDefinitionConfigurator bd = definitions.getOrAdd(TestingBean.class);
+        bd.setConfigurable(true);
+        bd.setConfigurationPrefix("props");
+
+    }
+
+    public static final class TestingBean {
+
+        public @ConfigProperty String prop1;
+
     }
 
 }
