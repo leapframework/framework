@@ -22,6 +22,7 @@ import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
 import leap.core.web.ResponseBase;
 import leap.lang.New;
+import leap.lang.beans.BeanException;
 import leap.lang.http.HTTP;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -53,31 +54,36 @@ public class AppFilter implements Filter {
 	
 	@Override
     public void init(FilterConfig config) throws ServletException {
-		this.servletContext = config.getServletContext();
-		this.bootstrap      = AppBootstrap.tryGet(servletContext);
+		try {
+			this.servletContext = config.getServletContext();
+			this.bootstrap      = AppBootstrap.tryGet(servletContext);
 
-		if(null == bootstrap) {
-			bootstrap = new AppBootstrap();
-			
-			Map<String, String> params = New.hashMap();
-			params.putAll(Servlets.getInitParamsMap(this.servletContext));
-			params.putAll(Servlets.getInitParamsMap(config));
-			
-		    bootstrap.bootApplication(config.getServletContext(), params);
+			if(null == bootstrap) {
+                bootstrap = new AppBootstrap();
+
+                Map<String, String> params = New.hashMap();
+                params.putAll(Servlets.getInitParamsMap(this.servletContext));
+                params.putAll(Servlets.getInitParamsMap(config));
+
+                bootstrap.bootApplication(config.getServletContext(), params);
+            }
+
+			//get beans
+			this.app		  = bootstrap.getApp();
+			this.appHandler   = bootstrap.getAppHandler();
+			this.appContext   = bootstrap.getAppContext();
+			this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
+			this.ignores      = bootstrap.getBeanFactory().getBeans(RequestIgnore.class).toArray(new RequestIgnore[]{});
+
+			if(!bootstrap.isSelfStarted()) {
+                //start application
+                bootstrap.startApplication();
+            }
+		} catch (Exception e) {
+			log.error(e);
+			throw e;
 		}
-	    
-	    //get beans
-	    this.app		  = bootstrap.getApp();
-	    this.appHandler   = bootstrap.getAppHandler();
-	    this.appContext   = bootstrap.getAppContext();
-	    this.assetHandler = bootstrap.getBeanFactory().tryGetBean(AssetHandler.class);
-	    this.ignores      = bootstrap.getBeanFactory().getBeans(RequestIgnore.class).toArray(new RequestIgnore[]{});
-
-        if(!bootstrap.isSelfStarted()) {
-            //start application
-            bootstrap.startApplication();
-        }
-    }
+	}
 
 	@Override
     public void doFilter(ServletRequest req, ServletResponse resp, final FilterChain chain) throws IOException, ServletException {

@@ -94,6 +94,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                     //ignore the properties config file.
                     return;
                 }
+
+                if(reader.isStartElement() && processExtensionElement(context, reader)) {
+                    return;
+                }
             }
 
             if(!foundValidRootElement){
@@ -113,7 +117,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
 
             //extension element
-            if(reader.isStartElement() && !DEFAULT_NAMESPACE_URI.equals(reader.getElementName().getNamespaceURI())){
+            if(reader.isStartElement() && !isDefaultNamespaceUri(reader)){
                 processExtensionElement(context,reader);
                 continue;
             }
@@ -197,19 +201,27 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
         }
     }
 
-    private void processExtensionElement(AppConfigContext context,XmlReader reader){
+    private boolean isDefaultNamespaceUri(XmlReader reader) {
+        return DEFAULT_NAMESPACE_URI.equals(reader.getElementName().getNamespaceURI());
+    }
+
+    private boolean processExtensionElement(AppConfigContext context,XmlReader reader){
         String nsURI = reader.getElementName().getNamespaceURI();
 
         for(AppConfigProcessor extension : processors){
 
             if(nsURI.equals(extension.getNamespaceURI())){
                 extension.processElement(context,reader);
-                return;
+                return true;
             }
 
         }
 
-        throw new AppConfigException("Namespace uri '" + nsURI + "' not supported, check your config : " + reader.getSource());
+        if(!isDefaultNamespaceUri(reader)) {
+            throw new AppConfigException("Namespace uri '" + nsURI + "' not supported, check your config : " + reader.getSource());
+        }
+
+        return false;
     }
 
     /*
