@@ -16,8 +16,12 @@
 package tested.beans;
 
 public class RefBean {
-    private String name;
+
+    private String  name;
     private RefBean refBean;
+    private Object  refPrimaryBean1;
+    private Object  refPrimaryBean2;
+
     public String getName() {
         return name;
     }
@@ -32,5 +36,21 @@ public class RefBean {
 
     public void setRefBean(RefBean refBean) {
         this.refBean = refBean;
+    }
+
+    public Object getRefPrimaryBean1() {
+        return refPrimaryBean1;
+    }
+
+    public void setRefPrimaryBean1(Object refPrimaryBean1) {
+        this.refPrimaryBean1 = refPrimaryBean1;
+    }
+
+    public Object getRefPrimaryBean2() {
+        return refPrimaryBean2;
+    }
+
+    public void setRefPrimaryBean2(Object refPrimaryBean2) {
+        this.refPrimaryBean2 = refPrimaryBean2;
     }
 }

@@ -13,6 +13,14 @@
     <beans if="properties['testIfBeanTrue4.enabled']">
         <bean id="testIfBeanTrue4" class="tested.beans.TBean"/>
     </beans>
+
+    <beans if="!properties['testIfBeanTrue4.enabled']">
+        <bean id="testIfBeanFalse4" class="tested.beans.TBean"/>
+    </beans>
+
+    <beans if="!!properties['testIfBeanTrue4.enabled']">
+        <bean id="testIfBeanFalseTrue4" class="tested.beans.TBean"/>
+    </beans>
 	
 	<beans if="false">
 	    <bean id="testIfBeanFalse1" class="tested.beans.TBean"/>

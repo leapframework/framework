@@ -16,9 +16,14 @@
 package leap.orm.model;
 
 import leap.core.value.Record;
+import leap.junit.contexual.Contextual;
+import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.query.PageResult;
+import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.petclinic.Owner;
+import leap.orm.tested.model.product.ChildProduct;
+import leap.orm.tested.model.product.Product;
 import leap.orm.value.EntityBase;
 
 import org.junit.Test;
@@ -46,7 +51,12 @@ public class ModelQueryTest extends OrmTestCase {
 		assertTrue(o1.id().equals(o2.id()) && o2.id().equals(o3.id()) && 
 				   o3.id().equals(o4.id()) && o4.id().equals(o5.id()) && o5.id().equals(o6.id()));
 	}
-	
+	@Test
+	@Contextual("h2")
+	public void testOrderBy(){
+		ChildProduct.query("testOrderByWithFieldName").params(new Object[]{1}).orderBy("typeId ASC").list();
+	}
+
 	@Test
 	public void testSqlQueryForModel() {
 		deleteAll(Owner.class);

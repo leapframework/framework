@@ -25,4 +25,7 @@
     <command key="testUpperCaseSqlWithLowerCaseField">
         SELECT PRDT_ID FROM Product
     </command>
+    <command key="testOrderByWithFieldName">
+        SELECT PRDT_ID, ? type FROM ChildProduct
+    </command>
 </sqls>

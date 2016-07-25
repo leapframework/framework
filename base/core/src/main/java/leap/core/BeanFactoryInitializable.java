@@ -15,9 +15,13 @@
  */
 package leap.core;
 
+import leap.core.ioc.BeanDefinitions;
 
 public interface BeanFactoryInitializable {
 
-	void postInit(AppContext appContext,BeanFactory beanFactory) throws Throwable;
+    /**
+     * Called after {@link BeanFactory} has been initialized and before creating non-lazy beans.
+     */
+	void postInit(AppConfig config, BeanFactory factory, BeanDefinitions definitions) throws Throwable;
 	
 }

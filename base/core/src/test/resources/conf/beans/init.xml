@@ -3,4 +3,6 @@
 
     <init class="tested.beans.TInitClass"/>
 
+    <bean type="leap.core.BeanFactoryInitializable"
+          class="tested.init.TestingBeanFactoryInitializable"/>
 </beans>

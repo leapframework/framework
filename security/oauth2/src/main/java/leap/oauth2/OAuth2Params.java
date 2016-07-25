@@ -37,6 +37,7 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	String RESPONSE_TYPE = "response_type";
 	String TOKEN_TYPE    = "token_type";
 	String ACCESS_TOKEN  = "access_token";
+	String RS_ID 		 = "rs_id";
 	
 	//Error
     String ERROR             = "error";
@@ -133,6 +134,10 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	
 	default boolean isError() {
 	    return !Strings.isEmpty(getError());
+	}
+
+	default String getResourceServerId(){
+		return getParameter(RS_ID);
 	}
 	
 	String getParameter(String name);

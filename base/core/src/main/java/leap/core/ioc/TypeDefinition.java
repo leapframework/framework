@@ -21,12 +21,12 @@ package leap.core.ioc;
 interface TypeDefinition {
 
     /**
-     * Required.
+     * Required. Returns the bean type.
      */
     Class<?> getType();
 
     /**
-     * Optional.
+     * Optional. Returns the name of bean.
      */
     String getName();
 
@@ -39,4 +39,5 @@ interface TypeDefinition {
      * Returns <code>true</code> if override the exists bean with same definition.
      */
     boolean isOverride();
+
 }

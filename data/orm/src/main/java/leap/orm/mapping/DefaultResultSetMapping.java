@@ -66,7 +66,7 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			cm.setColumnLabel(md.getColumnLabel(i));
 			cm.setColumnType(md.getColumnType(i));
 			
-			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnName());
+			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnLabel());
 
 			if(null != fm){
 				cm.setEntityMapping(primaryEntityMapping);

@@ -89,7 +89,7 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	<T> void addBean(Class<T> type, T bean, String name, boolean primary);
 
 	/**
-	 * Do the normal creation such as autowire, aware, validate, etc for the given bean class.
+	 * Do the normal creation such as inject, aware, validate, etc for the given bean class.
 	 *
 	 * <p>
 	 * After the creation, the bean instance will be register as singleton bean to this container with the given id.
@@ -97,7 +97,7 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	<T> void addBean(String id,boolean lazyInit,Class<? extends T> beanClass,Object... constructorArgs) throws BeanException;
 
 	/**
-	 * Do the normal creation such as autowire, aware, validate, etc for the given bean class.
+	 * Do the normal creation such as inject, aware, validate, etc for the given bean class.
 	 *
 	 * <p>
 	 * After the creation, the bean instance will be register as singleton bean to this container with the given type.
@@ -105,7 +105,7 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	<T> void addBean(Class<? super T> typeClass,boolean primary,boolean lazyInit,Class<T> beanClass,Object... constructorArgs) throws BeanException;
 
 	/**
-	 * Do the normal creation such as autowire, aware, validate, etc for the given bean class.
+	 * Do the normal creation such as inject, aware, validate, etc for the given bean class.
 	 *
 	 * <p>
 	 * After the creation, the bean instance will be register as singleton bean to this container with the given type and name.
@@ -145,7 +145,7 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * Returns <code>null</code> if no primary bean defined for the given type.
 	 */
 	<T> T tryGetBean(Class<? super T> type) throws BeanException;
-	
+
     /**
      * Returns the primary bean's instance for the given type.
      * 

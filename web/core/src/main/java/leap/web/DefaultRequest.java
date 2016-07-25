@@ -99,7 +99,7 @@ public class DefaultRequest extends Request {
 		this.handler		 = handler;
 		this.response		 = response;
 		this.req             = servletRequest;
-		this.overrideMethod = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
+		this.overrideMethod  = req.getHeader(Headers.X_HTTP_METHOD_OVERRIDE);
 		this.method			 = Strings.upperCase(Strings.isEmpty(overrideMethod) ? req.getMethod() : overrideMethod);
 		this.path    		 = extractRequestPath();
 		this.locale          = req.getLocale();

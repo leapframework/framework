@@ -15,6 +15,11 @@
  */
 package leap.core;
 
+/**
+ * Called when {@link AppContext} has been initialized,
+ *
+ * that means both {@link AppConfig} and {@link BeanFactory} are available.
+ */
 public interface AppContextInitializable {
 	
 	void postInit(AppContext context) throws Throwable;

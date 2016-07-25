@@ -38,11 +38,14 @@ public class DmoTest extends OrmTestCase {
 		assertAllPropertiesMapped(CreationEntity.class,em);
 		assertEquals(100,em.getFieldMapping("string1").getColumn().getLength());
 
+		assertEquals(50,em.getFieldMapping("id").getColumn().getLength());
+
 		assertFalse(em.getKeyFieldMappings().length == 0);
 		assertEquals(1, em.getTable().getPrimaryKeyColumnNames().length);
 		metadata.removeEntityMapping(em);
 		db.cmdDropTable(em.getTable()).execute();
 	}
+
 
 	//TODO : ERROR - DmoTest.testCreateTable:51 » Metadata Entity's primary key(s) must not be empt
 	/*

@@ -4,6 +4,6 @@
         select * from product
     </command>
     <command key="queryDirSqlWithResultFile">
-        select dir_id,dir_name,scope_id from Directory
+        select dir_id id,dir_name name,scope_id dir_id from Directory
     </command>
 </sqls>

@@ -45,17 +45,17 @@ public class JsonFormatWriter implements FormatWriter {
 	@Override
     public void write(Writer out, Class<?> type, Type genericType, Annotation[] annotations, Object value) throws IOException {
 		
-		if(value instanceof JsonStringable) {
-			((JsonStringable) value).toJson(out);
-			return;
-		}
-		
 		JsonSettings settings = getDefaultJsonSettings();
 		
 		JsonSerialize a = Classes.getAnnotation(annotations, JsonSerialize.class);
 		
 		if(null != a) {
 			settings = createJsonSettings(a);
+		}
+
+		if(value instanceof JsonStringable) {
+			((JsonStringable) value).toJson(out,settings);
+			return;
 		}
 
         if(log.isTraceEnabled()) {

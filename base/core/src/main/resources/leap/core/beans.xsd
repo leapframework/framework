@@ -36,6 +36,7 @@
                 -->
 			</xsd:sequence>
 			<xsd:attribute name="if" use="optional" type="xsd:string"/>
+            <xsd:attribute name="if-not" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 			<xsd:attribute name="if-class-present" use="optional" type="xsd:string"/>
             <xsd:attribute name="if-class-not-present" use="optional" type="xsd:string"/>
@@ -156,7 +157,6 @@
 			<xsd:choice minOccurs="0" maxOccurs="1">
 				<xsd:element ref="bean"/>
 				<xsd:element ref="ref"/>
-				<xsd:element ref="idref"/>
 				<xsd:element ref="value"/>
 				<xsd:element ref="class"/>
 				<xsd:element ref="null"/>
@@ -170,8 +170,10 @@
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string"/>
 		<xsd:attribute name="type" type="xsd:string"/>
-		<xsd:attribute name="ref" type="xsd:string"/>
-		<xsd:attribute name="value" type="xsd:string"/>
+        <xsd:attribute name="ref-id"   type="xsd:string"/>
+        <xsd:attribute name="ref-type" type="xsd:string"/>
+        <xsd:attribute name="ref-name" type="xsd:string"/>
+        <xsd:attribute name="value" type="xsd:string"/>
         <xsd:attribute name="default-value" type="xsd:string"/>
 	</xsd:complexType>	
 
@@ -187,19 +189,9 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:restriction base="xsd:anyType">
-					<xsd:attribute name="bean" type="xsd:string"/>
+					<xsd:attribute name="id"   type="xsd:string"/>
 					<xsd:attribute name="type" type="xsd:string"/>
 					<xsd:attribute name="name" type="xsd:string"/>
-				</xsd:restriction>
-			</xsd:complexContent>
-		</xsd:complexType>
-	</xsd:element>
-
-	<xsd:element name="idref">
-		<xsd:complexType>
-			<xsd:complexContent>
-				<xsd:restriction base="xsd:anyType">
-					<xsd:attribute name="bean" type="xsd:string"/>
 				</xsd:restriction>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -232,7 +224,6 @@
 			<xsd:choice minOccurs="0" maxOccurs="unbounded">
 				<xsd:element ref="bean"/>
 				<xsd:element ref="ref"/>
-				<xsd:element ref="idref"/>
 				<xsd:element ref="value"/>
 				<xsd:element ref="class"/>
 				<xsd:element ref="null"/>
@@ -318,7 +309,6 @@
 					<xsd:choice minOccurs="0" maxOccurs="unbounded">
 						<xsd:element ref="bean" />
 						<xsd:element ref="ref" />
-						<xsd:element ref="idref" />
 					</xsd:choice>
 					<xsd:attribute name="type" type="xsd:string" use="required" />
 					<xsd:attribute name="qualifier" type="xsd:string" />
@@ -393,7 +383,6 @@
 			<xsd:choice minOccurs="0" maxOccurs="1">
 				<xsd:element ref="bean" />
 				<xsd:element ref="ref" />
-				<xsd:element ref="idref" />
 				<xsd:element ref="value" />
 				<xsd:element ref="null" />
 				<xsd:element ref="array" />
@@ -405,12 +394,13 @@
 			</xsd:choice>
 		</xsd:sequence>
 		<xsd:attribute name="name" type="xsd:string" use="required"/>
-		<xsd:attribute name="ref" type="xsd:string"/>
+		<xsd:attribute name="ref-id"   type="xsd:string"/>
 		<xsd:attribute name="ref-type" type="xsd:string"/>
 		<xsd:attribute name="ref-name" type="xsd:string"/>
 		<xsd:attribute name="value" type="xsd:string"/>
 		<xsd:attribute name="default-value" type="xsd:string"/>
-		<xsd:attribute name="if" type="xsd:string"/>
+		<xsd:attribute name="if"     type="xsd:string"/>
+        <xsd:attribute name="if-not" type="xsd:string"/>
 		<xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
 	</xsd:complexType>
 

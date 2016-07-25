@@ -19,7 +19,6 @@ import leap.orm.annotation.Entity;
 
 @Entity
 public class TestedIntIdentity {
-	
 	protected int    id;
 	protected String col1;
 	

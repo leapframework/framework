@@ -28,6 +28,25 @@
             <url>https://maven.java.net/content/repositories/releases</url>
         </repository>        
     </repositories>
+
+    <build>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${plugins.surefire.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <file.encoding>UTF-8</file.encoding>
+                        <org.apache.jasper.compiler.disablejsr199>true</org.apache.jasper.compiler.disablejsr199>
+                    </systemPropertyVariables>
+                    <argLine>-javaagent:"${settings.localRepository}"/org/leapframework/leap-agent/${project.version}/leap-agent-${project.version}.jar=webunit</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
 	
 	<dependencies>
 		<dependency>
@@ -48,6 +67,12 @@
 			<version>${jetty.version}</version>
 			<scope>compile</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-agent</artifactId>
+            <version>${project.version}</version>
+            <scope>provided</scope>
+        </dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-jsp</artifactId>

@@ -41,7 +41,7 @@ public class RequestDispatchView extends AbstractServletResourceView {
 	
 	protected boolean preventDispatchLoop = false;
 	protected boolean alwaysInclude       = false;
-	protected String  defaultContentType;
+
 	
 	public RequestDispatchView(App app, String path, ServletResource resource) {
 	    super(app, path, resource);
@@ -73,7 +73,7 @@ public class RequestDispatchView extends AbstractServletResourceView {
 		if(null != characterEncoding) {
 			response.setCharacterEncoding(characterEncoding);
 		}
-		
+		String contentType = getContentType(request);
 		if(!Strings.isEmpty(contentType)) {
 			SetContentTypeResponse lctr = new SetContentTypeResponse(response.getServletResponse(), contentType);
 			response.setServletResponse(lctr);

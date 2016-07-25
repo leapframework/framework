@@ -17,6 +17,7 @@ package leap.orm.dao.query;
 
 import java.util.List;
 
+import leap.junit.contexual.Contextual;
 import leap.lang.Confirm;
 import leap.orm.tested.model.file.Directory;
 import org.junit.Test;
@@ -25,6 +26,12 @@ import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
 
 public class CriteriaQueryTest extends OrmTestCase {
+	@Test
+	@Contextual("mysql")
+	public void testEmptyStringInInMySql(){
+		List<Owner> owner = Owner.<Owner>query().where("id in :ids").param("ids",new Object[]{""}).list();
+		assertTrue(owner.isEmpty());
+	}
 
 	@Test
 	public void testIdInAndNotIn() {
@@ -62,9 +69,10 @@ public class CriteriaQueryTest extends OrmTestCase {
 		assertEquals(2,owners.size());
 		
 		//test null or empty in parameter
+		assertTrue(Owner.<Owner>query().where("address not in :address").list().isEmpty());
 		assertTrue(Owner.<Owner>query().where("id not in :ids").list().isEmpty());
 		assertTrue(Owner.<Owner>query().where("id not in :ids").param("ids",new Object[]{}).list().isEmpty());
-		
+
 		owners = Owner.<Owner>where().cnd("id","in",ids).q().orderByIdAsc().list();
 		assertEquals(2,owners.size());
 		assertEquals("a 0",owners.get(0).getFullName());
@@ -121,7 +129,7 @@ public class CriteriaQueryTest extends OrmTestCase {
 	}
 
 	@Test
-	public void testColumNameMapping() {
+	public void testColumnNameMapping() {
 		deleteAll(Directory.class);
 
 		Directory parent = new Directory();

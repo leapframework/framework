@@ -348,15 +348,25 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		}
 		return configurable;
 	}
-	
-	public String getConfigurationPrefix() {
+
+    @Override
+    public void setConfigurable(boolean b) {
+        this.configurable = b;
+    }
+
+    public String getConfigurationPrefix() {
 		if(null == configurationPrefix) {
 			Configurable a = beanClass.getAnnotation(Configurable.class);
 			configurationPrefix = null == a ? "" : a.prefix();
 		}
 		return configurationPrefix;
 	}
-	
+
+	@Override
+	public void setConfigurationPrefix(String prefix) {
+		this.configurationPrefix = prefix;
+	}
+
 	protected boolean isTypeOf(Class<?> beanType){
 	    if(null != type && type.equals(beanType)) {
 	        return true;

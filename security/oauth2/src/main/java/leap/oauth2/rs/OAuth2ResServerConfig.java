@@ -51,4 +51,15 @@ public interface OAuth2ResServerConfig {
 	 */
 	String getRemoteTokenInfoEndpointUrl();
 
+	/**
+	 * Returns the resource id of this resource server in authz server
+	 * @return resourceId
+     */
+	String getResourceServerId();
+
+	/**
+	 * Returns the resource secret of this resource server in authz server
+	 * @return resourceSecret
+     */
+	String getResourceServerSecret();
 }

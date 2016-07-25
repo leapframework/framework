@@ -16,6 +16,7 @@
 
 package leap.agent;
 
+import leap.lang.Factory;
 import leap.lang.instrument.InstrumentClass;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -40,6 +41,12 @@ public class Agent {
         }
 
         return redefined;
+    }
+
+    public static void premain(String args, Instrumentation inst) throws Exception {
+        for(AgentPremain premain : Factory.newInstances(AgentPremain.class)) {
+            premain.run(args, inst);
+        }
     }
 
     public static void agentmain(String args, Instrumentation inst) throws Exception {

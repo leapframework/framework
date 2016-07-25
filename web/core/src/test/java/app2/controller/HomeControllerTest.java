@@ -17,6 +17,8 @@ package app2.controller;
 
 import java.util.Map;
 
+import leap.lang.http.ContentTypes;
+import leap.webunit.client.THttpResponse;
 import org.junit.Test;
 
 import app.models.products.Product;
@@ -34,7 +36,13 @@ public class HomeControllerTest extends WebTestCase {
 	
 	@Test
 	public void testViewAction() {
-		get("/app2/mvc/index1").assertOk();
+		THttpResponse response = get("/app2/mvc/index1");
+		response.assertOk();
+		assertEquals(ContentTypes.TEXT_HTML_TYPE.getMediaType(),response.getContentType().getMediaType());
+		response = get("/app2/mvc/index2");
+		response.assertOk();
+		System.out.println(response.getContent());
+		assertEquals(ContentTypes.TEXT_HTML_TYPE.getMediaType(),response.getContentType().getMediaType());
 	}
 	
 	@Test

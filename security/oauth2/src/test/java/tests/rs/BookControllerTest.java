@@ -44,7 +44,7 @@ public class BookControllerTest extends OAuth2TestBase {
 	public void testLocalAccessTokenStore() {
 	    serverContextPath = "";
 	    
-	    login();
+	    logout();
 	    
 	    TokenResponse token = obtainAccessTokenImplicit();
 	    

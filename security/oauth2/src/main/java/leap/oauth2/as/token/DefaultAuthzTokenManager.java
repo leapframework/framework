@@ -30,7 +30,8 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	protected @Inject AuthzRefreshTokenGenerator defaultRefreshTokenGenerator;
     protected @Inject AuthzLoginTokenGenerator   defaultLoginTokenGenerator;
 	protected @Inject BeanFactory                factory;
-	
+    protected @Inject ScopeMerger[]              mergers;
+
     @Override
     public AuthzAccessToken createAccessToken(AuthzAuthentication authc) {
         AuthzClient client      = authc.getClientDetails();
@@ -77,14 +78,19 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         //Merge scope.
         String scope = null;
-        if(client != null){
-            if(config.isRequestLevelScopeEnabled()){
-                scope = mergeScope(client, authc);
-            }else if(client.isAuthenticated()){
-                scope = client.getGrantedScope();
+        if(mergers != null && mergers.length>0){
+            for(ScopeMerger merger : mergers ){
+                scope = merger.merge(client, authc, scope);
+            }
+        }else{
+            if(client != null){
+                if(config.isRequestLevelScopeEnabled()){
+                    scope = mergeScope(client, authc);
+                }else if(client.isAuthenticated()){
+                    scope = client.getGrantedScope();
+                }
             }
         }
-
         //Scope
         at.setScope(scope);
         rt.setScope(scope);

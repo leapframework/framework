@@ -29,6 +29,8 @@ import leap.lang.el.spel.SPEL;
 import leap.lang.expression.Expression;
 import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.logging.LogUtils;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
@@ -40,6 +42,7 @@ import java.util.function.Function;
 
 public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropertyReader {
 
+    private static final Log log = LogFactory.get(XmlPropertyReader.class);
 
     public boolean readProperties(AppPropertyContext context, Resource resource) {
         if(Strings.endsWithIgnoreCase(resource.getFilename(), ".xml")) {
@@ -84,7 +87,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             }
 
             if(!foundValidRootElement){
-                throw new AppConfigException("No valid root element found in file : " + resource.getClasspath());
+                log.info("No valid root element found in file : " + resource.getClasspath());
             }
         }finally{
             IO.close(reader);
