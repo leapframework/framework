@@ -76,7 +76,7 @@ public interface Apis {
 	String getDefaultOAuthAuthorizationUrl();
 	
 	/**
-	 * Optinal. Returns the default oauth2 token endpoint url.
+	 * Optional. Returns the default oauth2 token endpoint url.
 	 */
 	String getDefaultOAuthTokenUrl();
 
