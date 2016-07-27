@@ -51,4 +51,5 @@ public interface BeanDefinitionConfigurator {
      * Adds the additional type definition
      */
     void addAdditionalTypeDef(Class<?> clzz, String name, boolean primary, boolean override);
+
 }

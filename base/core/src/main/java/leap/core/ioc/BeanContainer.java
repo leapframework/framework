@@ -1470,7 +1470,7 @@ public class BeanContainer implements BeanFactory {
 				definedValue = placeholderResolver.resolveString(defaultValue);
 				vd.resolved(doConvertValue(definedValue, vd.getDefinedType()));
 			}
-			return null;
+			return vd.getResolvedValue();
 		}
 		
 		if(definedValue instanceof BeanReference){
