@@ -3,7 +3,7 @@
 
 	<bean type="leap.web.api.Apis"     						class="leap.web.api.DefaultApis"                          primary="true"/>
 	<bean type="leap.web.api.config.ApiConfiguratorFactory" class="leap.web.api.config.DefaultApiConfiguratorFactory" primary="true"/>
-	<bean type="leap.web.api.meta.ApiMetadataFactory"       class="leap.web.api.meta.DefaultApiMetadataFactory"       primary="true"/>
+	<bean type="leap.web.api.meta.ApiMetadataFactory" class="leap.web.api.meta.DefaultApiMetadataFactory" primary="true"/>
 	<bean type="leap.web.api.spec.ApiSpecWriter"			class="leap.web.api.spec.swagger.SwaggerJsonWriter"		  primary="true"/>
     
     <!-- built-in oauth2 processor : only the oauth2 module exists -->

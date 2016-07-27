@@ -23,8 +23,8 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.ApiMetadataBuilder;
+import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.model.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 

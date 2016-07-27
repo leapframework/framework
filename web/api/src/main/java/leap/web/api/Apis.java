@@ -21,7 +21,7 @@ import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.ApiMetadata;
 
 /**
  * Contains all the api configurators.

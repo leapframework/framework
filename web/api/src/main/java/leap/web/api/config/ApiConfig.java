@@ -21,8 +21,8 @@ import leap.lang.Described;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.model.OAuth2Scope;
 import leap.web.route.Route;
 
 /**

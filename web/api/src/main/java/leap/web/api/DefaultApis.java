@@ -33,7 +33,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.ApiConfiguratorFactory;
-import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.route.Route;
 

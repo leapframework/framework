@@ -24,7 +24,7 @@ import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.OAuth2Scope;
 import leap.web.route.Route;
 
 public class DefaultApiConfig implements ApiConfig, ApiConfigurator {

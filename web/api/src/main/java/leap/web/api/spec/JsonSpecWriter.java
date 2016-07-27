@@ -22,7 +22,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
 import leap.lang.json.JsonWriterCreator;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.ApiMetadata;
 
 public abstract class JsonSpecWriter implements ApiSpecWriter {
 	
