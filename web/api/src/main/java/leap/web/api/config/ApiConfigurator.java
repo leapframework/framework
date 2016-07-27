@@ -17,7 +17,7 @@ package leap.web.api.config;
 
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.OAuth2Scope;
 import leap.web.route.Route;
 
 

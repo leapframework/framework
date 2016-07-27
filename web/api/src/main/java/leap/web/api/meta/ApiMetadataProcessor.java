@@ -16,6 +16,9 @@
 package leap.web.api.meta;
 
 
+import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.model.ApiMetadataBuilder;
+
 public interface ApiMetadataProcessor {
 
 	default void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {

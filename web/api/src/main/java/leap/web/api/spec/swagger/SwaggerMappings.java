@@ -18,7 +18,7 @@ package leap.web.api.spec.swagger;
 import java.util.HashMap;
 import java.util.Map;
 
-import leap.web.api.meta.ApiParameter.Location;
+import leap.web.api.meta.model.ApiParameter.Location;
 
 public class SwaggerMappings {
 	
