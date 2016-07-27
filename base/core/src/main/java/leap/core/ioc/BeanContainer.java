@@ -526,38 +526,12 @@ public class BeanContainer implements BeanFactory {
 
 	@Override
     public <T> List<T> getBeans(Class<? super T> type) throws BeanException {
-    	List<T> beans = (List<T>)typedBeansMap.get(type);
-    	
-    	if(null == beans){
-    		beans = new ArrayList<T>(5);
-    		
-    		BeanListDefinition bld = beanListDefinitions.get(type.getName());
-    		if(null != bld){
-    			for(ValueDefinition vd : bld.getValues()){
-    				Object bean = doCreateBean(vd);
-    				if(!type.isAssignableFrom(bean.getClass())){
-    					throw new BeanDefinitionException("The bean list's element must be instance of '" + type.getName() + "' in '" + bld.getSource() + "'");
-    				}
-    				beans.add((T)bean);
-    			}
-    		}else{
-        		Set<BeanDefinitionBase> typeSet = bds.beanTypeDefinitions.get(type);
-        		if(null != typeSet){
-        			for(BeanDefinitionBase bd : typeSet){
-        				beans.add((T)doGetBean(bd));
-        			}
-        		}
-    		}
-    		
-    		typedBeansMap.put(type.getName(),Collections.unmodifiableList(beans));
-    	}
-		
-		return beans;
+		return getBeans(type, null);
     }
     
     @Override
     public <T> List<T> getBeans(Class<? super T> type, String qualifier) throws BeanException {
-    	String key = type.getName() + "$" + qualifier;
+    	String key = null == qualifier ? type.getName() : type.getName() + "$" + qualifier;
     	
         List<T> beans = (List<T>)typedBeansMap.get(key);
     	
@@ -577,7 +551,7 @@ public class BeanContainer implements BeanFactory {
     	    	
     	    	for(Entry<T, BeanDefinition> entry : bds.entrySet()){
     	    		BeanDefinition bd = entry.getValue();
-    	    		if(bd.getQualifiers().contains(qualifier)){
+    	    		if(null == qualifier || bd.getQualifiers().contains(qualifier)){
     	    			beans.add(entry.getKey());
     	    		}
     	    	}
