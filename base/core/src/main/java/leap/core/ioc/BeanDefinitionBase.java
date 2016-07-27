@@ -262,7 +262,17 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	public List<TypeDefinition> getAdditionalTypeDefs() {
 	    return additionalTypeDefs;
 	}
-	
+
+	@Override
+	public void addAdditionalTypeDef(Class<?> clzz, String name, boolean primary, boolean override) {
+		TypeDefinitionBase def = new TypeDefinitionBase();
+		def.setType(clzz);
+		def.setName(name);
+		def.setPrimary(primary);
+		def.setOverride(override);
+		addAdditionalTypeDef(def);
+	}
+
 	public void addAdditionalTypeDef(TypeDefinition def) {
 	    additionalTypeDefs.add(def);
 	}
