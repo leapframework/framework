@@ -1,8 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <apis xmlns="http://www.leapframework.org/schema/web/apis">
 
-    <api name="default">
-        <description>hello</description>
+    <config>
+        <oauth enabled="true">
+            <authz-url>http://127.0.0.1:8080/auth/oauth2/authorize</authz-url>
+            <token-url>"http://127.0.0.1:8080/auth/oauth2/token</token-url>
+        </oauth>
+    </config>
+
+    <api name="petstore" base-path="/petstore">
+
+        <title>Swagger Petstore</title>
+
+        <desc>
+            This is a sample server Petstore server. You can find out more about Swagger at
+            [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/). For this
+            sample, you can use the api key `special-key` to test the authorization filters.
+        </desc>
+
+        <protocols>
+            http
+        </protocols>
+
+        <paths>
+            
+            <path uri-template="/pet">
+
+                <post>
+                    <params>
+
+                    </params>
+
+                    <responses>
+
+                    </responses>
+                </post>
+
+            </path>
+            
+        </paths>
     </api>
 
 </apis>

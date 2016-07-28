@@ -16,6 +16,9 @@
 
 package app.models.petstore;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class Pet {
 
     public enum Status {
@@ -32,10 +35,58 @@ public class Pet {
 
     }
 
-    protected long     id;
-    protected Category category;
-    protected String   name;
-    protected String[] photoUrls;
-    protected String[] tags;
+    private Long         id        = null;
+    private Category     category  = null;
+    private String       name      = null;
+    private List<String> photoUrls = new ArrayList<String>();
+    private List<Tag>    tags      = new ArrayList<Tag>();
+    private Status       status    = null;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<String> getPhotoUrls() {
+        return photoUrls;
+    }
+
+    public void setPhotoUrls(List<String> photoUrls) {
+        this.photoUrls = photoUrls;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
 }

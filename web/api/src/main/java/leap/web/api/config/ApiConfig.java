@@ -42,57 +42,57 @@ public interface ApiConfig extends Named,Titled,Described {
 	
 	/**
 	 * A list of MIME types the APIs can produce.
-	 * 
+	 *
 	 * <p>
 	 * Default is {@link ApiConfigurator#DEFAULT_PRODUCES}.
-	 * 
+	 *
 	 * @see ApiMetadata#getProduces()
 	 */
 	String[] getProduces();
-	
+
 	/**
 	 * A list of MIME types the APIs can consume.
-	 * 
+	 *
 	 * <p>
 	 * Default is {@link ApiConfigurator#DEFAULT_CONSUMES}
-	 * 
+	 *
 	 * @see ApiMetadata#getConsumes()
 	 */
 	String[] getConsumes();
-	
+
 	/**
 	 * Returns the protocols.
 	 */
 	String[] getProtocols();
-	
+
 	/**
 	 * Returns <code>true</code> is <code>CORS</code> is enabled.
 	 */
 	default boolean isCorsEnabled() {
 		return !isCorsDisabled();
 	}
-	
+
 	/**
 	 * Returns <code>true</code> if the <code>CORS</code> is disabled.
-	 * 
+	 *
 	 * <p>
 	 * Default is enabled.
 	 */
 	boolean isCorsDisabled();
-	
+
 	/**
-	 * Returns <code>true</code> if OAuth2.0 security is enabled. 
+	 * Returns <code>true</code> if OAuth2.0 security is enabled.
 	 */
 	boolean isOAuthEnabled();
-	
+
 	/**
 	 * Returns the url of authorization endpoint in oauth2 server.
-	 * 
+	 *
 	 * <p>
 	 * Rquired if oauth enabled.
 	 */
 	String getOAuthAuthorizationUrl();
-	
+
 	/**
 	 * Returns the url of token endpoint in oauth2 server.
 	 *
@@ -100,12 +100,12 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Required if oauth enabled.
 	 */
 	String getOAuthTokenUrl();
-	
+
 	/**
 	 * Returns the oauth2 scopes of api.
 	 */
 	OAuth2Scope[] getOAuthScopes();
-	
+
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.
 	 */
@@ -115,12 +115,12 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns the naming style of property names, may be <coce>null</code>.
 	 */
 	NamingStyle getPropertyNamingStyle();
-	
+
 	/**
 	 * Returns an immutable {@link Set} contains the prefixes will be removed from all the model names.
 	 */
 	Set<String> getRemovalModelNamePrefixes();
-	
+
 	/**
 	 * Returns all the routes in this api.
 	 */

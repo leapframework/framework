@@ -91,7 +91,12 @@ public class MethodAction implements Action {
     public Annotation[] getAnnotations() {
 	    return method.getAnnotations();
     }
-    
+
+	@Override
+	public <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
+		return method.getReflectedMethod().getAnnotationsByType(annotationClass);
+	}
+
 	@Override
     public Annotation[] getMergedAnnotations() {
 	    return mergedAnnotations;

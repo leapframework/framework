@@ -29,6 +29,7 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
+import leap.web.api.annotation.MetaApiResponse;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.*;
 import leap.web.route.Route;
@@ -226,19 +227,49 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
-		if(route.getAction().hasReturnValue()) {
-			Class<?> returnType        = route.getAction().getReturnType();
-			Type     genericReturnType = route.getAction().getGenericReturnType();
-			
-			MType type = createMType(context, m, Types.getTypeInfo(returnType, genericReturnType));
-			ApiResponseBuilder resp = ApiResponseBuilder.ok();
-			resp.setType(type);
-			
-			op.addResponse(resp);
-		}else{	
-			op.addResponse(ApiResponseBuilder.ok());
-		}
+        MetaApiResponse[] annotations =
+                route.getAction().getAnnotationsByType(MetaApiResponse.class);
+
+        if(annotations.length > 0) {
+            for(MetaApiResponse a : annotations) {
+                op.addResponse(createApiResponse(context, m, route, a));
+            }
+        }else{
+            if(route.getAction().hasReturnValue()) {
+                Class<?> returnType        = route.getAction().getReturnType();
+                Type     genericReturnType = route.getAction().getGenericReturnType();
+
+                MType type = createMType(context, m, Types.getTypeInfo(returnType, genericReturnType));
+                ApiResponseBuilder resp = ApiResponseBuilder.ok();
+                resp.setType(type);
+
+                op.addResponse(resp);
+            }else{
+                op.addResponse(ApiResponseBuilder.ok());
+            }
+        }
 	}
+
+    protected ApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MetaApiResponse a) {
+        ApiResponseBuilder resp = new ApiResponseBuilder();
+        resp.setStatus(a.status());
+        if(!route.getAction().hasReturnValue()) {
+            return resp;
+        }
+
+        Class<?> returnType  = a.type();
+        Type     genericType = a.genericType();
+
+        if(Void.class.equals(returnType)) {
+            returnType  = route.getAction().getReturnType();
+            genericType = route.getAction().getGenericReturnType();
+        }
+
+        MType type = createMType(context, m, Types.getTypeInfo(returnType, genericType));
+        resp.setType(type);
+
+        return resp;
+    }
 	
 	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, TypeInfo ti) {
 		//TODO: file type

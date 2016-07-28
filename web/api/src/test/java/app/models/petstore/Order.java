@@ -34,11 +34,58 @@ public class Order {
 
     }
 
-    protected long   id;
-    protected long   petId;
-    protected int    quantity;
-    protected Date   shipDate;
-    protected Status status;
+    private Long    id       = null;
+    private Long    petId    = null;
+    private Integer quantity = null;
+    private Date    shipDate = null;
+    private Status  status   = null;
+    private Boolean complete = null;
 
+    public Long getId() {
+        return id;
+    }
 
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPetId() {
+        return petId;
+    }
+
+    public void setPetId(Long petId) {
+        this.petId = petId;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public Date getShipDate() {
+        return shipDate;
+    }
+
+    public void setShipDate(Date shipDate) {
+        this.shipDate = shipDate;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Boolean getComplete() {
+        return complete;
+    }
+
+    public void setComplete(Boolean complete) {
+        this.complete = complete;
+    }
 }

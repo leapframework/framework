@@ -29,10 +29,7 @@ import leap.lang.net.Urls;
 import leap.lang.path.Paths;
 import leap.web.App;
 import leap.web.AppInitializable;
-import leap.web.api.config.ApiConfig;
-import leap.web.api.config.ApiConfigProcessor;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.config.ApiConfiguratorFactory;
+import leap.web.api.config.*;
 import leap.web.api.meta.model.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.route.Route;
@@ -40,8 +37,9 @@ import leap.web.route.Route;
 public class DefaultApis implements Apis, AppInitializable  {
 	
 	protected @Inject ApiConfiguratorFactory configuratorFactory;
+    protected @Inject ApiConfigSource        configSource;
 	protected @Inject ApiConfigProcessor[]   configProcessors;
-	protected @Inject ApiMetadataFactory	 metadataFactory;
+	protected @Inject ApiMetadataFactory     metadataFactory;
 	
 	protected Map<String, ApiConfigurator> configurators               = new ConcurrentHashMap<String, ApiConfigurator>();
 	protected Map<String, ApiConfig>       configurations			   = new ConcurrentHashMap<String, ApiConfig>();
@@ -77,7 +75,7 @@ public class DefaultApis implements Apis, AppInitializable  {
 		
 		String key = name.toLowerCase();
 		if(configurators.containsKey(key)) {
-			throw new ObjectExistsException("The api '" + name + "' aleady exists");
+			throw new ObjectExistsException("The api '" + name + "' already exists");
 		}
  
 		ApiConfigurator configurator = configuratorFactory.createConfigurator(this, name, basePath);
@@ -87,7 +85,7 @@ public class DefaultApis implements Apis, AppInitializable  {
     }
 
 	@Override
-    public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
+    public ApiConfigurator of(String name) throws ObjectNotFoundException {
 		Args.notEmpty(name, "name");
 		
 		ApiConfigurator c = configurators.get(name.toLowerCase());
@@ -145,6 +143,8 @@ public class DefaultApis implements Apis, AppInitializable  {
 
     @Override
     public void postAppInit(App app) throws Throwable {
+        configSource.loadConfiguration(app, this);
+
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
 			
 			String key = entry.getKey();
