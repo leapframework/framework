@@ -18,7 +18,7 @@ package leap.core.ioc;
 /**
  * The definition of bean's type.
  */
-interface TypeDefinition {
+public interface TypeDefinition {
 
     /**
      * Required. Returns the bean type.
