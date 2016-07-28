@@ -41,15 +41,8 @@ public interface BeanDefinitionConfigurator {
     void setConfigurationPrefix(String prefix);
 
     /**
-     * Adds the additional type definition
+     * Sets bean sort order
      */
-    default void addAdditionalTypeDef(Class<?> clzz){
-        addAdditionalTypeDef(clzz,null,false,false);
-    }
-
-    /**
-     * Adds the additional type definition
-     */
-    void addAdditionalTypeDef(Class<?> clzz, String name, boolean primary, boolean override);
+    void setSortOrder(int order);
 
 }

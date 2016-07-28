@@ -42,4 +42,6 @@ public interface BeanDefinitions {
      */
     BeanDefinitionConfigurator getOrAdd(Class<?> type, Class<?> beanClass, String name);
 
+    void addAdditionalTypeDef(BeanDefinition definition,TypeDefinition type);
+
 }

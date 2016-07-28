@@ -1930,55 +1930,8 @@ public class BeanContainer implements BeanFactory {
             defs.addAll(bd.getAdditionalTypeDefs());
 
             for(TypeDefinition def : defs) {
-                Class<?> beanType = def.getType();
-
-                if(beanType.equals(BeanProcessor.class)){
-                    processorBeans.add(bd);
-                }
-
-                if(beanType.equals(BeanInjector.class)) {
-                    injectorBeans.add(bd);
-                }
-
-                if(beanType.equals(BeanFactoryInitializable.class)) {
-                    initializableBeans.add(bd);
-                }
-
-                //add to named bean definition collection
-                if(!Strings.isEmpty(def.getName())){
-                    String key = key(beanType, def.getName());
-                    if(!def.isOverride()) {
-                        BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
-                        if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
-                            throw new BeanDefinitionException("Found duplicated bean name '" + bd.getName() +
-                                    "' for type '" + beanType.getName() +
-                                    "' in resource : " + bd.getSource() + " with exists bean " + existsBeanDefinition);
-                        }
-                    }
-                    namedBeanDefinitions.put(key, bd);
-                }
-
-                //Add to primary bean definition collection
-                if(def.isPrimary()){
-                    if(!def.isOverride()) {
-                        BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
-                        if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
-                            throw new BeanDefinitionException("Found duplicated primary bean " + bd +
-                                    " for type '" + beanType.getName() +
-                                    "' with exists bean " + existsBeanDefinition.getSource());
-                        }
-                    }
-                    primaryBeanDefinitions.put(beanType, bd);
-                }
-
-                //add to bean type definition collection
-                Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(beanType);
-                if(null == typeSet){
-                    typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
-                    beanTypeDefinitions.put(beanType, typeSet);
-                }
-                typeSet.add(bd);
-            }
+				addAdditionalTypeDef(bd,def);
+			}
 
             //Add to bean class definition collection
             Set<BeanDefinitionBase> clsSet = beanClassDefinitions.get(bd.getBeanClass());
@@ -1997,5 +1950,64 @@ public class BeanContainer implements BeanFactory {
 
             return bd;
         }
-    }
+
+		@Override
+		public void addAdditionalTypeDef(BeanDefinition definition, TypeDefinition type) {
+
+			if(!BeanDefinitionBase.class.isAssignableFrom(definition.getClass())){
+				throw new BeanDefinitionException("definition " + definition.getClass() + " must assignable from " + BeanDefinitionBase.class.getName());
+			}
+
+			BeanDefinitionBase bd = (BeanDefinitionBase) definition;
+			Class<?> beanType = type.getType();
+
+			if(beanType.equals(BeanProcessor.class)){
+				processorBeans.add(bd);
+			}
+
+			if(beanType.equals(BeanInjector.class)) {
+				injectorBeans.add(bd);
+			}
+
+			if(beanType.equals(BeanFactoryInitializable.class)) {
+				initializableBeans.add(bd);
+			}
+
+			//add to named bean definition collection
+			if(!Strings.isEmpty(type.getName())){
+				String key = key(beanType, type.getName());
+				if(!type.isOverride()) {
+					BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
+					if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
+						throw new BeanDefinitionException("Found duplicated bean name '" + definition.getName() +
+								"' for type '" + beanType.getName() +
+								"' in resource : " + definition.getSource() + " with exists bean " + existsBeanDefinition);
+					}
+				}
+				namedBeanDefinitions.put(key, bd);
+			}
+
+			//Add to primary bean definition collection
+			if(type.isPrimary()){
+				if(!type.isOverride()) {
+					BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
+					if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
+						throw new BeanDefinitionException("Found duplicated primary bean " + definition +
+								" for type '" + beanType.getName() +
+								"' with exists bean " + existsBeanDefinition.getSource());
+					}
+				}
+				primaryBeanDefinitions.put(beanType, bd);
+			}
+
+			//add to bean type definition collection
+			Set<BeanDefinitionBase> typeSet = beanTypeDefinitions.get(beanType);
+			if(null == typeSet){
+				typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
+				beanTypeDefinitions.put(beanType, typeSet);
+			}
+			typeSet.add(bd);
+
+		}
+	}
 }
