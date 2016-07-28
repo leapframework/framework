@@ -18,17 +18,19 @@
 
 package leap.oauth2.as.token;
 
+import leap.oauth2.OAuth2Params;
+import leap.web.Request;
+import leap.web.Response;
+
 /**
  * Created by kael on 2016/7/12.
  */
-public interface ScopeFilter {
+public interface TokenInfoAuthzProcessor {
 
     /**
-     * filter the scope of this access token, the return string where be set to this access token
+     * process the scope of this access token, the return string where be set to this access token
      * @param at the access token
-     * @param rawScope rawScope
-     * @param rsId the resource server id of this tokeninfo request
-     * @return new scope
+     * @return  is continue to process access token,if true it will continue and return access token at last,otherwise will not return access token
      */
-    String filter(AuthzAccessToken at, String rawScope, String rsId);
+    boolean process(Request request, Response response, OAuth2Params params, AuthzAccessToken at);
 }

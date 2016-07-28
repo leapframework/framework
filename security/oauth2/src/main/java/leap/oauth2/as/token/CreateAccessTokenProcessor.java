@@ -24,14 +24,12 @@ import leap.oauth2.as.client.AuthzClient;
 /**
  * Created by kael on 2016/7/12.
  */
-public interface ScopeMerger {
+public interface CreateAccessTokenProcessor {
     /**
-     * merge client scope and user scope as access token scope
+     * process client scope and user scope as access token scope
      * @param client client
      * @param authc user authentication
-     * @param scope existing scope
-     * @return
      */
-    String merge(AuthzClient client, AuthzAuthentication authc, String scope);
+    void process(AuthzClient client, AuthzAuthentication authc, AuthzAccessToken at, AuthzRefreshToken rt);
 
 }

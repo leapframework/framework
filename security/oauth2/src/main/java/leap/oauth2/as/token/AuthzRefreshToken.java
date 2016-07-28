@@ -30,7 +30,9 @@ public interface AuthzRefreshToken extends TimeExpirable {
     String getUserId();
     
     String getScope();
-    
+
+    void setScope(String scope);
+
     default boolean isClientOnly() {
         return Strings.isEmpty(getUserId()) && !Strings.isEmpty(getClientId());
     }
