@@ -26,6 +26,7 @@ import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler;
+import leap.oauth2.as.endpoint.tokeninfo.TokenInfoResponseHandler;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.web.App;
 import leap.web.Handler;
@@ -51,13 +52,10 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
     
     protected @Inject TokenInfoHandler[] handlers;
 
-	protected JwtSigner signer;
-    
 	@Override
     public void startEndpoint(App app, Routes routes) {
 	    if(config.isEnabled()) {
 	        sc.ignore(config.getTokenInfoEndpointPath());
-			signer = genSigner();
 	        routes.create()
 	              .get(config.getTokenInfoEndpointPath(), this)
 	              .apply();
@@ -82,76 +80,12 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 	    }
 		if(at != null){
 			String responseType = params.getResponseType();
-			if(Strings.equalsIgnoreCase("jwt",responseType)){
-				writeJwtTokenInfo(request,response,at);
-			}else{
-				writeTokenInfo(request,response,at);
+			if(Strings.isEmpty(responseType)){
+				responseType = "default";
 			}
+			TokenInfoResponseHandler handler = factory.tryGetBean(TokenInfoResponseHandler.class,responseType);
+			handler.writeTokenInfo(request,response,at);
 		}
     }
 
-	protected void writeTokenInfo(Request request, Response response, AuthzAccessToken at) {
-		response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
-
-		JsonWriter w = response.getJsonWriter();
-
-		w.startObject()
-
-				.property("user_id",       at.getUserId())
-				.property("username",      at.getUsername())
-				.property("created",       at.getCreated())
-				.property("expires_in",    at.getExpiresIn())
-				.propertyOptional("scope", at.getScope());
-
-		if(at.isAuthenticated()){
-			w.property("client_id",     at.getClientId());
-		}
-
-		if(at.hasExtendedParameters()) {
-			for(Entry<String, Object> entry : at.getExtendedParameters().entrySet()) {
-				w.propertyOptional(entry.getKey(), entry.getValue());
-			}
-		}
-
-		w.endObject();
-	}
-
-	protected void writeJwtTokenInfo(Request request, Response response, AuthzAccessToken at){
-		if(signer == null){
-			OAuth2Errors.invalidRequest(response, "not support jwt response type, server may not configure rsa private key!");
-			return;
-		}
-		response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
-		String jwtToken = signer.sign(createClaims(request,response,at),at.getExpiresIn());
-		JsonWriter w = response.getJsonWriter();
-
-		w.startObject()
-
-				.property("jwt_token",     jwtToken);
-
-		w.endObject();
-	}
-
-	protected Map<String,Object> createClaims(Request request, Response response, AuthzAccessToken at) {
-		Map<String,Object> map = new LinkedHashMap<>();
-
-		//todo :
-		if(at.isAuthenticated()){
-			map.put("client_id",at.getClientId());
-		}
-		map.put("username",at.getUsername());
-		map.put("scope", at.getScope());
-		map.put("expires_in", at.getExpiresIn());
-		map.put("expires",at.getCreated()+at.getExpiresIn()*1000L);
-
-		return map;
-	}
-
-	protected JwtSigner genSigner(){
-		PrivateKey privateKey = config.getPrivateKey();
-		if(privateKey instanceof RSAPrivateKey){
-			return new RsaSigner((RSAPrivateKey)privateKey);
-		}
-		return null;
-	}
 }
