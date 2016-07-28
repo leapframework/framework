@@ -46,10 +46,10 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected OAuth2Scope[] oAuthScopes;
     protected NamingStyle   parameterNamingStyle;
     protected NamingStyle   propertyNamingStyle;
-    protected Set<String>   removalModelNamePrefixes    = new HashSet<String>();
-    protected Set<String>   removalModelnamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
-    protected Set<Route>    routes                      = new HashSet<>();
-    protected Set<Route>    routesImv                   = Collections.unmodifiableSet(routes);
+    protected Set<String> 	removalModelNamePrefixes    = new HashSet<String>();
+    protected Set<String> 	removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
+    protected Set<Route>  	routes                      = new HashSet<>();
+    protected Set<Route>  	routesImv                   = Collections.unmodifiableSet(routes);
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -132,7 +132,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	}
 	
 	public Set<String> getRemovalModelNamePrefixes() {
-		return removalModelnamePrefixesImv;
+		return removalModelNamePrefixesImv;
 	}
 	
 	public ApiConfigurator setTitle(String title) {

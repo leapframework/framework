@@ -14,26 +14,12 @@
  * limitations under the License.
  */
 
-package app.models.petstore;
+package leap.web.api.config;
 
-public class Tag {
+import leap.core.AppConfig;
 
-    private Long   id   = null;
-    private String name = null;
+public interface ApiConfigReaderContext {
 
-    public Long getId() {
-        return id;
-    }
+    AppConfig getAppConfig();
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

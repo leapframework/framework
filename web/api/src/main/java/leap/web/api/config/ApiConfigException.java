@@ -14,26 +14,24 @@
  * limitations under the License.
  */
 
-package app.models.petstore;
+package leap.web.api.config;
 
-public class Tag {
+import leap.core.AppConfigException;
 
-    private Long   id   = null;
-    private String name = null;
+public class ApiConfigException extends AppConfigException {
 
-    public Long getId() {
-        return id;
+    public ApiConfigException() {
     }
 
-    public void setId(Long id) {
-        this.id = id;
+    public ApiConfigException(String message) {
+        super(message);
     }
 
-    public String getName() {
-        return name;
+    public ApiConfigException(Throwable cause) {
+        super(cause);
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public ApiConfigException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

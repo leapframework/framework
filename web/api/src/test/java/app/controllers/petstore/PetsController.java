@@ -14,26 +14,19 @@
  * limitations under the License.
  */
 
-package app.models.petstore;
+package app.controllers.petstore;
 
-public class Tag {
+import app.models.petstore.Pet;
+import leap.web.annotation.RestController;
+import leap.web.annotation.http.POST;
+import leap.web.api.controller.ApiResponse;
 
-    private Long   id   = null;
-    private String name = null;
+@RestController
+public class PetsController {
 
-    public Long getId() {
-        return id;
+    @POST
+    public ApiResponse getPet(Pet pet) {
+        return null;
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
 }

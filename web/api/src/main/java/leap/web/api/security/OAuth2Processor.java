@@ -36,7 +36,7 @@ public class OAuth2Processor implements ApiConfigProcessor {
     public void preProcess(ApiConfigurator c) {
         //auto enable oauth if resource server is enabled.
         if(null != rsc && rsc.isEnabled()) {
-            c.enabledOAuth();
+            c.enableOAuth();
             
             //TODO : scopes
         }

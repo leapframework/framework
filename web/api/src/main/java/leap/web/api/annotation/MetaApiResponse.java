@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-package app.models.petstore;
+package leap.web.api.annotation;
 
-public class Tag {
+import java.lang.annotation.*;
 
-    private Long   id   = null;
-    private String name = null;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Repeatable(MetaApiResponses.class)
+public @interface MetaApiResponse {
 
-    public Long getId() {
-        return id;
-    }
+    /**
+     * The response http status.
+     */
+    int status() default 200;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    /**
+     * The type of response data.
+     */
+    Class<?> type() default Void.class;
 
-    public String getName() {
-        return name;
-    }
+    /**
+     * The generic type of response data.
+     */
+    Class<?> genericType() default Object.class;
 
-    public void setName(String name) {
-        this.name = name;
-    }
 }

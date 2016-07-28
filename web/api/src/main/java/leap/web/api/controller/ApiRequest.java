@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package app.controllers.petstore;
+package leap.web.api.controller;
 
-import leap.web.annotation.RestController;
+import leap.web.annotation.RequestBean;
 
-@RestController
-public class PetController {
+@RequestBean
+public abstract class ApiRequest {
 
 }
