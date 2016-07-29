@@ -220,7 +220,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		
 		if(null == bean){
-			bean = beanContainer.getBean(type);
+			bean = beanContainer.<T>getBean(type);
 		}
 		
 	    return bean;
@@ -242,7 +242,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		
 		if(null == bean){
-			bean = beanContainer.tryGetBean(type);
+			bean = beanContainer.<T>tryGetBean(type);
 		}
 		
 	    return bean;
@@ -253,7 +253,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
         T bean = (T)(null != externalFactory ? externalFactory.tryGetBeanExplicitly(type) : null);
         
         if(null == bean){
-            bean = beanContainer.tryGetBeanExplicitly(type);
+            bean = beanContainer.<T>tryGetBeanExplicitly(type);
         }
         
         return bean;
@@ -264,7 +264,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type,name) : null);
 		
 		if(null == bean){
-			bean = beanContainer.getBean(type,name);
+			bean = beanContainer.<T>getBean(type,name);
 		}
 		
 	    return bean;
@@ -286,7 +286,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type,name) : null);
 		
 		if(null == bean){
-			bean = beanContainer.tryGetBean(type,name);
+			bean = beanContainer.<T>tryGetBean(type,name);
 		}
 		
 	    return bean;
@@ -311,7 +311,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		}else{
 			List<T> list = new ArrayList<T>(beans);
 			
-			list.addAll(beanContainer.getBeans(type));
+			list.addAll(beanContainer.<T>getBeans(type));
 			
 			return list;
 		}
@@ -325,7 +325,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 			return beanContainer.getBeans(type,qualifier);
 		}else{
 			List<T> list = new ArrayList<T>(beans);
-			list.addAll(beanContainer.getBeans(type,qualifier));
+			list.addAll(beanContainer.<T>getBeans(type,qualifier));
 			return list;
 		}
     }

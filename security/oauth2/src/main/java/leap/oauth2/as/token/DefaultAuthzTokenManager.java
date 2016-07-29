@@ -25,12 +25,12 @@ import leap.web.security.user.UserDetails;
 
 public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	
-	protected @Inject OAuth2AuthzServerConfig    config;
-	protected @Inject AuthzAccessTokenGenerator  defaultAccessTokenGenerator;
-	protected @Inject AuthzRefreshTokenGenerator defaultRefreshTokenGenerator;
-    protected @Inject AuthzLoginTokenGenerator   defaultLoginTokenGenerator;
-	protected @Inject BeanFactory                factory;
-    protected @Inject ScopeMerger[]              mergers;
+	protected @Inject OAuth2AuthzServerConfig      config;
+	protected @Inject AuthzAccessTokenGenerator    defaultAccessTokenGenerator;
+	protected @Inject AuthzRefreshTokenGenerator   defaultRefreshTokenGenerator;
+    protected @Inject AuthzLoginTokenGenerator     defaultLoginTokenGenerator;
+	protected @Inject BeanFactory                  factory;
+    protected @Inject CreateAccessTokenProcessor[] processors;
 
     @Override
     public AuthzAccessToken createAccessToken(AuthzAuthentication authc) {
@@ -78,17 +78,11 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         //Merge scope.
         String scope = null;
-        if(mergers != null && mergers.length>0){
-            for(ScopeMerger merger : mergers ){
-                scope = merger.merge(client, authc, scope);
-            }
-        }else{
-            if(client != null){
-                if(config.isRequestLevelScopeEnabled()){
-                    scope = mergeScope(client, authc);
-                }else if(client.isAuthenticated()){
-                    scope = client.getGrantedScope();
-                }
+        if(client != null){
+            if(config.isRequestLevelScopeEnabled()){
+                scope = mergeScope(client, authc);
+            }else if(client.isAuthenticated()){
+                scope = client.getGrantedScope();
             }
         }
         //Scope
@@ -98,9 +92,15 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         //Client Authenticated
         at.setAuthenticated(authc.getClientDetails().isAuthenticated());
 
+        if(processors != null && processors.length>0){
+            for(CreateAccessTokenProcessor merger : processors){
+                merger.process(client, authc, at,rt);
+            }
+        }
+
         //Store the token
         config.getTokenStore().saveAccessToken(at);
-        
+
         if(rtCreated) {
             config.getTokenStore().saveRefreshToken(rt);
         }

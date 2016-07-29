@@ -40,4 +40,9 @@ public interface BeanDefinitionConfigurator {
      */
     void setConfigurationPrefix(String prefix);
 
+    /**
+     * Sets bean sort order
+     */
+    void setSortOrder(int order);
+
 }

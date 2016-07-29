@@ -143,6 +143,14 @@ public abstract class SqlParserBase {
 		return this;
 	}
 
+	protected final void restoreAndAcceptNodes() {
+		List<AstNode> savedNodes = this.savedNodes.pop();
+
+		savedNodes.addAll(this.nodes);
+
+		this.nodes = savedNodes;
+	}
+
     /**
      * Creates a save point for saving all the state of parser, includes lexer's state and the parsed nodes.
      */

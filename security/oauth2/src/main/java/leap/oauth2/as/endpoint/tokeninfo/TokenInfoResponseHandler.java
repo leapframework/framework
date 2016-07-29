@@ -16,19 +16,15 @@
  *
  */
 
-package leap.oauth2.as.token;
+package leap.oauth2.as.endpoint.tokeninfo;
+
+import leap.oauth2.as.token.AuthzAccessToken;
+import leap.web.Request;
+import leap.web.Response;
 
 /**
- * Created by kael on 2016/7/12.
+ * Created by kael on 2016/7/28.
  */
-public interface ScopeFilter {
-
-    /**
-     * filter the scope of this access token, the return string where be set to this access token
-     * @param at the access token
-     * @param rawScope rawScope
-     * @param rsId the resource server id of this tokeninfo request
-     * @return new scope
-     */
-    String filter(AuthzAccessToken at, String rawScope, String rsId);
+public interface TokenInfoResponseHandler {
+    void writeTokenInfo(Request request, Response response, AuthzAccessToken at);
 }

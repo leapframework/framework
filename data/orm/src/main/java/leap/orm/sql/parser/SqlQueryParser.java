@@ -40,7 +40,7 @@ abstract class SqlQueryParser extends SqlParser {
         parseTableSource(query);
     }
 
-    protected void parseTableSource(SqlQuery query) {
+    protected SqlTableSource parseTableSource(SqlQuery query) {
         if(lexer.token() == Token.LPAREN){
             acceptText();
 
@@ -52,25 +52,37 @@ abstract class SqlQueryParser extends SqlParser {
                 expect(Token.RPAREN).acceptText();
                 fromSelect.setAlias(parseTableAlias());
                 query.addTableSource(fromSelect);
+
+                return fromSelect;
             }else{
                 parseFromItem(query);
 
                 parseUnion();
 
                 expect(Token.RPAREN).acceptText();
+
+                return null;
             }
-            return;
+        }else {
+            return parseTableNameSource(query);
         }
 
+    }
+
+    protected SqlTableSource parseTableNameSource(SqlQuery query) {
         parseTableName();
 
         if(node instanceof SqlTableName){
             SqlTableName table = (SqlTableName)node;
             table.setAlias(parseTableAlias());
             query.addTableSource(table);
+
+            return table;
         }
+
+        return null;
     }
-	
+
 	protected boolean parseWhere(SqlQuery query){
 		if(lexer.token() == Token.WHERE){
             pushScope(Sql.Scope.WHERE);
