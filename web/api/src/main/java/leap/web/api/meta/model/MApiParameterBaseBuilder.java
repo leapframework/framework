@@ -23,6 +23,7 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	protected String                format;
 	protected boolean               required;
 	protected String                defaultValue;
+    protected String[]              enumValues;
 	protected MApiValidationBuilder validation;
 	
 	public MType getType() {
@@ -57,7 +58,15 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 		this.defaultValue = defaultValue;
 	}
 
-	public MApiValidationBuilder getValidation() {
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+
+    public void setEnumValues(String[] enumValues) {
+        this.enumValues = enumValues;
+    }
+
+    public MApiValidationBuilder getValidation() {
 		return validation;
 	}
 
