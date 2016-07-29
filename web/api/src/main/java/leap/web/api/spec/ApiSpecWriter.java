@@ -17,7 +17,7 @@ package leap.web.api.spec;
 
 import java.io.IOException;
 
-import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.ApiMetadata;
 
 public interface ApiSpecWriter {
 	

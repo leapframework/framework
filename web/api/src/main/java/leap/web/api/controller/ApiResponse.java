@@ -19,7 +19,7 @@ package leap.web.api.controller;
 import leap.lang.http.HTTP;
 import leap.web.ResponseEntity;
 
-public class ApiResponse implements ResponseEntity {
+public class ApiResponse<T> implements ResponseEntity {
 
     //SUCCESS
     public static final ApiResponse OK         = of(HTTP.Status.OK,         null);

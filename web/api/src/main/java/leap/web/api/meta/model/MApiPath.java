@@ -13,20 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+import java.util.List;
+import java.util.Map;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+import leap.core.web.path.PathTemplate;
 
-public class PetsController extends ApiController{
+public class MApiPath extends MApiObject {
+	
+	protected final PathTemplate    pathTemplate;
+	protected final MApiOperation[] operations;
 
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
-    }
+	public MApiPath(PathTemplate pathTemplate, List<MApiOperation> operations, Map<String, Object> attrs) {
+		super(attrs);
 
+		this.pathTemplate = pathTemplate;
+		this.operations   = operations.toArray(new MApiOperation[]{});
+	}
+
+	public PathTemplate getPathTemplate() {
+		return pathTemplate;
+	}
+
+	public MApiOperation[] getOperations() {
+		return operations;
+	}
+	
 }

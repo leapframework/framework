@@ -13,20 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+import java.util.Map;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+import leap.lang.meta.MType;
 
-public class PetsController extends ApiController{
+public class MApiProperty extends MApiParameterBase {
 
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
+	public MApiProperty(String name, String title, String summary, String description,
+                        MType type, String format, boolean required, String defaultValue,
+                        MApiValidation validation, Map<String, Object> attrs) {
+	    super(name, title, summary, description, type, format, required, defaultValue, validation, attrs);
     }
 
 }

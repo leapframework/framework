@@ -31,6 +31,7 @@ import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
 import leap.web.api.annotation.MetaApiResponse;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.controller.ApiResponse;
 import leap.web.api.meta.model.*;
 import leap.web.route.Route;
 
@@ -81,7 +82,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 				
 		.setComplexTypeCreatedListener((cls, ct) -> {
 			if(!md.containsModel(ct.getName())) {
-				md.addModel(new ApiModelBuilder(ct));
+				md.addModel(new MApiModelBuilder(ct));
 			}
 		})
 		
@@ -118,8 +119,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         if(c.isOAuthEnabled()) {
-            OAuth2ApiSecurityDef def =
-                    new OAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
+            MOAuth2ApiSecurityDef def =
+                    new MOAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
                                              c.getOAuthTokenUrl(),
                                              c.getOAuthScopes());
             
@@ -150,9 +151,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();
 
-		ApiPathBuilder path = md.getPath(pt.getTemplate());
+		MApiPathBuilder path = md.getPath(pt.getTemplate());
 		if(null == path) {
-			path = new ApiPathBuilder();
+			path = new MApiPathBuilder();
 			path.setPathTemplate(pt);
 			md.addPath(path);
 		}
@@ -161,8 +162,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		createApiOperation(context, md, route, path);
 	}
 	
-	protected void createApiOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path) {
-		ApiOperationBuilder op = new ApiOperationBuilder();
+	protected void createApiOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path) {
+		MApiOperationBuilder op = new MApiOperationBuilder();
 		
 		op.setName(route.getAction().getName());
 
@@ -180,7 +181,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		path.addOperation(op);
 	}
 	
-	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
+	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
 		String method = route.getMethod();
 		
 		if("*".equals(method)) {
@@ -201,13 +202,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 	}
 	
-	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
+	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
 		Action action = route.getAction();
 
         log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
-            ApiParameterBuilder p = new ApiParameterBuilder();
+            MApiParameterBuilder p = new MApiParameterBuilder();
 
             p.setName(a.getName());
 
@@ -218,7 +219,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
             if (null != a.getRequired()) {
                 p.setRequired(a.getRequired());
-            } else if (p.getLocation() == ApiParameter.Location.PATH) {
+            } else if (p.getLocation() == MApiParameter.Location.PATH) {
                 p.setRequired(true);
             }
 
@@ -226,7 +227,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
 	}
 	
-	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, ApiPathBuilder path, ApiOperationBuilder op) {
+	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
         MetaApiResponse[] annotations =
                 route.getAction().getAnnotationsByType(MetaApiResponse.class);
 
@@ -239,19 +240,19 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 Class<?> returnType        = route.getAction().getReturnType();
                 Type     genericReturnType = route.getAction().getGenericReturnType();
 
-                MType type = createMType(context, m, Types.getTypeInfo(returnType, genericReturnType));
-                ApiResponseBuilder resp = ApiResponseBuilder.ok();
-                resp.setType(type);
+                MApiResponseBuilder resp = MApiResponseBuilder.ok();
+
+                resolveApiResponseType(context, m, returnType, genericReturnType, resp);
 
                 op.addResponse(resp);
             }else{
-                op.addResponse(ApiResponseBuilder.ok());
+                op.addResponse(MApiResponseBuilder.ok());
             }
         }
 	}
 
-    protected ApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MetaApiResponse a) {
-        ApiResponseBuilder resp = new ApiResponseBuilder();
+    protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MetaApiResponse a) {
+        MApiResponseBuilder resp = new MApiResponseBuilder();
         resp.setStatus(a.status());
         if(!route.getAction().hasReturnValue()) {
             return resp;
@@ -265,10 +266,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             genericType = route.getAction().getGenericReturnType();
         }
 
-        MType type = createMType(context, m, Types.getTypeInfo(returnType, genericType));
-        resp.setType(type);
+        resolveApiResponseType(context, m, returnType, genericType, resp);
 
         return resp;
+    }
+
+    protected void resolveApiResponseType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType, MApiResponseBuilder resp) {
+        if(type.equals(ApiResponse.class)) {
+            System.out.println();
+        }
+        resp.setType(createMType(context, m, Types.getTypeInfo(type, genericType)));
     }
 	
 	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, TypeInfo ti) {
@@ -294,38 +301,38 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 	}
 	
-	protected ApiParameter.Location getParameterLocation(ApiMetadataContext context, Action action, Argument arg, ApiOperationBuilder o, ApiParameterBuilder p) {
+	protected MApiParameter.Location getParameterLocation(ApiMetadataContext context, Action action, Argument arg, MApiOperationBuilder o, MApiParameterBuilder p) {
 		Location from = arg.getLocation();
 		if(null == from || from == Location.UNDEFINED) {
 			
 			if(p.getType().isTypeRef() || p.getType().isCollectionType()) {
-				return ApiParameter.Location.BODY;
+				return MApiParameter.Location.BODY;
 			}else{
 				if(o.getMethod() == HTTP.Method.GET) {
-					return ApiParameter.Location.QUERY;
+					return MApiParameter.Location.QUERY;
 				}else{
-					return ApiParameter.Location.FORM;
+					return MApiParameter.Location.FORM;
 				}
 			}
 		}
 		
 		if(from == Location.QUERY_PARAM) {
-		    return ApiParameter.Location.QUERY;
+		    return MApiParameter.Location.QUERY;
 		}
 		
 		if(from == Location.PATH_PARAM) {
-			return ApiParameter.Location.PATH;
+			return MApiParameter.Location.PATH;
 		}
 		
 		if(from == Location.REQUEST_BODY) {
-			return ApiParameter.Location.BODY;
+			return MApiParameter.Location.BODY;
 		}
 		
 		if(from == Location.REQUEST_PARAM) {
 			if(o.getMethod() == HTTP.Method.GET) {
-				return ApiParameter.Location.QUERY;
+				return MApiParameter.Location.QUERY;
 			}else{
-				return ApiParameter.Location.FORM;
+				return MApiParameter.Location.FORM;
 			}
 		}
 		

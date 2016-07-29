@@ -62,18 +62,18 @@ import leap.lang.meta.MSimpleType;
 import leap.lang.meta.MSimpleTypeKind;
 import leap.lang.meta.MType;
 import leap.lang.meta.MTypeRef;
-import leap.web.api.meta.model.ApiMetadata;
-import leap.web.api.meta.model.ApiModel;
-import leap.web.api.meta.model.ApiOperation;
-import leap.web.api.meta.model.ApiParameter;
-import leap.web.api.meta.model.ApiParameter.Location;
-import leap.web.api.meta.model.ApiParameterBase;
-import leap.web.api.meta.model.ApiPath;
-import leap.web.api.meta.model.ApiProperty;
-import leap.web.api.meta.model.ApiResponse;
-import leap.web.api.meta.model.ApiSecurityDef;
-import leap.web.api.meta.model.OAuth2ApiSecurityDef;
-import leap.web.api.meta.model.OAuth2Scope;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiOperation;
+import leap.web.api.meta.model.MApiParameter;
+import leap.web.api.meta.model.MApiParameter.Location;
+import leap.web.api.meta.model.MApiParameterBase;
+import leap.web.api.meta.model.MApiPath;
+import leap.web.api.meta.model.MApiProperty;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiSecurityDef;
+import leap.web.api.meta.model.MOAuth2ApiSecurityDef;
+import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.api.spec.JsonSpecWriter;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
@@ -146,17 +146,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writePaths(WriteContext context, ApiMetadata m, JsonWriter w) {
 		w.startObject();
 	
-		for(Entry<String, ApiPath> entry : m.getPaths().entrySet()) {
+		for(Entry<String, MApiPath> entry : m.getPaths().entrySet()) {
 			w.property(entry.getKey(), () -> writePath(context, m, w, entry.getValue()) );
 		}
 		
 		w.endObject();
 	}
 	
-	protected void writePath(WriteContext context, ApiMetadata m, JsonWriter w, ApiPath p) {
+	protected void writePath(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p) {
 		w.startObject();
 
-		for(ApiOperation o : p.getOperations()) {
+		for(MApiOperation o : p.getOperations()) {
 			w.property(o.getMethod().name().toLowerCase(), () -> {
 				writeOperation(context, m, w, p, o);
 			});
@@ -165,7 +165,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 	
-	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, ApiPath p, ApiOperation o) {
+	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
 		
 		w.property(DESCRIPTION, nullToEmpty(o.descOrSummary()));
@@ -193,17 +193,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 	
-	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameter[] ps) {
+	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter[] ps) {
 		w.startArray();
 		
-		for(ApiParameter p : ps) {
+		for(MApiParameter p : ps) {
 			writeParameter(context, m, w, p);
 		}
 		
 		w.endArray();
 	}
 	
-	protected void writeParameter(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameter p) {
+	protected void writeParameter(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter p) {
 		w.startObject();
 		
 		w.property(NAME, p.getName())
@@ -224,17 +224,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 	
-	protected void writeResponses(WriteContext context, ApiMetadata m, JsonWriter w, ApiResponse[] rs) {
+	protected void writeResponses(WriteContext context, ApiMetadata m, JsonWriter w, MApiResponse[] rs) {
 		w.startObject();
 
-		for(ApiResponse r : rs) {
+		for(MApiResponse r : rs) {
 			w.property(String.valueOf(r.getStatus()), () -> writeResponse(context, m, w, r));
 		}
 		
 		w.endObject();
 	}
 	
-	protected void writeResponse(WriteContext context, ApiMetadata m, JsonWriter w, ApiResponse r) {
+	protected void writeResponse(WriteContext context, ApiMetadata m, JsonWriter w, MApiResponse r) {
 		w.startObject();
 
 		w.property(DESCRIPTION, nullToEmpty(r.descOrSummary()));
@@ -254,9 +254,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writeDefinitions(WriteContext context, ApiMetadata m, JsonWriter w) {
 		w.startObject();
 		
-		for(Entry<String, ApiModel> entry : m.getModels().entrySet()) {
+		for(Entry<String, MApiModel> entry : m.getModels().entrySet()) {
 			String   name  = entry.getKey();
-			ApiModel model = entry.getValue();
+			MApiModel model = entry.getValue();
 			
 			w.property(name, () -> writeModel(context, m, w, model));
 		}
@@ -267,10 +267,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     protected void writeSecurityDefs(WriteContext context, ApiMetadata m, JsonWriter w) {
         w.startObject();
 
-        for(ApiSecurityDef def : m.getSecurityDefs()) {
+        for(MApiSecurityDef def : m.getSecurityDefs()) {
             
-            if(def instanceof OAuth2ApiSecurityDef) {
-                writeOAuth2SecurityDef(context, m, w, (OAuth2ApiSecurityDef)def);
+            if(def instanceof MOAuth2ApiSecurityDef) {
+                writeOAuth2SecurityDef(context, m, w, (MOAuth2ApiSecurityDef)def);
                 continue;
             }
             
@@ -280,7 +280,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         w.endObject();
     }
     
-    protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
+    protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         context.defaultSecurity = OAUTH;
         if(null != d.getScopes() && d.getScopes().length > 0) {
             String[] values = new String[d.getScopes().length];
@@ -294,7 +294,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         //writeOAuth2AccesCode(context, m, w, d);
     }
     
-    protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
+    protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         w.property(OAUTH, () -> {
             w.startObject();
             
@@ -308,7 +308,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d) {
+    protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         w.property(OAUTH_ACCESS_CODE, () -> {
             w.startObject();
             
@@ -323,11 +323,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, OAuth2ApiSecurityDef d, OAuth2Scope[] scopes) {
+    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d, MOAuth2Scope[] scopes) {
         w.property(SCOPES, () -> {
             w.startObject();
             if(null != scopes) {
-                for (OAuth2Scope scope : d.getScopes()) {
+                for (MOAuth2Scope scope : d.getScopes()) {
                     w.property(scope.getValue(), scope.getDescription());
                 }
             }
@@ -335,13 +335,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
 	
-	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, ApiModel model) {
+	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
 		w.startObject();
 		
 		w.property(PROPETIES, () -> {
 			w.startObject();
 			
-			for(ApiProperty p : model.getProperties()) {
+			for(MApiProperty p : model.getProperties()) {
 				w.property(propertyName(p.getName()), () -> {
 					w.startObject();
 					writeParameterProperties(context, m, w, p);
@@ -355,7 +355,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 	
-	protected void writeParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameterBase p) {
+	protected void writeParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p) {
 		MType type = p.getType();
 		
 		if(type.isSimpleType()) {
@@ -376,16 +376,16 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		throw new IllegalStateException("Unsupproted type kind '" + type.getTypeKind() + "'");
 	}
 	
-	protected void writeSimpleParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameterBase p, MSimpleType st) {
+	protected void writeSimpleParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MSimpleType st) {
 		writeSimpleTypePropeties(context, m, w, st);
 		w.propertyOptional(FORMAT, p.getFormat());
 	}
 	
-	protected void writeArrayParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameterBase p, MCollectionType ct) {
+	protected void writeArrayParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MCollectionType ct) {
 		writeArrayTypeProperties(context, m, w, ct);
 	}
 	
-	protected void writeRefParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, ApiParameterBase p, MTypeRef tr) {
+	protected void writeRefParameterProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MTypeRef tr) {
 		writeRefTypeProperties(context, m, w, tr);
 	}
 	

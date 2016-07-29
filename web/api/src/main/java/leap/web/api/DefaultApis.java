@@ -30,7 +30,7 @@ import leap.lang.path.Paths;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.api.config.*;
-import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.route.Route;
 
@@ -41,9 +41,9 @@ public class DefaultApis implements Apis, AppInitializable  {
 	protected @Inject ApiConfigProcessor[]   configProcessors;
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	
-	protected Map<String, ApiConfigurator> configurators               = new ConcurrentHashMap<String, ApiConfigurator>();
-	protected Map<String, ApiConfig>       configurations			   = new ConcurrentHashMap<String, ApiConfig>();
-	protected Map<String, ApiMetadata>     metadatas				   = new ConcurrentHashMap<String, ApiMetadata>();
+	protected Map<String, ApiConfigurator> configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
+	protected Map<String, ApiConfig>       configurations = new ConcurrentHashMap<String, ApiConfig>();
+	protected Map<String, ApiMetadata>     metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
 	
 	protected Map<String, ApiConfigurator> configuratorsImmutableView  = Collections.unmodifiableMap(configurators);
 	protected Map<String, ApiConfig>       configurationsImmutableView = Collections.unmodifiableMap(configurations);
