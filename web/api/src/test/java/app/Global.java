@@ -39,12 +39,8 @@ public class Global extends App {
 	        .setDefaultOAuthTokenUrl("http://127.0.0.1:8080/auth/oauth2/token");
 	    
 	    //Add simple api.
-		apis.add("api",    "/api");
-		
-		//Add Box api
-		apis.add("boxapi", "/boxapi")
-			.setPropertyNamingStyle(NamingStyles.LOWER_UNDERSCORE)
-			.removeModelNamePrefixes("Box");
+		apis.add("api", "/api");
+
 	}
 
 }
