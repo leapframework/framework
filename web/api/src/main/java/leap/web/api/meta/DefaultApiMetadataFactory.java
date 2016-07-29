@@ -272,8 +272,15 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void resolveApiResponseType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType, MApiResponseBuilder resp) {
-        if(type.equals(ApiResponse.class)) {
-            System.out.println();
+        if(type.equals(ApiResponse.class) ) {
+            if(null == genericType || genericType.equals(ApiResponse.class)) {
+                return;
+            }else{
+                Type typeArgument = Types.getTypeArgument(genericType);
+
+                type = Types.getActualType(typeArgument);
+                genericType = typeArgument;
+            }
         }
         resp.setType(createMType(context, m, Types.getTypeInfo(type, genericType)));
     }

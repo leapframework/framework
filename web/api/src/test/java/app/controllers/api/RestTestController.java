@@ -16,15 +16,30 @@
 
 package app.controllers.api;
 
+import leap.lang.New;
+import leap.web.annotation.RequestBody;
 import leap.web.annotation.http.GET;
+import leap.web.annotation.http.POST;
 import leap.web.api.controller.ApiController;
 import leap.web.api.controller.ApiResponse;
 
+import java.util.List;
+
 public class RestTestController extends ApiController {
 
-    @GET
+    @POST("/set_string")
+    public ApiResponse setString(@RequestBody String s) {
+        return ApiResponse.OK;
+    }
+
+    @GET("/get_string")
     public ApiResponse<String> getString() {
         return ApiResponse.ok("hello");
+    }
+
+    @GET("/get_strings")
+    public ApiResponse<List<String>> getStrings() {
+        return ApiResponse.ok(New.arrayList("hello1", "hello2"));
     }
 
 }
