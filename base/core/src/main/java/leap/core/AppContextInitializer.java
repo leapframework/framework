@@ -119,8 +119,9 @@ public class AppContextInitializer {
 	}
 
     public static synchronized void initExternal(Object externalContext,
-                                                 Function<AppConfig, BeanFactory> beanFactoryCreator,
-                                                 Consumer<AppContext> callback,
+                                                 Function<AppConfig, BeanFactory> newBeanFactory,
+                                                 Consumer<AppContext> onAppContextCreated,
+                                                 Consumer<AppContext> onAppContextinited,
                                                  Map<String, String> initProperties) {
 
         if(initializing){
@@ -147,7 +148,7 @@ public class AppContextInitializer {
             Thread.currentThread().setContextClassLoader(appCl);
             appCl.load(config);
             try {
-                BeanFactory factory = beanFactoryCreator.apply(config);
+                BeanFactory factory = newBeanFactory.apply(config);
 
                 //register bean
                 cs.registerBeans(config, factory);
@@ -158,9 +159,11 @@ public class AppContextInitializer {
 
                 AppContext.setCurrent(context);
 
-                callback.accept(context);
+                onAppContextCreated.accept(context);
 
                 onInited(context);
+
+                onAppContextinited.accept(context);
             }finally {
                 appCl.done();
                 Thread.currentThread().setContextClassLoader(ctxCl);
