@@ -39,37 +39,40 @@ public abstract class ServletContextInitializerBase {
 		this.servletContext = sc;
 		
 		if(sc.getAttribute(AppContext.APP_CONTEXT_ATTRIBUTE) != null){
-			throw new ServletException("AppContext aleady inited for the given servlet context '" + sc.getContextPath() + "'");
+			throw new ServletException("AppContext already inited for the given servlet context '" + sc.getContextPath() + "'");
 		}
 		
 		AppContext.removeCurrent();
 		AppContextInitializer.initExternal(
-		   sc,
-		   
-		   (config) -> {
-				onAppConfigReady(config, initParams);
-				
-				beanFactory = new ServletBeanFactory(config,null);
-				
-				if(null != callback){
-					callback.accept(beanFactory);
-				}
-				
-				return beanFactory;
-		   },
-		   
-		   (appContext) -> {
-				ServletContextInitializerBase.this.appContext = appContext;
-				sc.setAttribute(AppContext.APP_CONTEXT_ATTRIBUTE, appContext);
-				
-				beanFactory.load(appContext);
-				onBeanFactoryReady(beanFactory);
-		   },
-		   
-		   initParams
-		);
-		
-		onAppContextReady(appContext);
+                sc,
+
+                // on app config ready, creates the bean factory.
+                (config) -> {
+                    onAppConfigReady(config, initParams);
+
+                    beanFactory = new ServletBeanFactory(config, null);
+
+                    if (null != callback) {
+                        callback.accept(beanFactory);
+                    }
+
+                    return beanFactory;
+                },
+
+                //on app context created
+                (appContext) -> {
+                    ServletContextInitializerBase.this.appContext = appContext;
+                    sc.setAttribute(AppContext.APP_CONTEXT_ATTRIBUTE, appContext);
+
+                    beanFactory.load(appContext);
+                    onBeanFactoryReady(beanFactory);
+                },
+
+                // on app context initied
+                (appContext) -> onAppContextReady(appContext),
+
+                initParams
+        );
 	}
 	
 	protected void onAppConfigReady(AppConfig config, Map<String, String> initParams) {
