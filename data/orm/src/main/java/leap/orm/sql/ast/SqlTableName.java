@@ -25,6 +25,7 @@ import java.io.IOException;
 public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 
 	private String 		  alias;
+    private boolean       join;
 	private EntityMapping entityMapping;
     private DynamicName   dynamicTableName;
 	
@@ -40,7 +41,16 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 		this.alias = alias;
 	}
 
-	public EntityMapping getEntityMapping() {
+    @Override
+    public boolean isJoin() {
+        return join;
+    }
+
+    public void setJoin(boolean join) {
+        this.join = join;
+    }
+
+    public EntityMapping getEntityMapping() {
 		return entityMapping;
 	}
 

@@ -17,6 +17,7 @@ package leap.orm.sql.parser;
 
 import leap.orm.sql.ast.SqlQuery;
 import leap.orm.sql.ast.SqlTableName;
+import leap.orm.sql.ast.SqlTableSource;
 import leap.orm.sql.ast.SqlUpdate;
 
 
@@ -61,14 +62,8 @@ public class SqlUpdateParser extends SqlQueryParser {
         addNode(update);
 	}
 
-	protected void parseTableSource(SqlQuery query) {
-		parseTableName();
-		
-		if(node instanceof SqlTableName){
-			SqlTableName table = (SqlTableName)node;
-			table.setAlias(parseTableAlias());
-			query.addTableSource(table);
-		}
+	protected SqlTableSource parseTableSource(SqlQuery query) {
+        return parseTableNameSource(query);
 	}
 	
 	protected String parseTableAlias(){

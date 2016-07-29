@@ -16,7 +16,19 @@
 package leap.orm.sql.ast;
 
 public interface SqlTableSource {
-	
+
+    /**
+     * Returns the table alias or null.
+     */
 	String getAlias();
 
+    /**
+     * Returns true if the table is a join table.
+     */
+	boolean isJoin();
+
+    /**
+     *  Sets join table.
+     */
+    void setJoin(boolean join);
 }

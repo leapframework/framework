@@ -16,17 +16,15 @@
 package leap.orm.sql.ast;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 
 public class SqlSelect extends SqlQuery implements SqlTableSource {
 
-	private boolean 	  distinct;
-	private SqlTop		  top;
+	private boolean                 distinct;
+	private SqlTop                  top;
 	private HashMap<String, String> selectItemAliases;
-	private SqlSelectList selectList;
-	private boolean		  union;
+	private SqlSelectList           selectList;
+	private boolean                 union;
 
 	public boolean isDistinct() {
 		return distinct;
