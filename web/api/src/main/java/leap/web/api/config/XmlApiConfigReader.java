@@ -38,6 +38,8 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String AUTHZ_URL_ATTR = "authz-url";
     protected static final String TOKEN_URL_ATTR = "token-url";
     protected static final String SCOPE_ATTR     = "scope";
+    protected static final String NAME_ATTR      = "name";
+    protected static final String BASE_PATH_ATTR = "base-path";
 
     @Override
     public boolean readConfiguration(Apis apis, ApiConfigReaderContext context, Resource resource) {
@@ -61,7 +63,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 if(reader.isStartElement(APIS_ELEMENT)){
                     foundValidRootElement = true;
 
-                    readApi(apis, context, resource, reader);
+                    readApis(apis, context, resource, reader);
                     break;
                 }
 
@@ -87,32 +89,23 @@ public class XmlApiConfigReader implements ApiConfigReader {
     }
 
     protected void readApis(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
-        while(reader.nextToEndElement(APIS_ELEMENT)) {
+        while(reader.nextWhileNotEnd(APIS_ELEMENT)) {
             if(reader.isStartElement(CONFIG_ELEMENT)) {
                 readConfig(apis, context, resource, reader);
-                break;
+                continue;
             }
 
             if(reader.isStartElement(API_ELEMENT)) {
                 readApi(apis, context, resource, reader);
-                break;
+                continue;
             }
-        }
-
-    }
-
-    protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
-
-        while(reader.nextToEndElement(API_ELEMENT)) {
-
-
         }
 
     }
 
     protected void readConfig(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
 
-        while(reader.nextToEndElement(CONFIG_ELEMENT)) {
+        while(reader.nextWhileNotEnd(CONFIG_ELEMENT)) {
 
             if(reader.isStartElement(OAUTH_ELEMENT)) {
 
@@ -130,6 +123,25 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
         }
 
+    }
+
+    protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
+        String name     = reader.resolveRequiredAttribute(NAME_ATTR);
+        String basePath = reader.resolveRequiredAttribute(BASE_PATH_ATTR);
+
+        ApiConfigurator api = apis.configurators().get(name);
+        if(null == api) {
+            api = apis.add(name, basePath);
+        }
+
+        readApi(context, reader, api);
+    }
+
+    protected void readApi(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+        while(reader.nextWhileNotEnd(API_ELEMENT)) {
+
+
+        }
     }
 
 }

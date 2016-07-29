@@ -72,4 +72,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
 		return scale;
 	}
 
+    @Override
+    public String toString() {
+        return "MProperty[name:" + name + ", kind:" + type.getTypeKind() + "]";
+    }
 }
