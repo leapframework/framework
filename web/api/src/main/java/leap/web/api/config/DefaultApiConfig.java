@@ -24,7 +24,7 @@ import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.meta.model.OAuth2Scope;
+import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
 public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
@@ -41,11 +41,11 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected String[]      consumes;
     protected boolean       corsEnabled                 = true;
     protected boolean       oAuthEnabled                = false;
-    protected String        oAuthAuthzEndpointUrl;
-    protected String        oAuthTokenEndpointUrl;
-    protected OAuth2Scope[] oAuthScopes;
-    protected NamingStyle   parameterNamingStyle;
-    protected NamingStyle   propertyNamingStyle;
+    protected String         oAuthAuthzEndpointUrl;
+    protected String         oAuthTokenEndpointUrl;
+    protected MOAuth2Scope[] oAuthScopes;
+    protected NamingStyle    parameterNamingStyle;
+    protected NamingStyle    propertyNamingStyle;
     protected Set<String> 	removalModelNamePrefixes    = new HashSet<String>();
     protected Set<String> 	removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
     protected Set<Route>  	routes                      = new HashSet<>();
@@ -227,13 +227,13 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
     
     @Override
-    public ApiConfigurator setOAuthScopes(OAuth2Scope... scopes) {
+    public ApiConfigurator setOAuthScopes(MOAuth2Scope... scopes) {
         this.oAuthScopes = scopes;
         return this;
     }
 
     @Override
-    public OAuth2Scope[] getOAuthScopes() {
+    public MOAuth2Scope[] getOAuthScopes() {
         return oAuthScopes;
     }
 

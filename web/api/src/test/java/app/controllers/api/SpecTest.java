@@ -15,10 +15,24 @@
  */
 package app.controllers.api;
 
+import leap.core.annotation.Inject;
+import leap.web.api.Apis;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiPath;
 import leap.webunit.WebTestBaseContextual;
+import org.junit.Test;
 
 public class SpecTest extends WebTestBaseContextual {
 
-	
+    private @Inject Apis apis;
+
+	@Test
+    public void testRestStringResponse() {
+        ApiMetadata m = apis.metadatas().get("api");
+
+        MApiPath path = m.getPaths().get("/rest_test");
+        assertNotNull(path);
+
+    }
 	
 }

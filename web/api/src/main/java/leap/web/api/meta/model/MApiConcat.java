@@ -13,20 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+import java.util.Map;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+public class MApiConcat extends MApiObject {
 
-public class PetsController extends ApiController{
-
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
+	protected final String name;
+	protected final String url;
+	protected final String email;
+	
+	public MApiConcat(String name, String url, String email) {
+		this(name, url, email, null);
+	}
+	
+	public MApiConcat(String name, String url, String email, Map<String, Object> attrs) {
+	    super(attrs);
+	    this.name = name;
+	    this.url = url;
+	    this.email = email;
     }
 
+	public String getName() {
+		return name;
+	}
+
+	public String getUrl() {
+		return url;
+	}
+
+	public String getEmail() {
+		return email;
+	}
 }

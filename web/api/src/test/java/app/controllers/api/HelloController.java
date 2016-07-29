@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.api.meta;
+package app.controllers.api;
 
-import leap.web.api.config.ApiConfig;
+import leap.web.annotation.Produces;
+import leap.web.api.controller.ApiResponse;
 
-/**
- * The factory to create a {@link ApiMetadata} for the {@link ApiConfig}.
- */
-public interface ApiMetadataFactory {
-	
-	/**
-	 * Creates the api metadata for the given {@link ApiConfig}.
-	 */
-	ApiMetadata createMetadata(ApiConfig c);
+public class HelloController {
+
+	@Produces("json")
+	public String sayHello(String who) {
+		return "Hello " + who;
+	}
 
 }

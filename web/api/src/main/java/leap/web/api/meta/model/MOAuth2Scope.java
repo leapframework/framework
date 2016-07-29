@@ -13,20 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+import leap.lang.Args;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+public class MOAuth2Scope {
 
-public class PetsController extends ApiController{
-
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
+    protected final String value;
+    protected final String description;
+    
+    public MOAuth2Scope(String value, String desc) {
+        Args.notEmpty(value, "scope value");
+        this.value = value;
+        this.description = desc;
     }
 
+    public String getValue() {
+        return value;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 }

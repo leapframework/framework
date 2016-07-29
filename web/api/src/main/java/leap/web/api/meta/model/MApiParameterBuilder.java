@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter> {
+	
+	protected MApiParameter.Location location;
+	
+	public MApiParameter.Location getLocation() {
+		return location;
+	}
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+	public void setLocation(MApiParameter.Location location) {
+		this.location = location;
+	}
 
-public class PetsController extends ApiController{
-
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
+	@Override
+    public MApiParameter build() {
+	    return new MApiParameter(name, title, summary, description, type, format, location, required, defaultValue,
+	    					    null == validation ? null : validation.build(), attrs);
     }
 
 }

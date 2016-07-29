@@ -22,7 +22,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
 import leap.lang.json.JsonWriterCreator;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.meta.model.ApiMetadata;
+import leap.web.api.meta.ApiMetadata;
 
 public abstract class JsonSpecWriter implements ApiSpecWriter {
 	
@@ -60,6 +60,6 @@ public abstract class JsonSpecWriter implements ApiSpecWriter {
 		return null == propertyNamingStyle ? name : propertyNamingStyle.of(name);
 	}
 	
-	protected abstract void write(ApiMetadata m, JsonWriter w); 
+	protected abstract void write(ApiMetadata m, JsonWriter w);
 
 }

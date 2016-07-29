@@ -17,7 +17,7 @@ package leap.web.api.config;
 
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.meta.model.OAuth2Scope;
+import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
 
@@ -126,7 +126,7 @@ public interface ApiConfigurator {
 	/**
 	 * Sets the oauth2 scopes of api.
 	 */
-	ApiConfigurator setOAuthScopes(OAuth2Scope... scopes);
+	ApiConfigurator setOAuthScopes(MOAuth2Scope... scopes);
 
 	/**
 	 * Adds a route in this api.

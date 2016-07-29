@@ -13,20 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.api.meta.model;
 
-package app.controllers.petstore;
+public abstract class MApiObjectWithDescBuilder<T extends MApiObjectWithDesc> extends MApiObjectBuilder<T> {
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+	protected String summary;
+	protected String description;
+	
+	public String getSummary() {
+		return summary;
+	}
 
-public class PetsController extends ApiController{
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
 
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
-    }
+	public String getDescription() {
+		return description;
+	}
 
+	public void setDescription(String description) {
+		this.description = description;
+	}
+	
 }
