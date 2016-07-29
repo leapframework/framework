@@ -81,8 +81,19 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		}
 		
 		if(Iterable.class.isAssignableFrom(type)) {
-			MType elementType = null == genericType ? MUnresolvedType.TYPE : getMType(Types.getActualTypeArgument(genericType));
-			
+			MType elementType;
+
+            if(null == genericType) {
+                elementType = MUnresolvedType.TYPE;
+            }else{
+                Type typeArgument = Types.getTypeArgument(genericType);
+
+                Class<?> elementClass = Types.getActualType(typeArgument);
+                genericType = typeArgument;
+
+                elementType = getMType(elementClass, genericType, root, stack, true);
+            }
+
 			return new MCollectionType(elementType);
 		}
 		
