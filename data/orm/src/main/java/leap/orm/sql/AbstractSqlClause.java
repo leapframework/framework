@@ -17,10 +17,4 @@ package leap.orm.sql;
 
 public abstract class AbstractSqlClause implements SqlClause {
 
-	protected void assertIsQuery(){
-		if(!isQuery()){
-			throw new IllegalStateException("Must be sql query clause : " + toString());
-		}
-	}
-	
 }

@@ -19,17 +19,24 @@ import leap.orm.query.QueryContext;
 
 public interface SqlClause {
 	
-	/**
-	 * Returns <code>true</code> if this sql clause is a select statement.
-	 */
-	boolean isQuery();
-	
+    /**
+     * Creates a sql update statement.
+     */
 	SqlStatement createUpdateStatement(SqlContext context,Object params);
-	
+
+    /**
+     * Creates a sql query statement.
+     */
 	SqlStatement createQueryStatement(QueryContext context,Object params);
-	
+
+    /**
+     * Creates a 'select count(*)' sql statement.
+     */
 	SqlStatement createCountStatement(QueryContext context,Object params);
-	
+
+    /**
+     * Creates a batch sql statement.
+     */
 	BatchSqlStatement createBatchStatement(SqlContext context, Object[] params);
 	
 }

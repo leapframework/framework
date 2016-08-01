@@ -28,6 +28,7 @@ import java.util.function.Function;
 public class Sql {
 	
 	public enum ParseLevel {
+        DYNA,
 		BASE,
 		MORE
 	}
@@ -145,6 +146,16 @@ public class Sql {
 		}
 		
 		return Strings.trim(sb.toString());
+    }
+
+    public String resolveDynamicSql(Params params) {
+        StringBuilder sb = new StringBuilder();
+
+        for(int i=0;i<nodes.length;i++) {
+            nodes[i].resolveDynamic(sb, params);
+        }
+
+        return Strings.trim(sb.toString());
     }
 	
 	@Override

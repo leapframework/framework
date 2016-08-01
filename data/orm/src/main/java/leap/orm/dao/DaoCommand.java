@@ -35,11 +35,6 @@ public interface DaoCommand {
     Dao dao();
 
     /**
-     * Returns true if this command is a sql query.
-     */
-    boolean isQuery();
-
-    /**
      * Executes sql update without any params.
      *
      * <p/>

@@ -51,23 +51,12 @@ public interface SqlCommand extends Sourced {
 	String getDbType();
 	
 	/**
-	 * Returns <code>true</code> if this command is a sql query.
-	 * 
-	 * <p>
-	 * A query sql command can not invoke the {@link #executeUpdate(SqlContext, Object)} method.
-	 * 
-	 * <p>
-	 * A non query sql command can not invoke the {@link #executeQuery(QueryContext, Object, ResultSetReader)} method.
-	 */
-	boolean isQuery();
-
-	/**
-	 * Returns <code>SqlClause</code> if this command is a sql query
+	 * Returns the unique <code>SqlClause</code>.
 	 *
 	 * @return the sql clause of this command
-	 * @throws SqlClauseException if this command is not a sql query
+	 * @throws IllegalStateException if this command contains two or more sql clauses.
      */
-	SqlClause getQueryClause() throws SqlClauseException;
+	SqlClause getClause() throws IllegalStateException;
 	
 	/**
 	 * Executes update and returns the affected rows.

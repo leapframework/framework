@@ -64,13 +64,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	}
 
 	@Override
-	public boolean isQuery() {
-		return sql.isSelect();
-	}
-
-	@Override
     public SqlStatement createUpdateStatement(SqlContext context, Object params) {
-		return doCreateStatement(context, params);
+		return doCreateStatement(context, params, false);
     }
 	
 	@Override
@@ -79,21 +74,21 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			log.debug("Creating query statement for sql : \n {}",sql);
 		}
 
-        if(isQuery()) {
+        if(sql.isSelect()) {
             Limit limit = context.getLimit();
 
-            if(null != limit){
+            if (null != limit) {
                 createSqlWithoutOrderBy();
                 return createLimitQueryStatement(context, params);
             }
 
-            if(!Strings.isEmpty(context.getOrderBy())) {
+            if (!Strings.isEmpty(context.getOrderBy())) {
                 createSqlWithoutOrderBy();
                 return createOrderByQueryStatement(context, params);
             }
         }
 
-	    return doCreateStatement(context, params);
+	    return doCreateStatement(context, params, true);
     }
 	
 	protected SqlStatement createLimitQueryStatement(QueryContext context, Object params) {
@@ -114,8 +109,6 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	
 	@Override
     public SqlStatement createCountStatement(QueryContext context, Object params) {
-		assertIsQuery();
-		
 		createSqlForCount();
 		
 		Params				       parameters = createParameters(context,params);
@@ -128,10 +121,6 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 	@Override
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
-		if(isQuery()){
-			throw new SqlClauseException("Cannot create batch statement for query sql : " + sql);
-		}
-		
 		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context);
 		
 		return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
@@ -265,13 +254,13 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return batchArgs;
 	}
 
-	protected SqlStatement doCreateStatement(SqlContext context,Object params){
-		return doCreateStatement(sql, context, params);
+	protected SqlStatement doCreateStatement(SqlContext context,Object params, boolean query){
+		return doCreateStatement(sql, context, params, query);
 	}
 
-	protected SqlStatement doCreateStatement(Sql sql, SqlContext context,Object params){
+	protected SqlStatement doCreateStatement(Sql sql, SqlContext context,Object params, boolean query){
 		Params				   parameters = createParameters(context,params);
-		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,isQuery());
+		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,query);
 	    
 		sql.buildStatement(statement, parameters);
 		

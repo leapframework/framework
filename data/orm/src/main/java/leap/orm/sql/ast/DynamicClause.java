@@ -51,8 +51,15 @@ public class DynamicClause extends DynamicNode {
 	public AstNode[] getBodyNodes() {
 		return bodyNodes;
 	}
-	
-	@Override
+
+    @Override
+    public void resolveDynamic(Appendable buf, Params params) {
+        if(test(params)) {
+            super.resolveDynamic(buf, params);
+        }
+    }
+
+    @Override
     protected void toString_(Appendable buf) throws IOException {
 		buf.append("{?");
 		

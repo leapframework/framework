@@ -103,11 +103,6 @@ public class JdbcSqlClause extends AbstractSqlClause implements SqlClause {
 	}
 
 	@Override
-    public boolean isQuery() {
-	    return query;
-    }
-
-	@Override
     public String toString() {
 	    return sql;
     }

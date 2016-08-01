@@ -35,6 +35,7 @@ public abstract class SqlParserBase {
 	protected final Lexer 			   lexer;
 	protected final ExpressionLanguage el;
 	protected final Sql.ParseLevel	   level;
+    protected final boolean            parseDyna;
 	protected final boolean			   parseMore;
 
 	protected Sql.Type      type;
@@ -48,6 +49,7 @@ public abstract class SqlParserBase {
 		this.lexer     = lexer;
 		this.el        = el;
 		this.level     = lexer.level;
+        this.parseDyna = this.level == ParseLevel.DYNA;
 		this.parseMore = this.level == ParseLevel.MORE;
 	}
 	

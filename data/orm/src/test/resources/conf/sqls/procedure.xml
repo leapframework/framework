@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+
+    <command key="testProcedureExecuteUpdate">
+        {call t_execute_sp(:p1)}
+    </command>
+
+    <command key="testProcedureExecuteQuery">
+        {call t_query_sp(:p1)}
+    </command>
+
+</sqls>

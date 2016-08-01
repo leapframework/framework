@@ -75,4 +75,22 @@ public class WhereColumnTest extends OrmTestCase {
     public void testComplexQuery() {
         ECodeModel.query("testSingleWhereColumn.ECodeModel.complexQuery").list();
     }
+
+    @Test
+    @Contextual("h2")
+    public void testLeftJoinWithDynamicClause() {
+        ECodeModel.query("testSingleWhereColumn.ECodeModel.leftJoinDynamic").list();
+    }
+
+    @Test
+    @Contextual("h2")
+    public void testWhereWithDynamicClause() {
+        ECodeModel.query("testSingleWhereColumn.ECodeModel.whereDynamic").list();
+    }
+//
+//    @Test
+//    @Contextual("h2")
+//    public void testWhereWithDynamicLeftJoin() {
+//        ECodeModel.query("testSingleWhereColumn.ECodeModel.whereWithDynamicLeftJoin").list();
+//    }
 }

@@ -59,6 +59,10 @@ public abstract class AstNode {
         	Exceptions.wrapAndThrow(e);
         }
     }
+
+    public void resolveDynamic(Appendable buf, Params params) {
+        toSql(buf);
+    }
 	
 	@SuppressWarnings("unchecked")
     public <T extends AstNode> T as(){

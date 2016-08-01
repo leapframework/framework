@@ -44,7 +44,7 @@ public class IfClause extends DynamicNode {
 	public ElseStatement getElseStatement() {
 		return elseStatement;
 	}
-	
+
 	@Override
 	protected void toString_(Appendable buf) throws IOException {
 		for(int i=0;i<ifStatements.length;i++){

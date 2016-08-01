@@ -190,38 +190,46 @@ public class SqlParser extends SqlParserBase {
 	protected Sql parseSql(){
 		type  = null;
 		nodes = new ArrayList<>();
-		
+
 		try {
-			Token token = lexer.token();
-			
-			switch (token) {
-				case SELECT:
-					type = Type.SELECT;
-					parseSelect();
-					break;
-				case INSERT:
-					type = Type.INSERT;
-					parseInsert();
-					break;
-				case UPDATE:
-					type = Type.UPDATE;
-					parseUpdate();
-					break;
-				case DELETE:
-					type = Type.DELETE;
-					parseDelete();
-					break;
-				default:
-					type = Type.UNRESOLVED;
-					parseOther();
-					break;
-			}
+            if(parseDyna) {
+                parseDynaOnly();
+            }else{
+                Token token = lexer.token();
+
+                switch (token) {
+                    case SELECT:
+                        type = Type.SELECT;
+                        parseSelect();
+                        break;
+                    case INSERT:
+                        type = Type.INSERT;
+                        parseInsert();
+                        break;
+                    case UPDATE:
+                        type = Type.UPDATE;
+                        parseUpdate();
+                        break;
+                    case DELETE:
+                        type = Type.DELETE;
+                        parseDelete();
+                        break;
+                    default:
+                        type = Type.UNRESOLVED;
+                        parseOther();
+                        break;
+                }
+            }
         } catch (Exception e) {
 	        error(e);
         }
 		
 		return new Sql(type, nodes.toArray(new AstNode[nodes.size()]));
 	}
+
+    protected final void parseDynaOnly() {
+        new SqlDynaParser(this).parseDynaSql();
+    }
 
 	protected final void parseSelect(){
 		if(parseMore) {

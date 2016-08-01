@@ -179,8 +179,8 @@ public class DefaultRowReader implements RowReader {
 
 			boolean isAlias = false;
 
-            if(command.isQuery() && command.getQueryClause() instanceof DynamicSqlClause){
-				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getQueryClause();
+            if(command.getClause() instanceof DynamicSqlClause){
+				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getClause();
 				Sql sql = sqlClause.getSql();
 				if(sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
 					SqlSelect selectCmd = (SqlSelect)sql.nodes()[0];

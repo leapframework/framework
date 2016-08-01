@@ -43,7 +43,6 @@ public class DefaultSqlCommand implements SqlCommand {
     private boolean prepared;
 
 	protected SqlClause[] clauses;
-	protected SqlClause   queryClause;
 
     public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, DefaultSqlIdentity identity) {
         this.source  = source;
@@ -62,7 +61,6 @@ public class DefaultSqlCommand implements SqlCommand {
 
         try {
             this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
-            this.queryClause = checkQuery();
         } catch (Exception e) {
             throw new SqlConfigException("Error parsing sql content in command" + desc + ", source : " + source,e);
         }
@@ -86,16 +84,11 @@ public class DefaultSqlCommand implements SqlCommand {
     }
 
 	@Override
-    public boolean isQuery() {
-	    return null != queryClause;
-    }
-
-	@Override
-	public SqlClause getQueryClause() throws SqlClauseException {
-		if(isQuery()){
-			return queryClause;
-		}
-		throw new SqlClauseException("this command is not a query command!");
+	public SqlClause getClause() throws IllegalStateException {
+		if(clauses.length > 1) {
+            throw new IllegalStateException("Command '" + source + "' contains many clauses");
+        }
+        return clauses[0];
 	}
 
 	@Override
@@ -123,11 +116,7 @@ public class DefaultSqlCommand implements SqlCommand {
         mustPrepare(context);
 
 		if(clauses.length == 1){
-            if(null != queryClause){
-                return queryClause.createQueryStatement(context, params).executeQuery(reader);
-            }else{
-                return clauses[0].createQueryStatement(context, params).executeQuery(reader);
-            }
+            return clauses[0].createQueryStatement(context, params).executeQuery(reader);
 		}else{
 			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
 		}
@@ -140,10 +129,8 @@ public class DefaultSqlCommand implements SqlCommand {
         }
         mustPrepare(context);
 
-		Assert.isTrue(null != queryClause,"This command is not a query, cannot execute count(*) query");
-
 		if(clauses.length == 1){
-			return queryClause.createCountStatement(context, params).executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
+			return clauses[0].createCountStatement(context, params).executeQuery(ResultSetReaders.forScalarValue(Long.class, false));
 		}else{
 			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
 		}
@@ -164,8 +151,6 @@ public class DefaultSqlCommand implements SqlCommand {
 	protected int doExecuteUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) {
         mustPrepare(context);
 
-		Assert.isTrue(null == queryClause,"This command is a query, cannot execute update");
-		
 		if(clauses.length == 1){
 			return clauses[0].createUpdateStatement(context, params).executeUpdate(psHandler);
 		}else{
@@ -179,8 +164,6 @@ public class DefaultSqlCommand implements SqlCommand {
         }
         mustPrepare(context);
 
-		Assert.isTrue(null == queryClause,"This command is a query, cannot execute batch update");
-		
 		if(clauses.length == 1){
 			return clauses[0].createBatchStatement(context, batchParams).executeBatchUpdate(psHandler);
 		}else{
@@ -197,15 +180,12 @@ public class DefaultSqlCommand implements SqlCommand {
 
 	protected SqlClause checkQuery(){
 		SqlClause queryClause = null;
-		
+
 		for(SqlClause clause : clauses){
-			if(clause.isQuery()){
-				if(null != queryClause){
-					throw new SqlConfigException("Two or more query clauses in a command not supported, source : " + source);
-				}
-				queryClause = clause;
-			}
+            queryClause = clause;
+            break;
 		}
+
 		return queryClause;
 	}
 
