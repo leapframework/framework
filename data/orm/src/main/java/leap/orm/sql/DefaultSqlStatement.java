@@ -16,11 +16,17 @@
 package leap.orm.sql;
 
 import leap.core.jdbc.BatchPreparedStatementHandler;
+import leap.core.jdbc.JdbcExecutor;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.db.Db;
 import leap.lang.annotation.Nullable;
 import leap.lang.exception.NestedSQLException;
+import leap.orm.OrmContext;
+import leap.orm.mapping.EntityMapping;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlExecutionContext {
 	
@@ -50,6 +56,21 @@ public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlEx
 	}
 
     @Override
+    public OrmContext getOrmContext() {
+        return context.getOrmContext();
+    }
+
+    @Override
+    public JdbcExecutor getJdbcExecutor() {
+        return context.getJdbcExecutor();
+    }
+
+    @Override
+    public EntityMapping getPrimaryEntityMapping() {
+        return context.getPrimaryEntityMapping();
+    }
+
+    @Override
     public Sql sql() {
         return sql;
     }
@@ -76,6 +97,14 @@ public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlEx
 
 	@Override
     public <T> T executeQuery(ResultSetReader<T> reader) throws NestedSQLException {
-		return context.getJdbcExecutor().executeQuery(sqlString, args, argTypes, reader);
+		return context.getJdbcExecutor().executeQuery(sqlString, args, argTypes, wrap(reader));
+    }
+
+    private <T> ResultSetReader<T> wrap(ResultSetReader<T> reader) {
+        if(reader instanceof SqlResultSetReader) {
+            return rs -> ((SqlResultSetReader<T>) reader).read(this, rs);
+        }else{
+            return reader;
+        }
     }
 }

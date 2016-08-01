@@ -16,7 +16,7 @@
 
 package leap.orm.sql;
 
-public interface SqlExecutionContext {
+public interface SqlExecutionContext extends SqlContext {
 
     /**
      * Optional.

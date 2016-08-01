@@ -16,6 +16,7 @@
 package leap.orm.sql;
 
 import leap.core.jdbc.JdbcExecutor;
+import leap.db.Db;
 import leap.db.DbDialect;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
@@ -28,7 +29,14 @@ public interface SqlContext {
     default DbDialect dialect() {
         return getOrmContext().getDb().getDialect();
     }
-	
+
+    /**
+     * Returns the {@link Db}.
+     */
+    default Db db() {
+        return getOrmContext().getDb();
+    }
+
     /**
      * Returns the {@link OrmContext}.
      */
