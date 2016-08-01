@@ -83,7 +83,6 @@ public class DefaultSqlCommand implements SqlCommand {
 	    return dbType;
     }
 
-	@Override
 	public SqlClause getClause() throws IllegalStateException {
 		if(clauses.length > 1) {
             throw new IllegalStateException("Command '" + source + "' contains many clauses");

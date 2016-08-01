@@ -26,6 +26,7 @@ import leap.core.jdbc.RawScalarReader;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlResultSetReader;
 
 public class ResultSetReaders {
 	
@@ -55,17 +56,17 @@ public class ResultSetReaders {
 		return rs -> context.getEntityReader().readList(context, rs, em, elementType, resultClass);
 	}
 	
-	public static <T> ResultSetReader<T> forFirstRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
-		return rs -> context.getRowReader().readFirst(context, rs, resultClass,command);
+	public static <T> SqlResultSetReader<T> forFirstRow(final OrmContext context, final Class<T> resultClass, final SqlCommand command){
+		return (c, rs) -> context.getRowReader().readFirst(c, rs, resultClass,command);
 	}
 	
-	public static <T> ResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
-		return rs -> context.getRowReader().readSingle(context, rs, resultClass,command);
+	public static <T> SqlResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
+		return (c,rs) -> context.getRowReader().readSingle(c, rs, resultClass,command);
 	}
 	
-	public static <T> ResultSetReader<List<T>> forListRow(final OrmContext context, final Class<T> elementType,
+	public static <T> SqlResultSetReader<List<T>> forListRow(final OrmContext context, final Class<T> elementType,
 														  final Class<? extends T> resultClass, final SqlCommand command){
-		return rs -> context.getRowReader().readList(context, rs, elementType, resultClass, command);
+		return (c,rs) -> context.getRowReader().readList(c, rs, elementType, resultClass, command);
 	}
 	
 	protected ResultSetReaders(){
