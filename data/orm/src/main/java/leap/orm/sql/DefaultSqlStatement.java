@@ -22,52 +22,60 @@ import leap.db.Db;
 import leap.lang.annotation.Nullable;
 import leap.lang.exception.NestedSQLException;
 
-public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement {
+public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlExecutionContext {
 	
 	protected final SqlContext context;
-	protected final String	   sql;
+    protected final Sql        sql;
+	protected final String     sqlString;
 	protected final Object[]   args;
 	protected final Object[][] batchArgs;
-	protected final int[]	   argTypes;
+	protected final int[]      argTypes;
 	
-	public DefaultSqlStatement(SqlContext context,String sql,Object[] args,int[] argTypes){
+	public DefaultSqlStatement(SqlContext context, Sql sql, String sqlString, Object[] args, int[] argTypes){
 		this.context   = context;
-		this.sql       = sql;
+        this.sql       = sql;
+		this.sqlString = sqlString;
 		this.args      = args;
 		this.argTypes  = argTypes;
 		this.batchArgs = null;
 	}
 	
-	public DefaultSqlStatement(SqlContext context,String sql,Object[][] batchArgs,int[] argTypes){
+	public DefaultSqlStatement(SqlContext context, Sql sql, String sqlString, Object[][] batchArgs, int[] argTypes){
 		this.context   = context;
-		this.sql       = sql;
+        this.sql       = sql;
+		this.sqlString = sqlString;
 		this.args      = null;
 		this.argTypes  = argTypes;
 		this.batchArgs = batchArgs;
 	}
 
-	@Override
+    @Override
+    public Sql sql() {
+        return sql;
+    }
+
+    @Override
     public int executeUpdate() throws NestedSQLException {
-		return context.getJdbcExecutor().executeUpdate(sql, args, argTypes);
+		return context.getJdbcExecutor().executeUpdate(sqlString, args, argTypes);
     }
 	
 	@Override
     public int executeUpdate(@Nullable PreparedStatementHandler<Db> psHandler) throws NestedSQLException {
-	    return context.getJdbcExecutor().executeUpdate(sql, args, argTypes, psHandler);
+	    return context.getJdbcExecutor().executeUpdate(sqlString, args, argTypes, psHandler);
     }
 
 	@Override
     public int[] executeBatchUpdate() throws NestedSQLException {
-	    return context.getJdbcExecutor().executeBatchUpdate(sql, batchArgs, argTypes);
+	    return context.getJdbcExecutor().executeBatchUpdate(sqlString, batchArgs, argTypes);
     }
 
 	@Override
     public int[] executeBatchUpdate(BatchPreparedStatementHandler<Db> psHandler) throws NestedSQLException {
-	    return context.getJdbcExecutor().executeBatchUpdate(sql, batchArgs, argTypes, psHandler);
+	    return context.getJdbcExecutor().executeBatchUpdate(sqlString, batchArgs, argTypes, psHandler);
     }
 
 	@Override
     public <T> T executeQuery(ResultSetReader<T> reader) throws NestedSQLException {
-		return context.getJdbcExecutor().executeQuery(sql, args, argTypes, reader);
+		return context.getJdbcExecutor().executeQuery(sqlString, args, argTypes, reader);
     }
 }

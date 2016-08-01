@@ -72,16 +72,18 @@ public class DefaultPreparedBatchSqlStatementBuilder implements PreparedBatchSql
 
 	@Override
     public PreparedBatchSqlStatement build() {
-	    return new DefaultPreparedSqlStatement(buf.toString(), params.toArray(new SqlParameter[params.size()]));
+	    return new DefaultPreparedSqlStatement(sql, buf.toString(), params.toArray(new SqlParameter[params.size()]));
     }
 
 	protected static final class DefaultPreparedSqlStatement implements PreparedBatchSqlStatement {
-		private final String 		 sql;
+        private final Sql            sql;
+		private final String         sqlString;
 		private final SqlParameter[] params;
 		
-		public DefaultPreparedSqlStatement(String sql, SqlParameter[] params) {
-			this.sql    = sql;
-			this.params = params;
+		public DefaultPreparedSqlStatement(Sql sql, String sqlString, SqlParameter[] params) {
+            this.sql       = sql;
+			this.sqlString = sqlString;
+			this.params    = params;
 		}
 
 		@Override
@@ -91,7 +93,7 @@ public class DefaultPreparedBatchSqlStatementBuilder implements PreparedBatchSql
 
 		@Override
         public BatchSqlStatement createBatchSqlStatement(SqlContext context, Object[][] args) {
-	        return new DefaultSqlStatement(context, sql, args, null);
+	        return new DefaultSqlStatement(context, sql, sqlString, args, null);
         }
 	}
 }

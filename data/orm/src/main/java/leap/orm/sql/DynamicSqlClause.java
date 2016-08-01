@@ -92,11 +92,11 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
     }
 	
 	protected SqlStatement createLimitQueryStatement(QueryContext context, Object params) {
-		DbLimitQuery limitQuery = new DynamicSqlLimitQuery(context, params);
+        DynamicSqlLimitQuery limitQuery = new DynamicSqlLimitQuery(context, params);
 		
-		String sql = context.getOrmContext().getDb().getDialect().getLimitQuerySql(limitQuery);
+		String sql = context.dialect().getLimitQuerySql(limitQuery);
 	    
-		return new DefaultSqlStatement(context, sql, limitQuery.getArgs().toArray(), Arrays2.EMPTY_INT_ARRAY);
+		return new DefaultSqlStatement(context, limitQuery.sql, sql, limitQuery.getArgs().toArray(), Arrays2.EMPTY_INT_ARRAY);
 	}
 	
 	protected SqlStatement createOrderByQueryStatement(QueryContext context, Object params) {
@@ -108,13 +108,13 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	}
 	
 	@Override
-    public SqlStatement createCountStatement(QueryContext context, Object params) {
+    public SqlStatement createCountStatement(QueryContext context, Object p) {
 		createSqlForCount();
 		
-		Params				       parameters = createParameters(context,params);
-		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,true);
+		Params params = createParameters(context, p);
+		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sqlForCount, true);
 	    
-		sqlForCount.buildStatement(statement, parameters);
+		sqlForCount.buildStatement(statement, params);
 		
 		return statement.build();
     }
@@ -258,11 +258,11 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return doCreateStatement(sql, context, params, query);
 	}
 
-	protected SqlStatement doCreateStatement(Sql sql, SqlContext context,Object params, boolean query){
-		Params				   parameters = createParameters(context,params);
-		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,query);
+	protected SqlStatement doCreateStatement(Sql sql, SqlContext context, Object p, boolean query){
+		Params params = createParameters(context, p);
+		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sql, query);
 	    
-		sql.buildStatement(statement, parameters);
+		sql.buildStatement(statement, params);
 		
 		return statement.build();
 	}
@@ -296,6 +296,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		
 		private final QueryContext         context;
 		private final Params               params;
+
+        private Sql                        sql;
 		private String                     orderBy;
 		private DefaultSqlStatementBuilder statement;
 		
@@ -304,8 +306,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		protected DynamicSqlLimitQuery(QueryContext context,Object params){
 			this.context   = context;
 			this.params    = createParameters(context,params);
-			this.statement = new DefaultSqlStatementBuilder(context, true);
-			
+
 			if(!Strings.isEmpty(context.getOrderBy())){
 				orderBy = "order by " + context.getOrderBy();
 			}else{
@@ -320,8 +321,6 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
         }
 		
 		public DefaultSqlStatementBuilder buildStatement(Db db) {
-			Sql sql;
-			
 			if(Strings.isEmpty(orderBy)) {
 				sql = mergeMultipleSelect(sqlWithoutOrderByResolved);
 			}else{
@@ -339,7 +338,8 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 				DynamicSqlClause sqlClauseWithOrderBy = lang.parseClause(context.getOrmContext(), sqlWithOrderBy);
 				sql = sqlClauseWithOrderBy.getSql();
 			}
-			
+
+            this.statement = new DefaultSqlStatementBuilder(context, sql, true);
 			sql.buildStatement(statement, params);
 			
 			return statement;
