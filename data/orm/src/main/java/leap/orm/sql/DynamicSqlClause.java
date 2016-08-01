@@ -178,12 +178,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			if(node instanceof SqlSelect){
 				SqlSelect select = (SqlSelect)node;
 				List<AstNode> nodes = createSqlNodesWithoutOrderBy(select.getNodes());
-				SqlSelect countSelect = new SqlSelect();
-				countSelect.setDistinct(select.isDistinct());
-				countSelect.setTop(select.getTop());
-				countSelect.setAlias(select.getAlias());
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
-				selects.add(countSelect);
+				SqlSelect newSelect = new SqlSelect();
+				newSelect.setDistinct(select.isDistinct());
+				newSelect.setTop(select.getTop());
+                newSelect.addSelectItemAliases(select.getSelectItemAliases());
+				newSelect.setAlias(select.getAlias());
+				newSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+                newSelect.setUnion(select.isUnion());
+				selects.add(newSelect);
 			}else {
 				selects.add(node);
 			}
@@ -338,6 +340,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 				DynamicSqlClause sqlClauseWithOrderBy = lang.parseClause(context.getOrmContext(), sqlWithOrderBy);
 				sql = sqlClauseWithOrderBy.getSql();
 			}
+
+            if(sql.isSelect()) {
+                Sql original = DynamicSqlClause.this.sql;
+                if(original.isSelect() && original.nodes()[0] instanceof SqlSelect) {
+                    SqlSelect select = (SqlSelect)sql.nodes()[0];
+                    select.addSelectItemAliases(((SqlSelect)original.nodes()[0]).getSelectItemAliases());
+                }
+            }
 
             this.statement = new DefaultSqlStatementBuilder(context, sql, true);
 			sql.buildStatement(statement, params);

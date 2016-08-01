@@ -180,17 +180,17 @@ public class DefaultRowReader implements RowReader {
 
 			boolean isAlias = false;
 
-            if(command.getClause() instanceof DynamicSqlClause){
-				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getClause();
-				Sql sql = sqlClause.getSql();
-				if(sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
+//            if(command.getClause() instanceof DynamicSqlClause){
+//				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getClause();
+				Sql sql = context.sql();// sqlClause.getSql();
+				if(null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
 					SqlSelect selectCmd = (SqlSelect)sql.nodes()[0];
 					if(selectCmd.isSelectItemAlias(c.columnLabel)){
 						c.fieldName = selectCmd.getSelectItemAlias(c.columnLabel);
 						isAlias = true;
 					}
 				}
-			}
+//			}
 
 			if(!isAlias){
 				c.fieldName = ns.columnToFieldName(c.columnLabel);

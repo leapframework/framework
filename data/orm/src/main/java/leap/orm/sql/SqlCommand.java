@@ -51,14 +51,6 @@ public interface SqlCommand extends Sourced {
 	String getDbType();
 	
 	/**
-	 * Returns the unique <code>SqlClause</code>.
-	 *
-	 * @return the sql clause of this command
-	 * @throws IllegalStateException if this command contains two or more sql clauses.
-     */
-	SqlClause getClause() throws IllegalStateException;
-
-	/**
 	 * Executes update and returns the affected rows.
 	 * 
 	 * @throws IllegalStateException if this command is not an update command.

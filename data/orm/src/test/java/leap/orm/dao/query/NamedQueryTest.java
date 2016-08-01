@@ -78,6 +78,7 @@ public class NamedQueryTest extends OrmTestCase {
         newer = dao.createNamedQuery("findOwnerByLastNameSimple").params(older).single();
         compareFields(older, newer);
 	}
+
 	@Test
 	public void testQueryWithResultClass(){
 		Product.deleteAll();
@@ -109,11 +110,13 @@ public class NamedQueryTest extends OrmTestCase {
 		assertEquals(dir.getName(),files.get(0).getScopeId());
 		assertEquals(dir.getId(),files.get(0).getId());
 	}
+
 	@Test
 	@Contextual("mysql")
 	public void testBracketsExpression(){
 		dao.createNamedQuery("testBracketsExpression").list();
 	}
+
 	@Test
 	public void testUpperCaseSqlWithLowerCaseField(){
 		Product.deleteAll();
@@ -123,7 +126,6 @@ public class NamedQueryTest extends OrmTestCase {
 		assertEquals(1,products.size());
 		assertEquals(product.getId(),products.get(0).getId());
 	}
-
 
 	protected void compareFields(Owner older, Map<String, Object> newer) {
         Map<String, Object> olderFields = older.fields();
