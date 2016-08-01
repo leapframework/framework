@@ -54,7 +54,7 @@ public interface SqlCommand extends Sourced {
 	 * Executes update and returns the affected rows.
 	 * 
 	 * @throws IllegalStateException if this command is not an update command.
-	 * @throws NestedSQLException if a {@link SQLException} throwed.
+	 * @throws NestedSQLException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
@@ -64,7 +64,7 @@ public interface SqlCommand extends Sourced {
 	 * Executes update and returns the affected rows.
 	 * 
 	 * @throws IllegalStateException if this command is not an update command.
-	 * @throws NestedSQLException if a {@link SQLException} throwed.
+	 * @throws NestedSQLException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
@@ -74,7 +74,7 @@ public interface SqlCommand extends Sourced {
 	 * Executes query and returns the result readed by the given {@link ResultSetReader}.
 	 * 
 	 * @throws IllegalStateException if this command is not a query command.
-	 * @throws IllegalStateException if a {@link SQLException} throwed.
+	 * @throws IllegalStateException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeQuery()
 	 */
