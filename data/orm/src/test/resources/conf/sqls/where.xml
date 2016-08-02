@@ -48,4 +48,13 @@
         where 1=1 {?and 1 = 2}
     </command>
 
+    <command key="testSingleWhereColumn.ECodeModel.whereWithDynamicLeftJoin">
+        SELECT
+        u.NAME AS creator
+        FROM
+        ecode_model u
+        {?left join a on a.id = :id}
+        where 1=1 {?and 1 = 2}
+    </command>
+
 </sqls>
