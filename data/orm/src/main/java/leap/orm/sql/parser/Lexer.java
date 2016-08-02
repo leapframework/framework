@@ -565,7 +565,7 @@ public class Lexer {
                         return;
                     }
                     
-                    if(scanMore && scanMoreTokens()){
+                    if(scanMoreTokens()){
                     	return;
                     }
                     
@@ -1115,7 +1115,7 @@ public class Lexer {
     /**
      * Returns <code>true</code> if current token is {@link Token#IDENTIFIER} 
      * 
-     * and the identifer literal equals to the given string.
+     * and the identifier literal equals to the given string.
      */
     public final boolean isIdentifier(String string){
     	return _token == Token.IDENTIFIER && Strings.equalsIgnoreCase(this.literal(), string);

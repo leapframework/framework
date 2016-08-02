@@ -25,14 +25,16 @@ import leap.lang.Strings;
 public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	
 	private final SqlContext    context;
-	private final boolean		query; 
-	private final StringBuilder sql  = new StringBuilder(150);
+    private final Sql           sql;
+	private final boolean		query;
+	private final StringBuilder buf  = new StringBuilder(150);
 	private final List<Object>  args = new ArrayList<Object>();
 	
 	private int pi = -1;
 	
-	public DefaultSqlStatementBuilder(SqlContext context, boolean query){
+	public DefaultSqlStatementBuilder(SqlContext context, Sql sql, boolean query){
 		this.context = context;
+        this.sql     = sql;
 		this.query   = query;
 	}
 	
@@ -55,7 +57,7 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
     }
 
 	public StringBuilder getSql(){
-		return sql;
+		return buf;
 	}
 	
 	public List<Object> getArgs() {
@@ -64,20 +66,20 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 
 	@Override
     public Appendable append(char c) throws IOException {
-		sql.append(c);
-	    return sql;
+		buf.append(c);
+	    return buf;
     }
 
 	@Override
     public Appendable append(CharSequence cs, int start, int end) throws IOException {
-		sql.append(cs,start,end);
-	    return sql;
+		buf.append(cs,start,end);
+	    return buf;
     }
 
 	@Override
     public Appendable append(CharSequence cs) throws IOException {
-		sql.append(cs);
-		return sql;
+		buf.append(cs);
+		return buf;
     }
 	
 	public DefaultSqlStatementBuilder appendText(String text){
@@ -89,14 +91,14 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 				if(c == '\r' || c == '\n'){
 					c = ' ';
 				}
-				sql.append(c);
+				buf.append(c);
 				
 				if(skip(c)){
 					i++;
 					for(;i < len;i++){
 						c = text.charAt(i);
 						if(!skip(c)){
-							sql.append(c);
+							buf.append(c);
 							break;
 						}
 					}
@@ -112,13 +114,13 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	}
 	
 	public boolean removeLastEqualsOperator(){
-		int len = sql.length();
+		int len = buf.length();
 		
 		for(int i=len-1;i > 0;i--){
-			char c = sql.charAt(i);
+			char c = buf.charAt(i);
 			
-			if(c == '=' && i > 1 && Character.isWhitespace(sql.charAt(i-1))){
-				sql.delete(i-1,len);
+			if(c == '=' && i > 1 && Character.isWhitespace(buf.charAt(i-1))){
+				buf.delete(i-1,len);
 				return true;
 			}			
 			
@@ -131,8 +133,8 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	}
 	
 	public boolean isLastInOperator(){
-		for(int i=sql.length() - 1;i>2;i--) {
-			char c = sql.charAt(i);
+		for(int i = buf.length() - 1; i>2; i--) {
+			char c = buf.charAt(i);
 			
 			if(Character.isWhitespace(c)) {
 				continue;
@@ -143,8 +145,8 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 			}
 			
 			if(c == 'n' || c == 'N') {
-				char c1 = sql.charAt(i-1);
-				if((c1 == 'i' || c1 == 'I') && Character.isWhitespace(sql.charAt(i-2))) {
+				char c1 = buf.charAt(i-1);
+				if((c1 == 'i' || c1 == 'I') && Character.isWhitespace(buf.charAt(i-2))) {
 					return true;
 				}
 			}
@@ -161,6 +163,10 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	
 	@Override
     public DefaultSqlStatement build() {
-	    return new DefaultSqlStatement(context, sql.toString(), args.toArray(new Object[args.size()]), Arrays2.EMPTY_INT_ARRAY);
+	    return new DefaultSqlStatement(context,
+                                        sql,
+                                        buf.toString(),
+                                        args.toArray(new Object[args.size()]),
+                                        Arrays2.EMPTY_INT_ARRAY);
     }
 }

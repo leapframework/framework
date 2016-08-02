@@ -245,21 +245,7 @@ class SqlSelectParser extends SqlQueryParser {
 			}
 			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
-			if(lexer.peekCharSkipWhitespaces() == '('){
-				acceptText();
-				expect(Token.LPAREN).acceptText();
-				parseRestForClosingParen();
-				expect(Token.RPAREN).acceptText();
-				
-				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					acceptText();
-					expect(Token.LPAREN).acceptText();
-					parseRestForClosingParen();
-					expect(Token.RPAREN).acceptText();
-				}
-			}else{
-				parseSqlObjectName();
-			}
+            parseNameExpr();
 		}else{
 			new SqlExprParser(this).parseExpr();
 		}

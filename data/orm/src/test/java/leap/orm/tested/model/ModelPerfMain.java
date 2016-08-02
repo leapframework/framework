@@ -18,7 +18,9 @@ package leap.orm.tested.model;
 import leap.lang.time.StopWatch;
 import leap.orm.OrmTestCase;
 import leap.orm.model.Model;
+import org.junit.Ignore;
 
+@Ignore
 public class ModelPerfMain extends OrmTestCase {
 
 	public static void main(String[] args) throws Exception {

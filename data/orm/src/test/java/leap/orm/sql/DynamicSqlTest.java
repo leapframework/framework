@@ -122,6 +122,7 @@ public class DynamicSqlTest extends OrmTestCase {
 				.limit(2).list();
 		assertEquals(2,records.size());
 	}
+
 	@Test
 	public void testFragmentAndUnionWithOrder(){
 		Owner.deleteAll();
@@ -137,6 +138,7 @@ public class DynamicSqlTest extends OrmTestCase {
 		assertEquals(3,records.size());
 		assertEquals("c",records.get(0).get("name"));
 	}
+
 	@Test
 	public void testFragmentAndUnionWithOrderAndLimit(){
 		Owner.deleteAll();
@@ -153,8 +155,9 @@ public class DynamicSqlTest extends OrmTestCase {
 		assertEquals(2,records.size());
 		assertEquals("c",records.get(0).get("name"));
 	}
+
 	@Test
-	public void testFragmentNseting(){
+	public void testFragmentNested(){
 		Owner.deleteAll();
 		new Owner().setFullName("a","1").save();
 		Record owner = dao.createNamedQuery("nestingIncludeSql").param("firstName","a").single();

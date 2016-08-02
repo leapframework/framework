@@ -39,73 +39,59 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	public static final String ORDER_BY_PLACEHOLDER = "$orderBy$";
 	
 	protected final DynamicSqlLanguage lang;
-    protected final Sql                raw;
-	protected final Sql 			   sql;
+    protected final DynamicSql         sql;
+
+    private PreparedBatchSqlStatement preparedBatchStatement;
 	
-	private Sql 	sqlForCount;	
-	
-	private Sql     sqlWithoutOrderByRaw;
-    private Sql     sqlWithoutOrderByResolved;
-	private String  defaultOrderBy;
-	private boolean hasOrderByPlaceHolder;
-	
-	private PreparedBatchSqlStatement preparedBatchStatement;
-	
-    public DynamicSqlClause(DynamicSqlLanguage lang, Sql raw, Sql sql){
-        Args.notNull(lang,"lang");
-        Args.notNull(sql, "sql");
+    public DynamicSqlClause(DynamicSqlLanguage lang, DynamicSql sql){
         this.lang = lang;
-        this.raw  = raw;
         this.sql  = sql;
     }
 
-	public Sql getSql() {
-		return sql;
-	}
-
 	@Override
-	public boolean isQuery() {
-		return sql.isSelect();
-	}
+    public SqlStatement createUpdateStatement(SqlContext context, Object p) {
+        Params params = createParameters(context, p);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
-	@Override
-    public SqlStatement createUpdateStatement(SqlContext context, Object params) {
-		return doCreateStatement(context, params);
+        return doCreateStatement(context, sqls, params, false);
     }
 	
 	@Override
-    public SqlStatement createQueryStatement(QueryContext context, Object params) {
+    public SqlStatement createQueryStatement(QueryContext context, Object p) {
 		if(log.isDebugEnabled()) {
 			log.debug("Creating query statement for sql : \n {}",sql);
 		}
 
-        if(isQuery()) {
+        Params params = createParameters(context, p);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+
+        if(sqls.sql.isSelect()) {
             Limit limit = context.getLimit();
 
-            if(null != limit){
-                createSqlWithoutOrderBy();
-                return createLimitQueryStatement(context, params);
+            if (null != limit) {
+                createSqlWithoutOrderBy(sqls);
+                return createLimitQueryStatement(context, sqls, params);
             }
 
-            if(!Strings.isEmpty(context.getOrderBy())) {
-                createSqlWithoutOrderBy();
-                return createOrderByQueryStatement(context, params);
+            if (!Strings.isEmpty(context.getOrderBy())) {
+                createSqlWithoutOrderBy(sqls);
+                return createOrderByQueryStatement(context, sqls, params);
             }
         }
 
-	    return doCreateStatement(context, params);
+	    return doCreateStatement(context, sqls, params, true);
     }
 	
-	protected SqlStatement createLimitQueryStatement(QueryContext context, Object params) {
-		DbLimitQuery limitQuery = new DynamicSqlLimitQuery(context, params);
+	protected SqlStatement createLimitQueryStatement(QueryContext context, DynamicSql.ExecutionSqls sqls, Params params) {
+        DynamicSqlLimitQuery limitQuery = new DynamicSqlLimitQuery(context, sqls, params);
 		
-		String sql = context.getOrmContext().getDb().getDialect().getLimitQuerySql(limitQuery);
+		String sql = context.dialect().getLimitQuerySql(limitQuery);
 	    
-		return new DefaultSqlStatement(context, sql, limitQuery.getArgs().toArray(), Arrays2.EMPTY_INT_ARRAY);
+		return new DefaultSqlStatement(context, limitQuery.sql, sql, limitQuery.getArgs().toArray(), Arrays2.EMPTY_INT_ARRAY);
 	}
 	
-	protected SqlStatement createOrderByQueryStatement(QueryContext context, Object params) {
-		DynamicSqlLimitQuery limitQuery = new DynamicSqlLimitQuery(context, params);
+	protected SqlStatement createOrderByQueryStatement(QueryContext context, DynamicSql.ExecutionSqls sqls, Params params) {
+		DynamicSqlLimitQuery limitQuery = new DynamicSqlLimitQuery(context, sqls, params);
 		
 		DefaultSqlStatementBuilder stm = limitQuery.buildStatement(context.getOrmContext().getDb());
 	    
@@ -113,33 +99,31 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	}
 	
 	@Override
-    public SqlStatement createCountStatement(QueryContext context, Object params) {
-		assertIsQuery();
+    public SqlStatement createCountStatement(QueryContext context, Object p) {
+        Params params = createParameters(context, p);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+
+        createSqlForCount(sqls);
 		
-		createSqlForCount();
-		
-		Params				       parameters = createParameters(context,params);
-		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,true);
+		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sqls.sqlForCount, true);
 	    
-		sqlForCount.buildStatement(statement, parameters);
+		sqls.sqlForCount.buildStatement(statement, params);
 		
 		return statement.build();
     }
 
 	@Override
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
-		if(isQuery()){
-			throw new SqlClauseException("Cannot create batch statement for query sql : " + sql);
-		}
-		
-		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
+
+		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls);
 		
 		return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
     }
 	
-	private void createSqlForCount() {
-		if(null == sqlForCount) {
-			SqlSelect select = (SqlSelect)sql.nodes()[0];
+	private void createSqlForCount(DynamicSql.ExecutionSqls sqls) {
+		if(null == sqls.sqlForCount) {
+			SqlSelect select = (SqlSelect)sqls.sql.nodes()[0];
 			List<AstNode> nodes = new ArrayList<>();
 			for(AstNode node : select.getNodes()){
 				if(node instanceof SqlOrderBy){
@@ -158,29 +142,29 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			countSelect.setAlias(select.getAlias());
 			countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
 			
-			sqlForCount = new Sql(sql.type(), new AstNode[]{countSelect});
+			sqls.sqlForCount = new Sql(sqls.sql.type(), new AstNode[]{countSelect});
 		}
 	}
 	
-	private void createSqlWithoutOrderBy() {
-		if(null == sqlWithoutOrderByRaw) {
+	private void createSqlWithoutOrderBy(DynamicSql.ExecutionSqls sqls) {
+		if(null == sqls.sqlWithoutOrderByRaw) {
 			if(lang.isSimple()) {
-                sqlWithoutOrderByRaw      = createSqlWithoutOrderBySimple(raw);
-                sqlWithoutOrderByResolved = createSqlWithoutOrderBySimple(sql);
+                sqls.sqlWithoutOrderByRaw      = createSqlWithoutOrderBySimple(sqls, sqls.raw);
+                sqls.sqlWithoutOrderByResolved = createSqlWithoutOrderBySimple(sqls, sqls.sql);
 			}else{
-                sqlWithoutOrderByRaw      = createSqlWithoutOrderByComplex(raw);
-                sqlWithoutOrderByResolved = createSqlWithoutOrderByComplex(sql);
+                sqls.sqlWithoutOrderByRaw      = createSqlWithoutOrderByComplex(sqls, sqls.raw);
+                sqls.sqlWithoutOrderByResolved = createSqlWithoutOrderByComplex(sqls, sqls.sql);
 			}
 		}
 	}
 	
-	protected Sql createSqlWithoutOrderBySimple(Sql sql) {
-		List<AstNode> nodes = createSqlNodesWithoutOrderBy(sql.nodes());
+	protected Sql createSqlWithoutOrderBySimple(DynamicSql.ExecutionSqls sqls, Sql sql) {
+		List<AstNode> nodes = createSqlNodesWithoutOrderBy(sqls, sql.nodes());
 		
 		return new Sql(sql.type(), nodes.toArray(new AstNode[nodes.size()]));
 	}
 	
-	protected Sql createSqlWithoutOrderByComplex(Sql sql) {
+	protected Sql createSqlWithoutOrderByComplex(DynamicSql.ExecutionSqls sqls, Sql sql) {
 		AstNode[] astNodes = sql.nodes();
 
 		List<AstNode> selects = New.arrayList();
@@ -188,13 +172,15 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 			if(node instanceof SqlSelect){
 				SqlSelect select = (SqlSelect)node;
-				List<AstNode> nodes = createSqlNodesWithoutOrderBy(select.getNodes());
-				SqlSelect countSelect = new SqlSelect();
-				countSelect.setDistinct(select.isDistinct());
-				countSelect.setTop(select.getTop());
-				countSelect.setAlias(select.getAlias());
-				countSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
-				selects.add(countSelect);
+				List<AstNode> nodes = createSqlNodesWithoutOrderBy(sqls, select.getNodes());
+				SqlSelect newSelect = new SqlSelect();
+				newSelect.setDistinct(select.isDistinct());
+				newSelect.setTop(select.getTop());
+                newSelect.addSelectItemAliases(select.getSelectItemAliases());
+				newSelect.setAlias(select.getAlias());
+				newSelect.setNodes(nodes.toArray(new AstNode[nodes.size()]));
+                newSelect.setUnion(select.isUnion());
+				selects.add(newSelect);
 			}else {
 				selects.add(node);
 			}
@@ -203,7 +189,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return new Sql(sql.type(), selects.toArray(new AstNode[selects.size()]));
 	}
 	
-	protected List<AstNode> createSqlNodesWithoutOrderBy(AstNode[] nodes) {
+	protected List<AstNode> createSqlNodesWithoutOrderBy(DynamicSql.ExecutionSqls sqls, AstNode[]nodes) {
 		List<AstNode> newNodes = new ArrayList<>();
 		
 		for(AstNode node : nodes){
@@ -211,15 +197,15 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			if(node instanceof SqlOrderBy){
 				newNodes.add(new Text(ORDER_BY_PLACEHOLDER));
 				
-				defaultOrderBy = node.toString();
-				hasOrderByPlaceHolder = true;
+				sqls.defaultOrderBy = node.toString();
+				sqls.hasOrderByPlaceHolder = true;
 				continue;
 			}
 			
 			if(node instanceof ParamReplacement){
 				if(((ParamReplacement) node).getName().equalsIgnoreCase("orderBy")){
 					newNodes.add(new Text(ORDER_BY_PLACEHOLDER));
-					hasOrderByPlaceHolder = true;
+					sqls.hasOrderByPlaceHolder = true;
 					continue;
 				}
 			}
@@ -230,12 +216,13 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return newNodes;
 	}
 	
-	protected PreparedBatchSqlStatement prepareBatchSqlStatement(SqlContext context) {
+	protected PreparedBatchSqlStatement prepareBatchSqlStatement(SqlContext context, DynamicSql.ExecutionSqls sqls) {
 		if(null == preparedBatchStatement) {
 			synchronized (this) {
 	            if(null == preparedBatchStatement){
-	            	DefaultPreparedBatchSqlStatementBuilder builder = new DefaultPreparedBatchSqlStatementBuilder(sql);
-	            	sql.prepareBatchSqlStatement(context, builder);
+	            	DefaultPreparedBatchSqlStatementBuilder builder =
+                            new DefaultPreparedBatchSqlStatementBuilder(sqls.sql);
+	            	sqls.sql.prepareBatchSqlStatement(context, builder);
 	            	preparedBatchStatement = builder.build();
 	            }
             }
@@ -265,15 +252,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return batchArgs;
 	}
 
-	protected SqlStatement doCreateStatement(SqlContext context,Object params){
-		return doCreateStatement(sql, context, params);
+	protected SqlStatement doCreateStatement(SqlContext context, DynamicSql.ExecutionSqls sqls, Params params, boolean query){
+		return doCreateStatement(context, sqls.sql, params, query);
 	}
 
-	protected SqlStatement doCreateStatement(Sql sql, SqlContext context,Object params){
-		Params				   parameters = createParameters(context,params);
-		DefaultSqlStatementBuilder statement  = new DefaultSqlStatementBuilder(context,isQuery());
+	protected SqlStatement doCreateStatement(SqlContext context, Sql sql, Params params, boolean query){
+		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sql, query);
 	    
-		sql.buildStatement(statement, parameters);
+		sql.buildStatement(statement, params);
 		
 		return statement.build();
 	}
@@ -304,23 +290,26 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
     }
 	
 	protected class DynamicSqlLimitQuery implements DbLimitQuery {
-		
-		private final QueryContext         context;
-		private final Params               params;
+
+        private final QueryContext             context;
+        private final DynamicSql.ExecutionSqls sqls;
+        private final Params                   params;
+
+        private Sql                        sql;
 		private String                     orderBy;
 		private DefaultSqlStatementBuilder statement;
 		
 		//private boolean hasOrderByPlaceHolder = false;
 		
-		protected DynamicSqlLimitQuery(QueryContext context,Object params){
-			this.context   = context;
-			this.params    = createParameters(context,params);
-			this.statement = new DefaultSqlStatementBuilder(context, true);
-			
+		protected DynamicSqlLimitQuery(QueryContext context, DynamicSql.ExecutionSqls sqls, Params params){
+			this.context = context;
+            this.sqls    = sqls;
+			this.params  = params;
+
 			if(!Strings.isEmpty(context.getOrderBy())){
 				orderBy = "order by " + context.getOrderBy();
 			}else{
-				orderBy = defaultOrderBy;
+				orderBy = sqls.defaultOrderBy;
 			}
 		}
 		
@@ -331,26 +320,32 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
         }
 		
 		public DefaultSqlStatementBuilder buildStatement(Db db) {
-			Sql sql;
-			
 			if(Strings.isEmpty(orderBy)) {
-				sql = mergeMultipleSelect(sqlWithoutOrderByResolved);
+				sql = mergeMultipleSelect(sqls.sqlWithoutOrderByResolved);
 			}else{
 				//TODO : optimize
 				String sqlWithOrderBy;
 				
 				String sqlWithoutOrderBy = getSqlWithoutOrderBy(db);
 				
-				if(hasOrderByPlaceHolder){
+				if(sqls.hasOrderByPlaceHolder){
 					sqlWithOrderBy = Strings.replace(sqlWithoutOrderBy, ORDER_BY_PLACEHOLDER, orderBy);
 				}else{
 					sqlWithOrderBy = db.getDialect().addOrderBy(sqlWithoutOrderBy, orderBy);
 				}
 				
-				DynamicSqlClause sqlClauseWithOrderBy = lang.parseClause(context.getOrmContext(), sqlWithOrderBy);
-				sql = sqlClauseWithOrderBy.getSql();
+				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy).sql;
 			}
-			
+
+            if(sql.isSelect()) {
+                Sql original = sqls.sql;
+                if(original.isSelect() && original.nodes()[0] instanceof SqlSelect) {
+                    SqlSelect select = (SqlSelect)sql.nodes()[0];
+                    select.addSelectItemAliases(((SqlSelect)original.nodes()[0]).getSelectItemAliases());
+                }
+            }
+
+            this.statement = new DefaultSqlStatementBuilder(context, sql, true);
 			sql.buildStatement(statement, params);
 			
 			return statement;
@@ -358,7 +353,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 		@Override
         public String getSqlWithoutOrderBy(Db db) {
-			return mergeMultipleSelect(sqlWithoutOrderByRaw).toSql();
+			return mergeMultipleSelect(sqls.sqlWithoutOrderByRaw).toSql();
         }
 
 		protected Sql mergeMultipleSelect(Sql sqlWithoutOrderBy){
@@ -403,14 +398,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 					orderBy = node.toString();
 				}
 				
-				hasOrderByPlaceHolder = true;
+				sqls.hasOrderByPlaceHolder = true;
 				return;
 			}
 			
 			if(node instanceof ParamReplacement){
 				if(((ParamReplacement) node).getName().equalsIgnoreCase("orderBy")){
 					statement.appendText(ORDER_BY_PLACEHOLDER);
-					hasOrderByPlaceHolder = true;
+					sqls.hasOrderByPlaceHolder = true;
 					return;
 				}
 			}

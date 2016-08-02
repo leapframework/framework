@@ -15,20 +15,20 @@
  */
 package leap.orm.reader;
 
+import leap.core.exception.TooManyRecordsException;
+import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlExecutionContext;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
-import leap.core.exception.TooManyRecordsException;
-import leap.orm.OrmContext;
-import leap.orm.sql.SqlCommand;
-
 public interface RowReader {
 	
-	<T> T readFirst(OrmContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException;
+	<T> T readFirst(SqlExecutionContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException;
 
-	<T> T readSingle(OrmContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException, TooManyRecordsException;
+	<T> T readSingle(SqlExecutionContext context, ResultSet rs, Class<T> resultClass, SqlCommand command) throws SQLException, TooManyRecordsException;
 	
-	<T> List<T> readList(OrmContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException;
+	<T> List<T> readList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException;
 
 }

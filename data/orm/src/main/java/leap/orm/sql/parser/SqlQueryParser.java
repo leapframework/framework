@@ -216,34 +216,27 @@ abstract class SqlQueryParser extends SqlParser {
     }
 
 	protected void parseIn(SqlQuery query, AtomicInteger lparens){
-		acceptText();
-		
-		if(lexer.token() == Token.LPAREN){
-			lparens.incrementAndGet();
-			acceptText();
-
-			if(lexer.token() == Token.SELECT){
-				parseSelect();
-				expect(Token.RPAREN).acceptText();
-				lparens.decrementAndGet();
-			}
-		}
+        parseSubSelect(query, lparens);
 	}
 	
 	protected void parseExists(SqlQuery select,AtomicInteger lparens){
-		acceptText();
-		
-		if(lexer.token() == Token.LPAREN){
-			lparens.incrementAndGet();
-			acceptText();
-
-			if(lexer.token() == Token.SELECT){
-				parseSelect();
-				expect(Token.RPAREN).acceptText();
-				lparens.decrementAndGet();
-			}
-		}
+        parseSubSelect(select, lparens);
 	}
+
+    protected void parseSubSelect(SqlQuery select, AtomicInteger lparens) {
+        acceptText();
+
+        if(lexer.token() == Token.LPAREN){
+            lparens.incrementAndGet();
+            acceptText();
+
+            if(lexer.token() == Token.SELECT){
+                parseSelect();
+                expect(Token.RPAREN).acceptText();
+                lparens.decrementAndGet();
+            }
+        }
+    }
 	
 	protected void parseUnion() {
         if (lexer.token() == Token.UNION) {
@@ -268,12 +261,7 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			acceptText();
-			
-			expect(Token.IDENTIFIER);
-			String alias = lexer.tokenText();
-			acceptText();
-			return alias;
+            return acceptAlias();
 		}
 
 		final Token token = lexer.token();
@@ -287,10 +275,36 @@ abstract class SqlQueryParser extends SqlParser {
 		return null;
 	}
 
+    protected String acceptAlias() {
+        acceptText();
+        expect(Token.IDENTIFIER);
+        String alias = lexer.tokenText();
+        acceptText();
+        return alias;
+    }
+
+    protected void parseNameExpr() {
+        if(lexer.peekCharSkipWhitespaces() == '('){
+            acceptText();
+            expect(Token.LPAREN).acceptText();
+            parseRestForClosingParen();
+            expect(Token.RPAREN).acceptText();
+
+            if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
+                acceptText();
+                expect(Token.LPAREN).acceptText();
+                parseRestForClosingParen();
+                expect(Token.RPAREN).acceptText();
+            }
+        }else{
+            parseSqlObjectName();
+        }
+    }
+
 	protected boolean isEndFromItem(){
-		if(lexer.isEOF()) {
-			return true;
-		}
+//		if(lexer.isEOF()) {
+//			return true;
+//		}
 		
 		final Token token = lexer.token();
 		switch (token) {

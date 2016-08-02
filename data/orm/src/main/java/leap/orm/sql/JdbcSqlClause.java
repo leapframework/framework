@@ -81,11 +81,11 @@ public class JdbcSqlClause extends AbstractSqlClause implements SqlClause {
 			batchArgs[i] = args;
 		}
 		
-		return new DefaultSqlStatement(context, sql, batchArgs, null);
+		return new DefaultSqlStatement(context, null, sql, batchArgs, null);
     }
 
 	protected SqlStatement doCreateStatement(SqlContext context, String sql, Object params){
-		return new DefaultSqlStatement(context, sql, resolveArgs(params), null);
+		return new DefaultSqlStatement(context, null, sql, resolveArgs(params), null);
 	}
 	
 	protected Object[] resolveArgs(Object params) {
@@ -101,11 +101,6 @@ public class JdbcSqlClause extends AbstractSqlClause implements SqlClause {
 		}
 		return args;
 	}
-
-	@Override
-    public boolean isQuery() {
-	    return query;
-    }
 
 	@Override
     public String toString() {

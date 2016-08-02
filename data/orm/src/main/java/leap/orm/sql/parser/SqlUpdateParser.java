@@ -16,7 +16,6 @@
 package leap.orm.sql.parser;
 
 import leap.orm.sql.ast.SqlQuery;
-import leap.orm.sql.ast.SqlTableName;
 import leap.orm.sql.ast.SqlTableSource;
 import leap.orm.sql.ast.SqlUpdate;
 
@@ -68,12 +67,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			acceptText();
-			
-			expect(Token.IDENTIFIER);
-			String alias = lexer.tokenText();
-			acceptText();
-			return alias;
+            return acceptAlias();
 		}
 
 		final Token token = lexer.token();
@@ -121,21 +115,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 			}
 			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || lexer.isKeyword()){
-			if(lexer.peekCharSkipWhitespaces() == '('){
-				acceptText();
-				expect(Token.LPAREN).acceptText();
-				parseRestForClosingParen();
-				expect(Token.RPAREN).acceptText();
-				
-				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					acceptText();
-					expect(Token.LPAREN).acceptText();
-					parseRestForClosingParen();
-					expect(Token.RPAREN).acceptText();
-				}
-			}else{
-				parseSqlObjectName();
-			}
+            parseNameExpr();
 		}else{
 			new SqlExprParser(this).parseExpr();
 		}

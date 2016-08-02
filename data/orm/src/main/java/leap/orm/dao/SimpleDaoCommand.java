@@ -80,11 +80,6 @@ public class SimpleDaoCommand implements DaoCommand,SqlContext,QueryContext {
     }
 
     @Override
-    public boolean isQuery() {
-        return cmd.isQuery();
-    }
-
-    @Override
     public int executeUpdate() {
         return cmd.executeUpdate(this,null);
     }

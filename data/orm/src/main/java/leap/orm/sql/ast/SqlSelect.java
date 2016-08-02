@@ -16,6 +16,7 @@
 package leap.orm.sql.ast;
 
 import java.util.HashMap;
+import java.util.Map;
 
 
 public class SqlSelect extends SqlQuery implements SqlTableSource {
@@ -61,12 +62,25 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 		selectItemAliases.put(alias.toLowerCase(),alias);
 	}
 
+    public void addSelectItemAliases(Map<String,String> m) {
+        if(null != m) {
+            if(null == selectItemAliases) {
+                selectItemAliases = new HashMap<>(m.size());
+            }
+            selectItemAliases.putAll(m);
+        }
+    }
+
 	public String getSelectItemAlias(String name){
 		if(isSelectItemAlias(name)){
 			return selectItemAliases.get(name.toLowerCase());
 		}
 		return name;
 	}
+
+    public Map<String,String> getSelectItemAliases() {
+        return selectItemAliases;
+    }
 
 	public boolean isUnion() {
 		return union;
