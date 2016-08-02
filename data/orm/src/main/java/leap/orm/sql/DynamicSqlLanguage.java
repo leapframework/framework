@@ -23,7 +23,6 @@ import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.value.SimpleEntry;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.parser.Lexer;
@@ -38,10 +37,12 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	
 	private static final Log log = LogFactory.get(DynamicSqlLanguage.class);
 	
-	protected Boolean            smart;
+	protected Boolean                    smart;
 	protected @Inject ExpressionLanguage expressionLanguage;
 	
-	private Cache<String, List<Map.Entry<Sql,Sql>>> cache = new SimpleLRUCache<>();
+	private Cache<String, List<Sql>> cache = new SimpleLRUCache<>();
+
+    private Cache<String, List<DynamicSql.ExecutionSqls>> executionCache = new SimpleLRUCache<>();
 	
 	@ConfigProperty
 	public void setMode(String mode) {
@@ -68,12 +69,12 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
 	@Override
     public List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
-		List<Map.Entry<Sql,Sql>> sqls = doParseSql(context, text);
+		List<Sql> sqls = doParseDynaSql(context, text);
 		
 		List<SqlClause> clauses = new ArrayList<>();
 		
-		for(Map.Entry<Sql,Sql> entry : sqls){
-			clauses.add(createClause(context, entry.getKey(), entry.getValue()));
+		for(Sql sql : sqls){
+			clauses.add(new DynamicSqlClause(this, new DynamicSql(this, context, sql)));
 		}
 		
 		return clauses;
@@ -81,17 +82,27 @@ public class DynamicSqlLanguage implements SqlLanguage {
 	
 	@Override
     public DynamicSqlClause parseClause(MetadataContext context, String sql) throws SqlClauseException {
-		List<Map.Entry<Sql,Sql>> sqls = doParseSql(context, sql);
-		return createClause(context, sqls.get(0).getKey(),sqls.get(0).getValue());
+		List<Sql> sqls = doParseDynaSql(context, sql);
+		return new DynamicSqlClause(this, new DynamicSql(this, context, sqls.get(0)));
     }
-	
-	protected List<Map.Entry<Sql,Sql>> doParseSql(MetadataContext context, String sql) {
+
+    public DynamicSql.ExecutionSqls parseExecutionSqls(MetadataContext context, String sql) {
+        List<DynamicSql.ExecutionSqls> sqls = doParseExecutionSqls(context, sql);
+
+        if(sqls.size() > 1) {
+            throw new IllegalStateException("Parsing multi sqls");
+        }
+
+        return sqls.get(0);
+    }
+
+    protected List<DynamicSql.ExecutionSqls> doParseExecutionSqls(MetadataContext context, String sql) {
         String key = context.getName() + "___" + sql;
 
-		List<Map.Entry<Sql,Sql>> sqls = cache.get(key);
+        List<DynamicSql.ExecutionSqls> sqls = executionCache.get(key);
 
-		if(null == sqls) {
-			log.trace("Parsing sql :\n {}", sql);
+        if(null == sqls) {
+            log.trace("Parsing sql :\n {}", sql);
             sqls = new ArrayList<>();
 
             List<Sql> rawSqls = createParser(sql).sqls();
@@ -106,17 +117,34 @@ public class DynamicSqlLanguage implements SqlLanguage {
                     processShardingTable(s);
                     processWhereFields(s);
 
-                    sqls.add(new SimpleEntry<>(rawSqls.get(i),s));
+                    sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i),s));
                 }
 
             }else{
                 for(Sql s : rawSqls) {
-                    sqls.add(new SimpleEntry<>(s,s));
+                    sqls.add(new DynamicSql.ExecutionSqls(s,s));
                 }
             }
 
+            executionCache.put(key, sqls);
+        }
+        return sqls;
+    }
+	
+	protected List<Sql> doParseDynaSql(MetadataContext context, String sql) {
+        String key = context.getName() + "___" + sql;
+
+		List<Sql> sqls = cache.get(key);
+
+		if(null == sqls) {
+			log.trace("Parsing dyna sql :\n {}", sql);
+
+            SqlParser parser = new SqlParser(new Lexer(sql, ParseLevel.DYNA), expressionLanguage);
+            sqls = parser.sqls();
+
 			cache.put(key, sqls);
 		}
+
 		return sqls;
 	}
 
@@ -128,10 +156,6 @@ public class DynamicSqlLanguage implements SqlLanguage {
 		}
 	}
 	
-	protected DynamicSqlClause createClause(MetadataContext context,Sql raw, Sql sql) {
-		return new DynamicSqlClause(this, raw, sql);
-	}
-
     protected void processShardingTable(Sql sql) {
         new SqlShardingProcessor(sql).processShardingTable();
     }

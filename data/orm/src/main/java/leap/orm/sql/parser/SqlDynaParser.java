@@ -67,5 +67,6 @@ public class SqlDynaParser extends SqlParser {
             return;
         }
 
+        acceptText();
     }
 }

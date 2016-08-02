@@ -20,7 +20,9 @@ import leap.lang.annotation.Internal;
 import leap.lang.params.Params;
 import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.AstUtils;
+import leap.orm.sql.ast.DynamicNode;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
 @Internal
@@ -104,6 +106,20 @@ public class Sql {
 	public boolean isUnresolved(){
 		return type == Type.UNRESOLVED;
 	}
+
+    public boolean isDynamic() {
+        AtomicBoolean b = new AtomicBoolean();
+
+        traverse(n -> {
+            if(n instanceof DynamicNode) {
+                b.set(true);
+                return false;
+            }
+            return true;
+        });
+
+        return b.get();
+    }
 	
 	public void buildStatement(SqlStatementBuilder stm,Params params){
 		for(int i=0;i<nodes.length;i++){

@@ -67,12 +67,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			acceptText();
-			
-			expect(Token.IDENTIFIER);
-			String alias = lexer.tokenText();
-			acceptText();
-			return alias;
+            return acceptAlias();
 		}
 
 		final Token token = lexer.token();

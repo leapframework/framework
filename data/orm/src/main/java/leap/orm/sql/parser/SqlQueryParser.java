@@ -261,12 +261,7 @@ abstract class SqlQueryParser extends SqlParser {
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			acceptText();
-			
-			expect(Token.IDENTIFIER);
-			String alias = lexer.tokenText();
-			acceptText();
-			return alias;
+            return acceptAlias();
 		}
 
 		final Token token = lexer.token();
@@ -279,6 +274,14 @@ abstract class SqlQueryParser extends SqlParser {
 		
 		return null;
 	}
+
+    protected String acceptAlias() {
+        acceptText();
+        expect(Token.IDENTIFIER);
+        String alias = lexer.tokenText();
+        acceptText();
+        return alias;
+    }
 
     protected void parseNameExpr() {
         if(lexer.peekCharSkipWhitespaces() == '('){
@@ -299,9 +302,9 @@ abstract class SqlQueryParser extends SqlParser {
     }
 
 	protected boolean isEndFromItem(){
-		if(lexer.isEOF()) {
-			return true;
-		}
+//		if(lexer.isEOF()) {
+//			return true;
+//		}
 		
 		final Token token = lexer.token();
 		switch (token) {
