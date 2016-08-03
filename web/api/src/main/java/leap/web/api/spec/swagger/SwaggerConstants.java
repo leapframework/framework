@@ -23,6 +23,7 @@ public class SwaggerConstants {
 	public static final String TITLE                = "title";
 	public static final String SUMMARY              = "summary";
 	public static final String DESCRIPTION          = "description";
+    public static final String OPERATION_ID         = "operationId";
 	public static final String TERMS_OF_SERVICE     = "termsOfService";
 	public static final String CONCAT               = "concat";
 	public static final String LICENSE              = "license"; 
@@ -67,3 +68,4 @@ public class SwaggerConstants {
 	}
 
 }
+

@@ -136,6 +136,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.startObject();
 		
 		w.property(DESCRIPTION, nullToEmpty(o.descOrSummary()));
+
+        w.property(OPERATION_ID, o.getName()); //todo : unique id ?
 		
 		if(o.getConsumes().length > 0) {
 			w.property(CONSUMES, o.getConsumes());
