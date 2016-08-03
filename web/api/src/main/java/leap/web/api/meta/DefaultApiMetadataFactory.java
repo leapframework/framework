@@ -34,9 +34,14 @@ import leap.web.api.annotation.MetaApiResponse;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.controller.ApiResponse;
 import leap.web.api.meta.model.*;
+import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
 
+import javax.servlet.http.Part;
+import java.io.File;
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 
 public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
@@ -214,7 +219,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
             log.trace("   {}", a.getName(), p.getLocation());
 
-            p.setType(createMType(context, m, a.getTypeInfo()));
+            if(isParameterFileType(a.getType())) {
+                p.setType(MSimpleTypes.BINARY);
+                p.setFile(true);
+            }else{
+                p.setType(createMType(context, m, a.getTypeInfo()));
+            }
+
             p.setLocation(getParameterLocation(context, action, a, op, p));
 
             if (null != a.getRequired()) {
@@ -286,12 +297,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 genericType = typeArgument;
             }
         }
-        resp.setType(createMType(context, m, Types.getTypeInfo(type, genericType)));
+
+        if(isResponseFileType(type)) {
+            resp.setType(MSimpleTypes.BINARY);
+            resp.setFile(true);
+        }else{
+            resp.setType(createMType(context, m, Types.getTypeInfo(type, genericType)));
+        }
     }
 	
 	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, TypeInfo ti) {
-		//TODO: file type
-		
 		if (ti.isSimpleType()) {
 			return context.getMTypeFactory().getMType(ti.getType(), ti.getGenericType());
 		} else if (ti.isCollectionType()) {
@@ -357,5 +372,18 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		
 		throw new IllegalStateException("Unsupported location '" + from + "' by swagger in parameter '" + arg + "'");
 	}
-	
+
+    private static final Set<Class<?>> PARAM_FILE_TYPES = new HashSet<>();
+    static {
+        PARAM_FILE_TYPES.add(Part.class);
+        PARAM_FILE_TYPES.add(MultipartFile.class);
+    }
+
+    protected boolean isParameterFileType(Class<?> c) {
+        return PARAM_FILE_TYPES.contains(c);
+    }
+
+    protected boolean isResponseFileType(Class<?> c) {
+        return File.class.equals(c);
+    }
 }

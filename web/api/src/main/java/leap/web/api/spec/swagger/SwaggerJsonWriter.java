@@ -340,7 +340,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 
 	protected void writeSimpleParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MSimpleType st) {
-		writeSimplePropertyType(context, m, w, st);
+        if(p.isFile()) {
+            w.property(TYPE, "file");
+        }else{
+            writeSimplePropertyType(context, m, w, st);
+        }
 		w.propertyOptional(FORMAT, p.getFormat());
         w.propertyOptional(ENUM, p.getEnumValues());
 	}

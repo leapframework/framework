@@ -24,13 +24,14 @@ public abstract class MApiParameterBase extends MApiNamedWithDesc {
 	
 	protected final MType          type;
 	protected final String         format;
+    protected final boolean        file;
 	protected final boolean        required;
 	protected final String         defaultValue;
     protected final String[]       enumValues;
 	protected final MApiValidation validation;
 
 	public MApiParameterBase(String name, String title, String summary, String description,
-                             MType type, String format, boolean required,
+                             MType type, String format, boolean file, boolean required,
                              String defaultValue, String[] enumValues, MApiValidation validation,
                              Map<String, Object> attrs) {
 		super(name, title, summary, description, attrs);
@@ -39,6 +40,7 @@ public abstract class MApiParameterBase extends MApiNamedWithDesc {
 		
 		this.type = type;
 		this.format = format;
+        this.file = file;
 		this.required = required;
 		this.defaultValue = defaultValue;
         this.enumValues = enumValues;
@@ -53,7 +55,11 @@ public abstract class MApiParameterBase extends MApiNamedWithDesc {
 		return format;
 	}
 
-	public boolean isRequired() {
+    public boolean isFile() {
+        return file;
+    }
+
+    public boolean isRequired() {
 		return required;
 	}
 

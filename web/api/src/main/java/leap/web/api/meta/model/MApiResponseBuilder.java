@@ -29,8 +29,9 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 		return r;
 	}
 	
-	protected int   status = HTTP.SC_OK;
-	protected MType type;
+	protected int     status = HTTP.SC_OK;
+	protected MType   type;
+    protected boolean file;
 	
 	public int getStatus() {
 		return status;
@@ -48,9 +49,17 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 		this.type = type;
 	}
 
-	@Override
+    public boolean isFile() {
+        return file;
+    }
+
+    public void setFile(boolean file) {
+        this.file = file;
+    }
+
+    @Override
     public MApiResponse build() {
-	    return new MApiResponse(summary, description, status, type, attrs);
+	    return new MApiResponse(summary, description, status, type, file, attrs);
     }
 	
 }
