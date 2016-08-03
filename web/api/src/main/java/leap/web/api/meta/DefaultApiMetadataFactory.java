@@ -334,6 +334,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		if(from == Location.PATH_PARAM) {
 			return MApiParameter.Location.PATH;
 		}
+
+        if(from == Location.HEADER_PARAM) {
+            return MApiParameter.Location.HEADER;
+        }
 		
 		if(from == Location.REQUEST_BODY) {
 			return MApiParameter.Location.BODY;
@@ -347,7 +351,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			}
 		}
 		
-		throw new IllegalStateException("Unsupported parameter type '" + p.getType() + "' for resolving location");
+		throw new IllegalStateException("Unsupported location '" + from + "' by swagger in parameter '" + arg + "'");
 	}
 	
 }

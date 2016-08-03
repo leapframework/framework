@@ -163,13 +163,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 	
 	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter[] ps) {
-		w.startArray();
-		
-		for(MApiParameter p : ps) {
-			writeParameter(context, m, w, p);
-		}
-		
-		w.endArray();
+        w.array(ps, p -> writeParameter(context, m, w, p));
 	}
 	
 	protected void writeParameter(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter p) {
