@@ -19,13 +19,17 @@ package app.controllers.petstore;
 import app.models.petstore.Pet;
 import leap.core.validation.annotations.Required;
 import leap.web.annotation.HeaderParam;
+import leap.web.annotation.QueryParam;
 import leap.web.annotation.RestController;
 import leap.web.annotation.http.DELETE;
+import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 import leap.web.api.controller.ApiController;
 import leap.web.api.controller.ApiResponse;
 
-public class PetsController extends ApiController{
+import java.util.List;
+
+public class PetController extends ApiController{
 
     @POST
     public ApiResponse addPet(Pet pet) {
@@ -34,6 +38,11 @@ public class PetsController extends ApiController{
 
     @DELETE("/{petId}")
     public ApiResponse deletePet(@HeaderParam String apiKey, Long petId) {
+        return ApiResponse.OK;
+    }
+
+    @GET("/findByStatus")
+    public ApiResponse<List<Pet>> findPetsByStatus(@QueryParam @Required List<Pet.Status> status) {
         return ApiResponse.OK;
     }
 
