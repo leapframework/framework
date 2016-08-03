@@ -22,13 +22,8 @@ import java.util.Map.Entry;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
-import leap.lang.Enums;
 import leap.lang.json.JsonWriter;
-import leap.lang.meta.MCollectionType;
-import leap.lang.meta.MSimpleType;
-import leap.lang.meta.MSimpleTypeKind;
-import leap.lang.meta.MType;
-import leap.lang.meta.MTypeRef;
+import leap.lang.meta.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiOperation;
@@ -206,7 +201,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		if(null != type) {
 			w.property(SCHEMA, () -> {
 				w.startObject();
-				writePropertyType(context, m, w, type);
+				writeType(context, m, w, type);
 				w.endObject();
 			});
 		}
@@ -300,7 +295,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	
 	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
 		w.startObject();
-		
+
+        w.property(TYPE, OBJECT);
+
 		w.property(PROPETIES, () -> {
 			w.startObject();
 			
@@ -335,62 +332,81 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			writeRefParameterType(context, m, w, p, type.asTypeRef());
 			return;
 		}
+
+        if(type.isDictionaryType()) {
+            writeDictionaryType(context, m, w, type.asDictionaryType());
+            return;
+        }
 		
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "' of parameter '" + p.getName() + "'");
 	}
 
 	protected void writeSimpleParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MSimpleType st) {
         if(p.isFile()) {
-            w.property(TYPE, "file");
+            w.property(TYPE, FILE);
         }else{
-            writeSimplePropertyType(context, m, w, st);
+            writeSimpleType(context, m, w, st);
         }
 		w.propertyOptional(FORMAT, p.getFormat());
         w.propertyOptional(ENUM, p.getEnumValues());
 	}
+
+    protected void writeDictionaryType(WriteContext context, ApiMetadata m, JsonWriter w, MDictionaryType type) {
+        w.property(TYPE, OBJECT);
+        w.property(ADDITIONAL_PROPERTIES, () -> {
+            w.startObject();
+            writeType(context, m, w, type.getValueType());
+            w.endObject();
+        });
+    }
 	
 	protected void writeArrayParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MCollectionType ct) {
-		writeArrayPropertyType(context, m, w, ct);
+		writeArrayType(context, m, w, ct);
 	}
 	
 	protected void writeRefParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MTypeRef tr) {
-		writeRefPropertyType(context, m, w, tr);
+		writeRefType(context, m, w, tr);
 	}
 	
-	protected void writeRefPropertyType(WriteContext context, ApiMetadata m, JsonWriter w, MTypeRef tr) {
+	protected void writeRefType(WriteContext context, ApiMetadata m, JsonWriter w, MTypeRef tr) {
 		String ref = "#/definitions/" + tr.getRefTypeName();
 		w.property(REF, ref);
 	}
 	
-	protected void writeArrayPropertyType(WriteContext context, ApiMetadata m, JsonWriter w, MCollectionType ct) {
+	protected void writeArrayType(WriteContext context, ApiMetadata m, JsonWriter w, MCollectionType ct) {
 		w.property(TYPE, ARRAY)
 		 .property(ITEMS,() -> {
 			 w.startObject();
-			 writePropertyType(context, m, w, ct.getElementType());
+			 writeType(context, m, w, ct.getElementType());
 			 w.endObject();
 		 });
 	}
 	
-	protected void writePropertyType(WriteContext context, ApiMetadata m, JsonWriter w, MType type) {
+	protected void writeType(WriteContext context, ApiMetadata m, JsonWriter w, MType type) {
 		if(type.isSimpleType()) {
-			writeSimplePropertyType(context, m, w, type.asSimpleType());
+			writeSimpleType(context, m, w, type.asSimpleType());
 			return;
 		}
 		
 		if(type.isCollectionType()) {
-			writeArrayPropertyType(context, m, w, type.asCollectionType());
+			writeArrayType(context, m, w, type.asCollectionType());
 			return;
 		}
 		
 		if(type.isTypeRef()) {
-			writeRefPropertyType(context, m, w, type.asTypeRef());
+			writeRefType(context, m, w, type.asTypeRef());
 			return;
 		}
+
+        if(type.isDictionaryType()) {
+            writeDictionaryType(context, m, w, type.asDictionaryType());
+            return;
+        }
 		
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "'");
 	}
 	
-	protected void writeSimplePropertyType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
+	protected void writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
 		SwaggerType type;
 		
 		MSimpleTypeKind k = st.getSimpleTypeKind();

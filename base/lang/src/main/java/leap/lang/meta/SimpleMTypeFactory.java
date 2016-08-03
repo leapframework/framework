@@ -55,7 +55,7 @@ public class SimpleMTypeFactory implements MTypeFactory {
 
 	@Override
     public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
-		return getMType(type, genericType, root, new Stack<Class<?>>(), false);
+		return getMType(type, genericType, root, new Stack<>(), false);
     }
 
 	protected MType getMType(Class<?> type, Type genericType, MTypeFactory root, Stack<Class<?>> stack, boolean createComplexTypeRef) {
@@ -93,6 +93,10 @@ public class SimpleMTypeFactory implements MTypeFactory {
 
 			return new MCollectionType(elementType);
 		}
+
+        if(Map.class.isAssignableFrom(type)) {
+            return getDictionaryType(root, type, genericType, stack, createComplexTypeRef);
+        }
 		
 		if(Object.class.equals(type)) {
 			return MObjectType.TYPE;
@@ -100,6 +104,22 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		
 		return getComplexTypeOrRef(root, type, stack, createComplexTypeRef);
 	}
+
+    protected MType getDictionaryType(MTypeFactory root, Class<?> type, Type genericType, Stack<Class<?>> stack, boolean createComplexTypeRef) {
+        if(null == genericType) {
+            return MDictionaryType.INSTANCE;
+        }
+
+        Type[] types = Types.getTypeArguments(genericType);
+
+        Type keyType = types[0];
+        Type valType = types[1];
+
+        MType keyMType = getMType(Types.getActualType(keyType), keyType, root, stack, createComplexTypeRef);
+        MType valMType = getMType(Types.getActualType(valType), valType, root, stack, createComplexTypeRef);
+
+        return new MDictionaryType(keyMType, valMType);
+    }
 	
 	protected MType getComplexTypeOrRef(MTypeFactory root, Class<?> type, Stack<Class<?>> stack, boolean createComplexTypeRef) {
 		MComplexType ct = getComplexType(root, type, stack);
@@ -133,15 +153,11 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		return ct;
 	}
 	
-	protected MComplexType createComplexType(MTypeFactory root, Class<?> type) {
-		return createComplexType(root, type, new Stack<Class<?>>());
-	}
-	
 	protected MComplexType createComplexType(MTypeFactory root, Class<?> type, Stack<Class<?>> stack) {
 		if(stack.contains(type)) {
-			throw new IllegalStateException("Cannot create complext type for '" + type + "', found cyclic reference");
+			throw new IllegalStateException("Cannot create complex type for '" + type + "', found cyclic reference");
 		}
-		
+
 		stack.add(type);
 		
 		MComplexTypeBuilder ct = new MComplexTypeBuilder();
