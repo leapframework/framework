@@ -20,57 +20,64 @@ import leap.lang.Strings;
 
 public class MProperty extends ImmutableMNamedWithDesc {
 
-	protected final MType   type;
-	protected final boolean nullable;
-	protected final String  defaultValue;
-	protected final boolean fixedLength;
-	protected final Integer	length;
-	protected final Integer precision;
-	protected final Integer scale;
-	
-	public MProperty(String name, String title, String summary, String description, 
-					 MType type, boolean nullable, String defaultValue, boolean fixedLength,
-					 Integer length, Integer precision, Integer scale) {
-		super(name, title, summary, description);
-		
-		Args.notNull(type, "type");
-		
-		this.type         = type;
-		this.nullable     = nullable;
-		this.defaultValue = Strings.trimToNull(defaultValue);
-		this.fixedLength  = fixedLength;
-		this.length		  = length;
-		this.precision	  = precision;
-		this.scale		  = scale;
-	}
+    protected final MType    type;
+    protected final boolean  nullable;
+    protected final String   defaultValue;
+    protected final String[] enumValues;
+    protected final boolean  fixedLength;
+    protected final Integer  length;
+    protected final Integer  precision;
+    protected final Integer  scale;
 
-	public MType getType() {
-		return type;
-	}
+    public MProperty(String name, String title, String summary, String description,
+                     MType type, boolean nullable, String defaultValue, String[] enumValues,
+                     boolean fixedLength,
+                     Integer length, Integer precision, Integer scale) {
+        super(name, title, summary, description);
 
-	public boolean isNullable() {
-		return nullable;
-	}
+        Args.notNull(type, "type");
 
-	public String getDefaultValue() {
-		return defaultValue;
-	}
+        this.type = type;
+        this.nullable = nullable;
+        this.defaultValue = Strings.trimToNull(defaultValue);
+        this.fixedLength = fixedLength;
+        this.enumValues = enumValues;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+    }
 
-	public boolean isFixedLength() {
-		return fixedLength;
-	}
+    public MType getType() {
+        return type;
+    }
 
-	public Integer getLength() {
-		return length;
-	}
+    public boolean isNullable() {
+        return nullable;
+    }
 
-	public Integer getPrecision() {
-		return precision;
-	}
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
-	public Integer getScale() {
-		return scale;
-	}
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+
+    public boolean isFixedLength() {
+        return fixedLength;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
 
     @Override
     public String toString() {

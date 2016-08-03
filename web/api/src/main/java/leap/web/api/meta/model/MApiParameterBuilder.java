@@ -29,8 +29,9 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
 
 	@Override
     public MApiParameter build() {
-	    return new MApiParameter(name, title, summary, description, type, format, location, required, defaultValue,
-	    					    null == validation ? null : validation.build(), attrs);
+	    return new MApiParameter(name, title, summary, description, type, format, location, required,
+                                 defaultValue, enumValues,
+                                 null == validation ? null : validation.build(), attrs);
     }
 
 }

@@ -33,14 +33,15 @@ public class MApiParameter extends MApiParameterBase implements MNamed {
 		HEADER
 	}
 	
-	protected final Location      location;
+	protected final Location location;
 
 	public MApiParameter(String name, String title, String summary, String description,
-                         MType type, String format, Location location, boolean required, String defaultValue,
+                         MType type, String format, Location location, boolean required,
+                         String defaultValue, String[] enumValues,
                          MApiValidation validation,
                          Map<String, Object> attrs) {
 		
-		super(name, title, summary, description, type, format, required, defaultValue, validation, attrs);
+		super(name, title, summary, description, type, format, required, defaultValue, enumValues, validation, attrs);
 		
 		this.location = location;
 	}
