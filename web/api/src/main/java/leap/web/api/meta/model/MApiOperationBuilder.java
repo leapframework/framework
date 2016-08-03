@@ -16,7 +16,9 @@
 package leap.web.api.meta.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import leap.lang.Arrays2;
 import leap.lang.Builders;
@@ -24,12 +26,12 @@ import leap.lang.http.HTTP;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 	
-	protected HTTP.Method        		method;
-	protected List<MApiParameterBuilder> parameters = new ArrayList<MApiParameterBuilder>();
-	protected List<MApiResponseBuilder>  responses  = new ArrayList<MApiResponseBuilder>();
-	protected List<String>               consumes   = new ArrayList<String>();
-	protected List<String>               produces   = new ArrayList<String>();
-	protected boolean           	    deprecated;
+	protected HTTP.Method        		 method;
+	protected List<MApiParameterBuilder> parameters = new ArrayList<>();
+	protected List<MApiResponseBuilder>  responses  = new ArrayList<>();
+	protected Set<String>                consumes   = new LinkedHashSet<>();
+	protected Set<String>                produces   = new LinkedHashSet<>();
+	protected boolean           	     deprecated;
 
 	public MApiOperationBuilder() {
 		
@@ -60,7 +62,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		responses.add(r);
 	}
 	
-	public List<String> getConsumes() {
+	public Set<String> getConsumes() {
 		return consumes;
 	}
 	
@@ -68,7 +70,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		consumes.add(mimeType);
 	}
 
-	public List<String> getProduces() {
+	public Set<String> getProduces() {
 		return produces;
 	}
 	

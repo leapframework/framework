@@ -15,10 +15,7 @@
  */
 package leap.web.api.meta;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
@@ -39,12 +36,12 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected MApiConcatBuilder concat;
     protected String            version;
     protected String            host;
-    protected List<String>                  protocols    = new ArrayList<String>();
-    protected List<String>                  consumes     = new ArrayList<String>();
-    protected List<String>                  produces     = new ArrayList<String>();
-    protected Map<String, MApiPathBuilder>  paths        = new LinkedHashMap<String, MApiPathBuilder>();
-    protected Map<String, MApiModelBuilder> models       = new LinkedHashMap<String, MApiModelBuilder>();
-    protected List<MApiSecurityDef>         securityDefs = new ArrayList<MApiSecurityDef>();
+    protected Set<String>                   protocols    = new LinkedHashSet<>();
+    protected Set<String>                   consumes     = new LinkedHashSet<>();
+    protected Set<String>                   produces     = new LinkedHashSet<>();
+    protected Map<String, MApiPathBuilder>  paths        = new LinkedHashMap<>();
+    protected Map<String, MApiModelBuilder> models       = new LinkedHashMap<>();
+    protected List<MApiSecurityDef>         securityDefs = new ArrayList<>();
 	
 	public ApiMetadataBuilder() {
         super();
@@ -94,7 +91,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		this.host = host;
 	}
 
-	public List<String> getProtocols() {
+	public Set<String> getProtocols() {
 		return protocols;
 	}
 	
@@ -106,7 +103,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(protocols, ps);
 	}
 
-	public List<String> getConsumes() {
+	public Set<String> getConsumes() {
 		return consumes;
 	}
 	
@@ -118,7 +115,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(consumes, cs);
 	}
 
-	public List<String> getProduces() {
+	public Set<String> getProduces() {
 		return produces;
 	}
 	

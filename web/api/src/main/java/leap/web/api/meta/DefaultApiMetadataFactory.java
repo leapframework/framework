@@ -23,6 +23,7 @@ import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.Types;
 import leap.lang.http.HTTP;
+import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.meta.*;
@@ -182,7 +183,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		
 		//Create responses.
 		createApiResponses(context, m, route, path, op);
-		
+
 		path.addOperation(op);
 	}
 	
@@ -222,6 +223,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             if(isParameterFileType(a.getType())) {
                 p.setType(MSimpleTypes.BINARY);
                 p.setFile(true);
+                op.addConsume(MimeTypes.MULTIPART_FORM_DATA);
             }else{
                 p.setType(createMType(context, m, a.getTypeInfo()));
             }
