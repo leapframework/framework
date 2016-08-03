@@ -22,7 +22,9 @@
     <el:functions prefix="orm_test" class="leap.orm.tested.model.Model1Ref">
     	<el:function method="test()"/>
     </el:functions>
-    
+
+    <orm:config auto-generate-columns="true"/>
+
     <orm:models datasource="ds1">
 		<orm:package name="tested.model"/>
 		<orm:class   name="leap.orm.tested.model.Model3"/>
