@@ -87,7 +87,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected MTypeFactory createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
 		return mtypeManager.factory()
                     .setComplexTypeCreatedListener((cls, ct) -> {
-                        if(!md.containsModel(ct.getName())) {
+                        if(!ct.isDictionaryType() && !md.containsModel(ct.getName())) {
                             md.addModel(new MApiModelBuilder(ct));
                         }
                     })
@@ -317,9 +317,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			return new MCollectionType(elementType);
 		} else {
 			//Complex Type
-			MType mtype = context.getMTypeFactory().getMType(ti.getType());
-			
-			if(mtype.isTypeRef()) {
+			MType mtype = context.getMTypeFactory().getMType(ti.getType(), ti.getGenericType());
+
+            if(mtype.isDictionaryType()) {
+                return mtype;
+            }else if(mtype.isTypeRef()) {
 				MComplexTypeRef ref = (MComplexTypeRef)mtype;
 				return new MComplexTypeRef(ref.getRefTypeName(), ref.getRefTypeQName());
 			}else{

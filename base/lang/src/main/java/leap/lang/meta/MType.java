@@ -44,8 +44,18 @@ public abstract class MType extends ImmutableMDescribed {
 	public boolean isComplexType(){
 		return getTypeKind() == MTypeKind.COMPLEX;
 	}
-	
-	/**
+
+    /**
+     * Returns true if this type is a dictionary type.
+     *
+     * <p/>
+     * Note : a dictionary type is also a complex type.
+     */
+    public boolean isDictionaryType() {
+        return false;
+    }
+
+    /**
 	 * Returns <code>true</code> if this type is a reference type.
 	 */
 	public boolean isTypeRef() {
@@ -84,5 +94,11 @@ public abstract class MType extends ImmutableMDescribed {
 	public final MTypeRef asTypeRef() {
 		return (MTypeRef)this;
 	}
-	
+
+    /**
+     * Returns this object as {@link MDictionaryType}.
+     */
+    public final MDictionaryType asDictionaryType() {
+        return (MDictionaryType)this;
+    }
 }
