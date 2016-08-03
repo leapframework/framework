@@ -24,7 +24,7 @@ public class MApiProperty extends MApiParameterBase {
 	public MApiProperty(String name, String title, String summary, String description,
                         MType type, String format, boolean required, String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs) {
-	    super(name, title, summary, description, type, format, required, defaultValue, enumValues, validation, attrs);
+	    super(name, title, summary, description, type, format, false, required, defaultValue, enumValues, validation, attrs);
     }
 
 }

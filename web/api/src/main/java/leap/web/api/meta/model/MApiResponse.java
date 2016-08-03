@@ -15,27 +15,33 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.Map;
-
 import leap.lang.http.HTTP;
 import leap.lang.meta.MType;
+
+import java.util.Map;
 
 public class MApiResponse extends MApiObjectWithDesc {
 	
 	public static final MApiResponse VOID = new MApiResponse(null);
-	
-	protected final int   status;
-	protected final MType type;
+
+    protected final int     status;
+    protected final MType   type;
+    protected final boolean file;
 
 	public MApiResponse(MType type) {
-		this(null, null, HTTP.SC_OK, type, null);
+		this(null, null, HTTP.SC_OK, type, false, null);
 	}
 
-	public MApiResponse(String summary, String description, int status, MType type, Map<String, Object> attrs) {
+    public MApiResponse(MType type, boolean file) {
+        this(null, null, HTTP.SC_OK, type, file, null);
+    }
+
+    public MApiResponse(String summary, String description, int status, MType type, boolean file, Map<String, Object> attrs) {
 	    super(summary, description, attrs);
 	    
 	    this.status = status;
 	    this.type   = type;
+        this.file   = file;
     }
 
 	/**
