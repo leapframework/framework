@@ -338,6 +338,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         if(from == Location.HEADER_PARAM) {
             return MApiParameter.Location.HEADER;
         }
+
+        if(from == Location.PART_PARAM) {
+            return MApiParameter.Location.FORM;
+        }
 		
 		if(from == Location.REQUEST_BODY) {
 			return MApiParameter.Location.BODY;

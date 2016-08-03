@@ -67,7 +67,9 @@ public class MultipartInitializer implements AppBootable {
 		Set<String> mappings = new HashSet<String>();
 		
 		for(Route route : routes) {
-			mappings.add(Paths.suffixWithoutSlash(route.getPathTemplate().getTemplateBeforeVariables()));
+            String path = Paths.suffixWithoutSlash(route.getPathTemplate().getTemplateBeforeVariables());
+            log.debug("Register multipart path mapping '{}'", path);
+			mappings.add(path);
 		}
 		
 		r.addMapping(mappings.toArray(new String[]{}));
