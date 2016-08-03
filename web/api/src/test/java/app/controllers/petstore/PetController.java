@@ -36,6 +36,16 @@ public class PetController extends ApiController{
         return ApiResponse.OK;
     }
 
+    @GET("/{petId}")
+    public ApiResponse<Pet> getPetById(Long petId) {
+        return ApiResponse.OK;
+    }
+
+    @POST("/{petId}")
+    public ApiResponse updatePetWithForm(Long petId, String name, Pet.Status status) {
+        return ApiResponse.OK;
+    }
+
     @DELETE("/{petId}")
     public ApiResponse deletePet(@HeaderParam String apiKey, Long petId) {
         return ApiResponse.OK;
@@ -43,6 +53,11 @@ public class PetController extends ApiController{
 
     @GET("/findByStatus")
     public ApiResponse<List<Pet>> findPetsByStatus(@QueryParam @Required List<Pet.Status> status) {
+        return ApiResponse.OK;
+    }
+
+    @GET("/findByTags")
+    public ApiResponse<List<Pet>> findPetsByTags(@QueryParam @Required List<String> tags) {
         return ApiResponse.OK;
     }
 

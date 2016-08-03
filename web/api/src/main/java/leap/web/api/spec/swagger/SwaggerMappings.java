@@ -28,7 +28,7 @@ public class SwaggerMappings {
 		LOC_IN.put(Location.QUERY,  "query");
 		LOC_IN.put(Location.BODY,   "body");
 		LOC_IN.put(Location.PATH,   "path");
-		LOC_IN.put(Location.FORM,   "form");
+		LOC_IN.put(Location.FORM,   "formData");
 		LOC_IN.put(Location.HEADER, "header");
 	}
 	
