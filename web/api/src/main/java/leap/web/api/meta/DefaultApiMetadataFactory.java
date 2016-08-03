@@ -18,6 +18,7 @@ package leap.web.api.meta;
 import leap.core.annotation.Inject;
 import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
+import leap.lang.Enums;
 import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.Types;
@@ -220,6 +221,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 p.setRequired(a.getRequired());
             } else if (p.getLocation() == MApiParameter.Location.PATH) {
                 p.setRequired(true);
+            }
+
+            if(a.getType().isEnum()){
+                p.setEnumValues(Enums.getValues(a.getType()));
             }
 
             op.addParameter(p);

@@ -47,6 +47,7 @@ public class SwaggerConstants {
 	public static final String SCHEMA               = "schema";
 	public static final String TYPE                 = "type";
 	public static final String FORMAT               = "format";
+    public static final String ENUM                 = "enum";
 	public static final String ARRAY                = "array";
 	public static final String ITEMS                = "items";
 	public static final String REF                  = "$ref";

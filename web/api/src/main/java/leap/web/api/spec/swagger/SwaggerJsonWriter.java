@@ -16,41 +16,7 @@
 package leap.web.api.spec.swagger;
 
 import static leap.lang.Strings.nullToEmpty;
-import static leap.web.api.spec.swagger.SwaggerConstants.ACCESS_CODE;
-import static leap.web.api.spec.swagger.SwaggerConstants.ARRAY;
-import static leap.web.api.spec.swagger.SwaggerConstants.AUTHZ_URL;
-import static leap.web.api.spec.swagger.SwaggerConstants.BASE_PATH;
-import static leap.web.api.spec.swagger.SwaggerConstants.CONCAT;
-import static leap.web.api.spec.swagger.SwaggerConstants.CONSUMES;
-import static leap.web.api.spec.swagger.SwaggerConstants.DEFINITIONS;
-import static leap.web.api.spec.swagger.SwaggerConstants.DESCRIPTION;
-import static leap.web.api.spec.swagger.SwaggerConstants.FLOW;
-import static leap.web.api.spec.swagger.SwaggerConstants.FORMAT;
-import static leap.web.api.spec.swagger.SwaggerConstants.HOST;
-import static leap.web.api.spec.swagger.SwaggerConstants.IMPLICIT;
-import static leap.web.api.spec.swagger.SwaggerConstants.IN;
-import static leap.web.api.spec.swagger.SwaggerConstants.INFO;
-import static leap.web.api.spec.swagger.SwaggerConstants.ITEMS;
-import static leap.web.api.spec.swagger.SwaggerConstants.NAME;
-import static leap.web.api.spec.swagger.SwaggerConstants.OAUTH2;
-import static leap.web.api.spec.swagger.SwaggerConstants.PARAMETERS;
-import static leap.web.api.spec.swagger.SwaggerConstants.PATHS;
-import static leap.web.api.spec.swagger.SwaggerConstants.PRODUCES;
-import static leap.web.api.spec.swagger.SwaggerConstants.PROPETIES;
-import static leap.web.api.spec.swagger.SwaggerConstants.REF;
-import static leap.web.api.spec.swagger.SwaggerConstants.REQUIRED;
-import static leap.web.api.spec.swagger.SwaggerConstants.RESPONSES;
-import static leap.web.api.spec.swagger.SwaggerConstants.SCHEMA;
-import static leap.web.api.spec.swagger.SwaggerConstants.SCHEMES;
-import static leap.web.api.spec.swagger.SwaggerConstants.SCOPES;
-import static leap.web.api.spec.swagger.SwaggerConstants.SECURITY;
-import static leap.web.api.spec.swagger.SwaggerConstants.SECURITY_DEFINITIONS;
-import static leap.web.api.spec.swagger.SwaggerConstants.SWAGGER;
-import static leap.web.api.spec.swagger.SwaggerConstants.TERMS_OF_SERVICE;
-import static leap.web.api.spec.swagger.SwaggerConstants.TITLE;
-import static leap.web.api.spec.swagger.SwaggerConstants.TOKEN_URL;
-import static leap.web.api.spec.swagger.SwaggerConstants.TYPE;
-import static leap.web.api.spec.swagger.SwaggerConstants.VERSION;
+import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
 import java.util.Map.Entry;
 
@@ -376,10 +342,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "' of parameter '" + p.getName() + "'");
 	}
-	
+
 	protected void writeSimpleParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MSimpleType st) {
 		writeSimplePropertyType(context, m, w, st);
 		w.propertyOptional(FORMAT, p.getFormat());
+        w.propertyOptional(ENUM, p.getEnumValues());
 	}
 	
 	protected void writeArrayParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p, MCollectionType ct) {

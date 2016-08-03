@@ -25,10 +25,7 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import leap.lang.Args;
-import leap.lang.Factory;
-import leap.lang.Strings;
-import leap.lang.Types;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 
@@ -162,8 +159,14 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		BeanType bt = BeanType.of(type);
 		for(BeanProperty bp : bt.getProperties()) {
 			MPropertyBuilder mp = new MPropertyBuilder();
-			mp.setName(bp.getName());
-			mp.setType(getMType(bp.getType(), bp.getGenericType(), root, stack, true)); 
+
+            mp.setName(bp.getName());
+			mp.setType(getMType(bp.getType(), bp.getGenericType(), root, stack, true));
+
+            if(bp.getType().isEnum()) {
+                mp.setEnumValues(Enums.getValues(bp.getType()));
+            }
+
 			ct.addProperty(mp.build());
 		}
 		

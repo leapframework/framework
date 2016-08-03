@@ -35,12 +35,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.description = mp.getDefaultValue();
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();
+        this.enumValues = mp.getEnumValues();
 		this.required = !mp.isNullable();
 	}
 
 	@Override
     public MApiProperty build() {
-	    return new MApiProperty(name, title, summary, description, type, format, required, defaultValue,
+	    return new MApiProperty(name, title, summary, description, type, format, required,
+                                defaultValue, enumValues,
 	    					   null == validation ? null : validation.build(), attrs);
     }
 }

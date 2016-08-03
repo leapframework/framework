@@ -18,6 +18,7 @@ package leap.orm.metadata;
 import java.lang.reflect.Type;
 
 import leap.core.annotation.Inject;
+import leap.lang.Enums;
 import leap.lang.meta.MComplexTypeBuilder;
 import leap.lang.meta.MPropertyBuilder;
 import leap.lang.meta.MType;
@@ -58,6 +59,10 @@ public class OrmMTypeFactory implements MTypeFactory {
 			p.setNullable(fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
+
+            if(type.isEnum()) {
+                p.setEnumValues(Enums.getValues(type));
+            }
 			
 			ct.addProperty(p.build());
 		}
