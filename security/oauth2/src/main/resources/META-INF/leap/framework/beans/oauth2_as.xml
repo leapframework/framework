@@ -105,6 +105,11 @@
     <bean type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoHandler"
           class="leap.oauth2.as.endpoint.tokeninfo.DefaultTokenInfoHandler"/>
 
+	<bean name="default" type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoResponseHandler"
+		  class="leap.oauth2.as.endpoint.tokeninfo.DefaultTokenInfoResponseHandler"/>
+	<bean name="jwt" type="leap.oauth2.as.endpoint.tokeninfo.TokenInfoResponseHandler"
+		  class="leap.oauth2.as.endpoint.tokeninfo.JwtTokenInfoResponseHandler"/>
+
 	<!-- logout endpoint : handlers -->
 	<bean type="leap.oauth2.as.endpoint.logout.PostLogoutHandler"
 		  class="leap.oauth2.as.endpoint.logout.DefaultPostLogoutHandler" primary="true"/>

@@ -54,7 +54,7 @@ public class Global extends App {
 	
 	@Override
     protected void filtering(FilterMappings filters) {
-		//csrf attribute test filter
+		//csrf attribute test process
 		filters().add(new Filter() {
 			@Override
 			public void doFilter(final Request request, Response response, FilterChain chain) throws ServletException, IOException {

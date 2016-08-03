@@ -29,14 +29,14 @@ public interface JdbcExecutor {
 	/**
 	 * Executes the given {@link ConnectionCallback}.
 	 * 
-	 * @throws NestedSQLException if an {@link SQLException} throwed.
+	 * @throws NestedSQLException if an {@link SQLException} thrown.
 	 */
 	void execute(ConnectionCallback callback) throws NestedSQLException;
 	
 	/**
 	 * Executes the given {@link ConnectionCallbackWithResult} and returns the result.
 	 * 
-	 * @throws NestedSQLException if an {@link SQLException} throwed.
+	 * @throws NestedSQLException if an {@link SQLException} thrown.
 	 */
 	<T> T executeWithResult(ConnectionCallbackWithResult<T> callback) throws NestedSQLException;
 
@@ -95,21 +95,21 @@ public interface JdbcExecutor {
 	int[] executeBatchUpdate(String sql,Object[][] batchArgs,int[] types,BatchPreparedStatementHandler<?> handler) throws NestedSQLException;
 	
 	/**
-	 * Executes a query and returns the result readed by the given {@link ResultSetReader}.
+	 * Executes a query and returns the result read by the given {@link ResultSetReader}.
 	 * 
 	 * @see Statement#executeQuery(String)
 	 */
 	<T> T executeQuery(String sql, ResultSetReader<T> reader) throws NestedSQLException;
 	
 	/**
-	 * Executes a query and returns the result readed by the given {@link ResultSetReader}.
+	 * Executes a query and returns the result read by the given {@link ResultSetReader}.
 	 * 
 	 * @see Statement#executeQuery(String)
 	 */
 	<T> T executeQuery(String sql, Object[] args, ResultSetReader<T> reader) throws NestedSQLException;
 	
 	/**
-	 * Executes a query and returns the result readed by the given {@link ResultSetReader}.
+	 * Executes a query and returns the result read by the given {@link ResultSetReader}.
 	 * 
 	 * @see Statement#executeQuery(String)
 	 */

@@ -8,9 +8,9 @@
     <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
     
     <bean-list type="tested.beans.TBeanType2">
-	    <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
-	    <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
-	    <bean type="tested.beans.TBeanType2" class="tested.beans.TBean"/>
+	    <bean class="tested.beans.TBean"/>
+	    <bean class="tested.beans.TBean"/>
+	    <bean class="tested.beans.TBean"/>
     </bean-list>
     
     <bean type="tested.beans.TBeanType2" qualifier="a" class="tested.beans.TBean"/>

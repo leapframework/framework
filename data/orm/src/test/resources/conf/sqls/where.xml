@@ -23,4 +23,38 @@
         ORDER BY T.version DESC
     </command>
 
+    <command key="testSingleWhereColumn.ECodeModel.leftJoinDynamic">
+        SELECT
+        T.*,
+        u.NAME AS creator
+        FROM
+        (
+        SELECT '' as version from dual f
+        where 1=2
+        UNION ALL
+        SELECT '' as version from dual v
+        WHERE 1=3
+        ) T
+        LEFT JOIN ecode_model u
+        where 1=1 {?and 1 = 2}
+        ORDER BY T.version DESC
+    </command>
+
+    <command key="testSingleWhereColumn.ECodeModel.whereDynamic">
+        SELECT
+        u.NAME AS creator
+        FROM
+        ecode_model u
+        where 1=1 {?and 1 = 2}
+    </command>
+
+    <command key="testSingleWhereColumn.ECodeModel.whereWithDynamicLeftJoin">
+        SELECT
+        u.NAME AS creator
+        FROM
+        ecode_model u
+        {?left join a on a.id = :id}
+        where 1=1 {?and 1 = 2}
+    </command>
+
 </sqls>

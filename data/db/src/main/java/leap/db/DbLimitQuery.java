@@ -20,15 +20,30 @@ import java.util.List;
 import leap.lang.value.Limit;
 
 public interface DbLimitQuery {
-	
+
+    /**
+     *  Returns the original sql text.
+     */
 	String getSql(Db db);
-	
+
+    /**
+     * Returns the original sql text without order by expression.
+     */
 	String getSqlWithoutOrderBy(Db db);
 
+    /**
+     * Returns the limitation info.
+     */
 	Limit getLimit();
-	
+
+    /**
+     * Returns the order by expression.
+     */
 	String getOrderBy();
-	
+
+    /**
+     * Returns the sql args.
+     */
 	List<Object> getArgs();
 
 }

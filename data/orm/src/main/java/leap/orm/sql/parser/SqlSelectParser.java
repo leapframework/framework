@@ -131,6 +131,8 @@ class SqlSelectParser extends SqlQueryParser {
 			if(lexer.token() == Token.WHERE) {
 				return;
 			}
+
+            suspendNodes();
 			
 			boolean join = true;
 			
@@ -168,22 +170,37 @@ class SqlSelectParser extends SqlQueryParser {
 			}
 			
 			if(join){
-				parseJoin(query);
-			}else{
-				return;
+                SqlJoin joinNode = new SqlJoin();
+
+				if(parseJoin(query, joinNode)){
+                    joinNode.setNodes(nodes());
+                    restoreNodes().addNode(joinNode);
+                    continue;
+                }
 			}
+
+			restoreAndAcceptNodes();
+			return;
 		}
 	}
 	
-	protected void parseJoin(SqlQuery query) {
-		parseTableSource(query);
+	protected boolean parseJoin(SqlQuery query, SqlJoin join) {
+		SqlTableSource ts = parseTableSource(query);
+		if(null != ts) {
+            join.setTable(ts);
+            ts.setJoin(true);
+        }
 		
 		if(lexer.token() == Token.ON) {
+            join.setHasOnExpression(true);
+
 			//Accepts 'ON'
 			acceptText();
-			
+
 			parseJoinOnExpr(query);
 		}
+
+		return null != ts;
 	}
 	
 	protected void parseJoinOnExpr(SqlQuery query){
@@ -228,21 +245,7 @@ class SqlSelectParser extends SqlQueryParser {
 			}
 			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || (lexer.isKeyword() && SELECT_ITEM_KEYWORDS.contains(lexer.token()))){
-			if(lexer.peekCharSkipWhitespaces() == '('){
-				acceptText();
-				expect(Token.LPAREN).acceptText();
-				parseRestForClosingParen();
-				expect(Token.RPAREN).acceptText();
-				
-				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					acceptText();
-					expect(Token.LPAREN).acceptText();
-					parseRestForClosingParen();
-					expect(Token.RPAREN).acceptText();
-				}
-			}else{
-				parseSqlObjectName();
-			}
+            parseNameExpr();
 		}else{
 			new SqlExprParser(this).parseExpr();
 		}

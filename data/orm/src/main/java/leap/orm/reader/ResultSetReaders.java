@@ -26,40 +26,26 @@ import leap.core.jdbc.RawScalarReader;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlResultSetReader;
 
 public class ResultSetReaders {
 	
-	private static final ResultSetReader<Boolean> CHECK_EXISTS_READER = new ResultSetReader<Boolean>() {
-		@Override
-        public Boolean read(ResultSet rs) throws SQLException {
-	        return rs.next();
-        }
-	}; 
+	private static final ResultSetReader<Boolean> CHECK_EXISTS_READER = rs -> rs.next();
 			
 	public static ResultSetReader<Boolean> forCheckExists(){
 		return CHECK_EXISTS_READER;
 	}
 	
 	public static <T> ResultSetReader<T> forScalarValue(final Class<T> targetType, final boolean checkEmptyResult) throws EmptyRecordsException,TooManyRecordsException {
-		return new RawScalarReader<T>(targetType,checkEmptyResult);
+		return new RawScalarReader<>(targetType,checkEmptyResult);
 	}
 	
 	public static <T> ResultSetReader<T> forFirstEntity(final OrmContext context,final EntityMapping em,final Class<T> resultClass){
-		return new ResultSetReader<T>() {
-			@Override
-            public T read(ResultSet rs) throws SQLException {
-	            return context.getEntityReader().readFirst(context, rs, em, resultClass);
-            }
-		};
+		return rs -> context.getEntityReader().readFirst(context, rs, em, resultClass);
 	}
 	
 	public static <T> ResultSetReader<T> forSingleEntity(final OrmContext context,final EntityMapping em,final Class<T> resultClass){
-		return new ResultSetReader<T>() {
-			@Override
-            public T read(ResultSet rs) throws SQLException {
-	            return context.getEntityReader().readSingle(context, rs, em, resultClass);
-            }
-		};
+		return rs -> context.getEntityReader().readSingle(context, rs, em, resultClass);
 	}
 	
 	public static <T> ResultSetReader<List<T>> forListEntity(final OrmContext context,final EntityMapping em,final Class<T> elementType){
@@ -67,40 +53,20 @@ public class ResultSetReaders {
 	}
 	
 	public static <T> ResultSetReader<List<T>> forListEntity(final OrmContext context,final EntityMapping em,final Class<T> elementType, final Class<? extends T> resultClass){
-		return new ResultSetReader<List<T>>() {
-			@Override
-            public List<T> read(ResultSet rs) throws SQLException {
-	            return context.getEntityReader().readList(context, rs, em, elementType, resultClass);
-            }
-		};
+		return rs -> context.getEntityReader().readList(context, rs, em, elementType, resultClass);
 	}
 	
-	public static <T> ResultSetReader<T> forFirstRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
-		return new ResultSetReader<T>() {
-			@Override
-            public T read(ResultSet rs) throws SQLException {
-	            return context.getRowReader().readFirst(context, rs, resultClass,command);
-            }
-		};
+	public static <T> SqlResultSetReader<T> forFirstRow(final OrmContext context, final Class<T> resultClass, final SqlCommand command){
+		return (c, rs) -> context.getRowReader().readFirst(c, rs, resultClass,command);
 	}
 	
-	public static <T> ResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
-		return new ResultSetReader<T>() {
-			@Override
-            public T read(ResultSet rs) throws SQLException {
-	            return context.getRowReader().readSingle(context, rs, resultClass,command);
-            }
-		};
+	public static <T> SqlResultSetReader<T> forSingleRow(final OrmContext context,final Class<T> resultClass,final SqlCommand command){
+		return (c,rs) -> context.getRowReader().readSingle(c, rs, resultClass,command);
 	}
 	
-	public static <T> ResultSetReader<List<T>> forListRow(final OrmContext context, final Class<T> elementType,
+	public static <T> SqlResultSetReader<List<T>> forListRow(final OrmContext context, final Class<T> elementType,
 														  final Class<? extends T> resultClass, final SqlCommand command){
-		return new ResultSetReader<List<T>>() {
-			@Override
-            public List<T> read(ResultSet rs) throws SQLException {
-				return context.getRowReader().readList(context, rs, elementType, resultClass, command);
-			}
-		};
+		return (c,rs) -> context.getRowReader().readList(c, rs, elementType, resultClass, command);
 	}
 	
 	protected ResultSetReaders(){

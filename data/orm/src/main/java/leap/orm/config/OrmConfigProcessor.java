@@ -90,8 +90,8 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 				String basePackage = reader.resolveAttribute(NAME_ATTRIBUTE);
 				if(!Strings.isEmpty(basePackage)) {
                     if(!models.removeBasePackage(basePackage)) {
-                        context.addResources(Resources.scanPackage(basePackage));
-                    }
+						context.addResources(Resources.scanPackage(basePackage));
+					}
 					models.addBasePackage(basePackage);
 				}
 				continue;

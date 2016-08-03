@@ -16,7 +16,7 @@
 package leap.orm.sql.parser;
 
 import leap.orm.sql.ast.SqlQuery;
-import leap.orm.sql.ast.SqlTableName;
+import leap.orm.sql.ast.SqlTableSource;
 import leap.orm.sql.ast.SqlUpdate;
 
 
@@ -61,24 +61,13 @@ public class SqlUpdateParser extends SqlQueryParser {
         addNode(update);
 	}
 
-	protected void parseTableSource(SqlQuery query) {
-		parseTableName();
-		
-		if(node instanceof SqlTableName){
-			SqlTableName table = (SqlTableName)node;
-			table.setAlias(parseTableAlias());
-			query.addTableSource(table);
-		}
+	protected SqlTableSource parseTableSource(SqlQuery query) {
+        return parseTableNameSource(query);
 	}
 	
 	protected String parseTableAlias(){
 		if(lexer.token() == Token.AS){
-			acceptText();
-			
-			expect(Token.IDENTIFIER);
-			String alias = lexer.tokenText();
-			acceptText();
-			return alias;
+            return acceptAlias();
 		}
 
 		final Token token = lexer.token();
@@ -126,21 +115,7 @@ public class SqlUpdateParser extends SqlQueryParser {
 			}
 			expect(Token.RPAREN).acceptText();
 		}else if(lexer.isIdentifier() || lexer.isKeyword()){
-			if(lexer.peekCharSkipWhitespaces() == '('){
-				acceptText();
-				expect(Token.LPAREN).acceptText();
-				parseRestForClosingParen();
-				expect(Token.RPAREN).acceptText();
-				
-				if(lexer.token().isKeywordOrIdentifier() && lexer.peekCharSkipWhitespaces() == '(') {
-					acceptText();
-					expect(Token.LPAREN).acceptText();
-					parseRestForClosingParen();
-					expect(Token.RPAREN).acceptText();
-				}
-			}else{
-				parseSqlObjectName();
-			}
+            parseNameExpr();
 		}else{
 			new SqlExprParser(this).parseExpr();
 		}

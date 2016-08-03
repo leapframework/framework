@@ -16,17 +16,16 @@
 package leap.orm.sql.ast;
 
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 
 public class SqlSelect extends SqlQuery implements SqlTableSource {
 
-	private boolean 	  distinct;
-	private SqlTop		  top;
+	private boolean                 distinct;
+	private SqlTop                  top;
 	private HashMap<String, String> selectItemAliases;
-	private SqlSelectList selectList;
-	private boolean		  union;
+	private SqlSelectList           selectList;
+	private boolean                 union;
 
 	public boolean isDistinct() {
 		return distinct;
@@ -63,12 +62,25 @@ public class SqlSelect extends SqlQuery implements SqlTableSource {
 		selectItemAliases.put(alias.toLowerCase(),alias);
 	}
 
+    public void addSelectItemAliases(Map<String,String> m) {
+        if(null != m) {
+            if(null == selectItemAliases) {
+                selectItemAliases = new HashMap<>(m.size());
+            }
+            selectItemAliases.putAll(m);
+        }
+    }
+
 	public String getSelectItemAlias(String name){
 		if(isSelectItemAlias(name)){
 			return selectItemAliases.get(name.toLowerCase());
 		}
 		return name;
 	}
+
+    public Map<String,String> getSelectItemAliases() {
+        return selectItemAliases;
+    }
 
 	public boolean isUnion() {
 		return union;

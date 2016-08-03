@@ -1,11 +1,11 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,22 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.orm.sql.ast;
 
-public interface SqlTableSource {
+package leap.orm.sql.parser;
 
-    /**
-     * Returns the table alias or null.
-     */
-	String getAlias();
+import leap.orm.sql.Sql;
+import org.junit.Test;
 
-    /**
-     * Returns true if the table is a join table.
-     */
-	boolean isJoin();
+public class SqlParserDynaTest extends SqlParserTestCase {
 
-    /**
-     *  Sets join table.
-     */
-    void setJoin(boolean join);
+    public void setup(){
+        level = Sql.ParseLevel.DYNA;
+    }
+
+    @Test
+    public void testSimpleUpdate() {
+        assertEquals("update owner set address = ? where 1=1",
+                parse("update owner set address = ? where 1=1;"));
+    }
 }

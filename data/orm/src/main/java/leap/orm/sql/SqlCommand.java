@@ -51,29 +51,10 @@ public interface SqlCommand extends Sourced {
 	String getDbType();
 	
 	/**
-	 * Returns <code>true</code> if this command is a sql query.
-	 * 
-	 * <p>
-	 * A query sql command can not invoke the {@link #executeUpdate(SqlContext, Object)} method.
-	 * 
-	 * <p>
-	 * A non query sql command can not invoke the {@link #executeQuery(QueryContext, Object, ResultSetReader)} method.
-	 */
-	boolean isQuery();
-
-	/**
-	 * Returns <code>SqlClause</code> if this command is a sql query
-	 *
-	 * @return the sql clause of this command
-	 * @throws SqlClauseException if this command is not a sql query
-     */
-	SqlClause getQueryClause() throws SqlClauseException;
-	
-	/**
 	 * Executes update and returns the affected rows.
 	 * 
 	 * @throws IllegalStateException if this command is not an update command.
-	 * @throws NestedSQLException if a {@link SQLException} throwed.
+	 * @throws NestedSQLException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
@@ -83,7 +64,7 @@ public interface SqlCommand extends Sourced {
 	 * Executes update and returns the affected rows.
 	 * 
 	 * @throws IllegalStateException if this command is not an update command.
-	 * @throws NestedSQLException if a {@link SQLException} throwed.
+	 * @throws NestedSQLException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
@@ -93,7 +74,7 @@ public interface SqlCommand extends Sourced {
 	 * Executes query and returns the result readed by the given {@link ResultSetReader}.
 	 * 
 	 * @throws IllegalStateException if this command is not a query command.
-	 * @throws IllegalStateException if a {@link SQLException} throwed.
+	 * @throws IllegalStateException if a {@link SQLException} thrown.
 	 * 
 	 * @see PreparedStatement#executeQuery()
 	 */

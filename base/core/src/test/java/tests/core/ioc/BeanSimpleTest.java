@@ -46,6 +46,11 @@ public class BeanSimpleTest extends CoreTestCase {
 		
 		List<TBeanType2> list1 = beanFactory.getBeans(TBeanType2.class);
 		assertEquals(3, list1.size());
+
+        List<TBeanType2> list1_1 = beanFactory.getBeans(TBeanType2.class);
+        for(int i=0;i<list1_1.size();i++) {
+            assertSame(list1.get(i), list1_1.get(i));
+        }
 		
 		List<TBeanType2> list2 = beanFactory.getBeans(TBeanType2.class, "a");
 		assertEquals(2, list2.size());

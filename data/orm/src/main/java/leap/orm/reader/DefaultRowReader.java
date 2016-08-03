@@ -23,11 +23,11 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.orm.OrmContext;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.DynamicSqlClause;
 import leap.orm.sql.Sql;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlExecutionContext;
 import leap.orm.sql.ast.SqlSelect;
 
 import java.sql.ResultSet;
@@ -43,7 +43,7 @@ public class DefaultRowReader implements RowReader {
 	private static final Log log = LogFactory.get(DefaultRowReader.class);
 
 	@Override
-    public <T> T readFirst(OrmContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException {
+    public <T> T readFirst(SqlExecutionContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException {
 		if(rs.next()){
 			ResultColumn[] columns = createResultColumns(context,command, rs);
 			return readCurrentRow(context, rs, columns, resultClass);
@@ -54,7 +54,7 @@ public class DefaultRowReader implements RowReader {
     }
 
 	@Override
-    public <T> T readSingle(OrmContext context, ResultSet rs, Class<T> resultClass,SqlCommand command) throws SQLException, TooManyRecordsException {
+    public <T> T readSingle(SqlExecutionContext context, ResultSet rs, Class<T> resultClass, SqlCommand command) throws SQLException, TooManyRecordsException {
 		if(rs.next()){
 			ResultColumn[] columns = createResultColumns(context,command, rs);
 			
@@ -73,7 +73,7 @@ public class DefaultRowReader implements RowReader {
 
     @Override
 	@SuppressWarnings("unchecked")
-    public <T> List<T> readList(OrmContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException {
+    public <T> List<T> readList(SqlExecutionContext context, ResultSet rs, Class<T> elementType, Class<? extends T> resultClass, SqlCommand command) throws SQLException {
 		List<T> list = new ArrayList<T>();
 		
 		if(rs.next()){
@@ -101,7 +101,7 @@ public class DefaultRowReader implements RowReader {
     }
 	
 	@SuppressWarnings("unchecked")
-    protected <T> T readCurrentRow(OrmContext context, ResultSet rs,ResultColumn[] columns,Class<T> resultClass) throws SQLException {
+    protected <T> T readCurrentRow(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns,Class<T> resultClass) throws SQLException {
 		
 		if(Record.class.equals(resultClass)) {
 			return (T)readRecord(context, rs, columns);
@@ -114,7 +114,7 @@ public class DefaultRowReader implements RowReader {
 		return readBean(context, rs, columns, resultClass);
 	}
 	
-	protected Map<String, Object> readMap(OrmContext context, ResultSet rs,ResultColumn[] columns) throws SQLException {
+	protected Map<String, Object> readMap(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns) throws SQLException {
 		Map<String,Object> map = new LinkedHashMap<String, Object>(columns.length);
 		
 		readMap(context, rs, columns, map);
@@ -122,7 +122,7 @@ public class DefaultRowReader implements RowReader {
 		return map;
 	}
 	
-	protected Record readRecord(OrmContext context, ResultSet rs,ResultColumn[] columns) throws SQLException {
+	protected Record readRecord(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns) throws SQLException {
 		Record r = new SimpleRecord(columns.length);
 		
 		readMap(context, rs, columns, r);
@@ -130,20 +130,21 @@ public class DefaultRowReader implements RowReader {
 		return r;
 	}
 	
-	protected <T> T readBean(OrmContext context, ResultSet rs,ResultColumn[] columns,Class<T> beanClass) throws SQLException {
+	protected <T> T readBean(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns,Class<T> beanClass) throws SQLException {
 		return readBean(context,rs,columns,BeanType.of(beanClass));
 	}
 	
-	protected <T> T readBean(OrmContext context, ResultSet rs,ResultColumn[] columns,BeanType beanType) throws SQLException {
+	protected <T> T readBean(SqlExecutionContext context, ResultSet rs,ResultColumn[] columns,BeanType beanType) throws SQLException {
 		T bean = beanType.newInstance();
 		
-		DbDialect dialect = context.getDb().getDialect();
+		DbDialect dialect = context.dialect();
+        NamingStrategy ns = context.getOrmContext().getNamingStrategy();
 		
 		for(int i=0;i<columns.length;i++){
 			ResultColumn column = columns[i];
 			BeanProperty     bp = null;
 
-            String name = context.getNamingStrategy().columnToFieldName(column.fieldName);
+            String name = ns.columnToFieldName(column.fieldName);
 
 			bp = beanType.tryGetProperty(name, true);
 			
@@ -155,8 +156,8 @@ public class DefaultRowReader implements RowReader {
 		return bean;
 	}
 	
-	protected void readMap(OrmContext context,ResultSet rs,ResultColumn[] columns,Map<String,Object> map) throws SQLException {
-		DbDialect dialect = context.getDb().getDialect();
+	protected void readMap(SqlExecutionContext context,ResultSet rs,ResultColumn[] columns,Map<String,Object> map) throws SQLException {
+		DbDialect dialect = context.dialect();
 		
 		for(int i=0;i<columns.length;i++){
 			ResultColumn column = columns[i];
@@ -165,9 +166,9 @@ public class DefaultRowReader implements RowReader {
 		}
 	}
 	
-	protected static ResultColumn[] createResultColumns(OrmContext context, SqlCommand command, ResultSet rs) throws SQLException {
+	protected static ResultColumn[] createResultColumns(SqlExecutionContext context, SqlCommand command, ResultSet rs) throws SQLException {
 		ResultSetMetaData rsm = rs.getMetaData();
-		NamingStrategy    ns  = context.getNamingStrategy();
+		NamingStrategy    ns  = context.getOrmContext().getNamingStrategy();
 		
 		ResultColumn[] columns = new ResultColumn[rsm.getColumnCount()];
 		
@@ -179,17 +180,17 @@ public class DefaultRowReader implements RowReader {
 
 			boolean isAlias = false;
 
-            if(command.isQuery() && command.getQueryClause() instanceof DynamicSqlClause){
-				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getQueryClause();
-				Sql sql = sqlClause.getSql();
-				if(sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
+//            if(command.getClause() instanceof DynamicSqlClause){
+//				DynamicSqlClause sqlClause = (DynamicSqlClause)command.getClause();
+				Sql sql = context.sql();// sqlClause.getSql();
+				if(null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect){
 					SqlSelect selectCmd = (SqlSelect)sql.nodes()[0];
 					if(selectCmd.isSelectItemAlias(c.columnLabel)){
 						c.fieldName = selectCmd.getSelectItemAlias(c.columnLabel);
 						isAlias = true;
 					}
 				}
-			}
+//			}
 
 			if(!isAlias){
 				c.fieldName = ns.columnToFieldName(c.columnLabel);

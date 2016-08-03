@@ -86,7 +86,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     public int getSortOrder() {
 	    return sortOrder;
     }
-
+	@Override
 	public void setSortOrder(int sortOrder) {
 		this.sortOrder = sortOrder;
 	}
@@ -262,7 +262,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	public List<TypeDefinition> getAdditionalTypeDefs() {
 	    return additionalTypeDefs;
 	}
-	
+
 	public void addAdditionalTypeDef(TypeDefinition def) {
 	    additionalTypeDefs.add(def);
 	}
