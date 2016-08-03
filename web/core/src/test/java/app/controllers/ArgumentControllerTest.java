@@ -247,6 +247,24 @@ public class ArgumentControllerTest extends WebTestCase {
 
     @Test
     @ContextualIgnore
+    public void testHeaderParam() {
+        forGet("argument/header_param").addHeader("testHeader","xyz").send().assertContentEquals("xyz");
+    }
+
+    @Test
+    @ContextualIgnore
+    public void testCookieParam() {
+        client().addCookie("testCookie","xyz");
+        get("argument/cookie_param1").assertContentEquals("xyz");
+        get("argument/cookie_param2").assertContentEquals("xyz");
+        get("argument/cookie_param3").assertContentEquals("xyz");
+
+        client().removeCookie("testCookie");
+        get("argument/cookie_param1").assertContentEquals("");
+    }
+
+    @Test
+    @ContextualIgnore
 	public void testArgsBean() {
         get("argument/args_bean/1?name=2").assertOk();
         get("argument/args_bean1/1/2?name=2").assertOk();

@@ -44,6 +44,7 @@ import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.view.ViewData;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.Part;
 import java.util.ArrayList;
 import java.util.List;
@@ -428,17 +429,17 @@ public class DefaultActionManager implements ActionManager,AppListener {
             if(typeInfo.isCollectionType()){
                 //Collection type resolver
                 resolver = new CollectionArgumentResolver(app, route, argument);
-            }else if(typeInfo.isSimpleType()){
+            }else if(typeInfo.isSimpleType()) {
                 //Simple type resolver
                 resolver = new SimpleArgumentResolver(app, route, argument);
+            }else if(Cookie.class.isAssignableFrom(argument.getType()) || leap.lang.http.Cookie.class.isAssignableFrom(argument.getType())) {
+                resolver = new CookieArgumentResolver(app, route, argument);
+            }else if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
+                //Part resolver
+                resolver = new MultipartArgumentResolver(app, route, argument);
             }else{
-                if(argument.getType().equals(Part.class) || argument.getType().equals(MultipartFile.class)) {
-                    //Part resolver
-                    resolver = new MultipartArgumentResolver(app, route, argument);
-                }else{
-                    //Complex type resolver
-                    resolver = new ComplexArgumentResolver(app, route, argument);
-                }
+                //Complex type resolver
+                resolver = new ComplexArgumentResolver(app, route, argument);
             }
         }
 

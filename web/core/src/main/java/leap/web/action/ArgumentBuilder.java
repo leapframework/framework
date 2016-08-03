@@ -25,6 +25,7 @@ import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.annotation.Optional;
 import leap.lang.beans.BeanProperty;
+import leap.lang.http.Cookie;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument.Location;
 import leap.web.annotation.*;
@@ -55,7 +56,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
-		this.configAnnotations();
+		this.autoConfigure();
         this.resolverValidators(validationManager);
 	}
 	
@@ -65,7 +66,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
-		this.configAnnotations();
+		this.autoConfigure();
         this.resolverValidators(validationManager);
 	}
 
@@ -166,7 +167,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return validators;
 	}
 
-	public ArgumentBuilder configAnnotations() {
+	public ArgumentBuilder autoConfigure() {
 		RequestParam rp = Classes.getAnnotation(annotations, RequestParam.class, true);
 		if(null != rp){
 			this.location = Location.REQUEST_PARAM;
@@ -193,12 +194,43 @@ public class ArgumentBuilder implements Buildable<Argument> {
             }
             return this;
         }
+
+        HeaderParam hp = Classes.getAnnotation(annotations, HeaderParam.class, true);
+        if(null != hp) {
+            this.location = Location.HEADER_PARAM;
+            if(!Strings.isEmpty(hp.value())) {
+                this.name = hp.value();
+            }
+            return this;
+        }
+
+        CookieParam cp = Classes.getAnnotation(annotations, CookieParam.class, true);
+        if(null != cp) {
+            this.location = Location.COOKIE_PARAM;
+            if(!Strings.isEmpty(cp.value())) {
+                this.name = cp.value();
+            }
+            return this;
+        }
 		
 		RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
 		if(null != rb){
 			this.location = Location.REQUEST_BODY;
 			return this;
 		}
+
+        if(null != type) {
+            RequestBean a = type.getAnnotation(RequestBean.class);
+            if(null != a && a.requestBody()) {
+                location = Location.REQUEST_BODY;
+                return this;
+            }
+
+            if(Cookie.class.isAssignableFrom(type) || javax.servlet.http.Cookie.class.isAssignableFrom(type)) {
+                location = Location.COOKIE_PARAM;
+                return this;
+            }
+        }
 
 		Optional o = Classes.getAnnotation(annotations, Optional.class, false);
 		if(null != o) {
@@ -209,13 +241,6 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		if(null != r) {
 			required = true;
 		}
-
-        if(null != type) {
-            RequestBean a = type.getAnnotation(RequestBean.class);
-            if(null != a && a.requestBody()) {
-                location = Location.REQUEST_BODY;
-            }
-        }
 
 		return this;
 	}
