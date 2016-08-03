@@ -347,7 +347,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         }else{
             writeSimpleType(context, m, w, st);
         }
-		w.propertyOptional(FORMAT, p.getFormat());
         w.propertyOptional(ENUM, p.getEnumValues());
 	}
 
@@ -438,5 +437,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		}
 		
 		w.property(TYPE, type.type());
+
+        if(null != type.fomrat()) {
+            w.property(FORMAT, type.fomrat());
+        }
 	}
 }
