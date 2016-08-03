@@ -323,3 +323,5 @@ SET used = fused,
 WHERE
 	quota_id = '01182800-585b-49e6-8e74-f5fdcc1b30c4'
 AND principal_type = 'D';
+
+select * from owners where 2/2=1;

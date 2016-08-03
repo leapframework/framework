@@ -80,7 +80,11 @@ public abstract class SqlParserTestCase extends TestBase {
 	}
 	
 	protected final Sql sql(String text){
-		return parser(text).sql();
+		List<Sql> sqls = parser(text).sqls();
+        if(sqls.size() != 1) {
+            throw new IllegalStateException("Must be one sql statement");
+        }
+        return sqls.get(0);
 	}
 	
 	protected final SqlParser parser(String sql){
