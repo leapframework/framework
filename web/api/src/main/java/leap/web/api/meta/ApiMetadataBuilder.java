@@ -150,7 +150,8 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	
 	public MApiPathBuilder getPath(String pathTemplate) {
 		Args.notEmpty(pathTemplate,"path template");
-		return paths.get(pathTemplate);
+        String relativePath = Strings.removeStart(pathTemplate, basePath);
+		return paths.get(relativePath);
 	}
 
 	public Map<String, MApiModelBuilder> getModels() {
