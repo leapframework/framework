@@ -17,6 +17,8 @@
 package app.controllers.petstore;
 
 import app.models.petstore.Pet;
+import leap.core.validation.annotations.Required;
+import leap.web.annotation.HeaderParam;
 import leap.web.annotation.RestController;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.POST;
@@ -31,7 +33,7 @@ public class PetsController extends ApiController{
     }
 
     @DELETE("/{petId}")
-    public ApiResponse deletePet(String apiKey, Long petId) {
+    public ApiResponse deletePet(@HeaderParam String apiKey, Long petId) {
         return ApiResponse.OK;
     }
 
