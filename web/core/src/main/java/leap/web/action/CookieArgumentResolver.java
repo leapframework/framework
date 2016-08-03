@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.action;
 
-package app.controllers.petstore;
+import leap.web.App;
+import leap.web.Request;
+import leap.web.route.RouteBase;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.DELETE;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+public class CookieArgumentResolver extends AbstractArgumentResolver {
 
-public class PetsController extends ApiController{
+	public CookieArgumentResolver(App app, RouteBase route, Argument arg) {
+		super(app, route, arg);
+	}
 
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
-    }
-
-    @DELETE("/{petId}")
-    public ApiResponse deletePet(String apiKey, Long petId) {
-        return ApiResponse.OK;
-    }
+	@Override
+	public Object resolveValue(ActionContext context, Argument argument) throws Throwable {
+		Request request = context.getRequest();
+        return convertFromCookie(request.getCookie(argument.getName()), argument);
+	}
 
 }

@@ -20,6 +20,7 @@ import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeType;
 import leap.lang.http.MimeTypes;
+import leap.lang.http.SimpleCookie;
 import leap.lang.io.IO;
 import leap.lang.naming.NamingStyles;
 import leap.web.App;
@@ -27,6 +28,7 @@ import leap.web.Request;
 import leap.web.action.Argument.Location;
 import leap.web.route.RouteBase;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.Part;
 import java.io.InputStream;
 import java.util.List;
@@ -35,24 +37,37 @@ import java.util.function.BiFunction;
 
 public abstract class AbstractArgumentResolver implements ArgumentResolver {
 
-    protected static final BiFunction<ActionContext, Argument, Object> query    = (c,a) -> c.getRequest().getQueryParameters().get(a.getName());
-    protected static final BiFunction<ActionContext, Argument, Object> request  = (c,a) -> c.getRequest().getParameters().get(a.getName());
-    protected static final BiFunction<ActionContext, Argument, Object> part     = (c,a) -> c.getRequest().getPart(a.getName());
-    protected static final BiFunction<ActionContext, Argument, Object> _default = (c,a) -> {
-        String             name    = a.getName();
-        Request            request = c.getRequest();
-        Map<String,Object> params  = request.getParameters();
+    protected static final BiFunction<ActionContext, Argument, Object> query =
+            (c,a) -> c.getRequest().getQueryParameters().get(a.getName());
 
-        if(params.containsKey(name)) {
-            return params.get(name);
-        }
+    protected static final BiFunction<ActionContext, Argument, Object> request =
+            (c,a) -> c.getRequest().getParameters().get(a.getName());
 
-        if(request.isMultipart()) {
-            return request.getPart(name);
-        }
+    protected static final BiFunction<ActionContext, Argument, Object> part =
+            (c,a) -> c.getRequest().getPart(a.getName());
 
-        return null;
-    };
+    protected static final BiFunction<ActionContext, Argument, Object> header =
+            (c,a) -> c.getRequest().getHeader(a.getName());
+
+    protected static final BiFunction<ActionContext, Argument, Object> cookie =
+            (c,a) -> convertFromCookie(c.getRequest().getCookie(a.getName()),a);
+
+    protected static final BiFunction<ActionContext, Argument, Object> _default =
+            (c,a) -> {
+                String             name    = a.getName();
+                Request            request = c.getRequest();
+                Map<String,Object> params  = request.getParameters();
+
+                if(params.containsKey(name)) {
+                    return params.get(name);
+                }
+
+                if(request.isMultipart()) {
+                    return request.getPart(name);
+                }
+
+                return null;
+            };
 
 	protected final BiFunction<ActionContext, Argument, Object> func;
 
@@ -69,6 +84,14 @@ public abstract class AbstractArgumentResolver implements ArgumentResolver {
 
         if(Location.QUERY_PARAM == loc) {
             return query;
+        }
+
+        if(Location.HEADER_PARAM == loc) {
+            return header;
+        }
+
+        if(Location.COOKIE_PARAM == loc) {
+            return cookie;
         }
 
         if(Location.PATH_PARAM == loc) {
@@ -120,7 +143,7 @@ public abstract class AbstractArgumentResolver implements ArgumentResolver {
         return null;
     }
 
-	protected Object convertFromPart(Part part,Argument arg) throws Throwable {
+	protected static Object convertFromPart(Part part,Argument arg) throws Throwable {
 		if(part.getSize() == 0) {
 			return null;
 		}
@@ -141,4 +164,28 @@ public abstract class AbstractArgumentResolver implements ArgumentResolver {
 			return Converts.convert(IO.readString(in, Charsets.UTF_8), arg.getType(), arg.getGenericType());
 		}
 	}
+
+    protected static Object convertFromCookie(Cookie cookie, Argument arg) {
+        if(null == cookie) {
+            return null;
+        }
+
+        if(Cookie.class.isAssignableFrom(arg.getType())) {
+            return cookie;
+        }
+
+        if(leap.lang.http.Cookie.class.isAssignableFrom(arg.getType())) {
+            SimpleCookie c = new SimpleCookie();
+            c.setName(cookie.getName());
+            c.setValue(cookie.getValue());
+            c.setDomain(cookie.getDomain());
+            c.setPath(cookie.getPath());
+            c.setHttpOnly(cookie.isHttpOnly());
+            c.setMaxAge(cookie.getMaxAge());
+            c.setSecure(cookie.getSecure());
+            return c;
+        }
+
+        return Converts.convert(cookie.getValue(), arg.getType(), arg.getGenericType());
+    }
 }

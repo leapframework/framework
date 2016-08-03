@@ -13,26 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.web.annotation;
 
-package app.controllers.petstore;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import app.models.petstore.Pet;
-import leap.web.annotation.RestController;
-import leap.web.annotation.http.DELETE;
-import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
-
-public class PetsController extends ApiController{
-
-    @POST
-    public ApiResponse addPet(Pet pet) {
-        return ApiResponse.OK;
-    }
-
-    @DELETE("/{petId}")
-    public ApiResponse deletePet(String apiKey, Long petId) {
-        return ApiResponse.OK;
-    }
-
+@Target({ElementType.PARAMETER,ElementType.FIELD,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface HeaderParam {
+	
+	/**
+	 * The name of request header.
+	 */
+	String value() default  "";
+	
 }

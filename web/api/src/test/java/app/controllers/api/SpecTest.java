@@ -30,7 +30,7 @@ public class SpecTest extends WebTestBaseContextual {
     public void testRestStringResponse() {
         ApiMetadata m = apis.metadatas().get("api");
 
-        MApiPath path = m.getPaths().get("/rest_test");
+        MApiPath path = m.getPaths().get("/rest_test/set_string");
         assertNotNull(path);
 
     }

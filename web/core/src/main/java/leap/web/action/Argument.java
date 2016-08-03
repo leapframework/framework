@@ -35,6 +35,10 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		REQUEST_PARAM,
 		
 		QUERY_PARAM,
+
+        HEADER_PARAM,
+
+        COOKIE_PARAM,
 		
 		PART_PARAM,
 		

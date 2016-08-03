@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import leap.core.security.UserPrincipal;
@@ -264,4 +265,9 @@ public abstract class Request extends RequestBase {
 	 * Sets current {@link UserPrincipal}.
 	 */
 	public abstract void setUser(UserPrincipal user);
+
+    @Override
+    public Cookie getCookie(String name) {
+        return null;
+    }
 }
