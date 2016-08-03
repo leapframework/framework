@@ -167,32 +167,37 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return validators;
 	}
 
-	public ArgumentBuilder autoConfigure() {
-		RequestParam rp = Classes.getAnnotation(annotations, RequestParam.class, true);
-		if(null != rp){
-			this.location = Location.REQUEST_PARAM;
-			if(!Strings.isEmpty(rp.value())){
-				this.name = rp.value();
-			}
-			return this;
-		}
-		
+	private void autoConfigure() {
+        autoConfigureLocation();
+        autoConfigureValidation();
+	}
+
+    private void autoConfigureLocation() {
+        RequestParam rp = Classes.getAnnotation(annotations, RequestParam.class, true);
+        if(null != rp){
+            this.location = Location.REQUEST_PARAM;
+            if(!Strings.isEmpty(rp.value())){
+                this.name = rp.value();
+            }
+            return;
+        }
+
         PathParam pp = Classes.getAnnotation(annotations, PathParam.class, true);
         if (null != pp) {
             this.location = Location.PATH_PARAM;
             if (!Strings.isEmpty(pp.value())) {
                 this.name = pp.value();
             }
-            return this;
+            return;
         }
-        
+
         QueryParam qp = Classes.getAnnotation(annotations, QueryParam.class, true);
         if (null != qp) {
             this.location = Location.QUERY_PARAM;
             if (!Strings.isEmpty(qp.value())) {
                 this.name = qp.value();
             }
-            return this;
+            return;
         }
 
         HeaderParam hp = Classes.getAnnotation(annotations, HeaderParam.class, true);
@@ -201,7 +206,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
             if(!Strings.isEmpty(hp.value())) {
                 this.name = hp.value();
             }
-            return this;
+            return;
         }
 
         CookieParam cp = Classes.getAnnotation(annotations, CookieParam.class, true);
@@ -210,41 +215,41 @@ public class ArgumentBuilder implements Buildable<Argument> {
             if(!Strings.isEmpty(cp.value())) {
                 this.name = cp.value();
             }
-            return this;
+            return;
         }
-		
-		RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
-		if(null != rb){
-			this.location = Location.REQUEST_BODY;
-			return this;
-		}
+
+        RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
+        if(null != rb){
+            this.location = Location.REQUEST_BODY;
+            return;
+        }
 
         if(null != type) {
             RequestBean a = type.getAnnotation(RequestBean.class);
             if(null != a && a.requestBody()) {
                 location = Location.REQUEST_BODY;
-                return this;
+                return;
             }
 
             if(Cookie.class.isAssignableFrom(type) || javax.servlet.http.Cookie.class.isAssignableFrom(type)) {
                 location = Location.COOKIE_PARAM;
-                return this;
+                return;
             }
         }
+    }
 
-		Optional o = Classes.getAnnotation(annotations, Optional.class, false);
-		if(null != o) {
-			required = false;
-		}
-		
-		Required r = Classes.getAnnotation(annotations, Required.class, false);
-		if(null != r) {
-			required = true;
-		}
+    private void autoConfigureValidation() {
+        Optional o = Classes.getAnnotation(annotations, Optional.class, false);
+        if(null != o) {
+            required = false;
+        }
 
-		return this;
-	}
-	
+        Required r = Classes.getAnnotation(annotations, Required.class, false);
+        if(null != r) {
+            required = true;
+        }
+    }
+
 	@Override
     public Argument build() {
 		ArgumentValidator[] validators = null == this.validators ? null : this.validators.toArray(new ArgumentValidator[]{});
