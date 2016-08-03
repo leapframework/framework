@@ -25,7 +25,7 @@ public class MApiParameter extends MApiParameterBase implements MNamed {
 	/**
 	 * The location of parameter.
 	 */
-	public static enum Location {
+	public enum Location {
 		QUERY,
 		BODY,
 		FORM,

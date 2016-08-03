@@ -26,6 +26,7 @@ import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 import leap.web.api.controller.ApiController;
 import leap.web.api.controller.ApiResponse;
+import leap.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -58,6 +59,11 @@ public class PetController extends ApiController{
 
     @GET("/findByTags")
     public ApiResponse<List<Pet>> findPetsByTags(@QueryParam @Required List<String> tags) {
+        return ApiResponse.OK;
+    }
+
+    @POST("/{petId}/uploadImage")
+    public ApiResponse uploadFile(Long petId, String additionalMetadata, MultipartFile file) {
         return ApiResponse.OK;
     }
 

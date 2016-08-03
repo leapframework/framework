@@ -93,7 +93,7 @@ final class JerseyPathTemplate extends JerseyUriTemplate implements PathTemplate
 		if(!hasVariables()){
 			return getTemplate();
 		}else{
-			StringBuilder path = new StringBuilder();
+			StringBuilder path = new StringBuilder("/");
 
 			String[] parts = Strings.split(getTemplate(),"/");
 			

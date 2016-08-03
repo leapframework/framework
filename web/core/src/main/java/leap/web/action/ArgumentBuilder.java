@@ -29,7 +29,9 @@ import leap.lang.http.Cookie;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument.Location;
 import leap.web.annotation.*;
+import leap.web.multipart.MultipartFile;
 
+import javax.servlet.http.Part;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -231,8 +233,18 @@ public class ArgumentBuilder implements Buildable<Argument> {
                 return;
             }
 
-            if(Cookie.class.isAssignableFrom(type) || javax.servlet.http.Cookie.class.isAssignableFrom(type)) {
+            if(Cookie.class.equals(type) || javax.servlet.http.Cookie.class.equals(type)) {
                 location = Location.COOKIE_PARAM;
+                return;
+            }
+
+            if(Classes.isAnnotatioinPresent(annotations, Multipart.class)) {
+                location = Location.PART_PARAM;
+                return;
+            }
+
+            if(Part.class.equals(type) || MultipartFile.class.equals(type)) {
+                location = Location.PART_PARAM;
                 return;
             }
         }
