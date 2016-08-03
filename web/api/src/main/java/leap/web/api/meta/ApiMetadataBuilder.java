@@ -27,7 +27,6 @@ import leap.web.api.meta.model.*;
 public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	
     protected String            basePath;
-    protected String            description;
     protected String            termsOfService;
     protected MApiConcatBuilder concat;
     protected String            version;

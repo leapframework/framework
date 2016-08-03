@@ -21,24 +21,6 @@
         <protocols>
             http
         </protocols>
-
-        <paths>
-            
-            <path uri-template="/pet">
-
-                <post>
-                    <params>
-
-                    </params>
-
-                    <responses>
-
-                    </responses>
-                </post>
-
-            </path>
-            
-        </paths>
     </api>
 
 </apis>

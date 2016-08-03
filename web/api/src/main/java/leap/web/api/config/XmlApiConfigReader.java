@@ -33,6 +33,14 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String API_ELEMENT       = "api";
     protected static final String CONFIG_ELEMENT    = "config";
     protected static final String OAUTH_ELEMENT     = "oauth";
+    protected static final String VERSION_ELEMENT   = "version";
+    protected static final String TITLE_ELEMENT     = "title";
+    protected static final String SUMMARY_ELEMENT   = "summary";
+    protected static final String DESC_ELEMENT      = "desc";
+    protected static final String PRODUCES_ELEMENT  = "produces";
+    protected static final String CONSUMES_ELEMENT  = "consumes";
+    protected static final String PROTOCOLS_ELEMENT = "protocols";
+
 
     protected static final String ENABLED_ATTR   = "enabled";
     protected static final String AUTHZ_URL_ATTR = "authz-url";
@@ -140,7 +148,61 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected void readApi(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
         while(reader.nextWhileNotEnd(API_ELEMENT)) {
 
+            if(reader.isStartElement(VERSION_ELEMENT)) {
+                String v = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(v)) {
+                    api.setVersion(v);
+                }
+                continue;
+            }
 
+            if(reader.isStartElement(TITLE_ELEMENT)) {
+                String title = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(title)) {
+                    api.setTitle(title);
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(SUMMARY_ELEMENT)) {
+                String summary = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(summary)) {
+                    api.setSummary(summary);
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(DESC_ELEMENT)) {
+                String desc = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(desc)) {
+                    api.setDescription(desc);
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(PRODUCES_ELEMENT)) {
+                String s = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(s)) {
+                    api.setProduces(Strings.splitMultiLines(s));
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(CONSUMES_ELEMENT)) {
+                String s = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(s)) {
+                    api.setConsumes(Strings.splitMultiLines(s));
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(PROTOCOLS_ELEMENT)) {
+                String s = reader.getElementTextAndEnd();
+                if(!Strings.isEmpty(s)) {
+                    api.setProtocols(Strings.splitMultiLines(s));
+                }
+                continue;
+            }
         }
     }
 

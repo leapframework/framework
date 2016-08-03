@@ -79,7 +79,6 @@
                 <xsd:element name="protocols" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="cors" type="cors" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="oauth" type="oauth" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="paths" type="paths" minOccurs="0" maxOccurs="1"/>
             </xsd:sequence>
             <xsd:attribute name="name"      type="xsd:string" use="required"/>
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
