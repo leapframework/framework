@@ -27,13 +27,11 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/orm/config";
 	
-	public static final String CONF_PROP_PREFIX 			 = "orm.";
-	public static final String CONF_PROP_DEFAULT_MAX_RESULTS = CONF_PROP_PREFIX + "default-max-results"; 
-	
 	private static final String CONFIG_ELEMENT       		  = "config";
 	private static final String MODELS_ELEMENT				  = "models";
 	private static final String PACKAGE_ELEMENT			      = "package";
 	private static final String CLASS_ELEMENT			      = "class";
+    private static final String AUTO_GENERATE_COLUMNS         = "auto-generate-columns";
 	private static final String DEFAULT_MAX_RESULTS_ATTRIBUTE = "default-max-results";
 	private static final String NAME_ATTRIBUTE       		  = "name";
 	private static final String DATASOURCE_ATTRIBUTE          = "datasource";
@@ -63,11 +61,18 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			properties = new OrmConfigProperties();
 			context.setExtension(properties);
 		}
+
+        Boolean autoGenerateColumns = reader.resolveBooleanAttribute(AUTO_GENERATE_COLUMNS);
+        if(null != autoGenerateColumns) {
+            properties.setAutoGenerateColumns(autoGenerateColumns);
+        }
 		
 		Long defaultMaxResults = reader.resolveAttribute(DEFAULT_MAX_RESULTS_ATTRIBUTE, Long.class);
 		if(null != defaultMaxResults){
 			properties.setDefaultMaxResult(defaultMaxResults);
 		}
+
+        reader.nextToEndElement(CONFIG_ELEMENT);
 	}
 	
 	protected void processModels(AppConfigContext context, XmlReader reader) throws AppConfigException {

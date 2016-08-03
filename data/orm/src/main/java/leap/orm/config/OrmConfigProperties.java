@@ -16,10 +16,19 @@
 package leap.orm.config;
 
 public class OrmConfigProperties {
-	
-	private Long defaultMaxResult;
 
-	public Long getDefaultMaxResult() {
+    private Boolean autoGenerateColumns;
+	private Long    defaultMaxResult;
+
+    public Boolean getAutoGenerateColumns() {
+        return autoGenerateColumns;
+    }
+
+    public void setAutoGenerateColumns(Boolean autoGenerateColumns) {
+        this.autoGenerateColumns = autoGenerateColumns;
+    }
+
+    public Long getDefaultMaxResult() {
 		return defaultMaxResult;
 	}
 

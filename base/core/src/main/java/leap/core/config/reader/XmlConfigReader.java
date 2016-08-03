@@ -41,6 +41,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 
+import javax.xml.namespace.QName;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.List;
@@ -114,7 +115,9 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
             return;
         }
 
-        while(reader.nextWhileNotEnd(CONFIG_ELEMENT)){
+        QName configElementName = reader.getElementName();
+
+        while(reader.nextWhileNotEnd(configElementName)){
 
             //extension element
             if(reader.isStartElement() && !isDefaultNamespaceUri(reader)){
