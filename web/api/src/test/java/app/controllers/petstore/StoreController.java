@@ -16,7 +16,10 @@
 
 package app.controllers.petstore;
 
+import app.models.petstore.Order;
+import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
+import leap.web.annotation.http.POST;
 import leap.web.api.controller.ApiController;
 import leap.web.api.controller.ApiResponse;
 
@@ -24,8 +27,23 @@ import java.util.Map;
 
 public class StoreController extends ApiController {
 
-    @GET("/store/inventory")
+    @GET("/inventory")
     public ApiResponse<Map<String,Integer>> getInventory() {
+        return ApiResponse.OK;
+    }
+
+    @POST("/order")
+    public ApiResponse<Order> placeOrder(Order order) {
+        return ApiResponse.OK;
+    }
+
+    @GET("/order/{orderId}")
+    public ApiResponse<Order> getOrderById(Long orderId) {
+        return ApiResponse.OK;
+    }
+
+    @DELETE("/order/{orderId}")
+    public ApiResponse deleteOrder(Long orderId) {
         return ApiResponse.OK;
     }
 

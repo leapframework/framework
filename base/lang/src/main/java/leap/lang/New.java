@@ -184,13 +184,6 @@ public class New {
     }
     
     /**
-     * Create a new {@link HashMap} and wrapped by {@link Collections#unmodifiableMap(java.util.Map)}.
-     */
-    public static <K,V> Map<K,V> unmodifiableHashMap(Map<K, V> m){
-    	return Collections.unmodifiableMap(new HashMap<K, V>(m));
-    }
-    
-    /**
      * Create a new {@link HashMap}
      */
     public static <K,V> HashMap<K,V> hashMap(K k1,V v1){
@@ -218,13 +211,6 @@ public class New {
      */
     public static <K,V> LinkedHashMap<K,V> linkedHashMap(){
     	return new LinkedHashMap<K, V>();
-    }
-    
-    /**
-     * Create a new {@link LinkedHashMap} and wrapped by {@link Collections#unmodifiableMap(java.util.Map)}.
-     */
-    public static <K,V> Map<K,V> unmodifiableLinkedHashMap(Map<K, V> m){
-    	return Collections.unmodifiableMap(new LinkedHashMap<K, V>(m));
     }
     
     /**
