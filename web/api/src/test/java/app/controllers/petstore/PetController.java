@@ -18,6 +18,7 @@ package app.controllers.petstore;
 
 import app.models.petstore.Pet;
 import leap.core.validation.annotations.Required;
+import leap.orm.annotation.domain.Summary;
 import leap.web.annotation.HeaderParam;
 import leap.web.annotation.QueryParam;
 import leap.web.annotation.RestController;

@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta;
 
+import java.util.Collections;
 import java.util.Map;
 
 import leap.lang.New;
@@ -53,8 +54,8 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		this.protocols = protocols;
 		this.consumes = consumes;
 		this.produces = produces;
-		this.paths    = New.unmodifiableHashMap(paths);
-		this.models   = New.unmodifiableHashMap(models);
+		this.paths    = Collections.unmodifiableMap(paths);
+		this.models   = Collections.unmodifiableMap(models);
 		this.securityDefs = securityDefs;
 	}
 	

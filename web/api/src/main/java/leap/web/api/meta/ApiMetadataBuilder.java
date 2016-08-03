@@ -17,11 +17,7 @@ package leap.web.api.meta;
 
 import java.util.*;
 
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Builders;
-import leap.lang.Collections2;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
 import leap.web.api.meta.model.*;
 
@@ -39,8 +35,8 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected Set<String>                   protocols    = new LinkedHashSet<>();
     protected Set<String>                   consumes     = new LinkedHashSet<>();
     protected Set<String>                   produces     = new LinkedHashSet<>();
-    protected Map<String, MApiPathBuilder>  paths        = new LinkedHashMap<>();
-    protected Map<String, MApiModelBuilder> models       = new LinkedHashMap<>();
+    protected Map<String, MApiPathBuilder>  paths        = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, MApiModelBuilder> models       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     protected List<MApiSecurityDef>         securityDefs = new ArrayList<>();
 	
 	public ApiMetadataBuilder() {
