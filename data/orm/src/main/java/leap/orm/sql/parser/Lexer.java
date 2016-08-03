@@ -102,7 +102,7 @@ public class Lexer {
 		this.sql      = sql;
 		this.chars    = new StringBuilder(this.sql);
 		this.level    = null == level ? ParseLevel.BASE : level;
-		this.scanMore = this.level == ParseLevel.MORE;
+		this.scanMore = true;
 		nextChar();
 	}
 	

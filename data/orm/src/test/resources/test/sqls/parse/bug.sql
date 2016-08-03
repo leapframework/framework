@@ -1,1 +1,0 @@
-select (:price * num) from owners

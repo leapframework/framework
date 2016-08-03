@@ -142,4 +142,8 @@ public class NamedQueryTest extends OrmTestCase {
         assertMapEquals(olderFields, newerFields);
 	}
 
+    @Test
+    public void testBug() {
+        Owner.query("testBug").list();
+    }
 }
