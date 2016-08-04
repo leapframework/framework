@@ -19,19 +19,24 @@ import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.path.AntPathPattern;
 import leap.lang.path.PathPattern;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
-	protected PathPattern 		 pattern;
-	protected boolean            allowAnonymous  = false;
-	protected boolean            allowClientOnly = false;
-	protected boolean            allowRememberMe = true;
-    protected boolean            allowCors       = false;
-	protected List<String>		 permissions	 = new ArrayList<>();
-    protected List<String>       roles           = new ArrayList<>();
+    protected Route       route;
+    protected PathPattern pattern;
+
+    protected boolean                allowAnonymous  = false;
+    protected boolean                allowClientOnly = false;
+    protected boolean                allowRememberMe = true;
+    protected boolean                allowCors       = false;
+    protected SecurityFailureHandler failureHandler  = null;
+    protected List<String>           permissions     = new ArrayList<>();
+    protected List<String>           roles           = new ArrayList<>();
 
 	public DefaultSecuredPathBuilder() {
 	    super();
@@ -45,15 +50,27 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
         this.pattern = pattern;
     }
 
+    public DefaultSecuredPathBuilder(Route route) {
+        this.route = route;
+        this.pattern = route.getPathTemplate();
+    }
+
 	public DefaultSecuredPathBuilder(SecuredPath path) {
+        this.route           = path.getRoute();
 		this.pattern         = path.getPattern();
 		this.allowAnonymous  = path.isAllowAnonymous();
 		this.allowClientOnly = path.isAllowClientOnly();
 		this.allowRememberMe = path.isAllowRememberMe();
+        this.allowCors       = path.isAllowCors();
+        this.failureHandler  = path.getFailureHandler();
 
 		Collections2.addAll(permissions, path.getPermissions());
 		Collections2.addAll(roles, path.getRoles());
 	}
+
+    public Route getRoute() {
+        return route;
+    }
 
 	public PathPattern getPattern() {
 		return pattern;
@@ -112,6 +129,15 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
         return allowCors;
     }
 
+    public SecurityFailureHandler getFailureHandler() {
+        return failureHandler;
+    }
+
+    public SecuredPathBuilder setFailureHandler(SecurityFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
+        return this;
+    }
+
     @Override
     public SecuredPathBuilder setPermissionsAllowed(String... permissions) {
         this.permissions.clear();
@@ -140,11 +166,13 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
     @Override
     public SecuredPath build() {
-        return new DefaultSecuredPath(pattern,
+        return new DefaultSecuredPath(route,
+                                      pattern,
                                       allowAnonymous,
                                       allowClientOnly,
                                       allowRememberMe,
                                       allowCors,
+                                      failureHandler,
                                       permissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                       roles.toArray(Arrays2.EMPTY_STRING_ARRAY));
     }

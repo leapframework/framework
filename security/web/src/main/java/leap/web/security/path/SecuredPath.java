@@ -19,6 +19,8 @@ import leap.core.web.RequestBase;
 import leap.core.web.RequestMatcher;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 
@@ -44,6 +46,11 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
 
         return -1;
     };
+
+    /**
+     * Optional. Returns the route.
+     */
+    Route getRoute();
 
     /**
      * Required. Returns the pattern of path.
@@ -79,6 +86,11 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
      * Optional. Returns the roles allowed to access the path.
      */
     String[] getRoles();
+
+    /**
+     * Optional. Returns the {@link SecurityFailureHandler}.
+     */
+    SecurityFailureHandler getFailureHandler();
 
     /**
      * Returns true if the path pattern matches the request.

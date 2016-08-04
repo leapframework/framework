@@ -14,23 +14,29 @@
  * limitations under the License.
  */
 
-package leap.web.api.controller;
+package leap.web.api.mvc;
 
+import leap.core.annotation.Inject;
 import leap.lang.NamedError;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.web.Response;
 import leap.web.Result;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionExecution;
 import leap.web.exception.ResponseException;
 
-public class DefaultApiFailureHandler extends AbstractApiFailureHandler {
+public class DefaultApiFailureHandler implements ApiFailureHandler {
+
+    protected @Inject ApiErrorHandler errorHandler;
 
     @Override
     public boolean handleFailure(ActionContext context, ActionExecution execution, Result result) {
+        Response response = context.getResponse();
+
         if(execution.isValidationError()) {
             NamedError error = execution.getValidation().errors().first();
-            badRequest(result, "Validation failed -> " + error.getName() + " : " + error.getMessage());
+            errorHandler.badRequest(response, "Validation failed -> " + error.getName() + " : " + error.getMessage());
             return true;
         }
 
@@ -38,25 +44,26 @@ public class DefaultApiFailureHandler extends AbstractApiFailureHandler {
             Throwable e = execution.getException();
 
             if(e instanceof ResponseException) {
-                errResponse(result, ((ResponseException) e).getStatus(), e.getMessage());
+                errorHandler.responseError(response
+                        , ((ResponseException) e).getStatus(), e.getMessage());
                 return true;
             }
 
             if(e instanceof ObjectExistsException) {
-                badRequest(result, e.getMessage());
+                errorHandler.badRequest(response, e.getMessage());
                 return true;
             }
 
             if(e instanceof ObjectNotFoundException) {
-                notFound(result, e.getMessage());
+                errorHandler.notFound(response, e.getMessage());
                 return true;
             }
 
-            internalServerError(result, e.getMessage());
+            errorHandler.internalServerError(response, e.getMessage());
             return true;
         }
 
-        internalServerError(result, "Execution failed.");
+        errorHandler.internalServerError(response, "Execution failed.");
         return true;
     }
 

@@ -21,7 +21,11 @@
 
     <!-- built-in oauth2 processor : only the oauth2 module exists -->
     <beans if-class-present="leap.oauth2.OAuth2Constants">
-        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuth2Processor"/>
+        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuthConfigProcessor"/>
+    </beans>
+
+    <beans if-class-present="leap.web.security.SecurityConfig">
+        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>
 
     <!-- built-in swagger processor -->
@@ -29,6 +33,11 @@
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
 
-    <bean type="leap.web.api.controller.ApiFailureHandler"
-          class="leap.web.api.controller.DefaultApiFailureHandler" primary="true"/>
+
+    <bean type="leap.web.api.mvc.ApiFailureHandler"
+          class="leap.web.api.mvc.DefaultApiFailureHandler" primary="true"/>
+
+    <bean type="leap.web.api.mvc.ApiErrorHandler"
+          class="leap.web.api.mvc.DefaultApiErrorHandler" primary="true"/>
+
 </beans>

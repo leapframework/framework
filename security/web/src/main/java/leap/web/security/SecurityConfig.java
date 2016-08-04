@@ -22,6 +22,8 @@ import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
 
+import java.util.Map;
+
 /**
  * The configuration of security module.
  */
@@ -192,6 +194,11 @@ public interface SecurityConfig {
 	 * Optional.
 	 */
 	RequestIgnore[] getIgnores();
+
+    /**
+     * Returns the failure handler map for path prefixes.
+     */
+    Map<String, SecurityFailureHandler> getPathPrefixFailureHandlers();
 
 	/**
 	 * Returns the {@link SecuredPaths}.

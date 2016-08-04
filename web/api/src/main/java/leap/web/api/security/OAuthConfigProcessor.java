@@ -25,7 +25,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 
-public class OAuth2Processor implements ApiConfigProcessor {
+public class OAuthConfigProcessor implements ApiConfigProcessor {
     
     protected @Inject App                     app;
     protected @Inject OAuth2AuthzServerConfig asc;

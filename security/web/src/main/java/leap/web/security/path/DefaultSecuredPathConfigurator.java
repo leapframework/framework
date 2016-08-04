@@ -16,11 +16,19 @@
 package leap.web.security.path;
 
 import leap.lang.path.PathPattern;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 
 public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
 
     protected final DefaultSecuredPaths paths;
     protected final SecuredPathBuilder  path;
+
+    public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, Route route) {
+        this.paths = paths;
+        this.path  = new DefaultSecuredPathBuilder(route);
+    }
+
 
     public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, PathPattern pp) {
         this.paths = paths;
@@ -58,6 +66,12 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     @Override
     public SecuredPathConfigurator setAllowClientOnly(boolean allow) {
         path.setAllowClientOnly(allow);
+        return this;
+    }
+
+    @Override
+    public SecuredPathConfigurator setFailureHandler(SecurityFailureHandler handler) {
+        path.setFailureHandler(handler);
         return this;
     }
 

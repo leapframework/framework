@@ -18,6 +18,7 @@ package leap.web.security;
 
 import leap.core.ioc.BeanList;
 import leap.core.security.crypto.PasswordEncoder;
+import leap.web.route.Route;
 import leap.web.security.csrf.CsrfStore;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.user.UserStore;
@@ -159,6 +160,11 @@ public interface SecurityConfigurator {
 	 * Sets the login url.
 	 */
 	SecurityConfigurator setLoginUrl(String url);
+
+    /**
+     * Sets the {@link SecurityFailureHandler} for the path prefix.
+     */
+    SecurityConfigurator setPathPrefixFailureHandler(String pathPrefix, SecurityFailureHandler failureHandler);
 	
 	/**
 	 * Do not intercept the given path.

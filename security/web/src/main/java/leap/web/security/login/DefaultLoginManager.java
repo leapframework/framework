@@ -27,6 +27,7 @@ import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
+import leap.web.security.path.SecuredPath;
 import leap.web.security.permission.PermissionManager;
 
 public class DefaultLoginManager implements LoginManager {

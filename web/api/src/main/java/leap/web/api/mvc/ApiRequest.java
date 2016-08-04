@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package leap.web.api.controller;
+package leap.web.api.mvc;
 
 import leap.web.annotation.RequestBean;
 
