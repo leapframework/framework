@@ -36,6 +36,8 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setAllowRememberMe(boolean allow);
 
+    SecuredPathBuilder setAllowCors(boolean allow);
+
     SecuredPathBuilder setPermissionsAllowed(String... permissions);
 
     SecuredPathBuilder setRolesAllowed(String... roles);
@@ -49,6 +51,8 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
     boolean isAllowAnonymous();
 
     boolean isAllowRememberMe();
+
+    boolean isAllowCors();
 
     boolean isAllowClientOnly();
 

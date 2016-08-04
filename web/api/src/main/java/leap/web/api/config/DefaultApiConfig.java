@@ -110,7 +110,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
 	
 	public boolean isCorsDisabled() {
-		return corsEnabled;
+		return !corsEnabled;
 	}
 	
 	@Override

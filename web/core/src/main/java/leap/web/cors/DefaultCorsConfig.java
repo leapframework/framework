@@ -29,8 +29,10 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 	public static final String CONF_EXPOSED_HEADERS      = "exposed-headers";
 	public static final String CONF_SUPPORTS_CREDENTIALS = "supports-credentials";
 	public static final String CONF_PREFLIGHT_MAXAGE	 = "preflight-maxage";
+
+    public static final String[]  ANY = new String[]{"*"};
 	
-    public static final String[]  DEFAULT_ALLOWED_ORIGINS      = new String[]{"*"};
+    public static final String[]  DEFAULT_ALLOWED_ORIGINS      = ANY;
     public static final String[]  DEFAULT_ALLOWED_METHODS      = new String[]{"GET","POST","HEAD","OPTIONS"};
     public static final int       DEFAULT_PREFLIGHT_MAXAGE     = 3600; // seconds
     public static final boolean   DEFAULT_SUPPORTS_CREDENTIALS = true;
@@ -55,8 +57,8 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 	
 	public DefaultCorsConfig() {
 		this(DEFAULT_ALLOWED_ORIGINS,
-			 DEFAULT_ALLOWED_METHODS,
-			 DEFAULT_ALLOWED_HEADERS,
+             ANY,
+             ANY,
 			 DEFAULT_EXPOSED_HEADERS,
 			 DEFAULT_SUPPORTS_CREDENTIALS,
 			 DEFAULT_PREFLIGHT_MAXAGE);	

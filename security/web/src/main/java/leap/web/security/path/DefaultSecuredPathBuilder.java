@@ -29,6 +29,7 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 	protected boolean            allowAnonymous  = false;
 	protected boolean            allowClientOnly = false;
 	protected boolean            allowRememberMe = true;
+    protected boolean            allowCors       = false;
 	protected List<String>		 permissions	 = new ArrayList<>();
     protected List<String>       roles           = new ArrayList<>();
 
@@ -101,6 +102,17 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 	}
 
     @Override
+    public SecuredPathBuilder setAllowCors(boolean allow) {
+        this.allowCors = allow;
+        return this;
+    }
+
+    @Override
+    public boolean isAllowCors() {
+        return allowCors;
+    }
+
+    @Override
     public SecuredPathBuilder setPermissionsAllowed(String... permissions) {
         this.permissions.clear();
         Collections2.addAll(this.permissions, permissions);
@@ -132,6 +144,7 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
                                       allowAnonymous,
                                       allowClientOnly,
                                       allowRememberMe,
+                                      allowCors,
                                       permissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                       roles.toArray(Arrays2.EMPTY_STRING_ARRAY));
     }

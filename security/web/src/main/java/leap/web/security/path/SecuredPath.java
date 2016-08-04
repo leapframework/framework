@@ -66,6 +66,11 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
     boolean isAllowRememberMe();
 
     /**
+     * Returns true if allows cors request.
+     */
+    boolean isAllowCors();
+
+    /**
      * Optional. Returns the permissions allowed to access the path.
      */
     String[] getPermissions();

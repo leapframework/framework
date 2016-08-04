@@ -28,6 +28,8 @@ import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
+import leap.web.config.WebConfig;
+import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
 import leap.web.security.annotation.*;
 import leap.web.security.csrf.CsrfHandler;
@@ -40,13 +42,15 @@ import leap.web.security.permission.PermissionManager;
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
-	
+
     protected @Inject @M SecurityConfig       config;
     protected @Inject @M SecurityConfigurator configurator;
+    protected @Inject @M WebConfig            webConfig;
     protected @Inject @M PermissionManager    permissionManager;
     protected @Inject @M SecuredPathSource    pathSource;
     protected @Inject @M SecurityHandler      handler;
     protected @Inject @M CsrfHandler          csrf;
+    protected @Inject @M CorsHandler          cors;
 
 	@Override
     public void postAppStart(App app) throws Throwable {
@@ -78,6 +82,10 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 				paths.of(route).setAllowRememberMe(ar.value()).apply();
 			}
 
+            if(route.isCorsEnabled() || (!route.isCorsDisabled() && webConfig.isCorsEnabled())) {
+                paths.of(route).setAllowCors(true).apply();
+            }
+
             Permissions permissions = action.searchAnnotation(Permissions.class);
             if(null != permissions) {
                 paths.of(route).setPermissionsAllowed(permissions.value()).apply();
@@ -87,7 +95,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        if(null != secured){
 	            boolean isAction = action.getAnnotation(Secured.class) != null;
 
-                SecuredPathConfigurator p = null;
+                SecuredPathConfigurator p;
 	            
 	            if(isAction){
 	                 p = paths.of(route);
@@ -159,7 +167,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		}
 
         //Resolve security path.
-        context.setSecurityPath(resolveSecurityPath(request, response, context));
+        SecuredPath sp = resolveSecurityPath(request, response, context);
+        context.setSecurityPath(sp);
+
+        //Handles cors request.
+        if(sp.isAllowCors()) {
+            state = cors.handle(request, response);
+            if(State.isIntercepted(state)) {
+                return state;
+            }
+        }
 
         //Check authentication
 		state = checkAuthentication(request, response, context);

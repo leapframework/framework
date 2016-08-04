@@ -15,6 +15,7 @@
  */
 package leap.web.cors;
 
+import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
@@ -25,8 +26,10 @@ import leap.web.Response;
  * @see <a href="http://www.w3.org/TR/cors/">CORS specification</a>
  */
 public class DefaultCorsHandler implements CorsHandler {
+
+    protected @Inject CorsConfig conf;
 	
-	public State handle(Request request, Response response, CorsConfig conf) throws Throwable {
+	public State handle(Request request, Response response) throws Throwable {
 		if(!request.hasHeader(REQUEST_HEADER_ORIGIN)) {
 			return State.CONTINUE;
 		}
