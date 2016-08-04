@@ -22,6 +22,7 @@ import java.util.Map.Entry;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
 import leap.web.api.meta.ApiMetadata;
@@ -36,6 +37,7 @@ import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiSecurityDef;
 import leap.web.api.meta.model.MOAuth2ApiSecurityDef;
 import leap.web.api.meta.model.MOAuth2Scope;
+import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
@@ -49,7 +51,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
 
 	@Override
-	protected void write(ApiMetadata m, JsonWriter w) {
+	protected void write(ApiSpecContext sc, ApiMetadata m, JsonWriter w) {
 		Args.notNull(m, "metadata");
 		Args.notNull(w, "writer");
 		
@@ -69,7 +71,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			 .endObject();
 		});
 		
-		w.propertyOptional(HOST, m.getHost())
+		w.propertyOptional(HOST, getHost(sc, m))
 		 .propertyOptional(BASE_PATH, m.getBasePath())
 		 .propertyOptional(SCHEMES, m.getProtocols())
 		 .propertyOptional(CONSUMES, m.getConsumes())
@@ -86,7 +88,23 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
-	
+
+    protected String getHost(ApiSpecContext sc, ApiMetadata m) {
+        String host = m.getHost();
+        if(!Strings.isEmpty(host)) {
+            return host;
+        }else if(!Strings.isEmpty(sc.getHost())) {
+            int port = sc.getPort();
+            if(port > 0) {
+                return sc.getHost() + ":" + port;
+            }else{
+                return sc.getHost();
+            }
+        }else{
+            return null;
+        }
+    }
+
 	protected void writeDefaultSecurity(WriteContext context, ApiMetadata m, JsonWriter w) {
 	    if(null == context.defaultSecurity){
 	        return;

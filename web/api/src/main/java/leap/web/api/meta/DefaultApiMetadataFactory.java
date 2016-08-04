@@ -138,7 +138,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		for(ApiMetadataProcessor p : processors) {
 			p.preProcess(context, md);
 		}
-		
+
+        processDefault(context, md);
+
 		ApiMetadata m = md.build();
 		
 		for(ApiMetadataProcessor p : processors) {
@@ -147,6 +149,18 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		
 		return m;
 	}
+
+    protected void processDefault(ApiMetadataContext context, ApiMetadataBuilder m) {
+        String defaultMimeType = MimeTypes.APPLICATION_JSON;
+
+        if(m.getConsumes().isEmpty()) {
+            m.addConsume(defaultMimeType);
+        }
+
+        if(m.getProduces().isEmpty()) {
+            m.addProduce(defaultMimeType);
+        }
+    }
 	
 	protected void createPaths(ApiMetadataContext context, ApiMetadataBuilder md) {
 		for(Route route : context.getConfig().getRoutes()) {
