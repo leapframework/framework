@@ -22,6 +22,7 @@ import leap.core.security.Authorization;
 import leap.core.web.RequestIgnore;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
+import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -38,6 +39,8 @@ import leap.web.security.path.SecuredPathConfigurator;
 import leap.web.security.path.SecuredPathSource;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.permission.PermissionManager;
+
+import java.util.Map;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
@@ -115,6 +118,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
                 p.apply();
 	        }
+
+            SecuredPathConfigurator sp = paths.get(route);
+            if(null != sp) {
+                config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
+                    if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
+                        log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
+                        sp.setFailureHandler(handler).apply();
+                    }
+                });
+            }
 	    }
     }
 	
@@ -273,7 +286,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }else{
             log.debug("Authorization already resolved by interceptor -> {}", authz);
         }
-
 
         for(SecurityInterceptor si : interceptors) {
             if(State.isIntercepted(si.postResolveAuthorization(request, response, context))) {

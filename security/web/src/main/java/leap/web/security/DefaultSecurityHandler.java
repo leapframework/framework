@@ -74,6 +74,13 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public void handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        SecuredPath path = context.getSecurityPath();
+        if(null != path && null != path.getFailureHandler()) {
+            if(path.getFailureHandler().handleAuthenticationDenied(request,response, context)) {
+                return;
+            }
+        }
+
         for(SecurityInterceptor si : config.getInterceptors()) {
             if(State.isIntercepted(si.onAuthenticationDenied(request, response, context))) {
                 return;
@@ -85,6 +92,13 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public void handleAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        SecuredPath path = context.getSecurityPath();
+        if(null != path && null != path.getFailureHandler()) {
+            if(path.getFailureHandler().handleAuthorizationDenied(request,response, context)) {
+                return;
+            }
+        }
+
         for(SecurityInterceptor si : config.getInterceptors()) {
             if(State.isIntercepted(si.onAuthorizationDenied(request, response, context))) {
                 return;

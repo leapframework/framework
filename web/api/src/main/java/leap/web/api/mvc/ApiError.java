@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package leap.web.api.controller;
+package leap.web.api.mvc;
 
 import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonStringable;
@@ -46,6 +46,11 @@ public final class ApiError implements JsonStringable, Renderable {
 
     @Override
     public void render(Request request, Response response) throws Throwable {
+        response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
+        toJson(response.getJsonWriter());
+    }
+
+    void response(Response response){
         response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
         toJson(response.getJsonWriter());
     }

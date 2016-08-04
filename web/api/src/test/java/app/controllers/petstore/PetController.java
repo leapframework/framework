@@ -18,15 +18,13 @@ package app.controllers.petstore;
 
 import app.models.petstore.Pet;
 import leap.core.validation.annotations.Required;
-import leap.orm.annotation.domain.Summary;
 import leap.web.annotation.HeaderParam;
 import leap.web.annotation.QueryParam;
-import leap.web.annotation.RestController;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+import leap.web.api.mvc.ApiController;
+import leap.web.api.mvc.ApiResponse;
 import leap.web.multipart.MultipartFile;
 
 import java.util.List;

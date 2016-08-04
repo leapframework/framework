@@ -22,8 +22,8 @@ import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 import leap.web.annotation.http.PUT;
-import leap.web.api.controller.ApiController;
-import leap.web.api.controller.ApiResponse;
+import leap.web.api.mvc.ApiController;
+import leap.web.api.mvc.ApiResponse;
 
 import java.util.List;
 

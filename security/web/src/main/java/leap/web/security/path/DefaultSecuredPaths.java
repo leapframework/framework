@@ -20,6 +20,7 @@ import leap.lang.path.AntPathPattern;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
 import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 
@@ -57,7 +58,32 @@ public class DefaultSecuredPaths implements SecuredPaths {
     @Override
     public SecuredPathConfigurator of(Route route) {
         Args.notNull(route, "route");
-        return configurator(route.getPathTemplate());
+        return configurator(route);
+    }
+
+    @Override
+    public SecuredPathConfigurator get(Route route) {
+        PathEntry pe = paths.get(route.getPathTemplate());
+
+        if(null == pe) {
+            return null;
+        }else{
+            return pe.configurator;
+        }
+    }
+
+    protected SecuredPathConfigurator configurator(Route route) {
+        PathEntry pe = paths.get(route.getPathTemplate());
+
+        if(null == pe) {
+            return new DefaultSecuredPathConfigurator(this, route);
+        }
+
+        if(null == pe.configurator) {
+            pe.configurator = new DefaultSecuredPathConfigurator(this,pe);
+        }
+
+        return pe.configurator;
     }
 
     protected SecuredPathConfigurator configurator(PathPattern pp) {
@@ -111,6 +137,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
+        public Route getRoute() {
+            return path.getRoute();
+        }
+
+        @Override
         public PathPattern getPattern() {
             return path.getPattern();
         }
@@ -133,6 +164,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         @Override
         public boolean isAllowCors() {
             return path.isAllowCors();
+        }
+
+        @Override
+        public SecurityFailureHandler getFailureHandler() {
+            return path.getFailureHandler();
         }
 
         @Override

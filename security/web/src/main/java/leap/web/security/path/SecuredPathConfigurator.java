@@ -15,6 +15,7 @@
  */
 package leap.web.security.path;
 
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.annotation.Secured;
 
 /**
@@ -109,6 +110,11 @@ public interface SecuredPathConfigurator {
      * Default is deny.
      */
     SecuredPathConfigurator setAllowClientOnly(boolean allow);
+
+    /**
+     * Sets the {@link SecurityFailureHandler}.
+     */
+    SecuredPathConfigurator setFailureHandler(SecurityFailureHandler handler);
 
     /**
      * Sets the allowed permissions.

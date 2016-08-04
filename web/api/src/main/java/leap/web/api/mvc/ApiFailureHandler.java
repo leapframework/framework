@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package leap.web.api.controller;
+package leap.web.api.mvc;
 
 import leap.web.action.FailureHandler;
 
 public interface ApiFailureHandler extends FailureHandler {
+
 }

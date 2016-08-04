@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package leap.web.api.controller;
+package leap.web.security;
 
-import leap.web.annotation.Consumes;
-import leap.web.annotation.Produces;
-import leap.web.annotation.RestController;
-import leap.web.security.annotation.AllowClientOnly;
+import leap.web.Request;
+import leap.web.Response;
+import leap.web.security.authz.AuthorizationContext;
+import leap.web.security.login.LoginContext;
 
-@Consumes("json")
-@Produces("json")
-@AllowClientOnly
-@RestController
-public abstract class ApiController {
+public interface SecurityFailureHandler {
+
+    default boolean handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
+        return false;
+    }
+
+    default boolean handleAuthorizationDenied(Request request, Response response, AuthorizationContext context) throws Throwable {
+        return false;
+    }
 
 }

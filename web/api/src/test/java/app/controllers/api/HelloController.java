@@ -16,7 +16,6 @@
 package app.controllers.api;
 
 import leap.web.annotation.Produces;
-import leap.web.api.controller.ApiResponse;
 
 public class HelloController {
 
