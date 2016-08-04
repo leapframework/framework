@@ -35,6 +35,7 @@ public class DefaultSecuredPath implements SecuredPath {
 	protected final boolean     allowAnonymous;
 	protected final boolean     allowClientOnly;
 	protected final boolean     allowRememberMe;
+    protected final boolean     allowCors;
     protected final String[]    permissions;
     protected final String[]    roles;
 
@@ -42,6 +43,7 @@ public class DefaultSecuredPath implements SecuredPath {
                               boolean allowAnonymous,
                               boolean allowClientOnly,
                               boolean allowRememberMe,
+                              boolean allowCors,
                               String[] permissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
@@ -49,6 +51,7 @@ public class DefaultSecuredPath implements SecuredPath {
 	    this.allowAnonymous  = allowAnonymous;
 	    this.allowClientOnly = allowClientOnly;
 	    this.allowRememberMe = allowRememberMe;
+        this.allowCors       = allowCors;
         this.permissions     = permissions;
         this.roles           = roles;
     }
@@ -83,6 +86,11 @@ public class DefaultSecuredPath implements SecuredPath {
     @Override
     public boolean isAllowRememberMe() {
         return allowRememberMe;
+    }
+
+    @Override
+    public boolean isAllowCors() {
+        return allowCors;
     }
 
     /**

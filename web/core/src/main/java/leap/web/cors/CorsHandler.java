@@ -32,6 +32,6 @@ public interface CorsHandler {
     String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS     = "Access-Control-Allow-Methods";  
     String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS     = "Access-Control-Allow-Headers";    
 	
-	State handle(Request request,Response response, CorsConfig conf) throws Throwable;
+	State handle(Request request,Response response) throws Throwable;
 	
 }

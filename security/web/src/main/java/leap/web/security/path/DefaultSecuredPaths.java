@@ -131,6 +131,11 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
+        public boolean isAllowCors() {
+            return path.isAllowCors();
+        }
+
+        @Override
         public String[] getPermissions() {
             return path.getPermissions();
         }

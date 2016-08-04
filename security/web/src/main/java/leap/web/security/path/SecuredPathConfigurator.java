@@ -15,6 +15,8 @@
  */
 package leap.web.security.path;
 
+import leap.web.security.annotation.Secured;
+
 /**
  * The configurator of {@link SecuredPath}.
  */
@@ -91,6 +93,14 @@ public interface SecuredPathConfigurator {
      * Default is allow.
      */
     SecuredPathConfigurator setAllowRememberMe(boolean allow);
+
+    /**
+     * Sets allow or deny cors request.
+     *
+     * <p/>
+     * Default is deny.
+     */
+    SecuredPathConfigurator setAllowCors(boolean allow);
 
     /**
      * Sets allow or deny client-only authentication.

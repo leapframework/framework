@@ -50,6 +50,12 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     }
 
     @Override
+    public SecuredPathConfigurator setAllowCors(boolean allow) {
+        path.setAllowCors(allow);
+        return this;
+    }
+
+    @Override
     public SecuredPathConfigurator setAllowClientOnly(boolean allow) {
         path.setAllowClientOnly(allow);
         return this;

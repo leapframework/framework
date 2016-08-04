@@ -67,7 +67,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M ViewSource              viewSource;
     protected @Inject @M AssetSource             assetSource;
     protected @Inject @M WebConfig               webConfig;
-    protected @Inject @M CorsConfig              corsConfig;
 
 	protected LocaleResolver localeResolver;
 	protected int	  		 maxExecutionCount   = 10;
@@ -474,7 +473,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		//handle cors request.
 		Route route = ac.getRoute();
 		if(route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
-			if(webConfig.getCorsHandler().handle(request, response, corsConfig).isIntercepted()) {
+			if(webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
 				log.debug("Request was intercepted by cors handler");
 				return;
 			}
@@ -485,9 +484,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		//execute action
 		Object returnValue = executeAction(ac, validation);
 		
-		//raw responsed
+		//raw response
 		if(response.isHandled() || response.isCommitted()){
-			log.debug("Resposne was rendered or committed, do not render the result of action");
+			log.debug("Response was rendered or committed, do not render the result of action");
 			return;
 		}
 
