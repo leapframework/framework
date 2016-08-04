@@ -46,6 +46,8 @@ class DefaultRoute implements Sourced, Route {
 	protected Boolean corsEnabled;
 	protected Boolean csrfEnabled;
 	protected Boolean supportsMultipart;
+    protected Boolean allowAnonymous;
+    protected Boolean allowClientOnly;
 	protected boolean acceptValidationError;
 	protected boolean httpsOnly;
 
@@ -56,6 +58,8 @@ class DefaultRoute implements Sourced, Route {
 						Boolean		corsEnabled,
 						Boolean		csrfEnabled,
 						Boolean		supportsMultipart,
+                        Boolean     allowAnonymous,
+                        Boolean     allowClientOnly,
 						Boolean        acceptValidationError,
 						RequestFormat  requestFormat,
 						ResponseFormat responseFormat,
@@ -77,6 +81,8 @@ class DefaultRoute implements Sourced, Route {
 	    this.corsEnabled		 = corsEnabled;
 	    this.csrfEnabled		 = csrfEnabled;
 	    this.supportsMultipart   = supportsMultipart;
+        this.allowAnonymous      = allowAnonymous;
+        this.allowClientOnly     = allowClientOnly;
 	    this.acceptValidationError = null == acceptValidationError ? false : acceptValidationError;
 	    this.requestFormat       = requestFormat;
 	    this.responseFormat	     = responseFormat;
@@ -220,8 +226,24 @@ class DefaultRoute implements Sourced, Route {
     public void setSupportsMultipart(boolean supports) {
 		this.supportsMultipart = supports;
     }
-	
-	@Override
+
+    public boolean isAllowAnonymous() {
+        return null != allowAnonymous && allowAnonymous;
+    }
+
+    public void setAllowAnonymous(Boolean allowAnonymous) {
+        this.allowAnonymous = allowAnonymous;
+    }
+
+    public boolean isAllowClientOnly() {
+        return null != allowClientOnly && allowClientOnly;
+    }
+
+    public void setAllowClientOnly(Boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+    }
+
+    @Override
     public boolean isCsrfEnabled() {
 	    return csrfEnabled == Boolean.TRUE;
     }

@@ -62,6 +62,8 @@ public class DefaultRoutes implements Routes {
 			rb.setCorsEnabled(c.getCorsEnabled());
 			rb.setCsrfEnabled(c.getCsrfEnabled());
 			rb.setHttpsOnly(c.getHttpsOnly());
+            rb.setAllowAnonymous(c.getAllowAnonymous());
+            rb.setAllowClientOnly(c.getAllowClientOnly());
 
 			Route r = rb.build();
 			

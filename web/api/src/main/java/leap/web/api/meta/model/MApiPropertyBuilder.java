@@ -41,7 +41,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
 	@Override
     public MApiProperty build() {
-	    return new MApiProperty(name, title, summary, description, type, format, required,
+	    return new MApiProperty(name, title, summary, description, type, format, password, required,
                                 defaultValue, enumValues,
 	    					   null == validation ? null : validation.build(), attrs);
     }
