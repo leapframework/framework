@@ -161,6 +161,26 @@ public interface Route extends RouteBase, Sourced {
 	 * Sets the <code>supportMultipart</code> property.
 	 */
 	void setSupportsMultipart(boolean supports);
+
+    /**
+     * Returns true if allow anonymous access.
+     */
+    boolean isAllowAnonymous();
+
+    /**
+     * Sets is allow anonymous access.
+     */
+    void setAllowAnonymous(Boolean allowAnonymous);
+
+    /**
+     * Returns true if allow client only access.
+     */
+    boolean isAllowClientOnly();
+
+    /**
+     * Sets is allow client only access.
+     */
+    void setAllowClientOnly(Boolean allowClientOnly);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

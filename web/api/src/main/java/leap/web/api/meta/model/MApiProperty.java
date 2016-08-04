@@ -22,9 +22,9 @@ import leap.lang.meta.MType;
 public class MApiProperty extends MApiParameterBase {
 
 	public MApiProperty(String name, String title, String summary, String description,
-                        MType type, String format, boolean required, String defaultValue, String[] enumValues,
+                        MType type, String format, boolean password, boolean required, String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs) {
-	    super(name, title, summary, description, type, format, false, required, defaultValue, enumValues, validation, attrs);
+	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
     }
 
 }
