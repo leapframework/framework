@@ -26,15 +26,16 @@ import leap.lang.meta.MTypeFactory;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.model.Model;
 
 public class OrmMTypeFactory implements MTypeFactory {
 	
-	protected @Inject OrmContext[] ormContextes;
+	protected @Inject OrmContext[] ormContexts;
 	
 	@Override
 	public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
 		
-		for(OrmContext c : ormContextes) {
+		for(OrmContext c : ormContexts) {
 			EntityMapping em = c.getMetadata().tryGetEntityMapping(type);
 			
 			if(null != em) {
@@ -42,7 +43,7 @@ public class OrmMTypeFactory implements MTypeFactory {
 			}
 			
 		}
-		
+
 		return null;
 	}
 

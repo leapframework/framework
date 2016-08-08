@@ -35,6 +35,7 @@ import leap.lang.expression.Expression;
 import leap.lang.json.JsonIgnore;
 import leap.lang.json.JsonStringable;
 import leap.lang.json.JsonWriter;
+import leap.lang.meta.annotation.ComplexType;
 import leap.lang.params.NamedParamsBase;
 import leap.lang.params.Params;
 import leap.lang.tostring.ToStringBuilder;
@@ -65,6 +66,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
+@ComplexType
 public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	
 	//This variable will be accessed by sub-model-class in the instrumented code, cannot change to private modifier.
