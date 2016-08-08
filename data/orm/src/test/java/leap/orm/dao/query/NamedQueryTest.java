@@ -19,6 +19,7 @@ import leap.junit.contexual.Contextual;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
+import leap.orm.query.PageResult;
 import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.file.File;
 import leap.orm.tested.model.petclinic.Owner;
@@ -149,5 +150,16 @@ public class NamedQueryTest extends OrmTestCase {
     @Test
     public void testQueryWithSlash(){
 		Owner.query("testQueryWithSlash").list();
+	}
+	@Test
+	@Contextual("mysql")
+	public void testGetTotalCountWithUnion(){
+		Owner.deleteAll();
+		new Owner().setFullName("f1","l1").create();
+		new Owner().setFullName("f2","l2").create();
+		PageResult<Owner> pageResult = Owner.<Owner>query("testGetTotalCountWithUnion").pageResult(1,10);
+		List<Owner> owners = pageResult.list();
+		long count = pageResult.getTotalCount();
+		assertEquals(owners.size(),count);
 	}
 }
