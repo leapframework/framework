@@ -15,6 +15,7 @@
 					<xsd:sequence>
 						<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
 					</xsd:sequence>
+                    <xsd:attribute name="auto-create-tables" type="xsd:boolean" use="optional" />
                     <xsd:attribute name="auto-generate-columns" type="xsd:boolean" use="optional" />
 					<xsd:attribute name="default-max-results" type="xsd:int" use="optional" />					
 				</xsd:restriction>

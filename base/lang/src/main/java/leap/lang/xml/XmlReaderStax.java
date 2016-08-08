@@ -116,7 +116,7 @@ final class XmlReaderStax extends XmlReaderBase implements XmlReader {
 	
     @Override
     @SuppressWarnings("unchecked")
-    public Iterator<String> getAttributeNames() {
+    public Iterator<String> getAttributeLocalNames() {
         final Iterator<Attribute> it = event.asStartElement().getAttributes();
 		return new Iterator<String>() {
             @Override
@@ -132,7 +132,24 @@ final class XmlReaderStax extends XmlReaderBase implements XmlReader {
         };
     }
 
-	@Override
+    @Override
+    public Iterator<QName> getAttributeNames() {
+        final Iterator<Attribute> it = event.asStartElement().getAttributes();
+        return new Iterator<QName>() {
+            @Override
+            public boolean hasNext() {
+                return it.hasNext();
+            }
+
+            @Override
+            public QName next() {
+                Attribute a = it.next();
+                return a.getName();
+            }
+        };
+    }
+
+    @Override
     public boolean hasAttribute(QName name) {
 		return null == event ? false : event.asStartElement().getAttributeByName(name) != null;
     }

@@ -22,11 +22,12 @@ import leap.lang.Strings;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XmlReader;
 import leap.orm.Orm;
+import leap.orm.OrmConfig;
 
 public class OrmConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/orm/config";
-	
+
 	private static final String CONFIG_ELEMENT       		  = "config";
 	private static final String MODELS_ELEMENT				  = "models";
 	private static final String PACKAGE_ELEMENT			      = "package";
@@ -56,21 +57,12 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 	}
 	
 	protected void processConfig(AppConfigContext context, XmlReader reader) throws AppConfigException {
-		OrmConfigProperties properties = context.getExtension(OrmConfigProperties.class);
-		if(null == properties){
-			properties = new OrmConfigProperties();
-			context.setExtension(properties);
-		}
-
-        Boolean autoGenerateColumns = reader.resolveBooleanAttribute(AUTO_GENERATE_COLUMNS);
-        if(null != autoGenerateColumns) {
-            properties.setAutoGenerateColumns(autoGenerateColumns);
-        }
-		
-		Long defaultMaxResults = reader.resolveAttribute(DEFAULT_MAX_RESULTS_ATTRIBUTE, Long.class);
-		if(null != defaultMaxResults){
-			properties.setDefaultMaxResult(defaultMaxResults);
-		}
+        reader.forEachResolvedAttributes((n,v) -> {
+            if(!Strings.isEmpty(v)) {
+                String key = OrmConfig.KEY_PREFIX + "." + n.getLocalPart();
+                context.putProperty(reader.getSource(), key, v);
+            }
+        });
 
         reader.nextToEndElement(CONFIG_ELEMENT);
 	}

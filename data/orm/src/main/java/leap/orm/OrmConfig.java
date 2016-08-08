@@ -20,6 +20,16 @@ import leap.lang.naming.NamingStyles;
 import java.util.Set;
 
 public interface OrmConfig {
+
+    String KEY_PREFIX = "orm";
+
+    /**
+     * Returns true if auto create tables at startup.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isAutoCreateTables();
 	
 	/**
 	 * zero means no limitation.

@@ -21,6 +21,9 @@ import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.text.PlaceholderResolver;
 
+import java.util.Iterator;
+import java.util.function.BiConsumer;
+
 public abstract class XmlReaderBase implements XmlReader {
 	
 	protected Object              source              = "unknow";
@@ -458,8 +461,28 @@ public abstract class XmlReaderBase implements XmlReader {
     public int resolveRequiredIntAttribute(String localName) {
 		return Converts.toInt(resolveRequiredAttribute(localName));
     }
-	
-	protected abstract String doGetElementTextAndEnd();
+
+    @Override
+    public void forEachResolvedAttributes(BiConsumer<QName, String> func) {
+        Iterator<QName> names = getAttributeNames();
+        while(names.hasNext()) {
+            QName  name  = names.next();
+            String value = resolveAttribute(name);
+            func.accept(name, value);
+        }
+    }
+
+    @Override
+    public void forEachAttributes(BiConsumer<QName, String> func) {
+        Iterator<QName> names = getAttributeNames();
+        while(names.hasNext()) {
+            QName  name  = names.next();
+            String value = getAttribute(name);
+            func.accept(name, value);
+        }
+    }
+
+    protected abstract String doGetElementTextAndEnd();
 	
 	protected abstract String doGetAttribute(QName name);
 	

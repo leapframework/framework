@@ -82,7 +82,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
     }
 
 	protected void readMvcConfig(AppConfigContext context, XmlReader reader) {
-        reader.getAttributeNames().forEachRemaining((name) -> {
+        reader.getAttributeLocalNames().forEachRemaining((name) -> {
             String value = reader.resolveAttribute(name);
             if(!Strings.isEmpty(value)) {
                 context.putProperty(WebConfigProcessor.class, WebConfigurator.CONFIG_PREFIX + name, value);
@@ -162,7 +162,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 	 * </pre>
 	 */
 	protected void readCorsConfig(AppConfigContext context, XmlReader reader) {
-		Iterator<String> attrs = reader.getAttributeNames();
+		Iterator<String> attrs = reader.getAttributeLocalNames();
 		if(attrs.hasNext()){
 			do{
 				String name  = attrs.next();
