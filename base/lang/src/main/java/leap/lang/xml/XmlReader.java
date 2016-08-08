@@ -9,6 +9,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import java.io.Closeable;
 import java.util.Iterator;
+import java.util.function.BiConsumer;
 
 /**
  * A wrapper interface of {@link XMLEventReader} to make it more easy to use.
@@ -144,9 +145,16 @@ public interface XmlReader extends Closeable,Sourced {
     	}
     	return null;
     }
-    
 
-    Iterator<String> getAttributeNames();
+    /**
+     * Returns the attribute names as {@link Iterator}.
+     */
+    Iterator<String> getAttributeLocalNames();
+
+    /**
+     * Returns the attribute names as {@link Iterator}.
+     */
+    Iterator<QName> getAttributeNames();
     
     //get string attribute
     boolean hasAttribute(QName name);
@@ -279,4 +287,14 @@ public interface XmlReader extends Closeable,Sourced {
     int resolveRequiredIntAttribute(QName name);
     
     int resolveRequiredIntAttribute(String localName);
+
+    /**
+     * Resolves all the attributes and apply the function for each attribute(name, value).
+     */
+    void forEachResolvedAttributes(BiConsumer<QName,String> func);
+
+    /**
+     * Gets all the attributes and apply the function for each attribute(name, value).
+     */
+    void forEachAttributes(BiConsumer<QName,String> func);
 }
