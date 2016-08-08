@@ -146,4 +146,8 @@ public class NamedQueryTest extends OrmTestCase {
     public void testBug() {
         Owner.query("testBug").list();
     }
+    @Test
+    public void testQueryWithSlash(){
+		Owner.query("testQueryWithSlash").list();
+	}
 }
