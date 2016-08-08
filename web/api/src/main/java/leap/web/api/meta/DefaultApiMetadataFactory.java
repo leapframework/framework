@@ -86,23 +86,24 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	
 	protected MTypeFactory createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
 		return mtypeManager.factory()
-                    .setComplexTypeCreatedListener((cls, ct) -> {
-                        if(!ct.isDictionaryType() && !md.containsModel(ct.getName())) {
+                    .setListener(new MTypeListener() {
+                        @Override
+                        public void onComplexTypeCreated(MComplexType ct) {
                             md.addModel(new MApiModelBuilder(ct));
                         }
                     })
 
-                    .setComplexTypeLocalNamer((cls) -> {
-                        String name = cls.getSimpleName();
-
-                        for(String prefix : c.getRemovalModelNamePrefixes()) {
-                            if(Strings.startsWithIgnoreCase(name, prefix)) {
-                                name = Strings.removeStartIgnoreCase(name, prefix);
-                                break;
+                    .setStrategy(new MTypeStrategy() {
+                        @Override
+                        public String getComplexTypeName(String name) {
+                            for(String prefix : c.getRemovalModelNamePrefixes()) {
+                                if(Strings.startsWithIgnoreCase(name, prefix)) {
+                                    name = Strings.removeStartIgnoreCase(name, prefix);
+                                    break;
+                                }
                             }
+                            return name;
                         }
-
-                        return name;
                     })
 
                     .create();

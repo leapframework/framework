@@ -20,18 +20,20 @@ import java.lang.reflect.Type;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
-import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactory;
-import leap.lang.meta.MTypeFactoryCreator;
-import leap.lang.meta.SimpleMTypeFactoryCreator;
+import leap.lang.meta.*;
 
 public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 
 	protected @Inject MTypeFactory[] extendedMTypeFactories;
 	
 	private MTypeFactory rootMTypeFactory;
-	
-	@Override
+
+    @Override
+    public MType getMType(Class<?> type) {
+        return rootMTypeFactory.getMType(type, null);
+    }
+
+    @Override
     public MType getMType(Class<?> type, Type genericType) {
 		return rootMTypeFactory.getMType(type, genericType);
     }
@@ -45,28 +47,60 @@ public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
     public void postCreate(BeanFactory factory) throws Throwable {
 		rootMTypeFactory = factory().create();
     }
-	
-	protected class ManagedMTypeFactoryCreator extends SimpleMTypeFactoryCreator implements MTypeFactory { 
+
+	protected class ManagedMTypeFactoryCreator extends SimpleMTypeFactoryCreator implements MTypeFactory,MTypeContext {
 		
 		protected MTypeFactory root;
 
 		@Override
         public MTypeFactory create() {
-			root = super.create();
+			root = new SimpleMTypeFactory(this);
+
 			return this;
         }
 
-		@Override
-        public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
+        @Override
+        public MTypeFactory root() {
+            return root;
+        }
+
+        @Override
+        public MTypeStrategy strategy() {
+            return strategy;
+        }
+
+        @Override
+        public MTypeListener listener() {
+            return listener;
+        }
+
+        @Override
+        public MType getMType(Class<?> type) {
+            return getMType(type, null, this);
+        }
+
+        @Override
+        public MType getMType(Class<?> type, Type genericType) {
+            return getMType(type, genericType, this);
+        }
+
+        @Override
+        public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+            MType mtype = null;
+
 			for(MTypeFactory f : extendedMTypeFactories) {
-				MType mtype = f.getMType(type, genericType, root);
+				mtype = f.getMType(type, genericType, context);
 				
 				if(null != mtype) {
-					return mtype;
+					break;
 				}
 			}
+
+            if(mtype != null) {
+
+            }
 			
-			return this.root.getMType(type, genericType);
+			return this.root.getMType(type, genericType, context);
         }
 	}
 	

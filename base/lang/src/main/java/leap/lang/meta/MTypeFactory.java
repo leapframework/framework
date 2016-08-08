@@ -18,15 +18,27 @@ package leap.lang.meta;
 import java.lang.reflect.Type;
 
 public interface MTypeFactory {
-	
-	default MType getMType(Class<?> type) {
-		return getMType(type, null, null);
+
+    /**
+     * Returns the {@link MType} of the java type with default {@link MTypeContext}.
+     */
+    default MType getMType(Class<?> type) {
+		return getMType(type, null, MTypeContext.DEFAULT);
 	}
-	
+
+    /**
+     * Returns the {@link MType} of the java type with default {@link MTypeContext}.
+     */
 	default MType getMType(Class<?> type, Type genericType) {
-		return getMType(type, genericType, null);
+		return getMType(type, genericType, MTypeContext.DEFAULT);
 	}
-	
-	MType getMType(Class<?> type, Type genericType, MTypeFactory root);
+
+    /**
+     * Returns the {@link MType} of the java type.
+     * @param type required.
+     * @param genericType optional.
+     * @param context required.
+     */
+	MType getMType(Class<?> type, Type genericType, MTypeContext context);
 
 }
