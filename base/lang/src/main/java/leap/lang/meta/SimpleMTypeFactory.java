@@ -28,6 +28,8 @@ import java.util.function.Function;
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.meta.annotation.ComplexType;
+import leap.lang.meta.annotation.NonProperty;
 
 public class SimpleMTypeFactory implements MTypeFactory {
 	
@@ -94,14 +96,17 @@ public class SimpleMTypeFactory implements MTypeFactory {
 			return new MCollectionType(elementType);
 		}
 
-        if(Map.class.isAssignableFrom(type)) {
-            return getDictionaryType(root, type, genericType, stack, createComplexTypeRef);
+        boolean isComplexTypeAnnotated = type.isAnnotationPresent(ComplexType.class);
+        if(!isComplexTypeAnnotated) {
+            if(Map.class.isAssignableFrom(type)) {
+                return getDictionaryType(root, type, genericType, stack, createComplexTypeRef);
+            }
+
+            if(Object.class.equals(type)) {
+                return MObjectType.TYPE;
+            }
         }
-		
-		if(Object.class.equals(type)) {
-			return MObjectType.TYPE;
-		}
-		
+
 		return getComplexTypeOrRef(root, type, stack, createComplexTypeRef);
 	}
 
@@ -174,6 +179,15 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		
 		BeanType bt = BeanType.of(type);
 		for(BeanProperty bp : bt.getProperties()) {
+
+            if(!bp.isField()) {
+                continue;
+            }
+
+            if(bp.isAnnotationPresent(NonProperty.class)) {
+                continue;
+            }
+
 			MPropertyBuilder mp = new MPropertyBuilder();
 
             mp.setName(bp.getName());

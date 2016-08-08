@@ -42,12 +42,12 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String PROTOCOLS_ELEMENT = "protocols";
 
 
-    protected static final String ENABLED_ATTR   = "enabled";
-    protected static final String AUTHZ_URL_ATTR = "authz-url";
-    protected static final String TOKEN_URL_ATTR = "token-url";
-    protected static final String SCOPE_ATTR     = "scope";
-    protected static final String NAME_ATTR      = "name";
-    protected static final String BASE_PATH_ATTR = "base-path";
+    protected static final String ENABLED_ATTR      = "enabled";
+    protected static final String AUTHZ_URL_ELEMENT = "authz-url";
+    protected static final String TOKEN_URL_ELEMENT = "token-url";
+    protected static final String SCOPE_ATTR        = "scope";
+    protected static final String NAME_ATTR         = "name";
+    protected static final String BASE_PATH_ATTR    = "base-path";
 
     @Override
     public boolean readConfiguration(Apis apis, ApiConfigReaderContext context, Resource resource) {
@@ -120,11 +120,24 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 apis.setDefaultOAuthEnabled(
                         reader.resolveBooleanAttribute(ENABLED_ATTR, apis.isDefaultOAuthEnabled()));
 
-                apis.setDefaultOAuthAuthorizationUrl(
-                        reader.resolveAttribute(AUTHZ_URL_ATTR, apis.getDefaultOAuthAuthorizationUrl()));
+                while(reader.nextWhileNotEnd(OAUTH_ELEMENT)) {
 
-                apis.setDefaultOAuthTokenUrl(
-                        reader.resolveAttribute(TOKEN_URL_ATTR, apis.getDefaultOAuthTokenUrl()));
+                    if(reader.isStartElement(AUTHZ_URL_ELEMENT)) {
+                        String url = reader.resolveElementTextAndEnd();
+                        if(!Strings.isEmpty(url)) {
+                            apis.setDefaultOAuthAuthorizationUrl(url);
+                        }
+                        continue;
+                    }
+
+                    if(reader.isStartElement(TOKEN_URL_ELEMENT)) {
+                        String url = reader.resolveElementTextAndEnd();
+                        if(!Strings.isEmpty(url)) {
+                            apis.setDefaultOAuthTokenUrl(url);
+                        }
+                        continue;
+                    }
+                }
 
                 continue;
             }
