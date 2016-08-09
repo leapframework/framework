@@ -17,6 +17,8 @@
 package leap.web.api.mvc;
 
 import leap.core.annotation.Inject;
+import leap.core.validation.Errors;
+import leap.core.validation.ValidationException;
 import leap.lang.NamedError;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
@@ -35,13 +37,18 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         Response response = context.getResponse();
 
         if(execution.isValidationError()) {
-            NamedError error = execution.getValidation().errors().first();
-            errorHandler.badRequest(response, "Validation failed -> " + error.getName() + " : " + error.getMessage());
+            handleValidationError(response, execution.getValidation().errors());
             return true;
         }
 
         if(execution.hasException()) {
             Throwable e = execution.getException();
+
+            if(e instanceof ValidationException) {
+                Errors errors = ((ValidationException) e).getErrors();
+                handleValidationError(response, errors);
+                return true;
+            }
 
             if(e instanceof ResponseException) {
                 errorHandler.responseError(response
@@ -67,4 +74,8 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
         return true;
     }
 
+    protected void handleValidationError(Response response, Errors errors) {
+        NamedError error = errors.first();
+        errorHandler.badRequest(response, "Validation failed -> " + error.getName() + " : " + error.getMessage());
+    }
 }

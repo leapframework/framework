@@ -503,6 +503,11 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	_init();
 	    return em.getEntityName();
     }
+
+    public final EntityMapping getEntityMapping() {
+        _init();
+        return em;
+    }
     
     public final boolean contains(String field) {
 	    return fields.containsKey(field);
@@ -867,17 +872,30 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     		throw new RecordNotDeletedException("Record not deleted, checks that is the record exists or failed to delete ?");
     	}
     }
-    
+
+    /**
+     * Delete the record, returns true if deleted, returns false if the record not exists.
+     */
     public final boolean tryDelete(){
     	_init();
     	return doDelete();
     }
-    
-    public final boolean refresh(){
+
+    /**
+     * Reload the record from underlying database.
+     */
+    public final boolean load(){
     	_init();
-    	return doRefresh();
+    	return doLoad();
     }
-    
+
+    /**
+     * Same as {@link #load()}
+     */
+    public final boolean refresh() {
+        return load();
+    }
+
     /**
      * Returns <code>true</code> if this model is valid after validation.
      * 
@@ -895,16 +913,34 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
      * Returns <code>false</code> if this model has {@link Errors} after validation. 
      */
     public final boolean validate(int maxErrors){
-    	_init();
-    	
-    	errors = dao.validate(this.em,this);
-    	
-    	if(maxErrors > 0 && errors.size() >= maxErrors){
-    		return false;
-    	}
-    	
-    	doValidate(errors,maxErrors);
-    	return errors.isEmpty();
+        return validate(maxErrors, null);
+    }
+
+    /**
+     * Validates the values in {@link #fields()} only.
+     *
+     * @see  {@link #validate()}
+     */
+    public final boolean validate(Iterable<String> fields) {
+        return validate(0, fields);
+    }
+
+    /**
+     * Validates the values of the given field names only.
+     *
+     * @see  {@link #validate()}
+     */
+    public final boolean validate(int maxErrors, Iterable<String> fields) {
+        _init();
+
+        errors = dao.validate(this.em,this,fields);
+
+        if(maxErrors > 0 && errors.size() >= maxErrors){
+            return false;
+        }
+
+        doValidate(errors,maxErrors);
+        return errors.isEmpty();
     }
     
 	protected Object doGetId(){
@@ -1003,7 +1039,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	return dao.delete(em.getEntityName(), ensureGetId()) > 0;
     }
     
-    protected boolean doRefresh(){
+    protected boolean doLoad(){
     	Object id = ensureGetId();
 
     	Entity entity = dao.find(em.getEntityName(), id);
@@ -1015,7 +1051,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
     
     /**
-     * Can be overrided by sub-class to perform customized validation.
+     * Can be override by sub-class to perform customized validation.
      */
     protected void doValidate(Errors errors,int maxErrors){
     	

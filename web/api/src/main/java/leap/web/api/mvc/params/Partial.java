@@ -33,6 +33,11 @@ import java.util.Map;
 public interface Partial<T> {
 
     /**
+     * Returns true if no any properties.
+     */
+    boolean isEmpty();
+
+    /**
      * Returns the map contains partial properties of model.
      */
     Map<String,Object> getProperties();
