@@ -113,7 +113,7 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
         RequestFormat format = context.getRequestFormat();
 
         if(null != format && format.supportsRequestBody()){
-            return (Map)format.readRequestBody(context.getRequest(), Map.class, null);
+            return (Map)format.readRequestBody(context.getRequest());
         }else{
             return (Map)requestBodyReader.readRequestBody(context.getRequest(), Map.class, null);
         }

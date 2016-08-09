@@ -15,10 +15,14 @@
  */
 package leap.web.action;
 
+import leap.lang.Out;
+import leap.lang.convert.Converts;
 import leap.web.App;
 import leap.web.annotation.RequestBody;
 import leap.web.body.RequestBodyReader;
 import leap.web.format.RequestFormat;
+
+import java.util.Optional;
 
 public class RequestBodyArgumentResolver implements ArgumentResolver {
 	
@@ -49,7 +53,19 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 
         RequestFormat format = context.getRequestFormat();
         if(null != format && format.supportsRequestBody()){
-            return format.readRequestBody(context.getRequest(), argument.getType(), argument.getGenericType());
+            Object body = format.readRequestBody(context.getRequest());
+            if(null == body) {
+                return null;
+            }
+
+            if(null != argument.getBinder()) {
+                Optional value = argument.getBinder().bind(context, argument, body);
+                if(null != value) {
+                    return value.get();
+                }
+            }
+
+            return Converts.convert(body, argument.getType(), argument.getGenericType());
         }
 
         if(requestBodyDeclared){

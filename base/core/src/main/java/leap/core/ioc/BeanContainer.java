@@ -402,7 +402,31 @@ public class BeanContainer implements BeanFactory {
 		
 	    return bean;
     }
-    
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type) throws BeanException {
+        T bean = tryCreateBean(type);
+
+        if(null == bean) {
+            bean = createBean(type);
+            addBean(type, bean, true);
+        }
+
+        return bean;
+    }
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type, String name) throws BeanException {
+        T bean = tryCreateBean(type, name);
+
+        if(null == bean){
+            bean = (T) createBean(type);
+            addBean(type, bean, name, false);
+        }
+
+        return bean;
+    }
+
     @Override
     public <T> T getOrCreateBean(Class<T> type) throws BeanException {
     	T bean = tryCreateBean(type);
@@ -412,6 +436,16 @@ public class BeanContainer implements BeanFactory {
 		}
 		
 	    return bean;
+    }
+
+    public <T> T getOrCreateBean(Class<T> type, String name) throws BeanException {
+        T bean = tryCreateBean(type, name);
+
+        if(null == bean){
+            return (T) createBean(type);
+        }
+
+        return bean;
     }
 
 	@Override
@@ -476,16 +510,6 @@ public class BeanContainer implements BeanFactory {
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No bean named '" + name + "' for type '" + type.getName() + "'");
-		}
-		
-	    return bean;
-    }
-	
-    public <T> T getOrCreateBean(Class<T> type, String name) throws BeanException {
-		T bean = tryCreateBean(type, name);
-		
-		if(null == bean){
-			return (T) createBean(type);
 		}
 		
 	    return bean;

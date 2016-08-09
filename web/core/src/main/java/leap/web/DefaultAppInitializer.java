@@ -345,7 +345,13 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	protected ArgumentBuilder createArgument(App app,ReflectMethod m, ReflectParameter p) {
 		ArgumentBuilder a = new ArgumentBuilder(validationManager, p);
-		
+
+        BindBy bindBy = p.getType().getAnnotation(BindBy.class);
+        if(null != bindBy) {
+            ArgumentBinder binder = app.factory.getOrAddBean(bindBy.value());
+            a.setBinder(binder);
+        }
+
 		return a;
 	}
 	

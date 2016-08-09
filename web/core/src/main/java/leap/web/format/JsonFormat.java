@@ -57,7 +57,7 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 	}
 
 	@Override
-    public Object readRequestBody(Request request, Class<?> type, Type genericType) throws IOException, IllegalStateException {
+    public Object readRequestBody(Request request) throws IOException, IllegalStateException {
 		JsonValue jsonObject = null;
 		try {
             if(log.isTraceEnabled()) {
@@ -73,11 +73,7 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
         	throw new InvalidFormatContentException("Error reading 'json' request body, " + e.getMessage(), e);
         }
 		
-		try {
-	        return Converts.convert(jsonObject.raw(), type, genericType);
-        } catch (Exception e) {
-        	throw new InvalidFormatContentException("Error converting 'json' request body to type '" + type.getName() + "', " + e.getMessage(), e);
-        }
+        return jsonObject.raw();
 	}
 
 	@Override

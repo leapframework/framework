@@ -39,14 +39,15 @@ import java.util.List;
 
 public class ArgumentBuilder implements Buildable<Argument> {
 
-	protected String       name;
-	protected Class<?>     type;
-	protected Type         genericType;
-	protected TypeInfo     typeInfo;
-	protected Boolean      required;
-	protected Location     location;
-	protected Annotation[] annotations;
-	protected List<ArgumentValidator> validators = new ArrayList<>();
+    protected String         name;
+    protected Class<?>       type;
+    protected Type           genericType;
+    protected TypeInfo       typeInfo;
+    protected Boolean        required;
+    protected Location       location;
+    protected Annotation[]   annotations;
+    protected ArgumentBinder binder;
+    protected List<ArgumentValidator> validators = new ArrayList<>();
 	
 	public ArgumentBuilder() {
 	    super();
@@ -159,8 +160,17 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.annotations = annotations;
 		return this;
 	}
-	
-	public ArgumentBuilder addValidator(ArgumentValidator validator){
+
+    public ArgumentBinder getBinder() {
+        return binder;
+    }
+
+    public ArgumentBuilder setBinder(ArgumentBinder binder) {
+        this.binder = binder;
+        return this;
+    }
+
+    public ArgumentBuilder addValidator(ArgumentValidator validator){
 		validators.add(validator);
 		return this;
 	}
@@ -266,6 +276,6 @@ public class ArgumentBuilder implements Buildable<Argument> {
     public Argument build() {
 		ArgumentValidator[] validators = null == this.validators ? null : this.validators.toArray(new ArgumentValidator[]{});
 		
-	    return new Argument(name, type, genericType, typeInfo, required, location, annotations,validators);
+	    return new Argument(name, type, genericType, typeInfo, required, location, annotations, binder, validators);
     }
 }

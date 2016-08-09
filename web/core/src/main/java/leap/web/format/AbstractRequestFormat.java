@@ -43,7 +43,7 @@ public abstract class AbstractRequestFormat extends AbstractHttpFormat implement
     }
 
 	@Override
-    public Object readRequestBody(Request request, Class<?> type, Type genericType) throws IOException, IllegalStateException {
+    public Object readRequestBody(Request request) throws IOException, IllegalStateException {
 		throw new IllegalStateException("This format '" + name + "' does not supports request body");
 	}
 }

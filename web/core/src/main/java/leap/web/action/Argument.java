@@ -53,6 +53,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	protected final Boolean             required;
 	protected final Location            location;
 	protected final Annotation[]        annotations;
+    protected final ArgumentBinder      binder;
 	protected final ArgumentValidator[] validators;
 
 	public Argument(String name, 
@@ -62,6 +63,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 					Boolean	required,
 					Location location,
 					Annotation[] annotations,
+                    ArgumentBinder binder,
 					ArgumentValidator[] validators) {
 		
 		Args.notEmpty(name,   "name");
@@ -76,6 +78,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		this.required		   = required;
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
+        this.binder            = binder;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
 	}
 
@@ -155,8 +158,15 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	public Annotation[] getAnnotations() {
 		return annotations;
 	}
-	
-	/**
+
+    /**
+     * Optional. Returns the {@link ArgumentBinder} of this argument.
+     */
+    public ArgumentBinder getBinder() {
+        return binder;
+    }
+
+    /**
 	 * Returns the {@link ArgumentValidator} arrays.
 	 */
 	public ArgumentValidator[] getValidators() {
