@@ -134,10 +134,12 @@ class SqlSelectParser extends SqlQueryParser {
 
             suspendNodes();
 			
-			boolean join = true;
+			boolean join  = true;
+            boolean comma = false;
 			
 			switch (lexer.token()) {
 				case COMMA:
+                    comma = true;
 				case JOIN:
 					acceptText();
 					break;
@@ -173,6 +175,7 @@ class SqlSelectParser extends SqlQueryParser {
                 SqlJoin joinNode = new SqlJoin();
 
 				if(parseJoin(query, joinNode)){
+                    joinNode.setCommaJoin(comma);
                     joinNode.setNodes(nodes());
                     restoreNodes().addNode(joinNode);
                     continue;
