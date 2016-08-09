@@ -78,13 +78,6 @@ public class WebHtplView extends AbstractView {
         }
 	}
 	*/
-	
-	@Override
-    protected void exposeViewDataAsRequestAttributes(ViewData model, Request request) throws Exception {
-		request.setAttribute("session", request.getSession());
-		request.setAttribute("params",  request.getParameters());
-	    super.exposeViewDataAsRequestAttributes(model, request);
-    }
 
 	@Override
     public String toString() {
