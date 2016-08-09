@@ -304,17 +304,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void resolveApiResponseType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType, MApiResponseBuilder resp) {
-        if(type.equals(ApiResponse.class) ) {
-            if(null == genericType || genericType.equals(ApiResponse.class)) {
-                return;
-            }else{
-                Type typeArgument = Types.getTypeArgument(genericType);
-
-                type = Types.getActualType(typeArgument);
-                genericType = typeArgument;
-            }
-        }
-
         if(isResponseFileType(type)) {
             resp.setType(MSimpleTypes.BINARY);
             resp.setFile(true);
@@ -333,16 +322,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		} else {
 			//Complex Type
 			MType mtype = context.getMTypeFactory().getMType(ti.getType(), ti.getGenericType());
-
-            if(mtype.isDictionaryType()) {
+            if(mtype instanceof MComplexType) {
+                MComplexType ct = mtype.asComplexType();
+                return new MComplexTypeRef(ct.getName());
+            }else{
                 return mtype;
-            }else if(mtype.isTypeRef()) {
-				MComplexTypeRef ref = (MComplexTypeRef)mtype;
-				return new MComplexTypeRef(ref.getRefTypeName(), ref.getRefTypeQName());
-			}else{
-				MComplexType ct = mtype.asComplexType();
-				return new MComplexTypeRef(ct.getName());
-			}
+            }
 		}
 	}
 	

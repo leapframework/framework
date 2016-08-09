@@ -30,6 +30,7 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.meta.annotation.ComplexType;
 import leap.lang.meta.annotation.NonProperty;
+import leap.lang.meta.annotation.TypeWrapper;
 
 public class SimpleMTypeFactory implements MTypeFactory {
 	
@@ -70,7 +71,24 @@ public class SimpleMTypeFactory implements MTypeFactory {
 
 	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, Stack<Class<?>> stack, boolean createComplexTypeRef) {
 		Args.notNull(type, "type");
-		
+
+        TypeWrapper tw = type.getAnnotation(TypeWrapper.class);
+        if(null != tw) {
+            Class<?> wrappedType = tw.value();
+            if(!wrappedType.equals(Void.class)) {
+                type = wrappedType;
+            }else{
+                if(null == genericType || genericType.equals(type)) {
+                    return MVoidType.TYPE;
+                }else{
+                    Type typeArgument = Types.getTypeArgument(genericType);
+
+                    type = Types.getActualType(typeArgument);
+                    genericType = typeArgument;
+                }
+            }
+        }
+
 		for(MTypeFactory factory : externalFactories){
 			MType mtype = factory.getMType(type, genericType, context);
 			if(null != mtype) {

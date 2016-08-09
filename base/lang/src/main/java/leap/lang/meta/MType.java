@@ -38,6 +38,13 @@ public abstract class MType extends ImmutableMDescribed {
         return getTypeKind() == MTypeKind.OBJECT;
     }
 
+    /**
+     * Returns true if this type is a void type.
+     */
+    public boolean isVoidType() {
+        return getTypeKind() == MTypeKind.VOID;
+    }
+
 	/**
 	 * Returns <code>true</code> if this type is a collection type.
 	 */
@@ -53,6 +60,13 @@ public abstract class MType extends ImmutableMDescribed {
 	}
 
     /**
+	 * Returns <code>true</code> if this type is a reference type.
+	 */
+	public boolean isTypeRef() {
+		return getTypeKind() == MTypeKind.REFERENCE;
+	}
+
+    /**
      * Returns true if this type is a dictionary type.
      *
      * <p/>
@@ -63,13 +77,6 @@ public abstract class MType extends ImmutableMDescribed {
     }
 
     /**
-	 * Returns <code>true</code> if this type is a reference type.
-	 */
-	public boolean isTypeRef() {
-		return getTypeKind() == MTypeKind.REFERENCE;
-	}
-	
-	/**
 	 * Returns the kind of this type.
 	 */
 	public abstract MTypeKind getTypeKind();
