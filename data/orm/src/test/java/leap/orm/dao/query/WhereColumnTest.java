@@ -93,4 +93,10 @@ public class WhereColumnTest extends OrmTestCase {
     public void testWhereWithDynamicLeftJoin() {
         ECodeModel.query("testSingleWhereColumn.ECodeModel.whereWithDynamicLeftJoin").list();
     }
+
+    @Test
+    @Contextual("h2")
+    public void testWhereWithCommaJoin() {
+        ECodeModel.query("testSingleWhereColumn.ECodeModel.whereWithCommaJoin").list();
+    }
 }

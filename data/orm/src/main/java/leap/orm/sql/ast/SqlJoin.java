@@ -20,6 +20,7 @@ public class SqlJoin extends SqlNodeContainer {
 
     protected SqlTableSource table;
     protected boolean        hasOnExpression;
+    protected boolean        commaJoin;
 
     public SqlTableSource getTable() {
         return table;
@@ -35,5 +36,13 @@ public class SqlJoin extends SqlNodeContainer {
 
     public void setHasOnExpression(boolean hasOnExpression) {
         this.hasOnExpression = hasOnExpression;
+    }
+
+    public boolean isCommaJoin() {
+        return commaJoin;
+    }
+
+    public void setCommaJoin(boolean commaJoin) {
+        this.commaJoin = commaJoin;
     }
 }
