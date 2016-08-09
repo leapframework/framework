@@ -32,6 +32,7 @@ import leap.web.action.Argument.Location;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.RequestBean;
 import leap.web.annotation.RequestBody;
+import leap.web.annotation.ResolvedBy;
 import leap.web.config.WebInterceptors;
 import leap.web.exception.ResponseException;
 import leap.web.exception.ValidateFailureException;
@@ -421,6 +422,14 @@ public class DefaultActionManager implements ActionManager,AppListener {
         for(ArgumentResolverProvider provider : argumentResolverProviders){
             if((resolver = provider.tryGetArgumentResolver(route, route.getAction(), argument)) != null){
                 break;
+            }
+        }
+
+        if(null == resolver) {
+            ResolvedBy a = argument.getType().getAnnotation(ResolvedBy.class);
+            if(null != a) {
+                Class<ArgumentResolver> c = (Class<ArgumentResolver>)a.value();
+                resolver = app.factory().getBean(c);
             }
         }
 
