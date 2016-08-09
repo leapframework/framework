@@ -141,6 +141,8 @@ public abstract class AbstractView implements View {
 		request.setAttribute("app", 	 request.app());
 		request.setAttribute("request",  request);
 		request.setAttribute("response", request.response());
+		request.setAttribute("session", request.getSession());
+		request.setAttribute("params",  request.getParameters());
 	}
 
 	/**
