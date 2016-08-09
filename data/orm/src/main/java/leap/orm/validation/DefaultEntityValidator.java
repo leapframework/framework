@@ -33,46 +33,70 @@ public class DefaultEntityValidator implements EntityValidator {
 	
 	@Override
 	public boolean validate(EntityWrapper entity, Validation validation, int maxErrors) {
-		EntityMapping em = entity.getMapping();
-		
-		//validates fields
-		for(FieldMapping fm : em.getFieldMappings()){
-			FieldValidator[] validators = fm.getValidators();
-			if(validators.length > 0){
-				if(validateField(entity, validation, maxErrors, fm, validators)){
-					return false;
-				}
-				
-				if(validation.maxErrorsReached(maxErrors)){
-					return false;
-				}
-			}
-		}
-		
-		if(validation.maxErrorsReached(maxErrors)){
-			return false;
-		}
-		
-		//validates entity
-		EntityValidator[] validators = em.getValidators();
-		if(validators.length > 0){
-			if(!validateEntity(entity, validation, maxErrors, validators)){
-				return false;
-			}
-			
-			if(validation.maxErrorsReached(maxErrors)){
-				return false;
-			}
-		}
-		
-		if(entity instanceof Validatable){
-			return ((Validatable) entity).validate(validation,maxErrors);
-		}
-		
-		return true;
+        return validate(entity, validation, maxErrors, null);
 	}
 
-	protected boolean validateField(EntityWrapper entity,Validation validation,int maxErrors, FieldMapping fm,FieldValidator[] validators){
+    @Override
+    public boolean validate(EntityWrapper entity, Validation validation, int maxErrors, Iterable<String> fields) {
+        EntityMapping em = entity.getMapping();
+
+        if(null != fields) {
+            for(String name : fields) {
+                FieldMapping fm = em.getFieldMapping(name);
+                if(null == fm) {
+                    throw new IllegalStateException("Field '" + name + "' not found in entity '" + em.getEntityName() + "'");
+                }
+                if(!validateField(entity, validation, maxErrors, fm)) {
+                    return false;
+                }
+            }
+        }else{
+            //validates fields
+            for(FieldMapping fm : em.getFieldMappings()){
+                if(!validateField(entity, validation, maxErrors, fm)) {
+                    return false;
+                }
+            }
+        }
+
+        if(validation.maxErrorsReached(maxErrors)){
+            return false;
+        }
+
+        //validates entity
+        EntityValidator[] validators = em.getValidators();
+        if(validators.length > 0){
+            if(!validateEntity(entity, validation, maxErrors, validators)){
+                return false;
+            }
+
+            if(validation.maxErrorsReached(maxErrors)){
+                return false;
+            }
+        }
+
+        if(entity instanceof Validatable){
+            return ((Validatable) entity).validate(validation,maxErrors);
+        }
+
+        return true;
+    }
+
+    protected boolean validateField(EntityWrapper entity, Validation validation, int maxErrors, FieldMapping fm) {
+        FieldValidator[] validators = fm.getValidators();
+        if(validators.length > 0){
+            if(validateField(entity, validation, maxErrors, fm, validators)){
+                return false;
+            }
+
+            if(validation.maxErrorsReached(maxErrors)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    protected boolean validateField(EntityWrapper entity, Validation validation, int maxErrors, FieldMapping fm, FieldValidator[] validators){
 		Object value = entity.get(fm.getFieldName());
 		
 		//Validates : not null

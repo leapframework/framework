@@ -102,9 +102,17 @@ public abstract class Dao implements JdbcExecutor {
 	 * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
 	 */
 	public abstract Errors validate(EntityMapping em,Object entity);
+
+    /**
+     * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     */
+    public abstract Errors validate(EntityMapping em,Object entity, Iterable<String> fields);
 	
 	/**
-	 * Validates the given entity object and returns the {@link Errors} contains empty or validatioin errors.
+	 * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
 	 * 
 	 * <p>
 	 * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
@@ -115,6 +123,19 @@ public abstract class Dao implements JdbcExecutor {
 	 * 
 	 */
 	public abstract Errors validate(EntityMapping em,Object entity, int maxErrors);
+
+    /**
+     * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     *
+     * @param em {@link EntityMapping} mapping to the given entity object.
+     * @param entity the entity object to be validated.
+     * @param maxErrors 0 means validates all errors, large than 0 means it will stop validating when the error's size reach the given maxErrors.
+     *
+     */
+    public abstract Errors validate(EntityMapping em,Object entity, int maxErrors, Iterable<String> fields);
 	
 	//----------------------------commands------------------------------
 	/**

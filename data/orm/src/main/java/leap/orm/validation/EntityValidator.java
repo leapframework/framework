@@ -21,5 +21,7 @@ import leap.orm.value.EntityWrapper;
 public interface EntityValidator {
 
 	boolean validate(EntityWrapper entity,Validation validation,int maxErrors);
+
+    boolean validate(EntityWrapper entity,Validation validation,int maxErrors, Iterable<String> fields);
 	
 }

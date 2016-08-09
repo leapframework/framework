@@ -20,6 +20,8 @@ import leap.lang.meta.annotation.TypeWrapper;
 import leap.web.annotation.BindBy;
 import leap.web.annotation.RequestBody;
 
+import java.util.Map;
+
 /**
  * Indicates a partial properties of model.
  *
@@ -30,6 +32,9 @@ import leap.web.annotation.RequestBody;
 @BindBy(PartialArgumentBinder.class)
 public interface Partial<T> {
 
-
+    /**
+     * Returns the map contains partial properties of model.
+     */
+    Map<String,Object> getProperties();
 
 }
