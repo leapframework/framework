@@ -340,6 +340,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			writeSimpleParameterType(context, m, w, p, type.asSimpleType());
 			return;
 		}
+
+        if(type.isObjectType()) {
+            writeObjectType(context, m, w);
+            return;
+        }
 		
 		if(type.isCollectionType()) {
 			writeArrayParameterType(context, m, w, p, type.asCollectionType());
@@ -367,6 +372,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         }
         w.propertyOptional(ENUM, p.getEnumValues());
 	}
+
+    protected void writeObjectType(WriteContext context, ApiMetadata m, JsonWriter w) {
+        w.property(TYPE, OBJECT);
+    }
 
     protected void writeDictionaryType(WriteContext context, ApiMetadata m, JsonWriter w, MDictionaryType type) {
         w.property(TYPE, OBJECT);
@@ -404,7 +413,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			writeSimpleType(context, m, w, type.asSimpleType());
 			return;
 		}
-		
+
+        if(type.isObjectType()) {
+            writeObjectType(context, m, w);
+            return;
+        }
+
 		if(type.isCollectionType()) {
 			writeArrayType(context, m, w, type.asCollectionType());
 			return;

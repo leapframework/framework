@@ -31,6 +31,13 @@ public abstract class MType extends ImmutableMDescribed {
 		return getTypeKind() == MTypeKind.SIMPLE;
 	}
 
+    /**
+     * Returns true if this type is an object type.
+     */
+    public boolean isObjectType() {
+        return getTypeKind() == MTypeKind.OBJECT;
+    }
+
 	/**
 	 * Returns <code>true</code> if this type is a collection type.
 	 */
