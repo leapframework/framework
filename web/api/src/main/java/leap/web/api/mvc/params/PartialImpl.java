@@ -27,6 +27,11 @@ public class PartialImpl implements Partial {
     }
 
     @Override
+    public boolean isEmpty() {
+        return null == m || m.isEmpty();
+    }
+
+    @Override
     public Map<String, Object> getProperties() {
         return (Map<String,Object>)m;
     }

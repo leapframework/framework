@@ -157,13 +157,13 @@ public class Beans {
 		if(bean instanceof Map){
 			return getNestableProperty((Map)bean, property);
 		}else if(bean instanceof DynaBean){
-			return getNestablePropety(((DynaBean) bean).getProperties(), property);
+			return getNestableProperty(((DynaBean) bean).getProperties(), property);
 		}else{
 			return getNestableProperty(BeanType.of(bean.getClass()), bean, property);
 		}
 	}
 	
-	public static Object getNestablePropety(Map map,String property){
+	public static Object getNestableProperty(Map map, String property){
 		if(map.containsKey(property)){
 			return map.get(property);
 		}

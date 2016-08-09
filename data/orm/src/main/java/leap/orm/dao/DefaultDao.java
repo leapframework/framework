@@ -86,7 +86,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 
     @Override
     public Errors validate(EntityMapping em, Object entity, Iterable<String> fields) {
-        return validate(em, entity, 0, null);
+        return validate(em, entity, 0, fields);
     }
 
     @Override
