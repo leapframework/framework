@@ -81,12 +81,6 @@ public class WhereColumnTest extends OrmTestCase {
     public void testLeftJoinWithDynamicClause() {
         ECodeModel.query("testSingleWhereColumn.ECodeModel.leftJoinDynamic").list();
     }
-    @Test
-    @Contextual("h2")
-    public void testInnerJoinWithDynamicClause(){
-        ECodeModel.query("testSingleWhereColumn.ECodeModel.innerJoinDynamic").list();
-    }
-
 
     @Test
     @Contextual("h2")
