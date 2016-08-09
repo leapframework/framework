@@ -216,7 +216,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.property(DESCRIPTION, nullToEmpty(r.descOrSummary()));
 		
 		MType type = r.getType();
-		if(null != type) {
+		if(null != type && !type.isVoidType()) {
 			w.property(SCHEMA, () -> {
 				w.startObject();
 				writeType(context, m, w, type);
@@ -335,7 +335,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	
 	protected void writeParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p) {
 		MType type = p.getType();
-		
+
 		if(type.isSimpleType()) {
 			writeSimpleParameterType(context, m, w, p, type.asSimpleType());
 			return;
@@ -409,6 +409,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 	
 	protected void writeType(WriteContext context, ApiMetadata m, JsonWriter w, MType type) {
+        if(type.isVoidType()) {
+            return;
+        }
+
 		if(type.isSimpleType()) {
 			writeSimpleType(context, m, w, type.asSimpleType());
 			return;

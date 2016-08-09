@@ -17,8 +17,10 @@
 package leap.web.api.mvc;
 
 import leap.lang.http.HTTP;
+import leap.lang.meta.annotation.TypeWrapper;
 import leap.web.ResponseEntity;
 
+@TypeWrapper
 public class ApiResponse<T> implements ResponseEntity {
 
     //SUCCESS
