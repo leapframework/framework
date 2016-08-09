@@ -40,6 +40,23 @@
         ORDER BY T.version DESC
     </command>
 
+    <command key="testSingleWhereColumn.ECodeModel.innerJoinDynamic">
+        SELECT
+        T.*,
+        u.NAME AS creator
+        FROM
+        (
+        SELECT '' as version from dual f
+        where 1=2
+        UNION ALL
+        SELECT '' as version from dual v
+        WHERE 1=3
+        ) T
+        ,ecode_model u
+        where 1=1 {?and 1 = 2}
+        ORDER BY T.version DESC
+    </command>
+
     <command key="testSingleWhereColumn.ECodeModel.whereDynamic">
         SELECT
         u.NAME AS creator
