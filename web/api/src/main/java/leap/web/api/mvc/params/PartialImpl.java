@@ -26,5 +26,9 @@ public class PartialImpl implements Partial {
         this.m = m;
     }
 
+    @Override
+    public Map<String, Object> getProperties() {
+        return (Map<String,Object>)m;
+    }
 
 }

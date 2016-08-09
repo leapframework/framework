@@ -84,16 +84,26 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return validate(em,entity,0);
     }
 
-	@Override
-    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
-		Validation validation = validationManager.createValidation();
-		
-		entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors);
-		
-	    return validation.errors();
+    @Override
+    public Errors validate(EntityMapping em, Object entity, Iterable<String> fields) {
+        return validate(em, entity, 0, null);
     }
-	
-	//--------------------- insert ------------------------------------
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
+        return validate(em, entity, maxErrors, null);
+    }
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
+        Validation validation = validationManager.createValidation();
+
+        entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors, fields);
+
+        return validation.errors();
+    }
+
+    //--------------------- insert ------------------------------------
 	
 	@Override
     public int insert(Object entity) {
