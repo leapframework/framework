@@ -21,6 +21,7 @@ import leap.lang.beans.BeanType;
 import leap.lang.convert.Converts;
 import leap.web.App;
 import leap.web.body.RequestBodyReader;
+import leap.web.exception.BadRequestException;
 import leap.web.format.RequestFormat;
 
 import java.util.Map;
@@ -60,62 +61,31 @@ public class WrapperArgumentResolver implements ArgumentResolver {
 
         //The bean itself is a request body argument.
         if(requestBody) {
-            Map body = readRequestBody(context);
-
+            Object body = readRequestBody(context);
             if(null != body) {
-                for(WrappedArgument ba : wrappedArguments) {
-                    Argument a = ba.argument;
 
-                    if(ba.body) {
-
-                        if(ba.isMap) {
-                            ba.property.setValue(bean, body);
-                        }else{
-                            Object v = a.getBeanType().newInstance();
-
-                            if(!body.isEmpty()) {
-                                Beans.setProperties(a.getBeanType(), v, body);
-                            }
-
-                            ba.property.setValue(bean, v);
-                        }
-
-                        continue;
-                    }
-
-                    if(body.isEmpty()) {
-                        continue;
-                    }
-
-                    if(!a.isLocationDeclared()) {
-                        String name = a.getName();
-                        if(body.containsKey(name)) {
-
-                            BeanProperty bp = ba.property;
-
-                            Object value = body.get(name);
-                            if(null == value) {
-                                bp.setValue(bean, null);
-                            }else{
-                                bp.setValue(bean, Converts.convert(value, bp.getType(), bp.getGenericType()));
-                            }
-
-                        }
-                    }
+                if(! (body instanceof Map)) {
+                    throw new BadRequestException("The request body must be an object");
                 }
+
+                Map map = (Map)body;
+                if(!map.isEmpty()) {
+                    Beans.setProperties(argument.getBeanType(), bean, map);
+                }
+
             }
         }
 
         return bean;
     }
 
-    protected Map readRequestBody(ActionContext context) throws Throwable{
+    protected Object readRequestBody(ActionContext context) throws Throwable {
         RequestFormat format = context.getRequestFormat();
 
         if(null != format && format.supportsRequestBody()){
-            return (Map)format.readRequestBody(context.getRequest());
+            return format.readRequestBody(context.getRequest());
         }else{
-            return (Map)requestBodyReader.readRequestBody(context.getRequest(), Map.class, null);
+            return requestBodyReader.readRequestBody(context.getRequest(), Object.class, null);
         }
     }
 
@@ -133,7 +103,6 @@ public class WrapperArgumentResolver implements ArgumentResolver {
         public final BeanProperty property;
         public final boolean      isMap;
 
-        public boolean          body;
         public ArgumentResolver resolver;
 
         public WrappedArgument(Argument a) {

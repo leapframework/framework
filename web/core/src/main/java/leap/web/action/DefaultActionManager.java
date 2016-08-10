@@ -469,11 +469,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
             WrapperArgumentResolver.WrappedArgument ba =
                     new WrapperArgumentResolver.WrappedArgument(wa);
 
-            if(wa.isAnnotationPresent(ArgumentsWrapper.BodyParams.class) ||
-               wa.getType().isAnnotationPresent(ArgumentsWrapper.BodyParams.class)) {
-                ba.body = true;
-            }
-
             bas.add(ba);
         }
 
@@ -489,9 +484,8 @@ public class DefaultActionManager implements ActionManager,AppListener {
                     continue;
                 }
             }
-            if(!ba.body) {
-                ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
-            }
+
+            ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
         }
 
         return new WrapperArgumentResolver(app,
