@@ -18,6 +18,7 @@ package leap.web.api.mvc;
 
 import leap.core.validation.ValidationException;
 import leap.lang.Beans;
+import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.reflect.Reflection;
 import leap.orm.dao.Dao;
@@ -121,6 +122,11 @@ public abstract class ModelController<T extends Model> extends ApiController {
         if(null == options) {
             list = query.limit(apiConfig.getMaxPageSize()).list();
         }else{
+            //todo : parse and validate order by expression.
+            if(!Strings.isEmpty(options.getOrderBy())) {
+                query.orderBy(options.getOrderBy());
+            }
+
             list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
         }
 
