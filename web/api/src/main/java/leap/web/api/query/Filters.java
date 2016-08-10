@@ -16,8 +16,28 @@
 
 package leap.web.api.query;
 
-//todo :
-public class Filter {
+import leap.lang.Strings;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+//todo :
+public class Filters {
+
+
+    public static Map<String,String> parse(String expr) {
+
+        String[] fields = Strings.split(expr, ',');
+
+        Map<String, String> map = new LinkedHashMap<>(fields.length);
+
+        for(String field : fields) {
+            String[] kv = Strings.split(field, ':');
+
+            map.put(kv[0], kv[1]);
+        }
+
+        return map;
+    }
 
 }

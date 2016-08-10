@@ -28,7 +28,7 @@ public class QueryOptions {
     protected @QueryParam("limit")     Integer limit;
     protected @QueryParam("offset")    Integer offset;  //0-based
     protected @QueryParam("orderby")   String  orderBy;
-    protected @QueryParam("filter")    String  filter;
+    protected @QueryParam("filters")   String  filters;
 
     public Integer getPageSize() {
         return pageSize;
@@ -70,12 +70,12 @@ public class QueryOptions {
         this.orderBy = orderBy;
     }
 
-    public String getFilter() {
-        return filter;
+    public String getFilters() {
+        return filters;
     }
 
-    public void setFilter(String filter) {
-        this.filter = filter;
+    public void setFilters(String filters) {
+        this.filters = filters;
     }
 
     public Page getPage(int defaultPageSize) {
