@@ -20,9 +20,12 @@ import leap.core.validation.ValidationException;
 import leap.lang.Beans;
 import leap.lang.Types;
 import leap.lang.reflect.Reflection;
+import leap.lang.value.Page;
 import leap.orm.dao.Dao;
 import leap.orm.model.Model;
+import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.Partial;
+import leap.web.api.mvc.params.QueryOptions;
 
 import java.util.List;
 import java.util.Map;
@@ -65,6 +68,14 @@ public abstract class ModelController<T extends Model> extends ApiController {
         return ApiResponse.of(createRecord(request, id));
     }
 
+    /**
+     * Creates a new record of model.
+     *
+     * @param request the request bean contains properties of model.
+     * @param id the id of model, pass null if use auto generated id.
+     *
+     * @return the created model object.
+     */
     protected T createRecord(Object request, Object id) {
         T m = Reflection.newInstance(modelClass);
 
@@ -93,27 +104,44 @@ public abstract class ModelController<T extends Model> extends ApiController {
     }
 
     /**
-     * Gets the record of the specified id.
+     * Returns all the records.
      */
-    protected ApiResponse<List<T>> getAll() {
-        //todo : pagination.
-        return ApiResponse.of(dao.findAll(modelClass));
+    protected ApiResponse<List<T>> getAll(QueryOptions options) {
+        return queryList(options);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options) {
+        //todo : validates the query options.
+
+        CriteriaQuery<T> query = dao.createCriteriaQuery(modelClass);
+
+        List<T> list;
+        if(null == options) {
+            list = query.limit(apiConfig.getMaxPageSize()).list();
+        }else{
+            list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
+        }
+
+        return ApiResponse.of(list);
     }
 
     /**
      * Update partial properties of model.
      */
-    protected ApiResponse updatePartial(Object id, Partial<T> patch) {
-        if(patch.isEmpty()) {
+    protected ApiResponse updatePartial(Object id, Partial<T> partial) {
+        if(partial.isEmpty()) {
             return ApiResponse.badRequest("No update properties");
         }
 
         T model = Reflection.newInstance(modelClass);
 
         model.id(id);
-        model.setAll(patch.getProperties());
+        model.setAll(partial.getProperties());
 
-        if(!model.validate(patch.getProperties().keySet())) {
+        if(!model.validate(partial.getProperties().keySet())) {
             throw new ValidationException(model.errors());
         }
 

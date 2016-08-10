@@ -22,11 +22,14 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import leap.core.annotation.Inject;
 import leap.lang.Args;
+import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.net.Urls;
 import leap.lang.path.Paths;
+import leap.lang.reflect.ReflectClass;
+import leap.lang.reflect.ReflectField;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.api.config.*;
@@ -160,8 +163,8 @@ public class DefaultApis implements Apis, AppInitializable  {
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
-		//configure routes.
-		configureRoutes(app, c);
+		//resolve routes of api.
+		resolveRoutes(app, c);
 		
 		//configure by processors.
 		for(ApiConfigProcessor p : configProcessors) {
@@ -171,9 +174,11 @@ public class DefaultApis implements Apis, AppInitializable  {
 		for(ApiConfigProcessor p : configProcessors) {
 			p.postProcess(c.config());
 		}
+
+        configureRoutes(app, c.config());
 	}
 	
-    protected void configureRoutes(App app, ApiConfigurator c) {
+    protected void resolveRoutes(App app, ApiConfigurator c) {
 		String basePath				   = c.config().getBasePath();
 		String basePathSuffixWithSlash = Paths.suffixWithSlash(basePath);
 		for(Route route : app.routes()) {
@@ -188,7 +193,25 @@ public class DefaultApis implements Apis, AppInitializable  {
 			}
 		}
 	}
-	
+
+    protected void configureRoutes(App app, ApiConfig c) {
+        for(Route route : c.getRoutes()) {
+            Object controller = route.getAction().getController();
+            if(null != controller) {
+
+                ReflectClass rc = ReflectClass.of(controller.getClass());
+
+                for(ReflectField rf : rc.getFields()) {
+                    if(rf.getType().equals(ApiConfig.class)) {
+                        rf.setValue(controller, c);
+                        break;
+                    }
+                }
+
+            }
+        }
+    }
+
 	protected ApiMetadata createMetadata(ApiConfigurator c) {
 		return metadataFactory.createMetadata(c.config());
 	}

@@ -62,8 +62,13 @@ public class MethodAction implements Action {
     public String getName() {
 	    return method.getName();
     }
-	
-	@Override
+
+    @Override
+    public Object getController() {
+        return controller;
+    }
+
+    @Override
     public boolean hasReturnValue() {
 	    return hasReturnValue;
     }

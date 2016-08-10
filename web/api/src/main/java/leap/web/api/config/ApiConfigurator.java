@@ -26,7 +26,9 @@ public interface ApiConfigurator {
 	String[] DEFAULT_PRODUCES = new String[]{MimeTypes.APPLICATION_JSON};
 	String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
 	
-	String   DEFAULT_VERSION  = "1.0";
+	String   DEFAULT_VERSION   = "1.0";
+    int      MAX_PAGE_SIZE     = 10000;
+    int      DEFAULT_PAGE_SIZE = 50;
 	
 	/**
 	 * Returns the configuration object.
@@ -82,6 +84,16 @@ public interface ApiConfigurator {
 	 * Removes all the prefixes in model's name.
 	 */
 	ApiConfigurator removeModelNamePrefixes(String... prefixes);
+
+    /**
+     * Sets the max page size.
+     */
+    ApiConfigurator setMaxPageSize(int size);
+
+    /**
+     * Sets the default page size.
+     */
+    ApiConfigurator setDefaultPageSize(int size);
 
 	/**
 	 * Disables cors of this api.
