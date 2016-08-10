@@ -44,4 +44,6 @@ public interface ApiErrorHandler {
 
     void responseError(Response response, int status, ApiError error);
 
+    void responseError(Response response, int status, String code, String message);
+
 }

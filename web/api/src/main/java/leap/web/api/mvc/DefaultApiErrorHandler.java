@@ -28,7 +28,7 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
 
     @Override
     public void unauthorized(Response response, String message) {
-        responseError(response, HTTP.SC_UNAUTHORIZED, "Unauthorized", message);
+        responseError(response, HTTP.SC_UNAUTHORIZED,  HTTP.Status.UNAUTHORIZED.name(), message);
     }
 
     @Override
@@ -38,7 +38,7 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
 
     @Override
     public void forbidden(Response response, String message) {
-        responseError(response, HTTP.SC_FORBIDDEN, "Forbidden", message);
+        responseError(response, HTTP.SC_FORBIDDEN, HTTP.Status.FORBIDDEN.name(), message);
     }
 
     @Override
@@ -48,7 +48,7 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
 
     @Override
     public void notFound(Response response, String message) {
-        responseError(response, HTTP.SC_NOT_FOUND, "NotFound", message);
+        responseError(response, HTTP.SC_NOT_FOUND, HTTP.Status.NOT_FOUND.name(), message);
     }
 
     @Override
@@ -58,17 +58,17 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
 
     @Override
     public void badRequest(Response response, String message) {
-        responseError(response, HTTP.SC_BAD_REQUEST, "BadRequest", message);
+        responseError(response, HTTP.SC_BAD_REQUEST, HTTP.Status.BAD_REQUEST.name(), message);
     }
 
     @Override
     public void internalServerError(Response response, String message) {
-        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, "InternalServerError", message);
+        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), message);
     }
 
     @Override
     public void internalServerError(Response response, Throwable cause) {
-        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, "InternalServerError", cause.getMessage());
+        responseError(response, HTTP.SC_INTERNAL_SERVER_ERROR, HTTP.Status.INTERNAL_SERVER_ERROR.name(), cause.getMessage());
     }
 
     @Override
@@ -76,7 +76,8 @@ public class DefaultApiErrorHandler implements ApiErrorHandler {
         responseError(response, status, new ApiError(message));
     }
 
-    protected void responseError(Response response, int status, String code, String message) {
+    @Override
+    public void responseError(Response response, int status, String code, String message) {
         responseError(response, status, new ApiError(code, message));
     }
 

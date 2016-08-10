@@ -27,7 +27,6 @@ public class RequestBeanControllerTest extends WebTestBase {
         forPost("/request_bean/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
         forPost("/request_bean/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
         forPost("/request_bean/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/request_bean/test3?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 
     @Test

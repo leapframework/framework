@@ -36,14 +36,16 @@ public @interface RequestBean {
 
     }
 
+    @Target({ElementType.FIELD,ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface NonParam {
+
+    }
+
     /**
      * Validates the bean or not.
      */
     boolean valid() default true;
-
-    /**
-     * Returns true if the bean is also a request body argument.
-     */
-    boolean requestBody() default false;
 
 }

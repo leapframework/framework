@@ -25,6 +25,8 @@ import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Strings;
 import leap.lang.beans.BeanException;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyles;
@@ -352,8 +354,32 @@ public class DefaultAppInitializer implements AppInitializer {
             a.setBinder(binder);
         }
 
+        RequestBean requestBean = p.getAnnotation(RequestBean.class);
+        if(null == requestBean) {
+            requestBean = p.getType().getAnnotation(RequestBean.class);
+        }
+        if(null != requestBean) {
+            resolveWrappedArguments(app, a);
+        }
+
 		return a;
 	}
+
+    protected void resolveWrappedArguments(App app, ArgumentBuilder a) {
+        if(!a.getTypeInfo().isComplexType()) {
+            throw new IllegalStateException("Only Complex Type can be '" + RequestBean.class.getSimpleName() +
+                                            "', check the arg : " + a);
+        }
+
+        BeanType bt = BeanType.of(a.getType());
+
+        for(BeanProperty bp : bt.getProperties()) {
+            if(bp.isField() && !bp.isAnnotationPresent(RequestBean.NonParam.class)) {
+                ArgumentBuilder wrapped = new ArgumentBuilder(validationManager, bp);
+                a.addWrappedArgument(wrapped);
+            }
+        }
+    }
 	
 	@SuppressWarnings("unchecked")
     protected List<ActionInterceptor> resolveActionInterceptors(App app,ControllerHolder ch,ReflectMethod m) {

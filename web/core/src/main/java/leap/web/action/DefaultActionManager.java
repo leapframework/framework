@@ -22,6 +22,7 @@ import leap.core.validation.ValidationManager;
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.convert.ConvertException;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
@@ -34,6 +35,7 @@ import leap.web.annotation.RequestBean;
 import leap.web.annotation.RequestBody;
 import leap.web.annotation.ResolvedBy;
 import leap.web.config.WebInterceptors;
+import leap.web.exception.BadRequestException;
 import leap.web.exception.ResponseException;
 import leap.web.exception.ValidateFailureException;
 import leap.web.format.FormatManager;
@@ -63,7 +65,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	private List<ExecutionAttributes> easList = new ArrayList<>();
 
 	protected @Inject App                        app;
-    protected @Inject ValidationManager          validationManager;
 	protected @Inject RequestFormat[]            requestFormats;
 	protected @Inject FormatManager              formatManager;
 	protected @Inject ResultProcessorProvider[]  resultProcessorProviders;
@@ -328,9 +329,15 @@ public class DefaultActionManager implements ActionManager,AppListener {
 				}
 				Argument         argument = arguments[i];
 				ArgumentResolver resolver = executionArguments[i].resolver;
-				
-				Object value = resolver.resolveValue(context, argument);
-				
+
+				Object value;
+
+                try {
+                    value = resolver.resolveValue(context, argument);
+                }catch(ConvertException e){
+                    throw new BadRequestException(e.getMessage(), e);
+                }
+
 				ArgumentValidator[] validators = argument.getValidators();
 				for(int j=0;j<validators.length;j++){
 					ArgumentValidator v = validators[j];
@@ -397,14 +404,10 @@ public class DefaultActionManager implements ActionManager,AppListener {
     protected void prepareArgument(RouteBuilder route, Argument argument, ExecutionArgument ea, RequestBodyArgumentInfo rbaf) {
         ArgumentResolver resolver = null;
 
-        boolean args = Classes.isAnnotatioinPresent(argument.getAnnotations(), RequestBean.class) ||
-                       argument.getType().isAnnotationPresent(RequestBean.class);
+        boolean wrapper = argument.isWrapper();
 
-        if(args && !argument.getTypeInfo().isComplexType()) {
-            throw new IllegalStateException("Only Complex Type can be 'RequestBean', check arg : " + argument);
-        }
-
-        resolver = args ? createRequestBeanArgumentResolver(route, argument, rbaf) : resolveArgumentResolver(route, argument, rbaf);
+        resolver = wrapper ? createWrapperArgumentResolver(route, argument, rbaf) :
+                             resolveArgumentResolver(route, argument, rbaf);
 
         ea.resolver     = resolver;
         ea.isContextual = resolver instanceof ContextArgumentResolver;
@@ -460,20 +463,17 @@ public class DefaultActionManager implements ActionManager,AppListener {
         return resolver;
     }
 
-    protected RequestBeanArgumentResolver createRequestBeanArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
-        BeanType bt = BeanType.of(argument.getType());
-
+    protected RequestBeanArgumentResolver createWrapperArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
         boolean requestBody = rbaf.isDeclaredRequestBody(argument);
 
         List<RequestBeanArgumentResolver.BeanArgument> bas = new ArrayList<>();
 
-        for(BeanProperty bp : bt.getProperties()) {
-            RequestBeanArgumentResolver.BeanArgument ba = new RequestBeanArgumentResolver.BeanArgument(bp);
+        for(Argument wa : argument.getWrappedArguments()) {
+            RequestBeanArgumentResolver.BeanArgument ba =
+                    new RequestBeanArgumentResolver.BeanArgument(wa);
 
-            ba.argument = new ArgumentBuilder(validationManager, bp).build();
-
-            if(bp.isAnnotationPresent(RequestBean.BodyParams.class) ||
-               bp.getType().isAnnotationPresent(RequestBean.BodyParams.class)) {
+            if(wa.isAnnotationPresent(RequestBean.BodyParams.class) ||
+               wa.getType().isAnnotationPresent(RequestBean.BodyParams.class)) {
                 ba.body = true;
             }
 
@@ -500,7 +500,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
         return new RequestBeanArgumentResolver(app,
                                          argument,
                                          requestBody,
-                                         bt,
+                                         argument.getBeanType(),
                                          bas.toArray(new RequestBeanArgumentResolver.BeanArgument[]{}));
     }
     
@@ -521,7 +521,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		}
 		
 		if(null == fmt){
-			fmt = selectRequstFormat(context,eas);
+			fmt = selectRequestFormat(context,eas);
 		}
 		
 		if(null != fmt){
@@ -531,7 +531,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		return fmt;
 	}
 	
-	protected RequestFormat selectRequstFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {
+	protected RequestFormat selectRequestFormat(ActionContext context, ExecutionAttributes eas) throws Throwable {
 		if(null != eas.annotatedFormats){
 			RequestFormat fmt = formatManager.selectRequestFormat(context.getRequest(), eas.annotatedFormats);
 			if(null == fmt){

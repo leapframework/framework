@@ -19,10 +19,7 @@ import leap.core.validation.Valid;
 import leap.core.validation.ValidationManager;
 import leap.core.validation.Validator;
 import leap.core.validation.annotations.Required;
-import leap.lang.Buildable;
-import leap.lang.Classes;
-import leap.lang.Strings;
-import leap.lang.TypeInfo;
+import leap.lang.*;
 import leap.lang.annotation.Optional;
 import leap.lang.beans.BeanProperty;
 import leap.lang.http.Cookie;
@@ -40,6 +37,7 @@ import java.util.List;
 public class ArgumentBuilder implements Buildable<Argument> {
 
     protected String         name;
+    protected BeanProperty   beanProperty;
     protected Class<?>       type;
     protected Type           genericType;
     protected TypeInfo       typeInfo;
@@ -47,18 +45,22 @@ public class ArgumentBuilder implements Buildable<Argument> {
     protected Location       location;
     protected Annotation[]   annotations;
     protected ArgumentBinder binder;
-    protected List<ArgumentValidator> validators = new ArrayList<>();
+
+    protected List<ArgumentValidator> validators       = new ArrayList<>();
+    protected List<ArgumentBuilder>   wrappedArguments = new ArrayList<>();
 	
 	public ArgumentBuilder() {
 	    super();
     }
 
 	public ArgumentBuilder(ValidationManager validationManager, BeanProperty p) {
-		this.name 		 = p.getName();
-		this.type 		 = p.getType();
-		this.typeInfo    = p.getTypeInfo();
-		this.genericType = p.getGenericType();
-		this.annotations = p.getAnnotations();
+		this.name 		  = p.getName();
+        this.beanProperty = p;
+		this.type 		  = p.getType();
+		this.typeInfo     = p.getTypeInfo();
+		this.genericType  = p.getGenericType();
+		this.annotations  = p.getAnnotations();
+
 		this.autoConfigure();
         this.resolverValidators(validationManager);
 	}
@@ -74,7 +76,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	}
 
     protected void resolverValidators(ValidationManager validationManager) {
-        Validator v = null;
+        Validator v;
         for(Annotation pa : annotations){
             if((v = validationManager.tryCreateValidator(pa, type)) != null){
                 addValidator(new SimpleArgumentValidator(v));
@@ -108,7 +110,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return this;
 	}
 
-	public Class<?> getType() {
+    public Class<?> getType() {
 		return type;
 	}
 
@@ -179,7 +181,16 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return validators;
 	}
 
-	private void autoConfigure() {
+    public ArgumentBuilder addWrappedArgument(ArgumentBuilder a) {
+        wrappedArguments.add(a);
+        return this;
+    }
+
+    public List<ArgumentBuilder> getWrappedArguments() {
+        return wrappedArguments;
+    }
+
+    private void autoConfigure() {
         autoConfigureLocation();
         autoConfigureValidation();
 	}
@@ -231,18 +242,15 @@ public class ArgumentBuilder implements Buildable<Argument> {
         }
 
         RequestBody rb = Classes.getAnnotation(annotations, RequestBody.class, true);
+        if(null == rb) {
+            rb = type.getAnnotation(RequestBody.class);
+        }
         if(null != rb){
             this.location = Location.REQUEST_BODY;
             return;
         }
 
         if(null != type) {
-            RequestBean a = type.getAnnotation(RequestBean.class);
-            if(null != a && a.requestBody()) {
-                location = Location.REQUEST_BODY;
-                return;
-            }
-
             if(Cookie.class.equals(type) || javax.servlet.http.Cookie.class.equals(type)) {
                 location = Location.COOKIE_PARAM;
                 return;
@@ -274,8 +282,13 @@ public class ArgumentBuilder implements Buildable<Argument> {
 
 	@Override
     public Argument build() {
-		ArgumentValidator[] validators = null == this.validators ? null : this.validators.toArray(new ArgumentValidator[]{});
+		ArgumentValidator[] validators = this.validators.toArray(new ArgumentValidator[0]);
+
+        Argument[] wrappedArguments =
+                Builders.buildArray(this.wrappedArguments, new Argument[this.wrappedArguments.size()]);
 		
-	    return new Argument(name, type, genericType, typeInfo, required, location, annotations, binder, validators);
+	    return new Argument(name, beanProperty, type, genericType, typeInfo,
+                            required, location, annotations, binder,
+                            validators, wrappedArguments);
     }
 }
