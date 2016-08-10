@@ -354,9 +354,9 @@ public class DefaultAppInitializer implements AppInitializer {
             a.setBinder(binder);
         }
 
-        ArgumentsWrapper aw = p.getAnnotation(ArgumentsWrapper.class);
+        ParamsWrapper aw = p.getAnnotation(ParamsWrapper.class);
         if(null == aw) {
-            aw = p.getType().getAnnotation(ArgumentsWrapper.class);
+            aw = p.getType().getAnnotation(ParamsWrapper.class);
         }
         if(null != aw) {
             resolveWrappedArguments(app, a);
@@ -367,7 +367,7 @@ public class DefaultAppInitializer implements AppInitializer {
 
     protected void resolveWrappedArguments(App app, ArgumentBuilder a) {
         if(!a.getTypeInfo().isComplexType()) {
-            throw new IllegalStateException("Only Complex Type can be '" + ArgumentsWrapper.class.getSimpleName() +
+            throw new IllegalStateException("Only Complex Type can be '" + ParamsWrapper.class.getSimpleName() +
                                             "', check the arg : " + a);
         }
 

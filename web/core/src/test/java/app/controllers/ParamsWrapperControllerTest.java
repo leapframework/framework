@@ -19,23 +19,23 @@ import leap.lang.New;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
-public class ArgumentsWrapperControllerTest extends WebTestBase {
+public class ParamsWrapperControllerTest extends WebTestBase {
 
     @Test
     public void testSimpleWrapperBean() {
-        forPost("/arguments_wrapper/test?id=1").setBody("Hello").send().assertOk();
-        forPost("/arguments_wrapper/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/arguments_wrapper/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/arguments_wrapper/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/params_wrapper/test?id=1").setBody("Hello").send().assertOk();
+        forPost("/params_wrapper/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/params_wrapper/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/params_wrapper/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 
     @Test
     public void testMultiWrapperBean() {
-        forPost("/arguments_wrapper/test3?id=1&name=Hello").send().assertOk();
+        forPost("/params_wrapper/test3?id=1&name=Hello").send().assertOk();
     }
 
     @Test
     public void testCombineWrapperAndBody() {
-        forPost("/arguments_wrapper/test4?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/params_wrapper/test4?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 }

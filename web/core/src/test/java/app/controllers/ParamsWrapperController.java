@@ -17,12 +17,12 @@ package app.controllers;
 
 import leap.lang.Assert;
 import leap.web.annotation.QueryParam;
-import leap.web.annotation.ArgumentsWrapper;
+import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.RequestBody;
 
 import java.util.Map;
 
-public class ArgumentsWrapperController {
+public class ParamsWrapperController {
 
     public void test(ReqBean bean) {
         Assert.notEmpty(bean.id);
@@ -56,13 +56,13 @@ public class ArgumentsWrapperController {
         Assert.notEmpty(body.name);
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     public static final class ReqBean {
         public @QueryParam  String id;
         public @RequestBody String name;
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     public static final class ReqBean0 {
         public @QueryParam  String     id;
         public @RequestBody NestedBean nested;
@@ -72,13 +72,13 @@ public class ArgumentsWrapperController {
         public String name;
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     public static final class ReqBean1 {
         public @QueryParam String id;
         public             String name;
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     @RequestBody
     public static final class ReqBean2 {
         public String             id;
@@ -86,12 +86,12 @@ public class ArgumentsWrapperController {
         public Map<String,Object> vars;
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     public static final class IdBean {
         public @QueryParam String id;
     }
 
-    @ArgumentsWrapper
+    @ParamsWrapper
     public static final class NameBean {
         public @QueryParam String name;
     }
