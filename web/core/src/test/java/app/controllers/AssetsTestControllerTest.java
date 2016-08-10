@@ -80,7 +80,7 @@ public class AssetsTestControllerTest extends WebTestCase {
         tempDir.createRelative("./assets").getFile().mkdirs();
 
         FileResource file1 = tempDir.createRelative("./upload/1.js");
-        FileResource file2 = tempDir.createRelative("./assets/external_assets_js1.js");
+        FileResource file2 = tempDir.createRelative("./assets/2.js");
 
         IO.writeString(file1.getFile(), "var i=0;");
         IO.writeString(file2.getFile(), "var i=0;");
@@ -88,7 +88,7 @@ public class AssetsTestControllerTest extends WebTestCase {
         System.out.println("file : " + file1.getURLString());
 
         String url1 = url("/upload/1.js");
-        String url2 = url("/external_assets_js1.js");
+        String url2 = url("/2.js");
         assertNotEmpty(url1);
         assertNotEmpty(url2);
 

@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-package leap.web.api.mvc;
+package leap.web.annotation;
 
-import leap.web.annotation.ArgumentsWrapper;
+import java.lang.annotation.*;
 
-@ArgumentsWrapper
-public abstract class ApiRequest {
+@Target({ElementType.FIELD,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface NonParam {
 
 }

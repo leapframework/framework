@@ -27,19 +27,12 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface RequestBean {
+public @interface ArgumentsWrapper {
 
     @Target({ElementType.FIELD,ElementType.METHOD,ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
     @Inherited
     @interface BodyParams {
-
-    }
-
-    @Target({ElementType.FIELD,ElementType.METHOD})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Inherited
-    @interface NonParam {
 
     }
 

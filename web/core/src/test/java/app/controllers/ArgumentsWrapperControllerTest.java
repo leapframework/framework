@@ -19,29 +19,29 @@ import leap.lang.New;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
-public class RequestBeanControllerTest extends WebTestBase {
+public class ArgumentsWrapperControllerTest extends WebTestBase {
 
     @Test
     public void testSimpleRequestBean() {
-        forPost("/request_bean/test?id=1").setBody("Hello").send().assertOk();
-        forPost("/request_bean/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/request_bean/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/request_bean/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test?id=1").setBody("Hello").send().assertOk();
+        forPost("/arguments_wrapper/test0?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test1?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test2?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 
     @Test
     public void testMultiRequestBean() {
-        forPost("/request_bean/test4?id=1&name=Hello").send().assertOk();
+        forPost("/arguments_wrapper/test4?id=1&name=Hello").send().assertOk();
     }
 
     @Test
     public void testCombineRequestAndBody() {
-        forPost("/request_bean/test5?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test5?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 
     @Test
     public void testBodyBean() {
-        forPost("/request_bean/test6?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
-        forPost("/request_bean/test7?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test6?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
+        forPost("/arguments_wrapper/test7?id=1").setJson(New.hashMap("name","Hello")).send().assertOk();
     }
 }

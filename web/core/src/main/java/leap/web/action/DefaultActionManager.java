@@ -18,10 +18,7 @@ package leap.web.action;
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
-import leap.core.validation.ValidationManager;
 import leap.lang.*;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
 import leap.lang.convert.ConvertException;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
@@ -31,7 +28,7 @@ import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
 import leap.web.annotation.Consumes;
-import leap.web.annotation.RequestBean;
+import leap.web.annotation.ArgumentsWrapper;
 import leap.web.annotation.RequestBody;
 import leap.web.annotation.ResolvedBy;
 import leap.web.config.WebInterceptors;
@@ -463,17 +460,17 @@ public class DefaultActionManager implements ActionManager,AppListener {
         return resolver;
     }
 
-    protected RequestBeanArgumentResolver createWrapperArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
+    protected WrapperArgumentResolver createWrapperArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
         boolean requestBody = rbaf.isDeclaredRequestBody(argument);
 
-        List<RequestBeanArgumentResolver.BeanArgument> bas = new ArrayList<>();
+        List<WrapperArgumentResolver.WrappedArgument> bas = new ArrayList<>();
 
         for(Argument wa : argument.getWrappedArguments()) {
-            RequestBeanArgumentResolver.BeanArgument ba =
-                    new RequestBeanArgumentResolver.BeanArgument(wa);
+            WrapperArgumentResolver.WrappedArgument ba =
+                    new WrapperArgumentResolver.WrappedArgument(wa);
 
-            if(wa.isAnnotationPresent(RequestBean.BodyParams.class) ||
-               wa.getType().isAnnotationPresent(RequestBean.BodyParams.class)) {
+            if(wa.isAnnotationPresent(ArgumentsWrapper.BodyParams.class) ||
+               wa.getType().isAnnotationPresent(ArgumentsWrapper.BodyParams.class)) {
                 ba.body = true;
             }
 
@@ -486,7 +483,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
             nestedRbaf = new RequestBodyArgumentInfo();
         }
 
-        for(RequestBeanArgumentResolver.BeanArgument ba : bas) {
+        for(WrapperArgumentResolver.WrappedArgument ba : bas) {
             if(requestBody) {
                 if(ba.property.isComplexType()) {
                     continue;
@@ -497,11 +494,11 @@ public class DefaultActionManager implements ActionManager,AppListener {
             }
         }
 
-        return new RequestBeanArgumentResolver(app,
+        return new WrapperArgumentResolver(app,
                                          argument,
                                          requestBody,
                                          argument.getBeanType(),
-                                         bas.toArray(new RequestBeanArgumentResolver.BeanArgument[]{}));
+                                         bas.toArray(new WrapperArgumentResolver.WrappedArgument[]{}));
     }
     
 	protected RequestFormat resolveRequestFormat(ActionContext context,ExecutionAttributes eas) throws Throwable {
