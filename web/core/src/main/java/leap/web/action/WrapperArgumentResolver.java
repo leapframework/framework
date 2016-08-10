@@ -25,19 +25,19 @@ import leap.web.format.RequestFormat;
 
 import java.util.Map;
 
-public class RequestBeanArgumentResolver implements ArgumentResolver {
+public class WrapperArgumentResolver implements ArgumentResolver {
 
     protected final Argument          argument;
     protected final boolean           requestBody;
     protected final BeanType          beanType;
-    protected final BeanArgument[]    bindingArguments;
+    protected final WrappedArgument[] wrappedArguments;
     protected final RequestBodyReader requestBodyReader;
 
-    public RequestBeanArgumentResolver(App app, Argument argument, boolean requestBody, BeanType beanType, BeanArgument[] bindingArguments) {
+    public WrapperArgumentResolver(App app, Argument argument, boolean requestBody, BeanType beanType, WrappedArgument[] wrappedArguments) {
         this.argument          = argument;
         this.requestBody       = requestBody;
         this.beanType          = beanType;
-        this.bindingArguments  = bindingArguments;
+        this.wrappedArguments  = wrappedArguments;
         this.requestBodyReader = getRequestBodyReader(app, argument);
     }
 
@@ -46,7 +46,7 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
         Object bean = beanType.newInstance();
 
         //binding the nested arguments(properties) in bean.
-        for(BeanArgument ba : bindingArguments) {
+        for(WrappedArgument ba : wrappedArguments) {
             ArgumentResolver r = ba.resolver;
             if(null == r) {
                 continue;
@@ -58,12 +58,12 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
             }
         }
 
-        //The bean itself is request body argument.
+        //The bean itself is a request body argument.
         if(requestBody) {
             Map body = readRequestBody(context);
 
             if(null != body) {
-                for(BeanArgument ba : bindingArguments) {
+                for(WrappedArgument ba : wrappedArguments) {
                     Argument a = ba.argument;
 
                     if(ba.body) {
@@ -128,7 +128,7 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
         return null;
     }
 
-    public static final class BeanArgument {
+    public static final class WrappedArgument {
         public final Argument     argument;
         public final BeanProperty property;
         public final boolean      isMap;
@@ -136,7 +136,7 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
         public boolean          body;
         public ArgumentResolver resolver;
 
-        public BeanArgument(Argument a) {
+        public WrappedArgument(Argument a) {
             this.argument = a;
             this.property = a.getBeanProperty();
             this.isMap    = a.getBeanProperty().getTypeInfo().isMap();

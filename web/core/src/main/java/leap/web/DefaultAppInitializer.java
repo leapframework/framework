@@ -322,8 +322,8 @@ public class DefaultAppInitializer implements AppInitializer {
 
 		action.getInterceptors().addAll(resolveActionInterceptors(app, ch, m));
 		
-		for(int i=0;i<m.getParameters().length;i++){
-			action.addArgument(createArgument(app, m, m.getParameters()[i]));
+		for(ReflectParameter p : m.getParameters()){
+            action.addArgument(createArgument(app, m, p));
 		}
 		
 		return action;
@@ -354,11 +354,11 @@ public class DefaultAppInitializer implements AppInitializer {
             a.setBinder(binder);
         }
 
-        RequestBean requestBean = p.getAnnotation(RequestBean.class);
-        if(null == requestBean) {
-            requestBean = p.getType().getAnnotation(RequestBean.class);
+        ArgumentsWrapper aw = p.getAnnotation(ArgumentsWrapper.class);
+        if(null == aw) {
+            aw = p.getType().getAnnotation(ArgumentsWrapper.class);
         }
-        if(null != requestBean) {
+        if(null != aw) {
             resolveWrappedArguments(app, a);
         }
 
@@ -367,14 +367,14 @@ public class DefaultAppInitializer implements AppInitializer {
 
     protected void resolveWrappedArguments(App app, ArgumentBuilder a) {
         if(!a.getTypeInfo().isComplexType()) {
-            throw new IllegalStateException("Only Complex Type can be '" + RequestBean.class.getSimpleName() +
+            throw new IllegalStateException("Only Complex Type can be '" + ArgumentsWrapper.class.getSimpleName() +
                                             "', check the arg : " + a);
         }
 
         BeanType bt = BeanType.of(a.getType());
 
         for(BeanProperty bp : bt.getProperties()) {
-            if(bp.isField() && !bp.isAnnotationPresent(RequestBean.NonParam.class)) {
+            if(bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {
                 ArgumentBuilder wrapped = new ArgumentBuilder(validationManager, bp);
                 a.addWrappedArgument(wrapped);
             }

@@ -62,7 +62,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.annotations  = p.getAnnotations();
 
 		this.autoConfigure();
-        this.resolverValidators(validationManager);
+        this.resolveValidators(validationManager);
 	}
 	
 	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
@@ -72,10 +72,10 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
 		this.autoConfigure();
-        this.resolverValidators(validationManager);
+        this.resolveValidators(validationManager);
 	}
 
-    protected void resolverValidators(ValidationManager validationManager) {
+    protected void resolveValidators(ValidationManager validationManager) {
         Validator v;
         for(Annotation pa : annotations){
             if((v = validationManager.tryCreateValidator(pa, type)) != null){
@@ -94,7 +94,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
                 addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
             }
         }else {
-			RequestBean a = type.getAnnotation(RequestBean.class);
+			ArgumentsWrapper a = type.getAnnotation(ArgumentsWrapper.class);
 			if(null != a && a.valid()){
                 addValidator(new NestedArgumentValidator(true));
             }

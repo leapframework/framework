@@ -26,7 +26,7 @@ import leap.web.Request;
 import leap.web.action.ControllerBase;
 import leap.web.annotation.CookieParam;
 import leap.web.annotation.HeaderParam;
-import leap.web.annotation.RequestBean;
+import leap.web.annotation.ArgumentsWrapper;
 import leap.web.annotation.Path;
 
 import java.util.HashMap;
@@ -117,7 +117,7 @@ public class ArgumentController extends ControllerBase {
     }
 
     @Path("args_bean/{id}")
-    public void argsBean(@RequestBean ArgsBean bean) {
+    public void argsBean(@ArgumentsWrapper ArgsBean bean) {
         Assert.notNull(bean);
         Assert.notNull(bean.request);
         Assert.isFalse(Strings.isEmpty(bean.id));
@@ -300,7 +300,7 @@ public class ArgumentController extends ControllerBase {
         public String  name;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class ArgsBean1{
         public Request request;
         public String  id;

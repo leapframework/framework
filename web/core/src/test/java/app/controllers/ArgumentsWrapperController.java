@@ -17,12 +17,12 @@ package app.controllers;
 
 import leap.lang.Assert;
 import leap.web.annotation.QueryParam;
-import leap.web.annotation.RequestBean;
+import leap.web.annotation.ArgumentsWrapper;
 import leap.web.annotation.RequestBody;
 
 import java.util.Map;
 
-public class RequestBeanController {
+public class ArgumentsWrapperController {
 
     public void test(ReqBean bean) {
         Assert.notEmpty(bean.id);
@@ -69,13 +69,13 @@ public class RequestBeanController {
         Assert.notEmpty(bean.params.get("name"));
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class ReqBean {
         public @QueryParam  String id;
         public @RequestBody String name;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class ReqBean0 {
         public @QueryParam  String     id;
         public @RequestBody NestedBean nested;
@@ -85,13 +85,13 @@ public class RequestBeanController {
         public String name;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class ReqBean1 {
         public @QueryParam String id;
         public             String name;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     @RequestBody
     public static final class ReqBean2 {
         public String             id;
@@ -99,12 +99,12 @@ public class RequestBeanController {
         public Map<String,Object> vars;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class IdBean {
         public @QueryParam String id;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     public static final class NameBean {
         public @QueryParam String name;
     }
@@ -114,7 +114,7 @@ public class RequestBeanController {
         public String name;
     }
 
-    @RequestBean.BodyParams
+    @ArgumentsWrapper.BodyParams
     public static final class BodyBean1 {
         public String name;
     }
@@ -123,7 +123,7 @@ public class RequestBeanController {
         public String name;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     @RequestBody
     public static final class ReqBean4 {
         public String    id;
@@ -131,12 +131,12 @@ public class RequestBeanController {
         public BodyBean1 body;
     }
 
-    @RequestBean
+    @ArgumentsWrapper
     @RequestBody
     public static final class ReqBean5 {
-        public                         String              id;
-        public                         String              name;
-        public @RequestBean.BodyParams BodyBean2           body;
-        public @RequestBean.BodyParams Map<String, Object> params;
+        public                              String              id;
+        public                              String              name;
+        public @ArgumentsWrapper.BodyParams BodyBean2           body;
+        public @ArgumentsWrapper.BodyParams Map<String, Object> params;
     }
 }
