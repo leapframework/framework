@@ -20,20 +20,28 @@ import leap.core.validation.ValidationException;
 import leap.lang.Beans;
 import leap.lang.Strings;
 import leap.lang.Types;
+import leap.lang.convert.Converts;
 import leap.lang.reflect.Reflection;
 import leap.orm.dao.Dao;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
+import leap.web.api.query.Filters;
+import leap.web.exception.BadRequestException;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ModelController<T extends Model> extends ApiController {
 
     private final Class<T> modelClass = getModelClass();
     private final Dao      dao        = Dao.of(modelClass);
+    private final EntityMapping em    = dao.getOrmContext().getMetadata().getEntityMapping(modelClass);
 
     private Class<T> getModelClass() {
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
@@ -125,6 +133,32 @@ public abstract class ModelController<T extends Model> extends ApiController {
             //todo : parse and validate order by expression.
             if(!Strings.isEmpty(options.getOrderBy())) {
                 query.orderBy(options.getOrderBy());
+            }
+
+            //todo : parse and validate filters expression.
+            if(!Strings.isEmpty(options.getFilters())) {
+                Map<String,String> props = Filters.parse(options.getFilters());
+
+                StringBuilder where = new StringBuilder();
+
+                Map<String,Object> params = new HashMap<>(props.size());
+
+                final AtomicInteger i = new AtomicInteger(0);
+                props.forEach((name,value) -> {
+                    FieldMapping fm = em.getFieldMapping(name);
+                    if(null == fm) {
+                        throw new BadRequestException("The filtering property '" + name + "' not found in model");
+                    }
+
+                    if(i.getAndIncrement() > 0) {
+                        where.append(" and ");
+                    }
+                    where.append(name).append("=:").append(name);
+
+                    params.put(name, Converts.convert(value, fm.getJavaType()));
+                });
+
+                query.where(where.toString()).params(params);
             }
 
             list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
