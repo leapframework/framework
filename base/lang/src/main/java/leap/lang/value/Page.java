@@ -22,12 +22,22 @@ public class Page extends Limit {
 	/**
 	 * Creates a new {@link Page} instance of the given limit size.
 	 * 
-	 * @param limit the limit size, starts from 1.
+	 * @param size the limit size, starts from 1.
 	 * 
 	 * @see #startFrom(int, int)
 	 */
     public static Page limit(int size){
     	return startFrom(1, size);
+    }
+
+    /**
+     * Creates a new {@link Page} instance of the given limit size and starts from offset.
+     *
+     * <p/>
+     * The offset is starts from 1.
+     */
+    public static Page limit(int limit, int offset) {
+       return startFrom(offset, limit);
     }
 	
     /**

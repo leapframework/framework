@@ -20,6 +20,7 @@ import leap.web.annotation.Consumes;
 import leap.web.annotation.Failure;
 import leap.web.annotation.Produces;
 import leap.web.annotation.RestController;
+import leap.web.api.config.ApiConfig;
 import leap.web.security.annotation.AllowClientOnly;
 
 @Consumes("json")
@@ -28,5 +29,7 @@ import leap.web.security.annotation.AllowClientOnly;
 @RestController
 @Failure(handler = ApiFailureHandler.class)
 public abstract class ApiController {
+
+    protected ApiConfig apiConfig;
 
 }

@@ -40,8 +40,8 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String PRODUCES_ELEMENT  = "produces";
     protected static final String CONSUMES_ELEMENT  = "consumes";
     protected static final String PROTOCOLS_ELEMENT = "protocols";
-
-
+    protected static final String MAX_PAGE_SIZE     = "max-page-size";
+    protected static final String DEFAULT_PAGE_SIZE = "default-page-size";
     protected static final String ENABLED_ATTR      = "enabled";
     protected static final String AUTHZ_URL_ELEMENT = "authz-url";
     protected static final String TOKEN_URL_ELEMENT = "token-url";
@@ -213,6 +213,22 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 String s = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(s)) {
                     api.setProtocols(Strings.splitMultiLines(s));
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(MAX_PAGE_SIZE)) {
+                Integer i = reader.getIntegerElementTextAndEnd();
+                if(null != i) {
+                    api.setMaxPageSize(i);
+                }
+                continue;
+            }
+
+            if(reader.isStartElement(DEFAULT_PAGE_SIZE)) {
+                Integer i = reader.getIntegerElementTextAndEnd();
+                if(null != i) {
+                    api.setDefaultPageSize(i);
                 }
                 continue;
             }

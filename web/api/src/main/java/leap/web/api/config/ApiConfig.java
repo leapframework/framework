@@ -89,7 +89,7 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns the url of authorization endpoint in oauth2 server.
 	 *
 	 * <p>
-	 * Rquired if oauth enabled.
+	 * Required if oauth enabled.
 	 */
 	String getOAuthAuthorizationUrl();
 
@@ -120,6 +120,16 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns an immutable {@link Set} contains the prefixes will be removed from all the model names.
 	 */
 	Set<String> getRemovalModelNamePrefixes();
+
+    /**
+     * Returns the max page size of pagination.
+     */
+    int getMaxPageSize();
+
+    /**
+     * Returns the default page size of pagination.
+     */
+    int getDefaultPageSize();
 
 	/**
 	 * Returns all the routes in this api.

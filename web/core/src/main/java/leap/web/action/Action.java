@@ -31,6 +31,14 @@ public interface Action extends Named,AnnotationsGetter {
 	default String getName() {
 		return toString();
 	}
+
+    default boolean hasController() {
+        return null != getController();
+    }
+
+    default Object getController() {
+        return null;
+    }
 	
 	default boolean hasReturnValue() {
 		return false;
