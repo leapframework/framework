@@ -46,11 +46,6 @@ public class RequestBeanController {
         Assert.isNull(bean.vars);
     }
 
-    public void test3(ReqBean3 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-    }
-
     public void test4(IdBean id,NameBean name) {
         Assert.notEmpty(id.id);
         Assert.notEmpty(name.name);
@@ -102,12 +97,6 @@ public class RequestBeanController {
         public String             id;
         public String             name;
         public Map<String,Object> vars;
-    }
-
-    @RequestBean(requestBody = true)
-    public static final class ReqBean3 {
-        public String id;
-        public String name;
     }
 
     @RequestBean

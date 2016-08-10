@@ -129,16 +129,17 @@ public class RequestBeanArgumentResolver implements ArgumentResolver {
     }
 
     public static final class BeanArgument {
-        public final BeanProperty     property;
-        public final boolean          isMap;
+        public final Argument     argument;
+        public final BeanProperty property;
+        public final boolean      isMap;
 
-        public Argument         argument;
         public boolean          body;
         public ArgumentResolver resolver;
 
-        public BeanArgument(BeanProperty p) {
-            this.property = p;
-            this.isMap    = p.getTypeInfo().isMap();
+        public BeanArgument(Argument a) {
+            this.argument = a;
+            this.property = a.getBeanProperty();
+            this.isMap    = a.getBeanProperty().getTypeInfo().isMap();
         }
     }
 }

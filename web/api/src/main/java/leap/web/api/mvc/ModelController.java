@@ -20,7 +20,6 @@ import leap.core.validation.ValidationException;
 import leap.lang.Beans;
 import leap.lang.Types;
 import leap.lang.reflect.Reflection;
-import leap.lang.value.Page;
 import leap.orm.dao.Dao;
 import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;

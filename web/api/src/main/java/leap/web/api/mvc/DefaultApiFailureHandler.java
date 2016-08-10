@@ -22,6 +22,7 @@ import leap.core.validation.ValidationException;
 import leap.lang.NamedError;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.http.HTTP;
 import leap.web.Response;
 import leap.web.Result;
 import leap.web.action.ActionContext;
@@ -51,8 +52,10 @@ public class DefaultApiFailureHandler implements ApiFailureHandler {
             }
 
             if(e instanceof ResponseException) {
-                errorHandler.responseError(response
-                        , ((ResponseException) e).getStatus(), e.getMessage());
+                int code = ((ResponseException) e).getStatus();
+                HTTP.Status status = HTTP.Status.valueOf(code);
+
+                errorHandler.responseError(response, code, status.name() , e.getMessage());
                 return true;
             }
 

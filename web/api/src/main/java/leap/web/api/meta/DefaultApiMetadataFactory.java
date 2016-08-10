@@ -229,35 +229,50 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
-            MApiParameterBuilder p = new MApiParameterBuilder();
+            if(a.isWrapper()) {
 
-            p.setName(a.getName());
+                for(Argument wa : a.getWrappedArguments()) {
+                    createApiParameter(context, m, route, op, wa);
+                }
 
-            log.trace("   {}", a.getName(), p.getLocation());
-
-            if(isParameterFileType(a.getType())) {
-                p.setType(MSimpleTypes.BINARY);
-                p.setFile(true);
-                op.addConsume(MimeTypes.MULTIPART_FORM_DATA);
-            }else{
-                p.setType(createMType(context, m, a.getTypeInfo()));
+                if(!a.isRequestBody()) {
+                    continue;
+                }
             }
 
-            p.setLocation(getParameterLocation(context, action, a, op, p));
-
-            if (null != a.getRequired()) {
-                p.setRequired(a.getRequired());
-            } else if (p.getLocation() == MApiParameter.Location.PATH) {
-                p.setRequired(true);
-            }
-
-            if(a.getType().isEnum()){
-                p.setEnumValues(Enums.getValues(a.getType()));
-            }
-
-            op.addParameter(p);
+            createApiParameter(context, m, route, op, a);
         }
 	}
+
+    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a) {
+        MApiParameterBuilder p = new MApiParameterBuilder();
+
+        p.setName(a.getName());
+
+        log.trace("   {}", a.getName(), p.getLocation());
+
+        if(isParameterFileType(a.getType())) {
+            p.setType(MSimpleTypes.BINARY);
+            p.setFile(true);
+            op.addConsume(MimeTypes.MULTIPART_FORM_DATA);
+        }else{
+            p.setType(createMType(context, m, a.getTypeInfo()));
+        }
+
+        p.setLocation(getParameterLocation(context, route.getAction(), a, op, p));
+
+        if (null != a.getRequired()) {
+            p.setRequired(a.getRequired());
+        } else if (p.getLocation() == MApiParameter.Location.PATH) {
+            p.setRequired(true);
+        }
+
+        if(a.getType().isEnum()){
+            p.setEnumValues(Enums.getValues(a.getType()));
+        }
+
+        op.addParameter(p);
+    }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
         MetaApiResponse[] annotations =
