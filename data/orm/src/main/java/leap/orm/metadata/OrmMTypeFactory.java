@@ -61,6 +61,8 @@ public class OrmMTypeFactory implements MTypeFactory {
 			p.setNullable(fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
+            p.setSortable(fm.getSortable());
+            p.setFilterable(fm.getFilterable());
 
             if(type.isEnum()) {
                 p.setEnumValues(Enums.getValues(type));

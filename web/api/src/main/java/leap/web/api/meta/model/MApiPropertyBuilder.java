@@ -18,6 +18,9 @@ package leap.web.api.meta.model;
 import leap.lang.meta.MProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
+
+    protected boolean sortable;
+    protected boolean filterable;
 	
 	public MApiPropertyBuilder() {
 	    super();
@@ -37,12 +40,31 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required = !mp.isNullable();
+        this.sortable = mp.isSortableExplicitly();
+        this.filterable = mp.isFilterableExplicitly();
 	}
 
-	@Override
+    public boolean isSortable() {
+        return sortable;
+    }
+
+    public void setSortable(boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public boolean isFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(boolean filterable) {
+        this.filterable = filterable;
+    }
+
+    @Override
     public MApiProperty build() {
 	    return new MApiProperty(name, title, summary, description, type, format, password, required,
                                 defaultValue, enumValues,
-	    					   null == validation ? null : validation.build(), attrs);
+	    					    null == validation ? null : validation.build(), attrs,
+                                sortable, filterable);
     }
 }

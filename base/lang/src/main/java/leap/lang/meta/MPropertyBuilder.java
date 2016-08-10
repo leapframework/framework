@@ -25,6 +25,8 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     protected Integer  length;
     protected Integer  precision;
     protected Integer  scale;
+    protected Boolean  sortable;
+    protected Boolean  filterable;
 
     public MType getType() {
         return type;
@@ -90,10 +92,27 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.scale = scale;
     }
 
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public void setSortable(Boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(Boolean filterable) {
+        this.filterable = filterable;
+    }
+
     @Override
     public MProperty build() {
         return new MProperty(name, title, summary, description, type, nullable,
-                             defaultValue, enumValues, fixedLength, length, precision, scale);
+                             defaultValue, enumValues, fixedLength, length, precision, scale,
+                             sortable, filterable);
     }
 
 }
