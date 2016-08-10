@@ -94,7 +94,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
                 addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
             }
         }else {
-			ArgumentsWrapper a = type.getAnnotation(ArgumentsWrapper.class);
+			ParamsWrapper a = type.getAnnotation(ParamsWrapper.class);
 			if(null != a && a.valid()){
                 addValidator(new NestedArgumentValidator(true));
             }

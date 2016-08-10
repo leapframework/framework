@@ -16,9 +16,9 @@
 
 package leap.web.api.mvc;
 
-import leap.web.annotation.ArgumentsWrapper;
+import leap.web.annotation.ParamsWrapper;
 
-@ArgumentsWrapper
+@ParamsWrapper
 public abstract class ApiRequest {
 
 }

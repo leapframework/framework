@@ -18,9 +18,9 @@ package leap.web.api.mvc.params;
 
 import leap.lang.value.Page;
 import leap.web.annotation.QueryParam;
-import leap.web.annotation.ArgumentsWrapper;
+import leap.web.annotation.ParamsWrapper;
 
-@ArgumentsWrapper
+@ParamsWrapper
 public class QueryOptions {
 
     protected @QueryParam("page_size") Integer pageSize;

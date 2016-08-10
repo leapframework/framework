@@ -28,7 +28,6 @@ import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
 import leap.web.annotation.Consumes;
-import leap.web.annotation.ArgumentsWrapper;
 import leap.web.annotation.RequestBody;
 import leap.web.annotation.ResolvedBy;
 import leap.web.config.WebInterceptors;

@@ -27,7 +27,7 @@ import java.lang.annotation.*;
 @Target({ElementType.PARAMETER,ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface ArgumentsWrapper {
+public @interface ParamsWrapper {
 
     /**
      * Validates the bean or not.
