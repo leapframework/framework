@@ -29,13 +29,6 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ArgumentsWrapper {
 
-    @Target({ElementType.FIELD,ElementType.METHOD,ElementType.TYPE})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Inherited
-    @interface BodyParams {
-
-    }
-
     /**
      * Validates the bean or not.
      */

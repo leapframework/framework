@@ -46,27 +46,14 @@ public class ArgumentsWrapperController {
         Assert.isNull(bean.vars);
     }
 
-    public void test4(IdBean id,NameBean name) {
+    public void test3(IdBean id,NameBean name) {
         Assert.notEmpty(id.id);
         Assert.notEmpty(name.name);
     }
 
-    public void test5(IdBean id,BodyBean body) {
+    public void test4(IdBean id,BodyBean body) {
         Assert.notEmpty(id.id);
         Assert.notEmpty(body.name);
-    }
-
-    public void test6(ReqBean4 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-        Assert.notEmpty(bean.body.name);
-    }
-
-    public void test7(ReqBean5 bean) {
-        Assert.notEmpty(bean.id);
-        Assert.notEmpty(bean.name);
-        Assert.notEmpty(bean.body.name);
-        Assert.notEmpty(bean.params.get("name"));
     }
 
     @ArgumentsWrapper
@@ -112,31 +99,5 @@ public class ArgumentsWrapperController {
     @RequestBody
     public static final class BodyBean {
         public String name;
-    }
-
-    @ArgumentsWrapper.BodyParams
-    public static final class BodyBean1 {
-        public String name;
-    }
-
-    public static final class BodyBean2 {
-        public String name;
-    }
-
-    @ArgumentsWrapper
-    @RequestBody
-    public static final class ReqBean4 {
-        public String    id;
-        public String    name;
-        public BodyBean1 body;
-    }
-
-    @ArgumentsWrapper
-    @RequestBody
-    public static final class ReqBean5 {
-        public                              String              id;
-        public                              String              name;
-        public @ArgumentsWrapper.BodyParams BodyBean2           body;
-        public @ArgumentsWrapper.BodyParams Map<String, Object> params;
     }
 }
