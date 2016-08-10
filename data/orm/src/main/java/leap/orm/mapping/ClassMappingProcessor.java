@@ -60,6 +60,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		if(null != annotations && annotations.length > 0){
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Column.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Sortable.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Filterable.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
 			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
@@ -182,17 +184,27 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             //unique
             if (!a.unique().isNone()) {
-                c.setUnique(a.unique().getValue());
+                c.setUnique(a.unique().value());
             }
 
             //insert
             if (!a.insert().isNone()) {
-                f.setInsert(a.insert().getValue());
+                f.setInsert(a.insert().value());
             }
 
             //update
             if (!a.update().isNone()) {
-                f.setUpdate(a.update().getValue());
+                f.setUpdate(a.update().value());
+            }
+
+            //sortable
+            if(!a.sortable().isNone()) {
+                f.setSortable(a.sortable().value());
+            }
+
+            //filterable
+            if(!a.filterable().isNone()) {
+                f.setFilterable(a.filterable().value());
             }
 
             //default-value
@@ -219,7 +231,23 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         }
 		return false;
 	}
-	
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Sortable a){
+        if(null != a) {
+            f.setSortable(true);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Filterable a){
+        if(null != a) {
+            f.setFilterable(true);
+            return true;
+        }
+        return false;
+    }
+
 	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){
 		String domainName = null;
 		
