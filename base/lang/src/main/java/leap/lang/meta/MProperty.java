@@ -28,11 +28,14 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Integer  length;
     protected final Integer  precision;
     protected final Integer  scale;
+    protected final Boolean  sortable;
+    protected final Boolean  filterable;
 
     public MProperty(String name, String title, String summary, String description,
                      MType type, boolean nullable, String defaultValue, String[] enumValues,
                      boolean fixedLength,
-                     Integer length, Integer precision, Integer scale) {
+                     Integer length, Integer precision, Integer scale,
+                     Boolean sortable, Boolean filterable) {
         super(name, title, summary, description);
 
         Args.notNull(type, "type");
@@ -45,6 +48,8 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.length = length;
         this.precision = precision;
         this.scale = scale;
+        this.sortable = sortable;
+        this.filterable = filterable;
     }
 
     public MType getType() {
@@ -77,6 +82,22 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public Integer getScale() {
         return scale;
+    }
+
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public boolean isSortableExplicitly() {
+        return null != sortable && sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public boolean isFilterableExplicitly() {
+        return null != filterable && filterable;
     }
 
     @Override

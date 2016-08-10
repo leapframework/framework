@@ -21,10 +21,23 @@ import leap.lang.meta.MType;
 
 public class MApiProperty extends MApiParameterBase {
 
+    protected final boolean sortable;
+    protected final boolean filterable;
+
 	public MApiProperty(String name, String title, String summary, String description,
                         MType type, String format, boolean password, boolean required, String defaultValue, String[] enumValues,
-                        MApiValidation validation, Map<String, Object> attrs) {
+                        MApiValidation validation, Map<String, Object> attrs, boolean sortable, boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
+
+        this.sortable = sortable;
+        this.filterable = filterable;
     }
 
+    public boolean isSortable() {
+        return sortable;
+    }
+
+    public boolean isFilterable() {
+        return filterable;
+    }
 }
