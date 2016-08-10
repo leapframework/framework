@@ -34,14 +34,14 @@ public class Page extends Limit {
      * Creates a new {@link Page} instance of the given limit size and starts from offset.
      *
      * <p/>
-     * The offset is starts from 1.
+     * The offset is starts from 0.
      */
     public static Page limit(int limit, int offset) {
-       return startFrom(offset, limit);
+       return startFrom(offset + 1, limit);
     }
 	
     /**
-     * Creates a new {@link Page} instance from the given start index.
+     * Creates a new {@link Page} instance from the given start row index.
      * 
      * @param start the start index , starts from 1.
      * @param size the page size, starts from 1.
@@ -52,7 +52,10 @@ public class Page extends Limit {
     	
     	return new Page(index,size,start,end);
     }
-    
+
+    /**
+     * Creates a new {@link Page} instance with the start and end row index.
+     */
     public static Page startEnd(int start,int end) {
     	return startFrom(start, end - start + 1);
     }

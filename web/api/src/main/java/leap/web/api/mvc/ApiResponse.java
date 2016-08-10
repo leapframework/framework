@@ -29,8 +29,8 @@ public class ApiResponse<T> implements ResponseEntity {
     public static final ApiResponse NO_CONTENT = of(HTTP.Status.NO_CONTENT, null);
 
     //ERROR
-    public static final ApiResponse NOT_FOUND       = err(HTTP.Status.NOT_FOUND,       "NotFound",       "The resource does not exists.");
-    public static final ApiResponse NOT_IMPLEMENTED = err(HTTP.Status.NOT_IMPLEMENTED, "NotImplemented", "Not implemented operation.");
+    public static final ApiResponse NOT_FOUND       = err(HTTP.Status.NOT_FOUND,       "The resource does not exists.");
+    public static final ApiResponse NOT_IMPLEMENTED = err(HTTP.Status.NOT_IMPLEMENTED, "Not implemented operation.");
 
     public static ApiResponse ok(Object entity) {
         return of(HTTP.Status.OK, entity);
@@ -45,7 +45,7 @@ public class ApiResponse<T> implements ResponseEntity {
     }
 
     public static ApiResponse err(HTTP.Status status, String message) {
-        return of(status, new ApiError(message));
+        return of(status, new ApiError(status.name(), message));
     }
 
     public static ApiResponse err(HTTP.Status status,String errorCode, String message){

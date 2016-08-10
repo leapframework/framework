@@ -26,7 +26,7 @@ public class QueryOptions {
     protected @QueryParam("page_size") Integer pageSize;
     protected @QueryParam("page")      Integer pageIndex;
     protected @QueryParam("limit")     Integer limit;
-    protected @QueryParam("offset")    Integer offset;
+    protected @QueryParam("offset")    Integer offset;  //0-based
 
     public Integer getPageSize() {
         return pageSize;
@@ -65,7 +65,7 @@ public class QueryOptions {
             if(null == limit) {
                 return Page.limit(defaultPageSize, offset);
             }else{
-                return Page.limit(limit, null == offset ? 1 : offset);
+                return Page.limit(limit, null == offset ? 0 : offset);
             }
         }
 

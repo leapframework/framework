@@ -131,7 +131,7 @@ public abstract class ModelController<T extends Model> extends ApiController {
      * Update partial properties of model.
      */
     protected ApiResponse updatePartial(Object id, Partial<T> partial) {
-        if(partial.isEmpty()) {
+        if(null == partial || partial.isEmpty()) {
             return ApiResponse.badRequest("No update properties");
         }
 
