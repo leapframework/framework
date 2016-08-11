@@ -65,10 +65,13 @@ public class SwaggerConstants {
 	public static final String AUTHZ_URL            = "authorizationUrl";
 	public static final String TOKEN_URL            = "tokenUrl";
 	public static final String SCOPES               = "scopes";
+
+    //extend
+    public static final String X_SORTABLE   = "x-sortable";
+    public static final String X_FILTERABLE = "x-filterable";
 	
 	protected SwaggerConstants() {
 		
 	}
 
 }
-
