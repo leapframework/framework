@@ -322,8 +322,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			for(MApiProperty p : model.getProperties()) {
 				w.property(propertyName(p.getName()), () -> {
 					w.startObject();
+
 					writeParameterType(context, m, w, p);
-					w.endObject();
+
+                    w.property(X_SORTABLE, p.isSortable());
+                    w.property(X_FILTERABLE, p.isFilterable());
+
+                    w.endObject();
 				});
 			}
 			
