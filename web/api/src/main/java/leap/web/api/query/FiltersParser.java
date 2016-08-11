@@ -16,16 +16,13 @@
 
 package leap.web.api.query;
 
-import leap.web.exception.BadRequestException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FiltersParser {
+public class FiltersParser extends ParserBase {
 
-    private static final char EOI = 0x1A;
     private static final Map<String, Token> OPS = new HashMap<>();
     private static final Node LPAREN = new Node(Token.LPAREN, "(");
     private static final Node RPAREN = new Node(Token.RPAREN, ")");
@@ -51,15 +48,10 @@ public class FiltersParser {
         return new FiltersParser(expr).filters();
     }
 
-    private final StringBuilder chars;
-    private final List<Node>    nodes = new ArrayList<>();
-
-    private char ch;
-    private int  pos;
+    private final List<Node> nodes = new ArrayList<>();
 
     public FiltersParser(String expr) {
-        this.chars = new StringBuilder(expr);
-        this.pos   = -1;
+        super(expr);
     }
 
     public Filters filters() {
@@ -220,70 +212,6 @@ public class FiltersParser {
         return s;
     }
 
-    private boolean eof() {
-        return ch == EOI;
-    }
-
-    private boolean isWhitespace() {
-        return Character.isWhitespace(ch);
-    }
-
-    protected final char charAt(int index) {
-        return index < chars.length() ? chars.charAt(index) : EOI;
-    }
-
-    protected final void nextChar(){
-        ch = charAt(++pos);
-    }
-
-    protected final String substring(int start,int end){
-        return chars.substring(start,end);
-    }
-
-    private final void skipWhitespaces(){
-        for(;;){
-            if(!Character.isWhitespace(ch)){
-                break;
-            }
-            if(eof()) {
-                error("Unexpected eof");
-            }
-            nextChar();
-        }
-    }
-
-    private void error(String message) {
-        throw new BadRequestException(message + ", " + describePosition());
-    }
-
-    private final String describePosition(){
-        return describePosition(pos);
-    }
-
-    private final String describePosition(int pos){
-        int fromIndex;
-        int endIndex;
-
-        if(pos > chars.length() - 5){
-            fromIndex = Math.max(pos - 15, 0);
-            endIndex  = chars.length()-1;
-        }else{
-            fromIndex = pos;
-            endIndex  = Math.min(pos + 20, chars.length() - 1);
-        }
-
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("position ").append(pos).append(", \" ");
-        sb.append(substring(fromIndex,endIndex));
-        if(endIndex < chars.length() - 1){
-            sb.append("...");
-        }
-        sb.append(" \"");
-
-        return sb.toString();
-    }
-
     public enum Token {
         NAME,
         VALUE,
@@ -344,22 +272,5 @@ public class FiltersParser {
         }
     }
 
-    private final static boolean[] identifierFlags = new boolean[256];
-    static {
-        for (char c = 0; c < identifierFlags.length; ++c) {
-            if (c >= 'A' && c <= 'Z') {
-                identifierFlags[c] = true;
-            } else if (c >= 'a' && c <= 'z') {
-                identifierFlags[c] = true;
-            } else if (c >= '0' && c <= '9') {
-                identifierFlags[c] = true;
-            }
-        }
-        identifierFlags['_'] = true;
-        identifierFlags['$'] = true;
-    }
 
-    private static boolean isIdentifierChar(char c) {
-        return c > identifierFlags.length || identifierFlags[c];
-    }
 }

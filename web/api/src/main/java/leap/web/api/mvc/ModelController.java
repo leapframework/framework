@@ -36,6 +36,8 @@ import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.query.Filters;
 import leap.web.api.query.FiltersParser;
+import leap.web.api.query.OrderBy;
+import leap.web.api.query.OrderByParser;
 import leap.web.exception.BadRequestException;
 
 import java.util.ArrayList;
@@ -142,12 +144,10 @@ public abstract class ModelController<T extends Model> extends ApiController imp
         if(null == options) {
             list = query.limit(apiConfig.getMaxPageSize()).list();
         }else{
-            //todo : parse and validate order by expression.
             if(!Strings.isEmpty(options.getOrderBy())) {
-                query.orderBy(options.getOrderBy());
+                applyOrderBy(query, options.getOrderBy());
             }
 
-            //todo : parse and validate filters expression.
             if(!Strings.isEmpty(options.getFilters())) {
                 applyFilters(query, options.getFilters());
             }
@@ -191,6 +191,42 @@ public abstract class ModelController<T extends Model> extends ApiController imp
         }else{
             return ApiResponse.NOT_FOUND;
         }
+    }
+
+    private void applyOrderBy(CriteriaQuery<T> query, String expr) {
+        OrderBy orderBy = OrderByParser.parse(expr);
+
+        OrderBy.Item[] items = orderBy.items();
+
+        StringBuilder s = new StringBuilder();
+
+        for(int i=0;i<items.length;i++) {
+
+            if(i > 0) {
+                s.append(',');
+            }
+
+            OrderBy.Item item = items[i];
+
+            String name = item.name();
+
+            MApiProperty ap = am.tryGetProperty(name);
+            if(null == ap) {
+                throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
+            }
+
+            if(!ap.isSortable()) {
+                throw new BadRequestException("Property '" + name + "' is not sortable!");
+            }
+
+            s.append(name);
+
+            if(!item.isAscending()) {
+                s.append(" desc");
+            }
+        }
+
+        query.orderBy(s.toString());
     }
 
     private void applyFilters(CriteriaQuery<T> query, String expr) {
