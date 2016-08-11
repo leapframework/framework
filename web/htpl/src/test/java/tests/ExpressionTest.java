@@ -85,6 +85,8 @@ public class ExpressionTest extends HtplTestCase {
 		assertRender("<div a=\"1\"></div>","<div a=\"${i < 11 ? 1 : 0}\"></div>");
 		assertRender("<div a=\"1\"></div>","<div a=\"${i >= 10 ? 1 : 0}\"></div>");
 		assertRender("<div a=\"1\"></div>","<div a=\"${i <= 10 ? 1 : 0}\"></div>");
+
+        assertRender("<div><div a=#{msg}></div></div>","<div ht-inline-el=off><div a=#{msg}></div></div>");
 	}
 	
 	@Test
