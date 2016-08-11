@@ -27,24 +27,36 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
+import leap.web.annotation.NonAction;
+import leap.web.api.config.ApiConfig;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.query.Filters;
+import leap.web.api.query.FiltersParser;
 import leap.web.exception.BadRequestException;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ModelController<T extends Model> extends ApiController {
+public abstract class ModelController<T extends Model> extends ApiController implements ApiInitializable {
 
     private final Class<T> modelClass = getModelClass();
     private final Dao      dao        = Dao.of(modelClass);
     private final EntityMapping em    = dao.getOrmContext().getMetadata().getEntityMapping(modelClass);
+    private MApiModel           am;
 
     private Class<T> getModelClass() {
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
+    }
+
+    @NonAction
+    public void postApiInitialized(ApiConfig c, ApiMetadata m) {
+        am = m.getModel(modelClass);
     }
 
     /**
@@ -137,28 +149,7 @@ public abstract class ModelController<T extends Model> extends ApiController {
 
             //todo : parse and validate filters expression.
             if(!Strings.isEmpty(options.getFilters())) {
-                Map<String,String> props = Filters.parse(options.getFilters());
-
-                StringBuilder where = new StringBuilder();
-
-                Map<String,Object> params = new HashMap<>(props.size());
-
-                final AtomicInteger i = new AtomicInteger(0);
-                props.forEach((name,value) -> {
-                    FieldMapping fm = em.getFieldMapping(name);
-                    if(null == fm) {
-                        throw new BadRequestException("The filtering property '" + name + "' not found in model");
-                    }
-
-                    if(i.getAndIncrement() > 0) {
-                        where.append(" and ");
-                    }
-                    where.append(name).append("=:").append(name);
-
-                    params.put(name, Converts.convert(value, fm.getJavaType()));
-                });
-
-                query.where(where.toString()).params(params);
+                applyFilters(query, options.getFilters());
             }
 
             list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
@@ -201,4 +192,91 @@ public abstract class ModelController<T extends Model> extends ApiController {
             return ApiResponse.NOT_FOUND;
         }
     }
+
+    private void applyFilters(CriteriaQuery<T> query, String expr) {
+        Filters filters = FiltersParser.parse(expr);
+
+        StringBuilder where = new StringBuilder();
+
+        List<Object> args = new ArrayList<>();
+
+        FiltersParser.Node[] nodes = filters.nodes();
+        for(int i=0;i<nodes.length;i++) {
+            FiltersParser.Node node = nodes[i];
+
+            if(node.isParen()) {
+                where.append(node.literal());
+                continue;
+            }
+
+            if(node.isAnd()) {
+                where.append(" and ");
+                continue;
+            }
+
+            if(node.isOr()) {
+                where.append(" or ");
+                continue;
+            }
+
+            String name = nodes[i].literal();
+            FiltersParser.Token op = nodes[++i].token();
+            String value = nodes[++i].literal();
+
+            MApiProperty ap = am.tryGetProperty(name);
+            if(null == ap) {
+                throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
+            }
+
+            if(!ap.isFilterable()) {
+                throw new BadRequestException("Property '" + name + "' is not filterable!");
+            }
+
+            FieldMapping fm = em.getFieldMapping(name);
+
+            where.append(name).append(' ').append(toSqlOperator(op)).append(" ?");
+
+            args.add(Converts.convert(value, fm.getJavaType()));
+        }
+
+        query.where(where.toString(), args.toArray());
+    }
+
+    private String toSqlOperator(FiltersParser.Token op) {
+
+        if(op == FiltersParser.Token.EQ) {
+            return "=";
+        }
+
+        if(op == FiltersParser.Token.GE) {
+            return ">=";
+        }
+
+        if(op == FiltersParser.Token.LE) {
+            return "<=";
+        }
+
+        if(op == FiltersParser.Token.GT) {
+            return ">";
+        }
+
+        if(op == FiltersParser.Token.LT) {
+            return "<";
+        }
+
+        if(op == FiltersParser.Token.NE) {
+            return "<>";
+        }
+
+        //todo : in
+//        if(op == FiltersParser.Token.IN)
+
+        if(op == FiltersParser.Token.LIKE) {
+            return "like";
+        }
+
+        throw new IllegalStateException("Not supported operator '" + op + "'");
+    }
+
+
 }

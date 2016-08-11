@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
-package leap.lang.meta;
+package leap.web.api.query;
 
-public interface MTypeListener {
+public class Filter {
 
-    MTypeListener NOP = new MTypeListener() { };
+    private final String name;
+    private final FiltersParser.Token operator;
+    private final String value;
 
-    /**
-     * Notify when a  complex type has been resolved.
-     *
-     * <p/>
-     * Note : it may be called multiple times for the same java type.
-     */
-    default void onComplexTypeResolved(Class<?> type, MComplexType ct) {
-
+    Filter(String name, FiltersParser.Token operator, String value) {
+        this.name = name;
+        this.operator = operator;
+        this.value = value;
     }
 
+    public String name() {
+        return name;
+    }
+
+    public FiltersParser.Token operator() {
+        return operator;
+    }
+
+    public String value() {
+        return value;
+    }
 }

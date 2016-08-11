@@ -20,6 +20,7 @@ import java.util.Map;
 public class DefaultModuleConfig implements ModuleConfig {
 
     protected String name;
+    protected String contextPath;
     protected String basePath;
     protected String basePackage;
 
@@ -30,6 +31,15 @@ public class DefaultModuleConfig implements ModuleConfig {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
     }
 
     @Override

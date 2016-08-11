@@ -20,7 +20,9 @@ import java.lang.reflect.Type;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
+import leap.lang.Types;
 import leap.lang.meta.*;
+import leap.lang.meta.annotation.TypeWrapper;
 
 public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 
@@ -88,6 +90,23 @@ public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
         public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
             MType mtype = null;
 
+            TypeWrapper tw = type.getAnnotation(TypeWrapper.class);
+            if(null != tw) {
+                Class<?> wrappedType = tw.value();
+                if(!wrappedType.equals(Void.class)) {
+                    type = wrappedType;
+                }else{
+                    if(null == genericType || genericType.equals(type)) {
+                        return MVoidType.TYPE;
+                    }else{
+                        Type typeArgument = Types.getTypeArgument(genericType);
+
+                        type = Types.getActualType(typeArgument);
+                        genericType = typeArgument;
+                    }
+                }
+            }
+
 			for(MTypeFactory f : extendedMTypeFactories) {
 				mtype = f.getMType(type, genericType, context);
 				
@@ -96,11 +115,15 @@ public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 				}
 			}
 
-            if(mtype != null) {
-
+            if(null == mtype) {
+                mtype = root.getMType(type, genericType, context);
             }
-			
-			return this.root.getMType(type, genericType, context);
+
+            if(null != mtype && mtype.isComplexType()) {
+                listener.onComplexTypeResolved(type, mtype.asComplexType());
+            }
+
+            return mtype;
         }
 	}
 	

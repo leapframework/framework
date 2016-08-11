@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import leap.lang.New;
+import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.meta.model.*;
 
 /**
@@ -137,9 +138,21 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		return paths;
 	}
 
+    /**
+     * Returns all the models.
+     */
 	public Map<String,MApiModel> getModels() {
 		return models;
 	}
+
+    public MApiModel getModel(Class<?> type) {
+        for(MApiModel m : models.values()) {
+            if(type.equals(m.getJavaType())) {
+                return m;
+            }
+        }
+        throw new ObjectNotFoundException("No api model of type '" + type + "'");
+    }
 
     public MApiSecurityDef[] getSecurityDefs() {
         return securityDefs;

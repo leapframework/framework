@@ -104,14 +104,21 @@ public class DefaultAppInitializer implements AppInitializer {
             if(rs.isEmpty()) {
                 log.info("No resource scanned in base package '{}' of module '{}', is the module exists?");
             }else{
-                log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
-                        module.getBasePath(), module.getBasePackage(), module.getName());
+                String appContextPath    = app.getContextPath().equals("") ? "/" : app.getContextPath();
+                String moduleContextPath = module.getContextPath();
 
-                rs.processClasses((cls) -> {
-                    if(as.isControllerClass(cls)) {
-                        loadControllerClass(app, module.getBasePath(), cls);
-                    }
-                });
+                if(Strings.isEmpty(moduleContextPath) || appContextPath.equals(moduleContextPath)) {
+
+                    log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
+                            module.getBasePath(), module.getBasePackage(), module.getName());
+
+                    rs.processClasses((cls) -> {
+                        if(as.isControllerClass(cls)) {
+                            loadControllerClass(app, module.getBasePath(), cls);
+                        }
+                    });
+
+                }
             }
         }
 	}

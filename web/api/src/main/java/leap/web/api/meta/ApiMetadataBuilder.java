@@ -172,6 +172,15 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	    securityDefs.add(def);
 	}
 
+    public boolean hasModel(Class<?> type) {
+        for(MApiModelBuilder m : models.values()){
+            if(type.equals(m.getJavaType())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public ApiMetadata build() {
         return new ApiMetadata(name, title, summary, description,
