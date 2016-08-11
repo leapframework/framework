@@ -1697,13 +1697,14 @@ public class BeanContainer implements BeanFactory {
 	}
 	
 	protected Supplier<Object> createBeanReferenceValue(BeanDefinitionBase bd,final BeanReference br){
-		final BeanDefinitionBase referenced = findBeanDefinition(br);
-		if(referenced == null){
-			throw new BeanDefinitionException("The referenced bean '" + br.getTargetId() + "' not exists, please check the bean : " + bd);
+
+		if(!Strings.isEmpty(br.getTargetId())){
+			return () -> this.getBean(br.getTargetId());
 		}
-		br.setTargetBeanDefinition(referenced);
-		
-		return () -> this.doGetBean(referenced);
+		if(!Strings.isEmpty(br.getBeanName())){
+			return () -> this.getBean(br.getBeanType(),br.getBeanName());
+		}
+		return () -> this.getBean(br.getBeanType());
 	}
 	
 	protected Supplier<Object> createBeanValue(BeanDefinition bd,final BeanDefinitionBase value){
