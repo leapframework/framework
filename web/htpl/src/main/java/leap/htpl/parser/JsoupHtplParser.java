@@ -521,7 +521,8 @@ public class JsoupHtplParser extends HtplParserBase {
 		if(Strings.isEmpty(content)){
 			throw new HtplParseException("Invalid 'render-fragment' directive, the content must not be empty");
 		}
-		RenderFragment render = null;
+
+		RenderFragment render;
 		
 		Map<String, String> params = parseParams(content,"name");
 			
@@ -529,7 +530,7 @@ public class JsoupHtplParser extends HtplParserBase {
 		boolean required = Converts.toBoolean(params.remove("required"),false);
 		
 		if(Strings.isEmpty(name)) {
-			throw new HtplParseException("The 'name' of 'render-frament' must not be empty");
+			throw new HtplParseException("The 'name' of 'render-fragment' must not be empty");
 		}
 		
 		render = new RenderFragment(name,required, params);
