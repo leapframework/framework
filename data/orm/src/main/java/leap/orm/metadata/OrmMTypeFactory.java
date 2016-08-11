@@ -15,16 +15,16 @@
  */
 package leap.orm.metadata;
 
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
 import leap.lang.Args;
 import leap.lang.Enums;
+import leap.lang.Types;
 import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
-import leap.orm.model.Model;
+
+import java.lang.reflect.Type;
 
 public class OrmMTypeFactory implements MTypeFactory {
 	
@@ -33,6 +33,10 @@ public class OrmMTypeFactory implements MTypeFactory {
 	@Override
 	public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
         Args.notNull(context.root(), "Root factory must be exists!");
+
+        if(Types.isSimpleType(type,genericType) || Types.isCollectionType(type,genericType)) {
+            return null;
+        }
 
         for(OrmContext c : ormContexts) {
 			EntityMapping em = c.getMetadata().tryGetEntityMapping(type);

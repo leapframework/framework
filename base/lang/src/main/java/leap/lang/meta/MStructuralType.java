@@ -19,13 +19,13 @@ import java.util.Collection;
 
 import leap.lang.Args;
 
-public abstract class MStructualType extends MType {
+public abstract class MStructuralType extends MType {
 	
 	private static final MProperty[] EMPTY_ARRAY = new MProperty[]{};
 	
 	protected final MProperty[] properties;
 
-	public MStructualType(String summary, String description, Collection<MProperty> properties) {
+	public MStructuralType(String summary, String description, Collection<MProperty> properties) {
 		super(summary, description);
 		
 		Args.notNull(properties,"properties");

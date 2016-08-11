@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package leap.lang.meta;
+package leap.web.api.mvc;
 
-public interface MTypeListener {
+import leap.web.api.config.ApiConfig;
+import leap.web.api.meta.ApiMetadata;
 
-    MTypeListener NOP = new MTypeListener() { };
+public interface ApiInitializable {
 
-    /**
-     * Notify when a  complex type has been resolved.
-     *
-     * <p/>
-     * Note : it may be called multiple times for the same java type.
-     */
-    default void onComplexTypeResolved(Class<?> type, MComplexType ct) {
-
-    }
+    void postApiInitialized(ApiConfig c, ApiMetadata m);
 
 }

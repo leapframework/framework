@@ -16,6 +16,7 @@
 package leap.web.api.meta.model;
 
 import leap.lang.Args;
+import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.meta.MComplexType;
 
 import java.util.Map;
@@ -23,26 +24,16 @@ import java.util.Map;
 public class MApiModel extends MApiNamedWithDesc {
 	
 	protected final MComplexType   type;
+    protected final Class<?>       javaType;
 	protected final MApiProperty[] properties;
 	
-	public MApiModel(MComplexType type, MApiProperty[] properties) {
-		this(type.getName(), type.getTitle(), type.getSummary(), type.getDescription(), type, properties, null);
-	}
-
-	public MApiModel(String name, MComplexType type, MApiProperty[] properties) {
-		this(name, type.getTitle(), type.getSummary(), type.getDescription(), type, properties, null);
-	}
-	
-	public MApiModel(String name, String title, MComplexType type, MApiProperty[] properties) {
-		this(name, title, type.getSummary(), type.getDescription(), type, properties, null);
-	}
-
 	public MApiModel(String name, String title, String summary, String description,
-                     MComplexType type, MApiProperty[] properties, Map<String, Object> attrs) {
+                     MComplexType type, Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
 	    super(name, title, summary, description, attrs);
 	    
 	    Args.notNull(type, "type");
 	    this.type       = type;
+        this.javaType   = javaType;
 	    this.properties = properties;
     }
 
@@ -50,8 +41,20 @@ public class MApiModel extends MApiNamedWithDesc {
 		return type;
 	}
 
-	public MApiProperty[] getProperties() {
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    public MApiProperty[] getProperties() {
 		return properties;
 	}
-	
+
+    public MApiProperty tryGetProperty(String name) {
+        for(MApiProperty p : properties) {
+            if(p.getName().equalsIgnoreCase(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
 }

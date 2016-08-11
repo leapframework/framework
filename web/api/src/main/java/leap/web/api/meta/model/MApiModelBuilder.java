@@ -23,8 +23,9 @@ import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
 
 public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
-	
-	protected MComplexType      	   type;
+
+	protected MComplexType      	    type;
+    protected Class<?>                  javaType;
 	protected List<MApiPropertyBuilder> properties = new ArrayList<MApiPropertyBuilder>();
 	
 	public MApiModelBuilder() {
@@ -52,7 +53,15 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 		}
 	}
 
-	public List<MApiPropertyBuilder> getProperties() {
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    public void setJavaType(Class<?> javaType) {
+        this.javaType = javaType;
+    }
+
+    public List<MApiPropertyBuilder> getProperties() {
 		return properties;
 	}
 	
@@ -62,7 +71,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
 	@Override
     public MApiModel build() {
-	    return new MApiModel(name, title, summary, description, type,
+	    return new MApiModel(name, title, summary, description, type, javaType,
 	    					Builders.buildArray(properties, new MApiProperty[properties.size()]), attrs);
     }
 	

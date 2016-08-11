@@ -21,7 +21,7 @@ import leap.lang.Args;
 import leap.lang.Strings;
 
 
-public class MComplexType extends MStructualType implements MNamed {
+public class MComplexType extends MStructuralType implements MNamed {
 	
 	protected final String		 name;
 	protected final String		 title;

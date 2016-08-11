@@ -16,13 +16,14 @@
 package leap.web.api;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leap.core.annotation.Inject;
 import leap.lang.Args;
-import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.http.QueryStringBuilder;
@@ -35,6 +36,7 @@ import leap.web.AppInitializable;
 import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
+import leap.web.api.mvc.ApiInitializable;
 import leap.web.route.Route;
 
 public class DefaultApis implements Apis, AppInitializable  {
@@ -149,7 +151,6 @@ public class DefaultApis implements Apis, AppInitializable  {
         configSource.loadConfiguration(app, this);
 
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			
 			String key = entry.getKey();
 			ApiConfigurator c = entry.getValue();
 			
@@ -158,7 +159,9 @@ public class DefaultApis implements Apis, AppInitializable  {
 			
 			//create metadata
 			ApiMetadata m = createMetadata(c);
-			metadatas.put(key, m);	
+			metadatas.put(key, m);
+
+            postLoadApi(app, c.config(), m);
 		}
 	}
 	
@@ -175,7 +178,6 @@ public class DefaultApis implements Apis, AppInitializable  {
 			p.postProcess(c.config());
 		}
 
-        configureRoutes(app, c.config());
 	}
 	
     protected void resolveRoutes(App app, ApiConfigurator c) {
@@ -194,10 +196,14 @@ public class DefaultApis implements Apis, AppInitializable  {
 		}
 	}
 
-    protected void configureRoutes(App app, ApiConfig c) {
+    protected void postLoadApi(App app, ApiConfig c, ApiMetadata m) {
+
+        Set<Object> controllers = new HashSet<>();
+
         for(Route route : c.getRoutes()) {
             Object controller = route.getAction().getController();
-            if(null != controller) {
+            if(null != controller && !controllers.contains(controller)) {
+                controllers.add(controller);
 
                 ReflectClass rc = ReflectClass.of(controller.getClass());
 
@@ -206,6 +212,14 @@ public class DefaultApis implements Apis, AppInitializable  {
                         rf.setValue(controller, c);
                         break;
                     }
+
+                    if(rf.getType().equals(ApiMetadata.class)) {
+                        rf.setValue(controller, m);
+                    }
+                }
+
+                if(controller instanceof ApiInitializable) {
+                    ((ApiInitializable) controller).postApiInitialized(c, m);
                 }
 
             }

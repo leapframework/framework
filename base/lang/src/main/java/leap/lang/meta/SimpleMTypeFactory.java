@@ -21,9 +21,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Stack;
 import java.util.WeakHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
@@ -71,23 +68,6 @@ public class SimpleMTypeFactory implements MTypeFactory {
 
 	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, Stack<Class<?>> stack, boolean createComplexTypeRef) {
 		Args.notNull(type, "type");
-
-        TypeWrapper tw = type.getAnnotation(TypeWrapper.class);
-        if(null != tw) {
-            Class<?> wrappedType = tw.value();
-            if(!wrappedType.equals(Void.class)) {
-                type = wrappedType;
-            }else{
-                if(null == genericType || genericType.equals(type)) {
-                    return MVoidType.TYPE;
-                }else{
-                    Type typeArgument = Types.getTypeArgument(genericType);
-
-                    type = Types.getActualType(typeArgument);
-                    genericType = typeArgument;
-                }
-            }
-        }
 
 		for(MTypeFactory factory : externalFactories){
 			MType mtype = factory.getMType(type, genericType, context);
@@ -171,9 +151,6 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		MComplexType ct = COMPLEX_TYPES.get(type);
 		if(null == ct) {
 			ct = createComplexType(context, type, stack);
-
-            context.listener().onComplexTypeCreated(ct);
-
 			COMPLEX_TYPES.put(type, ct);
 		}
 		
