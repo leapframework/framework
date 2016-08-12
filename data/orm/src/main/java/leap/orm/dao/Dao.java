@@ -244,6 +244,21 @@ public abstract class Dao implements JdbcExecutor {
 	 * @return The affected row(s).
 	 */
 	public abstract int insert(Object entity) throws MappingNotFoundException;
+
+    /**
+     * Inserts a new entity.
+     */
+    public int insert(EntityMapping em, Object entity) {
+        return insert(em, entity, null);
+    }
+
+    /**
+     * Inserts a new entity with the id.
+     *
+     * <p/>
+     * If id is null, use the value in entity or generate it.
+     */
+    public abstract int insert(EntityMapping em, Object entity, Object id);
 	
 	//----------------------------update--------------------------------
 	

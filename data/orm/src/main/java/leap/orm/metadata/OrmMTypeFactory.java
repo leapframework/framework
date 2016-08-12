@@ -65,6 +65,8 @@ public class OrmMTypeFactory implements MTypeFactory {
 			p.setNullable(fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
+            p.setInsertable(fm.isInsertable());
+            p.setUpdatable(fm.isUpdatable());
             p.setSortable(fm.getSortable());
             p.setFilterable(fm.getFilterable());
 

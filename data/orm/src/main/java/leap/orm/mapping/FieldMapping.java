@@ -30,7 +30,7 @@ import java.util.List;
 
 public class FieldMapping {
 	
-	protected final String		     fieldName;
+	protected final String           fieldName;
 	protected final MType            dataType;
 	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
@@ -41,8 +41,8 @@ public class FieldMapping {
 	protected final Integer          maxLength;
 	protected final Integer          precision;
 	protected final Integer          scale;
-	protected final boolean          insert;
-	protected final boolean          update;
+	protected final boolean          insertable;
+	protected final boolean          updatable;
     protected final Boolean          sortable;
     protected final Boolean          filterable;
     protected final boolean          where;
@@ -68,7 +68,7 @@ public class FieldMapping {
                         String sequenceName,
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
-                        boolean insert, boolean update,
+                        boolean insertable, boolean updatable,
                         Boolean sortable, Boolean filterable,
                         boolean where,
                         Expression defaultValue,
@@ -98,8 +98,8 @@ public class FieldMapping {
 	    this.maxLength		= maxLength;
 	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insert         = insert;
-	    this.update         = update;
+	    this.insertable = insertable;
+	    this.updatable = updatable;
         this.sortable       = sortable;
         this.filterable     = filterable;
         this.where          = where;
@@ -189,12 +189,12 @@ public class FieldMapping {
 		return column;
 	}
 	
-	public boolean isInsert() {
-		return insert;
+	public boolean isInsertable() {
+		return insertable;
 	}
 
-	public boolean isUpdate() {
-		return update;
+	public boolean isUpdatable() {
+		return updatable;
 	}
 
     public Boolean getSortable() {

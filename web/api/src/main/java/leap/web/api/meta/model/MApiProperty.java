@@ -21,23 +21,68 @@ import leap.lang.meta.MType;
 
 public class MApiProperty extends MApiParameterBase {
 
-    protected final boolean sortable;
-    protected final boolean filterable;
+    protected final Boolean insertable;
+    protected final Boolean updatable;
+    protected final Boolean sortable;
+    protected final Boolean filterable;
 
 	public MApiProperty(String name, String title, String summary, String description,
                         MType type, String format, boolean password, boolean required, String defaultValue, String[] enumValues,
-                        MApiValidation validation, Map<String, Object> attrs, boolean sortable, boolean filterable) {
+                        MApiValidation validation, Map<String, Object> attrs,
+                        Boolean insertable, Boolean updatable, Boolean sortable, Boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
+        this.insertable = insertable;
+        this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
     }
 
-    public boolean isSortable() {
+    public Boolean getInsertable() {
+        return insertable;
+    }
+
+    public Boolean getUpdatable() {
+        return updatable;
+    }
+
+    public Boolean getSortable() {
         return sortable;
     }
 
-    public boolean isFilterable() {
+    public Boolean getFilterable() {
         return filterable;
+    }
+
+    public boolean isInsertableExplicitly() {
+        return null != insertable && insertable;
+    }
+
+    public boolean isUpdatableExplicitly() {
+        return null != updatable && updatable;
+    }
+
+    public boolean isSortableExplicitly() {
+        return null != sortable && sortable;
+    }
+
+    public boolean isFilterableExplicitly() {
+        return null != filterable && filterable;
+    }
+
+    public boolean isNotInsertableExplicitly() {
+        return null != insertable && !insertable;
+    }
+
+    public boolean isNotUpdatableExplicitly() {
+        return null != updatable && !updatable;
+    }
+
+    public boolean isNotSortableExplicitly() {
+        return null != sortable && !sortable;
+    }
+
+    public boolean isNotFilterableExplicitly() {
+        return null != filterable && !filterable;
     }
 }

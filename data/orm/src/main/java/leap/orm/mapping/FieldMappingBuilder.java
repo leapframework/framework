@@ -41,41 +41,41 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	
 	public static final int MIDDLE_SORT_ORDER = Column.ORDER_MIDDLE;
 	public static final int LAST_SORT_ORDER   = Column.ORDER_LAST;
-	
-	protected String			    fieldName;
-	protected MType			   	    dataType;
-	protected String			    metaFieldName;
-	protected Class<?>              javaType;
-	protected BeanProperty          beanProperty;
-	protected DbColumnBuilder       column;
-	protected boolean               columnNameDeclared;
-	protected String                sequenceName;
-	protected IdGenerator           idGenerator;
-	protected Boolean               nullable;
-	protected Integer               maxLength;
-	protected Integer               precision;
-	protected Integer               scale;
-	protected String                defaultValue;
+
+    protected String                fieldName;
+    protected MType                 dataType;
+    protected String                metaFieldName;
+    protected Class<?>              javaType;
+    protected BeanProperty          beanProperty;
+    protected DbColumnBuilder       column;
+    protected boolean               columnNameDeclared;
+    protected String                sequenceName;
+    protected IdGenerator           idGenerator;
+    protected Boolean               nullable;
+    protected Integer               maxLength;
+    protected Integer               precision;
+    protected Integer               scale;
+    protected String                defaultValue;
     protected Expression            defaultValueExpression;
-	protected Boolean               insert;
-	protected Boolean               update;
+    protected Boolean               insertable;
+    protected Boolean               updatable;
     protected Boolean               sortable;
     protected Boolean               filterable;
     protected Boolean               where;
-	protected Expression            insertValue;
-	protected Expression            updateValue;
+    protected Expression            insertValue;
+    protected Expression            updateValue;
     protected Expression            whereValue;
     protected Expression            whereIf;
-	protected boolean               optimisticLock;
-	protected String                newOptimisticLockFieldName;
-	protected FieldDomain           domain;
-	protected Annotation[]          annotations;
-	protected List<FieldValidator>  validators;
-	protected Integer               sortOrder;
-	protected ReservedMetaFieldName reservedMetaFieldName;
+    protected boolean               optimisticLock;
+    protected String                newOptimisticLockFieldName;
+    protected FieldDomain           domain;
+    protected Annotation[]          annotations;
+    protected List<FieldValidator>  validators;
+    protected Integer               sortOrder;
+    protected ReservedMetaFieldName reservedMetaFieldName;
     protected boolean               sharding;
-	
-	public FieldMappingBuilder(){
+
+    public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
 	}
 	
@@ -101,8 +101,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.scale = template.scale;
         this.defaultValue = template.defaultValue;
         this.defaultValueExpression = template.defaultValueExpression;
-        this.insert = template.insert;
-        this.update = template.update;
+        this.insertable = template.insertable;
+        this.updatable = template.updatable;
         this.sortable = template.sortable;
         this.filterable = template.filterable;
         this.where = template.where;
@@ -157,12 +157,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.defaultValueExpression = fm.defaultValueExpression;
         }
 
-        if(null != fm.insert) {
-            this.insert = fm.insert;
+        if(null != fm.insertable) {
+            this.insertable = fm.insertable;
         }
 
-        if(null != fm.update) {
-            this.update = fm.update;
+        if(null != fm.updatable) {
+            this.updatable = fm.updatable;
         }
 
         if(null != fm.where) {
@@ -509,42 +509,42 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public boolean isInsert() {
-		return null != insert && insert;
+	public boolean getInsertable() {
+		return null != insertable && insertable;
 	}
 	
 	public Boolean getInsert(){
-		return insert;
+		return insertable;
 	}
 
-	public FieldMappingBuilder setInsert(Boolean insert) {
-		this.insert = insert;
+	public FieldMappingBuilder setInsertable(Boolean insertable) {
+		this.insertable = insertable;
 		return this;
 	}
 	
 	public FieldMappingBuilder trySetInsert(Boolean insert){
-		if(null == this.insert){
-			this.insert = insert;
+		if(null == this.insertable){
+			this.insertable = insert;
 		}
 		return this;
 	}
 
-	public boolean isUpdate() {
-		return null != update && update;
+	public boolean getUpdatable() {
+		return null != updatable && updatable;
 	}
 	
 	public Boolean getUpdate(){
-		return update;
+		return updatable;
 	}
 
-	public FieldMappingBuilder setUpdate(Boolean update) {
-		this.update = update;
+	public FieldMappingBuilder setUpdatable(Boolean updatable) {
+		this.updatable = updatable;
 		return this;
 	}
 	
 	public FieldMappingBuilder trySetUpdate(Boolean update){
-		if(null == this.update){
-			this.update = update;
+		if(null == this.updatable){
+			this.updatable = update;
 		}
 		return this;
 	}
@@ -691,12 +691,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			nullable = true;
 		}
 		
-		if(null == insert){
-			insert = true;
+		if(null == insertable){
+			insertable = true;
 		}
 		
-		if(null == update){
-			update = true;
+		if(null == updatable){
+			updatable = column.isPrimaryKey() ? false : true;
 		}
 
         if(null == where) {
@@ -710,14 +710,14 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		if(null != reservedMetaFieldName && null == metaFieldName) {
 			this.metaFieldName = reservedMetaFieldName.getFieldName();
 		}
-		
+
 	    return new FieldMapping(fieldName,
 	    						dataType,
 	    						metaFieldName,
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-	    						insert, update, sortable, filterable, where,
+                                insertable, updatable, sortable, filterable, where,
                                 defaultValueExpression,
                                 insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,
