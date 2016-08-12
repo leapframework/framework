@@ -30,7 +30,7 @@ import java.util.List;
 
 public class FieldMapping {
 	
-	protected final String		     fieldName;
+	protected final String           fieldName;
 	protected final MType            dataType;
 	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
@@ -41,8 +41,10 @@ public class FieldMapping {
 	protected final Integer          maxLength;
 	protected final Integer          precision;
 	protected final Integer          scale;
-	protected final boolean          insert;
-	protected final boolean          update;
+	protected final boolean          insertable;
+	protected final boolean          updatable;
+    protected final Boolean          sortable;
+    protected final Boolean          filterable;
     protected final boolean          where;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
@@ -54,29 +56,31 @@ public class FieldMapping {
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
     protected final boolean          sharding;
-	
+
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
 	public FieldMapping(String fieldName,
-						MType dataType,
-						String metaFieldName,
-					    Class<?> javaType,
-						BeanProperty beanProperty,
-						DbColumn column,
-						String sequenceName,
-						boolean nullable,
-						Integer maxLength,Integer presison,Integer scale,
-						boolean insert,boolean update,boolean where,
-						Expression defaultValue,
-						Expression insertValue,
-						Expression updateValue,
+                        MType dataType,
+                        String metaFieldName,
+                        Class<?> javaType,
+                        BeanProperty beanProperty,
+                        DbColumn column,
+                        String sequenceName,
+                        boolean nullable,
+                        Integer maxLength, Integer precision, Integer scale,
+                        boolean insertable, boolean updatable,
+                        Boolean sortable, Boolean filterable,
+                        boolean where,
+                        Expression defaultValue,
+                        Expression insertValue,
+                        Expression updateValue,
                         Expression whereValue,
                         Expression whereIf,
-						boolean optimisticLock,
-						String newOptimisticLockFieldName,
-						FieldDomain domain,
-						List<FieldValidator> validators,
-						ReservedMetaFieldName reservedMetaFieldName,
+                        boolean optimisticLock,
+                        String newOptimisticLockFieldName,
+                        FieldDomain domain,
+                        List<FieldValidator> validators,
+                        ReservedMetaFieldName reservedMetaFieldName,
                         boolean sharding) {
 		
 		Args.notEmpty(fieldName,"field name");
@@ -92,10 +96,12 @@ public class FieldMapping {
 	    this.sequenceName   = sequenceName;
 	    this.nullable		= nullable;
 	    this.maxLength		= maxLength;
-	    this.precision		= presison;
+	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insert         = insert;
-	    this.update         = update;
+	    this.insertable = insertable;
+	    this.updatable = updatable;
+        this.sortable       = sortable;
+        this.filterable     = filterable;
         this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
@@ -183,13 +189,29 @@ public class FieldMapping {
 		return column;
 	}
 	
-	public boolean isInsert() {
-		return insert;
+	public boolean isInsertable() {
+		return insertable;
 	}
 
-	public boolean isUpdate() {
-		return update;
+	public boolean isUpdatable() {
+		return updatable;
 	}
+
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public boolean isSortableExplicitly() {
+        return null != sortable && sortable;
+    }
+
+    public boolean isFilterableExplicitly() {
+        return null != filterable && filterable;
+    }
 
     public boolean isWhere() {
         return where;

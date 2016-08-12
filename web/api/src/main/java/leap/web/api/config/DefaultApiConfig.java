@@ -24,7 +24,7 @@ import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
 public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
@@ -32,24 +32,26 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	protected final String name;
 	protected final String basePath;
 
-    protected String        title;
-    protected String        summary;
-    protected String        description;
-    protected String        version                     = DEFAULT_VERSION;
-    protected String[]      protocols;
-    protected String[]      produces;
-    protected String[]      consumes;
-    protected boolean       corsEnabled                 = true;
-    protected boolean       oAuthEnabled                = false;
-    protected String        oAuthAuthzEndpointUrl;
-    protected String        oAuthTokenEndpointUrl;
-    protected OAuth2Scope[] oAuthScopes;
-    protected NamingStyle   parameterNamingStyle;
-    protected NamingStyle   propertyNamingStyle;
-    protected Set<String>   removalModelNamePrefixes    = new HashSet<String>();
-    protected Set<String>   removalModelnamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
-    protected Set<Route>    routes                      = new HashSet<>();
-    protected Set<Route>    routesImv                   = Collections.unmodifiableSet(routes);
+    protected String         title;
+    protected String         summary;
+    protected String         description;
+    protected String         version                     = DEFAULT_VERSION;
+    protected String[]       protocols;
+    protected String[]       produces;
+    protected String[]       consumes;
+    protected boolean        corsEnabled                 = true;
+    protected boolean        oAuthEnabled                = false;
+    protected String         oAuthAuthzEndpointUrl;
+    protected String         oAuthTokenEndpointUrl;
+    protected MOAuth2Scope[] oAuthScopes;
+    protected NamingStyle    parameterNamingStyle;
+    protected NamingStyle    propertyNamingStyle;
+    protected int            maxPageSize                 = MAX_PAGE_SIZE;
+    protected int            defaultPageSize             = DEFAULT_PAGE_SIZE;
+    protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
+    protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
+    protected Set<Route>  	 routes                      = new HashSet<>();
+    protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -110,7 +112,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
 	
 	public boolean isCorsDisabled() {
-		return corsEnabled;
+		return !corsEnabled;
 	}
 	
 	@Override
@@ -132,7 +134,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	}
 	
 	public Set<String> getRemovalModelNamePrefixes() {
-		return removalModelnamePrefixesImv;
+		return removalModelNamePrefixesImv;
 	}
 	
 	public ApiConfigurator setTitle(String title) {
@@ -227,14 +229,36 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
     
     @Override
-    public ApiConfigurator setOAuthScopes(OAuth2Scope... scopes) {
+    public ApiConfigurator setOAuthScopes(MOAuth2Scope... scopes) {
         this.oAuthScopes = scopes;
         return this;
     }
 
     @Override
-    public OAuth2Scope[] getOAuthScopes() {
+    public MOAuth2Scope[] getOAuthScopes() {
         return oAuthScopes;
+    }
+
+    @Override
+    public int getMaxPageSize() {
+        return maxPageSize;
+    }
+
+    @Override
+    public int getDefaultPageSize() {
+        return defaultPageSize;
+    }
+
+    @Override
+    public ApiConfigurator setMaxPageSize(int size) {
+        this.maxPageSize = size;
+        return this;
+    }
+
+    @Override
+    public ApiConfigurator setDefaultPageSize(int size) {
+        this.defaultPageSize = size;
+        return this;
     }
 
     @Override

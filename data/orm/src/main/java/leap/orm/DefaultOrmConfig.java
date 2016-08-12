@@ -23,11 +23,11 @@ import leap.core.annotation.Configurable;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.New;
 import leap.lang.naming.NamingStyles;
-import leap.orm.config.OrmConfigProperties;
 
-@Configurable(prefix="orm")
-public class DefaultOrmConfig implements OrmConfig,PostCreateBean {
-	
+@Configurable(prefix=OrmConfig.KEY_PREFIX)
+public class DefaultOrmConfig implements OrmConfig {
+
+    protected boolean     autoCreateTables           = false;
 	protected long        defaultMaxResults          = -1;
 	protected String      optimisticLockFieldName    = OrmConstants.LOCK_VERSION;
 	protected boolean     autoGenerateColumns        = false;
@@ -36,7 +36,17 @@ public class DefaultOrmConfig implements OrmConfig,PostCreateBean {
 	protected String      tableNamingStyle           = NamingStyles.NAME_LOWER_UNDERSCORE;
 	protected String      columnNamingStyle          = NamingStyles.NAME_LOWER_UNDERSCORE;
 
-	@Override
+    @Override
+    public boolean isAutoCreateTables() {
+        return autoCreateTables;
+    }
+
+    @ConfigProperty
+    public void setAutoCreateTables(boolean autoCreateTables) {
+        this.autoCreateTables = autoCreateTables;
+    }
+
+    @Override
     public long getDefaultMaxResults() {
 	    return defaultMaxResults;
     }
@@ -102,18 +112,4 @@ public class DefaultOrmConfig implements OrmConfig,PostCreateBean {
 	public void setColumnNamingStyle(String columnNamingStyle) {
 		this.columnNamingStyle = columnNamingStyle;
 	}
-
-	@Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-		OrmConfigProperties config = factory.getAppConfig().removeExtension(OrmConfigProperties.class);
-		if(null != config) {
-			if(null != config.getDefaultMaxResult()) {
-				this.setDefaultMaxResults(config.getDefaultMaxResult());
-			}
-
-            if(null != config.getAutoGenerateColumns()) {
-                this.setAutoGenerateColumns(config.getAutoGenerateColumns());
-            }
-		}
-    }
 }

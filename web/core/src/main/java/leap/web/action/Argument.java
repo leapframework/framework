@@ -18,6 +18,7 @@ package leap.web.action;
 import leap.lang.*;
 import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.accessor.TypeInfoGetter;
+import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +36,10 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		REQUEST_PARAM,
 		
 		QUERY_PARAM,
+
+        HEADER_PARAM,
+
+        COOKIE_PARAM,
 		
 		PART_PARAM,
 		
@@ -46,19 +51,26 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	protected final Type                genericType;
 	protected final TypeInfo            typeInfo;
     protected final BeanType            beanType;
+    protected final BeanProperty        beanProperty;
 	protected final Boolean             required;
 	protected final Location            location;
 	protected final Annotation[]        annotations;
+    protected final ArgumentBinder      binder;
 	protected final ArgumentValidator[] validators;
+    protected final Argument[]          wrappedArguments;
 
-	public Argument(String name, 
-					Class<?> type, 
-					Type genericType,
-					TypeInfo typeInfo,
-					Boolean	required,
-					Location location,
-					Annotation[] annotations,
-					ArgumentValidator[] validators) {
+
+	public Argument(String name,
+                    BeanProperty beanProperty,
+                    Class<?> type,
+                    Type genericType,
+                    TypeInfo typeInfo,
+                    Boolean	required,
+                    Location location,
+                    Annotation[] annotations,
+                    ArgumentBinder binder,
+                    ArgumentValidator[] validators,
+                    Argument[] wrappedArguments) {
 		
 		Args.notEmpty(name,   "name");
 		Args.notNull(type,    "type");
@@ -69,10 +81,13 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
         this.beanType          = typeInfo.isComplexType() ? BeanType.of(type) : null;
+        this.beanProperty      = beanProperty;
 		this.required		   = required;
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
+        this.binder            = binder;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
+        this.wrappedArguments  = wrappedArguments;
 	}
 
 	@Override
@@ -111,6 +126,16 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
         return beanType;
     }
 
+    /**
+     * Optional. Returns the {@link BeanProperty} of wrapper class.
+     *
+     * <p/>
+     * Valid only if this argument is a wrapped argument.
+     */
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
+    }
+
 	/**
 	 * Returns <code>true</code> or <code>false</code> if this argument is required or not explicitly declared.
 	 * 
@@ -138,7 +163,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
     /**
      * Returns true if the location of argument is {@link Location#REQUEST_BODY}.
      */
-	public boolean isRequestBodyLocation() {
+	public boolean isRequestBody() {
         return null != location && location == Location.REQUEST_BODY;
     }
 
@@ -151,14 +176,35 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	public Annotation[] getAnnotations() {
 		return annotations;
 	}
-	
-	/**
+
+    /**
+     * Optional. Returns the {@link ArgumentBinder} of this argument.
+     */
+    public ArgumentBinder getBinder() {
+        return binder;
+    }
+
+    /**
 	 * Returns the {@link ArgumentValidator} arrays.
 	 */
 	public ArgumentValidator[] getValidators() {
 		return validators;
 	}
-	
+
+    /**
+     * Returns true if this argument is a wrapper of wrapped arguments.
+     */
+    public boolean isWrapper() {
+        return wrappedArguments.length > 0;
+    }
+
+    /**
+     * Returns the wrapped arguments.
+     */
+    public Argument[] getWrappedArguments() {
+        return wrappedArguments;
+    }
+
     @Override
     public String toString() {
         return "Argument[name=" + name + ",type=" + type + "]";

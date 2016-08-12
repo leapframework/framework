@@ -20,56 +20,109 @@ import leap.lang.Strings;
 
 public class MProperty extends ImmutableMNamedWithDesc {
 
-	protected final MType   type;
-	protected final boolean nullable;
-	protected final String  defaultValue;
-	protected final boolean fixedLength;
-	protected final Integer	length;
-	protected final Integer precision;
-	protected final Integer scale;
-	
-	public MProperty(String name, String title, String summary, String description, 
-					 MType type, boolean nullable, String defaultValue, boolean fixedLength,
-					 Integer length, Integer precision, Integer scale) {
-		super(name, title, summary, description);
-		
-		Args.notNull(type, "type");
-		
-		this.type         = type;
-		this.nullable     = nullable;
-		this.defaultValue = Strings.trimToNull(defaultValue);
-		this.fixedLength  = fixedLength;
-		this.length		  = length;
-		this.precision	  = precision;
-		this.scale		  = scale;
-	}
+    protected final MType    type;
+    protected final boolean  nullable;
+    protected final String   defaultValue;
+    protected final String[] enumValues;
+    protected final boolean  fixedLength;
+    protected final Integer  length;
+    protected final Integer  precision;
+    protected final Integer  scale;
+    protected final Boolean  insertable;
+    protected final Boolean  updatable;
+    protected final Boolean  sortable;
+    protected final Boolean  filterable;
 
-	public MType getType() {
-		return type;
-	}
 
-	public boolean isNullable() {
-		return nullable;
-	}
+    public MProperty(String name, String title, String summary, String description,
+                     MType type, boolean nullable, String defaultValue, String[] enumValues,
+                     boolean fixedLength,
+                     Integer length, Integer precision, Integer scale,
+                     Boolean insertable, Boolean updatable, Boolean sortable, Boolean filterable) {
+        super(name, title, summary, description);
 
-	public String getDefaultValue() {
-		return defaultValue;
-	}
+        Args.notNull(type, "type");
 
-	public boolean isFixedLength() {
-		return fixedLength;
-	}
+        this.type = type;
+        this.nullable = nullable;
+        this.defaultValue = Strings.trimToNull(defaultValue);
+        this.fixedLength = fixedLength;
+        this.enumValues = enumValues;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+        this.insertable = insertable;
+        this.updatable = updatable;
+        this.sortable = sortable;
+        this.filterable = filterable;
+    }
 
-	public Integer getLength() {
-		return length;
-	}
+    public MType getType() {
+        return type;
+    }
 
-	public Integer getPrecision() {
-		return precision;
-	}
+    public boolean isNullable() {
+        return nullable;
+    }
 
-	public Integer getScale() {
-		return scale;
-	}
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+
+    public boolean isFixedLength() {
+        return fixedLength;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public Boolean getInsertable() {
+        return insertable;
+    }
+
+    public boolean isInsertableExplicitly() {
+        return null != insertable && insertable;
+    }
+
+    public Boolean getUpdatable() {
+        return updatable;
+    }
+
+    public boolean isUpdatableExplicitly() {
+        return null != updatable && updatable;
+    }
+
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public boolean isSortableExplicitly() {
+        return null != sortable && sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public boolean isFilterableExplicitly() {
+        return null != filterable && filterable;
+    }
+
+    @Override
+    public String toString() {
+        return "MProperty[name:" + name + ", kind:" + type.getTypeKind() + "]";
+    }
 }

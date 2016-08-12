@@ -81,6 +81,37 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     @Override
+    public InsertCommand id(Object id) {
+        Args.notNull(id,"id");
+
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            entity.put(keyNames[0],id);
+            return this;
+        }
+
+        if(keyNames.length == 0){
+            throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");
+        }
+
+        if(id == null){
+            for(int i=0;i<keyNames.length;i++){
+                entity.put(keyNames[i],null);
+            }
+        }else{
+            if(!(id instanceof Map)){
+                throw new IllegalArgumentException("The given id must be a Map object for composite id model");
+            }
+            Map map = (Map)id;
+            for(int i=0;i<keyNames.length;i++){
+                entity.put(keyNames[i], map.get(keyNames[i]));
+            }
+        }
+
+        return this;
+    }
+
+    @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public InsertCommand setAll(Object bean) {
 		Args.notNull(bean,"bean");

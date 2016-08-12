@@ -27,6 +27,8 @@ public enum MTypeKind {
 	
 	COMPLEX,
 	
-	OBJECT; //object type includes simple, collection and complex.
+	OBJECT, //object type includes simple, collection and complex.
+
+    VOID
 
 }

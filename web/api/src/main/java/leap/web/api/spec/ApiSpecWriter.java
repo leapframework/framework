@@ -29,6 +29,6 @@ public interface ApiSpecWriter {
 	/**
 	 * Writes the given api metadata to spec's format.
 	 */
-	void write(ApiMetadata m, Appendable out) throws IOException;
+	void write(ApiSpecContext context, ApiMetadata m, Appendable out) throws IOException;
 
 }

@@ -16,74 +16,121 @@
 package leap.lang.meta;
 
 public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
-	
-	protected MType   type;
-	protected boolean nullable;
-	protected String  defaultValue;
-	protected boolean fixedLength;
-	protected Integer length;
-	protected Integer precision;
-	protected Integer scale;
-	
-	public MType getType() {
-		return type;
-	}
 
-	public void setType(MType type) {
-		this.type = type;
-	}
+    protected MType    type;
+    protected boolean  nullable;
+    protected String   defaultValue;
+    protected String[] enumValues;
+    protected boolean  fixedLength;
+    protected Integer  length;
+    protected Integer  precision;
+    protected Integer  scale;
+    protected Boolean  insertable;
+    protected Boolean  updatable;
+    protected Boolean  sortable;
+    protected Boolean  filterable;
 
-	public boolean isNullable() {
-		return nullable;
-	}
-
-	public void setNullable(boolean nullable) {
-		this.nullable = nullable;
-	}
-
-	public String getDefaultValue() {
-		return defaultValue;
-	}
-
-	public void setDefaultValue(String defaultValue) {
-		this.defaultValue = defaultValue;
-	}
-
-	public boolean isFixedLength() {
-		return fixedLength;
-	}
-
-	public void setFixedLength(boolean fixedLength) {
-		this.fixedLength = fixedLength;
-	}
-
-	public Integer getLength() {
-		return length;
-	}
-
-	public void setLength(Integer length) {
-		this.length = length;
-	}
-
-	public Integer getPrecision() {
-		return precision;
-	}
-
-	public void setPrecision(Integer precision) {
-		this.precision = precision;
-	}
-
-	public Integer getScale() {
-		return scale;
-	}
-
-	public void setScale(Integer scale) {
-		this.scale = scale;
-	}
-
-	@Override
-    public MProperty build() {
-	    return new MProperty(name, title, summary, description, type, nullable, defaultValue, fixedLength, length, precision, scale);
+    public MType getType() {
+        return type;
     }
-	
+
+    public void setType(MType type) {
+        this.type = type;
+    }
+
+    public boolean isNullable() {
+        return nullable;
+    }
+
+    public void setNullable(boolean nullable) {
+        this.nullable = nullable;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public String[] getEnumValues() {
+        return enumValues;
+    }
+
+    public void setEnumValues(String[] enumValues) {
+        this.enumValues = enumValues;
+    }
+
+    public boolean isFixedLength() {
+        return fixedLength;
+    }
+
+    public void setFixedLength(boolean fixedLength) {
+        this.fixedLength = fixedLength;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public void setLength(Integer length) {
+        this.length = length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public void setPrecision(Integer precision) {
+        this.precision = precision;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public void setScale(Integer scale) {
+        this.scale = scale;
+    }
+
+    public Boolean getInsertable() {
+        return insertable;
+    }
+
+    public void setInsertable(Boolean insertable) {
+        this.insertable = insertable;
+    }
+
+    public Boolean getUpdatable() {
+        return updatable;
+    }
+
+    public void setUpdatable(Boolean updatable) {
+        this.updatable = updatable;
+    }
+
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public void setSortable(Boolean sortable) {
+        this.sortable = sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    public void setFilterable(Boolean filterable) {
+        this.filterable = filterable;
+    }
+
+    @Override
+    public MProperty build() {
+        return new MProperty(name, title, summary, description, type, nullable,
+                             defaultValue, enumValues, fixedLength, length, precision, scale,
+                             insertable, updatable, sortable, filterable);
+    }
+
 }

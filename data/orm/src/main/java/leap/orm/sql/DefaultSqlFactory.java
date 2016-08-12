@@ -119,7 +119,7 @@ public class DefaultSqlFactory implements SqlFactory {
         int index = 0;
         
         for(FieldMapping fm : em.getFieldMappings()){
-        	if(fm.isInsert()){
+        	if(fm.isInsertable()){
             	if(index > 0){
             		sql.append(",");
             		values.append(",");
@@ -161,7 +161,7 @@ public class DefaultSqlFactory implements SqlFactory {
         int index = 0;
 
         for(FieldMapping fm : em.getFieldMappings()){
-        	if(!fm.isInsert()){
+        	if(!fm.isInsertable()){
         		continue;
         	}
         	
@@ -209,7 +209,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		int index = 0;
 		
 		for(FieldMapping fm : em.getFieldMappings()){
-			if(fm.isUpdate() && !fm.isPrimaryKey()){
+			if(fm.isUpdatable() && !fm.isPrimaryKey()){
 				
 				if(index > 0){
 					sql.append(",");
@@ -276,7 +276,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		for(FieldMapping fm : em.getFieldMappings()){
 			
-			if(fm.isPrimaryKey() || !fm.isUpdate()){
+			if(fm.isPrimaryKey() || !fm.isUpdatable()){
 				continue;
 			}
 			

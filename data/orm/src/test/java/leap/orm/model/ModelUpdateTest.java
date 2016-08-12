@@ -33,7 +33,7 @@ public class ModelUpdateTest extends OrmTestCase {
 
 		assertTrue(Owner.update(owner.id(), New.hashMap("lastName","1")));
 		
-		owner.refresh();
+		owner.load();
 		assertEquals("1",owner.getLastName());
 	}
 	

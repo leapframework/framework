@@ -22,12 +22,15 @@ import leap.core.security.Authorization;
 import leap.core.web.RequestIgnore;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
+import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
+import leap.web.config.WebConfig;
+import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
 import leap.web.security.annotation.*;
 import leap.web.security.csrf.CsrfHandler;
@@ -37,16 +40,20 @@ import leap.web.security.path.SecuredPathSource;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.permission.PermissionManager;
 
+import java.util.Map;
+
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
-	
+
     protected @Inject @M SecurityConfig       config;
     protected @Inject @M SecurityConfigurator configurator;
+    protected @Inject @M WebConfig            webConfig;
     protected @Inject @M PermissionManager    permissionManager;
     protected @Inject @M SecuredPathSource    pathSource;
     protected @Inject @M SecurityHandler      handler;
     protected @Inject @M CsrfHandler          csrf;
+    protected @Inject @M CorsHandler          cors;
 
 	@Override
     public void postAppStart(App app) throws Throwable {
@@ -55,20 +62,32 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	    for(Route route : app.routes()) {
 	        Action action = route.getAction();
 
-	        AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
-	        if(null != aa) {
-	            paths.of(route).setAllowAnonymous(aa.value()).apply();
-	        }
-	        
-	        AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
-	        if(null != ac) {
-                paths.of(route).setAllowClientOnly(ac.value()).apply();
-	        }
+            if(route.isAllowAnonymous()) {
+                paths.of(route).setAllowAnonymous(true).apply();
+            }else{
+                AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
+                if(null != aa) {
+                    paths.of(route).setAllowAnonymous(aa.value()).apply();
+                }
+            }
+
+            if(route.isAllowClientOnly()) {
+                paths.of(route).setAllowClientOnly(true).apply();
+            }else{
+                AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
+                if(null != ac) {
+                    paths.of(route).setAllowClientOnly(ac.value()).apply();
+                }
+            }
 
 			AllowRememberMe ar = action.searchAnnotation(AllowRememberMe.class);
 			if(null != ar) {
 				paths.of(route).setAllowRememberMe(ar.value()).apply();
 			}
+
+            if(route.isCorsEnabled() || (!route.isCorsDisabled() && webConfig.isCorsEnabled())) {
+                paths.of(route).setAllowCors(true).apply();
+            }
 
             Permissions permissions = action.searchAnnotation(Permissions.class);
             if(null != permissions) {
@@ -79,7 +98,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	        if(null != secured){
 	            boolean isAction = action.getAnnotation(Secured.class) != null;
 
-                SecuredPathConfigurator p = null;
+                SecuredPathConfigurator p;
 	            
 	            if(isAction){
 	                 p = paths.of(route);
@@ -99,6 +118,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
                 p.apply();
 	        }
+
+            SecuredPathConfigurator sp = paths.get(route);
+            if(null != sp) {
+                config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
+                    if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
+                        log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
+                        sp.setFailureHandler(handler).apply();
+                    }
+                });
+            }
 	    }
     }
 	
@@ -151,7 +180,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		}
 
         //Resolve security path.
-        context.setSecurityPath(resolveSecurityPath(request, response, context));
+        SecuredPath sp = resolveSecurityPath(request, response, context);
+        context.setSecurityPath(sp);
+
+        //Handles cors request.
+        if(sp.isAllowCors()) {
+            state = cors.handle(request, response);
+            if(State.isIntercepted(state)) {
+                return state;
+            }
+        }
 
         //Check authentication
 		state = checkAuthentication(request, response, context);
@@ -248,7 +286,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }else{
             log.debug("Authorization already resolved by interceptor -> {}", authz);
         }
-
 
         for(SecurityInterceptor si : interceptors) {
             if(State.isIntercepted(si.postResolveAuthorization(request, response, context))) {

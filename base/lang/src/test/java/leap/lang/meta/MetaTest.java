@@ -31,6 +31,6 @@ public class MetaTest extends TestBase {
 		BeanProperty bp = bt.getProperty("summary");
 		assertTrue(bp.isAnnotationPresent(Localizable.class));
 	}
-	
-	
+
+
 }

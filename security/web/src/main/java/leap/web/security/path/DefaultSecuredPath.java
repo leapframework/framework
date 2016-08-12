@@ -23,6 +23,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.permission.PermissionManager;
@@ -31,26 +33,40 @@ public class DefaultSecuredPath implements SecuredPath {
 
 	private static final Log log = LogFactory.get(DefaultSecuredPath.class);
 
-	protected final PathPattern pattern;
-	protected final boolean     allowAnonymous;
-	protected final boolean     allowClientOnly;
-	protected final boolean     allowRememberMe;
-    protected final String[]    permissions;
-    protected final String[]    roles;
+    protected final Route                  route;
+    protected final PathPattern            pattern;
+    protected final boolean                allowAnonymous;
+    protected final boolean                allowClientOnly;
+    protected final boolean                allowRememberMe;
+    protected final boolean                allowCors;
+    protected final SecurityFailureHandler failureHandler;
+    protected final String[]               permissions;
+    protected final String[]               roles;
 
-	public DefaultSecuredPath(PathPattern pattern,
+	public DefaultSecuredPath(Route route,
+                              PathPattern pattern,
                               boolean allowAnonymous,
                               boolean allowClientOnly,
                               boolean allowRememberMe,
+                              boolean allowCors,
+                              SecurityFailureHandler failureHandler,
                               String[] permissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
+        this.route           = route;
 		this.pattern         = pattern;
 	    this.allowAnonymous  = allowAnonymous;
 	    this.allowClientOnly = allowClientOnly;
 	    this.allowRememberMe = allowRememberMe;
+        this.allowCors       = allowCors;
+        this.failureHandler  = failureHandler;
         this.permissions     = permissions;
         this.roles           = roles;
+    }
+
+    @Override
+    public Route getRoute() {
+        return route;
     }
 
     /**
@@ -83,6 +99,16 @@ public class DefaultSecuredPath implements SecuredPath {
     @Override
     public boolean isAllowRememberMe() {
         return allowRememberMe;
+    }
+
+    @Override
+    public boolean isAllowCors() {
+        return allowCors;
+    }
+
+    @Override
+    public SecurityFailureHandler getFailureHandler() {
+        return failureHandler;
     }
 
     /**

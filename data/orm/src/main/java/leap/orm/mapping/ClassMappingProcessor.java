@@ -59,6 +59,9 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		Annotation[] annotations = fmb.getAnnotations();
 		if(null != annotations && annotations.length > 0){
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Column.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Sortable.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Filterable.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
 			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
@@ -134,83 +137,117 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		}
 	}
 	
-	protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Column a){
-		if(null != a){
-			DbColumnBuilder c = f.getColumn();
-			
-			//column name
-			if(!Strings.isEmpty(a.value())) {
-				c.setName(a.value());
-				f.setColumnNameDeclared(true);
-			}
-			if(!Strings.isEmpty(a.name())){
-				c.setName(a.name());
-				f.setColumnNameDeclared(true);
-			}
-			
-			//column type (jdbc type name)
-			if(!Strings.isEmpty(a.typeName())){
-				c.setTypeName(a.typeName());
-			}else if(a.type() != ColumnType.AUTO){
-				c.setTypeName(a.type().getTypeName());
-			}
-			
-			//length
-			if(a.length() > 0){
-				f.setMaxLength(a.length());
-				c.setLength(a.length());
-			}
-			
-			//nullable
-			if(!a.nullable().isNone()){
-				f.setNullable(a.nullable().getValue());
-				c.setNullable(a.nullable().getValue());
-			}
-			
-			//precision
-			if(a.precision() > 0){
-				f.setPrecision(a.precision());
-				c.setPrecision(a.precision());
-			}
-			
-			//scale
-			if(a.scale() > 0){
-				f.setScale(a.scale());
-				c.setScale(a.scale());
-			}
-			
-			//unique
-			if(!a.unique().isNone()){
-				c.setUnique(a.unique().getValue());
-			}
-			
-			//insert
-			if(!a.insert().isNone()){
-				f.setInsert(a.insert().getValue());
-			}
-			
-			//update
-			if(!a.update().isNone()){
-				f.setUpdate(a.update().getValue());
-			}
-			
-			//default-value
-			if(!Strings.isEmpty(a.defaultValue())) {
-			    f.setDefaultValue(a.defaultValue());
-			    c.setDefaultValue(a.defaultValue());
-			}
-			
-			//sort order
-			if(a.order() != Integer.MIN_VALUE) {
-			    f.setSortOrder(a.order());    
-			}
-			
-			return true;
-		}
-		
+	protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Column a) {
+        if (null != a) {
+            DbColumnBuilder c = f.getColumn();
+
+            //column name
+            if (!Strings.isEmpty(a.value())) {
+                c.setName(a.value());
+                f.setColumnNameDeclared(true);
+            }
+            if (!Strings.isEmpty(a.name())) {
+                c.setName(a.name());
+                f.setColumnNameDeclared(true);
+            }
+
+            //column type (jdbc type name)
+            if (!Strings.isEmpty(a.typeName())) {
+                c.setTypeName(a.typeName());
+            } else if (a.type() != ColumnType.AUTO) {
+                c.setTypeName(a.type().getTypeName());
+            }
+
+            //length
+            if (a.length() > 0) {
+                f.setMaxLength(a.length());
+                c.setLength(a.length());
+            }
+
+            //nullable
+            if (!a.nullable().isNone()) {
+                f.setNullable(a.nullable().getValue());
+                c.setNullable(a.nullable().getValue());
+            }
+
+            //precision
+            if (a.precision() > 0) {
+                f.setPrecision(a.precision());
+                c.setPrecision(a.precision());
+            }
+
+            //scale
+            if (a.scale() > 0) {
+                f.setScale(a.scale());
+                c.setScale(a.scale());
+            }
+
+            //unique
+            if (!a.unique().isNone()) {
+                c.setUnique(a.unique().value());
+            }
+
+            //insert
+            if (!a.insert().isNone()) {
+                f.setInsertable(a.insert().value());
+            }
+
+            //update
+            if (!a.update().isNone()) {
+                f.setUpdatable(a.update().value());
+            }
+
+            //sortable
+            if(!a.sortable().isNone()) {
+                f.setSortable(a.sortable().value());
+            }
+
+            //filterable
+            if(!a.filterable().isNone()) {
+                f.setFilterable(a.filterable().value());
+            }
+
+            //default-value
+            if (!Strings.isEmpty(a.defaultValue())) {
+                f.setDefaultValue(a.defaultValue());
+                c.setDefaultValue(a.defaultValue());
+            }
+
+            //sort order
+            if (a.order() != Integer.MIN_VALUE) {
+                f.setSortOrder(a.order());
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Unique a){
+        if(null != a) {
+            f.getColumn().setUnique(true);
+            return true;
+        }
 		return false;
 	}
-	
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Sortable a){
+        if(null != a) {
+            f.setSortable(true);
+            return true;
+        }
+        return false;
+    }
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Filterable a){
+        if(null != a) {
+            f.setFilterable(true);
+            return true;
+        }
+        return false;
+    }
+
 	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){
 		String domainName = null;
 		

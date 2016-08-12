@@ -16,8 +16,10 @@
 package leap.web.api;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leap.core.annotation.Inject;
@@ -27,25 +29,26 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.net.Urls;
 import leap.lang.path.Paths;
+import leap.lang.reflect.ReflectClass;
+import leap.lang.reflect.ReflectField;
 import leap.web.App;
 import leap.web.AppInitializable;
-import leap.web.api.config.ApiConfig;
-import leap.web.api.config.ApiConfigProcessor;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.config.ApiConfiguratorFactory;
+import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
+import leap.web.api.mvc.ApiInitializable;
 import leap.web.route.Route;
 
 public class DefaultApis implements Apis, AppInitializable  {
 	
 	protected @Inject ApiConfiguratorFactory configuratorFactory;
+    protected @Inject ApiConfigSource        configSource;
 	protected @Inject ApiConfigProcessor[]   configProcessors;
-	protected @Inject ApiMetadataFactory	 metadataFactory;
+	protected @Inject ApiMetadataFactory     metadataFactory;
 	
-	protected Map<String, ApiConfigurator> configurators               = new ConcurrentHashMap<String, ApiConfigurator>();
-	protected Map<String, ApiConfig>       configurations			   = new ConcurrentHashMap<String, ApiConfig>();
-	protected Map<String, ApiMetadata>     metadatas				   = new ConcurrentHashMap<String, ApiMetadata>();
+	protected Map<String, ApiConfigurator> configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
+	protected Map<String, ApiConfig>       configurations = new ConcurrentHashMap<String, ApiConfig>();
+	protected Map<String, ApiMetadata>     metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
 	
 	protected Map<String, ApiConfigurator> configuratorsImmutableView  = Collections.unmodifiableMap(configurators);
 	protected Map<String, ApiConfig>       configurationsImmutableView = Collections.unmodifiableMap(configurations);
@@ -77,7 +80,7 @@ public class DefaultApis implements Apis, AppInitializable  {
 		
 		String key = name.toLowerCase();
 		if(configurators.containsKey(key)) {
-			throw new ObjectExistsException("The api '" + name + "' aleady exists");
+			throw new ObjectExistsException("The api '" + name + "' already exists");
 		}
  
 		ApiConfigurator configurator = configuratorFactory.createConfigurator(this, name, basePath);
@@ -87,7 +90,7 @@ public class DefaultApis implements Apis, AppInitializable  {
     }
 
 	@Override
-    public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
+    public ApiConfigurator of(String name) throws ObjectNotFoundException {
 		Args.notEmpty(name, "name");
 		
 		ApiConfigurator c = configurators.get(name.toLowerCase());
@@ -145,8 +148,9 @@ public class DefaultApis implements Apis, AppInitializable  {
 
     @Override
     public void postAppInit(App app) throws Throwable {
+        configSource.loadConfiguration(app, this);
+
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			
 			String key = entry.getKey();
 			ApiConfigurator c = entry.getValue();
 			
@@ -155,13 +159,15 @@ public class DefaultApis implements Apis, AppInitializable  {
 			
 			//create metadata
 			ApiMetadata m = createMetadata(c);
-			metadatas.put(key, m);	
+			metadatas.put(key, m);
+
+            postLoadApi(app, c.config(), m);
 		}
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
-		//configure routes.
-		configureRoutes(app, c);
+		//resolve routes of api.
+		resolveRoutes(app, c);
 		
 		//configure by processors.
 		for(ApiConfigProcessor p : configProcessors) {
@@ -171,9 +177,10 @@ public class DefaultApis implements Apis, AppInitializable  {
 		for(ApiConfigProcessor p : configProcessors) {
 			p.postProcess(c.config());
 		}
+
 	}
 	
-    protected void configureRoutes(App app, ApiConfigurator c) {
+    protected void resolveRoutes(App app, ApiConfigurator c) {
 		String basePath				   = c.config().getBasePath();
 		String basePathSuffixWithSlash = Paths.suffixWithSlash(basePath);
 		for(Route route : app.routes()) {
@@ -188,7 +195,37 @@ public class DefaultApis implements Apis, AppInitializable  {
 			}
 		}
 	}
-	
+
+    protected void postLoadApi(App app, ApiConfig c, ApiMetadata m) {
+
+        Set<Object> controllers = new HashSet<>();
+
+        for(Route route : c.getRoutes()) {
+            Object controller = route.getAction().getController();
+            if(null != controller && !controllers.contains(controller)) {
+                controllers.add(controller);
+
+                ReflectClass rc = ReflectClass.of(controller.getClass());
+
+                for(ReflectField rf : rc.getFields()) {
+                    if(rf.getType().equals(ApiConfig.class)) {
+                        rf.setValue(controller, c);
+                        break;
+                    }
+
+                    if(rf.getType().equals(ApiMetadata.class)) {
+                        rf.setValue(controller, m);
+                    }
+                }
+
+                if(controller instanceof ApiInitializable) {
+                    ((ApiInitializable) controller).postApiInitialized(c, m);
+                }
+
+            }
+        }
+    }
+
 	protected ApiMetadata createMetadata(ApiConfigurator c) {
 		return metadataFactory.createMetadata(c.config());
 	}

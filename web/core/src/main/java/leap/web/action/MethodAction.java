@@ -62,8 +62,13 @@ public class MethodAction implements Action {
     public String getName() {
 	    return method.getName();
     }
-	
-	@Override
+
+    @Override
+    public Object getController() {
+        return controller;
+    }
+
+    @Override
     public boolean hasReturnValue() {
 	    return hasReturnValue;
     }
@@ -91,7 +96,12 @@ public class MethodAction implements Action {
     public Annotation[] getAnnotations() {
 	    return method.getAnnotations();
     }
-    
+
+	@Override
+	public <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
+		return method.getReflectedMethod().getAnnotationsByType(annotationClass);
+	}
+
 	@Override
     public Annotation[] getMergedAnnotations() {
 	    return mergedAnnotations;

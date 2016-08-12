@@ -41,9 +41,9 @@ public interface RequestFormat extends Named {
 	boolean supportsRequestBody();
 	
 	/**
-	 * Reads the body content of the given {@link Request} and converts to the given type.
+	 * Reads the raw body content of the given {@link Request}.
 	 * 
 	 * @throws IllegalStateException if this format does not supports request body.
 	 */
-	Object readRequestBody(Request request, Class<?> type,Type genericType) throws IOException, IllegalStateException;
+	Object readRequestBody(Request request) throws IOException, IllegalStateException;
 }

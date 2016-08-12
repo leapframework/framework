@@ -42,8 +42,8 @@ public abstract class JsonSpecWriter implements ApiSpecWriter {
 	}
 
 	@Override
-	public void write(ApiMetadata m, Appendable out) throws IOException {
-		write(m, createJsonWriter(out));
+	public void write(ApiSpecContext context, ApiMetadata m, Appendable out) throws IOException {
+		write(context, m, createJsonWriter(out));
 	}
 	
 	protected JsonWriter createJsonWriter(Appendable out) {
@@ -60,6 +60,6 @@ public abstract class JsonSpecWriter implements ApiSpecWriter {
 		return null == propertyNamingStyle ? name : propertyNamingStyle.of(name);
 	}
 	
-	protected abstract void write(ApiMetadata m, JsonWriter w); 
+	protected abstract void write(ApiSpecContext context, ApiMetadata m, JsonWriter w);
 
 }

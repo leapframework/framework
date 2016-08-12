@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.function.Consumer;
 
 @SuppressWarnings("rawtypes")
 public interface JsonWriter {
@@ -710,6 +711,48 @@ public interface JsonWriter {
      * See {@link #value(Object}.
      */
     JsonWriter array(Object[] array);
+
+    /**
+     * Writes an array use writer function.
+     */
+    default <T> JsonWriter array(Iterable<T> a, Consumer<T> itemWriter) {
+        startArray();
+
+        if(null != a) {
+            int i = 0;
+            for(T item : a) {
+                if(i > 0) {
+                    separator();
+                }else{
+                    i++;
+                }
+                itemWriter.accept(item);
+            }
+        }
+
+        endArray();
+        return this;
+    }
+
+    /**
+     * Writes an array use writer function.
+     */
+    default <T> JsonWriter array(T[] a, Consumer<T> itemWriter) {
+        startArray();
+
+        if(null != a) {
+            for(int i=0;i<a.length;i++) {
+                T item = a[i];
+                if(i > 0) {
+                    separator();
+                }
+                itemWriter.accept(item);
+            }
+        }
+
+        endArray();
+        return this;
+    }
 
     /**
      * Writes a string array.

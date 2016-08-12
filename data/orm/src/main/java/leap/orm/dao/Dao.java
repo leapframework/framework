@@ -62,6 +62,13 @@ public abstract class Dao implements JdbcExecutor {
 	public static Dao get(String name){
 		return Orm.dao(name);
 	}
+
+    /**
+     * Returns the {@link Dao} of the entity class.
+     */
+    public static Dao of(Class<?> entityClass) {
+        return Orm.dao(entityClass);
+    }
 	
 	/**
 	 * Returns the {@link OrmContext} of this dao.
@@ -102,9 +109,17 @@ public abstract class Dao implements JdbcExecutor {
 	 * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
 	 */
 	public abstract Errors validate(EntityMapping em,Object entity);
+
+    /**
+     * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     */
+    public abstract Errors validate(EntityMapping em,Object entity, Iterable<String> fields);
 	
 	/**
-	 * Validates the given entity object and returns the {@link Errors} contains empty or validatioin errors.
+	 * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
 	 * 
 	 * <p>
 	 * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
@@ -115,6 +130,19 @@ public abstract class Dao implements JdbcExecutor {
 	 * 
 	 */
 	public abstract Errors validate(EntityMapping em,Object entity, int maxErrors);
+
+    /**
+     * Validates the given entity object and returns the {@link Errors} contains empty or validation errors.
+     *
+     * <p>
+     * The given entity object can be a pojo, a {@link Entity} object or a {@link Map} contains entity's attributes.
+     *
+     * @param em {@link EntityMapping} mapping to the given entity object.
+     * @param entity the entity object to be validated.
+     * @param maxErrors 0 means validates all errors, large than 0 means it will stop validating when the error's size reach the given maxErrors.
+     *
+     */
+    public abstract Errors validate(EntityMapping em,Object entity, int maxErrors, Iterable<String> fields);
 	
 	//----------------------------commands------------------------------
 	/**
@@ -216,6 +244,21 @@ public abstract class Dao implements JdbcExecutor {
 	 * @return The affected row(s).
 	 */
 	public abstract int insert(Object entity) throws MappingNotFoundException;
+
+    /**
+     * Inserts a new entity.
+     */
+    public int insert(EntityMapping em, Object entity) {
+        return insert(em, entity, null);
+    }
+
+    /**
+     * Inserts a new entity with the id.
+     *
+     * <p/>
+     * If id is null, use the value in entity or generate it.
+     */
+    public abstract int insert(EntityMapping em, Object entity, Object id);
 	
 	//----------------------------update--------------------------------
 	

@@ -15,37 +15,34 @@
  */
 package leap.lang.meta;
 
+import leap.lang.Args;
+
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class SimpleMTypeFactoryCreator implements MTypeFactoryCreator {
-	
-	protected BiConsumer<Class<?>, MComplexType>         complextTypeCreatedListener;
-	protected Function<Class<?>, String> 				 complextTypeLocalNamer;
-	protected BiFunction<Class<?>, MComplexType, String> complextTypeFqNamer;
-	
-	@Override
-    public MTypeFactoryCreator setComplexTypeCreatedListener(BiConsumer<Class<?>, MComplexType> listener) {
-		this.complextTypeCreatedListener = listener;
+
+    protected MTypeStrategy strategy = MTypeStrategy.DEFAULT;
+    protected MTypeListener listener = MTypeListener.NOP;
+
+    @Override
+    public MTypeFactoryCreator setListener(MTypeListener listener) {
+        Args.notNull(listener);
+        this.listener = listener;
         return this;
     }
 
-	@Override
-    public MTypeFactoryCreator setComplexTypeLocalNamer(Function<Class<?>, String> namer) {
-		this.complextTypeLocalNamer = namer;
+    @Override
+    public MTypeFactoryCreator setStrategy(MTypeStrategy strategy) {
+        Args.notNull(strategy);
+        this.strategy = strategy;
         return this;
     }
 
-	@Override
-    public MTypeFactoryCreator setComplexTypeFqNamer(BiFunction<Class<?>, MComplexType, String> fqNamer) {
-		this.complextTypeFqNamer = fqNamer;
-        return this;
-    }
-
-	@Override
+    @Override
     public MTypeFactory create() {
-        return new SimpleMTypeFactory(complextTypeCreatedListener, complextTypeLocalNamer, complextTypeFqNamer);
+        return new SimpleMTypeFactory();
     }
 	
 }

@@ -59,7 +59,7 @@ public class PersonTest extends OrmTestCase {
 		
 		p.save();
 		
-		p.refresh();
+		p.load();
 		assertEquals("n2",p.get("name"));
 	}
 	
@@ -98,7 +98,7 @@ public class PersonTest extends OrmTestCase {
 		//save it again (test lock version update)
 		assertTrue(p.trySave());
 		
-		assertTrue(p.refresh());
+		assertTrue(p.load());
 		assertEquals("hello",p.get("name"));
 		
 		assertTrue(p.tryDelete());

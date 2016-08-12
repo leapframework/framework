@@ -22,6 +22,8 @@ import leap.core.exception.OptimisticLockException;
 import leap.lang.Args;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.generator.ValueGeneratorContext;
@@ -33,6 +35,8 @@ import leap.orm.sql.SqlFactory;
 import leap.orm.value.Entity;
 
 public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements UpdateCommand,ValueGeneratorContext {
+
+    private static final Log log = LogFactory.get(DefaultUpdateCommand.class);
 	
     protected final SqlFactory sf;
     protected final Entity     entity;
@@ -137,7 +141,8 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 		SqlCommand command = this.command;
 		
 		if(null == command){
-			command = sf.createUpdateCommand(context, em, entity.keySet().toArray(new String[entity.size()]));
+            command = sf.createUpdateCommand(context, em, entity.keySet().toArray(new String[entity.size()]));
+            log.debug("Create update sql : {}", command.getSql());
 		}
 		
 	    int result = command.executeUpdate(this, entity);

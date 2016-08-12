@@ -1,19 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
-	<bean type="leap.web.api.Apis"     						class="leap.web.api.DefaultApis"                          primary="true"/>
-	<bean type="leap.web.api.config.ApiConfiguratorFactory" class="leap.web.api.config.DefaultApiConfiguratorFactory" primary="true"/>
-	<bean type="leap.web.api.meta.ApiMetadataFactory"       class="leap.web.api.meta.DefaultApiMetadataFactory"       primary="true"/>
-	<bean type="leap.web.api.spec.ApiSpecWriter"			class="leap.web.api.spec.swagger.SwaggerJsonWriter"		  primary="true"/>
-    
+    <bean type="leap.web.api.Apis"
+          class="leap.web.api.DefaultApis" primary="true"/>
+
+    <bean type="leap.web.api.config.ApiConfiguratorFactory"
+          class="leap.web.api.config.DefaultApiConfiguratorFactory" primary="true"/>
+
+    <bean type="leap.web.api.config.ApiConfigSource"
+          class="leap.web.api.config.DefaultApiConfigSource" primary="true"/>
+
+    <bean type="leap.web.api.config.ApiConfigReader"
+          class="leap.web.api.config.XmlApiConfigReader"/>
+
+    <bean type="leap.web.api.meta.ApiMetadataFactory"
+          class="leap.web.api.meta.DefaultApiMetadataFactory" primary="true"/>
+
+    <bean type="leap.web.api.spec.ApiSpecWriter"
+          class="leap.web.api.spec.swagger.SwaggerJsonWriter" primary="true"/>
+
     <!-- built-in oauth2 processor : only the oauth2 module exists -->
     <beans if-class-present="leap.oauth2.OAuth2Constants">
-        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuth2Processor"/>
+        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuthConfigProcessor"/>
     </beans>
-	
+
+    <beans if-class-present="leap.web.security.SecurityConfig">
+        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
+    </beans>
+
     <!-- built-in swagger processor -->
-	<bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
-    
+
+
+    <bean type="leap.web.api.mvc.ApiFailureHandler"
+          class="leap.web.api.mvc.DefaultApiFailureHandler" primary="true"/>
+
+    <bean type="leap.web.api.mvc.ApiErrorHandler"
+          class="leap.web.api.mvc.DefaultApiErrorHandler" primary="true"/>
+
 </beans>

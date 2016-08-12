@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,34 +15,37 @@
  */
 package leap.web.api.meta;
 
+import java.util.Collections;
 import java.util.Map;
 
 import leap.lang.New;
+import leap.lang.exception.ObjectNotFoundException;
+import leap.web.api.meta.model.*;
 
 /**
  * This is the root document object for the API specification.
  */
-public class ApiMetadata extends ApiNamedWithDesc {
+public class ApiMetadata extends MApiNamedWithDesc {
 	
-	protected final String               termsOfService;
-	protected final ApiConcat            concat;
-	protected final String               version;
-	protected final String               host;
-	protected final String               basePath;
-	protected final String[]             protocols;
-	protected final String[]             consumes;
-	protected final String[]             produces;
-	protected final Map<String,ApiPath>  paths;
-	protected final Map<String,ApiModel> models;
-	protected final ApiSecurityDef[]     securityDefs;
+	protected final String                termsOfService;
+	protected final MApiConcat            concat;
+	protected final String                version;
+	protected final String                host;
+	protected final String                basePath;
+	protected final String[]              protocols;
+	protected final String[]              consumes;
+	protected final String[]              produces;
+	protected final Map<String,MApiPath>  paths;
+	protected final Map<String,MApiModel> models;
+	protected final MApiSecurityDef[]     securityDefs;
 
-	public ApiMetadata(String name, String title, String summary, String description, 
-					 String termsOfService, ApiConcat concat, String version, 
-					 String host, String basePath, String[] protocols, String[] consumes, String[] produces, 
-					 Map<String, ApiPath> paths, 
-					 Map<String, ApiModel> models,
-					 ApiSecurityDef[] securityDefs,
-					 Map<String, Object> attrs)  {
+	public ApiMetadata(String name, String title, String summary, String description,
+                       String termsOfService, MApiConcat concat, String version,
+                       String host, String basePath, String[] protocols, String[] consumes, String[] produces,
+                       Map<String, MApiPath> paths,
+                       Map<String, MApiModel> models,
+                       MApiSecurityDef[] securityDefs,
+                       Map<String, Object> attrs)  {
 		super(name, title, summary, description, attrs);
 	    this.termsOfService = termsOfService;
 	    this.concat = concat;
@@ -52,8 +55,8 @@ public class ApiMetadata extends ApiNamedWithDesc {
 		this.protocols = protocols;
 		this.consumes = consumes;
 		this.produces = produces;
-		this.paths    = New.unmodifiableHashMap(paths);
-		this.models   = New.unmodifiableHashMap(models);
+		this.paths    = Collections.unmodifiableMap(paths);
+		this.models   = Collections.unmodifiableMap(models);
 		this.securityDefs = securityDefs;
 	}
 	
@@ -67,7 +70,7 @@ public class ApiMetadata extends ApiNamedWithDesc {
 	/**
 	 * The contact information for the exposed API.
 	 */
-	public ApiConcat getConcat() {
+	public MApiConcat getConcat() {
 		return concat;
 	}
 	
@@ -131,15 +134,27 @@ public class ApiMetadata extends ApiNamedWithDesc {
 	/**
 	 * Required. The available paths and operations for the API.
 	 */
-	public Map<String,ApiPath> getPaths() {
+	public Map<String,MApiPath> getPaths() {
 		return paths;
 	}
 
-	public Map<String,ApiModel> getModels() {
+    /**
+     * Returns all the models.
+     */
+	public Map<String,MApiModel> getModels() {
 		return models;
 	}
 
-    public ApiSecurityDef[] getSecurityDefs() {
+    public MApiModel getModel(Class<?> type) {
+        for(MApiModel m : models.values()) {
+            if(type.equals(m.getJavaType())) {
+                return m;
+            }
+        }
+        throw new ObjectNotFoundException("No api model of type '" + type + "'");
+    }
+
+    public MApiSecurityDef[] getSecurityDefs() {
         return securityDefs;
     }
 }

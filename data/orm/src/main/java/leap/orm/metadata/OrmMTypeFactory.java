@@ -15,40 +15,47 @@
  */
 package leap.orm.metadata;
 
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
-import leap.lang.meta.MComplexTypeBuilder;
-import leap.lang.meta.MPropertyBuilder;
-import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactory;
+import leap.lang.Args;
+import leap.lang.Enums;
+import leap.lang.Types;
+import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 
+import java.lang.reflect.Type;
+
 public class OrmMTypeFactory implements MTypeFactory {
 	
-	protected @Inject OrmContext[] ormContextes;
+	protected @Inject OrmContext[] ormContexts;
 	
 	@Override
-	public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
-		
-		for(OrmContext c : ormContextes) {
+	public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+        Args.notNull(context.root(), "Root factory must be exists!");
+
+        if(Types.isSimpleType(type,genericType) || Types.isCollectionType(type,genericType)) {
+            return null;
+        }
+
+        for(OrmContext c : ormContexts) {
 			EntityMapping em = c.getMetadata().tryGetEntityMapping(type);
 			
 			if(null != em) {
-				return getMType(type, genericType, root, c, em);
+				return getMType(type, genericType, context, c, em);
 			}
 			
 		}
-		
+
 		return null;
 	}
 
-	protected MType getMType(Class<?> type, Type genericType, MTypeFactory root, OrmContext c,  EntityMapping em) {
+	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, OrmContext c,  EntityMapping em) {
 		MComplexTypeBuilder ct = new MComplexTypeBuilder();
 
 		ct.setName(em.getEntityName());
+
+        MTypeFactory root = context.root();
 
 		for(FieldMapping fm : em.getFieldMappings()) {
 			MPropertyBuilder p = new MPropertyBuilder();
@@ -58,6 +65,14 @@ public class OrmMTypeFactory implements MTypeFactory {
 			p.setNullable(fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
+            p.setInsertable(fm.isInsertable());
+            p.setUpdatable(fm.isUpdatable());
+            p.setSortable(fm.getSortable());
+            p.setFilterable(fm.getFilterable());
+
+            if(type.isEnum()) {
+                p.setEnumValues(Enums.getValues(type));
+            }
 			
 			ct.addProperty(p.build());
 		}

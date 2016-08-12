@@ -22,13 +22,20 @@ import java.util.function.Function;
 import leap.lang.Creatable;
 
 public interface MTypeFactoryCreator extends Creatable<MTypeFactory> {
-	
-	MTypeFactoryCreator setComplexTypeCreatedListener(BiConsumer<Class<?>, MComplexType> listener);
-	
-	MTypeFactoryCreator setComplexTypeLocalNamer(Function<Class<?>, String> namer);
-	
-	MTypeFactoryCreator setComplexTypeFqNamer(BiFunction<Class<?>, MComplexType, String> fqNamer);
-	
+
+    /**
+     * Sets the listener.
+     */
+	MTypeFactoryCreator setListener(MTypeListener listener);
+
+    /**
+     * Sets the strategy.
+     */
+	MTypeFactoryCreator setStrategy(MTypeStrategy strategy);
+
+    /**
+     * Creates the {@link MTypeFactory}.
+     */
 	MTypeFactory create();
 	
 }

@@ -117,7 +117,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     }
 
     protected void tryCreateTable(MetadataContext context, EntityMapping em) {
-        if(em.isAutoCreateTable()) {
+        if(em.isAutoCreateTable() || context.getConfig().isAutoCreateTables()) {
             if(!context.getDb().checkTableExists(em.getTable())){
                 log.info("Auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
                 context.getDb().cmdCreateTable(em.getTable()).execute();

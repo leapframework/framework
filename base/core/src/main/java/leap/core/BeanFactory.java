@@ -64,6 +64,16 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	<T> T createBean(Class<T> cls) throws BeanException;
 
     /**
+     * Returns the primary bean of the given type if exists or creates a new one if not exists and register it.
+     */
+    <T> T getOrAddBean(Class<T> type) throws BeanException;
+
+    /**
+     * Returns the named bean of the given type if exists or creates a new one if not exists and register it.
+     */
+    <T> T getOrAddBean(Class<T> type, String name) throws BeanException;
+
+    /**
      * Returns the primary bean of the given type if exists or creates a new one if not exists.
      */
     <T> T getOrCreateBean(Class<T> type) throws BeanException;

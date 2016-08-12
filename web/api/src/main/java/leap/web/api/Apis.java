@@ -60,7 +60,7 @@ public interface Apis {
 	 * 
 	 * @throws ObjectNotFoundException if no api configuration exists for the given name.
 	 */
-	ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
+	ApiConfigurator of(String name) throws ObjectNotFoundException;
 	
 	/**
 	 * Returns <code>true</code> if default enabled.
@@ -76,7 +76,7 @@ public interface Apis {
 	String getDefaultOAuthAuthorizationUrl();
 	
 	/**
-	 * Optinal. Returns the default oauth2 token endpoint url.
+	 * Optional. Returns the default oauth2 token endpoint url.
 	 */
 	String getDefaultOAuthTokenUrl();
 
@@ -99,4 +99,5 @@ public interface Apis {
 	 * Sets the default oauth2 token url for all apis. 
 	 */
 	Apis setDefaultOAuthTokenUrl(String url);
+
 }

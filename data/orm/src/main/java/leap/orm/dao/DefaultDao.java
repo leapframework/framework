@@ -84,16 +84,26 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return validate(em,entity,0);
     }
 
-	@Override
-    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
-		Validation validation = validationManager.createValidation();
-		
-		entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors);
-		
-	    return validation.errors();
+    @Override
+    public Errors validate(EntityMapping em, Object entity, Iterable<String> fields) {
+        return validate(em, entity, 0, fields);
     }
-	
-	//--------------------- insert ------------------------------------
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
+        return validate(em, entity, maxErrors, null);
+    }
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
+        Validation validation = validationManager.createValidation();
+
+        entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors, fields);
+
+        return validation.errors();
+    }
+
+    //--------------------- insert ------------------------------------
 	
 	@Override
     public int insert(Object entity) {
@@ -104,7 +114,19 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return commandFactory().newInsertCommand(this, em).setAll(entity).execute();
     }
 
-	@Override
+    @Override
+    public int insert(EntityMapping em, Object entity, Object id) {
+        InsertCommand insert =
+                commandFactory().newInsertCommand(this, em).setAll(entity);
+
+        if(null != id) {
+            insert.id(id);
+        }
+
+        return insert.execute();
+    }
+
+    @Override
     public InsertCommand cmdInsert(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		return commandFactory().newInsertCommand(this, em(entityClass));

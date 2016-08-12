@@ -35,6 +35,8 @@ import leap.lang.Args;
 import leap.lang.Locales;
 import leap.lang.Strings;
 import leap.lang.http.MimeTypes;
+import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resources;
 
 /**
  * Servlet utils.
@@ -80,7 +82,14 @@ public class Servlets {
 	 * Standard Servlet spec context attribute that specifies a temporary
 	 * directory for the current web application, of type {@code java.io.File}.
 	 */
-	public static final String TEMP_DIR_CONTEXT_ATTRIBUTE = "javax.servlet.context.tempdir";	
+	public static final String TEMP_DIR_CONTEXT_ATTRIBUTE = "javax.servlet.context.tempdir";
+
+    /**
+     * Scans resources in webapp.
+     */
+    public static ResourceSet scanResources(ServletContext sc, String location) {
+        return Resources.scan(getResource(sc, "/"), location);
+    }
 	
 	/**
 	 * Gets a resource in the given servlet context.

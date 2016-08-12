@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 /**
  * The {@link ArgumentResolver} for resolving complex type.
@@ -94,10 +95,17 @@ public class ComplexArgumentResolver extends AbstractMapResolver {
 		return map;
 	}
 
-	protected Object mapBinding(ActionContext context,Argument argument,Map<String, Object> map) {
+	protected Object mapBinding(ActionContext context,Argument argument,Map<String, Object> map) throws Throwable {
 		if(this.map) {
 			return new LinkedHashMap<>(map);
 		}
+
+        if(argument.getBinder() != null) {
+            Optional value = argument.getBinder().bind(context, argument, map);
+            if(null != value) {
+                return value.get();
+            }
+        }
 
 		Object bean = beanType.newInstance();
 

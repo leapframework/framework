@@ -289,8 +289,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setPrecision(precision);
         field.setScale(scale);
         field.setDefaultValue(defaultValue);
-        field.setInsert(insert);
-        field.setUpdate(update);
+        field.setInsertable(insert);
+        field.setUpdatable(update);
         field.setWhere(where);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);

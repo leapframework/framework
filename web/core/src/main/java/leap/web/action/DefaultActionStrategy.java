@@ -26,7 +26,7 @@ import leap.lang.path.Paths;
 import leap.lang.reflect.Reflection;
 import leap.web.App;
 import leap.web.annotation.*;
-import leap.web.annotation.http.AMethod;
+import leap.web.annotation.http.HttpMethod;
 import leap.web.config.WebConfig;
 
 import java.lang.annotation.Annotation;
@@ -77,7 +77,7 @@ public class DefaultActionStrategy implements ActionStrategy {
     }
 
     @Override
-    public boolean isActionMethod(Method m) {
+    public boolean isActionMethod(ControllerInfo ci, Method m) {
         if(m.isAnnotationPresent(NonAction.class)) {
             return false;
         }
@@ -87,6 +87,10 @@ public class DefaultActionStrategy implements ActionStrategy {
         }
 
         if(Modifier.isStatic(m.getModifiers())) {
+            return false;
+        }
+
+        if(ci.isRestful() && null == Classes.getAnnotationByMetaType(m.getAnnotations(), HttpMethod.class)) {
             return false;
         }
 
@@ -217,7 +221,7 @@ public class DefaultActionStrategy implements ActionStrategy {
 		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
-			if(a.annotationType().isAnnotationPresent(AMethod.class)){
+			if(a.annotationType().isAnnotationPresent(HttpMethod.class)){
 				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
 
                 Method value = Reflection.findMethod(a.annotationType(), "value");
@@ -259,7 +263,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(RestController.class)) {
+        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
             restful = true;
         }
 

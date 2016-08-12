@@ -36,7 +36,6 @@ public class MComplexTypeBuilder extends MStructualTypeBuilder<MComplexType> {
 		this.baseType = baseType;
 	}
 
-
 	@Override
     public MComplexType build() {
 	    return new MComplexType(name, title, summary, description, baseType, properties, _abstract);

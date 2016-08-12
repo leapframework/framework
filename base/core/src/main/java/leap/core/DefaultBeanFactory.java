@@ -225,8 +225,18 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 		
 	    return bean;
     }
-	
-	@Override
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type) throws BeanException {
+        return beanContainer.getOrAddBean(type);
+    }
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type, String name) throws BeanException {
+        return beanContainer.getOrAddBean(type, name);
+    }
+
+    @Override
     public <T> T getOrCreateBean(Class<T> type) throws NoSuchBeanException, BeanException {
 		T bean = null;// (T)(null != externalFactory ? externalFactory.tryCreateBean(type) : null);
 		

@@ -17,6 +17,7 @@ package leap.web.security.path;
 
 import leap.lang.Buildable;
 import leap.lang.path.PathPattern;
+import leap.web.security.SecurityFailureHandler;
 
 public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
@@ -36,6 +37,10 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setAllowRememberMe(boolean allow);
 
+    SecuredPathBuilder setAllowCors(boolean allow);
+
+    SecuredPathBuilder setFailureHandler(SecurityFailureHandler h);
+
     SecuredPathBuilder setPermissionsAllowed(String... permissions);
 
     SecuredPathBuilder setRolesAllowed(String... roles);
@@ -49,6 +54,8 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
     boolean isAllowAnonymous();
 
     boolean isAllowRememberMe();
+
+    boolean isAllowCors();
 
     boolean isAllowClientOnly();
 

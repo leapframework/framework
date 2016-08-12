@@ -98,8 +98,8 @@ public class AppResources {
         }
     }
 
-    static AppResources create(DefaultAppConfig config) {
-        AppResources inst = new AppResources(config);
+    static AppResources create(DefaultAppConfig config, Object externalContext) {
+        AppResources inst = new AppResources(config, externalContext);
 
         instances.put(config, inst);
 
@@ -150,19 +150,19 @@ public class AppResources {
 
     private String[] defaultSearchPatterns;
 
-    private AppResources(DefaultAppConfig config) {
+    private AppResources(DefaultAppConfig config, Object externalContext) {
         this.config = config;
         this.dev    = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
-        init();
+        init(externalContext);
     }
 
-    protected void init() {
+    protected void init(Object externalContext) {
         //load fixed resources.
         Resources.scan(CP_CORE_LOCATION).forEach(this::add);
         Resources.scan(CP_FRAMEWORK_LOCATION).forEach(this::add);
         Resources.scan(CP_MODULES_LOCATION).forEach(this::add);
         Resources.scan(CP_META_LOCATION).forEach(this::add);
-
+        loadServletContextResources(externalContext);
         Resources.scan(CP_APP_LOCATION).forEach(this::add);
 
         //load profile resources.
@@ -391,6 +391,10 @@ public class AppResources {
         }
 
         return searchClasspathResources(namedPatterns);
+    }
+
+    private void loadServletContextResources(Object context) {
+
     }
 
     public AppResource[] searchClasspathResources(String[] patterns){

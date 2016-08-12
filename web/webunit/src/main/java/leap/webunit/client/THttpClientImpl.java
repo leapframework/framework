@@ -55,6 +55,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.InMemoryDnsResolver;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.impl.conn.SystemDefaultDnsResolver;
+import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
 
 public class THttpClientImpl implements THttpClient {
@@ -146,8 +147,16 @@ public class THttpClientImpl implements THttpClient {
 		}
 	    return null;
     }
-	
-	@Override
+
+    @Override
+    public THttpClient addCookie(String name, String value) {
+        BasicClientCookie c = new BasicClientCookie(name, value);
+        c.setDomain("localhost");
+        cookieStore.addCookie(c);
+        return this;
+    }
+
+    @Override
     public Cookie removeCookie(String name) {
 		org.apache.http.cookie.Cookie removed = cookieStore.removeCookie(name);
 		return null == removed ? null : new CookieImpl(removed);

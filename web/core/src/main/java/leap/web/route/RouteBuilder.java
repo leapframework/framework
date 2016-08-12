@@ -225,6 +225,24 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
         return this;
     }
 
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    public RouteBuilder setAllowAnonymous(Boolean allowAnonymous) {
+        this.allowAnonymous = allowAnonymous;
+        return this;
+    }
+
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    public RouteBuilder setAllowClientOnly(Boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+        return this;
+    }
+
     @Override
 	public Route build() {
 		Assert.notNull(action, "action cannot be null");
@@ -238,9 +256,10 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 			Csrf csrf = action.searchAnnotation(Csrf.class);
 			this.csrfEnabled = null != csrf ? csrf.value() : null;
 		}
-		
+
 		DefaultRoute route = new DefaultRoute(source, method, pathTemplate, action,
-            							 corsEnabled, csrfEnabled, supportsMultipart,acceptValidationError,
+            							 corsEnabled, csrfEnabled,
+                                         supportsMultipart,allowAnonymous, allowClientOnly, acceptValidationError,
             							 requestFormat,responseFormat,
             							 defaultView, defaultViewName, 
             							 controllerPath, 
