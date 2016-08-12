@@ -84,13 +84,6 @@ public class Servlets {
 	 */
 	public static final String TEMP_DIR_CONTEXT_ATTRIBUTE = "javax.servlet.context.tempdir";
 
-    /**
-     * Scans resources in webapp.
-     */
-    public static ResourceSet scanResources(ServletContext sc, String location) {
-        return Resources.scan(getResource(sc, "/"), location);
-    }
-	
 	/**
 	 * Gets a resource in the given servlet context.
 	 */

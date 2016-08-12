@@ -16,6 +16,7 @@
 
 package leap.core;
 
+import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 
 public final class SimpleAppResource implements AppResource {
@@ -23,24 +24,31 @@ public final class SimpleAppResource implements AppResource {
     private final Resource resource;
     private final boolean  defaultOverride;
     private final int      order;
+    private final String   path;
 
     public SimpleAppResource(Resource resource) {
         this(resource, false);
     }
 
     public SimpleAppResource(Resource resource, boolean defaultOverride) {
-        this(resource, defaultOverride, Integer.MAX_VALUE);
+        this(resource, defaultOverride, Integer.MAX_VALUE, resource.getClasspath());
     }
 
-    public SimpleAppResource(Resource resource, boolean defaultOverride, int order) {
+    public SimpleAppResource(Resource resource, boolean defaultOverride, int order, String path) {
         this.resource = resource;
         this.defaultOverride = defaultOverride;
         this.order = order;
+        this.path = Paths.prefixWithoutSlash(path);
     }
 
     @Override
     public int getSortOrder() {
         return order;
+    }
+
+    @Override
+    public String getPath() {
+        return path;
     }
 
     @Override

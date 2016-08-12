@@ -33,7 +33,6 @@ import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
 import leap.web.api.annotation.MetaApiResponse;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.mvc.ApiResponse;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
