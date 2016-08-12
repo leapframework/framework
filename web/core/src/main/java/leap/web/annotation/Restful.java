@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation.http;
+package leap.web.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.METHOD})
-@Retention(RetentionPolicy.RUNTIME)
-@HttpMethod
+@Controller
 @Inherited
-public @interface HEAD {
-
-    /**
-     * The jax-rs style path template.
-     */
-    String value() default "";
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Restful {
 
 }

@@ -13,14 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation;
+package leap.web.annotation.http;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Target({ElementType.TYPE})
+import leap.lang.annotation.Internal;
+
+/**
+ * The annotation of http method annotation.
+ */
+@Target({ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@Inherited
-@Controller
-public @interface RestController {
+@Internal
+public @interface HttpMethod {
 
 }

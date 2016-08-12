@@ -16,10 +16,10 @@
 package app;
 
 import leap.web.annotation.Path;
-import leap.web.annotation.RestController;
+import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
 
-@RestController
+@Restful
 @Path("/test_root222")
 public class TestRoot3Resource {
 

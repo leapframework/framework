@@ -53,7 +53,7 @@ public interface ActionStrategy {
     /**
      * Returns true if the method is an action method.
      */
-    boolean isActionMethod(Method m);
+    boolean isActionMethod(ControllerInfo ci, Method m);
 
     /**
      * Returns true if the action is an index action.

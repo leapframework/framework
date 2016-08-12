@@ -19,7 +19,7 @@ package leap.web.api.mvc;
 import leap.web.annotation.Consumes;
 import leap.web.annotation.Failure;
 import leap.web.annotation.Produces;
-import leap.web.annotation.RestController;
+import leap.web.annotation.Restful;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.security.annotation.AllowClientOnly;
@@ -27,7 +27,7 @@ import leap.web.security.annotation.AllowClientOnly;
 @Consumes("json")
 @Produces("json")
 @AllowClientOnly
-@RestController
+@Restful
 @Failure(handler = ApiFailureHandler.class)
 public abstract class ApiController {
 
