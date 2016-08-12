@@ -56,7 +56,6 @@ public abstract class ModelController<T extends Model> extends ApiController imp
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
-    @NonAction
     public void postApiInitialized(ApiConfig c, ApiMetadata m) {
         am = m.getModel(modelClass);
     }

@@ -1,11 +1,11 @@
 /*
- * Copyright 2013 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -13,21 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.annotation.http;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+package leap.web.action;
 
-import leap.lang.annotation.Internal;
+public interface ControllerInfo {
 
-/**
- * The annotation of http method annotation.
- */
-@Target({ElementType.ANNOTATION_TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Internal
-public @interface AMethod {
+    /**
+     * Returns the type of controller.
+     */
+    Class<?> getType();
+
+    /**
+     * Returns the controller instance.
+     */
+    Object getInstance();
+
+    /**
+     * Returns the path of controller.
+     */
+    String getPath();
+
+    /**
+     * Returns true if the controller is restful style.
+     */
+    boolean isRestful();
 
 }

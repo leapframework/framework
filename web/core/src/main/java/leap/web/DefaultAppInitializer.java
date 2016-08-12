@@ -150,14 +150,18 @@ public class DefaultAppInitializer implements AppInitializer {
 			//Create controller instance
 			Object controller = as.getControllerInstance(cls);
 			
-	        ControllerHolder controllerHolder = new ControllerHolder(controller,rcls,controllerPath);
+	        ControllerInfoImpl ci = new ControllerInfoImpl(controller,rcls,controllerPath);
+
+            if(cls.isAnnotationPresent(Restful.class)) {
+                ci.setRestful(true);
+            }
 	        
 			for(ReflectMethod rm : rcls.getMethods()){
 				if(rm.isGetterMethod() || rm.isSetterMethod()) {
                     continue;
                 }
 
-                if(!as.isActionMethod(rm.getReflectedMethod())) {
+                if(!as.isActionMethod(ci, rm.getReflectedMethod())) {
                     continue;
                 }
 
@@ -166,25 +170,23 @@ public class DefaultAppInitializer implements AppInitializer {
 					continue;
 				}
 				
-				loadActionMethod(app, controllerHolder, rm);
+				loadActionMethod(app, ci, rm);
 			}
 		}
 	}
 	
-	protected void loadActionMethod(App app,ControllerHolder cholder, ReflectMethod rm){
-		ActionBuilder action = createAction(app, cholder, rm);
+	protected void loadActionMethod(App app, ControllerInfoImpl ci, ReflectMethod rm){
+		ActionBuilder action = createAction(app, ci, rm);
 		
 		ActionMapping[] mappings = as.getActionMappings(action);
 		
 		for(ActionMapping m : mappings){
-			addActionRoute(app, cholder.cls(), cholder.path(), action, m);
+			addActionRoute(app, ci, action, m);
 		}
 	}
 	
-	protected void addActionRoute(App app, 
-							      Class<?> controllerClass,String controllerPath,
-							      ActionBuilder action,ActionMapping mapping) {
-		
+	protected void addActionRoute(App app, ControllerInfo ci, ActionBuilder action, ActionMapping mapping) {
+
 		StringBuilder path = new StringBuilder();
 		
 		String actionPath = mapping.getPath();
@@ -201,16 +203,16 @@ public class DefaultAppInitializer implements AppInitializer {
 			}
 		}
 
-		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(RestController.class);
-		
+        boolean restful = ci.isRestful();
+
 		if(!Strings.isEmpty(actionPath)){
 			if(!restful && actionPath.startsWith("/")){
 				path.append(actionPath);
 			}else{
-				path.append(controllerPath).append(Paths.prefixWithSlash(actionPath));
+				path.append(ci.getPath()).append(Paths.prefixWithSlash(actionPath));
 			}
 		}else{
-			path.append(controllerPath);
+			path.append(ci.getPath());
 		}
 		
 		if(path.length() > 0 && path.charAt(path.length() - 1) == '/'){
@@ -237,8 +239,8 @@ public class DefaultAppInitializer implements AppInitializer {
 		
 		//create route
 		RouteBuilder route = new RouteBuilder();
-		route.setSource(controllerClass);
-		route.setControllerPath(controllerPath);
+		route.setSource(ci.getType());
+		route.setControllerPath(ci.getPath());
 		route.setMethod(mapping.getMethod());
 		route.setPathTemplate(pathTemplate);
 		route.setResponseFormat(responseFormat);
@@ -246,7 +248,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		route.setSupportsMultipart(supportsMultipart(action));
 		
 		//resole default view path
-		String[] defaultViewNames = as.getDefaultViewNames(action, controllerPath, actionPath, pathTemplate);
+		String[] defaultViewNames = as.getDefaultViewNames(action, ci.getPath(), actionPath, pathTemplate);
 		for(String defaultViewName : defaultViewNames){
 			try {
 				View view = resolveView(app, defaultViewName);
@@ -324,7 +326,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		}
 	}
 
-	protected ActionBuilder createAction(App app,ControllerHolder ch,ReflectMethod m) {
+	protected ActionBuilder createAction(App app, ControllerInfoImpl ch, ReflectMethod m) {
 		MethodActionBuilder action = new MethodActionBuilder(ch.controller,m);
 
 		action.getInterceptors().addAll(resolveActionInterceptors(app, ch, m));
@@ -389,7 +391,7 @@ public class DefaultAppInitializer implements AppInitializer {
     }
 	
 	@SuppressWarnings("unchecked")
-    protected List<ActionInterceptor> resolveActionInterceptors(App app,ControllerHolder ch,ReflectMethod m) {
+    protected List<ActionInterceptor> resolveActionInterceptors(App app, ControllerInfoImpl ch, ReflectMethod m) {
 		List<ActionInterceptor> interceptors = new ArrayList<>();
 		
 		InterceptedBy a = m.getAnnotation(InterceptedBy.class);
@@ -415,27 +417,40 @@ public class DefaultAppInitializer implements AppInitializer {
 		return viewSource.getView(viewPath, app.getDefaultLocale());
 	}
 	
-	protected static class ControllerHolder {
+	protected static class ControllerInfoImpl implements ControllerInfo {
 		private final Object       controller;
 		private final ReflectClass reflectClass;
 		private final String	   path;
+
+        private boolean restful;
 		
-		protected ControllerHolder(Object controller,ReflectClass reflectClass,String path){
-			this.controller   = controller;
+		protected ControllerInfoImpl(Object instance, ReflectClass reflectClass, String path){
+			this.controller   = instance;
 			this.reflectClass = reflectClass;
 			this.path         = path;
 		}
 
-		public Object controller() {
-			return controller;
-		}
+        @Override
+        public Class<?> getType() {
+            return reflectClass.getReflectedClass();
+        }
 
-		public Class<?> cls(){
-			return reflectClass.getReflectedClass();
-		}
+        public Object getInstance() {
+            return controller;
+        }
 
-		public String path() {
-			return path;
-		}
-	}
+        @Override
+        public boolean isRestful() {
+            return restful;
+        }
+
+        public void setRestful(boolean b) {
+            this.restful = b;
+        }
+
+        @Override
+        public String getPath() {
+            return path;
+        }
+    }
 }
