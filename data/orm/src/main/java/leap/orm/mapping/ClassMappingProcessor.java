@@ -189,12 +189,12 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             //insert
             if (!a.insert().isNone()) {
-                f.setInsert(a.insert().value());
+                f.setInsertable(a.insert().value());
             }
 
             //update
             if (!a.update().isNone()) {
-                f.setUpdate(a.update().value());
+                f.setUpdatable(a.update().value());
             }
 
             //sortable

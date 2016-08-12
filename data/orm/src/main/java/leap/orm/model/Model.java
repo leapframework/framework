@@ -838,7 +838,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	Map<String, Object> map = new HashMap<String, Object>();
 
     	for(FieldMapping fm : em.getFieldMappings()) {
-    		if(fm.isPrimaryKey() || !fm.isUpdate()) {
+    		if(fm.isPrimaryKey() || !fm.isUpdatable()) {
     			continue;
     		}
     		

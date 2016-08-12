@@ -16,18 +16,18 @@
 
 package leap.web.api.mvc;
 
+import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.lang.Beans;
 import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.convert.Converts;
-import leap.lang.reflect.Reflection;
+import leap.orm.command.InsertCommand;
+import leap.orm.command.UpdateCommand;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
-import leap.orm.model.Model;
 import leap.orm.query.CriteriaQuery;
-import leap.web.annotation.NonAction;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -41,16 +41,18 @@ import leap.web.api.query.OrderByParser;
 import leap.web.exception.BadRequestException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class ModelController<T extends Model> extends ApiController implements ApiInitializable {
+/**
+ * The model class must be an orm model/entity class.
+ */
+public abstract class ModelController<T> extends ApiController implements ApiInitializable {
 
-    private final Class<T> modelClass = getModelClass();
-    private final Dao      dao        = Dao.of(modelClass);
-    private final EntityMapping em    = dao.getOrmContext().getMetadata().getEntityMapping(modelClass);
-    private MApiModel           am;
+    protected final Class<T>      modelClass = getModelClass();
+    protected final Dao           dao        = Dao.of(modelClass);
+    protected final EntityMapping em         = dao.getOrmContext().getMetadata().getEntityMapping(modelClass);
+    protected MApiModel           am;
 
     private Class<T> getModelClass() {
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
@@ -71,7 +73,7 @@ public abstract class ModelController<T extends Model> extends ApiController imp
      * Creates the record with specified id.
      */
     protected ApiResponse create(Object request, Object id) {
-        createRecord(request, id);
+        createRecordAndReturnId(request, id);
         return ApiResponse.OK;
     }
 
@@ -86,35 +88,51 @@ public abstract class ModelController<T extends Model> extends ApiController imp
      * Creates the record with specified id.
      */
     protected ApiResponse<T> createAndReturn(Object request, Object id) {
-        return ApiResponse.of(createRecord(request, id));
+        id = createRecordAndReturnId(request, id);
+        return ApiResponse.of(dao.find(em, modelClass, id));
     }
 
     /**
-     * Creates a new record of model.
+     * Creates a new record of model and returns the id.
      *
      * @param request the request bean contains properties of model.
      * @param id the id of model, pass null if use auto generated id.
      *
      * @return the created model object.
      */
-    protected T createRecord(Object request, Object id) {
-        T m = Reflection.newInstance(modelClass);
+    protected Object createRecordAndReturnId(Object request, Object id) {
+        Map<String,Object> properties = Beans.toMap(request);
+
+        for(String name : properties.keySet()) {
+            MApiProperty p = am.tryGetProperty(name);
+            if(null == p) {
+                throw new BadRequestException("Property '" + name + "' not exists!");
+            }
+            if(p.isNotInsertableExplicitly()) {
+                throw new BadRequestException("Property '" + name + "' is not insertable!");
+            }
+        }
+
+        Errors errors = dao.validate(em, properties, properties.keySet());
+        if(!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+
+        InsertCommand insert = dao.cmdInsert(modelClass);
 
         if(null != id) {
-            m.id(id);
+            insert.id(id);
         }
 
-        Map<String,Object> props = Beans.toMap(request);
+        insert.setAll(properties);
 
-        m.setAll(props);
+        insert.execute();
 
-        if (!m.validate(props.keySet())) {
-            throw new ValidationException(m.errors());
+        if(null != id) {
+            return id;
+        }else{
+            return insert.getGeneratedId();
         }
-
-        m.create();
-
-        return m;
     }
 
     /**
@@ -165,20 +183,31 @@ public abstract class ModelController<T extends Model> extends ApiController imp
             return ApiResponse.badRequest("No update properties");
         }
 
-        T model = Reflection.newInstance(modelClass);
-
-        model.id(id);
-        model.setAll(partial.getProperties());
-
-        if(!model.validate(partial.getProperties().keySet())) {
-            throw new ValidationException(model.errors());
+        Map<String,Object> properties = partial.getProperties();
+        for(String name : properties.keySet()) {
+            MApiProperty p = am.tryGetProperty(name);
+            if(null == p) {
+                throw new BadRequestException("Property '" + name + "' not exists!");
+            }
+            if(p.isNotUpdatableExplicitly()) {
+                throw new BadRequestException("Property '" + name + "' is not updatable!");
+            }
         }
 
-        if(model.tryUpdate()) {
+        Errors errors = dao.validate(em, properties, properties.keySet());
+        if(!errors.isEmpty()) {
+            throw new ValidationException(errors);
+        }
+
+        UpdateCommand update =
+                dao.cmdUpdate(modelClass).id(id).setAll(partial.getProperties());
+
+        if(update.execute() > 0) {
             return ApiResponse.NO_CONTENT;
+        }else{
+            return ApiResponse.NOT_FOUND;
         }
 
-        return ApiResponse.NOT_FOUND;
     }
 
     /**
@@ -214,7 +243,7 @@ public abstract class ModelController<T extends Model> extends ApiController imp
                 throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
             }
 
-            if(!ap.isSortable()) {
+            if(ap.isNotSortableExplicitly()) {
                 throw new BadRequestException("Property '" + name + "' is not sortable!");
             }
 
@@ -263,7 +292,7 @@ public abstract class ModelController<T extends Model> extends ApiController imp
                 throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
             }
 
-            if(!ap.isFilterable()) {
+            if(ap.isNotFilterableExplicitly()) {
                 throw new BadRequestException("Property '" + name + "' is not filterable!");
             }
 

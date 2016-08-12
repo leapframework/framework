@@ -33,9 +33,9 @@ public class DefaultSqlCommand implements SqlCommand {
 
     private static final Log log = LogFactory.get(DefaultSqlCommand.class);
 	
-	protected final Object 	         source;
+	protected final Object 	           source;
     protected final String             desc;
-	protected final String	             dbType;
+	protected final String	           dbType;
     protected final SqlLanguage        lang;
     protected final String             content;
     protected final DefaultSqlIdentity identity;
@@ -62,7 +62,7 @@ public class DefaultSqlCommand implements SqlCommand {
         try {
             this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
         } catch (Exception e) {
-            throw new SqlConfigException("Error parsing sql content in command" + desc + ", source : " + source,e);
+            throw new SqlConfigException("Error parsing sql (" + desc == null ? content : desc + "), source : " + source,e);
         }
         prepared = true;
     }
@@ -77,8 +77,13 @@ public class DefaultSqlCommand implements SqlCommand {
     public Object getSource() {
 	    return source;
     }
-	
-	@Override
+
+    @Override
+    public String getSql() {
+        return content;
+    }
+
+    @Override
     public String getDbType() {
 	    return dbType;
     }

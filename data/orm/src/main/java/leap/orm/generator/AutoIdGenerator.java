@@ -77,7 +77,7 @@ public class AutoIdGenerator implements IdGenerator {
 	
 	protected void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.getColumn().setAutoIncrement(true);
-		fmb.setInsert(false);  //remove auto increment from insert columns
+		fmb.setInsertable(false);  //remove auto increment from insert columns
 		
 		emb.setInsertInterceptor(new EntityExecutionInterceptor() {
 			@Override

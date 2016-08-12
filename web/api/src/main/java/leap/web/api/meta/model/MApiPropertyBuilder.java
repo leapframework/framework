@@ -19,8 +19,10 @@ import leap.lang.meta.MProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected boolean sortable;
-    protected boolean filterable;
+    protected Boolean insertable;
+    protected Boolean updatable;
+    protected Boolean sortable;
+    protected Boolean filterable;
 	
 	public MApiPropertyBuilder() {
 	    super();
@@ -40,23 +42,41 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required = !mp.isNullable();
-        this.sortable = mp.isSortableExplicitly();
-        this.filterable = mp.isFilterableExplicitly();
+        this.insertable = mp.getInsertable();
+        this.updatable = mp.getUpdatable();
+        this.sortable = mp.getSortable();
+        this.filterable = mp.getFilterable();
 	}
 
-    public boolean isSortable() {
+    public Boolean getInsertable() {
+        return insertable;
+    }
+
+    public void setInsertable(Boolean insertable) {
+        this.insertable = insertable;
+    }
+
+    public Boolean getUpdatable() {
+        return updatable;
+    }
+
+    public void setUpdatable(Boolean updatable) {
+        this.updatable = updatable;
+    }
+
+    public Boolean getSortable() {
         return sortable;
     }
 
-    public void setSortable(boolean sortable) {
+    public void setSortable(Boolean sortable) {
         this.sortable = sortable;
     }
 
-    public boolean isFilterable() {
+    public Boolean getFilterable() {
         return filterable;
     }
 
-    public void setFilterable(boolean filterable) {
+    public void setFilterable(Boolean filterable) {
         this.filterable = filterable;
     }
 
@@ -65,6 +85,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 	    return new MApiProperty(name, title, summary, description, type, format, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                sortable, filterable);
+                                insertable, updatable, sortable, filterable);
     }
 }

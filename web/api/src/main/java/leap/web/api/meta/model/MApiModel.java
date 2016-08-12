@@ -50,8 +50,12 @@ public class MApiModel extends MApiNamedWithDesc {
 	}
 
     public MApiProperty tryGetProperty(String name) {
+        return tryGetProperty(name, false);
+    }
+
+    public MApiProperty tryGetProperty(String name, boolean ignoreCause) {
         for(MApiProperty p : properties) {
-            if(p.getName().equalsIgnoreCase(name)) {
+            if(ignoreCause ? p.getName().equalsIgnoreCase(name) : p.getName().equals(name)) {
                 return p;
             }
         }
