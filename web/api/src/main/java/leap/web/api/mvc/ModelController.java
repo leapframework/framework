@@ -98,7 +98,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * @param request the request bean contains properties of model.
      * @param id the id of model, pass null if use auto generated id.
      *
-     * @return the created model object.
+     * @return the id of new record.
      */
     protected Object createRecordAndReturnId(Object request, Object id) {
         Map<String,Object> properties = Beans.toMap(request);
