@@ -47,7 +47,7 @@ public enum ReservedMetaFieldName {
 	
 	private final String fieldName;
 	
-	private ReservedMetaFieldName(String fieldName) {
+	ReservedMetaFieldName(String fieldName) {
 		this.fieldName = fieldName;
 	}
 

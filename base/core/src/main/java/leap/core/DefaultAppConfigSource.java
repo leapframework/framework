@@ -226,7 +226,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
             this.externalContext = externalContext;
             this.initProperties  = props;
             this.config          = new DefaultAppConfig(profile);
-            this.appResources    = AppResources.create(config);
+            this.appResources    = AppResources.create(config, externalContext);
             this.configResources = appResources.search("config");
 
             this.resolver = new DefaultPlaceholderResolver(this::resolveProperty);
