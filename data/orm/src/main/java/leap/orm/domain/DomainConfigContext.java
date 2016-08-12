@@ -38,6 +38,8 @@ public interface DomainConfigContext {
 	void addEntityDomainAlias(String alias,String entityName) throws ObjectNotFoundException;
 	
 	void addFieldDomain(FieldDomain domain) throws ObjectExistsException;
+
+    void addFieldDomain(FieldDomain domain, boolean override) throws ObjectExistsException;
 	
 	void addFieldDomain(Class<?> annotationType, FieldDomain domain) throws ObjectExistsException;
 	

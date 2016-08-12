@@ -170,23 +170,32 @@ public class DefaultDomains implements Domains , DomainConfigContext, PostCreate
 	
 	@Override
     public void addFieldDomain(FieldDomain domain) throws ObjectExistsException {
-		String key = qkey(domain.getEntityName(),domain.getName());
-		FieldDomain existsDomain = fieldDomains.get(key);
-
-		//domin without kind can override exists domain with kind
-		if(null != existsDomain){
-			if(null != domain.getEntityDomain() || null == existsDomain.getEntityDomain()){
-				throw new ObjectExistsException("The to be added domain '" + domain.getName() + "' aleady exists, check the source : " + domain.getSource() );	
-			}
-		}
-		fieldDomains.put(key, domain);
-		
-		if(null == domain.getEntityDomain() && null == tryGetFieldDomain(domain.getName())){
-			fieldDomains.put(Strings.lowerCase(domain.getName()), domain);
-		}
+        addFieldDomain(domain, false);
     }
-	
-	@Override
+
+    @Override
+    public void addFieldDomain(FieldDomain domain, boolean override) throws ObjectExistsException {
+        String key = qkey(domain.getEntityName(),domain.getName());
+
+        if(!override) {
+            FieldDomain existsDomain = fieldDomains.get(key);
+
+            //domain without kind can override exists domain with kind
+            if (null != existsDomain) {
+                if (null != domain.getEntityDomain() || null == existsDomain.getEntityDomain()) {
+                    throw new ObjectExistsException("The to be added domain '" + domain.getName() + "' aleady exists, check the source : " + domain.getSource());
+                }
+            }
+        }
+
+        fieldDomains.put(key, domain);
+
+        if(null == domain.getEntityDomain() && null == tryGetFieldDomain(domain.getName())){
+            fieldDomains.put(Strings.lowerCase(domain.getName()), domain);
+        }
+    }
+
+    @Override
     public FieldDomain tryGetFieldDomain(Class<?> annotationType) {
         return typedFieldDomains.get(annotationType);
     }

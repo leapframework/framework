@@ -9,4 +9,10 @@
 	
 	<field-domain name="lockVersion" type="integer" nullable="false" default-value="0" auto-mapping="true"/>
 
+    <field-domain name="publishedAt" type="timestamp"/>
+
+    <field-domain name="title"       type="varchar" length="150"/>
+    <field-domain name="summary"     type="varchar" length="1000"/>
+    <field-domain name="description" type="clob"/>
+
 </domains>

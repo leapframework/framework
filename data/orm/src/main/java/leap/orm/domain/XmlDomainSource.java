@@ -292,7 +292,7 @@ public class XmlDomainSource implements DomainSource {
 										.setAutoMapping(autoMapping)
 										.build();
 		
-		context.configContext.addFieldDomain(domain);
+		context.configContext.addFieldDomain(domain, override);
 		
 		String alias = reader.resolveAttribute(ALIAS_ATTRIBUTE);
 		if(!Strings.isEmpty(alias)){
