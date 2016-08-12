@@ -23,7 +23,9 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.ast.*;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 class SqlWhereProcessor {
@@ -37,8 +39,8 @@ class SqlWhereProcessor {
     void processWhereFields() {
         if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
 
-            List<SqlTableSource> joinTables = new ArrayList<>();
-            List<SqlTableSource> tables = new ArrayList<>();
+            Set<SqlTableSource> joinTables = new HashSet<>();
+            Set<SqlTableSource> tables = new HashSet<>();
 
             AstNode clause = sql.nodes()[0];
 
@@ -77,6 +79,10 @@ class SqlWhereProcessor {
                     if(!joinTables.contains(join.getTable())) {
                         return true;
                     }
+                    if(join.isCommaJoin()) {
+                        tables.add(join.getTable());
+                        return true;
+                    }
 
                     SqlTableSource ts = join.getTable();
                     EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
@@ -113,12 +119,14 @@ class SqlWhereProcessor {
 
                 if(node instanceof SqlWhere && !tables.isEmpty()) {
                     SqlWhere where = (SqlWhere)node;
-                    if(!where.getQuery().getTableSources().contains(tables.get(0))) {
+
+                    //todo : take the first one only
+                    SqlTableSource ts = tables.iterator().next();
+
+                    if(!where.getQuery().getTableSources().contains(ts)) {
                         return true;
                     }
 
-                    //todo : take the first one only
-                    SqlTableSource ts = tables.get(0);
                     EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
 
                     if(isWhereFieldExists(node, em)) {

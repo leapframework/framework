@@ -16,10 +16,20 @@
 
 package leap.orm.sql.parser;
 
+import leap.junit.contexual.Contextual;
+import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resource;
+import leap.lang.resource.Resources;
 import leap.orm.sql.Sql;
 import org.junit.Test;
 
+import java.util.List;
+
 public class SqlParserDynaTest extends SqlParserTestCase {
+
+    private static final Log log = LogFactory.get(SqlParserDynaTest.class);
 
     public void setup(){
         level = Sql.ParseLevel.DYNA;
@@ -29,5 +39,63 @@ public class SqlParserDynaTest extends SqlParserTestCase {
     public void testSimpleUpdate() {
         assertEquals("update owner set address = ? where 1=1",
                 parse("update owner set address = ? where 1=1;"));
+    }
+
+    @Test
+    @Contextual
+    public void testBug(){
+        String text = Strings.trim(Resources.getContent("classpath:/test/sqls/parse/bug.sql"));
+        if(!Strings.isEmpty(text)){
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s)", sqls.size());
+
+            for (int i = 0; i < sqls.size(); i++) {
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}", (i + 1), sql);
+                Sql result = assertParse(sql);
+                log.info(result.toString());
+            }
+        }
+    }
+
+    @Test
+    @Contextual
+    public void testFromResources() throws Exception{
+        for(Resource res : Resources.scan("classpath:/test/sqls/parse/**/*.sql")){
+            String text = res.getContent();
+
+            log.info("Split sqls in '{}'",res.getFilename());
+
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s) in '{}'",sqls.size(),res.getFilename());
+
+            for(int i=0;i<sqls.size();i++){
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}",(i+1),sql);
+                assertParse(sql);
+            }
+        }
+    }
+
+    @Test
+    @Contextual
+    public void testDynamicFromResources() throws Exception{
+        for(Resource res : Resources.scan("classpath:/test/sqls/dynamic/**/*.sql")){
+            String text = res.getContent();
+
+            log.info("Split sqls in '{}'",res.getFilename());
+
+            List<String> sqls = split(text);
+
+            log.info("Test {} sql statement(s) in '{}'",sqls.size(),res.getFilename());
+
+            for(int i=0;i<sqls.size();i++){
+                String sql = Strings.trim(sqls.get(i));
+                log.debug("  Sql {} \n {}",(i+1),sql);
+                assertParse(sql);
+            }
+        }
     }
 }

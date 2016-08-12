@@ -40,6 +40,7 @@
         ORDER BY T.version DESC
     </command>
 
+
     <command key="testSingleWhereColumn.ECodeModel.whereDynamic">
         SELECT
         u.NAME AS creator
@@ -55,6 +56,10 @@
         ecode_model u
         {?left join a on a.id = :id}
         where 1=1 {?and 1 = 2}
+    </command>
+
+    <command key="testSingleWhereColumn.ECodeModel.whereWithCommaJoin">
+        SELECT t.*, u.name from (select '' as version from dual) t, ecode_model u
     </command>
 
 </sqls>

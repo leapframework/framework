@@ -29,4 +29,18 @@
         select owners.*,1 as additional,2 secondAdditional from owners;
     </command>
 
+    <command key="testBug">
+        select * from owners where 2/2=1
+    </command>
+
+    <command key="testQueryWithSlash">
+        select * from owners where 2/2=1
+    </command>
+
+    <command key="testGetTotalCountWithUnion">
+        select first_name, 0 status from owners where first_name = 'f1'
+        union
+        select first_name, 0 status from owners where first_name = 'f2'
+    </command>
+
 </sqls>
