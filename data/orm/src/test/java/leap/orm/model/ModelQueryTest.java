@@ -104,7 +104,7 @@ public class ModelQueryTest extends OrmTestCase {
 		assertEquals(1, dao.createSqlQuery(Owner.metamodel(),"select * from owner").orderBy("id desc").list().size());
 		assertEquals(1, dao.createSqlQuery(Owner.metamodel(),"select * from owner").orderBy("id desc").limit(2).list().size());
 		
-		EntityBase r = dao.createSqlQuery(Owner.metamodel(),"select * from owner").first();
+		Record r = dao.createSqlQuery(Owner.metamodel(),"select * from owner").first();
 		assertEquals("a", r.get("firstName"));
 		assertEquals("b", r.get("lastName"));
 	}

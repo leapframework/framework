@@ -61,6 +61,7 @@ public class XmlDomainSource implements DomainSource {
 	private static final String UPDATE_VALUE_ATTRIBUTE        = "update-value";
 	private static final String DEFAULT_VALUE_ATTRIBUTE       = "default-value";
 	private static final String AUTO_MAPPING_ATTRIBUTE        = "auto-mapping";
+    private static final String SORT_ORDER                    = "sort-order";
 
     protected @Inject AppConfig config;
 	
@@ -233,6 +234,7 @@ public class XmlDomainSource implements DomainSource {
 		String  insertValue  = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
 		boolean	autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING_ATTRIBUTE,false);
+        Integer sortOrder    = reader.getIntegerAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
 		
 		if(!Strings.isEmpty(entityName)){
@@ -290,6 +292,7 @@ public class XmlDomainSource implements DomainSource {
 										.setInsertValue(insertValueExpression)
 										.setUpdateValue(updateValueExpression)
 										.setAutoMapping(autoMapping)
+                                        .setSortOrder(sortOrder)
 										.build();
 		
 		context.configContext.addFieldDomain(domain, override);

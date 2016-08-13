@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domains xmlns="http://www.leapframework.org/schema/domains">
 
-	<field-domain name="createdAt" type="timestamp" nullable="false" insert="true" update="false" 
-					 insert-value="${env.timestamp}" auto-mapping="true"/>
+	<field-domain name="createdAt" type="timestamp"
+                  nullable="false" insert="true" update="false"
+                  insert-value="${env.timestamp}"
+                  auto-mapping="true" sort-order="1001"/>
 					 
-	<field-domain name="updatedAt" type="timestamp" nullable="false" insert="true" update="true"  
-					 insert-value="${env.timestamp}" update-value="${env.timestamp}" auto-mapping="true"/>
+	<field-domain name="updatedAt" type="timestamp" nullable="false"
+                  insert="true" update="true"
+                  insert-value="${env.timestamp}" update-value="${env.timestamp}"
+                  auto-mapping="true" sort-order="1002"/>
 	
-	<field-domain name="lockVersion" type="integer" nullable="false" default-value="0" auto-mapping="true"/>
+	<field-domain name="lockVersion" type="integer"
+                  nullable="false" default-value="0" auto-mapping="true" sort-order="1000"/>
 
     <field-domain name="publishedAt" type="timestamp"/>
 
-    <field-domain name="title"       type="varchar" length="150"/>
-    <field-domain name="summary"     type="varchar" length="1000"/>
-    <field-domain name="description" type="clob"/>
+    <field-domain name="title"       type="varchar" length="150"  sort-order="10"/>
+    <field-domain name="summary"     type="varchar" length="1000" sort-order="11"/>
+    <field-domain name="description" type="clob" sort-order="999"/>
 
 </domains>

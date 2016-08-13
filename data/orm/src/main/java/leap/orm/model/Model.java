@@ -22,6 +22,7 @@ import leap.core.transaction.TransactionCallbackWithResult;
 import leap.core.transaction.TransactionStatus;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidatableBean;
+import leap.core.value.Record;
 import leap.db.Db;
 import leap.lang.Args;
 import leap.lang.Arrays2;
@@ -1042,7 +1043,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     protected boolean doLoad(){
     	Object id = ensureGetId();
 
-    	Entity entity = dao.find(em.getEntityName(), id);
+    	Record entity = dao.find(em, id);
     			
     	fields.clear();
     	setAll(entity);

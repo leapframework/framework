@@ -18,6 +18,7 @@ package leap.web.api.mvc;
 
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
+import leap.core.value.Record;
 import leap.lang.Beans;
 import leap.lang.Strings;
 import leap.lang.Types;
@@ -28,6 +29,7 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.orm.value.Entity;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -87,9 +89,9 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     /**
      * Creates the record with specified id.
      */
-    protected ApiResponse<T> createAndReturn(Object request, Object id) {
+    protected ApiResponse createAndReturn(Object request, Object id) {
         id = createRecordAndReturnId(request, id);
-        return ApiResponse.of(dao.find(em, modelClass, id));
+        return ApiResponse.created(dao.find(em, id));
     }
 
     /**
@@ -138,8 +140,8 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     /**
      * Gets the record of the specified id.
      */
-    protected ApiResponse<T> get(Object id) {
-        return ApiResponse.of(dao.findOrNull(modelClass,id));
+    protected ApiResponse get(Object id) {
+        return ApiResponse.of(dao.findOrNull(em,id));
     }
 
     /**
@@ -155,9 +157,9 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     protected ApiResponse<List<T>> queryList(QueryOptions options) {
         //todo : validates the query options.
 
-        CriteriaQuery<T> query = dao.createCriteriaQuery(modelClass);
+        CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
 
-        List<T> list;
+        List<Record> list;
         if(null == options) {
             list = query.limit(apiConfig.getMaxPageSize()).list();
         }else{
@@ -221,7 +223,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         }
     }
 
-    private void applyOrderBy(CriteriaQuery<T> query, String expr) {
+    private void applyOrderBy(CriteriaQuery query, String expr) {
         OrderBy orderBy = OrderByParser.parse(expr);
 
         OrderBy.Item[] items = orderBy.items();
@@ -257,7 +259,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         query.orderBy(s.toString());
     }
 
-    private void applyFilters(CriteriaQuery<T> query, String expr) {
+    private void applyFilters(CriteriaQuery query, String expr) {
         Filters filters = FiltersParser.parse(expr);
 
         StringBuilder where = new StringBuilder();

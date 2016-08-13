@@ -16,6 +16,8 @@
 package leap.orm.reader;
 
 import leap.core.exception.TooManyRecordsException;
+import leap.core.value.Record;
+import leap.core.value.SimpleRecord;
 import leap.db.DbDialect;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
@@ -93,9 +95,9 @@ public class DefaultEntityReader implements EntityReader {
 	
 	@SuppressWarnings("unchecked")
     protected <T> T readCurrentRow(OrmContext context, ResultSet rs,ResultSetMapping rsm,Class<T> resultClass) throws SQLException {
-		if(Entity.class.equals(resultClass) || EntityBase.class.equals(resultClass)){
-			return (T)readEntity(context, rs, rsm);
-		}
+        if(Record.class.equals(resultClass)) {
+            return (T)readRecord(context, rs, rsm);
+        }
 		
 		if(Model.class.isAssignableFrom(resultClass)){
 			return (T)readModel(context, rs, rsm,(Class<? extends Model>)resultClass);
@@ -104,13 +106,25 @@ public class DefaultEntityReader implements EntityReader {
 		if(Map.class.equals(resultClass)){
 			return (T)readMap(context, rs,rsm);
 		}
-		
-		return readBean(context, rs,rsm,resultClass);
+
+        if(Entity.class.equals(resultClass) || EntityBase.class.equals(resultClass)){
+            return (T)readEntity(context, rs, rsm);
+        }
+
+        return readBean(context, rs,rsm,resultClass);
 	}
 	
 	protected ResultSetMapping createResultSetMapping(OrmContext context,ResultSet rs,EntityMapping em) throws SQLException {
 		return new DefaultResultSetMapping(context, rs, em);
 	}
+
+    protected Record readRecord(OrmContext context, ResultSet rs,ResultSetMapping rsm) throws SQLException {
+        Record entity = new SimpleRecord();
+
+        readMap(context, rs, rsm, entity);
+
+        return entity;
+    }
 	
 	protected EntityBase readEntity(OrmContext context, ResultSet rs,ResultSetMapping rsm) throws SQLException {
 		Entity entity = new Entity(rsm.getPrimaryEntityMapping().getEntityName());

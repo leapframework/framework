@@ -348,7 +348,12 @@ public abstract class Dao implements JdbcExecutor {
      *
      * @throws RecordNotFoundException if the record not exists.
      */
-	public abstract Entity find(String entityName,Object id);
+	public abstract Record find(String entityName,Object id);
+
+    /**
+     * Returns the record for the id.
+     */
+    public abstract Record find(EntityMapping em, Object id);
 	
     /**
      * Returns the record for the id.
@@ -378,7 +383,15 @@ public abstract class Dao implements JdbcExecutor {
      * <p>
      * Returns <code>null</code> if record not exists.
      */
-	public abstract Entity findOrNull(String entityName,Object id);
+	public abstract Record findOrNull(String entityName,Object id);
+
+    /**
+     * Returns the record for the id.
+     *
+     * <p>
+     * Returns <code>null</code> if record not exists.
+     */
+    public abstract Record findOrNull(EntityMapping em,Object id);
 	
     /**
      * Returns the record for the id.
@@ -438,7 +451,7 @@ public abstract class Dao implements JdbcExecutor {
      * <p>
      * Do not throws {@link RecordNotFoundException} if the some of record(s) not exists.
      */
-    public abstract List<Entity> findListIfExists(String entityName,Object[] ids);  
+    public abstract List<Record> findListIfExists(String entityName,Object[] ids);
     
     /**
      * Returns the entity list by the given id array.
@@ -536,7 +549,7 @@ public abstract class Dao implements JdbcExecutor {
 	/**
 	 * Creates a new {@link EntityQuery} object for executing the given query sql.
 	 */
-	public abstract EntityQuery<EntityBase> createSqlQuery(EntityMapping em,String sql);
+	public abstract EntityQuery<Record> createSqlQuery(EntityMapping em,String sql);
 	
 	/**
 	 * Creates a new {@link EntityQuery} object for executing the given query sql.
@@ -546,7 +559,17 @@ public abstract class Dao implements JdbcExecutor {
 	/**
 	 * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
 	 */
-	public abstract <T> CriteriaQuery<T> createCriteriaQuery(Class<T> entityClass); 
+	public abstract <T> CriteriaQuery<T> createCriteriaQuery(Class<T> entityClass);
+
+    /**
+     * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
+     */
+    public abstract CriteriaQuery<Record> createCriteriaQuery(String entityName);
+
+    /**
+     * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
+     */
+    public abstract CriteriaQuery<Record> createCriteriaQuery(EntityMapping em);
 
 	/**
 	 * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
@@ -607,7 +630,7 @@ public abstract class Dao implements JdbcExecutor {
 	/**
 	 * Creates a new {@link Query} object for querying data later.
 	 */
-	public abstract EntityQuery<EntityBase> createNamedQuery(String entityName,String queryName);
+	public abstract EntityQuery<Record> createNamedQuery(String entityName,String queryName);
 	
 	/**
 	 * Creates a new {@link Query} object for querying data later.
