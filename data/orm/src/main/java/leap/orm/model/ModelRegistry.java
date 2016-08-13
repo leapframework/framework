@@ -15,10 +15,12 @@
  */
 package leap.orm.model;
 
+import leap.core.AppConfigException;
 import leap.lang.annotation.Internal;
 import leap.lang.beans.BeanType;
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
@@ -65,7 +67,13 @@ public class ModelRegistry {
 		ModelContext mc = modelContexts.get(className);
 		
 		if(null == mc){
-			throw new ObjectNotFoundException("Model '" + className + "' not found in registry");
+
+            if(!Orm.hasContexts()) {
+                throw new AppConfigException("DataSource(s) must be configured!");
+            }else{
+                throw new ObjectNotFoundException("Model '" + className + "' not found in registry");
+            }
+
 		}
 		
 		return mc;

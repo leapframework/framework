@@ -53,6 +53,10 @@ public class Orm {
         }
         throw new IllegalStateException("Orm context not found for entity class '" + entityClass + "'");
     }
+
+    public static boolean hasContexts() {
+        return !AppContext.factory().getBeans(OrmContext.class).isEmpty();
+    }
 	
 	public static OrmContext context() {
 		return context(DEFAULT_NAME);
