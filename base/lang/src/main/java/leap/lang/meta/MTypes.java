@@ -40,7 +40,7 @@ public class MTypes {
 	public static boolean isCollectionType(Class<?> type) {
 		return null == type ? false : type.isArray() || Iterable.class.isAssignableFrom(type);
 	}
-	
+
 	protected MTypes() {
 		
 	}

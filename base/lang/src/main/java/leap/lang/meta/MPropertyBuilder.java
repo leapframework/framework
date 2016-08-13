@@ -18,17 +18,17 @@ package leap.lang.meta;
 public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     protected MType    type;
-    protected boolean  nullable;
+    protected boolean  required;
     protected String   defaultValue;
     protected String[] enumValues;
     protected boolean  fixedLength;
     protected Integer  length;
     protected Integer  precision;
     protected Integer  scale;
-    protected Boolean  insertable;
-    protected Boolean  updatable;
-    protected Boolean  sortable;
-    protected Boolean  filterable;
+    protected Boolean  userCreatable;
+    protected Boolean  userUpdatable;
+    protected Boolean  userSortable;
+    protected Boolean  userFilterable;
 
     public MType getType() {
         return type;
@@ -38,12 +38,12 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.type = type;
     }
 
-    public boolean isNullable() {
-        return nullable;
+    public boolean isRequired() {
+        return required;
     }
 
-    public void setNullable(boolean nullable) {
-        this.nullable = nullable;
+    public void setRequired(boolean required) {
+        this.required = required;
     }
 
     public String getDefaultValue() {
@@ -94,43 +94,43 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.scale = scale;
     }
 
-    public Boolean getInsertable() {
-        return insertable;
+    public Boolean getUserCreatable() {
+        return userCreatable;
     }
 
-    public void setInsertable(Boolean insertable) {
-        this.insertable = insertable;
+    public void setUserCreatable(Boolean userCreatable) {
+        this.userCreatable = userCreatable;
     }
 
-    public Boolean getUpdatable() {
-        return updatable;
+    public Boolean getUserUpdatable() {
+        return userUpdatable;
     }
 
-    public void setUpdatable(Boolean updatable) {
-        this.updatable = updatable;
+    public void setUserUpdatable(Boolean userUpdatable) {
+        this.userUpdatable = userUpdatable;
     }
 
-    public Boolean getSortable() {
-        return sortable;
+    public Boolean getUserSortable() {
+        return userSortable;
     }
 
-    public void setSortable(Boolean sortable) {
-        this.sortable = sortable;
+    public void setUserSortable(Boolean userSortable) {
+        this.userSortable = userSortable;
     }
 
-    public Boolean getFilterable() {
-        return filterable;
+    public Boolean getUserFilterable() {
+        return userFilterable;
     }
 
-    public void setFilterable(Boolean filterable) {
-        this.filterable = filterable;
+    public void setUserFilterable(Boolean userFilterable) {
+        this.userFilterable = userFilterable;
     }
 
     @Override
     public MProperty build() {
-        return new MProperty(name, title, summary, description, type, nullable,
+        return new MProperty(name, title, summary, description, type, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
-                             insertable, updatable, sortable, filterable);
+                userCreatable, userUpdatable, userSortable, userFilterable);
     }
 
 }

@@ -21,48 +21,47 @@ import leap.lang.Strings;
 public class MProperty extends ImmutableMNamedWithDesc {
 
     protected final MType    type;
-    protected final boolean  nullable;
+    protected final boolean  required;
     protected final String   defaultValue;
     protected final String[] enumValues;
     protected final boolean  fixedLength;
     protected final Integer  length;
     protected final Integer  precision;
     protected final Integer  scale;
-    protected final Boolean  insertable;
-    protected final Boolean  updatable;
-    protected final Boolean  sortable;
-    protected final Boolean  filterable;
-
+    protected final Boolean  userCreatable;
+    protected final Boolean  userUpdatable;
+    protected final Boolean  userSortable;
+    protected final Boolean  userFilterable;
 
     public MProperty(String name, String title, String summary, String description,
-                     MType type, boolean nullable, String defaultValue, String[] enumValues,
+                     MType type, boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
-                     Boolean insertable, Boolean updatable, Boolean sortable, Boolean filterable) {
+                     Boolean userCreatable, Boolean userUpdatable, Boolean userSortable, Boolean userFilterable) {
         super(name, title, summary, description);
 
         Args.notNull(type, "type");
 
         this.type = type;
-        this.nullable = nullable;
+        this.required = required;
         this.defaultValue = Strings.trimToNull(defaultValue);
         this.fixedLength = fixedLength;
         this.enumValues = enumValues;
         this.length = length;
         this.precision = precision;
         this.scale = scale;
-        this.insertable = insertable;
-        this.updatable = updatable;
-        this.sortable = sortable;
-        this.filterable = filterable;
+        this.userCreatable = userCreatable;
+        this.userUpdatable = userUpdatable;
+        this.userSortable = userSortable;
+        this.userFilterable = userFilterable;
     }
 
     public MType getType() {
         return type;
     }
 
-    public boolean isNullable() {
-        return nullable;
+    public boolean isRequired() {
+        return required;
     }
 
     public String getDefaultValue() {
@@ -89,36 +88,20 @@ public class MProperty extends ImmutableMNamedWithDesc {
         return scale;
     }
 
-    public Boolean getInsertable() {
-        return insertable;
+    public Boolean getUserCreatable() {
+        return userCreatable;
     }
 
-    public boolean isInsertableExplicitly() {
-        return null != insertable && insertable;
+    public Boolean getUserUpdatable() {
+        return userUpdatable;
     }
 
-    public Boolean getUpdatable() {
-        return updatable;
+    public Boolean getUserSortable() {
+        return userSortable;
     }
 
-    public boolean isUpdatableExplicitly() {
-        return null != updatable && updatable;
-    }
-
-    public Boolean getSortable() {
-        return sortable;
-    }
-
-    public boolean isSortableExplicitly() {
-        return null != sortable && sortable;
-    }
-
-    public Boolean getFilterable() {
-        return filterable;
-    }
-
-    public boolean isFilterableExplicitly() {
-        return null != filterable && filterable;
+    public Boolean getUserFilterable() {
+        return userFilterable;
     }
 
     @Override

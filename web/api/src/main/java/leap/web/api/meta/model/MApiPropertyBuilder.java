@@ -19,7 +19,7 @@ import leap.lang.meta.MProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected Boolean insertable;
+    protected Boolean creatable;
     protected Boolean updatable;
     protected Boolean sortable;
     protected Boolean filterable;
@@ -41,19 +41,19 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
-		this.required = !mp.isNullable();
-        this.insertable = mp.getInsertable();
-        this.updatable = mp.getUpdatable();
-        this.sortable = mp.getSortable();
-        this.filterable = mp.getFilterable();
+		this.required =  mp.isRequired();
+        this.creatable = mp.getUserCreatable();
+        this.updatable = mp.getUserUpdatable();
+        this.sortable = mp.getUserSortable();
+        this.filterable = mp.getUserFilterable();
 	}
 
-    public Boolean getInsertable() {
-        return insertable;
+    public Boolean getCreatable() {
+        return creatable;
     }
 
-    public void setInsertable(Boolean insertable) {
-        this.insertable = insertable;
+    public void setCreatable(Boolean creatable) {
+        this.creatable = creatable;
     }
 
     public Boolean getUpdatable() {
@@ -85,6 +85,6 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 	    return new MApiProperty(name, title, summary, description, type, format, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
-                                insertable, updatable, sortable, filterable);
+                                creatable, updatable, sortable, filterable);
     }
 }

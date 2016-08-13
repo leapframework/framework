@@ -13,34 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package leap.lang.meta.annotation;
 
-package leap.lang.meta;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import leap.lang.beans.BeanProperty;
+@Target({ElementType.FIELD,ElementType.METHOD,ElementType.ANNOTATION_TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface UserUpdatable {
 
-public interface MTypeContext {
-
-    MTypeContext DEFAULT = new MTypeContext() {};
-
-    /**
-     * Optional. Returns the root factory.
-     */
-    default MTypeFactory root() {
-        return null;
-    }
-
-    /**
-     * Required. Returns the {@link MTypeStrategy}.
-     */
-    default MTypeStrategy strategy() {
-        return MTypeStrategy.DEFAULT;
-    }
-
-    /**
-     * Required. Returns the {@link MTypeListener}.
-     */
-    default MTypeListener listener() {
-        return MTypeListener.NOP;
-    }
+    boolean value() default true;
 
 }

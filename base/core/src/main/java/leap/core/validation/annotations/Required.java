@@ -30,6 +30,6 @@ import leap.core.validation.validators.RequiredValidator;
 @ConstraintAnnotation
 public @interface Required {
 
-	public String message() default "";
+	String message() default "";
 	
 }

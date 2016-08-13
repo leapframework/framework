@@ -29,7 +29,6 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.query.CriteriaQuery;
-import leap.orm.value.Entity;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -103,19 +102,28 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * @return the id of new record.
      */
     protected Object createRecordAndReturnId(Object request, Object id) {
-        Map<String,Object> properties = Beans.toMap(request);
+        Map<String,Object> properties;
+        if(request instanceof Partial) {
+            properties = ((Partial) request).getProperties();
+        }else{
+            properties = Beans.toMap(request);
+        }
+
+        if(properties.isEmpty()) {
+            throw new BadRequestException("No create properties!");
+        }
 
         for(String name : properties.keySet()) {
             MApiProperty p = am.tryGetProperty(name);
             if(null == p) {
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
-            if(p.isNotInsertableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not insertable!");
+            if(p.isNotCreatableExplicitly()) {
+                throw new BadRequestException("Property '" + name + "' is not creatable!");
             }
         }
 
-        Errors errors = dao.validate(em, properties, properties.keySet());
+        Errors errors = dao.validate(em, properties);
         if(!errors.isEmpty()) {
             throw new ValidationException(errors);
         }

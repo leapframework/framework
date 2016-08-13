@@ -28,8 +28,9 @@ import leap.lang.beans.BeanType;
 import leap.lang.meta.annotation.ComplexType;
 import leap.lang.meta.annotation.NonProperty;
 import leap.lang.meta.annotation.TypeWrapper;
+import leap.lang.meta.annotation.UserSortable;
 
-public class SimpleMTypeFactory implements MTypeFactory {
+public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
 	
 	protected static final Map<Class<?>, MComplexType> COMPLEX_TYPES = 
 			Collections.synchronizedMap(new WeakHashMap<Class<?>, MComplexType>());
@@ -168,7 +169,7 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		
 		ct.setName(type.getSimpleName());
 		ct.setAbstract(Modifier.isAbstract(type.getModifiers()));
-		
+
         String name = context.strategy().getComplexTypeName(type);
         if(!Strings.isEmpty(name)) {
             ct.setName(name);
@@ -190,9 +191,7 @@ public class SimpleMTypeFactory implements MTypeFactory {
             mp.setName(bp.getName());
 			mp.setType(getMType(bp.getType(), bp.getGenericType(), context, stack, true));
 
-            if(bp.getType().isEnum()) {
-                mp.setEnumValues(Enums.getValues(bp.getType()));
-            }
+            configureProperty(bp, mp);
 
 			ct.addProperty(mp.build());
 		}

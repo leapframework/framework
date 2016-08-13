@@ -21,7 +21,7 @@ import leap.lang.meta.MType;
 
 public class MApiProperty extends MApiParameterBase {
 
-    protected final Boolean insertable;
+    protected final Boolean creatable;
     protected final Boolean updatable;
     protected final Boolean sortable;
     protected final Boolean filterable;
@@ -29,17 +29,17 @@ public class MApiProperty extends MApiParameterBase {
 	public MApiProperty(String name, String title, String summary, String description,
                         MType type, String format, boolean password, boolean required, String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
-                        Boolean insertable, Boolean updatable, Boolean sortable, Boolean filterable) {
+                        Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
-        this.insertable = insertable;
+        this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
     }
 
-    public Boolean getInsertable() {
-        return insertable;
+    public Boolean getCreatable() {
+        return creatable;
     }
 
     public Boolean getUpdatable() {
@@ -54,8 +54,8 @@ public class MApiProperty extends MApiParameterBase {
         return filterable;
     }
 
-    public boolean isInsertableExplicitly() {
-        return null != insertable && insertable;
+    public boolean isCreatableExplicitly() {
+        return null != creatable && creatable;
     }
 
     public boolean isUpdatableExplicitly() {
@@ -70,8 +70,8 @@ public class MApiProperty extends MApiParameterBase {
         return null != filterable && filterable;
     }
 
-    public boolean isNotInsertableExplicitly() {
-        return null != insertable && !insertable;
+    public boolean isNotCreatableExplicitly() {
+        return null != creatable && !creatable;
     }
 
     public boolean isNotUpdatableExplicitly() {

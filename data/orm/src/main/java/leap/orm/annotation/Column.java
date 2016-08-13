@@ -87,16 +87,6 @@ public @interface Column {
 	 */
 	Bool update() default Bool.NONE;
 
-    /**
-     * (Optional). Whether the column is sortable (used in order by expression).
-     */
-    Bool sortable() default Bool.NONE;
-
-    /**
-     * (Optional). Whether the column is filterable (used in where expression).
-     */
-    Bool filterable() default Bool.NONE;
-	
 	/**
 	 * (Optional) The default value of the column.
 	 */

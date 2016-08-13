@@ -325,7 +325,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
 					writeParameterType(context, m, w, p);
 
-                    w.propertyOptional(X_INSERTABLE, p.getInsertable());
+                    w.property(REQUIRED,             p.isRequired());
+                    w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());
                     w.propertyOptional(X_FILTERABLE, p.getFilterable());

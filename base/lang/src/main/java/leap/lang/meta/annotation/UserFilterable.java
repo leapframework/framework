@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.orm.annotation;
+package leap.lang.meta.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -22,6 +22,8 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD,ElementType.METHOD,ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Filterable {
-    
+public @interface UserFilterable {
+
+    boolean value() default true;
+
 }

@@ -19,6 +19,7 @@ import leap.core.annotation.Inject;
 import leap.lang.Args;
 import leap.lang.Enums;
 import leap.lang.Types;
+import leap.lang.beans.BeanProperty;
 import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
@@ -26,7 +27,7 @@ import leap.orm.mapping.FieldMapping;
 
 import java.lang.reflect.Type;
 
-public class OrmMTypeFactory implements MTypeFactory {
+public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
 	
 	protected @Inject OrmContext[] ormContexts;
 	
@@ -62,18 +63,35 @@ public class OrmMTypeFactory implements MTypeFactory {
 			p.setName(fm.getFieldName());
 			p.setType(root.getMType(fm.getJavaType()));
 			p.setLength(fm.getMaxLength());
-			p.setNullable(fm.isNullable());
+			p.setRequired(!fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
-            p.setInsertable(fm.isInsertable());
-            p.setUpdatable(fm.isUpdatable());
-            p.setSortable(fm.getSortable());
-            p.setFilterable(fm.getFilterable());
 
-            if(type.isEnum()) {
-                p.setEnumValues(Enums.getValues(type));
+            BeanProperty bp = fm.getBeanProperty();
+            if(null != bp) {
+                configureProperty(bp, p);
             }
-			
+
+            if(null == p.getUserCreatable()) {
+                if(fm.isPrimaryKey()) {
+                    p.setUserCreatable(false);
+                }else{
+                    p.setUserCreatable(fm.isInsertable());
+                }
+            }
+
+            if(null == p.getUserUpdatable()) {
+                p.setUserUpdatable(fm.isUpdatable());
+            }
+
+            if(null == p.getUserSortable()) {
+                p.setUserSortable(false);
+            }
+
+            if(null == p.getUserFilterable()) {
+                p.setUserFilterable(false);
+            }
+
 			ct.addProperty(p.build());
 		}
 		

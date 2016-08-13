@@ -59,8 +59,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Expression            defaultValueExpression;
     protected Boolean               insertable;
     protected Boolean               updatable;
-    protected Boolean               sortable;
-    protected Boolean               filterable;
     protected Boolean               where;
     protected Expression            insertValue;
     protected Expression            updateValue;
@@ -103,8 +101,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.defaultValueExpression = template.defaultValueExpression;
         this.insertable = template.insertable;
         this.updatable = template.updatable;
-        this.sortable = template.sortable;
-        this.filterable = template.filterable;
         this.where = template.where;
         this.insertValue = template.insertValue;
         this.updateValue = template.updateValue;
@@ -549,38 +545,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public Boolean getSortable(){
-        return sortable;
-    }
-
-    public FieldMappingBuilder setSortable(Boolean b) {
-        this.sortable = b;
-        return this;
-    }
-
-    public FieldMappingBuilder trySetSortable(Boolean b){
-        if(null == this.sortable){
-            this.sortable = b;
-        }
-        return this;
-    }
-
-    public Boolean getFilterable(){
-        return filterable;
-    }
-
-    public FieldMappingBuilder setFilterable(Boolean b) {
-        this.filterable = b;
-        return this;
-    }
-
-    public FieldMappingBuilder trySetFilterable(Boolean b){
-        if(null == this.filterable){
-            this.filterable = b;
-        }
-        return this;
-    }
-
     public boolean isWhere() {
         return null != where && where;
     }
@@ -717,7 +681,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insertable, updatable, sortable, filterable, where,
+                                insertable, updatable, where,
                                 defaultValueExpression,
                                 insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,

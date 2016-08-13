@@ -43,8 +43,6 @@ public class FieldMapping {
 	protected final Integer          scale;
 	protected final boolean          insertable;
 	protected final boolean          updatable;
-    protected final Boolean          sortable;
-    protected final Boolean          filterable;
     protected final boolean          where;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
@@ -69,7 +67,6 @@ public class FieldMapping {
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
                         boolean insertable, boolean updatable,
-                        Boolean sortable, Boolean filterable,
                         boolean where,
                         Expression defaultValue,
                         Expression insertValue,
@@ -98,10 +95,8 @@ public class FieldMapping {
 	    this.maxLength		= maxLength;
 	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insertable = insertable;
-	    this.updatable = updatable;
-        this.sortable       = sortable;
-        this.filterable     = filterable;
+	    this.insertable     = insertable;
+	    this.updatable      = updatable;
         this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
@@ -196,22 +191,6 @@ public class FieldMapping {
 	public boolean isUpdatable() {
 		return updatable;
 	}
-
-    public Boolean getSortable() {
-        return sortable;
-    }
-
-    public Boolean getFilterable() {
-        return filterable;
-    }
-
-    public boolean isSortableExplicitly() {
-        return null != sortable && sortable;
-    }
-
-    public boolean isFilterableExplicitly() {
-        return null != filterable && filterable;
-    }
 
     public boolean isWhere() {
         return where;
