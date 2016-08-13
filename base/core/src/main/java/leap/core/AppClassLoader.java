@@ -43,7 +43,8 @@ public class AppClassLoader extends ClassLoader {
 
     private static final Log log = LogFactory.get(AppClassLoader.class);
 
-    private static final ThreadLocal<Set<String>> beanClassNamesLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Set<String>> instrumentPackagesLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Set<String>> instrumentClassesLocal  = new ThreadLocal<>();
 
     private static ThreadLocal<AppClassLoader>     instanceLocal;
     private static Map<ClassLoader,AppClassLoader> instances = new IdentityHashMap<>();
@@ -66,17 +67,35 @@ public class AppClassLoader extends ClassLoader {
         return inst;
     }
 
-    public static void addBeanClass(String name) {
-        Set<String> names = beanClassNamesLocal.get();
+    public static void addInstrumentPackage(String p) {
+        Set<String> names = instrumentPackagesLocal.get();
         if(null == names) {
             names = new HashSet<>();
-            beanClassNamesLocal.set(names);
+            instrumentPackagesLocal.set(names);
+        }
+        names.add(p.endsWith(".") ? p : p + ".");
+    }
+
+    public static void addInstrumentClass(String name) {
+        Set<String> names = instrumentClassesLocal.get();
+        if(null == names) {
+            names = new HashSet<>();
+            instrumentClassesLocal.set(names);
         }
         names.add(name);
     }
 
-    public static boolean isBeanClass(String name) {
-        Set<String> names = beanClassNamesLocal.get();
+    private static boolean isInstrumentClass(String name) {
+        Set<String> ps = instrumentPackagesLocal.get();
+        if(null != ps) {
+            for (String p : ps) {
+                if (name.startsWith(p)) {
+                    return true;
+                }
+            }
+        }
+
+        Set<String> names = instrumentClassesLocal.get();
         if(null == names) {
             return false;
         }
@@ -154,7 +173,8 @@ public class AppClassLoader extends ClassLoader {
         //loadedUrls.clear();
         //loadedNames.clear();
         instrumenting.clear();
-        beanClassNamesLocal.remove();
+        instrumentClassesLocal.remove();
+        instrumentPackagesLocal.remove();
     }
 
     @Internal
@@ -439,7 +459,7 @@ public class AppClassLoader extends ClassLoader {
             return true;
         }
 
-        if(isBeanClass(name)) {
+        if(isInstrumentClass(name)) {
             return false;
         }
 

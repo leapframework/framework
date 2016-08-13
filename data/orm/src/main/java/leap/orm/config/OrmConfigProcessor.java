@@ -15,6 +15,7 @@
  */
 package leap.orm.config;
 
+import leap.core.AppClassLoader;
 import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
 import leap.core.config.AppConfigProcessor;
@@ -90,6 +91,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 						context.addResources(Resources.scanPackage(basePackage));
 					}
 					models.addBasePackage(basePackage);
+                    AppClassLoader.addInstrumentPackage(basePackage);
 				}
 				continue;
 			}
@@ -99,6 +101,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 				if(!Strings.isEmpty(className)) {
                     models.removeClassName(className);
 					models.addClassName(className);
+                    AppClassLoader.addInstrumentClass(className);
 				}
 				continue;
 			}

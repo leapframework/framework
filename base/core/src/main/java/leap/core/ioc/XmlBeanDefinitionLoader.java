@@ -360,7 +360,7 @@ class XmlBeanDefinitionLoader {
 
 		if(!Strings.isEmpty(beanClassName)){
 			try {
-                AppClassLoader.addBeanClass(beanClassName);
+                AppClassLoader.addInstrumentClass(beanClassName);
                 log.trace("Resolving bean class '{}'...", beanClassName);
 	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
