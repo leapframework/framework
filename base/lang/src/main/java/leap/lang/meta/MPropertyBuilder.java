@@ -15,10 +15,12 @@
  */
 package leap.lang.meta;
 
+import leap.lang.enums.Bool;
+
 public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     protected MType    type;
-    protected boolean  required;
+    protected Boolean  required;
     protected String   defaultValue;
     protected String[] enumValues;
     protected boolean  fixedLength;
@@ -38,11 +40,11 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.type = type;
     }
 
-    public boolean isRequired() {
+    public Boolean getRequired() {
         return required;
     }
 
-    public void setRequired(boolean required) {
+    public void setRequired(Boolean required) {
         this.required = required;
     }
 

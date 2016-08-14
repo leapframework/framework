@@ -21,7 +21,7 @@ import leap.lang.Strings;
 public class MProperty extends ImmutableMNamedWithDesc {
 
     protected final MType    type;
-    protected final boolean  required;
+    protected final Boolean  required;
     protected final String   defaultValue;
     protected final String[] enumValues;
     protected final boolean  fixedLength;
@@ -34,7 +34,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Boolean  userFilterable;
 
     public MProperty(String name, String title, String summary, String description,
-                     MType type, boolean required, String defaultValue, String[] enumValues,
+                     MType type, Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
                      Boolean userCreatable, Boolean userUpdatable, Boolean userSortable, Boolean userFilterable) {
@@ -60,7 +60,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
         return type;
     }
 
-    public boolean isRequired() {
+    public Boolean getRequired() {
         return required;
     }
 

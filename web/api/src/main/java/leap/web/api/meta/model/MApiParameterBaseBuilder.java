@@ -21,7 +21,7 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	
 	protected MType                 type;
 	protected String                format;
-	protected boolean               required;
+	protected Boolean               required;
     protected boolean               password;
 	protected String                defaultValue;
     protected String[]              enumValues;
@@ -51,11 +51,11 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
         this.password = password;
     }
 
-    public boolean isRequired() {
+    public Boolean getRequired() {
 		return required;
 	}
 
-	public void setRequired(boolean required) {
+	public void setRequired(Boolean required) {
 		this.required = required;
 	}
 	

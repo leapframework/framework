@@ -27,7 +27,8 @@ public class MApiProperty extends MApiParameterBase {
     protected final Boolean filterable;
 
 	public MApiProperty(String name, String title, String summary, String description,
-                        MType type, String format, boolean password, boolean required, String defaultValue, String[] enumValues,
+                        MType type, String format, boolean password, Boolean required,
+                        String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);

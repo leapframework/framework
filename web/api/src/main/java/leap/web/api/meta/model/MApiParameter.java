@@ -37,7 +37,7 @@ public class MApiParameter extends MApiParameterBase implements MNamed {
 
 	public MApiParameter(String name, String title, String summary, String description,
                          MType type, String format, boolean file, boolean password,
-                         Location location, boolean required,
+                         Location location, Boolean required,
                          String defaultValue, String[] enumValues,
                          MApiValidation validation,
                          Map<String, Object> attrs) {

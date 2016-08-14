@@ -185,7 +185,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.property(NAME, p.getName())
          .property(DESCRIPTION, nullToEmpty(p.descOrSummary()))
          .property(IN, SwaggerMappings.in(p.getLocation()))
-         .property(REQUIRED, p.isRequired());
+         .propertyOptional(REQUIRED, p.getRequired());
 		
 		if(Location.BODY == p.getLocation()) {
 			w.property(SCHEMA, () -> {
@@ -325,7 +325,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
 					writeParameterType(context, m, w, p);
 
-                    w.property(REQUIRED,             p.isRequired());
+                    w.propertyOptional(REQUIRED,     p.getRequired());
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());
