@@ -20,6 +20,7 @@ import leap.lang.Named;
 import leap.lang.accessor.AnnotationsGetter;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 
 public interface Action extends Named,AnnotationsGetter {
@@ -71,7 +72,7 @@ public interface Action extends Named,AnnotationsGetter {
 	 * @see {@link java.lang.reflect.Method#getAnnotationsByType(Class)}
      */
 	default <T extends Annotation> T[] getAnnotationsByType(Class<T> annotationClass) {
-		return (T[])Classes.EMPTY_ANNOTATION_ARRAY;
+		return (T[])Array.newInstance(annotationClass,0);
 	}
 	
 	/**
