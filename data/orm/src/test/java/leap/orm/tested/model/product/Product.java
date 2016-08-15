@@ -16,6 +16,7 @@
 package leap.orm.tested.model.product;
 
 import leap.orm.annotation.Column;
+import leap.orm.annotation.NonColumn;
 import leap.orm.model.Model;
 
 public class Product extends Model {
@@ -24,6 +25,9 @@ public class Product extends Model {
 	protected String id;
 	
 	protected Integer typeId;
+
+	@NonColumn
+	private String displayName;
 
 	public String getId() {
 		return id;
@@ -39,6 +43,10 @@ public class Product extends Model {
 
 	public void setTypeId(Integer typeId) {
 		this.typeId = typeId;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }
