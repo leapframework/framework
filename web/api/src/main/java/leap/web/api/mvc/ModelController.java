@@ -94,6 +94,29 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     }
 
     /**
+     * Creates the record with specified id.
+     */
+    protected ApiResponse createAndReturn(Object request, Map<String,Object> extraProperties) {
+        Object id = createRecordAndReturnId(request, null, extraProperties);
+        return ApiResponse.created(dao.find(em, id));
+    }
+
+    /**
+     * Creates the record with specified id.
+     */
+    protected ApiResponse createAndReturn(Object request, Object id, Map<String,Object> extraProperties) {
+        id = createRecordAndReturnId(request, id, extraProperties);
+        return ApiResponse.created(dao.find(em, id));
+    }
+
+    /**
+     * Creates a new record of model and returns the id.
+     */
+    protected Object createRecordAndReturnId(Object request, Object id) {
+        return createRecordAndReturnId(request, id, null);
+    }
+
+    /**
      * Creates a new record of model and returns the id.
      *
      * @param request the request bean contains properties of model.
@@ -101,7 +124,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      *
      * @return the id of new record.
      */
-    protected Object createRecordAndReturnId(Object request, Object id) {
+    protected Object createRecordAndReturnId(Object request, Object id, Map<String, Object> extraProperties) {
         Map<String,Object> properties;
         if(request instanceof Partial) {
             properties = ((Partial) request).getProperties();
@@ -111,6 +134,10 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         if(properties.isEmpty()) {
             throw new BadRequestException("No create properties!");
+        }
+
+        if(null != extraProperties) {
+            properties.putAll(extraProperties);
         }
 
         for(String name : properties.keySet()) {
@@ -163,6 +190,13 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options) {
+        return queryList(options, null);
+    }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters) {
         //todo : validates the query options.
 
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
@@ -176,7 +210,9 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             }
 
             if(!Strings.isEmpty(options.getFilters())) {
-                applyFilters(query, options.getFilters());
+                applyFilters(query, options.getFilters(), filters);
+            }else if(null != filters && !filters.isEmpty()) {
+                applyFilters(query, filters);
             }
 
             list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
@@ -267,7 +303,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         query.orderBy(s.toString());
     }
 
-    private void applyFilters(CriteriaQuery query, String expr) {
+    private void applyFilters(CriteriaQuery query, String expr, Map<String, Object> extraFilters) {
         Filters filters = FiltersParser.parse(expr);
 
         StringBuilder where = new StringBuilder();
@@ -313,7 +349,38 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             args.add(Converts.convert(value, fm.getJavaType()));
         }
 
+        if(null != extraFilters && !extraFilters.isEmpty()) {
+            where .append(" and (");
+
+            applyFilters(where, args, extraFilters);
+
+            where.append(" )");
+        }
+
         query.where(where.toString(), args.toArray());
+    }
+
+    private void applyFilters(CriteriaQuery query, Map<String, Object> extraFilters) {
+        StringBuilder where = new StringBuilder();
+
+        List<Object> args = new ArrayList<>();
+
+        applyFilters(where, args, extraFilters);
+
+        query.where(where.toString(), args.toArray());
+    }
+
+    private void applyFilters(StringBuilder where, List<Object> args, Map<String, Object> filters) {
+        int i=0;
+        for(Map.Entry<String,Object> entry : filters.entrySet()) {
+            if(i > 0) {
+                where.append(" and ");
+            }
+            i++;
+            where.append(entry.getKey()).append(" = ?");
+            args.add(entry.getValue());
+        }
+
     }
 
     private String toSqlOperator(FiltersParser.Token op) {
