@@ -204,7 +204,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.startObject();
 
 		for(MApiResponse r : rs) {
-			w.property(String.valueOf(r.getStatus()), () -> writeResponse(context, m, w, r));
+			w.property(r.getName(), () -> writeResponse(context, m, w, r));
 		}
 		
 		w.endObject();

@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Args;
 import leap.lang.http.HTTP;
 import leap.lang.meta.MType;
 
@@ -22,32 +23,42 @@ import java.util.Map;
 
 public class MApiResponse extends MApiObjectWithDesc {
 	
-	public static final MApiResponse VOID = new MApiResponse(null);
-
-    protected final int     status;
+    protected final String  name;
+    protected final Integer status;
     protected final MType   type;
     protected final boolean file;
 
-	public MApiResponse(MType type) {
-		this(null, null, HTTP.SC_OK, type, false, null);
+	public MApiResponse(String name, MType type) {
+		this(name, null, null, HTTP.SC_OK, type, false, null);
 	}
 
-    public MApiResponse(MType type, boolean file) {
-        this(null, null, HTTP.SC_OK, type, file, null);
+    public MApiResponse(String name, MType type, boolean file) {
+        this(name, null, null, HTTP.SC_OK, type, file, null);
     }
 
-    public MApiResponse(String summary, String description, int status, MType type, boolean file, Map<String, Object> attrs) {
+    public MApiResponse(String name, String summary, String description, Integer status, MType type,
+                        boolean file, Map<String, Object> attrs) {
 	    super(summary, description, attrs);
-	    
+
+        Args.notEmpty(name, "name");
+
+        this.name   = name;
 	    this.status = status;
 	    this.type   = type;
         this.file   = file;
     }
 
-	/**
+    /**
+     * Returns the name.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
 	 * Returns the http status of this response.
 	 */
-	public int getStatus() {
+	public Integer getStatus() {
 		return status;
 	}
 
@@ -58,4 +69,10 @@ public class MApiResponse extends MApiObjectWithDesc {
 		return type;
 	}
 
+    /**
+     * Returns true if the response type is file.
+     */
+    public boolean isFile() {
+        return file;
+    }
 }

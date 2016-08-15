@@ -66,6 +66,15 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	public List<MApiResponseBuilder> getResponses() {
 		return responses;
 	}
+
+    public MApiResponseBuilder getResponse(String name) {
+        for(MApiResponseBuilder r : responses) {
+            if(r.getName().equals(name)) {
+                return r;
+            }
+        }
+        return null;
+    }
 	
 	public void addResponse(MApiResponseBuilder r) {
 		responses.add(r);

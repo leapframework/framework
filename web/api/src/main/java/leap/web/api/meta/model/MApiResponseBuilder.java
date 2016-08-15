@@ -28,12 +28,21 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 		
 		return r;
 	}
-	
-	protected int     status = HTTP.SC_OK;
+
+    protected String  name;
+	protected Integer status;
 	protected MType   type;
     protected boolean file;
-	
-	public int getStatus() {
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getStatus() {
 		return status;
 	}
 
@@ -59,7 +68,15 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 
     @Override
     public MApiResponse build() {
-	    return new MApiResponse(summary, description, status, type, file, attrs);
+        if(name == null && status == null) {
+            throw new IllegalStateException("'name' or 'status' must not be specified!");
+        }
+
+        if(null == name) {
+            name = String.valueOf(status);
+        }
+
+	    return new MApiResponse(name, summary, description, status, type, file, attrs);
     }
 	
 }
