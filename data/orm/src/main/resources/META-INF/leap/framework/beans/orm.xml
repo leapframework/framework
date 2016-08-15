@@ -83,6 +83,9 @@
     <bean name="short_uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortUUIDGenerator">
         <additional-type-def type="leap.orm.generator.ValueGenerator" name="short_uuid"/>
     </bean>
+    <bean name="shortid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortIDGenerator">
+        <additional-type-def type="leap.orm.generator.ValueGenerator" name="shortid"/>
+    </bean>
     
     <!-- data factory beans -->
     <bean type="leap.orm.df.DataGenerator" class="leap.orm.df.RandomDataGenerator" primary="true"/>

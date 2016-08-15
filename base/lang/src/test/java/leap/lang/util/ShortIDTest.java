@@ -16,7 +16,7 @@ public class ShortIDTest extends ConcurrentTestCase {
 
         int maxlen = 0;
         for(int i=0;i<num;i++) {
-            String id = ShortID.generate();
+            String id = ShortID.randomID();
             maxlen = Math.max(maxlen, id.length());
             set.add(id);
         }
