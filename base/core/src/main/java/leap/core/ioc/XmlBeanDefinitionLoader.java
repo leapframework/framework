@@ -1170,7 +1170,14 @@ class XmlBeanDefinitionLoader {
 
                 boolean result = EL.test(expression.getValue(vars), true);
 
-                return not ? !result : result;
+                if(not) {
+                    result = !result;
+                }
+
+                if(!result) {
+                    return false;
+                }
+
             } catch (Exception e) {
             	throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
             }
@@ -1178,17 +1185,23 @@ class XmlBeanDefinitionLoader {
 		
 		String className = element.getAttribute(IF_CLASS_PRESENT_ATTRIBUTE);
 		if(!Strings.isEmpty(className)){
-			return Classes.isPresent(className);
+			if(!Classes.isPresent(className)){
+                return false;
+            }
 		}
 
         className = element.getAttribute(IF_CLASS_NOT_PRESENT_ATTRIBUTE);
         if(!Strings.isEmpty(className)) {
-            return !Classes.isPresent(className);
+            if(Classes.isPresent(className)){
+               return false;
+            }
         }
 		
 		boolean ifServletEnvironment = element.getBooleanAttribute(IF_SERVLET_ENVIRONMENT_ATTRIBUTE, false);
 		if(ifServletEnvironment){
-			return container.getAppContext().isServletEnvironment();
+			if(!container.getAppContext().isServletEnvironment()){
+                return false;
+            }
 		}
 		
 		return true;

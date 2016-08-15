@@ -90,7 +90,7 @@
     </bean>
     
     <!-- for mvc -->
-    <beans if-class-present="leap.web.App">
+    <beans if-servlet-environment="true" if-class-present="leap.web.App">
 	    <!-- Assets processors -->
 	    <bean type="leap.htpl.HtplProcessors" class="leap.htpl.DefaultHtplProcessors">
 	        <property name="prefix" value="assets"/>
