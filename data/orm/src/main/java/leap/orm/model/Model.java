@@ -543,7 +543,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	BeanProperty[] props = beanType().getProperties();
     	for(int i=0;i<props.length;i++){
     		BeanProperty p = props[i];
-    		if(p.isField()){
+    		if(p.isField() && p.isReadable()){
     			map.put(p.getName(),p.getValue(this));	
     		}
     	}

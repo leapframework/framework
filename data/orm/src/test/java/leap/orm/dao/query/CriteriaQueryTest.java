@@ -20,6 +20,7 @@ import java.util.List;
 import leap.junit.contexual.Contextual;
 import leap.lang.Confirm;
 import leap.orm.tested.model.file.Directory;
+import leap.orm.tested.model.product.Product;
 import org.junit.Test;
 
 import leap.orm.OrmTestCase;
@@ -147,6 +148,14 @@ public class CriteriaQueryTest extends OrmTestCase {
 		assertEquals(child.getId(), childFromDb.getId());
 		assertEquals(child.getName(), childFromDb.getName());
 		assertEquals(child.getParentId(), childFromDb.getParentId());
+	}
+	@Test
+	public void testNoReadableField(){
+		Product p = new Product();
+		p.setTypeId(1);
+		p.create();
+		p.setTypeId(2);
+		p.update();
 	}
 	
 }
