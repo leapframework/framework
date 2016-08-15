@@ -22,6 +22,7 @@ import java.util.List;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.Builders;
+import leap.lang.exception.ObjectNotFoundException;
 
 public class MApiPathBuilder extends MApiObjectBuilder<MApiPath> {
 	
@@ -44,6 +45,15 @@ public class MApiPathBuilder extends MApiObjectBuilder<MApiPath> {
 	public List<MApiOperationBuilder> getOperations() {
 		return operations;
 	}
+
+    public MApiOperationBuilder getOperation(String method) {
+        for(MApiOperationBuilder op : operations) {
+            if(op.getMethod().name().equalsIgnoreCase(method)) {
+                return op;
+            }
+        }
+        return null;
+    }
 	
 	public MApiPathBuilder addOperation(MApiOperationBuilder operation) {
 		Args.notNull(operation, "operation");

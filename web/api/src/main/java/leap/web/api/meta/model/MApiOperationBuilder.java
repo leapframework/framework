@@ -49,6 +49,15 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	public List<MApiParameterBuilder> getParameters() {
 		return parameters;
 	}
+
+    public MApiParameterBuilder getParameter(String name) {
+        for(MApiParameterBuilder p : parameters) {
+            if(p.getName().equals(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
 	
 	public void addParameter(MApiParameterBuilder p) {
 		parameters.add(p);
