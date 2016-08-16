@@ -232,8 +232,12 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 		if(Boolean.class.equals(cls)){
 			return ((Boolean)value) ? "1" : "0"; 
 		}
-		
-	    return "'" + Converts.toString(value) + "'";
+
+        String s = Converts.toString(value);
+        s = Strings.replace(s, "\r", "\\r");
+        s = Strings.replace(s, "\n", "\\n");
+
+	    return "'" + s + "'";
     }
 	
 	@Override
