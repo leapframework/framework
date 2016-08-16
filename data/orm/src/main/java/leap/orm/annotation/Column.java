@@ -96,4 +96,10 @@ public @interface Column {
 	 * The sort order of column.
 	 */
 	int order() default Integer.MIN_VALUE;
+
+    /**
+     * Sets the serialize format.
+     */
+    String serialize() default "";
+
 }

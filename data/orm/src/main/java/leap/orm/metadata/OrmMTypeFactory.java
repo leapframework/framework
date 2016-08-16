@@ -17,7 +17,6 @@ package leap.orm.metadata;
 
 import leap.core.annotation.Inject;
 import leap.lang.Args;
-import leap.lang.Enums;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.*;
@@ -76,12 +75,12 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 if(fm.isPrimaryKey()) {
                     p.setUserCreatable(false);
                 }else{
-                    p.setUserCreatable(fm.isInsertable());
+                    p.setUserCreatable(fm.isInsert());
                 }
             }
 
             if(null == p.getUserUpdatable()) {
-                p.setUserUpdatable(fm.isUpdatable());
+                p.setUserUpdatable(fm.isUpdate());
             }
 
             if(null == p.getUserSortable()) {

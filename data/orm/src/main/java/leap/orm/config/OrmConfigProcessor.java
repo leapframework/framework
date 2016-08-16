@@ -16,10 +16,11 @@
 package leap.orm.config;
 
 import leap.core.AppClassLoader;
-import leap.core.config.AppConfigContext;
 import leap.core.AppConfigException;
+import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.lang.Strings;
+import leap.lang.jdbc.JdbcTypes;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XmlReader;
 import leap.orm.Orm;
@@ -29,35 +30,36 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 
 	public static final String NAMESPACE_URI = "http://www.leapframework.org/schema/orm/config";
 
-	private static final String CONFIG_ELEMENT       		  = "config";
-	private static final String MODELS_ELEMENT				  = "models";
-	private static final String PACKAGE_ELEMENT			      = "package";
-	private static final String CLASS_ELEMENT			      = "class";
-    private static final String AUTO_GENERATE_COLUMNS         = "auto-generate-columns";
-	private static final String DEFAULT_MAX_RESULTS_ATTRIBUTE = "default-max-results";
-	private static final String NAME_ATTRIBUTE       		  = "name";
-	private static final String DATASOURCE_ATTRIBUTE          = "datasource";
-	
-	@Override
+    private static final String CONFIG                = "config";
+    private static final String MODELS                = "models";
+    private static final String PACKAGE               = "package";
+    private static final String CLASS                 = "class";
+    private static final String NAME                  = "name";
+    private static final String DATASOURCE            = "datasource";
+    private static final String SERIALIZER            = "serializer";
+    private static final String DEFAULT_COLUMN_TYPE   = "default-column-type";
+    private static final String DEFAULT_COLUMN_LENGTH = "default-column-length";
+
+    @Override
     public String getNamespaceURI() {
 	    return NAMESPACE_URI;
     }
 
 	@Override
     public void processElement(AppConfigContext context, XmlReader reader) throws AppConfigException {
-		if(reader.isStartElement(CONFIG_ELEMENT)){
-			processConfig(context, reader);
+		if(reader.isStartElement(CONFIG)){
+			readConfig(context, reader);
 			return;
 		}
 		
-		if(reader.isStartElement(MODELS_ELEMENT)) {
-			processModels(context, reader);
+		if(reader.isStartElement(MODELS)) {
+			readModels(context, reader);
 			return;
 		}
 
 	}
 	
-	protected void processConfig(AppConfigContext context, XmlReader reader) throws AppConfigException {
+	protected void readConfig(AppConfigContext context, XmlReader reader) throws AppConfigException {
         reader.forEachResolvedAttributes((n,v) -> {
             if(!Strings.isEmpty(v)) {
                 String key = OrmConfig.KEY_PREFIX + "." + n.getLocalPart();
@@ -65,17 +67,38 @@ public class OrmConfigProcessor implements AppConfigProcessor {
             }
         });
 
-        reader.nextToEndElement(CONFIG_ELEMENT);
+        while(reader.nextWhileNotEnd(CONFIG)) {
+
+            if(reader.isStartElement(SERIALIZER)) {
+                readSerializer(context, reader);
+                continue;
+            }
+
+        }
 	}
-	
-	protected void processModels(AppConfigContext context, XmlReader reader) throws AppConfigException {
+
+    protected void readSerializer(AppConfigContext context, XmlReader reader) throws AppConfigException {
+        OrmConfigExtension extension = context.getOrCreateExtension(OrmConfigExtension.class);
+
+        String  name                = reader.getRequiredAttribute(NAME);
+        String  defaultColumnType   = reader.getRequiredAttribute(DEFAULT_COLUMN_TYPE);
+        Integer defaultColumnLength = reader.getIntegerAttribute(DEFAULT_COLUMN_LENGTH);
+
+        SerializeConfigImpl sc = new SerializeConfigImpl();
+        sc.setDefaultColumnType(JdbcTypes.forTypeName(defaultColumnType));
+        sc.setDefaultColumnLength(defaultColumnLength);
+
+        extension.addSerializeConfig(name, sc);
+    }
+
+	protected void readModels(AppConfigContext context, XmlReader reader) throws AppConfigException {
 		OrmModelsConfigs mc = context.getExtension(OrmModelsConfigs.class);
 		if(null == mc){
 			mc = new OrmModelsConfigs();
 			context.setExtension(mc);
 		}
 		
-		String datasource = reader.resolveAttribute(DATASOURCE_ATTRIBUTE, Orm.DEFAULT_NAME);
+		String datasource = reader.resolveAttribute(DATASOURCE, Orm.DEFAULT_NAME);
 		
 		OrmModelsConfig models = mc.getModelsConfig(datasource);
 		if(null == models) {
@@ -83,9 +106,9 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			mc.addModels(datasource, models);
 		}
 		
-		while(reader.nextWhileNotEnd(MODELS_ELEMENT)) {
-			if(reader.isStartElement(PACKAGE_ELEMENT)) {
-				String basePackage = reader.resolveAttribute(NAME_ATTRIBUTE);
+		while(reader.nextWhileNotEnd(MODELS)) {
+			if(reader.isStartElement(PACKAGE)) {
+				String basePackage = reader.resolveAttribute(NAME);
 				if(!Strings.isEmpty(basePackage)) {
                     if(!models.removeBasePackage(basePackage)) {
 						context.addResources(Resources.scanPackage(basePackage));
@@ -96,8 +119,8 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 				continue;
 			}
 			
-			if(reader.isStartElement(CLASS_ELEMENT)) {
-				String className = reader.resolveAttribute(NAME_ATTRIBUTE);
+			if(reader.isStartElement(CLASS)) {
+				String className = reader.resolveAttribute(NAME);
 				if(!Strings.isEmpty(className)) {
                     models.removeClassName(className);
 					models.addClassName(className);

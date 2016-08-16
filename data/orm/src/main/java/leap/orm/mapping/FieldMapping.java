@@ -24,6 +24,7 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.expression.Expression;
 import leap.lang.meta.MType;
 import leap.orm.domain.FieldDomain;
+import leap.orm.serialize.FieldSerializer;
 import leap.orm.validation.FieldValidator;
 
 import java.util.List;
@@ -41,8 +42,8 @@ public class FieldMapping {
 	protected final Integer          maxLength;
 	protected final Integer          precision;
 	protected final Integer          scale;
-	protected final boolean          insertable;
-	protected final boolean          updatable;
+	protected final boolean          insert;
+	protected final boolean          update;
     protected final boolean          where;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
@@ -54,6 +55,7 @@ public class FieldMapping {
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
     protected final boolean          sharding;
+    protected final FieldSerializer  serializer;
 
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
@@ -66,7 +68,7 @@ public class FieldMapping {
                         String sequenceName,
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
-                        boolean insertable, boolean updatable,
+                        boolean insert, boolean update,
                         boolean where,
                         Expression defaultValue,
                         Expression insertValue,
@@ -78,7 +80,7 @@ public class FieldMapping {
                         FieldDomain domain,
                         List<FieldValidator> validators,
                         ReservedMetaFieldName reservedMetaFieldName,
-                        boolean sharding) {
+                        boolean sharding, FieldSerializer serializer) {
 		
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
@@ -95,8 +97,8 @@ public class FieldMapping {
 	    this.maxLength		= maxLength;
 	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insertable     = insertable;
-	    this.updatable      = updatable;
+	    this.insert = insert;
+	    this.update = update;
         this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
@@ -108,6 +110,7 @@ public class FieldMapping {
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
         this.sharding       = sharding;
+        this.serializer     = serializer;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -184,12 +187,12 @@ public class FieldMapping {
 		return column;
 	}
 	
-	public boolean isInsertable() {
-		return insertable;
+	public boolean isInsert() {
+		return insert;
 	}
 
-	public boolean isUpdatable() {
-		return updatable;
+	public boolean isUpdate() {
+		return update;
 	}
 
     public boolean isWhere() {
@@ -232,6 +235,10 @@ public class FieldMapping {
 	public FieldValidator[] getValidators() {
 		return validators;
 	}
+
+    public FieldSerializer getSerializer() {
+        return serializer;
+    }
 
     public boolean isSharding() {
         return sharding;

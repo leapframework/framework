@@ -1,11 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://www.leapframework.org/schema/config">
-    
-    <!-- 
-    <permissions>
+<config xmlns="http://www.leapframework.org/schema/orm/config">
 
-        <grant name="*" class="" actions=""></grant>
+    <serializer name="json" default-column-type="varchar" default-column-length="1000"/>
 
-    </permissions>
-    -->
 </config>

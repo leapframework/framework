@@ -16,18 +16,14 @@
 package leap.orm.generator;
 
 import java.sql.Types;
-import java.util.function.Consumer;
 
 import leap.core.annotation.Inject;
-import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.validation.annotations.NotNull;
 import leap.db.Db;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.annotation.Sequence;
-import leap.orm.interceptor.EntityExecutionContext;
-import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.mapping.EntityMappingBuilder;
 import leap.orm.mapping.FieldMappingBuilder;
 import leap.orm.mapping.SequenceMappingBuilder;
@@ -77,7 +73,7 @@ public class AutoIdGenerator implements IdGenerator {
 	
 	protected void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.getColumn().setAutoIncrement(true);
-		fmb.setInsertable(false);  //remove auto increment from insert columns
+		fmb.setInsert(false);  //remove auto increment from insert columns
 		
 		emb.setInsertInterceptor(context1 -> {
             if(!context1.isReturnGeneratedId()){

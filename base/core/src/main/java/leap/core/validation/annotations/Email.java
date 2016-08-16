@@ -30,6 +30,6 @@ import leap.core.validation.validators.EmailValidator;
 @ConstraintAnnotation
 public @interface Email {
 
-	public String message() default "";
+	String message() default "";
 	
 }

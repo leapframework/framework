@@ -15,8 +15,10 @@
  */
 package leap.orm;
 
+import leap.lang.jdbc.JdbcType;
 import leap.lang.naming.NamingStyles;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface OrmConfig {
@@ -78,4 +80,39 @@ public interface OrmConfig {
 	 * @see NamingStyles
 	 */
 	String getColumnNamingStyle();
+
+    /**
+     * Returns the format name of default serializer.
+     */
+    String getDefaultSerializer();
+
+    /**
+     * Required. Returns the default serialize configuration.
+     */
+    SerializeConfig getDefaultSerializeConfig();
+
+    /**
+     * Returns an immutable map contains all the serialize configurations.
+     *
+     * <p/>
+     * The returned key is is the serialize format.
+     */
+    Map<String, SerializeConfig> getSerializeConfigs();
+
+    /**
+     * The serialize config interface.
+     */
+    interface SerializeConfig {
+
+        /**
+         * Required. Returns the default jdbc type of column which use this serialize format.
+         */
+        JdbcType getDefaultColumnType();
+
+        /**
+         * Required. Returns the default length of column which use this serialize format.
+         */
+        Integer getDefaultColumnLength();
+
+    }
 }

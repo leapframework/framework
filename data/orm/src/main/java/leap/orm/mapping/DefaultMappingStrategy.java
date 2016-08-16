@@ -27,6 +27,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.TypeInfo;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.jdbc.JdbcTypes;
@@ -48,6 +49,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.model.ModelField;
+import leap.orm.serialize.FieldSerializer;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -624,12 +626,19 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         if(null == fmb.getDataType()){
             Class<?> javaType = fmb.getJavaType();
             if(null != javaType) {
-                MSimpleType dataType = MSimpleTypes.forClass(javaType);
-                if(null == dataType){
-                    throw new MetadataException("Unsupported java type '" + javaType +
-                            "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+                TypeInfo ti = leap.lang.Types.getTypeInfo(javaType);
+
+                if(ti.isSimpleType()) {
+                    MSimpleType dataType = MSimpleTypes.forClass(javaType);
+                    if(null == dataType){
+                        throw new MetadataException("Unsupported java type '" + javaType +
+                                "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+                    }
+                    fmb.setDataType(dataType);
+                }else{
+                    //Found a serialize field.
+                    String format = fmb.getSerializeFormat();
                 }
-                fmb.setDataType(dataType);
             }
         }
 

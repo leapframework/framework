@@ -39,6 +39,10 @@ import leap.lang.meta.MTypeKind;
 public class Types {
 
 	protected static final Type[] EMPTY_TYPES = new Type[] {};
+
+    public static TypeInfo getTypeInfo(Class<?> type) {
+        return getTypeInfo(type, null);
+    }
 	
 	public static TypeInfo getTypeInfo(Class<?> type,Type genericType) {
 		MTypeKind kind            = null;

@@ -62,7 +62,7 @@ public class MappingTest extends OrmTestCase {
 		assertEquals(101,fm.getColumn().getLength());
 		
 		fm = em.getFieldMapping("test2");
-		assertFalse(fm.isUpdatable());
+		assertFalse(fm.isUpdate());
 	}
 
 	@Test

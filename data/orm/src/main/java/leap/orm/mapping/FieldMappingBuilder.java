@@ -31,6 +31,7 @@ import leap.orm.annotation.Column;
 import leap.orm.domain.FieldDomain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
+import leap.orm.serialize.FieldSerializer;
 import leap.orm.validation.FieldValidator;
 
 import java.lang.annotation.Annotation;
@@ -57,8 +58,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Integer               scale;
     protected String                defaultValue;
     protected Expression            defaultValueExpression;
-    protected Boolean               insertable;
-    protected Boolean               updatable;
+    protected Boolean               insert;
+    protected Boolean               update;
     protected Boolean               where;
     protected Expression            insertValue;
     protected Expression            updateValue;
@@ -72,6 +73,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Integer               sortOrder;
     protected ReservedMetaFieldName reservedMetaFieldName;
     protected boolean               sharding;
+    protected String                serializeFormat;
+    protected FieldSerializer       serializer;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -99,8 +102,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.scale = template.scale;
         this.defaultValue = template.defaultValue;
         this.defaultValueExpression = template.defaultValueExpression;
-        this.insertable = template.insertable;
-        this.updatable = template.updatable;
+        this.insert = template.insert;
+        this.update = template.update;
         this.where = template.where;
         this.insertValue = template.insertValue;
         this.updateValue = template.updateValue;
@@ -153,12 +156,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.defaultValueExpression = fm.defaultValueExpression;
         }
 
-        if(null != fm.insertable) {
-            this.insertable = fm.insertable;
+        if(null != fm.insert) {
+            this.insert = fm.insert;
         }
 
-        if(null != fm.updatable) {
-            this.updatable = fm.updatable;
+        if(null != fm.update) {
+            this.update = fm.update;
         }
 
         if(null != fm.where) {
@@ -505,42 +508,34 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public boolean getInsertable() {
-		return null != insertable && insertable;
-	}
-	
 	public Boolean getInsert(){
-		return insertable;
+		return insert;
 	}
 
-	public FieldMappingBuilder setInsertable(Boolean insertable) {
-		this.insertable = insertable;
+	public FieldMappingBuilder setInsert(Boolean insert) {
+		this.insert = insert;
 		return this;
 	}
 	
 	public FieldMappingBuilder trySetInsert(Boolean insert){
-		if(null == this.insertable){
-			this.insertable = insert;
+		if(null == this.insert){
+			this.insert = insert;
 		}
 		return this;
 	}
 
-	public boolean getUpdatable() {
-		return null != updatable && updatable;
-	}
-	
 	public Boolean getUpdate(){
-		return updatable;
+		return update;
 	}
 
-	public FieldMappingBuilder setUpdatable(Boolean updatable) {
-		this.updatable = updatable;
+	public FieldMappingBuilder setUpdate(Boolean update) {
+		this.update = update;
 		return this;
 	}
 	
 	public FieldMappingBuilder trySetUpdate(Boolean update){
-		if(null == this.updatable){
-			this.updatable = update;
+		if(null == this.update){
+			this.update = update;
 		}
 		return this;
 	}
@@ -645,6 +640,22 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
+    public String getSerializeFormat() {
+        return serializeFormat;
+    }
+
+    public void setSerializeFormat(String serializeFormat) {
+        this.serializeFormat = serializeFormat;
+    }
+
+    public FieldSerializer getSerializer() {
+        return serializer;
+    }
+
+    public void setSerializer(FieldSerializer serializer) {
+        this.serializer = serializer;
+    }
+
     @Override
     public FieldMapping build() {
 		if(null == javaType){
@@ -655,12 +666,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			nullable = true;
 		}
 		
-		if(null == insertable){
-			insertable = true;
+		if(null == insert){
+			insert = true;
 		}
 		
-		if(null == updatable){
-			updatable = column.isPrimaryKey() ? false : true;
+		if(null == update){
+			update = column.isPrimaryKey() ? false : true;
 		}
 
         if(null == where) {
@@ -681,13 +692,13 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insertable, updatable, where,
+                                insert, update, where,
                                 defaultValueExpression,
                                 insertValue, updateValue, whereValue, whereIf,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                sharding);
+                                sharding, serializer);
     }
 
 	@Override

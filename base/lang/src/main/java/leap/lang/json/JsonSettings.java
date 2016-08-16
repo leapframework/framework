@@ -93,6 +93,14 @@ public class JsonSettings {
 			return this;
 		}
 
+        public Builder ignoreEmpty() {
+            return setIgnoreEmpty(true);
+        }
+
+        public Builder ignoreNull() {
+            return setIgnoreNull(true);
+        }
+
 		public NamingStyle getNamingStyle() {
 			return namingStyle;
 		}

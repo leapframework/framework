@@ -101,4 +101,8 @@
     <!-- sharding -->
     <bean type="leap.orm.sharding.ShardingFactory" class="leap.orm.sharding.DefaultShardingFactory" primary="true"/>
 
+    <!-- serialize -->
+    <bean name="json"
+          type="leap.orm.serialize.FieldSerializer"
+          class="leap.orm.serialize.JsonFieldSerializer" primary="true"/>
 </beans>
