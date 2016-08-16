@@ -25,7 +25,7 @@ public class SerializeModel extends Model {
     protected Integer[] integerArray;
 
     @Column
-    protected Map<String,Object> nestMap;
+    protected Map<String,Object> nestedMap;
 
     @Column
     protected NestedBean nestedBean;
@@ -70,12 +70,12 @@ public class SerializeModel extends Model {
         this.integerArray = integerArray;
     }
 
-    public Map<String, Object> getNestMap() {
-        return nestMap;
+    public Map<String, Object> getNestedMap() {
+        return nestedMap;
     }
 
-    public void setNestMap(Map<String, Object> nestMap) {
-        this.nestMap = nestMap;
+    public void setNestedMap(Map<String, Object> nestedMap) {
+        this.nestedMap = nestedMap;
     }
 
     public NestedBean getNestedBean() {

@@ -42,6 +42,11 @@ public class JsonFieldSerializer implements FieldSerializer,Initializable {
     }
 
     @Override
+    public Object deserialize(FieldMapping fm, Object encoded) {
+        return JSON.decode((String)encoded);
+    }
+
+    @Override
     public Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType) {
         return JSON.decode((String)encoded, type);
     }

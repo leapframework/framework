@@ -30,7 +30,12 @@ public interface FieldSerializer {
     Object trySerialize(FieldMapping fm, Object value);
 
     /**
-     * Deserialize the encoded value to plain value.
+     * Decodes the encoded value to raw value.
+     */
+    Object deserialize(FieldMapping fm, Object encoded);
+
+    /**
+     * Deserialize the encoded value to the value of given type..
      */
     Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType);
 
