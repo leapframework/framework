@@ -16,8 +16,11 @@ public class ShortID {
 
     private static final ShortID INSTANCE = new ShortID.Builder().build();
 
-    private static final String DEFAULT_ALPHABET =
+    public static final String DEFAULT_ALPHABET =
             "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-";
+
+    public static final String DOLLARAT_ALPHABET =
+            "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ$@";
 
     private static final long DEFAULT_REDUCE_TIME = 1403265799803L;
 

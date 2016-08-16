@@ -26,8 +26,8 @@ public class JdbcSqlParameter implements SqlParameter {
 	}
 
 	@Override
-	public Object getValue(SqlContext context, Params parameters) {
-		return parameters.get(index);
+	public SqlValue getValue(SqlContext context, Params parameters) {
+		return SqlValue.of(parameters.get(index));
 	}
 
 	@Override

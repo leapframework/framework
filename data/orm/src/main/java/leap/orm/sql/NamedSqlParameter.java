@@ -36,9 +36,13 @@ public class NamedSqlParameter implements SqlParameter {
 		this.defaultValue = defaultValue;
 	}
 
-	@Override
-	public Object getValue(SqlContext context, Params parameters) {
-		Object v = null;
+    public String getName() {
+        return name;
+    }
+
+    @Override
+	public SqlValue getValue(SqlContext context, Params parameters) {
+		Object v;
 		if(parameters.isIndexed()){
 			v = parameters.get(index);
 		}else{
@@ -47,9 +51,10 @@ public class NamedSqlParameter implements SqlParameter {
 		
 		if(null == v && null != defaultValue) {
 			v = defaultValue.getValue(context, parameters.map());
-		}
-		
-		return v;
+            return SqlValue.generated(v);
+		}else{
+            return SqlValue.of(v);
+        }
 	}
 
 	@Override

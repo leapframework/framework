@@ -143,7 +143,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	}
 	
 	@Instrument
-	public static boolean tryDelete(Object id) throws RecordNotDeletedException{
+	public static boolean tryDelete(Object id){
 		ModelContext context = context();
 		EntityMapping em = context.getEntityMapping();
 		return context.getDao().delete(em, id) > 0;
@@ -188,7 +188,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public static <T extends Model> int deleteAll(Condition<T> condition) {
 		return ((CriteriaQuery<T>)query()).where(condition).delete();
 	}
-	
+
 	/**
 	 * Delete all the records with the given where expression.
 	 */
@@ -465,10 +465,6 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	@Instrument
 	protected static ModelContext context(){
 		return ModelRegistry.getModelContext(getClassName());
-	}
-	
-	protected static ModelFieldValidation validates(String... fields){
-		return new ModelFieldValidation(getClassName(), fields);
 	}
 	
 	@Instrument

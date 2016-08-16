@@ -33,7 +33,7 @@ import java.util.Random;
 public class ShortIDGenerator extends AbstractExpression implements IdGenerator, ValueGenerator,Expression,Initializable {
 
     private Random  random;
-    private String  alphabet;
+    private String  alphabet = ShortID.DOLLARAT_ALPHABET;
     private Long    reduceTime;
     private Integer version;
     private Integer clusterWorkerId;

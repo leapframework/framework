@@ -79,21 +79,13 @@ public class AutoIdGenerator implements IdGenerator {
 		fmb.getColumn().setAutoIncrement(true);
 		fmb.setInsertable(false);  //remove auto increment from insert columns
 		
-		emb.setInsertInterceptor(new EntityExecutionInterceptor() {
-			@Override
-			public PreparedStatementHandler<Db> getPreparedStatementHandler(final EntityExecutionContext context) {
-				if(!context.isReturnGeneratedId()){
-					return null;
-				}
-				
-				return context.getOrmContext().getDb().getDialect().getAutoIncrementIdHandler(new Consumer<Object>() {
-					@Override
-					public void accept(Object input) {
-						context.setGeneratedId(input);
-					}
-				});
-			}
-		});
+		emb.setInsertInterceptor(context1 -> {
+            if(!context1.isReturnGeneratedId()){
+                return null;
+            }
+
+            return context1.getOrmContext().getDb().getDialect().getAutoIncrementIdHandler(input -> context1.setGeneratedId(input));
+        });
 	}
 	
 	protected void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
@@ -106,25 +98,17 @@ public class AutoIdGenerator implements IdGenerator {
 		if(null == context.getMetadata().tryGetSequenceMapping(seq.getName())){
 			context.getMetadata().addSequenceMapping(seq.build());
 		}else{
-			log.info("Sequence '{}' aleady exists, skip adding it into the metadata",seq.getName());
+			log.info("Sequence '{}' already exists, skip adding it into the metadata",seq.getName());
 		}
 		
-		emb.setInsertInterceptor(new EntityExecutionInterceptor() {
-			@Override
-			public PreparedStatementHandler<Db> getPreparedStatementHandler(final EntityExecutionContext context) {
-				if(!context.isReturnGeneratedId()){
-					return null;
-				}
-				return context.getOrmContext().getDb().getDialect()
-							  .getInsertedSequenceValueHandler(fmb.getSequenceName(),
-								   new Consumer<Object>() {
-									@Override
-			                        public void accept(Object input) {
-										context.setGeneratedId(input);
-			                        }
-								});
-			}
-		});
+		emb.setInsertInterceptor(context1 -> {
+            if(!context1.isReturnGeneratedId()){
+                return null;
+            }
+            return context1.getOrmContext().getDb().getDialect()
+                          .getInsertedSequenceValueHandler(fmb.getSequenceName(),
+                                  input -> context1.setGeneratedId(input));
+        });
 	}
 	
 	protected void mappingUUID(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){

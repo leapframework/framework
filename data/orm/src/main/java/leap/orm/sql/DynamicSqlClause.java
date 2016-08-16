@@ -22,12 +22,14 @@ import leap.lang.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.ArrayParams;
+import leap.lang.params.BeanParams;
 import leap.lang.params.EmptyParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.query.QueryContext;
 import leap.orm.sql.Sql.Type;
 import leap.orm.sql.ast.*;
+import leap.orm.value.Entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -257,14 +259,34 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		
 		SqlParameter[] batchParameters = stmt.getBatchParameters();
 		int len = batchParameters.length;
+
+        Boolean writeGeneratedValue = null;
 		
 		for(int i=0;i<batchArgs.length;i++){
-			Params parameters = createParameters(context, params[i]);
+            Object object     = params[i];
+			Params parameters = createParameters(context, object);
 			
 			Object[] args = new Object[len];
 			
 			for(int j=0;j<len;j++) {
-				args[j] = batchParameters[j].getValue(context, parameters);
+                SqlParameter p = batchParameters[j];
+                SqlValue     v = p.getValue(context, parameters);
+
+				args[j] = null == v ? null : v.get();
+
+                if(v.isGenerated()) {
+
+                    if(null == writeGeneratedValue) {
+                        if(parameters instanceof BeanParams || parameters instanceof Entity) {
+                            writeGeneratedValue = true;
+                        }
+                    }
+
+                    if(writeGeneratedValue) {
+                        String name = ((NamedSqlParameter) p).getName();
+                        parameters.set(name, v.get());
+                    }
+                }
 			}
 			
 			batchArgs[i] = args;
