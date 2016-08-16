@@ -5,6 +5,15 @@ public class NestedBean {
     private String name;
     private String value;
 
+    public NestedBean() {
+
+    }
+
+    public NestedBean(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
     public String getName() {
         return name;
     }

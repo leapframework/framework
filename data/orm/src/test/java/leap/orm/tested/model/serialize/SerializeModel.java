@@ -18,12 +18,16 @@ public class SerializeModel extends Model {
     @Column
     protected String[] stringArray;
 
+    @Column
     protected int[] intArray;
 
+    @Column
     protected Integer[] integerArray;
 
+    @Column
     protected Map<String,Object> nestMap;
 
+    @Column
     protected NestedBean nestedBean;
 
     public String getId() {
