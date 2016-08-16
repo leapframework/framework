@@ -187,29 +187,42 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
 			this.fm = fm;
-			
-			if(!Strings.isEmpty(fm.getSequenceName())){
-				//the insertion sql must use $fieldName$
-				entity.set(fm.getFieldName(), db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName()));
-			}else{
-				Expression expression = fm.getInsertValue();
-				if(null != expression){
-					if(null == entity.get(fm.getFieldName())) {
-						Object value = expression.getValue(this, entity);	
-						
-						if(fm.isPrimaryKey()){
-							generatedId = value;
-						}
-						
-						setGeneratedValue(fm, value);
-					}
-				}else if(null == entity.get(fm.getFieldName())){
-					expression = fm.getDefaultValue();
-					if(null != expression){
-						setGeneratedValue(fm,expression.getValue(this,entity));
-					}
-				}
-			}
+
+            Object value = entity.get(fm.getFieldName());
+
+            if(null == value) {
+                if (!Strings.isEmpty(fm.getSequenceName())) {
+                    //the insertion sql must use $fieldName$
+                    value = db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName());
+                    entity.set(fm.getFieldName(), value);
+                } else {
+                    Expression expression = fm.getInsertValue();
+                    if (null != expression) {
+                        value = expression.getValue(this, entity);
+
+                        if (fm.isPrimaryKey()) {
+                            generatedId = value;
+                        }
+
+                        setGeneratedValue(fm, value);
+                    } else {
+                        expression = fm.getDefaultValue();
+
+                        if (null != expression) {
+                            value = expression.getValue(this, entity);
+
+                            setGeneratedValue(fm, value);
+                        }
+                    }
+                }
+            }
+
+            if(null != value && null != fm.getSerializer()) {
+                Object encoded = fm.getSerializer().trySerialize(fm, value);
+                if(encoded != value) {
+                    entity.set(fm.getFieldName(), encoded);
+                }
+            }
 		}
 		this.fm = null;
 	}

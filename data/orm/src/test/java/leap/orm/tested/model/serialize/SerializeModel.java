@@ -15,6 +15,7 @@ public class SerializeModel extends Model {
     @Column
     protected String name;
 
+    @Column
     protected String[] stringArray;
 
     protected int[] intArray;

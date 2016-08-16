@@ -17,6 +17,7 @@ package leap.orm.mapping;
 
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
+import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ioc.AbstractReadonlyBean;
@@ -638,6 +639,26 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
                 }else{
                     //Found a serialize field.
                     String format = fmb.getSerializeFormat();
+                    if(Strings.isEmpty(format)) {
+                        format = context.getConfig().getDefaultSerializer();
+                    }
+
+                    OrmConfig.SerializeConfig sc =
+                            context.getConfig().getSerializeConfig(format);
+
+                    DbColumnBuilder column = fmb.getColumn();
+                    column.trySetTypeCode(sc.getDefaultColumnType().getCode());
+                    column.trySetLength(sc.getDefaultColumnLength());
+
+                    FieldSerializer serializer =
+                            context.getAppContext().getBeanFactory().tryGetBean(FieldSerializer.class, format);
+
+                    if(null == serializer) {
+                        throw new AppConfigException("Bean '" + format + "' of type '" +
+                                                     FieldSerializer.class.getName() + "' must be exists!");
+                    }
+
+                    fmb.setSerializer(serializer);
                 }
             }
         }

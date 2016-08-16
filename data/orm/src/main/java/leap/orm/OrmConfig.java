@@ -15,6 +15,7 @@
  */
 package leap.orm;
 
+import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.jdbc.JdbcType;
 import leap.lang.naming.NamingStyles;
 
@@ -90,6 +91,13 @@ public interface OrmConfig {
      * Required. Returns the default serialize configuration.
      */
     SerializeConfig getDefaultSerializeConfig();
+
+    /**
+     * Returns the {@link SerializeConfig} of the name.
+     *
+     * @throws ObjectNotFoundException if the name not exists.
+     */
+    SerializeConfig getSerializeConfig(String name) throws ObjectNotFoundException;
 
     /**
      * Returns an immutable map contains all the serialize configurations.

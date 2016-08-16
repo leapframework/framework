@@ -164,23 +164,33 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
 			this.fm = fm;
-			
+
 			if(fm.isOptimisticLock()){
-				prepareOptisticLock(fm);
+				prepareOptimisticLock(fm);
 			}else{
-				Expression expression = fm.getUpdateValue();
-				if(null != expression){
-					if(null == entity.get(fm.getFieldName())) {
-						setGeneratedValue(fm,expression.getValue(this, entity));	
-					}
-				}
+                Object value = entity.get(fm.getFieldName());
+
+                if(null == value) {
+                    Expression expression = fm.getUpdateValue();
+                    if (null != expression) {
+                        value = expression.getValue(this, entity);
+                        setGeneratedValue(fm, value);
+                    }
+                }
+
+                if(null != value && null != fm.getSerializer()) {
+                    Object encoded = fm.getSerializer().trySerialize(fm, value);
+                    if(encoded != value) {
+                        entity.set(fm.getFieldName(), encoded);
+                    }
+                }
 			}
 		}
 		
 		this.fm = null;
 	}
 	
-	protected void prepareOptisticLock(FieldMapping fm){
+	protected void prepareOptimisticLock(FieldMapping fm){
 		oldOptimisticLockValue = entity.get(fm.getFieldName());
 		
 		if(null == oldOptimisticLockValue){

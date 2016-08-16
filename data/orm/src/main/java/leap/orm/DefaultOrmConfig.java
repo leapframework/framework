@@ -26,6 +26,7 @@ import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.ioc.PostConfigureBean;
 import leap.lang.New;
+import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.naming.NamingStyles;
 import leap.orm.config.OrmConfigExtension;
 
@@ -136,6 +137,15 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean {
     @Override
     public SerializeConfig getDefaultSerializeConfig() {
         return defaultSerializeConfig;
+    }
+
+    @Override
+    public SerializeConfig getSerializeConfig(String name) throws ObjectNotFoundException {
+        SerializeConfig sc = serializeConfigs.get(name.toLowerCase());
+        if(null == sc) {
+            throw new ObjectNotFoundException("Serializer config of format'" + name + "' not found");
+        }
+        return sc;
     }
 
     @Override

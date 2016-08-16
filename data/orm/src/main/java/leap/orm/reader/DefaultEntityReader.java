@@ -136,9 +136,39 @@ public class DefaultEntityReader implements EntityReader {
 	
 	protected Object readModel(OrmContext context,ResultSet rs,ResultSetMapping rsm,Class<? extends Model> modelClass) throws SQLException {
 		Model model = Reflection.newInstance(modelClass);
-		
-		model.setAll(readMap(context, rs, rsm));
-		
+
+        DbDialect dialect = context.getDb().getDialect();
+
+        BeanType beanType = BeanType.of(model.getClass());
+
+        for(int i=0;i<rsm.getColumnCount();i++){
+            ResultColumnMapping cm = rsm.getColumnMapping(i);
+            FieldMapping  fm = cm.getFieldMapping();
+
+            String name  = cm.getColumnLabel();
+            Object value = dialect.getColumnValue(rs, i+1, cm.getColumnType());
+
+            if(null != fm) {
+                name = fm.getFieldName();
+
+                if(null != value && null != fm.getSerializer()) {
+                    BeanProperty bp;
+
+                    if(modelClass.equals(cm.getEntityMapping().getEntityClass())){
+                        bp = fm.getBeanProperty();
+                    }else{
+                        bp = beanType.tryGetProperty(fm.getFieldName());
+                    }
+
+                    if(null != bp) {
+                        value = fm.getSerializer().deserialize(fm, value, bp.getType(), bp.getGenericType());
+                    }
+                }
+            }
+
+            model.set(name, value);
+        }
+
 		return model;
 	}
 	
@@ -160,7 +190,7 @@ public class DefaultEntityReader implements EntityReader {
 		for(int i=0;i<rsm.getColumnCount();i++){
 			ResultColumnMapping cm = rsm.getColumnMapping(i);
 			FieldMapping  fm = cm.getFieldMapping();
-			BeanProperty  bp = null;
+			BeanProperty  bp;
 			
 			if(null != fm && beanClass.equals(cm.getEntityMapping().getEntityClass())){
 				bp = fm.getBeanProperty();
@@ -173,7 +203,13 @@ public class DefaultEntityReader implements EntityReader {
 			}
 			
 			if(null != bp){
-				bp.setValue(bean, dialect.getColumnValue(rs, i+1,cm.getColumnType()));
+                Object value = dialect.getColumnValue(rs, i+1, cm.getColumnType());
+
+                if(null != value && null != fm && null != fm.getSerializer()) {
+                    value = fm.getSerializer().deserialize(fm, value, bp.getType(), bp.getGenericType());
+                }
+
+				bp.setValue(bean, value);
 			}
 		}
 		
@@ -222,7 +258,7 @@ public class DefaultEntityReader implements EntityReader {
 			beanColumnMappings.put(beanType.getBeanClass(), mappings);
 		}else{
 			Object bp = mappings.get(columnName);
-			if(null != bp){;
+			if(null != bp){
 				if(Null.is(bp)){
 					return null;
 				}

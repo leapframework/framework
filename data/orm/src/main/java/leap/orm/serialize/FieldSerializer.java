@@ -17,16 +17,21 @@ package leap.orm.serialize;
 
 import leap.orm.mapping.FieldMapping;
 
+import java.lang.reflect.Type;
+
 public interface FieldSerializer {
 
     /**
-     * Serialize the plain value to encoded value.
+     * Serialize the value to encoded value.
+     *
+     * <p/>
+     * If the value already serialized, just return it.
      */
-    Object serialize(FieldMapping fm, Object plain);
+    Object trySerialize(FieldMapping fm, Object value);
 
     /**
      * Deserialize the encoded value to plain value.
      */
-    Object deserialize(FieldMapping fm, Object encoded);
+    Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType);
 
 }

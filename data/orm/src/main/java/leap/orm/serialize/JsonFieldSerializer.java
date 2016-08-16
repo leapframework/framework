@@ -20,6 +20,8 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
 import leap.orm.mapping.FieldMapping;
 
+import java.lang.reflect.Type;
+
 public class JsonFieldSerializer implements FieldSerializer,Initializable {
 
     //todo : config json serialize settings.
@@ -35,13 +37,13 @@ public class JsonFieldSerializer implements FieldSerializer,Initializable {
     }
 
     @Override
-    public Object serialize(FieldMapping fm, Object plain) {
+    public Object trySerialize(FieldMapping fm, Object plain) {
         return JSON.createEncoder(plain,settings).encodeToString();
     }
 
     @Override
-    public Object deserialize(FieldMapping fm, Object encoded) {
-        return JSON.decode((String)encoded);
+    public Object deserialize(FieldMapping fm, Object encoded, Class<?> type, Type genericType) {
+        return JSON.decode((String)encoded, type);
     }
 
 }
