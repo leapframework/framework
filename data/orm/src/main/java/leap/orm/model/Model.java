@@ -84,6 +84,31 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 		ModelContext context = context();
 		return ((T)context.getBeanType().newInstance()).id(id);
 	}
+
+    //---id---
+    /**
+     * Returns the next generated id.
+     *
+     * @throws IllegalStateException if not id generator.
+     */
+    @Instrument
+    public static Object nextId() throws IllegalStateException{
+        ModelContext context = context();
+
+        EntityMapping  em   = context.getEntityMapping();
+        FieldMapping[] keys = em.getKeyFieldMappings();
+
+        if(keys.length != 1) {
+            throw new IllegalStateException("Only one key field can generate id");
+        }
+
+        FieldMapping key = keys[0];
+        if(null == key.getInsertValue()) {
+            throw new IllegalStateException("No id generator of key field '" + key.getFieldName() + "'");
+        }
+
+        return key.getInsertValue().getValue();
+    }
 	
 	//---cmd---
 	/**
