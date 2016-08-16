@@ -62,19 +62,22 @@ public class ParamPlaceholder extends NamedParamNode {
 				
 				if(null != fm){
 					if(sql.isInsert() && null != fm.getInsertValue()) {
-						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getInsertValue()));
+						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getInsertValue(), fm));
 						return;
 					}
 					
 					if(sql.isUpdate() && null != fm.getUpdateValue()) {
-						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getUpdateValue()));
+						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getUpdateValue(), fm));
 						return;
 					}
 					
 					if(sql.isInsert() && null != fm.getDefaultValue()) {
-						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getDefaultValue()));
+						stm.addBatchParameter(new NamedSqlParameter(index, name, fm.getDefaultValue(), fm));
 						return;
 					}
+
+                    stm.addBatchParameter(new NamedSqlParameter(index, name, null, fm));
+                    return;
 				}
 			}
 		}

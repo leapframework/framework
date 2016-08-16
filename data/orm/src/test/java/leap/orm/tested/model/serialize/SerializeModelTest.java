@@ -26,19 +26,7 @@ public class SerializeModelTest extends OrmTestCase {
     public void testSimpleCRUD() {
         SerializeModel.deleteAll();
 
-        SerializeModel m = new SerializeModel();
-        m.setName("Hello");
-
-        m.create();
-        m.delete();
-
-        m = new SerializeModel();
-        m.setName("Hello");
-        m.setStringArray(new String[]{"item1", "item2"});
-        m.setIntArray(new int[]{0,1});
-        m.setIntegerArray(new Integer[]{100,200});
-        m.setNestedMap(New.hashMap("a", "b"));
-        m.setNestedBean(new NestedBean("k", "v"));
+        SerializeModel m = newTestModel();
 
         m.create();
         assertFind(m);
@@ -47,6 +35,32 @@ public class SerializeModelTest extends OrmTestCase {
         m.update();
         assertFind(m);
         assertRecord(m);
+    }
+
+    @Test
+    public void testBatch() {
+        SerializeModel.deleteAll();
+
+        SerializeModel m = newTestModel();
+
+        SerializeModel.createAll(new Object[]{m});
+        assertFind(m);
+        assertRecord(m);
+
+        SerializeModel.updateAll(new Object[]{m});
+        assertFind(m);
+        assertRecord(m);
+    }
+
+    private SerializeModel newTestModel() {
+        SerializeModel m = new SerializeModel();
+        m.setName("Hello");
+        m.setStringArray(new String[]{"item1", "item2"});
+        m.setIntArray(new int[]{0,1});
+        m.setIntegerArray(new Integer[]{100,200});
+        m.setNestedMap(New.hashMap("a", "b"));
+        m.setNestedBean(new NestedBean("k", "v"));
+        return m;
     }
 
     private void assertRecord(SerializeModel m) {
