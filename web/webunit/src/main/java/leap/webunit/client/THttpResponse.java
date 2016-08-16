@@ -112,7 +112,7 @@ public interface THttpResponse {
      * Returns the content of response body as {@link JsonValue}.
      */
 	default JsonValue getJson() {
-		return JSON.decodeToJsonValue(getContent());
+		return JSON.parse(getContent());
 	}
 
     /**

@@ -26,7 +26,7 @@ public interface JsonParsable {
      * Parse the json.
      */
     default void parseJson(String json) {
-        parseJson(JSON.decodeToJsonValue(json));
+        parseJson(JSON.parse(json));
     }
 
     /**

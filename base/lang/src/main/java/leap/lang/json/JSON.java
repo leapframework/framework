@@ -24,6 +24,13 @@ import leap.lang.convert.Converts;
 public class JSON {
 	
     private static final JsonDecoder decoder = new JsonDecoder();
+
+    /**
+     * Returns the {@link JsonWriterCreator} for creating a new {@link JsonWriter}.
+     */
+    public static JsonWriterCreator writer() {
+        return new JsonWriterCreatorImpl(new StringBuilder());
+    }
     
     /**
      * Returns the {@link JsonWriterCreator} for creating a new {@link JsonWriter}.
@@ -38,135 +45,158 @@ public class JSON {
     public static JsonWriter createWriter() {
     	return createWriter(new StringBuilder());
     }
-    
+
+    /**
+     * Creates a {@link JsonWriter} use {@link StringBuilder} as output.
+     */
+    public static JsonWriter createWriter(JsonSettings settings) {
+        return writer().setSettings(settings).create();
+    }
+
     /**
      * Creates a {@link JsonWriter} use the given {@link Appendable} as output.
      */
     public static JsonWriter createWriter(Appendable out) {
     	return new JsonWriterCreatorImpl(out).create();
     }
-    
+
     /**
-     * Creates a {@link JsonEncoder} for the given value.
+     * Creates a {@link JsonWriter} use the given {@link Appendable} as output.
      */
-    public static JsonEncoder createEncoder(Object value) {
-    	return new JsonEncoderImpl(value);
+    public static JsonWriter createWriter(Appendable out, JsonSettings settings) {
+        return writer(out).setSettings(settings).create();
     }
     
     /**
-     * Creates a {@link JsonEncoder} for the given value.
-     */
-    public static JsonEncoder createEncoder(Object value, JsonSettings settings) {
-    	return new JsonEncoderImpl(value, settings);
-    }
-    
-    /**
+     * Encodes the value to json string.
+     *
+     * <p/>
      * Same as {@link #encode(Object)}.
      */
     public static String stringify(Object value){
-    	return createEncoder(value).encodeToString();
+    	return createWriter().value(value).toString();
     }
-    
+
+    /**
+     * Encodes the value to json string with the given settings.
+     *
+     * <p/>
+     * Same as {@link #encode(Object, JsonSettings)}.
+     */
+    public static String stringify(Object value, JsonSettings settings){
+        return createWriter(settings).value(value).toString();
+    }
+
+    /**
+     * Parse the json string and returns the result as {@link JsonValue}.
+     */
+    public static JsonValue parse(String json) {
+        return JsonValue.of(decode(json));
+    }
+
+    /**
+     * Parse the json string and returns the result as {@link JsonValue}.
+     */
+    public static JsonValue parse(Reader json) {
+        return JsonValue.of(decode(json));
+    }
+
     /**
      * Encodes the value to json string.
      */
     public static String encode(Object value){
-        return createEncoder(value).encodeToString();
-    }
-    
-    /**
-     * Encodes the value to json string.
-     */
-    public static String encode(Object value,JsonSettings settings){
-        return createEncoder(value, settings).encodeToString();
-    }
-    
-    /**
-     * Sames as {@link #decode(String)}
-     */
-    public static Object parse(String json) {
-    	return decoder.decode(json);
+        return createWriter().value(value).toString();
     }
 
     /**
-     * Parse the json string and returns the raw value.
+     * Encodes the value to json string with the given settings.
      */
-	public static Object decode(String json){
-		return decoder.decode(json);
+    public static String encode(Object value, JsonSettings settings){
+        return createWriter(settings).value(value).toString();
+    }
+
+    /**
+     * Encodes the value to json string.
+     */
+    public static void encode(Object value, Appendable out){
+        createWriter(out).value(value).toString();
+    }
+
+    /**
+     * Encodes the value to json string with the given settings.
+     */
+    public static void encode(Object value, JsonSettings settings, Appendable out){
+        createWriter(out, settings).value(value).toString();
+    }
+    
+    /**
+     * Parse the json string and returns the raw value.
+     *
+     * <p/>
+     * The raw value may be : map, list, null or simple value.
+     */
+	public static <T> T decode(String json){
+		return (T)decoder.decode(json);
 	}
 	
 	/**
 	 * Parse the json string and returns the raw value.
-	 */
-	public static Object decode(Reader json){
-		return decoder.decode(json);
+     *
+     * <p/>
+     * The raw value may be : map, list, null or simple value.
+     */
+	public static <T> T decode(Reader json){
+		return (T)decoder.decode(json);
 	}
-	
-	/**
-	 * Parse the json string and converts the raw value to the target type.
-	 */
-	public static <T> T decode(String json,Class<? extends T> targetType){
-	    return Converts.convert(decoder.decode(json),targetType);
-	}
-	
+
+    /**
+     * Parse the json string and converts the raw value to the target type.
+     */
+    public static <T> T decode(String json,Class<? extends T> targetType){
+        return Converts.convert(decoder.decode(json),targetType);
+    }
+
     /**
      * Parse the json string and converts the raw value to the target type.
      */
     public static <T> T decode(Reader json,Class<? extends T> targetType){
         return Converts.convert(decoder.decode(json),targetType);
     }
-    
-    /**
-     * Parse the json string and returns the wrapped {@link JsonValue}.
-     */
-	public static JsonValue decodeToJsonValue(Reader json) {
-	    return JsonValue.of(decoder.decode(json));
-	}
 
     /**
-     * Parse the json string and returns the wrapped {@link JsonValue}.
+     * Parse the json string and returns the the array.
      */
-	public static JsonValue decodeToJsonValue(String json) {
-		return JsonValue.of(decoder.decode(json));
-	}
-    
-    /**
-     * Parse the json string and returns the result as {@link Map}.
-     * 
-     * @throws IllegalStateException if not an json object(map).
-     */
-    public static Map<String,Object> decodeToMap(String json) throws IllegalStateException{
-        return decodeToJsonValue(json).asMap();
+    public static Map<String,Object> decodeMap(String json){
+        return parse(json).asMap();
     }
-    
+
     /**
-     * Parse the json string and returns the result as object array.
-     * 
-     * @throws IllegalStateException if not an object array.
+     * Parse the json string and returns the the array.
      */
-    public static Object[] decodeToArray(String json) throws IllegalStateException {
-        return decodeToJsonValue(json).asArray();
+    public static Object[] decodeArray(String json){
+        return parse(json).asArray();
     }
-    
+
     /**
-     * Parse the json string and converts the object array to the array of given component type.
-     * 
-     * @throws IllegalStateException if not an object array.
+     * Parse the json string and returns the the array.
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T[] decodeToArray(String json,Class<T> componentType){
+    public static Object[] decodeArray(Reader json){
+        return parse(json).asArray();
+    }
+
+    /**
+     * Parse the json string and returns the the array of the given type.
+     */
+    public static <T> T[] decodeArray(String json, Class<T> componentType){
         T[] a = (T[])Array.newInstance(componentType, 0);
-        return (T[])Converts.convert(decodeToJsonValue(json).asArray(),a.getClass());
+        return (T[])Converts.convert(parse(json).asArray(), a.getClass());
     }
-    
+
     /**
-     * Parse the json string and converts the object array to the array of given component type.
-     * 
-     * @throws IllegalStateException if not an object array.
+     * Parse the json string and returns the the array of the given type.
      */
-    @SuppressWarnings("unchecked")
-    public static <T> T[] decodeToArray(Reader json,Class<T> componentType){
+    public static <T> T[] decodeArray(Reader json, Class<T> componentType){
         T[] a = (T[])Array.newInstance(componentType, 0);
-        return (T[])Converts.convert(decodeToJsonValue(json).asArray(),a.getClass());
+        return (T[])Converts.convert(parse(json).asArray(), a.getClass());
     }
 }

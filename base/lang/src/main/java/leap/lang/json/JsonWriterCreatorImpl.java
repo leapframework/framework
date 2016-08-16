@@ -90,7 +90,26 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
 		return this;
 	}
 
-	@Override
+    @Override
+    public JsonWriterCreator setSettings(JsonSettings settings) {
+        if(null != settings) {
+
+            this.ignoreNull = settings.isIgnoreNull();
+
+            if (settings.isIgnoreEmpty()) {
+                this.ignoreEmptyArray = true;
+                this.ignoreEmptyString = true;
+            }
+
+            this.namingStyle = settings.getNamingStyle();
+            this.keyQuoted = settings.isKeyQuoted();
+
+        }
+
+        return this;
+    }
+
+    @Override
 	public JsonWriter create() {
 		if(null == namingStyle){
 			namingStyle = NamingStyles.RAW;

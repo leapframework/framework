@@ -19,6 +19,13 @@ import leap.lang.Creatable;
 import leap.lang.naming.NamingStyle;
 
 public interface JsonWriterCreator extends Creatable<JsonWriter>{
+
+    default JsonWriterCreator maxIgnore() {
+        setIgnoreNull(true);
+        setIgnoreEmptyString(true);
+        setIgnoreEmptyArray(true);
+        return setIgnoreFalse(true);
+    }
 	
 	JsonWriterCreator setDetectCyclicReferences(boolean detectCyclicReferences);
 	
@@ -37,12 +44,7 @@ public interface JsonWriterCreator extends Creatable<JsonWriter>{
 	JsonWriterCreator setMaxDepth(int depth);
 	
 	JsonWriterCreator setNamingStyle(NamingStyle namingStyle);
-	
-	default JsonWriterCreator maxIgnore() {
-		setIgnoreNull(true);
-		setIgnoreEmptyString(true);
-		setIgnoreEmptyArray(true);
-		return setIgnoreFalse(true);
-	}
+
+    JsonWriterCreator setSettings(JsonSettings settings);
 
 }

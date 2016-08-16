@@ -40,7 +40,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
         InputStreamReader reader = null;
         try{
             reader = resource.getInputStreamReader();
-            JsonValue json = JSON.decodeToJsonValue(reader);
+            JsonValue json = JSON.parse(reader);
             
             assertTrue(json.isArray());
             
@@ -112,7 +112,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
                 try{
                     reader = new InputStreamReader(stream);
                     
-                    JsonValue json = JSON.decodeToJsonValue(reader);
+                    JsonValue json = JSON.parse(reader);
                     
                     assertNotNull(json);
                     
@@ -120,7 +120,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
                     
                     assertNotNull(string);
                     
-                    json = JSON.decodeToJsonValue(string);
+                    json = JSON.parse(string);
                     
                     assertNotNull(json);
                 }finally{
@@ -141,7 +141,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     	
     	String json = JSON.encode(beans);
     	
-    	Bean[] decoded = JSON.decodeToArray(json, Bean.class);
+    	Bean[] decoded = JSON.decodeArray(json, Bean.class);
     	
     	assertEquals(2, decoded.length);
     	
@@ -152,7 +152,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     
     @Test
     public void testDecode1(){
-    	JSON.decodeToJsonValue("[{ id : \"\", fields:[{ id:\"\",attrs:{}}]}]");
+    	JSON.parse("[{ id : \"\", fields:[{ id:\"\",attrs:{}}]}]");
     }
     
     @Test

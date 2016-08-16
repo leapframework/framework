@@ -19,6 +19,8 @@ package leap.lang.json;
 import leap.lang.Beans;
 import leap.lang.Enums;
 import leap.lang.Strings;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
@@ -774,8 +776,53 @@ public class JsonWriterImpl implements JsonWriter {
 		if(null == bean) {
 			return null_();
 		}else{
-			return map(Beans.toMap(bean));
+            startObject();
+
+            try {
+                BeanType beanType = BeanType.of(bean.getClass());
+
+                for(BeanProperty prop : beanType.getProperties()){
+                    if(prop.isTransient()){
+                        continue;
+                    }
+
+                    if(!prop.isReadable() || !prop.isField()){
+                        continue;
+                    }
+
+                    JsonField jsonField = prop.getAnnotation(JsonField.class);
+
+                    if(null != jsonField || !prop.isAnnotationPresent(JsonIgnore.class)){
+                        String propName = prop.getName();
+
+                        JsonName named = prop.getAnnotation(JsonName.class);
+
+                        if(null != named){
+                            propName = named.value();
+                        }
+
+                        Object propValue = prop.getValue(bean);
+
+                        if(null == propValue && ignoreNull){
+                            continue;
+                        }
+
+                        if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
+                            continue;
+                        }
+
+                        keyUseNamingStyle(propName).value(propValue);
+                    }
+                }
+            } catch (JsonException e){
+                throw e;
+            } catch (Exception e) {
+                throw new JsonException("Error writing json value : " + bean.getClass().getName(), e);
+            }
+
+            return endObject();
 		}
+
     }
 
 	public JsonWriter separator() {

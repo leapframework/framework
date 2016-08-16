@@ -38,7 +38,7 @@ public class JsonFieldSerializer implements FieldSerializer,Initializable {
 
     @Override
     public Object trySerialize(FieldMapping fm, Object plain) {
-        return JSON.createEncoder(plain,settings).encodeToString();
+        return JSON.encode(plain,settings);
     }
 
     @Override

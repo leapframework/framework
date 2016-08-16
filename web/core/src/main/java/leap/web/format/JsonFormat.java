@@ -58,16 +58,16 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 
 	@Override
     public Object readRequestBody(Request request) throws IOException, IllegalStateException {
-		JsonValue jsonObject = null;
+		JsonValue jsonObject;
 		try {
             if(log.isTraceEnabled()) {
                 String json = IO.readString(request.getReader());
 
                 log.trace("Json request body : \n{}", json);
 
-                jsonObject = leap.lang.json.JSON.decodeToJsonValue(json);
+                jsonObject = leap.lang.json.JSON.parse(json);
             }else{
-                jsonObject = leap.lang.json.JSON.decodeToJsonValue(request.getReader());
+                jsonObject = leap.lang.json.JSON.parse(request.getReader());
             }
         } catch (Exception e) {
         	throw new InvalidFormatContentException("Error reading 'json' request body, " + e.getMessage(), e);

@@ -60,13 +60,13 @@ public class JsonFormatWriter implements FormatWriter {
 
         if(log.isTraceEnabled()) {
 
-            String json = JSON.createEncoder(value, settings).encodeToString();
+            String json = JSON.encode(value, settings);
 
             log.trace("json output -> \n{}", json);
 
             out.write(json);
         }else{
-            JSON.createEncoder(value, settings).encode(out);
+            JSON.encode(value, settings, out);
         }
     }
 

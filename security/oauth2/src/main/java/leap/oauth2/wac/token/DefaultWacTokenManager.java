@@ -52,7 +52,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
         
         HttpResponse resp = req.post();
         if(resp.isOk()) {
-            Map<String, Object> map = JSON.decodeToMap(resp.getString());
+            Map<String, Object> map = JSON.decode(resp.getString());
 
             if(!map.containsKey("error")) {
                 SimpleWacAccessToken at = new SimpleWacAccessToken();
@@ -101,7 +101,7 @@ public class DefaultWacTokenManager implements WacTokenManager {
         if(resp.isOk()) {
             String content = resp.getString();
 
-            Map<String, Object> map = JSON.decodeToMap(content);
+            Map<String, Object> map = JSON.decode(content);
 
             if(!map.containsKey("error")) {
                 SimpleWacAccessToken at = new SimpleWacAccessToken();
