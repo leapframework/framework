@@ -20,6 +20,7 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.db.Db;
+import leap.db.model.DbSchemaBuilder;
 import leap.lang.Args;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -93,10 +94,15 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
 
 		//create default sql commands for all entities.
+        DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
 		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
 		    tryCreateDefaultSqlCommands(loadingContext, em);
-            tryCreateTable(loadingContext, em);
+            tryCreateTable(loadingContext, em, schema);
 		}
+
+        if(!schema.getTables().isEmpty()) {
+            context.getDb().cmdCreateSchema(schema.build()).execute();
+        }
 
         //preparing sql commands.
         for(SqlCommand command : context.getMetadata().getSqlCommandSnapshotList()) {
@@ -116,11 +122,11 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         tryCreateCountCommand(context, em);
     }
 
-    protected void tryCreateTable(MetadataContext context, EntityMapping em) {
+    protected void tryCreateTable(MetadataContext context, EntityMapping em, DbSchemaBuilder schema) {
         if(em.isAutoCreateTable() || context.getConfig().isAutoCreateTables()) {
             if(!context.getDb().checkTableExists(em.getTable())){
-                log.info("Auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
-                context.getDb().cmdCreateTable(em.getTable()).execute();
+                log.info("Will auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
+                schema.addTable(em.getTable());
             }
         }
     }
