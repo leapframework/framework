@@ -274,16 +274,22 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mm.setTitle(model.getString(TITLE));
         mm.setSummary(model.getString(SUMMARY));
         mm.setDescription(model.getString(DESCRIPTION));
-        mm.setType(readComplexType(name, model));
 
         Map<String,Object> properties = model.getMap(PROPERTIES);
         if(null != properties) {
-            properties.forEach((propName, propMap) -> {
-                mm.addProperty(readProperty(propName, (Map<String,Object>)propMap));
-            });
+            List<MApiPropertyBuilder> list = readProperties(properties);
+            list.forEach(mm::addProperty);
         }
 
         return mm;
+    }
+
+    public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties) {
+        List<MApiPropertyBuilder> list = new ArrayList<>();
+        properties.forEach((propName, propMap) -> {
+            list.add(readProperty(propName, (Map<String,Object>)propMap));
+        });
+        return list;
     }
 
     public MApiPropertyBuilder readProperty(String name, Map<String,Object> map) {
@@ -386,19 +392,19 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
     }
 
-    protected MComplexType readComplexType(String name, JsonObject model) {
-        MComplexTypeBuilder ct = new MComplexTypeBuilder();
-        ct.setName(name);
-
-        Map<String,Object> properties = model.getMap(PROPERTIES);
-        if(null != properties) {
-            properties.forEach((propName, propMap) -> {
-                ct.addProperty(readComplexTypeProperty(propName, (Map<String,Object>)propMap));
-            });
-        }
-
-        return ct.build();
-    }
+//    protected MComplexType readComplexType(String name, JsonObject model) {
+//        MComplexTypeBuilder ct = new MComplexTypeBuilder();
+//        ct.setName(name);
+//
+//        Map<String,Object> properties = model.getMap(PROPERTIES);
+//        if(null != properties) {
+//            properties.forEach((propName, propMap) -> {
+//                ct.addProperty(readComplexTypeProperty(propName, (Map<String,Object>)propMap));
+//            });
+//        }
+//
+//        return ct.build();
+//    }
 
     protected MProperty readComplexTypeProperty(String name, Map<String,Object> map) {
         MPropertyBuilder mp = new MPropertyBuilder();

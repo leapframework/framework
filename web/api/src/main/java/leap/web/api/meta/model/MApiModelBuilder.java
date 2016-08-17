@@ -45,14 +45,6 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         }
 	}
 
-	public MComplexType getType() {
-		return type;
-	}
-
-	public void setType(MComplexType type) {
-        this.type = type;
-	}
-
     public Class<?> getJavaType() {
         return javaType;
     }
@@ -71,7 +63,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
 	@Override
     public MApiModel build() {
-	    return new MApiModel(name, title, summary, description, type, javaType,
+	    return new MApiModel(name, title, summary, description, javaType,
 	    					Builders.buildArray(properties, new MApiProperty[properties.size()]), attrs);
     }
 	

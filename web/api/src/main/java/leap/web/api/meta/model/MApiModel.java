@@ -23,24 +23,20 @@ import java.util.Map;
 
 public class MApiModel extends MApiNamedWithDesc {
 	
-	protected final MComplexType   type;
     protected final Class<?>       javaType;
 	protected final MApiProperty[] properties;
 	
 	public MApiModel(String name, String title, String summary, String description,
-                     MComplexType type, Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
+                     Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
 	    super(name, title, summary, description, attrs);
 	    
-	    Args.notNull(type, "type");
-	    this.type       = type;
         this.javaType   = javaType;
 	    this.properties = properties;
     }
 
-	public MComplexType getType() {
-		return type;
-	}
-
+    /**
+     * Optional.
+     */
     public Class<?> getJavaType() {
         return javaType;
     }
