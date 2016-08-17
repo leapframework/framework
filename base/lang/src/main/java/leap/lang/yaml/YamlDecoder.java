@@ -15,7 +15,6 @@
  */
 package leap.lang.yaml;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,12 +28,12 @@ class YamlDecoder {
 	private EventType	 type;
 	private List<Object> values = new ArrayList<Object>();
 	
-	public YamlDecoder(Reader reader) throws IOException {
+	public YamlDecoder(Reader reader) {
 		this.parser = new Parser(reader);
 		this.next();
 	}
 	
-	public YamlValue read() {
+	public Object decode() {
 		if(event == null){
 			throw new IllegalStateException("null event");
 		}
@@ -61,14 +60,14 @@ class YamlDecoder {
 		}while(next());
 		
 		if(values.size() == 0){
-			return YamlValue.NULL;
+			return null;
 		}
 		
 		if(values.size() == 1){
-			return YamlValue.of(values.get(0));
-		}
-		
-		return new YamlCollection(values);
+			return values.get(0);
+		}else{
+            return values;
+        }
 	}
 	
 	private Object readValue() {

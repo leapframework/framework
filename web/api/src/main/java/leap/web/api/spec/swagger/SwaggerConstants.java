@@ -25,7 +25,7 @@ public class SwaggerConstants {
     public static final String DESCRIPTION           = "description";
     public static final String OPERATION_ID          = "operationId";
     public static final String TERMS_OF_SERVICE      = "termsOfService";
-    public static final String CONCAT                = "concat";
+    public static final String CONTACT               = "contact";
     public static final String LICENSE               = "license";
     public static final String VERSION               = "version";
     public static final String HOST                  = "host";
@@ -54,8 +54,9 @@ public class SwaggerConstants {
     public static final String REF                   = "$ref";
     public static final String OBJECT                = "object";
     public static final String FILE                  = "file";
-    public static final String PROPETIES             = "properties";
+    public static final String PROPERTIES            = "properties";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
+    public static final String DEPRECATED            = "deprecated";
 
     //oauth2
 	public static final String OAUTH2               = "oauth2";

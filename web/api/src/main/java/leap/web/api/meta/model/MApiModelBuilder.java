@@ -33,7 +33,16 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     }
 
 	public MApiModelBuilder(MComplexType type) {
-		this.setType(type);
+        this.type = type;
+        this.name  = type.getName();
+        this.title = type.getTitle();
+        this.summary = type.getSummary();
+        this.description = type.getDescription();
+
+        this.properties.clear();
+        for(MProperty mp : type.getProperties()) {
+            addProperty(new MApiPropertyBuilder(mp));
+        }
 	}
 
 	public MComplexType getType() {
@@ -41,16 +50,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 	}
 
 	public void setType(MComplexType type) {
-		this.type = type;
-		this.name  = type.getName();
-		this.title = type.getTitle();
-		this.summary = type.getSummary();
-		this.description = type.getDescription();
-		
-		this.properties.clear();
-		for(MProperty mp : type.getProperties()) {
-			addProperty(new MApiPropertyBuilder(mp));
-		}
+        this.type = type;
 	}
 
     public Class<?> getJavaType() {

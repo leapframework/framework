@@ -162,7 +162,7 @@ public class HTTP {
     /**
      * Enumeration of HTTP method.
      */
-	public static enum Method {
+	public enum Method {
 		NONE,
 
 		GET,

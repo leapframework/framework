@@ -15,34 +15,47 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.Map;
 
-public class MApiConcat extends MApiObject {
-
-	protected final String name;
-	protected final String url;
-	protected final String email;
+public class MApiContactBuilder extends MApiObjectBuilder<MApiContact> {
 	
-	public MApiConcat(String name, String url, String email) {
-		this(name, url, email, null);
+	protected String name;
+	protected String url;
+	protected String email;
+
+	public MApiContactBuilder() {
+		
 	}
 	
-	public MApiConcat(String name, String url, String email, Map<String, Object> attrs) {
-	    super(attrs);
-	    this.name = name;
-	    this.url = url;
-	    this.email = email;
-    }
-
 	public String getName() {
 		return name;
+	}
+
+	public MApiContactBuilder setName(String name) {
+		this.name = name;
+		return this;
 	}
 
 	public String getUrl() {
 		return url;
 	}
 
+	public MApiContactBuilder setUrl(String url) {
+		this.url = url;
+		return this;
+	}
+
 	public String getEmail() {
 		return email;
 	}
+
+	public MApiContactBuilder setEmail(String email) {
+		this.email = email;
+		return this;
+	}
+
+	@Override
+    public MApiContact build() {
+	    return new MApiContact(name, url, email, attrs);
+    }
+
 }

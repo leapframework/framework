@@ -26,11 +26,11 @@ import leap.web.api.meta.model.*;
  */
 public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	
-    protected String            basePath;
-    protected String            termsOfService;
-    protected MApiConcatBuilder concat;
-    protected String            version;
-    protected String            host;
+    protected String             basePath;
+    protected String             termsOfService;
+    protected MApiContactBuilder contact;
+    protected String             version;
+    protected String             host;
     protected Set<String>                   protocols    = new LinkedHashSet<>();
     protected Set<String>                   consumes     = new LinkedHashSet<>();
     protected Set<String>                   produces     = new LinkedHashSet<>();
@@ -62,12 +62,12 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		this.termsOfService = termsOfService;
 	}
 
-	public MApiConcatBuilder getConcat() {
-		return concat;
+	public MApiContactBuilder getContact() {
+		return contact;
 	}
 
-	public void setConcat(MApiConcatBuilder concat) {
-		this.concat = concat;
+	public void setContact(MApiContactBuilder contact) {
+		this.contact = contact;
 	}
 
 	public String getVersion() {
@@ -184,7 +184,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     @Override
     public ApiMetadata build() {
         return new ApiMetadata(name, title, summary, description,
-        					termsOfService, null == concat ? null : concat.build(), 
+        					termsOfService, null == contact ? null : contact.build(),
         					version, host, basePath,
         					protocols.toArray(Arrays2.EMPTY_STRING_ARRAY), 
         					consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 

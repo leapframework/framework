@@ -20,6 +20,10 @@
           type="leap.web.api.spec.ApiSpecWriter"
           class="leap.web.api.spec.swagger.SwaggerJsonWriter" primary="true"/>
 
+    <bean name="swagger"
+          type="leap.web.api.spec.ApiSpecReader"
+          class="leap.web.api.spec.swagger.SwaggerSpecReader" primary="true"/>
+
     <!-- built-in oauth2 processor : only the oauth2 module exists -->
     <beans if-class-present="leap.oauth2.OAuth2Constants">
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuthConfigProcessor"/>

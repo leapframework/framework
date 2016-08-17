@@ -64,9 +64,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.property(INFO, () -> {
 			w.startObject()
 			 .property(TITLE, m.getTitle())
-			 .property(DESCRIPTION, nullToEmpty(m.descOrSummary()))
+             .propertyOptional(SUMMARY, m.getSummary())
+			 .property(DESCRIPTION, nullToEmpty(m.getDescription()))
 			 .propertyOptional(TERMS_OF_SERVICE, m.getTermsOfService())
-			 .propertyOptional(CONCAT, m.getConcat())
+			 .propertyOptional(CONTACT, m.getConcat())
 			 .propertyOptional(VERSION, m.getVersion())
 			 .endObject();
 		});
@@ -147,8 +148,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	
 	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
-		
-		w.property(DESCRIPTION, nullToEmpty(o.descOrSummary()));
+
+        w.propertyOptional(SUMMARY, o.getSummary());
+		w.property(DESCRIPTION, nullToEmpty(o.getDescription()));
 
         w.property(OPERATION_ID, o.getName()); //todo : unique id ?
 		
@@ -183,7 +185,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.startObject();
 		
 		w.property(NAME, p.getName())
-         .property(DESCRIPTION, nullToEmpty(p.descOrSummary()))
+         .propertyOptional(SUMMARY, p.getSummary())
+         .property(DESCRIPTION, nullToEmpty(p.getDescription()))
          .property(IN, SwaggerMappings.in(p.getLocation()))
          .propertyOptional(REQUIRED, p.getRequired());
 
@@ -217,7 +220,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writeResponse(WriteContext context, ApiMetadata m, JsonWriter w, MApiResponse r) {
 		w.startObject();
 
-		w.property(DESCRIPTION, nullToEmpty(r.descOrSummary()));
+        w.propertyOptional(SUMMARY, r.getSummary());
+		w.property(DESCRIPTION, nullToEmpty(r.getDescription()));
 		
 		MType type = r.getType();
 		if(null != type && !type.isVoidType()) {
@@ -320,7 +324,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         w.property(TYPE, OBJECT);
 
-		w.property(PROPETIES, () -> {
+		w.property(PROPERTIES, () -> {
 			w.startObject();
 			
 			for(MApiProperty p : model.getProperties()) {

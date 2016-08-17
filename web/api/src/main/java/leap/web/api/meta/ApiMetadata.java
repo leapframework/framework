@@ -18,7 +18,6 @@ package leap.web.api.meta;
 import java.util.Collections;
 import java.util.Map;
 
-import leap.lang.New;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.meta.model.*;
 
@@ -28,7 +27,7 @@ import leap.web.api.meta.model.*;
 public class ApiMetadata extends MApiNamedWithDesc {
 	
 	protected final String                termsOfService;
-	protected final MApiConcat            concat;
+	protected final MApiContact           concat;
 	protected final String                version;
 	protected final String                host;
 	protected final String                basePath;
@@ -40,7 +39,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
 	protected final MApiSecurityDef[]     securityDefs;
 
 	public ApiMetadata(String name, String title, String summary, String description,
-                       String termsOfService, MApiConcat concat, String version,
+                       String termsOfService, MApiContact concat, String version,
                        String host, String basePath, String[] protocols, String[] consumes, String[] produces,
                        Map<String, MApiPath> paths,
                        Map<String, MApiModel> models,
@@ -70,7 +69,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
 	/**
 	 * The contact information for the exposed API.
 	 */
-	public MApiConcat getConcat() {
+	public MApiContact getConcat() {
 		return concat;
 	}
 	
