@@ -19,12 +19,16 @@
 package leap.orm.tested.model.api;
 
 import leap.orm.OrmTestCase;
+import leap.orm.mapping.EntityMapping;
 import org.junit.Test;
 
 public class ApiTest extends OrmTestCase {
 
     @Test
     public void testApiOperationQuery() {
+        EntityMapping em = ApiOperation.metamodel();
+        assertEquals(11, em.getFieldMappings().length);
+
         ApiOperation.where("pathId = ?", "not_exists").list();
     }
 

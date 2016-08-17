@@ -703,7 +703,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 
 	@Override
     public String toString() {
-	    return new ToStringBuilder(this).append("fieldName", fieldName).toString();
+	    return this.getClass().getSimpleName() + "[field=" + fieldName + "]";
     }
 	
 }

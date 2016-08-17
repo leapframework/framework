@@ -20,6 +20,7 @@ import java.util.List;
 import leap.db.model.DbForeignKeyBuilder;
 import leap.db.model.DbForeignKeyColumn;
 import leap.lang.Strings;
+import leap.lang.beans.BeanProperty;
 import leap.orm.metadata.MetadataException;
 import leap.orm.naming.NamingStrategy;
 
@@ -210,17 +211,44 @@ public class RelationMapper implements Mapper {
 	protected void createManyToOneJoinFields(MappingConfigContext context,
 											 EntityMappingBuilder emb, EntityMappingBuilder targetEmb, 
 											 List<FieldMappingBuilder> foreignKeyFields, RelationMappingBuilder rmb) {
-		
-		NamingStrategy ns = context.getNamingStrategy();
-		
-		for(FieldMappingBuilder referencedField : foreignKeyFields) {
-			JoinFieldMappingBuilder jfmb = new JoinFieldMappingBuilder();
-			
-			jfmb.setLocalFieldName(ns.getLocalFieldName(targetEmb.getEntityName(), referencedField.getFieldName()));
-			jfmb.setReferencedFieldName(referencedField.getFieldName());
-			
-			rmb.addJoinField(jfmb);
-		}
+
+
+        if(null != rmb.getBeanProperty()) {
+            BeanProperty bp = rmb.getBeanProperty();
+
+            for(FieldMappingBuilder fmb : emb.getFieldMappings()) {
+
+                if(fmb.getBeanProperty() == bp) {
+
+                    if(foreignKeyFields.size() != 1) {
+                        throw new MappingConfigException("The key fields of referenced entity '" +
+                                                         targetEmb.getEntityName() + "' must be one!");
+                    }
+
+                    FieldMappingBuilder referencedField = foreignKeyFields.get(0);
+
+                    JoinFieldMappingBuilder jfmb = new JoinFieldMappingBuilder();
+                    jfmb.setLocalFieldName(fmb.getFieldName());
+                    jfmb.setReferencedFieldName(referencedField.getFieldName());
+
+                    rmb.addJoinField(jfmb);
+
+                    return;
+                }
+            }
+
+        }
+
+        NamingStrategy ns = context.getNamingStrategy();
+
+        for(FieldMappingBuilder referencedField : foreignKeyFields) {
+            JoinFieldMappingBuilder jfmb = new JoinFieldMappingBuilder();
+
+            jfmb.setLocalFieldName(ns.getLocalFieldName(targetEmb.getEntityName(), referencedField.getFieldName()));
+            jfmb.setReferencedFieldName(referencedField.getFieldName());
+
+            rmb.addJoinField(jfmb);
+        }
 	}
 	
 	protected void createManyToOneLocalField(MappingConfigContext    context,

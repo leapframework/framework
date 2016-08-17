@@ -19,6 +19,7 @@ import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
 import leap.lang.*;
+import leap.lang.tostring.ToStringBuilder;
 import leap.orm.domain.EntityDomain;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -328,7 +329,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	
 	public List<RelationMappingBuilder> getRelationMappings() {
 		if(null == relationMappings){
-			relationMappings = new ArrayList<RelationMappingBuilder>();
+			relationMappings = new ArrayList<>();
 		}
 		return relationMappings;
 	}
@@ -368,6 +369,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     public EntityMappingBuilder setShardingAlgorithm(ShardingAlgorithm shardingAlgorithm) {
         this.shardingAlgorithm = shardingAlgorithm;
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[entity=" + entityName + "]";
     }
 
     @Override

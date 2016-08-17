@@ -441,6 +441,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		lfmb.getColumn().setScale(rfmb.getColumn().getScale());
     }
 
+    /*
     public void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb) {
         DbColumnBuilder c = fmb.getColumn();
         if (Strings.isEmpty(c.getName())) {
@@ -488,6 +489,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
             fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(fmb.getFieldName()));
         }
     }
+    */
 
     @Override
     public void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder f, FieldDomain d) {
