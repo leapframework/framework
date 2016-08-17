@@ -32,6 +32,7 @@ public class RelationMapper implements Mapper {
 		}
 	}
 
+
 	protected void processRelationMappings(MappingConfigContext context,EntityMappingBuilder emb) {
 		for(RelationMappingBuilder rmb : emb.getRelationMappings()){
 			processRelationMapping(context, emb, rmb);

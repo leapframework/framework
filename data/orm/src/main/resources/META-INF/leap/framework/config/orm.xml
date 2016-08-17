@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config xmlns="http://www.leapframework.org/schema/orm/config">
 
-    <serializer name="json" default-column-type="varchar" default-column-length="1000"/>
+    <serializer name="json" default-column-type="varchar" default-column-length="2000"/>
 
 </config>

@@ -48,6 +48,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		if(null != sourceClass){
 			mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
 			mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
+            mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
 			mappingEntityTableByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
@@ -117,6 +118,12 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             emb.setAutoCreateTable(a.autoCreate());
 		}
 	}
+
+    protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,AutoCreateTable a){
+        if(null != a){
+            emb.setAutoCreateTable(a.value());
+        }
+    }
 	
 	protected void mappingEntityTableByDomain(MetadataContext context,EntityMappingBuilder emb,Domain annotation){
 		Domains domains = context.getMetadata().domains();
@@ -335,7 +342,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 	
 	protected void mappingManyToOneByClassAnnotation(MetadataContext context,EntityMappingBuilder emb,ManyToOne[] annotations) {
 		for(ManyToOne a : annotations){
-			if(a.targetEntityType().equals(void.class)){
+            Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
+			if(null == targetEntityType){
 				throw new MappingConfigException("The 'ManyToOne' annotation at class '" + emb.getEntityClass() + "' must defines 'targetEntityType'");
 			}
 			
@@ -344,7 +352,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			rmb.setType(RelationType.MANY_TO_ONE);
 			rmb.setName(a.name());
 			rmb.setOptional(a.optional().getValue());
-			rmb.setTargetEntityType(a.targetEntityType());
+			rmb.setTargetEntityType(targetEntityType);
 			
 			//join fields
 			createManyToOneJoinFields(emb, rmb, a.fields());
@@ -355,7 +363,12 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 	
 	protected void mappingManyToManyByClassAnnotation(MetadataContext context,EntityMappingBuilder emb,ManyToMany[] annotations) {
 		for(ManyToMany a : annotations) {
-			if(a.targetEntityType().equals(void.class)){
+            Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
+            if(null == targetEntityType){
+                throw new MappingConfigException("The 'ManyToOne' annotation at class '" + emb.getEntityClass() + "' must defines 'targetEntityType'");
+            }
+
+			if(null == targetEntityType){
 				throw new MappingConfigException("The 'ManyToMany' annotation at class '" + emb.getEntityClass() + "' must defines 'targetEntityType'");
 			}
 			
@@ -363,7 +376,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			
 			rmb.setType(RelationType.MANY_TO_MANY);
 			rmb.setName(a.name());
-			rmb.setTargetEntityType(a.targetEntityType());
+			rmb.setTargetEntityType(targetEntityType);
 			
 			if(!a.joinEntityType().equals(void.class)){
 				rmb.setJoinEntityType(a.joinEntityType());
@@ -383,12 +396,14 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		rmb.setName(a.name());
 		rmb.setType(RelationType.MANY_TO_ONE);
 		rmb.setOptional(a.optional().getValue());
-		
-		if(a.targetEntityType().equals(void.class)){
-			rmb.setTargetEntityType(bp.getType());	
-		}else{
-			rmb.setTargetEntityType(a.targetEntityType());
-		}
+
+        Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
+
+        if(null == targetEntityType){
+            rmb.setTargetEntityType(bp.getType());
+        }else{
+            rmb.setTargetEntityType(targetEntityType);
+        }
 
 		JoinField[] jfs = bp.getField().getDeclaredAnnotationsByType(JoinField.class);
 		createManyToOneJoinFields(emb, rmb, jfs);
@@ -403,11 +418,13 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		
 		rmb.setName(a.name());
 		rmb.setType(RelationType.MANY_TO_MANY);
+
+        Class<?> targetEntityType = Classes.firstNonVoid(a.target(),a.value());
 		
-		if(a.targetEntityType().equals(void.class)){
+		if(null == targetEntityType){
 			rmb.setTargetEntityType(bp.getType());	
 		}else{
-			rmb.setTargetEntityType(a.targetEntityType());
+			rmb.setTargetEntityType(targetEntityType);
 		}
 		
 		if(!a.joinEntityType().equals(void.class)){

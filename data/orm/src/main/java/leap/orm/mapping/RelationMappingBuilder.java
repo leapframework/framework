@@ -120,7 +120,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 
 	public List<JoinFieldMappingBuilder> getJoinFields() {
 		if(null == joinFields){
-			joinFields = new ArrayList<JoinFieldMappingBuilder>();
+			joinFields = new ArrayList<>();
 		}
 		return joinFields;
 	}

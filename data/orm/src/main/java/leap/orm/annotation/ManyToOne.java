@@ -29,6 +29,11 @@ import leap.lang.enums.Bool;
 @Repeatable(ManyToOnes.class)
 @ARelation
 public @interface ManyToOne {
+
+    /**
+     * Same as {@link #target()}.
+     */
+    Class<?> value() default void.class;
 	
 	/**
 	 * The relation name, i.e. <code>belongTo</code>.
@@ -40,7 +45,7 @@ public @interface ManyToOne {
      *
      * <p> Defaults to the type of the field or property that stores the association.
      */
-	Class<?> targetEntityType() default void.class;
+	Class<?> target() default void.class;
 	
 	/**
 	 * Whether the association is optional. If set to false then a non-null relationship must always exist.

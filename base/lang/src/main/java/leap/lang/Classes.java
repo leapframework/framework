@@ -56,7 +56,24 @@ public class Classes {
 	public static final String CLASS_FILE_SUFFIX          = ".class";
 	public static final char   PACKAGE_SEPARATOR_CHAR     = '.';
 	public static final String PACKAGE_SEPARATOR          = ".";
-	public static final char   INNER_CLASS_SEPARATOR_CHAR = '$';	
+	public static final char   INNER_CLASS_SEPARATOR_CHAR = '$';
+
+    /**
+     * Returns the first class not a void.class or Void.class in the given array.
+     */
+    public static Class<?> firstNonVoid(Class<?>... cs) {
+        if(null == cs) {
+            return null;
+        }
+
+        for(Class<?> c : cs) {
+            if(!(void.class.equals(c) || Void.class.equals(c))) {
+                return c;
+            }
+        }
+
+        return null;
+    }
 	
 	/**
 	 * Returns <code>true</code> if the given class name is present.

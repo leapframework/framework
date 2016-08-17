@@ -19,7 +19,7 @@ import leap.orm.annotation.Entity;
 import leap.orm.annotation.ManyToMany;
 
 @Entity
-@ManyToMany(targetEntityType=RelationEntity2.class)
+@ManyToMany(target =RelationEntity2.class)
 public class RelationEntity1 {
 
 	protected Integer id;

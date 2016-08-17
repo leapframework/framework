@@ -30,7 +30,7 @@ public class ConfigMapper implements Mapper {
     private final ShardingMapper    shardingMapper    = new ShardingMapper();
 
     @Override
-    public void completeMappings(MappingConfigContext context) throws MetadataException {
+    public void postMappings(MappingConfigContext context) throws MetadataException {
         //load mapping configs.
         MappingConfig config = source.load(context.getOrmContext());
 

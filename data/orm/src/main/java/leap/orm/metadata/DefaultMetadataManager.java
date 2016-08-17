@@ -77,8 +77,13 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		
 		//post loading entity mappings
 		for(Mapper loader : mappers){
-			loader.completeMappings(loadingContext);
+			loader.postMappings(loadingContext);
 		}
+
+        //complete loading entity mappings
+        for(Mapper loader : mappers){
+            loader.completeMappings(loadingContext);
+        }
 		
 		loadingContext.buildMappings();
 		
