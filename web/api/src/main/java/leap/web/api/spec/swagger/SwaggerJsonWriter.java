@@ -41,7 +41,7 @@ import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
-    
+
     protected static final String OAUTH             = "oauth";
     protected static final String OAUTH_ACCESS_CODE = "oauth_access_code";
     
@@ -186,17 +186,21 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
          .property(DESCRIPTION, nullToEmpty(p.descOrSummary()))
          .property(IN, SwaggerMappings.in(p.getLocation()))
          .propertyOptional(REQUIRED, p.getRequired());
-		
-		if(Location.BODY == p.getLocation()) {
-			w.property(SCHEMA, () -> {
-				w.startObject();
-				writeParameterType(context, m, w, p);
-				w.endObject();
-			});
-		}else{
-			writeParameterType(context, m, w, p);
-		}
-		
+
+        try{
+            if(Location.BODY == p.getLocation()) {
+                w.property(SCHEMA, () -> {
+                    w.startObject();
+                    writeParameterType(context, m, w, p);
+                    w.endObject();
+                });
+            }else{
+                writeParameterType(context, m, w, p);
+            }
+        }catch(RuntimeException e) {
+            throw e;
+        }
+
 		w.endObject();
 	}
 	
@@ -323,7 +327,11 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 				w.property(propertyName(p.getName()), () -> {
 					w.startObject();
 
-					writeParameterType(context, m, w, p);
+                    try {
+                        writeParameterType(context, m, w, p);
+                    }catch(RuntimeException e) {
+                        throw e;
+                    }
 
                     w.propertyOptional(REQUIRED,     p.getRequired());
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());

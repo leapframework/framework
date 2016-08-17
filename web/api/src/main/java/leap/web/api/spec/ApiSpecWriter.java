@@ -22,7 +22,7 @@ import leap.web.api.meta.ApiMetadata;
 public interface ApiSpecWriter {
 	
 	/**
-	 * Returns the content type of output sepc.
+	 * Returns the content type of output spec.
 	 */
 	String getContentType();
 	

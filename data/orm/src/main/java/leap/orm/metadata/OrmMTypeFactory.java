@@ -60,13 +60,19 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 		for(FieldMapping fm : em.getFieldMappings()) {
 			MPropertyBuilder p = new MPropertyBuilder();
 			p.setName(fm.getFieldName());
-			p.setType(root.getMType(fm.getJavaType()));
+
+            BeanProperty bp = fm.getBeanProperty();
+            if(null != bp) {
+                p.setType(root.getMType(bp.getType(), bp.getGenericType()));
+            }else{
+                p.setType(root.getMType(fm.getJavaType()));
+            }
+
 			p.setLength(fm.getMaxLength());
 			p.setRequired(!fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
 
-            BeanProperty bp = fm.getBeanProperty();
             if(null != bp) {
                 configureProperty(bp, p);
             }

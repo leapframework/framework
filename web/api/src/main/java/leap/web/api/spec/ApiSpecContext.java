@@ -18,6 +18,8 @@ package leap.web.api.spec;
 
 public interface ApiSpecContext {
 
+    ApiSpecContext EMPTY = new ApiSpecContext() {};
+
     /**
      * Optional. the host (name or ip) serving the API.
      */
