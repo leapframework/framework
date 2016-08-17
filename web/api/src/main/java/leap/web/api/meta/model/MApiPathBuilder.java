@@ -26,18 +26,18 @@ import leap.lang.exception.ObjectNotFoundException;
 
 public class MApiPathBuilder extends MApiObjectBuilder<MApiPath> {
 	
-	protected PathTemplate       		pathTemplate;
+	protected String       		         pathTemplate;
 	protected List<MApiOperationBuilder> operations = new ArrayList<MApiOperationBuilder>();
 
 	public MApiPathBuilder() {
 		
 	}
 
-	public PathTemplate getPathTemplate() {
+	public String getPathTemplate() {
 		return pathTemplate;
 	}
 	
-	public MApiPathBuilder setPathTemplate(PathTemplate pathTemplate) {
+	public MApiPathBuilder setPathTemplate(String pathTemplate) {
 		this.pathTemplate = pathTemplate;
 		return this;
 	}

@@ -19,20 +19,23 @@ import java.util.List;
 import java.util.Map;
 
 import leap.core.web.path.PathTemplate;
+import leap.lang.Args;
 
 public class MApiPath extends MApiObject {
 	
-	protected final PathTemplate    pathTemplate;
+	protected final String          pathTemplate;
 	protected final MApiOperation[] operations;
 
-	public MApiPath(PathTemplate pathTemplate, List<MApiOperation> operations, Map<String, Object> attrs) {
+	public MApiPath(String pathTemplate, List<MApiOperation> operations, Map<String, Object> attrs) {
 		super(attrs);
+
+        Args.notEmpty(pathTemplate);
 
 		this.pathTemplate = pathTemplate;
 		this.operations   = operations.toArray(new MApiOperation[]{});
 	}
 
-	public PathTemplate getPathTemplate() {
+	public String getPathTemplate() {
 		return pathTemplate;
 	}
 

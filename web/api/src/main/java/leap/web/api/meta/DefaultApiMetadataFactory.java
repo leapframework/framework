@@ -180,7 +180,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		MApiPathBuilder path = md.getPath(pt.getTemplate());
 		if(null == path) {
 			path = new MApiPathBuilder();
-			path.setPathTemplate(pt);
+			path.setPathTemplate(pt.getTemplate());
 			md.addPath(path);
 		}
 

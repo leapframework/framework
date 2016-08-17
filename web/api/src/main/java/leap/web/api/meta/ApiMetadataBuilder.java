@@ -126,11 +126,11 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		Args.notNull(path, "api path");
 		Args.notEmpty(path.getPathTemplate(), "path template");
 		
-		if(paths.containsKey(path.getPathTemplate().getTemplate())) {
-			throw new ObjectExistsException("The path template '" + path.getPathTemplate().getTemplate() + "' aleady exists");
+		if(paths.containsKey(path.getPathTemplate())) {
+			throw new ObjectExistsException("The path template '" + path.getPathTemplate() + "' aleady exists");
 		}
 		
-		String fullPath = path.getPathTemplate().getTemplate();
+		String fullPath = path.getPathTemplate();
 		String relativePath = Strings.removeStart(fullPath, basePath);
 		
 		paths.put(relativePath, path);
