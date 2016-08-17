@@ -28,9 +28,15 @@ import java.lang.annotation.Target;
 @Target({METHOD, FIELD})
 @Retention(RUNTIME)
 public @interface Id {
-	
+
+    /**
+     * Returns true if generate the value use generator.
+     */
 	boolean generate() default true;
-		
+
+    /**
+     * Specify the generator's name.
+     */
 	String generator() default "auto"; 
 
 }

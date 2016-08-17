@@ -15,6 +15,8 @@
  */
 package leap.orm.generator;
 
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.lang.expression.AbstractExpression;
 import leap.lang.expression.Expression;
 import leap.lang.util.ShortUUID;
@@ -25,9 +27,21 @@ import leap.orm.metadata.MetadataContext;
 import java.util.Map;
 import java.util.UUID;
 
-
+@Configurable(prefix = "orm.short_uuid")
 public class ShortUUIDGenerator extends AbstractExpression implements IdGenerator, ValueGenerator,Expression {
-	
+
+    private int defaultColumnLength = 38;
+
+    @Override
+    public Integer getDefaultColumnLength() {
+        return defaultColumnLength;
+    }
+
+    @ConfigProperty
+    public void setDefaultColumnLength(int defaultColumnLength) {
+        this.defaultColumnLength = defaultColumnLength;
+    }
+
 	@Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
 		fmb.setValueGenerator(this);

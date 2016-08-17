@@ -18,16 +18,30 @@ package leap.orm.generator;
 import java.util.Map;
 import java.util.UUID;
 
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.lang.expression.AbstractExpression;
 import leap.lang.expression.Expression;
 import leap.orm.mapping.EntityMappingBuilder;
 import leap.orm.mapping.FieldMappingBuilder;
 import leap.orm.metadata.MetadataContext;
 
-
+@Configurable(prefix = "orm.uuid")
 public class UUIDGenerator extends AbstractExpression implements IdGenerator, ValueGenerator,Expression {
-	
-	@Override
+
+    private int defaultColumnLength = 38;
+
+    @Override
+    public Integer getDefaultColumnLength() {
+        return defaultColumnLength;
+    }
+
+    @ConfigProperty
+    public void setDefaultColumnLength(int defaultColumnLength) {
+        this.defaultColumnLength = defaultColumnLength;
+    }
+
+    @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
 		fmb.setValueGenerator(this);
     }

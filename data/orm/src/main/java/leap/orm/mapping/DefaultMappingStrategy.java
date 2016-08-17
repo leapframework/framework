@@ -625,6 +625,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         }
         fmb.setFieldName(context.getNamingStrategy().fieldName(fmb.getFieldName()));
 
+        if(null != fmb.getIdGenerator()) {
+            fmb.getColumn().trySetLength(fmb.getIdGenerator().getDefaultColumnLength());
+        }
+
         if(null == fmb.getDataType()){
             Class<?> javaType = fmb.getJavaType();
             if(null != javaType) {
@@ -749,9 +753,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	
 	protected void postMappingFinally(MetadataContext context, EntityMappingBuilder emb){
 		//Auto set id generator
-		List<FieldMappingBuilder> idFieldMappigs = emb.getIdFieldMappings();
-		if(idFieldMappigs.size() == 1){
-			FieldMappingBuilder fmb = idFieldMappigs.get(0);
+		List<FieldMappingBuilder> idFieldMappings = emb.getIdFieldMappings();
+		if(idFieldMappings.size() == 1){
+			FieldMappingBuilder fmb = idFieldMappings.get(0);
 			
 			if(fmb.getIdGenerator() == null){
 				fmb.setIdGenerator(defaultIdGenerator);

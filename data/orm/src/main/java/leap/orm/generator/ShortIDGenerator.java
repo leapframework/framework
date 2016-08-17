@@ -29,7 +29,7 @@ import leap.orm.metadata.MetadataContext;
 import java.util.Map;
 import java.util.Random;
 
-@Configurable(prefix="shortid")
+@Configurable(prefix="orm.shortid")
 public class ShortIDGenerator extends AbstractExpression implements IdGenerator, ValueGenerator,Expression,Initializable {
 
     private Random  random;
@@ -37,7 +37,7 @@ public class ShortIDGenerator extends AbstractExpression implements IdGenerator,
     private Long    reduceTime;
     private Integer version;
     private Integer clusterWorkerId;
-
+    private int     defaultColumnLength = 38;
     private ShortID shortID;
 
     public void setRandom(Random random) {
@@ -61,6 +61,16 @@ public class ShortIDGenerator extends AbstractExpression implements IdGenerator,
     @ConfigProperty
     public void setClusterWorkerId(Integer clusterWorkerId) {
         this.clusterWorkerId = clusterWorkerId;
+    }
+
+    @Override
+    public Integer getDefaultColumnLength() {
+        return defaultColumnLength;
+    }
+
+    @ConfigProperty
+    public void setDefaultColumnLength(int defaultColumnLength) {
+        this.defaultColumnLength = defaultColumnLength;
     }
 
     @Override

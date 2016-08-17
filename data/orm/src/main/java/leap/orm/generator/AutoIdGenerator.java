@@ -20,6 +20,7 @@ import java.sql.Types;
 import leap.core.annotation.Inject;
 import leap.core.validation.annotations.NotNull;
 import leap.db.Db;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -46,7 +47,12 @@ public class AutoIdGenerator implements IdGenerator {
 		this.uuidLength = uuidLength;
 	}
 
-	@Override
+    @Override
+    public Integer getDefaultColumnLength() {
+        return uuidLength;
+    }
+
+    @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
 		Db db = context.getDb();
 		
@@ -145,23 +151,35 @@ public class AutoIdGenerator implements IdGenerator {
 	}
 	
 	protected boolean isIntegerType(FieldMappingBuilder fmb) {
-		int typeCode = fmb.getColumn().getTypeCode();
-		
-		if(Types.SMALLINT == typeCode || Types.INTEGER == typeCode || Types.BIGINT == typeCode){
-			return true;
-		}
+        if(null != fmb.getJavaType()) {
+            Class<?> type = fmb.getJavaType();
+
+            if(Classes.isInteger(type) || Classes.isBigInteger(type)) {
+                return true;
+            }
+        }
+
+        if(null != fmb.getColumn().getTypeCode()) {
+            int typeCode = fmb.getColumn().getTypeCode();
+
+            if (Types.SMALLINT == typeCode || Types.INTEGER == typeCode || Types.BIGINT == typeCode) {
+                return true;
+            }
+        }
 		
 		return false;
 	}
 	
 	protected boolean isGuidType(FieldMappingBuilder fmb){
-		if(null != fmb.getBeanProperty()){
-			return fmb.getBeanProperty().getType().equals(String.class);
+		if(null != fmb.getJavaType()){
+			return fmb.getJavaType().equals(String.class);
 		}
-		
-		if(fmb.getColumn().getTypeCode() == Types.VARCHAR){
-			return true;
-		}
+
+        if(null != fmb.getColumn().getTypeCode()) {
+            if (fmb.getColumn().getTypeCode() == Types.VARCHAR) {
+                return true;
+            }
+        }
 		
 		return false;
 	}
