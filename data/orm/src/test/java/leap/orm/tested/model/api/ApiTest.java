@@ -25,7 +25,7 @@ public class ApiTest extends OrmTestCase {
 
     @Test
     public void testApiOperationQuery() {
-        //ApiOperation.where("pathId = ?", "not_exists").list();
+        ApiOperation.where("pathId = ?", "not_exists").list();
     }
 
 }

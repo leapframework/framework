@@ -315,7 +315,6 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 				postMappingRelation(context, emb, rmb);
 				
 				emb.addRelationMapping(rmb);
-				continue;
 			}
 			
 			if( isExplicitField(context,bp) || isConventionalField(context,bp)){
