@@ -39,6 +39,8 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.summary = type.getSummary();
         this.description = type.getDescription();
 
+        this.javaType = type.getJavaType();
+
         this.properties.clear();
         for(MProperty mp : type.getProperties()) {
             addProperty(new MApiPropertyBuilder(mp));

@@ -88,12 +88,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                     .setListener(new MTypeListener() {
                         @Override
                         public void onComplexTypeResolved(Class<?> type, MComplexType ct) {
-                            if(md.hasModel(type)) {
+                            if(md.hasModel(ct.getName())) {
                                 return;
                             }
 
                             MApiModelBuilder model = new MApiModelBuilder(ct);
-                            model.setJavaType(type);
                             md.addModel(model);
                         }
                     })

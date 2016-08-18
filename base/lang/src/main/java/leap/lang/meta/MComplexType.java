@@ -26,10 +26,13 @@ public class MComplexType extends MStructuralType implements MNamed {
 	protected final String		 name;
 	protected final String		 title;
 	protected final MComplexType baseType;
+    protected final Class<?>     javaType;
 	protected final boolean		 _abstract;
 
 	public MComplexType(String name, String title, String summary, String description, 
-						MComplexType baseType, Collection<MProperty> properties,
+						MComplexType baseType,
+                        Class<?> javaType,
+                        Collection<MProperty> properties,
 					    boolean isAbstract) {
 		super(summary, description, properties);
 		
@@ -38,6 +41,7 @@ public class MComplexType extends MStructuralType implements MNamed {
 		this.name      = name;
 		this.title     = Strings.isEmpty(title) ? name : title;
 		this.baseType  = baseType;
+        this.javaType  = javaType;
 		this._abstract = isAbstract;
 	}
 	
@@ -63,7 +67,14 @@ public class MComplexType extends MStructuralType implements MNamed {
 		return baseType;
 	}
 
-	/**
+    /**
+     * Optional. Returns the java type of this complex type.
+     */
+    public Class<?> getJavaType() {
+        return javaType;
+    }
+
+    /**
 	 * Returns <code>true</code> if this type is an abstract type.
 	 */
 	public boolean isAbstract() {

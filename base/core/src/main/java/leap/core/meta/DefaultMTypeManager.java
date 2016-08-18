@@ -119,11 +119,21 @@ public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
                 mtype = root.getMType(type, genericType, context);
             }
 
-            if(null != mtype && mtype.isComplexType()) {
-                listener.onComplexTypeResolved(type, mtype.asComplexType());
+            if(null != mtype) {
+                tryNotifyComplexTypeResolved(mtype);
             }
 
             return mtype;
+        }
+
+        private void tryNotifyComplexTypeResolved(MType mtype) {
+            if(mtype.isComplexType()) {
+                MComplexType ct = mtype.asComplexType();
+                listener.onComplexTypeResolved(ct.getJavaType(), mtype.asComplexType());
+            }else if(mtype.isCollectionType()){
+                MType elementType = mtype.asCollectionType().getElementType();
+                tryNotifyComplexTypeResolved(elementType);
+            }
         }
 	}
 	

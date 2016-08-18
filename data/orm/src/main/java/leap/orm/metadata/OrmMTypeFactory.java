@@ -51,7 +51,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 	}
 
 	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, OrmContext c,  EntityMapping em) {
-		MComplexTypeBuilder ct = new MComplexTypeBuilder();
+		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());
 

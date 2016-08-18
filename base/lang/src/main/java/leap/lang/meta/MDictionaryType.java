@@ -26,7 +26,7 @@ public class MDictionaryType extends MComplexType {
     private final MType valueType;
 
     public MDictionaryType(MType keyType, MType valueType) {
-        super("dict", "dict", null, null, null, New.arrayList(), false);
+        super("dict", "dict", null, null, null, null, New.arrayList(), false);
         this.keyType   = keyType;
         this.valueType = valueType;
     }

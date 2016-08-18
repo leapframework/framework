@@ -266,4 +266,9 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 		routes.add(route);
 	    return this;
     }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[api=" + name + "]";
+    }
 }

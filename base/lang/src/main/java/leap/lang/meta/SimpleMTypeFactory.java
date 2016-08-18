@@ -153,6 +153,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 		if(null == ct) {
 			ct = createComplexType(context, type, stack);
 			COMPLEX_TYPES.put(type, ct);
+            context.listener().onComplexTypeResolved(type, ct);
 		}
 		
 		return ct;
@@ -165,7 +166,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 
 		stack.add(type);
 		
-		MComplexTypeBuilder ct = new MComplexTypeBuilder();
+		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 		
 		ct.setName(type.getSimpleName());
 		ct.setAbstract(Modifier.isAbstract(type.getModifiers()));
