@@ -114,7 +114,7 @@ class SqlWhereProcessor {
 
                     ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
-                    return false;
+                    return true;
                 }
 
                 if(node instanceof SqlWhere && !tables.isEmpty()) {

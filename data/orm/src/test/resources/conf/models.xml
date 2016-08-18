@@ -5,7 +5,7 @@
     <global-field name="ecode" column="ecode" jdbc-type="varchar" length="100" nullable="false"
                   insert="true" update="false" where="true" where-if="${true}" insert-value="${'t'}" where-value="${'t'}">
 
-        <included-entities>ECodeModel</included-entities>
+        <included-entities>ECodeModel, ECodeModel1</included-entities>
 
     </global-field>
 
