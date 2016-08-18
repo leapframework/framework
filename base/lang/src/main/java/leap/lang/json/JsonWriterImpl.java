@@ -16,19 +16,18 @@ package leap.lang.json;
  */
 
 
-import leap.lang.Beans;
 import leap.lang.Enums;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
 import leap.lang.naming.NamingStyle;
-import leap.lang.naming.NamingStyles;
+import leap.lang.time.DateFormats;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
-import java.time.Instant;
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -46,46 +45,39 @@ public class JsonWriterImpl implements JsonWriter {
         '0','1','2','3','4','5','6','7','8','9','A','B','C','D','E','F'
     }; 
 
-    private final Appendable  out;
-	private final boolean     keyQuoted;
-	private final boolean     ignoreNull;
-	private final boolean     ignoreFalse;
-	private final boolean     ignoreEmptyString;
-	private final boolean     ignoreEmptyArray;
-	private final boolean     detectCyclicReferences;
-	private final boolean	  ignoreCyclicReferences;
-	private final int		  maxDepth;
-	private final NamingStyle namingStyle;
+    private final JsonSettings settings;
+    private final Appendable   out;
+    private final DateFormat   dateFormat;
+	private final boolean      detectCyclicReferences;
+	private final boolean	   ignoreCyclicReferences;
+	private final int		   maxDepth;
 
 	private boolean							startProperty;
 	private int							    depth;
 	private IdentityHashMap<Object,Integer> references;
 	
-	public JsonWriterImpl(Appendable out, boolean keyQuoted, boolean ignoreNull, boolean ignroeFalse, boolean ignoreEmptyString,
-            			  boolean ignoreEmptyArray,boolean detectCyclicReferences,boolean ignoreCyclicReferences,
-            			  int maxDepth,
-            			  NamingStyle ns) {
+	public JsonWriterImpl(JsonSettings settings,
+                          Appendable out,
+                          boolean detectCyclicReferences,
+                          boolean ignoreCyclicReferences,
+            			  int maxDepth) {
 	    super();
-	    
+
+        this.settings               = settings;
 	    this.out 			        = out;
-	    this.keyQuoted              = keyQuoted;
-	    this.ignoreNull             = ignoreNull;
-	    this.ignoreFalse            = ignroeFalse;
-	    this.ignoreEmptyString      = ignoreEmptyString;
-	    this.ignoreEmptyArray       = ignoreEmptyArray;
+        this.dateFormat             = settings.getDateFormat();
 	    this.detectCyclicReferences = detectCyclicReferences;
 	    this.ignoreCyclicReferences = ignoreCyclicReferences;
 	    this.maxDepth				= depth <= 0 ? MAX_DEPTH : maxDepth;
-	    this.namingStyle            = ns == null ? NamingStyles.RAW : ns;
-	    
+
 	    if(detectCyclicReferences) {
-	    	references = new IdentityHashMap<Object, Integer>();
+	    	references = new IdentityHashMap<>();
 	    }
     }
 	
 	@Override
     public NamingStyle getNamingStyle() {
-	    return namingStyle;
+	    return settings.getNamingStyle();
     }
 	
 	@Override
@@ -95,27 +87,27 @@ public class JsonWriterImpl implements JsonWriter {
 
 	@Override
     public boolean isKeyQuoted() {
-	    return keyQuoted;
+	    return settings.isKeyQuoted();
     }
 
 	@Override
     public boolean isIgnoreEmptyString() {
-	    return ignoreEmptyString;
+	    return settings.isIgnoreEmptyString();
     }
 
 	@Override
     public boolean isIgnoreEmptyArray() {
-	    return ignoreEmptyArray;
+	    return settings.isIgnoreEmptyArray();
     }
 
 	@Override
     public boolean isIgnoreFalse() {
-	    return ignoreFalse;
+	    return settings.isIgnoreFalse();
     }
 
 	@Override
     public boolean isIgnoreNull() {
-	    return ignoreNull;
+	    return settings.isIgnoreNull();
     }
 
 	@Override
@@ -144,11 +136,11 @@ public class JsonWriterImpl implements JsonWriter {
 	
 	@Override
     public JsonWriter propertyIgnorable(String key, Object v) {
-		if(ignoreNull && null == v) {
+		if(isIgnoreNull() && null == v) {
 			return this;
 		}
 		
-		if(ignoreEmptyString){
+		if(isIgnoreEmptyString()){
 			if(v instanceof CharSequence) {
 				CharSequence cs = (CharSequence)v;
 				if(cs.length() == 0) {
@@ -159,7 +151,7 @@ public class JsonWriterImpl implements JsonWriter {
 			}
 		}
 		
-		if(ignoreEmptyArray) {
+		if(isIgnoreEmptyArray()) {
 			if(v instanceof Object[]) {
 				Object[] a = (Object[])v;
 				if(a.length == 0){
@@ -188,7 +180,7 @@ public class JsonWriterImpl implements JsonWriter {
 			}
 		}
 		
-		if(ignoreFalse) {
+		if(isIgnoreFalse()) {
 			if(v instanceof Boolean) {
 				if(v == Boolean.FALSE) {
 					return this;
@@ -203,11 +195,11 @@ public class JsonWriterImpl implements JsonWriter {
 	
 	@Override
     public JsonWriter propertyIgnorable(String key, String s) {
-		if(ignoreNull && null == s) {
+		if(isIgnoreNull() && null == s) {
 			return this;
 		}
 		
-		if(ignoreEmptyString && s.length() == 0){
+		if(isIgnoreEmptyString() && s.length() == 0){
 			return this;
 		}
 		
@@ -216,7 +208,7 @@ public class JsonWriterImpl implements JsonWriter {
 
 	@Override
     public JsonWriter propertyIgnorable(String key, boolean b) {
-		if(ignoreFalse && !b){
+		if(isIgnoreFalse() && !b){
 			return this;
 		}
 	    return property(key, b);
@@ -599,10 +591,16 @@ public class JsonWriterImpl implements JsonWriter {
     
 	public JsonWriter value(Date date) {
         try {
-        	out.append(null == date ? NULL_STRING : String.valueOf(date.getTime()));
+            if(null == date) {
+                out.append(NULL_STRING);
+            }else if(null != dateFormat){
+                out.append(dateFormat.format(date));
+            }else{
+                out.append(String.valueOf(date.getTime()));
+            }
         } catch (IOException e) {
         	wrapAndThrow(e);
-        }	
+        }
         return this;
     }
 
@@ -644,7 +642,7 @@ public class JsonWriterImpl implements JsonWriter {
         		out.append(COMMA_CHAR);
         	}
         	
-        	if(keyQuoted){
+        	if(isKeyQuoted()){
         		out.append(DOUBLE_QUOTE).append(key).append(DOUBLE_QUOTE);
         	}else{
         		out.append(key);	
@@ -658,7 +656,7 @@ public class JsonWriterImpl implements JsonWriter {
 	
 	@Override
     public JsonWriter keyUseNamingStyle(String key) {
-	    return key(namingStyle.of(key));
+	    return key(getNamingStyle().of(key));
     }
 
     public JsonWriter value(String string) {
@@ -843,7 +841,7 @@ public class JsonWriterImpl implements JsonWriter {
 
                         Object propValue = prop.getValue(bean);
 
-                        if(null == propValue && ignoreNull){
+                        if(null == propValue && isIgnoreNull()){
                             continue;
                         }
 
@@ -851,7 +849,11 @@ public class JsonWriterImpl implements JsonWriter {
                             continue;
                         }
 
-                        keyUseNamingStyle(propName).value(propValue);
+                        keyUseNamingStyle(propName);
+
+                        if(!writeDateValue(prop, propValue)) {
+                            value(propValue);
+                        }
                     }
                 }
             } catch (JsonException e){
@@ -863,6 +865,24 @@ public class JsonWriterImpl implements JsonWriter {
             return endObject();
 		}
 
+    }
+
+    protected boolean writeDateValue(BeanProperty bp, Object value) {
+
+        if(value instanceof Date) {
+            JsonFormat a = bp.getAnnotation(JsonFormat.class);
+
+            if(null == a) {
+                value((Date)value);
+            }else{
+                DateFormat dateFormat = DateFormats.getFormat(a.value());
+                value(dateFormat.format((Date)value));
+            }
+
+            return true;
+        }
+
+        return false;
     }
 
 	public JsonWriter separator() {
@@ -889,7 +909,7 @@ public class JsonWriterImpl implements JsonWriter {
     }
     
     protected String ns(String s) {
-    	return namingStyle.of(s);
+    	return getNamingStyle().of(s);
     }
     
 	private void wrapAndThrow(IOException e){

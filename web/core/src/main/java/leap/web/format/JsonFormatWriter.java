@@ -15,7 +15,7 @@
  */
 package leap.web.format;
 
-import leap.core.AppContext;
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.lang.Classes;
 import leap.lang.Strings;
@@ -39,8 +39,9 @@ public class JsonFormatWriter implements FormatWriter {
 	private static final Log log = LogFactory.get(JsonFormatWriter.class);
 	
 	private JsonSettings defaultJsonSettings;
-	
-	protected @Inject JsonConfig defaultJsonConfig;
+
+    protected @Inject BeanFactory factory;
+	protected @Inject JsonConfig  defaultJsonConfig;
 	
 	@Override
     public void write(Writer out, Class<?> type, Type genericType, Annotation[] annotations, Object value) throws IOException {
@@ -72,10 +73,13 @@ public class JsonFormatWriter implements FormatWriter {
 
 	protected JsonSettings getDefaultJsonSettings() {
 		if(null == defaultJsonSettings) {
-			defaultJsonSettings = new JsonSettings(defaultJsonConfig.isDefaultSerializationKeyQuoted(),
-												   defaultJsonConfig.isDefaultSerializationIgnoreNull(),
-												   defaultJsonConfig.isDefaultSerializationIgnoreEmpty(),
-												   defaultJsonConfig.getDefaultNamingStyle());
+			defaultJsonSettings =
+                    new JsonSettings.Builder()
+                            .setKeyQuoted(defaultJsonConfig.isDefaultSerializationKeyQuoted())
+                            .setIgnoreNull(defaultJsonConfig.isDefaultSerializationIgnoreNull())
+                            .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
+                            .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
+                            .build();
 		}
 		return defaultJsonSettings;
 	}
@@ -84,18 +88,26 @@ public class JsonFormatWriter implements FormatWriter {
 		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
-		NamingStyle ns;
-		if(Strings.isEmpty(a.namingStyle())){
+
+        NamingStyle ns;
+
+        if(Strings.isEmpty(a.namingStyle())){
 			ns = getDefaultJsonSettings().getNamingStyle();
 		}else {
 			ns = NamingStyles.get(a.namingStyle());
 			if(ns == null){
-				ns = NamingStyles.get(a.namingStyle(), AppContext.factory());
+				ns = NamingStyles.get(a.namingStyle(), factory);
 			}
 			if(ns == null){
 				throw new IllegalArgumentException("NamingStyle not found:"+a.namingStyle());
 			}
 		}
-		return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty,ns);
+
+		return new JsonSettings.Builder()
+                    .setKeyQuoted(keyQuoted)
+                    .setIgnoreNull(ignoreNull)
+                    .setIgnoreEmpty(ignoreEmpty)
+                    .setNamingStyle(ns)
+                    .build();
 	}
 }

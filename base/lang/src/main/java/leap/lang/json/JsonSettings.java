@@ -17,6 +17,9 @@ package leap.lang.json;
 
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
+import leap.lang.time.DateFormats;
+
+import java.text.DateFormat;
 
 public class JsonSettings {
 	
@@ -28,14 +31,22 @@ public class JsonSettings {
 
     private final boolean     keyQuoted;
     private final boolean     ignoreNull;
-    private final boolean     ignoreEmpty;
+    private final boolean     ignoreFalse;
+    private final boolean     ignoreEmptyString;
+    private final boolean     ignoreEmptyArray;
     private final NamingStyle namingStyle;
-    
-	public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreEmpty,NamingStyle namingStyle) {
-		this.keyQuoted   = keyQuoted;
-		this.ignoreNull  = ignoreNull;
-		this.ignoreEmpty = ignoreEmpty;
-		this.namingStyle = namingStyle;
+    private final DateFormat  dateFormat;
+
+	public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreFalse,
+                        boolean ignoreEmptyString,boolean ignoreEmptyArray,
+                        NamingStyle namingStyle, DateFormat dateFormat) {
+		this.keyQuoted         = keyQuoted;
+		this.ignoreNull        = ignoreNull;
+        this.ignoreFalse       = ignoreFalse;
+        this.ignoreEmptyString = ignoreEmptyString;
+        this.ignoreEmptyArray  = ignoreEmptyArray;
+		this.namingStyle       = namingStyle;
+        this.dateFormat        = dateFormat;
 	}
 	public boolean isKeyQuoted() {
 		return keyQuoted;
@@ -45,21 +56,37 @@ public class JsonSettings {
 		return ignoreNull;
 	}
 
-	public boolean isIgnoreEmpty() {
-		return ignoreEmpty;
-	}
+    public boolean isIgnoreFalse() {
+        return ignoreFalse;
+    }
 
-	public NamingStyle getNamingStyle(){
+    public boolean isIgnoreEmptyString() {
+        return ignoreEmptyString;
+    }
+
+    public boolean isIgnoreEmptyArray() {
+        return ignoreEmptyArray;
+    }
+
+    public NamingStyle getNamingStyle(){
 		return this.namingStyle;
 	}
+
+    public DateFormat getDateFormat() {
+        return dateFormat;
+    }
+
 	public static final class Builder {
-		
-		private boolean keyQuoted  = true;
-		private boolean ignoreNull  = false;
-		private boolean ignoreEmpty = false;
-		private NamingStyle namingStyle = NamingStyles.RAW;
-		
-		public Builder() {
+
+        private boolean     keyQuoted   = true;
+        private boolean     ignoreNull  = false;
+        private boolean     ignoreFalse = false;
+        private boolean     ignoreEmptyString = false;
+        private boolean     ignoreEmptyArray  = false;
+        private NamingStyle namingStyle = NamingStyles.RAW;
+        private DateFormat  dateFormat  = null;
+
+        public Builder() {
 	        super();
         }
 
@@ -81,14 +108,36 @@ public class JsonSettings {
 			return this;
 		}
 
-		public boolean isIgnoreEmpty() {
-			return ignoreEmpty;
-		}
+        public boolean isIgnoreFalse() {
+            return ignoreFalse;
+        }
 
-		public Builder setIgnoreEmpty(boolean ignoreEmpty) {
-			this.ignoreEmpty = ignoreEmpty;
+        public Builder setIgnoreFalse(boolean ignoreFalse) {
+            this.ignoreFalse = ignoreFalse;
+            return this;
+        }
+
+        public Builder setIgnoreEmpty(boolean ignoreEmpty) {
+            this.ignoreEmptyString = ignoreEmpty;
+            this.ignoreEmptyArray  = ignoreEmpty;
 			return this;
 		}
+
+        public boolean isIgnoreEmptyString() {
+            return ignoreEmptyString;
+        }
+
+        public void setIgnoreEmptyString(boolean ignoreEmptyString) {
+            this.ignoreEmptyString = ignoreEmptyString;
+        }
+
+        public boolean isIgnoreEmptyArray() {
+            return ignoreEmptyArray;
+        }
+
+        public void setIgnoreEmptyArray(boolean ignoreEmptyArray) {
+            this.ignoreEmptyArray = ignoreEmptyArray;
+        }
 
         public Builder ignoreEmpty() {
             return setIgnoreEmpty(true);
@@ -107,8 +156,30 @@ public class JsonSettings {
 			return this;
 		}
 
-		public JsonSettings build(){
-			return new JsonSettings(keyQuoted, ignoreNull, ignoreEmpty,namingStyle);
+        public DateFormat getDateFormat() {
+            return dateFormat;
+        }
+
+        public Builder setDateFormat(String dateFormat) {
+            this.dateFormat = null == dateFormat ? null : DateFormats.getFormat(dateFormat);
+            return this;
+        }
+
+        public Builder setSettings(JsonSettings settings) {
+            this.keyQuoted = settings.keyQuoted;
+            this.ignoreNull = settings.ignoreNull;
+            this.ignoreFalse = settings.ignoreFalse;
+            this.ignoreEmptyString = settings.ignoreEmptyString;
+            this.ignoreEmptyArray = settings.ignoreEmptyArray;
+            this.namingStyle = settings.namingStyle;
+            this.dateFormat = settings.dateFormat;
+            return this;
+        }
+
+        public JsonSettings build(){
+			return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
+                                    ignoreEmptyString, ignoreEmptyArray,
+                                    namingStyle, dateFormat);
 		}
 	}
 }
