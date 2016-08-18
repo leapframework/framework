@@ -16,6 +16,8 @@
 
 package leap.lang.meta;
 
+import leap.lang.annotation.Nullable;
+
 public interface MTypeListener {
 
     MTypeListener NOP = new MTypeListener() { };
@@ -26,7 +28,7 @@ public interface MTypeListener {
      * <p/>
      * Note : it may be called multiple times for the same java type.
      */
-    default void onComplexTypeResolved(Class<?> type, MComplexType ct) {
+    default void onComplexTypeResolved(@Nullable Class<?> type, MComplexType ct) {
 
     }
 
