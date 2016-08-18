@@ -39,6 +39,8 @@ public class DateConverterTest extends TestCase{
 	public void testStringToLocalDate() {
 		LocalDate d = Converts.convert("2014-11-01",LocalDate.class);
 		assertEquals(LocalDate.of(2014, 11, 1),d);
+
+        assertEquals("2014-11-01", Converts.toString(d));
 	}
 	
 }

@@ -77,6 +77,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		List<String> list = new ArrayList<String>();
 		list.add("1");
 		list.add("2");
+
 		
 		assertEquals("[\"1\",\"2\"]", encode(list));
 	}

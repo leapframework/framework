@@ -25,15 +25,12 @@ public class JsonSettings {
 	public static JsonSettings MIN = new Builder().setKeyQuoted(false)
 												  .setIgnoreEmpty(true)
 												  .setIgnoreNull(true).build();
+
+    private final boolean     keyQuoted;
+    private final boolean     ignoreNull;
+    private final boolean     ignoreEmpty;
+    private final NamingStyle namingStyle;
     
-    private final boolean keyQuoted;
-    private final boolean ignoreNull;
-    private final boolean ignoreEmpty;
-	private final NamingStyle namingStyle;
-    
-    public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreEmpty) {
-    	this(keyQuoted,ignoreNull,ignoreEmpty,NamingStyles.RAW);
-    }
 	public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreEmpty,NamingStyle namingStyle) {
 		this.keyQuoted   = keyQuoted;
 		this.ignoreNull  = ignoreNull;

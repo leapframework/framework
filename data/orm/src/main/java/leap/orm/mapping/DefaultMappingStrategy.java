@@ -701,17 +701,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
                 c.setTypeName(st.getJdbcType().getName());
             }
 
-            if(null == c.getLength()){
-                c.setLength(st.getDefaultLength());
-            }
-
-            if(null == c.getPrecision()){
-                c.setPrecision(st.getDefaultPrecision());
-            }
-
-            if(null == c.getScale()){
-                c.setScale(st.getDefaultScale());
-            }
+            c.trySetLength(st.getDefaultLength());
+            c.trySetPrecision(st.getDefaultPrecision());
+            c.trySetScale(st.getDefaultScale());
         }
 
         //Auto set optimistic lock

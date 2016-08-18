@@ -32,9 +32,9 @@ public class MSimpleType extends MType implements MNamed {
 	protected final JdbcType        jdbcType;
 	protected final Class<?>        javaType;
 	protected final Class<?>[]      javaTypes;
-	protected final int			    defaultLength;
-	protected final int			    defaultPrecision;
-	protected final int			    defaultScale;
+	protected final Integer			defaultLength;
+	protected final Integer			defaultPrecision;
+	protected final Integer			defaultScale;
 	
 	protected MSimpleType(String name, 
 					   	  String title, 
@@ -44,9 +44,9 @@ public class MSimpleType extends MType implements MNamed {
 					   	  JdbcType jdbcType,
 					   	  Class<?> javaType,
 					   	  Class<?>[] javaTypes,
-					   	  int defaultLength,
-					   	  int defaultPrecision,
-					   	  int defaultScale) {
+					   	  Integer defaultLength,
+					   	  Integer defaultPrecision,
+					   	  Integer defaultScale) {
 	    super(summary, description);
 	    
 	    Args.notEmpty(name, "name");
@@ -80,6 +80,9 @@ public class MSimpleType extends MType implements MNamed {
 	    return MTypeKind.SIMPLE;
     }
 
+    /**
+     * Returns the kind of simple type.
+     */
 	public MSimpleTypeKind getSimpleTypeKind() {
 		return simpleTypeKind;
 	}
@@ -105,15 +108,24 @@ public class MSimpleType extends MType implements MNamed {
 		return javaTypes;
 	}
 
-	public int getDefaultLength() {
+    /**
+     * Returns the default length of this simple type.
+     */
+	public Integer getDefaultLength() {
 		return defaultLength;
 	}
 
-	public int getDefaultPrecision() {
+    /**
+     * Returns the default precision of this simple type.
+     */
+	public Integer getDefaultPrecision() {
 		return defaultPrecision;
 	}
 
-	public int getDefaultScale() {
+    /**
+     * Returns the default scale of this simple type.
+     */
+	public Integer getDefaultScale() {
 		return defaultScale;
 	}
 	

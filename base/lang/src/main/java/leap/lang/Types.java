@@ -45,7 +45,7 @@ public class Types {
     }
 	
 	public static TypeInfo getTypeInfo(Class<?> type,Type genericType) {
-		MTypeKind kind            = null;
+		MTypeKind kind           = null;
 		Class<?> elementType     = null;
 		TypeInfo elementTypeInfo = null;
 		

@@ -28,6 +28,10 @@ import leap.lang.naming.NamingStyles;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -601,8 +605,38 @@ public class JsonWriterImpl implements JsonWriter {
         }	
         return this;
     }
-	
-	public JsonWriter key(String key) {
+
+    @Override
+    public JsonWriter value(LocalDate date) {
+        try {
+            out.append(null == date ? NULL_STRING : date.toString());
+        } catch (IOException e) {
+            wrapAndThrow(e);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonWriter value(LocalTime time) {
+        try {
+            out.append(null == time ? NULL_STRING : time.toString());
+        } catch (IOException e) {
+            wrapAndThrow(e);
+        }
+        return this;
+    }
+
+    @Override
+    public JsonWriter value(LocalDateTime dateTime) {
+        try {
+            out.append(null == dateTime ? NULL_STRING : dateTime.toString());
+        } catch (IOException e) {
+            wrapAndThrow(e);
+        }
+        return this;
+    }
+
+    public JsonWriter key(String key) {
         try {
         	if(startProperty){
         		startProperty = false;
@@ -706,6 +740,12 @@ public class JsonWriterImpl implements JsonWriter {
                 return value((Number) v);
             } else if (v instanceof Date) {
                 return value((Date) v);
+            }else if (v instanceof LocalDate) {
+                return value((LocalDate) v);
+            }else if (v instanceof LocalDateTime) {
+                return value((LocalDateTime) v);
+            }else if (v instanceof LocalTime) {
+                return value((LocalTime) v);
             } else if (v instanceof Class<?>) {
                 return value(((Class<?>) v).getName());
             } else if (v instanceof byte[]){

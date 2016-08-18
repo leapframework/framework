@@ -18,6 +18,10 @@ package leap.lang.json;
 import leap.lang.Strings;
 import leap.lang.naming.NamingStyle;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
@@ -178,9 +182,24 @@ public interface JsonWriter {
      * Writes a date value.
      *
      * <p/>
-     * Json has no data type of date, the implementation will converts the date to string value of {@link Date#getTime()}.
+     * Json has no data type of date.
      */
 	JsonWriter value(Date date);
+
+    /**
+     * Writes a date value.
+     */
+    JsonWriter value(LocalDate date);
+
+    /**
+     * Writes a time value.
+     */
+    JsonWriter value(LocalTime time);
+
+    /**
+     * Writes a date time value.
+     */
+    JsonWriter value(LocalDateTime dateTime);
 
     /**
      * Writes a string value.

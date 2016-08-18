@@ -26,6 +26,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -33,28 +36,40 @@ import java.util.Map;
 
 public class MSimpleTypes {
 	
-	private static final Map<String, MSimpleType> types = new LinkedHashMap<String, MSimpleType>();
+	private static final Map<String, MSimpleType> types = new LinkedHashMap<>();
 	
-	public static final MSimpleType BINARY   = define(MSimpleTypeKind.BINARY, JdbcTypes.BINARY_TYPE_NAME, byte[].class, Byte[].class);
+	public static final MSimpleType BINARY   = define(MSimpleTypeKind.BINARY, JdbcTypes.BINARY_TYPE_NAME,
+                                                      byte[].class, Byte[].class);
 	
-	public static final MSimpleType BOOLEAN  = define(MSimpleTypeKind.BOOLEAN, JdbcTypes.BOOLEAN_TYPE_NAME, Boolean.class, boolean.class);
+	public static final MSimpleType BOOLEAN  = define(MSimpleTypeKind.BOOLEAN, JdbcTypes.BOOLEAN_TYPE_NAME,
+                                                      Boolean.class, boolean.class);
 	
-	public static final MSimpleType BYTE     = define(MSimpleTypeKind.BYTE, JdbcTypes.TINYINT_TYPE_NAME,Byte.class, byte.class);
+	public static final MSimpleType BYTE     = define(MSimpleTypeKind.BYTE, JdbcTypes.TINYINT_TYPE_NAME,
+                                                      Byte.class, byte.class);
+
+	public static final MSimpleType DATETIME = define(MSimpleTypeKind.DATETIME, JdbcTypes.TIMESTAMP_TYPE_NAME,
+													  Date.class, LocalDateTime.class, Timestamp.class,java.sql.Date.class,Calendar.class);
+
+    public static final MSimpleType DATE     = define(MSimpleTypeKind.DATE, JdbcTypes.DATE_TYPE_NAME,
+            LocalDate.class, Date.class);
+
+    public static final MSimpleType TIME	 = define(MSimpleTypeKind.TIME,JdbcTypes.TIME_TYPE_NAME,
+                                                      LocalTime.class, Time.class, Date.class);
 	
-	public static final MSimpleType DATETIME = define(MSimpleTypeKind.DATETIME, JdbcTypes.TIMESTAMP_TYPE_NAME, 
-													  Date.class, Timestamp.class,java.sql.Date.class,Calendar.class);
+	public static final MSimpleType DECIMAL  = define(MSimpleTypeKind.DECIMAL,JdbcTypes.DECIMAL_TYPE_NAME,19,4,
+                                                      BigDecimal.class);
 	
-	public static final MSimpleType TIME	 = define(MSimpleTypeKind.TIME,JdbcTypes.TIME_TYPE_NAME,Time.class,Date.class);
+	public static final MSimpleType SINGLE	 = define(MSimpleTypeKind.SINGLE,JdbcTypes.REAL_TYPE_NAME,
+                                                      Float.class,float.class);
 	
-	public static final MSimpleType DECIMAL  = define(MSimpleTypeKind.DECIMAL,JdbcTypes.DECIMAL_TYPE_NAME,19,4,BigDecimal.class);
+	public static final MSimpleType DOUBLE   = define(MSimpleTypeKind.DOUBLE,JdbcTypes.DOUBLE_TYPE_NAME,
+                                                      Double.class,double.class);
 	
-	public static final MSimpleType SINGLE	 = define(MSimpleTypeKind.SINGLE,JdbcTypes.REAL_TYPE_NAME,Float.class,float.class);
+	public static final MSimpleType SMALLINT = define(MSimpleTypeKind.SMALLINT,JdbcTypes.SMALLINT_TYPE_NAME,
+                                                      Short.class,short.class);
 	
-	public static final MSimpleType DOUBLE   = define(MSimpleTypeKind.DOUBLE,JdbcTypes.DOUBLE_TYPE_NAME,Double.class,double.class);
-	
-	public static final MSimpleType SMALLINT = define(MSimpleTypeKind.SMALLINT,JdbcTypes.SMALLINT_TYPE_NAME,Short.class,short.class);
-	
-	public static final MSimpleType INTEGER  = define(MSimpleTypeKind.INTEGER,JdbcTypes.INTEGER_TYPE_NAME,Integer.class,int.class);
+	public static final MSimpleType INTEGER  = define(MSimpleTypeKind.INTEGER,JdbcTypes.INTEGER_TYPE_NAME,
+                                                      Integer.class,int.class);
 	
 	public static final MSimpleType BIGINT	 = define(MSimpleTypeKind.BIGINT,JdbcTypes.BIGINT_TYPE_NAME,
 													  Long.class,long.class,BigInteger.class);
@@ -117,28 +132,29 @@ public class MSimpleTypes {
 	}
 	
 	private static MSimpleType define(MSimpleTypeKind kind,String jdbcTypeName,Class<?>... javaTypes){
-		return define(kind,jdbcTypeName,0,0,0,javaTypes);
+		return define(kind,jdbcTypeName,null,null,null,javaTypes);
 	}
 	
 	private static MSimpleType define(MSimpleTypeKind kind,String jdbcTypeName, 
-										 int defaultLength, Class<?>... javaTypes){
+                                      Integer defaultLength, Class<?>... javaTypes){
 		return define(kind,jdbcTypeName,defaultLength,0,0,javaTypes);
 	}
 	
 	private static MSimpleType define(MSimpleTypeKind kind,String jdbcTypeName,
-										 int defaultPrecision,int defaultScale,Class<?>... javaTypes){
+										 Integer defaultPrecision,Integer defaultScale,Class<?>... javaTypes){
 		
 		return define(kind,jdbcTypeName,0,defaultPrecision,defaultScale,javaTypes);
 	}
 	
-	private static MSimpleType define(MSimpleTypeKind kind,String jdbcTypeName, 
-										 int defaultLength, int defautlPrecision, int defaultScale, Class<?>... javaTypes){
+	private static MSimpleType define(MSimpleTypeKind kind, String jdbcTypeName,
+                                      Integer defaultLength, Integer defaultPrecision, Integer defaultScale,
+                                      Class<?>... javaTypes){
 		String   name     = kind.name();
 		String   title    = Strings.upperCamel(name);
 		JdbcType jdbcType = JdbcTypes.forTypeName(jdbcTypeName);
 		
 		MSimpleType t = new MSimpleType(name, title, null, null, kind, jdbcType, javaTypes[0], javaTypes, 
-											  defaultLength, defautlPrecision, defaultScale);
+											  defaultLength, defaultPrecision, defaultScale);
 		
 		types.put(name.toLowerCase(), t);
 		

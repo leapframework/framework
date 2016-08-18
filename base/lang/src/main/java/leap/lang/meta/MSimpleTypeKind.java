@@ -32,13 +32,14 @@ public enum MSimpleTypeKind {
 	SINGLE,  //Float
 	DOUBLE,
 	DECIMAL(PRECISION,SCALE),
+    DATE,
 	DATETIME(PRECISION),
 	TIME(PRECISION),
 	BINARY(MAX_LENGTH,FIXED_LENGTH);
 	
 	private final MSimpleTypeFacet[] facets;
 	
-	private MSimpleTypeKind(MSimpleTypeFacet... facets){
+	MSimpleTypeKind(MSimpleTypeFacet... facets){
 		this.facets = facets;
 	}
 
