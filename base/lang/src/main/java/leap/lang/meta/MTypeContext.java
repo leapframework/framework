@@ -16,8 +16,6 @@
 
 package leap.lang.meta;
 
-import leap.lang.beans.BeanProperty;
-
 public interface MTypeContext {
 
     MTypeContext DEFAULT = new MTypeContext() {};
