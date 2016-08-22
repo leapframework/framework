@@ -24,7 +24,7 @@ import java.lang.annotation.*;
 public @interface TypeWrapper {
 
     /**
-     * Optiona. The wrapped type.
+     * Optional. The wrapped type.
      */
     Class<?> value() default Void.class;
 

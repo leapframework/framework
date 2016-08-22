@@ -20,17 +20,39 @@ package app.controllers.api;
 
 import leap.web.annotation.Produces;
 import leap.web.annotation.http.GET;
+import leap.web.api.mvc.ApiController;
+import leap.web.api.mvc.ApiResponse;
 import leap.web.security.annotation.AllowAnonymous;
 
 import java.util.Date;
 
 @AllowAnonymous
-public class TypesController {
+public class TypesController extends ApiController {
 
     @GET("/date")
-    @Produces("json")
     public Date date() {
         return new Date();
     }
 
+    @GET("/plain_text")
+    @Produces("text")
+    public String plainText() {
+        return "Hello";
+    }
+
+    @GET("plain_text1")
+    @Produces("text")
+    public ApiResponse<String> plainText1() {
+        return ApiResponse.of("Hello1");
+    }
+
+    @GET("/json_text")
+    public String jsonText() {
+        return "Hello";
+    }
+
+    @GET("json_text1")
+    public ApiResponse<String> jsonText1() {
+        return ApiResponse.of("Hello1");
+    }
 }

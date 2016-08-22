@@ -26,6 +26,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
+import leap.web.action.ActionContext;
 import leap.web.json.JsonConfig;
 import leap.web.json.JsonSerialize;
 
@@ -42,13 +43,12 @@ public class JsonFormatWriter implements FormatWriter {
 
     protected @Inject BeanFactory factory;
 	protected @Inject JsonConfig  defaultJsonConfig;
-	
-	@Override
-    public void write(Writer out, Class<?> type, Type genericType, Annotation[] annotations, Object value) throws IOException {
-		
+
+    @Override
+    public void write(ActionContext context, Object value, Writer out) throws IOException {
 		JsonSettings settings = getDefaultJsonSettings();
 		
-		JsonSerialize a = Classes.getAnnotation(annotations, JsonSerialize.class);
+		JsonSerialize a = Classes.getAnnotation(context.getAction().getAnnotations(), JsonSerialize.class);
 		
 		if(null != a) {
 			settings = createJsonSettings(a);

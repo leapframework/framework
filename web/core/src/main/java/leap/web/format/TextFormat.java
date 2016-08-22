@@ -15,19 +15,14 @@
  */
 package leap.web.format;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
-import leap.lang.Types;
+import leap.lang.Strings;
 import leap.lang.convert.Converts;
-import leap.lang.http.ContentTypes;
 import leap.lang.http.MimeTypes;
 import leap.web.Content;
 import leap.web.Contents;
-import leap.web.Request;
-import leap.web.Response;
+import leap.web.action.ActionContext;
 
 public class TextFormat extends AbstractResponseFormat {
 	
@@ -36,27 +31,16 @@ public class TextFormat extends AbstractResponseFormat {
 	public TextFormat() {
 		super(MimeTypes.TEXT_PLAIN_TYPE);
 	}
-	
-	@Override
-    public Content getContent(Class<?> type, Type genericType, Annotation[] annotations, Object value) throws Exception {
-		if(null == value){
-			return Contents.text("");
-		}else if(Types.isSimpleType(type,genericType)){
-			return Contents.text(Converts.toString(value));
-		}else{
-			return new Content() {
-				@Override
-				public void render(Request request, Response response) throws Throwable {
-					jsonWriter.write(response.getWriter(), type, genericType, annotations, value);
-				}
-				
-				@Override
-				public String getContentType(Request request) throws Throwable {
-					return ContentTypes.TEXT_PLAIN_UTF8;
-				}
-			};
-					
-		}
+
+    @Override
+    public Content getContent(ActionContext context, Object value) throws Exception {
+        String text;
+        if(null == value){
+            text = Strings.EMPTY;
+        }else{
+            text = Converts.toString(value);
+        }
+        return Contents.text(text);
     }
 
 }

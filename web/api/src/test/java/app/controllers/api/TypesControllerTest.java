@@ -32,4 +32,16 @@ public class TypesControllerTest extends WebTestBase {
         //todo : test the value.
     }
 
+    @Test
+    public void testPlainText() {
+        assertEquals("Hello", get("/api/types/plain_text").getContent());
+        assertEquals("Hello1", get("/api/types/plain_text1").getContent());
+    }
+
+    @Test
+    public void testJsonText() {
+        assertEquals("\"Hello\"", get("/api/types/json_text").getContent());
+        assertEquals("\"Hello1\"", get("/api/types/json_text1").getContent());
+    }
+
 }

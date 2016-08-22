@@ -18,12 +18,26 @@
 
 package leap.web.api.spec;
 
+import leap.lang.Exceptions;
 import leap.web.api.meta.ApiMetadataBuilder;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 
 public interface ApiSpecReader {
+
+    /**
+     * Returns the api spec to {@link ApiMetadataBuilder}.
+     */
+    default ApiMetadataBuilder read(String spec)  {
+       try(Reader reader = new StringReader(spec)){
+           return read(reader);
+       }catch(IOException e) {
+           Exceptions.wrapAndThrow(e);
+           return null;
+       }
+    }
 
     /**
      * Reads the api spec content to {@link ApiMetadataBuilder}.

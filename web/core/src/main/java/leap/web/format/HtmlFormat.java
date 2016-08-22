@@ -23,22 +23,23 @@ import leap.lang.convert.Converts;
 import leap.lang.http.MimeTypes;
 import leap.web.Content;
 import leap.web.Contents;
+import leap.web.action.ActionContext;
 
 public class HtmlFormat extends AbstractResponseFormat {
 	
 	public HtmlFormat() {
 		super(MimeTypes.TEXT_HTML_TYPE);
 	}
-	
-	@Override
-    public Content getContent(Class<?> type, Type genericType, Annotation[] annotations, Object value) throws Exception {
-		String html;
-		if(null == value){
-			html = Strings.EMPTY;
-		}else{
-			html = Converts.toString(value);
-		}
-		return Contents.html(html);
+
+    @Override
+    public Content getContent(ActionContext context, Object value) throws Exception {
+        String html;
+        if(null == value){
+            html = Strings.EMPTY;
+        }else{
+            html = Converts.toString(value);
+        }
+        return Contents.html(html);
     }
 
 }

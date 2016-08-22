@@ -15,7 +15,6 @@
  */
 package leap.web;
 
-import leap.lang.Classes;
 import leap.lang.Objects2;
 import leap.lang.Strings;
 import leap.lang.http.MimeTypes;
@@ -67,11 +66,7 @@ public class Contents extends MimeTypes{
 	public static Content view(String viewName){
 		return new ViewContent(viewName);
 	}
-	
-	public static Content format(Object value,String format){
-		return new FormatContent(value, format);
-	}
-	
+
 	public static abstract class AbstractTextContent implements Content {
 		
 		public abstract String getContentType(Request request) throws Throwable; 
@@ -115,22 +110,24 @@ public class Contents extends MimeTypes{
         }
 	}
 	
-	public static class FormatContent implements Content {
-		
+	public static class FormattingContent implements Content {
+
+        private final ActionContext  context;
 		private final String         name;
 		private final Object         value;
 		private final ResponseFormat format;
 		private final Content		 content;
 		private final Class<?>       type;
 		
-		public FormatContent(Object value,String formatName){
+		public FormattingContent(ActionContext context, Object value, String formatName){
+            this.context = context;
 			this.value   = value;
 			this.name    = formatName;
 			this.format  = resolveFormat(formatName);
 			this.type    = null == value ? Object.class : value.getClass();
 			
 			try {
-	            this.content = format.getContent(type, null, Classes.EMPTY_ANNOTATION_ARRAY, value);
+	            this.content = format.getContent(context, value);
             } catch (Exception e) {
             	throw new ResultException("Error convert value to content format '" + formatName + "', " + e.getMessage(), e);
             }

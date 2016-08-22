@@ -28,6 +28,7 @@ import leap.web.Content;
 import leap.web.Contents;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.action.ActionContext;
 import leap.web.json.JsonConfig;
 import leap.web.json.Jsonp;
 
@@ -76,8 +77,8 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
         return jsonObject.raw();
 	}
 
-	@Override
-    public Content getContent(final Class<?> type,final Type genericType,final Annotation[] annotations,final Object value) throws Exception {
+    @Override
+    public Content getContent(ActionContext context, Object value) throws Exception {
 		return new Contents.AbstractTextContent() {
 			
 			@Override
@@ -89,7 +90,7 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 			protected void doRender(Request request, Response response) throws Exception {
 				Jsonp.write(request, response, jsonConfig, (w) -> {
 					try {
-	                    writer.write(w, type, genericType, annotations, value);
+	                    writer.write(context, value, w);
                     } catch (Exception e) {
                     	throw Exceptions.uncheck(e);
                     }
@@ -98,7 +99,7 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 
 			@Override
             public String toString() {
-				return "json:" + type.getSimpleName();
+				return "json:" + (null == value ? "null" : value.getClass().getSimpleName());
             }
 		};
     }

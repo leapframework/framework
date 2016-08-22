@@ -73,7 +73,8 @@ public abstract class Results {
 	}
 	
 	public static Result render(Object content,String format) {
-		return Result.current().render(Contents.format(content, format));
+        Request request = Request.current();
+		return request.getResult().render(new Contents.FormattingContent(request.getActionContext(), content, format));
 	}
 	
 	public static Result renderView(String viewName){

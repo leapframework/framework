@@ -21,16 +21,18 @@ import leap.core.annotation.Inject;
 import leap.web.api.Apis;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiPath;
+import leap.web.api.spec.swagger.SwaggerSpecReader;
+import leap.webunit.WebTestBase;
 import leap.webunit.WebTestBaseContextual;
 import org.junit.Test;
 
-public class ApiMetadataTest extends WebTestBaseContextual {
+public class ApiMetadataTest extends WebTestBase {
 
-    private @Inject Apis apis;
+    private @Inject SwaggerSpecReader swaggerReader;
 
 	@Test
     public void testRestStringResponse() {
-        ApiMetadata m = apis.metadatas().get("api");
+        ApiMetadata m = swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
         MApiPath path = m.getPaths().get("/rest_test/set_string");
         assertNotNull(path);
