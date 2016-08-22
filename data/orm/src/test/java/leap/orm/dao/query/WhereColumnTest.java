@@ -132,4 +132,25 @@ public class WhereColumnTest extends OrmTestCase {
 
         dao.createSqlQuery(sql).count();
     }
+
+    @Test
+    public void testUnionQuery() {
+        ECodeModel.deleteAll();
+        ECodeModel1.deleteAll();
+
+        new ECodeModel("1").id("1").set("ecode","t").create();
+        new ECodeModel("2").id("2").set("ecode","t1").create();
+        new ECodeModel1("3").id("1").set("ecode","t").create();
+        new ECodeModel1("4").id("2").set("ecode","t1").create();
+
+        String sql = "select * from ECodeModel t1 union select * from ECodeModel1 t2";
+
+        assertEquals(2,dao.createSqlQuery(sql).count());
+
+        sql = "select * from (" +
+                    "select * from ECodeModel t1 union select * from ECodeModel1 t2" +
+                ") t";
+
+        assertEquals(2, dao.createSqlQuery(sql).count());
+    }
 }
