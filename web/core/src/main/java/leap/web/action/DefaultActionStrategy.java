@@ -316,6 +316,17 @@ public class DefaultActionStrategy implements ActionStrategy {
 
 	@Override
     public String[] getDefaultViewNames(ActionBuilder action, String controllerPath, String actionPath, PathTemplate pathTemplate) {
+        Annotation[] annotations = action.getAnnotations();
+        DefaultView dv = Classes.getAnnotation(annotations, DefaultView.class);
+        if(null != dv) {
+            return new String[]{dv.value()};
+        }
+
+        Success success = Classes.getAnnotation(annotations, Success.class);
+        if(null != success && !Strings.isEmpty(success.defaultView())) {
+            return new String[]{success.defaultView()};
+        }
+
 		String fullActionPath  = pathTemplate.getTemplate();
 		String defaultViewPath = null;
 		if(fullActionPath.equals("/")){
