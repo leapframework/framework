@@ -104,14 +104,7 @@ public class Types {
 
 		if (genericType instanceof Class<?>) {
 			Class<?> clazz = ((Class<?>) genericType);
-
-			TypeVariable<?>[] types = clazz.getTypeParameters();
-
-			if (types.length > 1) {
-				throw new IllegalArgumentException("type argument's length large than 1");
-			}
-
-			return types;
+			return clazz.getTypeParameters();
 		}
 
 		return EMPTY_TYPES;
