@@ -15,8 +15,10 @@
  */
 package app1.controllers;
 
+import leap.lang.http.HTTP;
 import leap.web.WebTestCase;
 
+import leap.web.cors.CorsHandler;
 import org.junit.Test;
 
 public class HomeControllerTest extends WebTestCase{
@@ -31,5 +33,18 @@ public class HomeControllerTest extends WebTestCase{
 	public void testFilter() {
 		get("/app1/test_filter").assertContentEquals("/app1");
 	}
-	
+
+    @Test
+    public void testCors() {
+        request(HTTP.Method.OPTIONS,"/app1")
+                .addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "")
+                .send()
+                .assertForbidden();
+
+        request(HTTP.Method.OPTIONS,"/app1")
+                .addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "example.com")
+                .send()
+                .assertOk()
+                .assertHeaderEquals(CorsHandler.RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "example.com");
+    }
 }

@@ -207,7 +207,7 @@ public class AppFilter implements Filter {
 	        	ErrorServletResponseWrapper espw = new ErrorServletResponseWrapper(response.getServletResponse());
 	        	
 	        	chain.doFilter(request.getServletRequest(), espw);
-	        	
+
 	        	if(espw.isError()) {
 	        		if(!appHandler.handleError(request, response, espw.getErrorStatus(), espw.getErrorMessage())) {
 	        			espw.commitError();
@@ -319,6 +319,10 @@ public class AppFilter implements Filter {
 		public String getErrorMessage() {
 			return message;
 		}
+
+        public boolean isHandled() {
+            return status > 0;
+        }
 		
 		public boolean isError() {
 			return status > 0;

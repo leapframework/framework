@@ -28,8 +28,17 @@ import leap.web.Response;
 public class DefaultCorsHandler implements CorsHandler {
 
     protected @Inject CorsConfig conf;
-	
-	public State handle(Request request, Response response) throws Throwable {
+
+    @Override
+    public boolean isPreflightRequest(Request request) {
+        String method = request.getRawMethod();
+        if("OPTIONS".equals(method) && request.hasHeader(REQUEST_HEADER_ORIGIN)) {
+            return true;
+        }
+        return false;
+    }
+
+    public State handle(Request request, Response response) throws Throwable {
 		if(!request.hasHeader(REQUEST_HEADER_ORIGIN)) {
 			return State.CONTINUE;
 		}

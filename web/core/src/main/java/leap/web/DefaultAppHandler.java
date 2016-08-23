@@ -21,6 +21,7 @@ import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.time.StopWatch;
@@ -30,7 +31,7 @@ import leap.web.action.DefaultActionContext;
 import leap.web.ajax.AjaxDetector;
 import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
-import leap.web.cors.CorsConfig;
+import leap.web.cors.CorsHandler;
 import leap.web.debug.DebugDetector;
 import leap.web.error.ErrorInfo;
 import leap.web.exception.BadRequestException;
@@ -163,22 +164,26 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 				if (!handled) {
 					DefaultActionContext ac = newActionContext(request, response);
 
-					//resolve action path
-					String path = resolveActionPath(request, response, ac);
+                    //resolve action path
+                    String path = resolveActionPath(request, response, ac);
 
-					if (_debug) {
-						log.debug("Routing path '{}'", ac.getPath());
-					}
+                    if (_debug) {
+                        log.debug("Routing path '{}'", ac.getPath());
+                    }
 
-					int routeState = routeAndExecuteAction(request, response, ac);
+                    if(handleCorePrelightRequest(request, response, ac)) {
+                        handled = true;
+                    }else {
+                        int routeState = routeAndExecuteAction(request, response, ac);
 
-					if (routeState == ROUTE_STATE_HANLDED) {
-						handled = true;
-					} else if (routeState == ROUTE_STATE_NOT_HANDLED) {
-						handled = handleNoAction(request, response, path);
-					} else {
-						return false;
-					}
+                        if (routeState == ROUTE_STATE_HANLDED) {
+                            handled = true;
+                        } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
+                            handled = handleNoAction(request, response, path);
+                        } else {
+                            return false;
+                        }
+                    }
 				}
 
 				if (!handled && _debug) {
@@ -299,6 +304,28 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	private static final int ROUTE_STATE_NOT_HANDLED = 0;
 	private static final int ROUTE_STATE_HANLDED     = 1;
 	private static final int ROUTE_STATE_END         = 2;
+
+    protected boolean handleCorePrelightRequest(Request request,
+                                                Response response,
+                                                DefaultActionContext ac) throws Throwable{
+
+        CorsHandler handler = webConfig.getCorsHandler();
+        if(!handler.isPreflightRequest(request)) {
+            return false;
+        }
+
+        if(!Strings.isEmpty(ac.getPath())) {
+            Route route = app.routes().match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            if(null == route) {
+                return false;
+            }
+
+            handler.handle(request, response);
+            return true;
+        }
+
+        return false;
+    }
 	
 	protected int routeAndExecuteAction(Request request,
 										Response response,

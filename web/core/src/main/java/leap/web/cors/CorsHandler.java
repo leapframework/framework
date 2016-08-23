@@ -30,8 +30,16 @@ public interface CorsHandler {
     String RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS    = "Access-Control-Expose-Headers";
     String RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE           = "Access-Control-Max-Age";  
     String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS     = "Access-Control-Allow-Methods";  
-    String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS     = "Access-Control-Allow-Headers";    
-	
+    String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS     = "Access-Control-Allow-Headers";
+
+    /**
+     * Returns true if the request is a cors preflight rquest.
+     */
+    boolean isPreflightRequest(Request request);
+
+    /**
+     * Handles the request and returns the state.
+     */
 	State handle(Request request,Response response) throws Throwable;
 	
 }

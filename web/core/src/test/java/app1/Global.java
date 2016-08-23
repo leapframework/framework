@@ -16,7 +16,13 @@
 package app1;
 
 import leap.web.App;
+import leap.web.config.WebConfigurator;
 
 public class Global extends App {
+
+    @Override
+    protected void configure(WebConfigurator c) {
+        c.setCorsEnabled(true);
+    }
 
 }
