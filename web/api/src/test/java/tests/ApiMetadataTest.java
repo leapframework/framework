@@ -20,6 +20,7 @@ package tests;
 import leap.core.annotation.Inject;
 import leap.web.api.Apis;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiOperation;
 import leap.web.api.meta.model.MApiPath;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
@@ -31,13 +32,24 @@ public class ApiMetadataTest extends WebTestBase {
     private @Inject SwaggerSpecReader swaggerReader;
 
 	@Test
-    public void testRestStringResponse() {
-        ApiMetadata m = swaggerReader.read(get("/api/swagger.json").getContent()).build();
+    public void testSwaggerSpec() {
+        ApiMetadata m =
+                swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
-        MApiPath path = m.getPaths().get("/rest_test/set_string");
-        assertNotNull(path);
+        assertPaths(m);
 
+        assertContextualArgument(m);
     }
 
+    private void assertPaths(ApiMetadata m) {
+        MApiPath path = m.getPaths().get("/rest_test/set_string");
+        assertNotNull(path);
+    }
+
+    private void assertContextualArgument(ApiMetadata m) {
+        MApiPath path = m.getPaths().get("/args/context_argument_only");
+        MApiOperation op = path.getOperations()[0];
+        assertEquals(0, op.getParameters().length);
+    }
 
 }

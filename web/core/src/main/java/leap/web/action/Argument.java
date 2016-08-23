@@ -27,8 +27,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
-	
-	public enum Location {
+
+    public enum Location {
 		UNDEFINED,
 		
 		PATH_PARAM,
@@ -59,6 +59,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	protected final ArgumentValidator[] validators;
     protected final Argument[]          wrappedArguments;
 
+    protected boolean contextual;
 
 	public Argument(String name,
                     BeanProperty beanProperty,
@@ -196,6 +197,20 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
      */
     public boolean isWrapper() {
         return wrappedArguments.length > 0;
+    }
+
+    /**
+     * Returns true if this argument is a contextual argument.
+     */
+    public boolean isContextual() {
+        return contextual;
+    }
+
+    /**
+     * Sets contextual.
+     */
+    protected void setContextual(boolean contextual) {
+        this.contextual = contextual;
     }
 
     /**

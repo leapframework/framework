@@ -122,7 +122,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
             return MDictionaryType.INSTANCE;
         }
 
-        Type[] types = Types.getTypeArguments(genericType);
+        Type[] types = getDictionaryTypes(type, genericType);
 
         Type keyType = types[0];
         Type valType = types[1];
@@ -131,6 +131,27 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
         MType valMType = getMType(Types.getActualType(valType), valType, context, stack, createComplexTypeRef);
 
         return new MDictionaryType(keyMType, valMType);
+    }
+
+    protected Type[] getDictionaryTypes(Class<?> type, Type genericType) {
+        Type[] types = Types.getTypeArguments(genericType);
+        if(types.length != 2) {
+            for(Type genericInterface : type.getGenericInterfaces()) {
+                Class<?> c = Types.getActualType(genericInterface);
+                if(Map.class.isAssignableFrom(c)) {
+                    return getDictionaryTypes(c, genericInterface);
+                }
+            }
+
+            Type genericSuperClass = type.getGenericSuperclass();
+            if(null != genericSuperClass) {
+                Class<?> c = Types.getActualType(genericSuperClass);
+                if(Map.class.isAssignableFrom(c)) {
+                    return getDictionaryTypes(c, genericSuperClass);
+                }
+            }
+        }
+        return types;
     }
 	
 	protected MType getComplexTypeOrRef(MTypeContext context, Class<?> type, Stack<Class<?>> stack, boolean createComplexTypeRef) {

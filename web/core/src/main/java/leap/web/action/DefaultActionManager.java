@@ -412,6 +412,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
     protected ArgumentResolver resolveArgumentResolver(RouteBuilder route, Argument argument, RequestBodyArgumentInfo rbaf) {
         //Get context resolver
         if(ContextArgumentResolver.isContext(argument.getType())){
+            argument.setContextual(true);
             return ContextArgumentResolver.of(argument.getType());
         }
 

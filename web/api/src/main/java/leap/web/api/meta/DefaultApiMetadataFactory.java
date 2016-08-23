@@ -244,7 +244,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            createApiParameter(context, m, route, op, a);
+            if(!a.isContextual()) {
+                createApiParameter(context, m, route, op, a);
+            }
         }
 	}
 
