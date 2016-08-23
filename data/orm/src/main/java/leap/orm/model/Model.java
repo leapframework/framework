@@ -234,6 +234,11 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public static int deleteBy(String field,Object value) {
 		return query().where(field + "=?",value).delete();
 	}
+
+    @Instrument
+    public static int deleteBy(String field1, Object value1, String field2, Object value2) {
+        return query().where(field1 + "=? and " + field2 + " = ?", value1, value2).delete();
+    }
 	
 	//---count---
 	@Instrument
@@ -293,9 +298,14 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
 	
 	@Instrument
-	public static <T extends Model> T findBy(String field,Object value) throws EmptyRecordsException,TooManyRecordsException {
+	public static <T extends Model> T findBy(String field,Object value) throws TooManyRecordsException {
 		return (T)query().where(field + "=?",value).singleOrNull();
 	}
+
+    @Instrument
+    public static <T extends Model> T findBy(String field1,Object value1, String field2, Object value2) throws TooManyRecordsException {
+        return (T)query().where(field1 + "=? and " + field2 + "=?",value1, value2).singleOrNull();
+    }
 
 	/**
 	 * Returns all the records or the model.
