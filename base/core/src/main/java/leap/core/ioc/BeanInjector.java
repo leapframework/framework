@@ -16,22 +16,18 @@
 
 package leap.core.ioc;
 
-import leap.lang.beans.BeanType;
+import leap.lang.Out;
 import leap.lang.reflect.ReflectValued;
 
 import java.lang.annotation.Annotation;
-import java.util.Set;
 
 public interface BeanInjector {
 
     /**
-     * Returns the supported annotation types.
+     * Returns true if handles the resolving of inject value.
      */
-    Set<Class<? extends Annotation>> getSupportedAnnotationTypes();
-
-    /**
-     * Returns the injected value or null.
-     */
-    Object resolveInjectValue(BeanDefinition bd, Object bean, BeanType bt, ReflectValued v, Annotation a);
+    default boolean resolveInjectValue(BeanDefinition bd, Object bean, ReflectValued v, Annotation a, Out<Object> value) {
+        return false;
+    }
 
 }

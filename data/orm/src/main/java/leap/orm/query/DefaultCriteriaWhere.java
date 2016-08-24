@@ -19,9 +19,12 @@ import leap.lang.Args;
 import leap.lang.Assert;
 import leap.lang.params.MapParams;
 import leap.lang.params.Params;
+import leap.orm.OrmContext;
+import leap.orm.mapping.EntityMapping;
 
 public class DefaultCriteriaWhere<T> implements CriteriaWhere<T> {
 
+    private final OrmContext       c;
 	private final CriteriaQuery<T> q;
 	private final StringBuilder    expr   = new StringBuilder();
 	private final Params       	   params = new MapParams();
@@ -29,7 +32,8 @@ public class DefaultCriteriaWhere<T> implements CriteriaWhere<T> {
 	private String name;
 	private String op;
 
-	public DefaultCriteriaWhere(CriteriaQuery<T> q) {
+	public DefaultCriteriaWhere(OrmContext c, CriteriaQuery<T> q) {
+        this.c = c;
 		this.q = q;
 	}
 
@@ -39,7 +43,35 @@ public class DefaultCriteriaWhere<T> implements CriteriaWhere<T> {
 	    return q;
     }
 
-	@Override
+    @Override
+    public CriteriaWhere<T> id(Object id) {
+        EntityMapping em = q.getEntityMapping();
+
+        if(em.getKeyFieldNames().length == 1) {
+            return name(em.getKeyFieldNames()[0]).eq(id);
+        }
+
+        if(em.getKeyFieldNames().length > 0) {
+            Params params = c.getParameterStrategy().createIdParameters(c, em, id);
+
+            for(int i=0;i<em.getKeyFieldNames().length;i++) {
+
+                if(i > 0) {
+                    and();
+                }
+
+                String name = em.getKeyFieldNames()[i];
+
+                name(em.getKeyFieldNames()[i]).eq(params.get(name));
+            }
+
+            return this;
+        }
+
+        throw new IllegalStateException("No id column(s) in entity '" + em.getEntityName() + "'");
+    }
+
+    @Override
     public CriteriaWhere<T> name(String name) {
 		Args.notEmpty(name,"name");
 		Assert.isNull(this.name,"Value must be specified for previous parameter '" + name + "'");

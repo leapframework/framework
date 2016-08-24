@@ -540,6 +540,11 @@ public abstract class Dao implements JdbcExecutor {
 	 * Creates a new {@link Query} object for executing the given query sql. 
 	 */
 	public abstract Query<Record> createSqlQuery(String sql);
+
+    /**
+     * Creates a new {@link Query} object for executing the given query sql.
+     */
+    public abstract Query<Record> createSqlQuery(String sql, Object... args);
 	
 	/**
 	 * Creates a new {@link Query} object for executing the given query sql.

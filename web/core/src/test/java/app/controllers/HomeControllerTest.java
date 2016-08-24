@@ -251,4 +251,10 @@ public class HomeControllerTest extends WebTestCase {
 	public void testSuccessStatus() {
 		get("/success_status").assertStatusEquals(HTTP.SC_NO_CONTENT);
 	}
+
+    @Test
+    public void testDefaultView() {
+        get("/default_view1").assertContentContains("test_default_view1");
+        get("/default_view2").assertContentContains("test_default_view2");
+    }
 }

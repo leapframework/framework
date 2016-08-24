@@ -26,7 +26,7 @@ public class JdbcUserStore implements UserStore {
     public static final String SQL_PARAM_USER_ID                       = "userId";
     public static final String SQL_PARAM_LOGIN_NAME                    = "loginName";
 
-	@Inject(name="security",namedOrPrimary=true)
+	@Inject(name="security", primary =true)
 	protected Lazy<Dao> lazyDao;
 	
 	public void setLazyDao(Lazy<Dao> lazyDao) {
