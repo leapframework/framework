@@ -1175,17 +1175,17 @@ public class BeanContainer implements BeanFactory {
 
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
 
-        Inject inject = v.getAnnotation(Inject.class);
-
-        if (null == inject || !inject.value()) {
-            if(!injectors.isEmpty()) {
-                for(Annotation a : v.getAnnotations()) {
-                    BeanInjector injector = injectors.get(a.annotationType());
-                    if(null != injector) {
-                        return injector.resolveInjectValue(bd, bean, bt, v, a);
-                    }
+        if(!injectors.isEmpty()) {
+            for(Annotation a : v.getAnnotations()) {
+                BeanInjector injector = injectors.get(a.annotationType());
+                if(null != injector) {
+                    return injector.resolveInjectValue(bd, bean, bt, v, a);
                 }
             }
+        }
+
+        Inject inject = v.getAnnotation(Inject.class);
+        if(null == inject) {
             return null;
         }
 
@@ -1202,11 +1202,7 @@ public class BeanContainer implements BeanFactory {
 	
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations) {
-		Inject inject = Classes.getAnnotation(annotations, Inject.class);
-		if(null != inject && !inject.value()){
-			return null;
-		}
-		
+
 		if(type.equals(BeanFactory.class)) {
 		    return factory;
 		}
@@ -1218,6 +1214,11 @@ public class BeanContainer implements BeanFactory {
 		if(type.equals(AppContext.class)) {
 		    return appContext;
 		}
+
+        Inject inject = Classes.getAnnotation(annotations, Inject.class);
+        if(null == inject){
+            return null;
+        }
 		
 		Object injectedBean = null;
 		
@@ -1251,7 +1252,7 @@ public class BeanContainer implements BeanFactory {
 							beanType = acturalTypeArgument;
 						}
 						injectedBean = new LazyBean(factory, beanType, beanName, 
-						                            null == inject ? false : inject.namedOrPrimary(), 
+						                            null == inject ? false : inject.primary(),
 						                            nullable, required);
 					}
 				}else if(List.class.equals(type) || BeanList.class.equals(type)){
@@ -1318,7 +1319,7 @@ public class BeanContainer implements BeanFactory {
 						injectedBean = factory.tryGetBean(beanType);	
 					}else{
 						injectedBean = factory.tryGetBean(beanType, beanName);
-						if(null == injectedBean && null != inject && inject.namedOrPrimary()){
+						if(null == injectedBean && null != inject && inject.primary()){
 							injectedBean = factory.tryGetBean(beanType);
 						}
 					}

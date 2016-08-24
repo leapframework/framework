@@ -23,9 +23,9 @@ import java.lang.annotation.*;
 public @interface Inject {
 	
 	/**
-	 * Enables(true) or Disables(false) inject.
+	 * Same as {@link #name()}.
 	 */
-	boolean value() default true;
+	String value() default "";
 
 	/**
 	 * The bean id depends on.
@@ -48,7 +48,7 @@ public @interface Inject {
 	 * <p>
 	 * Only use in single bean injection.
 	 */
-	boolean namedOrPrimary() default false;
+	boolean primary() default false;
 	
 	/**
 	 * The bean qualifier value , only use in bean list injection.
