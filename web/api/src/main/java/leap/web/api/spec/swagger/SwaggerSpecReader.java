@@ -100,6 +100,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
             m.setVersion(info.getString(VERSION));
             m.setTitle(info.getString(TITLE));
             m.setName(m.getTitle());
+            m.setSummary(info.getString(SUMMARY));
             m.setDescription(info.getString(DESCRIPTION));
             m.setTermsOfService(info.getString(TERMS_OF_SERVICE));
 
