@@ -96,7 +96,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	
 	@Override
     public CriteriaWhere<T> where() {
-	    return new DefaultCriteriaWhere<T>(this);
+	    return new DefaultCriteriaWhere<T>(getOrmContext(), this);
     }
 	
 	@Override

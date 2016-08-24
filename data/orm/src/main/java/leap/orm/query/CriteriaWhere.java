@@ -30,7 +30,7 @@ public interface CriteriaWhere<T> {
 		
 		private final String value;
 		
-		private Op(String v) {
+		Op(String v) {
 			this.value = v;
 		}
 
@@ -43,6 +43,11 @@ public interface CriteriaWhere<T> {
 	 * Returns the query for this where expression.
 	 */
 	CriteriaQuery<T> q();
+
+    /**
+     * Adds an {id_field_name} = {id_value} expression.
+     */
+    CriteriaWhere<T> id(Object id);
 	
 	/**
 	 * Adds and operator.

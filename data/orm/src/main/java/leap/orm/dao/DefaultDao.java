@@ -461,7 +461,12 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return (Query)createSqlQuery(Record.class, sql);
     }
 
-	@Override
+    @Override
+    public Query<Record> createSqlQuery(String sql, Object... args) {
+        return createSqlQuery(sql).params(args);
+    }
+
+    @Override
     public <T> Query<T> createSqlQuery(Class<T> resultClass, String sql) {
 		Args.notNull(resultClass,"resultClass");
 		Args.notEmpty(sql,"sql");
