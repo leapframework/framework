@@ -65,7 +65,6 @@ public class BeanContainer implements BeanFactory {
     protected List<BeanDefinitionBase>                       processorBeans      = new ArrayList<>();
     protected List<BeanDefinitionBase>                       initializableBeans  = new ArrayList<>();
     protected List<BeanDefinitionBase>                       injectorBeans       = new ArrayList<>();
-    protected Map<Class<? extends Annotation>, BeanInjector> injectors           = new HashMap<>();
 
     private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
@@ -78,6 +77,7 @@ public class BeanContainer implements BeanFactory {
     private   BeanConfigurator           beanConfigurator;
     protected BeanFactoryInitializable[] initializables;
     protected BeanProcessor[]            processors;
+    protected BeanInjector[]             injectors;
     private   boolean                    initializing;
     private   boolean                    containerInited;
     private   boolean                    appInited;
@@ -874,10 +874,11 @@ public class BeanContainer implements BeanFactory {
 
     protected void resolveAfterLoading() {
         //bean injector.
+        List<BeanInjector> injectorList = new ArrayList<>();
         for(BeanDefinitionBase bd : injectorBeans) {
-            BeanInjector injector = (BeanInjector)doGetBean(bd);
-            injector.getSupportedAnnotationTypes().forEach((c) -> injectors.put(c, injector));
+            injectorList.add((BeanInjector)doGetBean(bd));
         }
+        this.injectors = injectorList.toArray(new BeanInjector[0]);
 
         //bean processors
 		List<BeanProcessor> processorList = new ArrayList<>();
@@ -1175,11 +1176,15 @@ public class BeanContainer implements BeanFactory {
 
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
 
-        if(!injectors.isEmpty()) {
+        if(null != injectors && injectors.length > 0) {
             for(Annotation a : v.getAnnotations()) {
-                BeanInjector injector = injectors.get(a.annotationType());
-                if(null != injector) {
-                    return injector.resolveInjectValue(bd, bean, bt, v, a);
+                if(a.annotationType().isAnnotationPresent(AInject.class)){
+                    Out out = new Out();
+                    for(BeanInjector injector : injectors) {
+                        if(injector.resolveInjectValue(bd, bean, v, a, out)) {
+                            return out.get();
+                        }
+                    }
                 }
             }
         }
