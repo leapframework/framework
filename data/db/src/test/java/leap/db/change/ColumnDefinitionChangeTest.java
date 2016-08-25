@@ -18,7 +18,7 @@ package leap.db.change;
 import leap.db.DbTestCase;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
 
 import org.junit.Test;
@@ -30,7 +30,7 @@ public class ColumnDefinitionChangeTest extends DbTestCase {
 	public void testColumnUniquePropertyChange() {
 		DbColumnBuilder col = DbColumnBuilder.varchar("col1", 100);
 
-		DbTableBuilder1 table = new DbTableBuilder1("test_unique_change")
+		DbTableBuilder table = new DbTableBuilder("test_unique_change")
 								.addColumn(col);
 		
 		//create table with non-unique column

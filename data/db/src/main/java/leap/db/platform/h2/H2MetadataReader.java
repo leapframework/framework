@@ -25,7 +25,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbForeignKeyBuilder;
 import leap.db.model.DbIndexBuilder;
 import leap.db.model.DbSequenceBuilder;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
@@ -155,7 +155,7 @@ public class H2MetadataReader extends GenericDbMetadataReader {
     }
 	
 	@Override
-    protected boolean isInternalDefaultValue(DbTableBuilder1 table, DbColumnBuilder column, ResultSet rs, String defaultValue) throws SQLException {
+    protected boolean isInternalDefaultValue(DbTableBuilder table, DbColumnBuilder column, ResultSet rs, String defaultValue) throws SQLException {
 		return Strings.containsIgnoreCase(defaultValue,"SYSTEM_SEQUENCE_");
     }
 
@@ -165,7 +165,7 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 	}
 	
 	@Override
-    protected boolean isInternalIndex(DbTableBuilder1 table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
+    protected boolean isInternalIndex(DbTableBuilder table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
 		String name = ix.getName();
 		
 	    if(Strings.upperCase(name).startsWith("PRIMARY_KEY_")){

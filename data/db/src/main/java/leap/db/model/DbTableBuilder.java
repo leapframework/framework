@@ -20,11 +20,9 @@ import leap.lang.json.JsonArray;
 import leap.lang.json.JsonObject;
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
-import leap.lang.value.SimpleEntry;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 	
@@ -34,12 +32,12 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 	protected String type = DbTableTypes.TABLE;
 	protected String comment;
 	protected String primaryKeyName;
-	
-	protected List<String>       primaryKeyColumnNames = new ArrayList<>();
-	protected List<DbColumn>     columns               = new ArrayList<>();
-	protected List<DbForeignKey> foreignKeys           = new ArrayList<>();
-	protected List<DbIndex>      indexes               = new ArrayList<>();
-	
+
+    protected List<String>              primaryKeyColumnNames = new ArrayList<String>();
+    protected List<DbColumnBuilder>     columns               = new ArrayList<DbColumnBuilder>();
+    protected List<DbForeignKeyBuilder> foreignKeys           = new ArrayList<DbForeignKeyBuilder>();
+    protected List<DbIndexBuilder>      indexes               = new ArrayList<DbIndexBuilder>();
+
 	public DbTableBuilder(){
 		
 	}
@@ -63,11 +61,16 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
         this.primaryKeyName = table.getPrimaryKeyName();
 
         for(DbColumn column : table.getColumns()) {
-            addColumn(column);
+            addColumn(new DbColumnBuilder(column));
         }
 
-        Collections2.addAll(foreignKeys, table.getForeignKeys());
-        Collections2.addAll(indexes, table.getIndexes());
+        for(DbForeignKey fk : table.getForeignKeys()) {
+            addForeignKey(new DbForeignKeyBuilder(fk));
+        }
+
+        for(DbIndex ix : table.getIndexes()) {
+            addIndex(new DbIndexBuilder(ix));
+        }
     }
 	
 	public DbSchemaObjectName getTableName(){
@@ -131,223 +134,214 @@ public class DbTableBuilder implements Buildable<DbTable>,JsonParsable {
 
     public DbTableBuilder updateTableName(String newName) {
 
-        List<Map.Entry<DbIndex,DbIndex>> updatedIndexes = new ArrayList<>();
-        for(DbIndex index : indexes) {
-
+        indexes.forEach(index -> {
             if(Strings.containsIgnoreCase(index.getName(), name)) {
 
                 String newIndexName = Strings.replaceIgnoreCase(index.getName(), name, newName);
-
-                DbIndex newIndex = new DbIndexBuilder(index).setName(newIndexName).build();
-
-                updatedIndexes.add(new SimpleEntry<>(index, newIndex));
+                index.setName(newIndexName);
             }
 
-        }
-        for(Map.Entry<DbIndex,DbIndex> entry : updatedIndexes) {
-            indexes.set(indexes.indexOf(entry.getKey()), entry.getValue());
-        }
+        });
 
-        List<Map.Entry<DbForeignKey,DbForeignKey>> updatedFks = new ArrayList<>();
-        for(DbForeignKey fk : foreignKeys) {
+        foreignKeys.forEach(fk -> {
             if(Strings.containsIgnoreCase(fk.getName(), name)) {
-
                 String newFkName = Strings.replaceIgnoreCase(fk.getName(), name , newName);
-
-                DbForeignKey newFk = new DbForeignKeyBuilder(fk).setName(newFkName).build();
-
-                updatedFks.add(new SimpleEntry<>(fk, newFk));
+                fk.setName(newFkName);
             }
-        }
-
-        for(Map.Entry<DbForeignKey,DbForeignKey> entry : updatedFks) {
-            foreignKeys.set(foreignKeys.indexOf(entry.getKey()), entry.getValue());
-        }
+        });
 
         this.name = newName;
         return this;
     }
 
-	public List<DbColumn> getColumns() {
-		return columns;
-	}
-	
-	public DbTableBuilder addColumn(DbColumn column) {
-		return addColumn(column,-1);
-	}
-	
-	public DbTableBuilder addColumn(DbColumn column,int index) {
-		Args.notNull(column);
-		
-		if(index < 0){
-			columns.add(column);
-		}else{
-			columns.add(index,column);
-		}
-		
-		if(column.isPrimaryKey()){
-			addPrimaryKeyColumnName(column.getName());
-		}
-		
-		return this;
-	}
-	
-	public List<DbForeignKey> getForeignKeys() {
-		return foreignKeys;
-	}
-
-	public DbTableBuilder addForeignKey(DbForeignKey fk) {
-		foreignKeys.add(fk);
-		return this;
-	}
-	
-	public List<DbIndex> getIndexes() {
-		return indexes;
-	}
-
-	public DbTableBuilder addIndex(DbIndex ix) {
-		indexes.add(ix);
-		return this;
-	}
-	
-	public List<String> getPrimaryKeyColumnNames() {
-		return primaryKeyColumnNames;
-	}
-	
-	/*
-	public DbTableBuilder updatePrimaryKey(DbColumn theAddedColumn){
-		Args.checkNotNull(theAddedColumn);
-		Assert.isValid(primaryKeyColumnNames.isEmpty(),"primary key columns must be empty");
-		
-		int index = columns.indexOf(theAddedColumn);
-		if(index < 0){
-			throw new IllegalStateException("column '" + theAddedColumn.getName() + "' not exists");
-		}
-		
-		columns.set(index, new DbColumnBuilder(theAddedColumn).setPrimaryKey(true).build());
-		primaryKeyColumnNames.add(theAddedColumn.getName());
-		
-		return this;
-	}
-	*/
-
-	/**
-	 * returns the {@link DbColumn} object matched the given name (ignore case) in this table.
-	 * 
-	 * <p>
-	 * returns <code>null</code> if no column match the given name.
-	 */
-	public DbColumn findColumn(String name){
-		for(int i=0;i<columns.size();i++){
-			DbColumn column = columns.get(i);
-			if(Strings.equalsIgnoreCase(column.getName(), name)){
-				return column;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * returns the {@link DbForeignKey} object matched the given name (ignore case) in this table.
-	 * 
-	 * <p>
-	 * returns <code>null</code> if no foreign key match the given name.
-	 */
-	public DbForeignKey findForeignKey(String name){
-		for(int i=0;i<foreignKeys.size();i++){
-			DbForeignKey fk = foreignKeys.get(i);
-			if(Strings.equalsIgnoreCase(fk.getName(), name)){
-				return fk;
-			}
-		}
-		return null;
-	}
-	
-	/**
-	 * returns the {@link DbIndex} object matched the given name (ignore case) in this table.
-	 * 
-	 * <p>
-	 * returns <code>null</code> if no index match the given name.
-	 */
-	public DbIndex findIndex(String name){
-		for(int i=0;i<indexes.size();i++){
-			DbIndex ix = indexes.get(i);
-			if(Strings.equalsIgnoreCase(ix.getName(), name)){
-				return ix;
-			}
-		}
-		return null;
-	}
-	
-	@Override
-    public DbTable build() {
-		if(!primaryKeyColumnNames.isEmpty() && Strings.isEmpty(primaryKeyName)){
-			primaryKeyName = "PK_" + name;
-		}
-		
-	    return new DbTable(catalog, schema, name, type, comment, 
-	    				   primaryKeyName,
-	    				   primaryKeyColumnNames.toArray(new String[primaryKeyColumnNames.size()]),
-	    				   columns.toArray(new DbColumn[columns.size()]), 
-	    				   foreignKeys.toArray(new DbForeignKey[foreignKeys.size()]),
-	    				   indexes.toArray(new DbIndex[indexes.size()]));
+    public List<DbColumnBuilder> getColumns() {
+        return columns;
     }
-	
-	@Override
+
+    public DbTableBuilder addPrimaryKey(DbColumnBuilder column){
+        addColumn(column);
+        addPrimaryKeyColumnName(column.getName());
+        column.setPrimaryKey(true);
+        column.setNullable(false);
+        return this;
+    }
+
+    public DbTableBuilder addColumn(DbColumnBuilder column) {
+        return addColumn(column,-1);
+    }
+
+    public DbTableBuilder addColumn(DbColumn column) {
+        return addColumn(new DbColumnBuilder(column));
+    }
+
+    public DbTableBuilder addColumn(DbColumnBuilder column,int index) {
+        Args.notNull(column);
+
+        if(index < 0){
+            columns.add(column);
+        }else{
+            columns.add(index,column);
+        }
+
+        if(column.isPrimaryKey() && !primaryKeyColumnNames.contains(column.getName())){
+            addPrimaryKeyColumnName(column.getName());
+        }
+
+        return this;
+    }
+
+    public List<DbForeignKeyBuilder> getForeignKeys() {
+        return foreignKeys;
+    }
+
+    public DbTableBuilder addForeignKey(DbForeignKeyBuilder fk) {
+        foreignKeys.add(fk);
+        return this;
+    }
+
+    public DbTableBuilder addForeignKey(DbForeignKey fk) {
+        return addForeignKey(new DbForeignKeyBuilder(fk));
+    }
+
+    public List<DbIndexBuilder> getIndexes() {
+        return indexes;
+    }
+
+    public DbTableBuilder addIndex(DbIndexBuilder ix) {
+        indexes.add(ix);
+        return this;
+    }
+
+    public DbTableBuilder addIndex(DbIndex ix) {
+        return addIndex(new DbIndexBuilder(ix));
+    }
+
+    public List<String> getPrimaryKeyColumnNames() {
+        return primaryKeyColumnNames;
+    }
+
+    public DbTableBuilder addPrimaryKeyColumnName(String columnName){
+        return addPrimaryKeyColumnName(columnName, -1);
+    }
+
+    public DbTableBuilder addPrimaryKeyColumnName(String columnName, int index){
+        Args.notEmpty(columnName);
+        Assert.isTrue(findColumn(columnName) != null);
+
+        if(primaryKeyColumnNames.contains(columnName)) {
+            if(index == -1) {
+                return this;
+            }
+            throw new IllegalStateException("Duplicated primary key '" + columnName + "'");
+        }
+
+        if(index < 0){
+            primaryKeyColumnNames.add(columnName);
+        }else{
+            primaryKeyColumnNames.add(index, columnName);
+        }
+
+        return this;
+    }
+
+    /**
+     * returns the {@link DbColumnBuilder} object matched the given name (ignore case) in this table.
+     *
+     * <p>
+     * returns <code>null</code> if no column match the given name.
+     */
+    public DbColumnBuilder findColumn(String name){
+        for(int i=0;i<columns.size();i++){
+            DbColumnBuilder column = columns.get(i);
+            if(Strings.equalsIgnoreCase(column.getName(), name)){
+                return column;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * returns the {@link DbForeignKeyBuilder} object matched the given name (ignore case) in this table.
+     *
+     * <p>
+     * returns <code>null</code> if no foreign key match the given name.
+     */
+    public DbForeignKeyBuilder findForeignKey(String name){
+        for(int i=0;i<foreignKeys.size();i++){
+            DbForeignKeyBuilder fk = foreignKeys.get(i);
+            if(Strings.equalsIgnoreCase(fk.getName(), name)){
+                return fk;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * returns the {@link DbIndexBuilder} object matched the given name (ignore case) in this table.
+     *
+     * <p>
+     * returns <code>null</code> if no index match the given name.
+     */
+    public DbIndexBuilder findIndex(String name){
+        for(int i=0;i<indexes.size();i++){
+            DbIndexBuilder ix = indexes.get(i);
+            if(Strings.equalsIgnoreCase(ix.getName(), name)){
+                return ix;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void parseJson(JsonValue value) {
-		JsonObject o = value.asJsonObject();
-		
-		this.catalog = o.getString("catalog");
-		this.schema  = o.getString("schema");
-		this.name    = o.getString("name");
-		this.type    = o.getString("type",DbTableTypes.TABLE);
-		this.comment = o.getString("comment");
-		this.primaryKeyName = o.getString("primaryKeyName");
-		
-		JsonArray columns = o.getArray("columns");
-		if(null != columns){
-			for(JsonValue v : columns){
-				DbColumnBuilder cb = new DbColumnBuilder();
-				cb.parseJson(v);
-				addColumn(cb.build());
-			}
-		}
-		
-		JsonArray fks = o.getArray("foreignKeys");
-		if(null != fks){
-			for(JsonValue v : fks){
-				DbForeignKeyBuilder fb = new DbForeignKeyBuilder();
-				fb.parseJson(v);
-				addForeignKey(fb.build());
-			}
-		}
-		
-		JsonArray indexes = o.getArray("indexes");
-		if(null != indexes){
-			for(JsonValue v : indexes){
-				DbIndexBuilder ib = new DbIndexBuilder();
-				ib.parseJson(v);
-				addIndex(ib.build());
-			}
-		}
+        JsonObject o = value.asJsonObject();
+
+        this.catalog = o.getString("catalog");
+        this.schema  = o.getString("schema");
+        this.name    = o.getString("name");
+        this.type    = o.getString("type",DbTableTypes.TABLE);
+        this.comment = o.getString("comment");
+        this.primaryKeyName = o.getString("primaryKeyName");
+
+        JsonArray columns = o.getArray("columns");
+        if(null != columns){
+            for(JsonValue v : columns){
+                DbColumnBuilder cb = new DbColumnBuilder();
+                cb.parseJson(v);
+                addColumn(cb);
+            }
+        }
+
+        JsonArray fks = o.getArray("foreignKeys");
+        if(null != fks){
+            for(JsonValue v : fks){
+                DbForeignKeyBuilder fb = new DbForeignKeyBuilder();
+                fb.parseJson(v);
+                addForeignKey(fb);
+            }
+        }
+
+        JsonArray indexes = o.getArray("indexes");
+        if(null != indexes){
+            for(JsonValue v : indexes){
+                DbIndexBuilder ib = new DbIndexBuilder();
+                ib.parseJson(v);
+                addIndex(ib);
+            }
+        }
     }
 
-	protected DbTableBuilder addPrimaryKeyColumnName(String columName){
-		return addPrimaryKeyColumnName(columName, -1);
-	}
-	
-	protected DbTableBuilder addPrimaryKeyColumnName(String columName,int index){
-		Args.notEmpty(columName);
-		Assert.isTrue(findColumn(columName) != null);
-		
-		if(index < 0){
-			primaryKeyColumnNames.add(columName);
-		}else{
-			primaryKeyColumnNames.add(index,columName);	
-		}
-		
-		return this;
-	}
-	
-	
+    @Override
+    public DbTable build() {
+        if(!primaryKeyColumnNames.isEmpty() && Strings.isEmpty(primaryKeyName)){
+            primaryKeyName = "PK_" + name;
+        }
+
+        return new DbTable(catalog, schema, name, type, comment,
+                primaryKeyName,
+                primaryKeyColumnNames.toArray(new String[primaryKeyColumnNames.size()]),
+                Builders.buildArray(columns, new DbColumn[columns.size()]),
+                Builders.buildArray(foreignKeys,new DbForeignKey[foreignKeys.size()]),
+                Builders.buildArray(indexes, new DbIndex[indexes.size()]));
+    }
 }

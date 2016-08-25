@@ -38,7 +38,7 @@ public class SequenceTest extends DbTestCase {
 		DbSequence sequence = new DbSequenceBuilder("tested_sequence").build();
 		
 		DbTable table = new DbTableBuilder("tested_sequence_table")
-								.addColumn(DbColumnBuilder.integer("id_").setPrimaryKey(true).build())
+								.addColumn(DbColumnBuilder.integer("id_").setPrimaryKey(true))
 								.build();
 		
 		if(dialect.supportsSequence()){

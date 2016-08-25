@@ -21,7 +21,7 @@ import leap.db.change.SchemaChanges;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
 
 import leap.lang.exception.NestedSQLException;
@@ -40,7 +40,7 @@ public class ColumnTest extends DbTestCase {
 		DbColumnBuilder col2 = DbColumnBuilder.varchar("col2", 100);
 		DbColumnBuilder col3 = DbColumnBuilder.varchar("col3", 100).setComment("comm");
 
-		DbTableBuilder1 table = new DbTableBuilder1("test_column_comment")
+		DbTableBuilder table = new DbTableBuilder("test_column_comment")
 								.addColumn(col1)
 								.addColumn(col2);
 		//test column comment for create table

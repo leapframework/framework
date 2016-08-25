@@ -18,7 +18,7 @@ package leap.db.ddl;
 import leap.db.DbTestCase;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 
 import org.junit.Test;
 
@@ -26,7 +26,7 @@ public class JsonTest extends DbTestCase {
 
 	@Test
 	public void testJsonTable() {
-		DbTable t = new DbTableBuilder1("t_json").addColumn(DbColumnBuilder.varchar("c1", 100)).build();
+		DbTable t = new DbTableBuilder("t_json").addColumn(DbColumnBuilder.varchar("c1", 100)).build();
 		
 		String json = t.toJson();
 		

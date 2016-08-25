@@ -23,6 +23,8 @@ import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
 import leap.core.validation.annotations.Required;
 import leap.db.model.DbColumnBuilder;
+import leap.db.model.DbIndexBuilder;
+import leap.db.model.DbTableBuilder;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
@@ -61,6 +63,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		if(null != annotations && annotations.length > 0){
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Column.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Index.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
 			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
@@ -226,6 +229,22 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         }
 		return false;
 	}
+
+    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Index a){
+        if(null != a) {
+            DbTableBuilder table = emb.getTable();
+
+            String name = Strings.firstNotEmpty(a.name(), a.value());
+            if(Strings.isEmpty(name)) {
+                name = "index" + String.valueOf(table.getIndexes().size() + 1);
+            }
+
+            DbIndexBuilder ix = null;
+
+            return true;
+        }
+        return false;
+    }
 
 	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){
 		String domainName = null;

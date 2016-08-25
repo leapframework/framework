@@ -37,8 +37,8 @@ public class PrimaryKeyTest extends DbTestCase {
 		if(dialect.supportsAutoIncrement()){
 			DbTableBuilder tb = new DbTableBuilder("test_identity");
 			
-			tb.addColumn(new DbColumnBuilder("id_",Types.INTEGER).setAutoIncrement(true).setPrimaryKey(true).build());
-			tb.addColumn(DbColumnBuilder.varchar("col1_", 100).build());
+			tb.addColumn(new DbColumnBuilder("id_",Types.INTEGER).setAutoIncrement(true).setPrimaryKey(true));
+			tb.addColumn(DbColumnBuilder.varchar("col1_", 100));
 			
 			DbTable table = tb.build();
 			
