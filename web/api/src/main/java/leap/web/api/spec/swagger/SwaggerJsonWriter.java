@@ -336,7 +336,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     }catch(RuntimeException e) {
                         throw e;
                     }
-
+					w.propertyOptional(DESCRIPTION,	 p.getDescription());
                     w.propertyOptional(REQUIRED,     p.getRequired());
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
