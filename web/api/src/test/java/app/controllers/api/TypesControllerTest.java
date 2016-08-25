@@ -18,18 +18,26 @@
 
 package app.controllers.api;
 
+import leap.lang.Dates;
+import leap.lang.time.DateFormats;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class TypesControllerTest extends WebTestBase {
 
     @Test
     public void testDateType() {
-        String date = get("/api/types/date").getContent();
+        String s = get("/api/types/date").getContent();
 
-        assertNotEmpty(date);
+        assertNotEmpty(s);
 
-        //todo : test the value.
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+        Date date = Dates.tryParse(s, format);
+        assertNotNull(date);
     }
 
     @Test

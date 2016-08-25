@@ -18,6 +18,7 @@ package leap.web.route;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
+import leap.lang.ExtensibleBase;
 import leap.web.action.Action;
 import leap.web.action.FailureHandler;
 import leap.web.annotation.Cors;
@@ -31,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class RouteBuilder implements RouteBase, Buildable<Route> {
+public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable<Route> {
 	
 	protected Object	   		   source;
 	protected String       		   method;
@@ -272,6 +273,8 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 		if(null != httpsOnly) {
 		    route.setHttpsOnly(httpsOnly);
 		}
+
+        extensions.forEach((t,ex) -> route.setExtension(t, ex));
 
 		return route;
 	}

@@ -33,4 +33,6 @@ public @interface JsonSerialize {
 
 	String namingStyle() default "";
 
+    String dateFormat() default "";
+
 }

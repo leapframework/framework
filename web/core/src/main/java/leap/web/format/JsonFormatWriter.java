@@ -26,16 +26,19 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
+import leap.web.action.Action;
 import leap.web.action.ActionContext;
+import leap.web.action.ActionInitializable;
 import leap.web.json.JsonConfig;
 import leap.web.json.JsonSerialize;
+import leap.web.route.RouteBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-public class JsonFormatWriter implements FormatWriter {
+public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 
 	private static final Log log = LogFactory.get(JsonFormatWriter.class);
 	
@@ -45,15 +48,21 @@ public class JsonFormatWriter implements FormatWriter {
 	protected @Inject JsonConfig  defaultJsonConfig;
 
     @Override
-    public void write(ActionContext context, Object value, Writer out) throws IOException {
-		JsonSettings settings = getDefaultJsonSettings();
-		
-		JsonSerialize a = Classes.getAnnotation(context.getAction().getAnnotations(), JsonSerialize.class);
-		
-		if(null != a) {
-			settings = createJsonSettings(a);
-		}
+    public void postActionInit(RouteBuilder route, Action action) {
+        JsonSerialize a = action.searchAnnotation(JsonSerialize.class);
+        if(null != a) {
+            JsonSettings settings = createJsonSettings(a);
+            route.setExtension(settings);
+        }
+    }
 
+    @Override
+    public void write(ActionContext context, Object value, Writer out) throws IOException {
+		JsonSettings settings = context.getRoute().getExtension(JsonSettings.class);
+        if(null == settings) {
+            settings = getDefaultJsonSettings();
+        }
+		
 		if(value instanceof JsonStringable) {
 			((JsonStringable) value).toJson(out,settings);
 			return;
@@ -79,6 +88,7 @@ public class JsonFormatWriter implements FormatWriter {
                             .setIgnoreNull(defaultJsonConfig.isDefaultSerializationIgnoreNull())
                             .setIgnoreEmpty(defaultJsonConfig.isDefaultSerializationIgnoreEmpty())
                             .setNamingStyle(defaultJsonConfig.getDefaultNamingStyle())
+                            .setDateFormat(defaultJsonConfig.getDefaultDateFormat())
                             .build();
 		}
 		return defaultJsonSettings;
@@ -88,6 +98,7 @@ public class JsonFormatWriter implements FormatWriter {
 		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
+        String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
 
         NamingStyle ns;
 
@@ -108,6 +119,7 @@ public class JsonFormatWriter implements FormatWriter {
                     .setIgnoreNull(ignoreNull)
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
+                    .setDateFormat(dateFormat)
                     .build();
 	}
 }

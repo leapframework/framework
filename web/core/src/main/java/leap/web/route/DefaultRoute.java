@@ -17,6 +17,7 @@ package leap.web.route;
 
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.lang.Sourced;
 import leap.web.action.Action;
 import leap.web.action.FailureHandler;
@@ -27,7 +28,7 @@ import leap.web.view.View;
 import java.util.Collections;
 import java.util.Map;
 
-class DefaultRoute implements Sourced, Route {
+class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	
 	protected final Object		 		source;
 	protected final String 		 		method;
@@ -93,7 +94,7 @@ class DefaultRoute implements Sourced, Route {
 	    this.failureHandlers     = failureHandlers;
 	    this.requiredParameters  = null == requiredParameters ? Collections.emptyMap() : Collections.unmodifiableMap(requiredParameters);
     }
-	
+
 	/**
 	 * Returns a object indicates the source location defined this route.
 	 */

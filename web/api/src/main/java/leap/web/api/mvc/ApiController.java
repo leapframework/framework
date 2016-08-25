@@ -22,6 +22,7 @@ import leap.web.annotation.Produces;
 import leap.web.annotation.Restful;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.json.JsonSerialize;
 import leap.web.security.annotation.AllowClientOnly;
 
 @Consumes("json")
@@ -29,6 +30,7 @@ import leap.web.security.annotation.AllowClientOnly;
 @AllowClientOnly
 @Restful
 @Failure(handler = ApiFailureHandler.class)
+@JsonSerialize(dateFormat = "yyyy-MM-dd'T'HH:mm:ssXXX")
 public abstract class ApiController {
 
     protected ApiConfig   apiConfig;

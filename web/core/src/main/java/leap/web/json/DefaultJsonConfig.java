@@ -21,17 +21,20 @@ import leap.lang.Args;
 import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
 
+import java.text.DateFormat;
+
 @Configurable(prefix="webmvc.json")
 public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 
-	protected boolean defaultSerializationKeyQuoted   = true;
-	protected boolean defaultSerializationIgnoreNull  = false;
-	protected boolean defaultSerializationIgnoreEmpty = false;
-	protected boolean jsonpEnabled					= true;
-	protected NamingStyle namingStyle					= NamingStyles.RAW;
-	protected String  jsonpParameter				  = DEFAULT_JSONP_PARAMETER;
-	
-	public DefaultJsonConfig() {
+    protected boolean     defaultSerializationKeyQuoted   = true;
+    protected boolean     defaultSerializationIgnoreNull  = false;
+    protected boolean     defaultSerializationIgnoreEmpty = false;
+    protected NamingStyle defaultNamingStyle              = NamingStyles.RAW;
+    protected String      defaultDateFormat               = null;
+    protected boolean     jsonpEnabled                    = true;
+    protected String      jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
+
+    public DefaultJsonConfig() {
 	    super();
     }
 
@@ -75,11 +78,22 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		if(namingStyle == null){
 			throw new IllegalArgumentException("default naming style can not be null!");
 		}
-		this.namingStyle = namingStyle;
+		this.defaultNamingStyle = namingStyle;
 		return this;
 	}
 
-	@ConfigProperty
+    @Override
+    public String getDefaultDateFormat() {
+        return defaultDateFormat;
+    }
+
+    @Override
+    public JsonConfigurator setDefaultDateFormat(String f) {
+        this.defaultDateFormat = f;
+        return this;
+    }
+
+    @ConfigProperty
 	public JsonConfigurator setJsonpEnabled(boolean enabled) {
 		this.jsonpEnabled = enabled;
 	    return this;
@@ -104,6 +118,6 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 
 	@Override
 	public NamingStyle getDefaultNamingStyle() {
-		return namingStyle;
+		return defaultNamingStyle;
 	}
 }
