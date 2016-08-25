@@ -419,13 +419,16 @@ public class AppResources {
 
         if(context instanceof ServletContext) {
             ServletContext sc = (ServletContext)context;
-
-            for(String path : sc.getResourcePaths(searchPath)) {
-                ServletResource resource = Servlets.getResource(sc, path);
-                if(!resource.isDirectory()) {
-                    add(resource, Strings.removeStart(path, pathPrefix));
+            Set<String> paths = sc.getResourcePaths(searchPath);
+            if(paths != null){
+                for(String path : paths) {
+                    ServletResource resource = Servlets.getResource(sc, path);
+                    if(!resource.isDirectory()) {
+                        add(resource, Strings.removeStart(path, pathPrefix));
+                    }
                 }
             }
+
         }
     }
 
