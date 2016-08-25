@@ -118,7 +118,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.reservedMetaFieldName = template.reservedMetaFieldName;
     }
 
-    public void mergedWithGlobalField(FieldMappingBuilder fm) {
+    public void mergeWithGlobalField(FieldMappingBuilder fm) {
 
         if(null != fm.dataType) {
             this.dataType = fm.dataType;
@@ -212,6 +212,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		}
 		return this;
 	}
+
+    public String getColumnName() {
+        return column.getName();
+    }
 	
 	public MType getDataType() {
 		return dataType;

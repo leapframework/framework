@@ -275,8 +275,13 @@ public class DefaultNamingStrategy implements NamingStrategy,PostCreateBean {
     public String getForeignKeyName(String localEntityName, String referencedEntityName, String relationName) {
 	    return "fk_" + Strings.lowerUnderscore(localEntityName) + "_" + Strings.lowerUnderscore(relationName);
     }
-	
-	@Override
+
+    @Override
+    public String getIndexName(String entityName, String indexLocalName) {
+        return "ix_" + Strings.lowerUnderscore(entityName) + "_" + Strings.lowerUnderscore(indexLocalName);
+    }
+
+    @Override
     public String getJoinEntityName(String entityName, String targetEntityName) {
 	    return Strings.upperCamel(entityName,targetEntityName);
     }

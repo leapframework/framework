@@ -49,6 +49,8 @@ public interface NamingStrategy {
 	String getLocalFieldName(String referencedEntityName,String referencedFieldName);
 	
 	String getForeignKeyName(String localEntityName,String referencedEntityName,String relationName);
+
+    String getIndexName(String entityName, String indexLocalName);
 	
 	String getJoinEntityName(String entityName,String targetEntityName);
 }

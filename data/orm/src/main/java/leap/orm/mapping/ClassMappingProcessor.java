@@ -56,14 +56,21 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
 		}
     }
-	
-	@Override
+
+    @Override
+    public void postMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+        Index[] indexes = emb.getEntityClass().getAnnotationsByType(Index.class);
+        for(Index index : indexes) {
+            mappingTableIndex(context, emb, index);
+        }
+    }
+
+    @Override
     public void preMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) throws MetadataException {
 		Annotation[] annotations = fmb.getAnnotations();
 		if(null != annotations && annotations.length > 0){
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Column.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
-            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Index.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
 			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
@@ -78,6 +85,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		Annotation[] annotations = fmb.getAnnotations();
 		if(null != annotations && annotations.length > 0){
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
+            mappingFieldColumnIndex(context, emb, fmb, Classes.getAnnotation(annotations,Index.class));
 		}
     }
 	
@@ -230,20 +238,67 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		return false;
 	}
 
-    protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Index a){
+    protected boolean mappingFieldColumnIndex(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder f, Index a){
         if(null != a) {
             DbTableBuilder table = emb.getTable();
 
-            String name = Strings.firstNotEmpty(a.name(), a.value());
-            if(Strings.isEmpty(name)) {
-                name = "index" + String.valueOf(table.getIndexes().size() + 1);
+            String localName = Strings.firstNotEmpty(a.name(), a.value());
+            if(Strings.isEmpty(localName)) {
+                localName = "index" + String.valueOf(table.getIndexes().size() + 1);
             }
 
-            DbIndexBuilder ix = null;
+            String fullName = context.getNamingStrategy().getIndexName(emb.getEntityName(), localName);
 
+            DbIndexBuilder ix = null;
+            for(DbIndexBuilder item : table.getIndexes()) {
+                if(item.getName().equalsIgnoreCase(fullName)) {
+                    ix = item;
+                    break;
+                }
+            }
+            if(null == ix) {
+                ix = new DbIndexBuilder(fullName);
+            }
+
+            if(a.unique()) {
+                ix.setUnique(true);
+            }
+
+            ix.addColumnName(f.getColumnName());
             return true;
         }
         return false;
+    }
+
+    protected boolean mappingTableIndex(MetadataContext context, EntityMappingBuilder emb, Index a){
+        String localName = Strings.firstNotEmpty(a.name(), a.value());
+        if(Strings.isEmpty(localName)) {
+            throw new MappingConfigException("The name must not be empty in @Index, check : " + emb.getEntityClass());
+        }
+
+        String[] columns = a.columns();
+        if(columns.length == 0) {
+            throw new MappingConfigException("The columns must not be empty in @Index, check : " + emb.getEntityClass());
+        }
+
+        DbIndexBuilder index = new DbIndexBuilder();
+        index.setName(context.getNamingStrategy().getIndexName(emb.getEntityName(), localName));
+        index.setUnique(a.unique());
+
+        for(String columnName : columns) {
+            FieldMappingBuilder fmb = emb.findFieldMappingByColumn(columnName);
+            if(null == fmb) {
+               fmb = emb.findFieldMappingByName(columnName);
+            }
+            if(null == fmb) {
+                throw new MappingConfigException("No field or column named '" + columnName +
+                                                 "' in entity '" + emb.getEntityName() + "', check the @Index");
+            }
+            index.addColumnName(fmb.getColumnName());
+        }
+
+        emb.getTable().addIndex(index);
+        return true;
     }
 
 	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){

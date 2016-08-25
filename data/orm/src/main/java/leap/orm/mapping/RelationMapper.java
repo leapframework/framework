@@ -33,7 +33,6 @@ public class RelationMapper implements Mapper {
 		}
 	}
 
-
 	protected void processRelationMappings(MappingConfigContext context,EntityMappingBuilder emb) {
 		for(RelationMappingBuilder rmb : emb.getRelationMappings()){
 			processRelationMapping(context, emb, rmb);
@@ -291,7 +290,7 @@ public class RelationMapper implements Mapper {
 			fk.addColumn(new DbForeignKeyColumn(localField.getColumn().getName(), foreignField.getColumn().getName()));
 		}
 		
-		emb.getTable().addForeignKey(fk.build());
+		emb.getTable().addForeignKey(fk);
 	}
 	
 	protected void createManyToManyJoinEntity(MappingConfigContext   context,

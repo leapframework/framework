@@ -37,12 +37,19 @@ public class DbIndexBuilder implements Buildable<DbIndex>,JsonParsable {
 
     }
 
+    public DbIndexBuilder(String name) {
+        this.name = name;
+    }
+
     public DbIndexBuilder(DbIndex index) {
         this.name = index.getName();
         this.unique = index.isUnique();
         Collections2.addAll(columnNames,index.getColumnNames());
     }
 
+    /**
+     * Required. The full name of index.
+     */
     public String getName() {
 		return name;
 	}
@@ -51,8 +58,8 @@ public class DbIndexBuilder implements Buildable<DbIndex>,JsonParsable {
 		this.name = name;
 		return this;
 	}
-	
-	public boolean isUnique() {
+
+    public boolean isUnique() {
 		return unique;
 	}
 

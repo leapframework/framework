@@ -17,31 +17,16 @@
  */
 package leap.orm.annotation;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-@Target({ElementType.FIELD,ElementType.METHOD, ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Repeatable(Indexes.class)
-public @interface Index {
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-    /**
-     * The name of index, same as {@link #name()}.
-     */
-    String value() default "";
+@Target({ElementType.TYPE})
+@Retention(RUNTIME)
+public @interface Indexes {
 
-    /**
-     * The name of index.
-     */
-    String name() default "";
-
-    /**
-     * unique index.
-     */
-    boolean unique() default false;
-
-    /**
-     * The index columns.
-     */
-    String[] columns() default {};
-
+	Index[] value();
+	
 }
