@@ -63,7 +63,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	}
 	
 	public boolean isOptional() {
-		return null == optional ? true : false;
+		return null == optional ? true : optional;
 	}
 
 	public Boolean getOptional() {
