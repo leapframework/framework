@@ -34,6 +34,7 @@ import leap.orm.domain.Domains;
 import leap.orm.domain.EntityDomain;
 import leap.orm.domain.FieldDomain;
 import leap.orm.generator.IdGenerator;
+import leap.orm.generator.ValueGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 
@@ -72,6 +73,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Column.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
+            mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,GeneratedValue.class));
 			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotEmpty.class));
@@ -395,6 +397,17 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			
 		}
 	}
+
+    protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,GeneratedValue a){
+        if(null != a) {
+            String name = a.value();
+            ValueGenerator generator = factory.tryGetBean(ValueGenerator.class, name);
+            if (null == generator) {
+                throw new MappingConfigException("No value generator '" + name + "', check entity : " + emb.getEntityName());
+            }
+            fmb.setInsertValue(generator);
+        }
+    }
 	
 	protected void mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,NotEmpty a){
 		if(null != a && null == fmb.getNullable()){
