@@ -594,7 +594,7 @@ public class JsonWriterImpl implements JsonWriter {
             if(null == date) {
                 out.append(NULL_STRING);
             }else if(null != dateFormat){
-                out.append(dateFormat.format(date));
+				out.append(DOUBLE_QUOTE).append(dateFormat.format(date)).append(DOUBLE_QUOTE);
             }else{
                 out.append(String.valueOf(date.getTime()));
             }
