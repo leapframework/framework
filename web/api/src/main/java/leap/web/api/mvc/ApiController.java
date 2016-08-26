@@ -30,7 +30,7 @@ import leap.web.security.annotation.AllowClientOnly;
 @AllowClientOnly
 @Restful
 @Failure(handler = ApiFailureHandler.class)
-@JsonSerialize(dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+@JsonSerialize(dateFormat = "yyyy-MM-dd'T'HH:mm:ssXXX")
 public abstract class ApiController {
 
     protected ApiConfig   apiConfig;

@@ -19,6 +19,7 @@
 package app.controllers.api;
 
 import leap.lang.Dates;
+import leap.lang.json.JSON;
 import leap.lang.time.DateFormats;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
@@ -31,7 +32,7 @@ public class TypesControllerTest extends WebTestBase {
 
     @Test
     public void testDateType() {
-        String s = get("/api/types/date").getContent();
+        String s = JSON.decode(get("/api/types/date").getContent());
 
         assertNotEmpty(s);
 
