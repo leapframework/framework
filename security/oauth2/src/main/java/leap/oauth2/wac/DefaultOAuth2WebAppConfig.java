@@ -195,6 +195,11 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return tokenStore;
     }
 
+    @Override
+    public OAuth2WebAppConfigurator setTokenStore(WacTokenStore tokenStore) {
+        return setAccessTokenStore(tokenStore);
+    }
+
     public OAuth2WebAppConfigurator setAccessTokenStore(WacTokenStore accessTokenStore) {
         this.tokenStore = accessTokenStore;
         return this;
