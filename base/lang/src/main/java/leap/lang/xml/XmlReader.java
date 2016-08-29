@@ -44,6 +44,27 @@ public interface XmlReader extends Closeable,Sourced {
 	 */
     boolean next();
 
+    /**
+     * Loops inside current opened element until element end.
+     */
+    default void loopInsideElement(Runnable func) {
+        QName elementName = getElementName();
+        int elementCount = 1;
+
+        while(next()) {
+            if(isEndElement(elementName)) {
+                if(elementCount == 1) {
+                    return;
+                }else{
+                    elementCount --;
+                }
+            } else if(isStartElement(elementName)) {
+                elementCount++;
+            }
+            func.run();
+        }
+    }
+
     boolean nextWhileNotEnd(QName elementName);
     
     boolean nextWhileNotEnd(String elementLocalName);
