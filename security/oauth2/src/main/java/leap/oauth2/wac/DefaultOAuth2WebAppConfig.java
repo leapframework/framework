@@ -139,6 +139,11 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return this;
     }
 
+    @Override
+    public String getServerUrl() {
+        return this.serverUrl;
+    }
+
     public String getServerTokenEndpointUrl() {
         return serverTokenEndpointUrl;
     }
