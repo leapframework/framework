@@ -183,12 +183,9 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         SecuredPath sp = resolveSecurityPath(request, response, context);
         context.setSecurityPath(sp);
 
-        //Handles cors request.
-        if(sp.isAllowCors()) {
-            state = cors.handle(request, response);
-            if(State.isIntercepted(state)) {
-                return state;
-            }
+        state = checkAndSetCorsHeaders(request,response,context,sp);
+        if(state.isIntercepted()) {
+            return state;
         }
 
         //Check authentication
@@ -306,4 +303,27 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 		return State.CONTINUE;
 	}
+
+	protected State checkAndSetCorsHeaders(Request request, Response response, DefaultSecurityContextHolder context,SecuredPath sp) throws Throwable {
+        //Handles cors request.
+        State state = State.CONTINUE;
+
+        //If route disable cors,this request is not allow cors
+        boolean isRouteDisableCors = sp.getRoute()!=null&&sp.getRoute().isCorsDisabled();
+        if(isRouteDisableCors){
+            return state;
+        }
+
+        // If route is not disable cors, this request is not allow cors only when sp and global both not allow cors
+        boolean isGlobalAllowCors = webConfig.isCorsEnabled();
+        boolean isPathAllowCors = sp.isAllowCors();
+
+        if(isPathAllowCors || isGlobalAllowCors) {
+            state = cors.handle(request, response);
+            if(State.isIntercepted(state)) {
+                return state;
+            }
+        }
+        return state;
+    }
 }
