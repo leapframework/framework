@@ -15,8 +15,6 @@
  */
 package leap.web.format;
 
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeTypes;
@@ -25,8 +23,6 @@ import leap.web.Contents;
 import leap.web.action.ActionContext;
 
 public class TextFormat extends AbstractResponseFormat {
-	
-	protected @Inject @M JsonFormatWriter jsonWriter;
 	
 	public TextFormat() {
 		super(MimeTypes.TEXT_PLAIN_TYPE);

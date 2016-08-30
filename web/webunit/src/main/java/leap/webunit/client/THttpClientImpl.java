@@ -43,6 +43,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.ProtocolException;
 import org.apache.http.client.CookieStore;
 import org.apache.http.client.HttpClient;
+import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.DnsResolver;
@@ -192,8 +193,8 @@ public class THttpClientImpl implements THttpClient {
 		//TODO : small buffer size will cause socket closed when reading response entity?
 		PoolingHttpClientConnectionManager cm = 
 				new PoolingHttpClientConnectionManager(getDefaultRegistry(), this.dnsResolver);
-		//cm.setDefaultConnectionConfig(ConnectionConfig.custom().setBufferSize(1024 * 1024).build());
-		
+		cm.setDefaultConnectionConfig(ConnectionConfig.custom().setBufferSize(1024 * 1024).build());
+
 		cb.setConnectionManager(cm);
 		cb.setDefaultCookieStore(this.cookieStore);
 		cb.setRedirectStrategy(new DefaultRedirectStrategy() {

@@ -46,9 +46,32 @@ public class TypesController extends ApiController {
         return ApiResponse.of("Hello1");
     }
 
+    @GET("/plain_text_long")
+    @Produces("text")
+    public String plainTextLong() {
+        StringBuilder s = new StringBuilder();
+
+        for(int i=0;i<10000;i++) {
+            s.append('0');
+        }
+
+        return s.toString();
+    }
+
     @GET("/json_text")
     public String jsonText() {
         return "Hello";
+    }
+
+    @GET("/json_text_long")
+    public String jsonTextLong() {
+        StringBuilder s = new StringBuilder();
+
+        for(int i=0;i<10000;i++) {
+            s.append('0');
+        }
+
+        return s.toString();
     }
 
     @GET("json_text1")

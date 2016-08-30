@@ -119,14 +119,14 @@ public class JSON {
      * Encodes the value to json string.
      */
     public static void encode(Object value, Appendable out){
-        createWriter(out).value(value).toString();
+        createWriter(out).value(value);
     }
 
     /**
      * Encodes the value to json string with the given settings.
      */
     public static void encode(Object value, JsonSettings settings, Appendable out){
-        createWriter(out, settings).value(value).toString();
+        createWriter(out, settings).value(value);
     }
     
     /**

@@ -72,7 +72,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 
             String json = JSON.encode(value, settings);
 
-            log.trace("json output -> \n{}", json);
+            log.trace("json output -> \n{}", Strings.abbreviate(json, 1024));
 
             out.write(json);
         }else{
