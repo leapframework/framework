@@ -28,4 +28,8 @@ public @interface SqlKey {
      */
     String value();
 
+    /**
+     * The datasource of command
+     */
+    String datasource() default "";
 }

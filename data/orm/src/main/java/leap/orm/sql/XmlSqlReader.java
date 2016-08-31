@@ -172,6 +172,7 @@ public class XmlSqlReader implements SqlReader {
 		String	content             = reader.resolveElementTextAndEnd();
 		String  entityName          = reader.resolveAttribute(ENTITY_NAME_ATTRIBUTE);
 		String  entityClassName     = reader.resolveAttribute(ENTITY_CLASS_ATTRIBUTE);
+		String  datasource			= reader.resolveAttribute(DATA_SOURCE);
 		
 		//check key,name,entity-class,entity-name
 		if(Strings.isEmpty(key) && Strings.isEmpty(name)){
@@ -286,7 +287,7 @@ public class XmlSqlReader implements SqlReader {
 		}
 		
 		log.trace("SQL(s) : \n\n  {}\n",content);
-		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content, new DefaultSqlIdentity(key,name,entityName,entityClassName));
+		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content, new DefaultSqlIdentity(key,name,entityName,entityClassName,datasource));
 		if(!Strings.isEmpty(key)){
 			metadata.addSqlCommand(key, command);
 		}

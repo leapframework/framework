@@ -16,6 +16,7 @@
 
 package leap.orm.dao.query;
 
+import leap.core.annotation.Inject;
 import leap.junit.contexual.Contextual;
 import leap.lang.Confirm;
 import leap.lang.New;
@@ -30,11 +31,11 @@ import org.junit.Test;
 import javax.sql.DataSource;
 
 public class WhereColumnTest extends OrmTestCase {
-
-    @SqlKey("testSingleWhereColumn.ECodeModel.all")
+    @Inject
+    @SqlKey(value = "testSingleWhereColumn.ECodeModel.all",datasource = "h2")
     private DaoCommand selectAllCommand;
-
-    @SqlKey("testSqlDatasource")
+    @Inject
+    @SqlKey(value = "testSqlDatasource",datasource = "h2")
     private DaoCommand testSqlDatasource;
     @Test
     public void setTestSqlDatasource(){
@@ -47,7 +48,7 @@ public class WhereColumnTest extends OrmTestCase {
             }
             assertTrue(exception);
         }
-        if(testSqlDatasource != null){
+        if(dao.getOrmContext().getDataSource()==factory.getBean(DataSource.class,"h2")){
             DataSource ds = testSqlDatasource.dao().getOrmContext().getDataSource();
             assertTrue(factory.getBean(DataSource.class,"h2") == ds);
         }
