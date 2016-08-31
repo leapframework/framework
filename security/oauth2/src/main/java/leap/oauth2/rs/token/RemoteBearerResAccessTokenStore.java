@@ -94,7 +94,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
-        details.setCreated((Long)map.remove("created"));
+        details.setCreated(System.currentTimeMillis());
         details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
         details.setScope((String)map.remove("scope"));
 

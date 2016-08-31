@@ -60,11 +60,11 @@ public abstract class OAuth2ExpirableEntity implements OAuth2Entity {
     }
     
     public void setExpirationByExpiresIn(int expiresIn) {
-        this.setExpirationMs(created.getTime() + expiresIn * 1000l);
+        this.setExpirationMs(created.getTime() + expiresIn * 1000L);
     }
     
     public int getExpiresIn() {
-        return (int)((getExpirationMs() - getCreatedMs()) / 1000l);
+        return (int)((getExpirationMs() - getCreatedMs()) / 1000L);
     }
 
     public void setTimeExpirable(TimeExpirable te) {
