@@ -22,14 +22,36 @@ import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
+import leap.orm.sql.SqlNotFoundException;
 import leap.orm.tested.model.ECodeModel;
 import leap.orm.tested.model.ECodeModel1;
 import org.junit.Test;
+
+import javax.sql.DataSource;
 
 public class WhereColumnTest extends OrmTestCase {
 
     @SqlKey("testSingleWhereColumn.ECodeModel.all")
     private DaoCommand selectAllCommand;
+
+    @SqlKey("testSqlDatasource")
+    private DaoCommand testSqlDatasource;
+    @Test
+    public void setTestSqlDatasource(){
+        if(dao.getOrmContext().getDataSource()!=factory.getBean(DataSource.class,"h2")){
+            boolean exception = false;
+            try {
+                dao.createNamedQuery("testSqlDatasource");
+            } catch (SqlNotFoundException e) {
+                exception = true;
+            }
+            assertTrue(exception);
+        }
+        if(testSqlDatasource != null){
+            DataSource ds = testSqlDatasource.dao().getOrmContext().getDataSource();
+            assertTrue(factory.getBean(DataSource.class,"h2") == ds);
+        }
+    }
 
     @Test
     public void testSingleWhereQuery() {
