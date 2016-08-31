@@ -50,6 +50,7 @@ public class XmlSqlReader implements SqlReader {
 	private static final String DEFAULT_OVERRIDE_ATTRIBUTE  = "default-override";
 	private static final String NAME_ATTRIBUTE              = "name";
 	private static final String LANG_ATTRIBUTE              = "lang";
+    private static final String DATA_SOURCE                 = "data-source";
 	
 	protected @Inject @M BeanFactory beanFactory;
 	protected @Inject @M SqlLanguage defaultLanguage;
@@ -77,10 +78,14 @@ public class XmlSqlReader implements SqlReader {
 		if(!context.acceptDbType(dbType)){
 			return;
 		}
+
+        String defaultDataSource = null;
 		
 		while(reader.next()){
 			if(reader.isStartElement(SQLS_ELEMENT)){
 				foundValidRootElement = true;
+
+                defaultDataSource = reader.getAttribute(DATA_SOURCE);
 				
 				while(reader.next()){
 					if(reader.isStartElement(IMPORT_ELEMENT)){
@@ -102,11 +107,11 @@ public class XmlSqlReader implements SqlReader {
 					}
 					
 					if(reader.isStartElement(COMMAND_ELEMENT)){
-						readSqlCommand(context, resource, reader, dbType, defaultOverride);
+						readSqlCommand(context, resource, reader, dbType, defaultDataSource, defaultOverride);
 						continue;
 					}
 					if(reader.isStartElement(FRAGMENT_ELEMENT)){
-						readSqlFragment(context, resource, reader, dbType, defaultOverride);
+						readSqlFragment(context, resource, reader, dbType, defaultDataSource, defaultOverride);
 						continue;
 					}
 				}
@@ -119,7 +124,11 @@ public class XmlSqlReader implements SqlReader {
 		}
 	}
 
-	private void readSqlFragment(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride) {
+	private void readSqlFragment(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, String dataSource, boolean defaultOverride) {
+        if(!matchDataSource(context, reader, dataSource)) {
+            return;
+        }
+
 		String key 	   = reader.resolveAttribute(KEY_ATTRIBUTE);
 		String content = reader.resolveElementTextAndEnd();
 
@@ -138,7 +147,22 @@ public class XmlSqlReader implements SqlReader {
 		metadata.addSqlFragment(key,new SimpleSqlFragment(reader.getSource(),content));
 	}
 
-	protected void readSqlCommand(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, boolean defaultOverride){
+    protected boolean matchDataSource(SqlReaderContext context, XmlReader reader, String defaultDataSource) {
+        String dataSource = reader.getAttribute(DATA_SOURCE);
+        if(Strings.isEmpty(dataSource)) {
+            dataSource = defaultDataSource;
+        }
+        if(Strings.isEmpty(dataSource)) {
+            return true;
+        }
+        return context.getConfigContext().getName().equalsIgnoreCase(dataSource);
+    }
+
+	protected void readSqlCommand(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, String dataSource, boolean defaultOverride){
+        if(!matchDataSource(context, reader, dataSource)) {
+            return;
+        }
+
 		OrmMetadata metadata = context.getConfigContext().getMetadata();
 		
 		String  key                 = reader.resolveAttribute(KEY_ATTRIBUTE);
