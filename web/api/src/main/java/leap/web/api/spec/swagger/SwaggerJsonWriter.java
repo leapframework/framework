@@ -18,10 +18,12 @@ package leap.web.api.spec.swagger;
 import static leap.lang.Strings.nullToEmpty;
 import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
+import java.util.List;
 import java.util.Map.Entry;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
@@ -323,6 +325,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.startObject();
 
         w.property(TYPE, OBJECT);
+        w.propertyOptional(TITLE, model.getTitle());
+        w.propertyOptional(SUMMARY, model.getSummary());
+        w.propertyOptional(DESCRIPTION, model.getDescription());
+
+        List<String> requiredProperties = New.arrayList();
+        for(MApiProperty p : model.getProperties()) {
+            if(isRequired(p)) {
+                requiredProperties.add(p.getName());
+            }
+        }
+        w.property(REQUIRED, requiredProperties);
 
 		w.property(PROPERTIES, () -> {
 			w.startObject();
@@ -336,8 +349,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     }catch(RuntimeException e) {
                         throw e;
                     }
+
 					w.propertyOptional(DESCRIPTION,	 p.getDescription());
-                    w.propertyOptional(REQUIRED,     p.getRequired());
+
+//                    if(isReadonly(p)) {
+//                        w.property(READONLY, true);
+//                    }
+
                     w.propertyOptional(X_CREATABLE,  p.getCreatable());
                     w.propertyOptional(X_UPDATABLE,  p.getUpdatable());
                     w.propertyOptional(X_SORTABLE,   p.getSortable());
@@ -352,6 +370,14 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
+
+    protected boolean isRequired(MApiProperty p) {
+        return !isReadonly(p) && (null != p.getRequired() && p.getRequired());
+    }
+
+    protected boolean isReadonly(MApiProperty p) {
+        return p.isNotCreatableExplicitly() && p.isNotUpdatableExplicitly();
+    }
 	
 	protected void writeParameterType(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameterBase p) {
 		MType type = p.getType();

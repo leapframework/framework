@@ -16,9 +16,7 @@
 
 package leap.lang.meta;
 
-import leap.lang.New;
-
-public class MDictionaryType extends MComplexType {
+public class MDictionaryType extends MType {
 
     public static final MDictionaryType INSTANCE = new MDictionaryType(MObjectType.TYPE,MObjectType.TYPE);
 
@@ -26,7 +24,7 @@ public class MDictionaryType extends MComplexType {
     private final MType valueType;
 
     public MDictionaryType(MType keyType, MType valueType) {
-        super("dict", "dict", null, null, null, null, New.arrayList(), false);
+        super(null,null);
         this.keyType   = keyType;
         this.valueType = valueType;
     }
@@ -40,7 +38,7 @@ public class MDictionaryType extends MComplexType {
     }
 
     @Override
-    public final boolean isDictionaryType() {
-        return true;
+    public MTypeKind getTypeKind() {
+        return MTypeKind.DICTIONARY;
     }
 }

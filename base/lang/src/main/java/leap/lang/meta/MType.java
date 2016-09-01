@@ -68,12 +68,9 @@ public abstract class MType extends ImmutableMDescribed {
 
     /**
      * Returns true if this type is a dictionary type.
-     *
-     * <p/>
-     * Note : a dictionary type is also a complex type.
      */
     public boolean isDictionaryType() {
-        return false;
+        return getTypeKind() == MTypeKind.DICTIONARY;
     }
 
     /**
