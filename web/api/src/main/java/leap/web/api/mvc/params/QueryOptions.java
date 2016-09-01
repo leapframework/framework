@@ -17,18 +17,19 @@
 package leap.web.api.mvc.params;
 
 import leap.lang.value.Page;
-import leap.web.annotation.QueryParam;
 import leap.web.annotation.ParamsWrapper;
+import leap.web.annotation.QueryParam;
 
 @ParamsWrapper
 public class QueryOptions {
 
-    protected @QueryParam("page_size") Integer pageSize;
-    protected @QueryParam("page")      Integer pageIndex;
-    protected @QueryParam("limit")     Integer limit;
-    protected @QueryParam("offset")    Integer offset;  //0-based
-    protected @QueryParam("orderby")   String  orderBy;
-    protected @QueryParam("filters")   String  filters;
+    protected @QueryParam("page_size")   Integer pageSize;
+    protected @QueryParam("page")        Integer pageIndex;
+    protected @QueryParam("limit")       Integer limit;
+    protected @QueryParam("offset")      Integer offset;  //0-based
+    protected @QueryParam("total")       boolean total;
+    protected @QueryParam("orderby")     String  orderBy;
+    protected @QueryParam("filters")     String  filters;
 
     public Integer getPageSize() {
         return pageSize;
@@ -60,6 +61,14 @@ public class QueryOptions {
 
     public void setOffset(Integer offset) {
         this.offset = offset;
+    }
+
+    public boolean isTotal() {
+        return total;
+    }
+
+    public void setTotal(boolean total) {
+        this.total = total;
     }
 
     public String getOrderBy() {

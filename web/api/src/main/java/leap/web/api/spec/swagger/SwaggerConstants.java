@@ -35,6 +35,7 @@ public class SwaggerConstants {
     public static final String PARAMETERS            = "parameters";
     public static final String IN                    = "in";
     public static final String REQUIRED              = "required";
+    public static final String READONLY              = "readOnly";
     public static final String RESPONSES             = "responses";
     public static final String TAGS                  = "tags";
     public static final String EXTERNAL_DOCS         = "externalDocs";

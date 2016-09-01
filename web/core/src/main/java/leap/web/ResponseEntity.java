@@ -17,6 +17,7 @@ package leap.web;
 
 import leap.lang.Args;
 import leap.lang.http.HTTP;
+import leap.lang.http.client.HttpHeaders;
 
 public interface ResponseEntity {
 
@@ -59,6 +60,11 @@ public interface ResponseEntity {
      * Returns the http status.
      */
     default HTTP.Status getStatus() { return HTTP.Status.OK; }
+
+    /**
+     * Returns the http headers.
+     */
+    default HttpHeaders getHeaders() { return HttpHeaders.EMPTY; }
 
     /**
      * Optional.

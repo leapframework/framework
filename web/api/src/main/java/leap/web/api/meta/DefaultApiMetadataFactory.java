@@ -88,6 +88,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                     .setListener(new MTypeListener() {
                         @Override
                         public void onComplexTypeResolved(Class<?> type, MComplexType ct) {
+                            if(ct.isDictionaryType()) {
+                                return;
+                            }
+
                             if(md.hasModel(ct.getName())) {
                                 return;
                             }

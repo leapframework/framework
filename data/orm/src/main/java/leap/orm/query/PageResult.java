@@ -23,16 +23,28 @@ import java.util.List;
 public interface PageResult<T> extends Emptiable {
 	
 	/**
-	 * Returns current page for this query.
+	 * Returns current page info for this query.
 	 */
 	Page getPage();
-	
+
+    /**
+     * Returns current page index.
+     */
 	PageIndex getPageIndex();
-	
+
+    /**
+     * Returns the total count of this query.
+     */
 	long getTotalCount();
-	
+
+    /**
+     * Returns the size of result records.
+     */
 	int size();
 
+    /**
+     * Returns the records.
+     */
 	List<T> list();
 
 }
