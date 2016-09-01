@@ -49,6 +49,11 @@ public class BooleanConverterTestCase extends ConverterTestBase {
 			// Exception is successful test
 		}
 	}
+	@Test
+	public void testConvertFromBytes() {
+		assertEquals(Boolean.TRUE, Converts.convert(new byte[]{1}, Boolean.class));
+		assertEquals(Boolean.FALSE, Converts.convert(new byte[]{0}, Boolean.class));
+	}
 
 	@Test
 	public void testAdditionalStrings() {
