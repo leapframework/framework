@@ -29,6 +29,7 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.orm.query.PageResult;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -201,6 +202,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
 
+        long count = -1;
         List<Record> list;
         if(null == options) {
             list = query.limit(apiConfig.getMaxPageSize()).list();
@@ -215,10 +217,20 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                 applyFilters(query, filters);
             }
 
-            list = query.pageResult(options.getPage(apiConfig.getDefaultPageSize())).list();
+            PageResult result = query.pageResult(options.getPage(apiConfig.getDefaultPageSize()));
+
+            list = result.list();
+
+            if(options.isTotal()) {
+                count = result.getTotalCount();
+            }
         }
 
-        return ApiResponse.of(list);
+        if(count == -1) {
+            return ApiResponse.of(list);
+        }else{
+            return ApiResponse.of(list).setHeader("X-Total-Count", String.valueOf(count));
+        }
     }
 
     /**

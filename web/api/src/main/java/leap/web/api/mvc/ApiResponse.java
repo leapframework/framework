@@ -17,6 +17,8 @@
 package leap.web.api.mvc;
 
 import leap.lang.http.HTTP;
+import leap.lang.http.client.HttpHeaders;
+import leap.lang.http.client.SimpleHttpHeaders;
 import leap.lang.meta.annotation.TypeWrapper;
 import leap.web.ResponseEntity;
 
@@ -66,6 +68,7 @@ public class ApiResponse<T> implements ResponseEntity {
 
     protected final HTTP.Status status;
     protected final Object      entity;
+    protected final HttpHeaders headers = new SimpleHttpHeaders();
 
     protected ApiResponse(HTTP.Status status, Object entity) {
         this.status = status;
@@ -78,8 +81,29 @@ public class ApiResponse<T> implements ResponseEntity {
     }
 
     @Override
+    public HttpHeaders getHeaders() {
+        return headers;
+    }
+
+    @Override
     public Object getEntity() {
         return entity;
+    }
+
+    /**
+     * Sets the header.
+     */
+    public ApiResponse<T> setHeader(String name, String value) {
+        headers.set(name, value);
+        return this;
+    }
+
+    /**
+     * Adds the header value.
+     */
+    public ApiResponse<T> addHeader(String name, String value) {
+        headers.add(name, value);
+        return this;
     }
 
 }

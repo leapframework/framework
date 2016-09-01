@@ -20,13 +20,44 @@ import java.util.function.BiConsumer;
 
 public interface HttpHeaders {
 
-    boolean exists(String name);
+    /**
+     * Empty headers.
+     */
+    HttpHeaders EMPTY = name -> null;
 
+    /**
+     * Returns true if the header exists.
+     */
+    default boolean exists(String name) { return get(name) != null; }
+
+    /**
+     * Returns a list contains all the values of header.
+     *
+     * <p/>
+     * Returns null if the header is not exists.
+     */
     List<String> get(String name);
 
-    void add(String name, String value);
+    /**
+     * Adds a value to the given header.
+     */
+    default void add(String name, String value) {throw new IllegalStateException("Cannot add header");}
 
-    void set(String name, String value);
+    /**
+     * Sets the value of the given header,
+     *
+     * the value(s) will be override if the header already has value(s) exists.
+     */
+    default void set(String name, String value) {throw new IllegalStateException("Cannot set header");}
 
-    void forEach(BiConsumer<String, String> consumer);
+    /**
+     * For each all the header values.
+     *
+     * <p/>
+     * First argument is the name of header.
+     *
+     * Second argument is the value of header.
+     */
+    default void forEach(BiConsumer<String, String> consumer) {}
+
 }
