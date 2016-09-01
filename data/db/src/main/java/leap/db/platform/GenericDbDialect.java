@@ -722,7 +722,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	@Override
     public Object getColumnValue(ResultSet rs, int index, int type) throws SQLException {
 		if(type == JdbcTypes.UNKNOW_TYPE_CODE){
-			return getColumnValueTypeUnknow(rs, index);
+			return getColumnValueTypeUnknown(rs, index);
 		}else{
 			return getColumnValueTypeKnown(rs, index, type);
 		}
@@ -731,7 +731,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	@Override
     public Object getColumnValue(ResultSet rs, String name, int type) throws SQLException {
 		if(type == JdbcTypes.UNKNOW_TYPE_CODE){
-			return getColumnValueTypeUnknow(rs, name);
+			return getColumnValueTypeUnknown(rs, name);
 		}else{
 			return getColumnValueTypeKnown(rs, name, type);
 		}
@@ -739,7 +739,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	@Override
     public <T> T getColumnValue(ResultSet rs, int index, Class<T> targetType) throws SQLException {
-		Object value = getColumnValueTypeUnknow(rs, index);
+		Object value = getColumnValueTypeUnknown(rs, index);
 		if(null == value){
 			return null;
 		}else{
@@ -749,7 +749,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	
 	@Override
     public <T> T getColumnValue(ResultSet rs, String name, Class<T> targetType) throws SQLException {
-		Object value = getColumnValueTypeUnknow(rs, name);
+		Object value = getColumnValueTypeUnknown(rs, name);
 		if(null == value){
 			return null;
 		}else{
@@ -887,19 +887,42 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         return "*/";
     }
 
-	protected Object getColumnValueTypeUnknow(ResultSet rs,int index) throws SQLException {
+	protected Object getColumnValueTypeUnknown(ResultSet rs, int index) throws SQLException {
 		return rs.getObject(index);
 	}
 	
-	protected Object getColumnValueTypeUnknow(ResultSet rs,String name) throws SQLException {
+	protected Object getColumnValueTypeUnknown(ResultSet rs, String name) throws SQLException {
 		return rs.getObject(name);
 	}
 
 	protected Object getColumnValueTypeKnown(ResultSet rs,int index,int type) throws SQLException {
+        /*
+            from jdk :
+
+            The method recommended for retrieving BINARY and VARBINARY values is ResultSet.getBytes.
+            If a column of type JDBC LONGVARBINARY stores a byte array that is many megabytes long, however,
+            the method getBinaryStream is recommended.
+         */
+        if(type == Types.BINARY || type == Types.VARBINARY) {
+            return rs.getBytes(index);
+        }
+
+        if(type == Types.LONGVARBINARY) {
+            return rs.getBinaryStream(index);
+        }
+
 		return rs.getObject(index);
 	}
 	
 	protected Object getColumnValueTypeKnown(ResultSet rs,String name,int type) throws SQLException {
+        if(type == Types.BINARY || type == Types.VARBINARY) {
+            return rs.getBytes(name);
+        }
+
+        if(type == Types.LONGVARBINARY) {
+            return rs.getBinaryStream(name);
+        }
+
 		return rs.getObject(name);
 	}
 	
@@ -912,22 +935,19 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	}
 	
 	protected boolean testDriverSupportsGetParameterType(){
-		return db.executeWithResult(new ConnectionCallbackWithResult<Boolean>() {
-			@Override
-            public Boolean execute(Connection connection) throws SQLException {
-				PreparedStatement ps = null;
-				try{
-					ps = connection.prepareStatement(getTestDriverSupportsGetParameterTypeSQL());
-					ps.getParameterMetaData().getParameterType(1);
-					return true;
-				}catch(SQLException e){
-					log.debug("JDBC 3.0 getParameterType call not supported, message : {}", e.getMessage());
-					return false;
-				}finally{
-					JDBC.closeStatementOnly(ps);
-				}
+		return db.executeWithResult(connection -> {
+            PreparedStatement ps = null;
+            try{
+                ps = connection.prepareStatement(getTestDriverSupportsGetParameterTypeSQL());
+                ps.getParameterMetaData().getParameterType(1);
+                return true;
+            }catch(SQLException e){
+                log.debug("JDBC 3.0 getParameterType call not supported, message : {}", e.getMessage());
+                return false;
+            }finally{
+                JDBC.closeStatementOnly(ps);
             }
-		});
+});
 	}
 	
 	protected void setNullParameterTypeUnknow(PreparedStatement ps,int index) throws SQLException {

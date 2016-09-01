@@ -16,10 +16,7 @@
 package leap.db.platform.mysql;
 
 import java.io.BufferedReader;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -81,7 +78,35 @@ public class MySql5Dialect extends GenericDbDialect {
 		return connection.getCatalog();
     }
 
-	@Override
+    @Override
+    protected Object getColumnValueTypeKnown(ResultSet rs, int index, int type) throws SQLException {
+        //https://dev.mysql.com/doc/refman/5.7/en/binary-varbinary.html
+        /*
+            The BINARY and VARBINARY types are similar to CHAR and VARCHAR,
+            except that they contain binary strings rather than nonbinary strings.
+            That is, they contain byte strings rather than character strings.
+            This means that they have no character set, and sorting and comparison are
+             based on the numeric values of the bytes in the values
+         */
+        if(type == Types.BINARY || type == Types.VARBINARY) {
+            byte[] bytes = rs.getBytes(index);
+            return null == bytes ? null : new String(bytes);
+        }
+
+        return super.getColumnValueTypeKnown(rs, index, type);
+    }
+
+    @Override
+    protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
+        if(type == Types.BINARY || type == Types.VARBINARY) {
+            byte[] bytes = rs.getBytes(name);
+            return null == bytes ? null : new String(bytes);
+        }
+
+        return super.getColumnValueTypeKnown(rs, name, type);
+    }
+
+    @Override
     public String readDefaultValue(int typeCode, String nativeDefaultValue) {
         // MySQL converts illegal date/time/timestamp values to "0000-00-00 00:00:00", but this
         // is an illegal ISO value, so we replace it with NULL
