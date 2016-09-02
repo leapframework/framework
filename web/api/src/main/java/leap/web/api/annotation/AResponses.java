@@ -16,26 +16,15 @@
 
 package leap.web.api.annotation;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(MetaApiResponses.class)
-public @interface MetaApiResponse {
+public @interface AResponses {
 
-    /**
-     * The response http status.
-     */
-    int status() default 200;
-
-    /**
-     * The type of response data.
-     */
-    Class<?> type() default Void.class;
-
-    /**
-     * The generic type of response data.
-     */
-    Class<?> genericType() default Object.class;
+    AResponse[] value();
 
 }

@@ -39,6 +39,7 @@ public class ApiMetadataTest extends WebTestBase {
         assertPaths(m);
 
         assertContextualArgument(m);
+        assertSuccessResponse(m);
     }
 
     private void assertPaths(ApiMetadata m) {
@@ -52,4 +53,9 @@ public class ApiMetadataTest extends WebTestBase {
         assertEquals(0, op.getParameters().length);
     }
 
+    private void assertSuccessResponse(ApiMetadata m) {
+        MApiPath path = m.getPaths().get("/resp/created");
+        MApiOperation op = path.getOperations()[0];
+        assertEquals(new Integer(201), op.getResponses()[0].getStatus());
+    }
 }

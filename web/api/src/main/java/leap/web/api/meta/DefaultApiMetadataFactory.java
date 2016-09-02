@@ -31,7 +31,7 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
-import leap.web.api.annotation.MetaApiResponse;
+import leap.web.api.annotation.AResponse;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
@@ -40,7 +40,9 @@ import leap.web.route.Route;
 import javax.servlet.http.Part;
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class DefaultApiMetadataFactory implements ApiMetadataFactory {
@@ -285,30 +287,47 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
-        MetaApiResponse[] annotations =
-                route.getAction().getAnnotationsByType(MetaApiResponse.class);
+        AResponse[] annotations =
+                route.getAction().getAnnotationsByType(AResponse.class);
 
+        List<MApiResponseBuilder> responses = new ArrayList<>();
         if(annotations.length > 0) {
-            for(MetaApiResponse a : annotations) {
-                op.addResponse(createApiResponse(context, m, route, a));
+            for(AResponse a : annotations) {
+                responses.add(createApiResponse(context, m, route, a));
             }
-        }else{
+        }
+
+        boolean hasSuccess = false;
+        for(MApiResponseBuilder r : responses) {
+            if(r.getStatus() >= 200 && r.getStatus() < 300) {
+                hasSuccess = true;
+            }
+        }
+
+        if(responses.isEmpty() || !hasSuccess) {
+            Integer status = route.getSuccessStatus();
+            if(null == status) {
+                status = 200;
+            }
+
             if(route.getAction().hasReturnValue()) {
                 Class<?> returnType        = route.getAction().getReturnType();
                 Type     genericReturnType = route.getAction().getGenericReturnType();
 
-                MApiResponseBuilder resp = MApiResponseBuilder.ok();
+                MApiResponseBuilder resp = MApiResponseBuilder.success(status);
 
                 resolveApiResponseType(context, m, returnType, genericReturnType, resp);
 
                 op.addResponse(resp);
             }else{
-                op.addResponse(MApiResponseBuilder.ok());
+                op.addResponse(MApiResponseBuilder.success(status));
             }
         }
+
+        responses.forEach(op::addResponse);
 	}
 
-    protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MetaApiResponse a) {
+    protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, AResponse a) {
         MApiResponseBuilder resp = new MApiResponseBuilder();
         resp.setStatus(a.status());
         if(!route.getAction().hasReturnValue()) {

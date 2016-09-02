@@ -24,10 +24,19 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 		MApiResponseBuilder r = new MApiResponseBuilder();
 		
 		r.setStatus(HTTP.SC_OK);
-		r.setSummary("OK");
+		r.setSummary("Success");
 		
 		return r;
 	}
+
+    public static MApiResponseBuilder success(int status) {
+        MApiResponseBuilder r = new MApiResponseBuilder();
+
+        r.setStatus(status);
+        r.setSummary("Success");
+
+        return r;
+    }
 
     protected String  name;
 	protected Integer status;

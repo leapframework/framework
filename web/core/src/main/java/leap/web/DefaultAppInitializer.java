@@ -27,6 +27,7 @@ import leap.lang.Strings;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.http.HTTP;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyles;
@@ -272,7 +273,14 @@ public class DefaultAppInitializer implements AppInitializer {
 		//success status.
 		Success success = act.getAnnotation(Success.class);
 		if(null != success) {
-            route.setSuccessStatus(success.status().value());
+            HTTP.Status s1 = success.status();
+            HTTP.Status s2 = success.value();
+
+            if(s1.value() != 200) {
+                route.setSuccessStatus(s1.value());
+            }else{
+                route.setSuccessStatus(s2.value());
+            }
 		}
 
 		//validation
