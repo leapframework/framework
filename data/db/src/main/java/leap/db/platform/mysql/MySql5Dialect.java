@@ -79,6 +79,17 @@ public class MySql5Dialect extends GenericDbDialect {
     }
 
     @Override
+    protected void setNonNullParameter(PreparedStatement ps, int index, Object value, int type) throws SQLException {
+        if(type == Types.BINARY || type == Types.VARBINARY) {
+            byte[] bytes = Strings.getBytesUtf8(value.toString());
+            ps.setBytes(index, bytes);
+            return;
+        }
+
+        super.setNonNullParameter(ps, index, value, type);
+    }
+
+    @Override
     protected Object getColumnValueTypeKnown(ResultSet rs, int index, int type) throws SQLException {
         //https://dev.mysql.com/doc/refman/5.7/en/binary-varbinary.html
         /*
@@ -90,7 +101,7 @@ public class MySql5Dialect extends GenericDbDialect {
          */
         if(type == Types.BINARY || type == Types.VARBINARY) {
             byte[] bytes = rs.getBytes(index);
-            return null == bytes ? null : new String(bytes);
+            return null == bytes ? null : Strings.newStringUtf8(bytes);
         }
 
         return super.getColumnValueTypeKnown(rs, index, type);
@@ -100,7 +111,7 @@ public class MySql5Dialect extends GenericDbDialect {
     protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
         if(type == Types.BINARY || type == Types.VARBINARY) {
             byte[] bytes = rs.getBytes(name);
-            return null == bytes ? null : new String(bytes);
+            return null == bytes ? null : Strings.newStringUtf8(bytes);
         }
 
         return super.getColumnValueTypeKnown(rs, name, type);
