@@ -765,7 +765,19 @@ public class Arrays2 {
 		}
 		return true;
 	}
-	
+
+    public static int[] toIntArray(List<Integer> list) {
+        if(null == list) {
+            return EMPTY_INT_ARRAY;
+        }
+
+        int[] a = new int[list.size()];
+        for(int i=0;i<a.length;i++) {
+            a[i] = list.get(i);
+        }
+        return a;
+    }
+
 	/**
 	 * Returns the first element in {@code iterable} that satisfies the given predicate.
 	 * 

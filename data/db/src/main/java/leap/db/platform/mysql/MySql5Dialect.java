@@ -80,12 +80,6 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected void setNonNullParameter(PreparedStatement ps, int index, Object value, int type) throws SQLException {
-        if(type == Types.BINARY || type == Types.VARBINARY) {
-            byte[] bytes = Strings.getBytesUtf8(value.toString());
-            ps.setBytes(index, bytes);
-            return;
-        }
-
         super.setNonNullParameter(ps, index, value, type);
     }
 
@@ -100,8 +94,7 @@ public class MySql5Dialect extends GenericDbDialect {
              based on the numeric values of the bytes in the values
          */
         if(type == Types.BINARY || type == Types.VARBINARY) {
-            byte[] bytes = rs.getBytes(index);
-            return null == bytes ? null : Strings.newStringUtf8(bytes);
+            return rs.getString(index);
         }
 
         return super.getColumnValueTypeKnown(rs, index, type);
@@ -110,8 +103,7 @@ public class MySql5Dialect extends GenericDbDialect {
     @Override
     protected Object getColumnValueTypeKnown(ResultSet rs, String name, int type) throws SQLException {
         if(type == Types.BINARY || type == Types.VARBINARY) {
-            byte[] bytes = rs.getBytes(name);
-            return null == bytes ? null : Strings.newStringUtf8(bytes);
+            return rs.getString(name);
         }
 
         return super.getColumnValueTypeKnown(rs, name, type);
