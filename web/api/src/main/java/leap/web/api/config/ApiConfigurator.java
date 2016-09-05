@@ -17,6 +17,7 @@ package leap.web.api.config;
 
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
+import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
@@ -66,9 +67,17 @@ public interface ApiConfigurator {
 	ApiConfigurator setConsumes(String... consumes);
 
 	/**
-	 * Sets the prototols.
+	 * Sets the protocols.
 	 */
 	ApiConfigurator setProtocols(String... protocols);
+
+    /**
+     * Puts a common response.
+     *
+     * <p/>
+     * see {@link ApiConfig#getCommonResponses()}.
+     */
+    ApiConfigurator putCommonResponse(String name, MApiResponse response);
 
 	/**
 	 * Sets the naming style of parameter names.

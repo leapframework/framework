@@ -15,6 +15,7 @@
  */
 package leap.web.api.config;
 
+import java.util.Map;
 import java.util.Set;
 
 import leap.lang.Described;
@@ -22,6 +23,8 @@ import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
@@ -105,6 +108,11 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns the oauth2 scopes of api.
 	 */
 	MOAuth2Scope[] getOAuthScopes();
+
+    /**
+     * Returns an immutable {@link Map} contains all the common responses.
+     */
+    Map<String, MApiResponse> getCommonResponses();
 
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.

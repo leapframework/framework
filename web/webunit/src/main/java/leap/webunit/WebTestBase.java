@@ -15,6 +15,9 @@
  */
 package leap.webunit;
 
+import leap.core.AppConfig;
+import leap.core.AppContext;
+import leap.core.BeanFactory;
 import leap.junit.TestBase;
 import leap.lang.Strings;
 import leap.lang.http.HTTP.Method;
@@ -34,7 +37,10 @@ public abstract class WebTestBase extends TestBase {
 
     protected static TWebServer     server;
     protected static ServletContext rootServletContext;
-	protected static boolean        defaultHttps;
+    protected static boolean        defaultHttps;
+    protected static AppContext     appContext;
+    protected static AppConfig      appConfig;
+    protected static BeanFactory    beanFactory;
 
     /**
      * Returns the {@link THttpClient} with base url <code>https://localhost:port</code>.
@@ -58,12 +64,18 @@ public abstract class WebTestBase extends TestBase {
 	protected THttpResponse  response;
 	
     @Override
-    protected void setUp() throws Exception {
+    protected final void setUp() throws Exception {
         if (null == servletContext) {
             servletContext = rootServletContext;
             contextPath = "";
         }else{
             contextPath = servletContext.getContextPath();
+        }
+
+        appContext = null == servletContext ? null : AppContext.get(servletContext);
+        if(null != appContext) {
+            appConfig   = appContext.getConfig();
+            beanFactory = appContext.getBeanFactory();
         }
 
         this.doSetUp();

@@ -1,12 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <apis xmlns="http://www.leapframework.org/schema/web/apis">
 
-    <config>
+    <global>
         <oauth enabled="true">
             <authz-url>http://127.0.0.1:8080/auth/oauth2/authorize</authz-url>
             <token-url>"http://127.0.0.1:8080/auth/oauth2/token</token-url>
         </oauth>
-    </config>
+
+        <responses>
+
+            <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
+
+        </responses>
+    </global>
 
     <api name="petstore" base-path="/petstore">
 

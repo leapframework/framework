@@ -16,38 +16,54 @@
 
 package leap.web.api.config;
 
+import leap.core.annotation.Inject;
+import leap.core.meta.MTypeManager;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.meta.MType;
+import leap.lang.meta.MVoidType;
 import leap.lang.resource.Resource;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 import leap.web.api.Apis;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class XmlApiConfigReader implements ApiConfigReader {
 
     private static final Log log = LogFactory.get(XmlApiConfigReader.class);
 
-    protected static final String APIS_ELEMENT      = "apis";
-    protected static final String API_ELEMENT       = "api";
-    protected static final String CONFIG_ELEMENT    = "config";
-    protected static final String OAUTH_ELEMENT     = "oauth";
-    protected static final String VERSION_ELEMENT   = "version";
-    protected static final String TITLE_ELEMENT     = "title";
-    protected static final String SUMMARY_ELEMENT   = "summary";
-    protected static final String DESC_ELEMENT      = "desc";
-    protected static final String PRODUCES_ELEMENT  = "produces";
-    protected static final String CONSUMES_ELEMENT  = "consumes";
-    protected static final String PROTOCOLS_ELEMENT = "protocols";
+    protected static final String APIS              = "apis";
+    protected static final String API               = "api";
+    protected static final String GLOBAL            = "global";
+    protected static final String OAUTH             = "oauth";
+    protected static final String VERSION           = "version";
+    protected static final String TITLE             = "title";
+    protected static final String SUMMARY           = "summary";
+    protected static final String DESC              = "desc";
+    protected static final String PRODUCES          = "produces";
+    protected static final String CONSUMES          = "consumes";
+    protected static final String PROTOCOLS         = "protocols";
     protected static final String MAX_PAGE_SIZE     = "max-page-size";
     protected static final String DEFAULT_PAGE_SIZE = "default-page-size";
-    protected static final String ENABLED_ATTR      = "enabled";
-    protected static final String AUTHZ_URL_ELEMENT = "authz-url";
-    protected static final String TOKEN_URL_ELEMENT = "token-url";
-    protected static final String SCOPE_ATTR        = "scope";
-    protected static final String NAME_ATTR         = "name";
-    protected static final String BASE_PATH_ATTR    = "base-path";
+    protected static final String ENABLED           = "enabled";
+    protected static final String AUTHZ_URL         = "authz-url";
+    protected static final String TOKEN_URL         = "token-url";
+    protected static final String SCOPE             = "scope";
+    protected static final String NAME              = "name";
+    protected static final String BASE_PATH         = "base-path";
+    protected static final String RESPONSES         = "responses";
+    protected static final String RESPONSE          = "response";
+    protected static final String STATUS            = "status";
+    protected static final String TYPE              = "type";
+
+    protected @Inject MTypeManager mTypeManager;
 
     @Override
     public boolean readConfiguration(Apis apis, ApiConfigReaderContext context, Resource resource) {
@@ -68,14 +84,14 @@ public class XmlApiConfigReader implements ApiConfigReader {
             boolean foundValidRootElement = false;
 
             while(reader.next()){
-                if(reader.isStartElement(APIS_ELEMENT)){
+                if(reader.isStartElement(APIS)){
                     foundValidRootElement = true;
 
                     readApis(apis, context, resource, reader);
                     break;
                 }
 
-                if(reader.isStartElement(API_ELEMENT)) {
+                if(reader.isStartElement(API)) {
                     foundValidRootElement = true;
 
                     readApi(apis, context, resource, reader);
@@ -97,13 +113,13 @@ public class XmlApiConfigReader implements ApiConfigReader {
     }
 
     protected void readApis(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
-        while(reader.nextWhileNotEnd(APIS_ELEMENT)) {
-            if(reader.isStartElement(CONFIG_ELEMENT)) {
-                readConfig(apis, context, resource, reader);
+        while(reader.nextWhileNotEnd(APIS)) {
+            if(reader.isStartElement(GLOBAL)) {
+                readGlobal(apis, context, resource, reader);
                 continue;
             }
 
-            if(reader.isStartElement(API_ELEMENT)) {
+            if(reader.isStartElement(API)) {
                 readApi(apis, context, resource, reader);
                 continue;
             }
@@ -111,44 +127,97 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
     }
 
-    protected void readConfig(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
+    protected void readGlobal(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
 
-        while(reader.nextWhileNotEnd(CONFIG_ELEMENT)) {
+        Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
 
-            if(reader.isStartElement(OAUTH_ELEMENT)) {
+        while(reader.nextWhileNotEnd(GLOBAL)) {
+
+            if(reader.isStartElement(OAUTH)) {
 
                 apis.setDefaultOAuthEnabled(
-                        reader.resolveBooleanAttribute(ENABLED_ATTR, apis.isDefaultOAuthEnabled()));
+                        reader.resolveBooleanAttribute(ENABLED, apis.isDefaultOAuthEnabled()));
 
-                while(reader.nextWhileNotEnd(OAUTH_ELEMENT)) {
-
-                    if(reader.isStartElement(AUTHZ_URL_ELEMENT)) {
+                reader.loopInsideElement(() -> {
+                    if(reader.isStartElement(AUTHZ_URL)) {
                         String url = reader.resolveElementTextAndEnd();
                         if(!Strings.isEmpty(url)) {
                             apis.setDefaultOAuthAuthorizationUrl(url);
                         }
-                        continue;
+                        return;
                     }
 
-                    if(reader.isStartElement(TOKEN_URL_ELEMENT)) {
+                    if(reader.isStartElement(TOKEN_URL)) {
                         String url = reader.resolveElementTextAndEnd();
                         if(!Strings.isEmpty(url)) {
                             apis.setDefaultOAuthTokenUrl(url);
                         }
-                        continue;
+                        return;
                     }
-                }
+                });
 
                 continue;
             }
 
+            if(reader.isStartElement(RESPONSES)) {
+                readCommonResponses(reader).forEach(apis.getCommonResponses()::put);
+                continue;
+            }
         }
 
+        commonResponses.forEach(apis.getCommonResponses()::put);
+    }
+
+    protected Map<String,MApiResponse> readCommonResponses(XmlReader reader) {
+        Map<String, MApiResponse> responses = new LinkedHashMap<>();
+
+        reader.loopInsideElement(() -> {
+
+            if(reader.isStartElement(RESPONSE)) {
+                String name   = reader.getAttribute(NAME);
+                int    status = reader.getRequiredIntAttribute(STATUS);
+                String type   = reader.getAttribute(TYPE);
+
+                if(Strings.isEmpty(name)) {
+                    name = String.valueOf(status);
+                }
+
+                MApiResponseBuilder r = new MApiResponseBuilder();
+                r.setName(name);
+                r.setStatus(status);
+                r.setDescription(reader.getAttribute(DESC));
+
+                if(!Strings.isEmpty(type)) {
+                    Class<?> c = Classes.tryForName(type);
+                    if(null == c) {
+                        throw new ApiConfigException("Invalid response type '" + type + "', check : " + reader.getCurrentLocation());
+                    }
+
+                    MType mtype = mTypeManager.getMType(c);
+                    r.setType(mtype);
+                }else{
+                    r.setType(MVoidType.TYPE);
+                }
+
+                reader.loopInsideElement(() -> {
+
+                    if(reader.isStartElement(DESC)) {
+                        r.setDescription(reader.getElementTextAndEnd());
+                    }
+
+                });
+
+                responses.put(name, r.build());
+            }
+
+        });
+
+        return responses;
     }
 
     protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
-        String name     = reader.resolveRequiredAttribute(NAME_ATTR);
-        String basePath = reader.resolveRequiredAttribute(BASE_PATH_ATTR);
+        String name     = reader.resolveRequiredAttribute(NAME);
+        String basePath = reader.resolveRequiredAttribute(BASE_PATH);
 
         ApiConfigurator api = apis.configurators().get(name);
         if(null == api) {
@@ -159,9 +228,9 @@ public class XmlApiConfigReader implements ApiConfigReader {
     }
 
     protected void readApi(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
-        while(reader.nextWhileNotEnd(API_ELEMENT)) {
+        while(reader.nextWhileNotEnd(API)) {
 
-            if(reader.isStartElement(VERSION_ELEMENT)) {
+            if(reader.isStartElement(VERSION)) {
                 String v = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(v)) {
                     api.setVersion(v);
@@ -169,7 +238,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(TITLE_ELEMENT)) {
+            if(reader.isStartElement(TITLE)) {
                 String title = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(title)) {
                     api.setTitle(title);
@@ -177,7 +246,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(SUMMARY_ELEMENT)) {
+            if(reader.isStartElement(SUMMARY)) {
                 String summary = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(summary)) {
                     api.setSummary(summary);
@@ -185,7 +254,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(DESC_ELEMENT)) {
+            if(reader.isStartElement(DESC)) {
                 String desc = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(desc)) {
                     api.setDescription(desc);
@@ -193,7 +262,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(PRODUCES_ELEMENT)) {
+            if(reader.isStartElement(PRODUCES)) {
                 String s = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(s)) {
                     api.setProduces(Strings.splitMultiLines(s));
@@ -201,7 +270,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(CONSUMES_ELEMENT)) {
+            if(reader.isStartElement(CONSUMES)) {
                 String s = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(s)) {
                     api.setConsumes(Strings.splitMultiLines(s));
@@ -209,7 +278,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
-            if(reader.isStartElement(PROTOCOLS_ELEMENT)) {
+            if(reader.isStartElement(PROTOCOLS)) {
                 String s = reader.getElementTextAndEnd();
                 if(!Strings.isEmpty(s)) {
                     api.setProtocols(Strings.splitMultiLines(s));

@@ -23,7 +23,7 @@ import tests.TokenResponse;
 public class AdminControllerTest extends OAuth2TestBase {
 
     @Override
-    protected void setUp() throws Exception {
+    protected void doSetUp() throws Exception {
         serverContextPath = "/server";
     }
 

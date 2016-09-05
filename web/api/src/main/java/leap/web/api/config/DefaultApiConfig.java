@@ -15,15 +15,14 @@
  */
 package leap.web.api.config;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
+import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MOAuth2Scope;
 import leap.web.route.Route;
 
@@ -52,6 +51,8 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
     protected Set<Route>  	 routes                      = new HashSet<>();
     protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
+    protected Map<String, MApiResponse> commonResponses  = new LinkedHashMap<>();
+    protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -124,8 +125,13 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     public Set<Route> getRoutes() {
 	    return routesImv;
     }
-	
-	public NamingStyle getParameterNamingStyle() {
+
+    @Override
+    public Map<String, MApiResponse> getCommonResponses() {
+        return commonResponsesImv;
+    }
+
+    public NamingStyle getParameterNamingStyle() {
 		return parameterNamingStyle;
 	}
 	
@@ -166,7 +172,13 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 		return this;
 	}
 
-	@Override
+    @Override
+    public ApiConfigurator putCommonResponse(String name, MApiResponse response) {
+        commonResponses.put(name, response);
+        return this;
+    }
+
+    @Override
     public ApiConfigurator setProduces(String... produces) {
 		this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
 	    return this;

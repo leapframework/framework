@@ -15,11 +15,8 @@
  */
 package leap.web.api;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import leap.core.annotation.Inject;
@@ -36,6 +33,8 @@ import leap.web.AppInitializable;
 import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.route.Route;
 
@@ -57,6 +56,7 @@ public class DefaultApis implements Apis, AppInitializable  {
 	protected boolean defaultOAuthEnabled;
 	protected String  defaultOAuthAuthorizationUrl;
 	protected String  defaultOAuthTokenUrl;
+    protected Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
 	
 	@Override
     public Map<String, ApiConfigurator> configurators() {
@@ -116,6 +116,11 @@ public class DefaultApis implements Apis, AppInitializable  {
     }
 
     @Override
+    public Map<String, MApiResponse> getCommonResponses() {
+        return commonResponses;
+    }
+
+    @Override
     public Apis setDefaultOAuthEnabled(boolean enabled) {
         this.defaultOAuthEnabled = enabled;
         return this;
@@ -166,9 +171,12 @@ public class DefaultApis implements Apis, AppInitializable  {
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
+        //common
+        doCommonConfiguration(app, c);
+
 		//resolve routes of api.
 		resolveRoutes(app, c);
-		
+
 		//configure by processors.
 		for(ApiConfigProcessor p : configProcessors) {
 			p.preProcess(c);
@@ -179,6 +187,14 @@ public class DefaultApis implements Apis, AppInitializable  {
 		}
 
 	}
+
+    protected void doCommonConfiguration(App app, ApiConfigurator c) {
+        //todo : oauth
+
+        //todo : cors
+
+        commonResponses.forEach(c::putCommonResponse);
+    }
 	
     protected void resolveRoutes(App app, ApiConfigurator c) {
 		String basePath				   = c.config().getBasePath();

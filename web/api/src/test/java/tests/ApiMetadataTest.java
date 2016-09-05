@@ -32,7 +32,7 @@ public class ApiMetadataTest extends WebTestBase {
     private @Inject SwaggerSpecReader swaggerReader;
 
 	@Test
-    public void testSwaggerSpec() {
+    public void testMetadataBySwaggerSpec() {
         ApiMetadata m =
                 swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
@@ -58,4 +58,5 @@ public class ApiMetadataTest extends WebTestBase {
         MApiOperation op = path.getOperations()[0];
         assertEquals(new Integer(201), op.getResponses()[0].getStatus());
     }
+
 }
