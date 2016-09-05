@@ -18,13 +18,14 @@
 package tests;
 
 import leap.core.annotation.Inject;
-import leap.web.api.Apis;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiOperation;
 import leap.web.api.meta.model.MApiPath;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.mvc.ApiError;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
-import leap.webunit.WebTestBaseContextual;
 import org.junit.Test;
 
 public class ApiMetadataTest extends WebTestBase {
@@ -37,9 +38,9 @@ public class ApiMetadataTest extends WebTestBase {
                 swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
         assertPaths(m);
-
         assertContextualArgument(m);
         assertSuccessResponse(m);
+        assertCommonResponses(m);
     }
 
     private void assertPaths(ApiMetadata m) {
@@ -57,6 +58,14 @@ public class ApiMetadataTest extends WebTestBase {
         MApiPath path = m.getPaths().get("/resp/created");
         MApiOperation op = path.getOperations()[0];
         assertEquals(new Integer(201), op.getResponses()[0].getStatus());
+    }
+
+    private void assertCommonResponses(ApiMetadata m) {
+        MApiResponse r = m.getResponses().get("NotFound");
+        assertNotNull(r);
+
+        MApiModel model = m.getModels().get(ApiError.class.getSimpleName());
+        assertNotNull(model);
     }
 
 }

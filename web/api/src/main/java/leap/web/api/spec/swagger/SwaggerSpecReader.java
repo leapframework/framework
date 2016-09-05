@@ -72,6 +72,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         readBase(map, m);
         readPaths(swagger.getMap(PATHS), m);
         readDefinitions(swagger.getMap(DEFINITIONS), m);
+        readResponses(swagger.getMap(RESPONSES), m);
     }
 
     public void readBase(Map<String,Object> map, ApiMetadataBuilder m) {
@@ -264,6 +265,17 @@ public class SwaggerSpecReader implements ApiSpecReader {
         definitions.forEach((name, model) -> {
             m.addModel(readModel(name, (Map<String,Object>)model));
         });
+    }
+
+    public void readResponses(Map<String, Object> responses, ApiMetadataBuilder m) {
+        if(null == responses) {
+            return;
+        }
+
+        responses.forEach((name, resp) -> {
+            m.putResponse(name, readResponse(name, (Map<String,Object>)resp));
+        });
+
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {
