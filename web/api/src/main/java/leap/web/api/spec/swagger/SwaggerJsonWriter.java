@@ -80,14 +80,19 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		 .propertyOptional(CONSUMES, m.getConsumes())
 		 .propertyOptional(PRODUCES, m.getProduces());
 		
+		w.property(PATHS, () -> writePaths(context, m, w) )
+		 .property(DEFINITIONS, () -> writeDefinitions(context, m, w) );
+
+        if(!m.getResponses().isEmpty()) {
+            MApiResponse[] responses = m.getResponses().values().toArray(new MApiResponse[0]);
+            w.property(RESPONSES, () -> writeResponses(context, m, w, responses));
+        }
+
         if(!Arrays2.isEmpty(m.getSecurityDefs())) {
             w.property(SECURITY_DEFINITIONS, () -> writeSecurityDefs(context, m, w));
         }
-        
+
         writeDefaultSecurity(context, m, w);
-		
-		w.property(PATHS, () -> writePaths(context, m, w) )
-		 .property(DEFINITIONS, () -> writeDefinitions(context, m, w) );		
 		
 		w.endObject();
 	}
@@ -335,7 +340,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                 requiredProperties.add(p.getName());
             }
         }
-        w.property(REQUIRED, requiredProperties);
+
+        if(!requiredProperties.isEmpty()) {
+            w.property(REQUIRED, requiredProperties);
+        }
 
 		w.property(PROPERTIES, () -> {
 			w.startObject();

@@ -15,32 +15,34 @@
  */
 package leap.web.api.meta;
 
-import java.util.Collections;
-import java.util.Map;
-
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.meta.model.*;
+
+import java.util.Collections;
+import java.util.Map;
 
 /**
  * This is the root document object for the API specification.
  */
 public class ApiMetadata extends MApiNamedWithDesc {
-	
-	protected final String                termsOfService;
-	protected final MApiContact           concat;
-	protected final String                version;
-	protected final String                host;
-	protected final String                basePath;
-	protected final String[]              protocols;
-	protected final String[]              consumes;
-	protected final String[]              produces;
-	protected final Map<String,MApiPath>  paths;
-	protected final Map<String,MApiModel> models;
-	protected final MApiSecurityDef[]     securityDefs;
+
+    protected final String                    termsOfService;
+    protected final MApiContact               concat;
+    protected final String                    version;
+    protected final String                    host;
+    protected final String                    basePath;
+    protected final String[]                  protocols;
+    protected final String[]                  consumes;
+    protected final String[]                  produces;
+    protected final Map<String, MApiResponse> responses;
+    protected final Map<String, MApiPath>     paths;
+    protected final Map<String, MApiModel>    models;
+    protected final MApiSecurityDef[]         securityDefs;
 
 	public ApiMetadata(String name, String title, String summary, String description,
                        String termsOfService, MApiContact concat, String version,
                        String host, String basePath, String[] protocols, String[] consumes, String[] produces,
+                       Map<String, MApiResponse> responses,
                        Map<String, MApiPath> paths,
                        Map<String, MApiModel> models,
                        MApiSecurityDef[] securityDefs,
@@ -54,6 +56,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		this.protocols = protocols;
 		this.consumes = consumes;
 		this.produces = produces;
+        this.responses = Collections.unmodifiableMap(responses);
 		this.paths    = Collections.unmodifiableMap(paths);
 		this.models   = Collections.unmodifiableMap(models);
 		this.securityDefs = securityDefs;
@@ -129,8 +132,15 @@ public class ApiMetadata extends MApiNamedWithDesc {
 	public String[] getProduces() {
 		return produces;
 	}
-	
-	/**
+
+    /**
+     * An object to hold responses that can be used across operations.
+     */
+    public Map<String, MApiResponse> getResponses() {
+        return responses;
+    }
+
+    /**
 	 * Required. The available paths and operations for the API.
 	 */
 	public Map<String,MApiPath> getPaths() {

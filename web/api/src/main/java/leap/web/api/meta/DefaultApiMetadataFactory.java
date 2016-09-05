@@ -60,6 +60,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		ApiMetadataContext context = createContext(c, md);
 		
 		setBaseInfo(context, md);
+
+        createResponses(context, c, md);
 		
 		createSecurityDefs(context, md);
 		
@@ -132,7 +134,27 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		md.addProduces(c.getProduces());
 		md.addConsumes(c.getConsumes());
 	}
-	
+
+    protected void createResponses(ApiMetadataContext context, ApiConfig c, ApiMetadataBuilder m) {
+        c.getCommonResponses().forEach((name, r) -> {
+            MType type = r.getType();
+            if(type.isComplexType()) {
+                MComplexType ct = type.asComplexType();
+
+                if(!m.containsModel(ct.getName())) {
+                    m.addModel(new MApiModelBuilder(ct));
+                }
+
+                type = ct.createTypeRef();
+            }
+
+            MApiResponseBuilder rb = new MApiResponseBuilder(r);
+            rb.setType(type);
+            m.putResponse(name, rb);
+        });
+
+    }
+
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         if(c.isOAuthEnabled()) {
@@ -325,6 +347,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
 
         responses.forEach(op::addResponse);
+
+        //todo : common responses ?
 	}
 
     protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, AResponse a) {

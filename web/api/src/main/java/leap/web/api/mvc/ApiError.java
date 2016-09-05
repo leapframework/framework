@@ -19,6 +19,7 @@ package leap.web.api.mvc;
 import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonStringable;
 import leap.lang.json.JsonWriter;
+import leap.lang.meta.annotation.ComplexType;
 import leap.web.Renderable;
 import leap.web.Request;
 import leap.web.Response;

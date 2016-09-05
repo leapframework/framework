@@ -15,8 +15,6 @@
  */
 package leap.lang.meta;
 
-import leap.lang.enums.Bool;
-
 public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     protected MType    type;

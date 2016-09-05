@@ -192,7 +192,16 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 		ct.setName(type.getSimpleName());
 		ct.setAbstract(Modifier.isAbstract(type.getModifiers()));
 
-        String name = context.strategy().getComplexTypeName(type);
+        String name = "";
+        ComplexType a = type.getAnnotation(ComplexType.class);
+        if(null != a) {
+            name = a.name();
+        }
+
+        if(Strings.isEmpty(name)) {
+            name = context.strategy().getComplexTypeName(type);
+        }
+
         if(!Strings.isEmpty(name)) {
             ct.setName(name);
         }

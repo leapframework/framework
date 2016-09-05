@@ -15,11 +15,11 @@
  */
 package leap.web.api.meta;
 
-import java.util.*;
-
 import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
 import leap.web.api.meta.model.*;
+
+import java.util.*;
 
 /**
  * The builder of {@link ApiMetadata}
@@ -31,14 +31,16 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected MApiContactBuilder contact;
     protected String             version;
     protected String             host;
-    protected Set<String>                   protocols    = new LinkedHashSet<>();
-    protected Set<String>                   consumes     = new LinkedHashSet<>();
-    protected Set<String>                   produces     = new LinkedHashSet<>();
-    protected Map<String, MApiPathBuilder>  paths        = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    protected Map<String, MApiModelBuilder> models       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    protected List<MApiSecurityDef>         securityDefs = new ArrayList<>();
-	
-	public ApiMetadataBuilder() {
+
+    protected Set<String>                      protocols    = new LinkedHashSet<>();
+    protected Set<String>                      consumes     = new LinkedHashSet<>();
+    protected Set<String>                      produces     = new LinkedHashSet<>();
+    protected Map<String, MApiResponseBuilder> responses    = new LinkedHashMap<>();
+    protected Map<String, MApiPathBuilder>     paths        = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, MApiModelBuilder>    models       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected List<MApiSecurityDef>            securityDefs = new ArrayList<>();
+
+    public ApiMetadataBuilder() {
         super();
     }
 
@@ -122,7 +124,23 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(produces, ps);
 	}
 
-	public void addPath(MApiPathBuilder path) throws ObjectExistsException {
+    public Map<String, MApiResponseBuilder> getResponses() {
+        return responses;
+    }
+
+    public void putResponse(String name, MApiResponseBuilder r) {
+        responses.put(name, r);
+    }
+
+    public void putResponse(String name, MApiResponse r) {
+        putResponse(name, new MApiResponseBuilder(r));
+    }
+
+    public void setResponses(Map<String, MApiResponseBuilder> responses) {
+        this.responses = responses;
+    }
+
+    public void addPath(MApiPathBuilder path) throws ObjectExistsException {
 		Args.notNull(path, "api path");
 		Args.notEmpty(path.getPathTemplate(), "path template");
 		
@@ -197,7 +215,8 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         					version, host, basePath,
         					protocols.toArray(Arrays2.EMPTY_STRING_ARRAY), 
         					consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
-        					produces.toArray(Arrays2.EMPTY_STRING_ARRAY), 
+        					produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                            Builders.buildMap(responses),
         					Builders.buildMap(paths),
         					Builders.buildMap(models),
         					securityDefs.toArray(new MApiSecurityDef[]{}),

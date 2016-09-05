@@ -38,6 +38,19 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
         return r;
     }
 
+    public MApiResponseBuilder() {
+
+    }
+
+    public MApiResponseBuilder(MApiResponse r) {
+        this.name = r.getName();
+        this.status = r.getStatus();
+        this.type = r.getType();
+        this.file = r.isFile();
+        this.setSummary(r.getSummary());
+        this.setDescription(r.getDescription());
+    }
+
     protected String  name;
 	protected Integer status;
 	protected MType   type;

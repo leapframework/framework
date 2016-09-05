@@ -23,4 +23,9 @@ import java.lang.annotation.*;
 @Inherited
 public @interface ComplexType {
 
+    /**
+     * The simple name of complex type.
+     */
+    String name() default "";
+
 }
