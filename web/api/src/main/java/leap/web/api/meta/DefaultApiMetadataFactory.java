@@ -30,7 +30,7 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
-import leap.web.api.annotation.AResponse;
+import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
@@ -304,12 +304,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
-        AResponse[] annotations =
-                route.getAction().getAnnotationsByType(AResponse.class);
+        Response[] annotations =
+                route.getAction().getAnnotationsByType(Response.class);
 
         List<MApiResponseBuilder> responses = new ArrayList<>();
         if(annotations.length > 0) {
-            for(AResponse a : annotations) {
+            for(Response a : annotations) {
                 responses.add(createApiResponse(context, m, route, a));
             }
         }
@@ -346,7 +346,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         //todo : common responses ?
 	}
 
-    protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, AResponse a) {
+    protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, Response a) {
         MApiResponseBuilder resp = new MApiResponseBuilder();
         resp.setStatus(a.status());
         if(!route.getAction().hasReturnValue()) {

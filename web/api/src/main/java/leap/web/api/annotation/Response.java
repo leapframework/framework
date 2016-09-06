@@ -20,8 +20,8 @@ import java.lang.annotation.*;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-@Repeatable(AResponses.class)
-public @interface AResponse {
+@Repeatable(Responses.class)
+public @interface Response {
 
     /**
      * The response http status.

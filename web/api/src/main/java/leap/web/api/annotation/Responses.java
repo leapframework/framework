@@ -23,8 +23,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface AResponses {
+public @interface Responses {
 
-    AResponse[] value();
+    Response[] value();
 
 }
