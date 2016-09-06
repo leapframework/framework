@@ -20,6 +20,8 @@ import java.util.Map;
 
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
+import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.http.HTTP;
 
 public class MApiPath extends MApiObject {
 	
@@ -42,5 +44,13 @@ public class MApiPath extends MApiObject {
 	public MApiOperation[] getOperations() {
 		return operations;
 	}
-	
+
+    public MApiOperation getOperation(HTTP.Method method){
+        for(MApiOperation op : operations) {
+            if(op.getMethod().equals(method)) {
+                return op;
+            }
+        }
+        throw new ObjectNotFoundException("No operation with method '" + method + "' exists!");
+    }
 }

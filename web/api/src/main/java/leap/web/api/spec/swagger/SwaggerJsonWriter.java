@@ -156,6 +156,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
 
+        w.propertyOptional(TAGS, o.getTags());
         w.propertyOptional(SUMMARY, o.getSummary());
 		w.property(DESCRIPTION, nullToEmpty(o.getDescription()));
 

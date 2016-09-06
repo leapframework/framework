@@ -23,6 +23,7 @@ import leap.lang.http.HTTP;
 public class MApiOperation extends MApiNamedWithDesc {
 	
 	protected final HTTP.Method     method;
+    protected final String[]        tags;
 	protected final MApiParameter[] parameters;
 	protected final MApiResponse[]  responses;
 	protected final String[]        consumes;
@@ -31,6 +32,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 
 	public MApiOperation(String name, String title, String summary, String description,
                          HTTP.Method method,
+                         String[] tags,
                          List<MApiParameter> parameters,
                          List<MApiResponse> responses,
                          String[] consumes,
@@ -40,6 +42,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 	    super(name, title, summary, description, attrs);
 	    
 		this.method      = method;
+        this.tags        = tags;
 		this.parameters  = parameters.toArray(new MApiParameter[]{});
 		this.responses   = responses.toArray(new MApiResponse[]{});
 		this.consumes    = consumes;
@@ -67,8 +70,17 @@ public class MApiOperation extends MApiNamedWithDesc {
 	public HTTP.Method getMethod() {
 		return method;
 	}
-	
-	/**
+
+    /**
+     * A list of tags for API documentation control.
+     *
+     * Tags can be used for logical grouping of operations by resources or any other qualifier
+     */
+    public String[] getTags() {
+        return tags;
+    }
+
+    /**
 	 * Returns an array of {@link MApiParameter} of this operation.
 	 */
 	public MApiParameter[] getParameters() {

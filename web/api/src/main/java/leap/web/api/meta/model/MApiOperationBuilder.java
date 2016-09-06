@@ -23,10 +23,13 @@ import java.util.Set;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
+import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
-	
+
+    protected Route                      route;
 	protected HTTP.Method        		 method;
+    protected Set<String>                tags       = new LinkedHashSet<>();
 	protected List<MApiParameterBuilder> parameters = new ArrayList<>();
 	protected List<MApiResponseBuilder>  responses  = new ArrayList<>();
 	protected Set<String>                consumes   = new LinkedHashSet<>();
@@ -36,8 +39,16 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	public MApiOperationBuilder() {
 		
 	}
-	
-	public HTTP.Method getMethod() {
+
+    public MApiOperationBuilder(Route route) {
+        this.route = route;
+    }
+
+    public Route getRoute() {
+        return route;
+    }
+
+    public HTTP.Method getMethod() {
 		return method;
 	}
 
@@ -46,7 +57,15 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		return this;
 	}
 
-	public List<MApiParameterBuilder> getParameters() {
+    public Set<String> getTags() {
+        return tags;
+    }
+
+    public void addTag(String tag){
+        tags.add(tag);
+    }
+
+    public List<MApiParameterBuilder> getParameters() {
 		return parameters;
 	}
 
@@ -107,6 +126,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	@Override
     public MApiOperation build() {
 		return new MApiOperation(name, title, summary, description, method,
+                                tags.toArray(Arrays2.EMPTY_STRING_ARRAY),
 								Builders.buildList(parameters), 
 								Builders.buildList(responses), 
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 

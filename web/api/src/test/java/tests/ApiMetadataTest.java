@@ -18,6 +18,7 @@
 package tests;
 
 import leap.core.annotation.Inject;
+import leap.lang.http.HTTP;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiError;
@@ -35,6 +36,7 @@ public class ApiMetadataTest extends WebTestBase {
                 swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
         assertPaths(m);
+        assertTags(m);
         assertModels(m);
         assertContextualArgument(m);
         assertSuccessResponse(m);
@@ -71,6 +73,14 @@ public class ApiMetadataTest extends WebTestBase {
 
         MApiProperty loginName = user.tryGetProperty("loginName");
         assertEquals(Boolean.TRUE, loginName.getRequired());
+    }
+
+    private void assertTags(ApiMetadata m) {
+        MApiPath p = m.getPaths().get("/user");
+
+        String[] tags = p.getOperation(HTTP.Method.GET).getTags();
+        assertEquals(1, tags.length);
+        assertEquals("User", tags[0]);
     }
 
 }

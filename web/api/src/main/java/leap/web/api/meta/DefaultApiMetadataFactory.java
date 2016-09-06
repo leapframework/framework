@@ -21,6 +21,7 @@ import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Enums;
 import leap.lang.Strings;
+import leap.lang.Types;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -30,6 +31,8 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
+import leap.web.api.annotation.Resource;
+import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.*;
@@ -155,11 +158,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected ApiMetadata processMetadata(ApiMetadataContext context, ApiMetadataBuilder md) {
+        preProcessDefault(context, md);
+
 		for(ApiMetadataProcessor p : processors) {
 			p.preProcess(context, md);
 		}
 
-        processDefault(context, md);
+        postProcessDefault(context, md);
 
 		ApiMetadata m = md.build();
 		
@@ -170,7 +175,19 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		return m;
 	}
 
-    protected void processDefault(ApiMetadataContext context, ApiMetadataBuilder m) {
+    protected void preProcessDefault(ApiMetadataContext context, ApiMetadataBuilder m) {
+        m.getPaths().forEach((k,p) -> preProcessPath(context, m, p));
+    }
+
+    protected void preProcessPath(ApiMetadataContext context, ApiMetadataBuilder m, MApiPathBuilder p) {
+
+        p.getOperations().forEach(op -> {
+            createTags(context, m, op.getRoute(), p, op);
+        });
+
+    }
+
+    protected void postProcessDefault(ApiMetadataContext context, ApiMetadataBuilder m) {
         String defaultMimeType = MimeTypes.APPLICATION_JSON;
 
         if(m.getConsumes().isEmpty()) {
@@ -211,7 +228,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 	
 	protected void createApiOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path) {
-		MApiOperationBuilder op = new MApiOperationBuilder();
+		MApiOperationBuilder op = new MApiOperationBuilder(route);
 		
 		op.setName(route.getAction().getName());
 
@@ -345,6 +362,45 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         //todo : common responses ?
 	}
+
+    protected void createTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+        if(null == route) {
+            return;
+        }
+
+        Class<?> resourceType = null;
+
+        Resource resource = route.getAction().searchAnnotation(Resource.class);
+        if(null != resource) {
+            resourceType = resource.value();
+        }
+
+        if(null != route.getAction().getController()) {
+            ResourceWrapper rw = route.getAction().getControllerAnnotation(ResourceWrapper.class);
+            if(null != rw) {
+                Class<?> c = route.getAction().getController().getClass();
+
+                if(c.getTypeParameters().length == 1) {
+                    resourceType = c.getTypeParameters()[0].getGenericDeclaration();
+                }else {
+                    Class<?>[] types = Types.getActualTypeArguments(c.getGenericSuperclass());
+                    if(types.length == 1) {
+                        resourceType = types[0];
+                    }
+                }
+            }
+        }
+
+        if(null != resourceType) {
+            MApiModelBuilder model = m.tryGetModel(resourceType);
+            if(null != model) {
+                op.addTag(model.getName());
+            }else{
+                op.addTag(resourceType.getSimpleName());
+            }
+
+        }
+    }
 
     protected MApiResponseBuilder createApiResponse(ApiMetadataContext context, ApiMetadataBuilder m, Route route, Response a) {
         MApiResponseBuilder resp = new MApiResponseBuilder();

@@ -200,12 +200,16 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public boolean hasModel(Class<?> type) {
+        return tryGetModel(type) != null;
+    }
+
+    public MApiModelBuilder tryGetModel(Class<?> type) {
         for(MApiModelBuilder m : models.values()){
             if(type.equals(m.getJavaType())) {
-                return true;
+                return m;
             }
         }
-        return false;
+        return null;
     }
 
     @Override

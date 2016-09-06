@@ -155,6 +155,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
             mo.setName(method);
         }
 
+        //tags
+        List<String> tags = o.getList(TAGS);
+        if(null != tags){
+            tags.forEach(mo::addTag);
+        }
+
         mo.setSummary(o.getString(SUMMARY));
         mo.setDescription(o.getString(DESCRIPTION));
         mo.setDeprecated(o.get(DEPRECATED, Boolean.class, false));

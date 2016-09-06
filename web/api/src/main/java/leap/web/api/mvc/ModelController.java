@@ -30,6 +30,7 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
+import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
@@ -49,6 +50,7 @@ import java.util.Map;
 /**
  * The model class must be an orm model/entity class.
  */
+@ResourceWrapper
 public abstract class ModelController<T> extends ApiController implements ApiInitializable {
 
     protected final Class<T>      modelClass = getModelClass();

@@ -23,9 +23,10 @@ import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
 import leap.lang.Builders;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.web.route.Route;
 
 public class MApiPathBuilder extends MApiObjectBuilder<MApiPath> {
-	
+
 	protected String       		         pathTemplate;
 	protected List<MApiOperationBuilder> operations = new ArrayList<MApiOperationBuilder>();
 
@@ -33,7 +34,7 @@ public class MApiPathBuilder extends MApiObjectBuilder<MApiPath> {
 		
 	}
 
-	public String getPathTemplate() {
+    public String getPathTemplate() {
 		return pathTemplate;
 	}
 	
