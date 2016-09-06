@@ -286,6 +286,11 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 continue;
             }
 
+            if(reader.isStartElement(RESPONSES)) {
+                //todo : override exists responses.
+                readCommonResponses(reader).forEach(api::putCommonResponse);
+            }
+
             if(reader.isStartElement(MAX_PAGE_SIZE)) {
                 Integer i = reader.getIntegerElementTextAndEnd();
                 if(null != i) {
