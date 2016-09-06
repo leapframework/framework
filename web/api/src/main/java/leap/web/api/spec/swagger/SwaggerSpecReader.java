@@ -283,6 +283,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         JsonObject model = JsonObject.of(map);
 
+        List<String> requiredProperties = model.getList(REQUIRED);
+
         mm.setName(name);
         mm.setTitle(model.getString(TITLE));
         mm.setSummary(model.getString(SUMMARY));
@@ -290,7 +292,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         Map<String,Object> properties = model.getMap(PROPERTIES);
         if(null != properties) {
-            List<MApiPropertyBuilder> list = readProperties(properties);
+            List<MApiPropertyBuilder> list = readProperties(properties, requiredProperties);
             list.forEach(mm::addProperty);
         }
 
@@ -298,9 +300,20 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties) {
+        return readProperties(properties, null);
+    }
+
+    public List<MApiPropertyBuilder> readProperties(Map<String,Object> properties, List<String> requiredProperties) {
         List<MApiPropertyBuilder> list = new ArrayList<>();
         properties.forEach((propName, propMap) -> {
-            list.add(readProperty(propName, (Map<String,Object>)propMap));
+            MApiPropertyBuilder p = readProperty(propName, (Map<String,Object>)propMap);
+
+            if(null != requiredProperties && requiredProperties.contains(p.getName())) {
+                p.setRequired(true);
+            }
+
+            list.add(p);
+
         });
         return list;
     }

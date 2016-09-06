@@ -31,10 +31,7 @@ import leap.lang.meta.annotation.TypeWrapper;
 import leap.lang.meta.annotation.UserSortable;
 
 public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
-	
-	protected static final Map<Class<?>, MComplexType> COMPLEX_TYPES = 
-			Collections.synchronizedMap(new WeakHashMap<Class<?>, MComplexType>());
-	
+
 	protected static final MTypeFactory[] externalFactories;
 	
 	static {
@@ -64,10 +61,15 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
     public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
         Args.notNull(context, "context");
 
-		return getMType(type, genericType, context, new Stack<>(), false);
+        MTypeFactory root = context.root();
+        if(null == root) {
+            root = this;
+        }
+
+		return getMType(context, type, genericType, root);
     }
 
-	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, Stack<Class<?>> stack, boolean createComplexTypeRef) {
+	protected MType getMType(MTypeContext context, Class<?> type, Type genericType, MTypeFactory root) {
 		Args.notNull(type, "type");
 
 		for(MTypeFactory factory : externalFactories){
@@ -83,7 +85,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 		}
 
 		if(type.isArray()) {
-			return new MCollectionType(getMType(type.getComponentType(), null));
+			return new MCollectionType(root.getMType(type.getComponentType(), null, context));
 		}
 		
 		if(Iterable.class.isAssignableFrom(type)) {
@@ -97,7 +99,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
                 Class<?> elementClass = Types.getActualType(typeArgument);
                 genericType = typeArgument;
 
-                elementType = getMType(elementClass, genericType, context, stack, true);
+                elementType = root.getMType(elementClass, genericType, context);
             }
 
 			return new MCollectionType(elementType);
@@ -106,7 +108,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
         boolean isComplexTypeAnnotated = type.isAnnotationPresent(ComplexType.class);
         if(!isComplexTypeAnnotated) {
             if(Map.class.isAssignableFrom(type)) {
-                return getDictionaryType(context, type, genericType, stack, createComplexTypeRef);
+                return getDictionaryType(context, type, genericType, root);
             }
 
             if(Object.class.equals(type)) {
@@ -114,10 +116,10 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
             }
         }
 
-		return getComplexTypeOrRef(context, type, stack, createComplexTypeRef);
+		return createComplexType(context, type, root);
 	}
 
-    protected MType getDictionaryType(MTypeContext context, Class<?> type, Type genericType, Stack<Class<?>> stack, boolean createComplexTypeRef) {
+    protected MType getDictionaryType(MTypeContext context, Class<?> type, Type genericType, MTypeFactory root) {
         if(null == genericType) {
             return MDictionaryType.INSTANCE;
         }
@@ -127,8 +129,8 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
         Type keyType = types[0];
         Type valType = types[1];
 
-        MType keyMType = getMType(Types.getActualType(keyType), keyType, context, stack, createComplexTypeRef);
-        MType valMType = getMType(Types.getActualType(valType), valType, context, stack, createComplexTypeRef);
+        MType keyMType = getMType(context, Types.getActualType(keyType), keyType, root);
+        MType valMType = getMType(context, Types.getActualType(valType), valType, root);
 
         return new MDictionaryType(keyMType, valMType);
     }
@@ -154,39 +156,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
         return types;
     }
 	
-	protected MType getComplexTypeOrRef(MTypeContext context, Class<?> type, Stack<Class<?>> stack, boolean createComplexTypeRef) {
-		MComplexType ct = getComplexType(context, type, stack);
-		
-		if(!createComplexTypeRef) {
-			return ct;
-		}
-		
-        String fqName = context.strategy().getComplexTypeFqName(ct, type);
-        if(!Strings.isEmpty(fqName)) {
-            return new MComplexTypeRef(ct.getName(), fqName);
-        }
-
-		return ct.createTypeRef();
-	}
-	
-	protected MComplexType getComplexType(MTypeContext context, Class<?> type, Stack<Class<?>> stack) {
-		MComplexType ct = COMPLEX_TYPES.get(type);
-		if(null == ct) {
-			ct = createComplexType(context, type, stack);
-			COMPLEX_TYPES.put(type, ct);
-            context.listener().onComplexTypeResolved(type, ct);
-		}
-		
-		return ct;
-	}
-	
-	protected MComplexType createComplexType(MTypeContext context, Class<?> type, Stack<Class<?>> stack) {
-		if(stack.contains(type)) {
-			throw new IllegalStateException("Cannot create complex type for '" + type + "', found cyclic reference");
-		}
-
-		stack.add(type);
-		
+	protected MComplexType createComplexType(MTypeContext context, Class<?> type, MTypeFactory root) {
 		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 		
 		ct.setName(type.getSimpleName());
@@ -206,6 +176,8 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
             ct.setName(name);
         }
 
+        context.onComplexTypeCreating(type, name);
+
 		BeanType bt = BeanType.of(type);
 		for(BeanProperty bp : bt.getProperties()) {
 
@@ -220,12 +192,14 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 			MPropertyBuilder mp = new MPropertyBuilder();
 
             mp.setName(bp.getName());
-			mp.setType(getMType(bp.getType(), bp.getGenericType(), context, stack, true));
+			mp.setType(root.getMType(bp.getType(), bp.getGenericType(), context));
 
             configureProperty(bp, mp);
 
 			ct.addProperty(mp.build());
 		}
+
+        context.onComplexTypeCreated(type);
 		
 		return ct.build();
 	}

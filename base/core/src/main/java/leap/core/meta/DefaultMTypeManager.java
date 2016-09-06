@@ -15,126 +15,38 @@
  */
 package leap.core.meta;
 
-import java.lang.reflect.Type;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
-import leap.lang.Types;
-import leap.lang.meta.*;
-import leap.lang.meta.annotation.TypeWrapper;
+import leap.lang.meta.MType;
+import leap.lang.meta.MTypeFactory;
+
+import java.lang.reflect.Type;
 
 public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 
-	protected @Inject MTypeFactory[] extendedMTypeFactories;
+	protected @Inject MTypeFactory[] typeFactories;
 	
-	private MTypeFactory rootMTypeFactory;
+	private MTypeContainer defaultContainer;
 
     @Override
     public MType getMType(Class<?> type) {
-        return rootMTypeFactory.getMType(type, null);
+        return defaultContainer.getMType(type, null);
     }
 
     @Override
     public MType getMType(Class<?> type, Type genericType) {
-		return rootMTypeFactory.getMType(type, genericType);
+		return defaultContainer.getMType(type, genericType);
     }
 
 	@Override
-    public MTypeFactoryCreator factory() {
-	    return new ManagedMTypeFactoryCreator();
+    public MTypeContainerCreator factory() {
+	    return new DefaultMTypeContainer(typeFactories);
     }
 
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
-		rootMTypeFactory = factory().create();
+		defaultContainer = factory().create();
     }
 
-	protected class ManagedMTypeFactoryCreator extends SimpleMTypeFactoryCreator implements MTypeFactory,MTypeContext {
-		
-		protected MTypeFactory root;
-
-		@Override
-        public MTypeFactory create() {
-			root = new SimpleMTypeFactory(this);
-
-			return this;
-        }
-
-        @Override
-        public MTypeFactory root() {
-            return root;
-        }
-
-        @Override
-        public MTypeStrategy strategy() {
-            return strategy;
-        }
-
-        @Override
-        public MTypeListener listener() {
-            return listener;
-        }
-
-        @Override
-        public MType getMType(Class<?> type) {
-            return getMType(type, null, this);
-        }
-
-        @Override
-        public MType getMType(Class<?> type, Type genericType) {
-            return getMType(type, genericType, this);
-        }
-
-        @Override
-        public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
-            MType mtype = null;
-
-            TypeWrapper tw = type.getAnnotation(TypeWrapper.class);
-            if(null != tw) {
-                Class<?> wrappedType = tw.value();
-                if(!wrappedType.equals(Void.class)) {
-                    type = wrappedType;
-                }else{
-                    if(null == genericType || genericType.equals(type)) {
-                        return MVoidType.TYPE;
-                    }else{
-                        Type typeArgument = Types.getTypeArgument(genericType);
-
-                        type = Types.getActualType(typeArgument);
-                        genericType = typeArgument;
-                    }
-                }
-            }
-
-			for(MTypeFactory f : extendedMTypeFactories) {
-				mtype = f.getMType(type, genericType, context);
-				
-				if(null != mtype) {
-					break;
-				}
-			}
-
-            if(null == mtype) {
-                mtype = root.getMType(type, genericType, context);
-            }
-
-            if(null != mtype) {
-                tryNotifyComplexTypeResolved(mtype);
-            }
-
-            return mtype;
-        }
-
-        private void tryNotifyComplexTypeResolved(MType mtype) {
-            if(mtype.isComplexType()) {
-                MComplexType ct = mtype.asComplexType();
-                listener.onComplexTypeResolved(ct.getJavaType(), mtype.asComplexType());
-            }else if(mtype.isCollectionType()){
-                MType elementType = mtype.asCollectionType().getElementType();
-                tryNotifyComplexTypeResolved(elementType);
-            }
-        }
-	}
-	
 }

@@ -18,7 +18,6 @@ package leap.core.meta;
 import java.lang.reflect.Type;
 
 import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactoryCreator;
 
 public interface MTypeManager {
 
@@ -35,6 +34,6 @@ public interface MTypeManager {
     /**
      * Returns a creator for creating the {@link leap.lang.meta.MTypeFactory}.
      */
-	MTypeFactoryCreator factory();
+	MTypeContainerCreator factory();
 
 }

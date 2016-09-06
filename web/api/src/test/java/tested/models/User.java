@@ -15,14 +15,21 @@
  */
 package tested.models;
 
+import leap.lang.enums.Bool;
+import leap.orm.annotation.Column;
+import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 import leap.orm.model.Model;
 
 @Table("auth_user")
 public class User extends Model {
-	
+
+    @Id
 	private String	id;
+
+    @Column(nullable = Bool.FALSE)
 	private String	loginName;
+
 	private String	password;
 	private String  firstName;
 	private String  lastName;

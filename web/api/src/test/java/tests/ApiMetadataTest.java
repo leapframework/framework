@@ -19,10 +19,7 @@ package tests;
 
 import leap.core.annotation.Inject;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiModel;
-import leap.web.api.meta.model.MApiOperation;
-import leap.web.api.meta.model.MApiPath;
-import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiError;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
@@ -38,6 +35,7 @@ public class ApiMetadataTest extends WebTestBase {
                 swaggerReader.read(get("/api/swagger.json").getContent()).build();
 
         assertPaths(m);
+        assertModels(m);
         assertContextualArgument(m);
         assertSuccessResponse(m);
         assertCommonResponses(m);
@@ -66,6 +64,13 @@ public class ApiMetadataTest extends WebTestBase {
 
         MApiModel model = m.getModels().get(ApiError.class.getSimpleName());
         assertNotNull(model);
+    }
+
+    private void assertModels(ApiMetadata m) {
+        MApiModel user = m.getModel("User");
+
+        MApiProperty loginName = user.tryGetProperty("loginName");
+        assertEquals(Boolean.TRUE, loginName.getRequired());
     }
 
 }

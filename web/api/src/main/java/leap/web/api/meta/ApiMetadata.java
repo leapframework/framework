@@ -154,6 +154,14 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		return models;
 	}
 
+    public MApiModel getModel(String name) {
+        MApiModel m = models.get(name);
+        if(null == m) {
+            throw new ObjectNotFoundException("The model '" + name + "' not exists!");
+        }
+        return m;
+    }
+
     public MApiModel getModel(Class<?> type) {
         for(MApiModel m : models.values()) {
             if(type.equals(m.getJavaType())) {

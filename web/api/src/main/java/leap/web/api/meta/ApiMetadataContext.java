@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta;
 
+import leap.core.meta.MTypeContainer;
 import leap.lang.meta.MTypeFactory;
 import leap.web.api.config.ApiConfig;
 
@@ -29,8 +30,8 @@ public interface ApiMetadataContext {
 	ApiConfig getConfig();
 
 	/**
-	 * Returns the {@link MTypeFactory}.
+	 * Returns the {@link MTypeContainer}.
      */
-	MTypeFactory getMTypeFactory();
+	MTypeContainer getMTypeContainer();
 
 }

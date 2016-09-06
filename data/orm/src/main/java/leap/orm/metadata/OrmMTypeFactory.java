@@ -55,6 +55,8 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
 		ct.setName(em.getEntityName());
 
+        context.onComplexTypeCreating(type, ct.getName());
+
         MTypeFactory root = context.root();
 
 		for(FieldMapping fm : em.getFieldMappings()) {
@@ -99,6 +101,8 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
 			ct.addProperty(p.build());
 		}
+
+        context.onComplexTypeCreated(type);
 		
 		return ct.build();
 	}

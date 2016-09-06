@@ -16,12 +16,11 @@
 package leap.web.api.meta;
 
 import leap.core.annotation.Inject;
+import leap.core.meta.MTypeContainer;
 import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Enums;
 import leap.lang.Strings;
-import leap.lang.TypeInfo;
-import leap.lang.Types;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -66,45 +65,31 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		createSecurityDefs(context, md);
 		
 		createPaths(context, md);
+
+        createModels(context, md);
 		
 		return processMetadata(context, md);
     }
 	
     protected ApiMetadataContext createContext(ApiConfig c, ApiMetadataBuilder md) {
-		final MTypeFactory tf = createMTypeFactory(c, md);
+		final MTypeContainer tf = createMTypeFactory(c, md);
 		
 		return new ApiMetadataContext() {
-			
-			@Override
-			public MTypeFactory getMTypeFactory() {
-				return tf;
-			}
-			
-			@Override
+
+            @Override
+            public MTypeContainer getMTypeContainer() {
+                return tf;
+            }
+
+            @Override
 			public ApiConfig getConfig() {
 				return c;
 			}
 		};
 	}
 	
-	protected MTypeFactory createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
+	protected MTypeContainer createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
 		return mtypeManager.factory()
-                    .setListener(new MTypeListener() {
-                        @Override
-                        public void onComplexTypeResolved(Class<?> type, MComplexType ct) {
-                            if(ct.isDictionaryType()) {
-                                return;
-                            }
-
-                            if(md.hasModel(ct.getName())) {
-                                return;
-                            }
-
-                            MApiModelBuilder model = new MApiModelBuilder(ct);
-                            md.addModel(model);
-                        }
-                    })
-
                     .setStrategy(new MTypeStrategy() {
                         @Override
                         public String getComplexTypeName(String name) {
@@ -117,6 +102,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                             return name;
                         }
                     })
+
+                    .setAlwaysReturnComplexTypeRef(true)
 
                     .create();
 	}
@@ -200,6 +187,14 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			createApiPath(context, md, route);	
 		}
 	}
+
+    protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
+
+        context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
+            m.addModel(new MApiModelBuilder(ct));
+        });
+
+    }
 	
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();
@@ -290,7 +285,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             p.setFile(true);
             op.addConsume(MimeTypes.MULTIPART_FORM_DATA);
         }else{
-            p.setType(createMType(context, m, a.getTypeInfo()));
+            p.setType(createMType(context, m, a.getType(), a.getGenericType()));
         }
 
         p.setLocation(getParameterLocation(context, route.getAction(), a, op, p));
@@ -376,27 +371,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             resp.setType(MSimpleTypes.BINARY);
             resp.setFile(true);
         }else{
-            resp.setType(createMType(context, m, Types.getTypeInfo(type, genericType)));
+            resp.setType(createMType(context, m, type, genericType));
         }
     }
 	
-	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, TypeInfo ti) {
-		if (ti.isSimpleType()) {
-			return context.getMTypeFactory().getMType(ti.getType(), ti.getGenericType());
-		} else if (ti.isCollectionType()) {
-			TypeInfo eti = ti.getElementTypeInfo();
-			MType elementType = createMType(context, m, eti);
-			return new MCollectionType(elementType);
-		} else {
-			//Complex Type
-			MType mtype = context.getMTypeFactory().getMType(ti.getType(), ti.getGenericType());
-            if(mtype instanceof MComplexType) {
-                MComplexType ct = mtype.asComplexType();
-                return new MComplexTypeRef(ct.getName());
-            }else{
-                return mtype;
-            }
-		}
+	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType) {
+        return context.getMTypeContainer().getMType(type, genericType);
 	}
 	
 	protected MApiParameter.Location getParameterLocation(ApiMetadataContext context, Action action, Argument arg, MApiOperationBuilder o, MApiParameterBuilder p) {
