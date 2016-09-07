@@ -150,7 +150,7 @@ public interface Route extends RouteBase, Sourced, Extensible {
 	 * 
 	 * or 
 	 * 
-	 * Donothing if <code>null</code>.
+	 * Do nothing if <code>null</code>.
 	 */
 	void setCorsEnabled(Boolean enabled);
 	
@@ -190,7 +190,7 @@ public interface Route extends RouteBase, Sourced, Extensible {
 	boolean isCsrfDisabled();
 	
 	/**
-	 * Eanbles or Disables csrf.
+	 * Enables or Disables csrf.
 	 */
 	void setCsrfEnabled(Boolean enabled);
 	
