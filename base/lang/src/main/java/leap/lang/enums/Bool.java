@@ -51,4 +51,8 @@ public enum Bool implements Valued<Boolean>{
 	public boolean isNone(){
 		return value == null;
 	}
+
+    public boolean isPresent() {
+        return value != null;
+    }
 }

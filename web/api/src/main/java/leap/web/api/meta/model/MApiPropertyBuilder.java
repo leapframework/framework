@@ -42,10 +42,10 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required =  mp.getRequired();
-        this.creatable = mp.getUserCreatable();
-        this.updatable = mp.getUserUpdatable();
-        this.sortable = mp.getUserSortable();
-        this.filterable = mp.getUserFilterable();
+        this.creatable = mp.getCreatable();
+        this.updatable = mp.getUpdatable();
+        this.sortable = mp.getSortable();
+        this.filterable = mp.getFilterable();
 	}
 
     public Boolean getCreatable() {

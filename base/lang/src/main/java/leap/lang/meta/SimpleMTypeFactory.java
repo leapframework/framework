@@ -17,18 +17,13 @@ package leap.lang.meta;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Stack;
-import java.util.WeakHashMap;
 
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.meta.annotation.ComplexType;
 import leap.lang.meta.annotation.NonProperty;
-import leap.lang.meta.annotation.TypeWrapper;
-import leap.lang.meta.annotation.UserSortable;
 
 public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
 

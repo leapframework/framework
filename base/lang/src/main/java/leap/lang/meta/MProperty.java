@@ -28,16 +28,16 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Integer  length;
     protected final Integer  precision;
     protected final Integer  scale;
-    protected final Boolean  userCreatable;
-    protected final Boolean  userUpdatable;
-    protected final Boolean  userSortable;
-    protected final Boolean  userFilterable;
+    protected final Boolean  creatable;
+    protected final Boolean  updatable;
+    protected final Boolean  sortable;
+    protected final Boolean  filterable;
 
     public MProperty(String name, String title, String summary, String description,
                      MType type, Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
-                     Boolean userCreatable, Boolean userUpdatable, Boolean userSortable, Boolean userFilterable) {
+                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
         super(name, title, summary, description);
 
         Args.notNull(type, "type");
@@ -50,10 +50,10 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.length = length;
         this.precision = precision;
         this.scale = scale;
-        this.userCreatable = userCreatable;
-        this.userUpdatable = userUpdatable;
-        this.userSortable = userSortable;
-        this.userFilterable = userFilterable;
+        this.creatable = creatable;
+        this.updatable = updatable;
+        this.sortable = sortable;
+        this.filterable = filterable;
     }
 
     public MType getType() {
@@ -88,20 +88,20 @@ public class MProperty extends ImmutableMNamedWithDesc {
         return scale;
     }
 
-    public Boolean getUserCreatable() {
-        return userCreatable;
+    public Boolean getCreatable() {
+        return creatable;
     }
 
-    public Boolean getUserUpdatable() {
-        return userUpdatable;
+    public Boolean getUpdatable() {
+        return updatable;
     }
 
-    public Boolean getUserSortable() {
-        return userSortable;
+    public Boolean getSortable() {
+        return sortable;
     }
 
-    public Boolean getUserFilterable() {
-        return userFilterable;
+    public Boolean getFilterable() {
+        return filterable;
     }
 
     @Override

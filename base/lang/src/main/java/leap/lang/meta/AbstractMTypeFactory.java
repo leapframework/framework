@@ -2,10 +2,7 @@ package leap.lang.meta;
 
 import leap.lang.Enums;
 import leap.lang.beans.BeanProperty;
-import leap.lang.meta.annotation.UserCreatable;
-import leap.lang.meta.annotation.UserFilterable;
-import leap.lang.meta.annotation.UserSortable;
-import leap.lang.meta.annotation.UserUpdatable;
+import leap.lang.meta.annotation.*;
 
 public abstract class AbstractMTypeFactory implements MTypeFactory {
 
@@ -15,25 +12,49 @@ public abstract class AbstractMTypeFactory implements MTypeFactory {
             mp.setEnumValues(Enums.getValues(bp.getType()));
         }
 
-        UserSortable sortable = bp.getAnnotation(UserSortable.class);
+        Property p = bp.getAnnotation(Property.class);
+        if(null != p) {
+            if(p.required().isPresent()) {
+                mp.setRequired(p.required().value());
+            }
+
+            if(p.creatable().isPresent()) {
+                mp.setCreatable(p.creatable().value());
+            }
+
+            if(p.updatable().isPresent()) {
+                mp.setUpdatable(p.updatable().value());
+            }
+
+            if(p.filterable().isPresent()) {
+                mp.setFilterable(p.filterable().value());
+            }
+
+            if(p.sortable().isPresent()) {
+                mp.setSortable(p.sortable().value());
+            }
+        }
+
+        Sortable sortable = bp.getAnnotation(Sortable.class);
         if(null != sortable) {
-            mp.setUserSortable(sortable.value());
+            mp.setSortable(sortable.value());
         }
 
-        UserFilterable filterable = bp.getAnnotation(UserFilterable.class);
+        Filterable filterable = bp.getAnnotation(Filterable.class);
         if(null != filterable) {
-            mp.setUserFilterable(filterable.value());
+            mp.setFilterable(filterable.value());
         }
 
-        UserCreatable creatable = bp.getAnnotation(UserCreatable.class);
+        Creatable creatable = bp.getAnnotation(Creatable.class);
         if(null != creatable) {
-            mp.setUserCreatable(creatable.value());
+            mp.setCreatable(creatable.value());
         }
 
-        UserUpdatable updatable = bp.getAnnotation(UserUpdatable.class);
+        Updatable updatable = bp.getAnnotation(Updatable.class);
         if(null != updatable) {
-            mp.setUserUpdatable(updatable.value());
+            mp.setUpdatable(updatable.value());
         }
+
 
     }
 

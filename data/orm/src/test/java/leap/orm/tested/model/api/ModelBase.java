@@ -18,8 +18,8 @@
 
 package leap.orm.tested.model.api;
 
-import leap.lang.meta.annotation.UserCreatable;
-import leap.lang.meta.annotation.UserUpdatable;
+import leap.lang.meta.annotation.Creatable;
+import leap.lang.meta.annotation.Updatable;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.domain.CreatedAt;
@@ -35,13 +35,13 @@ public abstract class ModelBase extends Model {
 
     @Column
     @CreatedAt
-    @UserCreatable(false)
+    @Creatable(false)
     protected Date createdAt;
 
     @Column
     @UpdatedAt
-    @UserCreatable(false)
-    @UserUpdatable(false)
+    @Creatable(false)
+    @Updatable(false)
     protected Date updatedAt;
 
     public String getId() {

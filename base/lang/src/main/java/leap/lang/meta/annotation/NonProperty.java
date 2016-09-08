@@ -19,7 +19,7 @@ package leap.lang.meta.annotation;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD,ElementType.METHOD})
 @Inherited
 public @interface NonProperty {
 

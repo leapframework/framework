@@ -25,10 +25,10 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     protected Integer  length;
     protected Integer  precision;
     protected Integer  scale;
-    protected Boolean  userCreatable;
-    protected Boolean  userUpdatable;
-    protected Boolean  userSortable;
-    protected Boolean  userFilterable;
+    protected Boolean  creatable;
+    protected Boolean  updatable;
+    protected Boolean  sortable;
+    protected Boolean  filterable;
 
     public MType getType() {
         return type;
@@ -94,43 +94,43 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.scale = scale;
     }
 
-    public Boolean getUserCreatable() {
-        return userCreatable;
+    public Boolean getCreatable() {
+        return creatable;
     }
 
-    public void setUserCreatable(Boolean userCreatable) {
-        this.userCreatable = userCreatable;
+    public void setCreatable(Boolean creatable) {
+        this.creatable = creatable;
     }
 
-    public Boolean getUserUpdatable() {
-        return userUpdatable;
+    public Boolean getUpdatable() {
+        return updatable;
     }
 
-    public void setUserUpdatable(Boolean userUpdatable) {
-        this.userUpdatable = userUpdatable;
+    public void setUpdatable(Boolean updatable) {
+        this.updatable = updatable;
     }
 
-    public Boolean getUserSortable() {
-        return userSortable;
+    public Boolean getSortable() {
+        return sortable;
     }
 
-    public void setUserSortable(Boolean userSortable) {
-        this.userSortable = userSortable;
+    public void setSortable(Boolean sortable) {
+        this.sortable = sortable;
     }
 
-    public Boolean getUserFilterable() {
-        return userFilterable;
+    public Boolean getFilterable() {
+        return filterable;
     }
 
-    public void setUserFilterable(Boolean userFilterable) {
-        this.userFilterable = userFilterable;
+    public void setFilterable(Boolean filterable) {
+        this.filterable = filterable;
     }
 
     @Override
     public MProperty build() {
         return new MProperty(name, title, summary, description, type, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
-                userCreatable, userUpdatable, userSortable, userFilterable);
+                creatable, updatable, sortable, filterable);
     }
 
 }

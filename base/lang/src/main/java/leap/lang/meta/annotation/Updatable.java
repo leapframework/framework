@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD,ElementType.METHOD,ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface UserCreatable {
+public @interface Updatable {
 
     boolean value() default true;
 

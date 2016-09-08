@@ -20,12 +20,11 @@ package leap.orm.tested.model.api;
 
 import leap.core.validation.annotations.Required;
 import leap.lang.enums.Bool;
-import leap.lang.meta.annotation.UserFilterable;
-import leap.lang.meta.annotation.UserSortable;
+import leap.lang.meta.annotation.Filterable;
+import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.AutoCreateTable;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.NonColumn;
-import leap.orm.annotation.Table;
 import leap.orm.annotation.domain.Title;
 
 import java.util.List;
@@ -34,8 +33,8 @@ import java.util.List;
 public class Api extends ModelWithDesc {
 
     @Required
-    @UserSortable
-    @UserFilterable
+    @Sortable
+    @Filterable
     @Column(update = Bool.FALSE, unique = Bool.TRUE)
     protected String name;
 
