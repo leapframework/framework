@@ -367,6 +367,7 @@ public class AppClassLoader extends ClassLoader {
             //try instrument the class.
             AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, rawBytes, false);
 
+            //don't define the class if not instrumented.
             if(null == ic) {
                 return null;
             }
