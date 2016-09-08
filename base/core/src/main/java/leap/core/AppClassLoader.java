@@ -298,12 +298,8 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private Class<?> instrumentClass(String name) throws ClassNotFoundException {
-        if(isIgnore(name)) {
-            return null;
-        }
-
-        Resource resource = Resources.getResource("classpath:" + name.replace('.', '/') + ".class");
-        if(null == resource || !resource.exists()) {
+        Resource resource = tryGetResource(name);
+        if(null == resource) {
             return null;
         }
 
@@ -319,6 +315,18 @@ public class AppClassLoader extends ClassLoader {
         instrumenting.remove(name);
 
         return c;
+    }
+
+    private Resource tryGetResource(String name) {
+        if(isIgnore(name)) {
+            return null;
+        }
+
+        Resource resource = Resources.getResource("classpath:" + name.replace('.', '/') + ".class");
+        if(null == resource || !resource.exists()) {
+            return null;
+        }
+        return resource;
     }
 
     private Class<?> instrumentClass(String name, Resource resource, boolean depFirst) throws ClassNotFoundException {
@@ -358,9 +366,14 @@ public class AppClassLoader extends ClassLoader {
 
             //try instrument the class.
             AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, rawBytes, false);
-            if(null == ic && null == name) {
+
+            if(null == ic) {
                 return null;
             }
+
+//            if(null == ic && null == name) {
+//                return null;
+//            }
 
             if(null == ic && isParentLoaded(name)) {
                 log.trace("Class '{}' already loaded, do nothing", name);
