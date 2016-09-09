@@ -24,7 +24,7 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Relation {
+public @interface Relational {
 
     /**
      * The name of relation.

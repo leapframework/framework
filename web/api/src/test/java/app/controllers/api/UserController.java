@@ -22,10 +22,12 @@ import leap.web.annotation.http.GET;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
 import leap.web.api.mvc.params.QueryOptions;
+import leap.web.security.annotation.AllowAnonymous;
 import tested.models.User;
 
 import java.util.List;
 
+@AllowAnonymous
 public class UserController extends ModelController<User> {
 
     @GET

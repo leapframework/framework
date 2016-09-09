@@ -276,7 +276,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             if(a.isWrapper()) {
 
                 for(Argument wa : a.getWrappedArguments()) {
-                    createApiParameter(context, m, route, op, wa);
+                    if(!wa.isContextual()) {
+                        createApiParameter(context, m, route, op, wa);
+                    }
                 }
 
                 if(!a.isRequestBody()) {

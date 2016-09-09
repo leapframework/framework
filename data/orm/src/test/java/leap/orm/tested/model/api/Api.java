@@ -24,8 +24,7 @@ import leap.lang.meta.annotation.Filterable;
 import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.AutoCreateTable;
 import leap.orm.annotation.Column;
-import leap.orm.annotation.NonColumn;
-import leap.orm.annotation.Relation;
+import leap.orm.annotation.Relational;
 import leap.orm.annotation.domain.Title;
 
 import java.util.List;
@@ -46,13 +45,13 @@ public class Api extends ModelWithDesc {
     @Required
     protected String title;
 
-    @Relation
+    @Relational
     protected List<ApiPath> paths;
 
-    @Relation
+    @Relational
     protected List<ApiModel> models;
 
-    @Relation
+    @Relational
     protected List<Category> categories;
 
     public String getTitle() {

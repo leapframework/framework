@@ -32,12 +32,14 @@ public class MProperty extends ImmutableMNamedWithDesc {
     protected final Boolean  updatable;
     protected final Boolean  sortable;
     protected final Boolean  filterable;
+    protected final boolean  reference;
 
     public MProperty(String name, String title, String summary, String description,
                      MType type, Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
-                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
+                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                     boolean reference) {
         super(name, title, summary, description);
 
         Args.notNull(type, "type");
@@ -54,6 +56,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
+        this.reference = reference;
     }
 
     public MType getType() {
@@ -102,6 +105,22 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public Boolean getFilterable() {
         return filterable;
+    }
+
+    /**
+     * Returns true if this property is a reference property.
+     */
+    public boolean isReference() {
+        return reference;
+    }
+
+    /**
+     * Returns the referenced type name.
+     */
+    public String getRefTypeName() {
+        return type.isCollectionType() ?
+                type.asCollectionType().getElementType().asTypeRef().getRefTypeName() :
+                type.asTypeRef().getRefTypeName();
     }
 
     @Override

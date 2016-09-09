@@ -19,6 +19,7 @@
 package leap.orm.mapping;
 
 import leap.lang.Buildable;
+import leap.lang.beans.BeanProperty;
 
 public class RelationPropertyBuilder implements Buildable<RelationProperty> {
 
@@ -27,6 +28,15 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
     protected String  relation;
     protected String  targetEntityName;
     protected String  joinEntityName;
+    protected BeanProperty beanProperty;
+
+    public RelationPropertyBuilder() {
+
+    }
+
+    public RelationPropertyBuilder(BeanProperty beanProperty) {
+        this.beanProperty = beanProperty;
+    }
 
     public String getName() {
         return name;
@@ -68,8 +78,16 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
         this.joinEntityName = joinEntityName;
     }
 
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
+    }
+
+    public void setBeanProperty(BeanProperty beanProperty) {
+        this.beanProperty = beanProperty;
+    }
+
     @Override
     public RelationProperty build() {
-        return new RelationProperty(name, many, targetEntityName, joinEntityName);
+        return new RelationProperty(name, many, targetEntityName, joinEntityName, beanProperty);
     }
 }

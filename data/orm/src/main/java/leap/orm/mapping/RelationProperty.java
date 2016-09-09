@@ -20,6 +20,7 @@ package leap.orm.mapping;
 
 import leap.core.validation.annotations.Required;
 import leap.lang.annotation.Optional;
+import leap.lang.beans.BeanProperty;
 
 public class RelationProperty {
 
@@ -27,12 +28,14 @@ public class RelationProperty {
     protected final boolean many;
     protected final String  targetEntityName;
     protected final String  joinEntityName;
+    protected final BeanProperty beanProperty;
 
-    public RelationProperty(String name, boolean many, String targetEntityName, String joinEntityName) {
+    public RelationProperty(String name, boolean many, String targetEntityName, String joinEntityName, BeanProperty bp) {
         this.name = name;
         this.many = many;
         this.targetEntityName = targetEntityName;
         this.joinEntityName = joinEntityName;
+        this.beanProperty = bp;
     }
 
     @Required
@@ -58,4 +61,8 @@ public class RelationProperty {
         return joinEntityName;
     }
 
+    @Optional
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
+    }
 }

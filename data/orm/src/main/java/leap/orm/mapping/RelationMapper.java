@@ -23,7 +23,7 @@ import leap.db.model.DbForeignKeyColumn;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
-import leap.orm.annotation.Relation;
+import leap.orm.annotation.Relational;
 import leap.orm.metadata.MetadataException;
 import leap.orm.naming.NamingStrategy;
 
@@ -368,7 +368,7 @@ public class RelationMapper implements Mapper {
         BeanType bt = BeanType.of(emb.getEntityClass());
 
         for(BeanProperty bp : bt.getProperties()) {
-            Relation a = bp.getAnnotation(Relation.class);
+            Relational a = bp.getAnnotation(Relational.class);
             if(null != a) {
                 String relation = a.value();
 
@@ -387,7 +387,7 @@ public class RelationMapper implements Mapper {
                     throw new MappingConfigException("The target class '" + targetClass + "' is not an entity");
                 }
 
-                RelationPropertyBuilder rp = new RelationPropertyBuilder();
+                RelationPropertyBuilder rp = new RelationPropertyBuilder(bp);
                 rp.setName(bp.getName());
                 rp.setMany(many);
                 rp.setTargetEntityName(targetEntity.getEntityName());

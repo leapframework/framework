@@ -29,6 +29,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     protected Boolean  updatable;
     protected Boolean  sortable;
     protected Boolean  filterable;
+    protected boolean  reference;
 
     public MType getType() {
         return type;
@@ -126,11 +127,19 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.filterable = filterable;
     }
 
+    public boolean isReference() {
+        return reference;
+    }
+
+    public void setReference(boolean reference) {
+        this.reference = reference;
+    }
+
     @Override
     public MProperty build() {
         return new MProperty(name, title, summary, description, type, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
-                creatable, updatable, sortable, filterable);
+                             creatable, updatable, sortable, filterable, reference);
     }
 
 }

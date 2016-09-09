@@ -23,6 +23,7 @@ import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.RelationProperty;
 
 import java.lang.reflect.Type;
 
@@ -99,8 +100,31 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 p.setFilterable(false);
             }
 
+            if(null != bp) {
+                configureProperty(bp, p);
+            }
+
 			ct.addProperty(p.build());
 		}
+
+        for(RelationProperty rp : em.getRelationProperties()) {
+
+            EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
+
+            MPropertyBuilder p = new MPropertyBuilder();
+            p.setName(rp.getName());
+            p.setReference(true);
+
+            if(rp.isMany()) {
+                p.setType(new MCollectionType(new MComplexTypeRef(targetEntity.getEntityName())));
+            }else{
+                p.setType(new MComplexTypeRef(targetEntity.getEntityName()));
+            }
+
+            if(null != rp.getBeanProperty()) {
+                configureProperty(rp.getBeanProperty(), p);
+            }
+        }
 
         context.onComplexTypeCreated(type);
 		
