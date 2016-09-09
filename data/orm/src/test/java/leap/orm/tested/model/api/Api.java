@@ -25,6 +25,7 @@ import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.AutoCreateTable;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.NonColumn;
+import leap.orm.annotation.Relation;
 import leap.orm.annotation.domain.Title;
 
 import java.util.List;
@@ -45,11 +46,14 @@ public class Api extends ModelWithDesc {
     @Required
     protected String title;
 
-    @NonColumn
+    @Relation
     protected List<ApiPath> paths;
 
-    @NonColumn
+    @Relation
     protected List<ApiModel> models;
+
+    @Relation
+    protected List<Category> categories;
 
     public String getTitle() {
         return title;
@@ -96,4 +100,13 @@ public class Api extends ModelWithDesc {
     public void setModels(List<ApiModel> models) {
         this.models = models;
     }
+
+    public List<Category> getCategories() {
+        return categories;
+    }
+
+    public void setCategories(List<Category> categories) {
+        this.categories = categories;
+    }
+
 }

@@ -21,6 +21,7 @@ import java.util.List;
 import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.beans.BeanProperty;
+import leap.orm.annotation.ManyToOne;
 
 public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	
@@ -61,6 +62,22 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 		this.type = type;
 		return this;
 	}
+
+    public boolean isManyToOne() {
+        return RelationType.MANY_TO_ONE.equals(type);
+    }
+
+    public boolean isManyToMany() {
+        return RelationType.MANY_TO_MANY.equals(type);
+    }
+
+    public boolean isOneToMany() {
+        return RelationType.ONE_TO_MANY.equals(type);
+    }
+
+    public boolean isOneToOne() {
+        return RelationType.ONE_TO_ONE.equals(type);
+    }
 	
 	public boolean isOptional() {
 		return null == optional ? true : optional;

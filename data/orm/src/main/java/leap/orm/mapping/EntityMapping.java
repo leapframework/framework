@@ -57,6 +57,7 @@ public class EntityMapping {
 	protected final Class<? extends Model>       modelClass;
 	protected final EntityValidator[]            validators;
 	protected final RelationMapping[]			 relationMappings;
+    protected final RelationProperty[]           relationProperties;
     protected final boolean                      autoCreateTable;
     protected final boolean                      sharding;
     protected final boolean                      autoCreateShardingTable;
@@ -74,6 +75,7 @@ public class EntityMapping {
                          EntityDomain domain, Class<? extends Model> modelClass,
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
+                         RelationProperty[] relationProperties,
                          boolean autoCreateTable,
                          boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm) {
 		
@@ -97,6 +99,7 @@ public class EntityMapping {
 	    this.modelClass        = modelClass;
 	    this.validators        = null == validators ? new EntityValidator[]{} : validators.toArray(new EntityValidator[validators.size()]);
 	    this.relationMappings  = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
+        this.relationProperties = relationProperties;
 	    
 	    this.fieldMappings          = fieldMappings.toArray(new FieldMapping[fieldMappings.size()]);
 	    this.columnNameToFields     = createColumnNameToFieldsMap();
@@ -171,6 +174,28 @@ public class EntityMapping {
      */
     public RelationMapping[] getRelationMappings() {
         return relationMappings;
+    }
+
+    /**
+     * Returns all the {@link RelationProperty}.
+     */
+    public RelationProperty[] getRelationProperties() {
+        return relationProperties;
+    }
+
+    /**
+     * Returns the {@link RelationProperty} matches the given name.
+     *
+     * <p/>
+     * Returns null if not exists.
+     */
+    public RelationProperty tryGetRelationProperty(String name) {
+        for(RelationProperty p : relationProperties) {
+            if(p.getName().equals(name)) {
+                return p;
+            }
+        }
+        return null;
     }
 
     /**

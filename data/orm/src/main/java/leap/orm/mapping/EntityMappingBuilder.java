@@ -49,7 +49,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected Class<? extends Model>       modelClass;
 	protected DbTable					   physicalTable;
 	protected List<EntityValidator>        validators;
-	protected List<RelationMappingBuilder> relationMappings;
+	protected List<RelationMappingBuilder> relationMappings = new ArrayList<>();
+    protected List<RelationPropertyBuilder>relationProperties = new ArrayList<>();
     protected boolean                      sharding;
     protected boolean                      autoCreateShardingTable;
     protected ShardingAlgorithm            shardingAlgorithm;
@@ -328,21 +329,22 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	}
 	
 	public List<RelationMappingBuilder> getRelationMappings() {
-		if(null == relationMappings){
-			relationMappings = new ArrayList<>();
-		}
 		return relationMappings;
 	}
 
-	public EntityMappingBuilder setRelationMappings(List<RelationMappingBuilder> relationMappings) {
-		this.relationMappings = relationMappings;
-		return this;
-	}
-	
 	public EntityMappingBuilder addRelationMapping(RelationMappingBuilder relationMapping){
 		getRelationMappings().add(relationMapping);
 		return this;
 	}
+
+    public List<RelationPropertyBuilder> getRelationProperties() {
+        return relationProperties;
+    }
+
+    public EntityMappingBuilder addRelationProperty(RelationPropertyBuilder p) {
+        relationProperties.add(p);
+        return this;
+    }
 
     public boolean isSharding() {
         return sharding;
@@ -386,7 +388,10 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,relations, autoCreateTable,
+	    						 domain,modelClass,validators,
+                                 relations,
+                                 Builders.buildArray(relationProperties, new RelationProperty[0]),
+                                 autoCreateTable,
                                  sharding, autoCreateShardingTable, shardingAlgorithm);
     }
 	
