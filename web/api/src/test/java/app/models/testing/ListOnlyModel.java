@@ -16,23 +16,18 @@
  *
  */
 
-package app.controllers.api;
+package app.models.testing;
 
-import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.ModelController;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.web.security.annotation.AllowAnonymous;
-import tested.models.User;
+public class ListOnlyModel{
 
-import java.util.List;
+    protected String prop1;
 
-@AllowAnonymous
-public class UserController extends ModelController<User> {
+    public String getProp1() {
+        return prop1;
+    }
 
-    @GET
-    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
-        return queryList(options);
+    public void setProp1(String prop1) {
+        this.prop1 = prop1;
     }
 
 }

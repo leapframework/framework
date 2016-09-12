@@ -15,14 +15,21 @@
  *  * limitations under the License.
  *
  */
-package app.controllers.api;
 
-import leap.web.view.ViewData;
+package app.controllers.testing;
 
-public class ArgsController {
+import leap.web.annotation.http.GET;
+import leap.web.api.mvc.ApiController;
+import leap.web.api.mvc.ApiResponse;
+import app.models.testing.ListOnlyModel;
 
-    public void contextArgumentOnly(ViewData viewData) {
+import java.util.List;
 
+public class ListOnlyController extends ApiController {
+
+    @GET
+    public ApiResponse<List<ListOnlyModel>> getAllListOnlyModels() {
+        return null;
     }
 
 }

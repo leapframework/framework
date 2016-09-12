@@ -16,11 +16,10 @@
  *
  */
 
-package app.controllers.api;
+package app.controllers.testing;
 
 import leap.lang.Dates;
 import leap.lang.json.JSON;
-import leap.lang.time.DateFormats;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
@@ -32,7 +31,7 @@ public class TypesControllerTest extends WebTestBase {
 
     @Test
     public void testDateType() {
-        String s = JSON.decode(get("/api/types/date").getContent());
+        String s = JSON.decode(get("/testing/types/date").getContent());
 
         assertNotEmpty(s);
 
@@ -43,25 +42,25 @@ public class TypesControllerTest extends WebTestBase {
 
     @Test
     public void testPlainText() {
-        assertEquals("Hello", get("/api/types/plain_text").getContent());
-        assertEquals("Hello1", get("/api/types/plain_text1").getContent());
+        assertEquals("Hello", get("/testing/types/plain_text").getContent());
+        assertEquals("Hello1", get("/testing/types/plain_text1").getContent());
     }
 
     @Test
     public void testPlainTextLong() {
-        String s = get("/api/types/plain_text_long").getContent();
+        String s = get("/testing/types/plain_text_long").getContent();
         assertEquals(10000, s.length());
     }
 
     @Test
     public void testJsonText() {
-        assertEquals("\"Hello\"", get("/api/types/json_text").getContent());
-        assertEquals("\"Hello1\"", get("/api/types/json_text1").getContent());
+        assertEquals("\"Hello\"", get("/testing/types/json_text").getContent());
+        assertEquals("\"Hello1\"", get("/testing/types/json_text1").getContent());
     }
 
     @Test
     public void testJsonTextLong() {
-        String s = JSON.decode(get("/api/types/json_text_long").getContent());
+        String s = JSON.decode(get("/testing/types/json_text_long").getContent());
         assertEquals(10000, s.length());
     }
 }

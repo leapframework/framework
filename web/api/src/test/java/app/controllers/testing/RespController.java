@@ -16,20 +16,16 @@
  *
  */
 
-package app.controllers.api;
+package app.controllers.testing;
 
-import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiController;
-import leap.web.api.mvc.ApiResponse;
-import tested.models.ListOnlyModel;
+import leap.lang.http.HTTP;
+import leap.web.annotation.Success;
 
-import java.util.List;
+public class RespController {
 
-public class ListOnlyController extends ApiController {
+    @Success(HTTP.Status.CREATED)
+    public void created() {
 
-    @GET
-    public ApiResponse<List<ListOnlyModel>> getAllListOnlyModels() {
-        return null;
     }
 
 }

@@ -13,7 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
-package auth.models;
+package app.controllers.testing;
+
+import leap.web.annotation.Produces;
+
+public class HelloController {
+
+	@Produces("json")
+	public String sayHello(String who) {
+		return "Hello " + who;
+	}
+
+}

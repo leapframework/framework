@@ -18,10 +18,17 @@ package leap.web;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 
+import java.util.Set;
+
 /**
  * A wrapper interface of request parameters.
  */
 public interface Params {
+
+    /**
+     * Returns all the parameter names.
+     */
+    Iterable<String> names();
 	
 	/**
 	 * Returns <code>true</code> if the param name exists in the request.

@@ -16,7 +16,7 @@
  *
  */
 
-package app.controllers.api;
+package app.controllers.testing;
 
 import leap.web.annotation.Produces;
 import leap.web.annotation.http.GET;

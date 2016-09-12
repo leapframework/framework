@@ -16,15 +16,16 @@
  *
  */
 
-package app.controllers.api;
+package tests.model;
 
-import leap.lang.http.HTTP;
-import leap.web.annotation.Success;
+import leap.webunit.WebTestBase;
+import org.junit.Test;
 
-public class RespController {
+public class ModelControllerTest extends WebTestBase {
 
-    @Success(HTTP.Status.CREATED)
-    public void created() {
+    @Test
+    public void testQuery() {
+
 
     }
 

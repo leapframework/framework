@@ -42,6 +42,9 @@ public interface Apis {
 	
 	/**
 	 * Returns an immutable {@link Map} contains all the api metadatas.
+     *
+     * <p/>
+     * The key is lower-case.
 	 */
 	Map<String, ApiMetadata> metadatas();
 	

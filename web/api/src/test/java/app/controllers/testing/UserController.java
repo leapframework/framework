@@ -16,27 +16,23 @@
  *
  */
 
-package tests.spec;
+package app.controllers.testing;
 
-import leap.core.annotation.Inject;
-import leap.web.api.meta.ApiMetadata;
-import leap.web.api.spec.swagger.SwaggerSpecReader;
-import leap.webunit.WebTestBase;
-import org.junit.Test;
+import leap.web.annotation.http.GET;
+import leap.web.api.mvc.ApiResponse;
+import leap.web.api.mvc.ModelController;
+import leap.web.api.mvc.params.QueryOptions;
+import leap.web.security.annotation.AllowAnonymous;
+import app.models.testing.User;
 
-import java.io.StringReader;
+import java.util.List;
 
-public class SwaggerJsonTest extends WebTestBase {
+@AllowAnonymous
+public class UserController extends ModelController<User> {
 
-    private @Inject SwaggerSpecReader specReader;
-
-    @Test
-    public void testApiSwaggerJson() throws Exception {
-        String swagger = get("/testing/swagger.json").getContent();
-
-        ApiMetadata m = specReader.read(new StringReader(swagger)).build();
-
-        assertTrue(m.getModels().containsKey("ListOnlyModel"));
+    @GET
+    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
+        return queryList(options);
     }
 
 }

@@ -21,7 +21,7 @@ import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
-import tested.models.User;
+import app.models.testing.User;
 import auth.models.Client;
 
 public class Global extends App implements AuthTestData {

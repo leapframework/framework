@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package app.controllers.api;
+package app.controllers.testing;
 
 import leap.lang.New;
 import leap.web.annotation.RequestBody;

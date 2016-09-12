@@ -33,7 +33,7 @@ public class ApiMetadataTest extends WebTestBase {
 	@Test
     public void testMetadataBySwaggerSpec() {
         ApiMetadata m =
-                swaggerReader.read(get("/api/swagger.json").getContent()).build();
+                swaggerReader.read(get("/testing/swagger.json").getContent()).build();
 
         assertPaths(m);
         assertTags(m);

@@ -16,6 +16,7 @@
 package leap.web.api.spec.swagger;
 
 import leap.core.annotation.Inject;
+import leap.lang.http.HTTP;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -39,7 +40,7 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 	@Override
 	public void preProcess(ApiConfigurator c) {
 		app.routes().create().get(getJsonSpecPath(c.config()), (req, resp) -> {
-			handleJsonSpecRequest(c.config(), req, resp, c.config().getName());
+			handleJsonSpecRequest(c.config(), req, resp, c.config().getName().toLowerCase());
 		}).enableCors()
 		  .allowAnonymous()
 		  .apply();
@@ -50,8 +51,12 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 		m.getPaths().remove("/" + SWAGGER_JSON_FILE);
     }
 
-	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String name) throws Throwable {
-		ApiMetadata m = apis.metadatas().get(name);
+	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String key) throws Throwable {
+		ApiMetadata m = apis.metadatas().get(key);
+        if(null == m) {
+            resp.setStatus(HTTP.SC_NOT_FOUND);
+            return;
+        }
 		
 		SwaggerJsonWriter w = new SwaggerJsonWriter();
 		w.setPropertyNamingStyle(c.getPropertyNamingStyle());

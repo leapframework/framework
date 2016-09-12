@@ -48,6 +48,10 @@ public class RelationProperty {
         return many;
     }
 
+    public boolean isOne() {
+        return !many;
+    }
+
     @Required
     public String getTargetEntityName() {
         return targetEntityName;

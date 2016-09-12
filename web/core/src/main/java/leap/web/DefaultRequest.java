@@ -25,6 +25,7 @@ import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
+import leap.lang.collection.IterableEnumerable;
 import leap.lang.exception.NestedIOException;
 import leap.lang.exception.NestedServletException;
 import leap.lang.http.HTTP.Method;
@@ -864,7 +865,24 @@ public class DefaultRequest extends Request {
 	}
 	
 	protected final class SimpleParams implements Params {
-		@Override
+
+        @Override
+        public Iterable<String> names() {
+            final Enumeration<String> names = req.getParameterNames();
+            return () -> new Iterator<String>() {
+                @Override
+                public boolean hasNext() {
+                    return names.hasMoreElements();
+                }
+
+                @Override
+                public String next() {
+                    return names.nextElement();
+                }
+            };
+        }
+
+        @Override
         public String get(String name) {
 	        return req.getParameter(name);
         }
