@@ -32,8 +32,8 @@ import leap.orm.mapping.FieldMapping;
 
 public interface CriteriaQuery<T> extends Query<T> {
 	
-	public String DEFAULT_ALIAS_NAME = "t";
-	
+	String DEFAULT_ALIAS_NAME = "t";
+
 	/**
 	 * Sets the given name and value as CriteriaQuery parameter.
 	 */
@@ -106,7 +106,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 	CriteriaQuery<T> limit(Limit limit);
 	
 	/**
-	 * Returns the paimary entity mapping for this CriteriaQuery.
+	 * Returns the primary entity mapping for this CriteriaQuery.
 	 */
 	EntityMapping getEntityMapping();
 	
@@ -119,7 +119,7 @@ public interface CriteriaQuery<T> extends Query<T> {
 	CriteriaQuery<T> select(String... fields);
 	
 	/**
-	 * Sets the fitler of selected fields.
+	 * Sets the filter of selected fields.
 	 * 
 	 * <p>
 	 * Returns <code>true</code> in the {@link Predicate#test(Object)} method if the field should be included in selected list. 

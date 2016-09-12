@@ -309,7 +309,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			}
 			
 			if(isExplicitRelation(context, bp)) {
-				RelationMappingBuilder rmb = new RelationMappingBuilder().setBeanProperty(bp);
+				RelationMappingBuilder rmb = new RelationMappingBuilder(bp);
 				
 				preMappingRelation(context, emb, rmb);
 				postMappingRelation(context, emb, rmb);
