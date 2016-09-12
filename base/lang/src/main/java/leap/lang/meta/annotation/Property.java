@@ -23,7 +23,7 @@ import leap.lang.enums.Bool;
 import java.lang.annotation.*;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD,ElementType.METHOD})
+@Target({ElementType.FIELD,ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Inherited
 public @interface Property {
 
