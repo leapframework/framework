@@ -423,7 +423,9 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             }
         }
 
-        query.where(where.toString(), args.toArray());
+        if(where.length() > 0) {
+            query.where(where.toString(), args.toArray());
+        }
     }
 
     private String toSqlOperator(FiltersParser.Token op) {
