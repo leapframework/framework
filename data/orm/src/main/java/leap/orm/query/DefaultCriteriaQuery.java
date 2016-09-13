@@ -88,7 +88,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	    return em;
     }
 
-	@Override
+    @Override
+    public String alias() {
+        return builder.alias;
+    }
+
+    @Override
     public CriteriaQuery<T> alias(String alias) {
 		Args.notEmpty(alias,"alias");
 		builder.alias = alias;

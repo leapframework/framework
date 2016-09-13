@@ -578,69 +578,20 @@ public class RelationMapper implements Mapper {
     protected void resolveToManyRelation(MappingConfigContext context,
                                          EntityMappingBuilder emb, EntityMappingBuilder targetEntity,
                                          RelationPropertyBuilder rp, String relation) {
-        //find many-to-one relation in target entity
-        RelationMappingBuilder rm = findRelation(targetEntity, emb, RelationType.MANY_TO_ONE, relation);
+        //find many-to-one relation in local entity
+        RelationMappingBuilder rm = findRelation(emb, targetEntity, RelationType.ONE_TO_MANY, relation);
         if(null != rm) {
+            rp.setRelationName(rm.getName());
             return;
         }
 
         //find many-to-many relation in local entity.
         rm = findRelation(emb, targetEntity, RelationType.MANY_TO_MANY, relation);
         if(null != rm) {
+            rp.setRelationName(rm.getName());
             setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
             return ;
         }
-
-        /*
-        //find many-to-many relation in target entity.
-        rm = findRelation(targetEntity, emb, RelationType.MANY_TO_MANY, relation);
-        if(null != rm) {
-            setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
-            return ;
-        }
-
-        if(Strings.isEmpty(relation)) {
-            int keyColumnSize = emb.getKeyFieldMappings().size() + targetEntity.getKeyFieldMappings().size();
-
-            //find many-to-many relation by join entity from many-to-one relation.
-            for (EntityMappingBuilder em : context.getEntityMappings()) {
-                if (em.getKeyFieldMappings().size() == keyColumnSize) {
-
-                    //find many-to-one
-                    RelationMappingBuilder rm1 = findRelation(em, emb, RelationType.MANY_TO_ONE, null);
-                    RelationMappingBuilder rm2 = findRelation(em, targetEntity, RelationType.MANY_TO_ONE, null);
-
-                    if(null != rm1 && null != rm2) {
-
-                        boolean allId = true;
-
-                        for(JoinFieldMappingBuilder jf : rm1.getJoinFields()) {
-
-                            if(!em.findFieldMappingByName(jf.getLocalFieldName()).isId()){
-                                allId = false;
-                                break;
-                            }
-
-                        }
-
-                        for(JoinFieldMappingBuilder jf : rm2.getJoinFields()) {
-
-                            if(!em.findFieldMappingByName(jf.getLocalFieldName()).isId()){
-                                allId = false;
-                                break;
-                            }
-
-                        }
-
-                        if(allId) {
-                            setManyToManyJoinEntity(rp, em);
-                            return;
-                        }
-                    }
-                }
-            }
-        }
-        */
 
         throw new MappingConfigException("No unique to-many relation " + relation + " between entity '" +
                 emb.getEntityClass() + "' and target entity '" +
@@ -663,6 +614,8 @@ public class RelationMapper implements Mapper {
                     emb.getEntityClass() + "' for target entity '" +
                     targetEntity.getEntityName() + "'");
         }
+
+        rp.setRelationName(rm.getName());
     }
 
     protected RelationMappingBuilder findRelation(EntityMappingBuilder emb, EntityMappingBuilder targetEntity, RelationType type, String relation) {

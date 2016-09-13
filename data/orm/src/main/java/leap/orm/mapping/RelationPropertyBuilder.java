@@ -23,11 +23,11 @@ import leap.lang.beans.BeanProperty;
 
 public class RelationPropertyBuilder implements Buildable<RelationProperty> {
 
-    protected String  name;
-    protected boolean many;
-    protected String  relation;
-    protected String  targetEntityName;
-    protected String  joinEntityName;
+    protected String       name;
+    protected boolean      many;
+    protected String       relationName;
+    protected String       targetEntityName;
+    protected String       joinEntityName;
     protected BeanProperty beanProperty;
 
     public RelationPropertyBuilder() {
@@ -54,12 +54,12 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
         this.many = many;
     }
 
-    public String getRelation() {
-        return relation;
+    public String getRelationName() {
+        return relationName;
     }
 
-    public void setRelation(String relation) {
-        this.relation = relation;
+    public void setRelationName(String relationName) {
+        this.relationName = relationName;
     }
 
     public String getTargetEntityName() {
@@ -88,6 +88,6 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
 
     @Override
     public RelationProperty build() {
-        return new RelationProperty(name, many, targetEntityName, joinEntityName, beanProperty);
+        return new RelationProperty(name, many, relationName, targetEntityName, joinEntityName, beanProperty);
     }
 }

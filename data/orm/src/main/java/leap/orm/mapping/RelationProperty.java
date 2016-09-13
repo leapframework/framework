@@ -19,6 +19,7 @@
 package leap.orm.mapping;
 
 import leap.core.validation.annotations.Required;
+import leap.lang.Args;
 import leap.lang.annotation.Optional;
 import leap.lang.beans.BeanProperty;
 
@@ -26,13 +27,20 @@ public class RelationProperty {
 
     protected final String  name;
     protected final boolean many;
+    protected final String  relationName;
     protected final String  targetEntityName;
     protected final String  joinEntityName;
     protected final BeanProperty beanProperty;
 
-    public RelationProperty(String name, boolean many, String targetEntityName, String joinEntityName, BeanProperty bp) {
+    public RelationProperty(String name, boolean many, String relationName, String targetEntityName, String joinEntityName, BeanProperty bp) {
+        Args.notEmpty(name, "name");
+        Args.notEmpty(relationName, "relationName");
+        Args.notEmpty(targetEntityName, "targetEntityName");
+
+
         this.name = name;
         this.many = many;
+        this.relationName = relationName;
         this.targetEntityName = targetEntityName;
         this.joinEntityName = joinEntityName;
         this.beanProperty = bp;
@@ -50,6 +58,11 @@ public class RelationProperty {
 
     public boolean isOne() {
         return !many;
+    }
+
+    @Required
+    public String getRelationName() {
+        return relationName;
     }
 
     @Required

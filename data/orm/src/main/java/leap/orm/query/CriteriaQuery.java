@@ -125,6 +125,11 @@ public interface CriteriaQuery<T> extends Query<T> {
 	 * Returns <code>true</code> in the {@link Predicate#test(Object)} method if the field should be included in selected list. 
 	 */
 	CriteriaQuery<T> select(Predicate<FieldMapping> filter);
+
+    /**
+     * Returns the table alias of primary entity.
+     */
+    String alias();
 	
 	/**
 	 * Sets the primary table's alias name in this CriteriaQuery.
