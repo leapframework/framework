@@ -31,12 +31,12 @@ import leap.lang.params.ParamsMap;
 import leap.lang.value.Limit;
 import leap.orm.dao.Dao;
 import leap.orm.linq.Condition;
-import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.*;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlStatement;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,12 +44,13 @@ import java.util.function.Predicate;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
 	
-	protected SqlBuilder  			  builder;
+	protected SqlBuilder              builder;
 	protected Predicate<FieldMapping> selectFilter;
-	protected String	  			  where;
-	protected String	   			  groupBy;
-	protected String	   			  having;
-	protected ArrayParams  			  whereParameters;
+    protected List<Join>              joins = new ArrayList<>(1);
+	protected String                  where;
+	protected String                  groupBy;
+	protected String                  having;
+	protected ArrayParams             whereParameters;
 
 	public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
 	    super(dao, targetType, em);
@@ -93,8 +94,30 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		builder.alias = alias;
 	    return this;
     }
-	
-	@Override
+
+    @Override
+    public CriteriaQuery<T> join(Class<?> entityClass, String alias) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return join(em, alias, JoinType.INNER);
+    }
+
+    protected CriteriaQuery<T> join(EntityMapping target, String alias, JoinType type) {
+        Args.notEmpty(alias, "alias");
+
+        RelationMapping rm = em.tryGetRelationMappingOfTargetEntity(target.getEntityName());
+
+        if(null == rm) {
+            throw new IllegalStateException("Cannot join : no unique relation of the join entity '" +
+                                            target.getEntityName() + "' in entity '" + em.getEntityName() + "'");
+        }
+
+        joins.add(new Join(target, alias, type, rm));
+        return this;
+    }
+
+    @Override
     public CriteriaWhere<T> where() {
 	    return new DefaultCriteriaWhere<T>(getOrmContext(), this);
     }
@@ -262,7 +285,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
 		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
 		
-		Object updateParams = null;
+		Object updateParams;
 		if(null == whereParameters) {
 			updateParams = params();
 		}else {
@@ -286,12 +309,32 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		FieldMapping fm = em.tryGetFieldMapping(field);
 		return null == fm ? field : fm.getColumnName();
 	}
-	
+
+    protected enum JoinType {
+        INNER,
+        LEFT
+    }
+
+    protected static class Join {
+
+        final RelationMapping relation;
+        final EntityMapping   entity;
+        final String          alias;
+        final JoinType        type;
+
+        protected Join(EntityMapping entity, String alias, JoinType type, RelationMapping relation) {
+            this.entity   = entity;
+            this.alias    = alias;
+            this.type     = type;
+            this.relation = relation;
+        }
+    }
+
 	protected class SqlBuilder {
 		protected String   table;
 		protected String   alias = "t";
 		protected String[] selects;
-		
+
 		private StringBuilder sql;
 		
 		protected SqlBuilder(String table){
@@ -301,7 +344,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		public String buildDeleteSql() {
 			sql = new StringBuilder();
 			
-			delete().from().where();
+			delete().from().join().where();
 			
 			return sql.toString();
 		}
@@ -309,7 +352,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		public String buildSelectSql() {
 			sql = new StringBuilder();
 			
-			select().columns().from().where().groupBy().orderBy();
+			select().columns().from().join().where().groupBy().orderBy();
 			
 			return sql.toString();
 		}
@@ -317,7 +360,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		public String buildCountSql() {
 			sql = new StringBuilder();
 			
-			select().count().from().where().groupBy();
+			select().count().from().join().where().groupBy();
 			
 			return sql.toString();
 		}
@@ -417,6 +460,107 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	        sql.append(" from ").append(table).append(" ").append(alias);
 	        return this;
 		}
+
+        protected SqlBuilder join() {
+            for(Join join : joins) {
+
+                if(join.type == JoinType.LEFT) {
+                    sql.append(" left");
+                }
+
+                sql.append(" join ")
+                    .append(join.entity.getTableName())
+                    .append(" ")
+                    .append(join.alias)
+                    .append(" on ");
+
+                RelationMapping relation = join.relation;
+
+                //many-to-one
+                if(relation.isManyToOne()) {
+                    int i=0;
+                    for(JoinFieldMapping jf : relation.getJoinFields()) {
+                        if(i>0) {
+                            sql.append(" and ");
+                        }
+                        sql.append(alias).append(jf.getLocalFieldName())
+                            .append("=")
+                            .append(join.alias).append(jf.getReferencedFieldName());
+                        i++;
+                    }
+                    continue;
+                }
+
+                //one-to-many, find the inverse many-to-one relation.
+                if(relation.isOneToMany()) {
+                    RelationMapping inverse =
+                            join.entity.getRelationMapping(relation.getInverseRelationName());
+
+                    if(null == inverse || !inverse.isManyToOne()) {
+                        throw new IllegalStateException("A inverse many-to-one relation must be exists in entity '" +
+                                            join.entity.getEntityName() + "'");
+                    }
+
+                    int i=0;
+                    for(JoinFieldMapping jf : inverse.getJoinFields()) {
+                        if(i>0) {
+                            sql.append(" and ");
+                        }
+                        sql.append(alias).append(jf.getReferencedFieldName())
+                                .append("=")
+                                .append(join.alias).append(jf.getLocalFieldName());
+                        i++;
+                    }
+
+                    continue;
+                }
+
+                //many-to-many, find the join entity.
+                if(relation.isManyToMany()) {
+                    EntityMapping joinEntity =
+                            context.getMetadata().getEntityMapping(relation.getJoinEntityName());
+
+                    RelationMapping rjoin   = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+                    RelationMapping rtarget = joinEntity.tryGetKeyRelationMappingOfTargetEntity(relation.getTargetEntityName());
+
+                    String joinEntityAlias = join.alias + "000";
+
+                    int i=0;
+                    for(JoinFieldMapping jf : rtarget.getJoinFields()) {
+                        if(i > 0) {
+                            sql.append(" and ");
+                        }
+                        sql.append(join.alias).append(jf.getReferencedFieldName())
+                                .append(joinEntityAlias).append(jf.getLocalFieldName());
+                        i++;
+                    }
+
+                    if(join.type == JoinType.LEFT) {
+                        sql.append(" left");
+                    }
+
+                    sql.append(" join ")
+                            .append(joinEntity.getEntityName())
+                            .append(" ")
+                            .append(joinEntityAlias)
+                            .append(" on ");
+
+
+                    i = 0;
+                    for(JoinFieldMapping jf : rjoin.getJoinFields()) {
+                        if(i > 0) {
+                            sql.append(" and ");
+                        }
+                        sql.append(join.alias).append(jf.getReferencedFieldName())
+                                .append(joinEntityAlias).append(jf.getLocalFieldName());
+                        i++;
+                    }
+                    continue;
+                }
+
+            }
+            return this;
+        }
 		
 		protected SqlBuilder where() {
 	        if(!Strings.isEmpty(where)){

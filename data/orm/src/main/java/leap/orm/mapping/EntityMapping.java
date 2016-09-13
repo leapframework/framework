@@ -29,9 +29,7 @@ import leap.orm.model.Model;
 import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class EntityMapping {
 	private static final Log log = LogFactory.get(EntityMapping.class);
@@ -63,10 +61,13 @@ public class EntityMapping {
     protected final boolean                      autoCreateShardingTable;
     protected final ShardingAlgorithm            shardingAlgorithm;
 	
-	private final Map<String,FieldMapping> columnNameToFields;
-	private final Map<String,FieldMapping> fieldNameToFields;
-	private final Map<String,FieldMapping> metaNameToFields;
-    private final FieldMapping             shardingField;
+	private final Map<String,FieldMapping>    columnNameToFields;
+	private final Map<String,FieldMapping>    fieldNameToFields;
+	private final Map<String,FieldMapping>    metaNameToFields;
+    private final Map<String,RelationMapping> nameToRelations;
+    private final Map<String,RelationMapping> primaryKeyRelations;
+    private final Map<String,RelationMapping> targetEntityRelations;
+    private final FieldMapping                shardingField;
 	
 	public EntityMapping(String entityName,
                          Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
@@ -105,6 +106,9 @@ public class EntityMapping {
 	    this.columnNameToFields     = createColumnNameToFieldsMap();
 	    this.fieldNameToFields      = createFieldNameToFieldsMap();
 	    this.metaNameToFields		= createMetaNameToFieldsMap();
+        this.nameToRelations        = createNameToRelationsMap();
+        this.primaryKeyRelations    = createPrimaryKeyRelations();
+        this.targetEntityRelations  = createTargetEntityRelations();
         this.whereFieldMappings     = evalWhereFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
@@ -174,6 +178,44 @@ public class EntityMapping {
      */
     public RelationMapping[] getRelationMappings() {
         return relationMappings;
+    }
+
+    /**
+     * Returns the relation of the given name.
+     */
+    public RelationMapping getRelationMapping(String name) throws ObjectNotFoundException {
+        RelationMapping r = nameToRelations.get(name);
+        if(null == r) {
+            throw new ObjectNotFoundException("Relation '" + name + "' not exists in entity '" + entityName + "'");
+        }
+        return r;
+    }
+
+    /**
+     * Returns the relation of the given name or null if not exists.
+     */
+    public RelationMapping tryGetRelationMapping(String name) throws ObjectNotFoundException {
+        return nameToRelations.get(name);
+    }
+
+    /**
+     * Returns the primary key {@link RelationMapping} of the target entity name.
+     *
+     * <p/>
+     * Returns null if no relation or multi relations has been found fo the target entity name.
+     */
+    public RelationMapping tryGetKeyRelationMappingOfTargetEntity(String entityName) {
+        return primaryKeyRelations.get(entityName);
+    }
+
+    /**
+     * Returns the unique {@link RelationMapping} of the target entity name.
+     *
+     * <p/>
+     * Returns null if no relation or multi relations has been found fo the target entity name.
+     */
+    public RelationMapping tryGetRelationMappingOfTargetEntity(String entityName) {
+        return targetEntityRelations.get(entityName);
     }
 
     /**
@@ -442,6 +484,21 @@ public class EntityMapping {
 		}
 		return Collections.unmodifiableMap(map);
 	}
+
+    private Map<String, RelationMapping> createNameToRelationsMap() {
+        Map<String,RelationMapping> map = New.linkedHashMap();
+        for(RelationMapping r : relationMappings) {
+
+            if(map.containsKey(r.getName())) {
+                throw new IllegalStateException("Found duplicated relation name '" +
+                                                    r.getName() + "' in entity '" + entityName + "'");
+            }
+
+            map.put(r.getName(), r);
+        }
+
+        return Collections.unmodifiableMap(map);
+    }
 	
 	private Map<String,FieldMapping> createMetaNameToFieldsMap() {
 		Map<String,FieldMapping> map = New.hashMap();
@@ -464,6 +521,58 @@ public class EntityMapping {
 		
 		return Collections.unmodifiableMap(map);
 	}
+
+    private Map<String, RelationMapping> createPrimaryKeyRelations() {
+        Map<String, RelationMapping> map = new LinkedHashMap<>();
+
+        for(RelationMapping r : relationMappings) {
+
+            if(r.isManyToOne()) {
+
+                boolean primaryKey = true;
+
+                for(JoinFieldMapping f : r.getJoinFields()) {
+
+                    if(!f.isLocalPrimaryKey()) {
+                        primaryKey = false;
+                    }
+
+                }
+
+                if(primaryKey) {
+                    map.put(r.getTargetEntityName(), r);
+                }
+
+            }
+
+        }
+
+        return map;
+    }
+
+    private Map<String, RelationMapping> createTargetEntityRelations() {
+        Map<String, List<RelationMapping>> map = new HashMap<>();
+
+        for(RelationMapping r : relationMappings) {
+
+            List<RelationMapping> list = map.get(r.getTargetEntityName());
+            if(null == list) {
+                list = New.arrayList();
+                map.put(r.getTargetEntityName(), list);
+            }
+
+            list.add(r);
+        }
+
+        Map<String, RelationMapping> singleRelations = new HashMap<>();
+        map.forEach((name, list) -> {
+            if(list.size() == 1) {
+                singleRelations.put(name, list.get(0));
+            }
+        });
+
+        return Collections.unmodifiableMap(singleRelations);
+    }
 	
 	private FieldMapping findOptimisticLockField(){
 		for(FieldMapping fm : fieldMappings){

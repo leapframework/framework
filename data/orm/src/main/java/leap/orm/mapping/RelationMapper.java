@@ -36,7 +36,7 @@ public class RelationMapper implements Mapper {
 		}
 
         for(EntityMappingBuilder emb : context.getEntityMappings()) {
-            createInverseRelations(context, emb);
+            processInverseRelations(context, emb);
         }
 
         for(EntityMappingBuilder emb : context.getEntityMappings()) {
@@ -50,7 +50,7 @@ public class RelationMapper implements Mapper {
 		}
 	}
 
-    protected void createInverseRelations(MappingConfigContext context, EntityMappingBuilder emb) {
+    protected void processInverseRelations(MappingConfigContext context, EntityMappingBuilder emb) {
         List<RelationMappingBuilder> keyRelations = new ArrayList<>();
 
         for(RelationMappingBuilder rmb : emb.getRelationMappings()) {
@@ -83,6 +83,9 @@ public class RelationMapper implements Mapper {
                 if(null == inverse) {
                     //create the virtual inverse one-to-many relation in target entity.
                     targetEmb.addRelationMapping(createInverseOneToManyRelation(emb, targetEmb, rmb));
+                }else{
+                    inverse.setInverseRelationName(rmb.getName());
+                    rmb.setInverseRelationName(inverse.getName());
                 }
                 continue;
             }
@@ -93,6 +96,9 @@ public class RelationMapper implements Mapper {
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
                     targetEmb.addRelationMapping(createInverseManyToManyRelation(emb, targetEmb, rmb));
+                }else{
+                    inverse.setInverseRelationName(rmb.getName());
+                    rmb.setInverseRelationName(inverse.getName());
                 }
                 continue;
             }
@@ -185,12 +191,18 @@ public class RelationMapper implements Mapper {
 		
 		//Auto create local fields
 		for(JoinFieldMappingBuilder joinField : rmb.getJoinFields()) {
+
 			FieldMappingBuilder localField = emb.findFieldMappingByName(joinField.getLocalFieldName());
 			if(null == localField){
-				createManyToOneLocalField(context, emb, targetEmb, rmb, joinField);
+				localField = createManyToOneLocalField(context, emb, targetEmb, rmb, joinField);
 			}else{
 				updateManyToOneLocalField(context, emb, targetEmb, rmb, joinField, localField);
 			}
+
+            if(localField.isId()) {
+                joinField.setLocalPrimaryKey(true);
+            }
+
 		}
 		
 		//create foreign key
@@ -356,7 +368,7 @@ public class RelationMapper implements Mapper {
         }
 	}
 	
-	protected void createManyToOneLocalField(MappingConfigContext    context,
+	protected FieldMappingBuilder createManyToOneLocalField(MappingConfigContext    context,
 											 EntityMappingBuilder    emb,
 											 EntityMappingBuilder    targetEmb, 
 											 RelationMappingBuilder  rmb, 
@@ -366,6 +378,8 @@ public class RelationMapper implements Mapper {
 										   .createFieldMappingByJoinField(context, emb, targetEmb, rmb, jfmb);
 		
 		emb.addFieldMapping(local);
+
+        return local;
 	}
 	
 	
@@ -467,9 +481,15 @@ public class RelationMapper implements Mapper {
     protected RelationMappingBuilder createInverseOneToManyRelation(EntityMappingBuilder local,
                                                                     EntityMappingBuilder target,
                                                                     RelationMappingBuilder manyToOne) {
+
+        String name = "inverse_" + manyToOne.getName() + "_" + local.getEntityName();
+
+        manyToOne.setInverseRelationName(name);
+
         RelationMappingBuilder oneToMany = new RelationMappingBuilder();
 
-        oneToMany.setName(manyToOne.getName());
+        oneToMany.setName(name);
+        oneToMany.setInverseRelationName(manyToOne.getName());
         oneToMany.setType(RelationType.ONE_TO_MANY);
         oneToMany.setVirtual(true);
         oneToMany.setTargetEntity(local);
@@ -483,9 +503,15 @@ public class RelationMapper implements Mapper {
     protected RelationMappingBuilder createInverseManyToManyRelation(EntityMappingBuilder local,
                                                                      EntityMappingBuilder target,
                                                                      RelationMappingBuilder localManyToMany) {
+
+        String name = "inverse_" + localManyToMany.getName() + "_" + local.getEntityName();
+
+        localManyToMany.setInverseRelationName(name);
+
         RelationMappingBuilder targetManyToMany = new RelationMappingBuilder();
 
-        targetManyToMany.setName(localManyToMany.getName());
+        targetManyToMany.setName(name);
+        targetManyToMany.setInverseRelationName(localManyToMany.getName());
         targetManyToMany.setType(RelationType.MANY_TO_MANY);
         targetManyToMany.setVirtual(true);
         targetManyToMany.setTargetEntity(local);

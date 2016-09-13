@@ -19,14 +19,16 @@ import leap.lang.Args;
 
 public class JoinFieldMapping {
 
-	protected final String localFieldName;
-	protected final String referencedFieldName;
+	protected final String  localFieldName;
+    protected final boolean localPrimaryKey;
+	protected final String  referencedFieldName;
 	
-	public JoinFieldMapping(String localFieldName,String referencedFieldName) {
+	public JoinFieldMapping(String localFieldName, boolean localPrimaryKey, String referencedFieldName) {
 		Args.notEmpty(localFieldName,"localFieldName");
 		Args.notEmpty(referencedFieldName,"referencedFieldName");
 		
 		this.localFieldName      = localFieldName;
+        this.localPrimaryKey     = localPrimaryKey;
 		this.referencedFieldName = referencedFieldName;
 	}
 
@@ -38,4 +40,7 @@ public class JoinFieldMapping {
 		return referencedFieldName;
 	}
 
+    public boolean isLocalPrimaryKey() {
+        return localPrimaryKey;
+    }
 }

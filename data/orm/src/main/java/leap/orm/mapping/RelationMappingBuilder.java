@@ -30,6 +30,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	protected RelationType				    type;
 	protected Boolean					    optional;
     protected boolean                       virtual;
+    protected String                        inverseRelationName;
 	protected Class<?>                      targetEntityType;
 	protected String                        targetEntityName;
 	protected Class<?>						joinEntityType;
@@ -77,6 +78,10 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 		return optional;
 	}
 
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+
     public boolean isVirtual() {
         return virtual;
     }
@@ -85,11 +90,15 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
         this.virtual = virtual;
     }
 
-    public void setOptional(Boolean optional) {
-		this.optional = optional;
-	}
-	
-	public Class<?> getTargetEntityType() {
+    public String getInverseRelationName() {
+        return inverseRelationName;
+    }
+
+    public void setInverseRelationName(String inverseRelationName) {
+        this.inverseRelationName = inverseRelationName;
+    }
+
+    public Class<?> getTargetEntityType() {
 		return targetEntityType;
 	}
 
@@ -152,6 +161,6 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
     public RelationMapping build() {
 		List<JoinFieldMapping> joinFields = Builders.buildList(this.joinFields);
 		
-	    return new RelationMapping(name, type, targetEntityName, joinEntityName, isOptional(), virtual, joinFields);
+	    return new RelationMapping(name, type, inverseRelationName, targetEntityName, joinEntityName, isOptional(), virtual, joinFields);
     }
 }

@@ -23,16 +23,18 @@ public class RelationMapping {
 
 	protected final String 		       name; 		 	 //relation's name
 	protected final RelationType       type;			 //relation's type
+    protected final String             inverseRelationName;
 	protected final String			   targetEntityName; //target entity's name
 	protected final String			   joinEntityName;	 //join entity's name
 	protected final boolean		       optional;	 	 //is the relation optional ?
     protected final boolean            virtual;
 	protected final JoinFieldMapping[] joinFields;
 
-	public RelationMapping(String name, RelationType type, String targetEntityName, String joinEntityName,
+	public RelationMapping(String name, RelationType type, String inverseRelationName, String targetEntityName, String joinEntityName,
 						   boolean optional, boolean virtual, List<JoinFieldMapping> joinFields) {
 		Args.notEmpty(name,"name");
 		Args.notNull(type,"type");
+        Args.notEmpty(inverseRelationName, "inverseRelationName");
 		Args.notEmpty(targetEntityName,"targetEntityName");
 		
 		if(type == RelationType.MANY_TO_MANY){
@@ -41,6 +43,7 @@ public class RelationMapping {
 		
 		this.name       	  = name;
 		this.type       	  = type;
+        this.inverseRelationName = inverseRelationName;
 		this.targetEntityName = targetEntityName;
 		this.joinEntityName   = joinEntityName;
 		this.optional    	  = optional;
@@ -81,6 +84,10 @@ public class RelationMapping {
      */
     public boolean isOneToMany() {
         return RelationType.ONE_TO_MANY.equals(type);
+    }
+
+    public String getInverseRelationName() {
+        return inverseRelationName;
     }
 
     /**

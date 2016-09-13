@@ -133,6 +133,11 @@ public interface CriteriaQuery<T> extends Query<T> {
 	 * Default alias name is 't'.
 	 */
 	CriteriaQuery<T> alias(String alias);
+
+    /**
+     * Inner join the target entity by id columns.
+     */
+    CriteriaQuery<T> join(Class<?> entityClass, String alias);
 	
 	/**
 	 * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.
