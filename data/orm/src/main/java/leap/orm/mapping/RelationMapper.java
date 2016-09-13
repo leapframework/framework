@@ -20,6 +20,7 @@ import java.util.List;
 
 import leap.db.model.DbForeignKeyBuilder;
 import leap.db.model.DbForeignKeyColumn;
+import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -53,7 +54,11 @@ public class RelationMapper implements Mapper {
     protected void processInverseRelations(MappingConfigContext context, EntityMappingBuilder emb) {
         List<RelationMappingBuilder> keyRelations = new ArrayList<>();
 
-        for(RelationMappingBuilder rmb : emb.getRelationMappings()) {
+        //Avoid the java.util.ConcurrentModificationException in relation mapping list.
+        List<RelationMappingBuilder> relationSnapshot = new ArrayList<>(emb.getRelationMappings());
+
+        for(RelationMappingBuilder rmb : relationSnapshot) {
+            //Be careful, the target entity may be the self entity of local entity, so we use snapshot list
             EntityMappingBuilder targetEmb = context.getEntityMapping(rmb.getTargetEntityName());
 
             RelationType type = rmb.getType();

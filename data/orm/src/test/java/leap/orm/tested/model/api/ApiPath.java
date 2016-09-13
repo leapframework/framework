@@ -35,6 +35,7 @@ public class ApiPath extends ModelWithDesc {
     protected String apiId;
 
     @Column(nullable = Bool.TRUE, update = Bool.FALSE)
+    @ManyToOne(ApiPath.class)
     protected String parentId;
 
     @Column
