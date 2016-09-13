@@ -19,6 +19,10 @@ import java.util.List;
 
 import leap.junit.contexual.Contextual;
 import leap.lang.Confirm;
+import leap.orm.tested.model.api.Api;
+import leap.orm.tested.model.api.ApiCategory;
+import leap.orm.tested.model.api.ApiPath;
+import leap.orm.tested.model.api.Category;
 import leap.orm.tested.model.file.Directory;
 import leap.orm.tested.model.product.Product;
 import org.junit.Test;
@@ -149,6 +153,7 @@ public class CriteriaQueryTest extends OrmTestCase {
 		assertEquals(child.getName(), childFromDb.getName());
 		assertEquals(child.getParentId(), childFromDb.getParentId());
 	}
+
 	@Test
 	public void testNoReadableField(){
 		Product p = new Product();
@@ -157,5 +162,53 @@ public class CriteriaQueryTest extends OrmTestCase {
 		p.setTypeId(2);
 		p.update();
 	}
-	
+
+    @Test
+    public void testJoinQuery() {
+        try{
+            Category category = new Category();
+            category.setTitle("Test");
+            category.create();
+
+            Api api = new Api();
+            api.setName("Hello");
+            api.setTitle("Hello");
+            api.create();
+
+            ApiCategory ac = new ApiCategory();
+            ac.setApiId(api.getId());
+            ac.setCategoryId(category.getId());
+            ac.create();
+
+            ApiPath path = new ApiPath();
+            path.setFullPath("/");
+            path.setApiId(api.getId());
+            path.create();
+
+            //many-to-one
+            List<ApiPath> paths =
+                    ApiPath.<ApiPath>query().join(Api.class, "a").where("a.id = ?", api.getId()).list();
+            assertEquals(1, paths.size());
+            assertEquals(path.getId(), paths.get(0).getId());
+
+            //one-to-many
+            List<Api> apis =
+                    Api.<Api>query().join(ApiPath.class, "p")
+                            .where("p.id in ?", new Object[]{new Object[]{path.getId()}}).list();
+            assertEquals(1, apis.size());
+
+            //many-to-many
+            apis = Api.<Api>query().join(Category.class, "c")
+                        .where("c.title = ?", "Test").list();
+            assertEquals(1, apis.size());
+
+        }finally{
+            ApiCategory.deleteAll();
+            Category.deleteAll();
+            ApiPath.deleteAll();
+            Api.deleteAll();
+        }
+    }
+
+
 }
