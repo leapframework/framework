@@ -147,7 +147,7 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(Class<?> entityClass, String alias, String relation);
+    CriteriaQuery<T> join(Class<?> entityClass, String relation, String alias);
 
     /**
      * Inner join the target entity by id columns.
@@ -157,7 +157,7 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(String entityName, String alias, String relation);
+    CriteriaQuery<T> join(String entityName, String relation, String alias);
 
     /**
      * Left join the target entity by id columns.
@@ -167,7 +167,7 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias, String relation);
+    CriteriaQuery<T> leftJoin(Class<?> entityClass, String relation, String alias);
 
     /**
      * Left join the target entity by id columns.
@@ -177,7 +177,7 @@ public interface CriteriaQuery<T> extends Query<T> {
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(String entityName, String alias, String relation);
+    CriteriaQuery<T> leftJoin(String entityName, String relation, String alias);
 	
 	/**
 	 * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.

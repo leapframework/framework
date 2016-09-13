@@ -102,60 +102,60 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
     @Override
     public CriteriaQuery<T> join(Class<?> entityClass, String alias) {
-        return join(entityClass, alias, null);
+        return join(entityClass, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> join(Class<?> entityClass, String alias, String relation) {
+    public CriteriaQuery<T> join(Class<?> entityClass, String relation, String alias) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(entityClass);
 
-        return join(em, alias, relation, JoinType.INNER);
+        return join(em, relation, alias, JoinType.INNER);
     }
 
     @Override
     public CriteriaQuery<T> join(String entityName, String alias) {
-        return join(entityName, alias, null);
+        return join(entityName, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> join(String entityName, String alias, String relation) {
+    public CriteriaQuery<T> join(String entityName, String relation, String alias) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(entityName);
 
-        return join(em, alias, relation, JoinType.INNER);
+        return join(em, relation, alias, JoinType.INNER);
     }
 
     @Override
     public CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias) {
-        return join(entityClass, alias, null);
+        return join(entityClass, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias, String relation) {
+    public CriteriaQuery<T> leftJoin(Class<?> entityClass, String relation, String alias) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(entityClass);
 
-        return join(em, alias, relation, JoinType.LEFT);
+        return join(em, relation, alias, JoinType.LEFT);
     }
 
     @Override
     public CriteriaQuery<T> leftJoin(String entityName, String alias) {
-        return join(entityName, alias, null);
+        return join(entityName, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(String entityName, String alias, String relation) {
+    public CriteriaQuery<T> leftJoin(String entityName, String relation, String alias) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(entityName);
 
-        return join(em, alias, relation, JoinType.LEFT);
+        return join(em, relation, alias, JoinType.LEFT);
     }
 
-    protected CriteriaQuery<T> join(EntityMapping target, String alias, String relation, JoinType type) {
+    protected CriteriaQuery<T> join(EntityMapping target, String relation, String alias, JoinType type) {
         Args.notEmpty(alias, "alias");
 
-        RelationMapping rm = null;
+        RelationMapping rm;
         if(!Strings.isEmpty(relation)) {
             rm = em.getRelationMapping(relation);
         }else{

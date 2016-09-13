@@ -124,6 +124,8 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             if(null != rp.getBeanProperty()) {
                 configureProperty(rp.getBeanProperty(), p);
             }
+
+            ct.addProperty(p.build());
         }
 
         context.onComplexTypeCreated(type);
