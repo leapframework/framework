@@ -22,7 +22,7 @@ import leap.junit.TestBase;
 import leap.web.api.query.OrderByParser;
 import org.junit.Test;
 
-public class OrderByTest extends TestBase {
+public class OrderByParserTest extends TestBase {
 
     @Test
     public void testOneItem() {

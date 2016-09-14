@@ -37,10 +37,7 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.query.Filters;
-import leap.web.api.query.FiltersParser;
-import leap.web.api.query.OrderBy;
-import leap.web.api.query.OrderByParser;
+import leap.web.api.query.*;
 import leap.web.exception.BadRequestException;
 
 import java.lang.reflect.Array;
@@ -318,6 +315,10 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                 applyOrderBy(query, options.getOrderBy());
             }
 
+            if(!Strings.isEmpty(options.getSelect())) {
+                applySelect(query, options.getSelect());
+            }
+
             applyFilters(query, options.getParams(), options.getFilters(), filters);
 
             PageResult result = query.pageResult(options.getPage(apiConfig.getDefaultPageSize()));
@@ -329,15 +330,15 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             }
 
             if(!list.isEmpty()) {
-                String expand = options.getExpand();
-                if(!Strings.isEmpty(expand)) {
-                    String[] properties = Strings.split(expand, ',');
+                Expand[] expands = ExpandParser.parse(options.getExpand());
+                if(expands.length > 0) {
 
                     for(Record record : list) {
 
                         Object id = Mappings.getId(em, record);
 
-                        for(String name : properties) {
+                        for(Expand expand : expands) {
+                            String name = expand.getName();
 
                             MApiProperty ap = am.tryGetProperty(name);
                             if(null == ap) {
@@ -356,6 +357,11 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                             CriteriaQuery expandQuery =
                                     dao.createCriteriaQuery(rp.getTargetEntityName())
                                             .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
+
+
+                            if(!Strings.isEmpty(expand.getSelect())) {
+                                applySelect(expandQuery, expand.getSelect());
+                            }
 
                             if(rp.isMany()) {
                                 //todo : limit
@@ -456,6 +462,31 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         }
 
         query.orderBy(s.toString());
+    }
+
+    private void applySelect(CriteriaQuery query, String select) {
+        if(Strings.equals("*", select)) {
+            return;
+        }
+
+        EntityMapping em = query.getEntityMapping();
+
+        String[] names = Strings.split(select, ',');
+
+        List<String> fields = new ArrayList<>();
+
+        for(String name : names) {
+
+            FieldMapping p = em.tryGetFieldMapping(name);
+
+            if(null == p) {
+                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
+            }
+
+            fields.add(p.getFieldName());
+        }
+
+        query.select(fields.toArray(new String[fields.size()]));
     }
 
     private void applyFilters(CriteriaQuery query, Params params, String expr, Map<String, Object> fields) {

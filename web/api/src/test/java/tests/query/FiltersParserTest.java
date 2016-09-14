@@ -22,7 +22,7 @@ import leap.junit.TestBase;
 import leap.web.api.query.FiltersParser;
 import org.junit.Test;
 
-public class FiltersTest extends TestBase {
+public class FiltersParserTest extends TestBase {
 
     @Test
     public void testSimpleParseExprs() {

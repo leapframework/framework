@@ -16,31 +16,28 @@
  *
  */
 
-package leap.web.api.mvc.params;
+package leap.web.api.query;
 
-import leap.web.annotation.ParamsWrapper;
-import leap.web.annotation.QueryParam;
+public class Expand {
 
-@ParamsWrapper
-public class QueryOptionsBase {
+    protected final String name;
+    protected final String select;
 
-    protected @QueryParam("select") String select;
-    protected @QueryParam("expand") String expand;
-
-    public String getSelect() {
-        return select;
+    public Expand(String name) {
+        this(name, null);
     }
 
-    public void setSelect(String select) {
+    public Expand(String name, String select) {
+        this.name = name;
         this.select = select;
     }
 
-    public String getExpand() {
-        return expand;
+    public String getName() {
+        return name;
     }
 
-    public void setExpand(String expand) {
-        this.expand = expand;
+    public String getSelect() {
+        return select;
     }
 
 }
