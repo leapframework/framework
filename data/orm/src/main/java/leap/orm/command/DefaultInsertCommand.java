@@ -42,6 +42,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	
 	protected SqlCommand   command;
 	protected FieldMapping fm;
+    protected Object       id;
 	protected Object	   generatedId;
 	protected Params       parameters;
 
@@ -60,8 +61,13 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     public EntityMapping getEntityMapping() {
 	    return em;
     }
-	
-	@Override
+
+    @Override
+    public Object id() {
+        return null == id ? generatedId : id;
+    }
+
+    @Override
     public Object getGeneratedId() {
 	    return generatedId;
     }
@@ -89,6 +95,8 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
             entity.put(keyNames[0],id);
             return this;
         }
+
+        this.id = id;
 
         if(keyNames.length == 0){
             throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");

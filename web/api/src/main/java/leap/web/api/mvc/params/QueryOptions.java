@@ -22,7 +22,7 @@ import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
 
 @ParamsWrapper
-public class QueryOptions {
+public class QueryOptions extends QueryOptionsBase {
 
     protected @QueryParam("page_size")   Integer pageSize;
     protected @QueryParam("page")        Integer pageIndex;

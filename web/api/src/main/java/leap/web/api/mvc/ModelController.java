@@ -19,9 +19,7 @@ package leap.web.api.mvc;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.core.value.Record;
-import leap.lang.Beans;
-import leap.lang.Strings;
-import leap.lang.Types;
+import leap.lang.*;
 import leap.lang.convert.Converts;
 import leap.orm.OrmMetadata;
 import leap.orm.command.InsertCommand;
@@ -36,6 +34,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
+import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.query.Filters;
@@ -46,6 +45,7 @@ import leap.web.exception.BadRequestException;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -146,6 +146,8 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             properties.putAll(extraProperties);
         }
 
+        Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
+
         for(String name : properties.keySet()) {
             MApiProperty p = am.tryGetProperty(name);
             if(null == p) {
@@ -153,6 +155,24 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             }
             if(p.isNotCreatableExplicitly()) {
                 throw new BadRequestException("Property '" + name + "' is not creatable!");
+            }
+
+            if(null != p.getProperty() && p.getProperty().isReference()) {
+
+                Object v = properties.get(name);
+
+                if(null == v) {
+                    continue;
+                }
+
+                RelationProperty rp = em.getRelationProperty(name);
+
+                Enumerable e = Enumerables.tryOf(v);
+                if(null == e) {
+                    relationProperties.put(rp, new Object[]{v});
+                }else{
+                    relationProperties.put(rp, e.toArray());
+                }
             }
         }
 
@@ -169,13 +189,51 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
 
         insert.setAll(properties);
 
-        insert.execute();
-
-        if(null != id) {
-            return id;
+        if(relationProperties.isEmpty()) {
+            insert.execute();
         }else{
-            return insert.getGeneratedId();
+
+            dao.doTransaction((conn) -> {
+                insert.execute();
+
+                for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                    //valid for many-to-many only ?
+
+                    RelationProperty rp = entry.getKey();
+
+                    RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+                    if(rm.isManyToMany()) {
+                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
+
+                        RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+
+                        boolean localFirst = true;
+                        if(!joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
+                            localFirst = false;
+                        }
+
+                        Object localId = insert.id();
+
+                        List<Object[]> batchId = new ArrayList<>();
+
+                        for(Object targetId : entry.getValue()) {
+
+                            if(localFirst) {
+                                batchId.add(new Object[]{localId, targetId});
+                            }else{
+                                batchId.add(new Object[]{targetId, localId});
+                            }
+
+                        }
+
+                        dao.batchInsert(joinEntity, batchId);
+                    }
+                }
+
+            });
         }
+
+        return insert.id();
     }
 
     /**
@@ -183,6 +241,50 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse get(Object id) {
         return ApiResponse.of(dao.findOrNull(em,id));
+    }
+
+    /**
+     * Gets the record of the specified id.
+     */
+    protected ApiResponse get(Object id, QueryOptionsBase options) {
+        Record record = dao.findOrNull(em, id);
+        if(null == record) {
+            return ApiResponse.of(null);
+        }
+
+        if(null != options && !Strings.isEmpty(options.getExpand())) {
+            String[] properties = Strings.split(options.getExpand());
+
+            for(String name : properties) {
+
+                MApiProperty ap = am.tryGetProperty(name);
+                if(null == ap) {
+                    throw new BadRequestException("The expand property '" + name + "' not exists!");
+                }
+
+                //todo : check expandable?
+
+                RelationProperty rp = em.tryGetRelationProperty(name);
+                if(null == rp) {
+                    throw new BadRequestException("Property '" + name + "' cannot be expanded");
+                }
+
+                RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
+                CriteriaQuery query =
+                        dao.createCriteriaQuery(rp.getTargetEntityName())
+                            .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
+
+                if(rp.isMany()) {
+                    //todo : limit
+                    record.put(rp.getName(), query.list());
+                }else{
+                    record.put(rp.getName(), query.firstOrNull());
+                }
+            }
+        }
+
+        return ApiResponse.of(record);
     }
 
     /**
@@ -358,52 +460,22 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                     continue;
                 }
 
-                //todo :
                 RelationProperty rp = em.tryGetRelationProperty(name);
                 if (null != rp) {
-                    EntityMapping   target   = md.getEntityMapping(rp.getTargetEntityName());
-                    RelationMapping relation = em.getRelationMapping(rp.getRelationName());
+                    String alias = "jn" + joins++;
 
-                    String alias = "join" + joins++;
+                    query.joinWithWhere(rp.getTargetEntityName(), rp.getRelationName(), alias, where, (f) -> {
 
-                    //many-to-one
-                    if(relation.isManyToOne() || relation.isOneToMany()) {
-                        query.join(rp.getTargetEntityName(), relation.getName(), alias);
+                        String[] a = params.getArray(name);
+                        if(a.length == 1) {
+                            a = Strings.split(a[0], ',');
+                        }
 
-                        //todo : only one key columns allowed.
-                        FieldMapping key = target.getKeyFieldMappings()[0];
+                        args.add(Converts.convert(a, Array.newInstance(((FieldMapping)f).getJavaType(), 0).getClass()));
 
-                        where.append(alias).append('.').append(key.getFieldName()).append(" in ?");
+                    });
 
-                        args.add(Converts.convert(params.getArray(name),
-                                 Array.newInstance(key.getJavaType(), 0).getClass()));
-                        continue;
-                    }
-
-                    //many-to-many
-                    if(relation.isManyToMany()) {
-                        EntityMapping join = md.getEntityMapping(rp.getJoinEntityName());
-
-                        RelationMapping joinRelation1 =
-                                join.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
-
-                        RelationMapping joinRelation2 =
-                                join.tryGetKeyRelationMappingOfTargetEntity(target.getEntityName());
-
-                        query.join(join.getEntityName(), joinRelation1.getInverseRelationName(), alias);
-
-                        //todo : only one key columns allowed.
-                        FieldMapping key =
-                                join.getFieldMapping(joinRelation2.getJoinFields()[0].getLocalFieldName());
-
-                        where.append(alias).append('.').append(key.getFieldName()).append(" in ?");
-                        args.add(Converts.convert(params.getArray(name),
-                                Array.newInstance(key.getJavaType(), 0).getClass()));
-
-                        continue;
-                    }
-
-                    throw new IllegalStateException("Not supported relation type '" + relation.getType() + "'");
+                    continue;
                 }
 
                 throw new IllegalStateException("No field or relational property '" + name + "' in entity '" + em.getEntityName() + "'");

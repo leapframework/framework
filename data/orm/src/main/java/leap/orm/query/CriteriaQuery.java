@@ -15,7 +15,9 @@
  */
 package leap.orm.query;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import leap.core.metamodel.ReservedMetaFieldName;
@@ -160,6 +162,46 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> join(String entityName, String relation, String alias);
 
     /**
+     * Inner join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> joinById(Class<?> entityClass, String alias, Object id);
+
+    /**
+     * Inner join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> joinById(String entityName, String alias, Object id);
+
+    /**
+     * Inner join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> joinById(Class<?> entityClass, String relation, String alias, Object id);
+
+    /**
+     * Inner join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> joinById(String entityName, String relation, String alias, Object id);
+
+    /**
+     * Inner join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Inner join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Inner join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> joinWithWhere(String entityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Inner join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> joinWithWhere(String entityName, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
      * Left join the target entity by id columns.
      */
     CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias);
@@ -178,7 +220,47 @@ public interface CriteriaQuery<T> extends Query<T> {
      * Left join the target entity by id columns.
      */
     CriteriaQuery<T> leftJoin(String entityName, String relation, String alias);
-	
+
+    /**
+     * Left join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String alias, Object id);
+
+    /**
+     * Left join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> LeftJoinById(String entityName, String alias, Object id);
+
+    /**
+     * Left join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String relation, String alias, Object id);
+
+    /**
+     * Left join the target entity by id columns and with the id of the target entity.
+     */
+    CriteriaQuery<T> LeftJoinById(String entityName, String relation, String alias, Object id);
+
+    /**
+     * Left join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Left join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Left join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> leftJoinWithWhere(String entityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
+    /**
+     * Left join the target entity by id columns and with a where condition.
+     */
+    CriteriaQuery<T> leftJoinWithWhere(String entityName, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+
 	/**
 	 * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.
 	 */

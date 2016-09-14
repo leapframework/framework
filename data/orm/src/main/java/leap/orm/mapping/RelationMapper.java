@@ -84,7 +84,7 @@ public class RelationMapper implements Mapper {
             //create one-to-many for many-to-one
             if(RelationType.MANY_TO_ONE.equals(type)) {
                 //find one-to-many in target entity.
-                RelationMappingBuilder inverse = findRelation(emb, targetEmb, RelationType.ONE_TO_MANY, rmb.getName());
+                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.ONE_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
                     //create the virtual inverse one-to-many relation in target entity.
                     targetEmb.addRelationMapping(createInverseOneToManyRelation(emb, targetEmb, rmb));
@@ -97,7 +97,7 @@ public class RelationMapper implements Mapper {
 
             //create many-to-many for another side.
             if(RelationType.MANY_TO_MANY.equals(type)) {
-                RelationMappingBuilder inverse = findRelation(emb, targetEmb, RelationType.MANY_TO_MANY, rmb.getName());
+                RelationMappingBuilder inverse = findRelation(targetEmb, emb, RelationType.MANY_TO_MANY, rmb.getInverseRelationName());
                 if(null == inverse) {
                     //create the virtual inverse relation in target entity.
                     targetEmb.addRelationMapping(createInverseManyToManyRelation(emb, targetEmb, rmb));
@@ -132,9 +132,12 @@ public class RelationMapper implements Mapper {
                 }
 
                 if(null == manyToMany2) {
-                    manyToMany2 = createInverseManyToManyRelation(entity1, entity2, manyToMany1);
+                    manyToMany2 = createManyToManyRelation(entity2, entity1, emb);
                     entity2.addRelationMapping(manyToMany2);
                 }
+
+                manyToMany1.setInverseRelationName(manyToMany2.getName());
+                manyToMany2.setInverseRelationName(manyToMany1.getName());
             }
         }
     }

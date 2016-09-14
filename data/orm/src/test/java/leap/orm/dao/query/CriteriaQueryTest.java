@@ -191,10 +191,17 @@ public class CriteriaQueryTest extends OrmTestCase {
             assertEquals(1, paths.size());
             assertEquals(path.getId(), paths.get(0).getId());
 
+            paths = ApiPath.<ApiPath>query().joinById(Api.class, "a", api.getId()).list();
+            assertEquals(1, paths.size());
+            assertEquals(path.getId(), paths.get(0).getId());
+
             //one-to-many
             List<Api> apis =
                     Api.<Api>query().join(ApiPath.class, "p")
                             .where("p.id in ?", new Object[]{new Object[]{path.getId()}}).list();
+            assertEquals(1, apis.size());
+
+            apis = Api.<Api>query().joinById(ApiPath.class, "p", new Object[]{path.getId()}).list();
             assertEquals(1, apis.size());
 
             //many-to-many

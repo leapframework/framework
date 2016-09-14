@@ -23,6 +23,11 @@ import java.util.Map;
 public interface InsertCommand {
 
     /**
+     * Returns the passed in or generated id.
+     */
+    Object id();
+
+    /**
      * Returns the generated id after execution.
      *
      * <p/>

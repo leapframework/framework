@@ -17,26 +17,33 @@ package leap.web.api.meta.model;
 
 import java.util.Map;
 
+import leap.lang.meta.MProperty;
 import leap.lang.meta.MType;
 
 public class MApiProperty extends MApiParameterBase {
 
-    protected final Boolean creatable;
-    protected final Boolean updatable;
-    protected final Boolean sortable;
-    protected final Boolean filterable;
+    protected final MProperty property;
+    protected final Boolean   creatable;
+    protected final Boolean   updatable;
+    protected final Boolean   sortable;
+    protected final Boolean   filterable;
 
-	public MApiProperty(String name, String title, String summary, String description,
+	public MApiProperty(String name, String title, String summary, String description, MProperty property,
                         MType type, String format, boolean password, Boolean required,
                         String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
+        this.property  = property;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
+    }
+
+    public MProperty getProperty() {
+        return property;
     }
 
     public Boolean getCreatable() {

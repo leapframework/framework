@@ -91,7 +91,7 @@ public abstract class ParamBase extends AstNode {
 		}
 		*/
 		
-		//TODO : optimize performande
+		//TODO : optimize performance
 		if(stm.isLastInOperator()){
 			stm.append('(');
 			
@@ -99,8 +99,11 @@ public abstract class ParamBase extends AstNode {
 				stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
 				stm.addParameter(null);
 			}else{
-				Enumerable<Object> c = Enumerables.of(value);
-				if(c.isEmpty()) {
+				Enumerable<Object> c = Enumerables.tryOf(value);
+                if(c == null) {
+                    stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
+                    stm.addParameter(value);
+                }else if(c.isEmpty()) {
 					stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
 					stm.addParameter(null);
 				}else{

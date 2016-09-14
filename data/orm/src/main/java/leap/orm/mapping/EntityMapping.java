@@ -225,6 +225,14 @@ public class EntityMapping {
         return relationProperties;
     }
 
+    public RelationProperty getRelationProperty(String name) {
+        RelationProperty p = tryGetRelationProperty(name);
+        if(null == p) {
+            throw new ObjectNotFoundException("Relation Property '" + name + "' not exists!");
+        }
+        return p;
+    }
+
     /**
      * Returns the {@link RelationProperty} matches the given name.
      *

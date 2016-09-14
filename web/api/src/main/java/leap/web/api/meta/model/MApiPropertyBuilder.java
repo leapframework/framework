@@ -19,10 +19,11 @@ import leap.lang.meta.MProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected Boolean creatable;
-    protected Boolean updatable;
-    protected Boolean sortable;
-    protected Boolean filterable;
+    protected MProperty property;
+    protected Boolean   creatable;
+    protected Boolean   updatable;
+    protected Boolean   sortable;
+    protected Boolean   filterable;
 	
 	public MApiPropertyBuilder() {
 	    super();
@@ -38,6 +39,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.title = mp.getTitle();
 		this.summary = mp.getSummary();
 		this.description = mp.getDefaultValue();
+        this.property = mp;
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
@@ -47,6 +49,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.sortable = mp.getSortable();
         this.filterable = mp.getFilterable();
 	}
+
+    public MProperty getProperty() {
+        return property;
+    }
+
+    public void setProperty(MProperty property) {
+        this.property = property;
+    }
 
     public Boolean getCreatable() {
         return creatable;
@@ -82,7 +92,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     @Override
     public MApiProperty build() {
-	    return new MApiProperty(name, title, summary, description, type, format, password, required,
+	    return new MApiProperty(name, title, summary, description, property, type, format, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
                                 creatable, updatable, sortable, filterable);

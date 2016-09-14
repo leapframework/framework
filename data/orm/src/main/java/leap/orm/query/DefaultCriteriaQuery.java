@@ -22,6 +22,8 @@ import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
 import leap.lang.Args;
+import leap.lang.Arrays2;
+import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
@@ -36,10 +38,12 @@ import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlStatement;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements CriteriaQuery<T>,QueryContext {
@@ -47,10 +51,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	protected SqlBuilder              builder;
 	protected Predicate<FieldMapping> selectFilter;
     protected List<Join>              joins = new ArrayList<>(1);
-	protected String                  where;
-	protected String                  groupBy;
-	protected String                  having;
-	protected ArrayParams             whereParameters;
+	protected String        where;
+    protected ArrayParams   whereParameters;
+    protected StringBuilder joinByIdWhere;
+    protected List          joinByIdArgs;
+	protected String        groupBy;
+	protected String        having;
 
 	public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
 	    super(dao, targetType, em);
@@ -127,6 +133,75 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> joinById(Class<?> entityClass, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return joinById(em, null, alias, JoinType.INNER, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> joinById(String entityName, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return joinById(em, null, alias, JoinType.INNER, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> joinById(Class<?> entityClass, String relation, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return joinById(em, relation, alias, JoinType.INNER, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> joinById(String entityName, String relation, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return joinById(em, relation, alias, JoinType.INNER, id);
+    }
+
+    public CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return join(em, null, alias, JoinType.INNER, where, args);
+    }
+
+    public CriteriaQuery<T> joinWithWhere(String entityName, String relation, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return join(em, relation, alias, JoinType.INNER, where, args);
+    }
+
+    public CriteriaQuery<T> joinWithWhere(String entityName, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return join(em, null, alias, JoinType.INNER, where, args);
+    }
+
+    @Override
+    public CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String relation, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return join(em, relation, alias, JoinType.INNER, where, args);
+    }
+
+    @Override
     public CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias) {
         return join(entityClass, null, alias);
     }
@@ -152,7 +227,92 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         return join(em, relation, alias, JoinType.LEFT);
     }
 
+    @Override
+    public CriteriaQuery<T> LeftJoinById(String entityName, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return joinById(em, null, alias, JoinType.LEFT, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return joinById(em, null, alias, JoinType.LEFT, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> LeftJoinById(String entityName, String relation, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return joinById(em, relation, alias, JoinType.LEFT, id);
+    }
+
+    @Override
+    public CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String relation, String alias, Object id) {
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return joinById(em, relation, alias, JoinType.LEFT, id);
+    }
+
+    public CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return join(em, null, alias, JoinType.LEFT, where, args);
+    }
+
+    public CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String relation, String alias,
+                                          Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityClass);
+
+        return join(em, relation, alias, JoinType.LEFT, where, args);
+    }
+
+    public CriteriaQuery<T> leftJoinWithWhere(String entityName, String alias,
+                                              Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return join(em, null, alias, JoinType.LEFT, where, args);
+    }
+
+    public CriteriaQuery<T> leftJoinWithWhere(String entityName, String relation, String alias,
+                                              Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(entityName);
+
+        return join(em, relation, alias, JoinType.LEFT, where, args);
+    }
+
+    protected CriteriaQuery<T> joinById(EntityMapping target, String relation, String alias, JoinType type, Object id) {
+        if(null == joinByIdWhere) {
+            joinByIdWhere = new StringBuilder();
+            joinByIdArgs = new ArrayList();
+        }else{
+            joinByIdWhere.append(" and ");
+        }
+
+        return join(target, relation, alias, type, joinByIdWhere, (n) -> joinByIdArgs.add(id));
+    }
+
     protected CriteriaQuery<T> join(EntityMapping target, String relation, String alias, JoinType type) {
+        return join(target, relation, alias, type, null, null);
+    }
+
+    protected CriteriaQuery<T> join(EntityMapping target, String relation, String alias, JoinType type,
+                                    Appendable where, Consumer<FieldMapping> args) {
+
         Args.notEmpty(alias, "alias");
 
         RelationMapping rm;
@@ -168,6 +328,44 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
         }
 
         joins.add(new Join(target, alias, type, rm));
+
+        if(null != where) {
+
+            try{
+                //many-to-one
+                if(rm.isManyToOne() || rm.isOneToMany()) {
+                    //todo : only one key columns allowed.
+                    FieldMapping key = target.getKeyFieldMappings()[0];
+
+                    where.append(alias).append('.').append(key.getFieldName()).append(" in ?");
+
+                    args.accept(key);
+                    return this;
+                }
+
+                //many-to-many
+                if(rm.isManyToMany()) {
+//                    EntityMapping join = context.getMetadata().getEntityMapping(rm.getJoinEntityName());
+//
+//                    RelationMapping joinRelation =
+//                            join.tryGetKeyRelationMappingOfTargetEntity(target.getEntityName());
+
+                    //todo : only one key columns allowed.
+                    FieldMapping key =
+                            target.getKeyFieldMappings()[0];
+
+                    where.append(alias).append('.').append(key.getFieldName()).append(" in ?");
+                    args.accept(key);
+                    return this;
+                }
+
+                throw new IllegalStateException("Not handled relation type '" + rm.getType() + "'");
+
+            }catch(IOException e) {
+                throw Exceptions.wrap(e);
+            }
+        }
+
         return this;
     }
 
@@ -321,6 +519,22 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     protected Scalars executeQueryForScalars(QueryContext context) throws TooManyRecordsException {
 	    return buildQueryStatement(context).executeQuery(SimpleScalarsReader.DEFAULT_INSTANCE);
     }
+
+    protected Object[] args() {
+        if(null == whereParameters && null == joinByIdWhere) {
+            return null;
+        }
+
+        if(null != whereParameters && null == joinByIdArgs) {
+            return whereParameters.array();
+        }
+
+        if(null == whereParameters && null != joinByIdArgs) {
+            return joinByIdArgs.toArray(Arrays2.EMPTY_OBJECT_ARRAY);
+        }
+
+        throw new IllegalStateException("Cannot combine with joinById and where expr in one query");
+    }
 	
 	protected SqlStatement buildQueryStatement(QueryContext qc) {
 		return createQueryStatement(qc,builder.buildSelectSql());
@@ -328,22 +542,27 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
 	protected SqlStatement createQueryStatement(QueryContext qc, String sql) {
 		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
+
+        Object queryParams;
+        Object[] args = args();
+        if(null == args) {
+            queryParams = params();
+        }else {
+            queryParams = new MapArrayParams(paramsMap(), args);
+        }
 		
-		if(null != whereParameters){
-			return clause.createQueryStatement(qc, whereParameters);
-		}else{
-			return clause.createQueryStatement(qc, params());
-		}
+        return clause.createQueryStatement(qc, queryParams);
 	}
 	
 	protected SqlStatement createUpdateStatement(QueryContext qc, String sql) {
 		SqlClause clause = context.getQueryFactory().createQueryClause(dao, sql);
 		
 		Object updateParams;
-		if(null == whereParameters) {
+        Object[] args = args();
+		if(null == args) {
 			updateParams = params();
 		}else {
-			updateParams = new MapArrayParams(paramsMap(), whereParameters.array());
+			updateParams = new MapArrayParams(paramsMap(), args);
 		}
 		
 		return clause.createUpdateStatement(qc, updateParams);
@@ -644,6 +863,19 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	        		sql.append(" ").append(where);
 	        	}
 	        }
+
+            if(null != joinByIdWhere) {
+
+                if(Strings.isEmpty(where)) {
+                    sql.append(" where ").append(joinByIdWhere);
+                }else{
+                    sql.append(" and ( ");
+                    sql.append(joinByIdWhere);
+                    sql.append(" )");
+                }
+
+            }
+
 	        return this;
 		}
 		
