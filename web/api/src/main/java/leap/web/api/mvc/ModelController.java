@@ -327,6 +327,47 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             if(options.isTotal()) {
                 count = result.getTotalCount();
             }
+
+            if(!list.isEmpty()) {
+                String expand = options.getExpand();
+                if(!Strings.isEmpty(expand)) {
+                    String[] properties = Strings.split(expand, ',');
+
+                    for(Record record : list) {
+
+                        Object id = Mappings.getId(em, record);
+
+                        for(String name : properties) {
+
+                            MApiProperty ap = am.tryGetProperty(name);
+                            if(null == ap) {
+                                throw new BadRequestException("The expand property '" + name + "' not exists!");
+                            }
+
+                            //todo : check expandable?
+
+                            RelationProperty rp = em.tryGetRelationProperty(name);
+                            if(null == rp) {
+                                throw new BadRequestException("Property '" + name + "' cannot be expanded");
+                            }
+
+                            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
+                            CriteriaQuery expandQuery =
+                                    dao.createCriteriaQuery(rp.getTargetEntityName())
+                                            .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
+
+                            if(rp.isMany()) {
+                                //todo : limit
+                                record.put(rp.getName(), expandQuery.list());
+                            }else{
+                                record.put(rp.getName(), expandQuery.firstOrNull());
+                            }
+                        }
+
+                    }
+                }
+            }
         }
 
         if(count == -1) {
