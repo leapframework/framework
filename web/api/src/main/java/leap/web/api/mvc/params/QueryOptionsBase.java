@@ -18,6 +18,7 @@
 
 package leap.web.api.mvc.params;
 
+import leap.web.Params;
 import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.QueryParam;
 
@@ -26,6 +27,8 @@ public class QueryOptionsBase {
 
     protected @QueryParam("select") String select;
     protected @QueryParam("expand") String expand;
+
+    protected Params params;
 
     public String getSelect() {
         return select;
@@ -41,6 +44,14 @@ public class QueryOptionsBase {
 
     public void setExpand(String expand) {
         this.expand = expand;
+    }
+
+    public Params getParams() {
+        return params;
+    }
+
+    public void setParams(Params params) {
+        this.params = params;
     }
 
 }

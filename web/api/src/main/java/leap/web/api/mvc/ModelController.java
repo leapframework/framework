@@ -20,15 +20,12 @@ import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.core.value.Record;
 import leap.lang.*;
-import leap.lang.convert.Converts;
 import leap.orm.OrmMetadata;
 import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.*;
 import leap.orm.query.CriteriaQuery;
-import leap.orm.query.PageResult;
-import leap.web.Params;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -37,10 +34,10 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.query.*;
+import leap.web.api.orm.ModelQueryExecutor;
+import leap.web.api.orm.QueryListResult;
 import leap.web.exception.BadRequestException;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -302,84 +299,15 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters) {
-        //todo : validates the query options.
 
-        CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
+        ModelQueryExecutor executor = new ModelQueryExecutor(apiConfig, am, dao, em);
 
-        long count = -1;
-        List<Record> list;
-        if(null == options) {
-            list = query.limit(apiConfig.getMaxPageSize()).list();
+        QueryListResult result = executor.queryList(options, filters);
+
+        if(result.count == -1) {
+            return ApiResponse.of(result.list);
         }else{
-            if(!Strings.isEmpty(options.getOrderBy())) {
-                applyOrderBy(query, options.getOrderBy());
-            }
-
-            if(!Strings.isEmpty(options.getSelect())) {
-                applySelect(query, options.getSelect());
-            }
-
-            applyFilters(query, options.getParams(), options.getFilters(), filters);
-
-            PageResult result = query.pageResult(options.getPage(apiConfig.getDefaultPageSize()));
-
-            list = result.list();
-
-            if(options.isTotal()) {
-                count = result.getTotalCount();
-            }
-
-            if(!list.isEmpty()) {
-                Expand[] expands = ExpandParser.parse(options.getExpand());
-                if(expands.length > 0) {
-
-                    for(Record record : list) {
-
-                        Object id = Mappings.getId(em, record);
-
-                        for(Expand expand : expands) {
-                            String name = expand.getName();
-
-                            MApiProperty ap = am.tryGetProperty(name);
-                            if(null == ap) {
-                                throw new BadRequestException("The expand property '" + name + "' not exists!");
-                            }
-
-                            //todo : check expandable?
-
-                            RelationProperty rp = em.tryGetRelationProperty(name);
-                            if(null == rp) {
-                                throw new BadRequestException("Property '" + name + "' cannot be expanded");
-                            }
-
-                            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-
-                            CriteriaQuery expandQuery =
-                                    dao.createCriteriaQuery(rp.getTargetEntityName())
-                                            .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
-
-
-                            if(!Strings.isEmpty(expand.getSelect())) {
-                                applySelect(expandQuery, expand.getSelect());
-                            }
-
-                            if(rp.isMany()) {
-                                //todo : limit
-                                record.put(rp.getName(), expandQuery.list());
-                            }else{
-                                record.put(rp.getName(), expandQuery.firstOrNull());
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-
-        if(count == -1) {
-            return ApiResponse.of(list);
-        }else{
-            return ApiResponse.of(list).setHeader("X-Total-Count", String.valueOf(count));
+            return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
         }
     }
 
@@ -427,228 +355,4 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
             return ApiResponse.NOT_FOUND;
         }
     }
-
-    private void applyOrderBy(CriteriaQuery query, String expr) {
-        OrderBy orderBy = OrderByParser.parse(expr);
-
-        OrderBy.Item[] items = orderBy.items();
-
-        StringBuilder s = new StringBuilder();
-
-        for(int i=0;i<items.length;i++) {
-
-            if(i > 0) {
-                s.append(',');
-            }
-
-            OrderBy.Item item = items[i];
-
-            String name = item.name();
-
-            MApiProperty ap = am.tryGetProperty(name);
-            if(null == ap) {
-                throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
-            }
-
-            if(ap.isNotSortableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not sortable!");
-            }
-
-            s.append(name);
-
-            if(!item.isAscending()) {
-                s.append(" desc");
-            }
-        }
-
-        query.orderBy(s.toString());
-    }
-
-    private void applySelect(CriteriaQuery query, String select) {
-        if(Strings.equals("*", select)) {
-            return;
-        }
-
-        EntityMapping em = query.getEntityMapping();
-
-        String[] names = Strings.split(select, ',');
-
-        List<String> fields = new ArrayList<>();
-
-        for(String name : names) {
-
-            FieldMapping p = em.tryGetFieldMapping(name);
-
-            if(null == p) {
-                throw new BadRequestException("Property '" + name + "' not exists, check the 'select' query param");
-            }
-
-            fields.add(p.getFieldName());
-        }
-
-        query.select(fields.toArray(new String[fields.size()]));
-    }
-
-    private void applyFilters(CriteriaQuery query, Params params, String expr, Map<String, Object> fields) {
-        StringBuilder where = new StringBuilder();
-        List<Object> args = new ArrayList<>();
-
-        //fields
-        if(null != fields && !fields.isEmpty()) {
-            int i=0;
-            for(Map.Entry<String,Object> entry : fields.entrySet()) {
-                if(i > 0) {
-                    where.append(" and ");
-                }
-                i++;
-                where.append(query.alias()).append('.').append(entry.getKey()).append(" = ?");
-                args.add(entry.getValue());
-            }
-        }
-
-        int joins = 1;
-
-        for (String name : params.names()) {
-
-            MApiProperty ap = am.tryGetProperty(name);
-            if (null != ap) {
-                if (ap.isNotFilterableExplicitly()) {
-                    throw new BadRequestException("Property '" + name + "' is not filterable!");
-                }
-
-                String value = params.get(name);
-                if(Strings.isEmpty(value)) {
-                    continue;
-                }
-
-                if(!args.isEmpty()) {
-                    where.append(" and ");
-                }
-
-                FieldMapping fm = em.tryGetFieldMapping(name);
-                if (null != fm) {
-                    where.append(query.alias()).append('.').append(name).append(" = ?");
-                    args.add(Converts.convert(value, fm.getJavaType()));
-                    continue;
-                }
-
-                RelationProperty rp = em.tryGetRelationProperty(name);
-                if (null != rp) {
-                    String alias = "jn" + joins++;
-
-                    query.joinWithWhere(rp.getTargetEntityName(), rp.getRelationName(), alias, where, (f) -> {
-
-                        String[] a = params.getArray(name);
-                        if(a.length == 1) {
-                            a = Strings.split(a[0], ',');
-                        }
-
-                        args.add(Converts.convert(a, Array.newInstance(((FieldMapping)f).getJavaType(), 0).getClass()));
-
-                    });
-
-                    continue;
-                }
-
-                throw new IllegalStateException("No field or relational property '" + name + "' in entity '" + em.getEntityName() + "'");
-            }
-        }
-
-        //expr
-        if(!Strings.isEmpty(expr)) {
-            Filters filters = FiltersParser.parse(expr);
-
-            FiltersParser.Node[] nodes = filters.nodes();
-            if(nodes.length > 0) {
-
-                boolean and = !args.isEmpty();
-                if(and) {
-                    where.append(" and (");
-                }
-
-                for(int i=0;i<nodes.length;i++) {
-                    FiltersParser.Node node = nodes[i];
-
-                    if(node.isParen()) {
-                        where.append(node.literal());
-                        continue;
-                    }
-
-                    if(node.isAnd()) {
-                        where.append(" and ");
-                        continue;
-                    }
-
-                    if(node.isOr()) {
-                        where.append(" or ");
-                        continue;
-                    }
-
-                    String name = nodes[i].literal();
-                    FiltersParser.Token op = nodes[++i].token();
-                    String value = nodes[++i].literal();
-
-                    MApiProperty ap = am.tryGetProperty(name);
-                    if(null == ap) {
-                        throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
-                    }
-
-                    if(ap.isNotFilterableExplicitly()) {
-                        throw new BadRequestException("Property '" + name + "' is not filterable!");
-                    }
-
-                    FieldMapping fm = em.getFieldMapping(name);
-
-                    where.append(name).append(' ').append(toSqlOperator(op)).append(" ?");
-                    args.add(Converts.convert(value, fm.getJavaType()));
-                }
-
-                if(and) {
-                    where.append(")");
-                }
-            }
-        }
-
-        if(where.length() > 0) {
-            query.where(where.toString(), args.toArray());
-        }
-    }
-
-    private String toSqlOperator(FiltersParser.Token op) {
-
-        if(op == FiltersParser.Token.EQ) {
-            return "=";
-        }
-
-        if(op == FiltersParser.Token.GE) {
-            return ">=";
-        }
-
-        if(op == FiltersParser.Token.LE) {
-            return "<=";
-        }
-
-        if(op == FiltersParser.Token.GT) {
-            return ">";
-        }
-
-        if(op == FiltersParser.Token.LT) {
-            return "<";
-        }
-
-        if(op == FiltersParser.Token.NE) {
-            return "<>";
-        }
-
-        //todo : in
-//        if(op == FiltersParser.Token.IN)
-
-        if(op == FiltersParser.Token.LIKE) {
-            return "like";
-        }
-
-        throw new IllegalStateException("Not supported operator '" + op + "'");
-    }
-
-
 }
