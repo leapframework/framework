@@ -179,7 +179,11 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         if (routeState == ROUTE_STATE_HANLDED) {
                             handled = true;
                         } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
-                            handled = handleNoAction(request, response, path);
+                            if(State.isIntercepted(interceptors.handleNoRoute(request, response))) {
+                                handled = true;
+                            }else{
+                                handled = handleNoAction(request, response, path);
+                            }
                         } else {
                             return false;
                         }
@@ -371,8 +375,21 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 					return ROUTE_STATE_END;
 				}
 
+                //handle cors request.
+                if(route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
+                    if(webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
+                        log.debug("Request was intercepted by cors handler");
+                        return ROUTE_STATE_HANLDED;
+                    }
+                }
+
+                if(State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
+                    return ROUTE_STATE_HANLDED;
+                }
+
 				Result result = new Result(); 
 				request.setResult(result);
+
 				executeAndRenderAction(request,response,ac,result);
 				
 				return ROUTE_STATE_HANLDED;
@@ -495,15 +512,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		
 		if(result.increaseAndGetExecutionCount() > maxExecutionCount){
 			throw new ResultException("Max execution count " + maxExecutionCount + " reached, may be cyclic executing");
-		}
-		
-		//handle cors request.
-		Route route = ac.getRoute();
-		if(route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
-			if(webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
-				log.debug("Request was intercepted by cors handler");
-				return;
-			}
 		}
 		
 		Validation validation = request.getValidation();

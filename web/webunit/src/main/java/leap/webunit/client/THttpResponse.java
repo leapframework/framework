@@ -116,6 +116,13 @@ public interface THttpResponse {
 	}
 
     /**
+     * Decodes the response content to the value of the given type.
+     */
+    default <T> T decodeJson(Class<T> type) {
+        return JSON.decode(getContent(), type);
+    }
+
+    /**
      * Returns the content of response body as {@link InputStream}.
      */
 	InputStream getInputStream();

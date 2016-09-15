@@ -34,6 +34,21 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
+    static DefaultSecurityContextHolder get(Request request) {
+        DefaultSecurityContextHolder c =
+                (DefaultSecurityContextHolder)request.getAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME);
+
+        if(null == c) {
+            throw new IllegalStateException("No security context in request");
+        }
+
+        return c;
+    }
+
+    static void remove(Request request) {
+        request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
+    }
+
 	protected final SecurityConfig    config;
 	protected final PermissionManager permissionManager;
 	protected final Request           request;
@@ -46,19 +61,14 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	protected Object		errorObj;
 	protected String 		identity;
 
+    private boolean handled;
+
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
 		this.config            = config;
         this.permissionManager = permissionManager;
 		this.request           = request;
-	}
-
-	void initContext() {
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
-    }
-
-    static void removeContext(Request request) {
-        request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
     }
 
 	@Override
@@ -314,4 +324,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	public void setIdentity(String identity) {
 		this.identity = identity;
 	}
+
+    boolean isHandled() {
+        return handled;
+    }
+
+    void markHandled() {
+        handled = true;
+    }
 }

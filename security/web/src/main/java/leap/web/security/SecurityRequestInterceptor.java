@@ -29,6 +29,7 @@ import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
+import leap.web.action.ActionContext;
 import leap.web.config.WebConfig;
 import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
@@ -39,8 +40,6 @@ import leap.web.security.path.SecuredPathConfigurator;
 import leap.web.security.path.SecuredPathSource;
 import leap.web.security.path.SecuredPaths;
 import leap.web.security.permission.PermissionManager;
-
-import java.util.Map;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
@@ -151,45 +150,60 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 		
-		DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
-		context.initContext();
+		DefaultSecurityContextHolder context =
+                new DefaultSecurityContextHolder(config, permissionManager, request);
 
-		return handleRequest(request, response, context);
+		return preHandleRequest(request, response, context);
     }
-	
-	@Override
-    public void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
-		DefaultSecurityContextHolder.removeContext(request);
-	}
 
-	protected State handleRequest(Request request, Response response,DefaultSecurityContextHolder context) throws Throwable {
-		//Resolve authentication.
-		State state = resolveAuthentication(request,response,context);
-		if(state.isIntercepted()){
-			return state;
-		}
-		
-		//Handles request if login
-		if(handleLoginRequest(request, response, context)){
-			return State.INTERCEPTED;
-		}
-		
-		//Handles request if logout.
-		if(handleLogoutRequest(request, response, context)) {
-			return State.INTERCEPTED;
-		}
+    protected State preHandleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+        //Resolve authentication.
+        State state = resolveAuthentication(request,response,context);
+        if(state.isIntercepted()){
+            return state;
+        }
+
+        //Handles request if login
+        if(handleLoginRequest(request, response, context)){
+            return State.INTERCEPTED;
+        }
+
+        //Handles request if logout.
+        if(handleLogoutRequest(request, response, context)) {
+            return State.INTERCEPTED;
+        }
+
+        return handleRequest(request, response, context);
+    }
+
+//    @Override
+//    public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
+//        return handleRequest(request, response, DefaultSecurityContextHolder.get(request));
+//    }
+//
+//    @Override
+//    public State handleNoRoute(Request request, Response response) throws Throwable {
+//        return handleRequest(request, response, DefaultSecurityContextHolder.get(request));
+//    }
+
+    protected State handleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+        if(context.isHandled()) {
+            return State.CONTINUE;
+        }
+
+        context.markHandled();
 
         //Resolve security path.
         SecuredPath sp = resolveSecurityPath(request, response, context);
         context.setSecurityPath(sp);
 
-        state = checkAndSetCorsHeaders(request,response,context,sp);
+        State state = checkAndSetCorsHeaders(request,response,context,sp);
         if(state.isIntercepted()) {
             return state;
         }
 
         //Check authentication
-		state = checkAuthentication(request, response, context);
+        state = checkAuthentication(request, response, context);
         if(state.isIntercepted()) {
             return state;
         }
@@ -201,11 +215,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 
         //Check authorization.
-		return checkAuthorization(request, response, context);
+        return checkAuthorization(request, response, context);
+    }
+
+    @Override
+    public void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
+		DefaultSecurityContextHolder.remove(request);
 	}
-	
+
 	/**
-	 * Returns <code>true</code> if the request aleady handled.
+	 * Returns <code>true</code> if the request already handled.
 	 */
 	protected State resolveAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
 	    SecurityInterceptor[] interceptors = config.getInterceptors();

@@ -20,6 +20,8 @@ import java.util.List;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.web.action.ActionContext;
+import leap.web.route.Route;
 
 
 class RequestInterceptors implements RequestInterceptor {
@@ -44,7 +46,31 @@ class RequestInterceptors implements RequestInterceptor {
 		return state;
 	}
 
-	@Override
+    @Override
+    public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
+        State state = null;
+        for(int i=0;i<interceptors.size();i++){
+            if(!State.isContinue(state = interceptors.get(i).handleRoute(request, response, route, ac))){
+                response.markHandled();
+                break;
+            }
+        }
+        return state;
+    }
+
+    @Override
+    public State handleNoRoute(Request request, Response response) throws Throwable {
+        State state = null;
+        for(int i=0;i<interceptors.size();i++){
+            if(!State.isContinue(state = interceptors.get(i).handleNoRoute(request, response))){
+                response.markHandled();
+                break;
+            }
+        }
+        return state;
+    }
+
+    @Override
 	public State onRequestFailure(Request request, Response response, RequestExecution execution) throws Throwable {
 		State state = null;
 		for(int i=0;i<interceptors.size();i++){

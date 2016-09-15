@@ -40,7 +40,12 @@ public abstract class SecurityContext {
      * Returns the instance of {@link SecurityContext} in current request of returns <code>null</code> if the context not exists.
      */
     public static SecurityContext tryGetCurrent(){
-        return (SecurityContext)RequestContext.current().getAttribute(CONTEXT_ATTRIBUTE_NAME);
+        RequestContext rc = RequestContext.tryGetCurrent();
+        if(null == rc) {
+            return null;
+        }else{
+            return (SecurityContext)rc.getAttribute(CONTEXT_ATTRIBUTE_NAME);
+        }
     }
 
     /**

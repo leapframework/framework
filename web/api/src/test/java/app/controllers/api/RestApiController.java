@@ -43,6 +43,7 @@ import leap.web.security.annotation.AllowAnonymous;
 import java.util.List;
 
 @Path("/restapi")
+@AllowAnonymous
 public class RestApiController extends ModelController<RestApi> {
 
     @GET

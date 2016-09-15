@@ -37,6 +37,7 @@ public class DefaultDeleteFullyCommand extends AbstractEntityDaoCommand implemen
 
 	@Override
 	public boolean execute() {
+        //todo : sort the relations
         List<RelationMapping> oneToManyRelations = new ArrayList<>();
         for(RelationMapping rm : em.getRelationMappings()) {
             if(rm.isOneToMany()) {
