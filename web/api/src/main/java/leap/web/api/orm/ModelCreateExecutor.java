@@ -45,7 +45,7 @@ public class ModelCreateExecutor extends ModelExecutorBase {
         super(c, am, dao, em);
     }
 
-    public ModelCreateResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
+    public CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties) {
         Map<String,Object> properties;
         if(request instanceof Partial) {
             properties = ((Partial) request).getProperties();
@@ -148,7 +148,7 @@ public class ModelCreateExecutor extends ModelExecutorBase {
             });
         }
 
-        return new ModelCreateResult(insert.id());
+        return new CreateOneResult(insert.id());
     }
 
 }

@@ -36,7 +36,12 @@ public class DefaultCommandFactory implements CommandFactory {
 	    return new DefaultDeleteCommand(dao, em, id);
     }
 
-	@Override
+    @Override
+    public DeleteFullyCommand newDeleteFullyCommand(Dao dao, EntityMapping em, Object id) {
+        return new DefaultDeleteFullyCommand(dao, em, id);
+    }
+
+    @Override
     public DeleteAllCommand newDeleteAllCommand(Dao dao, EntityMapping em) {
 	    return new DefaultDeleteAllCommand(dao, em);
     }

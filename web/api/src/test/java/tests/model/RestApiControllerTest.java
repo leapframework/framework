@@ -16,13 +16,17 @@
  *
  */
 
-package leap.web.api.orm;
+package tests.model;
 
-public class ModelUpdateResult {
+import leap.webunit.WebTestBase;
+import org.junit.Test;
 
-    public final int affectedRows;
+public class RestApiControllerTest extends WebTestBase {
 
-    public ModelUpdateResult(int affectedRows) {
-        this.affectedRows = affectedRows;
+    @Test
+    public void testQueryOne() {
+
+
     }
+
 }

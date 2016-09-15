@@ -16,14 +16,19 @@
  *
  */
 
-package leap.web.api.orm;
+package app.models.api.domains;
 
-public class ModelCreateResult {
+import leap.lang.enums.Bool;
+import leap.orm.annotation.ADomain;
+import leap.orm.annotation.ColumnType;
 
-    public final Object id;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public ModelCreateResult(Object id) {
-        this.id = id;
-    }
-
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@ADomain(type = ColumnType.VARCHAR, length = 38, insertValue = "${env.user.id}", update = Bool.TRUE)
+public @interface UpdatedBy {
 }

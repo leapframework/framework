@@ -24,6 +24,7 @@ import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
@@ -172,7 +173,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     protected ApiResponse updatePartial(Object id, Partial<T> partial) {
         ModelUpdateExecutor executor = new ModelUpdateExecutor(apiConfig, am, dao, em);
 
-        ModelUpdateResult result = executor.partialUpdateOne(id, partial);
+        UpdateOneResult result = executor.partialUpdateOne(id, partial);
 
         if (result.affectedRows > 0) {
             return ApiResponse.NO_CONTENT;
@@ -188,6 +189,30 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         if (dao.delete(modelClass, id) > 0) {
             return ApiResponse.ACCEPTED;
         } else {
+            return ApiResponse.NOT_FOUND;
+        }
+    }
+
+    /**
+     * Deletes a record.
+     */
+    protected ApiResponse deleteFully(Object id) {
+        if (dao.deleteFully(modelClass, id)) {
+            return ApiResponse.ACCEPTED;
+        } else {
+            return ApiResponse.NOT_FOUND;
+        }
+    }
+
+    /**
+     * Deletes a record.
+     */
+    protected ApiResponse delete(Object id, DeleteOptions options) {
+        ModelDeleteExecutor executor = new ModelDeleteExecutor(apiConfig, am, dao, em);
+
+        if(executor.deleteOne(id, options).success) {
+            return ApiResponse.ACCEPTED;
+        }else{
             return ApiResponse.NOT_FOUND;
         }
     }

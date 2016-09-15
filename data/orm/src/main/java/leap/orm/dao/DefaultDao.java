@@ -198,7 +198,22 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		
 		return commandFactory().newDeleteCommand(this, em, id).execute();
     }
-	
+
+    @Override
+    public boolean deleteFully(Class<?> entityClass, Object id) throws MappingNotFoundException {
+        return deleteFully(em(entityClass), id);
+    }
+
+    @Override
+    public boolean deleteFully(String entityName, Object id) throws MappingNotFoundException {
+        return deleteFully(em(entityName), id);
+    }
+
+    @Override
+    public boolean deleteFully(EntityMapping em, Object id) {
+        return commandFactory().newDeleteFullyCommand(this, em, id).execute();
+    }
+
     public int deleteAll(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		

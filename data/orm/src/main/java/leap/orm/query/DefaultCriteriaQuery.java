@@ -21,10 +21,7 @@ import leap.core.jdbc.SimpleScalarReader;
 import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Exceptions;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
 import leap.lang.params.MapArrayParams;
@@ -107,192 +104,192 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
-    public CriteriaQuery<T> join(Class<?> entityClass, String alias) {
-        return join(entityClass, null, alias);
+    public CriteriaQuery<T> join(Class<?> targetEntityClass, String alias) {
+        return join(targetEntityClass, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> join(Class<?> entityClass, String relation, String alias) {
+    public CriteriaQuery<T> join(Class<?> targetEntityClass, String localRelation, String alias) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
-        return join(em, relation, alias, JoinType.INNER);
+        return join(em, localRelation, alias, JoinType.INNER);
     }
 
     @Override
-    public CriteriaQuery<T> join(String entityName, String alias) {
-        return join(entityName, null, alias);
+    public CriteriaQuery<T> join(String targetEntityName, String alias) {
+        return join(targetEntityName, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> join(String entityName, String relation, String alias) {
+    public CriteriaQuery<T> join(String targetEntityName, String localRelation, String alias) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return join(em, relation, alias, JoinType.INNER);
+        return join(em, localRelation, alias, JoinType.INNER);
     }
 
     @Override
-    public CriteriaQuery<T> joinById(Class<?> entityClass, String alias, Object id) {
+    public CriteriaQuery<T> joinById(Class<?> targetEntityClass, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
         return joinById(em, null, alias, JoinType.INNER, id);
     }
 
     @Override
-    public CriteriaQuery<T> joinById(String entityName, String alias, Object id) {
+    public CriteriaQuery<T> joinById(String targetEntityName, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
         return joinById(em, null, alias, JoinType.INNER, id);
     }
 
     @Override
-    public CriteriaQuery<T> joinById(Class<?> entityClass, String relation, String alias, Object id) {
+    public CriteriaQuery<T> joinById(Class<?> targetEntityName, String localRelation, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return joinById(em, relation, alias, JoinType.INNER, id);
+        return joinById(em, localRelation, alias, JoinType.INNER, id);
     }
 
     @Override
-    public CriteriaQuery<T> joinById(String entityName, String relation, String alias, Object id) {
+    public CriteriaQuery<T> joinById(String targetEntityName, String localRelation, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return joinById(em, relation, alias, JoinType.INNER, id);
+        return joinById(em, localRelation, alias, JoinType.INNER, id);
     }
 
-    public CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String alias,
+    public CriteriaQuery<T> joinWithWhere(Class<?> targetEntityClass, String alias,
                                           Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
         return join(em, null, alias, JoinType.INNER, where, args);
     }
 
-    public CriteriaQuery<T> joinWithWhere(String entityName, String relation, String alias,
+    public CriteriaQuery<T> joinWithWhere(String targetEntityName, String localRelation, String alias,
                                           Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return join(em, relation, alias, JoinType.INNER, where, args);
+        return join(em, localRelation, alias, JoinType.INNER, where, args);
     }
 
-    public CriteriaQuery<T> joinWithWhere(String entityName, String alias,
+    public CriteriaQuery<T> joinWithWhere(String targetEntityName, String alias,
                                           Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
         return join(em, null, alias, JoinType.INNER, where, args);
     }
 
     @Override
-    public CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String relation, String alias,
+    public CriteriaQuery<T> joinWithWhere(Class<?> targetEntityClass, String localRelation, String alias,
                                           Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
-        return join(em, relation, alias, JoinType.INNER, where, args);
+        return join(em, localRelation, alias, JoinType.INNER, where, args);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias) {
-        return join(entityClass, null, alias);
+    public CriteriaQuery<T> leftJoin(Class<?> targetEntityClass, String alias) {
+        return join(targetEntityClass, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(Class<?> entityClass, String relation, String alias) {
+    public CriteriaQuery<T> leftJoin(Class<?> targetEntityClass, String localRelation, String alias) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
-        return join(em, relation, alias, JoinType.LEFT);
+        return join(em, localRelation, alias, JoinType.LEFT);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(String entityName, String alias) {
-        return join(entityName, null, alias);
+    public CriteriaQuery<T> leftJoin(String targetEntityName, String alias) {
+        return join(targetEntityName, null, alias);
     }
 
     @Override
-    public CriteriaQuery<T> leftJoin(String entityName, String relation, String alias) {
+    public CriteriaQuery<T> leftJoin(String targetEntityName, String localRelation, String alias) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return join(em, relation, alias, JoinType.LEFT);
+        return join(em, localRelation, alias, JoinType.LEFT);
     }
 
     @Override
-    public CriteriaQuery<T> LeftJoinById(String entityName, String alias, Object id) {
+    public CriteriaQuery<T> LeftJoinById(String targetEntityName, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
         return joinById(em, null, alias, JoinType.LEFT, id);
     }
 
     @Override
-    public CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String alias, Object id) {
+    public CriteriaQuery<T> LeftJoinById(Class<?> targetEntityClass, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
         return joinById(em, null, alias, JoinType.LEFT, id);
     }
 
     @Override
-    public CriteriaQuery<T> LeftJoinById(String entityName, String relation, String alias, Object id) {
+    public CriteriaQuery<T> LeftJoinById(String targetEntityName, String localRelation, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return joinById(em, relation, alias, JoinType.LEFT, id);
+        return joinById(em, localRelation, alias, JoinType.LEFT, id);
     }
 
     @Override
-    public CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String relation, String alias, Object id) {
+    public CriteriaQuery<T> LeftJoinById(Class<?> targetEntityClass, String localRelation, String alias, Object id) {
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
-        return joinById(em, relation, alias, JoinType.LEFT, id);
+        return joinById(em, localRelation, alias, JoinType.LEFT, id);
     }
 
-    public CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String alias,
-                                          Appendable where, Consumer<FieldMapping> args) {
+    public CriteriaQuery<T> leftJoinWithWhere(Class<?> targetEntityClass, String alias,
+                                              Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
+                context.getMetadata().getEntityMapping(targetEntityClass);
 
         return join(em, null, alias, JoinType.LEFT, where, args);
     }
 
-    public CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String relation, String alias,
-                                          Appendable where, Consumer<FieldMapping> args) {
-
-        EntityMapping em =
-                context.getMetadata().getEntityMapping(entityClass);
-
-        return join(em, relation, alias, JoinType.LEFT, where, args);
-    }
-
-    public CriteriaQuery<T> leftJoinWithWhere(String entityName, String alias,
+    public CriteriaQuery<T> leftJoinWithWhere(Class<?> targetEntityClass, String localRelation, String alias,
                                               Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityClass);
+
+        return join(em, localRelation, alias, JoinType.LEFT, where, args);
+    }
+
+    public CriteriaQuery<T> leftJoinWithWhere(String targetEntityName, String alias,
+                                              Appendable where, Consumer<FieldMapping> args) {
+
+        EntityMapping em =
+                context.getMetadata().getEntityMapping(targetEntityName);
 
         return join(em, null, alias, JoinType.LEFT, where, args);
     }
 
-    public CriteriaQuery<T> leftJoinWithWhere(String entityName, String relation, String alias,
+    public CriteriaQuery<T> leftJoinWithWhere(String targetEntityName, String localRelation, String alias,
                                               Appendable where, Consumer<FieldMapping> args) {
 
         EntityMapping em =
-                context.getMetadata().getEntityMapping(entityName);
+                context.getMetadata().getEntityMapping(targetEntityName);
 
-        return join(em, relation, alias, JoinType.LEFT, where, args);
+        return join(em, localRelation, alias, JoinType.LEFT, where, args);
     }
 
     protected CriteriaQuery<T> joinById(EntityMapping target, String relation, String alias, JoinType type, Object id) {
@@ -381,6 +378,28 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
             s.append(builder.alias).append('.')
                     .append(em.getKeyColumnNames()[i])
+                    .append("=?");
+        }
+
+        return where(s.toString(), id);
+    }
+
+    @Override
+    public CriteriaQuery<T> whereByReference(RelationMapping rm, Object id) {
+        Args.notNull(rm, "relation");
+        Assert.isTrue(rm.isManyToOne(), "The relation must be many-to-one");
+
+        StringBuilder s = new StringBuilder();
+
+        for(int i=0;i<rm.getJoinFields().length;i++){
+            if(i > 0){
+                s.append(" and ");
+            }
+
+            JoinFieldMapping jf = rm.getJoinFields()[i];
+
+            s.append(builder.alias).append('.')
+                    .append(jf.getReferencedFieldName())
                     .append("=?");
         }
 

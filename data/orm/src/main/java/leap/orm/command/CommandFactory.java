@@ -27,6 +27,8 @@ public interface CommandFactory {
 
 	DeleteCommand newDeleteCommand(Dao dao, EntityMapping em, Object id);
 
+    DeleteFullyCommand newDeleteFullyCommand(Dao dao, EntityMapping em, Object id);
+
 	DeleteAllCommand newDeleteAllCommand(Dao dao,EntityMapping em);
 	
 	<T> FindCommand<T> newFindCommand(Dao dao,EntityMapping em, Object id, Class<T> resultClass, boolean checkNotFound);

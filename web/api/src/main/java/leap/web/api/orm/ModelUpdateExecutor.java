@@ -45,7 +45,7 @@ public class ModelUpdateExecutor extends ModelExecutorBase {
         super(c, am, dao, em);
     }
 
-    public ModelUpdateResult partialUpdateOne(Object id, Partial partial) {
+    public UpdateOneResult partialUpdateOne(Object id, Partial partial) {
         if (null == partial || partial.isEmpty()) {
             throw new BadRequestException("No update properties");
         }
@@ -144,6 +144,6 @@ public class ModelUpdateExecutor extends ModelExecutorBase {
             });
         }
 
-        return new ModelUpdateResult(result.get());
+        return new UpdateOneResult(result.get());
     }
 }

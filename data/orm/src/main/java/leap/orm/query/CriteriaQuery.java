@@ -15,12 +15,8 @@
  */
 package leap.orm.query;
 
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-
 import leap.core.metamodel.ReservedMetaFieldName;
+import leap.lang.annotation.Internal;
 import leap.lang.annotation.Nullable;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
@@ -30,325 +26,347 @@ import leap.lang.value.Page;
 import leap.orm.linq.Condition;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.RelationMapping;
+
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 
 public interface CriteriaQuery<T> extends Query<T> {
-	
-	String DEFAULT_ALIAS_NAME = "t";
 
-	/**
-	 * Sets the given name and value as CriteriaQuery parameter.
-	 */
-	CriteriaQuery<T> param(String name,Object value);
-	
-	/**
-	 * Sets all values in the given map as CriteriaQuery parameters.
-	 */
-	CriteriaQuery<T> params(@Nullable Map<String, Object> map);
-	
-	/**
-	 * Sets all values in the given {@link Params} as CriteriaQuery parameters.
-	 */
-	CriteriaQuery<T> params(@Nullable Params params);
-	
-	/**
-	 * Sets all properties in the given pojo bean as CriteriaQuery parameters. 
-	 */
-	CriteriaQuery<T> params(@Nullable DynaBean bean);
-	
-	/**
-	 * Sets the single arg as params.
-	 */
-	default CriteriaQuery<T> param(Object arg) {
-		return params(new Object[]{arg});
-	}
-	
-	/**
-	 * Sets a {@link ArrayParams} for jdbc placeholders in this CriteriaQuery.
-	 */
-	default CriteriaQuery<T> params(Object[] args) {
-		return params(new ArrayParams(args));
-	}
-	
-	/**
-	 * Sets the order by expression in this CriteriaQuery.
-	 * 
-	 * <p>
-	 * An order by expression is a standand sql order by clause without "order by" prefix..
-	 * 
-	 * <p>
-	 * For example : 
-	 * <pre>
-	 * 	orderBy("col1 asc,col2 desc")
-	 * </pre>
-	 */
-	CriteriaQuery<T> orderBy(String expression);
-	
-	/**
-	 * Sets to CriteriaQuery results limit to the given rows.
-	 * 
-	 * <p>
-	 * Starts from 1.
-	 */
-	CriteriaQuery<T> limit(Integer rows);
-	
-	/**
-	 * Sets to CriteriaQuery results in the range of the given start and end rows.
-	 * 
-	 * <p>
-	 * Starts from 1.
-	 */
-	CriteriaQuery<T> limit(int startRows,int endRows);
-	
-	/**
-	 * Sets to CriteriaQuery results in the range of the given page index and size.
-	 * 
-	 * @see Page
-	 */
-	CriteriaQuery<T> limit(Limit limit);
-	
-	/**
-	 * Returns the primary entity mapping for this CriteriaQuery.
-	 */
-	EntityMapping getEntityMapping();
-	
-	/**
-	 * Sets the selected fields(columns) in the CriteriaQuery result.
-	 * 
-	 * <p>
-	 * Selects all columns if the given columns is null or empty.
-	 */
-	CriteriaQuery<T> select(String... fields);
-	
-	/**
-	 * Sets the filter of selected fields.
-	 * 
-	 * <p>
-	 * Returns <code>true</code> in the {@link Predicate#test(Object)} method if the field should be included in selected list. 
-	 */
-	CriteriaQuery<T> select(Predicate<FieldMapping> filter);
+    String DEFAULT_ALIAS_NAME = "t";
+
+    /**
+     * Sets the given name and value as CriteriaQuery parameter.
+     */
+    CriteriaQuery<T> param(String name, Object value);
+
+    /**
+     * Sets all values in the given map as CriteriaQuery parameters.
+     */
+    CriteriaQuery<T> params(@Nullable Map<String, Object> map);
+
+    /**
+     * Sets all values in the given {@link Params} as CriteriaQuery parameters.
+     */
+    CriteriaQuery<T> params(@Nullable Params params);
+
+    /**
+     * Sets all properties in the given pojo bean as CriteriaQuery parameters.
+     */
+    CriteriaQuery<T> params(@Nullable DynaBean bean);
+
+    /**
+     * Sets the single arg as params.
+     */
+    default CriteriaQuery<T> param(Object arg) {
+        return params(new Object[]{arg});
+    }
+
+    /**
+     * Sets a {@link ArrayParams} for jdbc placeholders in this CriteriaQuery.
+     */
+    default CriteriaQuery<T> params(Object[] args) {
+        return params(new ArrayParams(args));
+    }
+
+    /**
+     * Sets the order by expression in this CriteriaQuery.
+     * <p>
+     * <p>
+     * An order by expression is a standand sql order by clause without "order by" prefix..
+     * <p>
+     * <p>
+     * For example :
+     * <pre>
+     * 	orderBy("col1 asc,col2 desc")
+     * </pre>
+     */
+    CriteriaQuery<T> orderBy(String expression);
+
+    /**
+     * Sets to CriteriaQuery results limit to the given rows.
+     * <p>
+     * <p>
+     * Starts from 1.
+     */
+    CriteriaQuery<T> limit(Integer rows);
+
+    /**
+     * Sets to CriteriaQuery results in the range of the given start and end rows.
+     * <p>
+     * <p>
+     * Starts from 1.
+     */
+    CriteriaQuery<T> limit(int startRows, int endRows);
+
+    /**
+     * Sets to CriteriaQuery results in the range of the given page index and size.
+     *
+     * @see Page
+     */
+    CriteriaQuery<T> limit(Limit limit);
+
+    /**
+     * Returns the primary entity mapping for this CriteriaQuery.
+     */
+    EntityMapping getEntityMapping();
+
+    /**
+     * Sets the selected fields(columns) in the CriteriaQuery result.
+     * <p>
+     * <p>
+     * Selects all columns if the given columns is null or empty.
+     */
+    CriteriaQuery<T> select(String... fields);
+
+    /**
+     * Sets the filter of selected fields.
+     * <p>
+     * <p>
+     * Returns <code>true</code> in the {@link Predicate#test(Object)} method if the field should be included in selected list.
+     */
+    CriteriaQuery<T> select(Predicate<FieldMapping> filter);
 
     /**
      * Returns the table alias of primary entity.
      */
     String alias();
-	
-	/**
-	 * Sets the primary table's alias name in this CriteriaQuery.
-	 * 
-	 * <p>
-	 * Default alias name is 't'.
-	 */
-	CriteriaQuery<T> alias(String alias);
+
+    /**
+     * Sets the primary table's alias name in this CriteriaQuery.
+     * <p>
+     * <p>
+     * Default alias name is 't'.
+     */
+    CriteriaQuery<T> alias(String alias);
 
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(Class<?> entityClass, String alias);
+    CriteriaQuery<T> join(Class<?> targetEntityClass, String alias);
 
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(Class<?> entityClass, String relation, String alias);
+    CriteriaQuery<T> join(Class<?> targetEntityClass, String localRelation, String alias);
 
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(String entityName, String alias);
+    CriteriaQuery<T> join(String targetEntityName, String alias);
 
     /**
      * Inner join the target entity by id columns.
      */
-    CriteriaQuery<T> join(String entityName, String relation, String alias);
+    CriteriaQuery<T> join(String targetEntityName, String localRelation, String alias);
 
     /**
      * Inner join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> joinById(Class<?> entityClass, String alias, Object id);
+    CriteriaQuery<T> joinById(Class<?> targetEntityClass, String alias, Object id);
 
     /**
      * Inner join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> joinById(String entityName, String alias, Object id);
+    CriteriaQuery<T> joinById(String targetEntityName, String alias, Object id);
 
     /**
      * Inner join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> joinById(Class<?> entityClass, String relation, String alias, Object id);
+    CriteriaQuery<T> joinById(Class<?> targetEntityName, String localRelation, String alias, Object id);
 
     /**
      * Inner join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> joinById(String entityName, String relation, String alias, Object id);
+    CriteriaQuery<T> joinById(String targetEntityName, String localRelation, String alias, Object id);
 
     /**
      * Inner join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> joinWithWhere(Class<?> targetEntityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Inner join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> joinWithWhere(Class<?> entityClass, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> joinWithWhere(Class<?> targetEntityClass, String localRelation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Inner join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> joinWithWhere(String entityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> joinWithWhere(String targetEntityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Inner join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> joinWithWhere(String entityName, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> joinWithWhere(String targetEntityName, String localRelation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(Class<?> entityClass, String alias);
+    CriteriaQuery<T> leftJoin(Class<?> targetEntityClass, String alias);
 
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(Class<?> entityClass, String relation, String alias);
+    CriteriaQuery<T> leftJoin(Class<?> targetEntityClass, String localRelation, String alias);
 
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(String entityName, String alias);
+    CriteriaQuery<T> leftJoin(String targetEntityName, String alias);
 
     /**
      * Left join the target entity by id columns.
      */
-    CriteriaQuery<T> leftJoin(String entityName, String relation, String alias);
+    CriteriaQuery<T> leftJoin(String targetEntityName, String localRelation, String alias);
 
     /**
      * Left join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String alias, Object id);
+    CriteriaQuery<T> LeftJoinById(Class<?> targetEntityClass, String alias, Object id);
 
     /**
      * Left join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> LeftJoinById(String entityName, String alias, Object id);
+    CriteriaQuery<T> LeftJoinById(String targetEntityName, String alias, Object id);
 
     /**
      * Left join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> LeftJoinById(Class<?> entityClass, String relation, String alias, Object id);
+    CriteriaQuery<T> LeftJoinById(Class<?> targetEntityClass, String localRelation, String alias, Object id);
 
     /**
      * Left join the target entity by id columns and with the id of the target entity.
      */
-    CriteriaQuery<T> LeftJoinById(String entityName, String relation, String alias, Object id);
+    CriteriaQuery<T> LeftJoinById(String targetEntityName, String localRelation, String alias, Object id);
 
     /**
      * Left join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> leftJoinWithWhere(Class<?> targetEntityClass, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Left join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> leftJoinWithWhere(Class<?> entityClass, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> leftJoinWithWhere(Class<?> targetEntityClass, String localRelation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Left join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> leftJoinWithWhere(String entityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> leftJoinWithWhere(String targetEntityName, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Left join the target entity by id columns and with a where condition.
      */
-    CriteriaQuery<T> leftJoinWithWhere(String entityName, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
+    @Internal
+    CriteriaQuery<T> leftJoinWithWhere(String targetEntityName, String localRelation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
     /**
      * Just like where("id = ?", id).
      */
     CriteriaQuery<T> whereById(Object id);
 
-	/**
-	 * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.
-	 */
-	CriteriaWhere<T> where();
-	
-	/**
-	 * Sets the where expression to the lambda condition.
-	 * 
-	 * <p>
-	 * Example : 
-	 * <pre>
-	 * 	where(m -> m.name == "Jim")
-	 * </pre>
-	 */
-	CriteriaQuery<T> where(Condition<T> condition);
+    /**
+     * Just like where("parentId = ?", parentId).
+     *
+     * <p/>
+     * The relation must be many-to-one.
+     */
+    @Internal
+    CriteriaQuery<T> whereByReference(RelationMapping refRelation, Object refToId);
 
-	/**
-	 * Sets the where expression in this CriteriaQuery.
-	 */
-	CriteriaQuery<T> where(String expression);
-	
-	/**
-	 * Sets the where expression in this CriteriaQuery.
-	 */
-	CriteriaQuery<T> where(String expression,Object... args);
-	
-	/**
-	 * Sets the 'group by' sql expression in the generated sql.
-	 */
-	CriteriaQuery<T> groupBy(String expression);
-	
-	/**
-	 * Sets the 'having' sql expression in the generated sql.
-	 */
-	CriteriaQuery<T> having(String expression);
-	
-	/**
-	 * Sets the order by expression in ascending order of the primary key.
-	 */
-	CriteriaQuery<T> orderByIdAsc();
-	
-	/**
-	 * Sets the order by expression in descending order of the primary key.
-	 */
-	CriteriaQuery<T> orderByIdDesc();
-	
-	/**
-	 * Sets the order by expression in descending order of createdAt column.
-	 */
-	default CriteriaQuery<T> lastCreated() {
-		return orderBy(getEntityMapping().getFieldMappingByMetaName(ReservedMetaFieldName.CREATED_AT).getFieldName() + " desc");
-	}
-	
-	/**
-	 * Sets the order by expression in descending order of createdAt column.
-	 */
-	default CriteriaQuery<T> lastCreated(Integer limit) {
-		return lastCreated().limit(limit);
-	}
-	
-	/**
-	 * Sets the order by expression in descending order of updatedAt column.
-	 */
-	default CriteriaQuery<T> lastUpdated() {
-		return orderBy(getEntityMapping().getFieldMappingByMetaName(ReservedMetaFieldName.UPDATED_AT).getFieldName() + " desc");
-	}
-	
-	/**
-	 * Sets the order by expression in descending order of updatedAt column.
-	 */
-	default CriteriaQuery<T> lastUpdated(Integer limit) {
-		return lastUpdated().limit(limit);
-	}
-	
-	/**
-	 * Executes a delete operation on this CriteriaQuery.
-	 */
-	int delete();
-	
-	/**
-	 * Executes an update operator on this CriteriaQuery.
-	 * 
-	 * @param fields the fields(columns) to be updated.
-	 */
-	int update(Map<String, Object> fields);
+    /**
+     * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.
+     */
+    CriteriaWhere<T> where();
+
+    /**
+     * Sets the where expression to the lambda condition.
+     * <p>
+     * <p>
+     * Example :
+     * <pre>
+     * 	where(m -> m.name == "Jim")
+     * </pre>
+     */
+    CriteriaQuery<T> where(Condition<T> condition);
+
+    /**
+     * Sets the where expression in this CriteriaQuery.
+     */
+    CriteriaQuery<T> where(String expression);
+
+    /**
+     * Sets the where expression in this CriteriaQuery.
+     */
+    CriteriaQuery<T> where(String expression, Object... args);
+
+    /**
+     * Sets the 'group by' sql expression in the generated sql.
+     */
+    CriteriaQuery<T> groupBy(String expression);
+
+    /**
+     * Sets the 'having' sql expression in the generated sql.
+     */
+    CriteriaQuery<T> having(String expression);
+
+    /**
+     * Sets the order by expression in ascending order of the primary key.
+     */
+    CriteriaQuery<T> orderByIdAsc();
+
+    /**
+     * Sets the order by expression in descending order of the primary key.
+     */
+    CriteriaQuery<T> orderByIdDesc();
+
+    /**
+     * Sets the order by expression in descending order of createdAt column.
+     */
+    default CriteriaQuery<T> lastCreated() {
+        return orderBy(getEntityMapping().getFieldMappingByMetaName(ReservedMetaFieldName.CREATED_AT).getFieldName() + " desc");
+    }
+
+    /**
+     * Sets the order by expression in descending order of createdAt column.
+     */
+    default CriteriaQuery<T> lastCreated(Integer limit) {
+        return lastCreated().limit(limit);
+    }
+
+    /**
+     * Sets the order by expression in descending order of updatedAt column.
+     */
+    default CriteriaQuery<T> lastUpdated() {
+        return orderBy(getEntityMapping().getFieldMappingByMetaName(ReservedMetaFieldName.UPDATED_AT).getFieldName() + " desc");
+    }
+
+    /**
+     * Sets the order by expression in descending order of updatedAt column.
+     */
+    default CriteriaQuery<T> lastUpdated(Integer limit) {
+        return lastUpdated().limit(limit);
+    }
+
+    /**
+     * Executes a delete operation on this CriteriaQuery.
+     */
+    int delete();
+
+    /**
+     * Executes an update operator on this CriteriaQuery.
+     *
+     * @param fields the fields(columns) to be updated.
+     */
+    int update(Map<String, Object> fields);
 }
