@@ -261,6 +261,11 @@ public interface CriteriaQuery<T> extends Query<T> {
      */
     CriteriaQuery<T> leftJoinWithWhere(String entityName, String relation, String alias, Appendable where, Consumer<FieldMapping> idCallback);
 
+    /**
+     * Just like where("id = ?", id).
+     */
+    CriteriaQuery<T> whereById(Object id);
+
 	/**
 	 * Creates a {@link CriteriaWhere} object for building where condition in this CriteriaQuery.
 	 */

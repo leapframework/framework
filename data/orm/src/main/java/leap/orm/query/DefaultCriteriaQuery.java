@@ -370,6 +370,24 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> whereById(Object id) {
+
+        StringBuilder s = new StringBuilder();
+
+        for(int i=0;i<em.getKeyColumnNames().length;i++){
+            if(i > 0){
+                s.append(" and ");
+            }
+
+            s.append(builder.alias).append('.')
+                    .append(em.getKeyColumnNames()[i])
+                    .append("=?");
+        }
+
+        return where(s.toString(), id);
+    }
+
+    @Override
     public CriteriaWhere<T> where() {
 	    return new DefaultCriteriaWhere<T>(getOrmContext(), this);
     }

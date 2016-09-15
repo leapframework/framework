@@ -39,18 +39,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ModelQueryExecutor {
-
-    protected final ApiConfig     c;
-    protected final MApiModel     am;
-    protected final Dao           dao;
-    protected final EntityMapping em;
+public class ModelQueryExecutor extends ModelExecutorBase {
 
     public ModelQueryExecutor(ApiConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        this.c = c;
-        this.am = am;
-        this.dao = dao;
-        this.em = em;
+        super(c, am, dao, em);
     }
 
     public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
@@ -58,10 +50,28 @@ public class ModelQueryExecutor {
             return new QueryOneResult(dao.findOrNull(em, id));
         }
 
+        Record record;
 
+        if(Strings.isEmpty(options.getSelect())) {
+            record = dao.findOrNull(em, id);
+        }else{
+            CriteriaQuery<Record> query = dao.createCriteriaQuery(em).whereById(id);
+            applySelect(query, options.getSelect());
+            record = query.firstOrNull();
+        }
 
+        if(null == record) {
+            return new QueryOneResult(record);
+        }
 
-        return null;
+        Expand[] expands = ExpandParser.parse(options.getExpand());
+        if(expands.length > 0) {
+            for(Expand expand : expands) {
+                expand(record, id, expand);
+            }
+        }
+
+        return new QueryOneResult(record);
     }
 
     public QueryListResult queryList(QueryOptions options, Map<String, Object> filters) {
@@ -97,37 +107,7 @@ public class ModelQueryExecutor {
                         Object id = Mappings.getId(em, record);
 
                         for(Expand expand : expands) {
-                            String name = expand.getName();
-
-                            MApiProperty ap = am.tryGetProperty(name);
-                            if(null == ap) {
-                                throw new BadRequestException("The expand property '" + name + "' not exists!");
-                            }
-
-                            //todo : check expandable?
-
-                            RelationProperty rp = em.tryGetRelationProperty(name);
-                            if(null == rp) {
-                                throw new BadRequestException("Property '" + name + "' cannot be expanded");
-                            }
-
-                            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-
-                            CriteriaQuery expandQuery =
-                                    dao.createCriteriaQuery(rp.getTargetEntityName())
-                                            .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
-
-
-                            if(!Strings.isEmpty(expand.getSelect())) {
-                                applySelect(expandQuery, expand.getSelect());
-                            }
-
-                            if(rp.isMany()) {
-                                //todo : limit
-                                record.put(rp.getName(), expandQuery.list());
-                            }else{
-                                record.put(rp.getName(), expandQuery.firstOrNull());
-                            }
+                            expand(record, id, expand);
                         }
 
                     }
@@ -136,6 +116,40 @@ public class ModelQueryExecutor {
         }
 
         return new QueryListResult(list, count);
+    }
+
+    protected void expand(Record record, Object id, Expand expand) {
+        String name = expand.getName();
+
+        MApiProperty ap = am.tryGetProperty(name);
+        if(null == ap) {
+            throw new BadRequestException("The expand property '" + name + "' not exists!");
+        }
+
+        //todo : check expandable?
+
+        RelationProperty rp = em.tryGetRelationProperty(name);
+        if(null == rp) {
+            throw new BadRequestException("Property '" + name + "' cannot be expanded");
+        }
+
+        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
+        CriteriaQuery expandQuery =
+                dao.createCriteriaQuery(rp.getTargetEntityName())
+                        .joinById(em.getEntityName(), rm.getInverseRelationName(), "t_" + em.getEntityName(), id);
+
+
+        if(!Strings.isEmpty(expand.getSelect())) {
+            applySelect(expandQuery, expand.getSelect());
+        }
+
+        if(rp.isMany()) {
+            //todo : limit
+            record.put(rp.getName(), expandQuery.list());
+        }else{
+            record.put(rp.getName(), expandQuery.firstOrNull());
+        }
     }
 
     protected void applyOrderBy(CriteriaQuery query, String expr) {
