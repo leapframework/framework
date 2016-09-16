@@ -61,7 +61,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M RequestInterceptors     interceptors;
     protected @Inject @M ActionManager           actionManager;
     protected @Inject @M ValidationManager       validationManager;
-    protected @Inject @M AjaxDetector            ajaxDetector;
     protected @Inject @M DebugDetector           debugDetector;
     protected @Inject @M ThemeManager            themeManager;
     protected @Inject @M FormatManager           formatManager;
@@ -179,7 +178,18 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         if (routeState == ROUTE_STATE_HANLDED) {
                             handled = true;
                         } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
-                            if(State.isIntercepted(interceptors.handleNoRoute(request, response))) {
+
+                            if(webConfig.isCorsEnabled() &&
+                                    webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
+
+                                log.debug("request (no route) handled by cors handler");
+
+                                handled = true;
+
+                            } else if(State.isIntercepted(interceptors.handleNoRoute(request, response))) {
+
+                                log.debug("request (no route) handled by interceptor");
+
                                 handled = true;
                             }else{
                                 handled = handleNoAction(request, response, path);

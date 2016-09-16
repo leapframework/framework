@@ -29,32 +29,34 @@ public class DateFormats {
 	private static final Map<String,  DateFormat> patternFormats  = new ConcurrentHashMap<String,  DateFormat>();
 	private static final Map<Class<?>,String>     defaultPatterns = new ConcurrentHashMap<Class<?>,String>();
 
-    public static final String DATE_PATTERN      = "yyyy-MM-dd";
-    public static final String TIME_PATTERN      = "HH:mm:ss";
-    public static final String DATETIME_PATTERN  = "yyyy-MM-dd HH:mm:ss";
-    public static final String TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final String RFC_DATE_PATTERN  = "yyyy-MM-dd'T'HH:mm:ssZ";  
-    
+    public static final String DATE_PATTERN          = "yyyy-MM-dd";
+    public static final String TIME_PATTERN          = "HH:mm:ss";
+    public static final String DATETIME_PATTERN      = "yyyy-MM-dd HH:mm:ss";
+    public static final String TIMESTAMP_PATTERN     = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String ISO8601_DATE_PATTERN  = "yyyy-MM-dd'T'HH:mm:ssZ";
+    public static final String RFC3339_DATE_PATTERN1 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+
     public static final String[] DEFAULT_PATTERNS = new String[]{
-    																DATETIME_PATTERN,
-    																DATE_PATTERN,
-    																TIME_PATTERN,
-    																TIMESTAMP_PATTERN,
-    																RFC_DATE_PATTERN
-																   };    
+        DATETIME_PATTERN,
+        DATE_PATTERN,
+        TIMESTAMP_PATTERN,
+        RFC3339_DATE_PATTERN1,
+        ISO8601_DATE_PATTERN,
+        TIME_PATTERN
+    };
     
     public static final ConcurrentDateFormat DATE_FORMAT      = new ConcurrentDateFormat(DATE_PATTERN);
     public static final ConcurrentDateFormat TIME_FORMAT      = new ConcurrentDateFormat(TIME_PATTERN);
     public static final ConcurrentDateFormat DATETIME_FORMAT  = new ConcurrentDateFormat(DATETIME_PATTERN);
     public static final ConcurrentDateFormat TIMESTAMP_FORMAT = new ConcurrentDateFormat(TIMESTAMP_PATTERN);
-    public static final ConcurrentDateFormat REF_DATE_FORMAT  = new ConcurrentDateFormat(RFC_DATE_PATTERN);
+    public static final ConcurrentDateFormat REF_DATE_FORMAT  = new ConcurrentDateFormat(ISO8601_DATE_PATTERN);
     
     static {
     	patternFormats.put(DATE_PATTERN,      DATE_FORMAT);
     	patternFormats.put(TIME_PATTERN,      TIME_FORMAT);
     	patternFormats.put(DATETIME_PATTERN,  DATETIME_FORMAT);
     	patternFormats.put(TIMESTAMP_PATTERN, TIMESTAMP_FORMAT);
-    	patternFormats.put(RFC_DATE_PATTERN,  REF_DATE_FORMAT);
+    	patternFormats.put(ISO8601_DATE_PATTERN,  REF_DATE_FORMAT);
     	
     	defaultPatterns.put(Timestamp.class,       TIMESTAMP_PATTERN);
     	defaultPatterns.put(Time.class, 	       TIME_PATTERN);

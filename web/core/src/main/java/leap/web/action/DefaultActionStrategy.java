@@ -137,34 +137,17 @@ public class DefaultActionStrategy implements ActionStrategy {
     public String[] getControllerPaths(Class<?> cls) {
         Class<?> parent = getParentControllerClass(cls);
 
-		//get path from annotation
-		Path a = cls.getAnnotation(Path.class);
-		if(null != a){
-            if(null != parent) {
-                String[] parentPaths = getControllerPaths(parent);
-                if(parentPaths.length == 1) {
-                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value())};
-                }else{
-                    throw new IllegalStateException("Controller only supports one path value");
-                }
+        String   pathPrefix             = "";
+        String   clsPackageName         = Classes.getPackageName(cls);
+
+        String[] baseControllerPackages = controllerPackagePrefixes();
+        for(String baseControllerPackage : baseControllerPackages) {
+            if(clsPackageName.startsWith(baseControllerPackage)){
+                //package name starts with {base-package}.controller
+                pathPrefix = clsPackageName.substring(baseControllerPackage.length()).replace('.', '/');
+                break;
             }
-            return new String[]{Paths.prefixWithSlash(a.value())};
-		}
-
-		//get path conventional
-		String controllerName = getControllerName(cls);
-		
-		String   pathPrefix             = "";
-		String   clsPackageName         = Classes.getPackageName(cls);
-
-		String[] baseControllerPackages = controllerPackagePrefixes();
-		for(String baseControllerPackage : baseControllerPackages) {
-			if(clsPackageName.startsWith(baseControllerPackage)){
-				//package name starts with {base-package}.controller
-				pathPrefix = clsPackageName.substring(baseControllerPackage.length()).replace('.', '/');
-				break;
-			}
-		}
+        }
 
         if(Strings.isEmpty(pathPrefix)) {
             String[] baseResourcePackages = resourcePackagePrefixes();
@@ -177,6 +160,24 @@ public class DefaultActionStrategy implements ActionStrategy {
             }
         }
 
+		//get path from annotation
+		Path a = cls.getAnnotation(Path.class);
+		if(null != a){
+            if(null != parent) {
+                String[] parentPaths = getControllerPaths(parent);
+                if(parentPaths.length == 1) {
+                    String path = path(pathPrefix, a.value());
+                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                }else{
+                    throw new IllegalStateException("Controller only supports one path value");
+                }
+            }
+            return new String[]{Paths.prefixWithSlash(path(pathPrefix, a.value()))};
+		}
+
+		//get path conventional
+		String controllerName = getControllerName(cls);
+		
         String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
 
         if(null != parent) {
@@ -197,6 +198,14 @@ public class DefaultActionStrategy implements ActionStrategy {
 		}else{
 			return new String[]{pathPrefix + "/" + pathSuffix};
 		}
+    }
+
+    protected String path(String pathPrefix, String path) {
+        if(path.startsWith("/")) {
+            return path;
+        }else{
+            return pathPrefix + "/" + path;
+        }
     }
 
     protected Class<?> getParentControllerClass(Class<?> c) {

@@ -31,12 +31,12 @@ public class RestApiControllerTest extends WebTestBase {
     private static Category c2  = null;
     private static RestApi  api = null;
 
-//    @Test
-//    public void testQueryOne() {
-//        RestApi result = get("/api/restapi/" + api.getId()).decodeJson(RestApi.class);
-//        assertEquals(result.getId(), api.getId());
-//        assertEquals(result.getName(), api.getName());
-//    }
+    @Test
+    public void testQueryOne() {
+        RestApi result = get("/api/restapi/" + api.getId()).decodeJson(RestApi.class);
+        assertEquals(result.getId(), api.getId());
+        assertEquals(result.getName(), api.getName());
+    }
 
     @BeforeClass
     public static void initData() {
