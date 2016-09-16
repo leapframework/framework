@@ -29,9 +29,9 @@ import java.util.function.Supplier;
 @SuppressWarnings({"unchecked","rawtypes"})
 public class JsonArray implements Iterable<JsonValue>,Emptiable,JsonValue {
 	
-	private final List<Object> list;
+	private final List list;
 	
-	public JsonArray(List<Object> list){
+	public JsonArray(List list){
 		this.list = list;
 	}
 	
@@ -41,7 +41,7 @@ public class JsonArray implements Iterable<JsonValue>,Emptiable,JsonValue {
     }
 	
 	@Override
-    public List<Object> asList() {
+    public <T> List<T> asList() {
 		return list;
 	}
 	

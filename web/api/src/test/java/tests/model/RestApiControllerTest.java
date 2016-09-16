@@ -25,6 +25,9 @@ import leap.webunit.WebTestBase;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.Map;
+
 public class RestApiControllerTest extends WebTestBase {
 
     private static Category c1  = null;
@@ -36,6 +39,72 @@ public class RestApiControllerTest extends WebTestBase {
         RestApi result = get("/api/restapi/" + api.getId()).decodeJson(RestApi.class);
         assertEquals(result.getId(), api.getId());
         assertEquals(result.getName(), api.getName());
+        assertNotNull(result.getCreatedAt());
+
+        get("/api/restapi/not_exists").assertNotFound();
+    }
+
+    @Test
+    public void testQueryOneWithSelect() {
+        Map<String,Object> record =
+                get("/api/restapi/" + api.getId() + "?select=id,name,title").decodeJsonMap();
+
+        assertEquals(3, record.size());
+        assertEquals(api.getId(), record.get("id"));
+
+        get("/api/restapi/" + api.getId() + "?select=not_exists").assertBadRequest();
+    }
+
+    @Test
+    public void testQueryOneWithExpand() {
+        RestApi record =
+                get("/api/restapi/" + api.getId() + "?expand=categories").decodeJson(RestApi.class);
+
+        List<Category> categories = record.getCategories();
+        assertEquals(1, categories.size());
+        assertEquals(c1.getId(), categories.get(0).getId());
+        assertNotNull(categories.get(0).getCreatedAt());
+
+        Map<String,Object> map =
+                get("/api/restapi/" + api.getId() + "?expand=categories(id,title)").decodeJsonMap();
+        List<Map<String,Object>> categoriesListMap = (List<Map<String,Object>>)map.get("categories");
+        Map<String,Object> categoriesMap = categoriesListMap.get(0);
+        assertEquals(2, categoriesMap.size());
+        assertEquals(c1.getId(), categoriesMap.get("id"));
+
+        //bad request
+        get("/api/restapi/" + api.getId() + "?expand=not_exists").assertBadRequest();
+        get("/api/restapi/" + api.getId() + "?expand=categories(not_exists)").assertBadRequest();
+    }
+
+    @Test
+    public void testQueryListWithSelect() {
+        List<Map<String,Object>> records =
+                get("/api/restapi?select=id,name,title").getJson().asList();
+
+        Map<String,Object> record = records.get(0);
+
+        assertEquals(3, record.size());
+        assertEquals(api.getId(), record.get("id"));
+
+        //bad request
+        get("/api/restapi?select=not_exists").assertBadRequest();
+    }
+
+    @Test
+    public void testQueryListWithExpand() {
+        List<Map<String,Object>> records =
+                get("/api/restapi?expand=categories(id,title)").getJson().asList();
+
+        Map<String,Object> map = records.get(0);
+        List<Map<String,Object>> categoriesListMap = (List<Map<String,Object>>)map.get("categories");
+        Map<String,Object> categoriesMap = categoriesListMap.get(0);
+        assertEquals(2, categoriesMap.size());
+        assertEquals(c1.getId(), categoriesMap.get("id"));
+
+        //bad request
+        get("/api/restapi?expand=not_exists").assertBadRequest();
+        get("/api/restapi?expand=categories(not_exists)").assertBadRequest();
     }
 
     @BeforeClass
@@ -60,6 +129,11 @@ public class RestApiControllerTest extends WebTestBase {
         api.setName("api1");
         api.setTitle("Api1");
         api.create();
+
+        RestCategory rc = new RestCategory();
+        rc.setApiId(api.getId());
+        rc.setCategoryId(c1.getId());
+        rc.create();
 
         RestPath path = new RestPath();
         path.setFullPath("/");

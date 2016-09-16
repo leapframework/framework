@@ -21,6 +21,7 @@ import leap.lang.json.JsonValue;
 import leap.lang.jsoup.nodes.Document;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * The HTTP response in client side for testing only.
@@ -116,7 +117,14 @@ public interface THttpResponse {
 	}
 
     /**
-     * Decodes the response content to the value of the given type.
+     * Parse the response content as json and decodes to map.
+     */
+    default Map<String,Object> decodeJsonMap() {
+        return JSON.decodeMap(getContent());
+    }
+
+    /**
+     * Parse the response content as json and decodes to the given type.
      */
     default <T> T decodeJson(Class<T> type) {
         return JSON.decode(getContent(), type);
