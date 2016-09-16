@@ -47,23 +47,18 @@ public class MergedSecuredPath implements SecuredPath {
     }
 
     @Override
-    public boolean isAllowAnonymous() {
-        return merged.isAllowAnonymous();
+    public Boolean getAllowAnonymous() {
+        return merged.getAllowAnonymous();
     }
 
     @Override
-    public boolean isAllowClientOnly() {
-        return merged.isAllowAnonymous();
+    public Boolean getAllowClientOnly() {
+        return merged.getAllowClientOnly();
     }
 
     @Override
-    public boolean isAllowRememberMe() {
-        return merged.isAllowRememberMe();
-    }
-
-    @Override
-    public boolean isAllowCors() {
-        return false;
+    public Boolean getAllowRememberMe() {
+        return merged.getAllowRememberMe();
     }
 
     @Override
@@ -99,9 +94,23 @@ public class MergedSecuredPath implements SecuredPath {
     private SecuredPath merge(SecuredPath p1, SecuredPath p2) {
         SecuredPathBuilder spb = new DefaultSecuredPathBuilder(route);
 
-        spb.setAllowAnonymous(p1.isAllowAnonymous() || p2.isAllowAnonymous());
-        spb.setAllowRememberMe(p1.isAllowRememberMe() || p2.isAllowRememberMe());
-        spb.setAllowClientOnly(p1.isAllowClientOnly() || p2.isAllowClientOnly());
+        if(null != p1.getAllowAnonymous()) {
+            spb.setAllowAnonymous(p1.getAllowAnonymous());
+        }else{
+            spb.setAllowAnonymous(p2.getAllowAnonymous());
+        }
+
+        if(null != p1.getAllowClientOnly()) {
+            spb.setAllowClientOnly(p1.getAllowClientOnly());
+        }else{
+            spb.setAllowClientOnly(p2.getAllowClientOnly());
+        }
+
+        if(null != p1.getAllowRememberMe()) {
+            spb.setAllowRememberMe(p1.getAllowRememberMe());
+        }else{
+            spb.setAllowRememberMe(p2.getAllowRememberMe());
+        }
 
         if(!Arrays2.isEmpty(p1.getPermissions())) {
             spb.setPermissionsAllowed(p1.getPermissions());

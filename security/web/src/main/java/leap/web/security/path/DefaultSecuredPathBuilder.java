@@ -17,6 +17,7 @@ package leap.web.security.path;
 
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
+import leap.lang.enums.Bool;
 import leap.lang.path.AntPathPattern;
 import leap.lang.path.PathPattern;
 import leap.web.route.Route;
@@ -30,10 +31,9 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
     protected Route       route;
     protected PathPattern pattern;
 
-    protected boolean                allowAnonymous  = false;
-    protected boolean                allowClientOnly = false;
-    protected boolean                allowRememberMe = true;
-    protected boolean                allowCors       = false;
+    protected Boolean                allowAnonymous  = null;
+    protected Boolean                allowClientOnly = null;
+    protected Boolean                allowRememberMe = true;
     protected SecurityFailureHandler failureHandler  = null;
     protected List<String>           permissions     = new ArrayList<>();
     protected List<String>           roles           = new ArrayList<>();
@@ -58,10 +58,9 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 	public DefaultSecuredPathBuilder(SecuredPath path) {
         this.route           = path.getRoute();
 		this.pattern         = path.getPattern();
-		this.allowAnonymous  = path.isAllowAnonymous();
-		this.allowClientOnly = path.isAllowClientOnly();
-		this.allowRememberMe = path.isAllowRememberMe();
-        this.allowCors       = path.isAllowCors();
+		this.allowAnonymous  = path.getAllowAnonymous();
+		this.allowClientOnly = path.getAllowClientOnly();
+		this.allowRememberMe = path.getAllowRememberMe();
         this.failureHandler  = path.getFailureHandler();
 
 		Collections2.addAll(permissions, path.getPermissions());
@@ -72,7 +71,11 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
         return route;
     }
 
-	public PathPattern getPattern() {
+    public SecuredPathBuilder path(String pattern) {
+        return setPattern(new AntPathPattern(pattern));
+    }
+
+    public PathPattern getPattern() {
 		return pattern;
 	}
 
@@ -80,54 +83,39 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 		this.pattern = pattern;
 		return this;
 	}
-	
-	public SecuredPathBuilder path(String pattern) {
-		return setPattern(new AntPathPattern(pattern));
-	}
-	
-	@Override
-    public boolean isAllowAnonymous() {
-		return allowAnonymous;
-	}
+
+    @Override
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    @Override
+    public Boolean getAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    @Override
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
+    }
 
 	@Override
-    public DefaultSecuredPathBuilder setAllowAnonymous(boolean allowAnonymous) {
+    public DefaultSecuredPathBuilder setAllowAnonymous(Boolean allowAnonymous) {
 		this.allowAnonymous = allowAnonymous;
 		return this;
 	}
 	
-	@Override
-    public boolean isAllowClientOnly() {
-        return allowClientOnly;
-    }
-
     @Override
-    public DefaultSecuredPathBuilder setAllowClientOnly(boolean allowClientOnly) {
+    public DefaultSecuredPathBuilder setAllowClientOnly(Boolean allowClientOnly) {
         this.allowClientOnly = allowClientOnly;
         return this;
     }
 
 	@Override
-    public boolean isAllowRememberMe() {
-		return allowRememberMe;
-	}
-
-	@Override
-    public SecuredPathBuilder setAllowRememberMe(boolean denyRememberMe) {
+    public SecuredPathBuilder setAllowRememberMe(Boolean denyRememberMe) {
 		this.allowRememberMe = denyRememberMe;
 		return this;
 	}
-
-    @Override
-    public SecuredPathBuilder setAllowCors(boolean allow) {
-        this.allowCors = allow;
-        return this;
-    }
-
-    @Override
-    public boolean isAllowCors() {
-        return allowCors;
-    }
 
     public SecurityFailureHandler getFailureHandler() {
         return failureHandler;
@@ -171,7 +159,6 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
                                       allowAnonymous,
                                       allowClientOnly,
                                       allowRememberMe,
-                                      allowCors,
                                       failureHandler,
                                       permissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                       roles.toArray(Arrays2.EMPTY_STRING_ARRAY));

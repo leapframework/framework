@@ -85,7 +85,7 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is deny.
      */
-    SecuredPathConfigurator setAllowAnonymous(boolean allow);
+    SecuredPathConfigurator setAllowAnonymous(Boolean allow);
 
     /**
      * Sets allow or deny remember-me authentication.
@@ -93,15 +93,7 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is allow.
      */
-    SecuredPathConfigurator setAllowRememberMe(boolean allow);
-
-    /**
-     * Sets allow or deny cors request.
-     *
-     * <p/>
-     * Default is deny.
-     */
-    SecuredPathConfigurator setAllowCors(boolean allow);
+    SecuredPathConfigurator setAllowRememberMe(Boolean allow);
 
     /**
      * Sets allow or deny client-only authentication.
@@ -109,7 +101,7 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is deny.
      */
-    SecuredPathConfigurator setAllowClientOnly(boolean allow);
+    SecuredPathConfigurator setAllowClientOnly(Boolean allow);
 
     /**
      * Sets the {@link SecurityFailureHandler}.
@@ -129,17 +121,17 @@ public interface SecuredPathConfigurator {
     /**
      * Returns true if allow anonymous access.
      */
-    boolean isAllowAnonymous();
+    Boolean getAllowAnonymous();
 
     /**
      * Returns true if allow remember-me authentication.
      */
-    boolean isAllowRememberMe();
+    Boolean getAllowRememberMe();
 
     /**
      * Returns true if allow client-only authentication.
      */
-    boolean isAllowClientOnly();
+    Boolean getAllowClientOnly();
 
     /**
      * Updates the configuration of secured path.

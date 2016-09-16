@@ -29,8 +29,6 @@ import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
-import leap.web.config.WebConfig;
-import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
 import leap.web.security.annotation.*;
 import leap.web.security.csrf.CsrfHandler;
@@ -41,13 +39,11 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
 
-    protected @Inject @M SecurityConfig       config;
-    protected @Inject @M WebConfig            webConfig;
-    protected @Inject @M PermissionManager    permissionManager;
-    protected @Inject @M SecuredPathSource    pathSource;
-    protected @Inject @M SecurityHandler      handler;
-    protected @Inject @M CsrfHandler          csrf;
-    protected @Inject @M CorsHandler          cors;
+    protected @Inject @M SecurityConfig    config;
+    protected @Inject @M PermissionManager perm;
+    protected @Inject @M SecuredPathSource pathSource;
+    protected @Inject @M SecurityHandler   handler;
+    protected @Inject @M CsrfHandler       csrf;
 
     protected SecuredPathBuilder spb(Route route) {
         SecuredPathBuilder spb = route.getExtension(SecuredPathBuilder.class);
@@ -64,8 +60,8 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	    for(Route route : app.routes()) {
 	        Action action = route.getAction();
 
-            if(route.isAllowAnonymous()) {
-                spb(route).setAllowAnonymous(true);
+            if(null != route.getAllowAnonymous()) {
+                spb(route).setAllowAnonymous(route.getAllowAnonymous());
             }else{
                 AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
                 if(null != aa) {
@@ -73,8 +69,8 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
                 }
             }
 
-            if(route.isAllowClientOnly()) {
-                spb(route).setAllowClientOnly(true);
+            if(null != route.getAllowClientOnly()) {
+                spb(route).setAllowClientOnly(route.getAllowClientOnly());
             }else{
                 AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
                 if(null != ac) {
@@ -86,10 +82,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			if(null != ar) {
 				spb(route).setAllowRememberMe(ar.value());
 			}
-
-            if(route.isCorsEnabled() || (!route.isCorsDisabled() && webConfig.isCorsEnabled())) {
-                spb(route).setAllowCors(true);
-            }
 
             Permissions permissions = action.searchAnnotation(Permissions.class);
             if(null != permissions) {
@@ -144,7 +136,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		}
 		
 		DefaultSecurityContextHolder context =
-                new DefaultSecurityContextHolder(config, permissionManager, request);
+                new DefaultSecurityContextHolder(config, perm, request);
 
 		return preHandleRequest(request, response, context);
     }
@@ -321,26 +313,4 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		return State.CONTINUE;
 	}
 
-	protected State checkAndSetCorsHeaders(Request request, Response response, DefaultSecurityContextHolder context,SecuredPath sp) throws Throwable {
-        //Handles cors request.
-        State state = State.CONTINUE;
-
-        //If route disable cors,this request is not allow cors
-        boolean isRouteDisableCors = sp.getRoute()!=null&&sp.getRoute().isCorsDisabled();
-        if(isRouteDisableCors){
-            return state;
-        }
-
-        // If route is not disable cors, this request is not allow cors only when sp and global both not allow cors
-        boolean isGlobalAllowCors = webConfig.isCorsEnabled();
-        boolean isPathAllowCors = sp.isAllowCors();
-
-        if(isPathAllowCors || isGlobalAllowCors) {
-            state = cors.handle(request, response);
-            if(State.isIntercepted(state)) {
-                return state;
-            }
-        }
-        return state;
-    }
 }

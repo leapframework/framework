@@ -228,16 +228,18 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 		this.supportsMultipart = supports;
     }
 
-    public boolean isAllowAnonymous() {
-        return null != allowAnonymous && allowAnonymous;
+    @Override
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
     }
 
     public void setAllowAnonymous(Boolean allowAnonymous) {
         this.allowAnonymous = allowAnonymous;
     }
 
-    public boolean isAllowClientOnly() {
-        return null != allowClientOnly && allowClientOnly;
+    @Override
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
     }
 
     public void setAllowClientOnly(Boolean allowClientOnly) {

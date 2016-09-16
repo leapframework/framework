@@ -147,23 +147,18 @@ public class DefaultSecuredPaths implements SecuredPaths {
         }
 
         @Override
-        public boolean isAllowAnonymous() {
-            return path.isAllowAnonymous();
+        public Boolean getAllowAnonymous() {
+            return path.getAllowAnonymous();
         }
 
         @Override
-        public boolean isAllowClientOnly() {
-            return path.isAllowClientOnly();
+        public Boolean getAllowClientOnly() {
+            return path.getAllowClientOnly();
         }
 
         @Override
-        public boolean isAllowRememberMe() {
-            return path.isAllowRememberMe();
-        }
-
-        @Override
-        public boolean isAllowCors() {
-            return path.isAllowCors();
+        public Boolean getAllowRememberMe() {
+            return path.getAllowRememberMe();
         }
 
         @Override

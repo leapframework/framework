@@ -160,9 +160,9 @@ public interface Route extends RouteBase, Sourced, Extensible {
 	void setSupportsMultipart(boolean supports);
 
     /**
-     * Returns true if allow anonymous access.
+     * Returns the allow-anonymous status..
      */
-    boolean isAllowAnonymous();
+    Boolean getAllowAnonymous();
 
     /**
      * Sets is allow anonymous access.
@@ -170,9 +170,9 @@ public interface Route extends RouteBase, Sourced, Extensible {
     void setAllowAnonymous(Boolean allowAnonymous);
 
     /**
-     * Returns true if allow client only access.
+     * Returns the allow-clientOnly status..
      */
-    boolean isAllowClientOnly();
+    Boolean getAllowClientOnly();
 
     /**
      * Sets is allow client only access.

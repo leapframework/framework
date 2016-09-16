@@ -21,6 +21,14 @@ import leap.web.security.SecurityFailureHandler;
 
 public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
+    PathPattern getPattern();
+
+    Boolean getAllowAnonymous();
+
+    Boolean getAllowRememberMe();
+
+    Boolean getAllowClientOnly();
+
     default SecuredPathBuilder allowAnonymous() {
         return setAllowAnonymous(true);
     }
@@ -31,13 +39,11 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder setPattern(PathPattern pattern);
 
-    SecuredPathBuilder setAllowAnonymous(boolean allow);
+    SecuredPathBuilder setAllowAnonymous(Boolean allow);
 
-    SecuredPathBuilder setAllowClientOnly(boolean allow);
+    SecuredPathBuilder setAllowClientOnly(Boolean allow);
 
-    SecuredPathBuilder setAllowRememberMe(boolean allow);
-
-    SecuredPathBuilder setAllowCors(boolean allow);
+    SecuredPathBuilder setAllowRememberMe(Boolean allow);
 
     SecuredPathBuilder setFailureHandler(SecurityFailureHandler h);
 
@@ -49,14 +55,5 @@ public interface SecuredPathBuilder extends Buildable<SecuredPath> {
 
     SecuredPathBuilder addRolesAllowed(String... roles);
 
-    PathPattern getPattern();
-
-    boolean isAllowAnonymous();
-
-    boolean isAllowRememberMe();
-
-    boolean isAllowCors();
-
-    boolean isAllowClientOnly();
 
 }

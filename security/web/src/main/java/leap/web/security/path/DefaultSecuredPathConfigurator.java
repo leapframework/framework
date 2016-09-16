@@ -46,25 +46,19 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     }
 
     @Override
-    public SecuredPathConfigurator setAllowAnonymous(boolean allow) {
+    public SecuredPathConfigurator setAllowAnonymous(Boolean allow) {
         path.setAllowAnonymous(allow);
         return this;
     }
 
     @Override
-    public SecuredPathConfigurator setAllowRememberMe(boolean allow) {
+    public SecuredPathConfigurator setAllowRememberMe(Boolean allow) {
         path.setAllowRememberMe(allow);
         return this;
     }
 
     @Override
-    public SecuredPathConfigurator setAllowCors(boolean allow) {
-        path.setAllowCors(allow);
-        return this;
-    }
-
-    @Override
-    public SecuredPathConfigurator setAllowClientOnly(boolean allow) {
+    public SecuredPathConfigurator setAllowClientOnly(Boolean allow) {
         path.setAllowClientOnly(allow);
         return this;
     }
@@ -76,18 +70,18 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     }
 
     @Override
-    public boolean isAllowAnonymous() {
-        return path.isAllowAnonymous();
+    public Boolean getAllowAnonymous() {
+        return path.getAllowAnonymous();
     }
 
     @Override
-    public boolean isAllowRememberMe() {
-        return path.isAllowRememberMe();
+    public Boolean getAllowRememberMe() {
+        return path.getAllowRememberMe();
     }
 
     @Override
-    public boolean isAllowClientOnly() {
-        return path.isAllowClientOnly();
+    public Boolean getAllowClientOnly() {
+        return path.getAllowClientOnly();
     }
 
     @Override

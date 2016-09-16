@@ -35,20 +35,18 @@ public class DefaultSecuredPath implements SecuredPath {
 
     protected final Route                  route;
     protected final PathPattern            pattern;
-    protected final boolean                allowAnonymous;
-    protected final boolean                allowClientOnly;
-    protected final boolean                allowRememberMe;
-    protected final boolean                allowCors;
+    protected final Boolean                allowAnonymous;
+    protected final Boolean                allowClientOnly;
+    protected final Boolean                allowRememberMe;
     protected final SecurityFailureHandler failureHandler;
     protected final String[]               permissions;
     protected final String[]               roles;
 
 	public DefaultSecuredPath(Route route,
                               PathPattern pattern,
-                              boolean allowAnonymous,
-                              boolean allowClientOnly,
-                              boolean allowRememberMe,
-                              boolean allowCors,
+                              Boolean allowAnonymous,
+                              Boolean allowClientOnly,
+                              Boolean allowRememberMe,
                               SecurityFailureHandler failureHandler,
                               String[] permissions,
                               String[] roles) {
@@ -58,7 +56,6 @@ public class DefaultSecuredPath implements SecuredPath {
 	    this.allowAnonymous  = allowAnonymous;
 	    this.allowClientOnly = allowClientOnly;
 	    this.allowRememberMe = allowRememberMe;
-        this.allowCors       = allowCors;
         this.failureHandler  = failureHandler;
         this.permissions     = permissions;
         this.roles           = roles;
@@ -77,33 +74,19 @@ public class DefaultSecuredPath implements SecuredPath {
 		return pattern;
 	}
 
-    /**
-     * Returns true if the path pattern allows anonymous access (that means no authentication required).
-     */
     @Override
-    public boolean isAllowAnonymous() {
+    public Boolean getAllowAnonymous() {
         return allowAnonymous;
     }
 
-    /**
-     * Returns true if the path pattern allows client-only authentication.
-     */
     @Override
-    public boolean isAllowClientOnly() {
+    public Boolean getAllowClientOnly() {
         return allowClientOnly;
     }
 
-    /**
-     * Returns true if the path pattern allows remember-me authentication.
-     */
     @Override
-    public boolean isAllowRememberMe() {
+    public Boolean getAllowRememberMe() {
         return allowRememberMe;
-    }
-
-    @Override
-    public boolean isAllowCors() {
-        return allowCors;
     }
 
     @Override
