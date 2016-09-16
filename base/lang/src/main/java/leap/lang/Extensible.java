@@ -37,4 +37,8 @@ public interface Extensible {
      */
     <T> void setExtension(Class<T> type, Object extension);
 
+    /**
+     * Removes the extension of the type and returns the extension object.
+     */
+    <T> T removeExtension(Class<?> type);
 }

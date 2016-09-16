@@ -26,7 +26,6 @@ import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
@@ -35,10 +34,7 @@ import leap.web.cors.CorsHandler;
 import leap.web.route.Route;
 import leap.web.security.annotation.*;
 import leap.web.security.csrf.CsrfHandler;
-import leap.web.security.path.SecuredPath;
-import leap.web.security.path.SecuredPathConfigurator;
-import leap.web.security.path.SecuredPathSource;
-import leap.web.security.path.SecuredPaths;
+import leap.web.security.path.*;
 import leap.web.security.permission.PermissionManager;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
@@ -46,7 +42,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
 
     protected @Inject @M SecurityConfig       config;
-    protected @Inject @M SecurityConfigurator configurator;
     protected @Inject @M WebConfig            webConfig;
     protected @Inject @M PermissionManager    permissionManager;
     protected @Inject @M SecuredPathSource    pathSource;
@@ -54,78 +49,76 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     protected @Inject @M CsrfHandler          csrf;
     protected @Inject @M CorsHandler          cors;
 
+    protected SecuredPathBuilder spb(Route route) {
+        SecuredPathBuilder spb = route.getExtension(SecuredPathBuilder.class);
+        if(null == spb) {
+            spb = new DefaultSecuredPathBuilder(route);
+            route.setExtension(SecuredPathBuilder.class, spb);
+        }
+        return spb;
+    }
+
 	@Override
     public void postAppStart(App app) throws Throwable {
-        SecuredPaths paths = configurator.paths();
 
 	    for(Route route : app.routes()) {
 	        Action action = route.getAction();
 
             if(route.isAllowAnonymous()) {
-                paths.of(route).setAllowAnonymous(true).apply();
+                spb(route).setAllowAnonymous(true);
             }else{
                 AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
                 if(null != aa) {
-                    paths.of(route).setAllowAnonymous(aa.value()).apply();
+                    spb(route).setAllowAnonymous(aa.value());
                 }
             }
 
             if(route.isAllowClientOnly()) {
-                paths.of(route).setAllowClientOnly(true).apply();
+                spb(route).setAllowClientOnly(true);
             }else{
                 AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
                 if(null != ac) {
-                    paths.of(route).setAllowClientOnly(ac.value()).apply();
+                    spb(route).setAllowClientOnly(ac.value());
                 }
             }
 
 			AllowRememberMe ar = action.searchAnnotation(AllowRememberMe.class);
 			if(null != ar) {
-				paths.of(route).setAllowRememberMe(ar.value()).apply();
+				spb(route).setAllowRememberMe(ar.value());
 			}
 
             if(route.isCorsEnabled() || (!route.isCorsDisabled() && webConfig.isCorsEnabled())) {
-                paths.of(route).setAllowCors(true).apply();
+                spb(route).setAllowCors(true);
             }
 
             Permissions permissions = action.searchAnnotation(Permissions.class);
             if(null != permissions) {
-                paths.of(route).setPermissionsAllowed(permissions.value()).apply();
+                spb(route).setPermissionsAllowed(permissions.value());
             }
 	        
 	        Secured secured = action.searchAnnotation(Secured.class);
 	        if(null != secured){
-	            boolean isAction = action.getAnnotation(Secured.class) != null;
-
-                SecuredPathConfigurator p;
-	            
-	            if(isAction){
-	                 p = paths.of(route);
-	            }else{
-	                 p = paths.of(Paths.suffixWithSlash(route.getControllerPath()) + "**");
-	            }
-	            
-	            p.setAllowRememberMe(secured.allowRememberMe());
+	            spb(route).setAllowRememberMe(secured.allowRememberMe());
 
 	            if(!Arrays2.isEmpty(secured.roles())){
-                    p.setRolesAllowed(secured.roles());
+                    spb(route).setRolesAllowed(secured.roles());
 	            }
 
 	            if(!Arrays2.isEmpty(secured.permissions())) {
-                    p.setPermissionsAllowed(secured.permissions());
+                    spb(route).setPermissionsAllowed(secured.permissions());
 	            }
-
-                p.apply();
 	        }
 
-            SecuredPathConfigurator sp = paths.get(route);
-            if(null != sp) {
-                config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
-                    if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
-                        log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
-                        sp.setFailureHandler(handler).apply();
-                    }
-                });
+            config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
+                if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
+                    log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
+                    spb(route).setFailureHandler(handler);
+                }
+            });
+
+            SecuredPathBuilder spb = route.removeExtension(SecuredPathBuilder.class);
+            if(null != spb) {
+                route.setExtension(SecuredPath.class, spb.build());
             }
 	    }
     }
@@ -174,45 +167,30 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 
         return State.CONTINUE;
-        //return handleRequest(request, response, context);
     }
 
     @Override
     public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
-        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
-        if(null == context) {
-            return State.CONTINUE;
-        }
-        return handleRequest(request, response, context);
+        return handleSecurity(request, response, route);
     }
 
     @Override
     public State handleNoRoute(Request request, Response response) throws Throwable {
-        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
-        if(null == context) {
-            return State.CONTINUE;
-        }
-        return handleRequest(request, response, context);
+        return handleSecurity(request, response, null);
     }
 
-    protected State handleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
-        if(context.isHandled()) {
+    protected State handleSecurity(Request request, Response response, Route route) throws Throwable {
+        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
+        if(null == context || context.isHandled()) {
             return State.CONTINUE;
         }
-
         context.markHandled();
 
-        //Resolve security path.
-        SecuredPath sp = resolveSecurityPath(request, response, context);
-        context.setSecurityPath(sp);
-
-        State state = checkAndSetCorsHeaders(request,response,context,sp);
-        if(state.isIntercepted()) {
-            return state;
-        }
+        //Resolve secured path.
+        context.setSecuredPath(resolveSecuredPath(request, response, context, route));
 
         //Check authentication
-        state = checkAuthentication(request, response, context);
+        State state = checkAuthentication(request, response, context);
         if(state.isIntercepted()) {
             return state;
         }
@@ -282,8 +260,19 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         return handler.handleLogoutRequest(request, response, context);
     }
 
-    protected SecuredPath resolveSecurityPath(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
-        return pathSource.getSecuredPath(context, request);
+    protected SecuredPath resolveSecuredPath(Request request, Response response, DefaultSecurityContextHolder context, Route route) throws Throwable {
+        SecuredPath p1 = null == route ? null : route.getExtension(SecuredPath.class);
+        SecuredPath p2 = pathSource.getSecuredPath(context, request);
+
+        if(null == p1) {
+            return p2;
+        }
+
+        if(null == p2) {
+            return p1;
+        }
+
+        return new MergedSecuredPath(route, p1, p2);
     }
 
     protected State checkAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {

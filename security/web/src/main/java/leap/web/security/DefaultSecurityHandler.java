@@ -52,7 +52,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public boolean checkAuthentication(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        SecuredPath path = context.getSecurityPath();
+        SecuredPath path = context.getSecuredPath();
 
         if(null != path) {
             return path.checkAuthentication(request, context);
@@ -63,7 +63,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public boolean checkAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        SecuredPath path = context.getSecurityPath();
+        SecuredPath path = context.getSecuredPath();
 
         if(null != path) {
             return path.checkAuthorization(request, context);
@@ -74,7 +74,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public void handleAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        SecuredPath path = context.getSecurityPath();
+        SecuredPath path = context.getSecuredPath();
         if(null != path && null != path.getFailureHandler()) {
             if(path.getFailureHandler().handleAuthenticationDenied(request,response, context)) {
                 return;
@@ -92,7 +92,7 @@ public class DefaultSecurityHandler implements SecurityHandler {
 
     @Override
     public void handleAuthorizationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
-        SecuredPath path = context.getSecurityPath();
+        SecuredPath path = context.getSecuredPath();
         if(null != path && null != path.getFailureHandler()) {
             if(path.getFailureHandler().handleAuthorizationDenied(request,response, context)) {
                 return;

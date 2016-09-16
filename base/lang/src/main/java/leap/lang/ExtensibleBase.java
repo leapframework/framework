@@ -35,4 +35,8 @@ public abstract class ExtensibleBase implements Extensible {
         extensions.put(type, extension);
     }
 
+    @Override
+    public <T> T removeExtension(Class<?> type) {
+        return (T)extensions.remove(type);
+    }
 }
