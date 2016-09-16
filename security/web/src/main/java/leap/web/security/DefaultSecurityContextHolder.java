@@ -34,15 +34,8 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
-    static DefaultSecurityContextHolder get(Request request) {
-        DefaultSecurityContextHolder c =
-                (DefaultSecurityContextHolder)request.getAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME);
-
-        if(null == c) {
-            throw new IllegalStateException("No security context in request");
-        }
-
-        return c;
+    static DefaultSecurityContextHolder tryGet(Request request) {
+        return (DefaultSecurityContextHolder)request.getAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME);
     }
 
     static void remove(Request request) {

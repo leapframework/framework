@@ -173,18 +173,27 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
             return State.INTERCEPTED;
         }
 
+        return State.CONTINUE;
+        //return handleRequest(request, response, context);
+    }
+
+    @Override
+    public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
+        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
+        if(null == context) {
+            return State.CONTINUE;
+        }
         return handleRequest(request, response, context);
     }
 
-//    @Override
-//    public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
-//        return handleRequest(request, response, DefaultSecurityContextHolder.get(request));
-//    }
-//
-//    @Override
-//    public State handleNoRoute(Request request, Response response) throws Throwable {
-//        return handleRequest(request, response, DefaultSecurityContextHolder.get(request));
-//    }
+    @Override
+    public State handleNoRoute(Request request, Response response) throws Throwable {
+        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
+        if(null == context) {
+            return State.CONTINUE;
+        }
+        return handleRequest(request, response, context);
+    }
 
     protected State handleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
         if(context.isHandled()) {
