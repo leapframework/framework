@@ -26,11 +26,11 @@ import leap.orm.query.CriteriaQuery;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class DefaultDeleteFullyCommand extends AbstractEntityDaoCommand implements DeleteFullyCommand {
+public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implements CascadeDeleteCommand {
 
     protected final DefaultDeleteCommand deleteCommand;
 
-	public DefaultDeleteFullyCommand(Dao dao, EntityMapping em, Object id) {
+	public DefaultCascadeDeleteCommand(Dao dao, EntityMapping em, Object id) {
         super(dao, em);
         deleteCommand = new DefaultDeleteCommand(dao, em, id);
     }

@@ -27,7 +27,7 @@ public interface CommandFactory {
 
 	DeleteCommand newDeleteCommand(Dao dao, EntityMapping em, Object id);
 
-    DeleteFullyCommand newDeleteFullyCommand(Dao dao, EntityMapping em, Object id);
+    CascadeDeleteCommand newCascadeDeleteCommand(Dao dao, EntityMapping em, Object id);
 
 	DeleteAllCommand newDeleteAllCommand(Dao dao,EntityMapping em);
 	

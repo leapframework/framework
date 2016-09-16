@@ -24,14 +24,14 @@ import leap.web.annotation.QueryParam;
 @ParamsWrapper
 public class DeleteOptions {
 
-    protected @QueryParam("delete_fully") boolean deleteFully;
+    protected @QueryParam("cascade_delete") boolean cascadeDelete;
 
-    public boolean isDeleteFully() {
-        return deleteFully;
+    public boolean isCascadeDelete() {
+        return cascadeDelete;
     }
 
-    public void setDeleteFully(boolean deleteFully) {
-        this.deleteFully = deleteFully;
+    public void setCascadeDelete(boolean cascadeDelete) {
+        this.cascadeDelete = cascadeDelete;
     }
 
 }

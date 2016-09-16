@@ -197,7 +197,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Deletes a record.
      */
     protected ApiResponse deleteFully(Object id) {
-        if (dao.deleteFully(modelClass, id)) {
+        if (dao.cascadeDelete(modelClass, id)) {
             return ApiResponse.ACCEPTED;
         } else {
             return ApiResponse.NOT_FOUND;

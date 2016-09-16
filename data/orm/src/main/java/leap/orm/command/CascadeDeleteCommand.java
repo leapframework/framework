@@ -17,7 +17,7 @@
  */
 package leap.orm.command;
 
-public interface DeleteFullyCommand {
+public interface CascadeDeleteCommand {
 
 	boolean execute();
 	

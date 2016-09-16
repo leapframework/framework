@@ -299,32 +299,32 @@ public abstract class Dao implements JdbcExecutor {
 	public abstract int delete(EntityMapping em,Object id);
 
     /**
-     * Deletes an entity fully by the given id immediately.
+     * Cascade deletes an entity and all dependent records by the given id immediately.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.
      *
      * @throws MappingNotFoundException if {@link EntityMapping} not found for the given entity class.
      */
-    public abstract boolean deleteFully(Class<?> entityClass,Object id) throws MappingNotFoundException;
+    public abstract boolean cascadeDelete(Class<?> entityClass, Object id) throws MappingNotFoundException;
 
     /**
-     * Deletes an entity by the given id immediately.
+     * Cascade deletes an entity and all dependent records by the given id immediately.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.
      *
      * @throws MappingNotFoundException if {@link EntityMapping} not found for the given entity name.
      */
-    public abstract boolean deleteFully(String entityName,Object id) throws MappingNotFoundException;
+    public abstract boolean cascadeDelete(String entityName, Object id) throws MappingNotFoundException;
 
     /**
-     * Deletes an entity by the given id immediately.
+     * Cascade deletes an entity and all dependent records by the given id immediately.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.
      */
-    public abstract boolean deleteFully(EntityMapping em,Object id);
+    public abstract boolean cascadeDelete(EntityMapping em, Object id);
 	
 	/**
 	 * Deletes all the data of the given entity type.

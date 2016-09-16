@@ -31,10 +31,10 @@ public class ModelDeleteExecutor extends ModelExecutorBase {
     }
 
     public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
-        if(null == options || !options.isDeleteFully()) {
+        if(null == options || !options.isCascadeDelete()) {
             return new DeleteOneResult(dao.delete(em, id) > 0);
         }else{
-            return new DeleteOneResult(dao.deleteFully(em, id));
+            return new DeleteOneResult(dao.cascadeDelete(em, id));
         }
     }
 

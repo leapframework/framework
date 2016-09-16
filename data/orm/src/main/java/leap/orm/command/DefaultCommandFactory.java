@@ -37,8 +37,8 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     @Override
-    public DeleteFullyCommand newDeleteFullyCommand(Dao dao, EntityMapping em, Object id) {
-        return new DefaultDeleteFullyCommand(dao, em, id);
+    public CascadeDeleteCommand newCascadeDeleteCommand(Dao dao, EntityMapping em, Object id) {
+        return new DefaultCascadeDeleteCommand(dao, em, id);
     }
 
     @Override
