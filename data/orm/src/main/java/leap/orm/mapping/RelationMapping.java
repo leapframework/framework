@@ -15,38 +15,43 @@
  */
 package leap.orm.mapping;
 
-import java.util.List;
-
 import leap.lang.Args;
+import leap.orm.enums.CascadeDeleteAction;
+
+import java.util.List;
 
 public class RelationMapping {
 
-	protected final String 		       name; 		 	 //relation's name
-	protected final RelationType       type;			 //relation's type
-    protected final String             inverseRelationName;
-	protected final String			   targetEntityName; //target entity's name
-	protected final String			   joinEntityName;	 //join entity's name
-	protected final boolean		       optional;	 	 //is the relation optional ?
-    protected final boolean            virtual;
-	protected final JoinFieldMapping[] joinFields;
+    protected final String              name;             //relation's name
+    protected final RelationType        type;             //relation's type
+    protected final String              inverseRelationName;
+    protected final String              targetEntityName; //target entity's name
+    protected final String              joinEntityName;     //join entity's name
+    protected final boolean             optional;         //is the relation optional ?
+    protected final CascadeDeleteAction onCascadeDelete;
+    protected final boolean             virtual;
+    protected final JoinFieldMapping[]  joinFields;
 
 	public RelationMapping(String name, RelationType type, String inverseRelationName, String targetEntityName, String joinEntityName,
-						   boolean optional, boolean virtual, List<JoinFieldMapping> joinFields) {
+						   boolean optional, CascadeDeleteAction onCascadeDelete,
+                           boolean virtual, List<JoinFieldMapping> joinFields) {
 		Args.notEmpty(name,"name");
 		Args.notNull(type,"type");
         Args.notEmpty(inverseRelationName, "inverseRelationName");
 		Args.notEmpty(targetEntityName,"targetEntityName");
+        Args.notNull(onCascadeDelete, "onCascadeDelete");
 		
 		if(type == RelationType.MANY_TO_MANY){
 			Args.notEmpty(joinEntityName,"joinEntityName");
 		}
-		
+
 		this.name       	  = name;
 		this.type       	  = type;
         this.inverseRelationName = inverseRelationName;
 		this.targetEntityName = targetEntityName;
 		this.joinEntityName   = joinEntityName;
 		this.optional    	  = optional;
+        this.onCascadeDelete  = onCascadeDelete;
         this.virtual          = virtual;
 		this.joinFields  	  = null == joinFields ? new JoinFieldMapping[]{} : joinFields.toArray(new JoinFieldMapping[joinFields.size()]);
     }
@@ -104,6 +109,10 @@ public class RelationMapping {
 		return optional;
 	}
 
+    public CascadeDeleteAction getOnCascadeDelete() {
+        return onCascadeDelete;
+    }
+
     /**
      * Returns true if the relation is not user defined (auto created by system).
      */
@@ -125,4 +134,7 @@ public class RelationMapping {
         return joinEntityName;
     }
 
+    public boolean isSetNullOnCascadeDelete() {
+        return null != onCascadeDelete && onCascadeDelete == CascadeDeleteAction.SET_NULL;
+    }
 }

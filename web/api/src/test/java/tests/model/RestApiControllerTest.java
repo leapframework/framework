@@ -107,6 +107,31 @@ public class RestApiControllerTest extends WebTestBase {
         get("/api/restapi?expand=categories(not_exists)").assertBadRequest();
     }
 
+//    @Test
+//    public void testCreateAndDeleteCascade() {
+//        //create api with categories.
+//        Map<String, Object> data = New.hashMap("name", "test",
+//                                                "title", "test",
+//                                                "categories", new String[]{c1.getId()}
+//                                               );
+//
+//        String apiId = (String) postJson("/api/restapi", data).decodeJsonMap().get("id");
+//
+//        //create root path.
+//        data = New.hashMap("apiId", apiId, "fullPath", "/");
+//        String rootPathId = (String)postJson("/api/restapi/" + apiId + "/paths", data).decodeJsonMap().get("id");
+//
+//        //create child path.
+//        data = New.hashMap("apiId", apiId, "fullPath", "/t", "parentId", rootPathId);
+//        postJson("/api/restapi/" + apiId + "/paths", data).assertOk();
+//
+//        //create operation.
+//        data = New.hashMap("apiId", apiId, "httpMethod", "GET", "name", "hello");
+//        postJson("/api/path/" + rootPathId + "/operations", data).assertOk();
+//
+//        delete("/api/restapi/" + apiId + "?cascade_delete=1").assertOk();
+//    }
+
     @BeforeClass
     public static void initData() {
         RestCategory.deleteAll();

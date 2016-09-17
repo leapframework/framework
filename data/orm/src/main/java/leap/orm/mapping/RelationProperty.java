@@ -25,18 +25,17 @@ import leap.lang.beans.BeanProperty;
 
 public class RelationProperty {
 
-    protected final String  name;
-    protected final boolean many;
-    protected final String  relationName;
-    protected final String  targetEntityName;
-    protected final String  joinEntityName;
+    protected final String       name;
+    protected final boolean      many;
+    protected final String       relationName;
+    protected final String       targetEntityName;
+    protected final String       joinEntityName;
     protected final BeanProperty beanProperty;
 
     public RelationProperty(String name, boolean many, String relationName, String targetEntityName, String joinEntityName, BeanProperty bp) {
         Args.notEmpty(name, "name");
         Args.notEmpty(relationName, "relationName");
         Args.notEmpty(targetEntityName, "targetEntityName");
-
 
         this.name = name;
         this.many = many;

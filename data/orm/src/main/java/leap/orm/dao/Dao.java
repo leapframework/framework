@@ -299,7 +299,7 @@ public abstract class Dao implements JdbcExecutor {
 	public abstract int delete(EntityMapping em,Object id);
 
     /**
-     * Cascade deletes an entity and all dependent records by the given id immediately.
+     * Cascade deletes an entity and all records dependent on the entity.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.
@@ -309,7 +309,7 @@ public abstract class Dao implements JdbcExecutor {
     public abstract boolean cascadeDelete(Class<?> entityClass, Object id) throws MappingNotFoundException;
 
     /**
-     * Cascade deletes an entity and all dependent records by the given id immediately.
+     * Cascade deletes an entity and all records dependent on the entity.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.
@@ -319,7 +319,7 @@ public abstract class Dao implements JdbcExecutor {
     public abstract boolean cascadeDelete(String entityName, Object id) throws MappingNotFoundException;
 
     /**
-     * Cascade deletes an entity and all dependent records by the given id immediately.
+     * Cascade deletes an entity and all records dependent on the entity.
      *
      * <p/>
      * Returns true if delete success, returns false if the record not exists.

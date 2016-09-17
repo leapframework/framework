@@ -23,6 +23,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import leap.lang.enums.Bool;
+import leap.orm.enums.CascadeDeleteAction;
 
 @Target({ElementType.TYPE,ElementType.FIELD})
 @Retention(RUNTIME)
@@ -56,5 +57,13 @@ public @interface ManyToOne {
      * The definitions of {@link JoinField} in this relation.
      */
     JoinField[] fields() default {};
+
+    /**
+     * The action while on cascade delete, valid for optional relation only.
+     *
+     * <p/>
+     * Non optional relation's on delete action must be {@link CascadeDeleteAction#DELETE}.
+     */
+    CascadeDeleteAction onCascadeDelete() default CascadeDeleteAction.SET_NULL;
 
 }

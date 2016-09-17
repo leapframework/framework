@@ -37,15 +37,20 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
 	@Override
 	public boolean execute() {
-        //todo : sort the relations
-        List<RelationMapping> oneToManyRelations = new ArrayList<>();
+        if(em.isSelfReferencing()) {
+            throw new UnsupportedOperationException("Cannot cascade delete self referencing entity '" + em.getEntityName() + "'");
+        }
+
+        Set<CascadeRelation> cascadeRelations = new TreeSet<>(CascadeRelation.COMPARATOR);
         for(RelationMapping rm : em.getRelationMappings()) {
             if(rm.isOneToMany()) {
-                oneToManyRelations.add(rm);
+                EntityMapping   target  = context.getMetadata().getEntityMapping(rm.getTargetEntityName());
+                RelationMapping inverse = target.getRelationMapping(rm.getInverseRelationName());
+                cascadeRelations.add(new CascadeRelation(target, inverse));
             }
         }
 
-        if(oneToManyRelations.isEmpty()) {
+        if(cascadeRelations.isEmpty()) {
             return deleteCommand.execute() > 0;
         }else{
             Object id = deleteCommand.idParameter;
@@ -54,19 +59,14 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
             dao.doTransaction((conn) -> {
 
-                for(RelationMapping rm : oneToManyRelations) {
-                    //find the inverse many-to-one relations.
-
-                    EntityMapping target =
-                            context.getMetadata().getEntityMapping(rm.getTargetEntityName());
-
-                    RelationMapping inverse =
-                            target.getRelationMapping(rm.getInverseRelationName());
+                for(CascadeRelation cr : cascadeRelations) {
+                    EntityMapping   target  = cr.entity;
+                    RelationMapping inverse = cr.relation;
 
                     CriteriaQuery query =
                             dao.createCriteriaQuery(target).whereByReference(inverse, id);
 
-                    if(inverse.isOptional()) {
+                    if(inverse.isOptional() && inverse.isSetNullOnCascadeDelete()) {
                         //update null
                         Map<String,Object> fields = new LinkedHashMap<>();
 
@@ -76,6 +76,22 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
 
                         query.update(fields);
                     }else {
+                        //update null for self referencing relation, such as parentId.
+                        if(target.isSelfReferencing()) {
+
+                            for(RelationMapping rm : target.getSelfReferencingRelations()) {
+                                Map<String,Object> fields = new LinkedHashMap<>();
+
+                                for(JoinFieldMapping jf : rm.getJoinFields()) {
+                                    fields.put(jf.getReferencedFieldName(), null);
+                                }
+
+                                dao.createCriteriaQuery(target.getEntityName())
+                                        .whereByReference(inverse, id)
+                                        .update(fields);
+                            }
+                        }
+
                         //delete
                         query.delete();
                     }
@@ -87,5 +103,28 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
             return result.get();
         }
 	}
+
+    protected static final class CascadeRelation {
+
+        private static final Comparator<CascadeRelation> COMPARATOR = (o1, o2) -> {
+
+            //todo : cyclic reference.
+
+            if(o1.entity.isReferenceTo(o2.entity.getEntityName())) {
+                return -1;
+            }
+
+            return 1;
+        };
+
+        private final EntityMapping   entity;
+        private final RelationMapping relation;
+
+        public CascadeRelation(EntityMapping entity, RelationMapping relation) {
+            this.entity   = entity;
+            this.relation = relation;
+        }
+
+    }
 
 }

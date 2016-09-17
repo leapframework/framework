@@ -31,7 +31,7 @@ import leap.orm.validation.EntityValidator;
 
 import java.util.*;
 
-public class EntityMapping {
+public class EntityMapping extends ExtensibleBase {
 	private static final Log log = LogFactory.get(EntityMapping.class);
 	
 	protected final String						 entityName;
@@ -52,14 +52,16 @@ public class EntityMapping {
 	protected final EntityExecutionInterceptor   deleteInterceptor;
 	protected final EntityExecutionInterceptor   findInterceptor;
 	protected final EntityDomain			     domain;
-	protected final Class<? extends Model>       modelClass;
-	protected final EntityValidator[]            validators;
-	protected final RelationMapping[]			 relationMappings;
-    protected final RelationProperty[]           relationProperties;
-    protected final boolean                      autoCreateTable;
-    protected final boolean                      sharding;
-    protected final boolean                      autoCreateShardingTable;
-    protected final ShardingAlgorithm            shardingAlgorithm;
+	protected final Class<? extends Model> modelClass;
+	protected final EntityValidator[]      validators;
+	protected final RelationMapping[]      relationMappings;
+    protected final RelationProperty[]     relationProperties;
+    protected final boolean                autoCreateTable;
+    protected final boolean                sharding;
+    protected final boolean                autoCreateShardingTable;
+    protected final ShardingAlgorithm      shardingAlgorithm;
+    protected final boolean                selfReferencing;
+    protected final RelationMapping[]      selfReferencingRelations;
 	
 	private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
@@ -122,6 +124,9 @@ public class EntityMapping {
         this.autoCreateShardingTable= autoCreateShardingTable;
         this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
         this.shardingAlgorithm      = shardingAlgorithm;
+
+        this.selfReferencingRelations = evalSelfReferencingRelations();
+        this.selfReferencing = selfReferencingRelations.length > 0;
     }
 
     /**
@@ -435,6 +440,23 @@ public class EntityMapping {
 		return findInterceptor;
 	}
 
+    public RelationMapping[] getSelfReferencingRelations() {
+        return selfReferencingRelations;
+    }
+
+    public boolean isSelfReferencing() {
+        return selfReferencing;
+    }
+
+    public boolean isReferenceTo(String entityName) {
+        for(RelationMapping rm : relationMappings) {
+            if(rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 	private FieldMapping[] evalKeyFieldMappings(){
 		List<FieldMapping> list = New.arrayList();
 		
@@ -580,6 +602,16 @@ public class EntityMapping {
         });
 
         return Collections.unmodifiableMap(singleRelations);
+    }
+
+    private RelationMapping[] evalSelfReferencingRelations() {
+        List<RelationMapping> list = new ArrayList<>();
+        for(RelationMapping rm : relationMappings) {
+            if(rm.isManyToOne() && rm.getTargetEntityName().equalsIgnoreCase(entityName)) {
+                list.add(rm);
+            }
+        }
+        return list.toArray(new RelationMapping[0]);
     }
 	
 	private FieldMapping findOptimisticLockField(){

@@ -22,6 +22,7 @@ import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.beans.BeanProperty;
 import leap.orm.annotation.ManyToOne;
+import leap.orm.enums.CascadeDeleteAction;
 
 public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	
@@ -29,6 +30,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	protected String					    name;
 	protected RelationType				    type;
 	protected Boolean					    optional;
+    protected CascadeDeleteAction           onCascadeDelete = CascadeDeleteAction.SET_NULL;
     protected boolean                       virtual;
     protected String                        inverseRelationName;
 	protected Class<?>                      targetEntityType;
@@ -80,6 +82,14 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 
     public void setOptional(Boolean optional) {
         this.optional = optional;
+    }
+
+    public CascadeDeleteAction getOnCascadeDelete() {
+        return onCascadeDelete;
+    }
+
+    public void setOnCascadeDelete(CascadeDeleteAction onCascadeDelete) {
+        this.onCascadeDelete = onCascadeDelete;
     }
 
     public boolean isVirtual() {
@@ -161,6 +171,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
     public RelationMapping build() {
 		List<JoinFieldMapping> joinFields = Builders.buildList(this.joinFields);
 		
-	    return new RelationMapping(name, type, inverseRelationName, targetEntityName, joinEntityName, isOptional(), virtual, joinFields);
+	    return new RelationMapping(name, type, inverseRelationName, targetEntityName,
+                                   joinEntityName, isOptional(), onCascadeDelete, virtual, joinFields);
     }
 }

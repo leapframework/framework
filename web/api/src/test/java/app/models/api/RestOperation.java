@@ -47,6 +47,7 @@ public class RestOperation extends ModelWithDesc {
 
     @Column
     protected String title;
+
     @Column
     protected String summary;
 

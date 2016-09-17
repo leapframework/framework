@@ -18,6 +18,7 @@ package leap.orm.mapping;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanProperty;
@@ -29,7 +30,7 @@ import leap.orm.validation.FieldValidator;
 
 import java.util.List;
 
-public class FieldMapping {
+public class FieldMapping extends ExtensibleBase {
 	
 	protected final String           fieldName;
 	protected final MType            dataType;

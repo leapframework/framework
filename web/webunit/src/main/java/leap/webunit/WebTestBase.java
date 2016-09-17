@@ -20,6 +20,7 @@ import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.junit.TestBase;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
 import leap.webunit.client.THttpClient;
 import leap.webunit.client.THttpRequest;
@@ -134,6 +135,27 @@ public abstract class WebTestBase extends TestBase {
 		request  = response.request();
 		return response;
 	}
+
+    /**
+     * Sends a POST request to the given path with the given raw json body and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse postJsonRaw(String path, String body) {
+        response = forPost(path)
+                    .setContentType(ContentTypes.APPLICATION_JSON_UTF8)
+                    .setBody(body)
+                    .post();
+        request = response.request();
+        return response;
+    }
+
+    /**
+     * Sends a POST request to the path with the encoded json body of the given value and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse postJson(String path, Object value) {
+        response = forPost(path).setJson(value).post();
+        request = response.request();
+        return response;
+    }
 
     /**
      * Sends a PUT request to the given path and returns the {@link THttpResponse}.

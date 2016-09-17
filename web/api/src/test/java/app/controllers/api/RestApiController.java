@@ -78,6 +78,7 @@ public class RestApiController extends ModelController<RestApi> {
     }
 
     @Path("/{api_id}/paths")
+    @AllowAnonymous
     public final class SubPathsController extends ModelController<RestPath> {
 
         @GET
@@ -103,6 +104,7 @@ public class RestApiController extends ModelController<RestApi> {
     }
 
     @Path("/{api_id}/models")
+    @AllowAnonymous
     public static final class SubModelsControler extends ModelController<RestModel> {
 
         @GET
