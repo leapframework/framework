@@ -410,8 +410,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			col.setName(context.getNamingStrategy().fieldToColumnName(local.getFieldName()));
 		}
 
-        if(null != relation.getOptional() && relation.getOptional()) {
-            col.setNullable(relation.isOptional());
+        if(null != relation.getOptional()) {
+            col.setNullable(relation.getOptional());
         }
 
 		local.setColumn(col);
@@ -430,8 +430,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		FieldMappingBuilder rfmb = targetEmb.findFieldMappingByName(jfmb.getReferencedFieldName());
 
 		if(!lfmb.getColumn().isPrimaryKey() && null != rmb.getOptional()) {
-			lfmb.trySetNullable(rmb.isOptional());
-			lfmb.getColumn().trySetNullable(rmb.isOptional());
+			lfmb.setNullable(rmb.getOptional());
+			lfmb.getColumn().setNullable(rmb.getOptional());
 		}
 
 		//force update length,precision,scale

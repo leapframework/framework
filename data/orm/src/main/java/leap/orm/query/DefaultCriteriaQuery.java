@@ -385,6 +385,31 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
     @Override
+    public CriteriaQuery<T> whereByReference(Class<?> refEntityClass, Object refToId) {
+        EntityMapping target = context.getMetadata().getEntityMapping(refEntityClass);
+        RelationMapping rm = em.tryGetRefRelationMappingOfTargetEntity(target.getEntityName());
+
+        if(null == rm) {
+            throw new IllegalStateException("No unique many-to-one relation in entity '" +
+                                            em.getEntityName() + "' ref to '" + target.getEntityName() + "'");
+        }
+
+        return whereByReference(rm,refToId);
+    }
+
+    @Override
+    public CriteriaQuery<T> whereByReference(String refEntityName, Object refToId) {
+        RelationMapping rm = em.tryGetRefRelationMappingOfTargetEntity(refEntityName);
+
+        if(null == rm) {
+            throw new IllegalStateException("No unique many-to-one relation in entity '" +
+                    em.getEntityName() + "' ref to '" + refEntityName + "'");
+        }
+
+        return whereByReference(rm,refToId);
+    }
+
+    @Override
     public CriteriaQuery<T> whereByReference(RelationMapping rm, Object id) {
         Args.notNull(rm, "relation");
         Assert.isTrue(rm.isManyToOne(), "The relation must be many-to-one");

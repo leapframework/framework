@@ -99,45 +99,47 @@ public class ModelUpdateExecutor extends ModelExecutorBase {
             result.set(update.execute());
         }else {
             dao.doTransaction((conn) -> {
-                update.execute();
+                result.set(update.execute());
 
-                for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
-                    //todo : valid for many-to-many only ?
+                if(result.get() > 0) {
+                    for(Map.Entry<RelationProperty, Object[]> entry : relationProperties.entrySet()) {
+                        //todo : valid for many-to-many only ?
 
-                    RelationProperty rp = entry.getKey();
+                        RelationProperty rp = entry.getKey();
 
-                    RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-                    if(rm.isManyToMany()) {
-                        EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
+                        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+                        if(rm.isManyToMany()) {
+                            EntityMapping joinEntity = md.getEntityMapping(rm.getJoinEntityName());
 
-                        RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
+                            RelationMapping manyToOne1 = joinEntity.tryGetKeyRelationMappingOfTargetEntity(em.getEntityName());
 
-                        String joinIdFieldName1 = manyToOne1.getJoinFields()[0].getLocalFieldName();
+                            String joinIdFieldName1 = manyToOne1.getJoinFields()[0].getLocalFieldName();
 
-                        boolean localFirst = true;
-                        if(!joinEntity.getKeyFieldMappings()[0].getFieldName().equals(joinIdFieldName1)){
-                            localFirst = false;
-                        }
-
-                        Object localId = id;
-
-                        List<Object[]> batchId = new ArrayList<>();
-
-                        for(Object targetId : entry.getValue()) {
-
-                            if(localFirst) {
-                                batchId.add(new Object[]{localId, targetId});
-                            }else{
-                                batchId.add(new Object[]{targetId, localId});
+                            boolean localFirst = true;
+                            if(!joinEntity.getKeyFieldMappings()[0].getFieldName().equals(joinIdFieldName1)){
+                                localFirst = false;
                             }
 
+                            Object localId = id;
+
+                            List<Object[]> batchId = new ArrayList<>();
+
+                            for(Object targetId : entry.getValue()) {
+
+                                if(localFirst) {
+                                    batchId.add(new Object[]{localId, targetId});
+                                }else{
+                                    batchId.add(new Object[]{targetId, localId});
+                                }
+
+                            }
+
+                            //delete
+                            dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", id).delete();
+
+                            //insert
+                            dao.batchInsert(joinEntity, batchId);
                         }
-
-                        //delete
-                        dao.createCriteriaQuery(joinEntity).where(joinIdFieldName1 + " = ?", id).delete();
-
-                        //insert
-                        dao.batchInsert(joinEntity, batchId);
                     }
                 }
 

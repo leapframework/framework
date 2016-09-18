@@ -172,6 +172,22 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 		EntityMapping em = context.getEntityMapping();
 		return context.getDao().delete(em, id) > 0;
 	}
+
+    @Instrument
+    public static void cascadeDelete(Object id) throws RecordNotDeletedException{
+        ModelContext context = context();
+        EntityMapping em = context.getEntityMapping();
+        if(!context.getDao().cascadeDelete(em, id)) {
+            throw new RecordNotDeletedException("Record not deleted, checks is record exists or failed to delete?");
+        }
+    }
+
+    @Instrument
+    public static boolean tryCascadeDelete(Object id){
+        ModelContext context = context();
+        EntityMapping em = context.getEntityMapping();
+        return context.getDao().cascadeDelete(em, id);
+    }
 	
 	/**
 	 * Deletes all the records of this model.

@@ -176,6 +176,15 @@ public abstract class WebTestBase extends TestBase {
     }
 
     /**
+     * Sends a PATCH request to the given path and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse patchJson(String path, Object value) {
+        response = client().request(Method.PATCH,path(path)).setJson(value).send();
+        request  = response.request();
+        return response;
+    }
+
+    /**
      * Sends a HEAD request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse head(String path) {

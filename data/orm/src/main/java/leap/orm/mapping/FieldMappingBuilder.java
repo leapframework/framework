@@ -428,7 +428,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	}
 	
 	public boolean isNullable(){
-		return null == nullable || nullable;
+		return null == nullable ? false : nullable;
 	}
 	
 	public Boolean getNullable() {

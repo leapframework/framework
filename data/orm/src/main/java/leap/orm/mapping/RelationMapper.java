@@ -179,6 +179,10 @@ public class RelationMapper implements Mapper {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
 
+        if(emb.getEntityName().equalsIgnoreCase("RestCategory") && rmb.getTargetEntityName().equalsIgnoreCase("RestApi")) {
+            System.out.println();
+        }
+
 		//resolve relation's name
 		if(Strings.isEmpty(rmb.getName())){
 			rmb.setName(targetEmb.getEntityName());
@@ -207,8 +211,8 @@ public class RelationMapper implements Mapper {
 				updateManyToOneLocalField(context, emb, targetEmb, rmb, joinField, localField);
 			}
 
-            if(null == rmb.getOptional() && localField.isNullable()) {
-                rmb.setOptional(true);
+            if(null == rmb.getOptional()) {
+                rmb.setOptional(localField.isNullable());
             }
 
             if(localField.isId()) {

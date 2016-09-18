@@ -134,6 +134,35 @@ public class RestApiControllerTest extends WebTestBase {
         delete("/api/restapi/" + apiId + "?cascade_delete=1").assertSuccess();
     }
 
+    @Test
+    public void testCreateAndUpdateRelationalProperty() {
+        //create api with categories.
+        Map<String, Object> data = New.hashMap("name", "test",
+                                                "title", "test",
+                                                "categories", new String[]{c1.getId()}
+        );
+
+        String apiId = (String) postJson("/api/restapi", data).decodeJsonMap().get("id");
+        assertNotNull(apiId);
+
+        List<RestCategory> categories = RestCategory.<RestCategory>query().whereByReference(RestApi.class, apiId).list();
+        assertEquals(1, categories.size());
+        assertEquals(c1.getId(), categories.get(0).getCategoryId());
+
+        data = New.hashMap("categories", c2.getId());
+        patchJson("/api/restapi/" + apiId, data).assertSuccess();
+        categories = RestCategory.<RestCategory>query().whereByReference(RestApi.class, apiId).list();
+        assertEquals(1, categories.size());
+        assertEquals(c2.getId(), categories.get(0).getCategoryId());
+
+        data = New.hashMap("categories", new String[]{c1.getId(), c2.getId()});
+        patchJson("/api/restapi/" + apiId, data).assertSuccess();
+        categories = RestCategory.<RestCategory>query().whereByReference(RestApi.class, apiId).list();
+        assertEquals(2, categories.size());
+
+        RestApi.cascadeDelete(apiId);
+    }
+
     @BeforeClass
     public static void initData() {
         RestCategory.deleteAll();

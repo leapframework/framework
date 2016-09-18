@@ -42,9 +42,9 @@ public class DefaultEntityValidator implements EntityValidator {
 
         if(null != fields) {
             for(String name : fields) {
-                FieldMapping fm = em.getFieldMapping(name);
+                FieldMapping fm = em.tryGetFieldMapping(name);
                 if(null == fm) {
-                    throw new IllegalStateException("Field '" + name + "' not found in entity '" + em.getEntityName() + "'");
+                    continue;
                 }
                 if(!validateField(entity, validation, maxErrors, fm)) {
                     return false;

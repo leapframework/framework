@@ -71,7 +71,7 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
                         Map<String,Object> fields = new LinkedHashMap<>();
 
                         for(JoinFieldMapping jf : inverse.getJoinFields()) {
-                            fields.put(jf.getReferencedFieldName(), null);
+                            fields.put(jf.getLocalFieldName(), null);
                         }
 
                         query.update(fields);

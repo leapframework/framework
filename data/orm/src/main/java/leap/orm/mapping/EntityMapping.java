@@ -69,6 +69,7 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String,RelationMapping> nameToRelations;
     private final Map<String,RelationMapping> primaryKeyRelations;
     private final Map<String,RelationMapping> targetEntityRelations;
+    private final Map<String,RelationMapping> referenceToRelations;
     private final FieldMapping                shardingField;
 	
 	public EntityMapping(String entityName,
@@ -111,6 +112,7 @@ public class EntityMapping extends ExtensibleBase {
         this.nameToRelations        = createNameToRelationsMap();
         this.primaryKeyRelations    = createPrimaryKeyRelations();
         this.targetEntityRelations  = createTargetEntityRelations();
+        this.referenceToRelations   = createReferenceToRelations();
         this.whereFieldMappings     = evalWhereFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
@@ -221,6 +223,16 @@ public class EntityMapping extends ExtensibleBase {
      */
     public RelationMapping tryGetRelationMappingOfTargetEntity(String entityName) {
         return targetEntityRelations.get(entityName);
+    }
+
+    /**
+     * Returns the unique many-to-one {@link RelationMapping} reference to the target entity name.
+     *
+     * <p/>
+     * Returns null if no relation or multi relations has been found fo the target entity name.
+     */
+    public RelationMapping tryGetRefRelationMappingOfTargetEntity(String entityName) {
+        return referenceToRelations.get(entityName);
     }
 
     /**
@@ -592,6 +604,31 @@ public class EntityMapping extends ExtensibleBase {
             }
 
             list.add(r);
+        }
+
+        Map<String, RelationMapping> singleRelations = new HashMap<>();
+        map.forEach((name, list) -> {
+            if(list.size() == 1) {
+                singleRelations.put(name, list.get(0));
+            }
+        });
+
+        return Collections.unmodifiableMap(singleRelations);
+    }
+
+    private Map<String, RelationMapping> createReferenceToRelations() {
+        Map<String, List<RelationMapping>> map = new HashMap<>();
+
+        for(RelationMapping r : relationMappings) {
+            if(r.isManyToOne()) {
+                List<RelationMapping> list = map.get(r.getTargetEntityName());
+                if (null == list) {
+                    list = New.arrayList();
+                    map.put(r.getTargetEntityName(), list);
+                }
+
+                list.add(r);
+            }
         }
 
         Map<String, RelationMapping> singleRelations = new HashMap<>();

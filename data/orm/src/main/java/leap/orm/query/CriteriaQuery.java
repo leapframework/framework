@@ -282,6 +282,24 @@ public interface CriteriaQuery<T> extends Query<T> {
      * The relation must be many-to-one.
      */
     @Internal
+    CriteriaQuery<T> whereByReference(Class<?> refEntityClass, Object refToId);
+
+    /**
+     * Just like where("parentId = ?", parentId).
+     *
+     * <p/>
+     * The relation must be many-to-one.
+     */
+    @Internal
+    CriteriaQuery<T> whereByReference(String refEntityName, Object refToId);
+
+    /**
+     * Just like where("parentId = ?", parentId).
+     *
+     * <p/>
+     * The relation must be many-to-one.
+     */
+    @Internal
     CriteriaQuery<T> whereByReference(RelationMapping refRelation, Object refToId);
 
     /**
