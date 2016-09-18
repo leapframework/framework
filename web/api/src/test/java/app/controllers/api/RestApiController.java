@@ -53,7 +53,7 @@ public class RestApiController extends ModelController<RestApi> {
 
     @POST
     public ApiResponse<RestApi> createRestApi(Partial<RestApi> api) {
-        return create(api);
+        return createAndReturn(api);
     }
 
     @AllowAnonymous

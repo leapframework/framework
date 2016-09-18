@@ -399,7 +399,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             JoinFieldMapping jf = rm.getJoinFields()[i];
 
             s.append(builder.alias).append('.')
-                    .append(jf.getReferencedFieldName())
+                    .append(jf.getLocalFieldName())
                     .append("=?");
         }
 
@@ -437,7 +437,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		where = expression;
 		
 		if(null != args && args.length > 0){
-			this.whereParameters = new ArrayParams(args);
+            if(args.length == 1 && args[0] instanceof ArrayParams){
+                this.whereParameters = (ArrayParams)args[0];
+            }else{
+                this.whereParameters = new ArrayParams(args);
+            }
 		}
 		
 	    return this;
@@ -709,7 +713,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 		
 		protected SqlBuilder updateSetColumns(Map<String, Object> columns, Map<String,Object> params) {
-			sql.append("update ").append(table).append(" set ");
+			sql.append("update ").append(table).append(" ").append(alias).append(" set ");
 			
             int index = 0;
             for(Entry<String, Object> entry : columns.entrySet()){
@@ -721,7 +725,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     sql.append(",");
                 }
                 
-                sql.append(column).append("=").append(':').append(param);
+                sql.append(alias).append('.').append(column).append("=").append(':').append(param);
                 
                 params.put(param, value);
                 

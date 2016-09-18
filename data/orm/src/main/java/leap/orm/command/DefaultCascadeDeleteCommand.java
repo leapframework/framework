@@ -53,7 +53,7 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
         if(cascadeRelations.isEmpty()) {
             return deleteCommand.execute() > 0;
         }else{
-            Object id = deleteCommand.idParameter;
+            Object id = deleteCommand.id;
 
             AtomicBoolean result = new AtomicBoolean(false);
 
@@ -83,7 +83,7 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
                                 Map<String,Object> fields = new LinkedHashMap<>();
 
                                 for(JoinFieldMapping jf : rm.getJoinFields()) {
-                                    fields.put(jf.getReferencedFieldName(), null);
+                                    fields.put(jf.getLocalFieldName(), null);
                                 }
 
                                 dao.createCriteriaQuery(target.getEntityName())
@@ -111,10 +111,10 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
             //todo : cyclic reference.
 
             if(o1.entity.isReferenceTo(o2.entity.getEntityName())) {
-                return -1;
+                return 1;
             }
 
-            return 1;
+            return -1;
         };
 
         private final EntityMapping   entity;

@@ -19,7 +19,6 @@
 package app.models.api;
 
 import app.models.api.base.ModelBase;
-import app.models.api.base.ModelWithTitle;
 import leap.lang.enums.Bool;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.ManyToOne;
@@ -29,7 +28,7 @@ import leap.orm.annotation.Table;
 public class Category extends ModelBase {
 
     @Column
-    @ManyToOne(Category.class)
+    @ManyToOne(target = Category.class, optional = Bool.TRUE)
     protected String parentId;
 
     @Column(nullable = Bool.FALSE)

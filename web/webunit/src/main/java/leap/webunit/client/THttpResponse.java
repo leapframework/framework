@@ -311,4 +311,11 @@ public interface THttpResponse {
      */
 	THttpResponse assertCharsetEquals(String expectedCharset);
 
+    /**
+     * Asserts the response body is json format.
+     */
+    default THttpResponse assertJsonBody() {
+        getJson();
+        return this;
+    }
 }

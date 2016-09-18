@@ -31,6 +31,7 @@ import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
 import leap.web.security.annotation.*;
+import leap.web.security.csrf.CSRF;
 import leap.web.security.csrf.CsrfHandler;
 import leap.web.security.path.*;
 import leap.web.security.permission.PermissionManager;
@@ -146,6 +147,11 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         State state = resolveAuthentication(request,response,context);
         if(state.isIntercepted()){
             return state;
+        }
+
+        //Disable csrf if anonymous access.
+        if(!context.getAuthentication().isAuthenticated()) {
+            CSRF.ignore(request);
         }
 
         //Handles request if login

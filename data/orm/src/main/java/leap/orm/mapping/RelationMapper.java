@@ -178,7 +178,7 @@ public class RelationMapper implements Mapper {
 	protected void processManyToOneMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
-		
+
 		//resolve relation's name
 		if(Strings.isEmpty(rmb.getName())){
 			rmb.setName(targetEmb.getEntityName());
@@ -207,12 +207,18 @@ public class RelationMapper implements Mapper {
 				updateManyToOneLocalField(context, emb, targetEmb, rmb, joinField, localField);
 			}
 
-            if(localField.isId()) {
-                joinField.setLocalPrimaryKey(true);
+            if(null == rmb.getOptional() && localField.isNullable()) {
+                rmb.setOptional(true);
             }
 
+            if(localField.isId()) {
+                joinField.setLocalPrimaryKey(true);
+            }else{
+                localField.setNullable(rmb.isOptional());
+                localField.getColumn().setNullable(rmb.isOptional());
+            }
 		}
-		
+
 		//create foreign key
 		createManyToOneForeignKey(context, emb, targetEmb, rmb);
 	}

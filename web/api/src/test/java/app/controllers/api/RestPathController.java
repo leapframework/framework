@@ -35,7 +35,7 @@ import leap.web.security.annotation.AllowAnonymous;
 import java.util.List;
 import java.util.Map;
 
-@Path("/path")
+@Path("path")
 @AllowAnonymous
 public class RestPathController extends ModelController<RestPath> {
 
@@ -50,6 +50,7 @@ public class RestPathController extends ModelController<RestPath> {
     }
 
     @Path("/{path_id}/operations")
+    @AllowAnonymous
     public static final class ApiOperationController extends ModelController<RestOperation> {
 
         @GET
