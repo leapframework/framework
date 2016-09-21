@@ -32,11 +32,18 @@ import javax.sql.DataSource;
 
 public class WhereColumnTest extends OrmTestCase {
     @Inject
-    @SqlKey(value = "testSingleWhereColumn.ECodeModel.all",datasource = "h2")
+    @SqlKey(value = "testSingleWhereColumn.ECodeModel.all")
     private DaoCommand selectAllCommand;
-    @Inject
     @SqlKey(value = "testSqlDatasource",datasource = "h2")
     private DaoCommand testSqlDatasource;
+
+    @Test
+    public void testDaoCommandInject(){
+        assertNotNull(selectAllCommand);
+        assertNotNull(testSqlDatasource);
+
+    }
+
     @Test
     public void setTestSqlDatasource(){
         if(dao.getOrmContext().getDataSource()!=factory.getBean(DataSource.class,"h2")){
