@@ -24,12 +24,10 @@ import leap.web.annotation.http.DELETE;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
 
+/**
+ * Empty controller for testing only.
+ */
 @Path("restcategory")
 public class RestCateController extends ModelController<RestCategory> {
-
-    @DELETE("/delete")
-    public ApiResponse deleteRestCategory(String apiId, String categoryId) {
-        return ApiResponse.OK;
-    }
 
 }
