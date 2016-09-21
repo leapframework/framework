@@ -265,7 +265,7 @@
             </xsd:sequence>
             <xsd:attribute name="class" type="xsd:string" use="required"/>
             <xsd:attribute name="if-profile"  use="optional" type="xsd:string"/>
-            <xsd:attribute name="sort-order" use="optional" type="xsd:int"/>
+            <xsd:attribute name="sort-order" use="optional" type="xsd:float"/>
         </xsd:complexType>
     </xsd:element>
 
