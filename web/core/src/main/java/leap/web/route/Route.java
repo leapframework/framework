@@ -178,6 +178,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
      * Sets is allow client only access.
      */
     void setAllowClientOnly(Boolean allowClientOnly);
+
+    /**
+     * Optional. Returns the permissions.
+     */
+    String[] getPermissions();
+
+    /**
+     * Sets the permissions.
+     */
+    void setPermissions(String[] permissions);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

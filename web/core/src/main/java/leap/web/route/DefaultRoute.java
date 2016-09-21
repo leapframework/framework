@@ -51,6 +51,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     protected Boolean allowClientOnly;
 	protected boolean acceptValidationError;
 	protected boolean httpsOnly;
+    protected String[] permissions;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -277,6 +278,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 
     public void setHttpsOnly(boolean httpsOnly) {
         this.httpsOnly = httpsOnly;
+    }
+
+    @Override
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    @Override
+    public void setPermissions(String[] permissions) {
+        this.permissions = permissions;
     }
 
     @Override

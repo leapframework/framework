@@ -84,11 +84,15 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 				spb(route).setAllowRememberMe(ar.value());
 			}
 
-            Permissions permissions = action.searchAnnotation(Permissions.class);
-            if(null != permissions) {
-                spb(route).setPermissionsAllowed(permissions.value());
+            if(null != route.getPermissions()) {
+                spb(route).setPermissionsAllowed(route.getPermissions());
+            }else{
+                Permissions permissions = action.searchAnnotation(Permissions.class);
+                if(null != permissions) {
+                    spb(route).setPermissionsAllowed(permissions.value());
+                }
             }
-	        
+
 	        Secured secured = action.searchAnnotation(Secured.class);
 	        if(null != secured){
 	            spb(route).setAllowRememberMe(secured.allowRememberMe());

@@ -23,6 +23,7 @@ import leap.web.Response;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.mvc.ApiErrorHandler;
+import leap.web.route.Route;
 import leap.web.security.SecurityConfigurator;
 import leap.web.security.SecurityContextHolder;
 import leap.web.security.SecurityFailureHandler;
@@ -36,8 +37,9 @@ public class SecurityConfigProcessor implements ApiConfigProcessor {
     @Override
     public void preProcess(ApiConfigurator c) {
         final String prefix = Paths.suffixWithSlash(c.config().getBasePath());
-        final ApiSecurityFailureHandler failureHandler = new ApiSecurityFailureHandler();
 
+        //security failure handler.
+        final ApiSecurityFailureHandler failureHandler = new ApiSecurityFailureHandler();
         sc.setPathPrefixFailureHandler(prefix, failureHandler);
     }
 
