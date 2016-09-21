@@ -20,7 +20,7 @@ import leap.db.model.DbSchemaObjectName;
 
 public interface DropPrimaryKey extends DbCommand {
 	
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return -1;
 	}
 

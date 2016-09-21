@@ -18,10 +18,7 @@ package leap.orm.mapping;
 import leap.core.el.EL;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumnBuilder;
-import leap.lang.Buildable;
-import leap.lang.Classes;
-import leap.lang.Ordered;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcTypes;
@@ -40,8 +37,8 @@ import java.util.List;
 
 public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	
-	public static final int MIDDLE_SORT_ORDER = Column.ORDER_MIDDLE;
-	public static final int LAST_SORT_ORDER   = Column.ORDER_LAST;
+	public static final float MIDDLE_SORT_ORDER = Column.ORDER_MIDDLE;
+	public static final float LAST_SORT_ORDER   = Column.ORDER_LAST;
 
     protected String                fieldName;
     protected MType                 dataType;
@@ -70,7 +67,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected FieldDomain           domain;
     protected Annotation[]          annotations;
     protected List<FieldValidator>  validators;
-    protected Integer               sortOrder;
+    protected Float                 sortOrder;
     protected ReservedMetaFieldName reservedMetaFieldName;
     protected boolean               sharding;
     protected String                serializeFormat;
@@ -612,7 +609,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 	
-	public int getSortOrder() {
+	public float getSortOrder() {
 		if(null == sortOrder){
 			if(null != column && column.isPrimaryKey()){
 				sortOrder = MINIMUM_SORT_ORDER;
@@ -623,12 +620,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return sortOrder;
 	}
 	
-	public FieldMappingBuilder setSortOrder(Integer sortOrder) {
+	public FieldMappingBuilder setSortOrder(Float sortOrder) {
 		this.sortOrder = sortOrder;
 		return this;
 	}
 	
-	public FieldMappingBuilder trySetSortOrder(Integer sortOrder){
+	public FieldMappingBuilder trySetSortOrder(Float sortOrder){
 		if(null == this.sortOrder){
 			this.sortOrder = sortOrder;
 		}

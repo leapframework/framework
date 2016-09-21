@@ -19,19 +19,9 @@ import leap.htpl.HtplDocument;
 import leap.htpl.HtplEngine;
 import leap.htpl.ast.Element;
 import leap.htpl.ast.Node;
+import leap.lang.OrderedBase;
 
-public abstract class AbstractElementProcessor implements ElementProcessor {
-	
-	private int sortOrder;
-	
-	@Override
-    public int getSortOrder() {
-	    return sortOrder;
-    }
-	
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
-	}
+public abstract class AbstractElementProcessor extends OrderedBase implements ElementProcessor {
 	
 	@Override
 	public Node processEndElement(HtplEngine engine, HtplDocument doc, Element e) {

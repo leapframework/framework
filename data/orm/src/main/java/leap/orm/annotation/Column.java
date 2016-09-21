@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import leap.lang.Ordered;
 import leap.lang.enums.Bool;
 import leap.lang.jdbc.JdbcTypes;
 
@@ -27,8 +28,8 @@ import leap.lang.jdbc.JdbcTypes;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Column {
     
-    int ORDER_MIDDLE = 50;
-    int ORDER_LAST   = 1000;
+    float ORDER_MIDDLE = 50.0f;
+    float ORDER_LAST   = 1000.0f;
 	
 	/**
 	 * (Optional) The name of the mapping column.
@@ -95,7 +96,7 @@ public @interface Column {
 	/**
 	 * The sort order of column.
 	 */
-	int order() default Integer.MIN_VALUE;
+	float order() default Ordered.MINIMUM_SORT_ORDER;
 
     /**
      * Sets the serialize format.

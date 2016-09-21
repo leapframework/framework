@@ -43,6 +43,6 @@ public interface BeanDefinitionConfigurator {
     /**
      * Sets bean sort order
      */
-    void setSortOrder(int order);
+    void setSortOrder(float order);
 
 }

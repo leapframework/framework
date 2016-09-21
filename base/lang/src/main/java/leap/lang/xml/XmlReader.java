@@ -219,6 +219,14 @@ public interface XmlReader extends Closeable,Sourced {
     
     int getIntAttribute(String localName,int defaultValue);
 
+    Float getFloatAttribute(QName name);
+
+    Float getFloatAttribute(String localName);
+
+    float getFloatAttribute(QName name,float defaultValue);
+
+    float getFloatAttribute(String localName,float defaultValue);
+
     //get required
     String getRequiredElementTextAndEnd();
 
@@ -288,6 +296,10 @@ public interface XmlReader extends Closeable,Sourced {
     int resolveIntAttribute(QName name,int defaultValue);
     
     int resolveIntAttribute(String localName,int defaultValue);
+
+    float resolveFloatAttribute(QName name,int defaultValue);
+
+    float resolveFloatAttribute(String localName,int defaultValue);
 
     //resolve required.
 

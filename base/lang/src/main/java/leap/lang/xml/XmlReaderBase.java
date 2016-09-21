@@ -305,8 +305,32 @@ public abstract class XmlReaderBase implements XmlReader {
 		String value = getAttribute(name);
 		return Strings.isEmpty(value) ? defaultValue : Converts.toInt(value);
     }
-	
-	@Override
+
+    @Override
+    public Float getFloatAttribute(QName name) {
+        String value = getAttribute(name);
+        return Strings.isEmpty(value) ? null : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public Float getFloatAttribute(String localName) {
+        String value = getAttribute(localName);
+        return Strings.isEmpty(value) ? null : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float getFloatAttribute(QName name, float defaultValue) {
+        String value = getAttribute(name);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float getFloatAttribute(String localName, float defaultValue) {
+        String value = getAttribute(localName);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
     public int getRequiredIntAttribute(QName name) {
 	    return Converts.toInt(getRequiredAttribute(name));
     }
@@ -452,7 +476,19 @@ public abstract class XmlReaderBase implements XmlReader {
 		return Strings.isEmpty(value) ? defaultValue : Converts.toInt(value);
     }
 
-	@Override
+    @Override
+    public float resolveFloatAttribute(QName name, int defaultValue) {
+        String value = resolveAttribute(name);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float resolveFloatAttribute(String localName, int defaultValue) {
+        String value = resolveAttribute(localName);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
     public int resolveRequiredIntAttribute(QName name) {
 		return Converts.toInt(resolveRequiredAttribute(name));
     }

@@ -17,9 +17,9 @@ package leap.lang;
 
 public interface Ordered {
 	
-	int MINIMUM_SORT_ORDER = Integer.MIN_VALUE;
-	int MAXIMUM_SORT_ORDER = Integer.MAX_VALUE;
+	float MINIMUM_SORT_ORDER = Float.MIN_VALUE;
+	float MAXIMUM_SORT_ORDER = Float.MAX_VALUE;
 	
-	int getSortOrder();
+	float getSortOrder();
 
 }

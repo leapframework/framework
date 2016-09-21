@@ -15,17 +15,8 @@
  */
 package leap.htpl.processor;
 
-public abstract class AbstractDirectiveProcessor implements DirectiveProcessor {
+import leap.lang.OrderedBase;
 
-	protected int sortOrder;
-	
-	@Override
-    public int getSortOrder() {
-	    return sortOrder;
-    }
-	
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
-	}
-	
+public abstract class AbstractDirectiveProcessor extends OrderedBase implements DirectiveProcessor {
+
 }

@@ -214,7 +214,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 		}
 		
 		@Override
-        public int getSortOrder() {
+        public float getSortOrder() {
 	        return -1;
         }
 
@@ -266,7 +266,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
         }
 
         @Override
-        public int getSortOrder() {
+        public float getSortOrder() {
             return 0;
         }
     }

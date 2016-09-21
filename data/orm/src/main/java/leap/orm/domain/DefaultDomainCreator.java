@@ -16,6 +16,7 @@
 package leap.orm.domain;
 
 import leap.core.el.EL;
+import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
@@ -48,7 +49,7 @@ public class DefaultDomainCreator implements DomainCreator {
         Boolean update            = fd.update().getValue();
         String  insertValue       = fd.insertValue();
         String  updateValue       = fd.updateValue();
-        Integer sortOrder         = fd.order() == Integer.MIN_VALUE ? null : fd.order();
+        Float sortOrder           = fd.order() == Ordered.MINIMUM_SORT_ORDER ? null : fd.order();
         boolean override          = fd.override();
         
         EntityDomain entityDomain = null;

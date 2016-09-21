@@ -7,7 +7,7 @@ import leap.lang.Sourced;
 
 public interface BeanDefinition extends TypeDefinition, Sourced,Ordered {
 	
-	int DEFAULT_SORT_ORDER = 100;
+	float DEFAULT_SORT_ORDER = 100.0f;
 
     /**
      * Optional. Returns the bean id.
