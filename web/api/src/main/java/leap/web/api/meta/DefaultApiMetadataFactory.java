@@ -207,6 +207,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
 
+        context.getConfig().getResourceTypes().values().forEach((t) -> {
+            if(null == m.tryGetModel(t)) {
+                //create model for resource type.
+                context.getMTypeContainer().getMType(t);
+            }
+        });
+
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
             m.addModel(new MApiModelBuilder(ct));
         });
@@ -370,29 +377,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             return;
         }
 
-        Class<?> resourceType = null;
-
-        Resource resource = route.getAction().searchAnnotation(Resource.class);
-        if(null != resource) {
-            resourceType = resource.value();
-        }
-
-        if(null != route.getAction().getController()) {
-            ResourceWrapper rw = route.getAction().getControllerAnnotation(ResourceWrapper.class);
-            if(null != rw) {
-                Class<?> c = route.getAction().getController().getClass();
-
-                if(c.getTypeParameters().length == 1) {
-                    resourceType = c.getTypeParameters()[0].getGenericDeclaration();
-                }else {
-                    Class<?>[] types = Types.getActualTypeArguments(c.getGenericSuperclass());
-                    if(types.length == 1) {
-                        resourceType = types[0];
-                    }
-                }
-            }
-        }
-
+        Class<?> resourceType = context.getConfig().getResourceTypes().get(route);
         if(null != resourceType) {
             MApiModelBuilder model = m.tryGetModel(resourceType);
             if(null != model) {
@@ -400,7 +385,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }else{
                 op.addTag(resourceType.getSimpleName());
             }
-
         }
     }
 

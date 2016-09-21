@@ -154,4 +154,8 @@ public interface ApiConfigurator {
 	 */
 	ApiConfigurator addRoute(Route route);
 
+    /**
+     * Sets the resource type of the route.
+     */
+    ApiConfigurator setResourceType(Route route, Class<?> resourceType);
 }

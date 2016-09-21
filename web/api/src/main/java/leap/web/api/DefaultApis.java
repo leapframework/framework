@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import leap.core.annotation.Inject;
 import leap.lang.Args;
+import leap.lang.Types;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.http.QueryStringBuilder;
@@ -30,11 +31,12 @@ import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectField;
 import leap.web.App;
 import leap.web.AppInitializable;
+import leap.web.api.annotation.Resource;
+import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.route.Route;
 
@@ -206,11 +208,42 @@ public class DefaultApis implements Apis, AppInitializable  {
 				if(!c.config().isCorsDisabled() && !route.isCorsDisabled()) {
 					route.setCorsEnabled(true);
 				}
-				
+
+                resolveResourceType(app, c, route);
+
 				c.addRoute(route);
 			}
 		}
 	}
+
+    protected void resolveResourceType(App app, ApiConfigurator c , Route route) {
+        Class<?> resourceType = null;
+
+        Resource resource = route.getAction().searchAnnotation(Resource.class);
+        if(null != resource) {
+            resourceType = resource.value();
+        }
+
+        if(null != route.getAction().getController()) {
+            ResourceWrapper rw = route.getAction().getControllerAnnotation(ResourceWrapper.class);
+            if(null != rw) {
+                Class<?> cls = route.getAction().getController().getClass();
+
+                if(cls.getTypeParameters().length == 1) {
+                    resourceType = cls.getTypeParameters()[0].getGenericDeclaration();
+                }else {
+                    Class<?>[] types = Types.getActualTypeArguments(cls.getGenericSuperclass());
+                    if(types.length == 1) {
+                        resourceType = types[0];
+                    }
+                }
+            }
+        }
+
+        if(null != resourceType) {
+            c.setResourceType(route, resourceType);
+        }
+    }
 
     protected void postLoadApi(App app, ApiConfig c, ApiMetadata m) {
 

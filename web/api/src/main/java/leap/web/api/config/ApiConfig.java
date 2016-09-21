@@ -143,4 +143,9 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns all the routes in this api.
 	 */
 	Set<Route> getRoutes();
+
+    /**
+     * Returns all the resource types of route.
+     */
+    Map<Route, Class<?>> getResourceTypes();
 }

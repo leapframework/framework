@@ -53,6 +53,8 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
     protected Map<String, MApiResponse> commonResponses  = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
+    protected Map<Route, Class<?>> resourceTypes    = new HashMap<>();
+    protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -277,6 +279,17 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     public ApiConfigurator addRoute(Route route) {
 		routes.add(route);
 	    return this;
+    }
+
+    @Override
+    public Map<Route, Class<?>> getResourceTypes() {
+        return resourceTypesImv;
+    }
+
+    @Override
+    public ApiConfigurator setResourceType(Route route, Class<?> resourceType) {
+        resourceTypes.put(route, resourceType);
+        return this;
     }
 
     @Override

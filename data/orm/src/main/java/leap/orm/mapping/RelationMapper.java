@@ -179,10 +179,6 @@ public class RelationMapper implements Mapper {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
 
-        if(emb.getEntityName().equalsIgnoreCase("RestCategory") && rmb.getTargetEntityName().equalsIgnoreCase("RestApi")) {
-            System.out.println();
-        }
-
 		//resolve relation's name
 		if(Strings.isEmpty(rmb.getName())){
 			rmb.setName(targetEmb.getEntityName());
