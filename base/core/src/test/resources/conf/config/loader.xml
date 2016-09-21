@@ -47,4 +47,19 @@
 
     </if>
 
+    <loader class="tested.TestPropertyLoader" sort-order="10">
+        <property name="name"  value="sortOrderTestProp"/>
+        <property name="value" value="10"/>
+    </loader>
+
+    <loader class="tested.TestPropertyLoader" sort-order="10.1">
+        <property name="name"  value="sortOrderTestProp"/>
+        <property name="value" value="10.1"/>
+    </loader>
+
+    <loader class="tested.TestPropertyLoader" sort-order="9.9">
+        <property name="name"  value="sortOrderTestProp"/>
+        <property name="value" value="9"/>
+    </loader>
+
 </config>

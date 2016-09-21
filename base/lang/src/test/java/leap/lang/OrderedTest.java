@@ -18,24 +18,27 @@
 
 package leap.lang;
 
-public class OrderedBase implements Ordered {
+import leap.junit.TestBase;
+import org.junit.Test;
 
-    protected float sortOrder;
+import java.util.Set;
+import java.util.TreeSet;
 
-    public OrderedBase() {
+public class OrderedTest extends TestBase {
 
+    @Test
+    public void testTreeSet() {
+        Set<OrderedBase> set = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
+
+        set.add(new OrderedBase(10));
+        set.add(new OrderedBase(9));
+        set.add(new OrderedBase(9.1f));
+
+        OrderedBase[] items = set.toArray(new OrderedBase[0]);
+
+        assertTrue(items[0].getSortOrder() == 9.0f);
+        assertTrue(items[1].getSortOrder() == 9.1f);
+        assertTrue(items[2].getSortOrder() == 10.0f);
     }
 
-    public OrderedBase(float sortOrder) {
-        this.sortOrder = sortOrder;
-    }
-
-    @Override
-    public float getSortOrder() {
-        return sortOrder;
-    }
-
-    public void setSortOrder(float sortOrder) {
-        this.sortOrder = sortOrder;
-    }
 }

@@ -294,7 +294,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
 
         String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
-        float  sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
+        float  sortOrder    = reader.resolveFloatAttribute(SORT_ORDER_ATTRIBUTE, 100);
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
 
