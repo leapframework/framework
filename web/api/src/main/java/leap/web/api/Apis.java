@@ -16,6 +16,7 @@
 package leap.web.api;
 
 import java.util.Map;
+import java.util.Set;
 
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
@@ -31,23 +32,34 @@ import leap.web.api.meta.model.MApiResponseBuilder;
 public interface Apis {
 
 	/**
-	 * Returns an immutable {@link Map} contains all the {@link ApiConfigurator}.
+	 * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
 	 */
-	Map<String, ApiConfigurator> configurators();
+	Set<ApiConfigurator> getConfigurators();
 	
 	/**
-	 * Returns an immutable {@link Map} contains all the api configurations.
+	 * Returns an immutable {@link Set} contains all the api configurations.
 	 */
-	Map<String, ApiConfig> configurations();
-	
-	/**
-	 * Returns an immutable {@link Map} contains all the api metadatas.
+	Set<ApiConfig> getConfigurations();
+
+    /**
+     * Returns the configurator of the api.
      *
-     * <p/>
-     * The key is lower-case.
-	 */
-	Map<String, ApiMetadata> metadatas();
-	
+     * @param name the name of the api.
+     *
+     * @throws ObjectNotFoundException if no api configuration exists for the given name.
+     */
+    ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
+
+    /**
+     * Returns the {@link ApiConfigurator} of the api or null if not exists.
+     */
+    ApiConfigurator tryGetConfigurator(String name);
+
+    /**
+     * Returns the {@link ApiMetadata} of the api or null if not exists.
+     */
+    ApiMetadata tryGetMetadata(String name);
+
 	/**
 	 * Creates an api configuration and returns the configurator.
 	 * 
@@ -57,15 +69,6 @@ public interface Apis {
 	 * @throws ObjectExistsException if the given name aleady exists.
 	 */
 	ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
-	
-	/**
-	 * Returns the configurator of the api.
-	 * 
-	 * @param name the name of the api.
-	 * 
-	 * @throws ObjectNotFoundException if no api configuration exists for the given name.
-	 */
-	ApiConfigurator of(String name) throws ObjectNotFoundException;
 	
 	/**
 	 * Returns <code>true</code> if default enabled.

@@ -40,7 +40,7 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 	@Override
 	public void preProcess(ApiConfigurator c) {
 		app.routes().create().get(getJsonSpecPath(c.config()), (req, resp) -> {
-			handleJsonSpecRequest(c.config(), req, resp, c.config().getName().toLowerCase());
+			handleJsonSpecRequest(c.config(), req, resp, c.config().getName());
 		}).enableCors()
 		  .allowAnonymous()
 		  .apply();
@@ -51,8 +51,8 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 		m.getPaths().remove("/" + SWAGGER_JSON_FILE);
     }
 
-	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String key) throws Throwable {
-		ApiMetadata m = apis.metadatas().get(key);
+	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String name) throws Throwable {
+		ApiMetadata m = apis.tryGetMetadata(name);
         if(null == m) {
             resp.setStatus(HTTP.SC_NOT_FOUND);
             return;

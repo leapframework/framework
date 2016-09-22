@@ -214,7 +214,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         StringBuilder chars      = new StringBuilder();
         boolean       hasElement = false;
         while(reader.nextWhileNotEnd(PROPERTIES_ELEMENT)){
-            if(reader.isCharacters()) {
+            if(!hasElement && reader.isCharacters()) {
                 chars.append(reader.getCharacters());
                 continue;
             }

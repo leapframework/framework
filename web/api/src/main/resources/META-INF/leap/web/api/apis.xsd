@@ -71,7 +71,7 @@
             </xsd:documentation>
         </xsd:annotation>
         <xsd:complexType>
-            <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="version" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
@@ -80,11 +80,12 @@
                 <xsd:element name="consumes" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="protocols" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="permissions" type="permissions"  minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:element name="cors" type="cors" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="oauth" type="oauth" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="max-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="default-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
-            </xsd:sequence>
+            </xsd:choice>
             <xsd:attribute name="name"      type="xsd:string" use="required"/>
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
         </xsd:complexType>
@@ -155,6 +156,26 @@
             <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="permissions">
+        <xsd:complexContent>
+            <xsd:extension base="xsd:string">
+                <xsd:sequence>
+                    <xsd:element name="permission" type="permission" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="permission">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="value" type="xsd:string" use="required"/>
+                <xsd:attribute name="desc"  type="xsd:string" use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
     <xsd:complexType name="responses">
