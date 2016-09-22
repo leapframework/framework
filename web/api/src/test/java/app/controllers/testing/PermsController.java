@@ -18,6 +18,7 @@
 
 package app.controllers.testing;
 
+import leap.core.security.annotation.AllowAnonymous;
 import leap.web.annotation.http.GET;
 import leap.web.api.mvc.ApiController;
 import leap.core.security.annotation.Permissions;
@@ -27,6 +28,12 @@ public class PermsController extends ApiController {
     @GET("/test_perm")
     @Permissions("test")
     public void testPerm() {
+
+    }
+
+    @GET("test_anonymous")
+    @AllowAnonymous
+    public void testAnonymous() {
 
     }
 

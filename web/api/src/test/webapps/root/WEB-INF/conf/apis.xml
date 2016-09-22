@@ -16,6 +16,16 @@
 
     <api name="api" base-path="/api"/>
 
+    <api name="testApi">
+
+        <permissions>
+
+            test : Test Permission
+
+        </permissions>
+
+    </api>
+
     <api name="petstore" base-path="/petstore">
 
         <title>Swagger Petstore</title>

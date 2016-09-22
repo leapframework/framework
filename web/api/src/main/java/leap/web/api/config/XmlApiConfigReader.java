@@ -19,7 +19,9 @@ package leap.web.api.config;
 import leap.core.annotation.Inject;
 import leap.core.meta.MTypeManager;
 import leap.lang.Classes;
+import leap.lang.Props;
 import leap.lang.Strings;
+import leap.lang.extension.ExProperties;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -31,6 +33,7 @@ import leap.lang.xml.XmlReader;
 import leap.web.api.Apis;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.model.MPermission;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,6 +65,9 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String RESPONSE          = "response";
     protected static final String STATUS            = "status";
     protected static final String TYPE              = "type";
+    protected static final String PERMISSIONS       = "permissions";
+    protected static final String PERMISSION        = "permission";
+    protected static final String VALUE             = "value";
 
     protected @Inject MTypeManager mTypeManager;
 
@@ -217,10 +223,11 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
     protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
         String name     = reader.resolveRequiredAttribute(NAME);
-        String basePath = reader.resolveRequiredAttribute(BASE_PATH);
+        String basePath = reader.resolveAttribute(BASE_PATH);
 
-        ApiConfigurator api = apis.configurators().get(name);
+        ApiConfigurator api = apis.tryGetConfigurator(name);
         if(null == api) {
+            reader.getRequiredAttribute(BASE_PATH);
             api = apis.add(name, basePath);
         }
 
@@ -306,7 +313,51 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 }
                 continue;
             }
+
+            if(reader.isStartElement(PERMISSIONS)) {
+                readApiPermissions(context, reader, api);
+                continue;
+            }
         }
     }
 
+    protected void readApiPermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+        StringBuilder chars      = new StringBuilder();
+        boolean       hasElement = false;
+
+        while(reader.nextWhileNotEnd(PERMISSIONS)){
+            if(!hasElement && reader.isCharacters()) {
+                chars.append(reader.getCharacters());
+                continue;
+            }
+
+            if(reader.isStartElement(PERMISSION)){
+                hasElement = true;
+
+                String value = reader.getRequiredAttribute(VALUE);
+                String desc  = reader.getAttribute(DESC);
+
+                if(Strings.isEmpty(desc)) {
+                    desc = reader.getElementTextAndEnd();
+                }
+
+                api.setPermission(new MPermission(value, desc));
+                continue;
+            }
+        }
+
+        if(!hasElement) {
+            String text = chars.toString().trim();
+            if(text.length() > 0) {
+                ExProperties props = Props.loadKeyValues(text);
+
+                props.forEach((k,v) -> {
+                    String value = (String)k;
+                    String desc = (String)v;
+
+                    api.setPermission(new MPermission(value, desc));
+                });
+            }
+        }
+    }
 }

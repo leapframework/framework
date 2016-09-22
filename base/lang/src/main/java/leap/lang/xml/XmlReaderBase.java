@@ -26,7 +26,7 @@ import java.util.function.BiConsumer;
 
 public abstract class XmlReaderBase implements XmlReader {
 	
-	protected Object              source              = "unknow";
+	protected Object              source              = "unknown";
 	protected PlaceholderResolver placeholderResolver = null;
 	protected boolean			  trimAll			  = true;
 	
@@ -168,7 +168,6 @@ public abstract class XmlReaderBase implements XmlReader {
 		}
 		return value;
     }
-	
 
 	@Override
     public final String getAttribute(QName name) {
@@ -204,7 +203,7 @@ public abstract class XmlReaderBase implements XmlReader {
 		String value = getAttribute(localName);
 	    return Strings.isEmpty(value) ? defaultValue : value;
     }
-	
+
 	@Override
     public String getRequiredAttribute(QName name) {
 		String value = getAttribute(name);

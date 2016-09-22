@@ -19,7 +19,7 @@ package leap.core.security.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.TYPE,ElementType.METHOD})
+@Target({ElementType.TYPE,ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface Permissions {

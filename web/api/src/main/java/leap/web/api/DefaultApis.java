@@ -59,23 +59,28 @@ public class DefaultApis implements Apis, AppInitializable  {
 	protected String  defaultOAuthAuthorizationUrl;
 	protected String  defaultOAuthTokenUrl;
     protected Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
-	
-	@Override
-    public Map<String, ApiConfigurator> configurators() {
-	    return configuratorsImmutableView;
-    }
-	
-	@Override
-    public Map<String, ApiConfig> configurations() {
-	    return configurationsImmutableView;
-    }
-	
-	@Override
-    public Map<String, ApiMetadata> metadatas() {
-	    return metadatasImmutableView;
+
+    @Override
+    public ApiConfigurator tryGetConfigurator(String name) {
+        return configurators.get(name.toLowerCase());
     }
 
+    @Override
+    public Set<ApiConfigurator> getConfigurators() {
+	    return new LinkedHashSet<>(configurators.values());
+    }
+	
 	@Override
+    public Set<ApiConfig> getConfigurations() {
+	    return new LinkedHashSet<>(configurations.values());
+    }
+
+    @Override
+    public ApiMetadata tryGetMetadata(String name) {
+        return metadatas.get(name.toLowerCase());
+    }
+
+    @Override
     public ApiConfigurator add(String name, String basePath) throws ObjectExistsException {
 		Args.notEmpty(name,     "name");
 		Args.notEmpty(basePath, "basePath");
@@ -92,7 +97,7 @@ public class DefaultApis implements Apis, AppInitializable  {
     }
 
 	@Override
-    public ApiConfigurator of(String name) throws ObjectNotFoundException {
+    public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
 		Args.notEmpty(name, "name");
 		
 		ApiConfigurator c = configurators.get(name.toLowerCase());

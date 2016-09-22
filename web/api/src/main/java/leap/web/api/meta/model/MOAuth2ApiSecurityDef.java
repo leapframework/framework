@@ -21,8 +21,8 @@ import java.util.Map;
 
 public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
     
-    protected final String        authzEndpointUrl;
-    protected final String        tokenEndpointUrl;
+    protected final String authzEndpointUrl;
+    protected final String tokenEndpointUrl;
 
     public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl) {
         this(authzEndpointUrl,tokenEndpointUrl, null);
@@ -52,4 +52,8 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
         return tokenEndpointUrl;
     }
 
+    @Override
+    public boolean isOAuth2() {
+        return true;
+    }
 }
