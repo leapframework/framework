@@ -34,6 +34,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	protected List<MApiResponseBuilder>  responses  = new ArrayList<>();
 	protected Set<String>                consumes   = new LinkedHashSet<>();
 	protected Set<String>                produces   = new LinkedHashSet<>();
+    protected String[]                   permissions;
 	protected boolean           	     deprecated;
 
 	public MApiOperationBuilder() {
@@ -41,7 +42,8 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	}
 
     public MApiOperationBuilder(Route route) {
-        this.route = route;
+        this.route       = route;
+        this.permissions = route.getPermissions();
     }
 
     public Route getRoute() {
@@ -115,7 +117,15 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		produces.add(mimeType);
 	}
 
-	public boolean isDeprecated() {
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String[] permissions) {
+        this.permissions = permissions;
+    }
+
+    public boolean isDeprecated() {
 		return deprecated;
 	}
 
@@ -130,7 +140,8 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 								Builders.buildList(parameters), 
 								Builders.buildList(responses), 
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
-								produces.toArray(Arrays2.EMPTY_STRING_ARRAY), 
+								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                                permissions,
 								deprecated, attrs);
     }
 	

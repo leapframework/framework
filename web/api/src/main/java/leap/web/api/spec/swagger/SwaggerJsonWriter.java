@@ -48,8 +48,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     protected static final String OAUTH_ACCESS_CODE = "oauth_access_code";
     
     protected static final class WriteContext {
-        String   defaultSecurity;
-        String[] defaultScopes;
+        String defaultSecurity;
     }
 
 	@Override
@@ -90,10 +89,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         if(!Arrays2.isEmpty(m.getSecurityDefs())) {
             w.property(SECURITY_DEFINITIONS, () -> writeSecurityDefs(context, m, w));
+
+            writeDefaultSecurity(context, m, w);
         }
 
-        writeDefaultSecurity(context, m, w);
-		
 		w.endObject();
 	}
 
@@ -117,13 +116,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	    if(null == context.defaultSecurity){
 	        return;
 	    }
-	    
+
 	    w.property(SECURITY, () -> {
 	       w.startArray();
 	       
 	       w.startObject();
 	       w.property(context.defaultSecurity, () -> {
-	           w.array(context.defaultScopes);
+               w.array(m.getPermissions(), (p) -> w.value(p.getValue()));
 	       });
 	       w.endObject();
 	       
@@ -161,7 +160,28 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.property(DESCRIPTION, nullToEmpty(o.getDescription()));
 
         w.property(OPERATION_ID, o.getName()); //todo : unique id ?
-		
+
+        if(null != o.getPermissions() && m.getSecurityDefs().length > 0) {
+
+            w.property(SECURITY, () -> {
+
+                w.startObject();
+
+                //todo :
+
+                for(MApiSecurityDef sd : m.getSecurityDefs()) {
+                    if(!sd.isOAuth2()) {
+                        throw new IllegalStateException("No supported security def : " + sd.getClass());
+                    }
+                    w.property(OAUTH, o.getPermissions());
+                }
+
+                w.endObject();
+
+            });
+
+        }
+
 		if(o.getConsumes().length > 0) {
 			w.property(CONSUMES, o.getConsumes());
 		}
@@ -184,7 +204,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
-	
+
+
 	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter[] ps) {
         w.array(ps, p -> writeParameter(context, m, w, p));
 	}

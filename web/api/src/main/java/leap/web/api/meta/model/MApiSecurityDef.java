@@ -27,5 +27,7 @@ public abstract class MApiSecurityDef extends MApiObject {
     public MApiSecurityDef(Map<String, Object> attrs) {
         super(attrs);
     }
-    
+
+    public abstract boolean isOAuth2();
+
 }
