@@ -38,7 +38,7 @@ import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.web.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowAnonymous;
 
 import java.util.List;
 

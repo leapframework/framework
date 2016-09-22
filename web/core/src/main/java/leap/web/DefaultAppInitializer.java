@@ -20,9 +20,11 @@ import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.security.annotation.*;
 import leap.core.validation.ValidationManager;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanProperty;
@@ -307,6 +309,41 @@ public class DefaultAppInitializer implements AppInitializer {
 		if(null != failure) {
 			addFailureHandler(route, failure);
 		}
+
+        //security.
+
+        AllowAnonymous aa = act.searchAnnotation(AllowAnonymous.class);
+        if(null != aa) {
+            route.setAllowAnonymous(aa.value());
+        }
+
+        AllowClientOnly ac = act.searchAnnotation(AllowClientOnly.class);
+        if(null != ac) {
+            route.setAllowClientOnly(ac.value());
+        }
+
+        AllowRememberMe ar = act.searchAnnotation(AllowRememberMe.class);
+        if(null != ar) {
+            route.setAllowRememberMe(ar.value());
+        }
+
+        Permissions permissions = act.searchAnnotation(Permissions.class);
+        if(null != permissions) {
+            route.setPermissions(permissions.value());
+        }
+
+        Secured secured = act.searchAnnotation(Secured.class);
+        if(null != secured){
+            route.setAllowRememberMe(secured.allowRememberMe());
+
+            if(!Arrays2.isEmpty(secured.roles())){
+                route.setRoles(secured.roles());
+            }
+
+            if(!Arrays2.isEmpty(secured.permissions())) {
+                route.setPermissions(secured.permissions());
+            }
+        }
 		
 		//prepare the action
 		am.prepareAction(route);

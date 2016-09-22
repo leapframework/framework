@@ -15,24 +15,15 @@
  *  * limitations under the License.
  *
  */
+package leap.core.security.annotation;
 
-package app.controllers.testing;
+import java.lang.annotation.*;
 
-import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.ModelController;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.core.security.annotation.AllowAnonymous;
-import app.models.testing.User;
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface Permissions {
 
-import java.util.List;
-
-@AllowAnonymous
-public class UserController extends ModelController<User> {
-
-    @GET
-    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
-        return queryList(options);
-    }
+    String[] value();
 
 }

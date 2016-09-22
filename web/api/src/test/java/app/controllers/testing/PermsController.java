@@ -19,20 +19,15 @@
 package app.controllers.testing;
 
 import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.ModelController;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.core.security.annotation.AllowAnonymous;
-import app.models.testing.User;
+import leap.web.api.mvc.ApiController;
+import leap.core.security.annotation.Permissions;
 
-import java.util.List;
+public class PermsController extends ApiController {
 
-@AllowAnonymous
-public class UserController extends ModelController<User> {
+    @GET("/test_perm")
+    @Permissions("test")
+    public void testPerm() {
 
-    @GET
-    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
-        return queryList(options);
     }
 
 }

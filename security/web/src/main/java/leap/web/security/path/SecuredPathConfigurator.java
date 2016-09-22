@@ -16,7 +16,6 @@
 package leap.web.security.path;
 
 import leap.web.security.SecurityFailureHandler;
-import leap.web.security.annotation.Secured;
 
 /**
  * The configurator of {@link SecuredPath}.

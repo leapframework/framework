@@ -43,15 +43,17 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
-	protected Integer successStatus;
-	protected Boolean corsEnabled;
-	protected Boolean csrfEnabled;
-	protected Boolean supportsMultipart;
-    protected Boolean allowAnonymous;
-    protected Boolean allowClientOnly;
-	protected boolean acceptValidationError;
-	protected boolean httpsOnly;
+    protected Integer  successStatus;
+    protected Boolean  corsEnabled;
+    protected Boolean  csrfEnabled;
+    protected Boolean  supportsMultipart;
+    protected boolean  acceptValidationError;
+    protected boolean  httpsOnly;
+    protected Boolean  allowAnonymous;
+    protected Boolean  allowRememberMe;
+    protected Boolean  allowClientOnly;
     protected String[] permissions;
+    protected String[] roles;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -239,6 +241,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     }
 
     @Override
+    public Boolean getAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    @Override
+    public void setAllowRememberMe(Boolean allowRememberMe) {
+        this.allowRememberMe = allowRememberMe;
+    }
+
+    @Override
     public Boolean getAllowClientOnly() {
         return allowClientOnly;
     }
@@ -288,6 +300,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
     @Override
     public void setPermissions(String[] permissions) {
         this.permissions = permissions;
+    }
+
+    @Override
+    public String[] getRoles() {
+        return roles;
+    }
+
+    @Override
+    public void setRoles(String[] roles) {
+        this.roles = roles;
     }
 
     @Override

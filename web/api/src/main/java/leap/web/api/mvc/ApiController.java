@@ -23,7 +23,7 @@ import leap.web.annotation.Restful;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.json.JsonSerialize;
-import leap.web.security.annotation.AllowClientOnly;
+import leap.core.security.annotation.AllowClientOnly;
 
 @Consumes("json")
 @Produces("json")

@@ -16,7 +16,7 @@
 package app.controllers;
 
 import leap.web.Request;
-import leap.web.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowAnonymous;
 import leap.web.security.csrf.CSRF;
 
 public class CsrfController {

@@ -38,7 +38,7 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiSecurityDef;
 import leap.web.api.meta.model.MOAuth2ApiSecurityDef;
-import leap.web.api.meta.model.MOAuth2Scope;
+import leap.web.api.meta.model.MPermission;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
@@ -274,14 +274,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         context.defaultSecurity = OAUTH;
-        if(null != d.getScopes() && d.getScopes().length > 0) {
-            String[] values = new String[d.getScopes().length];
-            for(int i=0;i<values.length;i++) {
-                values[i] = d.getScopes()[i].getValue();
-            }
-            context.defaultScopes = values;
-        }
-        
+
         writeOAuth2Implicit(context, m, w, d);
         //writeOAuth2AccesCode(context, m, w, d);
     }
@@ -294,7 +287,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             .property(FLOW, IMPLICIT)
             .property(AUTHZ_URL, d.getAuthzEndpointUrl());
             
-            writeOAuth2Scopes(context, m, w, d, d.getScopes());
+            writeOAuth2Scopes(context, m, w, d, m.getPermissions());
             
             w.endObject();
         });
@@ -309,18 +302,18 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             .property(AUTHZ_URL, d.getAuthzEndpointUrl())
             .property(TOKEN_URL, d.getTokenEndpointUrl());
             
-            writeOAuth2Scopes(context, m, w, d, d.getScopes());
+            writeOAuth2Scopes(context, m, w, d, m.getPermissions());
             
             w.endObject();
         });
     }
     
-    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d, MOAuth2Scope[] scopes) {
+    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d, MPermission[] scopes) {
         w.property(SCOPES, () -> {
             w.startObject();
             if(null != scopes) {
-                for (MOAuth2Scope scope : d.getScopes()) {
-                    w.property(scope.getValue(), scope.getDescription());
+                for (MPermission scope : scopes) {
+                    w.property(scope.getValue(), Strings.trim(scope.getDescription()));
                 }
             }
             w.endObject();

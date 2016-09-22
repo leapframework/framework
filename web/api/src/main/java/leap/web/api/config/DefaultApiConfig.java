@@ -15,16 +15,16 @@
  */
 package leap.web.api.config;
 
-import java.util.*;
-
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MOAuth2Scope;
+import leap.web.api.meta.model.MPermission;
 import leap.web.route.Route;
+
+import java.util.*;
 
 public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	
@@ -42,17 +42,22 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected boolean        oAuthEnabled                = false;
     protected String         oAuthAuthzEndpointUrl;
     protected String         oAuthTokenEndpointUrl;
-    protected MOAuth2Scope[] oAuthScopes;
     protected NamingStyle    parameterNamingStyle;
     protected NamingStyle    propertyNamingStyle;
     protected int            maxPageSize                 = MAX_PAGE_SIZE;
     protected int            defaultPageSize             = DEFAULT_PAGE_SIZE;
     protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
     protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
+
     protected Set<Route>  	 routes                      = new HashSet<>();
     protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
-    protected Map<String, MApiResponse> commonResponses  = new LinkedHashMap<>();
+
+    protected Map<String, MPermission> permissions    = new LinkedHashMap<>();
+    protected Map<String, MPermission> permissionsImv = Collections.unmodifiableMap(permissions);
+
+    protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
+
     protected Map<Route, Class<?>> resourceTypes    = new HashMap<>();
     protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
 	
@@ -243,14 +248,14 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
     
     @Override
-    public ApiConfigurator setOAuthScopes(MOAuth2Scope... scopes) {
-        this.oAuthScopes = scopes;
-        return this;
+    public Map<String, MPermission> getPermissions() {
+        return permissionsImv;
     }
 
     @Override
-    public MOAuth2Scope[] getOAuthScopes() {
-        return oAuthScopes;
+    public ApiConfigurator setPermission(MPermission p) {
+        permissions.put(p.getValue(), p);
+        return this;
     }
 
     @Override
@@ -278,6 +283,15 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     @Override
     public ApiConfigurator addRoute(Route route) {
 		routes.add(route);
+
+        if(null != route.getPermissions()) {
+            for(String p : route.getPermissions()) {
+                if(!permissions.containsKey(p)) {
+                    permissions.put(p, new MPermission(p, ""));
+                }
+            }
+        }
+
 	    return this;
     }
 
