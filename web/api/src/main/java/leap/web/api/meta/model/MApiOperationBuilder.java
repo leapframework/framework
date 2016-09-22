@@ -35,6 +35,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	protected Set<String>                consumes   = new LinkedHashSet<>();
 	protected Set<String>                produces   = new LinkedHashSet<>();
     protected String[]                   permissions;
+    protected boolean                    allowAnonymous;
 	protected boolean           	     deprecated;
 
 	public MApiOperationBuilder() {
@@ -44,6 +45,10 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     public MApiOperationBuilder(Route route) {
         this.route       = route;
         this.permissions = route.getPermissions();
+
+        if(null != route.getAllowAnonymous()) {
+            this.allowAnonymous = route.getAllowAnonymous();
+        }
     }
 
     public Route getRoute() {
@@ -133,7 +138,15 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		this.deprecated = deprecated;
 	}
 
-	@Override
+    public boolean isAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    public void setAllowAnonymous(boolean allowAnonymous) {
+        this.allowAnonymous = allowAnonymous;
+    }
+
+    @Override
     public MApiOperation build() {
 		return new MApiOperation(name, title, summary, description, method,
                                 tags.toArray(Arrays2.EMPTY_STRING_ARRAY),
@@ -142,6 +155,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
 								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                 permissions,
+                                allowAnonymous,
 								deprecated, attrs);
     }
 	

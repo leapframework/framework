@@ -29,6 +29,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 	protected final String[]        consumes;
 	protected final String[]        produces;
     protected final String[]        permissions;
+    protected final boolean         allowAnonymous;
 	protected final boolean         deprecated;
 
 	public MApiOperation(String name, String title, String summary, String description,
@@ -39,6 +40,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          String[] consumes,
                          String[] produces,
                          String[] permissions,
+                         boolean allowAnonymous,
                          boolean deprecated, Map<String, Object> attrs) {
 		
 	    super(name, title, summary, description, attrs);
@@ -50,6 +52,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 		this.consumes    = consumes;
 		this.produces    = produces;
         this.permissions = permissions;
+        this.allowAnonymous = allowAnonymous;
 		this.deprecated  = deprecated;
 	}
 	
@@ -116,6 +119,13 @@ public class MApiOperation extends MApiNamedWithDesc {
      */
     public String[] getPermissions() {
         return permissions;
+    }
+
+    /**
+     * Returns true if this operation allows anonymous access.
+     */
+    public boolean isAllowAnonymous() {
+        return allowAnonymous;
     }
 
     /**

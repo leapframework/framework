@@ -44,8 +44,8 @@ import leap.web.api.spec.JsonSpecWriter;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
 
-    protected static final String OAUTH             = "oauth";
-    protected static final String OAUTH_ACCESS_CODE = "oauth_access_code";
+    protected static final String OAUTH2             = "oauth2";
+    protected static final String OAUTH2_ACCESS_CODE = "oauth2_access_code";
     
     protected static final class WriteContext {
         String defaultSecurity;
@@ -161,7 +161,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         w.property(OPERATION_ID, o.getName()); //todo : unique id ?
 
-        if(null != o.getPermissions() && m.getSecurityDefs().length > 0) {
+        if(m.getSecurityDefs().length > 0 && !o.isAllowAnonymous()) {
 
             w.property(SECURITY, () -> {
 
@@ -173,7 +173,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     if(!sd.isOAuth2()) {
                         throw new IllegalStateException("No supported security def : " + sd.getClass());
                     }
-                    w.property(OAUTH, o.getPermissions());
+                    w.property(OAUTH2, o.getPermissions());
                 }
 
                 w.endObject();
@@ -294,17 +294,17 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        context.defaultSecurity = OAUTH;
+        context.defaultSecurity = OAUTH2;
 
         writeOAuth2Implicit(context, m, w, d);
         //writeOAuth2AccesCode(context, m, w, d);
     }
     
     protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH, () -> {
+        w.property(OAUTH2, () -> {
             w.startObject();
             
-            w.property(TYPE, OAUTH2)
+            w.property(TYPE, SwaggerConstants.OAUTH2)
             .property(FLOW, IMPLICIT)
             .property(AUTHZ_URL, d.getAuthzEndpointUrl());
             
@@ -315,10 +315,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH_ACCESS_CODE, () -> {
+        w.property(OAUTH2_ACCESS_CODE, () -> {
             w.startObject();
             
-            w.property(TYPE, OAUTH2)
+            w.property(TYPE, SwaggerConstants.OAUTH2)
             .property(FLOW, ACCESS_CODE)
             .property(AUTHZ_URL, d.getAuthzEndpointUrl())
             .property(TOKEN_URL, d.getTokenEndpointUrl());
