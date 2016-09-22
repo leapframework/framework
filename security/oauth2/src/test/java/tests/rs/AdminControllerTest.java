@@ -16,7 +16,9 @@
 package tests.rs;
 
 import app.Global;
+import leap.lang.Assert;
 import org.junit.Test;
+import tested.models.User;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
 
@@ -52,5 +54,17 @@ public class AdminControllerTest extends OAuth2TestBase {
         withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
         withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
     }
-    
+    @Test
+    public void testAccessTokenWithNotUser(){
+        User user = new User();
+        user.setLoginName("notuser");
+        user.setPassword("notuser");
+        user.create();
+        TokenResponse token = obtainAccessTokenByPassword(user.getLoginName(), user.getPassword());
+        Assert.notNull(token);
+        user.delete();
+
+        assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
+    }
+
 }

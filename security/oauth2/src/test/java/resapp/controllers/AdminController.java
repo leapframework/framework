@@ -15,6 +15,7 @@
  */
 package resapp.controllers;
 
+import leap.core.security.annotation.AllowAnonymous;
 import leap.core.security.annotation.AllowClientOnly;
 import leap.core.security.annotation.Permissions;
 
@@ -32,5 +33,9 @@ public class AdminController {
     @Permissions("admin:test")
     public void test(){
 
+    }
+    @AllowAnonymous
+    public String allowAnonymous(){
+        return "success";
     }
 }
