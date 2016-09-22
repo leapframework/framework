@@ -20,20 +20,11 @@ import leap.htpl.HtplEngine;
 import leap.htpl.ast.Attr;
 import leap.htpl.ast.Element;
 import leap.htpl.ast.Node;
+import leap.lang.Ordered;
+import leap.lang.OrderedBase;
 
-public abstract class AbstractAttrProcessor implements AttrProcessor {
+public abstract class AbstractAttrProcessor extends OrderedBase implements AttrProcessor {
 	
-	protected int sortOrder;
-	
-	@Override
-    public int getSortOrder() {
-	    return sortOrder;
-    }
-	
-	public void setSortOrder(int sortOrder) {
-		this.sortOrder = sortOrder;
-	}
-
 	@Override
     public boolean required() {
 	    return true;

@@ -64,6 +64,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		setBaseInfo(context, md);
 
         createResponses(context, c, md);
+
+        createPermissions(context, md);
 		
 		createSecurityDefs(context, md);
 		
@@ -145,13 +147,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     }
 
+    protected void createPermissions(ApiMetadataContext context, ApiMetadataBuilder md) {
+        context.getConfig().getPermissions().values().forEach(p -> md.addPermission(p));
+    }
+
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         if(c.isOAuthEnabled()) {
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
-                                             c.getOAuthTokenUrl(),
-                                             c.getOAuthScopes());
+                                              c.getOAuthTokenUrl());
             
             md.addSecurityDef(def);
         }

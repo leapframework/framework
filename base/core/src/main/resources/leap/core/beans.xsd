@@ -106,7 +106,7 @@
         <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
 	    <xsd:attribute name="init-method" type="xsd:string"/>
         <xsd:attribute name="destroy-method" type="xsd:string"/>
-        <xsd:attribute name="sort-order" type="xsd:integer" default="100"/>
+        <xsd:attribute name="sort-order" type="xsd:float" default="100"/>
 	    <xsd:anyAttribute namespace="##other" processContents="lax" />
 	</xsd:attributeGroup>
 

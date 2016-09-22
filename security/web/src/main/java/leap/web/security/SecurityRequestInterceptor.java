@@ -19,6 +19,7 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.security.Authentication;
 import leap.core.security.Authorization;
+import leap.core.security.annotation.*;
 import leap.core.web.RequestIgnore;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
@@ -30,7 +31,6 @@ import leap.web.*;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.route.Route;
-import leap.web.security.annotation.*;
 import leap.web.security.csrf.CSRF;
 import leap.web.security.csrf.CsrfHandler;
 import leap.web.security.path.*;
@@ -59,52 +59,25 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     public void postAppStart(App app) throws Throwable {
 
 	    for(Route route : app.routes()) {
-	        Action action = route.getAction();
-
             if(null != route.getAllowAnonymous()) {
                 spb(route).setAllowAnonymous(route.getAllowAnonymous());
-            }else{
-                AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
-                if(null != aa) {
-                    spb(route).setAllowAnonymous(aa.value());
-                }
             }
 
             if(null != route.getAllowClientOnly()) {
                 spb(route).setAllowClientOnly(route.getAllowClientOnly());
-            }else{
-                AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
-                if(null != ac) {
-                    spb(route).setAllowClientOnly(ac.value());
-                }
             }
 
-			AllowRememberMe ar = action.searchAnnotation(AllowRememberMe.class);
-			if(null != ar) {
-				spb(route).setAllowRememberMe(ar.value());
-			}
+            if(null != route.getAllowRememberMe()) {
+                spb(route).setAllowRememberMe(route.getAllowRememberMe());
+            }
 
             if(null != route.getPermissions()) {
                 spb(route).setPermissionsAllowed(route.getPermissions());
-            }else{
-                Permissions permissions = action.searchAnnotation(Permissions.class);
-                if(null != permissions) {
-                    spb(route).setPermissionsAllowed(permissions.value());
-                }
             }
 
-	        Secured secured = action.searchAnnotation(Secured.class);
-	        if(null != secured){
-	            spb(route).setAllowRememberMe(secured.allowRememberMe());
-
-	            if(!Arrays2.isEmpty(secured.roles())){
-                    spb(route).setRolesAllowed(secured.roles());
-	            }
-
-	            if(!Arrays2.isEmpty(secured.permissions())) {
-                    spb(route).setPermissionsAllowed(secured.permissions());
-	            }
-	        }
+            if(null != route.getRoles()) {
+                spb(route).setRolesAllowed(route.getRoles());
+            }
 
             config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
                 if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {

@@ -22,7 +22,7 @@ import leap.db.model.DbIndex;
 
 public interface AlterTable extends DbCommand {
 	
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return 1;
 	}
 	

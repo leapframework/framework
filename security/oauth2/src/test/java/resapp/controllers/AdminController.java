@@ -15,8 +15,8 @@
  */
 package resapp.controllers;
 
-import leap.web.security.annotation.AllowClientOnly;
-import leap.web.security.annotation.Permissions;
+import leap.core.security.annotation.AllowClientOnly;
+import leap.core.security.annotation.Permissions;
 
 @AllowClientOnly
 public class AdminController {

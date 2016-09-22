@@ -16,23 +16,29 @@
  *
  */
 
-package app.controllers.testing;
+package leap.lang;
 
-import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.ModelController;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.core.security.annotation.AllowAnonymous;
-import app.models.testing.User;
+import leap.junit.TestBase;
+import org.junit.Test;
 
-import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
-@AllowAnonymous
-public class UserController extends ModelController<User> {
+public class OrderedTest extends TestBase {
 
-    @GET
-    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
-        return queryList(options);
+    @Test
+    public void testTreeSet() {
+        Set<OrderedBase> set = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
+
+        set.add(new OrderedBase(10));
+        set.add(new OrderedBase(9));
+        set.add(new OrderedBase(9.1f));
+
+        OrderedBase[] items = set.toArray(new OrderedBase[0]);
+
+        assertTrue(items[0].getSortOrder() == 9.0f);
+        assertTrue(items[1].getSortOrder() == 9.1f);
+        assertTrue(items[2].getSortOrder() == 10.0f);
     }
 
 }

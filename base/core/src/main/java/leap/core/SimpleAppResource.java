@@ -23,7 +23,7 @@ public final class SimpleAppResource implements AppResource {
 
     private final Resource resource;
     private final boolean  defaultOverride;
-    private final int      order;
+    private final float    order;
     private final String   path;
 
     public SimpleAppResource(Resource resource) {
@@ -34,7 +34,7 @@ public final class SimpleAppResource implements AppResource {
         this(resource, defaultOverride, Integer.MAX_VALUE, resource.getClasspath());
     }
 
-    public SimpleAppResource(Resource resource, boolean defaultOverride, int order, String path) {
+    public SimpleAppResource(Resource resource, boolean defaultOverride, float order, String path) {
         this.resource = resource;
         this.defaultOverride = defaultOverride;
         this.order = order;
@@ -42,7 +42,7 @@ public final class SimpleAppResource implements AppResource {
     }
 
     @Override
-    public int getSortOrder() {
+    public float getSortOrder() {
         return order;
     }
 

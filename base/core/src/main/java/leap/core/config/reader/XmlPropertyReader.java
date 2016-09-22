@@ -294,7 +294,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
 
         String className    = reader.resolveRequiredAttribute(CLASS_ATTRIBUTE);
-        int    sortOrder    = reader.resolveIntAttribute(SORT_ORDER_ATTRIBUTE, 100);
+        float  sortOrder    = reader.resolveFloatAttribute(SORT_ORDER_ATTRIBUTE, 100);
 
         LoaderConfig loader = new LoaderConfig(className, enabled, sortOrder);
 
@@ -331,11 +331,11 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
     protected static class LoaderConfig implements AppPropertyLoaderConfig {
 
         private final Function<Map<String,String>, Boolean> enabled;
-        private final int                                   order;
+        private final float                                 order;
         private final String                                className;
         private final Map<String, String>                   properties = new LinkedHashMap<>();
 
-        public LoaderConfig(String className, Function<Map<String,String>, Boolean> enabled, int order) {
+        public LoaderConfig(String className, Function<Map<String,String>, Boolean> enabled, float order) {
             this.className = className;
             this.enabled   = enabled;
             this.order     = order;
@@ -347,7 +347,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
 
         @Override
-        public int getSortOrder() {
+        public float getSortOrder() {
             return order;
         }
 

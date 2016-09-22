@@ -234,7 +234,7 @@ public class XmlDomainSource implements DomainSource {
 		String  insertValue  = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
 		boolean	autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING_ATTRIBUTE,false);
-        Integer sortOrder    = reader.getIntegerAttribute(SORT_ORDER);
+        Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
 		
 		if(!Strings.isEmpty(entityName)){

@@ -30,7 +30,7 @@ import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowAnonymous;
 
 import java.util.List;
 import java.util.Map;

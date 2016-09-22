@@ -37,6 +37,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
     protected final Map<String, MApiResponse> responses;
     protected final Map<String, MApiPath>     paths;
     protected final Map<String, MApiModel>    models;
+    protected final MPermission[]             permissions;
     protected final MApiSecurityDef[]         securityDefs;
 
 	public ApiMetadata(String name, String title, String summary, String description,
@@ -45,6 +46,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
                        Map<String, MApiResponse> responses,
                        Map<String, MApiPath> paths,
                        Map<String, MApiModel> models,
+                       MPermission[] permissions,
                        MApiSecurityDef[] securityDefs,
                        Map<String, Object> attrs)  {
 		super(name, title, summary, description, attrs);
@@ -59,6 +61,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
         this.responses = Collections.unmodifiableMap(responses);
 		this.paths    = Collections.unmodifiableMap(paths);
 		this.models   = Collections.unmodifiableMap(models);
+        this.permissions = permissions;
 		this.securityDefs = securityDefs;
 	}
 	
@@ -169,6 +172,13 @@ public class ApiMetadata extends MApiNamedWithDesc {
             }
         }
         throw new ObjectNotFoundException("No api model of type '" + type + "'");
+    }
+
+    /**
+     * Returns all the permissions required by this api.
+     */
+    public MPermission[] getPermissions() {
+        return permissions;
     }
 
     public MApiSecurityDef[] getSecurityDefs() {

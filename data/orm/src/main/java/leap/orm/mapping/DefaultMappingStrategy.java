@@ -780,7 +780,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	        }
 	    }
 	    
-		int order = FieldMappingBuilder.LAST_SORT_ORDER;
+		float order = FieldMappingBuilder.LAST_SORT_ORDER;
 		
 		if(context.getConfig().isAutoGenerateOptimisticLock()) {
 			if(emb.findFieldMappingByName(context.getConfig().getOptimisticLockFieldName()) == null){

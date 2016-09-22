@@ -16,23 +16,26 @@
  *
  */
 
-package app.controllers.testing;
+package leap.lang;
 
-import leap.web.annotation.http.GET;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.ModelController;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.core.security.annotation.AllowAnonymous;
-import app.models.testing.User;
+public class OrderedBase implements Ordered {
 
-import java.util.List;
+    protected float sortOrder;
 
-@AllowAnonymous
-public class UserController extends ModelController<User> {
+    public OrderedBase() {
 
-    @GET
-    public ApiResponse<List<User>> getAllUsers(QueryOptions options) {
-        return queryList(options);
     }
 
+    public OrderedBase(float sortOrder) {
+        this.sortOrder = sortOrder;
+    }
+
+    @Override
+    public float getSortOrder() {
+        return sortOrder;
+    }
+
+    public void setSortOrder(float sortOrder) {
+        this.sortOrder = sortOrder;
+    }
 }

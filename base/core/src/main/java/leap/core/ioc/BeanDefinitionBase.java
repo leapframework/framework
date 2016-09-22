@@ -60,7 +60,7 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	
 	protected Object singletonInstance;
     protected Object proxyInstance;
-	protected int    sortOrder = DEFAULT_SORT_ORDER;
+	protected float  sortOrder = DEFAULT_SORT_ORDER;
 
     protected boolean inited;
 	
@@ -83,11 +83,12 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     }
 	
 	@Override
-    public int getSortOrder() {
+    public float getSortOrder() {
 	    return sortOrder;
     }
+
 	@Override
-	public void setSortOrder(int sortOrder) {
+	public void setSortOrder(float sortOrder) {
 		this.sortOrder = sortOrder;
 	}
 

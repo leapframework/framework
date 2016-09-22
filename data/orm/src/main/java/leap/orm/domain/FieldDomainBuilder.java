@@ -36,7 +36,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 	protected Expression   insertValue;
 	protected Expression   updateValue;
 	protected boolean	   autoMapping;
-	protected Integer      sortOrder;
+	protected Float        sortOrder;
 	protected boolean      unnamed;
 	
 	public FieldDomainBuilder(){
@@ -182,11 +182,11 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return this;
 	}
 	
-    public Integer getSortOrder() {
+    public Float getSortOrder() {
         return sortOrder;
     }
 
-    public FieldDomainBuilder setSortOrder(Integer sortOrder) {
+    public FieldDomainBuilder setSortOrder(Float sortOrder) {
         this.sortOrder = sortOrder;
         return this;
     }

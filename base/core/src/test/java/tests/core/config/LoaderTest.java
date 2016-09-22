@@ -36,5 +36,9 @@ public class LoaderTest extends AppTestBase {
     public void testPlaceholder() {
         assertEquals("db.val1", config.getProperty("testLoader.placeholder1"));
     }
-}
 
+    @Test
+    public void testLoaderSortOrder() {
+        assertEquals("10.1", config.getProperty("testConfigLoader.sortOrderTestProp"));
+    }
+}

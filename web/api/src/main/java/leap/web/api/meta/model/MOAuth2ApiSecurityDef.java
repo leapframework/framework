@@ -21,15 +21,14 @@ import java.util.Map;
 
 public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
     
-    protected final String         authzEndpointUrl;
-    protected final String         tokenEndpointUrl;
-    protected final MOAuth2Scope[] scopes;
-    
-    public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, MOAuth2Scope[] scopes) {
-        this(authzEndpointUrl,tokenEndpointUrl, scopes, null);
+    protected final String        authzEndpointUrl;
+    protected final String        tokenEndpointUrl;
+
+    public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl) {
+        this(authzEndpointUrl,tokenEndpointUrl, null);
     }
 
-    public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, MOAuth2Scope[] scopes, Map<String, Object> attrs) {
+    public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, Map<String, Object> attrs) {
         super(attrs);
         
         Args.notEmpty(authzEndpointUrl, "authorization endpoint url");
@@ -37,7 +36,6 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
         
         this.authzEndpointUrl = authzEndpointUrl;
         this.tokenEndpointUrl = tokenEndpointUrl;
-        this.scopes           = scopes;
     }
 
     /**
@@ -52,13 +50,6 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
      */
     public String getTokenEndpointUrl() {
         return tokenEndpointUrl;
-    }
-
-    /**
-     * The oauth2 scopes of api.
-     */
-    public MOAuth2Scope[] getScopes() {
-        return scopes;
     }
 
 }

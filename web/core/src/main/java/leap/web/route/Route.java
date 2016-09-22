@@ -170,6 +170,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
     void setAllowAnonymous(Boolean allowAnonymous);
 
     /**
+     * Returns the allow-rememberMe status.
+     */
+    Boolean getAllowRememberMe();
+
+    /**
+     * Sets allow remember-me.
+     */
+    void setAllowRememberMe(Boolean allowRememberMe);
+
+    /**
      * Returns the allow-clientOnly status..
      */
     Boolean getAllowClientOnly();
@@ -188,6 +198,16 @@ public interface Route extends RouteBase, Sourced, Extensible {
      * Sets the permissions.
      */
     void setPermissions(String[] permissions);
+
+    /**
+     * Optional. Returns the roles required for accessing this route..
+     */
+    String[] getRoles();
+
+    /**
+     * Sets the roles.
+     */
+    void setRoles(String[] roles);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.

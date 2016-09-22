@@ -17,13 +17,13 @@ package leap.web.api.meta.model;
 
 import leap.lang.Args;
 
-public class MOAuth2Scope {
+public class MPermission {
 
     protected final String value;
     protected final String description;
     
-    public MOAuth2Scope(String value, String desc) {
-        Args.notEmpty(value, "scope value");
+    public MPermission(String value, String desc) {
+        Args.notEmpty(value, "permission value");
         this.value = value;
         this.description = desc;
     }

@@ -22,7 +22,7 @@ import leap.web.annotation.Produces;
 import leap.web.annotation.http.GET;
 import leap.web.api.mvc.ApiController;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowAnonymous;
 
 import java.util.Date;
 

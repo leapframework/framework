@@ -26,6 +26,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbIndexBuilder;
 import leap.db.model.DbTableBuilder;
 import leap.lang.Classes;
+import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.orm.annotation.*;
@@ -222,7 +223,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             }
 
             //sort order
-            if (a.order() != Integer.MIN_VALUE) {
+            if (a.order() != Ordered.MINIMUM_SORT_ORDER) {
                 f.setSortOrder(a.order());
             }
 
