@@ -41,8 +41,6 @@ public abstract class AppMainRunner {
     /**
      * Called by the {@link #run(Class, Object[])}.
      */
-    protected void run(Object[] args) throws Throwable {
-
-    }
+    protected abstract void run(Object[] args) throws Throwable;
 
 }
