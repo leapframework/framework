@@ -335,6 +335,8 @@ public class AppClassLoader extends ClassLoader {
             return null;
         }
 
+        loadedUrls.add(url);
+
         try {
             byte[] rawBytes = IO.readByteArrayAndClose(resource.getInputStream());
 
@@ -359,9 +361,6 @@ public class AppClassLoader extends ClassLoader {
 
                 }
 
-                if(loadedUrls.contains(url)){
-                    return null;
-                }
             }
 
             //try instrument the class.
@@ -380,8 +379,6 @@ public class AppClassLoader extends ClassLoader {
                 log.trace("Class '{}' already loaded, do nothing", name);
                 return null;
             }
-
-            loadedUrls.add(url);
 
             byte[] bytes;
             if(null == ic) {
