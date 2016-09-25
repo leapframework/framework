@@ -80,11 +80,12 @@
                 <xsd:element name="consumes" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="protocols" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="permissions" type="permissions"  minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:element name="cors" type="cors" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="oauth" type="oauth" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="max-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="default-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="permissions" type="permissions"  minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="resource-permissions" type="resource-permissions" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:choice>
             <xsd:attribute name="name"      type="xsd:string" use="required"/>
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
@@ -158,6 +159,22 @@
         <xsd:attribute name="name" type="xsd:string" use="required"/>
     </xsd:complexType>
 
+    <xsd:complexType name="responses">
+        <xsd:sequence>
+            <xsd:element name="response" type="response" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="response">
+        <xsd:sequence>
+            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="name"   type="xsd:string"  use="optional"/>
+        <xsd:attribute name="status" type="xsd:integer" use="required"/>
+        <xsd:attribute name="type"   type="xsd:string"  use="optional"/>
+        <xsd:attribute name="desc"   type="xsd:string"  use="optional"/>
+    </xsd:complexType>
+
     <xsd:complexType name="permissions">
         <xsd:complexContent>
             <xsd:extension base="xsd:string">
@@ -178,20 +195,33 @@
         </xsd:simpleContent>
     </xsd:complexType>
 
-    <xsd:complexType name="responses">
-        <xsd:sequence>
-            <xsd:element name="response" type="response" minOccurs="0" maxOccurs="unbounded"/>
-        </xsd:sequence>
+    <xsd:complexType name="resource-permissions">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="resource"   type="resource"  minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="resources"  type="resources" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="permission" type="resource-permission" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:choice>
+
     </xsd:complexType>
 
-    <xsd:complexType name="response">
-        <xsd:sequence>
-            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-        </xsd:sequence>
-        <xsd:attribute name="name"   type="xsd:string"  use="optional"/>
-        <xsd:attribute name="status" type="xsd:integer" use="required"/>
-        <xsd:attribute name="type"   type="xsd:string"  use="optional"/>
-        <xsd:attribute name="desc"   type="xsd:string"  use="optional"/>
+    <xsd:complexType name="resource">
+        <xsd:attribute name="class" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="resources">
+        <xsd:attribute name="package" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="resource-permission">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="value"        type="xsd:string"  use="required"/>
+                <xsd:attribute name="http-methods" type="xsd:string"  use="optional"/>
+                <xsd:attribute name="path-pattern" type="xsd:string"  use="optional"/>
+                <xsd:attribute name="default"      type="xsd:boolean" use="optional"/>
+                <xsd:attribute name="desc"         type="xsd:string"  use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
     </xsd:complexType>
 
 </xsd:schema>

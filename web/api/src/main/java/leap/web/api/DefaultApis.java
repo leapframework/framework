@@ -37,7 +37,10 @@ import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MPermission;
 import leap.web.api.mvc.ApiInitializable;
+import leap.web.api.permission.ResourcePermissions;
+import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
 public class DefaultApis implements Apis, AppInitializable  {
@@ -50,10 +53,6 @@ public class DefaultApis implements Apis, AppInitializable  {
 	protected Map<String, ApiConfigurator> configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
 	protected Map<String, ApiConfig>       configurations = new ConcurrentHashMap<String, ApiConfig>();
 	protected Map<String, ApiMetadata>     metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
-	
-	protected Map<String, ApiConfigurator> configuratorsImmutableView  = Collections.unmodifiableMap(configurators);
-	protected Map<String, ApiConfig>       configurationsImmutableView = Collections.unmodifiableMap(configurations);
-	protected Map<String, ApiMetadata>     metadatasImmutableView      = Collections.unmodifiableMap(metadatas);
 	
 	protected boolean defaultOAuthEnabled;
 	protected String  defaultOAuthAuthorizationUrl;
@@ -247,6 +246,35 @@ public class DefaultApis implements Apis, AppInitializable  {
 
         if(null != resourceType) {
             c.setResourceType(route, resourceType);
+
+            resolveResourcePermissions(app, c, route, resourceType);
+        }
+    }
+
+    protected void resolveResourcePermissions(App app, ApiConfigurator c, Route route, Class<?> resourceType) {
+        if(null != route.getPermissions()) {
+            return;
+        }
+
+        ResourcePermissions rps =
+                c.config().getResourcePermissionsSet().tryGetResourcePermissions(resourceType);
+
+        if(null == rps) {
+            return;
+        }
+
+        MPermission[] permissions = rps.resolvePermissions(route, resourceType);
+        if(null != permissions && permissions.length > 0) {
+            String[] values = new String[permissions.length];
+            for(int i=0;i<values.length;i++) {
+                values[i] = permissions[i].getValue();
+            }
+
+            route.setPermissions(values);
+
+            for(MPermission p : permissions) {
+                c.tryAddPermission(p);
+            }
         }
     }
 

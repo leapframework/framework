@@ -22,6 +22,7 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MPermission;
+import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
 import java.util.*;
@@ -60,6 +61,8 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 
     protected Map<Route, Class<?>> resourceTypes    = new HashMap<>();
     protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
+
+    protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -259,6 +262,14 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
 
     @Override
+    public ApiConfigurator tryAddPermission(MPermission p) {
+        if(!permissions.containsKey(p.getValue())) {
+            setPermission(p);
+        }
+        return this;
+    }
+
+    @Override
     public int getMaxPageSize() {
         return maxPageSize;
     }
@@ -304,6 +315,11 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     public ApiConfigurator setResourceType(Route route, Class<?> resourceType) {
         resourceTypes.put(route, resourceType);
         return this;
+    }
+
+    @Override
+    public ResourcePermissionsSet getResourcePermissionsSet() {
+        return resourcePermissionsSet;
     }
 
     @Override

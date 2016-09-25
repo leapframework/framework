@@ -20,20 +20,36 @@ package leap.web.api.permission;
 
 import leap.lang.path.PathPattern;
 import leap.web.annotation.http.HttpMethod;
+import leap.web.route.Route;
 
-public class ResourceOperation {
+import java.util.Comparator;
 
-    private String       name;
+public class ResourcePermission {
+
+    static Comparator<ResourcePermission> COMPARATOR = (r1, r2) -> {
+        return 1;
+    };
+
+    private String       value;
+    private String       description;
     private HttpMethod[] httpMethods;
     private PathPattern  pathPattern;
-    private String       permissionTemplate;
+    private boolean      _default;
 
-    public String getName() {
-        return name;
+    public String getValue() {
+        return value;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public HttpMethod[] getHttpMethods() {
@@ -52,12 +68,15 @@ public class ResourceOperation {
         this.pathPattern = pathPattern;
     }
 
-    public String getPermissionTemplate() {
-        return permissionTemplate;
+    public boolean isDefault() {
+        return _default;
     }
 
-    public void setPermissionTemplate(String permissionTemplate) {
-        this.permissionTemplate = permissionTemplate;
+    public void setDefault(boolean _default) {
+        this._default = _default;
     }
 
+    public boolean matches(Route route) {
+        return false;
+    }
 }

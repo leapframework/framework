@@ -95,7 +95,7 @@ public class SPEL {
 	}
 	
 	/**
-	 * Parses a composited expression to an {@link Expression} object using the default {@link ElParseContext}.
+	 * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
 	 * 
 	 * <p>
 	 * 
@@ -111,7 +111,7 @@ public class SPEL {
 	}
 	
 	/**
-	 * Parses a composited expression to an {@link Expression} object using the default {@link ElParseContext}.
+	 * Parses a composite expression to an {@link Expression} object using the default {@link ElParseContext}.
 	 * 
 	 * <p>
 	 * 

@@ -25,6 +25,7 @@ import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MPermission;
+import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
 /**
@@ -147,4 +148,9 @@ public interface ApiConfig extends Named,Titled,Described {
      * Returns all the resource types of route.
      */
     Map<Route, Class<?>> getResourceTypes();
+
+    /**
+     * Returns the {@link ResourcePermissionsSet}.
+     */
+    ResourcePermissionsSet getResourcePermissionsSet();
 }

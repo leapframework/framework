@@ -24,6 +24,12 @@
 
         </permissions>
 
+        <resource-permissions>
+            <resource class="app.models.testing.User"/>
+
+            <permission value="ManageUser" desc="Manage User"/>
+        </resource-permissions>
+
     </api>
 
     <api name="petstore" base-path="/petstore">

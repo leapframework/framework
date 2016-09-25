@@ -34,6 +34,8 @@ import leap.web.api.Apis;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
+import leap.web.api.permission.ResourcePermission;
+import leap.web.api.permission.ResourcePermissions;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,32 +44,40 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
     private static final Log log = LogFactory.get(XmlApiConfigReader.class);
 
-    protected static final String APIS              = "apis";
-    protected static final String API               = "api";
-    protected static final String GLOBAL            = "global";
-    protected static final String OAUTH             = "oauth";
-    protected static final String VERSION           = "version";
-    protected static final String TITLE             = "title";
-    protected static final String SUMMARY           = "summary";
-    protected static final String DESC              = "desc";
-    protected static final String PRODUCES          = "produces";
-    protected static final String CONSUMES          = "consumes";
-    protected static final String PROTOCOLS         = "protocols";
-    protected static final String MAX_PAGE_SIZE     = "max-page-size";
-    protected static final String DEFAULT_PAGE_SIZE = "default-page-size";
-    protected static final String ENABLED           = "enabled";
-    protected static final String AUTHZ_URL         = "authz-url";
-    protected static final String TOKEN_URL         = "token-url";
-    protected static final String SCOPE             = "scope";
-    protected static final String NAME              = "name";
-    protected static final String BASE_PATH         = "base-path";
-    protected static final String RESPONSES         = "responses";
-    protected static final String RESPONSE          = "response";
-    protected static final String STATUS            = "status";
-    protected static final String TYPE              = "type";
-    protected static final String PERMISSIONS       = "permissions";
-    protected static final String PERMISSION        = "permission";
-    protected static final String VALUE             = "value";
+    protected static final String APIS                 = "apis";
+    protected static final String API                  = "api";
+    protected static final String GLOBAL               = "global";
+    protected static final String OAUTH                = "oauth";
+    protected static final String VERSION              = "version";
+    protected static final String TITLE                = "title";
+    protected static final String SUMMARY              = "summary";
+    protected static final String DESC                 = "desc";
+    protected static final String PRODUCES             = "produces";
+    protected static final String CONSUMES             = "consumes";
+    protected static final String PROTOCOLS            = "protocols";
+    protected static final String MAX_PAGE_SIZE        = "max-page-size";
+    protected static final String DEFAULT_PAGE_SIZE    = "default-page-size";
+    protected static final String ENABLED              = "enabled";
+    protected static final String AUTHZ_URL            = "authz-url";
+    protected static final String TOKEN_URL            = "token-url";
+    protected static final String SCOPE                = "scope";
+    protected static final String NAME                 = "name";
+    protected static final String BASE_PATH            = "base-path";
+    protected static final String RESPONSES            = "responses";
+    protected static final String RESPONSE             = "response";
+    protected static final String STATUS               = "status";
+    protected static final String TYPE                 = "type";
+    protected static final String PERMISSIONS          = "permissions";
+    protected static final String PERMISSION           = "permission";
+    protected static final String VALUE                = "value";
+    protected static final String RESOURCE_PERMISSIONS = "resource-permissions";
+    protected static final String RESOURCE             = "resource";
+    protected static final String RESOURCES            = "resources";
+    protected static final String CLASS                = "class";
+    protected static final String PACKAGE              = "package";
+    protected static final String DEFAULT              = "default";
+    protected static final String HTTP_METHODS         = "http-methods";
+    protected static final String PATH_PATTERN         = "path-pattern";
 
     protected @Inject MTypeManager mTypeManager;
 
@@ -315,13 +325,18 @@ public class XmlApiConfigReader implements ApiConfigReader {
             }
 
             if(reader.isStartElement(PERMISSIONS)) {
-                readApiPermissions(context, reader, api);
+                readPermissions(context, reader, api);
+                continue;
+            }
+
+            if(reader.isStartElement(RESOURCE_PERMISSIONS)) {
+                readResourcePermissions(context, reader, api);
                 continue;
             }
         }
     }
 
-    protected void readApiPermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+    protected void readPermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
         StringBuilder chars      = new StringBuilder();
         boolean       hasElement = false;
 
@@ -359,5 +374,61 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 });
             }
         }
+    }
+
+    protected void readResourcePermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+        ResourcePermissions rps = new ResourcePermissions();
+
+        reader.loopInsideElement(() -> {
+
+            if(reader.isStartElement(RESOURCE)) {
+                String className = reader.getRequiredAttribute(CLASS);
+
+                rps.addResourceClass(Classes.forName(className));
+
+                return;
+            }
+
+            if(reader.isStartElement(RESOURCES)) {
+
+                String packageName = reader.getRequiredAttribute(PACKAGE);
+
+                rps.addResourcePackage(packageName);
+
+                return;
+            }
+
+            if(reader.isStartElement(PERMISSION)) {
+
+                ResourcePermission rp = new ResourcePermission();
+
+                rp.setValue(reader.getRequiredAttribute(VALUE));
+                rp.setDescription(reader.getAttribute(DESC));
+                rp.setDefault(reader.getBooleanAttribute(DEFAULT, false));
+
+                String httpMethods = reader.getAttribute(HTTP_METHODS);
+                if(!Strings.isEmpty(httpMethods)) {
+                    //todo :
+                }
+
+                String pathPattern = reader.getAttribute(PATH_PATTERN);
+                if(!Strings.isEmpty(pathPattern)) {
+                    //todo :
+                }
+
+                rps.addPermission(rp);
+                return;
+            }
+        });
+
+        if(null == rps.getDefaultPermission() && rps.getPermissions().size() == 1) {
+            ResourcePermission rp = rps.getPermissions().iterator().next();
+
+            if(null == rp.getHttpMethods() && null == rp.getPathPattern()) {
+                rps.setDefaultPermission(rp);
+            }
+        }
+
+        api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 }

@@ -149,6 +149,14 @@ public interface ApiConfigurator {
      */
     ApiConfigurator setPermission(MPermission p);
 
+    /**
+     * Adds a new permission if not exists.
+     *
+     * <p/>
+     * Do nothing if not exists.
+     */
+    ApiConfigurator tryAddPermission(MPermission p);
+
 	/**
 	 * Adds a route in this api.
      *
