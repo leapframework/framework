@@ -313,18 +313,14 @@ public class AppClassLoader extends ClassLoader {
             return null;
         }
 
-        if(instrumenting.contains(name)) {
+        if(instrumenting.contains(resource.getURLString())) {
             log.debug("Found cyclic instrumenting class '{}', instrument it now", name);
             return instrumentClass(name, resource, false);
         }
 
-        instrumenting.add(name);
-
         log.trace("Try instrument class '{}' (depFirst)", name);
 
         Class<?> c = instrumentClass(name, resource, true);
-
-        instrumenting.remove(name);
 
         return c;
     }
@@ -351,6 +347,8 @@ public class AppClassLoader extends ClassLoader {
         }
 
         try {
+            instrumenting.add(url);
+
             byte[] rawBytes = IO.readByteArrayAndClose(resource.getInputStream());
 
             if(depFirst) {
@@ -471,6 +469,8 @@ public class AppClassLoader extends ClassLoader {
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);
+        }finally{
+            instrumenting.remove(url);
         }
     }
 
