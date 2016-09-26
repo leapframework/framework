@@ -369,6 +369,7 @@
         <module>base/lang</module>
         <module>base/agent</module>
 		<module>base/core</module>
+        <module>base/test-instrument</module>
         <module>base/test-profile</module>
         <module>base/test-profile1</module>
         <module>base/test-profile2</module>

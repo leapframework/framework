@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+	<base-package>tested</base-package>
+
+    <property name="instrument.redefine" value="false"/>
+
+    <aop>
+        <method-interception>
+            <interceptor class="tested.aop.TInterceptor"/>
+            <matches>
+                <annotation type="tested.aop.TIntercepted"/>
+            </matches>
+        </method-interception>
+    </aop>
+
+</config>
