@@ -124,6 +124,13 @@ public interface THttpResponse {
     }
 
     /**
+     * Parse the response content as json and decodes to array.
+     */
+    default <T> T[] decodeJsonArray(Class<T> componentType) {
+       return JSON.decodeArray(getContent(), componentType);
+    }
+
+    /**
      * Parse the response content as json and decodes to the given type.
      */
     default <T> T decodeJson(Class<T> type) {

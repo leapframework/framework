@@ -35,6 +35,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     }
 	
 	public void setMProperty(MProperty mp) {
+        this.property = mp;
 		this.name  = mp.getName();
 		this.title = mp.getTitle();
 		this.summary = mp.getSummary();

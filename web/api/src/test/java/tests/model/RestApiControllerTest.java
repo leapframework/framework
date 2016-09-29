@@ -30,15 +30,16 @@ import java.util.Map;
 
 public class RestApiControllerTest extends WebTestBase {
 
-    private static Category c1  = null;
-    private static Category c2  = null;
-    private static RestApi  api = null;
+    private static Category c1   = null;
+    private static Category c2   = null;
+    private static RestApi  api1 = null;
+    private static RestApi  api2 = null;
 
     @Test
     public void testQueryOne() {
-        RestApi result = get("/api/restapi/" + api.getId()).decodeJson(RestApi.class);
-        assertEquals(result.getId(), api.getId());
-        assertEquals(result.getName(), api.getName());
+        RestApi result = get("/api/restapi/" + api1.getId()).decodeJson(RestApi.class);
+        assertEquals(result.getId(), api1.getId());
+        assertEquals(result.getName(), api1.getName());
         assertNotNull(result.getCreatedAt());
 
         get("/api/restapi/not_exists").assertNotFound();
@@ -47,18 +48,18 @@ public class RestApiControllerTest extends WebTestBase {
     @Test
     public void testQueryOneWithSelect() {
         Map<String,Object> record =
-                get("/api/restapi/" + api.getId() + "?select=id,name,title").decodeJsonMap();
+                get("/api/restapi/" + api1.getId() + "?select=id,name,title").decodeJsonMap();
 
         assertEquals(3, record.size());
-        assertEquals(api.getId(), record.get("id"));
+        assertEquals(api1.getId(), record.get("id"));
 
-        get("/api/restapi/" + api.getId() + "?select=not_exists").assertBadRequest();
+        get("/api/restapi/" + api1.getId() + "?select=not_exists").assertBadRequest();
     }
 
     @Test
     public void testQueryOneWithExpand() {
         RestApi record =
-                get("/api/restapi/" + api.getId() + "?expand=categories").decodeJson(RestApi.class);
+                get("/api/restapi/" + api1.getId() + "?expand=categories").decodeJson(RestApi.class);
 
         List<Category> categories = record.getCategories();
         assertEquals(1, categories.size());
@@ -66,15 +67,15 @@ public class RestApiControllerTest extends WebTestBase {
         assertNotNull(categories.get(0).getCreatedAt());
 
         Map<String,Object> map =
-                get("/api/restapi/" + api.getId() + "?expand=categories(id,title)").decodeJsonMap();
+                get("/api/restapi/" + api1.getId() + "?expand=categories(id,title)").decodeJsonMap();
         List<Map<String,Object>> categoriesListMap = (List<Map<String,Object>>)map.get("categories");
         Map<String,Object> categoriesMap = categoriesListMap.get(0);
         assertEquals(2, categoriesMap.size());
         assertEquals(c1.getId(), categoriesMap.get("id"));
 
         //bad request
-        get("/api/restapi/" + api.getId() + "?expand=not_exists").assertBadRequest();
-        get("/api/restapi/" + api.getId() + "?expand=categories(not_exists)").assertBadRequest();
+        get("/api/restapi/" + api1.getId() + "?expand=not_exists").assertBadRequest();
+        get("/api/restapi/" + api1.getId() + "?expand=categories(not_exists)").assertBadRequest();
     }
 
     @Test
@@ -85,7 +86,7 @@ public class RestApiControllerTest extends WebTestBase {
         Map<String,Object> record = records.get(0);
 
         assertEquals(3, record.size());
-        assertEquals(api.getId(), record.get("id"));
+        assertEquals(api1.getId(), record.get("id"));
 
         //bad request
         get("/api/restapi?select=not_exists").assertBadRequest();
@@ -105,6 +106,39 @@ public class RestApiControllerTest extends WebTestBase {
         //bad request
         get("/api/restapi?expand=not_exists").assertBadRequest();
         get("/api/restapi?expand=categories(not_exists)").assertBadRequest();
+    }
+
+    @Test
+    public void testQueryListWithFieldFilters() {
+        RestApi[] apis = get("/api/restapi?name=not_exists").decodeJsonArray(RestApi.class);
+        assertEquals(0, apis.length);
+
+        apis = get("/api/restapi?name=api1").decodeJsonArray(RestApi.class);
+        assertEquals(1, apis.length);
+    }
+
+    @Test
+    public void testQueryListWithRelationalFilters() {
+        RestApi[] apis = get("/api/restapi?categories=not_exists").decodeJsonArray(RestApi.class);
+        assertEquals(0, apis.length);
+
+        apis = get("/api/restapi?categories=" + c1.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(1, apis.length);
+
+        apis = get("/api/restapi?categories=" + c1.getId() + "," + c2.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
+
+        apis = get("/api/restapi?categories=" + c1.getId() + "&categories=" + c2.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
+
+        apis = get("/api/restapi?filters=categories%20eq%20" + c1.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(1, apis.length);
+
+        apis = get("/api/restapi?filters=name%20eq%20api1%20and%20categories%20eq%20" + c1.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(1, apis.length);
+
+        apis = get("/api/restapi?filters=name%20eq%20api1%20or%20categories%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
     }
 
     @Test
@@ -181,32 +215,42 @@ public class RestApiControllerTest extends WebTestBase {
         c2.setTitle("Cate2");
         c2.create();
 
-        api = new RestApi();
-        api.setName("api1");
-        api.setTitle("Api1");
-        api.create();
+        api1 = new RestApi();
+        api1.setName("api1");
+        api1.setTitle("Api1");
+        api1.create();
 
-        RestCategory rc = new RestCategory();
-        rc.setApiId(api.getId());
-        rc.setCategoryId(c1.getId());
-        rc.create();
+        RestCategory rc1 = new RestCategory();
+        rc1.setApiId(api1.getId());
+        rc1.setCategoryId(c1.getId());
+        rc1.create();
 
         RestPath path = new RestPath();
         path.setFullPath("/");
-        path.setApiId(api.getId());
+        path.setApiId(api1.getId());
         path.create();
 
         RestPath subPath = new RestPath();
-        subPath.setApiId(api.getId());
+        subPath.setApiId(api1.getId());
         subPath.setParentId(path.getId());
         subPath.setFullPath("/t");
         subPath.create();
 
         RestOperation op = new RestOperation();
-        op.setApiId(api.getId());
+        op.setApiId(api1.getId());
         op.setPathId(path.getId());
         op.setTitle("Get");
         op.setHttpMethod(HTTP.Method.GET);
         op.create();
+
+        api2 = new RestApi();
+        api2.setName("api2");
+        api2.setTitle("Api2");
+        api2.create();
+
+        RestCategory rc2 = new RestCategory();
+        rc1.setApiId(api2.getId());
+        rc1.setCategoryId(c2.getId());
+        rc1.create();
     }
 }

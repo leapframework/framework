@@ -249,32 +249,17 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                     where.append(" and ");
                 }
 
-                FieldMapping fm = em.tryGetFieldMapping(name);
-                if (null != fm) {
-                    where.append(query.alias()).append('.').append(name).append(" = ?");
-                    args.add(Converts.convert(value, fm.getJavaType()));
+                if(!ap.isReference()) {
+                    applyFieldFilter(query, where, args, name, value, "=");
+                    continue;
+                }else{
+                    String[] a = params.getArray(name);
+                    if(a.length == 1) {
+                        a = Strings.split(a[0], ',');
+                    }
+                    applyRelationalFilter(query, where, args, joins, name, a);
                     continue;
                 }
-
-                RelationProperty rp = em.tryGetRelationProperty(name);
-                if (null != rp) {
-                    String alias = "jn" + joins++;
-
-                    query.joinWithWhere(rp.getTargetEntityName(), rp.getRelationName(), alias, where, (f) -> {
-
-                        String[] a = params.getArray(name);
-                        if(a.length == 1) {
-                            a = Strings.split(a[0], ',');
-                        }
-
-                        args.add(Converts.convert(a, Array.newInstance(((FieldMapping)f).getJavaType(), 0).getClass()));
-
-                    });
-
-                    continue;
-                }
-
-                throw new IllegalStateException("No field or relational property '" + name + "' in entity '" + em.getEntityName() + "'");
             }
         }
 
@@ -321,10 +306,24 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                         throw new BadRequestException("Property '" + name + "' is not filterable!");
                     }
 
-                    FieldMapping fm = em.getFieldMapping(name);
+                    String sqlOperator = toSqlOperator(op);
 
-                    where.append(name).append(' ').append(toSqlOperator(op)).append(" ?");
-                    args.add(Converts.convert(value, fm.getJavaType()));
+                    if(!ap.isReference()) {
+                        applyFieldFilter(query, where, args, name, value, sqlOperator);
+                        continue;
+                    }else{
+                        if(op != FiltersParser.Token.EQ) {
+                            throw new BadRequestException("Relational property '" + name + "' only supports 'eq' operator");
+                        }
+
+                        String[] a = Strings.split(value, ',');
+                        applyRelationalFilter(query, where, args, joins, name, a);
+                        continue;
+                    }
+
+//                    FieldMapping fm = em.getFieldMapping(name);
+//                    where.append(name).append(' ').append(toSqlOperator(op)).append(" ?");
+//                    args.add(Converts.convert(value, fm.getJavaType()));
                 }
 
                 if(and) {
@@ -336,6 +335,23 @@ public class ModelQueryExecutor extends ModelExecutorBase {
         if(where.length() > 0) {
             query.where(where.toString(), args.toArray());
         }
+    }
+
+    protected void applyFieldFilter(CriteriaQuery query, StringBuilder where, List<Object> args, String name, Object value, String op) {
+        FieldMapping fm = em.getFieldMapping(name);
+
+        where.append(query.alias()).append('.').append(name).append(' ').append(op).append(" ?");
+        args.add(Converts.convert(value, fm.getJavaType()));
+    }
+
+    protected void applyRelationalFilter(CriteriaQuery query, StringBuilder where, List<Object> args,  int joins, String name, String[] ids) {
+        RelationProperty rp = em.getRelationProperty(name);
+
+        String alias = "jn" + joins++;
+
+        query.joinWithWhere(rp.getTargetEntityName(), rp.getRelationName(), alias, where, (f) -> {
+            args.add(Converts.convert(ids, Array.newInstance(((FieldMapping)f).getJavaType(), 0).getClass()));
+        });
     }
 
     protected String toSqlOperator(FiltersParser.Token op) {

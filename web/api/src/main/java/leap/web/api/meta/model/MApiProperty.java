@@ -17,6 +17,7 @@ package leap.web.api.meta.model;
 
 import java.util.Map;
 
+import leap.lang.Args;
 import leap.lang.meta.MProperty;
 import leap.lang.meta.MType;
 
@@ -44,6 +45,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public MProperty getProperty() {
         return property;
+    }
+
+    public boolean isReference() {
+        return null != property && property.isReference();
     }
 
     public Boolean getCreatable() {
