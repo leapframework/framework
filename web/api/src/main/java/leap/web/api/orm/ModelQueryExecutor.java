@@ -249,14 +249,19 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                     where.append(" and ");
                 }
 
+                String[] a = params.getArray(name);
+                if(a.length == 1) {
+                    a = Strings.split(a[0], ',');
+                }
+
                 if(!ap.isReference()) {
-                    applyFieldFilter(query, where, args, name, value, "=");
+                    if(a.length > 0) {
+                        applyFieldFilterIn(query, where, args, name, a);
+                    }else{
+                        applyFieldFilter(query, where, args, name, value, "=");
+                    }
                     continue;
                 }else{
-                    String[] a = params.getArray(name);
-                    if(a.length == 1) {
-                        a = Strings.split(a[0], ',');
-                    }
                     applyRelationalFilter(query, where, args, joins, name, a);
                     continue;
                 }
@@ -309,7 +314,11 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                     String sqlOperator = toSqlOperator(op);
 
                     if(!ap.isReference()) {
-                        applyFieldFilter(query, where, args, name, value, sqlOperator);
+                        if(op == FiltersParser.Token.IN) {
+                            applyFieldFilterIn(query, where, args, name, Strings.split(value, ','));
+                        }else{
+                            applyFieldFilter(query, where, args, name, value, sqlOperator);
+                        }
                         continue;
                     }else{
                         if(op != FiltersParser.Token.EQ) {
@@ -342,6 +351,13 @@ public class ModelQueryExecutor extends ModelExecutorBase {
 
         where.append(query.alias()).append('.').append(name).append(' ').append(op).append(" ?");
         args.add(Converts.convert(value, fm.getJavaType()));
+    }
+
+    protected void applyFieldFilterIn(CriteriaQuery query, StringBuilder where, List<Object> args, String name, String[] values) {
+        FieldMapping fm = em.getFieldMapping(name);
+
+        where.append(query.alias()).append('.').append(name).append(' ').append("in").append(" ?");
+        args.add(Converts.convert(values, Array.newInstance(((FieldMapping)fm).getJavaType(), 0).getClass()));
     }
 
     protected void applyRelationalFilter(CriteriaQuery query, StringBuilder where, List<Object> args,  int joins, String name, String[] ids) {
@@ -380,8 +396,9 @@ public class ModelQueryExecutor extends ModelExecutorBase {
             return "<>";
         }
 
-        //todo : in
-//        if(op == FiltersParser.Token.IN)
+        if(op == FiltersParser.Token.IN) {
+            return "in";
+        }
 
         if(op == FiltersParser.Token.LIKE) {
             return "like";

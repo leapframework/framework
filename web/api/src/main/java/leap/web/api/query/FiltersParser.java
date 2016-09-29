@@ -35,7 +35,7 @@ public class FiltersParser extends ParserBase {
 
     static {
         op(Token.LIKE);
-        //op(Token.IN); //todo : supports in
+        op(Token.IN);
         op(Token.EQ);
         op(Token.GT);
         op(Token.LT);

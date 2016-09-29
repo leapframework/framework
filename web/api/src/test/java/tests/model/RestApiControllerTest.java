@@ -21,6 +21,7 @@ package tests.model;
 import app.models.api.*;
 import leap.lang.New;
 import leap.lang.http.HTTP;
+import leap.lang.net.Urls;
 import leap.webunit.WebTestBase;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -115,6 +116,12 @@ public class RestApiControllerTest extends WebTestBase {
 
         apis = get("/api/restapi?name=api1").decodeJsonArray(RestApi.class);
         assertEquals(1, apis.length);
+
+        apis = get("/api/restapi?name=api1,api2").decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
+
+        apis = get("/api/restapi?filters=" + Urls.encode("name in api1,api2")).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
     }
 
     @Test
