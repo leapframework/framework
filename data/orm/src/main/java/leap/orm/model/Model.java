@@ -27,6 +27,7 @@ import leap.db.Db;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Named;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
@@ -1054,7 +1055,8 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     
     protected void doSave(){
     	Object id = id();
-    	if(null == id){
+    	if(null == id || ((id instanceof String) && Strings.isEmpty((String)id))){
+    		this.id(null);
     		if(!doCreate() ){
     			throw new RecordNotSavedException("Record not created");
     		}

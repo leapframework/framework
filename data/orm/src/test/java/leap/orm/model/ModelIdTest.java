@@ -18,6 +18,7 @@ package leap.orm.model;
 import java.util.List;
 
 import leap.junit.contexual.Contextual;
+import leap.lang.Strings;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.ModelWithGuid;
 import leap.orm.tested.model.ModelWithId;
@@ -75,7 +76,18 @@ public class ModelIdTest extends OrmTestCase {
         ModelWithId m2 = ModelWithId.find(m.id());
         assertEquals("",m2.getField1());
     }
-	
+
+	@Test
+	public void testModelIdWithEmptyStringId(){
+		ModelWithGuid.deleteAll();
+		ModelWithGuid m = new ModelWithGuid();
+		m.setId("");
+		m.setField1("hello");
+		m.save();
+
+		assertFalse(Strings.isEmpty(m.getId()));
+	}
+
 	@Test
 	public void testModelWithGuid(){
 		ModelWithGuid m = new ModelWithGuid();
