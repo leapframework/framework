@@ -23,6 +23,7 @@ import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
 
 import java.lang.reflect.Type;
@@ -109,7 +110,10 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
         for(RelationProperty rp : em.getRelationProperties()) {
 
+            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
             EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
+
 
             MPropertyBuilder p = new MPropertyBuilder();
             p.setName(rp.getName());
@@ -123,6 +127,20 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
             if(null != rp.getBeanProperty()) {
                 configureProperty(rp.getBeanProperty(), p);
+            }
+
+            if(rm.isManyToMany()) {
+                if(null == p.getCreatable()) {
+                    p.setCreatable(true);
+                }
+
+                if(null == p.getUpdatable()) {
+                    p.setUpdatable(true);
+                }
+
+                if(null == p.getFilterable()) {
+                    p.setFilterable(true);
+                }
             }
 
             ct.addProperty(p.build());
