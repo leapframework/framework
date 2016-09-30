@@ -114,7 +114,9 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                 }
             }
         }
-
+        if(options.isTotal()){
+            count = query.count();
+        }
         return new QueryListResult(list, count);
     }
 
