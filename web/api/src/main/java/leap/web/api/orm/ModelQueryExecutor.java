@@ -114,9 +114,11 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                 }
             }
         }
+
         if(options.isTotal()){
             count = query.count();
         }
+
         return new QueryListResult(list, count);
     }
 
@@ -257,7 +259,7 @@ public class ModelQueryExecutor extends ModelExecutorBase {
                 }
 
                 if(!ap.isReference()) {
-                    if(a.length > 0) {
+                    if(a.length > 1) {
                         applyFieldFilterIn(query, where, args, name, a);
                     }else{
                         applyFieldFilter(query, where, args, name, value, "=");

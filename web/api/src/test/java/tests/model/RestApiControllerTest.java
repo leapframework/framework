@@ -23,6 +23,7 @@ import leap.lang.New;
 import leap.lang.http.HTTP;
 import leap.lang.net.Urls;
 import leap.webunit.WebTestBase;
+import leap.webunit.client.THttpResponse;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -107,6 +108,17 @@ public class RestApiControllerTest extends WebTestBase {
         //bad request
         get("/api/restapi?expand=not_exists").assertBadRequest();
         get("/api/restapi?expand=categories(not_exists)").assertBadRequest();
+    }
+
+    @Test
+    public void testQueryListWithTotal() {
+        THttpResponse resp;
+
+        resp = get("/api/restapi?name=api1&total=true");
+        assertEquals(1, Integer.parseInt(resp.getHeader("X-Total-Count")));
+
+        resp = get("/api/restapi?total=true");
+        assertEquals(2, Integer.parseInt(resp.getHeader("X-Total-Count")));
     }
 
     @Test
