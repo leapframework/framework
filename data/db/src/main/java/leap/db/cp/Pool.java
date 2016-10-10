@@ -70,7 +70,7 @@ class Pool {
 		
 		if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
-																	 new SimpleThreadFactory("CP - Health Worker", true), 
+																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
 
 			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(), 
@@ -515,7 +515,7 @@ class Pool {
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
 					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
 							  conn.getBusyDurationMs(), 
-							  new StackTraceStringBuilder(conn.getStackTraceOfThreadOnBorrow()).toString());
+							  new StackTraceStringBuilder(conn.getStackTraceOnBorrow()).toString());
 
                     connectionPool.abandonConnection(conn);
 					continue;

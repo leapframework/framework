@@ -286,8 +286,8 @@ public class PoolProperties {
 		return connectionLeakTimeout;
 	}
 
-	public void setConnectionLeakTimeout(int connectionLeakTimeout) {
-		this.connectionLeakTimeout = connectionLeakTimeout;
+	public void setConnectionLeakTimeout(int seconds) {
+		this.connectionLeakTimeout = seconds;
 	}
 
 	public int getHealthCheckInterval() {

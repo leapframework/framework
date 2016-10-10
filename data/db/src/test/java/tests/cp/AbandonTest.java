@@ -15,7 +15,7 @@
  *  * limitations under the License.
  *
  */
-package leap.db.cp;
+package tests.cp;
 
 import leap.lang.Threads;
 import org.junit.Test;
@@ -42,10 +42,22 @@ public class AbandonTest extends ConnPoolTestBase {
     }
 
     @Test
-    public void testMaxIdle() throws SQLException {
+    public void testAbandonMaxIdle() throws SQLException {
         ds.setMaxIdle(0);
 
         try(Connection conn = ds.getConnection()) {}
+
+        assertEquals(1, ms.getNrOfOpeningConnections());
+        Threads.sleep(1100);
+        assertEquals(0, ms.getNrOfOpeningConnections());
+    }
+
+    @Test
+    public void testAbandonConnectionLeak() throws SQLException {
+        ds.setConnectionLeakTimeout(1);
+
+        //don't close it.
+        Connection conn = ds.getConnection();
 
         assertEquals(1, ms.getNrOfOpeningConnections());
         Threads.sleep(1100);

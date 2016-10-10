@@ -15,6 +15,8 @@
  */
 package leap.db.cp;
 
+import leap.lang.Classes;
+import leap.lang.Strings;
 import leap.lang.jdbc.ConnectionWrapper;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -22,12 +24,16 @@ import leap.lang.logging.LogFactory;
 import leap.lang.logging.StackTraceStringBuilder;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PooledConnection extends ConnectionWrapper implements Connection {
 	private static final Log log = LogFactory.get(PooledConnection.class);
-	
-	static final int STATE_IDLE = 0;
+
+    private static final String FRAMEWORK_PKG = Classes.getPackageName(PooledConnection.class) + ".";
+
+    static final int STATE_IDLE = 0;
 	static final int STATE_BUSY = 1;
 	static final int STATE_CLEANUP = 2;
     static final int STATE_ABANDON = 3;
@@ -41,14 +47,14 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	private final AtomicInteger  state;
 	private final PoolUtils 	 utils;
 	private final StatementList	 statements = new StatementList();
-	
-	private boolean   			  newCreatedConnection;
-	private int		  			  transactionState = TRANSACTION_STATE_INIT;
-	private long      			  lastBusyTime;
-	private long	  			  lastIdleTime;
-	private Thread				  threadOnBorrow;
-	
-	private String realCatalog;
+
+    private boolean   newCreatedConnection;
+    private int       transactionState = TRANSACTION_STATE_INIT;
+    private long      lastBusyTime;
+    private long      lastIdleTime;
+    private Exception stackTraceOnBorrowException;
+
+    private String realCatalog;
 	private int	   realTransactionIsolation;
 	
 	PooledConnection(Pool pool) {
@@ -60,8 +66,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	}
 	
 	void setupBeforeOnBorrow() {
-		//stackTraceExceptionOnBorrow = new IllegalStateException("");
-		threadOnBorrow   = Thread.currentThread();
+        stackTraceOnBorrowException = new RuntimeException("");
 		transactionState = TRANSACTION_STATE_INIT;
 	}
 	
@@ -116,12 +121,25 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		return false;
 	}
 	
-	public Thread getThreadOnBorrow() {
-		return threadOnBorrow;
-	}
-	
-	public StackTraceElement[] getStackTraceOfThreadOnBorrow() {
-		return threadOnBorrow.getStackTrace();
+	public StackTraceElement[] getStackTraceOnBorrow() {
+        List<StackTraceElement> stes = new ArrayList<>();
+
+        //excludes the trace element in framework.
+        boolean found = false;
+        for(StackTraceElement ste : stackTraceOnBorrowException.getStackTrace()) {
+
+            if(found) {
+                stes.add(ste);
+                continue;
+            }
+
+            if(!Strings.startsWith(ste.getClassName(), FRAMEWORK_PKG)) {
+                found = true;
+                stes.add(ste);
+            }
+        }
+
+		return stes.toArray(new StackTraceElement[stes.size()]);
 	}
 
 	AtomicInteger getState() {

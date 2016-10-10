@@ -40,7 +40,6 @@ class PoolConfig {
 	private final int				   statementTimeout;
 	private final long				   connectionLeakTimeoutMs;
 	
-	
 	PoolConfig(PoolProperties props) {
 		this.testOnBorrow      			      = props.isTestOnBorrow();
 		this.validationQuery   			      = Strings.trimToNull(props.getValidationQuery());
