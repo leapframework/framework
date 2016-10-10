@@ -119,7 +119,7 @@ class PoolConfig {
 	}
 	
 	public boolean hasMaxIdle() {
-		return maxIdle > 0;
+		return maxIdle >= 0;
 	}
 	
 	public int getMaxIdle() {

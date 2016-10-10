@@ -29,9 +29,7 @@ public class AbandonTest extends ConnPoolTestBase {
     public void testAbandonIdleTimeout() throws SQLException {
         ds.setIdleTimeout(1);
 
-        try(Connection conn = ds.getConnection()) {
-
-        }
+        try(Connection conn = ds.getConnection()) {}
 
         assertEquals(1, ms.getNrOfOpenedConnections());
         assertEquals(0, ms.getNrOfClosedConnections());
@@ -40,6 +38,17 @@ public class AbandonTest extends ConnPoolTestBase {
         Threads.sleep(1100);
         assertEquals(1, ms.getNrOfOpenedConnections());
         assertEquals(1, ms.getNrOfClosedConnections());
+        assertEquals(0, ms.getNrOfOpeningConnections());
+    }
+
+    @Test
+    public void testMaxIdle() throws SQLException {
+        ds.setMaxIdle(0);
+
+        try(Connection conn = ds.getConnection()) {}
+
+        assertEquals(1, ms.getNrOfOpeningConnections());
+        Threads.sleep(1100);
         assertEquals(0, ms.getNrOfOpeningConnections());
     }
 

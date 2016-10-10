@@ -364,7 +364,7 @@ public class PoolProperties {
 		validateRange("idleTimeout", idleTimeout, healthCheckInterval, MAX_IDLE_TIMEOUT);
 		
 		if(maxIdle >= 0) {
-			validateRange("maxIdle", maxIdle, 1, maxActive);
+			validateRange("maxIdle", maxIdle, 0, maxActive);
 			validateRange("minIdle", minIdle, 0, maxIdle);
 		}else{
 			validateRange("minIdle", minIdle, 0, maxActive);
