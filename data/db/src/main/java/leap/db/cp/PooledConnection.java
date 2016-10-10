@@ -146,11 +146,11 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		return state;
 	}
 	
-	Connection getReal() {
+	Connection wrapped() {
 		return conn;
 	}
 	
-	void setReal(Connection conn) {
+	void setWrapped(Connection conn) {
 		this.conn = conn;
 	}
 
@@ -229,7 +229,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 
 	void abandonReal() {
 		if(null != conn) {
-			log.debug("Abandon the real connection");
+			log.debug("Abandon the wrapped connection");
 			JDBC.closeConnection(conn);
 			conn = null;
 		}
@@ -237,7 +237,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	
 	void closeReal() {
 		if(null != conn) {
-			log.debug("Close the real connection");
+			log.debug("Close the wrapped connection");
 			JDBC.closeConnection(conn);
 			conn = null;
 		}
@@ -250,14 +250,14 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		}
 	}
 	
-	void closeStatement(Statement proxy,Statement real) throws SQLException {
+	void closeStatement(Statement proxy,Statement wrappd) throws SQLException {
         if(((ProxyStatement)proxy).isClosed()) {
             log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
             return;
         }
 
 		try{
-			real.close();	
+			wrappd.close();
 			successCloseStatement(proxy);
 		}catch(SQLException e) {
 			errorCloseStatement(proxy, e);
@@ -269,14 +269,14 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		}
 	}
 	
-	void closeStatementOnly(Statement proxy,Statement real) throws SQLException {
+	void closeStatementOnly(Statement proxy,Statement wrapped) throws SQLException {
         if(((ProxyStatement)proxy).isClosed()) {
-            log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
+            log.warn("Invalid state, the proxy statement already closed", new Exception("Statement already closed"));
             return;
         }
 
 		try{
-			real.close();	
+			wrapped.close();
 			successCloseStatement(proxy);
 		}catch(SQLException e) {
 			errorCloseStatement(proxy, e);

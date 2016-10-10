@@ -185,92 +185,93 @@ class Pool {
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection real = conn.getReal();
-		if(null == real) {
+		Connection wrappd = conn.wrapped();
+		if(null == wrappd) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			real = createNewConnectionOnBorrow(conn);
+			wrappd = createNewConnectionOnBorrow(conn);
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			real = createNewConnectionOnBorrow(conn);
+			wrappd = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, real);
+		setupConnectionStateOnBorrow(conn, wrappd, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
-		Connection real = factory.getConnection();
-		conn.setReal(real);
+		Connection wrappd = factory.getConnection();
+		conn.setWrapped(wrappd);
 		conn.setNewCreatedConnection(true);
-		return real;
+		return wrappd;
 	}
 	
-	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection real) throws SQLException {
+	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection wrapped, int count) throws SQLException {
 		try {
 	        //Set auto commit.
-	        if(real.getAutoCommit() != config.isDefaultAutoCommit()) {
-	        	real.setAutoCommit(config.isDefaultAutoCommit());	
+	        if(wrapped.getAutoCommit() != config.isDefaultAutoCommit()) {
+	        	wrapped.setAutoCommit(config.isDefaultAutoCommit());
 	        }
 	        
 	        //Set transaction isolation level.
 	        if(config.hasDefaultTransactionIsolation()) {
-		        if(defaultTransactionIsolationLevel != real.getTransactionIsolation()) {
-		        	real.setTransactionIsolation(defaultTransactionIsolationLevel);
+		        if(defaultTransactionIsolationLevel != wrapped.getTransactionIsolation()) {
+		        	wrapped.setTransactionIsolation(defaultTransactionIsolationLevel);
 		        }
 	        }else {
-	        	conn.setRealTransactionIsolation(real.getTransactionIsolation());
+	        	conn.setRealTransactionIsolation(wrapped.getTransactionIsolation());
 	        }
 	        
 	        //Set default catalog.
 	        if(config.hasDefaultCatalog()) {
-		        if(!config.getDefaultCatalog().equals(real.getCatalog())) {
-		        	real.setCatalog(config.getDefaultCatalog());
+		        if(!config.getDefaultCatalog().equals(wrapped.getCatalog())) {
+		        	wrapped.setCatalog(config.getDefaultCatalog());
 		        }
 	        }else {
-	        	conn.setRealCatalog(real.getCatalog());
+	        	conn.setRealCatalog(wrapped.getCatalog());
 	        }
 
 	        //Set default readonly
-	        if(config.isDefaultReadOnly() != real.isReadOnly()) {
-	        	real.setReadOnly(config.isDefaultReadOnly());
+	        if(config.isDefaultReadOnly() != wrapped.isReadOnly()) {
+	        	wrapped.setReadOnly(config.isDefaultReadOnly());
 	        }
         } catch (SQLException e) {
+            conn.abandonReal();
+
         	//if the connection is new, throw the exception.
         	//if the connection is old, abandon it and create a new one.
-        	if(conn.isNewCreatedConnection()) {
+        	if(count > 1 || conn.isNewCreatedConnection()) {
         		log.info("Reset connection error, {}", e.getMessage(), e);
         		throw e;
         	}else{
         		log.warn("Reset connection error, abandon it and create a new one", e);
-        		conn.abandonReal();
-        		real = createNewConnectionOnBorrow(conn);
-        		setupConnectionStateOnBorrow(conn, real);
+        		wrapped = createNewConnectionOnBorrow(conn);
+        		setupConnectionStateOnBorrow(conn, wrapped, count++);
         	}
         }
 	}
 	
 	protected void setupConnectionOnReturn(PooledConnection conn)  throws SQLException {
-		Connection real = conn.getReal();
-		if(null == real) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//If pool has been closed, just ignore it.
 			if(!closed) {
-				log.error("Invalid state, the pooled connection has no real connection on return");	
+				log.error("Invalid state, the pooled connection has no underlying connection on return");
 			}
 			return;
 		}
 		
 		//Reset transaction isolation level
-		if(!config.hasDefaultTransactionIsolation() && conn.getRealTransactionIsolation() != real.getTransactionIsolation()) {
-			real.setTransactionIsolation(conn.getRealTransactionIsolation());
+		if(!config.hasDefaultTransactionIsolation() && conn.getRealTransactionIsolation() != wrapped.getTransactionIsolation()) {
+			wrapped.setTransactionIsolation(conn.getRealTransactionIsolation());
 		}
 		
 		//Reset catalog
-		if(!config.hasDefaultCatalog() && !Strings.equals(conn.getRealCatalog(), real.getCatalog())) {
+		if(!config.hasDefaultCatalog() && !Strings.equals(conn.getRealCatalog(), wrapped.getCatalog())) {
 			conn.setCatalog(conn.getRealCatalog());
 		}
 		
@@ -464,7 +465,7 @@ class Pool {
 				try {
 		            conn.closeReal();
 	            } catch (Throwable e) {
-	            	log.warn("Error closing real connection, {}", e.getMessage(), e);
+	            	log.warn("Error closing wrapped connection, {}", e.getMessage(), e);
 	            }
 			}
 		}
