@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.db.mock;
+package leap.db.cp.mock;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;

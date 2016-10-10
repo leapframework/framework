@@ -22,14 +22,14 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import leap.core.junit.AppTestBase;
-import leap.db.mock.MockConnection;
-import leap.db.mock.MockDataSource;
-import leap.db.mock.MockStatement;
+import leap.db.cp.mock.MockConnection;
+import leap.db.cp.mock.MockDataSource;
+import leap.db.cp.mock.MockStatement;
 
 public abstract class ConnPoolTestBase extends AppTestBase {
 	
-	PooledDataSource poolds;
-	MockDataSource	 mockds;
+	PooledDataSource ds;
+	MockDataSource   ms;
 	
 	@Override
     protected void setUp() throws Exception {
@@ -38,21 +38,21 @@ public abstract class ConnPoolTestBase extends AppTestBase {
 	
 	@Override
     protected void tearDown() throws Exception {
-		if(null != poolds && !poolds.isClose()) {
-			poolds.close();
+		if(null != ds && !ds.isClose()) {
+			ds.close();
 		}
 	}
 
 	protected void initDefaultDataSource() {
-		if(null != poolds && !poolds.isClose()) {
-			poolds.close();
+		if(null != ds && !ds.isClose()) {
+			ds.close();
 		}
-		mockds = new MockDataSource();
-		poolds = new PooledDataSource(mockds);
+		ms = new MockDataSource();
+		ds = new PooledDataSource(ms);
 	}
 	
 	ProxyConnection getConnection() throws SQLException {
-		return (ProxyConnection)poolds.getConnection();
+		return (ProxyConnection) ds.getConnection();
 	}
 	
 	protected PooledDataSource createDefaultDataSource() {

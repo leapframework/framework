@@ -19,24 +19,24 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 
-import leap.db.mock.MockConnection;
-import leap.db.mock.MockStatement;
+import leap.db.cp.mock.MockConnection;
+import leap.db.cp.mock.MockStatement;
 
 import org.junit.Test;
 
-public class ConnectionBorrowTest extends ConnPoolTestBase {
+public class BorrowTest extends ConnPoolTestBase {
 
 	@Test
 	public void testWaitTimeout() throws SQLException {
 		final int maxWait = 1000;
 		
-		poolds.setMaxActive(1);
-		poolds.setMaxWait(maxWait); //1 second
+		ds.setMaxActive(1);
+		ds.setMaxWait(maxWait); //1 second
 		
-		try(Connection conn1 = poolds.getConnection()) {
+		try(Connection conn1 = ds.getConnection()) {
 			long start = System.currentTimeMillis();
 			try{
-				poolds.getConnection();
+				ds.getConnection();
 				fail("Should throw a SQLTimeoutException");
 			}catch(SQLException e) {
 				long wait = System.currentTimeMillis() - start;
@@ -50,36 +50,36 @@ public class ConnectionBorrowTest extends ConnPoolTestBase {
 	
 	@Test
 	public void testValidationQueryOnBorrow() throws SQLException {
-		poolds.setTestOnBorrow(true);
-		poolds.setValidationQuery("select 1");
+		ds.setTestOnBorrow(true);
+		ds.setValidationQuery("select 1");
 		
-		mockds.setSupportsJdbc4Validation(false);
+		ms.setSupportsJdbc4Validation(false);
 		
 		//force create an underlying connection.
-		try(Connection conn = poolds.getConnection()){}
+		try(Connection conn = ds.getConnection()){}
 		
 		//should validate 
-		try(Connection conn = poolds.getConnection()) {
+		try(Connection conn = ds.getConnection()) {
 			MockConnection mconn = real(conn);
 			MockStatement  mstmt = mconn.getLastStatement();
 			
 			assertFalse(mconn.isValidMethodSuccessCalled());
-			assertEquals(poolds.getValidationQuery(), mstmt.getLastQuery());
+			assertEquals(ds.getValidationQuery(), mstmt.getLastQuery());
 		}
 	}
 	
 	@Test
 	public void testJdbc4ValidationOnBorrow() throws SQLException {
-		poolds.setTestOnBorrow(true);
-		poolds.setValidationQuery("select 1");
+		ds.setTestOnBorrow(true);
+		ds.setValidationQuery("select 1");
 		
-		mockds.setSupportsJdbc4Validation(true);
+		ms.setSupportsJdbc4Validation(true);
 		
 		//force create an underlying connection.
-		try(Connection conn = poolds.getConnection()){}
+		try(Connection conn = ds.getConnection()){}
 		
 		//should validate 
-		try(Connection conn = poolds.getConnection()) {
+		try(Connection conn = ds.getConnection()) {
 			MockConnection mconn = real(conn);
 			MockStatement  mstmt = mconn.getLastStatement();
 			assertNull(mstmt);

@@ -15,7 +15,7 @@
  */
 package leap.db.cp;
 
-import leap.db.mock.MockDriver;
+import leap.db.cp.mock.MockDriver;
 import leap.junit.TestBase;
 import org.junit.Test;
 

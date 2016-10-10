@@ -21,7 +21,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;
 
-public class ConnectionCloseTest extends ConnPoolTestBase {
+public class CloseTest extends ConnPoolTestBase {
 
     private static CountDownLatch opened;
     private static CountDownLatch closed;
@@ -34,60 +34,60 @@ public class ConnectionCloseTest extends ConnPoolTestBase {
 		for(int i=0;i<3;i++) {
             openAndClose(10, threads);
 			
-			assertEquals(10,mockds.getNrOfOpenedConnections());
-			assertEquals(0, mockds.getNrOfClosedConnections());
+			assertEquals(10, ms.getNrOfOpenedConnections());
+			assertEquals(0, ms.getNrOfClosedConnections());
 		}
 		
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(0, mockds.getNrOfClosedConnections());
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(0, ms.getNrOfClosedConnections());
 		
-		poolds.close();
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(10,mockds.getNrOfClosedConnections());
+		ds.close();
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(10, ms.getNrOfClosedConnections());
 	}
 	
 	@Test
 	public void testCloseAll10_15() throws Exception {
-		poolds.setMaxActive(10);
+		ds.setMaxActive(10);
 		
 		final int threads = 15;
 		
 		for(int i=0;i<3;i++) {
             openAndClose(10, threads);
 
-			assertEquals(10,mockds.getNrOfOpenedConnections());
-			assertEquals(0, mockds.getNrOfClosedConnections());
+			assertEquals(10, ms.getNrOfOpenedConnections());
+			assertEquals(0, ms.getNrOfClosedConnections());
 		}
 		
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(0, mockds.getNrOfClosedConnections());
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(0, ms.getNrOfClosedConnections());
 		
-		poolds.close();
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(10,mockds.getNrOfClosedConnections());
+		ds.close();
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(10, ms.getNrOfClosedConnections());
 	}
 	
 	@Test
 	public void testCloseAll10_20() throws Exception {
 		initDefaultDataSource();
 
-		poolds.setMaxActive(10);
+		ds.setMaxActive(10);
 
 		final int threads = 20;
 
 		for(int i=0;i<3;i++) {
             openAndClose(10, threads);
 
-			assertEquals(10,mockds.getNrOfOpenedConnections());
-			assertEquals(0, mockds.getNrOfClosedConnections());
+			assertEquals(10, ms.getNrOfOpenedConnections());
+			assertEquals(0, ms.getNrOfClosedConnections());
 		}
 
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(0, mockds.getNrOfClosedConnections());
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(0, ms.getNrOfClosedConnections());
 
-		poolds.close();
-		assertEquals(10,mockds.getNrOfOpenedConnections());
-		assertEquals(10,mockds.getNrOfClosedConnections());
+		ds.close();
+		assertEquals(10, ms.getNrOfOpenedConnections());
+		assertEquals(10, ms.getNrOfClosedConnections());
 	}
 
     private void openAndClose(int conns, int threads) throws Exception {
@@ -95,7 +95,7 @@ public class ConnectionCloseTest extends ConnPoolTestBase {
         closed = new CountDownLatch(threads);
 
         for(int j=0;j<threads;j++) {
-            OpenCloseThread thread = new OpenCloseThread(poolds);
+            OpenCloseThread thread = new OpenCloseThread(ds);
             thread.start();
         }
 

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.db.mock;
+package leap.db.cp.mock;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -26,8 +26,9 @@ import javax.sql.DataSource;
 
 public class MockDataSource implements DataSource {
 	
-	private final AtomicInteger nrOfOpenedConnections = new AtomicInteger(0);
-	private final AtomicInteger nrOfClosedConnections = new AtomicInteger(0);
+	private final AtomicInteger nrOfOpenedConnections  = new AtomicInteger(0);
+	private final AtomicInteger nrOfClosedConnections  = new AtomicInteger(0);
+    private final AtomicInteger nrOfOpeningConnections = new AtomicInteger(0);
 	
 	private String  url                         = MockDriver.JDBC_URL;
 	private boolean supportsJdbc4Validation     = true;
@@ -44,6 +45,10 @@ public class MockDataSource implements DataSource {
 	public int getNrOfClosedConnections() {
 		return nrOfClosedConnections.get();
 	}
+
+    public int getNrOfOpeningConnections() {
+        return nrOfOpeningConnections.get();
+    }
 	
 	public String getUrl() {
 		return url;
@@ -103,12 +108,14 @@ public class MockDataSource implements DataSource {
 		MockConnection connection = new MockConnection(this, username, password);
 		
 		nrOfOpenedConnections.incrementAndGet();
+        nrOfOpeningConnections.incrementAndGet();
 		
 		return connection;
 	}
 	
 	protected void closeConnection(MockConnection connection) {
 		nrOfClosedConnections.incrementAndGet();
+        nrOfOpeningConnections.decrementAndGet();
 	}
 
 	@Override

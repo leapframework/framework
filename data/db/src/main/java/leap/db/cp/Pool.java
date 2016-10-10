@@ -433,9 +433,9 @@ class Pool {
 		}
 
         /**
-         * Removes the connection from list and realease all the underlying resources.
+         * Removes the connection from list and release all the underlying resources.
          */
-        public void abandandConnection(PooledConnection conn) {
+        public void abandonConnection(PooledConnection conn) {
             conn.markAbandon();
             list.remove(conn);
             conn.closeReal();
@@ -517,7 +517,7 @@ class Pool {
 							  conn.getBusyDurationMs(), 
 							  new StackTraceStringBuilder(conn.getStackTraceOfThreadOnBorrow()).toString());
 
-                    connectionPool.abandandConnection(conn);
+                    connectionPool.abandonConnection(conn);
 					continue;
 				}
 				

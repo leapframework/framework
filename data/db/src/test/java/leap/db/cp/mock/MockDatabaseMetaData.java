@@ -13,20 +13,43 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.db.mock;
+package leap.db.cp.mock;
 
-import leap.lang.jdbc.ResultSetAdapter;
+import java.sql.SQLException;
 
-public class MockResultSet extends ResultSetAdapter {
+import leap.lang.jdbc.DatabaseMetaDataAdapter;
+
+public class MockDatabaseMetaData extends DatabaseMetaDataAdapter {
 	
+	private final MockDataSource dataSource;
 	private final MockConnection connection;
-
-	public MockResultSet(MockConnection connection) {
+	
+	public MockDatabaseMetaData(MockConnection connection) {
 		this.connection = connection;
+		this.dataSource = connection.getDataSource();
 	}
-
+	
+	public MockDataSource getDataSource() {
+		return dataSource;
+	}
+	
 	public MockConnection getConnection() {
 		return connection;
 	}
 
+	@Override
+    public String getURL() throws SQLException {
+		return dataSource.getUrl();
+	}
+	
+	@Override
+    public String getUserName() throws SQLException {
+		return "mock";
+    }
+
+	@Override
+    public String getDatabaseProductName() throws SQLException {
+		return "MySQL";
+	}
+	
 }

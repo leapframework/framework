@@ -116,6 +116,13 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 		throw new SQLFeatureNotSupportedException("'getParentLogger()' not supported");
 	}
 
+    /**
+     * Returns the wrapped {@link DataSource}.
+     */
+    public <T> T wrapped() {
+        return (T)pool.getDataSource();
+    }
+
     @Override
     @SuppressWarnings("unchecked")
 	public <T> T unwrap(Class<T> iface) throws SQLException {

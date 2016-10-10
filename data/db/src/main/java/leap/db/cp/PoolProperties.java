@@ -25,9 +25,9 @@ public class PoolProperties {
 	public static final int DEFAULT_MAX_WAIT                = 30 * 1000; //30 seconds
 	public static final int DEFAULT_MAX_ACTIVE              = 50;
 	public static final int DEFAULT_MAX_IDLE				= 10;
-	public static final int DEFAULT_MIN_IDLE				= 1;
+	public static final int DEFAULT_MIN_IDLE				= 0;
 	public static final int DEFAULT_VALIDATION_TIMEOUT      = 5;   //5 seconds
-	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 2;   //2 seconds
+	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 1;   //1 seconds
 	public static final int DEFAULT_IDLE_TIMEOUT 	        = 180; //3 minutes
 	public static final int DEFAULT_STATEMENT_TIMEOUT       = -1;
 	public static final int DEFAULT_CONNECTION_LEAK_TIMEOUT = -1;
@@ -267,8 +267,11 @@ public class PoolProperties {
 		return idleTimeout;
 	}
 
-	public void setIdleTimeout(int idleTimeout) {
-		this.idleTimeout = idleTimeout;
+    /**
+     * Sets idle timeout in seconds.
+     */
+	public void setIdleTimeout(int seconds) {
+		this.idleTimeout = seconds;
 	}
 	
 	public int getStatementTimeout() {
@@ -291,8 +294,11 @@ public class PoolProperties {
 		return healthCheckInterval;
 	}
 
-	public void setHealthCheckInterval(int cleanupInterval) {
-		this.healthCheckInterval = cleanupInterval;
+    /**
+     * Sets health check interval in seconds.
+     */
+	public void setHealthCheckInterval(int seconds) {
+		this.healthCheckInterval = seconds;
 	}
 	
 	public boolean isHealthCheck() {
