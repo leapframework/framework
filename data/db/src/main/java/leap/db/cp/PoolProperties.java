@@ -66,14 +66,19 @@ public class PoolProperties {
 	protected boolean			   throwPendingTransactionException = true;
 	
 	protected int statementTimeout	    = DEFAULT_STATEMENT_TIMEOUT;
-	protected int idleTimeout	        = DEFAULT_IDLE_TIMEOUT;
+
+    protected int idleTimeout	        = DEFAULT_IDLE_TIMEOUT;
+    protected int idleTimeoutMs         = -1;
+
 	protected int connectionLeakTimeout = DEFAULT_CONNECTION_LEAK_TIMEOUT;
+    protected int connectionLeakTimeoutMs = -1;
 	
 	protected int maxWait		      = DEFAULT_MAX_WAIT;
 	protected int maxActive 		  = DEFAULT_MAX_ACTIVE;
 	protected int maxIdle			  = -1;
 	protected int minIdle			  = DEFAULT_MIN_IDLE;
 	protected int healthCheckInterval = DEFAULT_HEALTH_CHECK_INTERVAL;
+    protected int healthCheckIntervalMs = -1;
 	
 	protected boolean healthCheck = true;
 	
@@ -273,8 +278,16 @@ public class PoolProperties {
 	public void setIdleTimeout(int seconds) {
 		this.idleTimeout = seconds;
 	}
-	
-	public int getStatementTimeout() {
+
+    public int getIdleTimeoutMs() {
+        return idleTimeoutMs < 0 ? idleTimeout * 1000 : idleTimeoutMs;
+    }
+
+    public void setIdleTimeoutMs(int idleTimeoutMs) {
+        this.idleTimeoutMs = idleTimeoutMs;
+    }
+
+    public int getStatementTimeout() {
 		return statementTimeout;
 	}
 
@@ -290,7 +303,15 @@ public class PoolProperties {
 		this.connectionLeakTimeout = seconds;
 	}
 
-	public int getHealthCheckInterval() {
+    public int getConnectionLeakTimeoutMs() {
+        return connectionLeakTimeoutMs < 0 ? connectionLeakTimeout * 1000 : connectionLeakTimeoutMs;
+    }
+
+    public void setConnectionLeakTimeoutMs(int connectionLeakTimeoutMs) {
+        this.connectionLeakTimeoutMs = connectionLeakTimeoutMs;
+    }
+
+    public int getHealthCheckInterval() {
 		return healthCheckInterval;
 	}
 
@@ -300,8 +321,16 @@ public class PoolProperties {
 	public void setHealthCheckInterval(int seconds) {
 		this.healthCheckInterval = seconds;
 	}
-	
-	public boolean isHealthCheck() {
+
+    public int getHealthCheckIntervalMs() {
+        return healthCheckIntervalMs < 0 ? healthCheckInterval * 1000 : healthCheckIntervalMs;
+    }
+
+    public void setHealthCheckIntervalMs(int healthCheckIntervalMs) {
+        this.healthCheckIntervalMs = healthCheckIntervalMs;
+    }
+
+    public boolean isHealthCheck() {
 		return healthCheck;
 	}
 

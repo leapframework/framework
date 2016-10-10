@@ -24,7 +24,7 @@ import leap.lang.jdbc.TransactionIsolation;
 
 import org.junit.Test;
 
-public class ConnStateTest extends ConnPoolTestBase {
+public class ConnStateTest extends PoolTestBase {
 	
 	@Test
 	public void testDefaultState() throws Exception {

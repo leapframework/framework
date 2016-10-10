@@ -39,14 +39,14 @@ class Pool {
 	
 	private static final AtomicInteger poolCounter = new AtomicInteger();
 	
-	private final PoolFactory 	 			   factory;
-	private final PoolConfig  	 			   config;
-	private final DataSource  	 			   dataSource;
-	private final PoolUtils 			   	   utils;
-	private final long 		     			   maxWait;
-	private final int     					   defaultTransactionIsolationLevel;
-	private final ConnectionPool 			   connectionPool;
-	private final ScheduledThreadPoolExecutor  scheduledExecutor;
+	private final PoolFactory                 factory;
+	private final PoolConfig                  config;
+	private final DataSource                  dataSource;
+	private final PoolUtils                   utils;
+	private final long                        maxWait;
+	private final int                         defaultTransactionIsolationLevel;
+	private final SyncPool                    syncPool;
+	private final ScheduledThreadPoolExecutor scheduledExecutor;
 	
 	private volatile String  name;
 	private volatile boolean closed = false;
@@ -59,7 +59,7 @@ class Pool {
 		this.config         = factory.getPoolConfig();
 		this.dataSource     = factory.getDataSource();
 		this.utils 		    = new PoolUtils(this);
-		this.connectionPool = new ConnectionPool();
+		this.syncPool = new SyncPool();
 		this.maxWait        = config.getMaxWait();
 		
 		if(config.hasDefaultTransactionIsolation()) {
@@ -74,8 +74,8 @@ class Pool {
 																	 new ThreadPoolExecutor.DiscardPolicy());
 
 			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(), 
-													   config.getHealthCheckInterval(), 
-													   config.getHealthCheckInterval(), TimeUnit.SECONDS);
+													   config.getHealthCheckIntervalMs(),
+													   config.getHealthCheckIntervalMs(), TimeUnit.MILLISECONDS);
 		}else{
 			this.scheduledExecutor = null;
 		}
@@ -103,10 +103,6 @@ class Pool {
 		return dataSource;
 	}
 	
-	protected Connection getRealConnection() throws SQLException {
-		return factory.getConnection();
-	}
-	
 	/**
 	 * Get a connection from the pool, or timeout after {@link #maxWait} milliseconds.
 	 */
@@ -129,7 +125,7 @@ class Pool {
 		final long start = System.currentTimeMillis();
 		
 		try{
-			PooledConnection conn = connectionPool.borrowConnection(maxWait);
+			PooledConnection conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
 				
@@ -168,7 +164,7 @@ class Pool {
 		}
 		
 		closed = true;
-		connectionPool.close();
+		syncPool.close();
 		log.info("[{}] Connection pool closed!",getName());
 	}
 	
@@ -179,7 +175,7 @@ class Pool {
 			try{
 				conn.setupOnReturn();
 			}finally {
-				connectionPool.returnConnection(conn);
+				syncPool.returnConnection(conn);
 				log.trace("A connection was returned to pool");
 			}
 		}
@@ -208,7 +204,7 @@ class Pool {
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
-		Connection real = getRealConnection();
+		Connection real = factory.getConnection();
 		conn.setReal(real);
 		conn.setNewCreatedConnection(true);
 		return real;
@@ -303,7 +299,6 @@ class Pool {
         	conn.checkDisconnectAndAbandon(e);
         }
 	}
-	
 
 	//from http://bugs.mysql.com/bug.php?id=75615
 	final static class SynchronousExecutor implements Executor {
@@ -333,14 +328,17 @@ class Pool {
 			return thread;
 		}
 	}
-	
-	final class ConnectionPool {
+
+    /**
+     * The underlying pool holds all the created connections and sync state.
+     */
+	final class SyncPool {
 		
 		private final CopyOnWriteArrayList<PooledConnection> list;
 		private final AbstractQueuedLongSynchronizer         synchronizer;
 		private final AtomicLong 							 syncState;
 
-		ConnectionPool() {
+		SyncPool() {
 			this.list 		  = new CopyOnWriteArrayList<>();
 			this.synchronizer = new Synchronizer();
 			this.syncState    = new AtomicLong(1); 
@@ -351,27 +349,27 @@ class Pool {
 			return list;
 		}
 		
-		int getActiveCount() {
-			int count = 0;
-			
-			for(final PooledConnection conn : list) {
-				if(conn.isActive()) {
-					count++;
-				}
-			}
-			
-			return count;
-		}
-		
-		int getRealCount() {
-			int size = 0;
-			for(final PooledConnection conn : list) {
-				if(null != conn.getReal()) {
-					size++;
-				}
-			}
-			return size;
-		}
+//		int getActiveCount() {
+//			int count = 0;
+//
+//			for(final PooledConnection conn : list) {
+//				if(conn.isActive()) {
+//					count++;
+//				}
+//			}
+//
+//			return count;
+//		}
+//
+//		int getRealCount() {
+//			int size = 0;
+//			for(final PooledConnection conn : list) {
+//				if(null != conn.getReal()) {
+//					size++;
+//				}
+//			}
+//			return size;
+//		}
 		
 		int getIdleCount() {
 			int count = 0;
@@ -501,13 +499,13 @@ class Pool {
 		@Override
         public void run() {
 			
-			for(final PooledConnection conn : connectionPool.connections()) {
+			for(final PooledConnection conn : syncPool.connections()) {
 				
 				//cleanup idle timeout connection.
-				if(conn.isIdleTimeout() && connectionPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
+				if(conn.isIdleTimeout() && syncPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
 					log.debug("Abandon a connection is idle timeout");
 					conn.abandonReal();
-					connectionPool.updateToIdleState(conn, STATE_CLEANUP);
+					syncPool.updateToIdleState(conn, STATE_CLEANUP);
 					continue;
 				}
 				
@@ -517,7 +515,7 @@ class Pool {
 							  conn.getBusyDurationMs(), 
 							  new StackTraceStringBuilder(conn.getStackTraceOnBorrow()).toString());
 
-                    connectionPool.abandonConnection(conn);
+                    syncPool.abandonConnection(conn);
 					continue;
 				}
 				
@@ -525,17 +523,17 @@ class Pool {
 			
 			//check max idle and decrease the idle connections.
 			if(config.hasMaxIdle() && config.getMaxActive() > config.getMaxIdle() ) {
-				int diff = connectionPool.getIdleCount() - config.getMaxIdle();
+				int diff = syncPool.getIdleCount() - config.getMaxIdle();
 				if(diff > 0) {
 					for(int i=0;i<diff;i++) {
-						if(connectionPool.getIdleCount() - config.getMaxIdle() <= 0) {
+						if(syncPool.getIdleCount() - config.getMaxIdle() <= 0) {
 							break;
 						}
-						for(PooledConnection conn : connectionPool.connections()) {
-							if(connectionPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
+						for(PooledConnection conn : syncPool.connections()) {
+							if(syncPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
 								log.debug("Close a connection for maxIdle");
 								conn.closeReal();
-								connectionPool.updateToIdleState(conn, STATE_CLEANUP);
+								syncPool.updateToIdleState(conn, STATE_CLEANUP);
 								break;
 							}
 						}
@@ -544,11 +542,11 @@ class Pool {
 			}
 			
 			//check min idle and increase the idle connections.
-			int idles = connectionPool.getIdleCount();
+			int idles = syncPool.getIdleCount();
 			int diff = config.getMinIdle() - idles;
 			if(diff > 0) {
 				for(int i=0;i<diff;i++) {
-					if(config.getMinIdle() - connectionPool.getIdleCount() <= 0) {
+					if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
 						break;
 					}
 					Connection conn = null;

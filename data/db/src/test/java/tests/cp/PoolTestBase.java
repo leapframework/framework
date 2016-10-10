@@ -29,7 +29,7 @@ import tests.cp.mock.MockConnection;
 import tests.cp.mock.MockDataSource;
 import tests.cp.mock.MockStatement;
 
-public abstract class ConnPoolTestBase extends AppTestBase {
+public abstract class PoolTestBase extends AppTestBase {
 	
 	PooledDataSource ds;
 	MockDataSource   ms;
@@ -52,6 +52,7 @@ public abstract class ConnPoolTestBase extends AppTestBase {
 		}
 		ms = new MockDataSource();
 		ds = new PooledDataSource(ms);
+        ds.setHealthCheckIntervalMs(100);
 	}
 	
 	ProxyConnection getConnection() throws SQLException {

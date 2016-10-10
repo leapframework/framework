@@ -23,22 +23,22 @@ class PoolConfig {
 	
 	private final boolean 			   testOnBorrow;
 	private final String  			   validationQuery;
-	private final int	  			   validationTimeout;
-	private final boolean 			   defaultAutoCommit;
+	private final int                  validationTimeout;
+	private final boolean              defaultAutoCommit;
 	private final TransactionIsolation defaultTransactionIsolation;
-	private final String			   defaultCatalog;
-	private final boolean			   defaultReadOnly;
-	private final boolean			   rollbackPendingTransaction;
-	private final boolean			   throwPendingTransactionException;
-	private final long 	  			   maxWait;
-	private final int  	  			   maxActive;
-	private final int				   maxIdle;
-	private final int				   minIdle;
-	private final int				   healthCheckInterval;
-	private final boolean			   healthCheck;
-	private final long				   idleTimeoutMs;	
-	private final int				   statementTimeout;
-	private final long				   connectionLeakTimeoutMs;
+	private final String               defaultCatalog;
+	private final boolean              defaultReadOnly;
+	private final boolean              rollbackPendingTransaction;
+	private final boolean              throwPendingTransactionException;
+	private final long                 maxWait;
+	private final int                  maxActive;
+	private final int                  maxIdle;
+	private final int                  minIdle;
+	private final int                  healthCheckIntervalMs;
+	private final boolean              healthCheck;
+	private final long                 idleTimeoutMs;
+	private final int                  statementTimeout;
+	private final long                 connectionLeakTimeoutMs;
 	
 	PoolConfig(PoolProperties props) {
 		this.testOnBorrow      			      = props.isTestOnBorrow();
@@ -54,11 +54,11 @@ class PoolConfig {
 		this.maxActive           			  = props.getMaxActive();
 		this.maxIdle						  = props.getMaxIdle();
 		this.minIdle						  = props.getMinIdle();
-		this.healthCheckInterval		      = props.getHealthCheckInterval();
+		this.healthCheckIntervalMs            = props.getHealthCheckIntervalMs();
 		this.healthCheck					  = props.isHealthCheck();
-		this.idleTimeoutMs					  = props.getIdleTimeout() * 1000;
+		this.idleTimeoutMs					  = props.getIdleTimeoutMs();
 		this.statementTimeout				  = props.getStatementTimeout();
-		this.connectionLeakTimeoutMs          = props.getConnectionLeakTimeout() * 1000;
+		this.connectionLeakTimeoutMs          = props.getConnectionLeakTimeoutMs();
 	}
 	
 	public boolean isTestOnBorrow() {
@@ -149,8 +149,8 @@ class PoolConfig {
 		return connectionLeakTimeoutMs;
 	}
 
-	public int getHealthCheckInterval() {
-		return healthCheckInterval;
+	public int getHealthCheckIntervalMs() {
+		return healthCheckIntervalMs;
 	}
 
 	public boolean isHealthCheck() {

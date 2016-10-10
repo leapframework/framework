@@ -26,7 +26,7 @@ import tests.cp.mock.MockStatement;
 
 import org.junit.Test;
 
-public class BorrowTest extends ConnPoolTestBase {
+public class BorrowTest extends PoolTestBase {
 
 	@Test
 	public void testWaitTimeout() throws SQLException {

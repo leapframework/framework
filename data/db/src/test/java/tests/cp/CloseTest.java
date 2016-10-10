@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.util.concurrent.CountDownLatch;
 
-public class CloseTest extends ConnPoolTestBase {
+public class CloseTest extends PoolTestBase {
 
     private static CountDownLatch opened;
     private static CountDownLatch closed;

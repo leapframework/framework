@@ -23,22 +23,22 @@ import org.junit.Test;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class AbandonTest extends ConnPoolTestBase {
+public class AbandonTest extends PoolTestBase {
 
     @Test
     public void testAbandonIdleTimeout() throws SQLException {
-        ds.setIdleTimeout(1);
+        ds.setIdleTimeoutMs(100);
 
         try(Connection conn = ds.getConnection()) {}
 
+        assertEquals(1, ms.getNrOfOpeningConnections());
         assertEquals(1, ms.getNrOfOpenedConnections());
         assertEquals(0, ms.getNrOfClosedConnections());
-        assertEquals(1, ms.getNrOfOpeningConnections());
 
-        Threads.sleep(1100);
+        Threads.sleep(1000);
+        assertEquals(0, ms.getNrOfOpeningConnections());
         assertEquals(1, ms.getNrOfOpenedConnections());
         assertEquals(1, ms.getNrOfClosedConnections());
-        assertEquals(0, ms.getNrOfOpeningConnections());
     }
 
     @Test
@@ -48,19 +48,19 @@ public class AbandonTest extends ConnPoolTestBase {
         try(Connection conn = ds.getConnection()) {}
 
         assertEquals(1, ms.getNrOfOpeningConnections());
-        Threads.sleep(1100);
+        Threads.sleep(1000);
         assertEquals(0, ms.getNrOfOpeningConnections());
     }
 
     @Test
     public void testAbandonConnectionLeak() throws SQLException {
-        ds.setConnectionLeakTimeout(1);
+        ds.setConnectionLeakTimeoutMs(100);
 
         //don't close it.
         Connection conn = ds.getConnection();
 
         assertEquals(1, ms.getNrOfOpeningConnections());
-        Threads.sleep(1100);
+        Threads.sleep(1000);
         assertEquals(0, ms.getNrOfOpeningConnections());
     }
 

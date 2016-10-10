@@ -36,7 +36,7 @@ public class DriverDataSourceTest extends TestBase {
 			ds.setDriverClassName(MockDriver.CLASS_NAME);
 			ds.setJdbcUrl(MockDriver.JDBC_URL);
 		
-			ds.init();
+			ds.open();
 			
 			assertTrue(ds.isWrapperFor(DriverDataSource.class));
 			
@@ -57,7 +57,7 @@ public class DriverDataSourceTest extends TestBase {
 			ds.setJdbcUrl("jdbc:err:db");
 		
 	        try {
-	            ds.init();
+	            ds.open();
 	            fail("Should throw exception");
             } catch (Exception e) {
             	assertContains(e.getMessage(), "Unable to get driver");

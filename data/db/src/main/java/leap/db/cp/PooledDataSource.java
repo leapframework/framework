@@ -54,20 +54,33 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 		}
 		return pool;
 	}
-	
-	public void init() {
+
+    /**
+     * Opens the pool and initial connections.
+     */
+	public void open() {
 		if(null != pool) {
-			throw new IllegalStateException("Pool already initialized!");
+			throw new IllegalStateException("Pool already opened!");
 		}
 		pool();
 	}
+
+    /**
+     * Close the pool and close all the underlying opened connections.
+     */
+    @Override
+    public void close() {
+        if(null != pool) {
+            pool.close();
+        }
+    }
+
+    public boolean isOpen() {
+        return null != pool && !pool.isClose();
+    }
 	
 	public boolean isClose() {
 		return null != pool && pool.isClose();
-	}
-	
-	public DataSource getReal() {
-		return pool().getDataSource();
 	}
 	
 	@Override
@@ -78,13 +91,6 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new SQLFeatureNotSupportedException("'getConnection(username,password)' not supported");
-	}
-
-	@Override
-	public void close() {
-		if(null != pool) {
-			pool.close();	
-		}
 	}
 
 	@Override
@@ -119,7 +125,7 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
     /**
      * Returns the wrapped {@link DataSource}.
      */
-    public <T> T wrapped() {
+    public <T extends DataSource> T wrapped() {
         return (T)pool.getDataSource();
     }
 
