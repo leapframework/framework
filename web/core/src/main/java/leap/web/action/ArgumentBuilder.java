@@ -269,6 +269,14 @@ public class ArgumentBuilder implements Buildable<Argument> {
     }
 
     private void autoConfigureValidation() {
+
+        if(null != type) {
+            Required r = type.getAnnotation(Required.class);
+            if(null != r) {
+                required = true;
+            }
+        }
+
         Optional o = Classes.getAnnotation(annotations, Optional.class, false);
         if(null != o) {
             required = false;
