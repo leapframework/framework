@@ -519,6 +519,8 @@ class Pool {
                     syncPool.abandonConnection(conn);
 					continue;
 				}
+
+                //todo : test the underlying connection is valid?
 				
 			}
 			
