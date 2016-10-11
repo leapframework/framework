@@ -22,6 +22,7 @@ import app.models.api.domains.CreatedBy;
 import app.models.api.domains.UpdatedBy;
 import leap.lang.enums.Bool;
 import leap.lang.meta.annotation.Property;
+import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.domain.CreatedAt;
@@ -47,6 +48,7 @@ public abstract class ModelBase extends Model {
 
     @Column
     @CreatedAt
+    @Sortable
     @Property(filterable = Bool.TRUE, creatable = Bool.FALSE, updatable = Bool.FALSE)
     protected Date createdAt;
 
