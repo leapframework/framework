@@ -51,14 +51,11 @@ public class DefaultLogManager implements LogManager {
 
     protected Class<? extends LogModel> logClass;
 
-    protected EntityMapping em;
-
     public void init() throws ClassNotFoundException {
         if(Strings.isEmpty(logClassName)){
             throw new ClassNotFoundException("logClassName can not be null!");
         }
         logClass = (Class<? extends LogModel>) Class.forName(logClassName);
-        em = dao.getOrmContext().getMetadata().getEntityMapping(logClass);
     }
 
     protected String parseDescription(String description, Map<String, Object> vars){
