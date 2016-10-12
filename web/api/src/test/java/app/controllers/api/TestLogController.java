@@ -16,16 +16,25 @@
  *
  */
 
-package leap.web.api.log;
+package app.controllers.api;
 
-import leap.web.action.ActionContext;
+import app.models.api.TestLogModel;
+import leap.core.security.annotation.AllowAnonymous;
+import leap.web.action.ControllerBase;
+import leap.web.annotation.Path;
+import leap.web.annotation.http.GET;
 import leap.web.api.annotation.Log;
 
 /**
  * Created by kael on 2016/10/11.
  */
-public interface LogManager {
-    Class<?> getLogClass() throws ClassNotFoundException;
+@Path("log")
+public class TestLogController extends leap.web.api.log.LogController<TestLogModel> {
+    @GET("/operation")
+    @AllowAnonymous
+    @Log(title = "测试操作", description = "测试操作${name}")
+    public void operation(String name){
 
-    void saveLog(Log annotation, ActionContext context, Object args[]) throws IllegalAccessException, InstantiationException;
+    }
+
 }

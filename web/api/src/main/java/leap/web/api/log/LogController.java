@@ -16,20 +16,22 @@
  *
  */
 
-package app.controllers.api;
+package leap.web.api.log;
 
-import leap.core.security.annotation.AllowAnonymous;
-import leap.web.action.ControllerBase;
-import leap.web.api.annotation.Log;
+import leap.web.annotation.http.GET;
+import leap.web.api.mvc.ApiResponse;
+import leap.web.api.mvc.ModelController;
+import leap.web.api.mvc.params.QueryOptions;
+
+import java.util.List;
 
 /**
- * Created by kael on 2016/10/11.
+ * Created by kael on 2016/10/12.
  */
-@AllowAnonymous
-public class LogController extends ControllerBase {
-    @Log(title = "测试操作", description = "测试操作${name}")
-    public void index(String name){
-
+public abstract class LogController<T> extends ModelController<T>{
+    @GET
+    public ApiResponse<List<T>> queryLogs(QueryOptions options){
+        return queryList(options);
     }
 
 }

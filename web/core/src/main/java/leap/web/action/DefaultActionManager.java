@@ -262,6 +262,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
                 continue;
             }
 
+
             if(a.isAnnotationPresent(RequestBody.class)) {
                 RequestBody rb = Classes.getAnnotation(a.getAnnotations(), RequestBody.class);
                 rbaf.argument   = a;
@@ -477,14 +478,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
         if(!nestedRbaf.declared && requestBody) {
             nestedRbaf = new RequestBodyArgumentInfo();
         }
-
         for(WrapperArgumentResolver.WrappedArgument ba : bas) {
             if(requestBody) {
                 if(ba.property.isComplexType()) {
                     continue;
                 }
             }
-
             ba.resolver = resolveArgumentResolver(route, ba.argument, nestedRbaf);
         }
 

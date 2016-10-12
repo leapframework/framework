@@ -32,7 +32,9 @@ import leap.web.action.ActionContext;
 import leap.web.api.annotation.Log;
 import leap.web.api.log.model.LogModel;
 
+import javax.swing.plaf.ButtonUI;
 import java.sql.Timestamp;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -42,13 +44,13 @@ import java.util.UUID;
 @Configurable(prefix = "api.log")
 public class DefaultLogManager implements LogManager {
     @ConfigProperty(defaultValue = "leap.web.api.log.model.DefaultLogModel")
-    private String logClassName;
+    protected String logClassName;
     @Inject
-    private Dao dao;
+    protected Dao dao;
 
-    private Class<? extends LogModel> logClass;
+    protected Class<? extends LogModel> logClass;
 
-    private EntityMapping em;
+    protected EntityMapping em;
 
     public void init() throws ClassNotFoundException {
         if(Strings.isEmpty(logClassName)){
@@ -56,6 +58,38 @@ public class DefaultLogManager implements LogManager {
         }
         logClass = (Class<? extends LogModel>) Class.forName(logClassName);
         em = dao.getOrmContext().getMetadata().getEntityMapping(logClass);
+    }
+
+    protected String parseDescription(String description, Map<String, Object> vars){
+        if (Strings.contains(description,EL.PREFIX)){
+            StringBuilder builder = new StringBuilder();
+            do{
+                int prefixIndex = description.indexOf(EL.PREFIX);
+                if(prefixIndex == -1){
+                    builder.append(description);
+                    break;
+                }
+                int suffixIndex = description.indexOf(EL.SUFFIX);
+                builder.append(description.substring(0,prefixIndex));
+                String expression = description.substring(prefixIndex,suffixIndex+1);
+                description = description.substring(suffixIndex+1);
+                String value = Objects.toString(EL.eval(expression,vars));
+                builder.append(value);
+                if(Strings.isEmpty(description)){
+                    break;
+                }
+            }while (true);
+            return builder.toString();
+        }
+        return description;
+    }
+
+    protected Map<String,Object> parseVars(Log annotation, ActionContext context, Object args[],LogModel log){
+        Map<String, Object> vars = New.hashMap();
+        vars.put("log",log);
+        vars.putAll(context.getMergedParameters());
+        putVars(annotation,context,args,vars);
+        return vars;
     }
 
     @Override
@@ -73,10 +107,14 @@ public class DefaultLogManager implements LogManager {
         log.setTitle(title);
         log.setCreatedTime(new Timestamp(System.currentTimeMillis()));
         if(Strings.isNotEmpty(annotation.description())){
-            log.setDescription(annotation.description());
+            String description = parseDescription(annotation.description(),parseVars(annotation,context,args,log));
+            log.setDescription(description);
         }
         log.create();
     }
 
+    protected void putVars(Log annotation, ActionContext context, Object args[],Map<String, Object> vars){
+
+    }
 
 }

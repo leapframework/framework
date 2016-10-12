@@ -37,7 +37,9 @@
     <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
-
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.log.LogProcessor">
+        <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
+    </bean>
     <bean type="leap.web.api.mvc.ApiFailureHandler"
           class="leap.web.api.mvc.DefaultApiFailureHandler" primary="true"/>
 

@@ -110,7 +110,7 @@ public abstract class AsmInstrumentProcessor implements AppInstrumentProcessor {
      * Reads the internal class of super class.
      */
     protected static String readSuperName(Resource base, String internalClassName){
-        String classUrl = "classpath:" + internalClassName + ".class";
+        String classUrl = "classpath:" + internalClassName + Classes.CLASS_FILE_SUFFIX;
 
         Resource resource = Resources.getResource(classUrl);
         if(null != resource && resource.exists()){

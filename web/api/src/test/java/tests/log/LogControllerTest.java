@@ -19,6 +19,7 @@
 package tests.log;
 
 import app.models.api.TestLogModel;
+import auth.AuthTestData;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
@@ -29,7 +30,25 @@ public class LogControllerTest extends WebTestBase {
     @Test
     public void testSaveLog(){
         TestLogModel.deleteAll();
-        forGet("/api/log").addQueryParam("name","testlog").send().assertSuccess();
+        forGet("/api/log/operation").addQueryParam("name","testlog").send().assertSuccess();
         assertEquals(1,TestLogModel.count());
+        assertEquals("测试操作testlog",TestLogModel.<TestLogModel>first().getDescription());
     }
+    @Test
+    public void testQueryLog(){
+        String at = forPost("http://127.0.0.1:8080/auth/oauth2/token")
+                .addQueryParam("grant_type","password")
+                .addQueryParam("username", AuthTestData.USERNAME1)
+                .addQueryParam("password",AuthTestData.PASSWORD1)
+                .addQueryParam("client_id","client1")
+                .send().getJson().asJsonObject().get("access_token");
+        assertNotNull(at);
+        TestLogModel.deleteAll();
+        forGet("/api/log/operation").addQueryParam("name","testlog").send().assertSuccess();
+
+        forGet("/api/log").addHeader("Authorization","Bearer " + at).addQueryParam("name","testlog").send().assertSuccess();
+        assertEquals(1,TestLogModel.count());
+        assertEquals("测试操作testlog",TestLogModel.<TestLogModel>first().getDescription());
+    }
+
 }
