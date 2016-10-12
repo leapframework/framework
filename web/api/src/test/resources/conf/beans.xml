@@ -7,9 +7,5 @@
         <property name="username"        value="${jdbc.username}" />
         <property name="password"        value="${jdbc.password}" />
     </bean>
-
-    <bean type="leap.web.api.log.LogManager" class="leap.web.api.log.DefaultLogManager" init-method="init"></bean>
-    <bean type="leap.web.action.ActionInterceptor" class="leap.web.api.log.LogInterceptor"></bean>
-
     <import resource="beans_local.xml" check-existence="false"/>
 </beans>

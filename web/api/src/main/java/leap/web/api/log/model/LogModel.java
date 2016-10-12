@@ -18,6 +18,8 @@
 
 package leap.web.api.log.model;
 
+import leap.lang.meta.annotation.Filterable;
+import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.Column;
 import leap.orm.model.Model;
 
@@ -27,14 +29,22 @@ import java.sql.Timestamp;
  * Created by kael on 2016/10/10.
  */
 public abstract class LogModel extends Model {
+    @Filterable
+    @Sortable
     @Column
     protected String id;
+    @Filterable
+    @Sortable
     @Column
     protected String title;
+    @Filterable
+    @Sortable
     @Column
     protected String description;
+    @Filterable
+    @Sortable
     @Column
-    protected Timestamp createdTime;
+    protected Timestamp createdAt;
 
     public String getId() {
         return id;
@@ -60,11 +70,12 @@ public abstract class LogModel extends Model {
         this.description = description;
     }
 
-    public Timestamp getCreatedTime() {
-        return createdTime;
+
+    public Timestamp getCreatedAt() {
+        return createdAt;
     }
 
-    public void setCreatedTime(Timestamp createdTime) {
-        this.createdTime = createdTime;
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
     }
 }

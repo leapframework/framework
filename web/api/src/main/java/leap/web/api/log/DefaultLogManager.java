@@ -29,6 +29,7 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.model.Model;
 import leap.web.action.ActionContext;
+import leap.web.action.Argument;
 import leap.web.api.annotation.Log;
 import leap.web.api.log.model.LogModel;
 
@@ -87,7 +88,16 @@ public class DefaultLogManager implements LogManager {
     protected Map<String,Object> parseVars(Log annotation, ActionContext context, Object args[],LogModel log){
         Map<String, Object> vars = New.hashMap();
         vars.put("log",log);
-        vars.putAll(context.getMergedParameters());
+
+        if(args != null && args.length > 0){
+            Argument[] arguments = context.getAction().getArguments();
+            for(int i = 0; i < args.length; i ++){
+                vars.put(arguments[i].getName(),args[i]);
+            }
+        }
+        if(context.getRequest().getUser() != null){
+            vars.put("user",context.getRequest().getUser());
+        }
         putVars(annotation,context,args,vars);
         return vars;
     }
@@ -105,7 +115,7 @@ public class DefaultLogManager implements LogManager {
         log.setId(UUID.randomUUID().toString());
         String title = Strings.isEmpty(annotation.value())?annotation.title():annotation.value();
         log.setTitle(title);
-        log.setCreatedTime(new Timestamp(System.currentTimeMillis()));
+        log.setCreatedAt(new Timestamp(System.currentTimeMillis()));
         if(Strings.isNotEmpty(annotation.description())){
             String description = parseDescription(annotation.description(),parseVars(annotation,context,args,log));
             log.setDescription(description);
