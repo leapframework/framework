@@ -86,6 +86,11 @@ public class MockConnection extends ConnectionAdapter {
 	
 	@Override
     public boolean isValid(int timeout) throws SQLException {
+
+        if(dataSource.isValidateConnectionError()) {
+            throw new SQLException("Validate Connection Error!");
+        }
+
 		if(!dataSource.isSupportsJdbc4Validation()) {
 			throw new SQLException("Not supported");
 		}else{

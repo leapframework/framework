@@ -41,6 +41,7 @@ public class MockDataSource implements DataSource {
     private boolean openConnectionError;
     private boolean setAutoCommitError;
     private AtomicInteger setAutoCommitErrorCount = new AtomicInteger(-1);
+    private boolean validateConnectionError;
 
     public int getNrOfOpenedConnections() {
 		return nrOfOpenedConnections.get();
@@ -52,26 +53,6 @@ public class MockDataSource implements DataSource {
 
     public int getNrOfOpeningConnections() {
         return nrOfOpeningConnections.get();
-    }
-
-    public boolean isOpenConnectionError() {
-        return openConnectionError;
-    }
-
-    public void setOpenConnectionError(boolean openConnectionError) {
-        this.openConnectionError = openConnectionError;
-    }
-
-    public boolean isSetAutoCommitError() {
-        return setAutoCommitError;
-    }
-
-    public void setSetAutoCommitError(boolean setAutoCommitError) {
-        this.setAutoCommitError = setAutoCommitError;
-    }
-
-    public AtomicInteger getSetAutoCommitErrorCount() {
-        return setAutoCommitErrorCount;
     }
 
     public String getUrl() {
@@ -181,4 +162,32 @@ public class MockDataSource implements DataSource {
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;
 	}
+
+    public boolean isOpenConnectionError() {
+        return openConnectionError;
+    }
+
+    public void setOpenConnectionError(boolean openConnectionError) {
+        this.openConnectionError = openConnectionError;
+    }
+
+    public boolean isSetAutoCommitError() {
+        return setAutoCommitError;
+    }
+
+    public void setSetAutoCommitError(boolean setAutoCommitError) {
+        this.setAutoCommitError = setAutoCommitError;
+    }
+
+    public AtomicInteger getSetAutoCommitErrorCount() {
+        return setAutoCommitErrorCount;
+    }
+
+    public boolean isValidateConnectionError() {
+        return validateConnectionError;
+    }
+
+    public void setValidateConnectionError(boolean validateConnectionError) {
+        this.validateConnectionError = validateConnectionError;
+    }
 }

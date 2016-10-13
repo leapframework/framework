@@ -90,6 +90,26 @@ public class BorrowTest extends PoolTestBase {
 	}
 
     @Test
+    public void testInvalidConnectionOnBorrowOld() throws SQLException {
+        ds.setTestOnBorrow(true);
+        ms.setSupportsJdbc4Validation(true);
+
+        Connection wrapped;
+        try(Connection conn = ds.getConnection()){
+            wrapped = conn.unwrap(MockConnection.class);
+        }
+
+        try(Connection conn = ds.getConnection()){
+            assertSame(wrapped, conn.unwrap(MockConnection.class));
+        }
+
+        ms.setValidateConnectionError(true);
+        try(Connection conn = ds.getConnection()){
+            assertNotSame(wrapped, conn.unwrap(MockConnection.class));
+        }
+    }
+
+    @Test
     public void testOpenConnectionError() {
         ms.setOpenConnectionError(true);
 
