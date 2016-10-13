@@ -172,6 +172,4 @@ public class BorrowTest extends PoolTestBase {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
     }
-
-
 }

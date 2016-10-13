@@ -42,6 +42,7 @@ public class MockDataSource implements DataSource {
     private boolean setAutoCommitError;
     private AtomicInteger setAutoCommitErrorCount = new AtomicInteger(-1);
     private boolean validateConnectionError;
+    private boolean returnSQLWarnings;
 
     public int getNrOfOpenedConnections() {
 		return nrOfOpenedConnections.get();
@@ -189,5 +190,13 @@ public class MockDataSource implements DataSource {
 
     public void setValidateConnectionError(boolean validateConnectionError) {
         this.validateConnectionError = validateConnectionError;
+    }
+
+    public boolean isReturnSQLWarnings() {
+        return returnSQLWarnings;
+    }
+
+    public void setReturnSQLWarnings(boolean returnSQLWarnings) {
+        this.returnSQLWarnings = returnSQLWarnings;
     }
 }

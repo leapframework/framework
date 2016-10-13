@@ -19,6 +19,7 @@ package tests.cp.mock;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -38,6 +39,8 @@ public class MockConnection extends ConnectionAdapter {
 	private boolean       closed;
 	private MockStatement lastStatement;
 	private boolean		  validMethodSuccessCalled;
+
+    private SQLWarning    warning;
 	
 	public MockConnection(MockDataSource dataSource) {
 		this(dataSource, null, null);
@@ -98,8 +101,28 @@ public class MockConnection extends ConnectionAdapter {
 			return true;
 		}
     }
-	
-	@Override
+
+    public SQLWarning warning() {
+        return warning;
+    }
+
+    @Override
+    public SQLWarning getWarnings() throws SQLException {
+        if(dataSource.isReturnSQLWarnings()) {
+            if(null == warning) {
+                warning = new SQLWarning("test", "test");
+            }
+            return warning;
+        }
+        return super.getWarnings();
+    }
+
+    @Override
+    public void clearWarnings() throws SQLException {
+        warning = null;
+    }
+
+    @Override
     public Statement createStatement() throws SQLException {
 		lastStatement = new MockStatement(this);
 		return lastStatement;

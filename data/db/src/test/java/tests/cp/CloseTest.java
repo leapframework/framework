@@ -18,15 +18,46 @@
 package tests.cp;
 
 import org.junit.Test;
+import tests.cp.mock.MockConnection;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.concurrent.CountDownLatch;
 
 public class CloseTest extends PoolTestBase {
 
     private static CountDownLatch opened;
     private static CountDownLatch closed;
+
+    @Test
+    public void testRollbackPendingTransaction() throws SQLException {
+        //Creates a pending transaction.
+        try{
+            try(Connection conn = ds.getConnection()) {
+                conn.setAutoCommit(false);
+                conn.createStatement().execute("select 1");
+            }
+            fail("Should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "pending transaction");
+        }
+    }
+
+    @Test
+    public void testClearWarnings() throws SQLException {
+        ms.setReturnSQLWarnings(true);
+
+        MockConnection mc;
+        try(Connection conn = ds.getConnection()) {
+            mc = conn.unwrap(MockConnection.class);
+            assertNull(mc.warning());
+            assertNotNull(conn.getWarnings());
+            assertNotNull(mc.warning());
+        }
+
+        assertNull(mc.warning());
+    }
 
 	@Test
 	public void testCloseAll10_10() throws Exception {
