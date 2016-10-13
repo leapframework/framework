@@ -356,6 +356,9 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     protected MApiParameter.Location readParameterIn(String param, String in) {
+        if(Strings.isEmpty(in)){
+            throw new InvalidSpecException("invalid specification of parameter "+param + ": property named in can not be empty!");
+        }
         switch (in) {
             case "body" :
                 return MApiParameter.Location.BODY;

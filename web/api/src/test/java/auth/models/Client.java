@@ -21,7 +21,7 @@ import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 import leap.orm.model.Model;
 
-@Table("auth_client")
+@Table("oauth2_client")
 @AutoGenerateColumns(false)
 public class Client extends Model {
     

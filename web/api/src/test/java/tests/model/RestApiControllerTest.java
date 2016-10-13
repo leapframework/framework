@@ -19,6 +19,7 @@
 package tests.model;
 
 import app.models.api.*;
+import leap.junit.contexual.Contextual;
 import leap.lang.New;
 import leap.lang.http.HTTP;
 import leap.lang.net.Urls;
@@ -83,7 +84,7 @@ public class RestApiControllerTest extends WebTestBase {
     @Test
     public void testQueryListWithSelect() {
         List<Map<String,Object>> records =
-                get("/api/restapi?select=id,name,title").getJson().asList();
+                get("/api/restapi?orderby=name&select=id,name,title").getJson().asList();
 
         Map<String,Object> record = records.get(0);
 
@@ -97,7 +98,7 @@ public class RestApiControllerTest extends WebTestBase {
     @Test
     public void testQueryListWithExpand() {
         List<Map<String,Object>> records =
-                get("/api/restapi?expand=categories(id,title)").getJson().asList();
+                get("/api/restapi?orderby=name&expand=categories(id,title)").getJson().asList();
 
         Map<String,Object> map = records.get(0);
         List<Map<String,Object>> categoriesListMap = (List<Map<String,Object>>)map.get("categories");
@@ -141,7 +142,7 @@ public class RestApiControllerTest extends WebTestBase {
         RestApi[] apis = get("/api/restapi?categories=not_exists").decodeJsonArray(RestApi.class);
         assertEquals(0, apis.length);
 
-        apis = get("/api/restapi?categories=" + c1.getId()).decodeJsonArray(RestApi.class);
+        apis = get("/api/restapi?categories=" + c1.getId()+"&orderby=createdAt").decodeJsonArray(RestApi.class);
         assertEquals(1, apis.length);
 
         apis = get("/api/restapi?categories=" + c1.getId() + "," + c2.getId()).decodeJsonArray(RestApi.class);

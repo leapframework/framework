@@ -181,8 +181,12 @@ public class ModelQueryExecutor extends ModelExecutorBase {
             if(ap.isNotSortableExplicitly()) {
                 throw new BadRequestException("Property '" + name + "' is not sortable!");
             }
+            if(Strings.isNotEmpty(query.alias())){
+                s.append(query.alias() + "."+name);
+            }else{
+                s.append(name);
+            }
 
-            s.append(name);
 
             if(!item.isAscending()) {
                 s.append(" desc");
