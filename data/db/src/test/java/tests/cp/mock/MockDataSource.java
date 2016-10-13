@@ -1,19 +1,21 @@
 /*
- * Copyright 2015 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2016 the original author or authors.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *      http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
-package leap.db.mock;
+package tests.cp.mock;
 
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -26,8 +28,9 @@ import javax.sql.DataSource;
 
 public class MockDataSource implements DataSource {
 	
-	private final AtomicInteger nrOfOpenedConnections = new AtomicInteger(0);
-	private final AtomicInteger nrOfClosedConnections = new AtomicInteger(0);
+	private final AtomicInteger nrOfOpenedConnections  = new AtomicInteger(0);
+	private final AtomicInteger nrOfClosedConnections  = new AtomicInteger(0);
+    private final AtomicInteger nrOfOpeningConnections = new AtomicInteger(0);
 	
 	private String  url                         = MockDriver.JDBC_URL;
 	private boolean supportsJdbc4Validation     = true;
@@ -44,6 +47,10 @@ public class MockDataSource implements DataSource {
 	public int getNrOfClosedConnections() {
 		return nrOfClosedConnections.get();
 	}
+
+    public int getNrOfOpeningConnections() {
+        return nrOfOpeningConnections.get();
+    }
 	
 	public String getUrl() {
 		return url;
@@ -103,12 +110,14 @@ public class MockDataSource implements DataSource {
 		MockConnection connection = new MockConnection(this, username, password);
 		
 		nrOfOpenedConnections.incrementAndGet();
+        nrOfOpeningConnections.incrementAndGet();
 		
 		return connection;
 	}
 	
 	protected void closeConnection(MockConnection connection) {
 		nrOfClosedConnections.incrementAndGet();
+        nrOfOpeningConnections.decrementAndGet();
 	}
 
 	@Override

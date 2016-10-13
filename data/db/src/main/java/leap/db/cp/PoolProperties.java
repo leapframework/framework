@@ -25,9 +25,9 @@ public class PoolProperties {
 	public static final int DEFAULT_MAX_WAIT                = 30 * 1000; //30 seconds
 	public static final int DEFAULT_MAX_ACTIVE              = 50;
 	public static final int DEFAULT_MAX_IDLE				= 10;
-	public static final int DEFAULT_MIN_IDLE				= 1;
+	public static final int DEFAULT_MIN_IDLE				= 0;
 	public static final int DEFAULT_VALIDATION_TIMEOUT      = 5;   //5 seconds
-	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 2;   //2 seconds
+	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 1;   //1 seconds
 	public static final int DEFAULT_IDLE_TIMEOUT 	        = 180; //3 minutes
 	public static final int DEFAULT_STATEMENT_TIMEOUT       = -1;
 	public static final int DEFAULT_CONNECTION_LEAK_TIMEOUT = -1;
@@ -66,14 +66,19 @@ public class PoolProperties {
 	protected boolean			   throwPendingTransactionException = true;
 	
 	protected int statementTimeout	    = DEFAULT_STATEMENT_TIMEOUT;
-	protected int idleTimeout	        = DEFAULT_IDLE_TIMEOUT;
+
+    protected int idleTimeout	        = DEFAULT_IDLE_TIMEOUT;
+    protected int idleTimeoutMs         = -1;
+
 	protected int connectionLeakTimeout = DEFAULT_CONNECTION_LEAK_TIMEOUT;
+    protected int connectionLeakTimeoutMs = -1;
 	
 	protected int maxWait		      = DEFAULT_MAX_WAIT;
 	protected int maxActive 		  = DEFAULT_MAX_ACTIVE;
 	protected int maxIdle			  = -1;
 	protected int minIdle			  = DEFAULT_MIN_IDLE;
 	protected int healthCheckInterval = DEFAULT_HEALTH_CHECK_INTERVAL;
+    protected int healthCheckIntervalMs = -1;
 	
 	protected boolean healthCheck = true;
 	
@@ -267,11 +272,22 @@ public class PoolProperties {
 		return idleTimeout;
 	}
 
-	public void setIdleTimeout(int idleTimeout) {
-		this.idleTimeout = idleTimeout;
+    /**
+     * Sets idle timeout in seconds.
+     */
+	public void setIdleTimeout(int seconds) {
+		this.idleTimeout = seconds;
 	}
-	
-	public int getStatementTimeout() {
+
+    public int getIdleTimeoutMs() {
+        return idleTimeoutMs < 0 ? idleTimeout * 1000 : idleTimeoutMs;
+    }
+
+    public void setIdleTimeoutMs(int idleTimeoutMs) {
+        this.idleTimeoutMs = idleTimeoutMs;
+    }
+
+    public int getStatementTimeout() {
 		return statementTimeout;
 	}
 
@@ -283,19 +299,38 @@ public class PoolProperties {
 		return connectionLeakTimeout;
 	}
 
-	public void setConnectionLeakTimeout(int connectionLeakTimeout) {
-		this.connectionLeakTimeout = connectionLeakTimeout;
+	public void setConnectionLeakTimeout(int seconds) {
+		this.connectionLeakTimeout = seconds;
 	}
 
-	public int getHealthCheckInterval() {
+    public int getConnectionLeakTimeoutMs() {
+        return connectionLeakTimeoutMs < 0 ? connectionLeakTimeout * 1000 : connectionLeakTimeoutMs;
+    }
+
+    public void setConnectionLeakTimeoutMs(int connectionLeakTimeoutMs) {
+        this.connectionLeakTimeoutMs = connectionLeakTimeoutMs;
+    }
+
+    public int getHealthCheckInterval() {
 		return healthCheckInterval;
 	}
 
-	public void setHealthCheckInterval(int cleanupInterval) {
-		this.healthCheckInterval = cleanupInterval;
+    /**
+     * Sets health check interval in seconds.
+     */
+	public void setHealthCheckInterval(int seconds) {
+		this.healthCheckInterval = seconds;
 	}
-	
-	public boolean isHealthCheck() {
+
+    public int getHealthCheckIntervalMs() {
+        return healthCheckIntervalMs < 0 ? healthCheckInterval * 1000 : healthCheckIntervalMs;
+    }
+
+    public void setHealthCheckIntervalMs(int healthCheckIntervalMs) {
+        this.healthCheckIntervalMs = healthCheckIntervalMs;
+    }
+
+    public boolean isHealthCheck() {
 		return healthCheck;
 	}
 
@@ -358,7 +393,7 @@ public class PoolProperties {
 		validateRange("idleTimeout", idleTimeout, healthCheckInterval, MAX_IDLE_TIMEOUT);
 		
 		if(maxIdle >= 0) {
-			validateRange("maxIdle", maxIdle, 1, maxActive);
+			validateRange("maxIdle", maxIdle, 0, maxActive);
 			validateRange("minIdle", minIdle, 0, maxIdle);
 		}else{
 			validateRange("minIdle", minIdle, 0, maxActive);

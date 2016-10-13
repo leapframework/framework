@@ -39,14 +39,14 @@ class Pool {
 	
 	private static final AtomicInteger poolCounter = new AtomicInteger();
 	
-	private final PoolFactory 	 			   factory;
-	private final PoolConfig  	 			   config;
-	private final DataSource  	 			   dataSource;
-	private final PoolUtils 			   	   utils;
-	private final long 		     			   maxWait;
-	private final int     					   defaultTransactionIsolationLevel;
-	private final ConnectionPool 			   connectionPool;
-	private final ScheduledThreadPoolExecutor  scheduledExecutor;
+	private final PoolFactory                 factory;
+	private final PoolConfig                  config;
+	private final DataSource                  dataSource;
+	private final PoolUtils                   utils;
+	private final long                        maxWait;
+	private final int                         defaultTransactionIsolationLevel;
+	private final SyncPool                    syncPool;
+	private final ScheduledThreadPoolExecutor scheduledExecutor;
 	
 	private volatile String  name;
 	private volatile boolean closed = false;
@@ -59,7 +59,7 @@ class Pool {
 		this.config         = factory.getPoolConfig();
 		this.dataSource     = factory.getDataSource();
 		this.utils 		    = new PoolUtils(this);
-		this.connectionPool = new ConnectionPool();
+		this.syncPool = new SyncPool();
 		this.maxWait        = config.getMaxWait();
 		
 		if(config.hasDefaultTransactionIsolation()) {
@@ -70,12 +70,12 @@ class Pool {
 		
 		if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
-																	 new SimpleThreadFactory("CP - Health Worker", true), 
+																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
 
 			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(), 
-													   config.getHealthCheckInterval(), 
-													   config.getHealthCheckInterval(), TimeUnit.SECONDS);
+													   config.getHealthCheckIntervalMs(),
+													   config.getHealthCheckIntervalMs(), TimeUnit.MILLISECONDS);
 		}else{
 			this.scheduledExecutor = null;
 		}
@@ -103,10 +103,6 @@ class Pool {
 		return dataSource;
 	}
 	
-	protected Connection getRealConnection() throws SQLException {
-		return factory.getConnection();
-	}
-	
 	/**
 	 * Get a connection from the pool, or timeout after {@link #maxWait} milliseconds.
 	 */
@@ -129,7 +125,7 @@ class Pool {
 		final long start = System.currentTimeMillis();
 		
 		try{
-			PooledConnection conn = connectionPool.borrowConnection(maxWait);
+			PooledConnection conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
 				
@@ -168,7 +164,7 @@ class Pool {
 		}
 		
 		closed = true;
-		connectionPool.close();
+		syncPool.close();
 		log.info("[{}] Connection pool closed!",getName());
 	}
 	
@@ -179,7 +175,7 @@ class Pool {
 			try{
 				conn.setupOnReturn();
 			}finally {
-				connectionPool.returnConnection(conn);
+				syncPool.returnConnection(conn);
 				log.trace("A connection was returned to pool");
 			}
 		}
@@ -189,92 +185,93 @@ class Pool {
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection real = conn.getReal();
-		if(null == real) {
+		Connection wrappd = conn.wrapped();
+		if(null == wrappd) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			real = createNewConnectionOnBorrow(conn);
+			wrappd = createNewConnectionOnBorrow(conn);
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			real = createNewConnectionOnBorrow(conn);
+			wrappd = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, real);
+		setupConnectionStateOnBorrow(conn, wrappd, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
-		Connection real = getRealConnection();
-		conn.setReal(real);
+		Connection wrappd = factory.getConnection();
+		conn.setWrapped(wrappd);
 		conn.setNewCreatedConnection(true);
-		return real;
+		return wrappd;
 	}
 	
-	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection real) throws SQLException {
+	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection wrapped, int count) throws SQLException {
 		try {
 	        //Set auto commit.
-	        if(real.getAutoCommit() != config.isDefaultAutoCommit()) {
-	        	real.setAutoCommit(config.isDefaultAutoCommit());	
+	        if(wrapped.getAutoCommit() != config.isDefaultAutoCommit()) {
+	        	wrapped.setAutoCommit(config.isDefaultAutoCommit());
 	        }
 	        
 	        //Set transaction isolation level.
 	        if(config.hasDefaultTransactionIsolation()) {
-		        if(defaultTransactionIsolationLevel != real.getTransactionIsolation()) {
-		        	real.setTransactionIsolation(defaultTransactionIsolationLevel);
+		        if(defaultTransactionIsolationLevel != wrapped.getTransactionIsolation()) {
+		        	wrapped.setTransactionIsolation(defaultTransactionIsolationLevel);
 		        }
 	        }else {
-	        	conn.setRealTransactionIsolation(real.getTransactionIsolation());
+	        	conn.setRealTransactionIsolation(wrapped.getTransactionIsolation());
 	        }
 	        
 	        //Set default catalog.
 	        if(config.hasDefaultCatalog()) {
-		        if(!config.getDefaultCatalog().equals(real.getCatalog())) {
-		        	real.setCatalog(config.getDefaultCatalog());
+		        if(!config.getDefaultCatalog().equals(wrapped.getCatalog())) {
+		        	wrapped.setCatalog(config.getDefaultCatalog());
 		        }
 	        }else {
-	        	conn.setRealCatalog(real.getCatalog());
+	        	conn.setRealCatalog(wrapped.getCatalog());
 	        }
 
 	        //Set default readonly
-	        if(config.isDefaultReadOnly() != real.isReadOnly()) {
-	        	real.setReadOnly(config.isDefaultReadOnly());
+	        if(config.isDefaultReadOnly() != wrapped.isReadOnly()) {
+	        	wrapped.setReadOnly(config.isDefaultReadOnly());
 	        }
         } catch (SQLException e) {
+            conn.abandonReal();
+
         	//if the connection is new, throw the exception.
         	//if the connection is old, abandon it and create a new one.
-        	if(conn.isNewCreatedConnection()) {
+        	if(count > 1 || conn.isNewCreatedConnection()) {
         		log.info("Reset connection error, {}", e.getMessage(), e);
         		throw e;
         	}else{
         		log.warn("Reset connection error, abandon it and create a new one", e);
-        		conn.abandonReal();
-        		real = createNewConnectionOnBorrow(conn);
-        		setupConnectionStateOnBorrow(conn, real);
+        		wrapped = createNewConnectionOnBorrow(conn);
+        		setupConnectionStateOnBorrow(conn, wrapped, count++);
         	}
         }
 	}
 	
 	protected void setupConnectionOnReturn(PooledConnection conn)  throws SQLException {
-		Connection real = conn.getReal();
-		if(null == real) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//If pool has been closed, just ignore it.
 			if(!closed) {
-				log.error("Invalid state, the pooled connection has no real connection on return");	
+				log.error("Invalid state, the pooled connection has no underlying connection on return");
 			}
 			return;
 		}
 		
 		//Reset transaction isolation level
-		if(!config.hasDefaultTransactionIsolation() && conn.getRealTransactionIsolation() != real.getTransactionIsolation()) {
-			real.setTransactionIsolation(conn.getRealTransactionIsolation());
+		if(!config.hasDefaultTransactionIsolation() && conn.getRealTransactionIsolation() != wrapped.getTransactionIsolation()) {
+			wrapped.setTransactionIsolation(conn.getRealTransactionIsolation());
 		}
 		
 		//Reset catalog
-		if(!config.hasDefaultCatalog() && !Strings.equals(conn.getRealCatalog(), real.getCatalog())) {
+		if(!config.hasDefaultCatalog() && !Strings.equals(conn.getRealCatalog(), wrapped.getCatalog())) {
 			conn.setCatalog(conn.getRealCatalog());
 		}
 		
@@ -303,7 +300,6 @@ class Pool {
         	conn.checkDisconnectAndAbandon(e);
         }
 	}
-	
 
 	//from http://bugs.mysql.com/bug.php?id=75615
 	final static class SynchronousExecutor implements Executor {
@@ -333,14 +329,17 @@ class Pool {
 			return thread;
 		}
 	}
-	
-	final class ConnectionPool {
+
+    /**
+     * The underlying pool holds all the created connections and sync state.
+     */
+	final class SyncPool {
 		
 		private final CopyOnWriteArrayList<PooledConnection> list;
 		private final AbstractQueuedLongSynchronizer         synchronizer;
 		private final AtomicLong 							 syncState;
 
-		ConnectionPool() {
+		SyncPool() {
 			this.list 		  = new CopyOnWriteArrayList<>();
 			this.synchronizer = new Synchronizer();
 			this.syncState    = new AtomicLong(1); 
@@ -351,27 +350,27 @@ class Pool {
 			return list;
 		}
 		
-		int getActiveCount() {
-			int count = 0;
-			
-			for(final PooledConnection conn : list) {
-				if(conn.isActive()) {
-					count++;
-				}
-			}
-			
-			return count;
-		}
-		
-		int getRealCount() {
-			int size = 0;
-			for(final PooledConnection conn : list) {
-				if(null != conn.getReal()) {
-					size++;
-				}
-			}
-			return size;
-		}
+//		int getActiveCount() {
+//			int count = 0;
+//
+//			for(final PooledConnection conn : list) {
+//				if(conn.isActive()) {
+//					count++;
+//				}
+//			}
+//
+//			return count;
+//		}
+//
+//		int getRealCount() {
+//			int size = 0;
+//			for(final PooledConnection conn : list) {
+//				if(null != conn.getReal()) {
+//					size++;
+//				}
+//			}
+//			return size;
+//		}
 		
 		int getIdleCount() {
 			int count = 0;
@@ -433,9 +432,9 @@ class Pool {
 		}
 
         /**
-         * Removes the connection from list and realease all the underlying resources.
+         * Removes the connection from list and release all the underlying resources.
          */
-        public void abandandConnection(PooledConnection conn) {
+        public void abandonConnection(PooledConnection conn) {
             conn.markAbandon();
             list.remove(conn);
             conn.closeReal();
@@ -466,7 +465,7 @@ class Pool {
 				try {
 		            conn.closeReal();
 	            } catch (Throwable e) {
-	            	log.warn("Error closing real connection, {}", e.getMessage(), e);
+	            	log.warn("Error closing wrapped connection, {}", e.getMessage(), e);
 	            }
 			}
 		}
@@ -501,13 +500,13 @@ class Pool {
 		@Override
         public void run() {
 			
-			for(final PooledConnection conn : connectionPool.connections()) {
+			for(final PooledConnection conn : syncPool.connections()) {
 				
 				//cleanup idle timeout connection.
-				if(conn.isIdleTimeout() && connectionPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
+				if(conn.isIdleTimeout() && syncPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
 					log.debug("Abandon a connection is idle timeout");
 					conn.abandonReal();
-					connectionPool.updateToIdleState(conn, STATE_CLEANUP);
+					syncPool.updateToIdleState(conn, STATE_CLEANUP);
 					continue;
 				}
 				
@@ -515,27 +514,29 @@ class Pool {
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
 					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
 							  conn.getBusyDurationMs(), 
-							  new StackTraceStringBuilder(conn.getStackTraceOfThreadOnBorrow()).toString());
+							  new StackTraceStringBuilder(conn.getStackTraceOnBorrow()).toString());
 
-                    connectionPool.abandandConnection(conn);
+                    syncPool.abandonConnection(conn);
 					continue;
 				}
+
+                //todo : test the underlying connection is valid?
 				
 			}
 			
 			//check max idle and decrease the idle connections.
 			if(config.hasMaxIdle() && config.getMaxActive() > config.getMaxIdle() ) {
-				int diff = connectionPool.getIdleCount() - config.getMaxIdle();
+				int diff = syncPool.getIdleCount() - config.getMaxIdle();
 				if(diff > 0) {
 					for(int i=0;i<diff;i++) {
-						if(connectionPool.getIdleCount() - config.getMaxIdle() <= 0) {
+						if(syncPool.getIdleCount() - config.getMaxIdle() <= 0) {
 							break;
 						}
-						for(PooledConnection conn : connectionPool.connections()) {
-							if(connectionPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
+						for(PooledConnection conn : syncPool.connections()) {
+							if(syncPool.updateToNotIdleState(conn, STATE_CLEANUP)) {
 								log.debug("Close a connection for maxIdle");
 								conn.closeReal();
-								connectionPool.updateToIdleState(conn, STATE_CLEANUP);
+								syncPool.updateToIdleState(conn, STATE_CLEANUP);
 								break;
 							}
 						}
@@ -544,11 +545,11 @@ class Pool {
 			}
 			
 			//check min idle and increase the idle connections.
-			int idles = connectionPool.getIdleCount();
+			int idles = syncPool.getIdleCount();
 			int diff = config.getMinIdle() - idles;
 			if(diff > 0) {
 				for(int i=0;i<diff;i++) {
-					if(config.getMinIdle() - connectionPool.getIdleCount() <= 0) {
+					if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
 						break;
 					}
 					Connection conn = null;
