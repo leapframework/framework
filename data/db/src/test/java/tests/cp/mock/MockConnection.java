@@ -20,6 +20,7 @@ package tests.cp.mock;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import leap.lang.jdbc.ConnectionAdapter;
 
@@ -116,6 +117,15 @@ public class MockConnection extends ConnectionAdapter {
 
 	@Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
+        if(dataSource.isSetAutoCommitError()) {
+            AtomicInteger count = dataSource.getSetAutoCommitErrorCount();
+            if(count.get() < 0 || count.get() > 0) {
+                if(count.get() > 0){
+                    count.decrementAndGet();
+                }
+                throw new SQLException("Set AutoCommit Error!");
+            }
+        }
 		this.autoCommit = autoCommit;
 	}
 

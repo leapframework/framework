@@ -17,14 +17,13 @@
  */
 package tests.cp.mock;
 
+import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
-
-import javax.sql.DataSource;
 
 public class MockDataSource implements DataSource {
 	
@@ -38,9 +37,12 @@ public class MockDataSource implements DataSource {
 	private boolean defaultReadonly				= false;
 	private boolean defaultAutoCommit			= true;
 	private String  defaultCatalog				= null;
-	
-	
-	public int getNrOfOpenedConnections() {
+
+    private boolean openConnectionError;
+    private boolean setAutoCommitError;
+    private AtomicInteger setAutoCommitErrorCount = new AtomicInteger(-1);
+
+    public int getNrOfOpenedConnections() {
 		return nrOfOpenedConnections.get();
 	}
 
@@ -51,8 +53,28 @@ public class MockDataSource implements DataSource {
     public int getNrOfOpeningConnections() {
         return nrOfOpeningConnections.get();
     }
-	
-	public String getUrl() {
+
+    public boolean isOpenConnectionError() {
+        return openConnectionError;
+    }
+
+    public void setOpenConnectionError(boolean openConnectionError) {
+        this.openConnectionError = openConnectionError;
+    }
+
+    public boolean isSetAutoCommitError() {
+        return setAutoCommitError;
+    }
+
+    public void setSetAutoCommitError(boolean setAutoCommitError) {
+        this.setAutoCommitError = setAutoCommitError;
+    }
+
+    public AtomicInteger getSetAutoCommitErrorCount() {
+        return setAutoCommitErrorCount;
+    }
+
+    public String getUrl() {
 		return url;
 	}
 
@@ -107,6 +129,11 @@ public class MockDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
+
+        if(openConnectionError) {
+            throw new SQLException("Open Connection Error!");
+        }
+
 		MockConnection connection = new MockConnection(this, username, password);
 		
 		nrOfOpenedConnections.incrementAndGet();

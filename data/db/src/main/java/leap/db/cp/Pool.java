@@ -55,12 +55,12 @@ class Pool {
 		Args.notNull(props,"pool properties");
 		props.validate();
 		
-		this.factory        = new PoolFactory(props);
-		this.config         = factory.getPoolConfig();
-		this.dataSource     = factory.getDataSource();
-		this.utils 		    = new PoolUtils(this);
-		this.syncPool = new SyncPool();
-		this.maxWait        = config.getMaxWait();
+		this.factory    = new PoolFactory(props);
+		this.config     = factory.getPoolConfig();
+		this.dataSource = factory.getDataSource();
+		this.utils 		= new PoolUtils(this);
+		this.syncPool   = new SyncPool();
+		this.maxWait    = config.getMaxWait();
 		
 		if(config.hasDefaultTransactionIsolation()) {
 			this.defaultTransactionIsolationLevel = config.getDefaultTransactionIsolation().getValue();
@@ -245,10 +245,10 @@ class Pool {
         	//if the connection is new, throw the exception.
         	//if the connection is old, abandon it and create a new one.
         	if(count > 1 || conn.isNewCreatedConnection()) {
-        		log.info("Reset connection error, {}", e.getMessage(), e);
+        		log.info("Setup new connection error : {}", e.getMessage(), e);
         		throw e;
         	}else{
-        		log.warn("Reset connection error, abandon it and create a new one", e);
+        		log.info("Reset old connection error ({}) abandon it and create a new one", e.getMessage(), e);
         		wrapped = createNewConnectionOnBorrow(conn);
         		setupConnectionStateOnBorrow(conn, wrapped, count++);
         	}

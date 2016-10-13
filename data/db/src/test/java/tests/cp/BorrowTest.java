@@ -88,5 +88,70 @@ public class BorrowTest extends PoolTestBase {
 			assertTrue(mconn.isValidMethodSuccessCalled());
 		}
 	}
-	
+
+    @Test
+    public void testOpenConnectionError() {
+        ms.setOpenConnectionError(true);
+
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+
+        }
+    }
+
+    @Test
+    public void testSetupConnectionErrorOnBorrowNew() throws SQLException {
+        ds.setDefaultAutoCommit(false);
+        ms.setSetAutoCommitError(true);
+
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+    }
+
+    @Test
+    public void testSetupConnectionErrorOnBorrowOld() throws SQLException {
+        ds.setDefaultAutoCommit(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+
+        ms.setSetAutoCommitError(true);
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+
+        //test abandon old one, creates a new.
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+        ms.setSetAutoCommitError(true);
+        ms.getSetAutoCommitErrorCount().set(1);
+        try(Connection conn = ds.getConnection()){}
+
+        //test abandon old one, throw exception.
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+        ms.setSetAutoCommitError(true);
+        ms.getSetAutoCommitErrorCount().set(2);
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+    }
+
+
 }
