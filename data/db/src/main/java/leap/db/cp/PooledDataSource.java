@@ -44,7 +44,7 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 		this.dataSource = real;
 	}
 
-	private Pool pool() {
+	private Pool pool() throws SQLException {
 		if(null == pool) {
 			synchronized (this) {
 				if(null == pool) {
@@ -58,7 +58,7 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
     /**
      * Opens the pool and initial connections.
      */
-	public void open() {
+	public void open() throws SQLException {
 		if(null != pool) {
 			throw new IllegalStateException("Pool already opened!");
 		}

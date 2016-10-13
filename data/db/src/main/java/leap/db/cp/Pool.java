@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,7 +52,7 @@ class Pool {
 	private volatile String  name;
 	private volatile boolean closed = false;
 	
-	public Pool(PoolProperties props) {
+	public Pool(PoolProperties props) throws SQLException {
 		Args.notNull(props,"pool properties");
 		props.validate();
 		
@@ -67,8 +68,10 @@ class Pool {
 		}else{
 			this.defaultTransactionIsolationLevel = Integer.MIN_VALUE;
 		}
-		
-		if(config.isHealthCheck()) {
+
+        initMinIdleConnections();
+
+        if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
 																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
@@ -496,6 +499,21 @@ class Pool {
 			
 		}
 	}
+
+    private void initMinIdleConnections() throws SQLException {
+        if(config.getMinIdle() <= 0){
+            return;
+        }
+
+        List<Connection> list = new ArrayList<>();
+        try{
+            for(int i=0;i<config.getMinIdle();i++) {
+                list.add(getConnection());
+            }
+        }finally{
+            list.forEach(JDBC::closeConnection);
+        }
+    }
 	
 	final class HealthWorker implements Runnable {
 
@@ -550,21 +568,21 @@ class Pool {
 			int idles = syncPool.getIdleCount();
 			int diff = config.getMinIdle() - idles;
 			if(diff > 0) {
-				for(int i=0;i<diff;i++) {
-					if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
-						break;
-					}
-					Connection conn = null;
-					try{
-						conn = getConnection();
-					}catch(SQLException e) {
-
-					}finally{
-						if(null != conn) {
-							JDBC.closeConnection(conn);
-						}
-					}
-				}
+                List<Connection> list = new ArrayList<>();
+                try{
+                    for(int i=0;i<diff;i++) {
+                        if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
+                            break;
+                        }
+                        try{
+                            list.add(getConnection());
+                        }catch(SQLException e) {
+                            return;
+                        }
+                    }
+                }finally{
+                    list.forEach(JDBC::closeConnection);
+                }
 			}
         }
 		
