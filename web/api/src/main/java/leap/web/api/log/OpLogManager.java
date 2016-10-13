@@ -16,30 +16,16 @@
  *
  */
 
-package leap.web.api.annotation;
+package leap.web.api.log;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import leap.web.action.ActionContext;
+import leap.web.api.annotation.OpLog;
 
 /**
- * Created by kael on 2016/10/10.
+ * Created by kael on 2016/10/11.
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Log {
-    /**
-     * Log record title
-     */
-    String value() default "";
-    /**
-     * Log record title
-     */
-    String title() default "";
+public interface OpLogManager {
+    Class<?> getLogClass() throws ClassNotFoundException;
 
-    /**
-     * Description of this operation, support expression
-     */
-    String description();
+    void saveLog(OpLog annotation, ActionContext context, Object args[]) throws IllegalAccessException, InstantiationException;
 }

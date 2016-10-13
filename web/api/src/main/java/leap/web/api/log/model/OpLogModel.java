@@ -28,7 +28,7 @@ import java.sql.Timestamp;
 /**
  * Created by kael on 2016/10/10.
  */
-public abstract class LogModel extends Model {
+public abstract class OpLogModel extends Model {
     @Filterable
     @Sortable
     @Column

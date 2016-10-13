@@ -16,16 +16,15 @@
  *
  */
 
-package leap.web.api.log;
+package leap.web.api.annotation;
 
-import leap.web.action.ActionContext;
-import leap.web.api.annotation.Log;
+import java.lang.annotation.*;
 
 /**
- * Created by kael on 2016/10/11.
+ * Created by kael on 2016/10/13.
  */
-public interface LogManager {
-    Class<?> getLogClass() throws ClassNotFoundException;
-
-    void saveLog(Log annotation, ActionContext context, Object args[]) throws IllegalAccessException, InstantiationException;
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface NonOpLog {
 }

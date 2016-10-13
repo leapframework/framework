@@ -16,13 +16,28 @@
  *
  */
 
-package leap.web.api.log.model;
+package leap.web.api.annotation;
 
-import leap.orm.annotation.Table;
+import java.lang.annotation.*;
 
 /**
- * Created by kael on 2016/10/11.
+ * Created by kael on 2016/10/10.
  */
-@Table("api_operation_log")
-public class DefaultLogModel extends LogModel {
+@Target({ElementType.TYPE, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface OpLog {
+    /**
+     * Log record title
+     */
+    String value() default "";
+    /**
+     * Log record title
+     */
+    String title() default "";
+
+    /**
+     * Description of this operation, support expression
+     */
+    String description();
 }

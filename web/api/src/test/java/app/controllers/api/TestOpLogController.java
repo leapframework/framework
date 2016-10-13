@@ -20,21 +20,27 @@ package app.controllers.api;
 
 import app.models.api.TestLogModel;
 import leap.core.security.annotation.AllowAnonymous;
-import leap.web.action.ControllerBase;
 import leap.web.annotation.Path;
 import leap.web.annotation.http.GET;
-import leap.web.api.annotation.Log;
+import leap.web.api.annotation.OpLog;
+import leap.web.api.log.OpLogController;
 import leap.web.api.mvc.params.QueryOptions;
 
 /**
  * Created by kael on 2016/10/11.
  */
 @Path("log")
-public class TestLogController extends leap.web.api.log.LogController<TestLogModel> {
-    @GET("/operation")
+@OpLog(description = "test")
+public class TestOpLogController extends OpLogController<TestLogModel> {
+    @GET("/operation1")
     @AllowAnonymous
-    @Log(title = "测试操作", description = "测试操作${name}")
-    public void operation(QueryOptions options, String name){
+    @OpLog(title = "测试操作", description = "测试操作${name}")
+    public void operation1(QueryOptions options, String name){
+
+    }
+    @GET("/operation2")
+    @AllowAnonymous
+    public void operation2(QueryOptions options, String name){
 
     }
 

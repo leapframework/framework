@@ -19,32 +19,36 @@
 package leap.web.api.log;
 
 import leap.core.annotation.Inject;
-import leap.core.el.EL;
 import leap.core.validation.Validation;
 import leap.lang.Classes;
-import leap.lang.New;
 import leap.lang.intercepting.State;
 import leap.web.action.Action;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionExecution;
 import leap.web.action.ActionInterceptor;
-import leap.web.api.annotation.Log;
+import leap.web.api.annotation.NonOpLog;
+import leap.web.api.annotation.OpLog;
+
+import java.lang.annotation.Annotation;
 
 /**
  * Created by kael on 2016/10/10.
  */
-public class LogInterceptor implements ActionInterceptor {
+public class OpLogInterceptor implements ActionInterceptor {
     @Inject
-    private LogManager manager;
+    private OpLogManager manager;
 
     @Override
     public State postExecuteAction(ActionContext context, Validation validation,
                                    ActionExecution execution) throws Throwable {
         Action action = context.getAction();
         if(action != null){
-            Log log = Classes.getAnnotation(action.getAnnotations(), Log.class);
-            if(log != null){
-                manager.saveLog(log,context,execution.getArgs());
+            OpLog controllerAnnotation = action.getControllerAnnotation(OpLog.class);
+            OpLog actionAnnotation = Classes.getAnnotation(action.getAnnotations(), OpLog.class);
+            NonOpLog nonOpLog = Classes.getAnnotation(action.getAnnotations(), NonOpLog.class);
+            OpLog annotation = actionAnnotation==null?controllerAnnotation:actionAnnotation;
+            if(annotation != null && nonOpLog == null){
+                manager.saveLog(annotation,context,execution.getArgs());
             }
         }
         return State.CONTINUE;

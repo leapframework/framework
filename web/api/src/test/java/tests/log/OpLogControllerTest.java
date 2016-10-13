@@ -26,11 +26,11 @@ import org.junit.Test;
 /**
  * Created by kael on 2016/10/11.
  */
-public class LogControllerTest extends WebTestBase {
+public class OpLogControllerTest extends WebTestBase {
     @Test
     public void testSaveLog(){
         TestLogModel.deleteAll();
-        forGet("/api/log/operation").addQueryParam("name","testlog").send().assertSuccess();
+        forGet("/api/log/operation1").addQueryParam("name","testlog").send().assertSuccess();
         assertEquals(1,TestLogModel.count());
         assertEquals("测试操作testlog",TestLogModel.<TestLogModel>first().getDescription());
     }
@@ -44,7 +44,7 @@ public class LogControllerTest extends WebTestBase {
                 .send().getJson().asJsonObject().get("access_token");
         assertNotNull(at);
         TestLogModel.deleteAll();
-        forGet("/api/log/operation").addQueryParam("name","testlog").send().assertSuccess();
+        forGet("/api/log/operation1").addQueryParam("name","testlog").send().assertSuccess();
 
         forGet("/api/log").addHeader("Authorization","Bearer " + at).addQueryParam("name","testlog").send().assertSuccess();
         assertEquals(1,TestLogModel.count());

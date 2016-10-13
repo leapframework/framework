@@ -19,6 +19,7 @@
 package leap.web.api.log;
 
 import leap.web.annotation.http.GET;
+import leap.web.api.annotation.NonOpLog;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
 import leap.web.api.mvc.params.QueryOptions;
@@ -28,8 +29,9 @@ import java.util.List;
 /**
  * Created by kael on 2016/10/12.
  */
-public abstract class LogController<T> extends ModelController<T>{
+public abstract class OpLogController<T> extends ModelController<T>{
     @GET
+    @NonOpLog
     public ApiResponse<List<T>> queryLogs(QueryOptions options){
         return queryList(options);
     }

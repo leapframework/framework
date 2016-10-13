@@ -19,12 +19,12 @@
 package app.models.api;
 
 import leap.orm.annotation.Table;
-import leap.web.api.log.model.LogModel;
+import leap.web.api.log.model.OpLogModel;
 
 /**
  * Created by kael on 2016/10/11.
  */
 @Table("test_operation_log")
-public class TestLogModel extends LogModel {
+public class TestLogModel extends OpLogModel {
 
 }
