@@ -388,8 +388,43 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		return createCallableStatementProxy(conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
 	}
-	
-	ProxyStatement createProxy(Statement stmt) {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return (T) this;
+        }
+
+        if(iface.isInstance(conn)) {
+            return (T)conn;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.unwrap(iface);
+        }
+
+        throw new SQLException("Wrapped Connection " + conn.getClass() + "' is not an instance of " + iface);
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return true;
+        }
+
+        if(iface.isInstance(conn)) {
+            return true;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.isWrapperFor(iface);
+        }
+
+        return false;
+    }
+
+    ProxyStatement createProxy(Statement stmt) {
 		if(stmt instanceof PreparedStatement) {
 			return createPreparedStatementProxy((PreparedStatement)stmt, null);
 		}

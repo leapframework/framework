@@ -62,7 +62,7 @@ public class BorrowTest extends PoolTestBase {
 		
 		//should validate 
 		try(Connection conn = ds.getConnection()) {
-			MockConnection mconn = real(conn);
+			MockConnection mconn = conn.unwrap(MockConnection.class);
 			MockStatement  mstmt = mconn.getLastStatement();
 			
 			assertFalse(mconn.isValidMethodSuccessCalled());

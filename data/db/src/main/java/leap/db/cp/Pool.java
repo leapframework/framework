@@ -154,7 +154,7 @@ class Pool {
 			try {
 	            scheduledExecutor.shutdownNow();
             } catch (Throwable e) {
-            	log.warn("[{}] Error shutdown the scheduled executor, {}",getName(), e.getMessage(), e);
+            	log.info("[{}] Error shutdown the scheduled executor, {}",getName(), e.getMessage(), e);
             }
 		}
 		
