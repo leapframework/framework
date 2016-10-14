@@ -15,6 +15,7 @@
  */
 package leap.db.cp;
 
+import leap.lang.Beans;
 import leap.lang.jdbc.TransactionIsolation;
 
 import javax.sql.DataSource;
@@ -369,15 +370,8 @@ public class PoolProperties {
 
 	public void setProperties(PoolProperties props) {
 		if(null != props) {
-			this.dataSource = props.dataSource;
-			this.driverClassName = props.driverClassName;
-			this.jdbcUrl      = props.jdbcUrl;
-			this.username = props.username;
-			this.password = props.password;
-			
-			this.maxWait = props.maxWait;
-			this.maxActive = props.maxActive;
-		}
+            Beans.copyProperties(props, this);
+        }
 	}
 	
 	public void validate() {
