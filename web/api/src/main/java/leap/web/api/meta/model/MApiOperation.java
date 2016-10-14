@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.Map;
 
 import leap.lang.http.HTTP;
+import leap.web.route.Route;
 
 public class MApiOperation extends MApiNamedWithDesc {
-	
+
+	protected final Route			route;
 	protected final HTTP.Method     method;
     protected final String[]        tags;
 	protected final MApiParameter[] parameters;
@@ -34,6 +36,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 
 	public MApiOperation(String name, String title, String summary, String description,
                          HTTP.Method method,
+						 Route 	  route,
                          String[] tags,
                          List<MApiParameter> parameters,
                          List<MApiResponse> responses,
@@ -44,7 +47,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          boolean deprecated, Map<String, Object> attrs) {
 		
 	    super(name, title, summary, description, attrs);
-	    
+	    this.route		 = route;
 		this.method      = method;
         this.tags        = tags;
 		this.parameters  = parameters.toArray(new MApiParameter[]{});
@@ -55,7 +58,14 @@ public class MApiOperation extends MApiNamedWithDesc {
         this.allowAnonymous = allowAnonymous;
 		this.deprecated  = deprecated;
 	}
-	
+
+	/**
+	 * The route of this operation
+	 */
+	public Route getRoute(){
+		return route;
+	}
+
 	/**
 	 * The short description of this operation.
 	 */

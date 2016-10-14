@@ -50,5 +50,12 @@ public class OpLogControllerTest extends WebTestBase {
         assertEquals(1,TestLogModel.count());
         assertEquals("测试操作testlog",TestLogModel.<TestLogModel>first().getDescription());
     }
+    @Test
+    public void testControllerOpLog(){
+        TestLogModel.deleteAll();
+        forGet("/api/log/operation2").addQueryParam("name","testlog").send().assertSuccess();
+        assertEquals(1,TestLogModel.count());
+        assertEquals("testtestlog",TestLogModel.<TestLogModel>first().getDescription());
+    }
 
 }

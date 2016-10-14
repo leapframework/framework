@@ -38,6 +38,7 @@ import leap.web.api.meta.model.MApiOperation;
 import leap.web.api.meta.model.MApiPath;
 import leap.web.route.Route;
 
+import java.lang.reflect.Modifier;
 import java.sql.Timestamp;
 import java.util.Map;
 import java.util.Objects;
@@ -63,6 +64,10 @@ public class DefaultOpLogManager implements OpLogManager {
         }
         dao.getOrmContext().getMetadata().getEntityMappingSnapshotList().forEach((em)->{
             Class<?> cls = em.getModelClass();
+            if(cls == null || Modifier.isAbstract(cls.getModifiers())){
+                return;
+            }
+
             if(OpLogModel.class.isAssignableFrom(cls)){
                 if(logClass != null){
                     throw new RuntimeException("duplicate subclass of leap.web.api.log.model.OpLogModel, please config class name or make sure there is only one subclass of leap.web.api.log.model.OpLogModel");
@@ -160,7 +165,7 @@ public class DefaultOpLogManager implements OpLogManager {
         ApiMetadata metadata = null;
         label : for(ApiConfig config : apis.getConfigurations()){
             for(Route route : config.getRoutes()){
-                if(context.getResult()==route){
+                if(context.getRoute()==route){
                     metadata = apis.tryGetMetadata(config.getName());
                     break label;
                 }
@@ -168,10 +173,15 @@ public class DefaultOpLogManager implements OpLogManager {
         }
         MApiOperation operation = null;
         if(metadata != null){
-            for(Map.Entry<String, MApiPath> entry : metadata.getPaths().entrySet()){
-                if(Strings.equals(entry.getKey(),context.getPath())){
-                    operation = entry.getValue().getOperation(HTTP.Method.valueOf(context.getRoute().getMethod()));
-                    break;
+            label:for(Map.Entry<String, MApiPath> entry : metadata.getPaths().entrySet()){
+                if(entry.getValue().getOperations() == null){
+                    continue;
+                }
+                for(MApiOperation op : entry.getValue().getOperations()){
+                    if (op.getRoute() == context.getRoute()){
+                        operation = op;
+                        break label;
+                    }
                 }
             }
         }

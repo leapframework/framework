@@ -30,7 +30,7 @@ import leap.web.api.mvc.params.QueryOptions;
  * Created by kael on 2016/10/11.
  */
 @Path("log")
-@OpLog(description = "test")
+@OpLog(description = "test${name}")
 public class TestOpLogController extends OpLogController<TestLogModel> {
     @GET("/operation1")
     @AllowAnonymous

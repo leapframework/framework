@@ -148,7 +148,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     @Override
     public MApiOperation build() {
-		return new MApiOperation(name, title, summary, description, method,
+		return new MApiOperation(name, title, summary, description, method,route,
                                 tags.toArray(Arrays2.EMPTY_STRING_ARRAY),
 								Builders.buildList(parameters), 
 								Builders.buildList(responses), 
