@@ -15,38 +15,20 @@
  *  * limitations under the License.
  *
  */
+
 package tests.cp.mock;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
+import leap.lang.jdbc.CallableStatementAdapter;
+
 import java.sql.SQLException;
 
-import leap.lang.jdbc.StatementAdapter;
+public class MockCallableStatement extends CallableStatementAdapter {
 
-public class MockStatement extends StatementAdapter {
+    private final MockConnection conn;
 
-	private final MockConnection conn;
-	
-	private String lastQuery; 
-
-	public MockStatement(MockConnection connection) {
-		this.conn = connection;
+    public MockCallableStatement(MockConnection conn) {
+        this.conn = conn;
         conn.increaseOpeningStatement();
-	}
-	
-	public String getLastQuery() {
-		return lastQuery;
-	}
-
-	@Override
-    public Connection getConnection() throws SQLException {
-		return conn;
-	}
-
-	@Override
-    public ResultSet executeQuery(String sql) throws SQLException {
-		this.lastQuery = sql;
-		return new MockResultSet(conn);
     }
 
     @Override
@@ -54,5 +36,4 @@ public class MockStatement extends StatementAdapter {
         conn.decreaseOpeningStatement();
         super.close();
     }
-	
 }

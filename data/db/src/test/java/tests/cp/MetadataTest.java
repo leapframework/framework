@@ -15,44 +15,28 @@
  *  * limitations under the License.
  *
  */
-package tests.cp.mock;
+package tests.cp;
+
+import org.junit.Test;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import leap.lang.jdbc.StatementAdapter;
+public class MetadataTest extends PoolTestBase {
 
-public class MockStatement extends StatementAdapter {
+    @Test
+    public void testResultSet() throws SQLException {
 
-	private final MockConnection conn;
-	
-	private String lastQuery; 
+        try(Connection conn = ds.getConnection()) {
+            DatabaseMetaData dm = conn.getMetaData();
 
-	public MockStatement(MockConnection connection) {
-		this.conn = connection;
-        conn.increaseOpeningStatement();
-	}
-	
-	public String getLastQuery() {
-		return lastQuery;
-	}
+            try(ResultSet rs = dm.getPrimaryKeys("", "", "")) {
 
-	@Override
-    public Connection getConnection() throws SQLException {
-		return conn;
-	}
+            }
+        }
 
-	@Override
-    public ResultSet executeQuery(String sql) throws SQLException {
-		this.lastQuery = sql;
-		return new MockResultSet(conn);
     }
 
-    @Override
-    public void close() throws SQLException {
-        conn.decreaseOpeningStatement();
-        super.close();
-    }
-	
 }

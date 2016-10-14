@@ -62,7 +62,7 @@ public class BorrowTest extends PoolTestBase {
 		
 		//should validate 
 		try(Connection conn = ds.getConnection()) {
-			MockConnection mconn = real(conn);
+			MockConnection mconn = conn.unwrap(MockConnection.class);
 			MockStatement  mstmt = mconn.getLastStatement();
 			
 			assertFalse(mconn.isValidMethodSuccessCalled());
@@ -88,5 +88,88 @@ public class BorrowTest extends PoolTestBase {
 			assertTrue(mconn.isValidMethodSuccessCalled());
 		}
 	}
-	
+
+    @Test
+    public void testInvalidConnectionOnBorrowOld() throws SQLException {
+        ds.setTestOnBorrow(true);
+        ms.setSupportsJdbc4Validation(true);
+
+        Connection wrapped;
+        try(Connection conn = ds.getConnection()){
+            wrapped = conn.unwrap(MockConnection.class);
+        }
+
+        try(Connection conn = ds.getConnection()){
+            assertSame(wrapped, conn.unwrap(MockConnection.class));
+        }
+
+        ms.setValidateConnectionError(true);
+        try(Connection conn = ds.getConnection()){
+            assertNotSame(wrapped, conn.unwrap(MockConnection.class));
+        }
+    }
+
+    @Test
+    public void testOpenConnectionError() {
+        ms.setOpenConnectionError(true);
+
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+
+        }
+    }
+
+    @Test
+    public void testSetupConnectionErrorOnBorrowNew() throws SQLException {
+        ds.setDefaultAutoCommit(false);
+        ms.setSetAutoCommitError(true);
+
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+    }
+
+    @Test
+    public void testSetupConnectionErrorOnBorrowOld() throws SQLException {
+        ds.setDefaultAutoCommit(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+
+        ms.setSetAutoCommitError(true);
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+
+        //test abandon old one, creates a new.
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+        ms.setSetAutoCommitError(true);
+        ms.getSetAutoCommitErrorCount().set(1);
+        try(Connection conn = ds.getConnection()){}
+
+        //test abandon old one, throw exception.
+        ms.setSetAutoCommitError(false);
+        try(Connection conn = ds.getConnection()){
+            conn.setAutoCommit(true);
+        }
+        ms.setSetAutoCommitError(true);
+        ms.getSetAutoCommitErrorCount().set(2);
+        try {
+            try(Connection conn = ds.getConnection()){}
+            fail("should throw SQLException");
+        }catch (SQLException e) {
+            assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+    }
 }
