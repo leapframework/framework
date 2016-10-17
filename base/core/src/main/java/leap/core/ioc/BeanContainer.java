@@ -968,7 +968,9 @@ public class BeanContainer implements BeanFactory {
 
                 ((ProxyBean)proxyBean).setTargetBean(bean);
 
-                bd.setProxyInstance(proxyBean);
+                if(bd.isSingleton()) {
+                    bd.setProxyInstance(proxyBean);
+                }
 
                 return proxyBean;
             }
@@ -978,22 +980,41 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected BeanDefinitionBase findProxyDefinition(BeanDefinitionBase bd) {
-        //todo : check the singleton of proxy bean (must be same as the target bean).
+        BeanDefinitionBase pd;
 
+        //find by id.
         if(!Strings.isEmpty(bd.getId())) {
-            return bpds.identifiedBeanDefinitions.get(bd.getId());
+            pd = bpds.identifiedBeanDefinitions.get(bd.getId());
+            if(null != pd) {
+                return pd;
+            }
         }
 
-        Class<?> type = bd.getType();
-        if(bd.isPrimary()) {
-            return bpds.primaryBeanDefinitions.get(type);
-        }
-
+        //find by name.
         if(!Strings.isEmpty(bd.getName())) {
-            return bpds.namedBeanDefinitions.get(bpds.key(type, bd.getName()));
+            pd = bpds.find(bd.getType(), bd.getName());
+            if(null != pd) {
+                return pd;
+            }
         }
 
-        //todo : supports bean proxy for all beans of type.
+        //find by primary.
+        if(bd.isPrimary()) {
+            pd = bpds.primaryBeanDefinitions.get(bd.getType());
+            if(null != pd) {
+                return pd;
+            }
+        }
+
+        //find type proxy.
+        Set<BeanDefinitionBase> pds = bpds.beanTypeDefinitions.get(bd.getType());
+        if(null != pds && pds.size() == 1) {
+            pd = pds.iterator().next();
+            if(!pd.isPrimary() && Strings.isEmpty(pd.getName()) && Strings.isEmpty(pd.getId())) {
+                return pd;
+            }
+        }
+
         return null;
     }
 	

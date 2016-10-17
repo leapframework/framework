@@ -9,8 +9,13 @@
     <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" id="testProxyBean1"/>
     <bean type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanImpl" id="testProxyBean2"/>
 
-    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" primary="true"/>
-    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" name="bean1"/>
-    <bean-proxy type="tested.beans.proxy.TBeanType" class="tested.beans.proxy.TBeanProxy" id="testProxyBean2"/>
+    <bean-proxy proxy-class="tested.beans.proxy.TBeanProxy" target-type="tested.beans.proxy.TBeanType" target-primary="true"/>
+    <bean-proxy proxy-class="tested.beans.proxy.TBeanProxy" target-type="tested.beans.proxy.TBeanType" target-name="bean1"/>
+    <bean-proxy proxy-class="tested.beans.proxy.TBeanProxy" target-type="tested.beans.proxy.TBeanType" target-id="testProxyBean2"/>
+
+    <bean type="tested.beans.proxy.TBeanType1" class="tested.beans.proxy.TBeanImpl" name="bean1"/>
+    <bean type="tested.beans.proxy.TBeanType1" class="tested.beans.proxy.TBeanImpl" name="bean2"/>
+
+    <bean-proxy target-type="tested.beans.proxy.TBeanType1" proxy-class="tested.beans.proxy.TBeanProxy1"/>
 
 </beans>
