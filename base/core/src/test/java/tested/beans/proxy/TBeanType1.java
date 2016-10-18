@@ -20,6 +20,6 @@ package tested.beans.proxy;
 
 public interface TBeanType1 {
 
-    String getTestValue();
+    int getCount();
 
 }

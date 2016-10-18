@@ -23,4 +23,9 @@ public class TBeanImpl implements TBeanType,TBeanType1 {
         return "impl";
     }
 
+    @Override
+    public int getCount() {
+        return 0;
+    }
 }
+

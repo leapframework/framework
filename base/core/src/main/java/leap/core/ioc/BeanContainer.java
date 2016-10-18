@@ -936,6 +936,10 @@ public class BeanContainer implements BeanFactory {
         return doCreateBean(bd, false);
 	}
 
+    protected Object doCreateProxy(BeanDefinitionBase bd){
+        return doCreateBean(bd, true);
+    }
+
     protected Object doCreateBean(BeanDefinitionBase bd, boolean proxy){
         if(initializing){
             throw new IllegalStateException("Cannot get bean when this container is initializing");
@@ -962,11 +966,19 @@ public class BeanContainer implements BeanFactory {
         bd.setInited(true);
 
         if(!proxy) {
-            BeanDefinitionBase bpd = findProxyDefinition(bd);
-            if(null != bpd) {
-                Object proxyBean = doGetBean(bpd);
-
+            BeanDefinitionBase pd = findProxy(bd);
+            if(null != pd) {
+                Object proxyBean = doCreateProxy(pd);
                 ((ProxyBean)proxyBean).setTargetBean(bean);
+
+                if(!isTypedProxy(pd)) {
+                    pd = findTypedProxy(bd);
+                    if(null != pd) {
+                        Object typedProxyBean = doCreateProxy(pd);
+                        ((ProxyBean) typedProxyBean).setTargetBean(proxyBean);
+                        proxyBean = typedProxyBean;
+                    }
+                }
 
                 if(bd.isSingleton()) {
                     bd.setProxyInstance(proxyBean);
@@ -979,7 +991,7 @@ public class BeanContainer implements BeanFactory {
         return bean;
     }
 
-    protected BeanDefinitionBase findProxyDefinition(BeanDefinitionBase bd) {
+    protected BeanDefinitionBase findProxy(BeanDefinitionBase bd) {
         BeanDefinitionBase pd;
 
         //find by id.
@@ -1006,16 +1018,27 @@ public class BeanContainer implements BeanFactory {
             }
         }
 
-        //find type proxy.
+        //find typed proxy.
+        return findTypedProxy(bd);
+    }
+
+    protected BeanDefinitionBase findTypedProxy(BeanDefinitionBase bd) {
         Set<BeanDefinitionBase> pds = bpds.beanTypeDefinitions.get(bd.getType());
-        if(null != pds && pds.size() == 1) {
-            pd = pds.iterator().next();
-            if(!pd.isPrimary() && Strings.isEmpty(pd.getName()) && Strings.isEmpty(pd.getId())) {
-                return pd;
+        if(null != pds) {
+            for(BeanDefinitionBase pd : pds) {
+                if(isTypedProxy(pd)) {
+                    return pd;
+                }
             }
         }
-
         return null;
+    }
+
+    protected boolean isTypedProxy(BeanDefinitionBase pd) {
+        if(!pd.isPrimary() && Strings.isEmpty(pd.getName()) && Strings.isEmpty(pd.getId())) {
+            return true;
+        }
+        return false;
     }
 	
 	protected Object doBeanCreation(BeanDefinitionBase bd){

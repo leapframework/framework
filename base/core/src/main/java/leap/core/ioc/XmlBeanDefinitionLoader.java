@@ -388,6 +388,10 @@ class XmlBeanDefinitionLoader {
 			
 			bean.setBeanClassType(BeanType.of(bean.getBeanClass()));
 		}
+
+        if(proxy && !ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
+            throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() + "' must be sub-class of '" + ProxyBean.class + "', source : " + reader.getSource());
+        }
 		
 		if(!Strings.isEmpty(typeClassName)){
 			Class<?> type = tryForName(typeClassName);

@@ -34,7 +34,7 @@ public class TBeanProxy1 implements TBeanType1, ProxyBean<TBeanType1> {
     }
 
     @Override
-    public String getTestValue() {
-        return "proxy";
+    public int getCount() {
+        return targetBean.getCount() + 1;
     }
 }

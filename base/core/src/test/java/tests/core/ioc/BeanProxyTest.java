@@ -56,7 +56,7 @@ public class BeanProxyTest extends CoreTestCase {
 
     @Test
     public void testTypedBeanProxy() {
-        assertEquals("proxy", nameBean11.getTestValue());
-        assertEquals("proxy", nameBean12.getTestValue());
+        assertEquals(2, nameBean11.getCount());
+        assertEquals(1, nameBean12.getCount());
     }
 }
