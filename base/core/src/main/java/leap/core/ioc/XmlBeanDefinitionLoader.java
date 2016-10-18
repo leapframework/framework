@@ -160,7 +160,9 @@ class XmlBeanDefinitionLoader {
                     log.debug("Load beans : {}", LogUtils.getUrl(resource));
                 }
             }
-            readDefinitions(container,resource, ar.isDefaultOverride());
+
+            //todo : use AppResource's default override?
+            readDefinitions(container,resource, false);
 	    }
     }
 

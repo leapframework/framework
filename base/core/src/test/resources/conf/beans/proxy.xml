@@ -17,6 +17,9 @@
     <bean type="tested.beans.proxy.TBeanType1" class="tested.beans.proxy.TBeanImpl" name="bean2"/>
 
     <bean-proxy target-type="tested.beans.proxy.TBeanType1" proxy-class="tested.beans.proxy.TBeanProxy1" target-name="bean1"/>
+    <bean-proxy target-type="tested.beans.proxy.TBeanType1" proxy-class="tested.beans.proxy.TBeanProxy1" target-name="bean1" override="true"/>
+
     <bean-proxy target-type="tested.beans.proxy.TBeanType1" proxy-class="tested.beans.proxy.TBeanProxy1"/>
+    <bean-proxy target-type="tested.beans.proxy.TBeanType1" proxy-class="tested.beans.proxy.TBeanProxy1" override="true"/>
 
 </beans>

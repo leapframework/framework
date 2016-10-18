@@ -59,8 +59,8 @@ public class BeanContainer implements BeanFactory {
     protected final XmlBeanDefinitionLoader        xmlBeanDefinitionLoader;
 
     protected Set<InitDefinition>                            initDefinitions     = new CopyOnWriteArraySet<>();
-    protected BeanDefinitionsImpl                            bds                 = new BeanDefinitionsImpl();
-    protected BeanDefinitionsImpl                            bpds                = new BeanDefinitionsImpl(); //proxy defs
+    protected BeanDefinitionsImpl                            bds                 = new BeanDefinitionsImpl(false);
+    protected BeanDefinitionsImpl                            bpds                = new BeanDefinitionsImpl(true); //proxy defs
     protected Map<String, BeanListDefinition>                beanListDefinitions = new HashMap<>();
     protected List<BeanDefinitionBase>                       processorBeans      = new ArrayList<>();
     protected List<BeanDefinitionBase>                       initializableBeans  = new ArrayList<>();
@@ -1872,6 +1872,8 @@ public class BeanContainer implements BeanFactory {
 	}
 
     protected class BeanDefinitionsImpl implements BeanDefinitions {
+        private final boolean proxy;
+
         protected Set<BeanDefinitionBase>                allBeanDefinitions        = new CopyOnWriteArraySet<>();
         protected Map<String, BeanDefinitionBase>        identifiedBeanDefinitions = new HashMap<>();
         protected Map<Class<?>, Set<BeanDefinitionBase>> beanTypeDefinitions       = new HashMap<>();
@@ -1881,6 +1883,10 @@ public class BeanContainer implements BeanFactory {
         protected Map<String, BeanDefinitionBase>        namedBeanDefinitions      = new HashMap<>();
         protected Map<Class<?>, BeanDefinitionBase>      primaryBeanDefinitions    = new HashMap<>();
         protected Map<String, AliasDefinition>           aliasDefinitions          = new HashMap<>();
+
+        public BeanDefinitionsImpl(boolean proxy) {
+            this.proxy = proxy;
+        }
 
         public String key(Class<?> type, String name) {
             return type.getName() + "$" + name;
@@ -2054,9 +2060,9 @@ public class BeanContainer implements BeanFactory {
 				if(!type.isOverride()) {
 					BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
 					if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
-						throw new BeanDefinitionException("Found duplicated bean name '" + definition.getName() +
+						throw new BeanDefinitionException("Found duplicated " + (proxy ? "proxy" : "bean") + " name '" + definition.getName() +
 								"' for type '" + beanType.getName() +
-								"' in resource : " + definition.getSource() + " with exists bean " + existsBeanDefinition);
+								"' in resource : " + definition.getSource() + " with exists " + (proxy ? "proxy " : "bean ") + existsBeanDefinition);
 					}
 				}
 				namedBeanDefinitions.put(key, bd);
@@ -2067,9 +2073,9 @@ public class BeanContainer implements BeanFactory {
 				if(!type.isOverride()) {
 					BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
 					if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
-						throw new BeanDefinitionException("Found duplicated primary bean " + definition +
+						throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
 								" for type '" + beanType.getName() +
-								"' with exists bean " + existsBeanDefinition.getSource());
+								"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
 					}
 				}
 				primaryBeanDefinitions.put(beanType, bd);
@@ -2081,6 +2087,28 @@ public class BeanContainer implements BeanFactory {
 				typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
 				beanTypeDefinitions.put(beanType, typeSet);
 			}
+
+            if(proxy && isTypedProxy(bd)) {
+
+                BeanDefinitionBase typedProxy = null;
+
+                for(BeanDefinitionBase d : typeSet) {
+                    if(isTypedProxy(d)) {
+                        if(bd.isOverride()) {
+                            typedProxy = d;
+                            break;
+                        }else{
+                            throw new BeanDefinitionException("Found duplicated type proxy "  + definition + " for type '" +
+                                beanType.getName() + "' with exists proxy in " + d.getSource());
+                        }
+                    }
+                }
+
+                if(null != typedProxy) {
+                    typeSet.remove(typedProxy);
+                }
+            }
+
 			typeSet.add(bd);
 
 		}
