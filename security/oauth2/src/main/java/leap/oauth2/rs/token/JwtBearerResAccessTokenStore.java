@@ -59,7 +59,8 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  
             if(expiresIn == null){
                 resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
             }else{
-                resAccessTokenDetails.setExpiresIn(expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString()));
+                int second = expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString());
+                resAccessTokenDetails.setExpiresIn(second * 1000);
             }
         } catch (NumberFormatException e) {
             resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
