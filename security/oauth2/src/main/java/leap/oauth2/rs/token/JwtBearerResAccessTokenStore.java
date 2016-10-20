@@ -55,8 +55,12 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  
         //TODO How to ensure is expired?
         resAccessTokenDetails.setCreated(System.currentTimeMillis());
         try {
-            int expiresIn = Integer.parseInt((String)jwtDetail.get("expires_in"));
-            resAccessTokenDetails.setExpiresIn(expiresIn);
+            Object expiresIn = jwtDetail.get("expires_in");
+            if(expiresIn == null){
+                resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
+            }else{
+                resAccessTokenDetails.setExpiresIn(expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString()));
+            }
         } catch (NumberFormatException e) {
             resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
         }
