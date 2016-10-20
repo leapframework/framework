@@ -55,7 +55,7 @@ public class MySql5Dialect extends GenericDbDialect {
         "SQL_SMALL_RESULT","SSL","STARTING","STRAIGHT_JOIN","STRIPED","TABLES",
         "TERMINATED","TINYBLOB","TINYINT","TINYTEXT","TYPES","UNLOCK","UNSIGNED","USE",
         "USER_RESOURCES","VARBINARY","VARCHARACTER","WARNINGS","XOR","YEAR_MONTH",
-        "ZEROFILL","INT","INT1","INT2","INT3","INT4","INT8"};
+        "ZEROFILL","INT","INT1","INT2","INT3","INT4","INT8","USAGE"};
     
     private static final String[] SYSTEM_SCHEMAS = new String[]{"INFORMATION_SCHEMA","PERFORMANCE_SCHEMA"};
 

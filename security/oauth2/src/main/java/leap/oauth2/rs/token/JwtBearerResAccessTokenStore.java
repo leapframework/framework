@@ -20,6 +20,7 @@ import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Result;
 import leap.lang.security.RSA;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
@@ -35,6 +36,7 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  
     protected RSAPublicKey               publicKey;
     protected final JwtVerifier         verifier;
     protected @Inject SecurityConfig     sc;
+    protected @Inject OAuth2AuthzServerConfig config;
 
     public JwtBearerResAccessTokenStore(String publicKey) {
         this.publicKey = RSA.decodePublicKey(publicKey);
@@ -51,8 +53,13 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  
         resAccessTokenDetails.setScope((String)jwtDetail.remove("scope"));
         resAccessTokenDetails.setClientId((String)jwtDetail.remove("client_id"));
         //TODO How to ensure is expired?
-        resAccessTokenDetails.setCreated(Calendar.getInstance().getTimeInMillis());
-        resAccessTokenDetails.setExpiresIn(120*1000);
+        resAccessTokenDetails.setCreated(System.currentTimeMillis());
+        try {
+            int expiresIn = Integer.parseInt((String)jwtDetail.get("expires_in"));
+            resAccessTokenDetails.setExpiresIn(expiresIn);
+        } catch (NumberFormatException e) {
+            resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
+        }
         return Result.of(resAccessTokenDetails);
     }
 
