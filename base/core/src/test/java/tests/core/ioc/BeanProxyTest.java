@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import org.junit.Test;
 import tested.beans.proxy.TBeanProxy;
 import tested.beans.proxy.TBeanType;
+import tested.beans.proxy.TBeanType1;
 import tests.core.CoreTestCase;
 
 public class BeanProxyTest extends CoreTestCase {
@@ -29,6 +30,9 @@ public class BeanProxyTest extends CoreTestCase {
     private @Inject(id = "testProxyBean2") TBeanType idBean2;
     private @Inject(name = "bean1")        TBeanType nameBean1;
     private @Inject(name = "bean2")        TBeanType nameBean2;
+
+    private @Inject(name = "bean1") TBeanType1 nameBean11;
+    private @Inject(name = "bean2") TBeanType1 nameBean12;
 
     @Test
     public void testPrimaryBeanProxy() {
@@ -48,5 +52,11 @@ public class BeanProxyTest extends CoreTestCase {
     public void testNamedBeanProxy() {
         assertEquals("proxy", nameBean1.getTestValue());
         assertEquals("impl",  nameBean2.getTestValue());
+    }
+
+    @Test
+    public void testTypedBeanProxy() {
+        assertEquals(2, nameBean11.getCount());
+        assertEquals(1, nameBean12.getCount());
     }
 }

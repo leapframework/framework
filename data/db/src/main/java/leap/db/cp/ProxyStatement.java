@@ -15,42 +15,39 @@
  */
 package leap.db.cp;
 
+import leap.lang.Strings;
 import leap.lang.jdbc.StatementWrapper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProxyStatement extends StatementWrapper {
 
 	protected final PooledConnection conn;
 
-	protected Thread threadOnCreate;
-	
 	protected long   lastExecutingTime;
 	protected long   lastExecutingDurationMs;
 	protected String lastExecutingSql;
+
+    private Exception stackTraceOnOpenException = new Exception("");
 
     private boolean closed;
 
 	ProxyStatement(PooledConnection conn, Statement stmt) {
 		super(stmt);
 		this.conn = conn;
-		this.threadOnCreate = Thread.currentThread();
-		//this.stackTraceExceptionOnCreate = new IllegalStateException("");
 	}
 
     public boolean isClosed() {
         return closed;
     }
 	
-	public Thread getThreadOnCreate() {
-		return threadOnCreate;
-	}
-	
-	public StackTraceElement[] getStackTraceOfThreadOnCreate() {
-		return threadOnCreate.getStackTrace();
+	public StackTraceElement[] getStackTraceOnOpen() {
+        return PooledConnection.getStackTrace(stackTraceOnOpenException);
 	}
 
 	public Statement getReal() {
@@ -79,7 +76,7 @@ public class ProxyStatement extends StatementWrapper {
 	}
 
 	protected void beginExecute(String sql) {
-		lastExecutingTime     = System.currentTimeMillis();
+		lastExecutingTime       = System.currentTimeMillis();
 		lastExecutingDurationMs = -1;
 		
 		if(null != sql) {
@@ -89,7 +86,7 @@ public class ProxyStatement extends StatementWrapper {
 	
 	protected void endExecute() {
 		lastExecutingDurationMs = System.currentTimeMillis() - lastExecutingTime;
-		lastExecutingTime     = -1;
+		lastExecutingTime       = -1;
 	}
 
 	@Override

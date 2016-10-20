@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -51,24 +52,26 @@ class Pool {
 	private volatile String  name;
 	private volatile boolean closed = false;
 	
-	public Pool(PoolProperties props) {
+	public Pool(PoolProperties props) throws SQLException {
 		Args.notNull(props,"pool properties");
 		props.validate();
 		
-		this.factory        = new PoolFactory(props);
-		this.config         = factory.getPoolConfig();
-		this.dataSource     = factory.getDataSource();
-		this.utils 		    = new PoolUtils(this);
-		this.syncPool = new SyncPool();
-		this.maxWait        = config.getMaxWait();
+		this.factory    = new PoolFactory(props);
+		this.config     = factory.getPoolConfig();
+		this.dataSource = factory.getDataSource();
+		this.utils 		= new PoolUtils(this);
+		this.syncPool   = new SyncPool();
+		this.maxWait    = config.getMaxWait();
 		
 		if(config.hasDefaultTransactionIsolation()) {
 			this.defaultTransactionIsolationLevel = config.getDefaultTransactionIsolation().getValue();
 		}else{
 			this.defaultTransactionIsolationLevel = Integer.MIN_VALUE;
 		}
-		
-		if(config.isHealthCheck()) {
+
+        initMinIdleConnections();
+
+        if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
 																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
@@ -154,7 +157,7 @@ class Pool {
 			try {
 	            scheduledExecutor.shutdownNow();
             } catch (Throwable e) {
-            	log.warn("[{}] Error shutdown the scheduled executor, {}",getName(), e.getMessage(), e);
+            	log.info("[{}] Error shutdown the scheduled executor, {}",getName(), e.getMessage(), e);
             }
 		}
 		
@@ -190,6 +193,8 @@ class Pool {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
 			wrappd = createNewConnectionOnBorrow(conn);
+
+            //todo : test the connection by validation query?.
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
@@ -245,10 +250,10 @@ class Pool {
         	//if the connection is new, throw the exception.
         	//if the connection is old, abandon it and create a new one.
         	if(count > 1 || conn.isNewCreatedConnection()) {
-        		log.info("Reset connection error, {}", e.getMessage(), e);
+        		log.info("Setup new connection error : {}", e.getMessage(), e);
         		throw e;
         	}else{
-        		log.warn("Reset connection error, abandon it and create a new one", e);
+        		log.info("Reset old connection error ({}) abandon it and create a new one", e.getMessage(), e);
         		wrapped = createNewConnectionOnBorrow(conn);
         		setupConnectionStateOnBorrow(conn, wrapped, count++);
         	}
@@ -494,6 +499,21 @@ class Pool {
 			
 		}
 	}
+
+    private void initMinIdleConnections() throws SQLException {
+        if(config.getMinIdle() <= 0){
+            return;
+        }
+
+        List<Connection> list = new ArrayList<>();
+        try{
+            for(int i=0;i<config.getMinIdle();i++) {
+                list.add(getConnection());
+            }
+        }finally{
+            list.forEach(JDBC::closeConnection);
+        }
+    }
 	
 	final class HealthWorker implements Runnable {
 
@@ -548,21 +568,21 @@ class Pool {
 			int idles = syncPool.getIdleCount();
 			int diff = config.getMinIdle() - idles;
 			if(diff > 0) {
-				for(int i=0;i<diff;i++) {
-					if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
-						break;
-					}
-					Connection conn = null;
-					try{
-						conn = getConnection();
-					}catch(SQLException e) {
-
-					}finally{
-						if(null != conn) {
-							JDBC.closeConnection(conn);
-						}
-					}
-				}
+                List<Connection> list = new ArrayList<>();
+                try{
+                    for(int i=0;i<diff;i++) {
+                        if(config.getMinIdle() - syncPool.getIdleCount() <= 0) {
+                            break;
+                        }
+                        try{
+                            list.add(getConnection());
+                        }catch(SQLException e) {
+                            return;
+                        }
+                    }
+                }finally{
+                    list.forEach(JDBC::closeConnection);
+                }
 			}
         }
 		

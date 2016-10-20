@@ -17,6 +17,7 @@
  */
 package tests.cp.mock;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import leap.lang.jdbc.DatabaseMetaDataAdapter;
@@ -53,5 +54,9 @@ public class MockDatabaseMetaData extends DatabaseMetaDataAdapter {
     public String getDatabaseProductName() throws SQLException {
 		return "MySQL";
 	}
-	
+
+    @Override
+    public ResultSet getPrimaryKeys(String catalog, String schema, String table) throws SQLException {
+        return new MockResultSet(connection);
+    }
 }

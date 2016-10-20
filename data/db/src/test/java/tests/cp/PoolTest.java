@@ -18,9 +18,14 @@
 
 package tests.cp;
 
+import leap.lang.Threads;
 import org.junit.Test;
+import tests.cp.mock.MockConnection;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PoolTest extends PoolTestBase {
 
@@ -36,6 +41,38 @@ public class PoolTest extends PoolTestBase {
         }catch(SQLException e) {
             assertTrue(e.getMessage().contains("Connection Pool has been closed."));
         }
+
+        //close again.
+        ds.close();
     }
 
+    @Test
+    public void testMinIdle() throws SQLException {
+        ds.setMinIdle(5);
+        ds.setConnectionLeakTimeoutMs(100);
+
+        ds.open();
+        assertEquals(5, ms.getNrOfOpeningConnections());
+
+        //abandon all the leak connections.
+        List<MockConnection> conns = new ArrayList<>();
+        for(int i=0;i<5;i++) {
+            conns.add(ds.getConnection().unwrap(MockConnection.class));
+        }
+
+        Threads.sleep(500);
+        assertEquals(5, ms.getNrOfOpeningConnections());
+        for(MockConnection c : conns) {
+            assertTrue(c.isClosed());
+        }
+        for(int i=0;i<5;i++) {
+            try(Connection conn = ds.getConnection()) {
+                assertFalse(conns.contains(conn.unwrap(MockConnection.class)));
+                assertFalse(conn.unwrap(MockConnection.class).isClosed());
+            }
+        }
+
+        ds.close();
+        assertEquals(0, ms.getNrOfOpeningConnections());
+    }
 }
