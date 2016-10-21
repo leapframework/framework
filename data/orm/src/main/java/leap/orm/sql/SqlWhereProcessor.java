@@ -39,140 +39,145 @@ class SqlWhereProcessor {
     void processWhereFields() {
         if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
 
-            Set<SqlTableSource> joinTables = new HashSet<>();
-            Set<SqlTableSource> tables = new HashSet<>();
+            sql.traverse(node -> {
 
-            AstNode clause = sql.nodes()[0];
-
-            if(clause instanceof SqlQuery) {
-
-                SqlQuery query = (SqlQuery)clause;
-
-                for(SqlTableSource ts : query.getTableSources()) {
-
-                    if(ts instanceof SqlTableName) {
-
-                        EntityMapping em = ((SqlTableName)ts).getEntityMapping();
-
-                        if(null != em && em.hasWhereFields()) {
-
-                            if(ts.isJoin()) {
-                                joinTables.add(ts);
-                            }else{
-                                tables.add(ts);
-                            }
-                        }
-
-                    }
-
+                if(node instanceof SqlQuery) {
+                    processQuery((SqlQuery)node);
                 }
-
-                if(joinTables.isEmpty() && tables.isEmpty()) {
-                    return;
-                }
-            }
-
-            sql.traverse((node) -> {
-
-                if(node instanceof SqlJoin) {
-                    SqlJoin join = (SqlJoin)node;
-                    if(!joinTables.contains(join.getTable())) {
-                        return true;
-                    }
-                    if(join.isCommaJoin()) {
-                        tables.add(join.getTable());
-                        return true;
-                    }
-
-                    SqlTableSource ts = join.getTable();
-                    EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
-
-                    if(isWhereFieldExists(node, em)) {
-                        return true;
-                    }
-
-                    AstNode[] olds = ((SqlJoin)node).getNodes();
-
-                    List<AstNode> nodes = new ArrayList<>();
-
-                    Collections2.addAll(nodes, olds);
-
-                    if(!join.hasOnExpression()) {
-                        nodes.add(new Text(" on "));
-                    }
-
-                    String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                    for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                        FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                        if(i > 0) {
-                            addWhereFieldNode(nodes, fm, alias);
-                        }else{
-                            addWhereFieldNode(nodes, fm, alias, join.hasOnExpression());
-                        }
-                    }
-
-                    ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
-
-                    return false;
-                }
-
-                if(node instanceof SqlWhere && !tables.isEmpty()) {
-                    SqlWhere where = (SqlWhere)node;
-
-                    //todo : take the first one only
-                    SqlTableSource ts = tables.iterator().next();
-
-                    if(!where.getQuery().getTableSources().contains(ts)) {
-                        return true;
-                    }
-
-                    EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
-
-                    if(isWhereFieldExists(node, em)) {
-                        return true;
-                    }
-
-                    FieldMapping[] whereFields = em.getWhereFieldMappings();
-
-                    AstNode[] olds = ((SqlWhere)node).getNodes();
-
-                    List<AstNode> nodes = new ArrayList<>();
-
-                    if(olds.length > 0) {
-                        //where ( original expression ) and (...)
-                        nodes.add(new Text(olds[0].toString()).append(" ("));
-                        for (int i = 1; i < olds.length; i++) {
-                            nodes.add(olds[i]);
-                        }
-                        nodes.add(new Text(" )"));
-                    }else {
-                        nodes.add(new Text(" where 1=1 "));
-                    }
-
-                    String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                    if(whereFields.length == 1) {
-                        addWhereFieldNode(nodes, whereFields[0], alias);
-                    }else{
-                        nodes.add(new Text(" and ( 1=1"));
-
-                        for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                            FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                            addWhereFieldNode(nodes, fm, alias);
-                        }
-
-                        nodes.add(new Text(" ) "));
-                    }
-
-                    ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
-
-                    return false;
-            }
 
                 return true;
             });
+
         }
+    }
+
+    protected void processQuery(SqlQuery query) {
+        Set<SqlTableSource> joinTables = new HashSet<>();
+        Set<SqlTableSource> tables = new HashSet<>();
+
+        for(SqlTableSource ts : query.getTableSources()) {
+
+            if(ts instanceof SqlTableName) {
+
+                EntityMapping em = ((SqlTableName)ts).getEntityMapping();
+
+                if(null != em && em.hasWhereFields()) {
+
+                    if(ts.isJoin()) {
+                        joinTables.add(ts);
+                    }else{
+                        tables.add(ts);
+                    }
+                }
+
+            }
+
+        }
+
+        if(joinTables.isEmpty() && tables.isEmpty()) {
+            return;
+        }
+
+        query.traverse((node) -> {
+
+            if(node instanceof SqlJoin) {
+                SqlJoin join = (SqlJoin)node;
+                if(!joinTables.contains(join.getTable())) {
+                    return true;
+                }
+                if(join.isCommaJoin()) {
+                    tables.add(join.getTable());
+                    return true;
+                }
+
+                SqlTableSource ts = join.getTable();
+                EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
+
+                if(isWhereFieldExists(node, em)) {
+                    return true;
+                }
+
+                AstNode[] olds = ((SqlJoin)node).getNodes();
+
+                List<AstNode> nodes = new ArrayList<>();
+
+                Collections2.addAll(nodes, olds);
+
+                if(!join.hasOnExpression()) {
+                    nodes.add(new Text(" on "));
+                }
+
+                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                for(int i=0;i<em.getWhereFieldMappings().length;i++) {
+                    FieldMapping fm = em.getWhereFieldMappings()[i];
+
+                    if(i > 0) {
+                        addWhereFieldNode(nodes, fm, alias);
+                    }else{
+                        addWhereFieldNode(nodes, fm, alias, join.hasOnExpression());
+                    }
+                }
+
+                ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
+
+                return true;
+            }
+
+            if(node instanceof SqlWhere && !tables.isEmpty()) {
+                SqlWhere where = (SqlWhere)node;
+
+                //todo : take the first one only
+                SqlTableSource ts = tables.iterator().next();
+
+                if(!where.getQuery().getTableSources().contains(ts)) {
+                    return true;
+                }
+
+                EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
+
+                if(isWhereFieldExists(node, em)) {
+                    return true;
+                }
+
+                FieldMapping[] whereFields = em.getWhereFieldMappings();
+
+                AstNode[] olds = ((SqlWhere)node).getNodes();
+
+                List<AstNode> nodes = new ArrayList<>();
+
+                if(olds.length > 0) {
+                    //where ( original expression ) and (...)
+                    nodes.add(new Text(olds[0].toString()).append(" ("));
+                    for (int i = 1; i < olds.length; i++) {
+                        nodes.add(olds[i]);
+                    }
+                    nodes.add(new Text(" )"));
+                }else {
+                    nodes.add(new Text(" where 1=1 "));
+                }
+
+                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                if(whereFields.length == 1) {
+                    addWhereFieldNode(nodes, whereFields[0], alias);
+                }else{
+                    nodes.add(new Text(" and ( 1=1"));
+
+                    for(int i=0;i<em.getWhereFieldMappings().length;i++) {
+                        FieldMapping fm = em.getWhereFieldMappings()[i];
+
+                        addWhereFieldNode(nodes, fm, alias);
+                    }
+
+                    nodes.add(new Text(" ) "));
+                }
+
+                ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
+
+                return false;
+            }
+
+            return true;
+        });
     }
 
     protected void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias) {

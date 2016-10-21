@@ -27,9 +27,13 @@ public enum Bool implements Valued<Boolean>{
 	
 	private final Boolean value;
 	
-	private Bool(Boolean value){
+	Bool(Boolean value){
 		this.value = value;
 	}
+
+    public Boolean value() {
+        return value;
+    }
 
 	@Override
     public Boolean getValue() {
@@ -47,4 +51,8 @@ public enum Bool implements Valued<Boolean>{
 	public boolean isNone(){
 		return value == null;
 	}
+
+    public boolean isPresent() {
+        return value != null;
+    }
 }

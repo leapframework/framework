@@ -53,15 +53,21 @@ public interface ActionStrategy {
     /**
      * Returns true if the method is an action method.
      */
-    boolean isActionMethod(Method m);
+    boolean isActionMethod(ControllerInfo ci, Method m);
 
     /**
      * Returns true if the action is an index action.
      */
 	boolean isIndexAction(ActionBuilder action);
 
+    /**
+     * Returns the mappings of action.
+     */
 	ActionMapping[] getActionMappings(ActionBuilder action);
-	
-	String[] getDefaultViewNames(ActionBuilder action,String controllerPath,String actionPath,PathTemplate pathTemplate);
+
+    /**
+     * Returns the default view names for the action.
+     */
+	String[] getDefaultViewNames(ActionBuilder action, String controllerPath, String actionPath, PathTemplate pathTemplate);
 
 }

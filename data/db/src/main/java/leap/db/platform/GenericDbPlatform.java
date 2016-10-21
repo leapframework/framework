@@ -137,7 +137,7 @@ public abstract class GenericDbPlatform extends DbPlatformBase implements PostCr
 			String keyPrefix = I18N.getLocalizedKeyPrefix(this) + ".drivers";
 			
 	        try(Reader reader = r.getInputStreamReader()){
-	        	GenericDbDriver[] drivers = JSON.decodeToArray(reader, GenericDbDriver.class);
+	        	GenericDbDriver[] drivers = JSON.decodeArray(reader, GenericDbDriver.class);
 	        	
 	        	for(GenericDbDriver driver : drivers){
 	        		I18N.localize(messageSource, driver, keyPrefix + "." + driver.getName());

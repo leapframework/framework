@@ -17,6 +17,7 @@ package leap.web.route;
 
 import leap.core.web.path.PathTemplate;
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.lang.Sourced;
 import leap.web.action.Action;
 import leap.web.action.FailureHandler;
@@ -27,7 +28,7 @@ import leap.web.view.View;
 import java.util.Collections;
 import java.util.Map;
 
-class DefaultRoute implements Sourced, Route {
+class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	
 	protected final Object		 		source;
 	protected final String 		 		method;
@@ -42,12 +43,17 @@ class DefaultRoute implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
-	protected Integer successStatus;
-	protected Boolean corsEnabled;
-	protected Boolean csrfEnabled;
-	protected Boolean supportsMultipart;
-	protected boolean acceptValidationError;
-	protected boolean httpsOnly;
+    protected Integer  successStatus;
+    protected Boolean  corsEnabled;
+    protected Boolean  csrfEnabled;
+    protected Boolean  supportsMultipart;
+    protected boolean  acceptValidationError;
+    protected boolean  httpsOnly;
+    protected Boolean  allowAnonymous;
+    protected Boolean  allowRememberMe;
+    protected Boolean  allowClientOnly;
+    protected String[] permissions;
+    protected String[] roles;
 
 	public DefaultRoute(Object 	    source,
 						String 	    method,
@@ -56,6 +62,8 @@ class DefaultRoute implements Sourced, Route {
 						Boolean		corsEnabled,
 						Boolean		csrfEnabled,
 						Boolean		supportsMultipart,
+                        Boolean     allowAnonymous,
+                        Boolean     allowClientOnly,
 						Boolean        acceptValidationError,
 						RequestFormat  requestFormat,
 						ResponseFormat responseFormat,
@@ -77,6 +85,8 @@ class DefaultRoute implements Sourced, Route {
 	    this.corsEnabled		 = corsEnabled;
 	    this.csrfEnabled		 = csrfEnabled;
 	    this.supportsMultipart   = supportsMultipart;
+        this.allowAnonymous      = allowAnonymous;
+        this.allowClientOnly     = allowClientOnly;
 	    this.acceptValidationError = null == acceptValidationError ? false : acceptValidationError;
 	    this.requestFormat       = requestFormat;
 	    this.responseFormat	     = responseFormat;
@@ -87,7 +97,7 @@ class DefaultRoute implements Sourced, Route {
 	    this.failureHandlers     = failureHandlers;
 	    this.requiredParameters  = null == requiredParameters ? Collections.emptyMap() : Collections.unmodifiableMap(requiredParameters);
     }
-	
+
 	/**
 	 * Returns a object indicates the source location defined this route.
 	 */
@@ -220,8 +230,36 @@ class DefaultRoute implements Sourced, Route {
     public void setSupportsMultipart(boolean supports) {
 		this.supportsMultipart = supports;
     }
-	
-	@Override
+
+    @Override
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    public void setAllowAnonymous(Boolean allowAnonymous) {
+        this.allowAnonymous = allowAnonymous;
+    }
+
+    @Override
+    public Boolean getAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    @Override
+    public void setAllowRememberMe(Boolean allowRememberMe) {
+        this.allowRememberMe = allowRememberMe;
+    }
+
+    @Override
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    public void setAllowClientOnly(Boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+    }
+
+    @Override
     public boolean isCsrfEnabled() {
 	    return csrfEnabled == Boolean.TRUE;
     }
@@ -252,6 +290,26 @@ class DefaultRoute implements Sourced, Route {
 
     public void setHttpsOnly(boolean httpsOnly) {
         this.httpsOnly = httpsOnly;
+    }
+
+    @Override
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    @Override
+    public void setPermissions(String[] permissions) {
+        this.permissions = permissions;
+    }
+
+    @Override
+    public String[] getRoles() {
+        return roles;
+    }
+
+    @Override
+    public void setRoles(String[] roles) {
+        this.roles = roles;
     }
 
     @Override

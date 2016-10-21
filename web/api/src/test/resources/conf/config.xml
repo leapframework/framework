@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://www.leapframework.org/schema/config" xmlns:orm="http://www.leapframework.org/schema/orm/config">
+<config xmlns="http://www.leapframework.org/schema/config">
 
 	<additional-packages>
-		tested.models
+		app.models
 	</additional-packages>
 
     <properties>
@@ -10,6 +10,8 @@
         <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="jdbc.username">sa</property>
     </properties>
-    
+    <!--
+    <property name="webapi.oplog.logClassName">app.models.api.TestLogModel</property>
+    -->
     <import resource="config_local.xml" check-existence="false" default-override="true"/>
 </config>

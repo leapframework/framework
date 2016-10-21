@@ -15,8 +15,12 @@
  */
 package leap.webunit;
 
+import leap.core.AppConfig;
+import leap.core.AppContext;
+import leap.core.BeanFactory;
 import leap.junit.TestBase;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP.Method;
 import leap.webunit.client.THttpClient;
 import leap.webunit.client.THttpRequest;
@@ -34,7 +38,10 @@ public abstract class WebTestBase extends TestBase {
 
     protected static TWebServer     server;
     protected static ServletContext rootServletContext;
-	protected static boolean        defaultHttps;
+    protected static boolean        defaultHttps;
+    protected static AppContext     appContext;
+    protected static AppConfig      appConfig;
+    protected static BeanFactory    beanFactory;
 
     /**
      * Returns the {@link THttpClient} with base url <code>https://localhost:port</code>.
@@ -58,12 +65,18 @@ public abstract class WebTestBase extends TestBase {
 	protected THttpResponse  response;
 	
     @Override
-    protected void setUp() throws Exception {
+    protected final void setUp() throws Exception {
         if (null == servletContext) {
             servletContext = rootServletContext;
             contextPath = "";
         }else{
             contextPath = servletContext.getContextPath();
+        }
+
+        appContext = null == servletContext ? null : AppContext.get(servletContext);
+        if(null != appContext) {
+            appConfig   = appContext.getConfig();
+            beanFactory = appContext.getBeanFactory();
         }
 
         this.doSetUp();
@@ -124,6 +137,27 @@ public abstract class WebTestBase extends TestBase {
 	}
 
     /**
+     * Sends a POST request to the given path with the given raw json body and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse postJsonRaw(String path, String body) {
+        response = forPost(path)
+                    .setContentType(ContentTypes.APPLICATION_JSON_UTF8)
+                    .setBody(body)
+                    .post();
+        request = response.request();
+        return response;
+    }
+
+    /**
+     * Sends a POST request to the path with the encoded json body of the given value and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse postJson(String path, Object value) {
+        response = forPost(path).setJson(value).post();
+        request = response.request();
+        return response;
+    }
+
+    /**
      * Sends a PUT request to the given path and returns the {@link THttpResponse}.
      */
     protected final THttpResponse put(String path) {
@@ -137,6 +171,15 @@ public abstract class WebTestBase extends TestBase {
      */
     protected final THttpResponse patch(String path) {
         response = client().request(Method.PATCH,path(path)).send();
+        request  = response.request();
+        return response;
+    }
+
+    /**
+     * Sends a PATCH request to the given path and returns the {@link THttpResponse}.
+     */
+    protected final THttpResponse patchJson(String path, Object value) {
+        response = client().request(Method.PATCH,path(path)).setJson(value).send();
         request  = response.request();
         return response;
     }

@@ -120,7 +120,7 @@ public class ArgumentControllerTest extends WebTestCase {
 		form.addFormParam("items1[0].strValue", "s2");
 
 		String json = form.send().getContent();
-		Item[] items = JSON.decodeToArray(json, ArgumentController.Item.class);
+		Item[] items = JSON.decodeArray(json, ArgumentController.Item.class);
 		assertEquals(2,items.length);
 		assertEquals("s1",items[0].getStrValue());
 		assertEquals("s2",items[1].getStrValue());
@@ -159,7 +159,7 @@ public class ArgumentControllerTest extends WebTestCase {
 	    
 	    String json = form.send().getContent();
 	    
-	    Object[] items = JSON.decodeToArray(json);
+	    Object[] items = JSON.decodeArray(json);
 	    
 	    Map<String, Object> item0 = (Map)items[0];
 	    assertEquals("__v", item0.get("__key"));
@@ -202,7 +202,7 @@ public class ArgumentControllerTest extends WebTestCase {
 
 		String json = form.send().getContent();
 		
-		Item[] items = JSON.decodeToArray(json, ArgumentController.Item.class);
+		Item[] items = JSON.decodeArray(json, ArgumentController.Item.class);
 		assertEquals(5,items.length);
 		assertEquals("s1",items[0].getStrValue());
 		assertEquals(new Integer(1),items[0].getIntValue());
@@ -230,7 +230,7 @@ public class ArgumentControllerTest extends WebTestCase {
 		form.addFormParam("intValue", "1");
 		String json = form.send().getContent();
 		
-		Map<String, Object> result = JSON.decodeToMap(json);
+		Map<String, Object> result = JSON.decode(json);
 		assertEquals("s1",result.get("strValue"));
 		assertEquals("1",result.get("intValue"));
 	}
@@ -244,6 +244,24 @@ public class ArgumentControllerTest extends WebTestCase {
 		
 		get("argument/path_var1/aaa").assertContentEquals("aaa");
 	}
+
+    @Test
+    @ContextualIgnore
+    public void testHeaderParam() {
+        forGet("argument/header_param").addHeader("testHeader","xyz").send().assertContentEquals("xyz");
+    }
+
+    @Test
+    @ContextualIgnore
+    public void testCookieParam() {
+        client().addCookie("testCookie","xyz");
+        get("argument/cookie_param1").assertContentEquals("xyz");
+        get("argument/cookie_param2").assertContentEquals("xyz");
+        get("argument/cookie_param3").assertContentEquals("xyz");
+
+        client().removeCookie("testCookie");
+        get("argument/cookie_param1").assertContentEquals("");
+    }
 
     @Test
     @ContextualIgnore

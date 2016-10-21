@@ -59,13 +59,12 @@ public class BeanContainer implements BeanFactory {
     protected final XmlBeanDefinitionLoader        xmlBeanDefinitionLoader;
 
     protected Set<InitDefinition>                            initDefinitions     = new CopyOnWriteArraySet<>();
-    protected BeanDefinitionsImpl                            bds                 = new BeanDefinitionsImpl();
-    protected BeanDefinitionsImpl                            bpds                = new BeanDefinitionsImpl(); //proxy defs
+    protected BeanDefinitionsImpl                            bds                 = new BeanDefinitionsImpl(false);
+    protected BeanDefinitionsImpl                            bpds                = new BeanDefinitionsImpl(true); //proxy defs
     protected Map<String, BeanListDefinition>                beanListDefinitions = new HashMap<>();
     protected List<BeanDefinitionBase>                       processorBeans      = new ArrayList<>();
     protected List<BeanDefinitionBase>                       initializableBeans  = new ArrayList<>();
     protected List<BeanDefinitionBase>                       injectorBeans       = new ArrayList<>();
-    protected Map<Class<? extends Annotation>, BeanInjector> injectors           = new HashMap<>();
 
     private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
@@ -78,6 +77,7 @@ public class BeanContainer implements BeanFactory {
     private   BeanConfigurator           beanConfigurator;
     protected BeanFactoryInitializable[] initializables;
     protected BeanProcessor[]            processors;
+    protected BeanInjector[]             injectors;
     private   boolean                    initializing;
     private   boolean                    containerInited;
     private   boolean                    appInited;
@@ -402,7 +402,31 @@ public class BeanContainer implements BeanFactory {
 		
 	    return bean;
     }
-    
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type) throws BeanException {
+        T bean = tryCreateBean(type);
+
+        if(null == bean) {
+            bean = createBean(type);
+            addBean(type, bean, true);
+        }
+
+        return bean;
+    }
+
+    @Override
+    public <T> T getOrAddBean(Class<T> type, String name) throws BeanException {
+        T bean = tryCreateBean(type, name);
+
+        if(null == bean){
+            bean = (T) createBean(type);
+            addBean(type, bean, name, false);
+        }
+
+        return bean;
+    }
+
     @Override
     public <T> T getOrCreateBean(Class<T> type) throws BeanException {
     	T bean = tryCreateBean(type);
@@ -412,6 +436,16 @@ public class BeanContainer implements BeanFactory {
 		}
 		
 	    return bean;
+    }
+
+    public <T> T getOrCreateBean(Class<T> type, String name) throws BeanException {
+        T bean = tryCreateBean(type, name);
+
+        if(null == bean){
+            return (T) createBean(type);
+        }
+
+        return bean;
     }
 
 	@Override
@@ -476,16 +510,6 @@ public class BeanContainer implements BeanFactory {
 		
 		if(null == bean){
 			throw new NoSuchBeanException("No bean named '" + name + "' for type '" + type.getName() + "'");
-		}
-		
-	    return bean;
-    }
-	
-    public <T> T getOrCreateBean(Class<T> type, String name) throws BeanException {
-		T bean = tryCreateBean(type, name);
-		
-		if(null == bean){
-			return (T) createBean(type);
 		}
 		
 	    return bean;
@@ -850,10 +874,11 @@ public class BeanContainer implements BeanFactory {
 
     protected void resolveAfterLoading() {
         //bean injector.
+        List<BeanInjector> injectorList = new ArrayList<>();
         for(BeanDefinitionBase bd : injectorBeans) {
-            BeanInjector injector = (BeanInjector)doGetBean(bd);
-            injector.getSupportedAnnotationTypes().forEach((c) -> injectors.put(c, injector));
+            injectorList.add((BeanInjector)doGetBean(bd));
         }
+        this.injectors = injectorList.toArray(new BeanInjector[0]);
 
         //bean processors
 		List<BeanProcessor> processorList = new ArrayList<>();
@@ -911,6 +936,10 @@ public class BeanContainer implements BeanFactory {
         return doCreateBean(bd, false);
 	}
 
+    protected Object doCreateProxy(BeanDefinitionBase bd){
+        return doCreateBean(bd, true);
+    }
+
     protected Object doCreateBean(BeanDefinitionBase bd, boolean proxy){
         if(initializing){
             throw new IllegalStateException("Cannot get bean when this container is initializing");
@@ -937,13 +966,23 @@ public class BeanContainer implements BeanFactory {
         bd.setInited(true);
 
         if(!proxy) {
-            BeanDefinitionBase bpd = findProxyDefinition(bd);
-            if(null != bpd) {
-                Object proxyBean = doGetBean(bpd);
-
+            BeanDefinitionBase pd = findProxy(bd);
+            if(null != pd) {
+                Object proxyBean = doCreateProxy(pd);
                 ((ProxyBean)proxyBean).setTargetBean(bean);
 
-                bd.setProxyInstance(proxyBean);
+                if(!isTypedProxy(pd)) {
+                    pd = findTypedProxy(bd);
+                    if(null != pd) {
+                        Object typedProxyBean = doCreateProxy(pd);
+                        ((ProxyBean) typedProxyBean).setTargetBean(proxyBean);
+                        proxyBean = typedProxyBean;
+                    }
+                }
+
+                if(bd.isSingleton()) {
+                    bd.setProxyInstance(proxyBean);
+                }
 
                 return proxyBean;
             }
@@ -952,24 +991,54 @@ public class BeanContainer implements BeanFactory {
         return bean;
     }
 
-    protected BeanDefinitionBase findProxyDefinition(BeanDefinitionBase bd) {
-        //todo : check the singleton of proxy bean (must be same as the target bean).
+    protected BeanDefinitionBase findProxy(BeanDefinitionBase bd) {
+        BeanDefinitionBase pd;
 
+        //find by id.
         if(!Strings.isEmpty(bd.getId())) {
-            return bpds.identifiedBeanDefinitions.get(bd.getId());
+            pd = bpds.identifiedBeanDefinitions.get(bd.getId());
+            if(null != pd) {
+                return pd;
+            }
         }
 
-        Class<?> type = bd.getType();
-        if(bd.isPrimary()) {
-            return bpds.primaryBeanDefinitions.get(type);
-        }
-
+        //find by name.
         if(!Strings.isEmpty(bd.getName())) {
-            return bpds.namedBeanDefinitions.get(bpds.key(type, bd.getName()));
+            pd = bpds.find(bd.getType(), bd.getName());
+            if(null != pd) {
+                return pd;
+            }
         }
 
-        //todo : supports bean proxy for all beans of type.
+        //find by primary.
+        if(bd.isPrimary()) {
+            pd = bpds.primaryBeanDefinitions.get(bd.getType());
+            if(null != pd) {
+                return pd;
+            }
+        }
+
+        //find typed proxy.
+        return findTypedProxy(bd);
+    }
+
+    protected BeanDefinitionBase findTypedProxy(BeanDefinitionBase bd) {
+        Set<BeanDefinitionBase> pds = bpds.beanTypeDefinitions.get(bd.getType());
+        if(null != pds) {
+            for(BeanDefinitionBase pd : pds) {
+                if(isTypedProxy(pd)) {
+                    return pd;
+                }
+            }
+        }
         return null;
+    }
+
+    protected boolean isTypedProxy(BeanDefinitionBase pd) {
+        if(!pd.isPrimary() && Strings.isEmpty(pd.getName()) && Strings.isEmpty(pd.getId())) {
+            return true;
+        }
+        return false;
     }
 	
 	protected Object doBeanCreation(BeanDefinitionBase bd){
@@ -1151,17 +1220,21 @@ public class BeanContainer implements BeanFactory {
 
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
 
-        Inject inject = v.getAnnotation(Inject.class);
-
-        if (null == inject || !inject.value()) {
-            if(!injectors.isEmpty()) {
-                for(Annotation a : v.getAnnotations()) {
-                    BeanInjector injector = injectors.get(a.annotationType());
-                    if(null != injector) {
-                        return injector.resolveInjectValue(bd, bean, bt, v, a);
+        if(null != injectors && injectors.length > 0) {
+            for(Annotation a : v.getAnnotations()) {
+                if(a.annotationType().isAnnotationPresent(AInject.class)){
+                    Out out = new Out();
+                    for(BeanInjector injector : injectors) {
+                        if(injector.resolveInjectValue(bd, bean, v, a, out)) {
+                            return out.get();
+                        }
                     }
                 }
             }
+        }
+
+        Inject inject = v.getAnnotation(Inject.class);
+        if(null == inject) {
             return null;
         }
 
@@ -1178,11 +1251,7 @@ public class BeanContainer implements BeanFactory {
 	
     @SuppressWarnings({ "rawtypes", "unchecked" })
 	protected Object resolveInjectValue(BeanFactory factory, BeanDefinitionBase bd, String name, Class<?> type,Type genericType,Annotation[] annotations) {
-		Inject inject = Classes.getAnnotation(annotations, Inject.class);
-		if(null != inject && !inject.value()){
-			return null;
-		}
-		
+
 		if(type.equals(BeanFactory.class)) {
 		    return factory;
 		}
@@ -1194,6 +1263,11 @@ public class BeanContainer implements BeanFactory {
 		if(type.equals(AppContext.class)) {
 		    return appContext;
 		}
+
+        Inject inject = Classes.getAnnotation(annotations, Inject.class);
+        if(null == inject){
+            return null;
+        }
 		
 		Object injectedBean = null;
 		
@@ -1227,7 +1301,7 @@ public class BeanContainer implements BeanFactory {
 							beanType = acturalTypeArgument;
 						}
 						injectedBean = new LazyBean(factory, beanType, beanName, 
-						                            null == inject ? false : inject.namedOrPrimary(), 
+						                            null == inject ? false : inject.primary(),
 						                            nullable, required);
 					}
 				}else if(List.class.equals(type) || BeanList.class.equals(type)){
@@ -1294,7 +1368,7 @@ public class BeanContainer implements BeanFactory {
 						injectedBean = factory.tryGetBean(beanType);	
 					}else{
 						injectedBean = factory.tryGetBean(beanType, beanName);
-						if(null == injectedBean && null != inject && inject.namedOrPrimary()){
+						if(null == injectedBean && null != inject && inject.primary()){
 							injectedBean = factory.tryGetBean(beanType);
 						}
 					}
@@ -1798,6 +1872,8 @@ public class BeanContainer implements BeanFactory {
 	}
 
     protected class BeanDefinitionsImpl implements BeanDefinitions {
+        private final boolean proxy;
+
         protected Set<BeanDefinitionBase>                allBeanDefinitions        = new CopyOnWriteArraySet<>();
         protected Map<String, BeanDefinitionBase>        identifiedBeanDefinitions = new HashMap<>();
         protected Map<Class<?>, Set<BeanDefinitionBase>> beanTypeDefinitions       = new HashMap<>();
@@ -1807,6 +1883,10 @@ public class BeanContainer implements BeanFactory {
         protected Map<String, BeanDefinitionBase>        namedBeanDefinitions      = new HashMap<>();
         protected Map<Class<?>, BeanDefinitionBase>      primaryBeanDefinitions    = new HashMap<>();
         protected Map<String, AliasDefinition>           aliasDefinitions          = new HashMap<>();
+
+        public BeanDefinitionsImpl(boolean proxy) {
+            this.proxy = proxy;
+        }
 
         public String key(Class<?> type, String name) {
             return type.getName() + "$" + name;
@@ -1980,9 +2060,9 @@ public class BeanContainer implements BeanFactory {
 				if(!type.isOverride()) {
 					BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
 					if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
-						throw new BeanDefinitionException("Found duplicated bean name '" + definition.getName() +
+						throw new BeanDefinitionException("Found duplicated " + (proxy ? "proxy" : "bean") + " name '" + definition.getName() +
 								"' for type '" + beanType.getName() +
-								"' in resource : " + definition.getSource() + " with exists bean " + existsBeanDefinition);
+								"' in resource : " + definition.getSource() + " with exists " + (proxy ? "proxy " : "bean ") + existsBeanDefinition);
 					}
 				}
 				namedBeanDefinitions.put(key, bd);
@@ -1993,9 +2073,9 @@ public class BeanContainer implements BeanFactory {
 				if(!type.isOverride()) {
 					BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
 					if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
-						throw new BeanDefinitionException("Found duplicated primary bean " + definition +
+						throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
 								" for type '" + beanType.getName() +
-								"' with exists bean " + existsBeanDefinition.getSource());
+								"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
 					}
 				}
 				primaryBeanDefinitions.put(beanType, bd);
@@ -2007,6 +2087,28 @@ public class BeanContainer implements BeanFactory {
 				typeSet = new TreeSet<>(Comparators.ORDERED_COMPARATOR);
 				beanTypeDefinitions.put(beanType, typeSet);
 			}
+
+            if(proxy && isTypedProxy(bd)) {
+
+                BeanDefinitionBase typedProxy = null;
+
+                for(BeanDefinitionBase d : typeSet) {
+                    if(isTypedProxy(d)) {
+                        if(bd.isOverride()) {
+                            typedProxy = d;
+                            break;
+                        }else{
+                            throw new BeanDefinitionException("Found duplicated type proxy "  + definition + " for type '" +
+                                beanType.getName() + "' with exists proxy in " + d.getSource());
+                        }
+                    }
+                }
+
+                if(null != typedProxy) {
+                    typeSet.remove(typedProxy);
+                }
+            }
+
 			typeSet.add(bd);
 
 		}

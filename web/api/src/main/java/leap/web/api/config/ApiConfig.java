@@ -15,6 +15,7 @@
  */
 package leap.web.api.config;
 
+import java.util.Map;
 import java.util.Set;
 
 import leap.lang.Described;
@@ -22,7 +23,9 @@ import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MPermission;
+import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
 /**
@@ -42,57 +45,57 @@ public interface ApiConfig extends Named,Titled,Described {
 	
 	/**
 	 * A list of MIME types the APIs can produce.
-	 * 
+	 *
 	 * <p>
 	 * Default is {@link ApiConfigurator#DEFAULT_PRODUCES}.
-	 * 
+	 *
 	 * @see ApiMetadata#getProduces()
 	 */
 	String[] getProduces();
-	
+
 	/**
 	 * A list of MIME types the APIs can consume.
-	 * 
+	 *
 	 * <p>
 	 * Default is {@link ApiConfigurator#DEFAULT_CONSUMES}
-	 * 
+	 *
 	 * @see ApiMetadata#getConsumes()
 	 */
 	String[] getConsumes();
-	
+
 	/**
 	 * Returns the protocols.
 	 */
 	String[] getProtocols();
-	
+
 	/**
 	 * Returns <code>true</code> is <code>CORS</code> is enabled.
 	 */
 	default boolean isCorsEnabled() {
 		return !isCorsDisabled();
 	}
-	
+
 	/**
 	 * Returns <code>true</code> if the <code>CORS</code> is disabled.
-	 * 
+	 *
 	 * <p>
 	 * Default is enabled.
 	 */
 	boolean isCorsDisabled();
-	
+
 	/**
-	 * Returns <code>true</code> if OAuth2.0 security is enabled. 
+	 * Returns <code>true</code> if OAuth2.0 security is enabled.
 	 */
 	boolean isOAuthEnabled();
-	
+
 	/**
 	 * Returns the url of authorization endpoint in oauth2 server.
-	 * 
+	 *
 	 * <p>
-	 * Rquired if oauth enabled.
+	 * Required if oauth enabled.
 	 */
 	String getOAuthAuthorizationUrl();
-	
+
 	/**
 	 * Returns the url of token endpoint in oauth2 server.
 	 *
@@ -100,12 +103,17 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Required if oauth enabled.
 	 */
 	String getOAuthTokenUrl();
-	
+
 	/**
-	 * Returns the oauth2 scopes of api.
+	 * Returns the permissions required by this api.
 	 */
-	OAuth2Scope[] getOAuthScopes();
-	
+	Map<String,MPermission> getPermissions();
+
+    /**
+     * Returns an immutable {@link Map} contains all the common responses.
+     */
+    Map<String, MApiResponse> getCommonResponses();
+
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.
 	 */
@@ -115,14 +123,34 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns the naming style of property names, may be <coce>null</code>.
 	 */
 	NamingStyle getPropertyNamingStyle();
-	
+
 	/**
 	 * Returns an immutable {@link Set} contains the prefixes will be removed from all the model names.
 	 */
 	Set<String> getRemovalModelNamePrefixes();
-	
+
+    /**
+     * Returns the max page size of pagination.
+     */
+    int getMaxPageSize();
+
+    /**
+     * Returns the default page size of pagination.
+     */
+    int getDefaultPageSize();
+
 	/**
 	 * Returns all the routes in this api.
 	 */
 	Set<Route> getRoutes();
+
+    /**
+     * Returns all the resource types of route.
+     */
+    Map<Route, Class<?>> getResourceTypes();
+
+    /**
+     * Returns the {@link ResourcePermissionsSet}.
+     */
+    ResourcePermissionsSet getResourcePermissionsSet();
 }

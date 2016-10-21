@@ -17,11 +17,11 @@ package app.controllers;
 
 import leap.web.annotation.Parent;
 import leap.web.annotation.Path;
-import leap.web.annotation.RestController;
+import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 
-@RestController
+@Restful
 public class RestTestController {
 
     @Parent(RestTestController.class)

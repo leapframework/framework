@@ -88,7 +88,7 @@ public abstract class AbstractDateConverter<T> extends AbstractConverter<T> {
 		if(null == patterns || patterns.length == 0){
 			return convertFrom(targetType, Dates.parse(stringValue,DateFormats.getPattern(targetType)));
 		}else{
-			Date date = null;
+			Date date;
 			
 			for(String pattern : patterns){
 				date = Dates.tryParse(stringValue,pattern);

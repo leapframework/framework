@@ -39,12 +39,12 @@ public class FieldDomain implements Sourced,Named {
 	private final Expression   insertValue;
 	private final Expression   updateValue;
 	private final boolean	   autoMapping;
-	private final Integer      sortOrder;
+	private final Float        sortOrder;
 	
 	public FieldDomain(Object source, EntityDomain entityDomain, 
 						 String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
 						 Boolean nullable, String defaultValue,Boolean insert,Boolean update,
-						 Expression insertValue,Expression updateValue, boolean autoMapping, Integer sortOrder) {
+						 Expression insertValue,Expression updateValue, boolean autoMapping, Float sortOrder) {
 		Args.notEmpty(name,"name");
 		this.source = source;
 		this.entityDomain = entityDomain;
@@ -142,7 +142,7 @@ public class FieldDomain implements Sourced,Named {
 		return autoMapping;
 	}
 	
-	public Integer getSortOrder() {
+	public Float getSortOrder() {
         return sortOrder;
     }
 

@@ -34,6 +34,8 @@ import leap.web.security.user.UserStore;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 @Configurable(prefix = "websecurity")
 public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurator, PostConfigureBean {
@@ -65,6 +67,8 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     protected String                   tokenSecret                    = null;
     protected String                   cookieDomain                   = null;
     protected List<RequestIgnore>      ignores                        = new ArrayList<>();
+
+    protected Map<String,SecurityFailureHandler> pathPrefixFailureHandlers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     protected @Inject SecuredPaths                  securedPaths;
     protected @Inject PasswordEncoder               passwordEncoder;
@@ -391,8 +395,19 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
+    public SecurityConfigurator setPathPrefixFailureHandler(String pathPrefix, SecurityFailureHandler failureHandler) {
+        pathPrefixFailureHandlers.put(pathPrefix, failureHandler);
+        return this;
+    }
+
+    @Override
     public RequestIgnore[] getIgnores() {
         return ignoresArray;
+    }
+
+    @Override
+    public Map<String, SecurityFailureHandler> getPathPrefixFailureHandlers() {
+        return pathPrefixFailureHandlers;
     }
 
     @Override

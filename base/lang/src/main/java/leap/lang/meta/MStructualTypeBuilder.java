@@ -23,7 +23,7 @@ import leap.lang.Iterables;
 import leap.lang.Predicates;
 import leap.lang.exception.ObjectNotFoundException;
 
-public abstract class MStructualTypeBuilder<T extends MStructualType> extends MNamedWithDescBuilder<T> {
+public abstract class MStructualTypeBuilder<T extends MStructuralType> extends MNamedWithDescBuilder<T> {
 
 	protected List<MProperty> properties = new ArrayList<MProperty>();
 

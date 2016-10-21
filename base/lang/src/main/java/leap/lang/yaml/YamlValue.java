@@ -20,15 +20,10 @@ import java.util.Map;
 
 public interface YamlValue {
 	
-	public static final YamlValue NULL = new YamlValue() {
-		@Override
-		public Object raw() {
-			return null;
-		}
-	};
+	YamlValue NULL = () -> null;
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-    public static YamlValue of(Object raw) {
+    static YamlValue of(Object raw) {
 		if(null == raw) {
 			return NULL;
 		}

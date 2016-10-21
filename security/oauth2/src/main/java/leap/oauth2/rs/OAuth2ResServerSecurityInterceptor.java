@@ -89,8 +89,12 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
             if(null == authc) {
                 Result<ResAuthentication> result = credentialsAuthenticator.authenticate(token);
                 if(!result.isPresent()) {
+                    /*
                     errorHandler.handleInvalidToken(request, response, "Invalid access token");
                     return State.INTERCEPTED;
+                    */
+                    log.warn("Invalid access token");
+                    return State.CONTINUE;
                 }
                 authc = result.get();
             }

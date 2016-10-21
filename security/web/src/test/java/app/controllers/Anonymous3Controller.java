@@ -15,7 +15,7 @@
  */
 package app.controllers;
 
-import leap.web.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowAnonymous;
 
 @AllowAnonymous(false)
 public class Anonymous3Controller extends AllowAnonymousBase {

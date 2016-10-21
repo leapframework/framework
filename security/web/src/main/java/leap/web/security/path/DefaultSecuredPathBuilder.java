@@ -17,20 +17,26 @@ package leap.web.security.path;
 
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
+import leap.lang.enums.Bool;
 import leap.lang.path.AntPathPattern;
 import leap.lang.path.PathPattern;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
-	protected PathPattern 		 pattern;
-	protected boolean            allowAnonymous  = false;
-	protected boolean            allowClientOnly = false;
-	protected boolean            allowRememberMe = true;
-	protected List<String>		 permissions	 = new ArrayList<>();
-    protected List<String>       roles           = new ArrayList<>();
+    protected Route       route;
+    protected PathPattern pattern;
+
+    protected Boolean                allowAnonymous  = null;
+    protected Boolean                allowClientOnly = null;
+    protected Boolean                allowRememberMe = true;
+    protected SecurityFailureHandler failureHandler  = null;
+    protected List<String>           permissions     = new ArrayList<>();
+    protected List<String>           roles           = new ArrayList<>();
 
 	public DefaultSecuredPathBuilder() {
 	    super();
@@ -44,17 +50,32 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
         this.pattern = pattern;
     }
 
+    public DefaultSecuredPathBuilder(Route route) {
+        this.route = route;
+        this.pattern = route.getPathTemplate();
+    }
+
 	public DefaultSecuredPathBuilder(SecuredPath path) {
+        this.route           = path.getRoute();
 		this.pattern         = path.getPattern();
-		this.allowAnonymous  = path.isAllowAnonymous();
-		this.allowClientOnly = path.isAllowClientOnly();
-		this.allowRememberMe = path.isAllowRememberMe();
+		this.allowAnonymous  = path.getAllowAnonymous();
+		this.allowClientOnly = path.getAllowClientOnly();
+		this.allowRememberMe = path.getAllowRememberMe();
+        this.failureHandler  = path.getFailureHandler();
 
 		Collections2.addAll(permissions, path.getPermissions());
 		Collections2.addAll(roles, path.getRoles());
 	}
 
-	public PathPattern getPattern() {
+    public Route getRoute() {
+        return route;
+    }
+
+    public SecuredPathBuilder path(String pattern) {
+        return setPattern(new AntPathPattern(pattern));
+    }
+
+    public PathPattern getPattern() {
 		return pattern;
 	}
 
@@ -62,43 +83,48 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 		this.pattern = pattern;
 		return this;
 	}
-	
-	public SecuredPathBuilder path(String pattern) {
-		return setPattern(new AntPathPattern(pattern));
-	}
-	
-	@Override
-    public boolean isAllowAnonymous() {
-		return allowAnonymous;
-	}
+
+    @Override
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    @Override
+    public Boolean getAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    @Override
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
+    }
 
 	@Override
-    public DefaultSecuredPathBuilder setAllowAnonymous(boolean allowAnonymous) {
+    public DefaultSecuredPathBuilder setAllowAnonymous(Boolean allowAnonymous) {
 		this.allowAnonymous = allowAnonymous;
 		return this;
 	}
 	
-	@Override
-    public boolean isAllowClientOnly() {
-        return allowClientOnly;
-    }
-
     @Override
-    public DefaultSecuredPathBuilder setAllowClientOnly(boolean allowClientOnly) {
+    public DefaultSecuredPathBuilder setAllowClientOnly(Boolean allowClientOnly) {
         this.allowClientOnly = allowClientOnly;
         return this;
     }
 
 	@Override
-    public boolean isAllowRememberMe() {
-		return allowRememberMe;
-	}
-
-	@Override
-    public SecuredPathBuilder setAllowRememberMe(boolean denyRememberMe) {
+    public SecuredPathBuilder setAllowRememberMe(Boolean denyRememberMe) {
 		this.allowRememberMe = denyRememberMe;
 		return this;
 	}
+
+    public SecurityFailureHandler getFailureHandler() {
+        return failureHandler;
+    }
+
+    public SecuredPathBuilder setFailureHandler(SecurityFailureHandler failureHandler) {
+        this.failureHandler = failureHandler;
+        return this;
+    }
 
     @Override
     public SecuredPathBuilder setPermissionsAllowed(String... permissions) {
@@ -128,10 +154,12 @@ public class DefaultSecuredPathBuilder implements SecuredPathBuilder {
 
     @Override
     public SecuredPath build() {
-        return new DefaultSecuredPath(pattern,
+        return new DefaultSecuredPath(route,
+                                      pattern,
                                       allowAnonymous,
                                       allowClientOnly,
                                       allowRememberMe,
+                                      failureHandler,
                                       permissions.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                       roles.toArray(Arrays2.EMPTY_STRING_ARRAY));
     }

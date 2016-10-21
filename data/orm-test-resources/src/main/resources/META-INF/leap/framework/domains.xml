@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<domains xmlns="http://www.leapframework.org/schema/domains">
+<domains xmlns="http://www.leapframework.org/schema/domains" default-override="true">
 
 	<!-- simple field-domain domains -->
 	<field-domain name="code"   type="varchar" length="38"  auto-mapping="true"/>

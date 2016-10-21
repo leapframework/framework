@@ -21,6 +21,7 @@ import leap.core.annotation.M;
 import leap.core.validation.SimpleErrors;
 import leap.core.validation.Validation;
 import leap.core.validation.ValidationManager;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.time.StopWatch;
@@ -30,7 +31,7 @@ import leap.web.action.DefaultActionContext;
 import leap.web.ajax.AjaxDetector;
 import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
-import leap.web.cors.CorsConfig;
+import leap.web.cors.CorsHandler;
 import leap.web.debug.DebugDetector;
 import leap.web.error.ErrorInfo;
 import leap.web.exception.BadRequestException;
@@ -60,14 +61,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M RequestInterceptors     interceptors;
     protected @Inject @M ActionManager           actionManager;
     protected @Inject @M ValidationManager       validationManager;
-    protected @Inject @M AjaxDetector            ajaxDetector;
     protected @Inject @M DebugDetector           debugDetector;
     protected @Inject @M ThemeManager            themeManager;
     protected @Inject @M FormatManager           formatManager;
     protected @Inject @M ViewSource              viewSource;
     protected @Inject @M AssetSource             assetSource;
     protected @Inject @M WebConfig               webConfig;
-    protected @Inject @M CorsConfig              corsConfig;
 
 	protected LocaleResolver localeResolver;
 	protected int	  		 maxExecutionCount   = 10;
@@ -164,22 +163,41 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 				if (!handled) {
 					DefaultActionContext ac = newActionContext(request, response);
 
-					//resolve action path
-					String path = resolveActionPath(request, response, ac);
+                    //resolve action path
+                    String path = resolveActionPath(request, response, ac);
 
-					if (_debug) {
-						log.debug("Routing path '{}'", ac.getPath());
-					}
+                    if (_debug) {
+                        log.debug("Routing path '{}'", ac.getPath());
+                    }
 
-					int routeState = routeAndExecuteAction(request, response, ac);
+                    if(handleCorePrelightRequest(request, response, ac)) {
+                        handled = true;
+                    }else {
+                        int routeState = routeAndExecuteAction(request, response, ac);
 
-					if (routeState == ROUTE_STATE_HANLDED) {
-						handled = true;
-					} else if (routeState == ROUTE_STATE_NOT_HANDLED) {
-						handled = handleNoAction(request, response, path);
-					} else {
-						return false;
-					}
+                        if (routeState == ROUTE_STATE_HANLDED) {
+                            handled = true;
+                        } else if (routeState == ROUTE_STATE_NOT_HANDLED) {
+
+                            if(webConfig.isCorsEnabled() &&
+                                    webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
+
+                                log.debug("request (no route) handled by cors handler");
+
+                                handled = true;
+
+                            } else if(State.isIntercepted(interceptors.handleNoRoute(request, response))) {
+
+                                log.debug("request (no route) handled by interceptor");
+
+                                handled = true;
+                            }else{
+                                handled = handleNoAction(request, response, path);
+                            }
+                        } else {
+                            return false;
+                        }
+                    }
 				}
 
 				if (!handled && _debug) {
@@ -300,6 +318,28 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	private static final int ROUTE_STATE_NOT_HANDLED = 0;
 	private static final int ROUTE_STATE_HANLDED     = 1;
 	private static final int ROUTE_STATE_END         = 2;
+
+    protected boolean handleCorePrelightRequest(Request request,
+                                                Response response,
+                                                DefaultActionContext ac) throws Throwable{
+
+        CorsHandler handler = webConfig.getCorsHandler();
+        if(!handler.isPreflightRequest(request)) {
+            return false;
+        }
+
+        if(!Strings.isEmpty(ac.getPath())) {
+            Route route = app.routes().match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            if(null == route) {
+                return false;
+            }
+
+            handler.handle(request, response);
+            return true;
+        }
+
+        return false;
+    }
 	
 	protected int routeAndExecuteAction(Request request,
 										Response response,
@@ -345,8 +385,21 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 					return ROUTE_STATE_END;
 				}
 
+                //handle cors request.
+                if(route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
+                    if(webConfig.getCorsHandler().handle(request, response).isIntercepted()) {
+                        log.debug("Request was intercepted by cors handler");
+                        return ROUTE_STATE_HANLDED;
+                    }
+                }
+
+                if(State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
+                    return ROUTE_STATE_HANLDED;
+                }
+
 				Result result = new Result(); 
 				request.setResult(result);
+
 				executeAndRenderAction(request,response,ac,result);
 				
 				return ROUTE_STATE_HANLDED;
@@ -471,23 +524,14 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 			throw new ResultException("Max execution count " + maxExecutionCount + " reached, may be cyclic executing");
 		}
 		
-		//handle cors request.
-		Route route = ac.getRoute();
-		if(route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
-			if(webConfig.getCorsHandler().handle(request, response, corsConfig).isIntercepted()) {
-				log.debug("Request was intercepted by cors handler");
-				return;
-			}
-		}
-		
 		Validation validation = request.getValidation();
 		
 		//execute action
 		Object returnValue = executeAction(ac, validation);
 		
-		//raw responsed
+		//raw response
 		if(response.isHandled() || response.isCommitted()){
-			log.debug("Resposne was rendered or committed, do not render the result of action");
+			log.debug("Response was rendered or committed, do not render the result of action");
 			return;
 		}
 

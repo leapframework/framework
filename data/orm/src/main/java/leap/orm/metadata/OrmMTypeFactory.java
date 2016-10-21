@@ -15,52 +15,138 @@
  */
 package leap.orm.metadata;
 
-import java.lang.reflect.Type;
-
 import leap.core.annotation.Inject;
-import leap.lang.meta.MComplexTypeBuilder;
-import leap.lang.meta.MPropertyBuilder;
-import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactory;
+import leap.lang.Args;
+import leap.lang.Types;
+import leap.lang.beans.BeanProperty;
+import leap.lang.meta.*;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.RelationMapping;
+import leap.orm.mapping.RelationProperty;
 
-public class OrmMTypeFactory implements MTypeFactory {
+import java.lang.reflect.Type;
+
+public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
 	
-	protected @Inject OrmContext[] ormContextes;
+	protected @Inject OrmContext[] ormContexts;
 	
 	@Override
-	public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
-		
-		for(OrmContext c : ormContextes) {
+	public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+        Args.notNull(context.root(), "Root factory must be exists!");
+
+        if(Types.isSimpleType(type,genericType) || Types.isCollectionType(type,genericType)) {
+            return null;
+        }
+
+        for(OrmContext c : ormContexts) {
 			EntityMapping em = c.getMetadata().tryGetEntityMapping(type);
 			
 			if(null != em) {
-				return getMType(type, genericType, root, c, em);
+				return getMType(type, genericType, context, c, em);
 			}
 			
 		}
-		
+
 		return null;
 	}
 
-	protected MType getMType(Class<?> type, Type genericType, MTypeFactory root, OrmContext c,  EntityMapping em) {
-		MComplexTypeBuilder ct = new MComplexTypeBuilder();
+	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, OrmContext c,  EntityMapping em) {
+		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());
+
+        context.onComplexTypeCreating(type, ct.getName());
+
+        MTypeFactory root = context.root();
 
 		for(FieldMapping fm : em.getFieldMappings()) {
 			MPropertyBuilder p = new MPropertyBuilder();
 			p.setName(fm.getFieldName());
-			p.setType(root.getMType(fm.getJavaType()));
+
+            BeanProperty bp = fm.getBeanProperty();
+            if(null != bp) {
+                p.setType(root.getMType(bp.getType(), bp.getGenericType()));
+            }else{
+                p.setType(root.getMType(fm.getJavaType()));
+            }
+
 			p.setLength(fm.getMaxLength());
-			p.setNullable(fm.isNullable());
+			p.setRequired(!fm.isNullable());
 			p.setPrecision(fm.getPrecision());
 			p.setScale(fm.getScale());
-			
+
+            if(null != bp) {
+                configureProperty(bp, p);
+            }
+
+            if(null == p.getCreatable()) {
+                if(fm.isPrimaryKey()) {
+                    p.setCreatable(false);
+                }else{
+                    p.setCreatable(fm.isInsert());
+                }
+            }
+
+            if(null == p.getUpdatable()) {
+                p.setUpdatable(fm.isUpdate());
+            }
+
+            if(null == p.getSortable()) {
+                p.setSortable(false);
+            }
+
+            if(null == p.getFilterable()) {
+                p.setFilterable(false);
+            }
+
+            if(null != bp) {
+                configureProperty(bp, p);
+            }
+
 			ct.addProperty(p.build());
 		}
+
+        for(RelationProperty rp : em.getRelationProperties()) {
+
+            RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+
+            EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
+
+
+            MPropertyBuilder p = new MPropertyBuilder();
+            p.setName(rp.getName());
+            p.setReference(true);
+
+            if(rp.isMany()) {
+                p.setType(new MCollectionType(new MComplexTypeRef(targetEntity.getEntityName())));
+            }else{
+                p.setType(new MComplexTypeRef(targetEntity.getEntityName()));
+            }
+
+            if(null != rp.getBeanProperty()) {
+                configureProperty(rp.getBeanProperty(), p);
+            }
+
+            if(rm.isManyToMany()) {
+                if(null == p.getCreatable()) {
+                    p.setCreatable(true);
+                }
+
+                if(null == p.getUpdatable()) {
+                    p.setUpdatable(true);
+                }
+
+                if(null == p.getFilterable()) {
+                    p.setFilterable(true);
+                }
+            }
+
+            ct.addProperty(p.build());
+        }
+
+        context.onComplexTypeCreated(type);
 		
 		return ct.build();
 	}

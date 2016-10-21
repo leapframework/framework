@@ -48,6 +48,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
     private static final String LOCATION_ATTRIBUTE               = "location";
     private static final String PATH_PREFIX_ATTRIBUTE            = "path-prefix";
     private static final String NAME_ATTRIBUTE                   = "name";
+    private static final String CONTEXT_PATH                     = "context-path";
     private static final String BASE_PATH_ATTRIBUTE              = "base-path";
     private static final String BASE_PACKAGE_ATTRIBUTE           = "base-package";
 
@@ -82,7 +83,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
     }
 
 	protected void readMvcConfig(AppConfigContext context, XmlReader reader) {
-        reader.getAttributeNames().forEachRemaining((name) -> {
+        reader.getAttributeLocalNames().forEachRemaining((name) -> {
             String value = reader.resolveAttribute(name);
             if(!Strings.isEmpty(value)) {
                 context.putProperty(WebConfigProcessor.class, WebConfigurator.CONFIG_PREFIX + name, value);
@@ -162,7 +163,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 	 * </pre>
 	 */
 	protected void readCorsConfig(AppConfigContext context, XmlReader reader) {
-		Iterator<String> attrs = reader.getAttributeNames();
+		Iterator<String> attrs = reader.getAttributeLocalNames();
 		if(attrs.hasNext()){
 			do{
 				String name  = attrs.next();
@@ -193,6 +194,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
         ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
 
         String name = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
+        String contextPath = reader.resolveAttribute(CONTEXT_PATH);
         String basePath = reader.resolveRequiredAttribute(BASE_PATH_ATTRIBUTE);
         String basePackage = reader.resolveRequiredAttribute(BASE_PACKAGE_ATTRIBUTE);
 
@@ -206,6 +208,7 @@ public class WebConfigProcessor implements AppConfigProcessor {
 
         DefaultModuleConfig module = new DefaultModuleConfig();
         module.setName(name);
+        module.setContextPath(contextPath);
         module.setBasePath(basePath);
         module.setBasePackage(basePackage);
 

@@ -18,40 +18,46 @@ package leap.orm.mapping;
 import leap.lang.Buildable;
 
 public class JoinFieldMappingBuilder implements Buildable<JoinFieldMapping> {
-	
-	protected String localFieldName;
-	protected String referencedFieldName;
-	protected String localColumnName;
-	
-	public String getLocalFieldName() {
+
+	protected String  localFieldName;
+	protected String  localColumnName;
+    protected boolean localPrimaryKey;
+    protected String  referencedFieldName;
+
+    public String getLocalFieldName() {
 		return localFieldName;
 	}
 
-	public JoinFieldMappingBuilder setLocalFieldName(String localFieldName) {
+	public void setLocalFieldName(String localFieldName) {
 		this.localFieldName = localFieldName;
-		return this;
 	}
+
+    public String getLocalColumnName() {
+        return localColumnName;
+    }
+
+    public void setLocalColumnName(String column) {
+        this.localColumnName = column;
+    }
+
+    public boolean isLocalPrimaryKey() {
+        return localPrimaryKey;
+    }
+
+    public void setLocalPrimaryKey(boolean localPrimaryKey) {
+        this.localPrimaryKey = localPrimaryKey;
+    }
 
 	public String getReferencedFieldName() {
 		return referencedFieldName;
 	}
 
-	public JoinFieldMappingBuilder setReferencedFieldName(String referencedFieldName) {
+	public void setReferencedFieldName(String referencedFieldName) {
 		this.referencedFieldName = referencedFieldName;
-		return this;
 	}
 
-	public String getLocalColumnName() {
-		return localColumnName;
-	}
-
-	public JoinFieldMappingBuilder setLocalColumnName(String column) {
-		this.localColumnName = column;
-		return this;
-	}
-
-	@Override
+    @Override
 	public JoinFieldMapping build() {
-		return new JoinFieldMapping(localFieldName, referencedFieldName);
+		return new JoinFieldMapping(localFieldName, localPrimaryKey, referencedFieldName);
 	}
 }

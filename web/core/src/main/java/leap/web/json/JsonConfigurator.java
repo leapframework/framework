@@ -18,6 +18,8 @@ package leap.web.json;
 import leap.core.validation.annotations.NotNull;
 import leap.lang.naming.NamingStyle;
 
+import java.text.DateFormat;
+
 public interface JsonConfigurator {
 	
 	String DEFAULT_JSONP_PARAMETER = "callback";
@@ -31,8 +33,14 @@ public interface JsonConfigurator {
 	JsonConfigurator setDefaultSerializationIgnoreEmpty(boolean ignoreEmpty);
 
 	JsonConfigurator setDefaultNamingStyle(NamingStyle namingStyle);
+
+    /**
+     * Sets the pattern of default {@link DateFormat} for writing {@link java.util.Date} value.
+     */
+    JsonConfigurator setDefaultDateFormat(String f);
 	
 	JsonConfigurator setJsonpEnabled(boolean enabled);
 	
 	JsonConfigurator setJsonpParameter(String jsonpParameter);
+
 }

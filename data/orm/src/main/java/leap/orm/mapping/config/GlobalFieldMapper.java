@@ -46,7 +46,7 @@ class GlobalFieldMapper {
 
         FieldMappingBuilder old = em.findFieldMappingByName(fm.getFieldName());
         if(null != old) {
-            old.mergedWithGlobalField(fm);
+            old.mergeWithGlobalField(fm);
         }else{
             FieldMappingBuilder real =
                     context.getMappingStrategy().createFieldMappingByTemplate(context, em, fm);

@@ -22,22 +22,27 @@ import leap.web.route.Route;
 public interface SecuredPaths extends Iterable<SecuredPath>,Emptiable {
 
     /**
-     * Creates a new {@link SecuredPathConfigurator} for the given path pattern
+     * Returns an exists or creates a new {@link SecuredPathConfigurator} for the given path pattern
      */
     SecuredPathConfigurator of(String path);
 
     /**
-     * Creates a new {@link SecuredPathConfigurator} for the given path pattern
+     * Returns an exists or creates a new {@link SecuredPathConfigurator} for the given path pattern
      */
     SecuredPathConfigurator of(PathPattern pp);
 
     /**
-     * Creates a new {@link SecuredPathConfigurator} for the given path pattern in route.
+     * Returns an exists or creates a new {@link SecuredPathConfigurator} for the given path pattern in route.
      */
     SecuredPathConfigurator of(Route route);
 
     /**
-     * Apply a secured path.
+     * Returns the exists {@link SecuredPathConfigurator} for the route or null if not exists.
+     */
+    SecuredPathConfigurator get(Route route);
+
+    /**
+     * Apply the secured path.
      */
     SecuredPaths apply(SecuredPath p);
 

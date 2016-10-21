@@ -15,11 +15,24 @@
  */
 package leap.orm;
 
+import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.jdbc.JdbcType;
 import leap.lang.naming.NamingStyles;
 
+import java.util.Map;
 import java.util.Set;
 
 public interface OrmConfig {
+
+    String KEY_PREFIX = "orm";
+
+    /**
+     * Returns true if auto create tables at startup.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isAutoCreateTables();
 	
 	/**
 	 * zero means no limitation.
@@ -68,4 +81,46 @@ public interface OrmConfig {
 	 * @see NamingStyles
 	 */
 	String getColumnNamingStyle();
+
+    /**
+     * Returns the format name of default serializer.
+     */
+    String getDefaultSerializer();
+
+    /**
+     * Required. Returns the default serialize configuration.
+     */
+    SerializeConfig getDefaultSerializeConfig();
+
+    /**
+     * Returns the {@link SerializeConfig} of the name.
+     *
+     * @throws ObjectNotFoundException if the name not exists.
+     */
+    SerializeConfig getSerializeConfig(String name) throws ObjectNotFoundException;
+
+    /**
+     * Returns an immutable map contains all the serialize configurations.
+     *
+     * <p/>
+     * The returned key is is the serialize format.
+     */
+    Map<String, SerializeConfig> getSerializeConfigs();
+
+    /**
+     * The serialize config interface.
+     */
+    interface SerializeConfig {
+
+        /**
+         * Required. Returns the default jdbc type of column which use this serialize format.
+         */
+        JdbcType getDefaultColumnType();
+
+        /**
+         * Required. Returns the default length of column which use this serialize format.
+         */
+        Integer getDefaultColumnLength();
+
+    }
 }

@@ -42,6 +42,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	
 	protected SqlCommand   command;
 	protected FieldMapping fm;
+    protected Object       id;
 	protected Object	   generatedId;
 	protected Params       parameters;
 
@@ -60,8 +61,13 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     public EntityMapping getEntityMapping() {
 	    return em;
     }
-	
-	@Override
+
+    @Override
+    public Object id() {
+        return null == id ? generatedId : id;
+    }
+
+    @Override
     public Object getGeneratedId() {
 	    return generatedId;
     }
@@ -78,6 +84,39 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		if(null != parameters){
 			parameters.set(em.getKeyFieldNames()[0], id);
 		}
+    }
+
+    @Override
+    public InsertCommand id(Object id) {
+        Args.notNull(id,"id");
+
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            entity.put(keyNames[0],id);
+            return this;
+        }
+
+        this.id = id;
+
+        if(keyNames.length == 0){
+            throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");
+        }
+
+        if(id == null){
+            for(int i=0;i<keyNames.length;i++){
+                entity.put(keyNames[i],null);
+            }
+        }else{
+            if(!(id instanceof Map)){
+                throw new IllegalArgumentException("The given id must be a Map object for composite id model");
+            }
+            Map map = (Map)id;
+            for(int i=0;i<keyNames.length;i++){
+                entity.put(keyNames[i], map.get(keyNames[i]));
+            }
+        }
+
+        return this;
     }
 
     @Override
@@ -156,29 +195,42 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
 			this.fm = fm;
-			
-			if(!Strings.isEmpty(fm.getSequenceName())){
-				//the insertion sql must use $fieldName$
-				entity.set(fm.getFieldName(), db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName()));
-			}else{
-				Expression expression = fm.getInsertValue();
-				if(null != expression){
-					if(null == entity.get(fm.getFieldName())) {
-						Object value = expression.getValue(this, entity);	
-						
-						if(fm.isPrimaryKey()){
-							generatedId = value;
-						}
-						
-						setGeneratedValue(fm, value);
-					}
-				}else if(null == entity.get(fm.getFieldName())){
-					expression = fm.getDefaultValue();
-					if(null != expression){
-						setGeneratedValue(fm,expression.getValue(this,entity));
-					}
-				}
-			}
+
+            Object value = entity.get(fm.getFieldName());
+
+            if(null == value) {
+                if (!Strings.isEmpty(fm.getSequenceName())) {
+                    //the insertion sql must use $fieldName$
+                    value = db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName());
+                    entity.set(fm.getFieldName(), value);
+                } else {
+                    Expression expression = fm.getInsertValue();
+                    if (null != expression) {
+                        value = expression.getValue(this, entity);
+
+                        if (fm.isPrimaryKey()) {
+                            generatedId = value;
+                        }
+
+                        setGeneratedValue(fm, value);
+                    } else {
+                        expression = fm.getDefaultValue();
+
+                        if (null != expression) {
+                            value = expression.getValue(this, entity);
+
+                            setGeneratedValue(fm, value);
+                        }
+                    }
+                }
+            }
+
+            if(null != value && null != fm.getSerializer()) {
+                Object encoded = fm.getSerializer().trySerialize(fm, value);
+                if(encoded != value) {
+                    entity.set(fm.getFieldName(), encoded);
+                }
+            }
 		}
 		this.fm = null;
 	}

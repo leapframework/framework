@@ -16,6 +16,8 @@
 package leap.web;
 
 import leap.lang.intercepting.State;
+import leap.web.action.ActionContext;
+import leap.web.route.Route;
 
 public interface RequestInterceptor {
 	
@@ -25,6 +27,20 @@ public interface RequestInterceptor {
 	default State preHandleRequest(Request request, Response response) throws Throwable {
 	    return State.CONTINUE;
 	}
+
+    /**
+     * Called after {@link #preHandleRequest(Request, Response)} and before handling the route.
+     */
+    default State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
+        return State.CONTINUE;
+    }
+
+    /**
+     * Called after {@link #preHandleRequest(Request, Response)} and before handling the request no route matched.
+     */
+    default State handleNoRoute(Request request, Response response) throws Throwable {
+        return State.CONTINUE;
+    }
 	
 	/**
 	 * Called after handling request (the view was rendered) successfully.

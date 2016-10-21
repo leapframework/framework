@@ -20,18 +20,13 @@ import leap.lang.naming.NamingStyles;
 
 class JsonWriterCreatorImpl implements JsonWriterCreator {
 
-	private final Appendable out;
+    private final JsonSettings.Builder settings = new JsonSettings.Builder();
+	private final Appendable           out;
 	
-	protected boolean     keyQuoted = true;
-	protected boolean     ignoreNull;
-	protected boolean     ignoreFalse;
-	protected boolean     ignoreEmptyString;
-	protected boolean     ignoreEmptyArray;
 	protected boolean	  detectCyclicReferences = true;
 	protected boolean	  ignoreCyclicReferences = true;
 	protected int		  maxDepth = JsonWriter.MAX_DEPTH;
-	protected NamingStyle namingStyle;
-	
+
 	public JsonWriterCreatorImpl(Appendable out) {
 		this.out = out;
 	}
@@ -50,31 +45,31 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
 
 	@Override
     public JsonWriterCreator setKeyQuoted(boolean keyQuoted) {
-		this.keyQuoted = keyQuoted;
+        settings.setKeyQuoted(keyQuoted);
 	    return this;
     }
 
 	@Override
 	public JsonWriterCreator setIgnoreNull(boolean ignoreNull) {
-		this.ignoreNull = ignoreNull;
+        settings.setIgnoreNull(ignoreNull);
 		return this;
 	}
 
 	@Override
 	public JsonWriterCreator setIgnoreFalse(boolean ignoreFalse) {
-		this.ignoreFalse = ignoreFalse;
+        settings.setIgnoreFalse(ignoreFalse);
 		return this;
 	}
 
 	@Override
 	public JsonWriterCreator setIgnoreEmptyString(boolean ignoreEmptyString) {
-		this.ignoreEmptyString = ignoreEmptyString;
+        settings.setIgnoreEmptyString(ignoreEmptyString);
 		return this;
 	}
 
 	@Override
 	public JsonWriterCreator setIgnoreEmptyArray(boolean ignoreEmptyArray) {
-		this.ignoreEmptyArray = ignoreEmptyArray;
+        settings.setIgnoreEmptyArray(ignoreEmptyArray);
 		return this;
 	}
 	
@@ -86,21 +81,27 @@ class JsonWriterCreatorImpl implements JsonWriterCreator {
 
 	@Override
 	public JsonWriterCreator setNamingStyle(NamingStyle namingStyle) {
-		this.namingStyle = namingStyle;
-		return this;
+        settings.setNamingStyle(namingStyle);
+        return this;
 	}
 
-	@Override
+    @Override
+    public JsonWriterCreator setSettings(JsonSettings settings) {
+        if(null != settings) {
+            this.settings.setSettings(settings);
+        }
+        return this;
+    }
+
+    @Override
 	public JsonWriter create() {
-		if(null == namingStyle){
-			namingStyle = NamingStyles.RAW;
+		if(null == settings.getNamingStyle()){
+			settings.setNamingStyle(NamingStyles.RAW);
 		}
 		
-		return new JsonWriterImpl(out, 
-								  keyQuoted, 
-								  ignoreNull, ignoreFalse, ignoreEmptyString, ignoreEmptyArray, 
+		return new JsonWriterImpl(settings.build(), out,
 								  detectCyclicReferences, ignoreCyclicReferences,
-								  maxDepth,
-								  namingStyle);
+								  maxDepth);
 	}
 }
+

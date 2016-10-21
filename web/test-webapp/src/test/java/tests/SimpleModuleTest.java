@@ -15,14 +15,23 @@
  */
 package tests;
 
+import leap.core.AppConfig;
+import leap.core.annotation.Inject;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
 public class SimpleModuleTest extends WebTestBase {
 
+    private @Inject AppConfig config;
+
     @Test
     public void testModuleIndexAction() {
         get("/t/").assertContentEquals("The module works!");
+    }
+
+    @Test
+    public void testConfig() {
+        assertEquals("test", config.getProperty("prop1"));
     }
 
 }

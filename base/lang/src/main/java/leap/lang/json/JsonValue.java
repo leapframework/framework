@@ -106,7 +106,7 @@ public interface JsonValue {
      *
      * @throws IllegalStateException if the raw value is not a json array.
      */
-	default List<Object> asList() {
+	default <T> List<T> asList() {
 		throw new IllegalStateException("Not a list");
 	}
 

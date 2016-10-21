@@ -64,7 +64,7 @@ public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
 	@Override
 	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
 	    for(int i=0;i<nodes.length;i++){
-	    	AstNode node = nodes[i];
+            AstNode node = nodes[i];
 	    	node.buildStatement(stm, params);
 	    }
     }

@@ -34,7 +34,7 @@ public class ModelJsonTest extends OrmTestCase {
 
         String json = JSON.stringify(m);
 
-        Map<String,Object> map = JSON.decodeToMap(json);
+        Map<String,Object> map = JSON.decode(json);
         assertEquals("test", map.get("name"));
         assertFalse(map.containsKey("ignoredField"));
     }

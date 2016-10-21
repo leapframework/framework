@@ -23,6 +23,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.permission.PermissionManager;
@@ -31,26 +33,37 @@ public class DefaultSecuredPath implements SecuredPath {
 
 	private static final Log log = LogFactory.get(DefaultSecuredPath.class);
 
-	protected final PathPattern pattern;
-	protected final boolean     allowAnonymous;
-	protected final boolean     allowClientOnly;
-	protected final boolean     allowRememberMe;
-    protected final String[]    permissions;
-    protected final String[]    roles;
+    protected final Route                  route;
+    protected final PathPattern            pattern;
+    protected final Boolean                allowAnonymous;
+    protected final Boolean                allowClientOnly;
+    protected final Boolean                allowRememberMe;
+    protected final SecurityFailureHandler failureHandler;
+    protected final String[]               permissions;
+    protected final String[]               roles;
 
-	public DefaultSecuredPath(PathPattern pattern,
-                              boolean allowAnonymous,
-                              boolean allowClientOnly,
-                              boolean allowRememberMe,
+	public DefaultSecuredPath(Route route,
+                              PathPattern pattern,
+                              Boolean allowAnonymous,
+                              Boolean allowClientOnly,
+                              Boolean allowRememberMe,
+                              SecurityFailureHandler failureHandler,
                               String[] permissions,
                               String[] roles) {
 		Args.notNull(pattern,"path pattern");
+        this.route           = route;
 		this.pattern         = pattern;
 	    this.allowAnonymous  = allowAnonymous;
 	    this.allowClientOnly = allowClientOnly;
 	    this.allowRememberMe = allowRememberMe;
+        this.failureHandler  = failureHandler;
         this.permissions     = permissions;
         this.roles           = roles;
+    }
+
+    @Override
+    public Route getRoute() {
+        return route;
     }
 
     /**
@@ -61,28 +74,24 @@ public class DefaultSecuredPath implements SecuredPath {
 		return pattern;
 	}
 
-    /**
-     * Returns true if the path pattern allows anonymous access (that means no authentication required).
-     */
     @Override
-    public boolean isAllowAnonymous() {
+    public Boolean getAllowAnonymous() {
         return allowAnonymous;
     }
 
-    /**
-     * Returns true if the path pattern allows client-only authentication.
-     */
     @Override
-    public boolean isAllowClientOnly() {
+    public Boolean getAllowClientOnly() {
         return allowClientOnly;
     }
 
-    /**
-     * Returns true if the path pattern allows remember-me authentication.
-     */
     @Override
-    public boolean isAllowRememberMe() {
+    public Boolean getAllowRememberMe() {
         return allowRememberMe;
+    }
+
+    @Override
+    public SecurityFailureHandler getFailureHandler() {
+        return failureHandler;
     }
 
     /**

@@ -15,6 +15,8 @@
  */
 package leap.db.cp;
 
+import leap.lang.Classes;
+import leap.lang.Strings;
 import leap.lang.jdbc.ConnectionWrapper;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -22,12 +24,16 @@ import leap.lang.logging.LogFactory;
 import leap.lang.logging.StackTraceStringBuilder;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PooledConnection extends ConnectionWrapper implements Connection {
 	private static final Log log = LogFactory.get(PooledConnection.class);
-	
-	static final int STATE_IDLE = 0;
+
+    static final String FRAMEWORK_PKG = Classes.getPackageName(PooledConnection.class) + ".";
+
+    static final int STATE_IDLE = 0;
 	static final int STATE_BUSY = 1;
 	static final int STATE_CLEANUP = 2;
     static final int STATE_ABANDON = 3;
@@ -41,14 +47,14 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	private final AtomicInteger  state;
 	private final PoolUtils 	 utils;
 	private final StatementList	 statements = new StatementList();
-	
-	private boolean   			  newCreatedConnection;
-	private int		  			  transactionState = TRANSACTION_STATE_INIT;
-	private long      			  lastBusyTime;
-	private long	  			  lastIdleTime;
-	private Thread				  threadOnBorrow;
-	
-	private String realCatalog;
+
+    private boolean   newCreatedConnection;
+    private int       transactionState = TRANSACTION_STATE_INIT;
+    private long      lastBusyTime;
+    private long      lastIdleTime;
+    private Exception stackTraceOnBorrowException;
+
+    private String realCatalog;
 	private int	   realTransactionIsolation;
 	
 	PooledConnection(Pool pool) {
@@ -60,8 +66,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	}
 	
 	void setupBeforeOnBorrow() {
-		//stackTraceExceptionOnBorrow = new IllegalStateException("");
-		threadOnBorrow   = Thread.currentThread();
+        stackTraceOnBorrowException = new Exception("");
 		transactionState = TRANSACTION_STATE_INIT;
 	}
 	
@@ -116,35 +121,52 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		return false;
 	}
 	
-	public Thread getThreadOnBorrow() {
-		return threadOnBorrow;
+	public StackTraceElement[] getStackTraceOnBorrow() {
+        return getStackTrace(stackTraceOnBorrowException);
 	}
-	
-	public StackTraceElement[] getStackTraceOfThreadOnBorrow() {
-		return threadOnBorrow.getStackTrace();
-	}
+
+    static StackTraceElement[] getStackTrace(Exception e) {
+        List<StackTraceElement> stes = new ArrayList<>();
+
+        //excludes the trace element in framework.
+        boolean found = false;
+        for(StackTraceElement ste : e.getStackTrace()) {
+
+            if(found) {
+                stes.add(ste);
+                continue;
+            }
+
+            if(!Strings.startsWith(ste.getClassName(), FRAMEWORK_PKG)) {
+                found = true;
+                stes.add(ste);
+            }
+        }
+
+        return stes.toArray(new StackTraceElement[stes.size()]);
+    }
 
 	AtomicInteger getState() {
 		return state;
 	}
 	
-	Connection getReal() {
+	Connection wrapped() {
 		return conn;
 	}
 	
-	void setReal(Connection conn) {
+	void setWrapped(Connection conn) {
 		this.conn = conn;
 	}
 
-	public boolean isNewCreatedConnection() {
+	boolean isNewCreatedConnection() {
 		return newCreatedConnection;
 	}
 
-	public void setNewCreatedConnection(boolean newCreatedConnection) {
+	void setNewCreatedConnection(boolean newCreatedConnection) {
 		this.newCreatedConnection = newCreatedConnection;
 	}
 
-	public boolean isValid() {
+	boolean isValid() {
 		if(null == conn) {
 			return false;
 		}
@@ -182,19 +204,19 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		return true;
 	}
 	
-	public String getRealCatalog() {
+	String getRealCatalog() {
 		return realCatalog;
 	}
 
-	public void setRealCatalog(String realCatalog) {
+	void setRealCatalog(String realCatalog) {
 		this.realCatalog = realCatalog;
 	}
 
-	public int getRealTransactionIsolation() {
+	int getRealTransactionIsolation() {
 		return realTransactionIsolation;
 	}
 
-	public void setRealTransactionIsolation(int realTransactionCatalog) {
+	void setRealTransactionIsolation(int realTransactionCatalog) {
 		this.realTransactionIsolation = realTransactionCatalog;
 	}
 
@@ -211,7 +233,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 
 	void abandonReal() {
 		if(null != conn) {
-			log.debug("Abandon the real connection");
+			log.debug("Abandon the wrapped connection");
 			JDBC.closeConnection(conn);
 			conn = null;
 		}
@@ -219,7 +241,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	
 	void closeReal() {
 		if(null != conn) {
-			log.debug("Close the real connection");
+			log.debug("Close the wrapped connection");
 			JDBC.closeConnection(conn);
 			conn = null;
 		}
@@ -232,33 +254,24 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		}
 	}
 	
-	void closeStatement(Statement proxy,Statement real) throws SQLException {
-        if(((ProxyStatement)proxy).isClosed()) {
-            log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
-            return;
+	void closeStatement(ProxyStatement proxy,Statement wrapped) throws SQLException {
+        try{
+            closeStatementOnly(proxy, wrapped);
+        }finally{
+            if(!statements.remove(proxy)){
+                log.error("Invalid state, No open statement found for the closed statement",new Exception(""));
+            }
         }
-
-		try{
-			real.close();	
-			successCloseStatement(proxy);
-		}catch(SQLException e) {
-			errorCloseStatement(proxy, e);
-			throw e;
-		}finally{
-			if(!statements.remove(proxy)){
-				log.error("Invalid state, No open statement found for the closed statement",new Exception("stack"));
-			}
-		}
 	}
 	
-	void closeStatementOnly(Statement proxy,Statement real) throws SQLException {
-        if(((ProxyStatement)proxy).isClosed()) {
-            log.warn("Invalid state, the proxy statement already closed", new Exception("stack"));
+	void closeStatementOnly(ProxyStatement proxy,Statement wrapped) throws SQLException {
+        if(proxy.isClosed()) {
+            log.warn("Invalid state, the proxy statement already closed", new Exception("Statement already closed"));
             return;
         }
 
 		try{
-			real.close();	
+			wrapped.close();
 			successCloseStatement(proxy);
 		}catch(SQLException e) {
 			errorCloseStatement(proxy, e);
@@ -284,7 +297,7 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		return state.get() == STATE_IDLE;
 	}
 	
-	public boolean isCommitOrRollback() {
+	boolean isCommitOrRollback() {
 		return transactionState > TRANSACTION_STATE_INIT;
 	}
 	
@@ -370,8 +383,43 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 	public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
 		return createCallableStatementProxy(conn.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql);
 	}
-	
-	ProxyStatement createProxy(Statement stmt) {
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return (T) this;
+        }
+
+        if(iface.isInstance(conn)) {
+            return (T)conn;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.unwrap(iface);
+        }
+
+        throw new SQLException("Wrapped Connection " + conn.getClass() + "' is not an instance of " + iface);
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return true;
+        }
+
+        if(iface.isInstance(conn)) {
+            return true;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.isWrapperFor(iface);
+        }
+
+        return false;
+    }
+
+    ProxyStatement createProxy(Statement stmt) {
 		if(stmt instanceof PreparedStatement) {
 			return createPreparedStatementProxy((PreparedStatement)stmt, null);
 		}
@@ -409,7 +457,8 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 		statements.add(proxy);
 		return proxy;
 	}
-	
+
+    //inspire from HikariCP
 	private final class StatementList {
 		
 		static final int DEFAULT_CAPACITY = 16; 
@@ -459,12 +508,12 @@ public class PooledConnection extends ConnectionWrapper implements Connection {
 				ProxyStatement stmt = array[i];
 				if(null != stmt) {
 					try {
-						log.warn("A potential statement leak detected, force to close it, last executed sql : \n\n{}\n{}",
+						log.warn("A potential statement leak detected, force to close it, sql ({}), stack trace -> \n{}",
 								stmt.getLastExecutingSql(),
-								new StackTraceStringBuilder(null, stmt.getStackTraceOfThreadOnCreate()).toString());
+								new StackTraceStringBuilder(null, stmt.getStackTraceOnOpen()).toString());
 	                    closeStatementOnly(stmt, stmt.getReal());
                     } catch (SQLException e) {
-                    	;
+
                     } finally {
                     	array[i] = null;
                     }

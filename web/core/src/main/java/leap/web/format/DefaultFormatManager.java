@@ -118,7 +118,7 @@ public class DefaultFormatManager implements FormatManager,PostCreateBean {
 			}
 		}
 		
-		//Resovle by resolvers.
+		//Resolved by resolvers.
 		ResponseFormat f = null;
 		for(int i=0;i<responseFormatResolvers.length;i++){
 			if((f = responseFormatResolvers[i].resolveResponseFormat(request)) != null){

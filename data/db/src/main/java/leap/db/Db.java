@@ -25,28 +25,8 @@ import leap.core.jdbc.JdbcExecutor;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.core.jdbc.RawScalarReader;
-import leap.db.command.AlterTable;
-import leap.db.command.CreateColumn;
-import leap.db.command.CreateForeignKey;
-import leap.db.command.CreateIndex;
-import leap.db.command.CreatePrimaryKey;
-import leap.db.command.CreateSequence;
-import leap.db.command.CreateTable;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropSchema;
-import leap.db.command.DropSequence;
-import leap.db.command.DropTable;
-import leap.db.command.RenameColumn;
-import leap.db.model.DbColumn;
-import leap.db.model.DbForeignKey;
-import leap.db.model.DbIndex;
-import leap.db.model.DbPrimaryKey;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbTable;
+import leap.db.command.*;
+import leap.db.model.*;
 import leap.lang.Arrays2;
 import leap.lang.Named;
 import leap.lang.exception.NestedSQLException;
@@ -195,6 +175,19 @@ public interface Db extends Named , JdbcExecutor {
 	 * Returns <code>false</code> if not exists.
 	 */
 	boolean checkSequenceExists(DbSchemaObjectName sequenceName) throws NestedSQLException;
+
+    /**
+     * Creates a new {@link leap.db.command.CreateSchema} command for creating the given schema later.
+     *
+     * <p>
+     * <strong>Note :</strong>
+     *
+     * <p>
+     * <strong>
+     * You must invoke the <code>execute()</code> method in the returned command to perform this operation.
+     * </strong>
+     */
+    CreateSchema cmdCreateSchema(DbSchema schema);
 	
 	/**
 	 * Creates a new {@link CreateTable} command for creating the given table later.

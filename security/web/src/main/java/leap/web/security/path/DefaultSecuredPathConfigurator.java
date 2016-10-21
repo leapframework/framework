@@ -16,11 +16,19 @@
 package leap.web.security.path;
 
 import leap.lang.path.PathPattern;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 
 public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
 
     protected final DefaultSecuredPaths paths;
     protected final SecuredPathBuilder  path;
+
+    public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, Route route) {
+        this.paths = paths;
+        this.path  = new DefaultSecuredPathBuilder(route);
+    }
+
 
     public DefaultSecuredPathConfigurator(DefaultSecuredPaths paths, PathPattern pp) {
         this.paths = paths;
@@ -38,36 +46,42 @@ public class DefaultSecuredPathConfigurator implements SecuredPathConfigurator {
     }
 
     @Override
-    public SecuredPathConfigurator setAllowAnonymous(boolean allow) {
+    public SecuredPathConfigurator setAllowAnonymous(Boolean allow) {
         path.setAllowAnonymous(allow);
         return this;
     }
 
     @Override
-    public SecuredPathConfigurator setAllowRememberMe(boolean allow) {
+    public SecuredPathConfigurator setAllowRememberMe(Boolean allow) {
         path.setAllowRememberMe(allow);
         return this;
     }
 
     @Override
-    public SecuredPathConfigurator setAllowClientOnly(boolean allow) {
+    public SecuredPathConfigurator setAllowClientOnly(Boolean allow) {
         path.setAllowClientOnly(allow);
         return this;
     }
 
     @Override
-    public boolean isAllowAnonymous() {
-        return path.isAllowAnonymous();
+    public SecuredPathConfigurator setFailureHandler(SecurityFailureHandler handler) {
+        path.setFailureHandler(handler);
+        return this;
     }
 
     @Override
-    public boolean isAllowRememberMe() {
-        return path.isAllowRememberMe();
+    public Boolean getAllowAnonymous() {
+        return path.getAllowAnonymous();
     }
 
     @Override
-    public boolean isAllowClientOnly() {
-        return path.isAllowClientOnly();
+    public Boolean getAllowRememberMe() {
+        return path.getAllowRememberMe();
+    }
+
+    @Override
+    public Boolean getAllowClientOnly() {
+        return path.getAllowClientOnly();
     }
 
     @Override

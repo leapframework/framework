@@ -15,39 +15,10 @@
  */
 package leap.db.platform;
 
-import static java.sql.DatabaseMetaData.importedKeyCascade;
-import static java.sql.DatabaseMetaData.importedKeyNoAction;
-import static java.sql.DatabaseMetaData.importedKeyRestrict;
-import static java.sql.DatabaseMetaData.importedKeySetDefault;
-import static java.sql.DatabaseMetaData.importedKeySetNull;
-
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import leap.db.DbDialect;
 import leap.db.DbMetadataReader;
 import leap.db.exception.DbSchemaException;
-import leap.db.model.DbCascadeAction;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbForeignKeyBuilder;
-import leap.db.model.DbForeignKeyColumn;
-import leap.db.model.DbIndexBuilder;
-import leap.db.model.DbSchema;
-import leap.db.model.DbSchemaBuilder;
-import leap.db.model.DbSchemaName;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
-import leap.db.model.DbSequenceBuilder;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder1;
-import leap.db.model.DbTableTypes;
+import leap.db.model.*;
 import leap.lang.Assert;
 import leap.lang.Builders;
 import leap.lang.Strings;
@@ -59,6 +30,14 @@ import leap.lang.jdbc.JdbcTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.time.StopWatch;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static java.sql.DatabaseMetaData.*;
 
 public class GenericDbMetadataReader extends GenericDbMetadataReaderBase implements DbMetadataReader {
 	
@@ -118,7 +97,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	        
 	        StopWatch sw = StopWatch.startNew();
 	        
-	        List<DbTableBuilder1> tables = readAllTables(connection, dm, params);
+	        List<DbTableBuilder> tables = readAllTables(connection, dm, params);
 	        
 	        log.debug("read {} tables used {}ms ",tables.size(),sw.getElapsedMilliseconds());
 	        readAllTableObjects(connection, dm, params, tables);
@@ -143,11 +122,11 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         }
     }
     
-    protected void postReadTables(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables) {
+    protected void postReadTables(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables) {
     	//A table without columns (empty table) may be dropped, so we should remove it. 
-    	List<DbTableBuilder1> emptyTables = new ArrayList<>();
+    	List<DbTableBuilder> emptyTables = new ArrayList<>();
     	
-    	for(DbTableBuilder1 table : tables){
+    	for(DbTableBuilder table : tables){
     		
     		if(table.getColumns().isEmpty()){
     			emptyTables.add(table);
@@ -157,12 +136,12 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
     		postReadTable(connection, dm, params, table);
     	}
     	
-    	for(DbTableBuilder1 table : emptyTables){
+    	for(DbTableBuilder table : emptyTables){
     		tables.remove(table);
     	}
     }
     
-    protected void postReadTable(Connection connection,DatabaseMetaData dm,MetadataParameters params,DbTableBuilder1 table){
+    protected void postReadTable(Connection connection,DatabaseMetaData dm,MetadataParameters params,DbTableBuilder table){
     	List<DbIndexBuilder> rmIndexes = new ArrayList<DbIndexBuilder>();
     	
     	for(DbIndexBuilder ix : table.getIndexes()){
@@ -185,10 +164,10 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
     	}
     }
     
-	protected List<DbTableBuilder1> readAllTables(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
+	protected List<DbTableBuilder> readAllTables(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		ResultSet rs = null;
 		try{
-			List<DbTableBuilder1> tables = new ArrayList<DbTableBuilder1>();
+			List<DbTableBuilder> tables = new ArrayList<DbTableBuilder>();
 			
 			rs = getTables(connection, dm, params);
 			
@@ -199,7 +178,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
                     String tableName    = rs.getString(TABLE_NAME);
                     
                     if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(tableSchema)){
-                    	DbTableBuilder1 table = new DbTableBuilder1(tableCatalog,tableSchema,tableName);
+                    	DbTableBuilder table = new DbTableBuilder(tableCatalog,tableSchema,tableName);
                     	
                     	readTableProperties(table, rs);
                     	
@@ -241,7 +220,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		}
 	}
 	
-	protected void readTableProperties(DbTableBuilder1 table,ResultSet rs) throws SQLException {
+	protected void readTableProperties(DbTableBuilder table,ResultSet rs) throws SQLException {
 		table.setType(rs.getString(TABLE_TYPE));
 		table.setComment(rs.getString(REMARKS));
 	}
@@ -257,7 +236,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return !isInternalSequence(sequence, rs);
 	}
 	
-	protected void readAllTableObjects(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables) throws SQLException {
+	protected void readAllTableObjects(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables) throws SQLException {
 		if(null == tables || tables.isEmpty()){
 			return ;
 		}
@@ -285,7 +264,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		log.debug("read {} indexes used {}ms",counter.get(),sw.stop().getElapsedMilliseconds());
 	}
 	
-    protected void readAllColumns(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables, AtomicInteger counter) throws SQLException {
+    protected void readAllColumns(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables, AtomicInteger counter) throws SQLException {
 		ResultSet rs = null;
 		try{
 			rs = getColumns(connection, dm, params);
@@ -298,7 +277,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					String tableName  = rs.getString(TABLE_NAME);
 					
 					if(Strings.equalsIgnoreCase(params.schema, schemaName)){
-						for(DbTableBuilder1 table : tables){
+						for(DbTableBuilder table : tables){
 							if(Strings.equalsIgnoreCase(tableName, table.getName())){
 								DbColumnBuilder column = new DbColumnBuilder();
 								
@@ -321,7 +300,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		}
 	}	
 	
-	protected boolean readColumnProperties(DbTableBuilder1 table, DbColumnBuilder column,ResultSet rs) throws SQLException {
+	protected boolean readColumnProperties(DbTableBuilder table, DbColumnBuilder column,ResultSet rs) throws SQLException {
 		column.setName(rs.getString(COLUMN_NAME));
 		column.setTypeCode(rs.getInt(COLUMN_TYPE));
 		
@@ -401,7 +380,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		}
 	}
 	
-	protected void readAllPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables, AtomicInteger counter) throws SQLException {
+	protected void readAllPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables, AtomicInteger counter) throws SQLException {
 		if(supportsReadAllPrimaryKeys()){
 			ResultSet rs = null;
 			try{
@@ -414,7 +393,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						String tableName  = rs.getString(TABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
-							for(DbTableBuilder1 table : tables){
+							for(DbTableBuilder table : tables){
 								if(Strings.equalsIgnoreCase(tableName, table.getName())){
 									readPrimaryKeyColumn(table, rs);
 								}
@@ -426,7 +405,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				JDBC.closeResultSetAndStatement(rs);
 			}
 		}else{
-			for(DbTableBuilder1 t : tables){
+			for(DbTableBuilder t : tables){
 				ResultSet rs = null;
 				try{
 					rs = dm.getPrimaryKeys(params.catalog, params.schema, t.getName());
@@ -453,7 +432,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return true;
 	}
 	
-	protected void readPrimaryKeyColumn(DbTableBuilder1 table,ResultSet rs) throws SQLException {
+	protected void readPrimaryKeyColumn(DbTableBuilder table,ResultSet rs) throws SQLException {
 		String pkName		= rs.getString(PK_NAME);
 		String pkColumnName = rs.getString(COLUMN_NAME);
 		
@@ -467,7 +446,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         table.addPrimaryKeyColumnName(pkColumnName, readPosition(rs, KEY_SEQ));
 	}
 	
-	protected void readAllForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables, AtomicInteger counter) throws SQLException {
+	protected void readAllForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables, AtomicInteger counter) throws SQLException {
 		if(supportsReadAllForeignKeys()){
 			ResultSet rs = null;
 			try{
@@ -479,7 +458,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						String tableName  = rs.getString(FKTABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
-							for(DbTableBuilder1 table : tables){
+							for(DbTableBuilder table : tables){
 								if(Strings.equalsIgnoreCase(tableName, table.getName())){
 									String fkName = rs.getString(FK_NAME);
 									
@@ -508,7 +487,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				JDBC.closeResultSetAndStatement(rs);
 			}
 		}else{
-			for(DbTableBuilder1 t : tables) {
+			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
 					rs = dm.getImportedKeys(params.catalogPattern, params.schemaPattern, t.getName());
@@ -551,14 +530,14 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return true;
 	}
 	
-	protected void readForeignKeyColumn(DbTableBuilder1 table, DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
+	protected void readForeignKeyColumn(DbTableBuilder table, DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
 		String localColumnName   = rs.getString(FKCOLUMN_NAME);
 		String foreignColumnName = rs.getString(PKCOLUMN_NAME);
 		
         fk.addColumn(new DbForeignKeyColumn(localColumnName,foreignColumnName), readPosition(rs, KEY_SEQ));
 	}
 	
-	protected boolean readForeignKeyProperties(DbTableBuilder1 table,DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
+	protected boolean readForeignKeyProperties(DbTableBuilder table,DbForeignKeyBuilder fk,ResultSet rs) throws SQLException {
 		
 		DbSchemaObjectName foreignTable = 
 				new DbSchemaObjectName(rs.getString(PKTABLE_CATALOG), rs.getString(PKTABLE_SCHEMA),rs.getString(PKTABLE_NAME));
@@ -574,7 +553,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         return true;
 	}
 	
-	protected void readAllIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder1> tables, AtomicInteger counter) throws SQLException {
+	protected void readAllIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params,List<DbTableBuilder> tables, AtomicInteger counter) throws SQLException {
 		if(supportsReadAllIndexes()){
 			ResultSet rs = null;
 			try{
@@ -587,7 +566,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						String tableName  = rs.getString(TABLE_NAME);
 						
 						if(Strings.equalsIgnoreCase(params.schema, schemaName)){
-							for(DbTableBuilder1 table : tables){
+							for(DbTableBuilder table : tables){
 								if(Strings.equalsIgnoreCase(tableName, table.getName())){
 									if(!readIndex(table, rs)){
 										break;
@@ -601,7 +580,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				JDBC.closeResultSetAndStatement(rs);
 			}
 		}else{
-			for(DbTableBuilder1 t : tables) {
+			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
 					rs = dm.getIndexInfo(params.catalogPattern, params.schemaPattern, t.getName(), false, false);
@@ -628,7 +607,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		}
 	}	
 	
-	protected boolean readIndex(DbTableBuilder1 t,ResultSet rs) throws SQLException {
+	protected boolean readIndex(DbTableBuilder t,ResultSet rs) throws SQLException {
 		String ixName = rs.getString(INDEX_NAME);
 		
 		DbIndexBuilder ix = t.findIndex(ixName);
@@ -655,11 +634,11 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return true;
 	}
 	
-	protected void readIndexColumn(DbTableBuilder1 table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
+	protected void readIndexColumn(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
         ix.addColumnName(rs.getString(COLUMN_NAME),readPosition(rs, ORDINAL_POSITION));
 	}
 	
-	protected boolean readIndexInfo(DbTableBuilder1 table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
+	protected boolean readIndexInfo(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
 		short type = rs.getShort("TYPE");
 		
         // we're ignoring statistic indexes
@@ -676,15 +655,15 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		return true;
 	}	
 	
-	protected boolean isInternalIndexGeneratedByApp(DbTableBuilder1 table,DbIndexBuilder ix,ResultSet rs) {
+	protected boolean isInternalIndexGeneratedByApp(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) {
 		return ix.getName().startsWith(INTERNAL_NAME_PREFIX);
 	}
 	
-	protected boolean isInternalIndex(DbTableBuilder1 table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
+	protected boolean isInternalIndex(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
 		return false;
 	}
 	
-	protected boolean isInternalDefaultValue(DbTableBuilder1 table, DbColumnBuilder column,ResultSet rs,String defaultValue) throws SQLException {
+	protected boolean isInternalDefaultValue(DbTableBuilder table, DbColumnBuilder column,ResultSet rs,String defaultValue) throws SQLException {
 		return false;
 	}
 	

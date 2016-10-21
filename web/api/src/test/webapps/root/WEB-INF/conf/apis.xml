@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apis xmlns="http://www.leapframework.org/schema/web/apis">
+
+    <global>
+        <oauth enabled="true">
+            <authz-url>http://127.0.0.1:8080/auth/oauth2/authorize</authz-url>
+            <token-url>"http://127.0.0.1:8080/auth/oauth2/token</token-url>
+        </oauth>
+
+        <responses>
+
+            <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
+
+        </responses>
+    </global>
+
+    <api name="api" base-path="/api"/>
+
+    <api name="testApi">
+
+        <permissions>
+
+            test : Test Permission
+
+        </permissions>
+
+        <resource-permissions>
+            <resource class="app.models.testing.User"/>
+
+            <permission value="ManageUser" desc="Manage User"/>
+        </resource-permissions>
+
+    </api>
+
+    <api name="petstore" base-path="/petstore">
+
+        <title>Swagger Petstore</title>
+
+        <desc>
+            This is a sample server Petstore server. You can find out more about Swagger at
+            [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/). For this
+            sample, you can use the api key `special-key` to test the authorization filters.
+        </desc>
+
+        <protocols>
+            http
+        </protocols>
+
+    </api>
+
+</apis>

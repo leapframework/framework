@@ -31,7 +31,7 @@ public class ProxyConnection extends ConnectionWrapper {
 	}
 	
 	public Connection getReal() {
-		return getPooledConnection().getReal();
+		return getPooledConnection().wrapped();
 	}
 
 	@Override

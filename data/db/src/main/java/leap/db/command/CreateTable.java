@@ -20,7 +20,7 @@ import leap.db.DbCommand;
 
 public interface CreateTable extends DbCommand {
 	
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return 0;
 	}
 	

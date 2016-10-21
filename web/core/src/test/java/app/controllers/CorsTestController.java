@@ -16,6 +16,7 @@
 package app.controllers;
 
 import leap.web.annotation.Cors;
+import leap.web.annotation.http.GET;
 
 public class CorsTestController {
 
@@ -23,7 +24,8 @@ public class CorsTestController {
 		return "normal";
 	}
 	
-	@Cors
+    @GET
+    @Cors
 	public String enabled() {
 		return "enabled";
 	}

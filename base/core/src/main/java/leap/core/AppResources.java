@@ -27,7 +27,10 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
+import leap.lang.servlet.ServletResource;
+import leap.lang.servlet.Servlets;
 
+import javax.servlet.ServletContext;
 import java.util.*;
 
 @Internal
@@ -98,8 +101,8 @@ public class AppResources {
         }
     }
 
-    static AppResources create(DefaultAppConfig config) {
-        AppResources inst = new AppResources(config);
+    static AppResources create(DefaultAppConfig config, Object externalContext) {
+        AppResources inst = new AppResources(config, externalContext);
 
         instances.put(config, inst);
 
@@ -150,18 +153,20 @@ public class AppResources {
 
     private String[] defaultSearchPatterns;
 
-    private AppResources(DefaultAppConfig config) {
+    private AppResources(DefaultAppConfig config, Object externalContext) {
         this.config = config;
         this.dev    = AppConfig.PROFILE_DEVELOPMENT.equals(config.getProfile());
-        init();
+        init(externalContext);
     }
 
-    protected void init() {
+    protected void init(Object externalContext) {
         //load fixed resources.
         Resources.scan(CP_CORE_LOCATION).forEach(this::add);
         Resources.scan(CP_FRAMEWORK_LOCATION).forEach(this::add);
         Resources.scan(CP_MODULES_LOCATION).forEach(this::add);
         Resources.scan(CP_META_LOCATION).forEach(this::add);
+
+        loadServletContextResources(externalContext);
 
         Resources.scan(CP_APP_LOCATION).forEach(this::add);
 
@@ -227,11 +232,14 @@ public class AppResources {
                 jar:conf     : 4
                 jar:conf_*   : 5
 
-                main:conf    : 6
-                main:conf_*  : 7
+                war:conf     : 6
+                war:conf_*   : 7
 
-                test:conf    : 8
-                test:conf_*  : 9
+                main:conf    : 8
+                main:conf_*  : 9
+
+                test:conf    : 10
+                test:conf_*  : 11
          */
 
         int order = Integer.MAX_VALUE;
@@ -251,14 +259,18 @@ public class AppResources {
                 if(isJarResource(resource)) {
                     order = 4;
                 }else if(isTestResource(resource)) {
-                    order = 8;
+                    order = 10;
                 }else {
-                    order = 6;
+                    order = 8;
                 }
 
                 if(isAppProfiledResource(cp)) {
                     order += 1;
                 }
+            }
+        }else {
+            if(resource instanceof ServletResource) {
+                order = 6;
             }
         }
 
@@ -279,6 +291,10 @@ public class AppResources {
     }
 
     protected void add(Resource resource) {
+        add(resource, resource.getClasspath());
+    }
+
+    protected void add(Resource resource, String path) {
         if(!resource.isReadable()) {
             return;
         }
@@ -302,12 +318,12 @@ public class AppResources {
         int order = resolveSortOrder(resource);
         boolean defaultOverride = resolveDefaultOverride(resource);
 
-        doAdd(resource, defaultOverride, order);
+        doAdd(resource, defaultOverride, order, path);
     }
 
-    private void doAdd(Resource resource, boolean defaultOverride, int order) {
+    private void doAdd(Resource resource, boolean defaultOverride, int order, String path) {
         resourceUrls.add(resource.getURLString());
-        sortedResources.add(new SimpleAppResource(resource, defaultOverride, order));
+        sortedResources.add(new SimpleAppResource(resource, defaultOverride, order, path));
     }
 
     protected void clear() {
@@ -316,11 +332,11 @@ public class AppResources {
     }
 
     public AppResource[] search(String name) {
-        return searchClasspathResources(defaultSearchPatterns, name, ".*");
+        return searchResources(defaultSearchPatterns, name, ".*");
     }
 
     public AppResource[] search(String name, String suffix) {
-        return searchClasspathResources(defaultSearchPatterns, name, suffix);
+        return searchResources(defaultSearchPatterns, name, suffix);
     }
 
     public AppResource[] searchAppFiles(String[] filenamePatterns) {
@@ -328,7 +344,7 @@ public class AppResources {
 
         addAppFiles(patterns, filenamePatterns);
 
-        return searchClasspathResources(patterns.toArray(new String[0]));
+        return searchResources(patterns.toArray(new String[0]));
     }
 
     public AppResource[] searchAllFiles(String[] filenamePatterns) {
@@ -337,7 +353,7 @@ public class AppResources {
         addCFMMFiles(patterns, filenamePatterns);
         addAppFiles(patterns,  filenamePatterns);
 
-        return searchClasspathResources(patterns.toArray(new String[0]));
+        return searchResources(patterns.toArray(new String[0]));
     }
 
     //CFMM -> core, framework, module, meta
@@ -382,7 +398,7 @@ public class AppResources {
         }
     }
 
-    private AppResource[] searchClasspathResources(String[] patterns, String name, String suffix){
+    private AppResource[] searchResources(String[] patterns, String name, String suffix){
 
         String[] namedPatterns = new String[patterns.length];
 
@@ -390,10 +406,33 @@ public class AppResources {
             namedPatterns[i] = Strings.format(patterns[i],name, suffix);
         }
 
-        return searchClasspathResources(namedPatterns);
+        return searchResources(namedPatterns);
     }
 
-    public AppResource[] searchClasspathResources(String[] patterns){
+    private void loadServletContextResources(Object context) {
+        if(!Classes.isPresent("javax.servlet.ServletContext")) {
+            return;
+        }
+
+        final String searchPath = "/WEB-INF/conf/";
+        final String pathPrefix = "/WEB-INF/";
+
+        if(context instanceof ServletContext) {
+            ServletContext sc = (ServletContext)context;
+            Set<String> paths = sc.getResourcePaths(searchPath);
+            if(paths != null){
+                for(String path : paths) {
+                    ServletResource resource = Servlets.getResource(sc, path);
+                    if(!resource.isDirectory()) {
+                        add(resource, Strings.removeStart(path, pathPrefix));
+                    }
+                }
+            }
+
+        }
+    }
+
+    public AppResource[] searchResources(String[] patterns){
         Set<AppResource> set = new TreeSet<>(new ResourceComparator());
 
         final PathMatcher matcher = Resources.getPathMatcher();
@@ -404,10 +443,10 @@ public class AppResources {
             }
 
             for(AppResource r  : sortedResources) {
-                if(null != r.getResource().getClasspath()) {
-                    String cp = r.getResource().getClasspath();
+                if(null != r.getPath()) {
+                    String path = r.getPath();
 
-                    if(matcher.match(namedPattern, cp)) {
+                    if(matcher.match(namedPattern, path)) {
                         set.add(r);
                     }
                 }

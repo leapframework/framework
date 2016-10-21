@@ -30,6 +30,11 @@ public interface AppResource extends Ordered {
     Resource getResource();
 
     /**
+     * Returns the relative path in app.
+     */
+    String getPath();
+
+    /**
      * Returns true if default override.
      */
     boolean isDefaultOverride();

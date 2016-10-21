@@ -17,8 +17,8 @@ package app.controllers;
 
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.web.security.annotation.AllowAnonymous;
-import leap.web.security.annotation.Permissions;
+import leap.core.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.Permissions;
 
 public class HomeController {
 	

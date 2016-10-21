@@ -16,14 +16,19 @@
 package tests.rs;
 
 import app.Global;
+import leap.lang.Assert;
 import org.junit.Test;
+import tested.models.User;
+import tests.JwtTokenResponse;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
+
+import java.util.Map;
 
 public class AdminControllerTest extends OAuth2TestBase {
 
     @Override
-    protected void setUp() throws Exception {
+    protected void doSetUp() throws Exception {
         serverContextPath = "/server";
     }
 
@@ -52,5 +57,26 @@ public class AdminControllerTest extends OAuth2TestBase {
         withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
         withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
     }
-    
+    @Test
+    public void testJwtTokenExpirseIn(){
+
+        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
+        TokenResponse token2 = obtainAccessTokenByTokenClient(token1.accessToken,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+        JwtTokenResponse jwtTokenResponse = testJwtResponseAccessTokenInfo(token2);
+        withAccessToken(forGet("/resapp/admin/test"), jwtTokenResponse.jwtToken).send().assertOk();
+    }
+
+    @Test
+    public void testAccessTokenWithNotUser(){
+        User user = new User();
+        user.setLoginName("notuser");
+        user.setPassword("notuser");
+        user.create();
+        TokenResponse token = obtainAccessTokenByPassword(user.getLoginName(), user.getPassword());
+        Assert.notNull(token);
+        user.delete();
+
+        assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
+    }
+
 }

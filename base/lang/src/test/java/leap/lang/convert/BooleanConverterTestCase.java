@@ -71,6 +71,12 @@ public class BooleanConverterTestCase extends ConverterTestBase {
 		}
 	}
 
+    @Test
+    public void testConvertFromBytes() {
+        assertEquals(Boolean.TRUE, Converts.convert(new byte[]{1}, Boolean.class));
+        assertEquals(Boolean.FALSE, Converts.convert(new byte[]{0}, Boolean.class));
+    }
+
 	protected void testConversionValues(String[] trueValues, String[] falseValues) {
 
 		for (int i = 0; i < trueValues.length; i++) {

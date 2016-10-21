@@ -54,6 +54,20 @@ public class BooleanConverter extends AbstractConverter<Boolean> implements Conv
 
 	@Override
     public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+        Class<?> type = value.getClass();
+        if(type.equals(byte[].class)) {
+            byte[] bytes = (byte[])value;
+            if(bytes.length == 1) {
+                byte b = bytes[0];
+                if(b == 0) {
+                    out.set(Boolean.FALSE);
+                }else{
+                    out.set(Boolean.TRUE);
+                }
+                return true;
+            }
+        }
+
 		String stringValue = value.toString().toLowerCase();
 		
         for(int i=0; i<trueStrings.length; ++i) {

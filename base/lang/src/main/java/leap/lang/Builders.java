@@ -15,6 +15,7 @@
  */
 package leap.lang;
 
+import java.lang.reflect.Array;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,8 +27,11 @@ public class Builders {
 
 	public static <T> T[] buildArray(List<? extends Buildable<T>> builders,T[] array){
 		Args.notNull(array);
-		Assert.isTrue(builders.size() == array.length,"the array's size must equals to the size of given builders");
-		
+
+        if(builders.size() != array.length) {
+            array = (T[])Array.newInstance(array.getClass().getComponentType(), builders.size());
+        }
+
 		for(int i=0;i<array.length;i++){
 			array[i] = builders.get(i).build();
 		}
@@ -37,8 +41,11 @@ public class Builders {
 	
 	public static <T> T[] buildArray(Buildable<T>[] builders, T[] array) {
 		Args.notNull(array);
-		Assert.isTrue(builders.length == array.length,"the array's size must equals to the size of given builders");
-		
+
+        if(builders.length != array.length) {
+            array = (T[])Array.newInstance(array.getClass().getComponentType(), builders.length);
+        }
+
 		for(int i=0;i<array.length;i++){
 			array[i] = builders[i].build();
 		}
@@ -60,11 +67,11 @@ public class Builders {
 	
 	public static <K,V> Map<K,V> buildMap(Map<K,? extends Buildable<V>> builders) {
 		Map<K,V> m = New.linkedHashMap();
-		
+
 		for(Entry<K, ? extends Buildable<V>> e : builders.entrySet()) {
 			m.put(e.getKey(), e.getValue().build());
 		}
-		
+
 		return m;
 	}
 	

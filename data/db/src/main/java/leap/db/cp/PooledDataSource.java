@@ -44,7 +44,7 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 		this.dataSource = real;
 	}
 
-	private Pool pool() {
+	private Pool pool() throws SQLException {
 		if(null == pool) {
 			synchronized (this) {
 				if(null == pool) {
@@ -54,20 +54,33 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 		}
 		return pool;
 	}
-	
-	public void init() {
+
+    /**
+     * Opens the pool and initial connections.
+     */
+	public void open() throws SQLException {
 		if(null != pool) {
-			throw new IllegalStateException("Pool already initialized!");
+			throw new IllegalStateException("Pool already opened!");
 		}
 		pool();
 	}
+
+    /**
+     * Close the pool and close all the underlying opened connections.
+     */
+    @Override
+    public void close() {
+        if(null != pool) {
+            pool.close();
+        }
+    }
+
+    public boolean isOpen() {
+        return null != pool && !pool.isClose();
+    }
 	
 	public boolean isClose() {
 		return null != pool && pool.isClose();
-	}
-	
-	public DataSource getReal() {
-		return pool().getDataSource();
 	}
 	
 	@Override
@@ -78,13 +91,6 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		throw new SQLFeatureNotSupportedException("'getConnection(username,password)' not supported");
-	}
-
-	@Override
-	public void close() {
-		if(null != pool) {
-			pool.close();	
-		}
 	}
 
 	@Override
@@ -115,6 +121,13 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 	public Logger getParentLogger() throws SQLFeatureNotSupportedException {
 		throw new SQLFeatureNotSupportedException("'getParentLogger()' not supported");
 	}
+
+    /**
+     * Returns the wrapped {@link DataSource}.
+     */
+    public <T extends DataSource> T wrapped() {
+        return (T)pool.getDataSource();
+    }
 
     @Override
     @SuppressWarnings("unchecked")

@@ -13,7 +13,7 @@ public class JsonSerializer implements Serializer {
     }
 
 	public Object deserialize(String string) {
-	    return JSON.decodeToJsonValue(string).raw();
+	    return JSON.decode(string);
     }
 
 	public Object tryDeserialize(String string) {
@@ -28,7 +28,7 @@ public class JsonSerializer implements Serializer {
 		}
 		
 		if((string.startsWith("[") && string.endsWith("]")) || (string.startsWith("{") && string.endsWith("}"))){
-			return JSON.decodeToJsonValue(string).raw();
+			return JSON.decode(string);
 		}
 		
 	    return string;

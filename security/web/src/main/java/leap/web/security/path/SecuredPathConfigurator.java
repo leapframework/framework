@@ -15,6 +15,8 @@
  */
 package leap.web.security.path;
 
+import leap.web.security.SecurityFailureHandler;
+
 /**
  * The configurator of {@link SecuredPath}.
  */
@@ -82,7 +84,7 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is deny.
      */
-    SecuredPathConfigurator setAllowAnonymous(boolean allow);
+    SecuredPathConfigurator setAllowAnonymous(Boolean allow);
 
     /**
      * Sets allow or deny remember-me authentication.
@@ -90,7 +92,7 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is allow.
      */
-    SecuredPathConfigurator setAllowRememberMe(boolean allow);
+    SecuredPathConfigurator setAllowRememberMe(Boolean allow);
 
     /**
      * Sets allow or deny client-only authentication.
@@ -98,7 +100,12 @@ public interface SecuredPathConfigurator {
      * <p/>
      * Default is deny.
      */
-    SecuredPathConfigurator setAllowClientOnly(boolean allow);
+    SecuredPathConfigurator setAllowClientOnly(Boolean allow);
+
+    /**
+     * Sets the {@link SecurityFailureHandler}.
+     */
+    SecuredPathConfigurator setFailureHandler(SecurityFailureHandler handler);
 
     /**
      * Sets the allowed permissions.
@@ -113,17 +120,17 @@ public interface SecuredPathConfigurator {
     /**
      * Returns true if allow anonymous access.
      */
-    boolean isAllowAnonymous();
+    Boolean getAllowAnonymous();
 
     /**
      * Returns true if allow remember-me authentication.
      */
-    boolean isAllowRememberMe();
+    Boolean getAllowRememberMe();
 
     /**
      * Returns true if allow client-only authentication.
      */
-    boolean isAllowClientOnly();
+    Boolean getAllowClientOnly();
 
     /**
      * Updates the configuration of secured path.

@@ -18,12 +18,22 @@ package leap.core.meta;
 import java.lang.reflect.Type;
 
 import leap.lang.meta.MType;
-import leap.lang.meta.MTypeFactoryCreator;
 
 public interface MTypeManager {
-	
+
+    /**
+     * Returns the {@link MType} for the java type use default {@link leap.lang.meta.MTypeFactory}.
+     */
+    MType getMType(Class<?> type);
+
+    /**
+     * Returns the {@link MType} for the java type use default {@link leap.lang.meta.MTypeFactory}.
+     */
 	MType getMType(Class<?> type, Type genericType);
-	
-	MTypeFactoryCreator factory();
+
+    /**
+     * Returns a creator for creating the {@link leap.lang.meta.MTypeFactory}.
+     */
+	MTypeContainerCreator factory();
 
 }

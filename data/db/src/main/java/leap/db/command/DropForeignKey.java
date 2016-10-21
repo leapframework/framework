@@ -20,7 +20,7 @@ import leap.db.model.DbSchemaObjectName;
 
 public interface DropForeignKey extends DbCommand {
 	
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return -1;
 	}
 

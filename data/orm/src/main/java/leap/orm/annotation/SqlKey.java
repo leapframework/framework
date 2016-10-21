@@ -16,11 +16,14 @@
 
 package leap.orm.annotation;
 
+import leap.core.annotation.AInject;
+
 import java.lang.annotation.*;
 
 @Target({ElementType.FIELD,ElementType.METHOD,ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
+@AInject
 public @interface SqlKey {
 
     /**
@@ -28,4 +31,8 @@ public @interface SqlKey {
      */
     String value();
 
+    /**
+     * The datasource of command
+     */
+    String datasource() default "";
 }

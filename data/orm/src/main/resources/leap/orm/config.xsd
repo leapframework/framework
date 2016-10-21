@@ -12,11 +12,14 @@
 		<xsd:complexType>
 			<xsd:complexContent>
 				<xsd:restriction base="xsd:anyType">
-					<xsd:sequence>
+                    <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                        <xsd:element name="serializer" type="serializer"/>
 						<xsd:any namespace="##other" processContents="lax" minOccurs="0" maxOccurs="unbounded" />
-					</xsd:sequence>
+					</xsd:choice>
+                    <xsd:attribute name="auto-create-tables" type="xsd:boolean" use="optional" />
                     <xsd:attribute name="auto-generate-columns" type="xsd:boolean" use="optional" />
-					<xsd:attribute name="default-max-results" type="xsd:int" use="optional" />					
+					<xsd:attribute name="default-max-results" type="xsd:int" use="optional" />
+                    <xsd:attribute name="default-serialize-format" type="xsd:string" use="optional"/>
 				</xsd:restriction>
 			</xsd:complexContent>
 		</xsd:complexType>
@@ -44,4 +47,42 @@
 			<xsd:attribute name="datasource" type="xsd:string" use="optional"/>
 		</xsd:complexType>
 	</xsd:element>
+
+    <xsd:complexType name="serializer">
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+        <xsd:attribute name="class" type="xsd:string" use="optional"/>
+        <xsd:attribute name="default-column-type"   type="JdbcType"    use="required"/>
+        <xsd:attribute name="default-column-length" type="xsd:integer" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="JdbcType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="varchar"/>
+            <xsd:enumeration value="bigint"/>
+            <xsd:enumeration value="binary"/>
+            <xsd:enumeration value="bit"/>
+            <xsd:enumeration value="blob"/>
+            <xsd:enumeration value="boolean"/>
+            <xsd:enumeration value="char"/>
+            <xsd:enumeration value="clob"/>
+            <xsd:enumeration value="date"/>
+            <xsd:enumeration value="decimal"/>
+            <xsd:enumeration value="double"/>
+            <xsd:enumeration value="float"/>
+            <xsd:enumeration value="integer"/>
+            <xsd:enumeration value="longvarbinary"/>
+            <xsd:enumeration value="longvarchar"/>
+            <xsd:enumeration value="numeric"/>
+            <xsd:enumeration value="real"/>
+            <xsd:enumeration value="smallint"/>
+            <xsd:enumeration value="time"/>
+            <xsd:enumeration value="timestamp"/>
+            <xsd:enumeration value="tinyint"/>
+            <xsd:enumeration value="varbinary"/>
+            <xsd:enumeration value="nchar"/>
+            <xsd:enumeration value="nvarchar"/>
+            <xsd:enumeration value="longnvarchar"/>
+            <xsd:enumeration value="nclob"/>
+        </xsd:restriction>
+    </xsd:simpleType>
 </xsd:schema>

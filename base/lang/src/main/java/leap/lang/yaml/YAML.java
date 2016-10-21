@@ -15,25 +15,44 @@
  */
 package leap.lang.yaml;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import leap.lang.exception.NestedIOException;
-
 public class YAML {
-	
+
+    /**
+     * Parse the yaml content to {@link YamlValue}.
+     */
 	public static YamlValue parse(String string) throws YamlException {
-		try {
-	        return parse(new StringReader(string));
-        } catch (IOException e) {
-        	throw new NestedIOException(e);
-        }
+        return parse(new StringReader(string));
 	}
-	
-	public static YamlValue parse(Reader reader) throws IOException,YamlException {
-		return new YamlDecoder(reader).read();
+
+    /**
+     * Parse the yaml content to {@link YamlValue}.
+     */
+	public static YamlValue parse(Reader reader) throws YamlException {
+		return YamlValue.of(new YamlDecoder(reader).decode());
 	}
+
+    /**
+     * Decodes the yaml content to raw value.
+     *
+     * <p/>
+     * The raw value may be null, map, list or simpl value.
+     */
+    public static <T> T decode(String string) throws YamlException {
+        return (T)new YamlDecoder(new StringReader(string)).decode();
+    }
+
+    /**
+     * Decodes the yaml content to raw value.
+     *
+     * <p/>
+     * The raw value may be null, map, list or simpl value.
+     */
+    public static <T> T decode(Reader reader) throws YamlException {
+        return (T)new YamlDecoder(reader).decode();
+    }
 
 	protected YAML() {
 		

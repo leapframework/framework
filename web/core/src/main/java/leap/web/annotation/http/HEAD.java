@@ -19,7 +19,7 @@ import java.lang.annotation.*;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-@AMethod
+@HttpMethod
 @Inherited
 public @interface HEAD {
 

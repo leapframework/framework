@@ -26,7 +26,7 @@ import leap.lang.path.Paths;
 import leap.lang.reflect.Reflection;
 import leap.web.App;
 import leap.web.annotation.*;
-import leap.web.annotation.http.AMethod;
+import leap.web.annotation.http.HttpMethod;
 import leap.web.config.WebConfig;
 
 import java.lang.annotation.Annotation;
@@ -77,7 +77,7 @@ public class DefaultActionStrategy implements ActionStrategy {
     }
 
     @Override
-    public boolean isActionMethod(Method m) {
+    public boolean isActionMethod(ControllerInfo ci, Method m) {
         if(m.isAnnotationPresent(NonAction.class)) {
             return false;
         }
@@ -87,6 +87,10 @@ public class DefaultActionStrategy implements ActionStrategy {
         }
 
         if(Modifier.isStatic(m.getModifiers())) {
+            return false;
+        }
+
+        if(ci.isRestful() && null == Classes.getAnnotationByMetaType(m.getAnnotations(), HttpMethod.class)) {
             return false;
         }
 
@@ -133,34 +137,17 @@ public class DefaultActionStrategy implements ActionStrategy {
     public String[] getControllerPaths(Class<?> cls) {
         Class<?> parent = getParentControllerClass(cls);
 
-		//get path from annotation
-		Path a = cls.getAnnotation(Path.class);
-		if(null != a){
-            if(null != parent) {
-                String[] parentPaths = getControllerPaths(parent);
-                if(parentPaths.length == 1) {
-                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(a.value())};
-                }else{
-                    throw new IllegalStateException("Controller only supports one path value");
-                }
+        String   pathPrefix             = "";
+        String   clsPackageName         = Classes.getPackageName(cls);
+
+        String[] baseControllerPackages = controllerPackagePrefixes();
+        for(String baseControllerPackage : baseControllerPackages) {
+            if(clsPackageName.startsWith(baseControllerPackage)){
+                //package name starts with {base-package}.controller
+                pathPrefix = clsPackageName.substring(baseControllerPackage.length()).replace('.', '/');
+                break;
             }
-            return new String[]{Paths.prefixWithSlash(a.value())};
-		}
-
-		//get path conventional
-		String controllerName = getControllerName(cls);
-		
-		String   pathPrefix             = "";
-		String   clsPackageName         = Classes.getPackageName(cls);
-
-		String[] baseControllerPackages = controllerPackagePrefixes();
-		for(String baseControllerPackage : baseControllerPackages) {
-			if(clsPackageName.startsWith(baseControllerPackage)){
-				//package name starts with {base-package}.controller
-				pathPrefix = clsPackageName.substring(baseControllerPackage.length()).replace('.', '/');
-				break;
-			}
-		}
+        }
 
         if(Strings.isEmpty(pathPrefix)) {
             String[] baseResourcePackages = resourcePackagePrefixes();
@@ -173,6 +160,24 @@ public class DefaultActionStrategy implements ActionStrategy {
             }
         }
 
+		//get path from annotation
+		Path a = cls.getAnnotation(Path.class);
+		if(null != a){
+            if(null != parent) {
+                String[] parentPaths = getControllerPaths(parent);
+                if(parentPaths.length == 1) {
+                    String path = path(pathPrefix, a.value());
+                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                }else{
+                    throw new IllegalStateException("Controller only supports one path value");
+                }
+            }
+            return new String[]{Paths.prefixWithSlash(path(pathPrefix, a.value()))};
+		}
+
+		//get path conventional
+		String controllerName = getControllerName(cls);
+		
         String pathSuffix = isHome(controllerName) ? "" : controllerName.toLowerCase();
 
         if(null != parent) {
@@ -193,6 +198,14 @@ public class DefaultActionStrategy implements ActionStrategy {
 		}else{
 			return new String[]{pathPrefix + "/" + pathSuffix};
 		}
+    }
+
+    protected String path(String pathPrefix, String path) {
+        if(path.startsWith("/")) {
+            return path;
+        }else{
+            return pathPrefix + "/" + path;
+        }
     }
 
     protected Class<?> getParentControllerClass(Class<?> c) {
@@ -217,7 +230,7 @@ public class DefaultActionStrategy implements ActionStrategy {
 		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
-			if(a.annotationType().isAnnotationPresent(AMethod.class)){
+			if(a.annotationType().isAnnotationPresent(HttpMethod.class)){
 				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
 
                 Method value = Reflection.findMethod(a.annotationType(), "value");
@@ -259,7 +272,7 @@ public class DefaultActionStrategy implements ActionStrategy {
         //Check is restful style.
         Object controller = action.getController();
         boolean restful = false;
-        if(null != controller && controller.getClass().isAnnotationPresent(RestController.class)) {
+        if(null != controller && controller.getClass().isAnnotationPresent(Restful.class)) {
             restful = true;
         }
 
@@ -312,6 +325,17 @@ public class DefaultActionStrategy implements ActionStrategy {
 
 	@Override
     public String[] getDefaultViewNames(ActionBuilder action, String controllerPath, String actionPath, PathTemplate pathTemplate) {
+        Annotation[] annotations = action.getAnnotations();
+        DefaultView dv = Classes.getAnnotation(annotations, DefaultView.class);
+        if(null != dv) {
+            return new String[]{dv.value()};
+        }
+
+        Success success = Classes.getAnnotation(annotations, Success.class);
+        if(null != success && !Strings.isEmpty(success.defaultView())) {
+            return new String[]{success.defaultView()};
+        }
+
 		String fullActionPath  = pathTemplate.getTemplate();
 		String defaultViewPath = null;
 		if(fullActionPath.equals("/")){

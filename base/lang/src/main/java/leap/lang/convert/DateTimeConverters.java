@@ -17,10 +17,7 @@ package leap.lang.convert;
 
 import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
@@ -52,6 +49,52 @@ public class DateTimeConverters {
 	        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalDate();
         }
 	}
+
+    public static class LocalTimeConverter extends AbstractDateTimeConverter<LocalTime> {
+
+        @Override
+        public String convertToString(LocalTime value) throws Throwable {
+            return value.toString();
+        }
+
+        @Override
+        protected LocalTime convertFromString(CharSequence cs) {
+            return DateTimes.tryParseLocalTime(cs);
+        }
+
+        @Override
+        protected Instant convertToInstant(LocalTime value) {
+            return null;
+        }
+
+        @Override
+        protected LocalTime convertFromInstant(Instant instant) {
+            return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
+        }
+    }
+
+    public static class LocalDateTimeConverter extends AbstractDateTimeConverter<LocalDateTime> {
+
+        @Override
+        public String convertToString(LocalDateTime value) throws Throwable {
+            return value.toString();
+        }
+
+        @Override
+        protected LocalDateTime convertFromString(CharSequence cs) {
+            return DateTimes.tryParseLocalDateTime(cs);
+        }
+
+        @Override
+        protected Instant convertToInstant(LocalDateTime value) {
+            return value.toInstant(ZoneOffset.UTC);
+        }
+
+        @Override
+        protected LocalDateTime convertFromInstant(Instant instant) {
+            return LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+        }
+    }
 
 	public static class DateTimeConverter extends AbstractDateConverter<Date> implements Converter<Date> {
 		

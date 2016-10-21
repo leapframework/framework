@@ -104,6 +104,9 @@ public class ReflectMethod extends ReflectMember{
 			}
 			
 	        if(accessorIndex == -1){
+	        	if(!reflectedMethod.isAccessible()){
+					reflectedMethod.setAccessible(true);
+				}
 	        	return reflectedMethod.invoke(instance, args);
 	        }else{
 	        	return reflectClass.getAccessor().invokeMethod(instance, accessorIndex, args);

@@ -19,7 +19,7 @@ import leap.db.DbCommand;
 
 public interface RenameColumn extends DbCommand {
 
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return -1;
 	}
 	

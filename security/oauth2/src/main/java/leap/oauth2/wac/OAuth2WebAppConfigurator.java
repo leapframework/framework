@@ -15,6 +15,8 @@
  */
 package leap.oauth2.wac;
 
+import leap.oauth2.wac.token.WacTokenStore;
+
 /**
  * The configurator of {@link OAuth2WebAppConfig}
  */
@@ -108,4 +110,9 @@ public interface OAuth2WebAppConfigurator {
      * Sets the error view name.
      */
     OAuth2WebAppConfigurator setErrorView(String viewName);
+
+    /**
+     * Sets the token store
+     */
+    OAuth2WebAppConfigurator setTokenStore(WacTokenStore tokenStore);
 }

@@ -25,8 +25,18 @@ import java.lang.annotation.*;
 public @interface Success {
 
     /**
+     * The http response status if success. Same as {@link #status()}.
+     */
+    HTTP.Status value() default HTTP.Status.OK;
+
+    /**
      * The http response status if success.
      */
-    HTTP.Status status();
+    HTTP.Status status() default HTTP.Status.OK;
+
+    /**
+     * Optional. The default view name for success response.
+     */
+    String defaultView() default "";
 
 }

@@ -72,7 +72,12 @@ public class GenericDb extends DbBase {
 	    return metadata.tryGetSequence(sequenceName) != null;
     }
 
-	@Override
+    @Override
+    public CreateSchema cmdCreateSchema(DbSchema schema) {
+        return new GenericDbCommands.GenericCreateSchema(this, schema);
+    }
+
+    @Override
     public CreateTable cmdCreateTable(DbTable table) {
 	    return new GenericDbCommands.GenericCreateTable(this, table);
     }

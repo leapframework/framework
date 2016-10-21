@@ -32,7 +32,11 @@ public class Orm {
 	public static Dao dao(String name){
 		return getDao(name,Strings.equals(DEFAULT_NAME, name));
 	}
-	
+
+    public static Dao dao(Class<?> entityClass) {
+        return dao(context(entityClass).getName());
+    }
+
 	public static Dmo dmo() throws DataAccessException {
 		return getDmo(DEFAULT_NAME,true);
 	}
@@ -40,6 +44,19 @@ public class Orm {
 	public static Dmo dmo(String name){
 		return getDmo(name,Strings.equals(DEFAULT_NAME, name));
 	}
+
+    public static OrmContext context(Class<?> entityClass) {
+        for(OrmContext context : AppContext.factory().getBeans(OrmContext.class)) {
+            if(context.getMetadata().tryGetEntityMapping(entityClass) != null) {
+                return context;
+            }
+        }
+        throw new IllegalStateException("Orm context not found for entity class '" + entityClass + "'");
+    }
+
+    public static boolean hasContexts() {
+        return !AppContext.factory().getBeans(OrmContext.class).isEmpty();
+    }
 	
 	public static OrmContext context() {
 		return context(DEFAULT_NAME);

@@ -31,24 +31,25 @@ import leap.web.security.SecurityConfigurator;
 @Configurable(prefix="oauth2.wac")
 public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebAppConfigurator, AppInitializable {
 
-    protected @Inject              SecurityConfigurator sc;
-    protected @Inject(false)       WacTokenStore        tokenStore;
-    protected @Inject(name="jdbc") WacTokenStore        jdbcTokenStore;
+    protected @Inject         SecurityConfigurator sc;
+    protected @Inject("jdbc") WacTokenStore        jdbcTokenStore;
 
-    protected boolean enabled;
-    protected boolean oauth2LoginEnabled;
-    protected boolean oauth2LogoutEnabled;
-    protected boolean accessTokenEnabled;
-    protected String  clientId;
-    protected String  clientSecret;
-    protected String  clientRedirectUri = DEFAULT_REDIRECT_PATH;
-    protected String  clientLogoutUri = DEFAULT_LOGOUT_PATH;
-    protected String  serverUrl;
-    protected String  serverTokenEndpointUrl;
-    protected String  serverAuthorizationEndpointUrl;
-    protected String  serverLogoutEndpointUrl;
-    protected String  errorView             = DEFAULT_ERROR_VIEW;
-    protected String  accessTokenCookieName = DEFAULT_ACCESS_TOKEN_COOKIE_NAME;
+    protected WacTokenStore tokenStore;
+    protected boolean       enabled;
+    protected boolean       oauth2LoginEnabled;
+    protected boolean       oauth2LogoutEnabled;
+    protected boolean       accessTokenEnabled;
+    protected String        clientId;
+    protected String        clientSecret;
+
+    protected String clientRedirectUri = DEFAULT_REDIRECT_PATH;
+    protected String clientLogoutUri   = DEFAULT_LOGOUT_PATH;
+    protected String serverUrl;
+    protected String serverTokenEndpointUrl;
+    protected String serverAuthorizationEndpointUrl;
+    protected String serverLogoutEndpointUrl;
+    protected String errorView             = DEFAULT_ERROR_VIEW;
+    protected String accessTokenCookieName = DEFAULT_ACCESS_TOKEN_COOKIE_NAME;
     
     @Override
     public OAuth2WebAppConfigurator useJdbcTokenStore() {
@@ -138,6 +139,11 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
         return this;
     }
 
+    @Override
+    public String getServerUrl() {
+        return this.serverUrl;
+    }
+
     public String getServerTokenEndpointUrl() {
         return serverTokenEndpointUrl;
     }
@@ -192,6 +198,11 @@ public class DefaultOAuth2WebAppConfig implements OAuth2WebAppConfig, OAuth2WebA
 
     public WacTokenStore getTokenStore() {
         return tokenStore;
+    }
+
+    @Override
+    public OAuth2WebAppConfigurator setTokenStore(WacTokenStore tokenStore) {
+        return setAccessTokenStore(tokenStore);
     }
 
     public OAuth2WebAppConfigurator setAccessTokenStore(WacTokenStore accessTokenStore) {

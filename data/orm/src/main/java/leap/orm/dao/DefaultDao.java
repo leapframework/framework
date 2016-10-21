@@ -84,16 +84,26 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return validate(em,entity,0);
     }
 
-	@Override
-    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
-		Validation validation = validationManager.createValidation();
-		
-		entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors);
-		
-	    return validation.errors();
+    @Override
+    public Errors validate(EntityMapping em, Object entity, Iterable<String> fields) {
+        return validate(em, entity, 0, fields);
     }
-	
-	//--------------------- insert ------------------------------------
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors) {
+        return validate(em, entity, maxErrors, null);
+    }
+
+    @Override
+    public Errors validate(EntityMapping em, Object entity, int maxErrors, Iterable<String> fields) {
+        Validation validation = validationManager.createValidation();
+
+        entityValidator.validate(EntityWrapper.wrap(em, entity), validation, maxErrors, fields);
+
+        return validation.errors();
+    }
+
+    //--------------------- insert ------------------------------------
 	
 	@Override
     public int insert(Object entity) {
@@ -104,7 +114,19 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return commandFactory().newInsertCommand(this, em).setAll(entity).execute();
     }
 
-	@Override
+    @Override
+    public int insert(EntityMapping em, Object entity, Object id) {
+        InsertCommand insert =
+                commandFactory().newInsertCommand(this, em).setAll(entity);
+
+        if(null != id) {
+            insert.id(id);
+        }
+
+        return insert.execute();
+    }
+
+    @Override
     public InsertCommand cmdInsert(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		return commandFactory().newInsertCommand(this, em(entityClass));
@@ -176,7 +198,22 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		
 		return commandFactory().newDeleteCommand(this, em, id).execute();
     }
-	
+
+    @Override
+    public boolean cascadeDelete(Class<?> entityClass, Object id) throws MappingNotFoundException {
+        return cascadeDelete(em(entityClass), id);
+    }
+
+    @Override
+    public boolean cascadeDelete(String entityName, Object id) throws MappingNotFoundException {
+        return cascadeDelete(em(entityName), id);
+    }
+
+    @Override
+    public boolean cascadeDelete(EntityMapping em, Object id) {
+        return commandFactory().newCascadeDeleteCommand(this, em, id).execute();
+    }
+
     public int deleteAll(Class<?> entityClass) {
 		Args.notNull(entityClass,"entity class");
 		
@@ -211,14 +248,22 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 	
 	@Override
-    public Entity find(String entityName, Object id) {
+    public Record find(String entityName, Object id) {
 		Args.notNull(entityName,"entity name");
 		Args.notNull(id,"id");
 		
-		return commandFactory().newFindCommand(this, em(entityName), id, Entity.class, true).execute();
+		return commandFactory().newFindCommand(this, em(entityName), id, Record.class, true).execute();
     }
 
-	@Override
+    @Override
+    public Record find(EntityMapping em, Object id) {
+        Args.notNull(em, "entity mapping");
+        Args.notNull(id, "id");
+
+        return commandFactory().newFindCommand(this, em, id, Record.class, true).execute();
+    }
+
+    @Override
     public <T> T find(String entityName, Class<T> resultClass, Object id) throws EmptyRecordsException, TooManyRecordsException {
 		Args.notNull(entityName,"entity name");
 		Args.notNull(resultClass,"result class");
@@ -245,11 +290,16 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
     
     @Override
-    public Entity findOrNull(String entityName, Object id) {
+    public Record findOrNull(String entityName, Object id) {
         Args.notNull(entityName,"entity name");
         Args.notNull(id,"id");
         
-        return commandFactory().newFindCommand(this, em(entityName), id, Entity.class, false).execute();
+        return commandFactory().newFindCommand(this, em(entityName), id, Record.class, false).execute();
+    }
+
+    @Override
+    public Record findOrNull(EntityMapping em, Object id) {
+        return commandFactory().newFindCommand(this, em, id, Record.class, false).execute();
     }
 
     @Override
@@ -309,9 +359,9 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 
     @Override
-    public List<Entity> findListIfExists(String entityName, Object[] ids) {
+    public List<Record> findListIfExists(String entityName, Object[] ids) {
         Args.notEmpty(entityName, "entity name");
-        return findListIfExists(em(entityName), Entity.class, ids);
+        return findListIfExists(em(entityName), Record.class, ids);
     }
 
     @Override
@@ -426,7 +476,12 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return (Query)createSqlQuery(Record.class, sql);
     }
 
-	@Override
+    @Override
+    public Query<Record> createSqlQuery(String sql, Object... args) {
+        return createSqlQuery(sql).params(args);
+    }
+
+    @Override
     public <T> Query<T> createSqlQuery(Class<T> resultClass, String sql) {
 		Args.notNull(resultClass,"resultClass");
 		Args.notEmpty(sql,"sql");
@@ -439,8 +494,8 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }	
 	
     @Override
-    public EntityQuery<EntityBase> createSqlQuery(EntityMapping em, String sql) {
-	    return (EntityQuery)createSqlQuery(em, EntityBase.class, sql);
+    public EntityQuery<Record> createSqlQuery(EntityMapping em, String sql) {
+	    return (EntityQuery)createSqlQuery(em, Record.class, sql);
     }
 
 	@Override
@@ -456,8 +511,20 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(entityClass,"entity class");
 	    return queryFactory().createCriteriaQuery(this, em(entityClass), entityClass);
     }
-	
-	@Override
+
+    @Override
+    public CriteriaQuery<Record> createCriteriaQuery(String entityName) {
+        Args.notNull(entityName, "entityName");
+        return queryFactory().createCriteriaQuery(this, em(entityName), Record.class);
+    }
+
+    @Override
+    public CriteriaQuery<Record> createCriteriaQuery(EntityMapping em) {
+        Args.notNull(em, "entity mapping");
+        return queryFactory().createCriteriaQuery(this, em, Record.class);
+    }
+
+    @Override
     public <T> CriteriaQuery<T> createCriteriaQuery(EntityMapping em, Class<T> resultClass) {
 		Args.notNull(em,"entity mapping");
 	    return queryFactory().createCriteriaQuery(this, em, resultClass);
@@ -513,8 +580,8 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 	
 	@Override
-    public EntityQuery<EntityBase> createNamedQuery(String entityName, String queryName) {
-	    return createNamedQuery(entityName, EntityBase.class, queryName);
+    public EntityQuery<Record> createNamedQuery(String entityName, String queryName) {
+	    return createNamedQuery(entityName, Record.class, queryName);
     }
 
 	@Override

@@ -21,9 +21,12 @@ import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.text.PlaceholderResolver;
 
+import java.util.Iterator;
+import java.util.function.BiConsumer;
+
 public abstract class XmlReaderBase implements XmlReader {
 	
-	protected Object              source              = "unknow";
+	protected Object              source              = "unknown";
 	protected PlaceholderResolver placeholderResolver = null;
 	protected boolean			  trimAll			  = true;
 	
@@ -165,7 +168,6 @@ public abstract class XmlReaderBase implements XmlReader {
 		}
 		return value;
     }
-	
 
 	@Override
     public final String getAttribute(QName name) {
@@ -201,7 +203,7 @@ public abstract class XmlReaderBase implements XmlReader {
 		String value = getAttribute(localName);
 	    return Strings.isEmpty(value) ? defaultValue : value;
     }
-	
+
 	@Override
     public String getRequiredAttribute(QName name) {
 		String value = getAttribute(name);
@@ -302,8 +304,32 @@ public abstract class XmlReaderBase implements XmlReader {
 		String value = getAttribute(name);
 		return Strings.isEmpty(value) ? defaultValue : Converts.toInt(value);
     }
-	
-	@Override
+
+    @Override
+    public Float getFloatAttribute(QName name) {
+        String value = getAttribute(name);
+        return Strings.isEmpty(value) ? null : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public Float getFloatAttribute(String localName) {
+        String value = getAttribute(localName);
+        return Strings.isEmpty(value) ? null : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float getFloatAttribute(QName name, float defaultValue) {
+        String value = getAttribute(name);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float getFloatAttribute(String localName, float defaultValue) {
+        String value = getAttribute(localName);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
     public int getRequiredIntAttribute(QName name) {
 	    return Converts.toInt(getRequiredAttribute(name));
     }
@@ -449,7 +475,19 @@ public abstract class XmlReaderBase implements XmlReader {
 		return Strings.isEmpty(value) ? defaultValue : Converts.toInt(value);
     }
 
-	@Override
+    @Override
+    public float resolveFloatAttribute(QName name, int defaultValue) {
+        String value = resolveAttribute(name);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
+    public float resolveFloatAttribute(String localName, int defaultValue) {
+        String value = resolveAttribute(localName);
+        return Strings.isEmpty(value) ? defaultValue : Converts.convert(value, Float.class);
+    }
+
+    @Override
     public int resolveRequiredIntAttribute(QName name) {
 		return Converts.toInt(resolveRequiredAttribute(name));
     }
@@ -458,8 +496,28 @@ public abstract class XmlReaderBase implements XmlReader {
     public int resolveRequiredIntAttribute(String localName) {
 		return Converts.toInt(resolveRequiredAttribute(localName));
     }
-	
-	protected abstract String doGetElementTextAndEnd();
+
+    @Override
+    public void forEachResolvedAttributes(BiConsumer<QName, String> func) {
+        Iterator<QName> names = getAttributeNames();
+        while(names.hasNext()) {
+            QName  name  = names.next();
+            String value = resolveAttribute(name);
+            func.accept(name, value);
+        }
+    }
+
+    @Override
+    public void forEachAttributes(BiConsumer<QName, String> func) {
+        Iterator<QName> names = getAttributeNames();
+        while(names.hasNext()) {
+            QName  name  = names.next();
+            String value = getAttribute(name);
+            func.accept(name, value);
+        }
+    }
+
+    protected abstract String doGetElementTextAndEnd();
 	
 	protected abstract String doGetAttribute(QName name);
 	

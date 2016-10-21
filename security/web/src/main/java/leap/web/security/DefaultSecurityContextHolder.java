@@ -24,6 +24,7 @@ import leap.core.validation.Validation;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.web.Request;
+import leap.web.route.Route;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
@@ -34,31 +35,34 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 
 	private static final Log log = LogFactory.get(DefaultSecurityContextHolder.class);
 
+    static DefaultSecurityContextHolder tryGet(Request request) {
+        return (DefaultSecurityContextHolder)request.getAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME);
+    }
+
+    static void remove(Request request) {
+        request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
+    }
+
 	protected final SecurityConfig    config;
 	protected final PermissionManager permissionManager;
 	protected final Request           request;
 
-	protected SecuredPath   path;
+	protected SecuredPath   securedPath;
     protected LoginContext  loginContext;
     protected LogoutContext logoutContext;
 	protected String        authenticationToken;
-	protected boolean		error;
-	protected Object		errorObj;
-	protected String 		identity;
+	protected boolean       error;
+	protected Object        errorObj;
+	protected String        identity;
+
+    private boolean handled;
 
 	public DefaultSecurityContextHolder(SecurityConfig config, PermissionManager permissionManager, Request request){
 		this.config            = config;
         this.permissionManager = permissionManager;
 		this.request           = request;
-	}
-
-	void initContext() {
         request.setAttribute(CONTEXT_ATTRIBUTE_NAME, this);
         request.setAttribute(CONTEXT_HOLDER_ATTRIBUTE_NAME, this);
-    }
-
-    static void removeContext(Request request) {
-        request.removeAttribute(CONTEXT_ATTRIBUTE_NAME);
     }
 
 	@Override
@@ -82,15 +86,15 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
     }
 
 	@Override
-	public SecuredPath getSecurityPath() {
-		return path;
+	public SecuredPath getSecuredPath() {
+		return securedPath;
 	}
 
-	public void setSecurityPath(SecuredPath path) {
-		this.path = path;
+	public void setSecuredPath(SecuredPath path) {
+		this.securedPath = path;
 	}
 
-	@Override
+    @Override
 	public String getAuthenticationToken() {
 		return authenticationToken;
 	}
@@ -314,4 +318,12 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 	public void setIdentity(String identity) {
 		this.identity = identity;
 	}
+
+    boolean isHandled() {
+        return handled;
+    }
+
+    void markHandled() {
+        handled = true;
+    }
 }

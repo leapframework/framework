@@ -19,7 +19,7 @@ import leap.db.DbCommand;
 
 public interface CreatePrimaryKey extends DbCommand {
 
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return 2;
 	}
 	

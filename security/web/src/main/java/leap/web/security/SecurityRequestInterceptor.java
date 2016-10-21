@@ -19,86 +19,77 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.security.Authentication;
 import leap.core.security.Authorization;
+import leap.core.security.annotation.*;
 import leap.core.web.RequestIgnore;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
+import leap.lang.Strings;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.path.Paths;
 import leap.web.*;
 import leap.web.action.Action;
+import leap.web.action.ActionContext;
 import leap.web.route.Route;
-import leap.web.security.annotation.*;
+import leap.web.security.csrf.CSRF;
 import leap.web.security.csrf.CsrfHandler;
-import leap.web.security.path.SecuredPath;
-import leap.web.security.path.SecuredPathConfigurator;
-import leap.web.security.path.SecuredPathSource;
-import leap.web.security.path.SecuredPaths;
+import leap.web.security.path.*;
 import leap.web.security.permission.PermissionManager;
 
 public class SecurityRequestInterceptor implements RequestInterceptor,AppListener {
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
-	
-    protected @Inject @M SecurityConfig       config;
-    protected @Inject @M SecurityConfigurator configurator;
-    protected @Inject @M PermissionManager    permissionManager;
-    protected @Inject @M SecuredPathSource    pathSource;
-    protected @Inject @M SecurityHandler      handler;
-    protected @Inject @M CsrfHandler          csrf;
+
+    protected @Inject @M SecurityConfig    config;
+    protected @Inject @M PermissionManager perm;
+    protected @Inject @M SecuredPathSource pathSource;
+    protected @Inject @M SecurityHandler   handler;
+    protected @Inject @M CsrfHandler       csrf;
+
+    protected SecuredPathBuilder spb(Route route) {
+        SecuredPathBuilder spb = route.getExtension(SecuredPathBuilder.class);
+        if(null == spb) {
+            spb = new DefaultSecuredPathBuilder(route);
+            route.setExtension(SecuredPathBuilder.class, spb);
+        }
+        return spb;
+    }
 
 	@Override
     public void postAppStart(App app) throws Throwable {
-        SecuredPaths paths = configurator.paths();
 
 	    for(Route route : app.routes()) {
-	        Action action = route.getAction();
-
-	        AllowAnonymous aa = action.searchAnnotation(AllowAnonymous.class);
-	        if(null != aa) {
-	            paths.of(route).setAllowAnonymous(aa.value()).apply();
-	        }
-	        
-	        AllowClientOnly ac = action.searchAnnotation(AllowClientOnly.class);
-	        if(null != ac) {
-                paths.of(route).setAllowClientOnly(ac.value()).apply();
-	        }
-
-			AllowRememberMe ar = action.searchAnnotation(AllowRememberMe.class);
-			if(null != ar) {
-				paths.of(route).setAllowRememberMe(ar.value()).apply();
-			}
-
-            Permissions permissions = action.searchAnnotation(Permissions.class);
-            if(null != permissions) {
-                paths.of(route).setPermissionsAllowed(permissions.value()).apply();
+            if(null != route.getAllowAnonymous()) {
+                spb(route).setAllowAnonymous(route.getAllowAnonymous());
             }
-	        
-	        Secured secured = action.searchAnnotation(Secured.class);
-	        if(null != secured){
-	            boolean isAction = action.getAnnotation(Secured.class) != null;
 
-                SecuredPathConfigurator p = null;
-	            
-	            if(isAction){
-	                 p = paths.of(route);
-	            }else{
-	                 p = paths.of(Paths.suffixWithSlash(route.getControllerPath()) + "**");
-	            }
-	            
-	            p.setAllowRememberMe(secured.allowRememberMe());
+            if(null != route.getAllowClientOnly()) {
+                spb(route).setAllowClientOnly(route.getAllowClientOnly());
+            }
 
-	            if(!Arrays2.isEmpty(secured.roles())){
-                    p.setRolesAllowed(secured.roles());
-	            }
+            if(null != route.getAllowRememberMe()) {
+                spb(route).setAllowRememberMe(route.getAllowRememberMe());
+            }
 
-	            if(!Arrays2.isEmpty(secured.permissions())) {
-                    p.setPermissionsAllowed(secured.permissions());
-	            }
+            if(null != route.getPermissions()) {
+                spb(route).setPermissionsAllowed(route.getPermissions());
+            }
 
-                p.apply();
-	        }
+            if(null != route.getRoles()) {
+                spb(route).setRolesAllowed(route.getRoles());
+            }
+
+            config.getPathPrefixFailureHandlers().forEach((prefix, handler) -> {
+                if(Strings.startsWith(route.getPathTemplate().getTemplate(), prefix)) {
+                    log.debug("Set failure handler for path prefix '{}'", route.getPathTemplate());
+                    spb(route).setFailureHandler(handler);
+                }
+            });
+
+            SecuredPathBuilder spb = route.removeExtension(SecuredPathBuilder.class);
+            if(null != spb) {
+                route.setExtension(SecuredPath.class, spb.build());
+            }
 	    }
     }
 	
@@ -122,39 +113,59 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 			}
 		}
 		
-		DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
-		context.initContext();
+		DefaultSecurityContextHolder context =
+                new DefaultSecurityContextHolder(config, perm, request);
 
-		return handleRequest(request, response, context);
+		return preHandleRequest(request, response, context);
     }
-	
-	@Override
-    public void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
-		DefaultSecurityContextHolder.removeContext(request);
-	}
 
-	protected State handleRequest(Request request, Response response,DefaultSecurityContextHolder context) throws Throwable {
-		//Resolve authentication.
-		State state = resolveAuthentication(request,response,context);
-		if(state.isIntercepted()){
-			return state;
-		}
-		
-		//Handles request if login
-		if(handleLoginRequest(request, response, context)){
-			return State.INTERCEPTED;
-		}
-		
-		//Handles request if logout.
-		if(handleLogoutRequest(request, response, context)) {
-			return State.INTERCEPTED;
-		}
+    protected State preHandleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+        //Resolve authentication.
+        State state = resolveAuthentication(request,response,context);
+        if(state.isIntercepted()){
+            return state;
+        }
 
-        //Resolve security path.
-        context.setSecurityPath(resolveSecurityPath(request, response, context));
+        //Disable csrf if anonymous access.
+        if(!context.getAuthentication().isAuthenticated()) {
+            CSRF.ignore(request);
+        }
+
+        //Handles request if login
+        if(handleLoginRequest(request, response, context)){
+            return State.INTERCEPTED;
+        }
+
+        //Handles request if logout.
+        if(handleLogoutRequest(request, response, context)) {
+            return State.INTERCEPTED;
+        }
+
+        return State.CONTINUE;
+    }
+
+    @Override
+    public State handleRoute(Request request, Response response, Route route, ActionContext ac) throws Throwable {
+        return handleSecurity(request, response, route);
+    }
+
+    @Override
+    public State handleNoRoute(Request request, Response response) throws Throwable {
+        return handleSecurity(request, response, null);
+    }
+
+    protected State handleSecurity(Request request, Response response, Route route) throws Throwable {
+        DefaultSecurityContextHolder context = DefaultSecurityContextHolder.tryGet(request);
+        if(null == context || context.isHandled()) {
+            return State.CONTINUE;
+        }
+        context.markHandled();
+
+        //Resolve secured path.
+        context.setSecuredPath(resolveSecuredPath(request, response, context, route));
 
         //Check authentication
-		state = checkAuthentication(request, response, context);
+        State state = checkAuthentication(request, response, context);
         if(state.isIntercepted()) {
             return state;
         }
@@ -166,11 +177,16 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 
         //Check authorization.
-		return checkAuthorization(request, response, context);
+        return checkAuthorization(request, response, context);
+    }
+
+    @Override
+    public void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
+		DefaultSecurityContextHolder.remove(request);
 	}
-	
+
 	/**
-	 * Returns <code>true</code> if the request aleady handled.
+	 * Returns <code>true</code> if the request already handled.
 	 */
 	protected State resolveAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
 	    SecurityInterceptor[] interceptors = config.getInterceptors();
@@ -219,8 +235,19 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         return handler.handleLogoutRequest(request, response, context);
     }
 
-    protected SecuredPath resolveSecurityPath(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
-        return pathSource.getSecuredPath(context, request);
+    protected SecuredPath resolveSecuredPath(Request request, Response response, DefaultSecurityContextHolder context, Route route) throws Throwable {
+        SecuredPath p1 = null == route ? null : route.getExtension(SecuredPath.class);
+        SecuredPath p2 = pathSource.getSecuredPath(context, request);
+
+        if(null == p1) {
+            return p2;
+        }
+
+        if(null == p2) {
+            return p1;
+        }
+
+        return new MergedSecuredPath(route, p1, p2);
     }
 
     protected State checkAuthentication(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
@@ -249,7 +276,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
             log.debug("Authorization already resolved by interceptor -> {}", authz);
         }
 
-
         for(SecurityInterceptor si : interceptors) {
             if(State.isIntercepted(si.postResolveAuthorization(request, response, context))) {
                 return State.INTERCEPTED;
@@ -269,4 +295,5 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         }
 		return State.CONTINUE;
 	}
+
 }

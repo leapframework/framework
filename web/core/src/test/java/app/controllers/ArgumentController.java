@@ -19,11 +19,14 @@ import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.lang.http.Cookie;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
 import leap.web.Request;
 import leap.web.action.ControllerBase;
-import leap.web.annotation.RequestBean;
+import leap.web.annotation.CookieParam;
+import leap.web.annotation.HeaderParam;
+import leap.web.annotation.ParamsWrapper;
 import leap.web.annotation.Path;
 
 import java.util.HashMap;
@@ -97,8 +100,24 @@ public class ArgumentController extends ControllerBase {
 		text(testId);
 	}
 
+    public String headerParam(@HeaderParam String testHeader) {
+        return testHeader;
+    }
+
+    public String cookieParam1(@CookieParam String testCookie) {
+        return testCookie;
+    }
+
+    public String cookieParam2(javax.servlet.http.Cookie testCookie) {
+        return testCookie.getValue();
+    }
+
+    public String cookieParam3(Cookie testCookie) {
+        return testCookie.getValue();
+    }
+
     @Path("args_bean/{id}")
-    public void argsBean(@RequestBean ArgsBean bean) {
+    public void argsBean(@ParamsWrapper ArgsBean bean) {
         Assert.notNull(bean);
         Assert.notNull(bean.request);
         Assert.isFalse(Strings.isEmpty(bean.id));
@@ -281,7 +300,7 @@ public class ArgumentController extends ControllerBase {
         public String  name;
     }
 
-    @RequestBean
+    @ParamsWrapper
     public static final class ArgsBean1{
         public Request request;
         public String  id;

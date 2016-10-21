@@ -16,6 +16,7 @@
 package leap.lang;
 
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 
 import leap.lang.collection.ArrayIterable;
@@ -40,37 +41,49 @@ public class Enumerables {
 	
 	@SuppressWarnings("unchecked")
     public static final <E> Enumerable<E> of(Object object) throws IllegalArgumentException {
-		if(null == object){
-			return empty();
-		}
-		
-		if(object instanceof Enumerable){
-			return (Enumerable<E>)object;
-		}
-		
-		if(object instanceof List){
-			return new ListEnumerable<E>((List<E>)object);
-		}
-		
-		if(object instanceof Collection){
-			return new CollectionEnumerable<>((Collection<E>)object);
-		}
-		
-		Class<?> clazz = object.getClass();
-		if(clazz.isArray()){
-			if(clazz.getComponentType().isPrimitive()){
-				return new ArrayObjectIterable<E>(object);
-			}else{
-				return ofArray((E[])object);	
-			}
-		}
-		
-		if(object instanceof Iterable){
-			return new IterableEnumerable<E>((Iterable<E>)object);
-		}		
-		
-		throw new IllegalArgumentException("not a supported enumerable type '" + object.getClass().getName() + "'");
+
+        Enumerable<E> e = tryOf(object);
+
+        if(null == e) {
+            throw new IllegalArgumentException("not a supported enumerable type '" + object.getClass().getName() + "'");
+        }
+
+        return e;
 	}
+
+    @SuppressWarnings("unchecked")
+    public static final <E> Enumerable<E> tryOf(Object object) throws IllegalArgumentException {
+        if(null == object){
+            return empty();
+        }
+
+        if(object instanceof Enumerable){
+            return (Enumerable<E>)object;
+        }
+
+        if(object instanceof List){
+            return new ListEnumerable<E>((List<E>)object);
+        }
+
+        if(object instanceof Collection){
+            return new CollectionEnumerable<>((Collection<E>)object);
+        }
+
+        Class<?> clazz = object.getClass();
+        if(clazz.isArray()){
+            if(clazz.getComponentType().isPrimitive()){
+                return new ArrayObjectIterable<E>(object);
+            }else{
+                return ofArray((E[])object);
+            }
+        }
+
+        if(object instanceof Iterable){
+            return new IterableEnumerable<E>((Iterable<E>)object);
+        }
+
+        return null;
+    }
 	
 	@SuppressWarnings("unchecked")
     public static final <E> Enumerable<E> ofArray(E... array){

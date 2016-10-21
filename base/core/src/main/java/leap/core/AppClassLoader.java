@@ -16,10 +16,7 @@
 
 package leap.core;
 
-import leap.core.instrument.AppInstrumentClass;
-import leap.core.instrument.AppInstrumentation;
-import leap.core.instrument.ClassDependency;
-import leap.core.instrument.ClassDependencyResolver;
+import leap.core.instrument.*;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Factory;
@@ -43,10 +40,13 @@ public class AppClassLoader extends ClassLoader {
 
     private static final Log log = LogFactory.get(AppClassLoader.class);
 
-    private static final ThreadLocal<Set<String>> beanClassNamesLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Set<String>> instrumentPackagesLocal = new ThreadLocal<>();
+    private static final ThreadLocal<Set<String>> instrumentClassesLocal  = new ThreadLocal<>();
 
     private static ThreadLocal<AppClassLoader>     instanceLocal;
     private static Map<ClassLoader,AppClassLoader> instances = new IdentityHashMap<>();
+
+    private static final Map<ClassLoader, Set<String>> vmInstrumentedClasses = new WeakHashMap<>();
 
     @Internal
     public static AppClassLoader get() {
@@ -66,17 +66,35 @@ public class AppClassLoader extends ClassLoader {
         return inst;
     }
 
-    public static void addBeanClass(String name) {
-        Set<String> names = beanClassNamesLocal.get();
+    public static void addInstrumentPackage(String p) {
+        Set<String> names = instrumentPackagesLocal.get();
         if(null == names) {
             names = new HashSet<>();
-            beanClassNamesLocal.set(names);
+            instrumentPackagesLocal.set(names);
+        }
+        names.add(p.endsWith(".") ? p : p + ".");
+    }
+
+    public static void addInstrumentClass(String name) {
+        Set<String> names = instrumentClassesLocal.get();
+        if(null == names) {
+            names = new HashSet<>();
+            instrumentClassesLocal.set(names);
         }
         names.add(name);
     }
 
-    public static boolean isBeanClass(String name) {
-        Set<String> names = beanClassNamesLocal.get();
+    private static boolean isInstrumentClass(String name) {
+        Set<String> ps = instrumentPackagesLocal.get();
+        if(null != ps) {
+            for (String p : ps) {
+                if (name.startsWith(p)) {
+                    return true;
+                }
+            }
+        }
+
+        Set<String> names = instrumentClassesLocal.get();
         if(null == names) {
             return false;
         }
@@ -86,7 +104,7 @@ public class AppClassLoader extends ClassLoader {
 
     private final ClassLoader parent;
 
-    private final Set<String>                       loadedUrls         = new HashSet<>();
+    private final Map<String,Boolean>               handledUrls        = new HashMap<>();
     private final Set<String>                       loadedNames        = new HashSet<>();
     private final AppInstrumentation                instrumentation    = Factory.newInstance(AppInstrumentation.class);
     private final ClassDependencyResolver           dependencyResolver = Factory.newInstance(ClassDependencyResolver.class);
@@ -100,6 +118,7 @@ public class AppClassLoader extends ClassLoader {
     private AppConfig config;
     private String    basePackage;
     private boolean   testing;
+    private boolean   redefine;
 
     private RedefineClassLoader redefineClassLoader;
 
@@ -124,7 +143,16 @@ public class AppClassLoader extends ClassLoader {
     void load(AppConfig config) {
         this.config      = config;
         this.basePackage = config.getBasePackage() + ".";
+
+        Boolean redefineProp = config.getProperty("instrument.redefine", Boolean.class);
+        if(null == redefineProp) {
+            redefine = testing;
+        }else{
+            redefine = redefineProp;
+        }
+
         instrumentation.init(config);
+
         loadAllClasses();
     }
 
@@ -153,8 +181,10 @@ public class AppClassLoader extends ClassLoader {
         redefine();
         //loadedUrls.clear();
         //loadedNames.clear();
+        handledUrls.clear();
         instrumenting.clear();
-        beanClassNamesLocal.remove();
+        instrumentClassesLocal.remove();
+        instrumentPackagesLocal.remove();
     }
 
     @Internal
@@ -175,7 +205,7 @@ public class AppClassLoader extends ClassLoader {
             log.warn("Redefining {} classes by agent...", redefineClasses.size());
             //redefine by agent.
             if(!redefineByAgent()){
-                if(!testing) {
+                if(!redefine) {
                     log.warn("Agent redefine failed!");
                     for (AppInstrumentClass ic : redefineClasses.values()) {
                         if (ic.isEnsure()) {
@@ -197,7 +227,7 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private void onInstrumentFailed(Resource resource, byte[] rawBytes, AppInstrumentClass ic) {
-        if(!testing) {
+        if(!redefine) {
             throw new IllegalStateException("Cannot instrument class '" + ic.getClassName() + "', check the class loading!");
         }
         redefineFailedClass(ic);
@@ -278,6 +308,24 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private Class<?> instrumentClass(String name) throws ClassNotFoundException {
+        Resource resource = tryGetResource(name);
+        if(null == resource) {
+            return null;
+        }
+
+        if(instrumenting.contains(resource.getURLString())) {
+            log.debug("Found cyclic instrumenting class '{}', instrument it now", name);
+            return instrumentClass(name, resource, false);
+        }
+
+        log.trace("Try instrument class '{}' (depFirst)", name);
+
+        Class<?> c = instrumentClass(name, resource, true);
+
+        return c;
+    }
+
+    private Resource tryGetResource(String name) {
         if(isIgnore(name)) {
             return null;
         }
@@ -286,32 +334,29 @@ public class AppClassLoader extends ClassLoader {
         if(null == resource || !resource.exists()) {
             return null;
         }
-
-        if(instrumenting.contains(name)) {
-            log.debug("Found cyclic instrumenting class '{}'", name);
-            return instrumentClass(name, resource, false);
-        }
-
-        instrumenting.add(name);
-
-        Class<?> c = instrumentClass(name, resource, true);
-
-        instrumenting.remove(name);
-
-        return c;
+        return resource;
     }
 
     private Class<?> instrumentClass(String name, Resource resource, boolean depFirst) throws ClassNotFoundException {
         String url = resource.getURLString();
-        if(loadedUrls.contains(url)) {
+
+        Boolean instrumented = handledUrls.get(url);
+        if(null != instrumented) {
+            log.trace("class '{}' already {}, ignore", name, instrumented ? "instrumented" : "handled");
             return null;
         }
 
         try {
+            instrumenting.add(url);
+
             byte[] rawBytes = IO.readByteArrayAndClose(resource.getInputStream());
 
             if(depFirst) {
                 ClassDependency dep = dependencyResolver.resolveDependentClassNames(resource, rawBytes);
+
+                if(null == name) {
+                    name = dep.getClassName();
+                }
 
                 if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
                     log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
@@ -325,43 +370,68 @@ public class AppClassLoader extends ClassLoader {
                             dep.getClassName());
 
                     for(String depClassName : dep.getDependentClassNames()) {
-                        log.trace("Loading dependent class '{}'", depClassName);
+
+                        if(depClassName.equals(dep.getSuperClassName())) {
+                            continue;
+                        }
+
+                        log.trace("Loading dependent class '{}' of '{}'", depClassName, dep.getClassName());
                         instrumentClass(depClassName);
                     }
 
                 }
 
-                if(loadedUrls.contains(url)){
+                //may be instrumented in cycle.
+                if(handledUrls.containsKey(url)) {
                     return null;
                 }
             }
 
             //try instrument the class.
             AppInstrumentClass ic = instrumentation.tryInstrument(this, resource, rawBytes, false);
-            if(null == ic && null == name) {
-                return null;
-            }
 
-            if(null == ic && isParentLoaded(name)) {
-                log.trace("Class '{}' already loaded, do nothing", name);
+            //don't define the class if not instrumented.
+            if(null == ic) {
+                handledUrls.put(url, false);
+                log.trace("Class '{}' don't need to be instrumented, ignore it", null == name ? url : name);
                 return null;
+            }else{
+                handledUrls.put(url, true);
             }
-
-            loadedUrls.add(url);
 
             byte[] bytes;
-            if(null == ic) {
-                bytes = rawBytes;
-            }else{
-                name  = ic.getClassName();
-                bytes = ic.getClassData();
-            }
+            name  = ic.getClassName();
+            bytes = ic.getClassData();
 
-            log.trace("Defining instrumented class '{}' use parent loader", name);
+            log.debug("Defining instrumented class '{}' use class loader '{}'", name, parent);
             Object[] args = new Object[]{name, bytes, 0, bytes.length};
 
+            Set<String> vmInstrumented = vmInstrumentedClasses.get(parent);
+            if(null == vmInstrumented) {
+                vmInstrumented = new HashSet<>(1);
+                vmInstrumentedClasses.put(parent, vmInstrumented);
+            }else if(vmInstrumented.contains(name)){
+                //ignore if instrumented in same class loader by another app.
+                boolean ignore = true;
+                for(AppInstrumentProcessor p : ic.getAllInstrumentedBy()) {
+                    if(p.shouldRedefineInSameClassLoader()) {
+                        ignore = false;
+                    }
+                }
+                if(ignore) {
+                    log.debug("Class '{}' already instrumented in same class loader by another app, ignore it", name);
+                    return null;
+                }
+            }
+
             try {
-                return (Class<?>) parentLoaderDefineClass.invoke(parent, args);
+                Class<?> c = (Class<?>) parentLoaderDefineClass.invoke(parent, args);
+
+                log.debug("Success instrument class '{}'", name);
+
+                vmInstrumented.add(name);
+
+                return c;
             }catch(InvocationTargetException e) {
                 Throwable cause = e.getCause();
 
@@ -370,7 +440,8 @@ public class AppClassLoader extends ClassLoader {
                 }
 
                 if(cause instanceof  LinkageError) {
-                    if(null != ic && ic.shouldRedefine()) {
+
+                    if(null != ic && redefine && ic.shouldRedefine()) {
                         if(ic.supportsInstrumentMethodBodyOnly()) {
                             log.warn("Cannot define the instrumented class '{}', it was loaded by parent loader", name);
                             if(!ic.isInstrumentedMethodBodyOnly()) {
@@ -378,7 +449,7 @@ public class AppClassLoader extends ClassLoader {
                             }
                             redefineClasses.put(parent.loadClass(name), ic);
                         }else{
-                            log.warn("Instrument failed, class '{}'", name);
+                            log.warn("Instrument '{}' failed : {}", name, cause.getMessage(), cause);
                             onInstrumentFailed(resource, rawBytes, ic);
                         }
                     }else{
@@ -398,6 +469,8 @@ public class AppClassLoader extends ClassLoader {
             }
         }catch(IOException e) {
             throw new ClassNotFoundException(name, e);
+        }finally{
+            instrumenting.remove(url);
         }
     }
 
@@ -439,7 +512,7 @@ public class AppClassLoader extends ClassLoader {
             return true;
         }
 
-        if(isBeanClass(name)) {
+        if(isInstrumentClass(name)) {
             return false;
         }
 

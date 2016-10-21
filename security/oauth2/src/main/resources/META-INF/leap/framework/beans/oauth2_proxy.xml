@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans" default-lazy-init="true">
+<beans xmlns="http://www.leapframework.org/schema/beans"
+       if-servlet-environment="true"
+       if-class-present="leap.web.security.SecurityConfig">
+
     <bean type="leap.oauth2.proxy.UserAgentForwardedResolver"
           class="leap.oauth2.proxy.XForwardedResolver"/>
+
 </beans>

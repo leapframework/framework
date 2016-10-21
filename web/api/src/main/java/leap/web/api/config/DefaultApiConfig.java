@@ -15,41 +15,54 @@
  */
 package leap.web.api.config;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
-
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.meta.OAuth2Scope;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MPermission;
+import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
+
+import java.util.*;
 
 public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	
 	protected final String name;
 	protected final String basePath;
 
-    protected String        title;
-    protected String        summary;
-    protected String        description;
-    protected String        version                     = DEFAULT_VERSION;
-    protected String[]      protocols;
-    protected String[]      produces;
-    protected String[]      consumes;
-    protected boolean       corsEnabled                 = true;
-    protected boolean       oAuthEnabled                = false;
-    protected String        oAuthAuthzEndpointUrl;
-    protected String        oAuthTokenEndpointUrl;
-    protected OAuth2Scope[] oAuthScopes;
-    protected NamingStyle   parameterNamingStyle;
-    protected NamingStyle   propertyNamingStyle;
-    protected Set<String>   removalModelNamePrefixes    = new HashSet<String>();
-    protected Set<String>   removalModelnamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
-    protected Set<Route>    routes                      = new HashSet<>();
-    protected Set<Route>    routesImv                   = Collections.unmodifiableSet(routes);
+    protected String         title;
+    protected String         summary;
+    protected String         description;
+    protected String         version                     = DEFAULT_VERSION;
+    protected String[]       protocols;
+    protected String[]       produces;
+    protected String[]       consumes;
+    protected boolean        corsEnabled                 = true;
+    protected boolean        oAuthEnabled                = false;
+    protected String         oAuthAuthzEndpointUrl;
+    protected String         oAuthTokenEndpointUrl;
+    protected NamingStyle    parameterNamingStyle;
+    protected NamingStyle    propertyNamingStyle;
+    protected int            maxPageSize                 = MAX_PAGE_SIZE;
+    protected int            defaultPageSize             = DEFAULT_PAGE_SIZE;
+    protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
+    protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
+
+    protected Set<Route>  	 routes                      = new HashSet<>();
+    protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
+
+    protected Map<String, MPermission> permissions    = new LinkedHashMap<>();
+    protected Map<String, MPermission> permissionsImv = Collections.unmodifiableMap(permissions);
+
+    protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
+    protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
+
+    protected Map<Route, Class<?>> resourceTypes    = new HashMap<>();
+    protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
+
+    protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -110,7 +123,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
 	
 	public boolean isCorsDisabled() {
-		return corsEnabled;
+		return !corsEnabled;
 	}
 	
 	@Override
@@ -122,8 +135,13 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     public Set<Route> getRoutes() {
 	    return routesImv;
     }
-	
-	public NamingStyle getParameterNamingStyle() {
+
+    @Override
+    public Map<String, MApiResponse> getCommonResponses() {
+        return commonResponsesImv;
+    }
+
+    public NamingStyle getParameterNamingStyle() {
 		return parameterNamingStyle;
 	}
 	
@@ -132,7 +150,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	}
 	
 	public Set<String> getRemovalModelNamePrefixes() {
-		return removalModelnamePrefixesImv;
+		return removalModelNamePrefixesImv;
 	}
 	
 	public ApiConfigurator setTitle(String title) {
@@ -164,7 +182,13 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 		return this;
 	}
 
-	@Override
+    @Override
+    public ApiConfigurator putCommonResponse(String name, MApiResponse response) {
+        commonResponses.put(name, response);
+        return this;
+    }
+
+    @Override
     public ApiConfigurator setProduces(String... produces) {
 		this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
 	    return this;
@@ -227,19 +251,79 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
     
     @Override
-    public ApiConfigurator setOAuthScopes(OAuth2Scope... scopes) {
-        this.oAuthScopes = scopes;
+    public Map<String, MPermission> getPermissions() {
+        return permissionsImv;
+    }
+
+    @Override
+    public ApiConfigurator setPermission(MPermission p) {
+        permissions.put(p.getValue(), p);
         return this;
     }
 
     @Override
-    public OAuth2Scope[] getOAuthScopes() {
-        return oAuthScopes;
+    public ApiConfigurator tryAddPermission(MPermission p) {
+        if(!permissions.containsKey(p.getValue())) {
+            setPermission(p);
+        }
+        return this;
+    }
+
+    @Override
+    public int getMaxPageSize() {
+        return maxPageSize;
+    }
+
+    @Override
+    public int getDefaultPageSize() {
+        return defaultPageSize;
+    }
+
+    @Override
+    public ApiConfigurator setMaxPageSize(int size) {
+        this.maxPageSize = size;
+        return this;
+    }
+
+    @Override
+    public ApiConfigurator setDefaultPageSize(int size) {
+        this.defaultPageSize = size;
+        return this;
     }
 
     @Override
     public ApiConfigurator addRoute(Route route) {
 		routes.add(route);
+
+        if(null != route.getPermissions()) {
+            for(String p : route.getPermissions()) {
+                if(!permissions.containsKey(p)) {
+                    permissions.put(p, new MPermission(p, ""));
+                }
+            }
+        }
+
 	    return this;
+    }
+
+    @Override
+    public Map<Route, Class<?>> getResourceTypes() {
+        return resourceTypesImv;
+    }
+
+    @Override
+    public ApiConfigurator setResourceType(Route route, Class<?> resourceType) {
+        resourceTypes.put(route, resourceType);
+        return this;
+    }
+
+    @Override
+    public ResourcePermissionsSet getResourcePermissionsSet() {
+        return resourcePermissionsSet;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[api=" + name + "]";
     }
 }

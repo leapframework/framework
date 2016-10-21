@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<xsd:schema xmlns="http://www.leapframework.org/schema/web/apis"
+            xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://www.leapframework.org/schema/web/apis" elementFormDefault="qualified">
+
+    <xsd:element name="apis">
+        <xsd:complexType>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element ref="import" />
+                <xsd:element name="global" type="api-global"/>
+                <xsd:element ref="api"/>
+                <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
+            </xsd:choice>
+            <xsd:anyAttribute namespace="##other" processContents="lax" />
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="import">
+        <xsd:annotation>
+            <xsd:documentation><![CDATA[
+                Specifies an XML config definition resource to import.
+            ]]></xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:complexContent>
+                <xsd:restriction base="xsd:anyType">
+                    <xsd:attribute name="resource" type="xsd:string" use="required">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                The relative resource location of the XML file to import,
+                                for example "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="check-existence" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                default value is true, set the value to false will skip this importing if resource not exists.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                    <xsd:attribute name="default-override" type="xsd:boolean">
+                        <xsd:annotation>
+                            <xsd:documentation><![CDATA[
+                                set the default override attribute value defined in <command override="true|false" ../> element.
+                            ]]></xsd:documentation>
+                        </xsd:annotation>
+                    </xsd:attribute>
+                </xsd:restriction>
+            </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="api-global">
+        <xsd:annotation>
+            <xsd:documentation>
+                The global configuration for all api(s).
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="oauth"     type="oauth-base" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="cors"      type="cors"       minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
+        </xsd:choice>
+    </xsd:complexType>
+
+    <xsd:element name="api">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for api.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="version" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="produces" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="consumes" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="protocols" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="cors" type="cors" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="oauth" type="oauth" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="max-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="default-page-size" type="xsd:integer" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="permissions" type="permissions"  minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="resource-permissions" type="resource-permissions" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:choice>
+            <xsd:attribute name="name"      type="xsd:string" use="required"/>
+            <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:complexType name="cors">
+        <xsd:attribute name="enabled" default="true" type="xsd:boolean" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="oauth-base">
+        <xsd:sequence>
+            <xsd:element name="authz-url" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="token-url" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="enabled" default="true" type="xsd:boolean" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="oauth">
+        <xsd:complexContent>
+            <xsd:extension base="oauth-base">
+                <xsd:sequence>
+                    <xsd:element name="scope" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="paths">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="path" type="path"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="path">
+        <xsd:choice minOccurs="0" maxOccurs="1">
+            <xsd:element name="get"     type="operation"/>
+            <xsd:element name="post"    type="operation"/>
+            <xsd:element name="delete"  type="operation"/>
+            <xsd:element name="put"     type="operation"/>
+            <xsd:element name="patch"   type="operation"/>
+            <xsd:element name="options" type="operation"/>
+            <xsd:element name="head"    type="operation"/>
+            <xsd:element name="trace"   type="operation"/>
+        </xsd:choice>
+        <xsd:attribute name="uri-template" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="operation">
+        <xsd:sequence>
+            <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="params" type="parameters" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="responses" type="responses" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="cors" type="cors" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="oauth" type="oauth" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="parameters">
+        <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="param" type="parameter"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="parameter">
+        <xsd:sequence>
+            <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="name" type="xsd:string" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="responses">
+        <xsd:sequence>
+            <xsd:element name="response" type="response" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+    </xsd:complexType>
+
+    <xsd:complexType name="response">
+        <xsd:sequence>
+            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="name"   type="xsd:string"  use="optional"/>
+        <xsd:attribute name="status" type="xsd:integer" use="required"/>
+        <xsd:attribute name="type"   type="xsd:string"  use="optional"/>
+        <xsd:attribute name="desc"   type="xsd:string"  use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="permissions">
+        <xsd:complexContent>
+            <xsd:extension base="xsd:string">
+                <xsd:sequence>
+                    <xsd:element name="permission" type="permission" minOccurs="0" maxOccurs="unbounded"/>
+                    <xsd:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+                </xsd:sequence>
+            </xsd:extension>
+        </xsd:complexContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="permission">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="value" type="xsd:string" use="required"/>
+                <xsd:attribute name="desc"  type="xsd:string" use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+    <xsd:complexType name="resource-permissions">
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="resource"   type="resource"  minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="resources"  type="resources" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="permission" type="resource-permission" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:choice>
+
+    </xsd:complexType>
+
+    <xsd:complexType name="resource">
+        <xsd:attribute name="class" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="resources">
+        <xsd:attribute name="package" use="required"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="resource-permission">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="value"        type="xsd:string"  use="required"/>
+                <xsd:attribute name="http-methods" type="xsd:string"  use="optional"/>
+                <xsd:attribute name="path-pattern" type="xsd:string"  use="optional"/>
+                <xsd:attribute name="default"      type="xsd:boolean" use="optional"/>
+                <xsd:attribute name="desc"         type="xsd:string"  use="optional"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+</xsd:schema>

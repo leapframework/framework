@@ -25,6 +25,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Serialize {
 
-	public String value();
+    /**
+     * The name of serializer.
+     */
+	String value();
 	
 }

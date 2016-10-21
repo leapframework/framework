@@ -26,7 +26,11 @@ public enum MTypeKind {
 	REFERENCE,  // a type reference
 	
 	COMPLEX,
+
+    DICTIONARY,
 	
-	OBJECT; //object type includes simple, collection and complex.
+	OBJECT, //object type includes simple, collection and complex.
+
+    VOID
 
 }

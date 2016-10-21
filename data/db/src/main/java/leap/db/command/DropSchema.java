@@ -21,7 +21,7 @@ import leap.lang.annotation.Dangerous;
 @Dangerous(askForConfirm=true)
 public interface DropSchema extends DbCommand {
 
-	default int getSortOrder() {
+	default float getSortOrder() {
 		return -1;
 	}
 	

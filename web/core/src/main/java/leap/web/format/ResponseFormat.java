@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
 import leap.lang.Named;
+import leap.lang.annotation.Nullable;
 import leap.lang.http.MimeType;
 import leap.web.Content;
 import leap.web.action.Action;
@@ -39,18 +40,10 @@ public interface ResponseFormat extends Named {
 	 * Returns <code>true</code> if this format supports the given media type.
 	 */
 	boolean supports(MimeType mediaType);
-	
-	/**
-	 * Returns a {@link Content} object for rendering the given value.
-	 */
-	Content getContent(Class<?> type, Type genericType, Annotation[] annotations, Object value) throws Exception;
-	
+
 	/**
 	 * Returns a {@link Content} object for rendering the given result value of action.
 	 */
-	default Content getContent(ActionContext context, Object result) throws Exception {
-		Action action = context.getAction();
-		return getContent(action.getReturnType(),action.getGenericReturnType(),action.getMergedAnnotations(),result);
-	}
+	Content getContent(ActionContext context, Object value) throws Exception;
 
 }

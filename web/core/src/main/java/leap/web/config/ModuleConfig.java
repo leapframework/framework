@@ -28,6 +28,11 @@ public interface ModuleConfig {
     String getName();
 
     /**
+     * Optional. Returns the context path of this module.
+     */
+    String getContextPath();
+
+    /**
      * Required.
      *
      * Returns the base path of module.

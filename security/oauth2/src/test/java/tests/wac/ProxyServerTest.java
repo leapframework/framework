@@ -35,7 +35,7 @@ public class ProxyServerTest extends OAuth2TestBase {
                 .addHeader(XForwardedResolver.X_FORWARDED_HOST,"www.leap.org")
                 .addHeader(XForwardedResolver.X_FORWARDED_PROTOCOL,"https")
                 .get().getContent();
-        Map<String, Object> map = JSON.decodeToMap(json);
+        Map<String, Object> map = JSON.decode(json);
 
         assertEquals("true",map.get("isProxy"));
         assertEquals("https://www.leap.org/clientapp1",map.get("host"));

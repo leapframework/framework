@@ -15,10 +15,10 @@
  */
 package app.resources;
 
-import leap.web.annotation.RestController;
+import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
 
-@RestController
+@Restful
 public class Test0Resource {
 
     @GET

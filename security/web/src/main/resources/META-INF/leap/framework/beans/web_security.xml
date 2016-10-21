@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<beans xmlns="http://www.leapframework.org/schema/beans">
+<beans xmlns="http://www.leapframework.org/schema/beans"
+       if-servlet-environment="true"
+       if-class-present="leap.web.App">
     
     <!-- Base -->
     <bean type="leap.web.RequestInterceptor" class="leap.web.security.SecurityRequestInterceptor">

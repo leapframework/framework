@@ -16,6 +16,7 @@
 package leap.web.api.spec.swagger;
 
 import leap.core.annotation.Inject;
+import leap.lang.http.HTTP;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -27,11 +28,12 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
+import leap.web.api.spec.ApiSpecContext;
 
 public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor {
 	
 	private static final String SWAGGER_JSON_FILE = "swagger.json";
-	
+
 	protected @Inject App  app;
 	protected @Inject Apis apis;
 
@@ -50,17 +52,39 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
     }
 
 	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String name) throws Throwable {
-		ApiMetadata m = apis.metadatas().get(name);
+		ApiMetadata m = apis.tryGetMetadata(name);
+        if(null == m) {
+            resp.setStatus(HTTP.SC_NOT_FOUND);
+            return;
+        }
 		
 		SwaggerJsonWriter w = new SwaggerJsonWriter();
 		w.setPropertyNamingStyle(c.getPropertyNamingStyle());
 		
 		resp.setContentType(w.getContentType());
-		w.write(m, resp.getWriter()); 
+		w.write(new ApiSpecContextImpl(req), m, resp.getWriter());
 	}
 	
 	protected String getJsonSpecPath(ApiConfig c) {
 		return c.getBasePath() + "/" + SWAGGER_JSON_FILE;
 	}
+
+    private static final class ApiSpecContextImpl implements ApiSpecContext {
+        private final Request request;
+
+        public ApiSpecContextImpl(Request request) {
+            this.request = request;
+        }
+
+        @Override
+        public String getHost() {
+            return request.getServletRequest().getServerName();
+        }
+
+        @Override
+        public int getPort() {
+            return request.getServletRequest().getServerPort();
+        }
+    }
 
 }

@@ -17,55 +17,58 @@ package leap.lang.meta;
 
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Map;
-import java.util.Stack;
-import java.util.WeakHashMap;
-import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
-import leap.lang.Args;
-import leap.lang.Factory;
-import leap.lang.Strings;
-import leap.lang.Types;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.meta.annotation.ComplexType;
+import leap.lang.meta.annotation.NonProperty;
 
-public class SimpleMTypeFactory implements MTypeFactory {
-	
-	protected static final Map<Class<?>, MComplexType> COMPLEX_TYPES = 
-			Collections.synchronizedMap(new WeakHashMap<Class<?>, MComplexType>());
-	
+public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFactory {
+
 	protected static final MTypeFactory[] externalFactories;
 	
 	static {
 		externalFactories = Factory.newInstances(MTypeFactory.class).toArray(new MTypeFactory[]{});
 	}
-	
-	protected final BiConsumer<Class<?>, MComplexType>         complextTypeCreatedListener;
-	protected final Function<Class<?>, String> 				   complextTypeLocalNamer;
-	protected final BiFunction<Class<?>, MComplexType, String> complextTypeFqNamer;
-	
-	public SimpleMTypeFactory(BiConsumer<Class<?>, MComplexType> complextTypeCreatedListener, 
-							Function<Class<?>, String> complextTypeLocalNamer,
-							BiFunction<Class<?>, MComplexType, String> complextTypeFqNamer) {
-	    super();
-	    this.complextTypeCreatedListener = complextTypeCreatedListener;
-	    this.complextTypeLocalNamer      = complextTypeLocalNamer;
-	    this.complextTypeFqNamer         = complextTypeFqNamer;
+
+    private MTypeContext context;
+
+    public SimpleMTypeFactory() {
     }
 
-	@Override
-    public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
-		return getMType(type, genericType, root, new Stack<Class<?>>(), false);
+    public SimpleMTypeFactory(MTypeContext context) {
+        this.context = context;
     }
 
-	protected MType getMType(Class<?> type, Type genericType, MTypeFactory root, Stack<Class<?>> stack, boolean createComplexTypeRef) {
+    @Override
+    public MType getMType(Class<?> type) {
+        return getMType(type, null, context);
+    }
+
+    @Override
+    public MType getMType(Class<?> type, Type genericType) {
+        return getMType(type, genericType, context);
+    }
+
+    @Override
+    public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+        Args.notNull(context, "context");
+
+        MTypeFactory root = context.root();
+        if(null == root) {
+            root = this;
+        }
+
+		return getMType(context, type, genericType, root);
+    }
+
+	protected MType getMType(MTypeContext context, Class<?> type, Type genericType, MTypeFactory root) {
 		Args.notNull(type, "type");
-		
+
 		for(MTypeFactory factory : externalFactories){
-			MType mtype = factory.getMType(type, genericType, root);
+			MType mtype = factory.getMType(type, genericType, context);
 			if(null != mtype) {
 				return mtype;
 			}
@@ -77,84 +80,121 @@ public class SimpleMTypeFactory implements MTypeFactory {
 		}
 
 		if(type.isArray()) {
-			return new MCollectionType(getMType(type.getComponentType(), null));
+			return new MCollectionType(root.getMType(type.getComponentType(), null, context));
 		}
 		
 		if(Iterable.class.isAssignableFrom(type)) {
-			MType elementType = null == genericType ? MUnresolvedType.TYPE : getMType(Types.getActualTypeArgument(genericType));
-			
+			MType elementType;
+
+            if(null == genericType) {
+                elementType = MUnresolvedType.TYPE;
+            }else{
+                Type typeArgument = Types.getTypeArgument(genericType);
+
+                Class<?> elementClass = Types.getActualType(typeArgument);
+                genericType = typeArgument;
+
+                elementType = root.getMType(elementClass, genericType, context);
+            }
+
 			return new MCollectionType(elementType);
 		}
-		
-		if(Object.class.equals(type)) {
-			return MObjectType.TYPE;
-		}
-		
-		return getComplexTypeOrRef(root, type, stack, createComplexTypeRef);
+
+        boolean isComplexTypeAnnotated = type.isAnnotationPresent(ComplexType.class);
+        if(!isComplexTypeAnnotated) {
+            if(Map.class.isAssignableFrom(type)) {
+                return getDictionaryType(context, type, genericType, root);
+            }
+
+            if(Object.class.equals(type)) {
+                return MObjectType.TYPE;
+            }
+        }
+
+		return createComplexType(context, type, root);
 	}
+
+    protected MType getDictionaryType(MTypeContext context, Class<?> type, Type genericType, MTypeFactory root) {
+        if(null == genericType) {
+            return MDictionaryType.INSTANCE;
+        }
+
+        Type[] types = getDictionaryTypes(type, genericType);
+
+        Type keyType = types[0];
+        Type valType = types[1];
+
+        MType keyMType = getMType(context, Types.getActualType(keyType), keyType, root);
+        MType valMType = getMType(context, Types.getActualType(valType), valType, root);
+
+        return new MDictionaryType(keyMType, valMType);
+    }
+
+    protected Type[] getDictionaryTypes(Class<?> type, Type genericType) {
+        Type[] types = Types.getTypeArguments(genericType);
+        if(types.length != 2) {
+            for(Type genericInterface : type.getGenericInterfaces()) {
+                Class<?> c = Types.getActualType(genericInterface);
+                if(Map.class.isAssignableFrom(c)) {
+                    return getDictionaryTypes(c, genericInterface);
+                }
+            }
+
+            Type genericSuperClass = type.getGenericSuperclass();
+            if(null != genericSuperClass) {
+                Class<?> c = Types.getActualType(genericSuperClass);
+                if(Map.class.isAssignableFrom(c)) {
+                    return getDictionaryTypes(c, genericSuperClass);
+                }
+            }
+        }
+        return types;
+    }
 	
-	protected MType getComplexTypeOrRef(MTypeFactory root, Class<?> type, Stack<Class<?>> stack, boolean createComplexTypeRef) {
-		MComplexType ct = getComplexType(root, type, stack);
-		
-		if(!createComplexTypeRef) {
-			return ct;
-		}
-		
-		if(null != complextTypeFqNamer) {
-			String fqName = complextTypeFqNamer.apply(type, ct);
-			if(!Strings.isEmpty(fqName)) {
-				return new MComplexTypeRef(ct.getName(), fqName);
-			}
-		}
-		
-		return ct.createTypeRef();
-	}
-	
-	protected MComplexType getComplexType(MTypeFactory root, Class<?> type, Stack<Class<?>> stack) {
-		MComplexType ct = COMPLEX_TYPES.get(type);
-		if(null == ct) {
-			ct = createComplexType(root, type, stack);
-			
-			if(null != complextTypeCreatedListener) {
-				complextTypeCreatedListener.accept(type, ct);
-			}
-			
-			COMPLEX_TYPES.put(type, ct);
-		}
-		
-		return ct;
-	}
-	
-	protected MComplexType createComplexType(MTypeFactory root, Class<?> type) {
-		return createComplexType(root, type, new Stack<Class<?>>());
-	}
-	
-	protected MComplexType createComplexType(MTypeFactory root, Class<?> type, Stack<Class<?>> stack) {
-		if(stack.contains(type)) {
-			throw new IllegalStateException("Cannot create complext type for '" + type + "', found cyclic reference");
-		}
-		
-		stack.add(type);
-		
-		MComplexTypeBuilder ct = new MComplexTypeBuilder();
+	protected MComplexType createComplexType(MTypeContext context, Class<?> type, MTypeFactory root) {
+		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 		
 		ct.setName(type.getSimpleName());
 		ct.setAbstract(Modifier.isAbstract(type.getModifiers()));
-		
-		if(null != complextTypeLocalNamer) {
-			String name = complextTypeLocalNamer.apply(type);
-			if(!Strings.isEmpty(name)) {
-				ct.setName(name);
-			}
-		}
-		
+
+        String name = "";
+        ComplexType a = type.getAnnotation(ComplexType.class);
+        if(null != a) {
+            name = a.name();
+        }
+
+        if(Strings.isEmpty(name)) {
+            name = context.strategy().getComplexTypeName(type);
+        }
+
+        if(!Strings.isEmpty(name)) {
+            ct.setName(name);
+        }
+
+        context.onComplexTypeCreating(type, name);
+
 		BeanType bt = BeanType.of(type);
 		for(BeanProperty bp : bt.getProperties()) {
+
+            if(!bp.isField()) {
+                continue;
+            }
+
+            if(bp.isAnnotationPresent(NonProperty.class)) {
+                continue;
+            }
+
 			MPropertyBuilder mp = new MPropertyBuilder();
-			mp.setName(bp.getName());
-			mp.setType(getMType(bp.getType(), bp.getGenericType(), root, stack, true)); 
+
+            mp.setName(bp.getName());
+			mp.setType(root.getMType(bp.getType(), bp.getGenericType(), context));
+
+            configureProperty(bp, mp);
+
 			ct.addProperty(mp.build());
 		}
+
+        context.onComplexTypeCreated(type);
 		
 		return ct.build();
 	}

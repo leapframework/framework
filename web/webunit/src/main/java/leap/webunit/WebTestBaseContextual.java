@@ -21,17 +21,17 @@ import org.junit.Rule;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @RunWith(WebTestRunnerContextual.class)
 public abstract class WebTestBaseContextual extends WebTestBase {
 	
-	private static final List<String> contextPaths = new ArrayList<>();
-	
-	static {
-		contextPaths.add("");
-		contextPaths.add("/root");
+	protected static final Set<String> contextPaths = new LinkedHashSet<>();
+
+    static {
+		contextPaths.add("/");
+        contextPaths.add(WebTestRunner.ROOT_CONTEXT_PATH);
 	}
 
 	@Rule
@@ -43,7 +43,14 @@ public abstract class WebTestBaseContextual extends WebTestBase {
 
 		@Override
         public void beforeTest(Description description, String name) throws Exception {
-			servletContext = server.getServletContext(name);
+            if(name.equals("/")) {
+                servletContext = rootServletContext;
+            }else {
+                servletContext = server.getServletContext(name);
+                if(null == servletContext && name.equals(WebTestRunner.ROOT_CONTEXT_PATH)) {
+                    servletContext = rootServletContext;
+                }
+            }
         }
 	},true);
 

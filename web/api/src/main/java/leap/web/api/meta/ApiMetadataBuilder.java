@@ -1,11 +1,11 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,37 +15,33 @@
  */
 package leap.web.api.meta;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Builders;
-import leap.lang.Collections2;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
+import leap.web.api.meta.model.*;
+
+import java.util.*;
 
 /**
  * The builder of {@link ApiMetadata}
  */
-public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
+public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	
-    protected String                       basePath;
-    protected String                       description;
-    protected String                       termsOfService;
-    protected ApiConcatBuilder             concat;
-    protected String                       version;
-    protected String                       host;
-    protected List<String>                 protocols    = new ArrayList<String>();
-    protected List<String>                 consumes     = new ArrayList<String>();
-    protected List<String>                 produces     = new ArrayList<String>();
-    protected Map<String, ApiPathBuilder>  paths        = new LinkedHashMap<String, ApiPathBuilder>();
-    protected Map<String, ApiModelBuilder> models       = new LinkedHashMap<String, ApiModelBuilder>();
-    protected List<ApiSecurityDef>         securityDefs = new ArrayList<ApiSecurityDef>();
-	
-	public ApiMetadataBuilder() {
+    protected String             basePath;
+    protected String             termsOfService;
+    protected MApiContactBuilder contact;
+    protected String             version;
+    protected String             host;
+
+    protected Set<String>                      protocols    = new LinkedHashSet<>();
+    protected Set<String>                      consumes     = new LinkedHashSet<>();
+    protected Set<String>                      produces     = new LinkedHashSet<>();
+    protected Map<String, MApiResponseBuilder> responses    = new LinkedHashMap<>();
+    protected Map<String, MApiPathBuilder>     paths        = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, MApiModelBuilder>    models       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, MPermission>         permissions  = new LinkedHashMap<>();
+    protected List<MApiSecurityDef>            securityDefs = new ArrayList<>();
+
+    public ApiMetadataBuilder() {
         super();
     }
 
@@ -69,12 +65,12 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		this.termsOfService = termsOfService;
 	}
 
-	public ApiConcatBuilder getConcat() {
-		return concat;
+	public MApiContactBuilder getContact() {
+		return contact;
 	}
 
-	public void setConcat(ApiConcatBuilder concat) {
-		this.concat = concat;
+	public void setContact(MApiContactBuilder contact) {
+		this.contact = contact;
 	}
 
 	public String getVersion() {
@@ -93,7 +89,7 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		this.host = host;
 	}
 
-	public List<String> getProtocols() {
+	public Set<String> getProtocols() {
 		return protocols;
 	}
 	
@@ -105,7 +101,7 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(protocols, ps);
 	}
 
-	public List<String> getConsumes() {
+	public Set<String> getConsumes() {
 		return consumes;
 	}
 	
@@ -117,7 +113,7 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(consumes, cs);
 	}
 
-	public List<String> getProduces() {
+	public Set<String> getProduces() {
 		return produces;
 	}
 	
@@ -129,38 +125,55 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 		Collections2.addAll(produces, ps);
 	}
 
-	public void addPath(ApiPathBuilder path) throws ObjectExistsException {
+    public Map<String, MApiResponseBuilder> getResponses() {
+        return responses;
+    }
+
+    public void putResponse(String name, MApiResponseBuilder r) {
+        responses.put(name, r);
+    }
+
+    public void putResponse(String name, MApiResponse r) {
+        putResponse(name, new MApiResponseBuilder(r));
+    }
+
+    public void setResponses(Map<String, MApiResponseBuilder> responses) {
+        this.responses = responses;
+    }
+
+    public void addPath(MApiPathBuilder path) throws ObjectExistsException {
 		Args.notNull(path, "api path");
 		Args.notEmpty(path.getPathTemplate(), "path template");
 		
-		if(paths.containsKey(path.getPathTemplate().getTemplate())) {
-			throw new ObjectExistsException("The path template '" + path.getPathTemplate().getTemplate() + "' aleady exists");
+		if(paths.containsKey(path.getPathTemplate())) {
+			throw new ObjectExistsException("The path template '" + path.getPathTemplate() + "' already exists");
 		}
 		
-		String fullPath = path.getPathTemplate().getTemplate();
+		String fullPath = path.getPathTemplate();
 		String relativePath = Strings.removeStart(fullPath, basePath);
 		
 		paths.put(relativePath, path);
 	}
 	
-	public Map<String, ApiPathBuilder> getPaths() {
+	public Map<String, MApiPathBuilder> getPaths() {
 		return paths;
 	}
 	
-	public ApiPathBuilder getPath(String pathTemplate) {
+	public MApiPathBuilder getPath(String pathTemplate) {
 		Args.notEmpty(pathTemplate,"path template");
-		return paths.get(pathTemplate);
+        String relativePath = Strings.removeStart(pathTemplate, basePath);
+		return paths.get(relativePath);
 	}
 
-	public Map<String, ApiModelBuilder> getModels() {
+	public Map<String, MApiModelBuilder> getModels() {
 		return models;
 	}
 	
-	public void addModel(ApiModelBuilder model) throws ObjectExistsException {
+	public void addModel(MApiModelBuilder model) throws ObjectExistsException {
 		Args.notNull(model, "model");
 		
 		if(models.containsKey(model.getName())) {
-			throw new ObjectExistsException("The model '" + model.getName() + "' aleady exists");
+			throw new ObjectExistsException("The model '" + model.getName() + "' already exists");
 		}
 		
 		models.put(model.getName(), model);
@@ -169,26 +182,64 @@ public class ApiMetadataBuilder extends ApiNamedWithDescBuilder<ApiMetadata> {
 	public boolean containsModel(String name) {
 		return models.containsKey(name);
 	}
+
+    public Map<String, MPermission> getPermissions() {
+        return permissions;
+    }
+
+    public void addPermission(MPermission p) {
+        if(permissions.containsKey(p.getValue())) {
+            throw new IllegalStateException("Permission '" + p.getValue() + "' already exists!");
+        }
+        permissions.put(p.getValue(), p);
+    }
 	
-	public List<ApiSecurityDef> getSecurityDefs() {
+	public List<MApiSecurityDef> getSecurityDefs() {
         return securityDefs;
     }
 	
-	public void addSecurityDef(ApiSecurityDef def) {
+	public void addSecurityDef(MApiSecurityDef def) {
 	    securityDefs.add(def);
 	}
 
+    public boolean hasModel(String name) {
+        for(MApiModelBuilder m : models.values()){
+            if(name.equals(m.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasModel(Class<?> type) {
+        return tryGetModel(type) != null;
+    }
+
+    public MApiModelBuilder tryGetModel(Class<?> type) {
+        for(MApiModelBuilder m : models.values()){
+            if(type.equals(m.getJavaType())) {
+                return m;
+            }
+        }
+        return null;
+    }
+
     @Override
     public ApiMetadata build() {
-        return new ApiMetadata(name, title, summary, description, 
-        					termsOfService, null == concat ? null : concat.build(), 
+
+        MPermission[] permissions = this.permissions.values().toArray(new MPermission[0]);
+
+        return new ApiMetadata(name, title, summary, description,
+        					termsOfService, null == contact ? null : contact.build(),
         					version, host, basePath,
         					protocols.toArray(Arrays2.EMPTY_STRING_ARRAY), 
         					consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
-        					produces.toArray(Arrays2.EMPTY_STRING_ARRAY), 
+        					produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
+                            Builders.buildMap(responses),
         					Builders.buildMap(paths),
         					Builders.buildMap(models),
-        					securityDefs.toArray(new ApiSecurityDef[]{}),
+                            permissions,
+        					securityDefs.toArray(new MApiSecurityDef[]{}),
         					attrs);
     }
 	

@@ -217,6 +217,16 @@ public class HomeController {
         System.out.println();
     }
 
+    @DefaultView("/test_default_view1")
+    public void defaultView1() {
+
+    }
+
+    @Success(defaultView = "/test_default_view2")
+    public void defaultView2() {
+
+    }
+
 	public static final class NestedController {
         public void index() {
 

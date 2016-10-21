@@ -15,16 +15,12 @@
  */
 package leap.db.platform.postgresql;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import leap.db.model.DbIndexBuilder;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.jdbc.JDBC;
+
+import java.sql.*;
 
 public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 
@@ -93,7 +89,7 @@ public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 	}
 	
 	@Override
-    protected boolean isInternalIndex(DbTableBuilder1 table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
+    protected boolean isInternalIndex(DbTableBuilder table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
 		String name = ix.getName().toLowerCase();
 		String tableName = table.getName().toLowerCase();
 		

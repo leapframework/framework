@@ -64,7 +64,7 @@ public abstract class Dmo {
 	 * 
 	 * <p>
 	 * <font color="red"><strong>
-	 * Be carefull : this method will clear all data in the table(s) mapping to the given entity type.
+	 * Be careful : this method will clear all data in the table(s) mapping to the given entity type.
 	 * </strong></font>
 	 * 
 	 * @throws MappingNotFoundException if the given entity not exists.
@@ -112,7 +112,7 @@ public abstract class Dmo {
     public abstract CreateTableCommand cmdCreateTable(EntityMapping em);
 
 	/**
-	 * Creates a new {@linke DropTableCommand} command for dropping the table of entity.
+	 * Creates a new {@link DropTableCommand} command for dropping the table of entity.
      */
 	@Dangerous(askForConfirm = true)
 	public abstract DropTableCommand cmdDropTable(Class<?> entityClass);

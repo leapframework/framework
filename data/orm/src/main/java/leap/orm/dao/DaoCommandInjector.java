@@ -20,48 +20,85 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.BeanDefinition;
 import leap.core.ioc.BeanInjector;
 import leap.lang.Lazy;
-import leap.lang.New;
+import leap.lang.Out;
 import leap.lang.Strings;
 import leap.lang.beans.BeanCreationException;
-import leap.lang.beans.BeanType;
 import leap.lang.reflect.ReflectValued;
 import leap.orm.annotation.SqlKey;
+import leap.orm.sql.DefaultSqlIdentity;
 import leap.orm.sql.SqlCommand;
+import leap.orm.sql.SqlIdentity;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Set;
 
 public class DaoCommandInjector implements BeanInjector {
 
     protected @Inject Lazy<List<Dao>> daos;
 
     @Override
-    public Set<Class<? extends Annotation>> getSupportedAnnotationTypes() {
-        return New.hashSet(SqlKey.class);
-    }
-
-    @Override
-    public Object resolveInjectValue(BeanDefinition bd, Object bean, BeanType bt, ReflectValued v, Annotation a) {
+    public boolean resolveInjectValue(BeanDefinition bd, Object bean, ReflectValued v, Annotation a, Out<Object> value) {
         if (!leap.orm.dao.DaoCommand.class.equals(v.getType())) {
-            throw new BeanCreationException("The type of '" + v + "' must be '" + DaoCommand.class + "' in bean '" + bean + "'");
+            return false;
         }
 
-        SqlKey c = (SqlKey)a;
+        SqlIdentity identity;
+        if(a.annotationType().equals(Inject.class)) {
+            identity = resolveSqlIdentity(bd, v, (Inject)a);
+        }else if(a.annotationType().equals(SqlKey.class)) {
+            identity = resolveSqlIdentity(bd, v, (SqlKey)a);
+        }else{
+            return false;
+        }
+        String key = identity.getAttribute("key");
+        String datasource = identity.getAttribute("datasource");
+        for(Dao dao : daos.get()) {
+            if(datasource == null){
+                SqlCommand sc = dao.getOrmContext().getMetadata().tryGetSqlCommand(key);
+                if(null != sc) {
+                    value.set(new SimpleDaoCommand(dao, sc));
+                    return true;
+                }
+            }else if(Strings.equals(dao.getOrmContext().getName(),datasource)){
+                SqlCommand sc = dao.getOrmContext().getMetadata().tryGetSqlCommand(key);
+                if(null != sc) {
+                    value.set(new SimpleDaoCommand(dao, sc));
+                    return true;
+                }
+            }
+        }
+        if(datasource == null){
+            String msg = "The sql key '" + key + "' not found, check the bean : " + bd;
+            throw new BeanCreationException(msg);
+        }else{
+            String msg = "The sql key '" + key + "', datasource '"+datasource+"' not found, check the bean : " + bd;
+            throw new BeanCreationException(msg);
+        }
 
-        String key = c.value();
+    }
+
+    protected SqlIdentity resolveSqlIdentity(BeanDefinition bd, ReflectValued v, Inject inject) {
+        String key = Strings.firstNotEmpty(inject.name(), inject.value());
+
+        SqlKey sk = v.getAnnotation(SqlKey.class);
+        if(null != sk) {
+            return resolveSqlIdentity(bd, v, sk);
+        }
+        if(Strings.isEmpty(key)){
+            key = v.getName();
+        }
+        return new DefaultSqlIdentity(key, null, null, null, null);
+    }
+
+    protected SqlIdentity resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
+        String key = a.value();
+        String datasource = a.datasource();
+        if(Strings.isEmpty(datasource)){
+            datasource = null;
+        }
         if(Strings.isEmpty(key)) {
             throw new BeanCreationException("The value of '" + SqlKey.class + "' must not be empty, check the bean : " + bd);
         }
-
-        for(Dao dao : daos.get()) {
-            SqlCommand sc = dao.getOrmContext().getMetadata().tryGetSqlCommand(key);
-            if(null != sc) {
-                return new SimpleDaoCommand(dao, sc);
-            }
-        }
-
-        throw new BeanCreationException("The sql key '" + key + "' not found, check the bean : " + bd);
+        return new DefaultSqlIdentity(key, null, null, null, datasource);
     }
-
 }

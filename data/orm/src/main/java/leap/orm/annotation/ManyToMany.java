@@ -27,6 +27,11 @@ import java.lang.annotation.Target;
 @Repeatable(ManyToManys.class)
 @ARelation
 public @interface ManyToMany {
+
+    /**
+     * Same as {@link #target()}.
+     */
+    Class<?> value() default void.class;
 	
 	/**
 	 * The relation name, i.e. <code>categories</code>.
@@ -38,7 +43,7 @@ public @interface ManyToMany {
      *
      * <p> Defaults to the type of the field or property that stores the association.
      */
-	Class<?> targetEntityType() default void.class;
+	Class<?> target() default void.class;
 	
 	/**
 	 * The join entity class of the association.

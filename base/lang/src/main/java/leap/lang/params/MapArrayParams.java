@@ -15,6 +15,9 @@
  */
 package leap.lang.params;
 
+import leap.lang.collection.WrappedCaseInsensitiveMap;
+
+import java.util.HashMap;
 import java.util.Map;
 
 public class MapArrayParams extends NamedParamsBase {
@@ -23,11 +26,11 @@ public class MapArrayParams extends NamedParamsBase {
 	protected final Object[] values;
 
 	public MapArrayParams(Map<String, Object> map, Object... values) {
-		super(map);
+        super(WrappedCaseInsensitiveMap.create(null == map ? new HashMap<>(1) : map));
 		this.start  = map.size();
 		this.values = values;
 		for(int i=0;i<values.length;i++){
-			map.put(ArrayParams.PREFIX + (start + i), values[i]);
+			this.map.put(ArrayParams.PREFIX + (start + i), values[i]);
 		}
 	}
 	

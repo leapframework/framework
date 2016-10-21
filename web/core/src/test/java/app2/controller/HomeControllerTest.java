@@ -54,7 +54,7 @@ public class HomeControllerTest extends WebTestCase {
 		assertEquals(new Integer(100), product.getId());
 		assertEquals("Iphone6", product.getTitle());
 		
-		Map<String, Object> map = JSON.decodeToMap(json);
+		Map<String, Object> map = JSON.decodeMap(json);
 		assertFalse(map.containsKey("summary"));
 	}
 	

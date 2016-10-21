@@ -95,6 +95,7 @@
 			<xsd:attribute name="update-value" type="xsd:string"/>
 			<xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
 			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
+            <xsd:attribute name="sort-order" type="xsd:float" use="optional"/>
 			<xsd:attribute name="override" type="xsd:boolean">
 				<xsd:annotation>
 					<xsd:documentation><![CDATA[

@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-parent</artifactId>
-	<version>0.2.2-SNAPSHOT</version>
+	<version>0.4.0b-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	
 	<licenses>
@@ -332,12 +332,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>${servlet.version}</version>
-            <scope>provided</scope>
-        </dependency>        
-        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>${h2.version}</version>
@@ -375,6 +369,7 @@
         <module>base/lang</module>
         <module>base/agent</module>
 		<module>base/core</module>
+        <module>base/test-instrument</module>
         <module>base/test-profile</module>
         <module>base/test-profile1</module>
         <module>base/test-profile2</module>

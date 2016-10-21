@@ -39,9 +39,13 @@ import leap.lang.meta.MTypeKind;
 public class Types {
 
 	protected static final Type[] EMPTY_TYPES = new Type[] {};
+
+    public static TypeInfo getTypeInfo(Class<?> type) {
+        return getTypeInfo(type, null);
+    }
 	
 	public static TypeInfo getTypeInfo(Class<?> type,Type genericType) {
-		MTypeKind kind            = null;
+		MTypeKind kind           = null;
 		Class<?> elementType     = null;
 		TypeInfo elementTypeInfo = null;
 		
@@ -100,14 +104,7 @@ public class Types {
 
 		if (genericType instanceof Class<?>) {
 			Class<?> clazz = ((Class<?>) genericType);
-
-			TypeVariable<?>[] types = clazz.getTypeParameters();
-
-			if (types.length > 1) {
-				throw new IllegalArgumentException("type argument's length large than 1");
-			}
-
-			return types;
+			return clazz.getTypeParameters();
 		}
 
 		return EMPTY_TYPES;

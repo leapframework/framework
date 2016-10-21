@@ -1,5 +1,6 @@
 package leap.web.route;
 
+import leap.lang.Extensible;
 import leap.lang.Sourced;
 import leap.web.action.FailureHandler;
 import leap.web.format.RequestFormat;
@@ -12,45 +13,41 @@ import java.util.Map;
 /**
  * Indicates a routing rule use to mapping a request to a handler.
  */
-public interface Route extends RouteBase, Sourced {
+public interface Route extends RouteBase, Sourced, Extensible {
 
-	Comparator<Route> COMPARATOR = 
-			new Comparator<Route>() {
-               @Override
-               public int compare(Route o1, Route o2) {
-                   if (o1 == null && o2 == null) {
-                       return 1;
-                   }
+	Comparator<Route> COMPARATOR =
+            (o1, o2) -> {
+                if (o1 == null && o2 == null) {
+                    return 1;
+                }
 
-                   if (o1 == null) {
-                       return 1;
-                   }
+                if (o1 == null) {
+                    return 1;
+                }
 
-                   if (o2 == null) {
-                       return -1;
-                   }
+                if (o2 == null) {
+                    return -1;
+                }
 
-                   int result = o1.getPathTemplate().compareTo(o2.getPathTemplate());
+                int result = o1.getPathTemplate().compareTo(o2.getPathTemplate());
 
-                   if (result == 0) {
-                       result = Integer.compare(o2.getRequiredParameters().size(), o1
-                               .getRequiredParameters().size());
-                   }
+                if (result == 0) {
+                    result = Integer.compare(o2.getRequiredParameters().size(), o1
+                            .getRequiredParameters().size());
+                }
 
-                   if (result == 0) {
-                       if (o1.getMethod().equals("*")) {
-                           result = 1;
-                       } else if (o2.getMethod().equals("*")) {
-                           result = -1;
-                       } else {
-                           result = o1.getMethod().compareToIgnoreCase(o2.getMethod());
-                       }
-                   }
+                if (result == 0) {
+                    if (o1.getMethod().equals("*")) {
+                        result = 1;
+                    } else if (o2.getMethod().equals("*")) {
+                        result = -1;
+                    } else {
+                        result = o1.getMethod().compareToIgnoreCase(o2.getMethod());
+                    }
+                }
 
-                   return result == 0 ? 1 : result;
-               }
-
-           };
+                return result == 0 ? 1 : result;
+            };
 
 	/**
 	 * Returns a object indicates the source location defined this route.
@@ -153,7 +150,7 @@ public interface Route extends RouteBase, Sourced {
 	 * 
 	 * or 
 	 * 
-	 * Donothing if <code>null</code>.
+	 * Do nothing if <code>null</code>.
 	 */
 	void setCorsEnabled(Boolean enabled);
 	
@@ -161,6 +158,56 @@ public interface Route extends RouteBase, Sourced {
 	 * Sets the <code>supportMultipart</code> property.
 	 */
 	void setSupportsMultipart(boolean supports);
+
+    /**
+     * Returns the allow-anonymous status..
+     */
+    Boolean getAllowAnonymous();
+
+    /**
+     * Sets is allow anonymous access.
+     */
+    void setAllowAnonymous(Boolean allowAnonymous);
+
+    /**
+     * Returns the allow-rememberMe status.
+     */
+    Boolean getAllowRememberMe();
+
+    /**
+     * Sets allow remember-me.
+     */
+    void setAllowRememberMe(Boolean allowRememberMe);
+
+    /**
+     * Returns the allow-clientOnly status..
+     */
+    Boolean getAllowClientOnly();
+
+    /**
+     * Sets is allow client only access.
+     */
+    void setAllowClientOnly(Boolean allowClientOnly);
+
+    /**
+     * Optional. Returns the permissions.
+     */
+    String[] getPermissions();
+
+    /**
+     * Sets the permissions.
+     */
+    void setPermissions(String[] permissions);
+
+    /**
+     * Optional. Returns the roles required for accessing this route..
+     */
+    String[] getRoles();
+
+    /**
+     * Sets the roles.
+     */
+    void setRoles(String[] roles);
 	
 	/**
 	 * Returns <code>true</code> if the route enables csrf support explicitly.
@@ -173,7 +220,7 @@ public interface Route extends RouteBase, Sourced {
 	boolean isCsrfDisabled();
 	
 	/**
-	 * Eanbles or Disables csrf.
+	 * Enables or Disables csrf.
 	 */
 	void setCsrfEnabled(Boolean enabled);
 	

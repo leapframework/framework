@@ -23,7 +23,7 @@ import java.sql.SQLException;
 
 import leap.db.model.DbForeignKeyBuilder;
 import leap.db.model.DbIndexBuilder;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
@@ -196,7 +196,7 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
     }
 
 	@Override
-    protected boolean isInternalIndex(DbTableBuilder1 table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
+    protected boolean isInternalIndex(DbTableBuilder table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
 		//primary key index
 		if(ix.getName().equals("PRIMARY")){
 			return true;

@@ -64,7 +64,7 @@ public abstract class AbstractJwtVerifier implements JwtVerifier {
 
         JsonValue json;
         try {
-            json = JSON.decodeToJsonValue(JWT.base64UrlDeocodeToString(payload));
+            json = JSON.parse(JWT.base64UrlDeocodeToString(payload));
         } catch (Exception e) {
             throw new TokenVerifyException(ErrorCode.INVALID_PAYLOAD, "Parse payload as json object failed, " + e.getMessage());
         }

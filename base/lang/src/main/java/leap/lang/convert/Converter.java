@@ -24,6 +24,6 @@ public interface Converter<T> {
 	boolean convertFrom(Object value,Class<?> targetType,Type genericType, Out<Object> out) throws Throwable;
 	
 	boolean convertTo(T value,Class<?> targetType,Type genericType,Out<Object> out) throws Throwable;
-	
+
 	String convertToString(T value) throws Throwable;
 }

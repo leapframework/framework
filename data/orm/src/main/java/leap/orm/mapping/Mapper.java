@@ -23,6 +23,10 @@ public interface Mapper {
 	    
 	}
 
+    default void postMappings(MappingConfigContext context) throws MetadataException {
+
+    }
+
 	default void completeMappings(MappingConfigContext context) throws MetadataException {
 	    
 	}

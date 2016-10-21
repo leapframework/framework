@@ -15,6 +15,7 @@
  */
 package leap.web.cors;
 
+import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
@@ -25,8 +26,19 @@ import leap.web.Response;
  * @see <a href="http://www.w3.org/TR/cors/">CORS specification</a>
  */
 public class DefaultCorsHandler implements CorsHandler {
-	
-	public State handle(Request request, Response response, CorsConfig conf) throws Throwable {
+
+    protected @Inject CorsConfig conf;
+
+    @Override
+    public boolean isPreflightRequest(Request request) {
+        String method = request.getRawMethod();
+        if("OPTIONS".equals(method) && request.hasHeader(REQUEST_HEADER_ORIGIN)) {
+            return true;
+        }
+        return false;
+    }
+
+    public State handle(Request request, Response response) throws Throwable {
 		if(!request.hasHeader(REQUEST_HEADER_ORIGIN)) {
 			return State.CONTINUE;
 		}
@@ -75,13 +87,13 @@ public class DefaultCorsHandler implements CorsHandler {
 		
 		//Section 6.1.3
 		if(conf.isSupportsCredentials()) {
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,      origin);
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+			setCorsOrigin(response,origin);
+			setCorsCredentials(response,"true");
 		}else{
 			if(conf.isAllowAnyOrigin()) {
-				response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+				setCorsOrigin(response,"*");
 			}else{
-				response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+				setCorsOrigin(response,origin);
 			}
 		}
 		
@@ -129,27 +141,27 @@ public class DefaultCorsHandler implements CorsHandler {
 		
 		//6.2.7
 		if(conf.isSupportsCredentials()) {
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,      origin);
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS, "true");
+			setCorsOrigin(response,origin);
+			setCorsCredentials(response,"true");
 		}else{
 			if(conf.isAllowAnyOrigin()) {
-				response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+				setCorsOrigin(response,"*");
 			}else{
-				response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, origin);
+				setCorsOrigin(response,origin);
 			}
 		}	
 		
 		//6.2.8
 		if(conf.getPreflightMaxAge() > 0) {
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE, String.valueOf(conf.getPreflightMaxAge()));
+			setCorsMaxAge(response,String.valueOf(conf.getPreflightMaxAge()));
 		}
 		
 		//6.2.9
-		response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS, accessControlRequestMethod);
-		
+		setCorsMethod(response,accessControlRequestMethod);
+
 		//6.2.10
 		if(accessControlRequestHeaders != null && accessControlRequestHeaders.length() > 0) {
-			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS, accessControlRequestHeaders);
+			setCorsHeaders(response,accessControlRequestHeaders);
 		}
 		
 		return State.INTERCEPTED;
@@ -172,6 +184,27 @@ public class DefaultCorsHandler implements CorsHandler {
 	protected void responseInvalid(Request request, Response response, CorsConfig conf, String origin) throws Throwable {
 		response.setContentType("text/plain");
 		response.setStatus(HTTP.SC_FORBIDDEN);
+	}
+
+	protected void setCorsOrigin(Response response, String headerValue){
+		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,headerValue);
+	}
+	protected void setCorsCredentials(Response response, String headerValue){
+		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS,headerValue);
+	}
+	protected void setCorsMaxAge(Response response, String headerValue){
+		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE,headerValue);
+	}
+	protected void setCorsMethod(Response response, String headerValue){
+		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS,headerValue);
+	}
+	protected void setCorsHeaders(Response response, String headerValue){
+		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS,headerValue);
+	}
+	protected void setHeaderWhenEmpty(Response response, String headerName, String headerValue){
+		if(Strings.isEmpty(response.getServletResponse().getHeader(headerName))){
+			response.addHeader(headerName,headerValue);
+		}
 	}
 }
 

@@ -50,6 +50,13 @@ public interface Record extends Map<String, Object> {
     }
 
     /**
+     * Returns the value and case to the generic type.
+     */
+    default <T> T getAs(String name) {
+        return (T)get(name);
+    }
+
+    /**
      * Returns the column value as the given type.
      */
     default <T> T get(String name, Class<T> type) {

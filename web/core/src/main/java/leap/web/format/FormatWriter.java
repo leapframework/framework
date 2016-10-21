@@ -15,6 +15,8 @@
  */
 package leap.web.format;
 
+import leap.web.action.ActionContext;
+
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
@@ -22,6 +24,6 @@ import java.lang.reflect.Type;
 
 public interface FormatWriter {
 
-	void write(Writer out, Class<?> type, Type genericType, Annotation[] annotations, Object value) throws IOException;
+	void write(ActionContext context, Object value, Writer out) throws IOException;
 
 }

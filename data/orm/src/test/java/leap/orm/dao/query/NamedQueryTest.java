@@ -15,6 +15,7 @@
  */
 package leap.orm.dao.query;
 
+import leap.core.annotation.Inject;
 import leap.junit.contexual.Contextual;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
@@ -32,7 +33,7 @@ import java.util.Map;
 
 public class NamedQueryTest extends OrmTestCase {
 
-    protected @SqlKey("findOwnerByLastNameWithAlias") DaoCommand findOwnerByLastNameWithAlias;
+    protected @Inject DaoCommand findOwnerByLastNameWithAlias;
 
 	@Test
 	public void testFindOwnersByLastName() {

@@ -36,7 +36,7 @@ public class ResponseEntityControllerTest extends WebTestCase {
 		assertEquals(new Integer(100), product.getId());
 		assertEquals("Iphone6", product.getTitle());
 		
-		Map<String, Object> map = JSON.decodeToMap(json);
+		Map<String, Object> map = JSON.decode(json);
 		assertTrue(map.containsKey("summary"));
 
         get("/response_entity/get_product?id=2").assert404().assertContentEmpty();
@@ -51,7 +51,7 @@ public class ResponseEntityControllerTest extends WebTestCase {
 		assertEquals(new Integer(100), product.getId());
 		assertEquals("Iphone6", product.getTitle());
 		
-		Map<String, Object> map = JSON.decodeToMap(json);
+		Map<String, Object> map = JSON.decode(json);
 		assertFalse(map.containsKey("summary"));
 	}
 

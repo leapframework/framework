@@ -61,7 +61,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
             log.debug("Received response : {}", content);
             
             try {
-                JsonValue json = JSON.decodeToJsonValue(content);
+                JsonValue json = JSON.parse(content);
                 
                 if(!json.isMap()) {
                     throw new OAuth2InternalServerException("Invalid response from auth server : not a json map");
@@ -94,7 +94,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
-        details.setCreated((Long)map.remove("created"));
+        details.setCreated(System.currentTimeMillis());
         details.setExpiresIn(((Integer)map.remove("expires_in")) * 1000);
         details.setScope((String)map.remove("scope"));
 

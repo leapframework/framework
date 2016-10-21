@@ -17,15 +17,47 @@ package leap.orm.command;
 
 import java.util.Map;
 
+/**
+ * A command for creating a new record of entity.
+ */
 public interface InsertCommand {
-	
+
+    /**
+     * Returns the passed in or generated id.
+     */
+    Object id();
+
+    /**
+     * Returns the generated id after execution.
+     *
+     * <p/>
+     * Returns null if the entity has no generator of id.
+     */
 	Object getGeneratedId();
-	
+
+    /**
+     * Sets the id of record.
+     */
+    InsertCommand id(Object id);
+
+    /**
+     * Sets the insert field.
+     */
 	InsertCommand set(String name,Object value);
-	
+
+    /**
+     * Sets all the fields in the bean.
+     */
 	InsertCommand setAll(Object bean);
-	
+
+    /**
+     * Sets all the fields in the map.
+     */
 	InsertCommand setAll(Map<String, Object> map);
-	
+
+    /**
+     * Executes insert and returns the affected records.
+     */
 	int execute();
+
 }

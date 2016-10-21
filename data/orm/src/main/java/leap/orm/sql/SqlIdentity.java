@@ -18,4 +18,5 @@ package leap.orm.sql;
  */
 public interface SqlIdentity {
     String identity();
+    String getAttribute(String attr);
 }

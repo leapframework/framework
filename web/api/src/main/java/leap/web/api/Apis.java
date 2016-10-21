@@ -16,12 +16,15 @@
 package leap.web.api;
 
 import java.util.Map;
+import java.util.Set;
 
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 
 /**
  * Contains all the api configurators.
@@ -29,20 +32,34 @@ import leap.web.api.meta.ApiMetadata;
 public interface Apis {
 
 	/**
-	 * Returns an immutable {@link Map} contains all the {@link ApiConfigurator}.
+	 * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
 	 */
-	Map<String, ApiConfigurator> configurators();
+	Set<ApiConfigurator> getConfigurators();
 	
 	/**
-	 * Returns an immutable {@link Map} contains all the api configurations.
+	 * Returns an immutable {@link Set} contains all the api configurations.
 	 */
-	Map<String, ApiConfig> configurations();
-	
-	/**
-	 * Returns an immutable {@link Map} contains all the api metadatas.
-	 */
-	Map<String, ApiMetadata> metadatas();
-	
+	Set<ApiConfig> getConfigurations();
+
+    /**
+     * Returns the configurator of the api.
+     *
+     * @param name the name of the api.
+     *
+     * @throws ObjectNotFoundException if no api configuration exists for the given name.
+     */
+    ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
+
+    /**
+     * Returns the {@link ApiConfigurator} of the api or null if not exists.
+     */
+    ApiConfigurator tryGetConfigurator(String name);
+
+    /**
+     * Returns the {@link ApiMetadata} of the api or null if not exists.
+     */
+    ApiMetadata tryGetMetadata(String name);
+
 	/**
 	 * Creates an api configuration and returns the configurator.
 	 * 
@@ -52,15 +69,6 @@ public interface Apis {
 	 * @throws ObjectExistsException if the given name aleady exists.
 	 */
 	ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
-	
-	/**
-	 * Returns the configurator of the api.
-	 * 
-	 * @param name the name of the api.
-	 * 
-	 * @throws ObjectNotFoundException if no api configuration exists for the given name.
-	 */
-	ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
 	
 	/**
 	 * Returns <code>true</code> if default enabled.
@@ -76,9 +84,14 @@ public interface Apis {
 	String getDefaultOAuthAuthorizationUrl();
 	
 	/**
-	 * Optinal. Returns the default oauth2 token endpoint url.
+	 * Optional. Returns the default oauth2 token endpoint url.
 	 */
 	String getDefaultOAuthTokenUrl();
+
+    /**
+     * Returns a mutable {@link Map} contains all the common responses.
+     */
+    Map<String, MApiResponse> getCommonResponses();
 
 	/**
 	 * Sets all the apis default enable oauth2.
@@ -99,4 +112,5 @@ public interface Apis {
 	 * Sets the default oauth2 token url for all apis. 
 	 */
 	Apis setDefaultOAuthTokenUrl(String url);
+
 }

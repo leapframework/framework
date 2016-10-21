@@ -3,7 +3,7 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.2.2-SNAPSHOT</version>
+		<version>0.4.0b-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap-core</artifactId>
@@ -51,15 +51,12 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-        <!-- for testing only
         <dependency>
-            <groupId>org.leapframework</groupId>
-            <artifactId>leap-agent</artifactId>
-            <version>0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/lib/leap-agent.jar</systemPath>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet.version}</version>
+            <scope>provided</scope>
         </dependency>
-        -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>

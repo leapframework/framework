@@ -25,6 +25,8 @@ import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.List;
@@ -81,7 +83,9 @@ public class Converts {
 		register(java.sql.Timestamp.class,	new DateTimeConverters.SqlTimestampConverter());
 		register(java.sql.Time.class,		new DateTimeConverters.SqlTimeConverter());
 		register(Calendar.class,			new DateTimeConverters.CalendarConverter());
-		register(LocalDate.class,           new DateTimeConverters.LocalDateConverter());	
+		register(LocalDate.class,           new DateTimeConverters.LocalDateConverter());
+        register(LocalTime.class,           new DateTimeConverters.LocalTimeConverter());
+        register(LocalDateTime.class,       new DateTimeConverters.LocalDateTimeConverter());
 		
 		//Collection :  
 		register(Iterable.class,new CollectionConverters.ListConverter());

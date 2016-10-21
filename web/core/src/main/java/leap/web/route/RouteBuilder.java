@@ -18,6 +18,7 @@ package leap.web.route;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Assert;
 import leap.lang.Buildable;
+import leap.lang.ExtensibleBase;
 import leap.web.action.Action;
 import leap.web.action.FailureHandler;
 import leap.web.annotation.Cors;
@@ -31,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class RouteBuilder implements RouteBase, Buildable<Route> {
+public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable<Route> {
 	
 	protected Object	   		   source;
 	protected String       		   method;
@@ -42,9 +43,6 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 	protected Boolean			   csrfEnabled;
 	protected Boolean			   supportsMultipart;
 	protected Boolean              acceptValidationError;
-	protected Boolean              httpsOnly;
-	protected Boolean              allowAnonymous;
-	protected Boolean              allowClientOnly;
 	protected RequestFormat		   requestFormat;
 	protected ResponseFormat       responseFormat;
 	protected View		   		   defaultView;
@@ -53,6 +51,13 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 	protected Object	   		   executionAttributes;
 	protected Map<String, String>  requiredParameters;
 	protected List<FailureHandler> failureHandlers = new ArrayList<>();
+
+    protected Boolean              httpsOnly;
+    protected Boolean              allowAnonymous;
+    protected Boolean              allowClientOnly;
+    protected Boolean              allowRememberMe;
+    protected String[]             permissions;
+    protected String[]             roles;
 	
 	public Object getSource() {
 		return source;
@@ -225,6 +230,51 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
         return this;
     }
 
+    public Boolean getAllowAnonymous() {
+        return allowAnonymous;
+    }
+
+    public RouteBuilder setAllowAnonymous(Boolean allowAnonymous) {
+        this.allowAnonymous = allowAnonymous;
+        return this;
+    }
+
+    public Boolean getAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    public RouteBuilder setAllowClientOnly(Boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+        return this;
+    }
+
+    public Boolean getAllowRememberMe() {
+        return allowRememberMe;
+    }
+
+    public RouteBuilder setAllowRememberMe(Boolean allowRememberMe) {
+        this.allowRememberMe = allowRememberMe;
+        return this;
+    }
+
+    public String[] getPermissions() {
+        return permissions;
+    }
+
+    public RouteBuilder setPermissions(String[] permissions) {
+        this.permissions = permissions;
+        return this;
+    }
+
+    public String[] getRoles() {
+        return roles;
+    }
+
+    public RouteBuilder setRoles(String[] roles) {
+        this.roles = roles;
+        return this;
+    }
+
     @Override
 	public Route build() {
 		Assert.notNull(action, "action cannot be null");
@@ -238,9 +288,13 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
 			Csrf csrf = action.searchAnnotation(Csrf.class);
 			this.csrfEnabled = null != csrf ? csrf.value() : null;
 		}
-		
+
 		DefaultRoute route = new DefaultRoute(source, method, pathTemplate, action,
-            							 corsEnabled, csrfEnabled, supportsMultipart,acceptValidationError,
+            							 corsEnabled, csrfEnabled,
+                                         supportsMultipart,
+                                         allowAnonymous,
+                                         allowClientOnly,
+                                         acceptValidationError,
             							 requestFormat,responseFormat,
             							 defaultView, defaultViewName, 
             							 controllerPath, 
@@ -248,11 +302,25 @@ public class RouteBuilder implements RouteBase, Buildable<Route> {
             							 failureHandlers.toArray(new FailureHandler[failureHandlers.size()]),
             							 requiredParameters);
 
+        //success status.
         route.setSuccessStatus(successStatus);
 
+        //https only
 		if(null != httpsOnly) {
 		    route.setHttpsOnly(httpsOnly);
 		}
+
+        //remember-me
+        route.setAllowRememberMe(allowRememberMe);
+
+        //permissions
+        route.setPermissions(permissions);
+
+        //roles
+        route.setRoles(this.roles);
+
+        //extensions.
+        extensions.forEach((t,ex) -> route.setExtension(t, ex));
 
 		return route;
 	}

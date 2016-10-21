@@ -42,7 +42,17 @@ public class ValidationException extends AppException {
 		super(message, cause);
 		this.errors = errors;
 	}
-	
+
+    public ValidationException(String message) {
+        errors = new SimpleErrors();
+        errors.add("ValidationError",message);
+    }
+
+    public ValidationException(String code, String message) {
+        errors = new SimpleErrors();
+        errors.add(code,message);
+    }
+
 	public Errors getErrors() {
 		return errors;
 	}

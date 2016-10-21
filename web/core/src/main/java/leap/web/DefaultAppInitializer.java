@@ -20,11 +20,16 @@ import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.security.annotation.*;
 import leap.core.validation.ValidationManager;
 import leap.core.web.path.PathTemplate;
 import leap.core.web.path.PathTemplateFactory;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.beans.BeanException;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+import leap.lang.http.HTTP;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.naming.NamingStyles;
@@ -102,14 +107,21 @@ public class DefaultAppInitializer implements AppInitializer {
             if(rs.isEmpty()) {
                 log.info("No resource scanned in base package '{}' of module '{}', is the module exists?");
             }else{
-                log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
-                        module.getBasePath(), module.getBasePackage(), module.getName());
+                String appContextPath    = app.getContextPath().equals("") ? "/" : app.getContextPath();
+                String moduleContextPath = module.getContextPath();
 
-                rs.processClasses((cls) -> {
-                    if(as.isControllerClass(cls)) {
-                        loadControllerClass(app, module.getBasePath(), cls);
-                    }
-                });
+                if(Strings.isEmpty(moduleContextPath) || appContextPath.equals(moduleContextPath)) {
+
+                    log.debug("Load routes[base-path={}' from classes in base package '{}' of module '{}'.",
+                            module.getBasePath(), module.getBasePackage(), module.getName());
+
+                    rs.processClasses((cls) -> {
+                        if(as.isControllerClass(cls)) {
+                            loadControllerClass(app, module.getBasePath(), cls);
+                        }
+                    });
+
+                }
             }
         }
 	}
@@ -141,14 +153,18 @@ public class DefaultAppInitializer implements AppInitializer {
 			//Create controller instance
 			Object controller = as.getControllerInstance(cls);
 			
-	        ControllerHolder controllerHolder = new ControllerHolder(controller,rcls,controllerPath);
+	        ControllerInfoImpl ci = new ControllerInfoImpl(controller,rcls,controllerPath);
+
+            if(cls.isAnnotationPresent(Restful.class)) {
+                ci.setRestful(true);
+            }
 	        
 			for(ReflectMethod rm : rcls.getMethods()){
 				if(rm.isGetterMethod() || rm.isSetterMethod()) {
                     continue;
                 }
 
-                if(!as.isActionMethod(rm.getReflectedMethod())) {
+                if(!as.isActionMethod(ci, rm.getReflectedMethod())) {
                     continue;
                 }
 
@@ -157,25 +173,23 @@ public class DefaultAppInitializer implements AppInitializer {
 					continue;
 				}
 				
-				loadActionMethod(app, controllerHolder, rm);
+				loadActionMethod(app, ci, rm);
 			}
 		}
 	}
 	
-	protected void loadActionMethod(App app,ControllerHolder cholder, ReflectMethod rm){
-		ActionBuilder action = createAction(app, cholder, rm);
+	protected void loadActionMethod(App app, ControllerInfoImpl ci, ReflectMethod rm){
+		ActionBuilder action = createAction(app, ci, rm);
 		
 		ActionMapping[] mappings = as.getActionMappings(action);
 		
 		for(ActionMapping m : mappings){
-			addActionRoute(app, cholder.cls(), cholder.path(), action, m);
+			addActionRoute(app, ci, action, m);
 		}
 	}
 	
-	protected void addActionRoute(App app, 
-							      Class<?> controllerClass,String controllerPath,
-							      ActionBuilder action,ActionMapping mapping) {
-		
+	protected void addActionRoute(App app, ControllerInfo ci, ActionBuilder action, ActionMapping mapping) {
+
 		StringBuilder path = new StringBuilder();
 		
 		String actionPath = mapping.getPath();
@@ -192,16 +206,16 @@ public class DefaultAppInitializer implements AppInitializer {
 			}
 		}
 
-		boolean restful = null != controllerClass && controllerClass.isAnnotationPresent(RestController.class);
-		
+        boolean restful = ci.isRestful();
+
 		if(!Strings.isEmpty(actionPath)){
 			if(!restful && actionPath.startsWith("/")){
 				path.append(actionPath);
 			}else{
-				path.append(controllerPath).append(Paths.prefixWithSlash(actionPath));
+				path.append(ci.getPath()).append(Paths.prefixWithSlash(actionPath));
 			}
 		}else{
-			path.append(controllerPath);
+			path.append(ci.getPath());
 		}
 		
 		if(path.length() > 0 && path.charAt(path.length() - 1) == '/'){
@@ -228,8 +242,8 @@ public class DefaultAppInitializer implements AppInitializer {
 		
 		//create route
 		RouteBuilder route = new RouteBuilder();
-		route.setSource(controllerClass);
-		route.setControllerPath(controllerPath);
+		route.setSource(ci.getType());
+		route.setControllerPath(ci.getPath());
 		route.setMethod(mapping.getMethod());
 		route.setPathTemplate(pathTemplate);
 		route.setResponseFormat(responseFormat);
@@ -237,7 +251,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		route.setSupportsMultipart(supportsMultipart(action));
 		
 		//resole default view path
-		String[] defaultViewNames = as.getDefaultViewNames(action, controllerPath, actionPath, pathTemplate);
+		String[] defaultViewNames = as.getDefaultViewNames(action, ci.getPath(), actionPath, pathTemplate);
 		for(String defaultViewName : defaultViewNames){
 			try {
 				View view = resolveView(app, defaultViewName);
@@ -261,7 +275,14 @@ public class DefaultAppInitializer implements AppInitializer {
 		//success status.
 		Success success = act.getAnnotation(Success.class);
 		if(null != success) {
-            route.setSuccessStatus(success.status().value());
+            HTTP.Status s1 = success.status();
+            HTTP.Status s2 = success.value();
+
+            if(s1.value() != 200) {
+                route.setSuccessStatus(s1.value());
+            }else{
+                route.setSuccessStatus(s2.value());
+            }
 		}
 
 		//validation
@@ -288,6 +309,41 @@ public class DefaultAppInitializer implements AppInitializer {
 		if(null != failure) {
 			addFailureHandler(route, failure);
 		}
+
+        //security.
+
+        AllowAnonymous aa = act.searchAnnotation(AllowAnonymous.class);
+        if(null != aa) {
+            route.setAllowAnonymous(aa.value());
+        }
+
+        AllowClientOnly ac = act.searchAnnotation(AllowClientOnly.class);
+        if(null != ac) {
+            route.setAllowClientOnly(ac.value());
+        }
+
+        AllowRememberMe ar = act.searchAnnotation(AllowRememberMe.class);
+        if(null != ar) {
+            route.setAllowRememberMe(ar.value());
+        }
+
+        Permissions permissions = act.searchAnnotation(Permissions.class);
+        if(null != permissions) {
+            route.setPermissions(permissions.value());
+        }
+
+        Secured secured = act.searchAnnotation(Secured.class);
+        if(null != secured){
+            route.setAllowRememberMe(secured.allowRememberMe());
+
+            if(!Arrays2.isEmpty(secured.roles())){
+                route.setRoles(secured.roles());
+            }
+
+            if(!Arrays2.isEmpty(secured.permissions())) {
+                route.setPermissions(secured.permissions());
+            }
+        }
 		
 		//prepare the action
 		am.prepareAction(route);
@@ -315,13 +371,13 @@ public class DefaultAppInitializer implements AppInitializer {
 		}
 	}
 
-	protected ActionBuilder createAction(App app,ControllerHolder ch,ReflectMethod m) {
+	protected ActionBuilder createAction(App app, ControllerInfoImpl ch, ReflectMethod m) {
 		MethodActionBuilder action = new MethodActionBuilder(ch.controller,m);
 
 		action.getInterceptors().addAll(resolveActionInterceptors(app, ch, m));
 		
-		for(int i=0;i<m.getParameters().length;i++){
-			action.addArgument(createArgument(app, m, m.getParameters()[i]));
+		for(ReflectParameter p : m.getParameters()){
+            action.addArgument(createArgument(app, m, p));
 		}
 		
 		return action;
@@ -345,12 +401,42 @@ public class DefaultAppInitializer implements AppInitializer {
 	
 	protected ArgumentBuilder createArgument(App app,ReflectMethod m, ReflectParameter p) {
 		ArgumentBuilder a = new ArgumentBuilder(validationManager, p);
-		
+
+        BindBy bindBy = p.getType().getAnnotation(BindBy.class);
+        if(null != bindBy) {
+            ArgumentBinder binder = app.factory.getOrAddBean(bindBy.value());
+            a.setBinder(binder);
+        }
+
+        ParamsWrapper aw = p.getAnnotation(ParamsWrapper.class);
+        if(null == aw) {
+            aw = p.getType().getAnnotation(ParamsWrapper.class);
+        }
+        if(null != aw) {
+            resolveWrappedArguments(app, a);
+        }
+
 		return a;
 	}
+
+    protected void resolveWrappedArguments(App app, ArgumentBuilder a) {
+        if(!a.getTypeInfo().isComplexType()) {
+            throw new IllegalStateException("Only Complex Type can be '" + ParamsWrapper.class.getSimpleName() +
+                                            "', check the arg : " + a);
+        }
+
+        BeanType bt = BeanType.of(a.getType());
+
+        for(BeanProperty bp : bt.getProperties()) {
+            if(bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {
+                ArgumentBuilder wrapped = new ArgumentBuilder(validationManager, bp);
+                a.addWrappedArgument(wrapped);
+            }
+        }
+    }
 	
 	@SuppressWarnings("unchecked")
-    protected List<ActionInterceptor> resolveActionInterceptors(App app,ControllerHolder ch,ReflectMethod m) {
+    protected List<ActionInterceptor> resolveActionInterceptors(App app, ControllerInfoImpl ch, ReflectMethod m) {
 		List<ActionInterceptor> interceptors = new ArrayList<>();
 		
 		InterceptedBy a = m.getAnnotation(InterceptedBy.class);
@@ -376,27 +462,40 @@ public class DefaultAppInitializer implements AppInitializer {
 		return viewSource.getView(viewPath, app.getDefaultLocale());
 	}
 	
-	protected static class ControllerHolder {
+	protected static class ControllerInfoImpl implements ControllerInfo {
 		private final Object       controller;
 		private final ReflectClass reflectClass;
 		private final String	   path;
+
+        private boolean restful;
 		
-		protected ControllerHolder(Object controller,ReflectClass reflectClass,String path){
-			this.controller   = controller;
+		protected ControllerInfoImpl(Object instance, ReflectClass reflectClass, String path){
+			this.controller   = instance;
 			this.reflectClass = reflectClass;
 			this.path         = path;
 		}
 
-		public Object controller() {
-			return controller;
-		}
+        @Override
+        public Class<?> getType() {
+            return reflectClass.getReflectedClass();
+        }
 
-		public Class<?> cls(){
-			return reflectClass.getReflectedClass();
-		}
+        public Object getInstance() {
+            return controller;
+        }
 
-		public String path() {
-			return path;
-		}
-	}
+        @Override
+        public boolean isRestful() {
+            return restful;
+        }
+
+        public void setRestful(boolean b) {
+            this.restful = b;
+        }
+
+        @Override
+        public String getPath() {
+            return path;
+        }
+    }
 }

@@ -21,6 +21,7 @@ import leap.lang.json.JsonValue;
 import leap.lang.jsoup.nodes.Document;
 
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * The HTTP response in client side for testing only.
@@ -112,8 +113,29 @@ public interface THttpResponse {
      * Returns the content of response body as {@link JsonValue}.
      */
 	default JsonValue getJson() {
-		return JSON.decodeToJsonValue(getContent());
+		return JSON.parse(getContent());
 	}
+
+    /**
+     * Parse the response content as json and decodes to map.
+     */
+    default Map<String,Object> decodeJsonMap() {
+        return JSON.decodeMap(getContent());
+    }
+
+    /**
+     * Parse the response content as json and decodes to array.
+     */
+    default <T> T[] decodeJsonArray(Class<T> componentType) {
+       return JSON.decodeArray(getContent(), componentType);
+    }
+
+    /**
+     * Parse the response content as json and decodes to the given type.
+     */
+    default <T> T decodeJson(Class<T> type) {
+        return JSON.decode(getContent(), type);
+    }
 
     /**
      * Returns the content of response body as {@link InputStream}.
@@ -296,4 +318,11 @@ public interface THttpResponse {
      */
 	THttpResponse assertCharsetEquals(String expectedCharset);
 
+    /**
+     * Asserts the response body is json format.
+     */
+    default THttpResponse assertJsonBody() {
+        getJson();
+        return this;
+    }
 }

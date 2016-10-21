@@ -23,6 +23,15 @@ import org.junit.Test;
 
 public class CorsTestControllerTest extends WebTestCase {
 
+    @Test
+    public void testOptions() {
+        request(HTTP.Method.OPTIONS, "/cors_test/enabled")
+                .addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "example.com")
+                .send()
+                .assertOk()
+                .assertHeaderEquals(CorsHandler.RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN, "example.com");
+    }
+
 	@Test
 	public void testOrigin() {
 		forGet("/cors_test/normal")
@@ -30,7 +39,6 @@ public class CorsTestControllerTest extends WebTestCase {
 			.send()
 			.assertContentEquals("normal");
 
-		
 		forGet("/cors_test/enabled")
 			.addHeader(CorsHandler.REQUEST_HEADER_ORIGIN, "")
 			.send()

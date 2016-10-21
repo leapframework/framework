@@ -34,6 +34,8 @@ import java.util.List;
 
 public class WebTestRunner extends BlockJUnit4ClassRunner {
 
+    public static final String ROOT_CONTEXT_PATH = "/root";
+
     private static THttpClient httpClient;
     private static THttpClient httpsClient;
 
@@ -74,7 +76,7 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
                     server = new TWebServer(httpPort, httpsPort, true);
 
                     if(duplicateRootContext) {
-                        server.duplicateContext("", "/root");
+                        server.duplicateContext("", ROOT_CONTEXT_PATH);
                     }
 
                     server.start();
@@ -137,7 +139,7 @@ public class WebTestRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected Object createTest() throws Exception {
-        AppContext context = AppContext.tryGetCurrent();
+        AppContext context = null == rootServletContext ? null : AppContext.get(rootServletContext);
         if(null != context) {
             return context.getBeanFactory().getOrCreateBean(getTestClass().getJavaClass());
         }else{

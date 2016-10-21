@@ -46,6 +46,13 @@ public interface AppInstrumentProcessor {
     }
 
     /**
+     * Returns true if the instrumented class should be redefined if define by same class loader.
+     */
+    default boolean shouldRedefineInSameClassLoader() {
+        return false;
+    }
+
+    /**
      * Instrument the class.
      *
      * @param context the {@link AppInstrumentContext}.

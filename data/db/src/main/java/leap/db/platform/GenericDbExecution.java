@@ -184,12 +184,12 @@ public class GenericDbExecution implements DbExecution {
 				
 				nrOfExecuted++;
 				
-				log.trace("Executing [{}] statement : \n\n{}\n ", nrOfExecuted, sql);
+				log.debug("Executing [{}] statement : \n\n{}\n ", nrOfExecuted, sql);
 
 				try{
 					int affected = stmt.executeUpdate(sql);
 					
-					log.trace("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
+					log.debug("Statement [{}] success, {} rows(s) affected", nrOfExecuted, affected);
 					
 					nrOfSuccesses++;
 					dbStatement.success(affected);

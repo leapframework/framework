@@ -21,6 +21,8 @@ import java.util.List;
 import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.beans.BeanProperty;
+import leap.orm.annotation.ManyToOne;
+import leap.orm.enums.CascadeDeleteAction;
 
 public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	
@@ -28,78 +30,111 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	protected String					    name;
 	protected RelationType				    type;
 	protected Boolean					    optional;
+    protected CascadeDeleteAction           onCascadeDelete = CascadeDeleteAction.SET_NULL;
+    protected boolean                       virtual;
+    protected String                        inverseRelationName;
 	protected Class<?>                      targetEntityType;
 	protected String                        targetEntityName;
 	protected Class<?>						joinEntityType;
 	protected String						joinEntityName;
 	protected String						joinTableName;
-	protected List<JoinFieldMappingBuilder> joinFields;
-	
-	public BeanProperty getBeanProperty() {
+	protected List<JoinFieldMappingBuilder> joinFields = new ArrayList<>();
+
+    public RelationMappingBuilder() {
+
+    }
+
+    public RelationMappingBuilder(BeanProperty beanProperty) {
+        this.beanProperty = beanProperty;
+    }
+
+    public BeanProperty getBeanProperty() {
 		return beanProperty;
 	}
 
-	public RelationMappingBuilder setBeanProperty(BeanProperty beanProperty) {
+	public void setBeanProperty(BeanProperty beanProperty) {
 		this.beanProperty = beanProperty;
-		return this;
 	}
 	
 	public String getName() {
 		return name;
 	}
 
-	public RelationMappingBuilder setName(String name) {
+	public void setName(String name) {
 		this.name = name;
-		return this;
 	}
 	
 	public RelationType getType() {
 		return type;
 	}
 
-	public RelationMappingBuilder setType(RelationType type) {
+	public void setType(RelationType type) {
 		this.type = type;
-		return this;
 	}
-	
+
 	public boolean isOptional() {
-		return null == optional ? true : false;
+		return null == optional ? false : optional;
 	}
 
 	public Boolean getOptional() {
 		return optional;
 	}
 
-	public RelationMappingBuilder setOptional(Boolean optional) {
-		this.optional = optional;
-		return this;
-	}
-	
-	public Class<?> getTargetEntityType() {
+    public void setOptional(Boolean optional) {
+        this.optional = optional;
+    }
+
+    public CascadeDeleteAction getOnCascadeDelete() {
+        return onCascadeDelete;
+    }
+
+    public void setOnCascadeDelete(CascadeDeleteAction onCascadeDelete) {
+        this.onCascadeDelete = onCascadeDelete;
+    }
+
+    public boolean isVirtual() {
+        return virtual;
+    }
+
+    public void setVirtual(boolean virtual) {
+        this.virtual = virtual;
+    }
+
+    public String getInverseRelationName() {
+        return inverseRelationName;
+    }
+
+    public void setInverseRelationName(String inverseRelationName) {
+        this.inverseRelationName = inverseRelationName;
+    }
+
+    public Class<?> getTargetEntityType() {
 		return targetEntityType;
 	}
 
-	public RelationMappingBuilder setTargetEntityType(Class<?> targetEntityType) {
+	public void setTargetEntityType(Class<?> targetEntityType) {
 		this.targetEntityType = targetEntityType;
-		return this;
 	}
 	
 	public String getTargetEntityName() {
 		return targetEntityName;
 	}
 
-	public RelationMappingBuilder setTargetEntityName(String targetEntityName) {
+	public void setTargetEntityName(String targetEntityName) {
 		this.targetEntityName = targetEntityName;
-		return this;
 	}
+
+    public void setTargetEntity(EntityMappingBuilder emb) {
+        this.targetEntityName = emb.getEntityName();
+        this.targetEntityType = emb.getEntityClass();
+    }
 	
 	public Class<?> getJoinEntityType() {
 		return joinEntityType;
 	}
 
-	public RelationMappingBuilder setJoinEntityType(Class<?> joinEntityType) {
+	public void setJoinEntityType(Class<?> joinEntityType) {
 		this.joinEntityType = joinEntityType;
-		return this;
 	}
 
 	public String getJoinEntityName() {
@@ -118,26 +153,25 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 		this.joinTableName = joinTableName;
 	}
 
+    public void setJoinEntity(EntityMappingBuilder emb) {
+        this.joinEntityName = emb.getEntityName();
+        this.joinEntityType = emb.getEntityClass();
+        this.joinTableName  = emb.getTableName();
+    }
+
 	public List<JoinFieldMappingBuilder> getJoinFields() {
-		if(null == joinFields){
-			joinFields = new ArrayList<JoinFieldMappingBuilder>();
-		}
 		return joinFields;
 	}
 
-	public void setJoinFields(List<JoinFieldMappingBuilder> joinFields) {
-		this.joinFields = joinFields;
-	}
-	
-	public RelationMappingBuilder addJoinField(JoinFieldMappingBuilder joinField) {
-		getJoinFields().add(joinField);
-		return this;
+	public void addJoinField(JoinFieldMappingBuilder joinField) {
+		joinFields.add(joinField);
 	}
 
 	@Override
     public RelationMapping build() {
 		List<JoinFieldMapping> joinFields = Builders.buildList(this.joinFields);
 		
-	    return new RelationMapping(name, type, targetEntityName, joinEntityName, isOptional(), joinFields);
+	    return new RelationMapping(name, type, inverseRelationName, targetEntityName,
+                                   joinEntityName, isOptional(), onCascadeDelete, virtual, joinFields);
     }
 }

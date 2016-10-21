@@ -72,7 +72,12 @@ public interface OAuth2WebAppConfig {
      * Optional.
      */
     String getClientLogoutUri();
-    
+
+    /**
+     * Optional. Return the server context url of remote oauth server
+     */
+    String getServerUrl();
+
     /**
      * Required. Returns the token endpoint url of remote oauth server.
      */

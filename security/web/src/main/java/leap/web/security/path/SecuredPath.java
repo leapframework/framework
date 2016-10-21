@@ -17,8 +17,11 @@ package leap.web.security.path;
 
 import leap.core.web.RequestBase;
 import leap.core.web.RequestMatcher;
+import leap.lang.enums.Bool;
 import leap.lang.path.PathPattern;
 import leap.web.Request;
+import leap.web.route.Route;
+import leap.web.security.SecurityFailureHandler;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 
@@ -46,24 +49,89 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
     };
 
     /**
+     * Optional. Returns the route.
+     */
+    Route getRoute();
+
+    /**
      * Required. Returns the pattern of path.
      */
     PathPattern getPattern();
 
     /**
-     * Returns true if allows anonymous access the path.
+     * Returns the allow-anonymous status, may be null.
      */
-    boolean isAllowAnonymous();
+    Boolean getAllowAnonymous();
 
     /**
-     * Return true if allows client-only authentication access the path.
+     * Returns true if allows anonymous access to the path.
+     *
+     * <p/>
+     * Same as {@link #getAllowAnonymous()} == Boolean.TRUE .
      */
-    boolean isAllowClientOnly();
+    default boolean isAllowAnonymous() {
+        return getAllowAnonymous() == Boolean.TRUE;
+    }
 
     /**
-     * Returns true if allows remember-me authentication access the path.
+     * Returns true if denys anonymous access to the path.
+     *
+     * <p/>
+     * Same as {@link #getAllowAnonymous()} == Boolean.FALSE.
      */
-    boolean isAllowRememberMe();
+    default boolean isDenyAnonymous() {
+        return getAllowAnonymous() == Boolean.FALSE;
+    }
+
+    /**
+     * Returns the allow-clientOnly status, may be null.
+     */
+    Boolean getAllowClientOnly();
+
+    /**
+     * Return true if allows client-only authentication access to the path.
+     *
+     * <p/>
+     * Same as {@link #getAllowClientOnly()} == Boolean.TRUE.
+     */
+    default boolean isAllowClientOnly() {
+        return getAllowClientOnly() == Boolean.TRUE;
+    }
+
+    /**
+     * Returns true if denys client-only authentication access to the path.
+     *
+     * <P/>
+     * Same as {@link #getAllowClientOnly()} == Boolean.FALSE.
+     */
+    default boolean isDenyClientOnly() {
+        return getAllowClientOnly() == Boolean.FALSE;
+    }
+
+    /**
+     * Returns the allow-rememberMe status, may be null.
+     */
+    Boolean getAllowRememberMe();
+
+    /**
+     * Returns true if allows remember-me authentication access to the path.
+     *
+     * <p/>
+     * Same as {@link #getAllowRememberMe()} == Boolean.TRUE.
+     */
+    default boolean isAllowRememberMe() {
+        return getAllowRememberMe() == Boolean.TRUE;
+    }
+
+    /**
+     * Returns true if denys remember-me authentication access to the path.
+     *
+     * <p/>
+     * Same as {@link #getAllowRememberMe()} == Boolean.FALSE.
+     */
+    default boolean isDenyRememberMe() {
+        return getAllowRememberMe() == Boolean.FALSE;
+    }
 
     /**
      * Optional. Returns the permissions allowed to access the path.
@@ -74,6 +142,11 @@ public interface SecuredPath extends RequestMatcher, Comparable<SecuredPath> {
      * Optional. Returns the roles allowed to access the path.
      */
     String[] getRoles();
+
+    /**
+     * Optional. Returns the {@link SecurityFailureHandler}.
+     */
+    SecurityFailureHandler getFailureHandler();
 
     /**
      * Returns true if the path pattern matches the request.

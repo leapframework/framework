@@ -16,11 +16,16 @@
 
 package tested.beans.proxy;
 
-public class TBeanImpl implements TBeanType {
+public class TBeanImpl implements TBeanType,TBeanType1 {
 
     @Override
     public String getTestValue() {
         return "impl";
     }
 
+    @Override
+    public int getCount() {
+        return 0;
+    }
 }
+

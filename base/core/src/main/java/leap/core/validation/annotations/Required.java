@@ -24,12 +24,12 @@ import leap.core.validation.ConstraintAnnotation;
 import leap.core.validation.ValidatedBy;
 import leap.core.validation.validators.RequiredValidator;
 
-@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @ValidatedBy(validator=RequiredValidator.class)
 @ConstraintAnnotation
 public @interface Required {
 
-	public String message() default "";
+	String message() default "";
 	
 }

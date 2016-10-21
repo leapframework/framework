@@ -48,6 +48,11 @@ public interface THttpClient {
 	 * Returns the cookie or <code>null</code> if not exists.
 	 */
 	Cookie getCookie(String name);
+
+    /**
+     * Adds a cookie
+     */
+    THttpClient addCookie(String name, String value);
 	
 	/**
 	 * Removes the cookie and returns the removed cookie if exists. 

@@ -47,6 +47,19 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
 	
 	@Override
     public void processReturnValue(ActionContext context, Object returnValue, Result result) throws Throwable {
+        if(returnValue instanceof ResponseEntity) {
+            ResponseEntity re = (ResponseEntity)returnValue;
+
+            result.setStatus(re.getStatus().value());
+            returnValue = re.getEntity();
+
+            re.getHeaders().forEach(context.getResponse()::addHeader);
+
+            if(null == returnValue) {
+                return;
+            }
+        }
+
 		result.setReturnValue(returnValue);
 
         if(returnValue instanceof Renderable) {
@@ -54,25 +67,7 @@ public class FormattingResultProcessor extends AbstractResultProcessor implement
             return;
         }
 
-        if(returnValue instanceof ResponseEntity) {
-            ResponseEntity re = (ResponseEntity)returnValue;
-
-            result.setStatus(re.getStatus().value());
-            Object entity = re.getEntity();
-
-            if(null != entity) {
-                if(entity instanceof Renderable) {
-                    ((Renderable) entity).render(context.getRequest(), context.getResponse());
-                }else{
-                    result.render(resolveResponseFormatOrDefault(context).getContent(context, entity));
-                }
-            }
-
-            return;
-        }
-
 		ResponseFormat format = resolveResponseFormat(context);
-
 		if(null == format){
 			format = formatManager.getDefaultResponseFormat();
 		}

@@ -27,7 +27,6 @@ import java.util.Map;
 
 import leap.junit.concurrent.ConcurrentTestCase;
 
-import leap.lang.naming.NamingStyle;
 import leap.lang.naming.NamingStyles;
 import org.junit.Test;
 
@@ -78,6 +77,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		List<String> list = new ArrayList<String>();
 		list.add("1");
 		list.add("2");
+
 		
 		assertEquals("[\"1\",\"2\"]", encode(list));
 	}
@@ -125,7 +125,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		
 		String json = encode(parent);
 		
-		JSON.decodeToJsonValue(json);
+		JSON.parse(json);
 	}
 	
 	@Test
@@ -148,7 +148,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		
 		String jsonString = JSON.encode(arrayarray);
 		
-		JsonValue jsonValue = JSON.decodeToJsonValue(jsonString);
+		JsonValue jsonValue = JSON.parse(jsonString);
 		
 		Object[] jsonArrayArray = jsonValue.asList().toArray();
 		assertEquals(3, jsonArrayArray.length);
@@ -159,7 +159,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 	@Test
 	public void testNamingStyle(){
 		String json = "{\"user_id\":\"1\",\"user_name\":\"xx\"}";
-		assertEquals(json, encodeUpperCamelSytle(new NamingStyleBean("1","xx")));
+		assertEquals(json, encodeUpperCamelStyle(new NamingStyleBean("1","xx")));
 	}
 	
 	private static String encode(Object value){
@@ -169,7 +169,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 	private static String encodeNonKeyQuoted(Object value){
 		return JSON.encode(value,new JsonSettings.Builder().setKeyQuoted(false).build());
 	}
-	private static String encodeUpperCamelSytle(Object value){
+	private static String encodeUpperCamelStyle(Object value){
 		return JSON.encode(value,new JsonSettings.Builder().setNamingStyle(NamingStyles.LOWER_UNDERSCORE).build());
 	}
 	

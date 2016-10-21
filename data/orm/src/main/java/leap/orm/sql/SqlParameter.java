@@ -19,6 +19,6 @@ import leap.lang.params.Params;
 
 public interface SqlParameter {
 
-	Object getValue(SqlContext context, Params parameters);
+	SqlValue getValue(SqlContext context, Params parameters);
 
 }

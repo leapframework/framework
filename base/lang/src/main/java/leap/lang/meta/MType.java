@@ -31,6 +31,20 @@ public abstract class MType extends ImmutableMDescribed {
 		return getTypeKind() == MTypeKind.SIMPLE;
 	}
 
+    /**
+     * Returns true if this type is an object type.
+     */
+    public boolean isObjectType() {
+        return getTypeKind() == MTypeKind.OBJECT;
+    }
+
+    /**
+     * Returns true if this type is a void type.
+     */
+    public boolean isVoidType() {
+        return getTypeKind() == MTypeKind.VOID;
+    }
+
 	/**
 	 * Returns <code>true</code> if this type is a collection type.
 	 */
@@ -44,15 +58,22 @@ public abstract class MType extends ImmutableMDescribed {
 	public boolean isComplexType(){
 		return getTypeKind() == MTypeKind.COMPLEX;
 	}
-	
-	/**
+
+    /**
 	 * Returns <code>true</code> if this type is a reference type.
 	 */
 	public boolean isTypeRef() {
 		return getTypeKind() == MTypeKind.REFERENCE;
 	}
-	
-	/**
+
+    /**
+     * Returns true if this type is a dictionary type.
+     */
+    public boolean isDictionaryType() {
+        return getTypeKind() == MTypeKind.DICTIONARY;
+    }
+
+    /**
 	 * Returns the kind of this type.
 	 */
 	public abstract MTypeKind getTypeKind();
@@ -84,5 +105,11 @@ public abstract class MType extends ImmutableMDescribed {
 	public final MTypeRef asTypeRef() {
 		return (MTypeRef)this;
 	}
-	
+
+    /**
+     * Returns this object as {@link MDictionaryType}.
+     */
+    public final MDictionaryType asDictionaryType() {
+        return (MDictionaryType)this;
+    }
 }

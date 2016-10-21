@@ -18,7 +18,7 @@ package leap.db.ddl;
 import leap.db.DbTestCase;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder1;
+import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
 
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class TableTest extends DbTestCase {
 	@Test
 	@Contextual()
 	public void testSimpleCreateDropTable(){
-		DbTable tableTobeCreate = new DbTableBuilder1("simple_create_drop_table")
+		DbTable tableTobeCreate = new DbTableBuilder("simple_create_drop_table")
 										.addPrimaryKey(DbColumnBuilder.guid("id_"))
 										.addColumn(DbColumnBuilder.varchar("name", 150).notNull().unique())
 										.addColumn(DbColumnBuilder.bigint("bitint_"))

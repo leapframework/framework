@@ -15,59 +15,38 @@
  */
 package leap.core.meta;
 
-import java.lang.reflect.Type;
-
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.meta.MType;
 import leap.lang.meta.MTypeFactory;
-import leap.lang.meta.MTypeFactoryCreator;
-import leap.lang.meta.SimpleMTypeFactoryCreator;
+
+import java.lang.reflect.Type;
 
 public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 
-	protected @Inject MTypeFactory[] extendedMTypeFactories;
+	protected @Inject MTypeFactory[] typeFactories;
 	
-	private MTypeFactory rootMTypeFactory;
-	
-	@Override
+	private MTypeContainer defaultContainer;
+
+    @Override
+    public MType getMType(Class<?> type) {
+        return defaultContainer.getMType(type, null);
+    }
+
+    @Override
     public MType getMType(Class<?> type, Type genericType) {
-		return rootMTypeFactory.getMType(type, genericType);
+		return defaultContainer.getMType(type, genericType);
     }
 
 	@Override
-    public MTypeFactoryCreator factory() {
-	    return new ManagedMTypeFactoryCreator();
+    public MTypeContainerCreator factory() {
+	    return new DefaultMTypeContainer(typeFactories);
     }
 
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
-		rootMTypeFactory = factory().create();
+		defaultContainer = factory().create();
     }
-	
-	protected class ManagedMTypeFactoryCreator extends SimpleMTypeFactoryCreator implements MTypeFactory { 
-		
-		protected MTypeFactory root;
 
-		@Override
-        public MTypeFactory create() {
-			root = super.create();
-			return this;
-        }
-
-		@Override
-        public MType getMType(Class<?> type, Type genericType, MTypeFactory root) {
-			for(MTypeFactory f : extendedMTypeFactories) {
-				MType mtype = f.getMType(type, genericType, root);
-				
-				if(null != mtype) {
-					return mtype;
-				}
-			}
-			
-			return this.root.getMType(type, genericType);
-        }
-	}
-	
 }

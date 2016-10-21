@@ -17,6 +17,7 @@ package leap.orm.mapping;
 
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
+import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ioc.AbstractReadonlyBean;
@@ -27,6 +28,7 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.TypeInfo;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.jdbc.JdbcTypes;
@@ -48,6 +50,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.model.ModelField;
+import leap.orm.serialize.FieldSerializer;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -306,13 +309,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			}
 			
 			if(isExplicitRelation(context, bp)) {
-				RelationMappingBuilder rmb = new RelationMappingBuilder().setBeanProperty(bp);
+				RelationMappingBuilder rmb = new RelationMappingBuilder(bp);
 				
 				preMappingRelation(context, emb, rmb);
 				postMappingRelation(context, emb, rmb);
 				
 				emb.addRelationMapping(rmb);
-				continue;
 			}
 			
 			if( isExplicitField(context,bp) || isConventionalField(context,bp)){
@@ -407,8 +409,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}else{
 			col.setName(context.getNamingStrategy().fieldToColumnName(local.getFieldName()));
 		}
-		col.setNullable(relation.isOptional());
-		
+
+        if(null != relation.getOptional()) {
+            col.setNullable(relation.getOptional());
+        }
+
 		local.setColumn(col);
 		
 		return local;
@@ -424,9 +429,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 		FieldMappingBuilder rfmb = targetEmb.findFieldMappingByName(jfmb.getReferencedFieldName());
 
-		if(!lfmb.getColumn().isPrimaryKey()) {
-			lfmb.setNullable(rmb.isOptional());
-			lfmb.getColumn().setNullable(rmb.isOptional());
+		if(!lfmb.getColumn().isPrimaryKey() && null != rmb.getOptional()) {
+			lfmb.setNullable(rmb.getOptional());
+			lfmb.getColumn().setNullable(rmb.getOptional());
 		}
 
 		//force update length,precision,scale
@@ -439,6 +444,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		lfmb.getColumn().setScale(rfmb.getColumn().getScale());
     }
 
+    /*
     public void configFieldMappingConventional(MetadataContext context, FieldMappingBuilder fmb) {
         DbColumnBuilder c = fmb.getColumn();
         if (Strings.isEmpty(c.getName())) {
@@ -486,6 +492,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
             fmb.setReservedMetaFieldName(ReservedMetaFieldName.tryForName(fmb.getFieldName()));
         }
     }
+    */
 
     @Override
     public void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder f, FieldDomain d) {
@@ -621,15 +628,46 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         }
         fmb.setFieldName(context.getNamingStrategy().fieldName(fmb.getFieldName()));
 
+        if(null != fmb.getIdGenerator()) {
+            fmb.getColumn().trySetLength(fmb.getIdGenerator().getDefaultColumnLength());
+        }
+
         if(null == fmb.getDataType()){
             Class<?> javaType = fmb.getJavaType();
             if(null != javaType) {
-                MSimpleType dataType = MSimpleTypes.forClass(javaType);
-                if(null == dataType){
-                    throw new MetadataException("Unsupported java type '" + javaType +
-                            "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+                TypeInfo ti = leap.lang.Types.getTypeInfo(javaType);
+
+                if(ti.isSimpleType()) {
+                    MSimpleType dataType = MSimpleTypes.forClass(javaType);
+                    if(null == dataType){
+                        throw new MetadataException("Unsupported java type '" + javaType +
+                                "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
+                    }
+                    fmb.setDataType(dataType);
+                }else{
+                    //Found a serialize field.
+                    String format = fmb.getSerializeFormat();
+                    if(Strings.isEmpty(format)) {
+                        format = context.getConfig().getDefaultSerializer();
+                    }
+
+                    OrmConfig.SerializeConfig sc =
+                            context.getConfig().getSerializeConfig(format);
+
+                    DbColumnBuilder column = fmb.getColumn();
+                    column.trySetTypeCode(sc.getDefaultColumnType().getCode());
+                    column.trySetLength(sc.getDefaultColumnLength());
+
+                    FieldSerializer serializer =
+                            context.getAppContext().getBeanFactory().tryGetBean(FieldSerializer.class, format);
+
+                    if(null == serializer) {
+                        throw new AppConfigException("Bean '" + format + "' of type '" +
+                                                     FieldSerializer.class.getName() + "' must be exists!");
+                    }
+
+                    fmb.setSerializer(serializer);
                 }
-                fmb.setDataType(dataType);
             }
         }
 
@@ -666,17 +704,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
                 c.setTypeName(st.getJdbcType().getName());
             }
 
-            if(null == c.getLength()){
-                c.setLength(st.getDefaultLength());
-            }
-
-            if(null == c.getPrecision()){
-                c.setPrecision(st.getDefaultPrecision());
-            }
-
-            if(null == c.getScale()){
-                c.setScale(st.getDefaultScale());
-            }
+            c.trySetLength(st.getDefaultLength());
+            c.trySetPrecision(st.getDefaultPrecision());
+            c.trySetScale(st.getDefaultScale());
         }
 
         //Auto set optimistic lock
@@ -718,9 +748,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	
 	protected void postMappingFinally(MetadataContext context, EntityMappingBuilder emb){
 		//Auto set id generator
-		List<FieldMappingBuilder> idFieldMappigs = emb.getIdFieldMappings();
-		if(idFieldMappigs.size() == 1){
-			FieldMappingBuilder fmb = idFieldMappigs.get(0);
+		List<FieldMappingBuilder> idFieldMappings = emb.getIdFieldMappings();
+		if(idFieldMappings.size() == 1){
+			FieldMappingBuilder fmb = idFieldMappings.get(0);
 			
 			if(fmb.getIdGenerator() == null){
 				fmb.setIdGenerator(defaultIdGenerator);
@@ -750,7 +780,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	        }
 	    }
 	    
-		int order = FieldMappingBuilder.LAST_SORT_ORDER;
+		float order = FieldMappingBuilder.LAST_SORT_ORDER;
 		
 		if(context.getConfig().isAutoGenerateOptimisticLock()) {
 			if(emb.findFieldMappingByName(context.getConfig().getOptimisticLockFieldName()) == null){

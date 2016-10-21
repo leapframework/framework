@@ -15,13 +15,23 @@
  */
 package leap.web.api.meta;
 
+import leap.core.meta.MTypeContainer;
 import leap.lang.meta.MTypeFactory;
 import leap.web.api.config.ApiConfig;
 
+/**
+ * The context used by {@link ApiMetadataProcessor}.
+ */
 public interface ApiMetadataContext {
-	
+
+	/**
+	 * Returns the configuration of api.
+     */
 	ApiConfig getConfig();
-	
-	MTypeFactory getMTypeFactory();
+
+	/**
+	 * Returns the {@link MTypeContainer}.
+     */
+	MTypeContainer getMTypeContainer();
 
 }

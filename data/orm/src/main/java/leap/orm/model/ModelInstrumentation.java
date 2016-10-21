@@ -30,6 +30,7 @@ import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.annotation.Instrument;
+import leap.orm.annotation.NonEntity;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,6 +80,10 @@ public class ModelInstrumentation extends AsmInstrumentProcessor implements AppI
 
     @Override
     protected void processClass(AppInstrumentContext context, AppInstrumentClass ic, ClassInfo ci, boolean methodBodyOnly) {
+        if(ASM.isAnnotationPresent(ci.cn, NonEntity.class)){
+            return;
+        }
+
         boolean isModel = false;
 
         String superName = ci.cr.getSuperName();

@@ -21,6 +21,16 @@ import leap.orm.metadata.MetadataContext;
 
 public interface IdGenerator {
 
+    /**
+     * Returns the default column length of null.
+     */
+    default Integer getDefaultColumnLength() {
+        return null;
+    }
+
+    /**
+     * Do mapping.
+     */
 	void mapping(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb);
 	
 }

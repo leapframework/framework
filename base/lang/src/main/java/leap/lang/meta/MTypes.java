@@ -19,12 +19,8 @@ import java.lang.reflect.Type;
 
 public class MTypes {
 	
-	private static final MTypeFactory DEFAULT_FACTORY = factory().create();
-	
-	public static MTypeFactoryCreator factory() {
-		return new SimpleMTypeFactoryCreator();
-	}
-	
+	private static final MTypeFactory DEFAULT_FACTORY = new SimpleMTypeFactory();
+
 	public static MType getMType(Class<?> type) {
 		return getMType(type, null);
 	}
@@ -40,7 +36,7 @@ public class MTypes {
 	public static boolean isCollectionType(Class<?> type) {
 		return null == type ? false : type.isArray() || Iterable.class.isAssignableFrom(type);
 	}
-	
+
 	protected MTypes() {
 		
 	}

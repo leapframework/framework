@@ -74,6 +74,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
             boolean foundValidRootElement = false;
 
             while(reader.next()){
+                if(reader.isStartElement() && processExtensionElement(context, reader)) {
+                    return;
+                }
+
                 if(reader.isStartElement(CONFIG_ELEMENT)){
                     foundValidRootElement = true;
 
@@ -93,10 +97,6 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
                 if(reader.isStartElement(PROPERTIES_ELEMENT)) {
                     //ignore the properties config file.
-                    return;
-                }
-
-                if(reader.isStartElement() && processExtensionElement(context, reader)) {
                     return;
                 }
             }
@@ -210,6 +210,10 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
 
     private boolean processExtensionElement(AppConfigContext context,XmlReader reader){
         String nsURI = reader.getElementName().getNamespaceURI();
+
+        if(Strings.isEmpty(nsURI)) {
+            return false;
+        }
 
         for(AppConfigProcessor extension : processors){
 

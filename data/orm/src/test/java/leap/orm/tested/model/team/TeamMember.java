@@ -27,13 +27,13 @@ import leap.orm.tested.model.sec.Role;
 import leap.orm.tested.model.sec.User;
 import static leap.lang.enums.Bool.*;
 
-@ManyToOne(targetEntityType=Team.class,fields={
+@ManyToOne(target =Team.class,fields={
 	@JoinField(name="teamId")
 })
-@ManyToOne(targetEntityType=User.class,fields={
+@ManyToOne(target =User.class,fields={
 	@JoinField(name="userId")
 })
-@ManyToOne(targetEntityType=Role.class,fields={
+@ManyToOne(target =Role.class,fields={
 	@JoinField(name="roleId")
 })
 public class TeamMember extends Model {

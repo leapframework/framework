@@ -18,19 +18,21 @@ package leap.orm.mapping;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanProperty;
 import leap.lang.expression.Expression;
 import leap.lang.meta.MType;
 import leap.orm.domain.FieldDomain;
+import leap.orm.serialize.FieldSerializer;
 import leap.orm.validation.FieldValidator;
 
 import java.util.List;
 
-public class FieldMapping {
+public class FieldMapping extends ExtensibleBase {
 	
-	protected final String		     fieldName;
+	protected final String           fieldName;
 	protected final MType            dataType;
 	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
@@ -54,30 +56,32 @@ public class FieldMapping {
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
     protected final boolean          sharding;
-	
+    protected final FieldSerializer  serializer;
+
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
 	public FieldMapping(String fieldName,
-						MType dataType,
-						String metaFieldName,
-					    Class<?> javaType,
-						BeanProperty beanProperty,
-						DbColumn column,
-						String sequenceName,
-						boolean nullable,
-						Integer maxLength,Integer presison,Integer scale,
-						boolean insert,boolean update,boolean where,
-						Expression defaultValue,
-						Expression insertValue,
-						Expression updateValue,
+                        MType dataType,
+                        String metaFieldName,
+                        Class<?> javaType,
+                        BeanProperty beanProperty,
+                        DbColumn column,
+                        String sequenceName,
+                        boolean nullable,
+                        Integer maxLength, Integer precision, Integer scale,
+                        boolean insert, boolean update,
+                        boolean where,
+                        Expression defaultValue,
+                        Expression insertValue,
+                        Expression updateValue,
                         Expression whereValue,
                         Expression whereIf,
-						boolean optimisticLock,
-						String newOptimisticLockFieldName,
-						FieldDomain domain,
-						List<FieldValidator> validators,
-						ReservedMetaFieldName reservedMetaFieldName,
-                        boolean sharding) {
+                        boolean optimisticLock,
+                        String newOptimisticLockFieldName,
+                        FieldDomain domain,
+                        List<FieldValidator> validators,
+                        ReservedMetaFieldName reservedMetaFieldName,
+                        boolean sharding, FieldSerializer serializer) {
 		
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
@@ -92,10 +96,10 @@ public class FieldMapping {
 	    this.sequenceName   = sequenceName;
 	    this.nullable		= nullable;
 	    this.maxLength		= maxLength;
-	    this.precision		= presison;
+	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insert         = insert;
-	    this.update         = update;
+	    this.insert = insert;
+	    this.update = update;
         this.where          = where;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
@@ -107,6 +111,7 @@ public class FieldMapping {
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
         this.sharding       = sharding;
+        this.serializer     = serializer;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -231,6 +236,10 @@ public class FieldMapping {
 	public FieldValidator[] getValidators() {
 		return validators;
 	}
+
+    public FieldSerializer getSerializer() {
+        return serializer;
+    }
 
     public boolean isSharding() {
         return sharding;

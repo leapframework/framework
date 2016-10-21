@@ -22,10 +22,12 @@ import leap.core.transaction.TransactionCallbackWithResult;
 import leap.core.transaction.TransactionStatus;
 import leap.core.validation.Errors;
 import leap.core.validation.ValidatableBean;
+import leap.core.value.Record;
 import leap.db.Db;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Named;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
@@ -35,6 +37,7 @@ import leap.lang.expression.Expression;
 import leap.lang.json.JsonIgnore;
 import leap.lang.json.JsonStringable;
 import leap.lang.json.JsonWriter;
+import leap.lang.meta.annotation.ComplexType;
 import leap.lang.params.NamedParamsBase;
 import leap.lang.params.Params;
 import leap.lang.tostring.ToStringBuilder;
@@ -55,7 +58,6 @@ import leap.orm.query.CriteriaQuery;
 import leap.orm.query.CriteriaWhere;
 import leap.orm.query.EntityQuery;
 import leap.orm.query.Query;
-import leap.orm.value.Entity;
 
 import java.sql.Timestamp;
 import java.util.HashMap;
@@ -65,6 +67,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @SuppressWarnings("unchecked")
+@ComplexType
 public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	
 	//This variable will be accessed by sub-model-class in the instrumented code, cannot change to private modifier.
@@ -81,6 +84,31 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 		ModelContext context = context();
 		return ((T)context.getBeanType().newInstance()).id(id);
 	}
+
+    //---id---
+    /**
+     * Returns the next generated id.
+     *
+     * @throws IllegalStateException if not id generator.
+     */
+    @Instrument
+    public static Object nextId() throws IllegalStateException{
+        ModelContext context = context();
+
+        EntityMapping  em   = context.getEntityMapping();
+        FieldMapping[] keys = em.getKeyFieldMappings();
+
+        if(keys.length != 1) {
+            throw new IllegalStateException("Only one key field can generate id");
+        }
+
+        FieldMapping key = keys[0];
+        if(null == key.getInsertValue()) {
+            throw new IllegalStateException("No id generator of key field '" + key.getFieldName() + "'");
+        }
+
+        return key.getInsertValue().getValue();
+    }
 	
 	//---cmd---
 	/**
@@ -140,11 +168,27 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	}
 	
 	@Instrument
-	public static boolean tryDelete(Object id) throws RecordNotDeletedException{
+	public static boolean tryDelete(Object id){
 		ModelContext context = context();
 		EntityMapping em = context.getEntityMapping();
 		return context.getDao().delete(em, id) > 0;
 	}
+
+    @Instrument
+    public static void cascadeDelete(Object id) throws RecordNotDeletedException{
+        ModelContext context = context();
+        EntityMapping em = context.getEntityMapping();
+        if(!context.getDao().cascadeDelete(em, id)) {
+            throw new RecordNotDeletedException("Record not deleted, checks is record exists or failed to delete?");
+        }
+    }
+
+    @Instrument
+    public static boolean tryCascadeDelete(Object id){
+        ModelContext context = context();
+        EntityMapping em = context.getEntityMapping();
+        return context.getDao().cascadeDelete(em, id);
+    }
 	
 	/**
 	 * Deletes all the records of this model.
@@ -185,7 +229,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public static <T extends Model> int deleteAll(Condition<T> condition) {
 		return ((CriteriaQuery<T>)query()).where(condition).delete();
 	}
-	
+
 	/**
 	 * Delete all the records with the given where expression.
 	 */
@@ -207,6 +251,11 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public static int deleteBy(String field,Object value) {
 		return query().where(field + "=?",value).delete();
 	}
+
+    @Instrument
+    public static int deleteBy(String field1, Object value1, String field2, Object value2) {
+        return query().where(field1 + "=? and " + field2 + " = ?", value1, value2).delete();
+    }
 	
 	//---count---
 	@Instrument
@@ -266,9 +315,14 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
 	
 	@Instrument
-	public static <T extends Model> T findBy(String field,Object value) throws EmptyRecordsException,TooManyRecordsException {
+	public static <T extends Model> T findBy(String field,Object value) throws TooManyRecordsException {
 		return (T)query().where(field + "=?",value).singleOrNull();
 	}
+
+    @Instrument
+    public static <T extends Model> T findBy(String field1,Object value1, String field2, Object value2) throws TooManyRecordsException {
+        return (T)query().where(field1 + "=? and " + field2 + "=?",value1, value2).singleOrNull();
+    }
 
 	/**
 	 * Returns all the records or the model.
@@ -464,10 +518,6 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 		return ModelRegistry.getModelContext(getClassName());
 	}
 	
-	protected static ModelFieldValidation validates(String... fields){
-		return new ModelFieldValidation(getClassName(), fields);
-	}
-	
 	@Instrument
 	protected static String className(){
 		return getClassName();
@@ -500,6 +550,11 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public final String getEntityName() {
     	_init();
 	    return em.getEntityName();
+    }
+
+    public final EntityMapping getEntityMapping() {
+        _init();
+        return em;
     }
     
     public final boolean contains(String field) {
@@ -535,7 +590,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	BeanProperty[] props = beanType().getProperties();
     	for(int i=0;i<props.length;i++){
     		BeanProperty p = props[i];
-    		if(p.isField()){
+    		if(p.isField() && p.isReadable()){
     			map.put(p.getName(),p.getValue(this));	
     		}
     	}
@@ -865,17 +920,30 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     		throw new RecordNotDeletedException("Record not deleted, checks that is the record exists or failed to delete ?");
     	}
     }
-    
+
+    /**
+     * Delete the record, returns true if deleted, returns false if the record not exists.
+     */
     public final boolean tryDelete(){
     	_init();
     	return doDelete();
     }
-    
-    public final boolean refresh(){
+
+    /**
+     * Reload the record from underlying database.
+     */
+    public final boolean load(){
     	_init();
-    	return doRefresh();
+    	return doLoad();
     }
-    
+
+    /**
+     * Same as {@link #load()}
+     */
+    public final boolean refresh() {
+        return load();
+    }
+
     /**
      * Returns <code>true</code> if this model is valid after validation.
      * 
@@ -893,16 +961,34 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
      * Returns <code>false</code> if this model has {@link Errors} after validation. 
      */
     public final boolean validate(int maxErrors){
-    	_init();
-    	
-    	errors = dao.validate(this.em,this);
-    	
-    	if(maxErrors > 0 && errors.size() >= maxErrors){
-    		return false;
-    	}
-    	
-    	doValidate(errors,maxErrors);
-    	return errors.isEmpty();
+        return validate(maxErrors, null);
+    }
+
+    /**
+     * Validates the values in {@link #fields()} only.
+     *
+     * @see  {@link #validate()}
+     */
+    public final boolean validate(Iterable<String> fields) {
+        return validate(0, fields);
+    }
+
+    /**
+     * Validates the values of the given field names only.
+     *
+     * @see  {@link #validate()}
+     */
+    public final boolean validate(int maxErrors, Iterable<String> fields) {
+        _init();
+
+        errors = dao.validate(this.em,this,fields);
+
+        if(maxErrors > 0 && errors.size() >= maxErrors){
+            return false;
+        }
+
+        doValidate(errors,maxErrors);
+        return errors.isEmpty();
     }
     
 	protected Object doGetId(){
@@ -969,7 +1055,8 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     
     protected void doSave(){
     	Object id = id();
-    	if(null == id){
+    	if(null == id || ((id instanceof String) && Strings.isEmpty((String)id))){
+    		this.id(null);
     		if(!doCreate() ){
     			throw new RecordNotSavedException("Record not created");
     		}
@@ -1001,10 +1088,10 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     	return dao.delete(em.getEntityName(), ensureGetId()) > 0;
     }
     
-    protected boolean doRefresh(){
+    protected boolean doLoad(){
     	Object id = ensureGetId();
 
-    	Entity entity = dao.find(em.getEntityName(), id);
+    	Record entity = dao.find(em, id);
     			
     	fields.clear();
     	setAll(entity);
@@ -1013,7 +1100,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
     
     /**
-     * Can be overrided by sub-class to perform customized validation.
+     * Can be override by sub-class to perform customized validation.
      */
     protected void doValidate(Errors errors,int maxErrors){
     	

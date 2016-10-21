@@ -27,21 +27,7 @@ import java.util.function.Predicate;
 import leap.db.DbCommand;
 import leap.db.DbCommands;
 import leap.db.DbExecution;
-import leap.db.command.AlterTable;
-import leap.db.command.CreateColumn;
-import leap.db.command.CreateForeignKey;
-import leap.db.command.CreateIndex;
-import leap.db.command.CreatePrimaryKey;
-import leap.db.command.CreateSequence;
-import leap.db.command.CreateTable;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropSchema;
-import leap.db.command.DropSequence;
-import leap.db.command.DropTable;
-import leap.db.command.RenameColumn;
+import leap.db.command.*;
 import leap.db.model.DbColumn;
 import leap.db.model.DbForeignKey;
 import leap.db.model.DbIndex;
@@ -228,7 +214,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 		}
 		
 		@Override
-        public int getSortOrder() {
+        public float getSortOrder() {
 	        return -1;
         }
 
@@ -237,6 +223,53 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 	        return sqls;
         }
 	}
+
+    protected static class GenericCreateSchema extends GenericDbCommand implements CreateSchema {
+
+        private final DbSchema schema;
+
+        public GenericCreateSchema(GenericDb db, DbSchema schema) {
+            super(db);
+            Args.notNull(schema, "schema");
+            this.schema = schema;
+        }
+
+        @Override
+        public List<String> sqls() {
+            List<String> sqls = new ArrayList<>();
+
+            //create sequences
+            for(DbSequence seq : schema.getSequences()) {
+                sqls.addAll(dialect.getCreateSequenceSqls(seq));
+            }
+
+            //create tables.
+            for(DbTable table : schema.getTables()) {
+                sqls.addAll(dialect.getCreateTableSqls(table));
+            }
+
+            //create foreign keys.
+            for(DbTable table : schema.getTables()) {
+                for(DbForeignKey fk : table.getForeignKeys()) {
+                    sqls.addAll(dialect.getCreateForeignKeySqls(table, fk));
+                }
+            }
+
+            //create indexes.
+            for(DbTable table : schema.getTables()) {
+                for(DbIndex ix : table.getIndexes()) {
+                    sqls.addAll(dialect.getCreateIndexSqls(table, ix));
+                }
+            }
+
+            return sqls;
+        }
+
+        @Override
+        public float getSortOrder() {
+            return 0;
+        }
+    }
 
 	protected static class GenericCreateTable extends GenericDbCommand implements CreateTable {
 		

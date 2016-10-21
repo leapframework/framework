@@ -22,4 +22,8 @@
     <command key="testOrderByWithFieldName">
         SELECT PRDT_ID, ? type FROM ChildProduct
     </command>
+
+    <command key="testSqlDatasource" data-source="h2">
+        select * from Owner owner where lastName = :lastName
+    </command>
 </sqls>

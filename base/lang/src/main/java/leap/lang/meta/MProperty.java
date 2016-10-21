@@ -20,56 +20,111 @@ import leap.lang.Strings;
 
 public class MProperty extends ImmutableMNamedWithDesc {
 
-	protected final MType   type;
-	protected final boolean nullable;
-	protected final String  defaultValue;
-	protected final boolean fixedLength;
-	protected final Integer	length;
-	protected final Integer precision;
-	protected final Integer scale;
-	
-	public MProperty(String name, String title, String summary, String description, 
-					 MType type, boolean nullable, String defaultValue, boolean fixedLength,
-					 Integer length, Integer precision, Integer scale) {
-		super(name, title, summary, description);
-		
-		Args.notNull(type, "type");
-		
-		this.type         = type;
-		this.nullable     = nullable;
-		this.defaultValue = Strings.trimToNull(defaultValue);
-		this.fixedLength  = fixedLength;
-		this.length		  = length;
-		this.precision	  = precision;
-		this.scale		  = scale;
-	}
+    protected final MType    type;
+    protected final Boolean  required;
+    protected final String   defaultValue;
+    protected final String[] enumValues;
+    protected final boolean  fixedLength;
+    protected final Integer  length;
+    protected final Integer  precision;
+    protected final Integer  scale;
+    protected final Boolean  creatable;
+    protected final Boolean  updatable;
+    protected final Boolean  sortable;
+    protected final Boolean  filterable;
+    protected final boolean  reference;
 
-	public MType getType() {
-		return type;
-	}
+    public MProperty(String name, String title, String summary, String description,
+                     MType type, Boolean required, String defaultValue, String[] enumValues,
+                     boolean fixedLength,
+                     Integer length, Integer precision, Integer scale,
+                     Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable,
+                     boolean reference) {
+        super(name, title, summary, description);
 
-	public boolean isNullable() {
-		return nullable;
-	}
+        Args.notNull(type, "type");
 
-	public String getDefaultValue() {
-		return defaultValue;
-	}
+        this.type = type;
+        this.required = required;
+        this.defaultValue = Strings.trimToNull(defaultValue);
+        this.fixedLength = fixedLength;
+        this.enumValues = enumValues;
+        this.length = length;
+        this.precision = precision;
+        this.scale = scale;
+        this.creatable = creatable;
+        this.updatable = updatable;
+        this.sortable = sortable;
+        this.filterable = filterable;
+        this.reference = reference;
+    }
 
-	public boolean isFixedLength() {
-		return fixedLength;
-	}
+    public MType getType() {
+        return type;
+    }
 
-	public Integer getLength() {
-		return length;
-	}
+    public Boolean getRequired() {
+        return required;
+    }
 
-	public Integer getPrecision() {
-		return precision;
-	}
+    public String getDefaultValue() {
+        return defaultValue;
+    }
 
-	public Integer getScale() {
-		return scale;
-	}
+    public String[] getEnumValues() {
+        return enumValues;
+    }
 
+    public boolean isFixedLength() {
+        return fixedLength;
+    }
+
+    public Integer getLength() {
+        return length;
+    }
+
+    public Integer getPrecision() {
+        return precision;
+    }
+
+    public Integer getScale() {
+        return scale;
+    }
+
+    public Boolean getCreatable() {
+        return creatable;
+    }
+
+    public Boolean getUpdatable() {
+        return updatable;
+    }
+
+    public Boolean getSortable() {
+        return sortable;
+    }
+
+    public Boolean getFilterable() {
+        return filterable;
+    }
+
+    /**
+     * Returns true if this property is a reference property.
+     */
+    public boolean isReference() {
+        return reference;
+    }
+
+    /**
+     * Returns the referenced type name.
+     */
+    public String getRefTypeName() {
+        return type.isCollectionType() ?
+                type.asCollectionType().getElementType().asTypeRef().getRefTypeName() :
+                type.asTypeRef().getRefTypeName();
+    }
+
+    @Override
+    public String toString() {
+        return "MProperty[name:" + name + ", kind:" + type.getTypeKind() + "]";
+    }
 }

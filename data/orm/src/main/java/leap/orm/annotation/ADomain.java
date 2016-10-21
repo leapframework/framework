@@ -20,6 +20,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import leap.lang.Ordered;
 import leap.lang.enums.Bool;
 
 @Target({ElementType.ANNOTATION_TYPE})
@@ -79,8 +80,11 @@ public @interface ADomain {
 	String insertValue() default "";
 	
 	String updateValue() default "";
-	
-	int order() default Integer.MIN_VALUE;
+
+    /**
+     * The sort order.
+     */
+	float order() default Ordered.MINIMUM_SORT_ORDER;
 	
 	boolean override() default false;
 }

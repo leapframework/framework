@@ -87,7 +87,11 @@ class XmlBeanDefinitionLoader {
     public static final String CONSTRUCTOR_ARG_ELEMENT          = "constructor-arg";
     public static final String TYPE_ATTRIBUTE                   = "type";
     public static final String VALUE_TYPE_ATTRIBUTE             = "value-type";
+    public static final String PROXY_CLASS_ATTRIBUTE            = "proxy-class";
     public static final String TARGET_TYPE_ATTRIBUTE            = "target-type";
+    public static final String TARGET_NAME_ATTRIBUTE            = "target-name";
+    public static final String TARGET_ID_ATTRIBUTE              = "target-id";
+    public static final String TARGET_PRIMARY_ATTRIBUTE         = "target-primary";
     public static final String KEY_TYPE_ATTRIBUTE               = "key-type";
     public static final String PROPERTY_ELEMENT                 = "property";
     public static final String REF_ID_ATTRIBUTE                 = "ref-id";
@@ -156,6 +160,8 @@ class XmlBeanDefinitionLoader {
                     log.debug("Load beans : {}", LogUtils.getUrl(resource));
                 }
             }
+
+            //todo : use AppResource's default override?
             readDefinitions(container,resource, ar.isDefaultOverride());
 	    }
     }
@@ -346,13 +352,14 @@ class XmlBeanDefinitionLoader {
 		
 		BeanDefinitionBase bean = new BeanDefinitionBase(reader.getSource());
 		
-		bean.setId(reader.getAttribute(ID_ATTRIBUTE));
-		bean.setName(reader.getAttribute(NAME_ATTRIBUTE));
+		bean.setId(proxy ? reader.getAttribute(TARGET_ID_ATTRIBUTE) : reader.getAttribute(ID_ATTRIBUTE));
+		bean.setName(proxy ? reader.getAttribute(TARGET_NAME_ATTRIBUTE) : reader.getAttribute(NAME_ATTRIBUTE));
 		
-		String beanClassName     = reader.getRequiredAttribute(CLASS_ATTRIBUTE);
-		String typeClassName     = reader.getAttribute(TYPE_ATTRIBUTE);
+		String beanClassName     = proxy ? reader.getRequiredAttribute(PROXY_CLASS_ATTRIBUTE) : reader.getRequiredAttribute(CLASS_ATTRIBUTE);
 		String initMethodName    = reader.getAttribute(INIT_METHOD_ATTRIBUTE);
 		String destroyMethodName = reader.getAttribute(DESTROY_METHOD_ATTRIBUTE);
+
+        String typeClassName     = proxy ? reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE) : reader.getAttribute(TYPE_ATTRIBUTE);
 		String qualifierName	 = reader.getAttribute(QUALIFIER_ATTRIBUTE);
 		Integer sortOrder        = reader.getIntegerAttribute(SORT_ORDER_ATTRIBUTE);
 		boolean override         = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
@@ -360,7 +367,7 @@ class XmlBeanDefinitionLoader {
 
 		if(!Strings.isEmpty(beanClassName)){
 			try {
-                AppClassLoader.addBeanClass(beanClassName);
+                AppClassLoader.addInstrumentClass(beanClassName);
                 log.trace("Resolving bean class '{}'...", beanClassName);
 	            bean.setBeanClass(forName(beanClassName));
             } catch (NestedClassNotFoundException e) {
@@ -383,6 +390,10 @@ class XmlBeanDefinitionLoader {
 			
 			bean.setBeanClassType(BeanType.of(bean.getBeanClass()));
 		}
+
+        if(proxy && !ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
+            throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() + "' must be sub-class of '" + ProxyBean.class + "', source : " + reader.getSource());
+        }
 		
 		if(!Strings.isEmpty(typeClassName)){
 			Class<?> type = tryForName(typeClassName);
@@ -399,23 +410,24 @@ class XmlBeanDefinitionLoader {
 		}else{
 		    bean.setType(bean.getBeanClass());
 		}
-		
-		bean.setSingleton(reader.getBooleanAttribute(SINGLETON_ATTRIBUTE,true));
-		bean.setLazyInit(boolAttribute(reader,LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
-		bean.setPrimary(boolAttribute(reader,PRIMARY_ATTRIBUTE, false));
-		bean.setOverride(override);
+
+        bean.setSingleton(reader.getBooleanAttribute(SINGLETON_ATTRIBUTE, true));
+        bean.setLazyInit(boolAttribute(reader, LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
+        bean.setPrimary(boolAttribute(reader, proxy ? TARGET_PRIMARY_ATTRIBUTE : PRIMARY_ATTRIBUTE, false));
+        bean.setOverride(override);
         bean.setDefaultOverride(defaultOverride);
-		
-		if(!Strings.isEmpty(qualifierName)){
-			bean.addQualifier(qualifierName);
-		}
-		
-		if(null != sortOrder){
-			bean.setSortOrder(sortOrder);
-		}
-		
+
+        if(!Strings.isEmpty(qualifierName)){
+            bean.addQualifier(qualifierName);
+        }
+
+        if(null != sortOrder){
+            bean.setSortOrder(sortOrder);
+        }
+
 		bean.setFactoryBeanName(reader.getAttribute(FACTORY_BEAN_ATTRIBUTE));
 		bean.setFactoryMethodName(reader.getAttribute(FACTORY_METHOD_ATTRIBUTE));
+
 		// TODO the property factoryBeanName and factoryMethodName was set but never used,why?
 		if(null == bean.getBeanClass() && Strings.isEmpty(bean.getFactoryBeanName())){
 			throw new BeanDefinitionException("bean's class or factory-bean must be specified, bean '" + bean.getIdOrName() + "' in source : " + reader.getSource());
@@ -424,24 +436,32 @@ class XmlBeanDefinitionLoader {
 		if(Strings.isEmpty(bean.getFactoryBeanName()) && !Strings.isEmpty(bean.getFactoryMethodName())){
 			bean.setFactoryMethod(Reflection.findMethod(bean.getBeanClass(),bean.getFactoryMethodName()));
 			if(null == bean.getFactoryMethod()){
-				throw new BeanDefinitionException("the factory-method '" + bean.getFactoryMethodName() + "' not found in class '" + bean.getBeanClass().getName() + ", source : " + reader.getSource());
+				throw new BeanDefinitionException("The factory-method '" + bean.getFactoryMethodName() + "' not found in class '" + bean.getBeanClass().getName() + ", source : " + reader.getSource());
 			}
 			if(!Modifier.isStatic(bean.getFactoryMethod().getModifiers())){
-				throw new BeanDefinitionException("the factory-method '" + bean.getFactoryMethodName() + "' must be static, source : " + reader.getSource());
+				throw new BeanDefinitionException("The factory-method '" + bean.getFactoryMethodName() + "' must be static, source : " + reader.getSource());
 			}
 		}
-		
+
 		while(reader.nextWhileNotEnd(proxy ? BEAN_PROXY_ELEMENT : BEAN_ELEMENT)){
 			if(reader.isStartElement()){
-			    if(reader.isStartElement(ADDITIONAL_TYPE_DEF_ELEMENT)) {
-			        readBeanTypeDef(container, reader, context, bean);
-			        continue;
-			    }
-			    
-			    if(reader.isStartElement(REGISTER_BEAN_FACTORY_ELEMENT)) {
-			        readBeanFactoryDef(container, reader, context, bean);
-			        continue;
-			    }
+
+                if(!proxy) {
+                    if (reader.isStartElement(ADDITIONAL_TYPE_DEF_ELEMENT)) {
+                        readBeanTypeDef(container, reader, context, bean);
+                        continue;
+                    }
+
+                    if (reader.isStartElement(REGISTER_BEAN_FACTORY_ELEMENT)) {
+                        readBeanFactoryDef(container, reader, context, bean);
+                        continue;
+                    }
+
+                    if(reader.isStartElement(QUALIFIER_ELEMENT)){
+                        bean.addQualifier(reader.resolveRequiredAttribute(VALUE_ATTRIBUTE));
+                        continue;
+                    }
+                }
 			    
 				if(reader.isStartElement(CONSTRUCTOR_ARG_ELEMENT)){
 					readConstructorArgument(container, reader, context, bean);
@@ -453,11 +473,7 @@ class XmlBeanDefinitionLoader {
 					continue;
 				}
 				
-				if(reader.isStartElement(QUALIFIER_ELEMENT)){
-					bean.addQualifier(reader.resolveRequiredAttribute(VALUE_ATTRIBUTE));
-					continue;
-				}
-				
+
 				if(reader.isStartElement(INVOKE_ELEMENT)){
 					readInvoke(container, reader, context, bean);
 					continue;
@@ -1170,7 +1186,14 @@ class XmlBeanDefinitionLoader {
 
                 boolean result = EL.test(expression.getValue(vars), true);
 
-                return not ? !result : result;
+                if(not) {
+                    result = !result;
+                }
+
+                if(!result) {
+                    return false;
+                }
+
             } catch (Exception e) {
             	throw new BeanDefinitionException("Error testing if expression '" + expressionText + "' at " + element.getCurrentLocation(), e);
             }
@@ -1178,17 +1201,23 @@ class XmlBeanDefinitionLoader {
 		
 		String className = element.getAttribute(IF_CLASS_PRESENT_ATTRIBUTE);
 		if(!Strings.isEmpty(className)){
-			return Classes.isPresent(className);
+			if(!Classes.isPresent(className)){
+                return false;
+            }
 		}
 
         className = element.getAttribute(IF_CLASS_NOT_PRESENT_ATTRIBUTE);
         if(!Strings.isEmpty(className)) {
-            return !Classes.isPresent(className);
+            if(Classes.isPresent(className)){
+               return false;
+            }
         }
 		
 		boolean ifServletEnvironment = element.getBooleanAttribute(IF_SERVLET_ENVIRONMENT_ATTRIBUTE, false);
 		if(ifServletEnvironment){
-			return container.getAppContext().isServletEnvironment();
+			if(!container.getAppContext().isServletEnvironment()){
+                return false;
+            }
 		}
 		
 		return true;

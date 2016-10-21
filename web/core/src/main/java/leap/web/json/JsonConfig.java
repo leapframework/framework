@@ -17,6 +17,8 @@ package leap.web.json;
 
 import leap.lang.naming.NamingStyle;
 
+import java.text.DateFormat;
+
 public interface JsonConfig {
 
 	boolean isDefaultSerializationKeyQuoted();
@@ -24,11 +26,28 @@ public interface JsonConfig {
 	boolean isDefaultSerializationIgnoreNull();
 	
 	boolean isDefaultSerializationIgnoreEmpty();
-	
+
 	boolean isJsonpEnabled();
-	
+
+    /**
+     * Required.
+     *
+     * Returns the request parameter of jsonp callback.
+     */
 	String getJsonpParameter();
 
+    /**
+     * Required.
+     *
+     * Returns the default {@link NamingStyle} for writing property name.
+     */
 	NamingStyle getDefaultNamingStyle();
+
+    /**
+     * Optional.
+     *
+     * Returns the pattern of default {@link DateFormat} for {@link java.util.Date} type.
+     */
+    String getDefaultDateFormat();
 
 }

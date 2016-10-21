@@ -29,8 +29,8 @@ public class ExpressionSqlParameter implements SqlParameter {
 	}
 
 	@Override
-	public Object getValue(SqlContext context, Params parameters) {
-		return expression.getValue(context, parameters.map());
+	public SqlValue getValue(SqlContext context, Params parameters) {
+		return SqlValue.of(expression.getValue(context, parameters.map()));
 	}
 
 }

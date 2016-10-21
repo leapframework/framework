@@ -28,6 +28,10 @@ import java.util.function.Consumer;
 @SuppressWarnings({"rawtypes","unchecked"})
 public class JsonObject implements JsonValue {
 
+    public static JsonObject of(Map<String,Object> map) {
+        return new JsonObject(map);
+    }
+
 	private final Map<String,Object> map;
 
 	public JsonObject(Map map){
@@ -104,6 +108,14 @@ public class JsonObject implements JsonValue {
 	}
 
     /**
+     * Converts the property value to the given type.
+     */
+    public <T> T get(String key,Class<T> type, T defaultValue){
+        Object v = map.get(key);
+        return null == v ? defaultValue : Converts.convert(v, type);
+    }
+
+    /**
      * Wraps the property value as {@link JsonValue}.
      */
 	public JsonValue getValue(String key){
@@ -136,8 +148,8 @@ public class JsonObject implements JsonValue {
     /**
      * Returns the property value as {@link List}.
      */
-    public List<Object> getList(String key) {
-        return (List<Object>)get(key);
+    public <T> List<T> getList(String key) {
+        return (List<T>)get(key);
     }
 
     /**
