@@ -162,7 +162,7 @@ class XmlBeanDefinitionLoader {
             }
 
             //todo : use AppResource's default override?
-            readDefinitions(container,resource, false);
+            readDefinitions(container,resource, ar.isDefaultOverride());
 	    }
     }
 
