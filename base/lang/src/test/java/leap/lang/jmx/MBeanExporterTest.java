@@ -56,6 +56,11 @@ public class MBeanExporterTest extends TestBase {
         assertTrue(a.isReadable());
         assertFalse(a.isWritable());
 
+        assertEquals("name", o.getName());
+
+        assertEquals(new Integer(1),server.getAttribute(name, "count"));
+        assertEquals(Bean1.class.getSimpleName(), server.invoke(name, "name", new Object[0],new String[0]));
+
         exporter.unexportAll();
 
         try {
@@ -68,7 +73,7 @@ public class MBeanExporterTest extends TestBase {
 
     public static final class Bean1 {
 
-        private @Managed int count;
+        private @Managed int count = 1;
 
         public int getCount() {
             return count;

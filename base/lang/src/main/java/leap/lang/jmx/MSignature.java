@@ -71,9 +71,13 @@ final class MSignature {
 
     @Override
     public int hashCode() {
-        int result = actionName.hashCode();
+        int result = 31 * actionName.hashCode();
 
-        result = 31 * result + parameterTypes.hashCode();
+        if(parameterTypes.length > 0) {
+            for(String pt : parameterTypes) {
+                result += pt.hashCode();
+            }
+        }
 
         return result;
     }

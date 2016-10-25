@@ -33,7 +33,7 @@ public class MBeanExporter {
     private static final Log log = LogFactory.get(MBeanExporter.class);
 
     protected final MBeanServer server;
-    protected final String      namePrefix;
+    protected final String      domain;
     protected final Map<ObjectName, Object> exportedBeans = new ConcurrentHashMap<>();
 
     public MBeanExporter() {
@@ -44,15 +44,13 @@ public class MBeanExporter {
         this(server, "app");
     }
 
-    public MBeanExporter(MBeanServer server, String namePrefix) {
+    public MBeanExporter(MBeanServer server, String domain) {
         this.server = server;
-        this.namePrefix = namePrefix;
+        this.domain = domain;
     }
 
     public ObjectName objectName(String name) {
-        if(!Strings.isEmpty(namePrefix)) {
-            name = namePrefix + ":name=" + name;
-        }
+        name = domain + ":name=" + name;
         try {
             return new ObjectName(name);
         } catch (MalformedObjectNameException e) {
