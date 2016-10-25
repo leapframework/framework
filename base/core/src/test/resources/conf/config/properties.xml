@@ -39,4 +39,14 @@
         <prop6>f</prop6>
     </properties>
 
+    <properties prefix="recursive">
+        <properties prefix="recursive1">
+            <properties prefix="recursive2">
+                <property name="property">recursive2</property>
+            </properties>
+            <property name="property">recursive1</property>
+        </properties>
+        <property name="property">recursive</property>
+    </properties>
+
 </config>
