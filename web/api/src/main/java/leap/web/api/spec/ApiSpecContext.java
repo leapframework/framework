@@ -32,4 +32,10 @@ public interface ApiSpecContext {
         return 0;
     }
 
+    /**
+     * Optional. the context path of current web app.
+     */
+    default String getContextPath() {
+        return "";
+    }
 }
