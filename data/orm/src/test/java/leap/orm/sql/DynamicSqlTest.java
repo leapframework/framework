@@ -108,6 +108,14 @@ public class DynamicSqlTest extends OrmTestCase {
         dao.executeNamedUpdate("test.sql.dynamic.clause.update_with_null_column", new Object[]{null});
 
     }
+	@Test
+    public void testSqlUseEnvVariable(){
+		Owner.deleteAll();
+		new Owner().setFullName("a", "01").save();
+		int size = dao.createNamedQuery("test.sql.dynamic.env.params").list().size();
+		assertEquals(1,size);
+
+	}
 
 	@Test
 	public void testFragmentAndUnionWithLimit(){

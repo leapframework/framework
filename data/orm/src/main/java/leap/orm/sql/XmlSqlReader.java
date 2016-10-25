@@ -169,7 +169,7 @@ public class XmlSqlReader implements SqlReader {
 		String  name                = reader.resolveAttribute(NAME_ATTRIBUTE);
 		String  langName     	    = reader.resolveAttribute(LANG_ATTRIBUTE);
 		boolean override            = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
-		String	content             = reader.resolveElementTextAndEnd();
+		String	content             = reader.getElementTextAndEnd();
 		String  entityName          = reader.resolveAttribute(ENTITY_NAME_ATTRIBUTE);
 		String  entityClassName     = reader.resolveAttribute(ENTITY_CLASS_ATTRIBUTE);
 		String  datasource			= reader.resolveAttribute(DATA_SOURCE);

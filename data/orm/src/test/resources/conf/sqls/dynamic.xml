@@ -42,4 +42,8 @@
 
     </command>
 
+    <command key="test.sql.dynamic.env.params">
+        select * from owners where last_name = #{env.sqlVariable}
+    </command>
+
 </sqls>

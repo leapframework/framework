@@ -25,7 +25,9 @@
     </bean>
 
     <bean class="leap.orm.dao.TransactionBean"/>
-    
+
+    <bean name="sqlVariable" type="leap.core.variable.Variable" class="leap.orm.sql.SqlVariable"/>
+
     <import resource="beans_local.xml" check-existence="false"/>
     
 </beans>
