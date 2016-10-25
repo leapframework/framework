@@ -65,4 +65,8 @@
         </bean>
     </beans>
 
+    <!-- jmx -->
+    <bean type="leap.lang.jmx.MBeanExporter" class="leap.lang.jmx.SimpleMBeanExporter" primary="true"/>
+    <bean type="leap.core.ioc.BeanProcessor" class="leap.core.jmx.JmxBeanProcessor"/>
+
 </beans>
