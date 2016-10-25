@@ -16,36 +16,27 @@
  *
  */
 
-package leap.lang.jmx;
+package tests.core.ioc;
 
-import javax.management.MBeanServer;
+import leap.core.annotation.Inject;
+import leap.core.junit.AppTestBase;
+import leap.lang.jmx.MBeanExporter;
+import org.junit.Test;
+
+import javax.management.MBeanInfo;
 import javax.management.ObjectName;
 
-public interface MBeanExporter {
+public class BeanJmxTest extends AppTestBase {
 
-    /**
-     * Returns the {@link MBeanServer} used by this exporter.
-     */
-    MBeanServer getServer();
+    protected @Inject MBeanExporter exporter;
 
-    /**
-     * Returns the {@link ObjectName} of the given string name.
-     */
-    ObjectName createObjectName(String name);
+    @Test
+    public void testSimpleJmxBean() throws Exception {
+        assertNotNull(exporter);
 
-    /**
-     * Export the bean as jmx managed bean.
-     */
-    void export(String name, Object bean);
-
-    /**
-     * Export the bean as jmx managed bean.
-     */
-    void export(ObjectName name, Object bean);
-
-    /**
-     * Unexport all the beans exported by this exporter.
-     */
-    void unexportAll();
+        ObjectName name = exporter.createObjectName("testJmxBean");
+        MBeanInfo mbean = exporter.getServer().getMBeanInfo(name);
+        assertNotNull(mbean);
+    }
 
 }

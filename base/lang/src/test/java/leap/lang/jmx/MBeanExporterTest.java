@@ -27,16 +27,16 @@ import java.lang.management.ManagementFactory;
 public class MBeanExporterTest extends TestBase {
 
     private MBeanServer   server = ManagementFactory.getPlatformMBeanServer();
-    private MBeanExporter exporter;
+    private SimpleMBeanExporter exporter;
 
     @Override
     protected void setUp() throws Exception {
-        exporter = new MBeanExporter(server);
+        exporter = new SimpleMBeanExporter(server);
     }
 
     @Test
     public void testSimpleExport() throws Exception {
-        ObjectName name = exporter.objectName("simpleTestBean");
+        ObjectName name = exporter.createObjectName("simpleTestBean");
 
         exporter.export(name, new Bean1());
 
