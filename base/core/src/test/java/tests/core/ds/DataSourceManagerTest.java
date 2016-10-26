@@ -17,6 +17,7 @@ package tests.core.ds;
 
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
+import leap.core.ds.management.MDataSourceProxy;
 import leap.core.junit.AppTestBase;
 import leap.lang.Exceptions;
 import org.junit.Test;
@@ -53,10 +54,16 @@ public class DataSourceManagerTest extends AppTestBase {
         } catch (SQLException e) {
         	throw Exceptions.wrap(e);
         }
+
+        assertTrue(ds instanceof MDataSourceProxy);
 		
 		dsm.destroyDataSource(ds);
 
         assertNull(dsm.tryGetDataSource("test"));
 	}
 
+    @Test
+    public void testDataSourceProxy() {
+        assertTrue(dsm.getDefaultDataSource() instanceof MDataSourceProxy);
+    }
 }

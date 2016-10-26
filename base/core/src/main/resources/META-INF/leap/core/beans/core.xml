@@ -37,6 +37,9 @@
     </beans>
     <bean name="jndi" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.JndiDataSourceFactory"/>
 
+    <!-- proxy for all data source(s) -->
+    <bean-proxy target-type="javax.sql.DataSource" proxy-class="leap.core.ds.management.MDataSourceProxy"/>
+
     <!--meta-->
     <bean type="leap.core.meta.MPatternSource" class="leap.core.meta.DefaultMPatternSource" primary="true"/>
     <bean type="leap.core.meta.MTypeManager"   class="leap.core.meta.DefaultMTypeManager"   primary="true"/>
