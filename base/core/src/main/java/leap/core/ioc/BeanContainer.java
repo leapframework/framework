@@ -932,15 +932,60 @@ public class BeanContainer implements BeanFactory {
         }
 	}
 	
-	protected Object doCreateBean(BeanDefinitionBase bd){
-        return doCreateBean(bd, false);
-	}
+    protected Object doCreateProxy(BeanDefinitionBase pd, Class<?> type, Object bean){
 
-    protected Object doCreateProxy(BeanDefinitionBase bd){
-        return doCreateBean(bd, true);
+        Object proxy;
+
+        if(ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
+            proxy = doCreateBeanOnly(pd);
+            ((ProxyBean)proxy).setTargetBean(bean);
+        }else{
+            ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
+            if(null == c) {
+                throw new BeanCreationException("Can't create proxy '" + pd.getBeanClass() + "', No valid constructor");
+            }
+
+            proxy = c.newInstance(bean);
+
+            beforeBeanCreation(pd);
+
+            processBeanCreation(pd, proxy);
+
+            afterBeanCreation(pd);
+
+            pd.setInited(true);
+        }
+
+        return proxy;
     }
 
-    protected Object doCreateBean(BeanDefinitionBase bd, boolean proxy){
+    protected Object doCreateBean(BeanDefinitionBase bd){
+
+        Object bean = doCreateBeanOnly(bd);
+
+        BeanDefinitionBase pd = findProxy(bd);
+        if(null != pd) {
+            Object proxyBean = doCreateProxy(pd, bd.getType(), bean);
+
+            if(!isTypedProxy(pd)) {
+                pd = findTypedProxy(bd);
+                if(null != pd) {
+                    Object typedProxyBean = doCreateProxy(pd, bd.getType(), proxyBean);
+                    proxyBean = typedProxyBean;
+                }
+            }
+
+            if(bd.isSingleton()) {
+                bd.setProxyInstance(proxyBean);
+            }
+
+            return proxyBean;
+        }
+
+        return bean;
+    }
+
+    protected Object doCreateBeanOnly(BeanDefinitionBase bd) {
         if(initializing){
             throw new IllegalStateException("Cannot get bean when this container is initializing");
         }
@@ -964,29 +1009,6 @@ public class BeanContainer implements BeanFactory {
         afterBeanCreation(bd);
 
         bd.setInited(true);
-
-        if(!proxy) {
-            BeanDefinitionBase pd = findProxy(bd);
-            if(null != pd) {
-                Object proxyBean = doCreateProxy(pd);
-                ((ProxyBean)proxyBean).setTargetBean(bean);
-
-                if(!isTypedProxy(pd)) {
-                    pd = findTypedProxy(bd);
-                    if(null != pd) {
-                        Object typedProxyBean = doCreateProxy(pd);
-                        ((ProxyBean) typedProxyBean).setTargetBean(proxyBean);
-                        proxyBean = typedProxyBean;
-                    }
-                }
-
-                if(bd.isSingleton()) {
-                    bd.setProxyInstance(proxyBean);
-                }
-
-                return proxyBean;
-            }
-        }
 
         return bean;
     }
@@ -1040,74 +1062,76 @@ public class BeanContainer implements BeanFactory {
         }
         return false;
     }
-	
+
 	protected Object doBeanCreation(BeanDefinitionBase bd){
 		log.trace("Creating bean {}",bd);
 		
-		Object          bean = null;
-		ValueDefinition vd   = bd.getValueDefinition();
-		try {
-	        if(null != vd){
-	        	bean = doResolveValue(bd, vd, null);
-	        }else{
-	        	bean = doBeanCreationByConstructor(bd);
-	        }
-	        
-	        setBeanCurrentlyInCreation(bd, bean);
-	        
-	        doBeanAware(bd, bean);
-	        
-	        doBeanConfigure(bd, bean);
-	        if(bean instanceof PostConfigureBean){
-	            ((PostConfigureBean) bean).postConfigure(appContext.getBeanFactory(), appContext.getConfig());
-	        }
-	        
-	        doBeanSetProperties(bd,bean);
-	        doBeanInjection(bd,bean);
+		Object          bean;
+		ValueDefinition vd = bd.getValueDefinition();
+
+        if (null != vd) {
+            bean = doResolveValue(bd, vd, null);
+        } else {
+            bean = doBeanCreationByConstructor(bd);
+        }
+
+        processBeanCreation(bd, bean);
+
+		return bean;
+	}
+
+    protected void processBeanCreation(BeanDefinitionBase bd, Object bean) {
+        try {
+            setBeanCurrentlyInCreation(bd, bean);
+
+            doBeanAware(bd, bean);
+
+            doBeanConfigure(bd, bean);
+            if(bean instanceof PostConfigureBean){
+                ((PostConfigureBean) bean).postConfigure(appContext.getBeanFactory(), appContext.getConfig());
+            }
+
+            doBeanSetProperties(bd,bean);
+            doBeanInjection(bd,bean);
             doBeanInvokeMethods(bd,bean);
-	        
-			if(null != bd.getInitMethod()){
-				Reflection.invokeMethod(bd.getInitMethod(), bean);
-			}
-			
-			//null if post processors not resolved, see #resolveAfterLoading 
-			if(null != processors){
-				for(int i=0;i<processors.length;i++){
-					processors[i].postCreateBean(appContext, beanFactory, bd, bean);
-				}
-			}
-			
-	        if(bean instanceof PostCreateBean){
-	        	((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
-	        }
+
+            if(null != bd.getInitMethod()){
+                Reflection.invokeMethod(bd.getInitMethod(), bean);
+            }
+
+            //null if post processors not resolved, see #resolveAfterLoading
+            if(null != processors){
+                for(int i=0;i<processors.length;i++){
+                    processors[i].postCreateBean(appContext, beanFactory, bd, bean);
+                }
+            }
+
+            if(bean instanceof PostCreateBean){
+                ((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
+            }
 
             if(bean instanceof Initializable) {
                 ((Initializable) bean).init();
             }
-	        
-	        if(bean instanceof LoadableBean){
-	        	if(!((LoadableBean) bean).load(appContext.getBeanFactory())){
-	        		return null;
-	        	}
-	        }
-        } catch (Throwable e) {
-        	throw errorCreateBean(bd,e);
-        }
-		
-		if(bd.isSingleton()){
-			doBeanValidation(bd,bean);
-			bd.setSingletonInstance(bean);
-		}
-		
-		return bean;
-	}
-	
-	protected void postBeanCreation(Object bean) {
-		
-	}
 
+            if(bean instanceof LoadableBean){
+                if(!((LoadableBean) bean).load(appContext.getBeanFactory())){
+                    return;
+                }
+            }
+        } catch (Throwable e) {
+            throw errorCreateBean(bd,e);
+        }
+
+        if(bd.isSingleton()){
+            doBeanValidation(bd,bean);
+            bd.setSingletonInstance(bean);
+        }
+    }
+	
     protected Object resolveConfigProperty(BeanDefinitionBase bd, ConfigProperty p, String name, Class<?> type, Type genericType) {
         String keyPrefix = bd.getConfigurationPrefix();
+
         if(!Strings.isEmpty(keyPrefix)) {
             char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
             if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
@@ -1116,6 +1140,7 @@ public class BeanContainer implements BeanFactory {
         }else{
             keyPrefix = "";
         }
+
         if(p.value().length > 0) {
             for(String key : p.value()) {
                 Object value = resolveConfigProperty(keyPrefix + key, type, genericType);
