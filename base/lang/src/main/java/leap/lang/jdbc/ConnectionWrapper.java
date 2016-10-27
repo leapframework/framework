@@ -15,21 +15,7 @@
  */
 package leap.lang.jdbc;
 
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.Statement;
-import java.sql.Struct;
+import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
@@ -42,15 +28,40 @@ public class ConnectionWrapper implements Connection {
 		this.conn = conn;
 	}
 
-	@Override
-	public <T> T unwrap(Class<T> iface) throws SQLException {
-		return conn.unwrap(iface);
-	}
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T unwrap(Class<T> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return (T) this;
+        }
 
-	@Override
-	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return conn.isWrapperFor(iface);
-	}
+        if(iface.isInstance(conn)) {
+            return (T)conn;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.unwrap(iface);
+        }
+
+        throw new SQLException("Wrapped Connection " + conn.getClass() + "' is not an instance of " + iface);
+    }
+
+    @Override
+    public boolean isWrapperFor(Class<?> iface) throws SQLException {
+        if (iface.isInstance(this)) {
+            return true;
+        }
+
+        if(iface.isInstance(conn)) {
+            return true;
+        }
+
+        if(conn instanceof Wrapper) {
+            return conn.isWrapperFor(iface);
+        }
+
+        return false;
+    }
 
 	@Override
 	public Statement createStatement() throws SQLException {

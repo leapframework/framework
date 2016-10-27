@@ -42,7 +42,7 @@ public class ProxyDatabaseMetadata extends DatabaseMetaDataWrapper {
 		if(null == stmt){
 			return new ProxyResultSet(null, rs);
 		}else{
-			return new ProxyResultSet(conn.createProxy(stmt), rs); 
+			return new ProxyResultSet(conn.proxyOf(stmt), rs);
 		}
 	}
 	
