@@ -26,10 +26,12 @@ import java.sql.SQLException;
 public class MConnectionProxy extends ConnectionWrapper implements MConnection {
 
     protected final MDataSourceProxy ds;
+    protected final long             openTime;
 
     public MConnectionProxy(MDataSourceProxy ds, Connection conn) {
         super(conn);
         this.ds = ds;
+        this.openTime = System.currentTimeMillis();
     }
 
     public Connection wrapped() {
@@ -37,7 +39,13 @@ public class MConnectionProxy extends ConnectionWrapper implements MConnection {
     }
 
     @Override
+    public long getOpenTime() {
+        return openTime;
+    }
+
+    @Override
     public void close() throws SQLException {
         ds.closeConnection(this);
     }
+
 }

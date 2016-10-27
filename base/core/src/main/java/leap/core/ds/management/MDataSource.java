@@ -18,8 +18,14 @@
 
 package leap.core.ds.management;
 
+/**
+ * The management interface of {@link javax.sql.DataSource}.
+ */
 public interface MDataSource {
 
+    /**
+     * Returns all the current opened connections.
+     */
     MConnection[] getActiveConnections();
 
 }

@@ -20,6 +20,7 @@ package tests.core.ds;
 
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
+import leap.core.ds.management.MConnection;
 import leap.core.ds.management.MDataSource;
 import leap.core.junit.AppTestBase;
 import org.junit.Test;
@@ -51,5 +52,13 @@ public class MDataSourceTest extends AppTestBase {
         }
 
         assertEquals(0, mds.getActiveConnections().length);
+    }
+
+    @Test
+    public void testConnectionOpenTime() throws SQLException {
+        try(Connection conn = ds.getConnection()) {
+            MConnection mconn = mds.getActiveConnections()[0];
+            assertTrue(mconn.getOpenTime() > 0 && mconn.getOpenTime() <= System.currentTimeMillis());
+        }
     }
 }

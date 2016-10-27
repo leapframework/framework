@@ -18,7 +18,14 @@
 
 package leap.core.ds.management;
 
+/**
+ * The management interface of {@link java.sql.Connection}.
+ */
 public interface MConnection {
 
+    /**
+     * Returns the timestamp when the connection has been opened.
+     */
+    long getOpenTime();
 
 }
