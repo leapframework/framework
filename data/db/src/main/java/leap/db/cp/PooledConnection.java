@@ -15,23 +15,16 @@
  */
 package leap.db.cp;
 
-import leap.lang.Classes;
-import leap.lang.Strings;
-import leap.lang.jdbc.ConnectionProxy;
-import leap.lang.jdbc.JDBC;
+import leap.lang.jdbc.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.logging.StackTraceStringBuilder;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PooledConnection extends ConnectionProxy implements Connection {
 	private static final Log log = LogFactory.get(PooledConnection.class);
-
-    static final String FRAMEWORK_PKG = Classes.getPackageName(PooledConnection.class) + ".";
 
     static final int STATE_IDLE = 0;
 	static final int STATE_BUSY = 1;
@@ -63,6 +56,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		this.poolConfig = pool.getConfig();
 		this.state      = new AtomicInteger(STATE_IDLE);
 		this.utils      = pool.utils();
+        this.statementStackTrace = true;
 	}
 	
 	void setupBeforeOnBorrow() {
@@ -125,33 +119,8 @@ public class PooledConnection extends ConnectionProxy implements Connection {
         return getStackTrace(stackTraceOnBorrowException);
 	}
 
-    static StackTraceElement[] getStackTrace(Exception e) {
-        List<StackTraceElement> stes = new ArrayList<>();
-
-        //excludes the trace element in framework.
-        boolean found = false;
-        for(StackTraceElement ste : e.getStackTrace()) {
-
-            if(found) {
-                stes.add(ste);
-                continue;
-            }
-
-            if(!Strings.startsWith(ste.getClassName(), FRAMEWORK_PKG)) {
-                found = true;
-                stes.add(ste);
-            }
-        }
-
-        return stes.toArray(new StackTraceElement[stes.size()]);
-    }
-
 	AtomicInteger getState() {
 		return state;
-	}
-	
-	Connection wrapped() {
-		return conn;
 	}
 	
 	void setWrapped(Connection conn) {
@@ -254,9 +223,9 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		}
 	}
 	
-	void closeStatement(ProxyStatement proxy,Statement wrapped) throws SQLException {
+	protected void closeStatement(StatementProxy proxy) throws SQLException {
         try{
-            closeStatementOnly(proxy, wrapped);
+            closeStatementOnly(proxy);
         }finally{
             if(!statements.remove(proxy)){
                 log.error("Invalid state, No open statement found for the closed statement",new Exception(""));
@@ -264,14 +233,9 @@ public class PooledConnection extends ConnectionProxy implements Connection {
         }
 	}
 	
-	void closeStatementOnly(ProxyStatement proxy,Statement wrapped) throws SQLException {
-        if(proxy.isClosed()) {
-            log.warn("Invalid state, the proxy statement already closed", new Exception("Statement already closed"));
-            return;
-        }
-
+	void closeStatementOnly(StatementProxy proxy) throws SQLException {
 		try{
-			wrapped.close();
+			proxy.wrapped().close();
 			successCloseStatement(proxy);
 		}catch(SQLException e) {
 			errorCloseStatement(proxy, e);
@@ -319,43 +283,26 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 	    super.commit();
     }
 
-    protected ProxyStatement proxyOf(Statement stmt) {
-		if(stmt instanceof PreparedStatement) {
-			return proxyOfPreparedStatement((PreparedStatement)stmt, null);
-		}
-
-		if(stmt instanceof CallableStatement) {
-			return proxyOfCallableStatement((CallableStatement)stmt, null);
-		}
-
-		return proxyOfStatement(stmt);
-	}
-
     @Override
-    protected DatabaseMetaData proxyOfMetadata(DatabaseMetaData md) {
-        return new ProxyDatabaseMetadata(this, md);
-    }
-
-    @Override
-    protected ProxyStatement proxyOfStatement(Statement stmt) {
+    protected StatementProxy proxyOfStatement(Statement stmt) {
         setupStatement(stmt);
-        ProxyStatement proxy = new ProxyStatement(this, stmt);
+        StatementProxy proxy = super.proxyOfStatement(stmt);
         statements.add(proxy);
         return proxy;
     }
 
     @Override
-    protected ProxyPreparedStatement proxyOfPreparedStatement(PreparedStatement ps, String sql) {
+    protected PreparedStatementProxy proxyOfPreparedStatement(PreparedStatement ps, String sql) {
         setupStatement(ps);
-        ProxyPreparedStatement proxy = new ProxyPreparedStatement(this, ps, sql);
+        PreparedStatementProxy proxy = super.proxyOfPreparedStatement(ps, sql);
         statements.add(proxy);
         return proxy;
     }
 
     @Override
-    protected ProxyCallableStatement proxyOfCallableStatement(CallableStatement cs, String sql) {
+    protected CallableStatementProxy proxyOfCallableStatement(CallableStatement cs, String sql) {
 		setupStatement(cs);
-		ProxyCallableStatement proxy = new ProxyCallableStatement(this, cs, sql);
+        CallableStatementProxy proxy = super.proxyOfCallableStatement(cs, sql);
 		statements.add(proxy);
 		return proxy;
 	}
@@ -372,7 +319,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		static final int DEFAULT_CAPACITY = 16; 
 		static final int MAX_CAPACITY     = DEFAULT_CAPACITY * 2;
 		
-		private ProxyStatement[] array;
+		private StatementProxy[] array;
 		private int				 length;
 		
 		public StatementList() {
@@ -380,17 +327,17 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		}
 		
 		public StatementList(int capacity) {
-			array = new ProxyStatement[capacity];
+			array = new StatementProxy[capacity];
 		}
 		
-		public void add(ProxyStatement stmt) {
+		public void add(StatementProxy stmt) {
 			try {
 	            array[length++] = stmt;
             } catch (ArrayIndexOutOfBoundsException e) {
             	int oldLength = array.length;
             	int newLength = oldLength + DEFAULT_CAPACITY;
             	
-            	final ProxyStatement[] newArray = new ProxyStatement[newLength];
+            	final StatementProxy[] newArray = new StatementProxy[newLength];
                 System.arraycopy(array, 0, newArray, 0, oldLength);
                 newArray[length - 1] = stmt;
                 array = newArray;
@@ -413,13 +360,13 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		
 		public void reset() {
 			for(int i=0;i<length;i++) {
-				ProxyStatement stmt = array[i];
+				StatementProxy stmt = array[i];
 				if(null != stmt) {
 					try {
 						log.warn("A potential statement leak detected, force to close it, sql ({}), stack trace -> \n{}",
 								stmt.getLastExecutingSql(),
 								new StackTraceStringBuilder(null, stmt.getStackTraceOnOpen()).toString());
-	                    closeStatementOnly(stmt, stmt.getReal());
+	                    closeStatementOnly(stmt);
                     } catch (SQLException e) {
 
                     } finally {
@@ -429,7 +376,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 			}
 			
 			if(array.length > MAX_CAPACITY) {
-				array = new ProxyStatement[DEFAULT_CAPACITY];
+				array = new StatementProxy[DEFAULT_CAPACITY];
 			}
 			
 			this.length = 0;

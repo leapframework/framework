@@ -16,31 +16,24 @@
  *
  */
 
-package leap.core.ds.management;
+package leap.lang.jdbc;
 
-import leap.lang.jdbc.*;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
-import java.sql.*;
+public class ResultSetProxy extends ResultSetWrapper {
 
-public class MConnectionProxy extends ConnectionProxy implements MConnection {
+    protected final Statement statement;
 
-    protected final MDataSourceProxy ds;
-    protected final long             openTime;
-
-    public MConnectionProxy(MDataSourceProxy ds, Connection conn) {
-        super(conn);
-        this.ds = ds;
-        this.openTime = System.currentTimeMillis();
+    public ResultSetProxy(Statement statement, ResultSet rs) {
+        super(rs);
+        this.statement = statement;
     }
 
     @Override
-    public long getOpenTime() {
-        return openTime;
-    }
-
-    @Override
-    public void close() throws SQLException {
-        ds.closeConnection(this);
+    public final Statement getStatement() throws SQLException {
+        return statement;
     }
 
 }

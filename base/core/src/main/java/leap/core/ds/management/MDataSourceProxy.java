@@ -18,7 +18,6 @@
 
 package leap.core.ds.management;
 
-import leap.lang.Disposable;
 import leap.lang.jdbc.DataSourceWrapper;
 
 import javax.sql.DataSource;

@@ -134,7 +134,7 @@ class Pool {
 				
 				setupConnectionOnBorrow(conn);
 				
-				return new ProxyConnection(conn);
+				return conn;
 			}
 		}catch(InterruptedException e) {
 			throw new SQLException("Interrupted while connection borrowing");

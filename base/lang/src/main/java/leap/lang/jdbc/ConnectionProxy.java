@@ -22,8 +22,14 @@ import java.sql.*;
 
 public abstract class ConnectionProxy extends ConnectionWrapper {
 
+    protected boolean statementStackTrace;
+
     public ConnectionProxy(Connection conn) {
         super(conn);
+    }
+
+    public final Connection wrapped() {
+        return conn;
     }
 
     @Override
@@ -92,23 +98,57 @@ public abstract class ConnectionProxy extends ConnectionWrapper {
     }
 
     /**
+     * Test the type of the statement and return the proxy of it.
+     */
+    protected Statement proxyOf(Statement stmt) {
+        if (stmt instanceof PreparedStatement) {
+            return proxyOfPreparedStatement((PreparedStatement) stmt, null);
+        }
+
+        if (stmt instanceof CallableStatement) {
+            return proxyOfCallableStatement((CallableStatement) stmt, null);
+        }
+
+        return proxyOfStatement(stmt);
+    }
+
+    /**
      * Returns the proxy of {@link DatabaseMetaData}.
      */
-    protected abstract DatabaseMetaData proxyOfMetadata(DatabaseMetaData md);
+    protected DatabaseMetadataProxy proxyOfMetadata(DatabaseMetaData md) {
+        return new DatabaseMetadataProxy(this, md);
+    }
 
     /**
      * Returns the proxy of {@link Statement}.
      */
-    protected abstract Statement proxyOfStatement(Statement stmt);
+    protected StatementProxy proxyOfStatement(Statement stmt) {
+        return new StatementProxy(this, stmt, statementStackTrace);
+    }
 
     /**
      * Returns the proxy of {@link PreparedStatement}.
      */
-    protected abstract PreparedStatement proxyOfPreparedStatement(PreparedStatement ps, String sql);
+    protected PreparedStatementProxy proxyOfPreparedStatement(PreparedStatement ps, String sql) {
+        return new PreparedStatementProxy(this, ps, sql, statementStackTrace);
+    }
 
     /**
      * Returns the proxy of {@link CallableStatement}.
      */
-    protected abstract CallableStatement proxyOfCallableStatement(CallableStatement cs, String sql);
+    protected CallableStatementProxy proxyOfCallableStatement(CallableStatement cs, String sql) {
+        return new CallableStatementProxy<>(this, cs, sql, statementStackTrace);
+    }
+
+    /**
+     * Close the statement.
+     */
+    protected void closeStatement(StatementProxy stmt) throws SQLException {
+        stmt.wrapped().close();
+    }
+
+    protected static StackTraceElement[] getStackTrace(Exception e) {
+        return e.getStackTrace();
+    }
 
 }
