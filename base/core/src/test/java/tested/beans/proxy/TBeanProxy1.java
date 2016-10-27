@@ -18,19 +18,16 @@
 
 package tested.beans.proxy;
 
-import leap.core.ioc.ProxyBean;
+public class TBeanProxy1 implements TBeanType1 {
 
-public class TBeanProxy1 implements TBeanType1, ProxyBean<TBeanType1> {
+    private final TBeanType1 targetBean;
 
-    private TBeanType1 targetBean;
+    public TBeanProxy1(TBeanType1 targetBean) {
+        this.targetBean = targetBean;
+    }
 
     public TBeanType1 getTargetBean() {
         return targetBean;
-    }
-
-    @Override
-    public void setTargetBean(TBeanType1 bean) {
-        this.targetBean = bean;
     }
 
     @Override

@@ -33,6 +33,7 @@ import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.logging.LogUtils;
+import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.Reflection;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
@@ -391,10 +392,6 @@ class XmlBeanDefinitionLoader {
 			bean.setBeanClassType(BeanType.of(bean.getBeanClass()));
 		}
 
-        if(proxy && !ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
-            throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() + "' must be sub-class of '" + ProxyBean.class + "', source : " + reader.getSource());
-        }
-		
 		if(!Strings.isEmpty(typeClassName)){
 			Class<?> type = tryForName(typeClassName);
 			
@@ -410,6 +407,18 @@ class XmlBeanDefinitionLoader {
 		}else{
 		    bean.setType(bean.getBeanClass());
 		}
+
+
+        if(proxy) {
+            if(!ProxyBean.class.isAssignableFrom(bean.getBeanClass())) {
+                if(null == ReflectClass.of(bean.getBeanClass()).getConstructor(bean.getType())){
+                    throw new BeanDefinitionException("Bean proxy class'" + bean.getBeanClass() +
+                                                        "' must be sub-class of '" + ProxyBean.class +
+                                                        "' or has a constructor with the parameter type '" + bean.getType() +
+                                                        "' , source : " + reader.getSource());
+                }
+            }
+        }
 
         bean.setSingleton(reader.getBooleanAttribute(SINGLETON_ATTRIBUTE, true));
         bean.setLazyInit(boolAttribute(reader, LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
