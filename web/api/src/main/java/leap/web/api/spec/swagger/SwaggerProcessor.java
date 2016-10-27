@@ -85,6 +85,11 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
         public int getPort() {
             return request.getServletRequest().getServerPort();
         }
+
+        @Override
+        public String getContextPath() {
+            return request.getContextPath();
+        }
     }
 
 }

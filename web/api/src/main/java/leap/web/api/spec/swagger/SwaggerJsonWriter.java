@@ -74,7 +74,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		});
 		
 		w.propertyOptional(HOST, getHost(sc, m))
-		 .propertyOptional(BASE_PATH, m.getBasePath())
+		 .propertyOptional(BASE_PATH, sc.getContextPath() + m.getBasePath())
 		 .propertyOptional(SCHEMES, m.getProtocols())
 		 .propertyOptional(CONSUMES, m.getConsumes())
 		 .propertyOptional(PRODUCES, m.getProduces());
