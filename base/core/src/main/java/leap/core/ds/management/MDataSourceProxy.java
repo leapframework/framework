@@ -18,16 +18,26 @@
 
 package leap.core.ds.management;
 
+import leap.lang.Disposable;
 import leap.lang.jdbc.DataSourceWrapper;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-public class MDataSourceProxy extends DataSourceWrapper {
+public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
+
+    //todo : check the performance?
+    protected CopyOnWriteArrayList<MConnection> activeConnections = new CopyOnWriteArrayList<>();
 
     public MDataSourceProxy(DataSource ds) {
         super(ds);
+    }
+
+    @Override
+    public MConnection[] getActiveConnections() {
+        return activeConnections.toArray(new MConnection[0]);
     }
 
     public DataSource wrapped() {
@@ -36,16 +46,37 @@ public class MDataSourceProxy extends DataSourceWrapper {
 
     @Override
     public Connection getConnection() throws SQLException {
-        return proxy(super.getConnection());
+        return openConnection(super.getConnection());
     }
 
     @Override
     public Connection getConnection(String username, String password) throws SQLException {
-        return proxy(super.getConnection(username, password));
+        return openConnection(super.getConnection(username, password));
     }
 
-    protected Connection proxy(Connection connection) {
-        return null == connection ? null : new MConnectionProxy(this, connection);
+    public void destroy() {
+        activeConnections.clear();
+    }
+
+    protected Connection openConnection(Connection connection) {
+        if(null == connection) {
+            return null;
+        }
+
+        MConnectionProxy proxy = new MConnectionProxy(this, connection);
+
+        activeConnections.add(proxy);
+
+        return proxy;
+    }
+
+    protected void closeConnection(MConnectionProxy proxy) throws SQLException {
+        Connection conn = proxy.wrapped();
+        try{
+            activeConnections.remove(proxy);
+        }finally{
+            conn.close();
+        }
     }
 
 }

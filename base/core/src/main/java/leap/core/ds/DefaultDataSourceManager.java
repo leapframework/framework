@@ -19,6 +19,7 @@ import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.ds.management.MDataSource;
 import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
@@ -186,6 +187,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
             DataSource real = ds;
             if(ds instanceof MDataSourceProxy) {
                 real = ((MDataSourceProxy) ds).wrapped();
+                ((MDataSourceProxy) ds).destroy();
             }
 
             for (DataSourceFactory f : dataSourceFactories) {
@@ -229,8 +231,13 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         	return false;
         }
     }
-	
-	protected void notifyDataSourceCreated(String name,DataSource ds) {
+
+    @Override
+    public MDataSource getManagedDataSource(DataSource ds) {
+        return null == ds ? null : (MDataSource)ds;
+    }
+
+    protected void notifyDataSourceCreated(String name, DataSource ds) {
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
 		}

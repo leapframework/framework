@@ -12,7 +12,7 @@
 		<property name="minIdle" value="2" />
 	</bean>
 
-    <bean type="javax.sql.DataSource" class="org.apache.tomcat.jdbc.pool.DataSource" destroy-method="close">
+    <bean type="javax.sql.DataSource" class="org.apache.tomcat.jdbc.pool.DataSource" destroy-method="close" primary="true">
         <property name="driverClassName" value="${db.driverClassName}" />
         <property name="url"             value="${db.url}" />
         <property name="username"        value="${db.username}" />

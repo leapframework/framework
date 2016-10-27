@@ -18,26 +18,8 @@
 
 package leap.core.ds.management;
 
-import leap.lang.jdbc.ConnectionWrapper;
+public interface MDataSource {
 
-import java.sql.Connection;
-import java.sql.SQLException;
+    MConnection[] getActiveConnections();
 
-public class MConnectionProxy extends ConnectionWrapper implements MConnection {
-
-    protected final MDataSourceProxy ds;
-
-    public MConnectionProxy(MDataSourceProxy ds, Connection conn) {
-        super(conn);
-        this.ds = ds;
-    }
-
-    public Connection wrapped() {
-        return conn;
-    }
-
-    @Override
-    public void close() throws SQLException {
-        ds.closeConnection(this);
-    }
 }
