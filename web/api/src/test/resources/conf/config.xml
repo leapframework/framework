@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns="http://www.leapframework.org/schema/config">
+<config xmlns="http://www.leapframework.org/schema/config"
+        xmlns:orm="http://www.leapframework.org/schema/orm/config">
 
 	<additional-packages>
 		app.models
@@ -13,5 +14,10 @@
     <!--
     <property name="webapi.oplog.logClassName">app.models.api.TestLogModel</property>
     -->
+    <orm:config auto-create-tables="true"/>
+    <orm:models>
+        <orm:package name="api.basepackage"/>
+    </orm:models>
+
     <import resource="config_local.xml" check-existence="false" default-override="true"/>
 </config>

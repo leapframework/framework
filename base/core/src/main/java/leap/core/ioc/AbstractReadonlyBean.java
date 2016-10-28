@@ -25,14 +25,14 @@ public abstract class AbstractReadonlyBean implements PostCreateBean{
 	@Override
     public void postCreate(BeanFactory beanFactory) throws Exception {
 	    _readonly.check().enable();
-	    this.doInit();	  
+	    this.doInit(beanFactory);
     }
 
 	protected final void checkReadonly(){
 		_readonly.check();
 	}
 
-	protected void doInit() throws Exception {
+	protected void doInit(BeanFactory beanFactory) throws Exception {
 		
 	}
 }

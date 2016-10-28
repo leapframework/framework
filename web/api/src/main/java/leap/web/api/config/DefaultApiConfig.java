@@ -32,6 +32,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	protected final String name;
 	protected final String basePath;
 
+    protected String         basePackage;
     protected String         title;
     protected String         summary;
     protected String         description;
@@ -325,5 +326,16 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     @Override
     public String toString() {
         return this.getClass().getSimpleName() + "[api=" + name + "]";
+    }
+
+    @Override
+    public String getBasePackage() {
+        return basePackage;
+    }
+
+    @Override
+    public ApiConfigurator setBasePackage(String basePackage) {
+        this.basePackage = basePackage;
+        return this;
     }
 }

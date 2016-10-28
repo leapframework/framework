@@ -89,6 +89,7 @@
             </xsd:choice>
             <xsd:attribute name="name"      type="xsd:string" use="required"/>
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
+            <xsd:attribute name="base-package" type="xsd:string" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 

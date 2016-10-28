@@ -22,6 +22,7 @@ import java.util.Set;
 
 public class OrmModelsConfig {
 
+	private String dataSource;
 	private Set<String> basePackages = new LinkedHashSet<String>();
 	private Set<String> classNames	 = new LinkedHashSet<String>();
 
@@ -57,7 +58,7 @@ public class OrmModelsConfig {
 
 	public void addAll(OrmModelsConfig models) {
 		basePackages.addAll(models.basePackages);
-		classNames.addAll(classNames);
+		classNames.addAll(models.classNames);
 	}
 	
 	public boolean contains(Class<?> cls) {
@@ -73,5 +74,13 @@ public class OrmModelsConfig {
 		}
 		
 		return false;
+	}
+
+	public String getDataSource() {
+		return dataSource;
+	}
+
+	public void setDataSource(String dataSource) {
+		this.dataSource = dataSource;
 	}
 }

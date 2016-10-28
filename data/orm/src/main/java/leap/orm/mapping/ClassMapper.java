@@ -32,7 +32,7 @@ public class ClassMapper implements Mapper {
 		
 		resources.processClasses((cls) -> {
 
-			if(mappingStrategy.isExplicitEntity(context,cls)){
+ 			if(mappingStrategy.isExplicitEntity(context,cls)){
 
                 if(!mappingStrategy.isContextModel(context.getOrmContext(), cls)) {
                     return;

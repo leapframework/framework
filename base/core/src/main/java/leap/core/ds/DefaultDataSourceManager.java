@@ -38,6 +38,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected @Inject @M DataSourceFactory[]          dataSourceFactories;
     protected @Inject @M BeanList<DataSourceListener> listeners;
 
+	protected String 						 defaultDataSourceBeanName;
     protected DataSource                     defaultDataSource;
     protected Map<String, DataSource>        allDataSources;
     protected Map<String, DataSource>        allDataSourcesImmutableView;
@@ -72,7 +73,12 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		}
 	    return defaultDataSource;
     }
-	
+
+	@Override
+	public String getDefaultDatasourceBeanName() throws ObjectNotFoundException {
+		return defaultDataSourceBeanName;
+	}
+
 	@Override
     public DataSource tryGetDefaultDataSource() {
 	    return defaultDataSource;
@@ -250,9 +256,19 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			    defaultDataSource = allDataSources.values().iterator().next();
 			}
 		}
-		
+
 		if(null != defaultDataSource && !allDataSources.containsValue(this.defaultDataSource)){
 		    allDataSources.put(DEFAULT_DATASOURCE_NAME, defaultDataSource);
+			defaultDataSourceBeanName = DEFAULT_DATASOURCE_NAME;
+		}
+
+		if(allDataSources.containsValue(this.defaultDataSource)){
+			for(Entry<String, DataSource> entry : allDataSources.entrySet()){
+				if(entry.getValue() == this.defaultDataSource){
+					defaultDataSourceBeanName = entry.getKey();
+					break;
+				}
+			}
 		}
 		
 		for(Entry<String, DataSource> entry : allDataSources.entrySet()){

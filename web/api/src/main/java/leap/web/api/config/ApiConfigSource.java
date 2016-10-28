@@ -16,11 +16,13 @@
 
 package leap.web.api.config;
 
+import leap.core.AppConfig;
 import leap.web.App;
 import leap.web.api.Apis;
+import leap.web.config.WebConfigurator;
 
 public interface ApiConfigSource {
 
-    void loadConfiguration(App app, Apis apis);
+    void loadConfiguration(AppConfig config, WebConfigurator configurator, Apis apis);
 
 }

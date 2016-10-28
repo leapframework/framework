@@ -40,35 +40,15 @@ import java.util.Map.Entry;
  * 
  * This class must be configured in the beans configuration.
  */
-public class OrmInit implements AppContextInitializable,DataSourceListener {
+public class OrmInit implements AppContextInitializable {
 
     private static final Log log = LogFactory.get(OrmInit.class);
 	
     protected @Inject @M BeanFactory       beanFactory;
     protected @Inject @M DataSourceManager dataSourceManager;
-	
-	@Override
-    public void onDataSourceCreated(String name, DataSource ds) {
-	    boolean primary = dataSourceManager.getDefaultDataSource() == ds;
-	    if(primary){
-	    	initOrmBeans(beanFactory, ds, Orm.DEFAULT_NAME, true);
-	    }else{
-	    	initOrmBeans(beanFactory, ds, name, false);
-	    }
-	    
-		beanFactory.tryGetBean(OrmContext.class,name);
-		beanFactory.tryGetBean(Dao.class,name);
-		beanFactory.tryGetBean(Dmo.class,name);
-    }
-
-	@Override
-    public void onDataSourceDestroyed(String name, DataSource ds) {
-		//TODO : destroy orm beans
-    }
 
 	@Override
     public void postInit(AppContext context) throws Exception {
-		dataSourceManager.addListener(this);
 
         log.debug("Lookup all dataSource(s)...");
 

@@ -18,8 +18,10 @@ package leap.orm.mapping;
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.AppConfigException;
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.ds.DataSourceManager;
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.DbMetadata;
@@ -63,11 +65,12 @@ import java.util.Map.Entry;
 public class DefaultMappingStrategy extends AbstractReadonlyBean implements MappingStrategy, AppConfigAware  {
 	
 	private static final Log log = LogFactory.get(DefaultMappingStrategy.class);
-	
+
     protected @Inject @M MappingProcessor[] processors;
     protected @Inject @M IdGenerator        defaultIdGenerator;
 	
 	protected OrmModelsConfigs modelsConfigs;
+	protected String defaultDatasourceName;
 	
 	public void setDefaultIdGenerator(IdGenerator defaultIdGenerator) {
 		this.defaultIdGenerator = defaultIdGenerator;
@@ -79,26 +82,43 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     }
 
 	@Override
+	protected void doInit(BeanFactory beanFactory) throws Exception {
+		if(this.modelsConfigs != null){
+			defaultDatasourceName = beanFactory.tryGetBean(DataSourceManager.class).getDefaultDatasourceBeanName();
+			this.modelsConfigs.getModelsConfigMap().forEach((k,v)->{
+				if(Strings.isEmpty(v.getDataSource())){
+					v.setDataSource(defaultDatasourceName);
+				}
+			});
+		}
+		super.doInit(beanFactory);
+	}
+
+	@Override
     public boolean isContextModel(OrmContext context, Class<?> cls) {
 		//The datasource's name.
 		String ds = context.getName();
 		
 		if(null != modelsConfigs) {
 			for(Entry<String, OrmModelsConfig> entry : modelsConfigs.getModelsConfigMap().entrySet()) {
-				String 			name   = entry.getKey(); //the datasource's name
-				OrmModelsConfig models = entry.getValue();
-				
+				OrmModelsConfig models 				= entry.getValue();
+				String 			name   				= Strings.isEmpty(models.getDataSource())?entry.getKey():models.getDataSource(); //the datasource's name
+				boolean 		isDefaultDatasource = Strings.equals(name,defaultDatasourceName);
 				if(name.equalsIgnoreCase(ds)) {
 					if(models.contains(cls)){
 						return true;
 					}else if(isContextModelAnnotated(context, cls)){
 						return true;
 					}else{
-						return false;
+						if(!isDefaultDatasource){
+							return false;
+						}
 					}
 				}else{
 					if(models.contains(cls)) {
-						return false;
+						if(!isDefaultDatasource){
+							return false;
+						}
 					}
 				}
 			}

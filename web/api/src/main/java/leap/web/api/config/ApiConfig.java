@@ -144,6 +144,11 @@ public interface ApiConfig extends Named,Titled,Described {
 	 */
 	Set<Route> getRoutes();
 
+	/**
+	 * Returns the base package of this api.
+	 */
+	String getBasePackage();
+
     /**
      * Returns all the resource types of route.
      */

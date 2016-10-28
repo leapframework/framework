@@ -19,7 +19,9 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 import leap.lang.Args;
 import leap.lang.Types;
 import leap.lang.exception.ObjectExistsException;
@@ -41,9 +43,10 @@ import leap.web.api.meta.model.MPermission;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.api.permission.ResourcePermissionsSet;
+import leap.web.config.WebConfigurator;
 import leap.web.route.Route;
 
-public class DefaultApis implements Apis, AppInitializable  {
+public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
 	protected @Inject ApiConfiguratorFactory configuratorFactory;
     protected @Inject ApiConfigSource        configSource;
@@ -158,8 +161,13 @@ public class DefaultApis implements Apis, AppInitializable  {
     }
 
     @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        configSource.loadConfiguration(factory.getAppConfig(), factory.getBean(WebConfigurator.class), this);
+    }
+
+    @Override
     public void postAppInit(App app) throws Throwable {
-        configSource.loadConfiguration(app, this);
+
 
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
 			String key = entry.getKey();

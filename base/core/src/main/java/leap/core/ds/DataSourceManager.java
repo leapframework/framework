@@ -42,6 +42,12 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	DataSource getDefaultDataSource() throws ObjectNotFoundException;
 
 	/**
+	 * Returns the default datasource bean name.
+	 * @throws ObjectNotFoundException
+	 */
+	String getDefaultDatasourceBeanName() throws ObjectNotFoundException;
+
+	/**
 	 * Returns the default datasource.
 	 * 
 	 * <p>

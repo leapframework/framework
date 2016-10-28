@@ -22,8 +22,10 @@ import leap.core.BeanFactory;
 import leap.core.annotation.*;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Args;
+import leap.lang.Strings;
 import leap.lang.collection.ImvCopyOnWriteArraySet;
 import leap.lang.collection.ImvSet;
+import leap.lang.exception.ObjectExistsException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
@@ -307,7 +309,18 @@ public class DefaultWebConfig implements WebConfig,WebConfigurator,PostCreateBea
     public Set<ModuleConfig> getModules() {
         return ((ImvSet)modules).getImmutableView();
     }
-	
+
+	@Override
+	public WebConfigurator addModule(ModuleConfig module) {
+		modules.forEach((config)->{
+			if (Strings.equals(config.getName(),module.getName())){
+				throw new ObjectExistsException("The web module '" + module.getName() + "' already exists!");
+			}
+		});
+		modules.add(module);
+		return this;
+	}
+
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
         //filters.

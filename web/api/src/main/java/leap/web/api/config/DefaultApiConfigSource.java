@@ -25,6 +25,7 @@ import leap.lang.resource.Resource;
 import leap.orm.sql.SqlConfigException;
 import leap.web.App;
 import leap.web.api.Apis;
+import leap.web.config.WebConfigurator;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,10 +35,10 @@ public class DefaultApiConfigSource implements ApiConfigSource{
     protected @Inject ApiConfigReader[] readers;
 
     @Override
-    public void loadConfiguration(App app, Apis apis) {
-        AppResource resources[] = AppResources.get(app.config()).search("apis");
+    public void loadConfiguration(AppConfig config, WebConfigurator configurator, Apis apis) {
+        AppResource resources[] = AppResources.get(config).search("apis");
 
-        LoadContext context = new LoadContext(app);
+        LoadContext context = new LoadContext(config,configurator);
 
         for(int i=0;i<resources.length;i++){
             AppResource ar = resources[i];
@@ -70,16 +71,23 @@ public class DefaultApiConfigSource implements ApiConfigSource{
 
     protected static final class LoadContext implements ApiConfigReaderContext {
 
-        private final App app;
+        private final AppConfig config;
+        private final WebConfigurator configurator;
         private final Set<String> resourceUrls = new HashSet<>();
 
-        public LoadContext(App app) {
-            this.app = app;
+        public LoadContext(AppConfig config,WebConfigurator configurator) {
+            this.config = config;
+            this.configurator = configurator;
         }
 
         @Override
         public AppConfig getAppConfig() {
-            return app.config();
+            return config;
+        }
+
+        @Override
+        public WebConfigurator getWebConfigurator() {
+            return configurator;
         }
 
         public Set<String> getResourceUrls() {

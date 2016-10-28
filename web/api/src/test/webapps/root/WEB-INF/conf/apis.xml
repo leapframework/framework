@@ -16,7 +16,12 @@
 
     <api name="api" base-path="/api"/>
 
-    <api name="testApi">
+
+    <api name="basepackage" base-path="/basepackage" base-package="api.basepackage">
+        <oauth enabled="false"/>
+    </api>
+
+    <api name="testApi" base-path="/testing">
 
         <permissions>
 

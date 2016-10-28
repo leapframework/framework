@@ -17,9 +17,10 @@
 package leap.web.api.config;
 
 import leap.core.AppConfig;
+import leap.web.config.WebConfigurator;
 
 public interface ApiConfigReaderContext {
 
     AppConfig getAppConfig();
-
+    WebConfigurator getWebConfigurator();
 }

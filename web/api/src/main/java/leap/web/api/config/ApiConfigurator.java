@@ -165,6 +165,11 @@ public interface ApiConfigurator {
 	 */
 	ApiConfigurator addRoute(Route route);
 
+	/**
+	 * Sets base package of this api
+	 */
+	ApiConfigurator setBasePackage(String basePackage);
+
     /**
      * Sets the resource type of the route.
      */

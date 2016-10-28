@@ -16,6 +16,7 @@
 
 package leap.web.api.config;
 
+import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.meta.MTypeManager;
 import leap.lang.Classes;
@@ -36,6 +37,7 @@ import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
+import leap.web.config.DefaultModuleConfig;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -63,6 +65,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String SCOPE                = "scope";
     protected static final String NAME                 = "name";
     protected static final String BASE_PATH            = "base-path";
+    protected static final String BASE_PACKAGE         = "base-package";
     protected static final String RESPONSES            = "responses";
     protected static final String RESPONSE             = "response";
     protected static final String STATUS               = "status";
@@ -234,14 +237,29 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
         String name     = reader.resolveRequiredAttribute(NAME);
         String basePath = reader.resolveAttribute(BASE_PATH);
-
+        String basePackage = reader.resolveAttribute(BASE_PACKAGE);
         ApiConfigurator api = apis.tryGetConfigurator(name);
         if(null == api) {
             reader.getRequiredAttribute(BASE_PATH);
             api = apis.add(name, basePath);
+            api.setBasePackage(basePackage);
         }
 
         readApi(context, reader, api);
+        addWebModule(context,api);
+    }
+
+    protected void addWebModule(ApiConfigReaderContext context, ApiConfigurator api) {
+        ApiConfig apiConf = api.config();
+        String basePackage = apiConf.getBasePackage();
+        if(Strings.isNotEmpty(basePackage)){
+            DefaultModuleConfig module = new DefaultModuleConfig();
+            module.setName(apiConf.getName());
+            module.setBasePath(apiConf.getBasePath());
+            module.setBasePackage(apiConf.getBasePackage());
+            context.getWebConfigurator().addModule(module);
+        }
+
     }
 
     protected void readApi(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {

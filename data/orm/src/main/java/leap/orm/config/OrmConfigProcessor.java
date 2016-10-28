@@ -98,12 +98,18 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			context.setExtension(mc);
 		}
 		
-		String datasource = reader.resolveAttribute(DATASOURCE, Orm.DEFAULT_NAME);
-		
+		String datasource = reader.resolveAttribute(DATASOURCE);
+
 		OrmModelsConfig models = mc.getModelsConfig(datasource);
 		if(null == models) {
 			models = new OrmModelsConfig();
-			mc.addModels(datasource, models);
+			models.setDataSource(datasource);
+			if(Strings.isEmpty(models.getDataSource())){
+				mc.addModels(Orm.DEFAULT_NAME, models);
+			}else {
+				mc.addModels(models.getDataSource(), models);
+			}
+
 		}
 		
 		while(reader.nextWhileNotEnd(MODELS)) {
