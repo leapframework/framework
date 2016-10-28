@@ -103,7 +103,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			for(Entry<String, OrmModelsConfig> entry : modelsConfigs.getModelsConfigMap().entrySet()) {
 				OrmModelsConfig models 				= entry.getValue();
 				String 			name   				= Strings.isEmpty(models.getDataSource())?entry.getKey():models.getDataSource(); //the datasource's name
-				boolean 		isDefaultDatasource = Strings.equals(name,defaultDatasourceName);
+				boolean 		isDefaultDatasource = Strings.equals(name,defaultDatasourceName); // is default datasource
 				if(name.equalsIgnoreCase(ds)) {
 					if(models.contains(cls)){
 						return true;
@@ -111,6 +111,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 						return true;
 					}else{
 						if(!isDefaultDatasource){
+							// if this context is default datasource context, there can not return false;
 							return false;
 						}
 					}
