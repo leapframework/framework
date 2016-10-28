@@ -19,6 +19,8 @@ import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.ds.management.MDataSource;
+import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.exception.ObjectExistsException;
@@ -169,6 +171,10 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		if(null != ds) {
 			validateDataSource(ds);
 		}
+
+        if(null != ds && ! (ds instanceof MDataSourceProxy)) {
+            ds = new MDataSourceProxy(ds);
+        }
 		
 		return ds;
 	}
@@ -182,14 +188,21 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	
 	@Override
     public boolean tryDestroyDataSource(DataSource ds) {
+
         try {
+            DataSource real = ds;
+            if(ds instanceof MDataSourceProxy) {
+                real = ((MDataSourceProxy) ds).wrapped();
+                ((MDataSourceProxy) ds).destroy();
+            }
+
             for (DataSourceFactory f : dataSourceFactories) {
-                if (f.tryDestroyDataSource(ds)) {
+                if (f.tryDestroyDataSource(real)) {
                     return true;
                 }
             }
 
-            return unpooledDataSourceFactory.tryDestroyDataSource(ds);
+            return unpooledDataSourceFactory.tryDestroyDataSource(real);
         }finally{
             String name = null;
             for(Entry<String, DataSource> entry : allDataSources.entrySet()) {
@@ -224,8 +237,13 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         	return false;
         }
     }
-	
-	protected void notifyDataSourceCreated(String name,DataSource ds) {
+
+    @Override
+    public MDataSource getManagedDataSource(DataSource ds) {
+        return null == ds ? null : (MDataSource)ds;
+    }
+
+    protected void notifyDataSourceCreated(String name, DataSource ds) {
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
 		}
