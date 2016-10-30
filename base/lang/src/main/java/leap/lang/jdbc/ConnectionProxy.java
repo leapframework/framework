@@ -22,14 +22,28 @@ import java.sql.*;
 
 public abstract class ConnectionProxy extends ConnectionWrapper {
 
-    protected boolean statementStackTrace;
+    protected Exception stackTraceExceptionOnOpen;
+    protected boolean   statementStackTrace;
 
     public ConnectionProxy(Connection conn) {
+        this(conn, false);
+    }
+
+    public ConnectionProxy(Connection conn, boolean stackTraceOnOpen) {
         super(conn);
+        this.stackTraceExceptionOnOpen = stackTraceOnOpen ? new Exception("") : null;
     }
 
     public final Connection wrapped() {
         return conn;
+    }
+
+    public final boolean hasStackTraceOnOpen() {
+        return null != stackTraceExceptionOnOpen;
+    }
+
+    public StackTraceElement[] getStackTraceOnOpen() {
+        return null == stackTraceExceptionOnOpen ? null : getStackTrace(stackTraceExceptionOnOpen);
     }
 
     @Override
@@ -147,8 +161,7 @@ public abstract class ConnectionProxy extends ConnectionWrapper {
         stmt.wrapped().close();
     }
 
-    protected static StackTraceElement[] getStackTrace(Exception e) {
+    protected StackTraceElement[] getStackTrace(Exception e) {
         return e.getStackTrace();
     }
-
 }

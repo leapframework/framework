@@ -28,4 +28,9 @@ public interface MConnection {
      */
     long getOpenTime();
 
+    /**
+     * Returns the stack trace elements when the connection has been opened.
+     */
+    StackTraceElement[] getStackTraceOnOpen();
+
 }

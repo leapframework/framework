@@ -34,13 +34,13 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
         super(ds);
     }
 
+    public DataSource wrapped() {
+        return ds;
+    }
+
     @Override
     public MConnection[] getActiveConnections() {
         return activeConnections.toArray(new MConnection[0]);
-    }
-
-    public DataSource wrapped() {
-        return ds;
     }
 
     @Override

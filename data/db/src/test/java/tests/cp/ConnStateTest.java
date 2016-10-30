@@ -18,6 +18,7 @@
 package tests.cp;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 import leap.db.cp.PooledConnection;
 import leap.lang.jdbc.TransactionIsolation;
@@ -25,6 +26,18 @@ import leap.lang.jdbc.TransactionIsolation;
 import org.junit.Test;
 
 public class ConnStateTest extends PoolTestBase {
+
+    @Test
+    public void testStackTrace() throws SQLException{
+
+        try(Connection conn = ds.getConnection()) {
+            PooledConnection pc = conn.unwrap(PooledConnection.class);
+
+            assertTrue(pc.hasStackTraceOnOpen());
+            assertNotNull(pc.getStackTraceOnOpen());
+        }
+
+    }
 	
 	@Test
 	public void testDefaultState() throws Exception {

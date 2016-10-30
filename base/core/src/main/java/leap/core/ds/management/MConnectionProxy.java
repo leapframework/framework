@@ -28,7 +28,7 @@ public class MConnectionProxy extends ConnectionProxy implements MConnection {
     protected final long             openTime;
 
     public MConnectionProxy(MDataSourceProxy ds, Connection conn) {
-        super(conn);
+        super(conn, conn instanceof ConnectionProxy ? !((ConnectionProxy) conn).hasStackTraceOnOpen() : true);
         this.ds = ds;
         this.openTime = System.currentTimeMillis();
     }
@@ -39,8 +39,19 @@ public class MConnectionProxy extends ConnectionProxy implements MConnection {
     }
 
     @Override
+    public final StackTraceElement[] getStackTraceOnOpen() {
+        return hasStackTraceOnOpen() ? super.getStackTraceOnOpen() : ((ConnectionProxy)conn).getStackTraceOnOpen();
+    }
+
+    @Override
     public void close() throws SQLException {
         ds.closeConnection(this);
     }
 
+    @Override
+    protected void closeStatement(StatementProxy stmt) throws SQLException {
+        //todo : check slow statement.
+
+        super.closeStatement(stmt);
+    }
 }

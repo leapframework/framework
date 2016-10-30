@@ -45,7 +45,6 @@ public class PooledConnection extends ConnectionProxy implements Connection {
     private int       transactionState = TRANSACTION_STATE_INIT;
     private long      lastBusyTime;
     private long      lastIdleTime;
-    private Exception stackTraceOnBorrowException;
 
     private String realCatalog;
 	private int	   realTransactionIsolation;
@@ -60,7 +59,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 	}
 	
 	void setupBeforeOnBorrow() {
-        stackTraceOnBorrowException = new Exception("");
+        stackTraceExceptionOnOpen = new Exception("");
 		transactionState = TRANSACTION_STATE_INIT;
 	}
 	
@@ -115,10 +114,6 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		return false;
 	}
 	
-	public StackTraceElement[] getStackTraceOnBorrow() {
-        return getStackTrace(stackTraceOnBorrowException);
-	}
-
 	AtomicInteger getState() {
 		return state;
 	}
