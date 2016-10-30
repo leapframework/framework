@@ -73,7 +73,7 @@ public class AssetsTestControllerTest extends WebTestCase {
 		get("/assets/plugins/pdfjs/web/locale/locale.properties").assertOk();
 	}
 
-    //todo : review the test case : sometimes will failed.
+    //todo : review the test case : sometimes will fail.
     @Test
     @Ignore
     public void testExternalAssets() {
