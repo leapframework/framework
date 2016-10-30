@@ -61,4 +61,14 @@ public class MDataSourceTest extends AppTestBase {
             assertTrue(mconn.getOpenTime() > 0 && mconn.getOpenTime() <= System.currentTimeMillis());
         }
     }
+
+    @Test
+    public void testConnectionStackTrace() throws SQLException {
+
+        try(Connection conn = ds.getConnection()) {
+            MConnection mconn = mds.getActiveConnections()[0];
+            assertNotNull(mconn.getStackTraceOnOpen());
+        }
+
+    }
 }
