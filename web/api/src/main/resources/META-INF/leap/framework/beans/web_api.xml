@@ -7,12 +7,6 @@
     <bean type="leap.web.api.config.ApiConfiguratorFactory"
           class="leap.web.api.config.DefaultApiConfiguratorFactory" primary="true"/>
 
-    <bean type="leap.web.api.config.ApiConfigSource"
-          class="leap.web.api.config.DefaultApiConfigSource" primary="true"/>
-
-    <bean type="leap.web.api.config.ApiConfigReader"
-          class="leap.web.api.config.XmlApiConfigReader"/>
-
     <bean type="leap.web.api.meta.ApiMetadataFactory"
           class="leap.web.api.meta.DefaultApiMetadataFactory" primary="true"/>
 

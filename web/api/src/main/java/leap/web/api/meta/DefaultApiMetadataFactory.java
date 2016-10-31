@@ -35,6 +35,7 @@ import leap.web.api.annotation.Resource;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.OauthConfig;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
@@ -153,10 +154,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
-        if(c.isOAuthEnabled()) {
+        OauthConfig oauthConfig = c.getOauthConfig();
+        if(oauthConfig != null && oauthConfig.isOauthEnabled()) {
             MOAuth2ApiSecurityDef def =
-                    new MOAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
-                                              c.getOAuthTokenUrl());
+                    new MOAuth2ApiSecurityDef(oauthConfig.getOauthAuthzEndpointUrl(),
+                            oauthConfig.getOauthTokenEndpointUrl());
             
             md.addSecurityDef(def);
         }

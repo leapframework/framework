@@ -18,6 +18,7 @@ package leap.web.api.config;
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
 import leap.web.route.Route;
 
@@ -80,6 +81,14 @@ public interface ApiConfigurator {
     ApiConfigurator putCommonResponse(String name, MApiResponse response);
 
 	/**
+	 * Puts a common response builder for build common response.
+	 *
+	 * <p/>
+	 * see {@link ApiConfig#getCommonResponses()}.
+	 */
+	ApiConfigurator putCommonResponseBuilder(String name, MApiResponseBuilder response);
+
+	/**
 	 * Sets the naming style of parameter names.
 	 */
 	ApiConfigurator setParameterNamingStyle(NamingStyle ns);
@@ -122,27 +131,13 @@ public interface ApiConfigurator {
 	/**
 	 * Enables OAuth authentication.
 	 */
-	default ApiConfigurator enableOAuth() {
-		return setOAuthEnabled(true);
-	}
+	ApiConfigurator enableOAuth();
 
 	/**
-	 * Enables or Disables oauth2 authentication.
-	 *
-	 * <p>
-	 * Default is disabled.
+	 * Sets oauth config
 	 */
-	ApiConfigurator setOAuthEnabled(boolean enabled);
+	ApiConfigurator setOAuthConfig(OauthConfig oauth);
 
-	/**
-	 * Sets the url of authorization endpoint in oauth2 server.
-	 */
-	ApiConfigurator setOAuthAuthorizationUrl(String url);
-
-	/**
-	 * Sets the url of token endpoint in oauth2 server.
-	 */
-	ApiConfigurator setOAuthTokenUrl(String url);
 
     /**
      * Adds a new or updates an exists permission.

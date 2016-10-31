@@ -18,7 +18,6 @@
 
 package leap.web.api.config;
 
-import leap.core.AppResource;
 import leap.core.AppResources;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigInitializable;
@@ -29,8 +28,13 @@ import leap.core.config.AppConfigInitializable;
 public class ApiConfigInitializable implements AppConfigInitializable {
 
     @Override
+    public void preLoadConfig(AppConfigContext context, AppResources appResources) {
+        context.addExternalConfig("apis");
+    }
+
+    @Override
     public void postLoadConfig(AppConfigContext context, AppResources appResources) {
-        AppResource[] resources = appResources.search("apis");
+
 
     }
 }

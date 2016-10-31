@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta.model;
 
+import leap.core.meta.MTypeManager;
 import leap.lang.http.HTTP;
 import leap.lang.meta.MType;
 
@@ -50,11 +51,12 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
         this.setSummary(r.getSummary());
         this.setDescription(r.getDescription());
     }
-
-    protected String  name;
-	protected Integer status;
-	protected MType   type;
-    protected boolean file;
+    protected MTypeManager typeManager;
+    protected String   name;
+	protected Integer  status;
+    protected Class<?> typeClass;
+	protected MType    type;
+    protected boolean  file;
 
     public String getName() {
         return name;
@@ -72,7 +74,19 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 		this.status = status;
 	}
 
-	public MType getType() {
+    public Class<?> getTypeClass() {
+        return typeClass;
+    }
+
+    public void setTypeClass(Class<?> typeClass) {
+        this.typeClass = typeClass;
+    }
+
+    public void setTypeManager(MTypeManager typeManager) {
+        this.typeManager = typeManager;
+    }
+
+    public MType getType() {
 		return type;
 	}
 
@@ -96,6 +110,13 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
 
         if(null == name) {
             name = String.valueOf(status);
+        }
+
+        if(typeClass != null && type == null){
+            if(typeManager == null){
+                throw new IllegalStateException("'typeManager' must not be specified!");
+            }
+            type = typeManager.getMType(typeClass);
         }
 
 	    return new MApiResponse(name, summary, description, status, type, file, attrs);

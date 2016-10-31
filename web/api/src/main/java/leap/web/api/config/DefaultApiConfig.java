@@ -21,6 +21,7 @@ import leap.lang.Collections2;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
@@ -41,9 +42,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected String[]       produces;
     protected String[]       consumes;
     protected boolean        corsEnabled                 = true;
-    protected boolean        oAuthEnabled                = false;
-    protected String         oAuthAuthzEndpointUrl;
-    protected String         oAuthTokenEndpointUrl;
+    protected OauthConfig    oauthConfig;
     protected NamingStyle    parameterNamingStyle;
     protected NamingStyle    propertyNamingStyle;
     protected int            maxPageSize                 = MAX_PAGE_SIZE;
@@ -59,6 +58,9 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
+
+    protected Map<String, MApiResponseBuilder> commonResponseBuilders    = new LinkedHashMap<>();
+    protected Map<String, MApiResponseBuilder> commonResponseBuildersImv = Collections.unmodifiableMap(commonResponseBuilders);
 
     protected Map<Route, Class<?>> resourceTypes    = new HashMap<>();
     protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
@@ -126,11 +128,6 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	public boolean isCorsDisabled() {
 		return !corsEnabled;
 	}
-	
-	@Override
-    public boolean isOAuthEnabled() {
-	    return oAuthEnabled;
-    }
 
 	@Override
     public Set<Route> getRoutes() {
@@ -184,6 +181,12 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 	}
 
     @Override
+    public ApiConfigurator putCommonResponseBuilder(String name, MApiResponseBuilder response) {
+        commonResponseBuilders.put(name,response);
+        return this;
+    }
+
+    @Override
     public ApiConfigurator putCommonResponse(String name, MApiResponse response) {
         commonResponses.put(name, response);
         return this;
@@ -222,35 +225,28 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
 		this.corsEnabled = enabled;
 	    return this;
     }
-	
-	@Override
-    public ApiConfigurator setOAuthEnabled(boolean enabled) {
-		this.oAuthEnabled = enabled;
-	    return this;
-    }
-	
-	@Override
-    public ApiConfigurator setOAuthAuthorizationUrl(String url) {
-	    this.oAuthAuthzEndpointUrl = url;
+
+    @Override
+    public ApiConfigurator setOAuthConfig(OauthConfig oauth) {
+        this.oauthConfig = oauth;
         return this;
     }
 
     @Override
-    public ApiConfigurator setOAuthTokenUrl(String url) {
-        this.oAuthTokenEndpointUrl = url;
+    public ApiConfigurator enableOAuth() {
+        if(oauthConfig == null){
+            oauthConfig = new OauthConfig(true,null,null);
+        }else{
+            oauthConfig.setOauthEnabled(true);
+        }
         return this;
     }
 
     @Override
-    public String getOAuthAuthorizationUrl() {
-        return oAuthAuthzEndpointUrl;
+    public OauthConfig getOauthConfig() {
+        return oauthConfig;
     }
 
-    @Override
-    public String getOAuthTokenUrl() {
-        return oAuthTokenEndpointUrl;
-    }
-    
     @Override
     public Map<String, MPermission> getPermissions() {
         return permissionsImv;

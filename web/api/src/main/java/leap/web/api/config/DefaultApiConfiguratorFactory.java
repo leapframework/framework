@@ -22,11 +22,7 @@ public class DefaultApiConfiguratorFactory implements ApiConfiguratorFactory {
 	@Override
     public ApiConfigurator createConfigurator(Apis apis, String name, String basePath) {
 	    DefaultApiConfig c = new DefaultApiConfig(name, basePath);
-	    
-	    c.setOAuthEnabled(apis.isDefaultOAuthEnabled());
-	    c.setOAuthAuthorizationUrl(apis.getDefaultOAuthAuthorizationUrl());
-	    c.setOAuthTokenUrl(apis.getDefaultOAuthTokenUrl());
-	    
+		c.setOAuthConfig(new OauthConfig(apis.isDefaultOAuthEnabled(),apis.getDefaultOAuthAuthorizationUrl(),apis.getDefaultOAuthTokenUrl()));
 	    return c;
     }
 	

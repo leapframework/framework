@@ -27,13 +27,13 @@ import java.util.*;
 
 public class ResourcePermissions {
 
-    private final Set<Class<?>>           resourceClasses  = new HashSet<>();
+    private final Set<String>             resourceClasses  = new HashSet<>();
     private final Set<String>             resourcePackages = new HashSet<>();
     private final Set<ResourcePermission> permissions      = new TreeSet<>(ResourcePermission.COMPARATOR);
 
     private ResourcePermission defaultPermission;
 
-    public Set<Class<?>> getResourceClasses() {
+    public Set<String> getResourceClasses() {
         return resourceClasses;
     }
 
@@ -53,8 +53,8 @@ public class ResourcePermissions {
         this.defaultPermission = defaultPermission;
     }
 
-    public void addResourceClass(Class<?> c) {
-        resourceClasses.add(c);
+    public void addResourceClass(String clzzName) {
+        resourceClasses.add(clzzName);
     }
 
     public void addResourcePackage(String p) {

@@ -1,49 +1,50 @@
 /*
- * Copyright 2016 the original author or authors.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ *  * Copyright 2013 the original author or authors.
+ *  *
+ *  * Licensed under the Apache License, Version 2.0 (the "License");
+ *  * you may not use this file except in compliance with the License.
+ *  * You may obtain a copy of the License at
+ *  *
+ *  *      http://www.apache.org/licenses/LICENSE-2.0
+ *  *
+ *  * Unless required by applicable law or agreed to in writing, software
+ *  * distributed under the License is distributed on an "AS IS" BASIS,
+ *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  * See the License for the specific language governing permissions and
+ *  * limitations under the License.
  *
- *       http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
 
 package leap.web.api.config;
 
-import leap.core.annotation.Inject;
-import leap.core.meta.MTypeManager;
+import leap.core.AppConfigException;
+import leap.core.config.AppConfigContext;
+import leap.core.config.AppConfigProcessor;
 import leap.lang.Classes;
 import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
-import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.meta.MType;
 import leap.lang.meta.MVoidType;
-import leap.lang.resource.Resource;
-import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
-import leap.web.api.Apis;
-import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.config.DefaultModuleConfig;
+import leap.web.config.ModuleConfigExtension;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class XmlApiConfigReader implements ApiConfigReader {
-
-    private static final Log log = LogFactory.get(XmlApiConfigReader.class);
+/**
+ * Created by kael on 2016/10/31.
+ */
+public class XmlApiConfigProcessor implements AppConfigProcessor {
+    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis";
+    private static final Log log = LogFactory.get(XmlApiConfigProcessor.class);
 
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";
@@ -81,113 +82,53 @@ public class XmlApiConfigReader implements ApiConfigReader {
     protected static final String HTTP_METHODS         = "http-methods";
     protected static final String PATH_PATTERN         = "path-pattern";
 
-    protected @Inject MTypeManager mTypeManager;
+    @Override
+    public String getNamespaceURI() {
+        return NAMESPACE_URI;
+    }
 
     @Override
-    public boolean readConfiguration(Apis apis, ApiConfigReaderContext context, Resource resource) {
-        if(Strings.endsWithIgnoreCase(resource.getFilename(), ".xml")) {
-            readXml(apis, context, resource);
-            return true;
-        }
-        return false;
+    public void processElement(AppConfigContext context, XmlReader reader) throws AppConfigException {
+        readApis(context, reader);
     }
 
-    protected void readXml(Apis apis, ApiConfigReaderContext context, Resource resource) {
-
-        XmlReader reader = null;
-        try{
-            reader = XML.createReader(resource);
-            reader.setPlaceholderResolver(context.getAppConfig().getPlaceholderResolver());
-
-            boolean foundValidRootElement = false;
-
-            while(reader.next()){
-                if(reader.isStartElement(APIS)){
-                    foundValidRootElement = true;
-
-                    readApis(apis, context, resource, reader);
-                    break;
-                }
-
-                if(reader.isStartElement(API)) {
-                    foundValidRootElement = true;
-
-                    readApi(apis, context, resource, reader);
-                    break;
-                }
-
-                if(reader.isStartElement()) {
-                    break;
-                }
-            }
-
-            if(!foundValidRootElement){
-                log.info("No valid root element found in file : " + resource.getClasspath());
-            }
-        }finally{
-            IO.close(reader);
-        }
-
-    }
-
-    protected void readApis(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
+    protected void readApis(AppConfigContext context, XmlReader reader) {
         while(reader.nextWhileNotEnd(APIS)) {
             if(reader.isStartElement(GLOBAL)) {
-                readGlobal(apis, context, resource, reader);
+                readGlobal(context, reader);
                 continue;
             }
 
             if(reader.isStartElement(API)) {
-                readApi(apis, context, resource, reader);
+                readApi(context, reader);
                 continue;
             }
         }
 
     }
 
-    protected void readGlobal(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
-
-        Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
+    protected void readGlobal(AppConfigContext context, XmlReader reader) {
+        ApiConfigExtension extension = context.getOrCreateExtension(ApiConfigExtension.class);
+        Map<String, MApiResponseBuilder> commonResponses = new LinkedHashMap<>();
 
         while(reader.nextWhileNotEnd(GLOBAL)) {
 
             if(reader.isStartElement(OAUTH)) {
-
-                apis.setDefaultOAuthEnabled(
-                        reader.resolveBooleanAttribute(ENABLED, apis.isDefaultOAuthEnabled()));
-
-                reader.loopInsideElement(() -> {
-                    if(reader.isStartElement(AUTHZ_URL)) {
-                        String url = reader.resolveElementTextAndEnd();
-                        if(!Strings.isEmpty(url)) {
-                            apis.setDefaultOAuthAuthorizationUrl(url);
-                        }
-                        return;
-                    }
-
-                    if(reader.isStartElement(TOKEN_URL)) {
-                        String url = reader.resolveElementTextAndEnd();
-                        if(!Strings.isEmpty(url)) {
-                            apis.setDefaultOAuthTokenUrl(url);
-                        }
-                        return;
-                    }
-                });
-
+                OauthConfig oauth = readOauth(context,reader);
+                extension.setDefaultOauthConfig(oauth);
                 continue;
             }
 
             if(reader.isStartElement(RESPONSES)) {
-                readCommonResponses(reader).forEach(apis.getCommonResponses()::put);
+                readCommonResponses(reader).forEach(extension::addCommonResponseBuilder);
                 continue;
             }
         }
 
-        commonResponses.forEach(apis.getCommonResponses()::put);
+        commonResponses.forEach(extension::addCommonResponseBuilder);
     }
-
-    protected Map<String,MApiResponse> readCommonResponses(XmlReader reader) {
-        Map<String, MApiResponse> responses = new LinkedHashMap<>();
+    protected Map<String,MApiResponseBuilder> readCommonResponses(XmlReader reader) {
+        Map<String, MApiResponseBuilder> responses = new LinkedHashMap<>();
 
         reader.loopInsideElement(() -> {
 
@@ -211,8 +152,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
                         throw new ApiConfigException("Invalid response type '" + type + "', check : " + reader.getCurrentLocation());
                     }
 
-                    MType mtype = mTypeManager.getMType(c);
-                    r.setType(mtype);
+                    r.setTypeClass(c);
                 }else{
                     r.setType(MVoidType.TYPE);
                 }
@@ -225,43 +165,30 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
                 });
 
-                responses.put(name, r.build());
+                responses.put(name, r);
             }
 
         });
 
         return responses;
     }
-
-    protected void readApi(Apis apis, ApiConfigReaderContext context, Resource resource, XmlReader reader) {
+    protected void readApi(AppConfigContext context, XmlReader reader) {
+        ApiConfigExtension extensions = context.getOrCreateExtension(ApiConfigExtension.class);
         String name     = reader.resolveRequiredAttribute(NAME);
         String basePath = reader.resolveAttribute(BASE_PATH);
         String basePackage = reader.resolveAttribute(BASE_PACKAGE);
-        ApiConfigurator api = apis.tryGetConfigurator(name);
+        ApiConfigurator api = extensions.getApiConfigurator(name);
         if(null == api) {
             reader.getRequiredAttribute(BASE_PATH);
-            api = apis.add(name, basePath);
+            api = new DefaultApiConfig(name,basePath);
             api.setBasePackage(basePackage);
+            extensions.addApiConfigurator(api);
         }
 
         readApi(context, reader, api);
         addWebModule(context,api);
     }
-
-    protected void addWebModule(ApiConfigReaderContext context, ApiConfigurator api) {
-        ApiConfig apiConf = api.config();
-        String basePackage = apiConf.getBasePackage();
-        if(Strings.isNotEmpty(basePackage)){
-            DefaultModuleConfig module = new DefaultModuleConfig();
-            module.setName(apiConf.getName());
-            module.setBasePath(apiConf.getBasePath());
-            module.setBasePackage(apiConf.getBasePackage());
-            context.getWebConfigurator().addModule(module);
-        }
-
-    }
-
-    protected void readApi(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+    protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
         while(reader.nextWhileNotEnd(API)) {
 
             if(reader.isStartElement(VERSION)) {
@@ -322,7 +249,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
 
             if(reader.isStartElement(RESPONSES)) {
                 //todo : override exists responses.
-                readCommonResponses(reader).forEach(api::putCommonResponse);
+                readCommonResponses(reader).forEach(api::putCommonResponseBuilder);
             }
 
             if(reader.isStartElement(MAX_PAGE_SIZE)) {
@@ -350,10 +277,28 @@ public class XmlApiConfigReader implements ApiConfigReader {
                 readResourcePermissions(context, reader, api);
                 continue;
             }
+            if(reader.isStartElement(OAUTH)){
+                OauthConfig oauth = readOauth(context,reader);
+                api.setOAuthConfig(oauth);
+                continue;
+            }
         }
     }
 
-    protected void readPermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+    protected void addWebModule(AppConfigContext context, ApiConfigurator api) {
+        ApiConfig apiConf = api.config();
+        String basePackage = apiConf.getBasePackage();
+        if(Strings.isNotEmpty(basePackage)){
+            DefaultModuleConfig module = new DefaultModuleConfig();
+            module.setName(apiConf.getName());
+            module.setBasePath(apiConf.getBasePath());
+            module.setBasePackage(apiConf.getBasePackage());
+            ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
+            extension.addModule(module);
+        }
+
+    }
+    protected void readPermissions(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
         StringBuilder chars      = new StringBuilder();
         boolean       hasElement = false;
 
@@ -392,8 +337,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
             }
         }
     }
-
-    protected void readResourcePermissions(ApiConfigReaderContext context, XmlReader reader, ApiConfigurator api) {
+    protected void readResourcePermissions(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
         ResourcePermissions rps = new ResourcePermissions();
 
         reader.loopInsideElement(() -> {
@@ -401,7 +345,7 @@ public class XmlApiConfigReader implements ApiConfigReader {
             if(reader.isStartElement(RESOURCE)) {
                 String className = reader.getRequiredAttribute(CLASS);
 
-                rps.addResourceClass(Classes.forName(className));
+                rps.addResourceClass(className);
 
                 return;
             }
@@ -447,5 +391,28 @@ public class XmlApiConfigReader implements ApiConfigReader {
         }
 
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
+    }
+
+    public OauthConfig readOauth(AppConfigContext context, XmlReader reader){
+        boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
+        OauthConfig oauth = new OauthConfig(defaultEnabled,null,null);
+        reader.loopInsideElement(() -> {
+            if(reader.isStartElement(AUTHZ_URL)) {
+                String url = reader.resolveElementTextAndEnd();
+                if(!Strings.isEmpty(url)) {
+                    oauth.setOauthAuthzEndpointUrl(url);
+                }
+                return;
+            }
+
+            if(reader.isStartElement(TOKEN_URL)) {
+                String url = reader.resolveElementTextAndEnd();
+                if(!Strings.isEmpty(url)) {
+                    oauth.setOauthTokenEndpointUrl(url);
+                }
+                return;
+            }
+        });
+        return oauth;
     }
 }

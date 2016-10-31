@@ -84,25 +84,9 @@ public interface ApiConfig extends Named,Titled,Described {
 	boolean isCorsDisabled();
 
 	/**
-	 * Returns <code>true</code> if OAuth2.0 security is enabled.
+	 * Returns the oauth config
 	 */
-	boolean isOAuthEnabled();
-
-	/**
-	 * Returns the url of authorization endpoint in oauth2 server.
-	 *
-	 * <p>
-	 * Required if oauth enabled.
-	 */
-	String getOAuthAuthorizationUrl();
-
-	/**
-	 * Returns the url of token endpoint in oauth2 server.
-	 *
-	 * <p>
-	 * Required if oauth enabled.
-	 */
-	String getOAuthTokenUrl();
+	OauthConfig getOauthConfig();
 
 	/**
 	 * Returns the permissions required by this api.
