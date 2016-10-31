@@ -40,6 +40,16 @@ public interface BeanDefinition extends TypeDefinition, Sourced,Ordered {
     boolean isConfigurable();
 
     /**
+     * Returns true if this bean can be exported as MBean.
+     */
+    boolean isExportMBean();
+
+    /**
+     * Optional. Returns the name of mbean.
+     */
+    String getMBeanName();
+
+    /**
      * Returns the key prefix of configuration properties.
      */
     String getConfigurationPrefix();

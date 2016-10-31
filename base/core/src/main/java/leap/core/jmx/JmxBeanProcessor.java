@@ -40,16 +40,26 @@ public class JmxBeanProcessor implements BeanProcessor {
 
     @Override
     public void postInitBean(AppContext context, BeanFactory factory, BeanDefinitionConfigurator c) throws Throwable {
-        if(c.definition().getBeanClass().isAnnotationPresent(Managed.class)){
+        if(c.definition().isExportMBean() || c.definition().getBeanClass().isAnnotationPresent(Managed.class)){
             c.setLazyInit(false);
         }
     }
 
     @Override
     public void postCreateBean(AppContext context, BeanFactory factory, BeanDefinition def, Object bean) throws Throwable {
+        boolean exportMBean = def.isExportMBean();
         Managed a = bean.getClass().getAnnotation(Managed.class);
+
         if(null != a) {
-            String name = a.name();
+            exportMBean = true;
+        }
+
+        if(exportMBean) {
+            String name = def.getMBeanName();
+
+            if(Strings.isEmpty(name)){
+                name = null == a ?  null : a.name();
+            }
 
             if(Strings.isEmpty(name)) {
 
@@ -60,7 +70,7 @@ public class JmxBeanProcessor implements BeanProcessor {
                 }else if(def.isPrimary()) {
                     name = def.getType().getName();
                 }else {
-                    name = "mbean" + String.valueOf(counter++);
+                    name = def.getType().getName() + "-[mbean-" + String.valueOf(counter++) + "]";
                 }
 
             }

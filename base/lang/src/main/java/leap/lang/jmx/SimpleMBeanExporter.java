@@ -55,6 +55,11 @@ public class SimpleMBeanExporter implements MBeanExporter {
         return server;
     }
 
+    @Override
+    public String getDomain() {
+        return domain;
+    }
+
     public ObjectName createObjectName(String name) {
         name = domain + ":name=" + name;
         try {

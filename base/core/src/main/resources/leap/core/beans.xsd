@@ -107,6 +107,8 @@
 	    <xsd:attribute name="init-method" type="xsd:string"/>
         <xsd:attribute name="destroy-method" type="xsd:string"/>
         <xsd:attribute name="sort-order" type="xsd:float" default="100"/>
+        <xsd:attribute name="export-mbean" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="mbean-name" type="xsd:string"/>
 	    <xsd:anyAttribute namespace="##other" processContents="lax" />
 	</xsd:attributeGroup>
 

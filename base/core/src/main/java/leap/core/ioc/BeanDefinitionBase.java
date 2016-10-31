@@ -49,6 +49,8 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected Constructor              constructor;
     protected Boolean                  configurable;
     protected String                   configurationPrefix;
+    protected boolean                  exportMBean;
+    protected String                   MBeanName;
 
     protected List<TypeDefinition>     additionalTypeDefs   = new ArrayList<>();
     protected List<FactoryDefinition>  factoryDefs          = new ArrayList<>();
@@ -211,8 +213,26 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	protected void setPrimary(boolean primary) {
 		this.primary = primary;
 	}
-	
-	public String getFactoryBeanName() {
+
+    @Override
+    public boolean isExportMBean() {
+        return exportMBean;
+    }
+
+    public void setExportMBean(boolean exportMBean) {
+        this.exportMBean = exportMBean;
+    }
+
+    @Override
+    public String getMBeanName() {
+        return MBeanName;
+    }
+
+    public void setMBeanName(String MBeanName) {
+        this.MBeanName = MBeanName;
+    }
+
+    public String getFactoryBeanName() {
 		return factoryBeanName;
 	}
 

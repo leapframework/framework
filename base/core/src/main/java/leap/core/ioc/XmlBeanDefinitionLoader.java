@@ -132,6 +132,8 @@ class XmlBeanDefinitionLoader {
     public static final String CHECK_EXISTENCE_ATTRIBUTE        = "check-existence";
     public static final String ADDITIONAL_TYPE_DEF_ELEMENT      = "additional-type-def";
     public static final String REGISTER_BEAN_FACTORY_ELEMENT    = "register-bean-factory";
+    public static final String EXPORT_MBEAN                     = "export-mbean";
+    public static final String MBEAN_NAME                       = "mbean-name";
 
     protected boolean defaultAutoInject = true;
 
@@ -425,6 +427,8 @@ class XmlBeanDefinitionLoader {
         bean.setPrimary(boolAttribute(reader, proxy ? TARGET_PRIMARY_ATTRIBUTE : PRIMARY_ATTRIBUTE, false));
         bean.setOverride(override);
         bean.setDefaultOverride(defaultOverride);
+        bean.setExportMBean(reader.getBooleanAttribute(EXPORT_MBEAN, false));
+        bean.setMBeanName(reader.getAttribute(MBEAN_NAME));
 
         if(!Strings.isEmpty(qualifierName)){
             bean.addQualifier(qualifierName);

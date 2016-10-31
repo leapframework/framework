@@ -3,4 +3,6 @@
 
     <bean id="testJmxBean" class="tested.beans.jmx.TJmxBean"/>
 
+    <bean name="testJmxBean" class="tested.beans.jmx.TJmxBean1" export-mbean="true"/>
+
 </beans>

@@ -29,6 +29,11 @@ public interface MBeanExporter {
     MBeanServer getServer();
 
     /**
+     * Returns the default domain.
+     */
+    String getDomain();
+
+    /**
      * Returns the {@link ObjectName} of the given string name.
      */
     ObjectName createObjectName(String name);
