@@ -19,30 +19,50 @@
 package leap.lang.jmx;
 
 import leap.junit.TestBase;
+import leap.lang.Enumerables;
+import leap.lang.New;
+import leap.lang.Threads;
 import org.junit.Test;
 
 import javax.management.*;
+import javax.management.openmbean.CompositeData;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MBeanExporterTest extends TestBase {
 
-    private MBeanServer   server = ManagementFactory.getPlatformMBeanServer();
+    private MBeanServer server = ManagementFactory.getPlatformMBeanServer();
     private SimpleMBeanExporter exporter;
+
+    private ComplexBean complexBean;
+    private ObjectName  complexBeanName;
+    private MBeanInfo   complexBeanInfo;
 
     @Override
     protected void setUp() throws Exception {
         exporter = new SimpleMBeanExporter(server);
+
+        complexBean = new ComplexBean();
+        complexBeanName = exporter.createObjectName("complexTestBean");
+        exporter.export(complexBeanName, complexBean);
+        complexBeanInfo = server.getMBeanInfo(complexBeanName);
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        exporter.unexport(complexBeanName);
     }
 
     @Test
-    public void testSimpleExport() throws Exception {
+    public void testSimpleBean() throws Exception {
         ObjectName name = exporter.createObjectName("simpleTestBean");
 
-        exporter.export(name, new Bean1());
+        exporter.export(name, new SimpleBean());
 
         MBeanInfo info = server.getMBeanInfo(name);
         assertNotNull(info);
-        assertEquals(Bean1.class.getName(), info.getClassName());
+        assertEquals(SimpleBean.class.getName(), info.getClassName());
         assertEmpty(info.getDescription());
 
         assertEquals(1, info.getAttributes().length);
@@ -52,14 +72,14 @@ public class MBeanExporterTest extends TestBase {
         MBeanOperationInfo o = info.getOperations()[0];
 
         assertEquals("count", a.getName());
-        assertEquals(Integer.TYPE.getName(), a.getType());
+        assertEquals(Integer.class.getName(), a.getType());
         assertTrue(a.isReadable());
         assertFalse(a.isWritable());
 
         assertEquals("name", o.getName());
 
         assertEquals(new Integer(1),server.getAttribute(name, "count"));
-        assertEquals(Bean1.class.getSimpleName(), server.invoke(name, "name", new Object[0],new String[0]));
+        assertEquals(SimpleBean.class.getSimpleName(), server.invoke(name, "name", new Object[0],new String[0]));
 
         exporter.unexportAll();
 
@@ -71,7 +91,21 @@ public class MBeanExporterTest extends TestBase {
         }
     }
 
-    public static final class Bean1 {
+    @Test
+    public void testSimpleCollectionAttribute() throws Exception {
+        Object value = server.getAttribute(complexBeanName, "stringArray");
+        assertArrayEquals(complexBean.getStringArray(), Enumerables.of(value).toArray());
+
+        value = server.getAttribute(complexBeanName, "stringList");
+        assertArrayEquals(complexBean.getStringList().toArray(), Enumerables.of(value).toArray());
+
+        value = server.getAttribute(complexBeanName, "complexData");
+        CompositeData cd = (CompositeData)value;
+        assertEquals(complexBean.getComplexData().getIntValue(), cd.get("intValue"));
+        assertEquals(complexBean.getComplexData().getStrValue(), cd.get("strValue"));
+    }
+
+    public static final class SimpleBean {
 
         private @Managed int count = 1;
 
@@ -84,4 +118,117 @@ public class MBeanExporterTest extends TestBase {
             return this.getClass().getSimpleName();
         }
     }
+
+    public static final class ComplexData {
+
+        private int    intValue = 100;
+        private String strValue = "test";
+
+        public int getIntValue() {
+            return intValue;
+        }
+
+        public void setIntValue(int intValue) {
+            this.intValue = intValue;
+        }
+
+        public String getStrValue() {
+            return strValue;
+        }
+
+        public void setStrValue(String strValue) {
+            this.strValue = strValue;
+        }
+    }
+
+    public static final class ComplexBean {
+
+        private int[]             intArray        = new int[]{1,2};
+        private String[]          stringArray     = new String[]{"hello1"};
+        private List<String>      stringList      = New.arrayList("hello2");
+        private List<String[]>    stringArrayList = new ArrayList<>();
+        private ComplexData       complexData     = new ComplexData();
+        private List<ComplexData> complexDataList = New.arrayList(new ComplexData(), new ComplexData());
+
+        public ComplexBean() {
+            stringArrayList.add(new String[]{"hello"});
+        }
+
+        @Managed
+        public int[] getIntArray() {
+            return intArray;
+        }
+
+        public void setIntArray(int[] intArray) {
+            this.intArray = intArray;
+        }
+
+        @Managed
+        public String[] getStringArray() {
+            return stringArray;
+        }
+
+        public void setStringArray(String[] stringArray) {
+            this.stringArray = stringArray;
+        }
+
+        @Managed
+        public List<String> getStringList() {
+            return stringList;
+        }
+
+        public void setStringList(List<String> stringList) {
+            this.stringList = stringList;
+        }
+
+        @Managed
+        public List<String[]> getStringArrayList() {
+            return stringArrayList;
+        }
+
+        public void setStringArrayList(List<String[]> stringArrayList) {
+            this.stringArrayList = stringArrayList;
+        }
+
+        @Managed
+        public ComplexData getComplexData() {
+            return complexData;
+        }
+
+        public void setComplexData(ComplexData complexData) {
+            this.complexData = complexData;
+        }
+
+        @Managed
+        public List<ComplexData> getComplexDataList() {
+            return complexDataList;
+        }
+
+        public void setComplexDataList(List<ComplexData> complexDataList) {
+            this.complexDataList = complexDataList;
+        }
+
+        @Managed
+        public void noReturnTypeOp() {
+
+        }
+
+        @Managed
+        public int intReturnTypeOp() {
+            return 100;
+        }
+
+        @Managed
+        public ComplexData complexReturnTypeOp() {
+            return new ComplexData();
+        }
+    }
+
+//    public static void main(String[] args) {
+//        SimpleMBeanExporter exporter = new SimpleMBeanExporter();
+//
+//        exporter.export("Hello", new ComplexBean());
+//
+//        Threads.sleep(1000000000L);
+//    }
 }

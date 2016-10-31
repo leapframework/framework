@@ -44,6 +44,11 @@ public interface MBeanExporter {
     void export(ObjectName name, Object bean);
 
     /**
+     * Unexport the bean.
+     */
+    void unexport(ObjectName name);
+
+    /**
      * Unexport all the beans exported by this exporter.
      */
     void unexportAll();

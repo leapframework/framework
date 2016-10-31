@@ -22,8 +22,6 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.reflect.ReflectException;
-import leap.lang.reflect.ReflectMethod;
-import leap.lang.reflect.ReflectValued;
 
 import javax.management.*;
 import java.util.Map;
@@ -32,12 +30,12 @@ public class MBean implements DynamicMBean {
 
     private static final Log log = LogFactory.get(MBean.class);
 
-    protected final Object                         bean;
-    protected final MBeanInfo                      mbeanInfo;
-    protected final Map<String, ReflectValued>     attributes;
-    protected final Map<MSignature, ReflectMethod> operations;
+    protected final Object                      bean;
+    protected final MBeanInfo                   mbeanInfo;
+    protected final Map<String, MAttribute>     attributes;
+    protected final Map<MSignature, MOperation> operations;
 
-    public MBean(Object bean, MBeanInfo mbeanInfo, Map<String, ReflectValued> attributes, Map<MSignature, ReflectMethod> operations) {
+    public MBean(Object bean, MBeanInfo mbeanInfo, Map<String, MAttribute> attributes, Map<MSignature, MOperation> operations) {
         this.bean       = bean;
         this.mbeanInfo  = mbeanInfo;
         this.attributes = attributes;
@@ -89,13 +87,19 @@ public class MBean implements DynamicMBean {
 
     @Override
     public Object getAttribute(String name) throws AttributeNotFoundException, MBeanException, ReflectionException {
-        ReflectValued a = this.attributes.get(name);
+        MAttribute a = this.attributes.get(name);
         if(null == a) {
             throw new AttributeNotFoundException("Attribute '" + name + "' not found in '" + bean.getClass() + "'");
         }
 
         try{
-            return a.getValue(bean);
+            Object value = a.valued().getValue(bean);
+
+            if(a.isOpen()) {
+                value = MConverts.convert(value, a.getOpenType());
+            }
+
+            return value;
         }catch(ReflectException e) {
             throw new ReflectionException(e);
         }catch(Exception e) {
@@ -107,13 +111,15 @@ public class MBean implements DynamicMBean {
     public void setAttribute(Attribute attribute) throws AttributeNotFoundException, InvalidAttributeValueException, MBeanException, ReflectionException {
         String name = attribute.getName();
 
-        ReflectValued a = this.attributes.get(name);
+        MAttribute a = this.attributes.get(name);
         if(null == a) {
             throw new AttributeNotFoundException("Attribute '" + name + "' not found in '" + bean.getClass() + "'");
         }
 
+        //todo : convert the value.
+
         try{
-            a.setValue(bean, attribute.getValue());
+            a.valued().setValue(bean, attribute.getValue());
         }catch(ReflectException e) {
             throw new ReflectionException(e);
         }catch(Exception e) {
@@ -123,13 +129,19 @@ public class MBean implements DynamicMBean {
 
     @Override
     public Object invoke(String actionName, Object[] params, String[] signature) throws MBeanException, ReflectionException {
-        ReflectMethod m = operations.get(new MSignature(actionName, signature));
-        if(null == m) {
+        MOperation o = operations.get(new MSignature(actionName, signature));
+        if(null == o) {
             throw new MBeanException(new ObjectNotFoundException("Operation '" + actionName + "' not found in '" + bean.getClass() + "'"));
         }
 
         try{
-            return m.invoke(bean, params);
+            Object value = o.getMethod().invoke(bean, params);
+
+            if(o.isOpen()) {
+                value = MConverts.convert(value, o.getReturnOpenType());
+            }
+
+            return value;
         }catch(ReflectException e) {
             throw new ReflectionException(e);
         }catch(Exception e) {
