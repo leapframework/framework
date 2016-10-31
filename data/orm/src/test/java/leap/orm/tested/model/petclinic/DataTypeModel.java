@@ -19,9 +19,12 @@
 package leap.orm.tested.model.petclinic;
 
 import leap.lang.enums.Bool;
+import leap.orm.annotation.Column;
+import leap.orm.annotation.ColumnType;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.NonColumn;
 import leap.orm.model.Model;
+import leap.orm.query.PageResult;
 
 /**
  * Created by kael on 2016/6/28.
@@ -34,6 +37,8 @@ public class DataTypeModel extends Model {
     @NonColumn
     private Boolean booleanType;
     private Boolean nullBooleanType;
+    @Column
+    private EnumType enumType;
 
     public Boolean getBooleanType() {
         return booleanType;
@@ -65,5 +70,13 @@ public class DataTypeModel extends Model {
 
     public void setNullBooleanType(Boolean nullBooleanType) {
         this.nullBooleanType = nullBooleanType;
+    }
+
+    public EnumType getEnumType() {
+        return enumType;
+    }
+
+    public void setEnumType(EnumType enumType) {
+        this.enumType = enumType;
     }
 }
