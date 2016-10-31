@@ -16,7 +16,6 @@
 
 package leap.web.api.config;
 
-import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.meta.MTypeManager;
 import leap.lang.Classes;
