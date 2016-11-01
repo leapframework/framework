@@ -41,4 +41,9 @@ public interface Principal extends Serializable {
         return false;
     }
 
+	/**
+	 * Refresh this principal in memory, override it when we need refresh this principal
+	 * from db or other storage
+	 */
+	default void refresh(){}
 }

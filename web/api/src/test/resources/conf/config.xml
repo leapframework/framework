@@ -4,7 +4,6 @@
 
 	<additional-packages>
 		app.models
-        app.models.api
 	</additional-packages>
 
     <properties>
