@@ -18,7 +18,6 @@
 
 package leap.oauth2.as.endpoint.tokeninfo;
 
-import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
