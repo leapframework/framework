@@ -4,6 +4,7 @@
 
 	<additional-packages>
 		app.models
+        app.models.api
 	</additional-packages>
 
     <properties>
@@ -15,9 +16,5 @@
     <property name="webapi.oplog.logClassName">app.models.api.TestLogModel</property>
     -->
     <orm:config auto-create-tables="true"/>
-    <orm:models>
-        <orm:package name="api.basepackage"/>
-    </orm:models>
-
     <import resource="config_local.xml" check-existence="false" default-override="true"/>
 </config>

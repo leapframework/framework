@@ -21,6 +21,7 @@ package leap.web.api.config;
 import leap.core.AppResources;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigInitializable;
+import leap.lang.Strings;
 
 /**
  * Created by kael on 2016/10/31.
@@ -34,7 +35,14 @@ public class ApiConfigInitializable implements AppConfigInitializable {
 
     @Override
     public void postLoadConfig(AppConfigContext context, AppResources appResources) {
-
-
+        ApiConfigExtension extension = context.getExtension(ApiConfigExtension.class);
+        if(extension != null){
+            extension.getApiConfigurators().forEach((k,v)->{
+                String basepackage = v.config().getBasePackage();
+                if(Strings.isNotEmpty(basepackage)){
+                    context.getAdditionalPackages().add(basepackage);
+                }
+            });
+        }
     }
 }
