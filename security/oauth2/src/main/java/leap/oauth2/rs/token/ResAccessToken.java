@@ -34,4 +34,10 @@ public interface ResAccessToken extends TokenCredentials, ParameterizedCredentia
      * Returns <code>true</code> if the token is <code>'Bearer'</code> type.
      */
     boolean isBearer();
+
+    /**
+     * Returns <code>true</code> if the token is a jwt token.
+     * @return
+     */
+    boolean isJwt();
 }

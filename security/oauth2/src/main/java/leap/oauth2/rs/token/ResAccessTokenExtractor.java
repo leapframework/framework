@@ -17,8 +17,11 @@ package leap.oauth2.rs.token;
 
 import leap.web.Request;
 
+import java.util.Map;
+
 public interface ResAccessTokenExtractor {
 
 	ResAccessToken extractTokenFromRequest(Request request);
-	
+
+	ResAccessToken extractTokenFromString(String token, Map<String, Object> params);
 }

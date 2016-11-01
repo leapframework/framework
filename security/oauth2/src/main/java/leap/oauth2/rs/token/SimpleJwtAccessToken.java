@@ -41,4 +41,9 @@ public class SimpleJwtAccessToken extends SimpleTokenCredentials implements ResA
     public Map<String, Object> getParameters() {
         return params;
     }
+
+    @Override
+    public boolean isJwt() {
+        return true;
+    }
 }
