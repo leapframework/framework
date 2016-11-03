@@ -100,10 +100,6 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 		
 		w.property("expires_in", expiresIn);
 
-		if(token.isAuthenticated()){
-			w.property("client_id",token.getClientId());
-		}
-
 		if(null != token.getRefreshToken()) {
 			w.property("refresh_token", token.getRefreshToken());
 		}

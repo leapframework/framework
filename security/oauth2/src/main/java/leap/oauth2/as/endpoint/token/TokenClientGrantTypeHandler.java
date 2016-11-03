@@ -45,6 +45,7 @@ import java.util.function.Consumer;
 
 /**
  * Created by KAEL on 2016/6/13.
+ * grant_type=token_client
  */
 public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateBean {
 

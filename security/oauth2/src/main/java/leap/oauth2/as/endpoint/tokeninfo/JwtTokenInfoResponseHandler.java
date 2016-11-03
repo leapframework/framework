@@ -38,6 +38,7 @@ import java.util.Map;
 
 /**
  * Created by kael on 2016/7/28.
+ * response_type=jwt
  */
 public class JwtTokenInfoResponseHandler implements TokenInfoResponseHandler,PostCreateBean {
     @Inject
