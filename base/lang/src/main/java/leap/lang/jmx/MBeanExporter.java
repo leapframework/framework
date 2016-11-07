@@ -50,8 +50,11 @@ public interface MBeanExporter {
 
     /**
      * Unexport the bean.
+     *
+     * <p/>
+     * Returns true if export success.
      */
-    void unexport(ObjectName name);
+    boolean unexport(ObjectName name);
 
     /**
      * Unexport all the beans exported by this exporter.

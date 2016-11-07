@@ -19,6 +19,7 @@
 package leap.core.ds.management;
 
 import leap.lang.jdbc.DataSourceWrapper;
+import leap.lang.jmx.Managed;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -27,15 +28,30 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
-    //todo : check the performance?
-    protected CopyOnWriteArrayList<MConnection> activeConnections = new CopyOnWriteArrayList<>();
+    protected String name;
+    protected DataSourceMBean mbean = new DataSourceMBean();
+    protected CopyOnWriteArrayList<MConnection> activeConnections = new CopyOnWriteArrayList<>(); //todo : check the performance?
 
     public MDataSourceProxy(DataSource ds) {
         super(ds);
     }
 
+    @Managed
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public DataSource wrapped() {
         return ds;
+    }
+
+    @Override
+    public Object getMBean() {
+        return mbean;
     }
 
     @Override
@@ -76,6 +92,38 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
         }finally{
             conn.close();
         }
+    }
+
+    protected class DataSourceMBean {
+
+        @Managed
+        public ConnectionMBeanModel[] getActiveConnections() {
+
+            MConnection[] activeConnections = MDataSourceProxy.this.getActiveConnections();
+
+            ConnectionMBeanModel[] activeConnectionModels = new ConnectionMBeanModel[activeConnections.length];
+
+            for(int i=0;i<activeConnectionModels.length;i++) {
+                activeConnectionModels[i] = new ConnectionMBeanModel(activeConnections[i]);
+            }
+
+            return activeConnectionModels;
+        }
+
+    }
+
+    protected static class ConnectionMBeanModel {
+
+        private final MConnection connection;
+
+        public ConnectionMBeanModel(MConnection connection) {
+            this.connection = connection;
+        }
+
+        public long getOpenTime() {
+            return connection.getOpenTime();
+        }
+
     }
 
 }

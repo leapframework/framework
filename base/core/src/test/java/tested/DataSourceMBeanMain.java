@@ -16,23 +16,31 @@
  *
  */
 
-package leap.core.ds.management;
+package tested;
 
-import leap.lang.Named;
+import leap.core.AppMainBase;
+import leap.core.annotation.Inject;
+import leap.core.ds.DataSourceManager;
+import leap.lang.Threads;
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+import javax.sql.DataSource;
+import java.sql.Connection;
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+public class DataSourceMBeanMain extends AppMainBase {
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    public static void main(String[] args) {
+        main(DataSourceMBeanMain.class, args);
+    }
+
+    private @Inject DataSource ds;
+
+    @Override
+    protected void run(Object[] args) throws Throwable {
+        for(;;) {
+            try(Connection conn = ds.getConnection()) {
+                Threads.sleep(1000);
+            }
+        }
+    }
 
 }

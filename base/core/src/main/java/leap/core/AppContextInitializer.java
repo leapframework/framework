@@ -89,7 +89,7 @@ public class AppContextInitializer {
                 //register beans
                 cs.registerBeans(config, factory);
 
-                AppContext context = new AppContext(config, factory, null);
+                AppContext context = new AppContext("app", config, factory, null);
 
                 initSysContext(context,config);
 
@@ -119,6 +119,7 @@ public class AppContextInitializer {
 	}
 
     public static synchronized void initExternal(Object externalContext,
+                                                 String name,
                                                  Function<AppConfig, BeanFactory> newBeanFactory,
                                                  Consumer<AppContext> onAppContextCreated,
                                                  Consumer<AppContext> onAppContextinited,
@@ -153,7 +154,7 @@ public class AppContextInitializer {
                 //register bean
                 cs.registerBeans(config, factory);
 
-                AppContext context = new AppContext(config, factory, externalContext);
+                AppContext context = new AppContext(name, config, factory, externalContext);
 
                 initSysContext(context, config);
 

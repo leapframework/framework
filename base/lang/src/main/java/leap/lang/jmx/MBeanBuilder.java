@@ -80,10 +80,26 @@ public class MBeanBuilder implements Buildable<MBean> {
                 String name = Strings.firstNotEmpty(a.name(), bp.getName());
                 String desc = Strings.firstNotEmpty(a.desc(), bp.getName()); // description can't be null or empty.
 
+                boolean readable = false;
+                boolean writable = false;
+
+                if(bp.isField() && bp.getReflectField().isAnnotationPresent(Managed.class)) {
+                    readable = bp.isReadable();
+                    writable = bp.isWritable();
+                }else {
+                    if(bp.hasGetter() && bp.getGetter().isAnnotationPresent(Managed.class)) {
+                        readable = true;
+                    }
+
+                    if(bp.hasSetter() && bp.getSetter().isAnnotationPresent(Managed.class)) {
+                        writable = true;
+                    }
+                }
+
                 OpenType type = MBeanTypes.of(bp.getTypeInfo());
 
                 OpenMBeanAttributeInfoSupport ai =
-                        new OpenMBeanAttributeInfoSupport(name, desc, type, bp.isReadable(), bp.isWritable(), false);
+                        new OpenMBeanAttributeInfoSupport(name, desc, type, readable, writable, false);
 
                 attributeInfos.add(ai);
                 attributes.put(name, new MAttribute(ai, bp));

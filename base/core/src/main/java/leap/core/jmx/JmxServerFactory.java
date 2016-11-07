@@ -16,23 +16,25 @@
  *
  */
 
-package leap.core.ds.management;
+package leap.core.jmx;
 
-import leap.lang.Named;
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+public class JmxServerFactory {
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+    private String domain;
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    public String getDomain() {
+        return domain;
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public MBeanServer createServer() {
+        return MBeanServerFactory.createMBeanServer(domain);
+    }
 
 }

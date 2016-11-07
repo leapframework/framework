@@ -100,11 +100,13 @@ public class SimpleMBeanExporter implements MBeanExporter {
         }
     }
 
-    public void unexport(ObjectName name) {
+    public boolean unexport(ObjectName name) {
         try {
             server.unregisterMBean(name);
+            return true;
         } catch (Exception e) {
-            log.error("Error unexport mbean '" + name + "'", e);
+            log.warn("Error unexport mbean '" + name + "'", e);
         }
+        return false;
     }
 }

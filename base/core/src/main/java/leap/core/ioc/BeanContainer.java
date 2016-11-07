@@ -894,7 +894,7 @@ public class BeanContainer implements BeanFactory {
 
 		//create factory beans
 		for(BeanDefinitionBase bd : bds.typedFactoryDefinitions.values()){
-		    for(FactoryDefinition fd : bd.getFactoryDefs()) {
+		    for(FactoryBeanDefinition fd : bd.getFactoryBeanDefs()) {
                 bds.typedFactoryBeans.put(fd.getTargetType(),(FactoryBean)doGetBean(bd));
 		    }
 		}
@@ -1066,10 +1066,13 @@ public class BeanContainer implements BeanFactory {
 	protected Object doBeanCreation(BeanDefinitionBase bd){
 		log.trace("Creating bean {}",bd);
 		
-		Object          bean;
-		ValueDefinition vd = bd.getValueDefinition();
+		Object            bean;
+        FactoryDefinition fd = bd.getFactoryDefinition();
+		ValueDefinition   vd = bd.getValueDefinition();
 
-        if (null != vd) {
+        if(null != fd) {
+            bean = doResolveValueFromFactory(bd, fd);
+        }else if(null != vd) {
             bean = doResolveValue(bd, vd, null);
         } else {
             bean = doBeanCreationByConstructor(bd);
@@ -1547,7 +1550,16 @@ public class BeanContainer implements BeanFactory {
         }
         return bean;
     }
-    
+
+    protected Object doResolveValueFromFactory(BeanDefinitionBase bd, FactoryDefinition fd) {
+        Method m = fd.getMethod();
+        try {
+            return m.invoke(null, doResolveArgs(bd, fd.getArguments()));
+        } catch (Exception e) {
+            throw new BeanCreationException("Error invoke factory method '" + m.getName() + "' in bean '" + bd + "' : " + e.getMessage(),e);
+        }
+    }
+
 	@SuppressWarnings({ "rawtypes", "unused" })
     protected Object doResolveValue(BeanDefinitionBase bd,ValueDefinition vd, String defaultValue){
 		if(vd.isResolved()){
@@ -2047,7 +2059,7 @@ public class BeanContainer implements BeanFactory {
             }
             clsSet.add(bd);
 
-            for(FactoryDefinition fd : bd.getFactoryDefs()) {
+            for(FactoryBeanDefinition fd : bd.getFactoryBeanDefs()) {
                 typedFactoryDefinitions.put(fd.getTargetType(), bd);
             }
 
