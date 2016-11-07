@@ -26,15 +26,6 @@ import org.junit.Test;
 public class RequestBodyControllerTest extends WebTestCase {
 
 	@Test
-	public void testStringBodyWithGet() {
-		THttpResponse resp = forGet("/request_body/string_body").setBody("hello").send();
-		resp.assertContentEquals("hello");
-
-		resp = forGet("/request_body/string_body1?p1=x").setBody("hello").send();
-		resp.assertContentEquals("hello:x");
-	}
-
-	@Test
 	public void testStringBody() {
 		THttpResponse resp = forPost("/request_body/string_body").setBody("hello").send();
 		resp.assertContentEquals("hello");
