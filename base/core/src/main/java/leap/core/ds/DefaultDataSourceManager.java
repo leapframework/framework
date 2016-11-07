@@ -16,6 +16,7 @@
 package leap.core.ds;
 
 import leap.core.AppConfig;
+import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
@@ -25,7 +26,10 @@ import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.jmx.MBeanExporter;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -35,10 +39,12 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean {
-	
+
+    protected @Inject @M AppContext                   context;
     protected @Inject @M AppConfig                    config;
     protected @Inject @M DataSourceFactory[]          dataSourceFactories;
     protected @Inject @M BeanList<DataSourceListener> listeners;
+    protected @Inject @M MBeanExporter                mbeanExporter;
 
 	protected String 						 defaultDataSourceBeanName;
     protected DataSource                     defaultDataSource;
@@ -244,16 +250,48 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
     protected void notifyDataSourceCreated(String name, DataSource ds) {
+
+        if(ds instanceof MDataSourceProxy) {
+            ((MDataSourceProxy) ds).setName(name);
+        }
+
+        exportDataSourceMBean(name, ds);
+
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
 		}
 	}
 	
 	protected void notifyDataSourceDestroyed(String name,DataSource ds) {
+        unexportDataSourceMBean(name, ds);
+
 		for(DataSourceListener l : listeners){
 			l.onDataSourceDestroyed(name, ds);
 		}
 	}
+
+    protected void exportDataSourceMBean(String name, DataSource ds) {
+        if(!(ds instanceof MDataSource)) {
+            return;
+        }
+        mbeanExporter.export(objectName(name), ((MDataSource)ds).getMBean());
+    }
+
+    protected void unexportDataSourceMBean(String name, DataSource ds) {
+        if(!(ds instanceof MDataSource)) {
+            return;
+        }
+        mbeanExporter.unexport(objectName(name));
+    }
+
+    protected ObjectName objectName(String name) {
+        String fullName = "DataSources:name=" + context.getName() + "_" + name;
+        try {
+            return new ObjectName(fullName);
+        } catch (MalformedObjectNameException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
@@ -280,7 +318,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			defaultDataSourceBeanName = DEFAULT_DATASOURCE_NAME;
 		}
 
-		if(allDataSources.containsValue(this.defaultDataSource)){
+		if(null != defaultDataSource && allDataSources.containsValue(this.defaultDataSource)){
 			for(Entry<String, DataSource> entry : allDataSources.entrySet()){
 				if(entry.getValue() == this.defaultDataSource){
 					defaultDataSourceBeanName = entry.getKey();

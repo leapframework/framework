@@ -29,6 +29,8 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class SimpleMBeanExporter implements MBeanExporter {
 
+    public static final String DEFAULT_DOMAIN = "beans";
+
     private static final Log log = LogFactory.get(SimpleMBeanExporter.class);
 
     protected final MBeanServer server;
@@ -36,11 +38,11 @@ public class SimpleMBeanExporter implements MBeanExporter {
     protected final Map<ObjectName, Object> exportedBeans = new ConcurrentHashMap<>();
 
     public SimpleMBeanExporter() {
-        this(ManagementFactory.getPlatformMBeanServer(), "app");
+        this(ManagementFactory.getPlatformMBeanServer(), DEFAULT_DOMAIN);
     }
 
     public SimpleMBeanExporter(MBeanServer server) {
-        this(server, "app");
+        this(server, DEFAULT_DOMAIN);
     }
 
     public SimpleMBeanExporter(MBeanServer server, String domain) {
@@ -51,6 +53,11 @@ public class SimpleMBeanExporter implements MBeanExporter {
     @Override
     public MBeanServer getServer() {
         return server;
+    }
+
+    @Override
+    public String getDomain() {
+        return domain;
     }
 
     public ObjectName createObjectName(String name) {
@@ -89,11 +96,17 @@ public class SimpleMBeanExporter implements MBeanExporter {
     @Override
     public void unexportAll() {
         for(ObjectName name : exportedBeans.keySet()) {
-            try {
-                server.unregisterMBean(name);
-            } catch (Exception e) {
-                log.error("Error unexport mbean '" + name + "'", e);
-            }
+            unexport(name);
         }
+    }
+
+    public boolean unexport(ObjectName name) {
+        try {
+            server.unregisterMBean(name);
+            return true;
+        } catch (Exception e) {
+            log.warn("Error unexport mbean '" + name + "'", e);
+        }
+        return false;
     }
 }

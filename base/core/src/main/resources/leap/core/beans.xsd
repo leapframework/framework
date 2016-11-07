@@ -81,6 +81,7 @@
 		<xsd:sequence>
 			<xsd:element ref="description" minOccurs="0"/>
 			<xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element ref="factory"/>
                 <xsd:element ref="additional-type-def"/>
                 <xsd:element ref="register-bean-factory"/>
 				<xsd:element ref="constructor-arg"/>
@@ -107,6 +108,8 @@
 	    <xsd:attribute name="init-method" type="xsd:string"/>
         <xsd:attribute name="destroy-method" type="xsd:string"/>
         <xsd:attribute name="sort-order" type="xsd:float" default="100"/>
+        <xsd:attribute name="export-mbean" type="xsd:boolean" default="false"/>
+        <xsd:attribute name="mbean-name" type="xsd:string"/>
 	    <xsd:anyAttribute namespace="##other" processContents="lax" />
 	</xsd:attributeGroup>
 
@@ -377,6 +380,19 @@
 		</xsd:sequence>
 		<xsd:attribute name="method" type="xsd:string" use="required"/>
 	</xsd:complexType>
+
+    <xsd:element name="factory" type="factoryType"/>
+
+    <xsd:complexType name="factoryType">
+        <xsd:sequence>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element ref="method-arg"/>
+                <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:choice>
+        </xsd:sequence>
+        <xsd:attribute name="class"  type="xsd:string" use="optional"/>
+        <xsd:attribute name="method" type="xsd:string" use="optional"/>
+    </xsd:complexType>
 	
 	<xsd:complexType name="typeDefType">
 		<xsd:attribute name="type" type="xsd:string" use="required"/>

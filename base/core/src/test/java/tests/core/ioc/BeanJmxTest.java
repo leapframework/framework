@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.junit.AppTestBase;
 import leap.lang.jmx.MBeanExporter;
 import org.junit.Test;
+import tested.beans.jmx.TJmxBean1;
 
 import javax.management.MBeanInfo;
 import javax.management.ObjectName;
@@ -35,6 +36,13 @@ public class BeanJmxTest extends AppTestBase {
         assertNotNull(exporter);
 
         ObjectName name = exporter.createObjectName("testJmxBean");
+        MBeanInfo mbean = exporter.getServer().getMBeanInfo(name);
+        assertNotNull(mbean);
+    }
+
+    @Test
+    public void testSimpleJmxBean1() throws Exception {
+        ObjectName name = exporter.createObjectName(TJmxBean1.class.getName() + "#testJmxBean");
         MBeanInfo mbean = exporter.getServer().getMBeanInfo(name);
         assertNotNull(mbean);
     }

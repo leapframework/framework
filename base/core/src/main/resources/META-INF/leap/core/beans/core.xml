@@ -11,7 +11,7 @@
     <bean type="leap.core.transaction.TransactionManager" class="leap.core.transaction.DefaultTransactionManager" primary="true"/>
     <bean type="leap.core.event.EventManager" class="leap.core.event.DefaultEventManager" primary="true"/>
     <bean type="leap.core.AppContextInitializable" class="leap.core.event.DefaultEventRegister"/>
-    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true"/>
+    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true" lazy-init="false"/>
     <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
 
@@ -70,6 +70,12 @@
 
     <!-- jmx -->
     <bean type="leap.lang.jmx.MBeanExporter" class="leap.lang.jmx.SimpleMBeanExporter" primary="true"/>
+        <!--<constructor-arg>-->
+            <!--<bean class="javax.management.MBeanServer">-->
+                <!--<factory class="javax.management.MBeanServerFactory" method="createMBeanServer"/>-->
+            <!--</bean>-->
+        <!--</constructor-arg>-->
+    <!--</bean>-->
     <bean type="leap.core.ioc.BeanProcessor" class="leap.core.jmx.JmxBeanProcessor"/>
 
 </beans>

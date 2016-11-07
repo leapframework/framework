@@ -16,23 +16,26 @@
  *
  */
 
-package leap.core.ds.management;
+package tested.beans.jmx;
 
-import leap.lang.Named;
+import leap.lang.Randoms;
+import leap.lang.jmx.Managed;
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+public class TJmxBean1 {
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+    private @Managed String value = Randoms.nextString(10);
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
+    @Managed
+    public int count() {
+        return Randoms.nextInt(1, 10);
+    }
 
 }

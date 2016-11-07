@@ -16,6 +16,8 @@
 package leap.core.web;
 
 import leap.core.*;
+import leap.lang.Strings;
+import leap.lang.path.Paths;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -39,12 +41,14 @@ public abstract class ServletContextInitializerBase {
 		this.servletContext = sc;
 		
 		if(sc.getAttribute(AppContext.APP_CONTEXT_ATTRIBUTE) != null){
-			throw new ServletException("AppContext already inited for the given servlet context '" + sc.getContextPath() + "'");
+			throw new ServletException("AppContext already initialized for the given servlet context '" + sc.getContextPath() + "'");
 		}
 		
 		AppContext.removeCurrent();
 		AppContextInitializer.initExternal(
                 sc,
+
+                Strings.isEmpty(sc.getContextPath()) ? "" : Paths.prefixWithoutSlash(sc.getContextPath()),
 
                 // on app config ready, creates the bean factory.
                 (config) -> {

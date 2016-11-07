@@ -163,7 +163,8 @@ public class AppContext implements AttributeAccessor {
 	protected static AppContext getStandalone(){
 		return standalone;
 	}
-	
+
+    protected final String             name;
 	protected final AppConfig		   config;
 	protected final BeanFactory		   beanFactory;
 	protected final Object 			   externalContext;
@@ -172,13 +173,18 @@ public class AppContext implements AttributeAccessor {
 	protected AppHome		home;
 	protected MessageSource messageSource;
 
-    protected AppContext(AppConfig config,BeanFactory beanFactory,Object externalContext){
+    protected AppContext(String name, AppConfig config,BeanFactory beanFactory,Object externalContext){
+        this.name            = name;
         this.config			 = config;
         this.beanFactory     = beanFactory;
         this.externalContext = externalContext;
     }
 
-	public AppHome getHome() {
+    public String getName() {
+        return name;
+    }
+
+    public AppHome getHome() {
 		return home;
 	}
 	

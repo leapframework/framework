@@ -16,23 +16,31 @@
  *
  */
 
-package leap.core.ds.management;
+package leap.core.ioc;
 
-import leap.lang.Named;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+abstract class MethodDefinition {
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+    protected Method method;
+    protected List<ArgumentDefinition> arguments = new ArrayList<ArgumentDefinition>();
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    public Method getMethod() {
+        return method;
+    }
+
+    public void setMethod(Method method) {
+        this.method = method;
+    }
+
+    public List<ArgumentDefinition> getArguments() {
+        return arguments;
+    }
+
+    public void addArgument(ArgumentDefinition argument){
+        arguments.add(argument);
+    }
 
 }

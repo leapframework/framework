@@ -15,24 +15,8 @@
  */
 package leap.core.ioc;
 
-class FactoryDefinitionBase implements FactoryDefinition {
+public interface FactoryBeanDefinition {
+
+    Class<?> getTargetType();
     
-    protected Class<?> targetType;
-    
-    public FactoryDefinitionBase() {
-        super();
-    }
-
-    public FactoryDefinitionBase(Class<?> targetType) {
-        this.targetType = targetType;
-    }
-
-    public Class<?> getTargetType() {
-        return targetType;
-    }
-
-    public void setTargetType(Class<?> targetType) {
-        this.targetType = targetType;
-    }
-
 }

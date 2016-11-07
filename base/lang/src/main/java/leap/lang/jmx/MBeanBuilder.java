@@ -18,21 +18,17 @@
 
 package leap.lang.jmx;
 
-import com.sun.jmx.mbeanserver.Introspector;
 import leap.lang.Buildable;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.reflect.ReflectMethod;
-import leap.lang.reflect.ReflectValued;
+import leap.lang.reflect.ReflectParameter;
 
 import javax.management.*;
-import javax.management.modelmbean.ModelMBeanAttributeInfo;
 import javax.management.modelmbean.ModelMBeanConstructorInfo;
 import javax.management.modelmbean.ModelMBeanNotificationInfo;
-import javax.management.modelmbean.ModelMBeanOperationInfo;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import javax.management.openmbean.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -43,11 +39,11 @@ public class MBeanBuilder implements Buildable<MBean> {
     private static final MBeanConstructorInfo[]  EMPTY_CONSTRUCTORS  = new ModelMBeanConstructorInfo[0];
     private static final MBeanNotificationInfo[] EMPTY_NOTIFICATIONS = new ModelMBeanNotificationInfo[0];
 
-    protected final Object                         bean;
-    protected final Map<String, ReflectValued>     attributes = new LinkedHashMap<>();
-    protected final Map<MSignature, ReflectMethod> operations = new LinkedHashMap<>();
-    protected final List<MBeanAttributeInfo> attributeInfos   = new ArrayList<>();
-    protected final List<MBeanOperationInfo> operationInfos   = new ArrayList<>();
+    protected final Object                      bean;
+    protected final Map<String, MAttribute>     attributes     = new LinkedHashMap<>();
+    protected final Map<MSignature, MOperation> operations     = new LinkedHashMap<>();
+    protected final List<MBeanAttributeInfo>    attributeInfos = new ArrayList<>();
+    protected final List<MBeanOperationInfo>    operationInfos = new ArrayList<>();
 
     protected String className;
     protected String description;
@@ -82,12 +78,31 @@ public class MBeanBuilder implements Buildable<MBean> {
             a = bp.getAnnotation(Managed.class);
             if(null != a) {
                 String name = Strings.firstNotEmpty(a.name(), bp.getName());
+                String desc = Strings.firstNotEmpty(a.desc(), bp.getName()); // description can't be null or empty.
 
-                MBeanAttributeInfo ai =
-                        new ModelMBeanAttributeInfo(name, bp.getType().getName(), a.desc(), bp.isReadable(), bp.isWritable(), false);
+                boolean readable = false;
+                boolean writable = false;
+
+                if(bp.isField() && bp.getReflectField().isAnnotationPresent(Managed.class)) {
+                    readable = bp.isReadable();
+                    writable = bp.isWritable();
+                }else {
+                    if(bp.hasGetter() && bp.getGetter().isAnnotationPresent(Managed.class)) {
+                        readable = true;
+                    }
+
+                    if(bp.hasSetter() && bp.getSetter().isAnnotationPresent(Managed.class)) {
+                        writable = true;
+                    }
+                }
+
+                OpenType type = MBeanTypes.of(bp.getTypeInfo());
+
+                OpenMBeanAttributeInfoSupport ai =
+                        new OpenMBeanAttributeInfoSupport(name, desc, type, readable, writable, false);
 
                 attributeInfos.add(ai);
-                attributes.put(name, bp);
+                attributes.put(name, new MAttribute(ai, bp));
             }
         }
 
@@ -104,39 +119,29 @@ public class MBeanBuilder implements Buildable<MBean> {
             a = rm.getAnnotation(Managed.class);
             if(null != a) {
                 String name = Strings.firstNotEmpty(a.name(), rm.getName());
+                String desc = Strings.firstNotEmpty(a.desc(), rm.getName());
 
-                MBeanParameterInfo[] parameterInfos =
-                        methodSignature(rm.getReflectedMethod());
+                OpenMBeanParameterInfo[] parameterInfos = params(rm);
 
-                MBeanOperationInfo oi = new ModelMBeanOperationInfo(name, a.desc(),
-                                                parameterInfos,
-                                                rm.getReturnType().getName(),
-                                                MBeanOperationInfo.UNKNOWN);
+                OpenType returnType = MBeanTypes.of(rm.getReturnType(), null);
+
+                OpenMBeanOperationInfoSupport oi =
+                        new OpenMBeanOperationInfoSupport(name, desc, parameterInfos, returnType, MBeanOperationInfo.UNKNOWN);
 
                 operationInfos.add(oi);
-                operations.put(new MSignature(name, rm.getReflectedMethod()), rm);
+                operations.put(new MSignature(name, rm.getReflectedMethod()), new MOperation(oi, rm));
             }
         }
     }
 
-    //from jdk.
-    private static MBeanParameterInfo[] methodSignature(Method method) {
-        final Class<?>[] classes = method.getParameterTypes();
-        final Annotation[][] annots = method.getParameterAnnotations();
-        return parameters(classes, annots);
-    }
+    private static OpenMBeanParameterInfo[] params(ReflectMethod rm) {
+        final OpenMBeanParameterInfo[] params = new OpenMBeanParameterInfo[rm.getParameters().length];
 
-    static MBeanParameterInfo[] parameters(Class<?>[] classes,
-                                           Annotation[][] annots) {
-        final MBeanParameterInfo[] params =
-                new MBeanParameterInfo[classes.length];
-        assert(classes.length == annots.length);
+        for (int i=0;i<params.length;i++) {
+            ReflectParameter p = rm.getParameters()[i];
 
-        for (int i = 0; i < classes.length; i++) {
-            Descriptor d = Introspector.descriptorForAnnotations(annots[i]);
-            final String pn = "p" + (i + 1);
-            params[i] =
-                    new MBeanParameterInfo(pn, classes[i].getName(), "", d);
+            params[i] = new OpenMBeanParameterInfoSupport(p.getName(), p.getName(),
+                                                          MBeanTypes.of(p.getType(),p.getGenericType()));
         }
 
         return params;

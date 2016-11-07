@@ -29,6 +29,11 @@ public interface MBeanExporter {
     MBeanServer getServer();
 
     /**
+     * Returns the default domain.
+     */
+    String getDomain();
+
+    /**
      * Returns the {@link ObjectName} of the given string name.
      */
     ObjectName createObjectName(String name);
@@ -42,6 +47,14 @@ public interface MBeanExporter {
      * Export the bean as jmx managed bean.
      */
     void export(ObjectName name, Object bean);
+
+    /**
+     * Unexport the bean.
+     *
+     * <p/>
+     * Returns true if export success.
+     */
+    boolean unexport(ObjectName name);
 
     /**
      * Unexport all the beans exported by this exporter.
