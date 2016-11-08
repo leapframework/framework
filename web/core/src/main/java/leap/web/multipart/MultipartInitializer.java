@@ -15,6 +15,7 @@
  */
 package leap.web.multipart;
 
+import leap.lang.Patterns;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MultipartInitializer implements AppBootable {
 
@@ -68,6 +70,10 @@ public class MultipartInitializer implements AppBootable {
 		
 		for(Route route : routes) {
             String path = Paths.suffixWithoutSlash(route.getPathTemplate().getTemplateBeforeVariables());
+			if(route.getPathTemplate().hasVariables()){
+				path += "/*";
+			}
+
             log.debug("Register multipart path mapping '{}'", path);
 			mappings.add(path);
 		}
