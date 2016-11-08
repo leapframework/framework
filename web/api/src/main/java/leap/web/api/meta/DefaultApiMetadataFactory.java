@@ -21,7 +21,6 @@ import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Enums;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -31,11 +30,10 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
-import leap.web.api.annotation.Resource;
-import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
+import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
@@ -55,6 +53,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected @Inject App                    app;
 	protected @Inject ApiMetadataProcessor[] processors;
 	protected @Inject MTypeManager           mtypeManager;
+    protected @Inject ApiDescContainer apiDescContainer;
 	
 	@Override
     public ApiMetadata createMetadata(ApiConfig c) {
@@ -91,7 +90,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			public ApiConfig getConfig() {
 				return c;
 			}
-		};
+
+            @Override
+            public ApiDescContainer getDescContainer() {
+                return apiDescContainer;
+            }
+        };
 	}
 	
 	protected MTypeContainer createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {

@@ -42,13 +42,11 @@
     </xsd:element>
     <xsd:element name="parameter" type="xsd:element">
         <xsd:complexType>
-            <xsd:simpleContent>
-                <xsd:extension base="xsd:string">
-                    <xsd:attribute name="name" type="xsd:string"/>
-                    <xsd:attribute name="ref" type="xsd:string"/>
-                </xsd:extension>
-                <xsd:attribute name="id" type="xsd:string"/>
-            </xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="name" type="xsd:string"/>
+                <xsd:attribute name="ref" type="xsd:string"/>
+            </xsd:extension>
+            <xsd:attribute name="id" type="xsd:string"/>
         </xsd:complexType>
 
     </xsd:element>
