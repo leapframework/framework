@@ -18,12 +18,16 @@
 
 package leap.core.ds.management;
 
+import leap.lang.Dates;
 import leap.lang.jdbc.DataSourceWrapper;
 import leap.lang.jmx.Managed;
+import leap.lang.logging.StackTraceStringBuilder;
+import leap.lang.time.DateFormats;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Date;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
@@ -97,33 +101,55 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     protected class DataSourceMBean {
 
         @Managed
-        public ConnectionMBeanModel[] getActiveConnections() {
+        public ActiveConnectionsModel getActiveConnections() {
 
             MConnection[] activeConnections = MDataSourceProxy.this.getActiveConnections();
 
-            ConnectionMBeanModel[] activeConnectionModels = new ConnectionMBeanModel[activeConnections.length];
+            ConnectionModel[] activeConnectionModels = new ConnectionModel[activeConnections.length];
 
             for(int i=0;i<activeConnectionModels.length;i++) {
-                activeConnectionModels[i] = new ConnectionMBeanModel(activeConnections[i]);
+                activeConnectionModels[i] = new ConnectionModel(activeConnections[i]);
             }
 
-            return activeConnectionModels;
+            return new ActiveConnectionsModel(activeConnectionModels);
         }
 
     }
 
-    protected static class ConnectionMBeanModel {
+    protected static class ActiveConnectionsModel {
+
+        protected final int               size;
+        protected final ConnectionModel[] connections;
+
+        public ActiveConnectionsModel(ConnectionModel[] connections) {
+            this.connections = connections;
+            this.size        = connections.length;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public ConnectionModel[] getConnections() {
+            return connections;
+        }
+    }
+
+    protected static class ConnectionModel {
 
         private final MConnection connection;
 
-        public ConnectionMBeanModel(MConnection connection) {
+        public ConnectionModel(MConnection connection) {
             this.connection = connection;
         }
 
-        public long getOpenTime() {
-            return connection.getOpenTime();
+        public String getOpenTime() {
+            return Dates.format(new Date(connection.getOpenTime()), DateFormats.TIMESTAMP_PATTERN);
         }
 
+        public String getStackTrace() {
+            return new StackTraceStringBuilder(connection.getStackTraceOnOpen()).toString();
+        }
     }
 
 }
