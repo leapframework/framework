@@ -109,9 +109,9 @@ public class ServletAsset extends AbstractAsset implements Asset {
 		String minifiedFilepath = getMinifiedFilepath(filepath);
 		
 		ServletResource minifiedResoruce = Servlets.getResource(sr.getServletContext(), minifiedFilepath);
-		
 		try {
 	        if(null != minifiedResoruce && minifiedResoruce.exists()){
+				this.path = getMinifiedFilepath(assetPath);
 	        	this.resource      = new ServletAssetResource(manager, this, minifiedResoruce, false);
 	        	this.debugResource = new ServletAssetResource(manager, this, sr, true);
 	        }else{

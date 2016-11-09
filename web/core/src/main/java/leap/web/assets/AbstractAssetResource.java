@@ -15,19 +15,14 @@
  */
 package leap.web.assets;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.Reader;
-
 import leap.lang.Strings;
 import leap.lang.io.Files;
 import leap.lang.io.IO;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+
+import java.io.*;
 
 public abstract class AbstractAssetResource implements AssetResource {
     
@@ -117,7 +112,13 @@ public abstract class AbstractAssetResource implements AssetResource {
     }
 	
     protected void resolveClientPathAndUrl() {
-        this.path      = manager.getPathWithFingerprint(asset.getPath(), this.fingerprint);
+        String filePath;
+        if(debug){
+            filePath = asset.getDebugPath();
+        }else {
+            filePath = asset.getPath();
+        }
+        this.path      = manager.getPathWithFingerprint(filePath, this.fingerprint);
         this.clientUrl = manager.getServletContext().getContextPath() + manager.getConfig().getPathPrefix() + path;
     }
 

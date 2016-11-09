@@ -46,8 +46,9 @@ public class AssetsTestControllerTest extends WebTestCase {
 		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=en&path=js/hello.js&debug=true").getContent());
 		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=zn_CN&path=js/hello.js&debug=true").getContent());
 		
-		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=en&path=js/hello.js").getContent());
-		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=zn_CN&path=js/hello.js").getContent());
+		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=en&path=js/hello.js&debug=true").getContent());
+		assertPathWithFingerprint("/assets/js/hello.min.js",get("/assets_test/get_asset_url?locale=en&path=js/hello.js").getContent());
+		assertPathWithFingerprint("/assets/js/hello.js",get("/assets_test/get_asset_url?locale=zn_CN&path=js/hello.js&debug=true").getContent());
 	}
 	
 	@Test
