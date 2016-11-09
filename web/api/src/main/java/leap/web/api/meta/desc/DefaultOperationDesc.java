@@ -19,8 +19,11 @@
 package leap.web.api.meta.desc;
 
 import leap.web.action.Action;
+import leap.web.action.Argument;
 
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by kael on 2016/11/8.
@@ -30,7 +33,8 @@ public class DefaultOperationDesc implements OperationDesc {
     private String summary;
     private String description;
     private Action action;
-    private List<ParameterDesc> parameterDescs;
+
+    private Map<String, ParameterDesc> params = new ConcurrentHashMap<>();
 
     @Override
     public String getSummary() {
@@ -48,8 +52,12 @@ public class DefaultOperationDesc implements OperationDesc {
     }
 
     @Override
-    public List<ParameterDesc> getParams() {
-        return parameterDescs;
+    public ParameterDesc getParameter(Argument argument) {
+        return params.get(argument.getName());
+    }
+
+    public void addParameter(ParameterDesc param){
+        params.put(param.getArgument().getName(),param);
     }
 
     public void setSummary(String summary) {
@@ -64,11 +72,4 @@ public class DefaultOperationDesc implements OperationDesc {
         this.action = action;
     }
 
-    public List<ParameterDesc> getParameterDescs() {
-        return parameterDescs;
-    }
-
-    public void setParameterDescs(List<ParameterDesc> parameterDescs) {
-        this.parameterDescs = parameterDescs;
-    }
 }

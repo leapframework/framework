@@ -22,5 +22,8 @@ package leap.web.api.meta.desc;
  * Created by kael on 2016/11/8.
  */
 public interface DescriptionLoader {
-    OperationDescSet load(Object controller);
+    /**
+     * Returns an {@link OperationDescSet} load from config
+     */
+    OperationDescSet load(ApiDescContainer container, Object controller);
 }

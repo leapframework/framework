@@ -18,8 +18,6 @@
 
 package leap.web.api.meta.desc;
 
-import java.util.List;
-
 /**
  * Created by kael on 2016/11/8.
  */

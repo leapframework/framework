@@ -16,30 +16,27 @@
  *
  */
 
-package leap.web.api.meta.desc;
+package tests.descriptionloader;
 
-import leap.web.action.Action;
-
-import java.util.LinkedList;
-import java.util.List;
+import app.controllers.api.RestPathController;
+import leap.core.annotation.Inject;
+import leap.web.api.meta.desc.DefaultApiDescContainer;
+import leap.web.api.meta.desc.DescriptionLoader;
+import leap.web.api.meta.desc.OperationDescSet;
+import leap.webunit.WebTestBase;
+import org.junit.Test;
 
 /**
- * Created by kael on 2016/11/8.
+ * Created by kael on 2016/11/9.
  */
-public class DefaultOperationDescSet implements OperationDescSet {
+public class TestXmlDescriptionLoader extends WebTestBase {
+    @Inject
+    private DescriptionLoader loader;
 
-    private List<OperationDesc> descs = new LinkedList<>();
-
-    @Override
-    public OperationDesc getOperationDesc(Action action) {
-        if(action == null){
-            return null;
-        }
-        for(OperationDesc desc : descs){
-            if(desc.getAction() == action){
-                return desc;
-            }
-        }
-        return null;
+    @Test
+    public void testLoad(){
+        //OperationDescSet ods = loader.load(new RestApiController());
+        OperationDescSet ods = loader.load(new DefaultApiDescContainer(),new RestPathController());
     }
+
 }

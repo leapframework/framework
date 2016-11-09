@@ -19,6 +19,7 @@
 package leap.web.api.meta.desc;
 
 import leap.web.action.Action;
+import leap.web.action.Argument;
 
 import java.util.List;
 
@@ -42,8 +43,9 @@ public interface OperationDesc {
     Action getAction();
 
     /**
-     * Returns all {@link ParameterDesc} of this operation.
+     * Retturns the {@link ParameterDesc} of this argument
+     * @param argument
      * @return
      */
-    List<ParameterDesc> getParams();
+    ParameterDesc getParameter(Argument argument);
 }

@@ -15,11 +15,14 @@
  */
 package leap.web.api.meta.model;
 
+import leap.web.api.meta.desc.ParameterDesc;
+
 public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter> {
 
     protected boolean                file;
     protected boolean                password;
 	protected MApiParameter.Location location;
+    protected ParameterDesc          desc;
 
     public boolean isFile() {
         return file;
@@ -45,7 +48,16 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
 		this.location = location;
 	}
 
-	@Override
+    public ParameterDesc getDesc() {
+        return desc;
+    }
+
+    public void setDesc(ParameterDesc desc) {
+        this.desc = desc;
+        this.setDescription(desc.getDescription());
+    }
+
+    @Override
     public MApiParameter build() {
 	    return new MApiParameter(name, title, summary, description, type, format,
                                  file, password, location, required,

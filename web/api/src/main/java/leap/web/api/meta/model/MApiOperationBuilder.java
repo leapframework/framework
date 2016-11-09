@@ -23,6 +23,7 @@ import java.util.Set;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
+import leap.web.api.meta.desc.OperationDesc;
 import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
@@ -37,6 +38,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     protected String[]                   permissions;
     protected boolean                    allowAnonymous;
 	protected boolean           	     deprecated;
+    protected OperationDesc              desc;
 
 	public MApiOperationBuilder() {
 		
@@ -144,6 +146,16 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     public void setAllowAnonymous(boolean allowAnonymous) {
         this.allowAnonymous = allowAnonymous;
+    }
+
+    public void setDesc(OperationDesc desc){
+        this.desc = desc;
+        this.setSummary(desc.getSummary());
+        this.setDescription(desc.getDescription());
+    }
+
+    public OperationDesc getDesc() {
+        return desc;
     }
 
     @Override

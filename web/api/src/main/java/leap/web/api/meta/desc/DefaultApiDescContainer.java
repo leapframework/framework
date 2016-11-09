@@ -18,28 +18,33 @@
 
 package leap.web.api.meta.desc;
 
-import leap.web.action.Action;
+import leap.core.annotation.Inject;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by kael on 2016/11/8.
  */
-public class DefaultOperationDescSet implements OperationDescSet {
-
-    private List<OperationDesc> descs = new LinkedList<>();
+public class DefaultApiDescContainer implements ApiDescContainer {
+    @Inject
+    private DescriptionLoader loader;
+    private final static Map<String, OperationDescSet> container = new ConcurrentHashMap<>();
 
     @Override
-    public OperationDesc getOperationDesc(Action action) {
-        if(action == null){
+    public OperationDescSet getAllOperationDesc(Object controller) {
+        if(container.containsKey(getKey(controller))){
+            return container.get(getKey(controller));
+        }
+        OperationDescSet set = loader.load(this,controller);
+        if(set == null){
             return null;
         }
-        for(OperationDesc desc : descs){
-            if(desc.getAction() == action){
-                return desc;
-            }
-        }
-        return null;
+        container.put(getKey(controller),set);
+        return set;
+    }
+
+    protected String getKey(Object controller){
+        return controller.getClass().getName();
     }
 }
