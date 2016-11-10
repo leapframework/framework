@@ -82,8 +82,9 @@ public class XmlDescriptionLoader implements DescriptionLoader {
     protected OperationDescSet readDescSet(ApiDescContainer container, Object controller,XmlReader reader){
         DefaultOperationDescSet set = null;
         reader.nextToStartElement(DESCRIPTION_ELEMENT);
+        set = new DefaultOperationDescSet();
+        container.addOperationDescSet(controller,set);
         while (reader.nextWhileNotEnd(DESCRIPTION_ELEMENT)){
-            set = new DefaultOperationDescSet();
             if(reader.isStartElement(CONTROLLER_ELEMENT)){
                 readController(container,controller,reader,set);
                 continue;
@@ -106,11 +107,11 @@ public class XmlDescriptionLoader implements DescriptionLoader {
         String controllerName = reader.resolveRequiredAttribute(CONTROLLER_ATTR_NAME);
         Class<?> controlCls = Classes.forName(parentController.getClass().getName()+"$"+controllerName);
         Object childController = getController(controlCls);
-        container.addOperationDescSet(parentController,set);
+        DefaultOperationDescSet childSet = new DefaultOperationDescSet();
+        container.addOperationDescSet(childController,childSet);
         while(reader.nextWhileNotEnd(CONTROLLER_ELEMENT)){
             if(reader.isStartElement(CONTROLLER_ELEMENT)){
-                DefaultOperationDescSet child = new DefaultOperationDescSet();
-                readController(container,childController,reader,child);
+                readController(container,childController,reader,childSet);
                 reader.next();
                 continue;
             }

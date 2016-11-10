@@ -18,14 +18,13 @@
 
 package tests.descriptionloader;
 
-import app.controllers.api.RestPathController;
+import app.controllers.api.RestApiController;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
 import leap.web.App;
-import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.DefaultApiDescContainer;
-import leap.web.api.meta.desc.DescriptionLoader;
-import leap.web.api.meta.desc.OperationDescSet;
+import leap.web.action.Argument;
+import leap.web.api.meta.desc.*;
 import leap.web.route.Route;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
@@ -41,14 +40,70 @@ public class TestXmlDescriptionLoader extends WebTestBase {
     @Inject
     private ApiDescContainer container;
 
+    @Inject
+    private App app;
+
     @Test
     public void testLoad(){
         //OperationDescSet ods = loader.load(new RestApiController());
-        RestPathController controller = factory.getBean(RestPathController.class);
-        OperationDescSet ods = loader.load(container,controller);
-        assertNotNull(ods);
-        
+        Object restApiController = null;
+        Object subPathsController = null;
+        for(Route route : app.routes()){
+            if(route.getController() != null && route.getController() instanceof RestApiController){
+                restApiController = route.getController();
+            }
+            if(route.getController() != null && route.getController() instanceof RestApiController.SubPathsController){
+                subPathsController = route.getController();
+            }
+        }
+        OperationDescSet set = container.getAllOperationDescSet(restApiController);
+        assertNotNull(set);
+        boolean updateRestApi = false;
+        boolean idArgument = false;
+        boolean getApiPaths = false;
+        boolean apiIdArgument = false;
+        for(Route route : app.routes().getRoutesByController(restApiController)){
+            if(route.getAction() != null){
+                String actionName = route.getAction().getName();
+                if(Strings.equals(actionName,"updateRestApi")){
+                    updateRestApi = true;
+                    OperationDesc desc = set.getOperationDesc(route.getAction());
+                    assertEquals("简介",desc.getSummary());
+                    assertEquals("描述",desc.getDescription());
 
+                    for(Argument argument:route.getAction().getArguments()){
+                        if(Strings.equals(argument.getDeclaredName(),"id")){
+                            idArgument = true;
+                            ParameterDesc paramDesc = desc.getParameter(argument);
+                            assertEquals("api主键",paramDesc.getDescription());
+                        }
+                    }
+
+                }
+            }
+        }
+        for(Route route : app.routes().getRoutesByController(subPathsController)){
+            if(route.getAction() != null){
+                String actionName = route.getAction().getName();
+                if(Strings.equals(actionName,"getApiPaths")){
+                    getApiPaths = true;
+                    OperationDesc desc = set.getOperationDesc(route.getAction());
+                    for(Argument argument:route.getAction().getArguments()){
+                        if(Strings.equals(argument.getDeclaredName(),"apiId")){
+                            apiIdArgument = true;
+                            ParameterDesc paramDesc = desc.getParameter(argument);
+                            assertEquals("path的api主键",paramDesc.getDescription());
+                        }
+                    }
+
+                }
+            }
+        }
+
+        assertTrue(updateRestApi);
+        assertTrue(idArgument);
+        assertTrue(getApiPaths);
+        assertTrue(apiIdArgument);
     }
 
 }
