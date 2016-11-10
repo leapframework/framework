@@ -19,7 +19,10 @@
 package tests.spec;
 
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
+import leap.lang.http.HTTP;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
@@ -36,7 +39,18 @@ public class SwaggerJsonTest extends WebTestBase {
 
         ApiMetadata m = specReader.read(new StringReader(swagger)).build();
 
+        boolean who = false;
+
         assertTrue(m.getModels().containsKey("ListOnlyModel"));
+        assertEquals("hello方法",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getSummary());
+        assertEquals("返回参数加上 Hello的字符串",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getDescription());
+        for(MApiParameter parameter : m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getParameters()){
+            if(Strings.equals(parameter.getName(),"who")){
+                who =true;
+                assertEquals("人名",parameter.getDescription());
+            }
+        }
+        assertTrue(who);
     }
 
 }

@@ -21,7 +21,6 @@ import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Enums;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -31,11 +30,13 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
-import leap.web.api.annotation.Resource;
-import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
+import leap.web.api.meta.desc.ApiDescContainer;
+import leap.web.api.meta.desc.OperationDesc;
+import leap.web.api.meta.desc.OperationDescSet;
+import leap.web.api.meta.desc.ParameterDesc;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
@@ -55,6 +56,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected @Inject App                    app;
 	protected @Inject ApiMetadataProcessor[] processors;
 	protected @Inject MTypeManager           mtypeManager;
+    protected @Inject ApiDescContainer       apiDescContainer;
 	
 	@Override
     public ApiMetadata createMetadata(ApiConfig c) {
@@ -91,7 +93,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			public ApiConfig getConfig() {
 				return c;
 			}
-		};
+
+            @Override
+            public ApiDescContainer getDescContainer() {
+                return apiDescContainer;
+            }
+        };
 	}
 	
 	protected MTypeContainer createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
@@ -250,7 +257,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		setApiMethod(context, m, route, path, op);
 
         log.debug(" {}", op.getMethod());
-	
+
+        //Set description and summary
+        setOperationDesc(context, m, route, path, op);
+
 		//Create parameters.
 		createApiParameters(context, m, route, path, op);
 		
@@ -280,8 +290,21 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			op.setMethod(HTTP.Method.valueOf(method));
 		}
 	}
-	
-	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+
+	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+        if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
+            OperationDescSet set = apiDescContainer.getAllOperationDescSet(route.getAction().getController());
+            if(set == null){
+                return;
+            }
+            OperationDesc desc = set.getOperationDesc(op.getRoute().getAction());
+            if(desc != null){
+                op.setDesc(desc);
+            }
+        }
+    }
+
+    protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
 		Action action = route.getAction();
 
         log.trace("  Parameters({})", action.getArguments().length);
@@ -331,6 +354,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         if(a.getType().isEnum()){
             p.setEnumValues(Enums.getValues(a.getType()));
+        }
+
+        if(op.getDesc() != null){
+            ParameterDesc desc = op.getDesc().getParameter(a);
+            if(desc != null){
+                p.setDesc(desc);
+            }
         }
 
         op.addParameter(p);

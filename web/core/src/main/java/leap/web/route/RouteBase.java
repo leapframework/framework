@@ -33,4 +33,17 @@ public interface RouteBase {
      */
     Action getAction();
 
+    /**
+     * Return the controller of {@link Action} or <code>null</code> if no controller
+     */
+    default Object getController(){
+        Action action = getAction();
+        if(action == null){
+            return null;
+        }
+        if(action.hasController()){
+            return action.getController();
+        }
+        return null;
+    }
 }
