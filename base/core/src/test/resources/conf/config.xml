@@ -12,4 +12,11 @@
     <if expr="true">
         <monitor enabled="true" report-error="true" report-args="true" report-line-number="true" method-threshold="10"/>
     </if>
+
+    <!--test slow sqls-->
+    <properties prefix="dsm">
+        <property name="slow-sql-threshold"      value="20"/>
+        <property name="very-slow-sql-threshold" value="50"/>
+    </properties>
+
 </config>

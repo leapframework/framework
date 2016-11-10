@@ -18,25 +18,51 @@
 
 package leap.core.ds.management;
 
+import leap.core.annotation.Inject;
+import leap.core.annotation.M;
+import leap.lang.Dates;
 import leap.lang.jdbc.DataSourceWrapper;
+import leap.lang.jdbc.StatementProxy;
 import leap.lang.jmx.Managed;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.logging.StackTraceStringBuilder;
+import leap.lang.time.DateFormats;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
+    private static final Log log = LogFactory.get(MDataSourceProxy.class);
+
     protected String name;
-    protected DataSourceMBean mbean = new DataSourceMBean();
-    protected CopyOnWriteArrayList<MConnection> activeConnections = new CopyOnWriteArrayList<>(); //todo : check the performance?
+
+    protected @Inject @M MDataSourceConfig config;
+
+    protected final DataSourceMBean   mbean             = new DataSourceMBean();
+    protected final List<MConnection> activeConnections = new CopyOnWriteArrayList<>(); //todo : check the performance?
+
+    private final    SlowSql[] slowSqls     = new SlowSql[50];
+    private volatile int       slowSqlIndex = 0;
+
+    private final    SlowSql[] verySlowSqls     = new SlowSql[50];
+    private volatile int       verySlowSqlIndex = 0;
 
     public MDataSourceProxy(DataSource ds) {
         super(ds);
     }
 
-    @Managed
+    public MDataSourceProxy(DataSource ds, MDataSourceConfig config) {
+        super(ds);
+        this.config = config;
+    }
+
     public String getName() {
         return name;
     }
@@ -60,6 +86,32 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     }
 
     @Override
+    public MSlowSql[] getSlowSqls() {
+        List<MSlowSql> list = new ArrayList<>();
+
+        for(SlowSql ss : slowSqls) {
+            if(null != ss) {
+                list.add(ss);
+            }
+        }
+
+        return list.toArray(new MSlowSql[list.size()]);
+    }
+
+    @Override
+    public MSlowSql[] getVerySlowSqls() {
+        List<MSlowSql> list = new ArrayList<>();
+
+        for(SlowSql ss : verySlowSqls) {
+            if(null != ss) {
+                list.add(ss);
+            }
+        }
+
+        return list.toArray(new MSlowSql[list.size()]);
+    }
+
+    @Override
     public Connection getConnection() throws SQLException {
         return openConnection(super.getConnection());
     }
@@ -71,6 +123,40 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
     public void destroy() {
         activeConnections.clear();
+    }
+
+    protected void onStatementEndExecute(MConnectionProxy conn, StatementProxy stmt) {
+        SlowSql ss;
+
+        if(config.getVerySlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getVerySlowSqlThreshold()) {
+
+            if(verySlowSqlIndex == verySlowSqls.length) {
+                verySlowSqlIndex = 0;
+            }
+
+            ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
+
+            verySlowSqls[verySlowSqlIndex++] = ss;
+
+            if(config.isLogVerySlowSql()) {
+                log.warn("Found very slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
+                        ss.getDurationMs(), ss.getSql(), new StackTraceStringBuilder(ss.getStackTraceElements()).toString());
+
+            }
+        }else if(config.getSlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getSlowSqlThreshold()) {
+            if(slowSqlIndex == slowSqls.length) {
+                slowSqlIndex = 0;
+            }
+
+            ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
+
+            slowSqls[slowSqlIndex++] = ss;
+
+            if(config.isLogSlowSql()) {
+                log.warn("Found slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
+                        ss.getDurationMs(), ss.getSql(), new StackTraceStringBuilder(ss.getStackTraceElements()).toString());
+            }
+        }
     }
 
     protected Connection openConnection(Connection connection) {
@@ -97,33 +183,81 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     protected class DataSourceMBean {
 
         @Managed
-        public ConnectionMBeanModel[] getActiveConnections() {
+        public ActiveConnectionsModel getActiveConnections() {
 
             MConnection[] activeConnections = MDataSourceProxy.this.getActiveConnections();
 
-            ConnectionMBeanModel[] activeConnectionModels = new ConnectionMBeanModel[activeConnections.length];
+            ConnectionModel[] activeConnectionModels = new ConnectionModel[activeConnections.length];
 
             for(int i=0;i<activeConnectionModels.length;i++) {
-                activeConnectionModels[i] = new ConnectionMBeanModel(activeConnections[i]);
+                activeConnectionModels[i] = new ConnectionModel(activeConnections[i]);
             }
 
-            return activeConnectionModels;
+            return new ActiveConnectionsModel(activeConnectionModels);
         }
 
     }
 
-    protected static class ConnectionMBeanModel {
+    protected static class ActiveConnectionsModel {
+
+        protected final int               size;
+        protected final ConnectionModel[] connections;
+
+        public ActiveConnectionsModel(ConnectionModel[] connections) {
+            this.connections = connections;
+            this.size        = connections.length;
+        }
+
+        public int getSize() {
+            return size;
+        }
+
+        public ConnectionModel[] getConnections() {
+            return connections;
+        }
+    }
+
+    protected static class ConnectionModel {
 
         private final MConnection connection;
 
-        public ConnectionMBeanModel(MConnection connection) {
+        public ConnectionModel(MConnection connection) {
             this.connection = connection;
         }
 
-        public long getOpenTime() {
-            return connection.getOpenTime();
+        public String getOpenTime() {
+            return Dates.format(new Date(connection.getOpenTime()), DateFormats.TIMESTAMP_PATTERN);
         }
 
+        public String getStackTrace() {
+            return new StackTraceStringBuilder(connection.getStackTraceOnOpen()).toString();
+        }
+    }
+
+    protected static class SlowSql implements MSlowSql {
+
+        private final String              sql;
+        private final long                durationMs;
+        private final StackTraceElement[] stackTraceElements;
+
+        public SlowSql(String sql, long duration, StackTraceElement[] stackTraceElements) {
+            this.sql = sql;
+            this.durationMs = duration;
+            this.stackTraceElements = stackTraceElements;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+
+        @Override
+        public long getDurationMs() {
+            return durationMs;
+        }
+
+        public StackTraceElement[] getStackTraceElements() {
+            return stackTraceElements;
+        }
     }
 
 }

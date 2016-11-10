@@ -16,33 +16,24 @@
  *
  */
 
-package leap.core.ds.management;
+package tested.ds;
 
-import leap.lang.Named;
+import leap.lang.jdbc.ConnectionAdapter;
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+import java.sql.SQLException;
+import java.sql.Statement;
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+public class MockConnection extends ConnectionAdapter {
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    private final MockDataSource ds;
 
-    /**
-     * Returns the last reported slow sqls.
-     */
-    MSlowSql[] getSlowSqls();
+    public MockConnection(MockDataSource ds) {
+        this.ds = ds;
+    }
 
-    /**
-     * Returns the last reported very slow sqls.
-     */
-    MSlowSql[] getVerySlowSqls();
+    @Override
+    public Statement createStatement() throws SQLException {
+        return new MockStatement(ds, this);
+    }
 
 }

@@ -105,6 +105,15 @@ public class MBeanExporterTest extends TestBase {
         assertEquals(complexBean.getComplexData().getStrValue(), cd.get("strValue"));
     }
 
+    @Test
+    public void testComplexBean() throws Exception {
+        server.getAttribute(complexBeanName, "complexData");
+        server.getAttribute(complexBeanName, "complexDataList");
+
+        server.getAttribute(complexBeanName, "nestedBean");
+        server.getAttribute(complexBeanName, "nestedBeans");
+    }
+
     public static final class SimpleBean {
 
         private @Managed int count = 1;
@@ -141,6 +150,30 @@ public class MBeanExporterTest extends TestBase {
         }
     }
 
+    public static final class NestedBean {
+
+        protected ComplexData   complexData  = new ComplexData();
+        protected ComplexData[] complexDatas = new ComplexData[]{new ComplexData()};
+        protected int[]         intArray     = new int[]{100};
+        protected Integer[]     integerArray = new Integer[]{100};
+
+        public ComplexData getComplexData() {
+            return complexData;
+        }
+
+        public ComplexData[] getComplexDatas() {
+            return complexDatas;
+        }
+
+        public int[] getIntArray() {
+            return intArray;
+        }
+
+        public Integer[] getIntegerArray() {
+            return integerArray;
+        }
+    }
+
     public static final class ComplexBean {
 
         private int[]             intArray        = new int[]{1,2};
@@ -149,6 +182,8 @@ public class MBeanExporterTest extends TestBase {
         private List<String[]>    stringArrayList = new ArrayList<>();
         private ComplexData       complexData     = new ComplexData();
         private List<ComplexData> complexDataList = New.arrayList(new ComplexData(), new ComplexData());
+        private NestedBean        nestedBean      = new NestedBean();
+        private NestedBean[]      nestedBeans     = new NestedBean[] {new NestedBean()};
 
         public ComplexBean() {
             stringArrayList.add(new String[]{"hello"});
@@ -206,6 +241,16 @@ public class MBeanExporterTest extends TestBase {
 
         public void setComplexDataList(List<ComplexData> complexDataList) {
             this.complexDataList = complexDataList;
+        }
+
+        @Managed
+        public NestedBean getNestedBean() {
+            return nestedBean;
+        }
+
+        @Managed
+        public NestedBean[] getNestedBeans() {
+            return nestedBeans;
         }
 
         @Managed

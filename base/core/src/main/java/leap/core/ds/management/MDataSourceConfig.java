@@ -18,31 +18,13 @@
 
 package leap.core.ds.management;
 
-import leap.lang.Named;
+public interface MDataSourceConfig {
 
-/**
- * The management interface of {@link javax.sql.DataSource}.
- */
-public interface MDataSource extends Named {
+    long getSlowSqlThreshold();
 
-    /**
-     * Returns the mbean instance of this DataSource.
-     */
-    Object getMBean();
+    long getVerySlowSqlThreshold();
 
-    /**
-     * Returns all the current opened connections.
-     */
-    MConnection[] getActiveConnections();
+    boolean isLogSlowSql();
 
-    /**
-     * Returns the last reported slow sqls.
-     */
-    MSlowSql[] getSlowSqls();
-
-    /**
-     * Returns the last reported very slow sqls.
-     */
-    MSlowSql[] getVerySlowSqls();
-
+    boolean isLogVerySlowSql();
 }

@@ -243,6 +243,7 @@ public class StatementProxy<T extends ConnectionProxy> extends StatementWrapper 
     protected void endExecute() {
         lastExecutingDurationMs = System.currentTimeMillis() - lastExecutingTime;
         lastExecutingTime       = -1;
+        conn.endExecuteStatement(this);
     }
 
     protected SQLException handleSQLException(SQLException e) {

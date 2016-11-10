@@ -18,9 +18,12 @@ package leap.core.ds;
 import leap.core.AppConfig;
 import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ds.management.MDataSource;
+import leap.core.ds.management.MDataSourceConfig;
 import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
@@ -38,7 +41,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean {
+@Configurable(prefix = "dsm")
+public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean,MDataSourceConfig {
 
     protected @Inject @M AppContext                   context;
     protected @Inject @M AppConfig                    config;
@@ -52,7 +56,50 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected Map<String, DataSource>        allDataSourcesImmutableView;
     protected UnPooledDataSourceFactory      unpooledDataSourceFactory = new UnPooledDataSourceFactory();
 
-	@Override
+    protected long                           slowSqlThreshold;
+    protected long                           verySlowSqlThreshold;
+    protected boolean                        logSlowSql;
+    protected boolean                        logVerySlowSql;
+
+    @Override
+    public long getSlowSqlThreshold() {
+        return slowSqlThreshold;
+    }
+
+    @ConfigProperty
+    public void setSlowSqlThreshold(long slowSqlThreshold) {
+        this.slowSqlThreshold = slowSqlThreshold;
+    }
+
+    @Override
+    public long getVerySlowSqlThreshold() {
+        return verySlowSqlThreshold;
+    }
+
+    @ConfigProperty
+    public void setVerySlowSqlThreshold(long verySlowSqlThreshold) {
+        this.verySlowSqlThreshold = verySlowSqlThreshold;
+    }
+
+    public boolean isLogSlowSql() {
+        return logSlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogSlowSql(boolean logSlowSql) {
+        this.logSlowSql = logSlowSql;
+    }
+
+    public boolean isLogVerySlowSql() {
+        return logVerySlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogVerySlowSql(boolean logVerySlowSql) {
+        this.logVerySlowSql = logVerySlowSql;
+    }
+
+    @Override
     public void addListener(DataSourceListener listener) {
 		if(listeners.contains(listener)){
 			throw new ObjectExistsException("The listener already exists");
@@ -65,10 +112,6 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	    return listeners.remove(listener);
     }
 
-	public void setDataSourceFactories(DataSourceFactory[] dataSourceFactories) {
-		this.dataSourceFactories = dataSourceFactories;
-	}
-	
 	@Override
     public boolean hasDataSources() {
         return !allDataSources.isEmpty();
@@ -179,7 +222,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		}
 
         if(null != ds && ! (ds instanceof MDataSourceProxy)) {
-            ds = new MDataSourceProxy(ds);
+            ds = new MDataSourceProxy(ds, this);
         }
 		
 		return ds;

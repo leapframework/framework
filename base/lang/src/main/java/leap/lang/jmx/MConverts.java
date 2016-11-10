@@ -18,12 +18,17 @@
 
 package leap.lang.jmx;
 
-import leap.lang.Beans;
+import leap.lang.Classes;
 import leap.lang.Enumerables;
+import leap.lang.beans.BeanType;
 
+import javax.management.ObjectName;
 import javax.management.openmbean.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MConverts {
 
@@ -40,7 +45,7 @@ public class MConverts {
             CompositeType ct = (CompositeType)targetType;
 
             try {
-                return new CompositeDataSupport(ct, Beans.toMap(value));
+                return convertToCompositeData(value, ct);
             } catch (OpenDataException e) {
                 throw new MException(e);
             }
@@ -66,6 +71,29 @@ public class MConverts {
 
         //todo : support
         throw new IllegalStateException("Not supported open type '" + targetType + "'");
+    }
+
+    static CompositeData convertToCompositeData(Object bean, CompositeType ct) throws OpenDataException{
+        BeanType bt = BeanType.of(bean.getClass());
+
+        Map<String,Object> map = new LinkedHashMap<>();
+        for(String name : ct.keySet()) {
+            OpenType type  = ct.getType(name);
+            Object   value = bt.getProperty(name).getValue(bean);
+
+            Object converted = convert(value, type);
+
+            if(type instanceof ArrayType) {
+                List list = (List)converted;
+
+                Class<?> elementType = Classes.forName(((ArrayType) type).getElementOpenType().getClassName());
+                converted = list.toArray((Object[])Array.newInstance(elementType, list.size()));
+            }
+
+            map.put(name, converted);
+        }
+
+        return new CompositeDataSupport(ct, map);
     }
 
     protected MConverts() {
