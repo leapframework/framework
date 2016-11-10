@@ -47,6 +47,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 	}
 
 	protected final String              name;
+	protected final String 				declaredName;
 	protected final Class<?>            type;
 	protected final Type                genericType;
 	protected final TypeInfo            typeInfo;
@@ -62,6 +63,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
     protected boolean contextual;
 
 	public Argument(String name,
+					String declaredName,
                     BeanProperty beanProperty,
                     Class<?> type,
                     Type genericType,
@@ -78,6 +80,7 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		Args.notNull(typeInfo,"type info");
 		
 		this.name              = name;
+		this.declaredName	   = declaredName;
 		this.type              = type;
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
@@ -224,4 +227,8 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
     public String toString() {
         return "Argument[name=" + name + ",type=" + type + "]";
     }
+
+	public String getDeclaredName() {
+		return declaredName;
+	}
 }

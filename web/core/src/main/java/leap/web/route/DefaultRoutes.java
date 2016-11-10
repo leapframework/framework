@@ -23,11 +23,8 @@ import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
 import leap.web.action.*;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
@@ -156,8 +153,19 @@ public class DefaultRoutes implements Routes {
 		
 		return null;
     }
-	
-	protected boolean matchRequiredParameters(Map<String, String> requiredParameters,Map<String, Object> inParameters) {
+
+	@Override
+	public Route[] getRoutesByController(Object controller) {
+		List<Route> routes = new LinkedList<>();
+		for(Route route : this){
+			if(route.getController() == controller){
+				routes.add(route);
+			}
+		}
+		return routes.toArray(new Route[]{});
+	}
+
+	protected boolean matchRequiredParameters(Map<String, String> requiredParameters, Map<String, Object> inParameters) {
 		if(requiredParameters.isEmpty()){
 			return true;
 		}
