@@ -66,4 +66,5 @@ public class DataSourceManagerTest extends AppTestBase {
     public void testDataSourceProxy() {
         assertTrue(dsm.getDefaultDataSource() instanceof MDataSourceProxy);
     }
+
 }
