@@ -54,9 +54,12 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected DataSource                     defaultDataSource;
     protected Map<String, DataSource>        allDataSources;
     protected Map<String, DataSource>        allDataSourcesImmutableView;
+    protected UnPooledDataSourceFactory      unpooledDataSourceFactory = new UnPooledDataSourceFactory();
+
     protected long                           slowSqlThreshold;
     protected long                           verySlowSqlThreshold;
-    protected UnPooledDataSourceFactory      unpooledDataSourceFactory = new UnPooledDataSourceFactory();
+    protected boolean                        logSlowSql;
+    protected boolean                        logVerySlowSql;
 
     @Override
     public long getSlowSqlThreshold() {
@@ -76,6 +79,24 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     @ConfigProperty
     public void setVerySlowSqlThreshold(long verySlowSqlThreshold) {
         this.verySlowSqlThreshold = verySlowSqlThreshold;
+    }
+
+    public boolean isLogSlowSql() {
+        return logSlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogSlowSql(boolean logSlowSql) {
+        this.logSlowSql = logSlowSql;
+    }
+
+    public boolean isLogVerySlowSql() {
+        return logVerySlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogVerySlowSql(boolean logVerySlowSql) {
+        this.logVerySlowSql = logVerySlowSql;
     }
 
     @Override

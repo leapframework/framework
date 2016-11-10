@@ -155,6 +155,13 @@ public abstract class ConnectionProxy extends ConnectionWrapper {
     }
 
     /**
+     * End executes the statement.
+     */
+    protected void endExecuteStatement(StatementProxy stmt) {
+
+    }
+
+    /**
      * Close the statement.
      */
     protected void closeStatement(StatementProxy stmt) throws SQLException {

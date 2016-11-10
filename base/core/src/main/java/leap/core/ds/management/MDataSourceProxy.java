@@ -32,6 +32,7 @@ import leap.lang.time.DateFormats;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -86,12 +87,28 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
     @Override
     public MSlowSql[] getSlowSqls() {
-        return slowSqls;
+        List<MSlowSql> list = new ArrayList<>();
+
+        for(SlowSql ss : slowSqls) {
+            if(null != ss) {
+                list.add(ss);
+            }
+        }
+
+        return list.toArray(new MSlowSql[list.size()]);
     }
 
     @Override
     public MSlowSql[] getVerySlowSqls() {
-        return verySlowSqls;
+        List<MSlowSql> list = new ArrayList<>();
+
+        for(SlowSql ss : verySlowSqls) {
+            if(null != ss) {
+                list.add(ss);
+            }
+        }
+
+        return list.toArray(new MSlowSql[list.size()]);
     }
 
     @Override
@@ -108,9 +125,8 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
         activeConnections.clear();
     }
 
-    protected void onStatementClose(MConnectionProxy conn, StatementProxy stmt) {
-
-        SlowSql ss = null;
+    protected void onStatementEndExecute(MConnectionProxy conn, StatementProxy stmt) {
+        SlowSql ss;
 
         if(config.getVerySlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getVerySlowSqlThreshold()) {
 
@@ -122,6 +138,11 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
             verySlowSqls[verySlowSqlIndex++] = ss;
 
+            if(config.isLogVerySlowSql()) {
+                log.warn("Found very slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
+                        ss.getDurationMs(), ss.getSql(), new StackTraceStringBuilder(ss.getStackTraceElements()).toString());
+
+            }
         }else if(config.getSlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getSlowSqlThreshold()) {
             if(slowSqlIndex == slowSqls.length) {
                 slowSqlIndex = 0;
@@ -130,11 +151,11 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
             slowSqls[slowSqlIndex++] = ss;
-        }
 
-        if(null != ss) {
-            log.warn("Found slow sql ->\n duration : {}ms\n\n sql : \n{}\n\n stack trace : \n{}\n",
-                     ss.getDurationMs(), ss.getSql(), new StackTraceStringBuilder(ss.getStackTraceElements()).toString());
+            if(config.isLogSlowSql()) {
+                log.warn("Found slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
+                        ss.getDurationMs(), ss.getSql(), new StackTraceStringBuilder(ss.getStackTraceElements()).toString());
+            }
         }
     }
 

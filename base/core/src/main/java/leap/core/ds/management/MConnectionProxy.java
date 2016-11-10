@@ -49,11 +49,8 @@ public class MConnectionProxy extends ConnectionProxy implements MConnection {
     }
 
     @Override
-    protected void closeStatement(StatementProxy stmt) throws SQLException {
-        try {
-            ds.onStatementClose(this, stmt);
-        }finally{
-            super.closeStatement(stmt);
-        }
+    protected void endExecuteStatement(StatementProxy stmt) {
+        ds.onStatementEndExecute(this, stmt);
     }
+
 }

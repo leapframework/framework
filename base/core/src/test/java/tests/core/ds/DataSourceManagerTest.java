@@ -15,25 +15,24 @@
  */
 package tests.core.ds;
 
+import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
+import leap.core.ds.management.MDataSource;
 import leap.core.ds.management.MDataSourceProxy;
+import leap.core.ds.management.MSlowSql;
 import leap.core.junit.AppTestBase;
 import leap.lang.Exceptions;
 import org.junit.Test;
+import tested.ds.MockDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 
 public class DataSourceManagerTest extends AppTestBase {
-	
-	private DataSourceManager dsm;
-	
-	@Override
-    protected void setUp() throws Exception {
-		dsm = factory.getBean(DataSourceManager.class);
-	}
+
+    private @Inject DataSourceManager dsm;
 
 	@Test
 	public void testCreateDataSource() {
@@ -43,7 +42,7 @@ public class DataSourceManagerTest extends AppTestBase {
 								    .setUrl("jdbc:h2:mem:test")
 								    .build();
 		
-		DataSource ds = null;
+		DataSource ds;
 		try {
 			ds = dsm.createDataSource("test", p);
 			assertNotNull(ds);
@@ -65,6 +64,58 @@ public class DataSourceManagerTest extends AppTestBase {
     @Test
     public void testDataSourceProxy() {
         assertTrue(dsm.getDefaultDataSource() instanceof MDataSourceProxy);
+    }
+
+    @Test
+    public void testSlowSql() throws SQLException {
+        DataSource     dataSource     = dsm.getDataSource("mock");
+        MDataSource    mDataSource    = dsm.getManagedDataSource(dataSource);
+        MockDataSource mockDataSource = dsm.getDataSource("mock").unwrap(MockDataSource.class);
+
+        //warm up.
+        dataSource.getConnection().createStatement().execute("sql1");
+
+        //begin test
+
+        mockDataSource.setStatementDurationMs(1);
+        dataSource.getConnection().createStatement().execute("sql1");
+        assertEquals(0, mDataSource.getSlowSqls().length);
+        assertEquals(0, mDataSource.getVerySlowSqls().length);
+
+        mockDataSource.setStatementDurationMs(20);
+        dataSource.getConnection().createStatement().execute("sql1");
+        assertEquals(1, mDataSource.getSlowSqls().length);
+        assertEquals(0, mDataSource.getVerySlowSqls().length);
+
+        mockDataSource.setStatementDurationMs(50);
+        dataSource.getConnection().createStatement().execute("sql1");
+        assertEquals(1, mDataSource.getSlowSqls().length);
+        assertEquals(1, mDataSource.getVerySlowSqls().length);
+
+        MSlowSql nss0 = mDataSource.getSlowSqls()[0];
+        MSlowSql vss0 = mDataSource.getVerySlowSqls()[0];
+
+        mockDataSource.setStatementDurationMs(20);
+        for(int i=0;i<49;i++) {
+            dataSource.getConnection().createStatement().execute("sql1");
+        }
+        assertEquals(50, mDataSource.getSlowSqls().length);
+        assertSame(nss0, mDataSource.getSlowSqls()[0]);
+
+        dataSource.getConnection().createStatement().execute("sql1");
+        assertEquals(50, mDataSource.getSlowSqls().length);
+        assertNotSame(nss0, mDataSource.getSlowSqls()[0]);
+
+        mockDataSource.setStatementDurationMs(50);
+        for(int i=0;i<49;i++) {
+            dataSource.getConnection().createStatement().execute("sql1");
+        }
+        assertEquals(50, mDataSource.getVerySlowSqls().length);
+        assertSame(vss0, mDataSource.getVerySlowSqls()[0]);
+
+        dataSource.getConnection().createStatement().execute("sql1");
+        assertEquals(50, mDataSource.getVerySlowSqls().length);
+        assertNotSame(vss0, mDataSource.getVerySlowSqls()[0]);
     }
 
 }

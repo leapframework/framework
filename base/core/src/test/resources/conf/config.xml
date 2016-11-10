@@ -15,8 +15,8 @@
 
     <!--test slow sqls-->
     <properties prefix="dsm">
-        <property name="slow-sql-threshold"      value="50"/>
-        <property name="very-slow-sql-threshold" value="100"/>
+        <property name="slow-sql-threshold"      value="20"/>
+        <property name="very-slow-sql-threshold" value="50"/>
     </properties>
 
 </config>

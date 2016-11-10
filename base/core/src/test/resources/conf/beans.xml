@@ -7,4 +7,5 @@
         <constructor-arg value="1024"/>
     </bean>
 
+    <bean name="mock" type="javax.sql.DataSource" class="tested.ds.MockDataSource"/>
 </beans>

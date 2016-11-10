@@ -16,15 +16,27 @@
  *
  */
 
-package leap.core.ds.management;
+package tested.ds;
 
-public interface MDataSourceConfig {
+import leap.lang.Threads;
+import leap.lang.jdbc.StatementAdapter;
 
-    long getSlowSqlThreshold();
+import java.sql.SQLException;
 
-    long getVerySlowSqlThreshold();
+public class MockStatement extends StatementAdapter {
 
-    boolean isLogSlowSql();
+    private final MockDataSource ds;
+    private final MockConnection conn;
 
-    boolean isLogVerySlowSql();
+    public MockStatement(MockDataSource ds, MockConnection conn) {
+        this.ds = ds;
+        this.conn = conn;
+    }
+
+    @Override
+    public boolean execute(String sql) throws SQLException {
+        Threads.sleep(ds.getStatementDurationMs());
+        return true;
+    }
+
 }

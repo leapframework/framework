@@ -27,6 +27,9 @@
     <properties prefix="dsm">
         <property name="slow-sql-threshold"      value="500"/>
         <property name="very-slow-sql-threshold" value="5000"/>
+
+        <property name="log-slow-sql"      value="true"/>
+        <property name="log-very-slow-sql" value="true"/>
     </properties>
 	
 </config>
