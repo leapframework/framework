@@ -19,10 +19,14 @@
 package tests.descriptionloader;
 
 import app.controllers.api.RestPathController;
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.web.App;
+import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.DefaultApiDescContainer;
 import leap.web.api.meta.desc.DescriptionLoader;
 import leap.web.api.meta.desc.OperationDescSet;
+import leap.web.route.Route;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
@@ -32,11 +36,19 @@ import org.junit.Test;
 public class TestXmlDescriptionLoader extends WebTestBase {
     @Inject
     private DescriptionLoader loader;
+    @Inject
+    private BeanFactory factory;
+    @Inject
+    private ApiDescContainer container;
 
     @Test
     public void testLoad(){
         //OperationDescSet ods = loader.load(new RestApiController());
-        OperationDescSet ods = loader.load(new DefaultApiDescContainer(),new RestPathController());
+        RestPathController controller = factory.getBean(RestPathController.class);
+        OperationDescSet ods = loader.load(container,controller);
+        assertNotNull(ods);
+        
+
     }
 
 }

@@ -19,6 +19,7 @@
 package leap.web.api.meta.desc;
 
 import leap.web.action.Action;
+import leap.web.api.config.ApiConfigException;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -42,4 +43,12 @@ public class DefaultOperationDescSet implements OperationDescSet {
         }
         return null;
     }
+
+    public void addOperationDesc(Action action, OperationDesc desc){
+        if(null != getOperationDesc(action)){
+            throw new ApiConfigException("duplicate description for operation :"+action.getName());
+        }
+        descs.add(desc);
+    }
+
 }

@@ -19,6 +19,7 @@
 package leap.web.api.meta.desc;
 
 import leap.core.annotation.Inject;
+import leap.web.api.config.ApiConfigException;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -32,7 +33,7 @@ public class DefaultApiDescContainer implements ApiDescContainer {
     private final static Map<String, OperationDescSet> container = new ConcurrentHashMap<>();
 
     @Override
-    public OperationDescSet getAllOperationDesc(Object controller) {
+    public OperationDescSet getAllOperationDescSet(Object controller) {
         if(container.containsKey(getKey(controller))){
             return container.get(getKey(controller));
         }
@@ -42,6 +43,14 @@ public class DefaultApiDescContainer implements ApiDescContainer {
         }
         container.put(getKey(controller),set);
         return set;
+    }
+
+    @Override
+    public void addOperationDescSet(Object controller,OperationDescSet set) {
+        if(container.containsKey(getKey(controller))){
+            throw new ApiConfigException("duplicate OperationDescSet for controller:"+controller.getClass().getName());
+        }
+        container.put(getKey(controller),set);
     }
 
     protected String getKey(Object controller){

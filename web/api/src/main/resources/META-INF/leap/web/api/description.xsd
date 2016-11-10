@@ -21,33 +21,38 @@
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
             targetNamespace="http://www.leapframework.org/schema/web/apis/description" elementFormDefault="qualified">
 
+    <xsd:element name="description">
+        <xsd:complexType>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element ref="controller"/>
+                <xsd:element ref="method" />
+            </xsd:choice>
+        </xsd:complexType>
+    </xsd:element>
+
     <xsd:element name="controller">
         <xsd:complexType>
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element ref="controller"/>
                 <xsd:element ref="method" />
-                <xsd:element ref="parameter"/>
             </xsd:choice>
-            <xsd:attribute name="name" type="xsd:string" use="optional"/>
+            <xsd:attribute name="name" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>
 
     <xsd:element name="method">
         <xsd:complexType>
+            <xsd:element name="summary"></xsd:element>
+            <xsd:element name="description"></xsd:element>
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
-                <xsd:element ref="parameter"/>
+            <xsd:element name="parameter">
+                <xsd:complexType>
+                    <xsd:attribute name="name" type="xsd:string"/>
+                    <xsd:sequence/>
+                </xsd:complexType>
+            </xsd:element>
             </xsd:choice>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
         </xsd:complexType>
-    </xsd:element>
-    <xsd:element name="parameter" type="xsd:element">
-        <xsd:complexType>
-            <xsd:extension base="xsd:string">
-                <xsd:attribute name="name" type="xsd:string"/>
-                <xsd:attribute name="ref" type="xsd:string"/>
-            </xsd:extension>
-            <xsd:attribute name="id" type="xsd:string"/>
-        </xsd:complexType>
-
     </xsd:element>
 </xsd:schema>

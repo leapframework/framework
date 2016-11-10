@@ -37,6 +37,7 @@ import java.util.List;
 public class ArgumentBuilder implements Buildable<Argument> {
 
     protected String         name;
+    protected String         declaredName;
     protected BeanProperty   beanProperty;
     protected Class<?>       type;
     protected Type           genericType;
@@ -55,6 +56,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 
 	public ArgumentBuilder(ValidationManager validationManager, BeanProperty p) {
 		this.name 		  = p.getName();
+        this.declaredName = this.name;
         this.beanProperty = p;
 		this.type 		  = p.getType();
 		this.typeInfo     = p.getTypeInfo();
@@ -67,6 +69,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	
 	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
 		this.name        = p.getName();
+        this.declaredName = this.name;
 		this.type        = p.getType();
 		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
@@ -295,7 +298,7 @@ public class ArgumentBuilder implements Buildable<Argument> {
         Argument[] wrappedArguments =
                 Builders.buildArray(this.wrappedArguments, new Argument[this.wrappedArguments.size()]);
 		
-	    return new Argument(name, beanProperty, type, genericType, typeInfo,
+	    return new Argument(name, declaredName,beanProperty, type, genericType, typeInfo,
                             required, location, annotations, binder,
                             validators, wrappedArguments);
     }

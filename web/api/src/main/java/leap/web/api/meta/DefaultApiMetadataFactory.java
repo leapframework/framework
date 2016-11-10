@@ -293,7 +293,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
 	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
         if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
-            OperationDescSet set = apiDescContainer.getAllOperationDesc(route.getAction().getController());
+            OperationDescSet set = apiDescContainer.getAllOperationDescSet(route.getAction().getController());
             if(set == null){
                 return;
             }

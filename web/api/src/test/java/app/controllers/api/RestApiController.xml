@@ -16,14 +16,19 @@
   ~  */
   -->
 
-<controller xmlns="http://www.leapframework.org/schema/web/apis/description">
+<description xmlns="http://www.leapframework.org/schema/web/apis/description">
     <method name="getRestApis">
         <parameter name="options">
             查询选项
         </parameter>
-        <parameter ref="common-param"/>
     </method>
     <method name="updateRestApi">
+        <summary>
+            简介
+        </summary>
+        <description>
+            描述
+        </description>
         <parameter name="id">
             api主键
         </parameter>
@@ -35,13 +40,9 @@
             </parameter>
         </method>
         <method name="createApiPath">
-            <parameter ref="createApiPathParam"/>
+            <parameter name="apiId">
+                查询单个path的api主键
+            </parameter>
         </method>
-        <parameter id="createApiPathParam" name="apiId">
-            查询单个path的api主键
-        </parameter>
     </controller>
-    <parameter id="common-param" name="id">
-        主键
-    </parameter>
-</controller>
+</description>
