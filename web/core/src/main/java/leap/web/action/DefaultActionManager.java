@@ -524,11 +524,9 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	protected RequestFormat selectRequestFormat(ActionContext context, ExecutionAttributes eas) throws Throwable {
 		if(null != eas.annotatedFormats){
 			RequestFormat fmt = formatManager.selectRequestFormat(context.getRequest(), eas.annotatedFormats);
-			/* don't use default
 			if(null == fmt){
 				fmt = eas.annotatedFormats[0];
 			}
-			*/
 			return fmt;
 		}else{
 			return formatManager.selectRequestFormat(context.getRequest(), eas.supportedFormats);
