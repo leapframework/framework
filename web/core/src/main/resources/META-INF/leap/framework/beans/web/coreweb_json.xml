@@ -13,6 +13,8 @@
     
     </bean>
 
+    <bean name="multipart" type="leap.web.format.RequestFormat" class="leap.web.format.MultipartFormat"/>
+
     <bean name="json" type="leap.web.format.FormatWriter"
                       class="leap.web.format.JsonFormatWriter">
     

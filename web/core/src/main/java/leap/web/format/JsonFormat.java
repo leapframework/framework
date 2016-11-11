@@ -32,6 +32,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.action.ActionContext;
 import leap.web.action.Argument;
+import leap.web.action.ArgumentResolver;
 import leap.web.json.JsonConfig;
 import leap.web.json.Jsonp;
 
