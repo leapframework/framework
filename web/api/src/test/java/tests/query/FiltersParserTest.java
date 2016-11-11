@@ -39,6 +39,8 @@ public class FiltersParserTest extends TestBase {
 
     @Test
     public void testComplexParseExprs() {
+        assertParse("a not null and c ge 10");
+        assertParse("a is null and c ge 10");
         assertParse("a eq b and c ge 10");
         assertParse("a eq b , c ge 10");
         assertParse("a : b , c : 10");

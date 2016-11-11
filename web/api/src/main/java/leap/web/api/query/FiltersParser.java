@@ -35,6 +35,8 @@ public class FiltersParser extends ParserBase {
 
     static {
         op(Token.LIKE);
+        op(Token.IS);
+        op(Token.NOT);
         op(Token.IN);
         op(Token.EQ);
         op(Token.GT);
@@ -130,7 +132,6 @@ public class FiltersParser extends ParserBase {
         if(null == token) {
             error("Invalid operator '" + op + "'");
         }
-
         nodes.add(new Node(token, op));
     }
 
@@ -228,6 +229,8 @@ public class FiltersParser extends ParserBase {
         LE,
         NE,
 
+        IS,
+        NOT,
         AND,
         OR;
     }

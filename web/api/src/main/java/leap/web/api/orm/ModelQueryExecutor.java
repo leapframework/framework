@@ -412,6 +412,13 @@ public class ModelQueryExecutor extends ModelExecutorBase {
             return "like";
         }
 
+        if(op == FiltersParser.Token.IS){
+            return "is";
+        }
+
+        if(op == FiltersParser.Token.NOT){
+            return "is not";
+        }
         throw new IllegalStateException("Not supported operator '" + op + "'");
     }
 
