@@ -22,6 +22,14 @@
 	<el:functions prefix="times" class="leap.core.el.function.TimeFuncs">
 		<el:function name="fmt"  method="format(java.lang.Object,java.lang.String)"/>
 		<el:function name="hour" method="hour(java.lang.Object)"/>
-	</el:functions>	
+	</el:functions>
+
+    <properties prefix="dsm">
+        <property name="slow-sql-threshold"      value="500"/>
+        <property name="very-slow-sql-threshold" value="5000"/>
+
+        <property name="log-slow-sql"      value="true"/>
+        <property name="log-very-slow-sql" value="true"/>
+    </properties>
 	
 </config>

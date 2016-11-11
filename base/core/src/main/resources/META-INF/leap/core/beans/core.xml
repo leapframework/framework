@@ -11,7 +11,9 @@
     <bean type="leap.core.transaction.TransactionManager" class="leap.core.transaction.DefaultTransactionManager" primary="true"/>
     <bean type="leap.core.event.EventManager" class="leap.core.event.DefaultEventManager" primary="true"/>
     <bean type="leap.core.AppContextInitializable" class="leap.core.event.DefaultEventRegister"/>
-    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true" lazy-init="false"/>
+    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true" lazy-init="false">
+        <additional-type-def type="leap.core.ds.management.MDataSourceConfig" primary="true"/>
+    </bean>
     <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
 
