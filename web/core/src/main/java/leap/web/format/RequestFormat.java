@@ -15,10 +15,12 @@
  */
 package leap.web.format;
 
+import com.sun.org.apache.xpath.internal.Arg;
 import leap.lang.Named;
 import leap.lang.http.MimeType;
 import leap.web.Request;
 import leap.web.action.Action;
+import leap.web.action.Argument;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -45,5 +47,5 @@ public interface RequestFormat extends Named {
 	 * 
 	 * @throws IllegalStateException if this format does not supports request body.
 	 */
-	Object readRequestBody(Request request) throws IOException, IllegalStateException;
+	Object readRequestBody(Request request, Argument argument) throws IOException, IllegalStateException;
 }

@@ -17,7 +17,9 @@ package leap.web.format;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.annotations.NotNull;
+import leap.core.validation.annotations.Required;
 import leap.lang.Exceptions;
+import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeTypes;
 import leap.lang.io.IO;
@@ -29,6 +31,7 @@ import leap.web.Contents;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.action.ActionContext;
+import leap.web.action.Argument;
 import leap.web.json.JsonConfig;
 import leap.web.json.Jsonp;
 
@@ -58,13 +61,17 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
 	}
 
 	@Override
-    public Object readRequestBody(Request request) throws IOException, IllegalStateException {
+    public Object readRequestBody(Request request, Argument argument) throws IOException, IllegalStateException {
 		JsonValue jsonObject;
 		try {
             if(log.isTraceEnabled()) {
                 String json = IO.readString(request.getReader());
 
                 log.trace("Json request body : \n{}", json);
+
+				if(Strings.isEmpty(json)){
+					return null;
+				}
 
                 jsonObject = leap.lang.json.JSON.parse(json);
             }else{

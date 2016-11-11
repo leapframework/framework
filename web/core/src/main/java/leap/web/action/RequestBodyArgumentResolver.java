@@ -53,7 +53,7 @@ public class RequestBodyArgumentResolver implements ArgumentResolver {
 
         RequestFormat format = context.getRequestFormat();
         if(null != format && format.supportsRequestBody()){
-            Object body = format.readRequestBody(context.getRequest());
+            Object body = format.readRequestBody(context.getRequest(),argument);
             if(null == body) {
                 return null;
             }

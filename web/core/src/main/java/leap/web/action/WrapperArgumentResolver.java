@@ -61,7 +61,7 @@ public class WrapperArgumentResolver implements ArgumentResolver {
 
         //The bean itself is a request body argument.
         if(requestBody) {
-            Object body = readRequestBody(context);
+            Object body = readRequestBody(context,argument);
             if(null != body) {
 
                 if(! (body instanceof Map)) {
@@ -79,11 +79,11 @@ public class WrapperArgumentResolver implements ArgumentResolver {
         return bean;
     }
 
-    protected Object readRequestBody(ActionContext context) throws Throwable {
+    protected Object readRequestBody(ActionContext context, Argument argument) throws Throwable {
         RequestFormat format = context.getRequestFormat();
 
         if(null != format && format.supportsRequestBody()){
-            return format.readRequestBody(context.getRequest());
+            return format.readRequestBody(context.getRequest(),argument);
         }else{
             return requestBodyReader.readRequestBody(context.getRequest(), Object.class, null);
         }
