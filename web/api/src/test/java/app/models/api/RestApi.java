@@ -42,6 +42,7 @@ public class RestApi extends ModelWithDesc {
     protected String title;
 
     @Column
+    @Filterable
     @ManyToOne(target = Kind.class, optional = Bool.TRUE)
     protected String kindId;
 

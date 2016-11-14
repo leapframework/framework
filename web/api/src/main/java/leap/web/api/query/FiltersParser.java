@@ -16,6 +16,8 @@
 
 package leap.web.api.query;
 
+import leap.lang.Strings;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -166,7 +168,15 @@ public class FiltersParser extends ParserBase {
         }
 
         String value = substring(start, end);
-        nodes.add(new Node(Token.VALUE, value, quoted));
+        if(!Strings.equals(Token.NULL.name(),value.toUpperCase())){
+            Token last = nodes.get(nodes.size()-1).token;
+            if(last == Token.NOT || last == Token.IS){
+                error("Invalid value of operation '" + last + "', it must be null");
+            }
+            nodes.add(new Node(Token.VALUE, value, quoted));
+        }else {
+            nodes.add(new Node(Token.NULL, "null"));
+        }
     }
 
     private void scanAndOr() {
@@ -216,6 +226,7 @@ public class FiltersParser extends ParserBase {
     public enum Token {
         NAME,
         VALUE,
+        NULL,
 
         LPAREN,
         RPAREN,

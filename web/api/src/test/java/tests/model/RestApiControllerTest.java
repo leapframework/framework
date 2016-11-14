@@ -135,10 +135,10 @@ public class RestApiControllerTest extends WebTestBase {
 
         apis = get("/api/restapi?filters=" + Urls.encode("name in api1,api2")).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
-        apis = get("/api/restapi?filters=" + Urls.encode("name is null or name eq api1")).decodeJsonArray(RestApi.class);
-        assertEquals(1, apis.length);
-        apis = get("/api/restapi?filters=" + Urls.encode("name not null and name eq api1")).decodeJsonArray(RestApi.class);
-        assertEquals(1, apis.length);
+        apis = get("/api/restapi?filters=" + Urls.encode("kindId is null")).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
+        apis = get("/api/restapi?filters=" + Urls.encode("name not null")).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
     }
 
     @Test

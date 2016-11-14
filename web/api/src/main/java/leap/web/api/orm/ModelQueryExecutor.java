@@ -321,6 +321,11 @@ public class ModelQueryExecutor extends ModelExecutorBase {
 
                     String sqlOperator = toSqlOperator(op);
 
+                    if(op == FiltersParser.Token.IS || op == FiltersParser.Token.NOT){
+                        where.append(query.alias()).append('.').append(name).append(' ').append(sqlOperator);
+                        continue;
+                    }
+
                     if(!ap.isReference()) {
                         if(op == FiltersParser.Token.IN) {
                             applyFieldFilterIn(query, where, args, name, Strings.split(value, ','));
@@ -413,11 +418,11 @@ public class ModelQueryExecutor extends ModelExecutorBase {
         }
 
         if(op == FiltersParser.Token.IS){
-            return "is";
+            return "is null";
         }
 
         if(op == FiltersParser.Token.NOT){
-            return "is not";
+            return "is not null";
         }
         throw new IllegalStateException("Not supported operator '" + op + "'");
     }
