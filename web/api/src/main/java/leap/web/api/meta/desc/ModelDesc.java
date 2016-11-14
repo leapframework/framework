@@ -18,31 +18,19 @@
 
 package leap.web.api.meta.desc;
 
-import leap.web.action.Argument;
-
 /**
- * Created by kael on 2016/11/8.
+ * Created by kael on 2016/11/14.
  */
-public class DefaultParameterDesc implements ParameterDesc {
+public interface ModelDesc {
+    /**
+     * Returns the description object of the specified field.
+     */
+    PropertyDesc getPropertyDesc(String fieldName);
 
-    private String description;
-    private Argument argument;
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public Argument getArgument() {
-        return argument;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public void setArgument(Argument argument) {
-        this.argument = argument;
+    interface PropertyDesc {
+        /**
+         * Returns the description string of the specified field.
+         */
+        String getDesc();
     }
 }

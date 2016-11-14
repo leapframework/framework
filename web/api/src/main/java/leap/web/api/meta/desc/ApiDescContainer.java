@@ -25,8 +25,11 @@ public interface ApiDescContainer {
     /**
      * Returns an {@link OperationDescSet} of this controller
      */
-    OperationDescSet getAllOperationDescSet(Object controller);
+    OperationDescSet getOperationDescSet(Object controller);
 
     void addOperationDescSet(Object controller,OperationDescSet set);
 
+    ModelDesc getModelDesc(Class<?> modelType);
+
+    void addModelDesc(Class<?> modelType, ModelDesc desc);
 }

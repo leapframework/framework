@@ -34,9 +34,8 @@ import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.OperationDesc;
+import leap.web.api.meta.desc.ModelDesc;
 import leap.web.api.meta.desc.OperationDescSet;
-import leap.web.api.meta.desc.ParameterDesc;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
@@ -142,7 +141,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 MComplexType ct = type.asComplexType();
 
                 if(!m.containsModel(ct.getName())) {
-                    m.addModel(new MApiModelBuilder(ct));
+                    m.addModel(new MApiModelBuilder(ct,apiDescContainer));
                 }
 
                 type = ct.createTypeRef();
@@ -227,9 +226,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 context.getMTypeContainer().getMType(t);
             }
         });
-
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
-            m.addModel(new MApiModelBuilder(ct));
+            m.addModel(new MApiModelBuilder(ct,apiDescContainer));
         });
 
     }
@@ -293,11 +291,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
 	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
         if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
-            OperationDescSet set = apiDescContainer.getAllOperationDescSet(route.getAction().getController());
+            OperationDescSet set = apiDescContainer.getOperationDescSet(route.getAction().getController());
             if(set == null){
                 return;
             }
-            OperationDesc desc = set.getOperationDesc(op.getRoute().getAction());
+            OperationDescSet.OperationDesc desc = set.getOperationDesc(op.getRoute().getAction());
             if(desc != null){
                 op.setDesc(desc);
             }
@@ -357,7 +355,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
 
         if(op.getDesc() != null){
-            ParameterDesc desc = op.getDesc().getParameter(a);
+            OperationDescSet.ParameterDesc desc = op.getDesc().getParameter(a);
             if(desc != null){
                 p.setDesc(desc);
             }

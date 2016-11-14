@@ -23,22 +23,22 @@ import java.util.Set;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
-import leap.web.api.meta.desc.OperationDesc;
+import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 
-    protected Route                      route;
-	protected HTTP.Method        		 method;
-    protected Set<String>                tags       = new LinkedHashSet<>();
-	protected List<MApiParameterBuilder> parameters = new ArrayList<>();
-	protected List<MApiResponseBuilder>  responses  = new ArrayList<>();
-	protected Set<String>                consumes   = new LinkedHashSet<>();
-	protected Set<String>                produces   = new LinkedHashSet<>();
-    protected String[]                   permissions;
-    protected boolean                    allowAnonymous;
-	protected boolean           	     deprecated;
-    protected OperationDesc              desc;
+    protected Route                          route;
+	protected HTTP.Method        		     method;
+    protected Set<String>                    tags       = new LinkedHashSet<>();
+	protected List<MApiParameterBuilder>     parameters = new ArrayList<>();
+	protected List<MApiResponseBuilder>      responses  = new ArrayList<>();
+	protected Set<String>                    consumes   = new LinkedHashSet<>();
+	protected Set<String>                    produces   = new LinkedHashSet<>();
+    protected String[]                       permissions;
+    protected boolean                        allowAnonymous;
+	protected boolean           	         deprecated;
+    protected OperationDescSet.OperationDesc desc;
 
 	public MApiOperationBuilder() {
 		
@@ -148,13 +148,13 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.allowAnonymous = allowAnonymous;
     }
 
-    public void setDesc(OperationDesc desc){
+    public void setDesc(OperationDescSet.OperationDesc desc){
         this.desc = desc;
         this.setSummary(desc.getSummary());
         this.setDescription(desc.getDescription());
     }
 
-    public OperationDesc getDesc() {
+    public OperationDescSet.OperationDesc getDesc() {
         return desc;
     }
 

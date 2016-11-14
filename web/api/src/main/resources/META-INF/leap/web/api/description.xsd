@@ -45,12 +45,18 @@
             <xsd:element name="summary"></xsd:element>
             <xsd:element name="description"></xsd:element>
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="parameter">
-                <xsd:complexType>
-                    <xsd:attribute name="name" type="xsd:string"/>
-                    <xsd:sequence/>
-                </xsd:complexType>
-            </xsd:element>
+                <xsd:element name="parameter">
+                    <xsd:complexType>
+                        <xsd:attribute name="name" type="xsd:string"/>
+                        <xsd:choice  minOccurs="0" maxOccurs="1">
+                            <xsd:element name="description">
+                                <xsd:complexType>
+                                    <xsd:sequence></xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:choice>
+                    </xsd:complexType>
+                </xsd:element>
             </xsd:choice>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
         </xsd:complexType>

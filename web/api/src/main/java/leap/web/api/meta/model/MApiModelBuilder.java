@@ -21,10 +21,13 @@ import java.util.List;
 import leap.lang.Builders;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
+import leap.web.api.meta.desc.ApiDescContainer;
+import leap.web.api.meta.desc.ModelDesc;
 
 public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
 	protected MComplexType      	    type;
+    protected ModelDesc                 desc;
     protected Class<?>                  javaType;
 	protected List<MApiPropertyBuilder> properties = new ArrayList<MApiPropertyBuilder>();
 	
@@ -32,7 +35,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 	    super();
     }
 
-	public MApiModelBuilder(MComplexType type) {
+	public MApiModelBuilder(MComplexType type, ApiDescContainer apiDescContainer) {
         this.type = type;
         this.name  = type.getName();
         this.title = type.getTitle();
@@ -41,9 +44,11 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
         this.javaType = type.getJavaType();
 
+        this.desc = apiDescContainer.getModelDesc(this.javaType);
+
         this.properties.clear();
         for(MProperty mp : type.getProperties()) {
-            addProperty(new MApiPropertyBuilder(mp));
+            addProperty(new MApiPropertyBuilder(mp,this.desc == null?null:this.desc.getPropertyDesc(mp.getName())));
         }
 	}
 

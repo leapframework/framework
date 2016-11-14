@@ -56,7 +56,7 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 subPathsController = route.getController();
             }
         }
-        OperationDescSet set = container.getAllOperationDescSet(restApiController);
+        OperationDescSet set = container.getOperationDescSet(restApiController);
         assertNotNull(set);
         boolean updateRestApi = false;
         boolean idArgument = false;
@@ -67,14 +67,14 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 String actionName = route.getAction().getName();
                 if(Strings.equals(actionName,"updateRestApi")){
                     updateRestApi = true;
-                    OperationDesc desc = set.getOperationDesc(route.getAction());
+                    OperationDescSet.OperationDesc desc = set.getOperationDesc(route.getAction());
                     assertEquals("简介",desc.getSummary());
                     assertEquals("描述",desc.getDescription());
 
                     for(Argument argument:route.getAction().getArguments()){
                         if(Strings.equals(argument.getDeclaredName(),"id")){
                             idArgument = true;
-                            ParameterDesc paramDesc = desc.getParameter(argument);
+                            OperationDescSet.ParameterDesc paramDesc = desc.getParameter(argument);
                             assertEquals("api主键",paramDesc.getDescription());
                         }
                     }
@@ -87,11 +87,11 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 String actionName = route.getAction().getName();
                 if(Strings.equals(actionName,"getApiPaths")){
                     getApiPaths = true;
-                    OperationDesc desc = set.getOperationDesc(route.getAction());
+                    OperationDescSet.OperationDesc desc = set.getOperationDesc(route.getAction());
                     for(Argument argument:route.getAction().getArguments()){
                         if(Strings.equals(argument.getDeclaredName(),"apiId")){
                             apiIdArgument = true;
-                            ParameterDesc paramDesc = desc.getParameter(argument);
+                            OperationDescSet.ParameterDesc paramDesc = desc.getParameter(argument);
                             assertEquals("path的api主键",paramDesc.getDescription());
                         }
                     }

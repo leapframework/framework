@@ -19,7 +19,6 @@
 package leap.web.api.meta.desc;
 
 import leap.core.AppConfig;
-import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.lang.Classes;
@@ -32,22 +31,19 @@ import leap.lang.xml.XmlReader;
 import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigException;
 import leap.web.route.Route;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by kael on 2016/11/8.
  */
-public class XmlDescriptionLoader implements DescriptionLoader {
+public class ControllerDescriptionLoader implements DescriptionLoader {
 
-    private static final Log log = LogFactory.get(XmlDescriptionLoader.class);
+    private static final Log log = LogFactory.get(ControllerDescriptionLoader.class);
 
 
     protected @Inject AppConfig config;
@@ -60,7 +56,7 @@ public class XmlDescriptionLoader implements DescriptionLoader {
     public static final String METHOD_SUMMARY_ELEMENT  = "summary";
     public static final String METHOD_DESC_ELEMENT     = "description";
     public static final String PARAMETER_ELEMENT       = "parameter";
-    public static final String PARAMETER_REF_ELEMENT   = "parameter";
+    public static final String PARAMETER_DESC_ELEMENT  = "description";
 
     public static final String CONTROLLER_ATTR_NAME    = "name";
     public static final String METHOD_ATTR_NAME        = "name";
@@ -124,7 +120,7 @@ public class XmlDescriptionLoader implements DescriptionLoader {
         }
     }
     protected void readMethod(ApiDescContainer container, Action action,XmlReader reader,DefaultOperationDescSet set){
-        DefaultOperationDesc desc = new DefaultOperationDesc();
+        DefaultOperationDescSet.DefaultOperationDesc desc = new DefaultOperationDescSet.DefaultOperationDesc();
         desc.setAction(action);
         while (reader.nextWhileNotEnd(METHOD_ELEMENT)){
             if(reader.isStartElement(METHOD_SUMMARY_ELEMENT)){
@@ -151,11 +147,20 @@ public class XmlDescriptionLoader implements DescriptionLoader {
         }
         set.addOperationDesc(action,desc);
     }
-    protected void readParameter(ApiDescContainer container, DefaultOperationDesc desc,XmlReader reader){
+    protected void readParameter(ApiDescContainer container, DefaultOperationDescSet.DefaultOperationDesc desc, XmlReader reader){
         String name = reader.resolveRequiredAttribute(PARAMETER_ATTR_NAME);
-        String description = reader.resolveElementTextAndEnd();
         Argument argument = findArgument(name,desc.getAction());
-        DefaultParameterDesc pdesc = new DefaultParameterDesc();
+        String description = null;
+        while (reader.nextWhileNotEnd(PARAMETER_ELEMENT)){
+            if(reader.isStartElement(PARAMETER_DESC_ELEMENT)){
+                if(description != null){
+                    throw new ApiConfigException("duplicate parameter["+name+"] description in :" + reader.getSource());
+                }
+                description = reader.resolveElementTextAndEnd();
+            }
+        }
+
+        DefaultOperationDescSet.DefaultParameterDesc pdesc = new DefaultOperationDescSet.DefaultParameterDesc();
         pdesc.setArgument(argument);
         pdesc.setDescription(description);
         desc.addParameter(pdesc);

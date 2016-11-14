@@ -42,6 +42,7 @@ public class SwaggerJsonTest extends WebTestBase {
         boolean who = false;
 
         assertTrue(m.getModels().containsKey("ListOnlyModel"));
+        assertEquals("登录账号",m.getModel("User").tryGetProperty("loginName").getDescription());
         assertEquals("hello方法",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getSummary());
         assertEquals("返回参数加上 Hello的字符串",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getDescription());
         for(MApiParameter parameter : m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getParameters()){

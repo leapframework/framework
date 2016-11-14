@@ -19,10 +19,13 @@
 package leap.web.api.meta.desc;
 
 import leap.web.action.Action;
+import leap.web.action.Argument;
 import leap.web.api.config.ApiConfigException;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by kael on 2016/11/8.
@@ -51,4 +54,73 @@ public class DefaultOperationDescSet implements OperationDescSet {
         descs.add(desc);
     }
 
+    public static class DefaultOperationDesc implements OperationDescSet.OperationDesc {
+
+        private String summary;
+        private String description;
+        private Action action;
+
+        private Map<String, ParameterDesc> params = new ConcurrentHashMap<>();
+
+        @Override
+        public String getSummary() {
+            return summary;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public Action getAction() {
+            return action;
+        }
+
+        @Override
+        public OperationDescSet.ParameterDesc getParameter(Argument argument) {
+            return params.get(argument.getName());
+        }
+
+        public void addParameter(OperationDescSet.ParameterDesc param){
+            params.put(param.getArgument().getName(),param);
+        }
+
+        public void setSummary(String summary) {
+            this.summary = summary;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setAction(Action action) {
+            this.action = action;
+        }
+
+    }
+
+    public static class DefaultParameterDesc implements OperationDescSet.ParameterDesc {
+
+        private String description;
+        private Argument argument;
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public Argument getArgument() {
+            return argument;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        public void setArgument(Argument argument) {
+            this.argument = argument;
+        }
+    }
 }

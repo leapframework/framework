@@ -42,5 +42,6 @@
 
     <!-- description loader -->
     <bean type="leap.web.api.meta.desc.ApiDescContainer" class="leap.web.api.meta.desc.DefaultApiDescContainer"/>
-    <bean type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.XmlDescriptionLoader"/>
+    <bean name="controller" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ControllerDescriptionLoader"/>
+    <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
 </beans>

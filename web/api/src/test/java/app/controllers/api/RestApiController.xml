@@ -19,7 +19,7 @@
 <description xmlns="http://www.leapframework.org/schema/web/apis/description">
     <method name="getRestApis">
         <parameter name="options">
-            查询选项
+            <description>查询选项</description>
         </parameter>
     </method>
     <method name="updateRestApi">
@@ -30,18 +30,18 @@
             描述
         </description>
         <parameter name="id">
-            api主键
+            <description>api主键</description>
         </parameter>
     </method>
     <controller name="SubPathsController">
         <method name="getApiPaths">
             <parameter name="apiId">
-                path的api主键
+                <description>path的api主键</description>
             </parameter>
         </method>
         <method name="createApiPath">
             <parameter name="apiId">
-                查询单个path的api主键
+                <description>查询单个path的api主键</description>
             </parameter>
         </method>
     </controller>

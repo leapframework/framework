@@ -16,12 +16,20 @@
   ~  */
   -->
 
-<description xmlns="http://www.leapframework.org/schema/web/apis/description">
-    <method name="sayHello">
-        <summary>hello方法</summary>
-        <description>返回参数加上 Hello的字符串</description>
-        <parameter name="who">
-            <description>人名</description>
-        </parameter>
-    </method>
-</description>
+<model xmlns="http://www.leapframework.org/schema/web/apis/models/description">
+    <property name="loginName">
+        <description>
+            登录账号
+        </description>
+    </property>
+    <property name="firstName">
+        <description>
+            姓
+        </description>
+    </property>
+    <property name="lastName">
+        <description>
+            名
+        </description>
+    </property>
+</model>

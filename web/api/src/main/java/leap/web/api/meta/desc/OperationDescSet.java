@@ -19,6 +19,7 @@
 package leap.web.api.meta.desc;
 
 import leap.web.action.Action;
+import leap.web.action.Argument;
 
 /**
  * Created by kael on 2016/11/8.
@@ -28,4 +29,40 @@ public interface OperationDescSet {
      * Returns an {@link OperationDesc} mapping this action or null
      */
     OperationDesc getOperationDesc(Action action);
+
+
+    interface OperationDesc{
+        /**
+         * Returns summary of this operation
+         */
+        String getSummary();
+
+        /**
+         * Returns description of this operation
+         */
+        String getDescription();
+
+        /**
+         * Returns {@link Action} of this operation
+         */
+        Action getAction();
+
+        /**
+         * Retturns the {@link ParameterDesc} of this argument
+         * @param argument
+         * @return
+         */
+        ParameterDesc getParameter(Argument argument);
+    }
+    public interface ParameterDesc {
+        /**
+         * Returns description of this parameter
+         */
+        String getDescription();
+
+        /**
+         * Returns the argument object of this description
+         */
+        Argument getArgument();
+    }
 }

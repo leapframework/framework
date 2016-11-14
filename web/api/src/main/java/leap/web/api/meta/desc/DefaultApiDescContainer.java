@@ -28,29 +28,50 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by kael on 2016/11/8.
  */
 public class DefaultApiDescContainer implements ApiDescContainer {
-    @Inject
-    private DescriptionLoader loader;
-    private final static Map<String, OperationDescSet> container = new ConcurrentHashMap<>();
+    @Inject(name="controller")
+    private DescriptionLoader<Object,OperationDescSet> controllerLoader;
+    @Inject(name="model")
+    private DescriptionLoader<Class<?>,ModelDesc>      modelLoader;
+
+    private final static Map<String, OperationDescSet> controllers = new ConcurrentHashMap<>();
+    private final static Map<String, ModelDesc>     models      = new ConcurrentHashMap<>();
 
     @Override
-    public OperationDescSet getAllOperationDescSet(Object controller) {
-        if(container.containsKey(getKey(controller))){
-            return container.get(getKey(controller));
+    public OperationDescSet getOperationDescSet(Object controller) {
+        if(controllers.containsKey(getKey(controller))){
+            return controllers.get(getKey(controller));
         }
-        OperationDescSet set = loader.load(this,controller);
+        OperationDescSet set = controllerLoader.load(this,controller);
         if(set == null){
             return null;
         }
-        container.put(getKey(controller),set);
+        controllers.put(getKey(controller),set);
         return set;
     }
 
     @Override
     public void addOperationDescSet(Object controller,OperationDescSet set) {
-        if(container.containsKey(getKey(controller))){
+        if(controllers.containsKey(getKey(controller))){
             throw new ApiConfigException("duplicate OperationDescSet for controller:"+controller.getClass().getName());
         }
-        container.put(getKey(controller),set);
+        controllers.put(getKey(controller),set);
+    }
+
+    @Override
+    public ModelDesc getModelDesc(Class<?> modelType) {
+        if(models.containsKey(modelType.getName())){
+            return models.get(modelType.getName());
+        }
+        ModelDesc set = modelLoader.load(this,modelType);
+        if(set != null){
+            return set;
+        }
+        return null;
+    }
+
+    @Override
+    public void addModelDesc(Class<?> modelType, ModelDesc set) {
+
     }
 
     protected String getKey(Object controller){
