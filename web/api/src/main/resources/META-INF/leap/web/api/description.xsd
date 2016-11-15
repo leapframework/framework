@@ -42,22 +42,36 @@
 
     <xsd:element name="method">
         <xsd:complexType>
-            <xsd:element name="summary"></xsd:element>
-            <xsd:element name="description"></xsd:element>
-            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="summary"></xsd:element>
+                <xsd:element name="description"></xsd:element>
                 <xsd:element name="parameter">
                     <xsd:complexType>
                         <xsd:attribute name="name" type="xsd:string"/>
-                        <xsd:choice  minOccurs="0" maxOccurs="1">
-                            <xsd:element name="description">
+                        <xsd:sequence>
+                            <xsd:element name="description" minOccurs="0" maxOccurs="1">
                                 <xsd:complexType>
                                     <xsd:sequence></xsd:sequence>
                                 </xsd:complexType>
                             </xsd:element>
-                        </xsd:choice>
+                            <xsd:element name="properties" minOccurs="0" maxOccurs="1">
+                                <xsd:complexType>
+                                    <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+                                        <xsd:element name="property">
+                                            <xsd:complexType>
+                                                <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                <xsd:sequence>
+                                                    <xsd:element name="description" type="xsd:string"></xsd:element>
+                                                </xsd:sequence>
+                                            </xsd:complexType>
+                                        </xsd:element>
+                                    </xsd:sequence>
+                                </xsd:complexType>
+                            </xsd:element>
+                        </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
-            </xsd:choice>
+            </xsd:sequence>
             <xsd:attribute name="name" type="xsd:string" use="required"/>
         </xsd:complexType>
     </xsd:element>

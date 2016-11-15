@@ -50,17 +50,21 @@ public class ControllerDescriptionLoader implements DescriptionLoader {
     protected @Inject App       app;
     protected @Inject BeanFactory factory;
 
-    public static final String DESCRIPTION_ELEMENT     = "description";
-    public static final String CONTROLLER_ELEMENT      = "controller";
-    public static final String METHOD_ELEMENT          = "method";
-    public static final String METHOD_SUMMARY_ELEMENT  = "summary";
-    public static final String METHOD_DESC_ELEMENT     = "description";
-    public static final String PARAMETER_ELEMENT       = "parameter";
-    public static final String PARAMETER_DESC_ELEMENT  = "description";
+    public static final String DESCRIPTION_ELEMENT          = "description";
+    public static final String CONTROLLER_ELEMENT           = "controller";
+    public static final String METHOD_ELEMENT               = "method";
+    public static final String METHOD_SUMMARY_ELEMENT       = "summary";
+    public static final String METHOD_DESC_ELEMENT          = "description";
+    public static final String PARAMETER_ELEMENT            = "parameter";
+    public static final String PARAMETER_DESC_ELEMENT       = "description";
+    public static final String PARAMETER_PROPS_ELEMENT      = "properties";
+    public static final String PARAMETER_PROP_ELEMENT       = "property";
+    public static final String PARAMETER_PROP_DESC_ELEMENT  = "description";
 
-    public static final String CONTROLLER_ATTR_NAME    = "name";
-    public static final String METHOD_ATTR_NAME        = "name";
-    public static final String PARAMETER_ATTR_NAME     = "name";
+    public static final String CONTROLLER_ATTR_NAME         = "name";
+    public static final String METHOD_ATTR_NAME             = "name";
+    public static final String PARAMETER_ATTR_NAME          = "name";
+    public static final String PROPERTY_ATTR_NAME           = "name";
 
     @Override
     public OperationDescSet load(ApiDescContainer container, Object controller) {
@@ -150,6 +154,10 @@ public class ControllerDescriptionLoader implements DescriptionLoader {
     protected void readParameter(ApiDescContainer container, DefaultOperationDescSet.DefaultOperationDesc desc, XmlReader reader){
         String name = reader.resolveRequiredAttribute(PARAMETER_ATTR_NAME);
         Argument argument = findArgument(name,desc.getAction());
+
+        DefaultOperationDescSet.DefaultParameterDesc pdesc = new DefaultOperationDescSet.DefaultParameterDesc();
+        pdesc.setArgument(argument);
+
         String description = null;
         while (reader.nextWhileNotEnd(PARAMETER_ELEMENT)){
             if(reader.isStartElement(PARAMETER_DESC_ELEMENT)){
@@ -158,12 +166,38 @@ public class ControllerDescriptionLoader implements DescriptionLoader {
                 }
                 description = reader.resolveElementTextAndEnd();
             }
+            if(reader.isStartElement(PARAMETER_PROPS_ELEMENT)){
+                readParameterProperties(pdesc,reader);
+            }
         }
-
-        DefaultOperationDescSet.DefaultParameterDesc pdesc = new DefaultOperationDescSet.DefaultParameterDesc();
-        pdesc.setArgument(argument);
         pdesc.setDescription(description);
         desc.addParameter(pdesc);
+    }
+
+    protected void readParameterProperties(DefaultOperationDescSet.DefaultParameterDesc desc, XmlReader reader){
+        while (reader.nextWhileNotEnd(PARAMETER_PROPS_ELEMENT)){
+            if(reader.isStartElement(PARAMETER_PROP_ELEMENT)){
+                DefaultOperationDescSet.DefaultProperty property = readParameterProperty(desc,reader);
+                desc.addProperty(property);
+                continue;
+            }
+        }
+    }
+
+    protected DefaultOperationDescSet.DefaultProperty readParameterProperty(DefaultOperationDescSet.DefaultParameterDesc desc, XmlReader reader){
+        String name = reader.resolveRequiredAttribute(PROPERTY_ATTR_NAME);
+        DefaultOperationDescSet.DefaultProperty property = new DefaultOperationDescSet.DefaultProperty(name);
+        String description = null;
+        while (reader.nextWhileNotEnd(PARAMETER_PROP_ELEMENT)){
+            if(reader.isStartElement(PARAMETER_PROP_DESC_ELEMENT)){
+                if(description != null){
+                    throw new ApiConfigException("duplicate property["+name+"] description in :" + reader.getSource());
+                }
+                description = reader.getElementTextAndEnd();
+            }
+        }
+        property.setDesc(description);
+        return property;
     }
 
     protected XmlReader getConfigReader(Object controller){

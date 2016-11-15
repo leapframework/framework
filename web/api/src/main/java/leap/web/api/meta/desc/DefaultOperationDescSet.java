@@ -22,6 +22,7 @@ import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.api.config.ApiConfigException;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -105,6 +106,8 @@ public class DefaultOperationDescSet implements OperationDescSet {
         private String description;
         private Argument argument;
 
+        private final Map<String, PropertyDesc> propertyDescMap = new HashMap<>();
+
         @Override
         public String getDescription() {
             return description;
@@ -121,6 +124,42 @@ public class DefaultOperationDescSet implements OperationDescSet {
 
         public void setArgument(Argument argument) {
             this.argument = argument;
+        }
+
+        public void addProperty(PropertyDesc propertyDesc){
+            if(propertyDescMap.containsKey(propertyDesc.getName())){
+                throw new ApiConfigException("duplicate property "+propertyDesc.getName()+" for parameter :"+argument.getName());
+            }
+            propertyDescMap.put(propertyDesc.getName(),propertyDesc);
+        }
+
+        @Override
+        public PropertyDesc getProperty(String name) {
+            return propertyDescMap.get(name);
+        }
+    }
+
+    public static class DefaultProperty implements PropertyDesc {
+
+        private final String name;
+        private String desc;
+
+        public DefaultProperty(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getDesc() {
+            return desc;
+        }
+
+        public void setDesc(String desc){
+            this.desc = desc;
         }
     }
 }

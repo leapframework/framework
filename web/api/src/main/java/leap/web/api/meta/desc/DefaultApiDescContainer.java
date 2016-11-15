@@ -18,7 +18,9 @@
 
 package leap.web.api.meta.desc;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 import leap.web.api.config.ApiConfigException;
 
 import java.util.Map;
@@ -27,11 +29,13 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by kael on 2016/11/8.
  */
-public class DefaultApiDescContainer implements ApiDescContainer {
+public class DefaultApiDescContainer implements ApiDescContainer,PostCreateBean {
     @Inject(name="controller")
     private DescriptionLoader<Object,OperationDescSet> controllerLoader;
     @Inject(name="model")
     private DescriptionLoader<Class<?>,ModelDesc>      modelLoader;
+
+    private CommonDescContainer commonDescContainer = null;
 
     private final static Map<String, OperationDescSet> controllers = new ConcurrentHashMap<>();
     private final static Map<String, ModelDesc>     models      = new ConcurrentHashMap<>();
@@ -70,11 +74,28 @@ public class DefaultApiDescContainer implements ApiDescContainer {
     }
 
     @Override
-    public void addModelDesc(Class<?> modelType, ModelDesc set) {
+    public CommonDescContainer.Parameter getCommonParameter(Class<?> type) {
+        if(commonDescContainer == null){
+            return null;
+        }
+        return commonDescContainer.getCommonParam(type);
+    }
 
+    @Override
+    public void addModelDesc(Class<?> modelType, ModelDesc desc) {
+        if(models.containsKey(modelType.getName())){
+            throw new ApiConfigException("duplicate ModelDesc for model:"+modelType.getName());
+        }
+        models.put(modelType.getName(),desc);
     }
 
     protected String getKey(Object controller){
         return controller.getClass().getName();
     }
+
+    @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        commonDescContainer = factory.getAppConfig().getExtension(CommonDescContainer.class);
+    }
+
 }

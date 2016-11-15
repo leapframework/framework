@@ -17,27 +17,18 @@
   -->
 
 <description xmlns="http://www.leapframework.org/schema/web/apis/description">
-    <method name="updateRestApi">
-        <summary>
-            简介
-        </summary>
-        <description>
-            描述
-        </description>
+    <method name="getUser">
+        <summary>获取用户</summary>
+        <description>根据id获取用户</description>
         <parameter name="id">
-            <description>api主键</description>
+            <description>用户id</description>
+        </parameter>
+        <parameter name="options">
+            <properties>
+                <property name="pageSize">
+                    <description>单独配置的分页大小</description>
+                </property>
+            </properties>
         </parameter>
     </method>
-    <controller name="SubPathsController">
-        <method name="getApiPaths">
-            <parameter name="apiId">
-                <description>path的api主键</description>
-            </parameter>
-        </method>
-        <method name="createApiPath">
-            <parameter name="apiId">
-                <description>查询单个path的api主键</description>
-            </parameter>
-        </method>
-    </controller>
 </description>

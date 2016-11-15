@@ -54,7 +54,7 @@ public interface OperationDescSet {
          */
         ParameterDesc getParameter(Argument argument);
     }
-    public interface ParameterDesc {
+    interface ParameterDesc {
         /**
          * Returns description of this parameter
          */
@@ -64,5 +64,23 @@ public interface OperationDescSet {
          * Returns the argument object of this description
          */
         Argument getArgument();
+
+        /**
+         * Returns the property with name of this argument
+         */
+        PropertyDesc getProperty(String name);
+
+    }
+
+    interface PropertyDesc {
+        /**
+         * Returns property name
+         */
+        String getName();
+
+        /**
+         * Returns property description
+         */
+        String getDesc();
     }
 }

@@ -29,6 +29,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
+import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MPermission;
 import leap.web.api.permission.ResourcePermission;
@@ -49,6 +50,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";
     protected static final String GLOBAL               = "global";
+    protected static final String PARAMETERS           = "parameters";
+    protected static final String PARAMETER            = "param";
+    protected static final String PROPERTIES           = "properties";
+    protected static final String PROPERTY             = "property";
     protected static final String OAUTH                = "oauth";
     protected static final String VERSION              = "version";
     protected static final String TITLE                = "title";
@@ -123,6 +128,11 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                 readCommonResponses(reader).forEach(extension::addCommonResponseBuilder);
                 continue;
             }
+
+            if (reader.isStartElement(PARAMETERS)){
+                readCommonParameters(context,reader);
+                continue;
+            }
         }
 
         commonResponses.forEach(extension::addCommonResponseBuilder);
@@ -172,6 +182,85 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
 
         return responses;
     }
+
+    protected void readCommonParameters(AppConfigContext context,XmlReader reader){
+        CommonDescContainer container = context.getOrCreateExtension(CommonDescContainer.class);
+        while (reader.nextWhileNotEnd(PARAMETERS)){
+            if(reader.isStartElement(PARAMETER)){
+                CommonDescContainer.Parameter parameter = readParam(reader);
+                container.addCommonParam(parameter);
+            }
+        }
+    }
+
+    protected CommonDescContainer.Parameter readParam(XmlReader reader){
+        String type = reader.resolveRequiredAttribute(TYPE);
+        Class<?> clzz = Classes.forName(type);
+        CommonDescContainer.Parameter parameter = new CommonDescContainer.Parameter(clzz);
+        String title = null;
+        String description = null;
+        while(reader.nextWhileNotEnd(PARAMETER)){
+            if(reader.isStartElement(TITLE)){
+                if(title != null){
+                    throw new ApiConfigException("duplicate title of parameter:"+clzz.getName() + " in " + reader.getSource());
+                }
+                title = reader.resolveElementTextAndEnd();
+                continue;
+            }
+            if(reader.isStartElement(DESC)){
+                if(description != null){
+                    throw new ApiConfigException("duplicate description of parameter:"+clzz.getName() + " in " + reader.getSource());
+                }
+                description = reader.resolveElementTextAndEnd();
+                continue;
+            }
+            if(reader.isStartElement(PROPERTIES)){
+                readProperties(parameter,reader);
+                continue;
+            }
+        }
+        parameter.setTitle(title);
+        parameter.setDesc(description);
+        return parameter;
+    }
+
+    protected void readProperties(CommonDescContainer.Parameter parameter,XmlReader reader){
+        while(reader.nextWhileNotEnd(PROPERTIES)){
+            if(reader.isStartElement(PROPERTY)){
+                CommonDescContainer.Property property = readProperty(parameter,reader);
+                parameter.addProperty(property);
+            }
+        }
+    }
+
+    protected CommonDescContainer.Property readProperty(CommonDescContainer.Parameter parameter,XmlReader reader){
+        String name = reader.resolveRequiredAttribute(NAME);
+        CommonDescContainer.Property property = new CommonDescContainer.Property(name);
+        String title = null;
+        String desc = null;
+        while(reader.nextWhileNotEnd(PROPERTY)){
+            if(reader.isStartElement(TITLE)){
+                if(title != null){
+                    throw new ApiConfigException("duplicate title of property:"+name + " in "
+                            + parameter.getType().getName() + " source:" + reader.getSource());
+                }
+                title = reader.resolveElementTextAndEnd();
+                continue;
+            }
+            if(reader.isStartElement(DESC)){
+                if(desc != null){
+                    throw new ApiConfigException("duplicate desc of property:"+name + " in "
+                            + parameter.getType().getName() + " source:" + reader.getSource());
+                }
+                desc = reader.resolveElementTextAndEnd();
+                continue;
+            }
+        }
+        property.setTitle(title);
+        property.setDesc(desc);
+        return property;
+    }
+
     protected void readApi(AppConfigContext context, XmlReader reader) {
         ApiConfigExtension extensions = context.getOrCreateExtension(ApiConfigExtension.class);
         String name     = reader.resolveRequiredAttribute(NAME);

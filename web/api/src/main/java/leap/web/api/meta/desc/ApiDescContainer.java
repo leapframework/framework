@@ -32,4 +32,6 @@ public interface ApiDescContainer {
     ModelDesc getModelDesc(Class<?> modelType);
 
     void addModelDesc(Class<?> modelType, ModelDesc desc);
+
+    CommonDescContainer.Parameter getCommonParameter(Class<?> type);
 }

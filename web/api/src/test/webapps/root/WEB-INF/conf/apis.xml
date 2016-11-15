@@ -12,6 +12,20 @@
             <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
 
         </responses>
+
+        <parameters>
+            <param type="leap.web.api.mvc.params.QueryOptions">
+                <title>查询参数</title>
+                <desc>查询参数</desc>
+                <properties>
+                    <property name="pageSize">
+                        <title>页面大小</title>
+                        <desc>分页的每页大小</desc>
+                    </property>
+                </properties>
+            </param>
+        </parameters>
+
     </global>
 
     <api name="api" base-path="/api"/>

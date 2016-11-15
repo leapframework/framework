@@ -25,7 +25,10 @@ import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.meta.*;
+import leap.lang.meta.MComplexType;
+import leap.lang.meta.MSimpleTypes;
+import leap.lang.meta.MType;
+import leap.lang.meta.MTypeStrategy;
 import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
@@ -34,7 +37,7 @@ import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.ModelDesc;
+import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
 import leap.web.multipart.MultipartFile;
@@ -309,30 +312,58 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		
 		for(Argument a : action.getArguments()) {
             if(a.isWrapper()) {
-
-                for(Argument wa : a.getWrappedArguments()) {
-                    if(!wa.isContextual()) {
-                        createApiParameter(context, m, route, op, wa);
-                    }
-                }
-
+                createApiWrapperParameter(context, m, route, op, a);
                 if(!a.isRequestBody()) {
                     continue;
                 }
             }
 
             if(!a.isContextual()) {
-                createApiParameter(context, m, route, op, a);
+                String description = null;
+                if(op.getDesc() != null){
+                    OperationDescSet.ParameterDesc desc = op.getDesc().getParameter(a);
+                    if(desc != null){
+                        description = desc.getDescription();
+                    }
+                }
+                createApiParameter(context, m, route, op, a,description);
             }
         }
 	}
 
-    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a) {
+	protected void createApiWrapperParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a){
+        OperationDescSet.ParameterDesc desc = null;
+        if(op.getDesc() != null){
+            desc = op.getDesc().getParameter(a);
+        }
+
+        CommonDescContainer.Parameter parameter = apiDescContainer.getCommonParameter(a.getType());
+
+        for(Argument wa : a.getWrappedArguments()) {
+            if(!wa.isContextual()) {
+                String description = null;
+                if(desc != null){
+                    OperationDescSet.PropertyDesc propertyDesc = desc.getProperty(wa.getDeclaredName());
+                    if(propertyDesc != null){
+                        description = propertyDesc.getDesc();
+                    }
+                }else if(parameter != null){
+                    CommonDescContainer.Property property = parameter.getProperty(wa.getDeclaredName());
+                    if(property != null){
+                        description = property.getDesc();
+                    }
+                }
+                createApiParameter(context, m, route, op, wa,description);
+            }
+        }
+    }
+
+    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a, String desc) {
         MApiParameterBuilder p = new MApiParameterBuilder();
 
         p.setName(a.getName());
 
-        log.trace("   {}", a.getName(), p.getLocation());
+        log.trace("{}", a.getName(), p.getLocation());
 
         if(isParameterFileType(a.getType())) {
             p.setType(MSimpleTypes.BINARY);
@@ -354,12 +385,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             p.setEnumValues(Enums.getValues(a.getType()));
         }
 
-        if(op.getDesc() != null){
-            OperationDescSet.ParameterDesc desc = op.getDesc().getParameter(a);
-            if(desc != null){
-                p.setDesc(desc);
-            }
-        }
+        p.setDescription(desc);
 
         op.addParameter(p);
     }

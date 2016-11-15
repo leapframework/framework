@@ -23,7 +23,6 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
     protected boolean                        file;
     protected boolean                        password;
 	protected MApiParameter.Location         location;
-    protected OperationDescSet.ParameterDesc desc;
 
     public boolean isFile() {
         return file;
@@ -48,15 +47,6 @@ public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter
 	public void setLocation(MApiParameter.Location location) {
 		this.location = location;
 	}
-
-    public OperationDescSet.ParameterDesc getDesc() {
-        return desc;
-    }
-
-    public void setDesc(OperationDescSet.ParameterDesc desc) {
-        this.desc = desc;
-        this.setDescription(desc.getDescription());
-    }
 
     @Override
     public MApiParameter build() {
