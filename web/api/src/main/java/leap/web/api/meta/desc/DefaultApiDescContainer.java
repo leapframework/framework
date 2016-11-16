@@ -49,7 +49,6 @@ public class DefaultApiDescContainer implements ApiDescContainer,PostCreateBean 
         if(set == null){
             return null;
         }
-        controllers.put(getKey(controller),set);
         return set;
     }
 
