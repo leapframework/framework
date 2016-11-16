@@ -42,9 +42,9 @@
 
     <xsd:element name="method">
         <xsd:complexType>
+            <xsd:element name="summary"></xsd:element>
+            <xsd:element name="description"></xsd:element>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
-                <xsd:element name="summary"></xsd:element>
-                <xsd:element name="description"></xsd:element>
                 <xsd:element name="parameter">
                     <xsd:complexType>
                         <xsd:attribute name="name" type="xsd:string"/>
@@ -69,6 +69,7 @@
                                 </xsd:complexType>
                             </xsd:element>
                         </xsd:sequence>
+
                     </xsd:complexType>
                 </xsd:element>
             </xsd:sequence>
