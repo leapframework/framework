@@ -22,6 +22,7 @@ import leap.lang.Confirm;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.JoinBuilder;
 import leap.orm.query.JoinContext;
+import leap.orm.sql.SqlFragment;
 import leap.orm.tested.model.api.Api;
 import leap.orm.tested.model.api.ApiCategory;
 import leap.orm.tested.model.api.ApiPath;
@@ -220,6 +221,16 @@ public class CriteriaQueryTest extends OrmTestCase {
 						.append(context.getSourceAlias()+".id");
 			}).list();
 			assertEquals(1, apis.size());
+
+			// join with sql fragment
+			apis = Api.<Api>query().join((sql,context) -> {
+				SqlFragment fragment = context.getOrm().getMetadata().getSqlFragment("join_fragment");
+
+				sql.append(" join (").append(fragment.getContent())
+						.append(") p on p.apiId=")
+						.append(context.getSourceAlias()+".id");
+			}).param("apiId",api.getId()).list();
+			assertEquals(1, apis.size());
         }finally{
             ApiCategory.deleteAll();
             Category.deleteAll();
@@ -227,6 +238,5 @@ public class CriteriaQueryTest extends OrmTestCase {
             Api.deleteAll();
         }
     }
-
 
 }

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqls xmlns="http://www.leapframework.org/schema/sqls">
+    <fragment key="join_fragment">
+        select * from ApiPath where apiId = :apiId
+    </fragment>
     <fragment key="fragment1">
         last_name = :name and @if(name != null) first_name=:name @else first_name is null @endif
     </fragment>

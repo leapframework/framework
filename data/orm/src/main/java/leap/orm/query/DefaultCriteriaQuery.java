@@ -156,7 +156,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     public CriteriaQuery<T> joinById(Class<?> targetEntityName, String localRelation, String alias, Object id) {
         EntityMapping em =
                 context.getMetadata().getEntityMapping(targetEntityName);
-
         return joinById(em, localRelation, alias, JoinType.INNER, id);
     }
 
