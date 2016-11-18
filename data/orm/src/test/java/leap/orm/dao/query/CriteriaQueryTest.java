@@ -19,6 +19,9 @@ import java.util.List;
 
 import leap.junit.contexual.Contextual;
 import leap.lang.Confirm;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.query.JoinBuilder;
+import leap.orm.query.JoinContext;
 import leap.orm.tested.model.api.Api;
 import leap.orm.tested.model.api.ApiCategory;
 import leap.orm.tested.model.api.ApiPath;
@@ -209,6 +212,14 @@ public class CriteriaQueryTest extends OrmTestCase {
                         .where("c.title = ?", "Test").list();
             assertEquals(1, apis.size());
 
+			// join builder
+			apis = Api.<Api>query().join((sql,context) -> {
+				EntityMapping em = context.getOrm().getMetadata().getEntityMapping(ApiPath.class);
+				sql.append(" join ").append(em.getTableName())
+						.append(" p on p.apiId=")
+						.append(context.getSourceAlias()+".id");
+			}).list();
+			assertEquals(1, apis.size());
         }finally{
             ApiCategory.deleteAll();
             Category.deleteAll();

@@ -48,7 +48,9 @@ public class RestApiController extends ModelController<RestApi> {
 
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {
-        return getAll(options);
+        return queryList(options,query -> {
+
+        });
     }
 
     @POST

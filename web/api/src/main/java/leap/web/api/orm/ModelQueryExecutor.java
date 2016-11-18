@@ -38,6 +38,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class ModelQueryExecutor extends ModelExecutorBase {
 
@@ -74,7 +75,11 @@ public class ModelQueryExecutor extends ModelExecutorBase {
         return new QueryOneResult(record);
     }
 
-    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters) {
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters){
+        return queryList(options,filters,null);
+    }
+
+    public QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
         //todo : validates the query options.
 
         CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
@@ -93,6 +98,10 @@ public class ModelQueryExecutor extends ModelExecutorBase {
             }
 
             applyFilters(query, options.getParams(), options.getFilters(), filters);
+
+            if(callback != null){
+                callback.accept(query);
+            }
 
             PageResult result = query.pageResult(options.getPage(c.getDefaultPageSize()));
 

@@ -16,10 +16,12 @@
 
 package leap.web.api.mvc;
 
+import leap.core.value.Record;
 import leap.lang.Types;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.query.CriteriaQuery;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -32,6 +34,7 @@ import leap.web.api.orm.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * The model class must be an orm model/entity class.
@@ -148,17 +151,28 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options) {
-        return queryList(options, null);
+        return queryList(options, null,null);
     }
-
     /**
      * Query the model records with the {@link QueryOptions}.
      */
-    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters) {
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Consumer<CriteriaQuery> callback){
+        return queryList(options, null, callback);
+    }
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters){
+        return queryList(options, filters, null);
+    }
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
 
         ModelQueryExecutor executor = new ModelQueryExecutor(apiConfig, am, dao, em);
 
-        QueryListResult result = executor.queryList(options, filters);
+        QueryListResult result = executor.queryList(options, filters,callback);
 
         if (result.count == -1) {
             return ApiResponse.of(result.list);
