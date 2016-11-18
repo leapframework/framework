@@ -45,6 +45,11 @@ import java.util.List;
 @Path("restapi")
 @AllowAnonymous
 public class RestApiController extends ModelController<RestApi> {
+    @POST("/convert")
+    public ApiResponse<RestApi> convertPartialToObject(Partial<RestApi> api){
+        RestApi o = api.getObject();
+        return ApiResponse.ok(o);
+    }
 
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {

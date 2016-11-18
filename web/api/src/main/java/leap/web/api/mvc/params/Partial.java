@@ -44,4 +44,6 @@ public interface Partial<T> {
      */
     Map<String,Object> getProperties();
 
+    T getObject();
+
 }

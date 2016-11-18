@@ -19,7 +19,6 @@
 package tests.model;
 
 import app.models.api.*;
-import leap.junit.contexual.Contextual;
 import leap.lang.New;
 import leap.lang.http.HTTP;
 import leap.lang.net.Urls;
@@ -163,6 +162,13 @@ public class RestApiControllerTest extends WebTestBase {
 
         apis = get("/api/restapi?filters=name%20eq%20api1%20or%20categories%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
+    }
+    @Test
+    public void testPartialConvertToObject(){
+        Map<String, Object> data = New.hashMap("name", "test","title", "test");
+
+        String title = (String) postJson("/api/restapi/convert", data).decodeJsonMap().get("title");
+        assertEquals("test",title);
     }
 
     @Test

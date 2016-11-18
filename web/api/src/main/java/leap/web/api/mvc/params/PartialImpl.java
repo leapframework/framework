@@ -16,14 +16,43 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Types;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+
+import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Objects;
 
-public class PartialImpl implements Partial {
+public class PartialImpl<T> implements Partial {
 
+    private final Class<T> clzz;
     private final Map m;
+    private final T t;
 
-    public PartialImpl(Map m) {
+    public PartialImpl(Map m,Type genericType) throws IllegalAccessException, InstantiationException {
         this.m = m;
+        if(genericType != null){
+            clzz = (Class<T>)Types.getActualTypeArgument(genericType);
+        }else{
+            clzz = null;
+        }
+        if(clzz != null){
+            t = clzz.newInstance();
+            BeanType bt = BeanType.of(clzz);
+            if(m != null){
+                m.forEach((k,v)->{
+                    String field = Objects.toString(k);
+                    BeanProperty property = bt.getProperty(field);
+                    Class<?> type = property.getType();
+                    if(bt.hasProperty(field) && (v.getClass() == type)){
+                        bt.trySet(t, Objects.toString(k),v);
+                    }
+                });
+            }
+        }else{
+            t = null;
+        }
     }
 
     @Override
@@ -36,4 +65,13 @@ public class PartialImpl implements Partial {
         return (Map<String,Object>)m;
     }
 
+    @Override
+    public T getObject() {
+        if(t != null){
+            return t;
+        }else{
+            return (T)m;
+        }
+
+    }
 }
