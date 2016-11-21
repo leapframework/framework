@@ -16,6 +16,7 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Exceptions;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -28,7 +29,7 @@ public class PartialImpl<T> implements Partial {
 
     private final Class<T> clzz;
     private final Map m;
-    private final T t;
+    private T t;
 
     public PartialImpl(Map m,Type genericType) throws IllegalAccessException, InstantiationException {
         this.m = m;
@@ -36,22 +37,6 @@ public class PartialImpl<T> implements Partial {
             clzz = (Class<T>)Types.getActualTypeArgument(genericType);
         }else{
             clzz = null;
-        }
-        if(clzz != null){
-            t = clzz.newInstance();
-            BeanType bt = BeanType.of(clzz);
-            if(m != null){
-                m.forEach((k,v)->{
-                    String field = Objects.toString(k);
-                    BeanProperty property = bt.getProperty(field);
-                    Class<?> type = property.getType();
-                    if(bt.hasProperty(field) && (v.getClass() == type)){
-                        bt.trySet(t, Objects.toString(k),v);
-                    }
-                });
-            }
-        }else{
-            t = null;
         }
     }
 
@@ -69,9 +54,26 @@ public class PartialImpl<T> implements Partial {
     public T getObject() {
         if(t != null){
             return t;
-        }else{
+        }else if (clzz != null){
+            try {
+                t = clzz.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            BeanType bt = BeanType.of(clzz);
+            if(m != null){
+                m.forEach((k,v)->{
+                    String field = Objects.toString(k);
+                    BeanProperty property = bt.getProperty(field);
+                    Class<?> type = property.getType();
+                    if(bt.hasProperty(field) && v != null && (v.getClass() == type)){
+                        bt.trySet(t, Objects.toString(k),v);
+                    }
+                });
+            }
+            return t;
+        }else {
             return (T)m;
         }
-
     }
 }

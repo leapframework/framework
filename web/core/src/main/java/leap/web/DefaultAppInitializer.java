@@ -58,7 +58,7 @@ import java.util.function.Function;
 public class DefaultAppInitializer implements AppInitializer {
 	
 	private static final Log log = LogFactory.get(DefaultAppInitializer.class);
-	
+
     protected @Inject @M BeanFactory         factory;
     protected @Inject @M ActionStrategy      as;
     protected @Inject @M ActionManager       am;
@@ -102,6 +102,12 @@ public class DefaultAppInitializer implements AppInitializer {
 
 		//Load web module's routes.
 		for(ModuleConfig module : app.getWebConfig().getModules()){
+			// don't duplicate load controller
+			if(Strings.startsWith(module.getBasePackage()+".",basePackage+".")){
+				if(Strings.isEmpty(module.getBasePath())||Strings.equals("/",module.getBasePath())){
+					continue;
+				}
+			}
             ResourceSet rs = Resources.scanPackage(module.getBasePackage());
 
             if(rs.isEmpty()) {
