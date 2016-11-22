@@ -23,4 +23,6 @@ public interface AuthorizationManager {
 	
 	Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable;
 
+	boolean checkAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable;
+
 }

@@ -219,6 +219,13 @@
                 </xsd:sequence>
                 <xsd:attribute name="if-profile" use="optional" type="xsd:string"/>
                 <xsd:attribute name="prefix" type="xsd:string" use="optional"/>
+                <xsd:attribute name="override" type="xsd:boolean">
+                    <xsd:annotation>
+                        <xsd:documentation><![CDATA[
+                                    if set to true this property value will override the exists property with same name.
+                                ]]></xsd:documentation>
+                    </xsd:annotation>
+                </xsd:attribute>
             </xsd:extension>
             </xsd:complexContent>
         </xsd:complexType>

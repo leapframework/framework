@@ -30,6 +30,7 @@ public class DefaultAuthorizationManager implements AuthorizationManager {
 
     protected @Inject @M SecurityConfig          config;
     protected @Inject @M AuthorizationResolver[] resolvers;
+    protected @Inject @M AuthorizationChecker[]  checkers;
 
 	@Override
     public Authorization resolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable {
@@ -53,5 +54,16 @@ public class DefaultAuthorizationManager implements AuthorizationManager {
 		}
 		
 		return EMPTY_AUTHZ;
+    }
+
+    @Override
+    public boolean checkAuthorization(Request request, Response response,
+                                      AuthorizationContext context) throws Throwable {
+        for(AuthorizationChecker checker : checkers){
+            if(!checker.check(request,response,context.getAuthorization(),context)){
+                return false;
+            }
+        }
+        return true;
     }
 }
