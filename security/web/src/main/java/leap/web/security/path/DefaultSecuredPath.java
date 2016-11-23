@@ -169,11 +169,11 @@ public class DefaultSecuredPath implements SecuredPath {
             boolean allow = false;
             String[] grantedPermissions = authc.getPermissions();
             if(null != grantedPermissions && grantedPermissions.length > 0) {
-                allow = pm.checkPermissionImpliesAny(grantedPermissions,permissions);
+                allow = pm.checkPermissionImpliesAll(grantedPermissions,permissions);
             }
 
             if(!allow) {
-                allow = authz.hasAnyPermission(permissions);
+                allow = authz.hasAllPermission(permissions);
             }
 
             if(!allow) {

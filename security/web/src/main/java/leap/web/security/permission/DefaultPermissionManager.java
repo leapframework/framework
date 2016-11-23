@@ -16,32 +16,33 @@
 package leap.web.security.permission;
 
 import leap.core.annotation.Inject;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
+
+import java.util.Arrays;
 
 public class DefaultPermissionManager implements PermissionManager {
 
     protected @Inject PermissionChecker[] checkers;
 
     @Override
-    public boolean checkPermissionImplies(String checkingPermission, String impliedByPermission) {
+    public boolean checkPermissionImplies(String[] checkingPermission, String impliedByPermission) {
         for(PermissionChecker checker : checkers) {
             if(checker.checkPermissionImplies(checkingPermission, impliedByPermission)) {
                 return true;
             }
         }
-        return Strings.equals(checkingPermission, impliedByPermission);
+        return Arrays2.containsAny(checkingPermission,impliedByPermission);
     }
 
     @Override
-    public boolean checkPermissionImpliesAny(String[] checkingPermissions, String[] impliedByPermissions) {
+    public boolean checkPermissionImpliesAll(String[] checkingPermissions, String[] impliedByPermissions) {
         for(String by : impliedByPermissions) {
-            for(String p : checkingPermissions) {
-                if(checkPermissionImplies(p, by)) {
-                    return true;
-                }
+            if(!checkPermissionImplies(checkingPermissions,by)){
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
 }
