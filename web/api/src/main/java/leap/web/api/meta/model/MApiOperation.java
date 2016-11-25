@@ -18,11 +18,13 @@ package leap.web.api.meta.model;
 import java.util.List;
 import java.util.Map;
 
+import leap.lang.Args;
 import leap.lang.http.HTTP;
 import leap.web.route.Route;
 
 public class MApiOperation extends MApiNamedWithDesc {
 
+    protected final String          id;
 	protected final Route			route;
 	protected final HTTP.Method     method;
     protected final String[]        tags;
@@ -34,7 +36,7 @@ public class MApiOperation extends MApiNamedWithDesc {
     protected final boolean         allowAnonymous;
 	protected final boolean         deprecated;
 
-	public MApiOperation(String name, String title, String summary, String description,
+	public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
 						 Route 	  route,
                          String[] tags,
@@ -45,8 +47,9 @@ public class MApiOperation extends MApiNamedWithDesc {
                          String[] permissions,
                          boolean allowAnonymous,
                          boolean deprecated, Map<String, Object> attrs) {
-		
 	    super(name, title, summary, description, attrs);
+
+        this.id          = id;
 	    this.route		 = route;
 		this.method      = method;
         this.tags        = tags;
@@ -59,7 +62,14 @@ public class MApiOperation extends MApiNamedWithDesc {
 		this.deprecated  = deprecated;
 	}
 
-	/**
+    /**
+     * Returns the unique id of this operation.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
 	 * The route of this operation
 	 */
 	public Route getRoute(){

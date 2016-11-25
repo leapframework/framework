@@ -154,7 +154,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         w.propertyOptional(SUMMARY, o.getSummary());
 		w.property(DESCRIPTION, nullToEmpty(o.getDescription()));
 
-        w.property(OPERATION_ID, o.getName()); //todo : unique id ?
+        w.propertyOptional(OPERATION_ID, o.getId());
 
         if(m.getSecurityDefs().length > 0 && !o.isAllowAnonymous()) {
 

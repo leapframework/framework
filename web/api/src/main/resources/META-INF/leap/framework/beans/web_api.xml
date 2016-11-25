@@ -10,6 +10,9 @@
     <bean type="leap.web.api.meta.ApiMetadataFactory"
           class="leap.web.api.meta.DefaultApiMetadataFactory" primary="true"/>
 
+    <bean type="leap.web.api.meta.ApiMetadataStrategy"
+          class="leap.web.api.meta.DefaultApiMetadataStrategy" primary="true"/>
+
     <bean name="swagger"
           type="leap.web.api.spec.ApiSpecWriter"
           class="leap.web.api.spec.swagger.SwaggerJsonWriter" primary="true"/>

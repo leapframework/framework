@@ -28,6 +28,7 @@ import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 
+    protected String                         id;
     protected Route                          route;
 	protected HTTP.Method        		     method;
     protected Set<String>                    tags       = new LinkedHashSet<>();
@@ -51,6 +52,14 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
         }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Route getRoute() {
@@ -160,7 +169,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     @Override
     public MApiOperation build() {
-		return new MApiOperation(name, title, summary, description, method,route,
+		return new MApiOperation(id, name, title, summary, description, method,route,
                                 tags.toArray(Arrays2.EMPTY_STRING_ARRAY),
 								Builders.buildList(parameters), 
 								Builders.buildList(responses), 

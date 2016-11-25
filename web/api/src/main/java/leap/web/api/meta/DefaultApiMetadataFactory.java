@@ -58,6 +58,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected @Inject App                    app;
 	protected @Inject ApiMetadataProcessor[] processors;
 	protected @Inject MTypeManager           mtypeManager;
+    protected @Inject ApiMetadataStrategy    strategy;
     protected @Inject ApiDescContainer       apiDescContainer;
 	
 	@Override
@@ -198,7 +199,14 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void preProcessPath(ApiMetadataContext context, ApiMetadataBuilder m, MApiPathBuilder p) {
 
         p.getOperations().forEach(op -> {
-            createTags(context, m, op.getRoute(), p, op);
+
+            //operation tag
+            createOperationTags(context, m, op.getRoute(), p, op);
+
+            //operation id
+            if(Strings.isEmpty(op.getId())) {
+                strategy.tryCreateOperationId(m, p, op);
+            }
         });
 
     }
@@ -433,7 +441,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         //todo : common responses ?
 	}
 
-    protected void createTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+    protected void createOperationTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
         if(null == route) {
             return;
         }

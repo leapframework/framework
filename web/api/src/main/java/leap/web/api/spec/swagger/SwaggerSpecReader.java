@@ -18,6 +18,7 @@
 
 package leap.web.api.spec.swagger;
 
+import leap.core.annotation.Inject;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
@@ -27,6 +28,7 @@ import leap.lang.json.JsonObject;
 import leap.lang.meta.*;
 import leap.lang.yaml.YAML;
 import leap.web.api.meta.ApiMetadataBuilder;
+import leap.web.api.meta.ApiMetadataStrategy;
 import leap.web.api.meta.model.*;
 import leap.web.api.spec.ApiSpecReader;
 import leap.web.api.spec.InvalidSpecException;
@@ -135,6 +137,14 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public MApiPathBuilder readPath(String pathTemplate, Map<String,Object> map) {
+        return readPath(null, pathTemplate, map);
+    }
+
+    public MApiOperationBuilder readOperation(String method, Map<String,Object> map) {
+        return readOperation(null, null, method, map);
+    }
+
+    protected MApiPathBuilder readPath(ApiMetadataBuilder m, String pathTemplate, Map<String,Object> map) {
         MApiPathBuilder mp = new MApiPathBuilder();
 
         mp.setPathTemplate(pathTemplate);
@@ -146,17 +156,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return mp;
     }
 
-    public MApiOperationBuilder readOperation(String method, Map<String,Object> map) {
+    protected MApiOperationBuilder readOperation(ApiMetadataBuilder m, MApiPathBuilder p, String method, Map<String,Object> map) {
         MApiOperationBuilder mo = new MApiOperationBuilder();
 
         JsonObject o = JsonObject.of(map);
 
-        mo.setName(o.getString(OPERATION_ID));
         mo.setMethod(HTTP.Method.valueOf(method.toUpperCase()));
-
-        if(Strings.isEmpty(mo.getName())) {
-            mo.setName(method);
-        }
 
         //tags
         List<String> tags = o.getList(TAGS);
@@ -192,6 +197,15 @@ public class SwaggerSpecReader implements ApiSpecReader {
         List<Map<String,Object>> security = o.getList(SECURITY);
         if(null != security) {
             //todo : security.
+        }
+
+        String id = o.getString(OPERATION_ID);
+        if(!Strings.isEmpty(id)) {
+            mo.setId(id);
+            mo.setName(id);
+        }else {
+            mo.setName(mo.getMethod().name().toLowerCase());
+            //todo : create operation id ?
         }
 
         return mo;

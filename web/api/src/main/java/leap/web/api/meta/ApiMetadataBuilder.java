@@ -41,6 +41,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected Map<String, MApiPermission>      permissions  = new LinkedHashMap<>();
     protected Map<String, MApiTag>             tags         = new LinkedHashMap<>();
     protected List<MApiSecurityDef>            securityDefs = new ArrayList<>();
+    protected Set<String>                      operationIds = new HashSet<>();
 
     public ApiMetadataBuilder() {
         super();
@@ -234,6 +235,10 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
             }
         }
         return null;
+    }
+
+    public Set<String> getOperationIds() {
+        return operationIds;
     }
 
     @Override
