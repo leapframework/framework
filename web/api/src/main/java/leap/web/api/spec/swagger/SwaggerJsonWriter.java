@@ -165,18 +165,18 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
             w.property(SECURITY, () -> {
 
-                w.startObject();
+                w.array(m.getSecurityDefs(), (sd) -> {
 
-                //todo :
+                    w.startObject();
 
-                for(MApiSecurityDef sd : m.getSecurityDefs()) {
                     if(!sd.isOAuth2()) {
                         throw new IllegalStateException("No supported security def : " + sd.getClass());
                     }
-                    w.property(OAUTH2, o.getPermissions());
-                }
 
-                w.endObject();
+                    w.property(OAUTH2, o.getPermissions());
+
+                    w.endObject();
+                });
 
             });
 
@@ -204,7 +204,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
-
 
 	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter[] ps) {
         w.array(ps, p -> writeParameter(context, m, w, p));
@@ -294,7 +293,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        context.defaultSecurity = OAUTH2;
+        //context.defaultSecurity = OAUTH2;
 
         writeOAuth2Implicit(context, m, w, d);
         //writeOAuth2AccesCode(context, m, w, d);

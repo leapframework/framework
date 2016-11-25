@@ -185,7 +185,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
         List<MApiResponseBuilder> responses = readResponses(o.getMap(RESPONSES));
         responses.forEach(mo::addResponse);
 
-        //todo : security.
+        //security
+        List<Map<String,Object>> security = o.getList(SECURITY);
+        if(null != security) {
+            //todo : security.
+        }
 
         return mo;
     }
