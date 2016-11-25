@@ -32,7 +32,7 @@ public abstract class MApiObject implements AttributeGetter, MObject {
 	
 	@SuppressWarnings("unchecked")
     public MApiObject(Map<String, Object> attrs) {
-		this.attributes = attrs == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(new HashMap<String, Object>(attrs)); 
+		this.attributes = attrs == null ? Collections.EMPTY_MAP : Collections.unmodifiableMap(new HashMap<>(attrs));
 	}
 	
 	/**

@@ -41,11 +41,9 @@ import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
-import leap.web.api.permission.ResourcePermissionsSet;
-import leap.web.config.WebConfigurator;
 import leap.web.route.Route;
 
 public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
@@ -297,7 +295,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             return;
         }
 
-        MPermission[] permissions = rps.resolvePermissions(route, resourceType);
+        MApiPermission[] permissions = rps.resolvePermissions(route, resourceType);
         if(null != permissions && permissions.length > 0) {
             String[] values = new String[permissions.length];
             for(int i=0;i<values.length;i++) {
@@ -306,7 +304,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
             route.setPermissions(values);
 
-            for(MPermission p : permissions) {
+            for(MApiPermission p : permissions) {
                 c.tryAddPermission(p);
             }
         }

@@ -443,8 +443,17 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             MApiModelBuilder model = m.tryGetModel(resourceType);
             if(null != model) {
                 op.addTag(model.getName());
+
+                MApiTag tag = m.getTags().get(model.getName());
+                if(null == tag) {
+                    m.addTag(new MApiTag(model.getName(),model.getTitle(),model.getSummary(),model.getDescription(),null));
+                }
             }else{
                 op.addTag(resourceType.getSimpleName());
+                MApiTag tag = m.getTags().get(resourceType.getSimpleName());
+                if(null == tag) {
+                    m.addTag(new MApiTag(resourceType.getSimpleName()));
+                }
             }
         }
     }

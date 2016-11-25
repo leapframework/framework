@@ -22,7 +22,7 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
@@ -53,8 +53,8 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     protected Set<Route>  	 routes                      = new HashSet<>();
     protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
 
-    protected Map<String, MPermission> permissions    = new LinkedHashMap<>();
-    protected Map<String, MPermission> permissionsImv = Collections.unmodifiableMap(permissions);
+    protected Map<String, MApiPermission> permissions    = new LinkedHashMap<>();
+    protected Map<String, MApiPermission> permissionsImv = Collections.unmodifiableMap(permissions);
 
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
@@ -248,18 +248,18 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
     }
 
     @Override
-    public Map<String, MPermission> getPermissions() {
+    public Map<String, MApiPermission> getPermissions() {
         return permissionsImv;
     }
 
     @Override
-    public ApiConfigurator setPermission(MPermission p) {
+    public ApiConfigurator setPermission(MApiPermission p) {
         permissions.put(p.getValue(), p);
         return this;
     }
 
     @Override
-    public ApiConfigurator tryAddPermission(MPermission p) {
+    public ApiConfigurator tryAddPermission(MApiPermission p) {
         if(!permissions.containsKey(p.getValue())) {
             setPermission(p);
         }
@@ -295,7 +295,7 @@ public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
         if(null != route.getPermissions()) {
             for(String p : route.getPermissions()) {
                 if(!permissions.containsKey(p)) {
-                    permissions.put(p, new MPermission(p, ""));
+                    permissions.put(p, new MApiPermission(p, ""));
                 }
             }
         }

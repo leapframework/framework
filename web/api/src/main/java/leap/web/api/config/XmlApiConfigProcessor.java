@@ -31,7 +31,7 @@ import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.config.DefaultModuleConfig;
@@ -407,7 +407,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     desc = reader.getElementTextAndEnd();
                 }
 
-                api.setPermission(new MPermission(value, desc));
+                api.setPermission(new MApiPermission(value, desc));
                 continue;
             }
         }
@@ -421,7 +421,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     String value = (String)k;
                     String desc = (String)v;
 
-                    api.setPermission(new MPermission(value, desc));
+                    api.setPermission(new MApiPermission(value, desc));
                 });
             }
         }

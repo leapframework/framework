@@ -38,7 +38,8 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     protected Map<String, MApiResponseBuilder> responses    = new LinkedHashMap<>();
     protected Map<String, MApiPathBuilder>     paths        = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     protected Map<String, MApiModelBuilder>    models       = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
-    protected Map<String, MPermission>         permissions  = new LinkedHashMap<>();
+    protected Map<String, MApiPermission>      permissions  = new LinkedHashMap<>();
+    protected Map<String, MApiTag>             tags         = new LinkedHashMap<>();
     protected List<MApiSecurityDef>            securityDefs = new ArrayList<>();
 
     public ApiMetadataBuilder() {
@@ -183,17 +184,17 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		return models.containsKey(name);
 	}
 
-    public Map<String, MPermission> getPermissions() {
+    public Map<String, MApiPermission> getPermissions() {
         return permissions;
     }
 
-    public void addPermission(MPermission p) {
+    public void addPermission(MApiPermission p) {
         if(permissions.containsKey(p.getValue())) {
             throw new IllegalStateException("Permission '" + p.getValue() + "' already exists!");
         }
         permissions.put(p.getValue(), p);
     }
-	
+
 	public List<MApiSecurityDef> getSecurityDefs() {
         return securityDefs;
     }
@@ -201,6 +202,17 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	public void addSecurityDef(MApiSecurityDef def) {
 	    securityDefs.add(def);
 	}
+
+    public Map<String, MApiTag> getTags() {
+        return tags;
+    }
+
+    public void addTag(MApiTag tag) {
+        if(tags.containsKey(tag.getName())) {
+            throw new IllegalStateException("Tag '" + tag.getName() + "' already exists!");
+        }
+        tags.put(tag.getName(), tag);
+    }
 
     public boolean hasModel(String name) {
         for(MApiModelBuilder m : models.values()){
@@ -227,7 +239,8 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     @Override
     public ApiMetadata build() {
 
-        MPermission[] permissions = this.permissions.values().toArray(new MPermission[0]);
+        MApiPermission[] permissions = this.permissions.values().toArray(new MApiPermission[0]);
+        MApiTag[]        tags        = this.tags.values().toArray(new MApiTag[0]);
 
         return new ApiMetadata(name, title, summary, description,
         					termsOfService, null == contact ? null : contact.build(),
@@ -240,6 +253,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         					Builders.buildMap(models),
                             permissions,
         					securityDefs.toArray(new MApiSecurityDef[]{}),
+                            tags,
         					attrs);
     }
 	

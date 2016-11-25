@@ -19,7 +19,7 @@ import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.route.Route;
 
 
@@ -142,7 +142,7 @@ public interface ApiConfigurator {
     /**
      * Adds a new or updates an exists permission.
      */
-    ApiConfigurator setPermission(MPermission p);
+    ApiConfigurator setPermission(MApiPermission p);
 
     /**
      * Adds a new permission if not exists.
@@ -150,7 +150,7 @@ public interface ApiConfigurator {
      * <p/>
      * Do nothing if not exists.
      */
-    ApiConfigurator tryAddPermission(MPermission p);
+    ApiConfigurator tryAddPermission(MApiPermission p);
 
 	/**
 	 * Adds a route in this api.

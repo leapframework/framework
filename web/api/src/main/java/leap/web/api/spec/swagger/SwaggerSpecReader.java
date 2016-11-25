@@ -73,6 +73,9 @@ public class SwaggerSpecReader implements ApiSpecReader {
         readPaths(swagger.getMap(PATHS), m);
         readDefinitions(swagger.getMap(DEFINITIONS), m);
         readResponses(swagger.getMap(RESPONSES), m);
+        readTags(swagger.getList(TAGS), m);
+
+        //todo : security & securityDefinitions.
     }
 
     public void readBase(Map<String,Object> map, ApiMetadataBuilder m) {
@@ -286,6 +289,22 @@ public class SwaggerSpecReader implements ApiSpecReader {
             m.putResponse(name, readResponse(name, (Map<String,Object>)resp));
         });
 
+    }
+
+    public void readTags(List<Map<String,Object>> tags, ApiMetadataBuilder m) {
+        if(null == tags) {
+            return;
+        }
+
+        for(Map<String,Object> map : tags) {
+
+            JsonObject tag = JsonObject.of(map);
+
+            String name = tag.getString(NAME);
+            String desc = tag.getString(DESCRIPTION);
+
+            m.addTag(new MApiTag(name, name, null ,desc, null));
+        }
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {

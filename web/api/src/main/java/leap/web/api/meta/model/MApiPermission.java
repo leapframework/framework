@@ -17,12 +17,19 @@ package leap.web.api.meta.model;
 
 import leap.lang.Args;
 
-public class MPermission {
+import java.util.Map;
+
+public class MApiPermission extends MApiObject {
 
     protected final String value;
     protected final String description;
     
-    public MPermission(String value, String desc) {
+    public MApiPermission(String value, String desc) {
+        this(value, desc, null);
+    }
+
+    public MApiPermission(String value, String desc, Map<String, Object> attrs) {
+        super(attrs);
         Args.notEmpty(value, "permission value");
         this.value = value;
         this.description = desc;

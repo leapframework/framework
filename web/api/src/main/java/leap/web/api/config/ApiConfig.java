@@ -24,7 +24,7 @@ import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
@@ -91,7 +91,7 @@ public interface ApiConfig extends Named,Titled,Described {
 	/**
 	 * Returns the permissions required by this api.
 	 */
-	Map<String,MPermission> getPermissions();
+	Map<String,MApiPermission> getPermissions();
 
     /**
      * Returns an immutable {@link Map} contains all the common responses.
