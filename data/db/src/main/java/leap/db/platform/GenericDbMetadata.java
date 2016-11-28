@@ -21,6 +21,7 @@ import leap.db.DbMetadata;
 import leap.db.DbMetadataReader;
 import leap.db.model.*;
 import leap.lang.*;
+import leap.lang.jdbc.ConnectionProxy;
 import leap.lang.logging.Log;
 
 import java.sql.DatabaseMetaData;
@@ -213,10 +214,15 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
                 final String theSchemaName = schemaName;
 
                 return db.executeWithResult((conn) -> {
-                    DbSchema schema = metadataReader.readSchema(conn, catalog, theSchemaName);
-                    cachedSchemas.put(key, schema);
-                    return schema;
-                });
+					try {
+						ConnectionProxy.disabledPrintThreadDump();
+						DbSchema schema = metadataReader.readSchema(conn, catalog, theSchemaName);
+						cachedSchemas.put(key, schema);
+						return schema;
+					} finally {
+						ConnectionProxy.resetPrintThreadDump();
+					}
+				});
 			}else{
 				log.trace("Schema '{}' was cached,just return it",schemaName);
                 return cachedSchema;

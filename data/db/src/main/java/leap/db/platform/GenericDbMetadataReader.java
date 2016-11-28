@@ -24,6 +24,7 @@ import leap.lang.Builders;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.exception.NestedSQLException;
+import leap.lang.jdbc.ConnectionProxy;
 import leap.lang.jdbc.JDBC;
 import leap.lang.jdbc.JdbcType;
 import leap.lang.jdbc.JdbcTypes;
@@ -168,10 +169,8 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		ResultSet rs = null;
 		try{
 			List<DbTableBuilder> tables = new ArrayList<DbTableBuilder>();
-			
 			rs = getTables(connection, dm, params);
-			
-            if(null != rs){
+			if(null != rs){
                 while ( rs.next() ) {
                 	String tableCatalog = getTableCatalog(rs);
                     String tableSchema  = getTableSchema(rs);

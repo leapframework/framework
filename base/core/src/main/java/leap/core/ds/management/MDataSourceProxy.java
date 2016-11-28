@@ -21,6 +21,7 @@ package leap.core.ds.management;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Dates;
+import leap.lang.jdbc.ConnectionProxy;
 import leap.lang.jdbc.DataSourceWrapper;
 import leap.lang.jdbc.StatementProxy;
 import leap.lang.jmx.Managed;
@@ -126,6 +127,9 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     }
 
     protected void onStatementEndExecute(MConnectionProxy conn, StatementProxy stmt) {
+        if(!conn.printThreadDumpEnable()){
+            return;
+        }
         SlowSql ss;
 
         if(config.getVerySlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getVerySlowSqlThreshold()) {

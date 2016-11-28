@@ -22,9 +22,19 @@ import java.sql.*;
 
 public abstract class ConnectionProxy extends ConnectionWrapper {
 
-    protected Exception stackTraceExceptionOnOpen;
-    protected boolean   statementStackTrace;
+    protected Exception                    stackTraceExceptionOnOpen;
+    protected boolean                      statementStackTrace;
+    protected static ThreadLocal<Boolean>  printThreadDump = ThreadLocal.withInitial(()->true);
 
+    public static void disabledPrintThreadDump(){
+        printThreadDump.set(false);
+    }
+    public static void resetPrintThreadDump(){
+        printThreadDump.set(true);
+    }
+    public static boolean printThreadDumpEnable(){
+        return printThreadDump.get();
+    }
     public ConnectionProxy(Connection conn) {
         this(conn, false);
     }
