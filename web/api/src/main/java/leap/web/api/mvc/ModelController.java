@@ -16,7 +16,6 @@
 
 package leap.web.api.mvc;
 
-import leap.core.value.Record;
 import leap.lang.Types;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
