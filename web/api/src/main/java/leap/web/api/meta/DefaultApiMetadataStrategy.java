@@ -29,6 +29,11 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
         String name   = op.getName();
         String method = op.getMethod().name().toLowerCase();
 
+        if(Strings.contains(name,"$Lambda$")){
+            // Lambda expression do not create operation id
+            return false;
+        }
+
         if(!name.equalsIgnoreCase(method)) {
             //id = name
             if (tryCreateOperationId(m, op, name)) {
