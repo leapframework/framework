@@ -194,18 +194,28 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     @Override
     public void postAppInit(App app) throws Throwable {
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			String key = entry.getKey();
-			ApiConfigurator c = entry.getValue();
-			
+            ApiConfigurator c = entry.getValue();
 			//do configuration
 			doConfiguration(app, c);
-			
-			//create metadata
-			ApiMetadata m = createMetadata(c);
-			metadatas.put(key, m);
+		}
+        for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
+            String key = entry.getKey();
+            ApiConfigurator c = entry.getValue();
+            //configure by processors.
+            for(ApiConfigProcessor p : configProcessors) {
+                p.preProcess(c);
+            }
+
+            for(ApiConfigProcessor p : configProcessors) {
+                p.postProcess(c.config());
+            }
+
+            ApiMetadata m = createMetadata(c);
+            //create metadata
+            metadatas.put(key, m);
 
             postLoadApi(app, c.config(), m);
-		}
+        }
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
@@ -214,15 +224,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
 		//resolve routes of api.
 		resolveRoutes(app, c);
-
-		//configure by processors.
-		for(ApiConfigProcessor p : configProcessors) {
-			p.preProcess(c);
-		}
-		
-		for(ApiConfigProcessor p : configProcessors) {
-			p.postProcess(c.config());
-		}
 
 	}
 
