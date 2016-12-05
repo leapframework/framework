@@ -18,6 +18,7 @@
 
 package app.controllers.api;
 
+import app.models.PartialModel;
 import app.models.api.RestApi;
 import app.models.api.RestModel;
 import app.models.api.RestOperation;
@@ -28,6 +29,7 @@ import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
 import leap.web.annotation.Path;
+import leap.web.annotation.Produces;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.PATCH;
@@ -45,9 +47,15 @@ import java.util.List;
 @Path("restapi")
 @AllowAnonymous
 public class RestApiController extends ModelController<RestApi> {
+
+    @GET("/path_decode/{path}")
+    public ApiResponse<String> pathDecode(String path){
+        return ApiResponse.ok(path);
+    }
+
     @POST("/convert")
-    public ApiResponse<RestApi> convertPartialToObject(Partial<RestApi> api){
-        RestApi o = api.getObject();
+    public ApiResponse<PartialModel> convertPartialToObject(Partial<PartialModel> api){
+        PartialModel o = api.getObject();
         return ApiResponse.ok(o);
     }
 

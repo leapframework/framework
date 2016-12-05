@@ -23,6 +23,7 @@ import leap.lang.http.MimeTypes;
 import leap.lang.http.SimpleCookie;
 import leap.lang.io.IO;
 import leap.lang.naming.NamingStyles;
+import leap.lang.net.Urls;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.action.Argument.Location;
@@ -95,7 +96,7 @@ public abstract class AbstractArgumentResolver implements ArgumentResolver {
         }
 
         if(Location.PATH_PARAM == loc) {
-            return (c,a) -> c.getPathParameters().get(resolvePathVar(route, arg.getName()));
+            return (c,a) -> Urls.decode(c.getPathParameters().get(resolvePathVar(route, arg.getName())));
         }
 
         if(Location.REQUEST_PARAM == loc) {

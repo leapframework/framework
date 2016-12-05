@@ -165,10 +165,19 @@ public class RestApiControllerTest extends WebTestBase {
     }
     @Test
     public void testPartialConvertToObject(){
-        Map<String, Object> data = New.hashMap("name", "test","title", "test");
-
-        String title = (String) postJson("/api/restapi/convert", data).decodeJsonMap().get("title");
-        assertEquals("test",title);
+        Map<String, Object> data = New.hashMap();
+        data.put("integer",1);
+        data.put("doubleNum",1.2D);
+        data.put("map",New.hashMap("key","value"));
+        data.put("list",New.arrayList("list1","list2"));
+        Map<String, Object> result = postJson("/api/restapi/convert", data).decodeJsonMap();
+        data.forEach((k,v)->assertEquals(v,result.get(k)));
+    }
+    @Test
+    public void testPathParamDecode(){
+        String path = "abc%20def";
+        String content = get("/api/restapi/path_decode/"+path).getContent();
+        assertEquals(Urls.decode("\""+path+"\""),content);
     }
 
     @Test

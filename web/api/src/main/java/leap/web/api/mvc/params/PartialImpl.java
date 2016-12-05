@@ -20,6 +20,9 @@ import leap.lang.Exceptions;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.convert.Converter;
+import leap.lang.convert.MapConverter;
+import leap.lang.json.JSON;
 
 import java.lang.reflect.Type;
 import java.util.Map;
@@ -55,21 +58,8 @@ public class PartialImpl<T> implements Partial {
         if(t != null){
             return t;
         }else if (clzz != null){
-            try {
-                t = clzz.newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-            BeanType bt = BeanType.of(clzz);
             if(m != null){
-                m.forEach((k,v)->{
-                    String field = Objects.toString(k);
-                    BeanProperty property = bt.getProperty(field);
-                    Class<?> type = property.getType();
-                    if(bt.hasProperty(field) && v != null && (v.getClass() == type)){
-                        bt.trySet(t, Objects.toString(k),v);
-                    }
-                });
+                t = JSON.decode(JSON.encode(m),clzz);
             }
             return t;
         }else {
