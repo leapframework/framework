@@ -31,7 +31,10 @@ public class DynamicSqlTest extends OrmTestCase {
 		
 		new Owner().setFullName("a", "0").save();
 		new Owner().setFullName("b", "1").save();
-		
+
+		assertEquals(1,Owner.where("1=1 AND firstName = :firstName {?AND lastName like '%$lastName$%'}")
+				.param("lastName","0").param("firstName","a").count());
+
 		Query<Record> query = dao.createNamedQuery("test.sql.dynamic.clause.simple");
 		assertEquals(2,query.count());
 		assertEquals(1,query.param("lastName", "1").count());
@@ -39,6 +42,7 @@ public class DynamicSqlTest extends OrmTestCase {
 		query = dao.createNamedQuery("test.sql.dynamic.clause.simple_1");
 		assertEquals(2,query.count());
 		assertEquals(1,query.param("lastName", "1").count());
+
 	}
 	
 	@Test

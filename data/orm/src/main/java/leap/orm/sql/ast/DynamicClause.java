@@ -25,7 +25,7 @@ import leap.lang.convert.Converts;
 import leap.lang.params.Params;
 import leap.orm.sql.SqlStatementBuilder;
 
-public class DynamicClause extends DynamicNode {
+public class DynamicClause extends DynamicNode implements AstNodeContainer {
 	
 	private final AstNode[]        bodyNodes;
 	private final NamedParamNode[] paramNodes;
@@ -105,6 +105,16 @@ public class DynamicClause extends DynamicNode {
 	    	n.buildStatement(stm, params);
 	    }
     }
+
+	@Override
+	public AstNode[] getNodes() {
+		return bodyNodes;
+	}
+
+	@Override
+	public <T extends AstNode> T findLastNode(Class<T> type) {
+		return AstUtils.findLastNode(bodyNodes, type);
+	}
 
 	protected NamedParamNode[] resolveParamNodes() {
 		List<NamedParamNode> nodes = new ArrayList<NamedParamNode>();

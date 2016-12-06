@@ -577,7 +577,10 @@ public class SqlParser extends SqlParserBase {
                 lexer.reportError("Unclosed dynamic clause at {0}", lexer.describePosition(mark));
                 return;
             }
-
+			if(lexer.isIdentifier()){
+				parseSqlObjectName();
+				continue;
+			}
             parseToken();
         }
         

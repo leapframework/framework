@@ -78,7 +78,12 @@ public class SqlResolver {
 			resolve(tablesStack,((SqlNodeContainer)node).getNodes());
 			return;
 		}
-		
+
+		if(node instanceof DynamicClause){
+			resolve(tablesStack,((DynamicClause)node).getNodes());
+			return;
+		}
+
 		if(!tablesStack.isEmpty()){
             if(node instanceof SqlObjectName) {
                 resolveColumn(tablesStack, (SqlObjectName)node);
