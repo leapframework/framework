@@ -15,20 +15,14 @@
  */
 package leap.lang.json;
 
+import leap.junit.concurrent.ConcurrentTestCase;
+import leap.lang.naming.NamingStyles;
+import org.junit.Test;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import leap.junit.concurrent.ConcurrentTestCase;
-
-import leap.lang.naming.NamingStyles;
-import org.junit.Test;
+import java.util.*;
 
 public class JSONEncodeTest extends ConcurrentTestCase {
 	

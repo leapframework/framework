@@ -634,9 +634,14 @@ public interface JsonWriter {
 	default JsonWriter propertyJsonable(String key, Iterable<? extends JsonStringable> iterable) {
 		key(key).startArray();
         if(null != iterable) {
-            for(JsonStringable o : iterable){
-                o.toJson(this);
-            }
+			Iterator<? extends JsonStringable> iterator = iterable.iterator();
+			while (iterator.hasNext()){
+				JsonStringable o = iterator.next();
+				o.toJson(this);
+				if(iterator.hasNext()){
+					this.separator();
+				}
+			}
         }
 		return endArray();
 	}
