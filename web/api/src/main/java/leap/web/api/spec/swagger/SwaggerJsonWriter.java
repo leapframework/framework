@@ -168,7 +168,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                         throw new IllegalStateException("No supported security def : " + sd.getClass());
                     }
 
-                    w.property(OAUTH2, o.getPermissions());
+                    w.property(sd.getName(), o.getPermissions());
 
                     w.endObject();
                 });
@@ -295,7 +295,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH2, () -> {
+        w.property(d.getName(), () -> {
             w.startObject();
             
             w.property(TYPE, SwaggerConstants.OAUTH2)

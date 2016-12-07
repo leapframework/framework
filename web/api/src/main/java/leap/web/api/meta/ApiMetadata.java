@@ -34,13 +34,13 @@ public class ApiMetadata extends MApiNamedWithDesc {
     protected final String[]                  protocols;
     protected final String[]                  consumes;
     protected final String[]                  produces;
+
     protected final Map<String, MApiResponse> responses;
     protected final Map<String, MApiPath>     paths;
     protected final Map<String, MApiModel>    models;
     protected final MApiPermission[]          permissions;
     protected final MApiSecurityDef[]         securityDefs;
     protected final MApiTag[]                 tags;
-
 	public ApiMetadata(String name, String title, String summary, String description,
                        String termsOfService, MApiContact concat, String version,
                        String host, String basePath, String[] protocols, String[] consumes, String[] produces,
@@ -67,7 +67,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		this.securityDefs = securityDefs;
         this.tags = tags;
 	}
-	
+
 	/**
 	 * The terms of service for the API.
 	 */

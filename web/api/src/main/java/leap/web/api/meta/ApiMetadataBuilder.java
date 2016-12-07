@@ -196,6 +196,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         permissions.put(p.getValue(), p);
     }
 
+
 	public List<MApiSecurityDef> getSecurityDefs() {
         return securityDefs;
     }

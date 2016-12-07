@@ -18,7 +18,6 @@
 
 package leap.web.api.spec.swagger;
 
-import leap.core.annotation.Inject;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
@@ -28,7 +27,6 @@ import leap.lang.json.JsonObject;
 import leap.lang.meta.*;
 import leap.lang.yaml.YAML;
 import leap.web.api.meta.ApiMetadataBuilder;
-import leap.web.api.meta.ApiMetadataStrategy;
 import leap.web.api.meta.model.*;
 import leap.web.api.spec.ApiSpecReader;
 import leap.web.api.spec.InvalidSpecException;
@@ -39,6 +37,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
@@ -73,6 +72,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         readBase(map, m);
         readPaths(swagger.getMap(PATHS), m);
+        readSecurityDefinitions(swagger.getMap(SECURITY_DEFINITIONS), m);
         readDefinitions(swagger.getMap(DEFINITIONS), m);
         readResponses(swagger.getMap(RESPONSES), m);
         readTags(swagger.getList(TAGS), m);
@@ -252,9 +252,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         if(null != map) {
 
-            map.forEach((name, resp) -> {
-                responses.add(readResponse(name, (Map<String,Object>)resp));
-            });
+            map.forEach((name, resp) ->  responses.add(readResponse(name, (Map<String,Object>)resp)));
 
         }
 
@@ -282,6 +280,14 @@ public class SwaggerSpecReader implements ApiSpecReader {
         }
 
         return mr;
+    }
+
+    public void readSecurityDefinitions(Map<String,Object> definitions, ApiMetadataBuilder m) {
+        if(null == definitions) {
+            return ;
+        }
+
+        definitions.forEach((name, def) -> m.addSecurityDef(readSecurityDef(name,(Map<String,Object>)def)));
     }
 
     public void readDefinitions(Map<String,Object> definitions, ApiMetadataBuilder m) {
@@ -319,6 +325,20 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
             m.addTag(new MApiTag(name, name, null ,desc, null));
         }
+    }
+
+    public MApiSecurityDef readSecurityDef(String name, Map<String, Object> map){
+        if(map == null){
+            return null;
+        }
+        Object type = map.get(TYPE);
+        if(Objects.equals(type,OAUTH2)){
+            String authzUrl = Objects.toString(map.get(AUTHZ_URL));
+            String tokenUrl = Objects.toString(map.get(TOKEN_URL));
+            MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,map);
+            return def;
+        }
+        throw new IllegalStateException("No supported security def : " + type);
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {
