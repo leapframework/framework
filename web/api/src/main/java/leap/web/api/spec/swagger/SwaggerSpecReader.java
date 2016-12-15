@@ -19,6 +19,7 @@
 package leap.web.api.spec.swagger;
 
 import leap.lang.Arrays2;
+import leap.lang.Collections2;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.io.IO;
@@ -34,10 +35,7 @@ import leap.web.api.spec.UnsupportedSpecException;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
@@ -196,7 +194,16 @@ public class SwaggerSpecReader implements ApiSpecReader {
         //security
         List<Map<String,Object>> security = o.getList(SECURITY);
         if(null != security) {
-            //todo : security.
+            security.forEach(sc->{
+                for(Map.Entry<String, Object> entry:sc.entrySet()){
+                    MApiSecurity sec = new MApiSecurity(entry.getKey());
+                    sec.addScopes(Collections2.toStringArray((Collection<String>)entry.getValue()));
+                    mo.getSecurity().put(sec.getName(),sec);
+                    break;
+                }
+            });
+        }else{
+            mo.setAllowAnonymous(true);
         }
 
         String id = o.getString(OPERATION_ID);

@@ -161,16 +161,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(SECURITY, () -> {
 
                 w.array(m.getSecurityDefs(), (sd) -> {
-
-                    w.startObject();
-
                     if(!sd.isOAuth2()) {
                         throw new IllegalStateException("No supported security def : " + sd.getClass());
                     }
-
-                    w.property(sd.getName(), o.getPermissions());
-
-                    w.endObject();
+					writeSecurities(context,m,w,o.getSecurity());
                 });
 
             });
@@ -197,6 +191,20 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			w.property(RESPONSES, () -> writeResponses(context, m, w, o.getResponses()) );
 		}
 		
+		w.endObject();
+	}
+
+	protected void writeSecurities(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity[] sc){
+    	if(sc == null){
+			return;
+		}
+		for(MApiSecurity s : sc){
+			writeSecurity(context,m,w,s);
+		}
+	}
+	protected void writeSecurity(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity sc){
+		w.startObject();
+		w.property(sc.getName(),sc.getScopes());
 		w.endObject();
 	}
 

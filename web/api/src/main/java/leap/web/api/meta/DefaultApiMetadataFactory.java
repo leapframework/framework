@@ -270,6 +270,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         //Set description and summary
         setOperationDesc(context, m, route, path, op);
 
+        //Create security
+        createApiSecurity(context, m, route, path, op);
+
 		//Create parameters.
 		createApiParameters(context, m, route, path, op);
 		
@@ -311,6 +314,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 op.setDesc(desc);
             }
         }
+    }
+
+    protected void createApiSecurity(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+        // todo create operation security
+
     }
 
     protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {

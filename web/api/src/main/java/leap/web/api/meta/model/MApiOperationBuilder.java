@@ -15,15 +15,13 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
 import leap.web.api.meta.desc.OperationDescSet;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
@@ -36,7 +34,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	protected List<MApiResponseBuilder>      responses  = new ArrayList<>();
 	protected Set<String>                    consumes   = new LinkedHashSet<>();
 	protected Set<String>                    produces   = new LinkedHashSet<>();
-    protected String[]                       permissions;
+    protected Map<String, MApiSecurity>      security   = new HashMap<>();
     protected boolean                        allowAnonymous;
 	protected boolean           	         deprecated;
     protected OperationDescSet.OperationDesc desc;
@@ -47,8 +45,13 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     public MApiOperationBuilder(Route route) {
         this.route       = route;
-        this.permissions = route.getPermissions();
-
+        if(!security.containsKey(SwaggerConstants.OAUTH2)){
+            MApiSecurity sec = new MApiSecurity(SwaggerConstants.OAUTH2);
+            security.put(sec.getName(), sec);
+        }
+        if(route.getPermissions() != null){
+            security.get(SwaggerConstants.OAUTH2).addScopes(route.getPermissions());
+        }
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
         }
@@ -133,12 +136,12 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		produces.add(mimeType);
 	}
 
-    public String[] getPermissions() {
-        return permissions;
+    public Map<String, MApiSecurity> getSecurity() {
+        return security;
     }
 
-    public void setPermissions(String[] permissions) {
-        this.permissions = permissions;
+    public void setSecurity(Map<String, MApiSecurity> security) {
+        this.security = security;
     }
 
     public boolean isDeprecated() {
@@ -175,7 +178,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 								Builders.buildList(responses), 
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
 								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
-                                permissions,
+                                security.values().toArray(new MApiSecurity[security.size()]),
                                 allowAnonymous,
 								deprecated, attrs);
     }

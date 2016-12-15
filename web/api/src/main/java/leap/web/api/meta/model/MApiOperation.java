@@ -32,7 +32,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 	protected final MApiResponse[]  responses;
 	protected final String[]        consumes;
 	protected final String[]        produces;
-    protected final String[]        permissions;
+    protected final MApiSecurity[]  security;
     protected final boolean         allowAnonymous;
 	protected final boolean         deprecated;
 
@@ -44,7 +44,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          List<MApiResponse> responses,
                          String[] consumes,
                          String[] produces,
-                         String[] permissions,
+						 MApiSecurity[] security,
                          boolean allowAnonymous,
                          boolean deprecated, Map<String, Object> attrs) {
 	    super(name, title, summary, description, attrs);
@@ -57,7 +57,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 		this.responses   = responses.toArray(new MApiResponse[]{});
 		this.consumes    = consumes;
 		this.produces    = produces;
-        this.permissions = permissions;
+        this.security    = security;
         this.allowAnonymous = allowAnonymous;
 		this.deprecated  = deprecated;
 	}
@@ -137,8 +137,8 @@ public class MApiOperation extends MApiNamedWithDesc {
     /**
      * Returns the permissions required by this operation.
      */
-    public String[] getPermissions() {
-        return permissions;
+    public MApiSecurity[] getSecurity() {
+        return security;
     }
 
     /**

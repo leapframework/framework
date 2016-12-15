@@ -28,6 +28,7 @@ import leap.web.api.spec.swagger.SwaggerJsonWriter;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import org.junit.Test;
 
+import javax.rmi.PortableRemoteObject;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -43,21 +44,41 @@ public class SwaggerSecurityTest  extends AppTestBase {
 
         try(Reader reader = Resources.getResource("classpath:/swagger/security.json").getInputStreamReader()) {
             ApiMetadataBuilder m = swaggerReader.read(reader);
-            assertReadSpec(m);
-            readAgain(m);
+            assertReadSecuritySpec(m);
+            readAgainReadSecuritySpec(m);
         }
 
     }
+    @Test
+    public void testNonSecuritySpec() throws Exception{
+        try(Reader reader = Resources.getResource("classpath:/swagger/sec.json").getInputStreamReader()) {
+            ApiMetadataBuilder m = swaggerReader.read(reader);
+            assertReadSecSpec(m);
+            assertReadAgainReadSecSpec(m);
+        }
+    }
 
-    protected void assertReadSpec(ApiMetadataBuilder m){
+
+    protected void assertReadSecSpec(ApiMetadataBuilder m){
+        assertEquals(1,m.getPath("/").getOperation("get").getSecurity().size());
+    }
+
+    protected void assertReadAgainReadSecSpec(ApiMetadataBuilder m) throws IOException {
+        StringBuilder json = new StringBuilder();
+
+        Try.throwUnchecked(() -> swaggerwriter.write(ApiSpecContext.EMPTY, m.build(), json));
+        assertReadSecSpec(swaggerReader.read(new StringReader(json.toString())));
+    }
+
+    protected void assertReadSecuritySpec(ApiMetadataBuilder m){
         assertEquals(2,m.getSecurityDefs().size());
     }
 
-    protected void readAgain(ApiMetadataBuilder m) throws IOException {
+    protected void readAgainReadSecuritySpec(ApiMetadataBuilder m) throws IOException {
         StringBuilder json = new StringBuilder();
 
         Try.throwUnchecked(() -> swaggerwriter.write(ApiSpecContext.EMPTY, m.build(), json));
 
-        assertReadSpec(swaggerReader.read(new StringReader(json.toString())));
+        assertReadSecuritySpec(swaggerReader.read(new StringReader(json.toString())));
     }
 }
