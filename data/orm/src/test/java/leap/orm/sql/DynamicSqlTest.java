@@ -92,6 +92,11 @@ public class DynamicSqlTest extends OrmTestCase {
 		long nameLike1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","%1%").count();
 		long nameEq01 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","123456").count();
 		long nameEq1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").count();
+		if(dao.getOrmContext().getName().equals("mysql")){
+			long count = dao.createNamedQuery("test.sql.dynamic.keyword.quota")
+					.param("group_max_quota",1).param("total",2).param("minQuota",0).count();
+			assertEquals(2,count);
+		}
 		assertEquals(nameLike1,Owner.count());
 		assertEquals(nameEq1,1L);
 		assertEquals(nameEq01,1L);

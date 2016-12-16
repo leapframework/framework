@@ -46,4 +46,8 @@
         select * from owners where last_name = #{env.sqlVariable}
     </command>
 
+    <command key="test.sql.dynamic.keyword.quota">
+        select * from owners where 1=1 {? AND ifnull(:total, if(1 > ifnull(:group_max_quota, 0), 1, :group_max_quota)) &gt;= :minQuota * 1024}
+    </command>
+
 </sqls>
