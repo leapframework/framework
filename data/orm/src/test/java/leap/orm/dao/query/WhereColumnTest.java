@@ -60,6 +60,15 @@ public class WhereColumnTest extends OrmTestCase {
             assertTrue(factory.getBean(DataSource.class,"h2") == ds);
         }
     }
+    @Test
+    public void testDeleteWhere(){
+        ECodeModel.deleteAll();
+        ECodeModel o1 = new ECodeModel("1").create();
+        ECodeModel o2 = new ECodeModel("2").create();
+        assertEquals(2,ECodeModel.count());
+        ECodeModel.deleteAll(new Object[]{o1.id(),o2.id()});
+        assertEquals(0,ECodeModel.count());
+    }
 
     @Test
     public void testSingleWhereQuery() {

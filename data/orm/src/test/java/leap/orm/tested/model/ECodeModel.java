@@ -16,9 +16,12 @@
 
 package leap.orm.tested.model;
 
+import leap.orm.annotation.Id;
 import leap.orm.model.Model;
 
 public class ECodeModel extends Model {
+    @Id
+    private String id;
 
     private String name;
 
