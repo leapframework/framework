@@ -128,9 +128,9 @@ public class Sql {
 		}
 	}
 	
-	public void prepareBatchSqlStatement(SqlContext context, PreparedBatchSqlStatementBuilder stm) {
+	public void prepareBatchSqlStatement(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) {
 		for(int i=0;i<nodes.length;i++) {
-			nodes[i].prepareBatchStatement(context, stm);
+			nodes[i].prepareBatchStatement(context, stm,params);
 		}
 	}
 	

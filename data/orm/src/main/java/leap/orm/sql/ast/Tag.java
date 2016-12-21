@@ -35,7 +35,7 @@ public class Tag extends AstNode {
     }
 
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		throw new IllegalStateException("Not implemented");	    
     }
 

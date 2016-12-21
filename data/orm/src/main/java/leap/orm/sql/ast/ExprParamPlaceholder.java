@@ -31,7 +31,7 @@ public class ExprParamPlaceholder extends ExprParamBase {
     }
 
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		stm.append(JDBC.PARAMETER_PLACEHOLDER_CHAR);
 		stm.addBatchParameter(new ExpressionSqlParameter(expression));
     }
