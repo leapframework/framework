@@ -29,6 +29,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class RestApiControllerTest extends WebTestBase {
 
@@ -36,7 +37,19 @@ public class RestApiControllerTest extends WebTestBase {
     private static Category c2   = null;
     private static RestApi  api1 = null;
     private static RestApi  api2 = null;
+    
+    @Test
+    public void testCreateAndReturnWithId(){
+        String id = UUID.randomUUID().toString();
+        Map<String, Object> data = New.hashMap("name", "test",
+                "title", "test");
 
+        String apiId = (String) postJson("/api/restapi/create/"+id, data).decodeJsonMap().get("id");
+        assertEquals(apiId,id);
+        RestApi.delete(apiId);
+    }
+    
+    
     @Test
     public void testQueryOne() {
         RestApi result = get("/api/restapi/" + api1.getId()).decodeJson(RestApi.class);

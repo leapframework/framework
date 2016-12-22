@@ -93,6 +93,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         String[] keyNames = em.getKeyFieldNames();
         if(keyNames.length == 1){
             entity.put(keyNames[0],id);
+            this.id = id;
             return this;
         }
 

@@ -52,7 +52,12 @@ public class RestApiController extends ModelController<RestApi> {
     public ApiResponse<String> pathDecode(String path){
         return ApiResponse.ok(path);
     }
-
+    @POST("/create/{id}")
+    public ApiResponse<RestApi> createAndReturnWithId(Partial<RestApi> api,String id){
+        ApiResponse<RestApi> response = createAndReturn(api,id);
+        return response;
+    }
+    
     @POST("/convert")
     public ApiResponse<PartialModel> convertPartialToObject(Partial<PartialModel> api){
         PartialModel o = api.getObject();
