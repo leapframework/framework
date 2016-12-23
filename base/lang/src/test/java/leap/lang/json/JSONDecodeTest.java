@@ -24,6 +24,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import leap.junit.concurrent.ConcurrentTestCase;
+import leap.lang.Beans;
+import leap.lang.convert.Converts;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
 import leap.lang.resource.ResourceSet;
@@ -166,7 +168,30 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     	Bean1 bean1 = JSON.decode(json,Bean1.class);
     	assertEquals("xxx",bean1.name);
     }
-
+    @Test
+    public void testJsonWriterWithJsonSetting(){
+        JsonWriter writer = JSON.createWriter(new JsonSettings(true,true,
+                true,true,true,null,null));
+        writer.map(Beans.toMap(new JsonWriterBean()));
+        Map map = JSON.decode(writer.toString());
+        assertNull(map.get("strEmpty"));
+        assertFalse(map.containsKey("strEmpty"));
+        assertFalse(map.containsKey("strNull"));
+        assertFalse(map.containsKey("arrayEmpty"));
+        assertFalse(map.containsKey("boolFalse"));
+        assertTrue(map.containsKey("str"));
+        assertTrue(map.containsKey("boolTrue"));
+    }
+    
+    private static  class JsonWriterBean{
+        public String str = "str";
+        public String strEmpty = "";
+        public String strNull = null;
+        public String[] arrayEmpty = {};
+        public boolean boolFalse = false;
+        public boolean boolTrue = true;
+    }
+    
     private static class Bean {
     	public String name = UUID.randomUUID().toString();
     }
