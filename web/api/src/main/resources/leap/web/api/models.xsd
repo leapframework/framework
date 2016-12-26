@@ -17,9 +17,9 @@
   ~  */
   -->
 
-<xsd:schema xmlns="http://www.leapframework.org/schema/web/apis/models/description"
+<xsd:schema xmlns="http://www.leapframework.org/schema/web/apis/models"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://www.leapframework.org/schema/web/apis/models/description"
+            targetNamespace="http://www.leapframework.org/schema/web/apis/models"
             elementFormDefault="qualified">
 
     <xsd:element name="model">

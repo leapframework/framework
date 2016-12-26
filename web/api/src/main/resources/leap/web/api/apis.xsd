@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<xsd:schema xmlns="http://www.leapframework.org/schema/web/apis"
+<xsd:schema xmlns="http://www.leapframework.org/schema/web/apis/apis"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://www.leapframework.org/schema/web/apis" elementFormDefault="qualified">
+            targetNamespace="http://www.leapframework.org/schema/web/apis/apis" elementFormDefault="qualified">
 
     <xsd:element name="apis">
         <xsd:complexType>
