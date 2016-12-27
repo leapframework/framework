@@ -68,11 +68,12 @@ public class DefaultWacTokenManager implements WacTokenManager {
                 return at;
             }else{
                 throw new AuthorizationCodeInvalidException("Cannot obtain access token, authorization code may be invalid : " +
-                                                            (String)map.get("error"));
+                                                            map.get("error"));
             }
+        }else {
+            throw new ObtainAccessTokenFailedException("Obtain access token failed, " +
+                    resp.getStatus() + " -> " + resp.getString());
         }
-
-        throw new ObtainAccessTokenFailedException("Obtain access token failed, server response error");
     }
     
     @Override
@@ -119,11 +120,14 @@ public class DefaultWacTokenManager implements WacTokenManager {
                 if(config.getTokenStore() != null) {
                     config.getTokenStore().removeAccessToken(request, old);
                 }
-                throw new RefreshTokenInvalidException("Refresh access token failed : " + (String)map.get("error"));
+                throw new RefreshTokenInvalidException("Refresh access token failed : " + map.get("error"));
             }
+        }else{
+            throw new RefreshAccessTokenFailedException("Refresh access token failed : " + 
+                    resp.getStatus() + " -> " + resp.getString());
         }
 
-        throw new RefreshAccessTokenFailedException("Refresh access token failed : ");
+        
     }
     
     @Override
