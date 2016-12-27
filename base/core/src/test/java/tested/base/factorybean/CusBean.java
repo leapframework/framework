@@ -16,12 +16,16 @@
  *  
  */
 
-package tested.base.injected;
+package tested.base.factorybean;
 
 import leap.core.annotation.Bean;
 
 /**
  * Created by kael on 2016/12/27.
  */
-@Bean(additionalTypeDef = {AbstractInjectBean.class})
-public class InjectBean extends AbstractInjectBean implements InjectInterface1,InjectInterface2 {} 
+@Bean
+public class CusBean {
+    public CusBean() {
+        System.out.println(this.getClass().getName());
+    }
+}

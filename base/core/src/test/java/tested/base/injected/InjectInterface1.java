@@ -18,10 +18,8 @@
 
 package tested.base.injected;
 
-import leap.core.annotation.Bean;
-
 /**
  * Created by kael on 2016/12/27.
  */
-@Bean(additionalTypeDef = {AbstractInjectBean.class})
-public class InjectBean extends AbstractInjectBean implements InjectInterface1,InjectInterface2 {} 
+public interface InjectInterface1 {
+}

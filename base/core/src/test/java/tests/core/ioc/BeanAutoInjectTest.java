@@ -18,13 +18,14 @@ package tests.core.ioc;
 
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
-import leap.core.annotation.Bean;
-import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import tested.base.factorybean.CusBean;
+import tested.base.injected.AbstractInjectBean;
 import tested.base.injected.InjectBean;
-import tested.base.injected.InjectInterface;
+import tested.base.injected.InjectInterface1;
+import tested.base.injected.InjectInterface2;
 import tested.beans.TAutoInjectBean;
 import tests.core.CoreTestCase;
 
@@ -36,7 +37,11 @@ public class BeanAutoInjectTest extends CoreTestCase {
     protected @Inject TAutoInjectBean autoInjectBean;
 
     protected @Inject InjectBean injectBean;
-    protected @Inject InjectInterface injectBeanInterface;
+    protected @Inject AbstractInjectBean abstractInjectBean;
+    protected @Inject InjectInterface1 injectBeanInterface1;
+    protected @Inject InjectInterface2 injectBeanInterface2;
+    
+    protected @Inject CusBean cusBean;
     
     @BeforeClass
     public static void checkStaticInjection() {
@@ -66,7 +71,11 @@ public class BeanAutoInjectTest extends CoreTestCase {
     
     @Test
     public void testInjectBeanWithImplement(){
-        assertNotNull(injectBeanInterface);
+        assertNotNull(injectBeanInterface1);
+        assertNotNull(injectBeanInterface2);
+        assertNotNull(abstractInjectBean);
         assertNotNull(injectBean);
+        
+        assertNotNull(cusBean);
     }
 }

@@ -59,4 +59,8 @@ public @interface Bean {
 	 */
 	boolean lazyInit() default true;
 
+	/**
+	 * addition type def
+	 */
+	Class<?>[] additionalTypeDef() default {};
 }

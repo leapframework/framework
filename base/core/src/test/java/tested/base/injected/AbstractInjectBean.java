@@ -21,5 +21,5 @@ package tested.base.injected;
 /**
  * Created by kael on 2016/12/27.
  */
-public interface InjectInterface {
+public abstract class AbstractInjectBean {
 }

@@ -16,12 +16,24 @@
  *  
  */
 
-package tested.base.injected;
+package tested.base.factorybean;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Bean;
+import leap.core.ioc.FactoryBean;
 
 /**
  * Created by kael on 2016/12/27.
  */
-@Bean(additionalTypeDef = {AbstractInjectBean.class})
-public class InjectBean extends AbstractInjectBean implements InjectInterface1,InjectInterface2 {} 
+@Bean
+public class CusFactoryBean implements FactoryBean<CusBean> {
+    @Override
+    public CusBean getBean(BeanFactory beanFactory, Class<CusBean> type) {
+        return new CusBean();
+    }
+
+    @Override
+    public CusBean getBean(BeanFactory beanFactory, Class<CusBean> type, String name) {
+        return new CusBean();
+    }
+}

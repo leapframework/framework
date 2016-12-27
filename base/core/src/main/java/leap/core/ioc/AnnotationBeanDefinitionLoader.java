@@ -60,12 +60,22 @@ class AnnotationBeanDefinitionLoader {
 			if(!Strings.isEmpty(a.name())){
 				bd.setName(a.name());
 			}
-			
+			parseAdditionalTypeDef(bd,cls,a);
 			bd.setBeanClass(cls);
 			bd.setBeanClassType(BeanType.of(cls));
 			bd.setPrimary(a.primary());
 			bd.setSingleton(a.singleton());
 			bd.setLazyInit(a.lazyInit());
+			// TODO register bean factory
+			/*
+			if(a.registerBeanFactory()){
+				Class<?> target = a.targetType();
+				if(void.class.equals(target)){
+					throw new BeanDefinitionException("Target type '" + target.getName() + "' not found, source : " + cls.getName());
+				}
+				bd.addFactoryBeanDef(new FactoryBeanDefinitionBase(target));
+			}
+			*/
 			
 			container.addBeanDefinition(bd);
 		}
@@ -77,5 +87,37 @@ class AnnotationBeanDefinitionLoader {
 		}else{
 			return cls;
 		}
+	}
+	
+	protected void parseAdditionalTypeDef(BeanDefinitionBase bd,Class<?> cls,Bean a){
+		if(cls.getInterfaces().length > 1){
+			for(Class<?> interfaces : cls.getInterfaces()){
+				addNotRepeatAdditionalTypeDef(bd,interfaces);
+			}
+		}
+		if(a.additionalTypeDef() != null && a.additionalTypeDef().length > 0){
+			typeEach:
+			for(Class<?> additional : a.additionalTypeDef()){
+				for(TypeDefinition def : bd.getAdditionalTypeDefs()){
+					if(def.getType() == additional){
+						continue typeEach;
+					}
+				}
+				TypeDefinitionBase def = new TypeDefinitionBase();
+				def.setType(additional);
+				bd.addAdditionalTypeDef(def);
+			}
+		}
+	}
+	
+	protected void addNotRepeatAdditionalTypeDef(BeanDefinitionBase bd, Class<?> cls){
+		for(TypeDefinition def : bd.getAdditionalTypeDefs()){
+			if(def.getType() == cls){
+				return;
+			}
+		}
+		TypeDefinitionBase def = new TypeDefinitionBase();
+		def.setType(cls);
+		bd.addAdditionalTypeDef(def);
 	}
 }
