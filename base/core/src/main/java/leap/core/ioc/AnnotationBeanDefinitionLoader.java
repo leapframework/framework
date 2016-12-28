@@ -68,8 +68,7 @@ class AnnotationBeanDefinitionLoader {
 			bd.setSingleton(a.singleton());
 			bd.setLazyInit(a.lazyInit());
 			bd.setSortOrder(a.sortOrder());
-			// TODO register bean factory
-			/**/
+
 			if(a.registerBeanFactory()){
 				Class<?>[] targets = a.targetType();
 				if(Arrays2.isNotEmpty(targets)){
@@ -81,7 +80,6 @@ class AnnotationBeanDefinitionLoader {
 					}
 				}
 			}
-			
 			container.addBeanDefinition(bd);
 		}
 	}
