@@ -25,15 +25,15 @@ import leap.core.ioc.FactoryBean;
 /**
  * Created by kael on 2016/12/27.
  */
-@Bean
+@Bean(registerBeanFactory = true,targetType = {CusBean.class})
 public class CusFactoryBean implements FactoryBean<CusBean> {
     @Override
     public CusBean getBean(BeanFactory beanFactory, Class<CusBean> type) {
-        return new CusBean();
+        return new CusBean(this.getClass().getName());
     }
 
     @Override
     public CusBean getBean(BeanFactory beanFactory, Class<CusBean> type, String name) {
-        return new CusBean();
+        return getBean(beanFactory,type);
     }
 }

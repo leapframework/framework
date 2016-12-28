@@ -18,21 +18,27 @@
 
 package tested.base.factorybean;
 
+import leap.core.BeanFactory;
+import leap.core.annotation.Bean;
+import leap.core.ioc.FactoryBean;
+
 /**
  * Created by kael on 2016/12/28.
  */
-public class CusBean {
-    private String createBy;
-
-    public CusBean(String createBy) {
-        this.createBy = createBy;
+@Bean(registerBeanFactory = true,targetType = {CusBean1.class,CusBean2.class})
+public class CusFactoryBean12 implements FactoryBean {
+    @Override
+    public Object getBean(BeanFactory beanFactory, Class type) {
+        if(type == CusBean1.class){
+            return new CusBean1(this.getClass().getName());
+        }else if(type == CusBean2.class){
+            return new CusBean2(this.getClass().getName());
+        }
+        return null;
     }
 
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
+    @Override
+    public Object getBean(BeanFactory beanFactory, Class type, String name) {
+        return getBean(beanFactory,type);
     }
 }

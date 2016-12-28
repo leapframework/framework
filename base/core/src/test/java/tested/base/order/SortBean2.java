@@ -16,23 +16,23 @@
  *  
  */
 
-package tested.base.factorybean;
+package tested.base.order;
+
+import leap.core.annotation.Bean;
 
 /**
  * Created by kael on 2016/12/28.
  */
-public class CusBean {
-    private String createBy;
+@Bean(sortOrder = 2.2f)
+public class SortBean2 implements SortInterface {
+    private float order = 2.2f;
 
-    public CusBean(String createBy) {
-        this.createBy = createBy;
+    @Override
+    public float getOrder() {
+        return order;
     }
 
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
+    public void setOrder(float order) {
+        this.order = order;
     }
 }

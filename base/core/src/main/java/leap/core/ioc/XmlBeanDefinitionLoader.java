@@ -365,7 +365,7 @@ class XmlBeanDefinitionLoader {
 
         String typeClassName = proxy ? reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE) : reader.getAttribute(TYPE_ATTRIBUTE);
         String qualifierName = reader.getAttribute(QUALIFIER_ATTRIBUTE);
-        Integer sortOrder = reader.getIntegerAttribute(SORT_ORDER_ATTRIBUTE);
+        Float sortOrder = reader.getFloatAttribute(SORT_ORDER_ATTRIBUTE);
         boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
         boolean defaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, false);
 

@@ -16,23 +16,20 @@
  *  
  */
 
-package tested.base.factorybean;
+package tested.base.order;
 
 /**
  * Created by kael on 2016/12/28.
  */
-public class CusBean {
-    private String createBy;
+public class SortBean {
+    private float order;
 
-    public CusBean(String createBy) {
-        this.createBy = createBy;
+
+    public float getOrder() {
+        return order;
     }
 
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
+    public void setOrder(float order) {
+        this.order = order;
     }
 }

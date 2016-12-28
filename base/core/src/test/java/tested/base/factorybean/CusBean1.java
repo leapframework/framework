@@ -19,12 +19,12 @@
 package tested.base.factorybean;
 
 /**
- * Created by kael on 2016/12/28.
+ * Created by kael on 2016/12/27.
  */
-public class CusBean {
+public class CusBean1 {
     private String createBy;
 
-    public CusBean(String createBy) {
+    public CusBean1(String createBy) {
         this.createBy = createBy;
     }
 

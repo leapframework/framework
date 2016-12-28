@@ -16,23 +16,20 @@
  *  
  */
 
-package tested.base.factorybean;
+package tested.base.order;
 
 /**
  * Created by kael on 2016/12/28.
  */
-public class CusBean {
-    private String createBy;
+public class SortBean3 implements SortInterface {
+    private float order = 3;
 
-    public CusBean(String createBy) {
-        this.createBy = createBy;
+    @Override
+    public float getOrder() {
+        return order;
     }
 
-    public String getCreateBy() {
-        return createBy;
-    }
-
-    public void setCreateBy(String createBy) {
-        this.createBy = createBy;
+    public void setOrder(float order) {
+        this.order = order;
     }
 }

@@ -21,10 +21,10 @@ package tested.base.factorybean;
 /**
  * Created by kael on 2016/12/28.
  */
-public class CusBean {
+public class CusBean2 {
     private String createBy;
 
-    public CusBean(String createBy) {
+    public CusBean2(String createBy) {
         this.createBy = createBy;
     }
 

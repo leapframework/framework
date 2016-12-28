@@ -16,6 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.annotation.Bean;
+import leap.lang.Arrays2;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
@@ -66,16 +67,20 @@ class AnnotationBeanDefinitionLoader {
 			bd.setPrimary(a.primary());
 			bd.setSingleton(a.singleton());
 			bd.setLazyInit(a.lazyInit());
+			bd.setSortOrder(a.sortOrder());
 			// TODO register bean factory
-			/*
+			/**/
 			if(a.registerBeanFactory()){
-				Class<?> target = a.targetType();
-				if(void.class.equals(target)){
-					throw new BeanDefinitionException("Target type '" + target.getName() + "' not found, source : " + cls.getName());
+				Class<?>[] targets = a.targetType();
+				if(Arrays2.isNotEmpty(targets)){
+					for(Class<?> target : targets){
+						if(void.class.equals(target)){
+							throw new BeanDefinitionException("Target type '" + target.getName() + "' not found, source : " + cls.getName());
+						}
+						bd.addFactoryBeanDef(new FactoryBeanDefinitionBase(target));
+					}
 				}
-				bd.addFactoryBeanDef(new FactoryBeanDefinitionBase(target));
 			}
-			*/
 			
 			container.addBeanDefinition(bd);
 		}
