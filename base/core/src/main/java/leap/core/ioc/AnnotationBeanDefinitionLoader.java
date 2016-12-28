@@ -66,7 +66,7 @@ class AnnotationBeanDefinitionLoader {
 			bd.setPrimary(a.primary());
 			bd.setSingleton(a.singleton());
 			bd.setLazyInit(a.lazyInit());
-			
+			bd.setSortOrder(a.sortOrder());
 			container.addBeanDefinition(bd);
 		}
 	}

@@ -59,4 +59,9 @@ public @interface Bean {
 	 */
 	boolean lazyInit() default true;
 
+	/**
+	 * sort order
+	 */
+	float sortOrder() default 100;
+	
 }
