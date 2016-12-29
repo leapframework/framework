@@ -21,6 +21,7 @@ package tests.spec;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
+import leap.lang.json.JSON;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
@@ -29,6 +30,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Map;
 
 public class SwaggerJsonTest extends WebTestBase {
 
@@ -40,13 +42,11 @@ public class SwaggerJsonTest extends WebTestBase {
 
         ApiMetadata m = specReader.read(new StringReader(swagger)).build();
 
-        boolean who = false;
-
         assertTrue(m.getModels().containsKey("ListOnlyModel"));
 
         assertEquals("hello方法",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getSummary());
         assertEquals("返回参数加上 Hello的字符串",m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getDescription());
-
+        
     }
     @Test
     public void testApiDescSwagger() throws IOException {
@@ -92,5 +92,26 @@ public class SwaggerJsonTest extends WebTestBase {
         }
         assertTrue(pageSize);
         assertTrue(id);
+    }
+    @Test
+    public void testXSecuritySwaggerJson(){
+        String swagger = get("/testing/swagger.json").getContent();
+        Map<String, Object> map = JSON.decodeMap(swagger);
+        Map<String, Object> path = getAsMap(getAsMap(map,"paths"),"/perms/test_anonymous");
+        Map<String, Object> op = getAsMap(path,"get");
+        Map<String, Object> xs = getAsMap(op,"x-security");
+        Object userRequired = xs.get("userRequired");
+        assertEquals(Boolean.FALSE,userRequired);
+
+        path = getAsMap(getAsMap(map,"paths"),"/perms/test_perm");
+        op = getAsMap(path,"get");
+        xs = getAsMap(op,"x-security");
+        userRequired = xs.get("userRequired");
+        assertEquals(Boolean.TRUE,userRequired);
+        
+    }
+    
+    protected Map<String, Object> getAsMap(Map<String, Object> map, String key){
+        return (Map<String, Object>)map.get(key);
     }
 }

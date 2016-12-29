@@ -813,7 +813,7 @@ public class JsonWriterImpl implements JsonWriter {
 						}
 					}
 					if(val instanceof Boolean){
-						if(Objects.equals(val,Boolean.FALSE)){
+						if(isIgnoreFalse() && Objects.equals(val,Boolean.FALSE)){
 							continue;
 						}
 					}
