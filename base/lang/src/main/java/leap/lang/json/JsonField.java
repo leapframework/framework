@@ -23,5 +23,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)  
 @Target(ElementType.FIELD)
 public @interface JsonField {
-	
+    boolean useGetter() default true;
+    boolean useSetter() default true;
 }

@@ -16,10 +16,7 @@ package leap.lang.json;
  */
 
 
-import leap.lang.Arrays2;
-import leap.lang.Enums;
-import leap.lang.Objects2;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
@@ -816,7 +813,7 @@ public class JsonWriterImpl implements JsonWriter {
 						}
 					}
 					if(val instanceof Boolean){
-						if(Objects.equals(val,Boolean.FALSE)){
+						if(isIgnoreFalse() && Objects.equals(val,Boolean.FALSE)){
 							continue;
 						}
 					}
@@ -853,12 +850,18 @@ public class JsonWriterImpl implements JsonWriter {
                         String propName = prop.getName();
 
                         JsonName named = prop.getAnnotation(JsonName.class);
-
+						
                         if(null != named){
                             propName = named.value();
                         }
 
-                        Object propValue = prop.getValue(bean);
+						Object propValue;
+                        
+                        if(jsonField != null && jsonField.useGetter() == false){
+							propValue = prop.getReflectField().getValue(bean,false);
+						}else{
+							propValue = prop.getValue(bean);
+						}
 
                         if(null == propValue && isIgnoreNull()){
                             continue;

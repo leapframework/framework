@@ -68,7 +68,12 @@ public class SwaggerConstants {
 	public static final String TOKEN_URL            = "tokenUrl";
 	public static final String SCOPES               = "scopes";
 
+    public static final String USER_REQUIRED        = "userRequired";
+    public static final String CLIENT_REQUIRED      = "clientRequired";
+	
     //extend
+    public static final String X_SECURITY   = "x-security";
+    
     public static final String X_CREATABLE  = "x-creatable";
     public static final String X_UPDATABLE  = "x-updatable";
     public static final String X_SORTABLE   = "x-sortable";

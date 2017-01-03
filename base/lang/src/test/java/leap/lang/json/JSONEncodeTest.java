@@ -102,6 +102,14 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		assertEquals("1", bean.id);
 		assertEquals("xx", bean.name);
 	}
+	@Test
+	public void testUseField(){
+
+		String json = encode(new UseFieldBean());
+		Map<String, Object> map = JSON.decodeMap(json);
+		assertEquals("default",map.get("name1"));
+		assertEquals("no-default",map.get("name2"));
+	}
 	
 	@Test
 	public void testCyclicBean() throws Exception {
@@ -317,6 +325,27 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		public NamingStyleBean(String userId, String userName) {
 			this.userId = userId;
 			this.userName = userName;
+		}
+	}
+	static final class UseFieldBean {
+		@JsonField(useGetter = false)
+		private String name1 = "default";
+		private String name2 = "default";
+		
+		public String getName1() {
+			return "no-default";
+		}
+
+		public void setName1(String name1) {
+			this.name1 = name1;
+		}
+
+		public String getName2() {
+			return "no-default";
+		}
+
+		public void setName2(String name2) {
+			this.name2 = name2;
 		}
 	}
 }

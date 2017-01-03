@@ -171,6 +171,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         }
 
+        w.property(X_SECURITY,writer -> {
+        	writer.startObject();
+        	writer.property(USER_REQUIRED,!o.isAllowAnonymous());
+        	writer.endObject();
+		});
+        
 		if(o.getConsumes().length > 0) {
 			w.property(CONSUMES, o.getConsumes());
 		}

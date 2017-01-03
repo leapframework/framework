@@ -23,13 +23,13 @@ import app.models.api.RestApi;
 import app.models.api.RestModel;
 import app.models.api.RestOperation;
 import app.models.api.RestPath;
+import leap.core.security.annotation.AllowAnonymous;
 import leap.core.value.Record;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
 import leap.web.annotation.Path;
-import leap.web.annotation.Produces;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.PATCH;
@@ -40,7 +40,6 @@ import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.core.security.annotation.AllowAnonymous;
 
 import java.util.List;
 
@@ -67,7 +66,7 @@ public class RestApiController extends ModelController<RestApi> {
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {
         return queryList(options,query -> {
-
+            
         });
     }
 

@@ -79,6 +79,10 @@ public class WebConfigProcessor implements AppConfigProcessor {
             return;
         }
 		
+        if(reader.isStartElement()){
+			
+		}
+        
 		throw new AppConfigException("Unknown xml element '" + reader.getElementLocalName() + "', check the config : " + reader.getSource());
     }
 
