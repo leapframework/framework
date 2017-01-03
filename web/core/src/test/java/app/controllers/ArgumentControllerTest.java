@@ -307,4 +307,10 @@ public class ArgumentControllerTest extends WebTestCase {
 	public void testGetControllerPath() {
 		get("/argument/controller_path").assertContentEquals("/argument");
 	}
+
+    @Test
+    public void testSimpleRequestAttribute() {
+        get("/argument/simple_request_attribute").assertContentEquals("Simple Request Attribute");
+        assertEquals("Complex Request Attribute",get("/argument/complex_request_attribute").decodeJsonMap().get("name"));
+    }
 }
