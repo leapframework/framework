@@ -15,6 +15,7 @@
  */
 package app;
 
+import app.interceptors.RoutesInterceptor;
 import leap.core.annotation.Inject;
 import leap.lang.Assert;
 import leap.lang.logging.Log;
@@ -23,6 +24,7 @@ import leap.web.App;
 import leap.web.Results;
 import leap.web.assets.AssetConfigurator;
 import leap.web.config.WebConfigurator;
+import leap.web.config.WebInterceptors;
 import leap.web.route.Routes;
 
 public class Global extends App {
@@ -32,6 +34,12 @@ public class Global extends App {
 	public static final String APPLICATION_INIT_CALLED_ATTRIBUTE  = "application_init_called";
 
     private @Inject AssetConfigurator ac;
+
+    @Override
+    protected void intercepting(WebInterceptors interceptors) {
+        //for testing external routes.
+        interceptors.add(factory.createBean(RoutesInterceptor.class));
+    }
 
     @Override
     protected void configure(WebConfigurator c) {
