@@ -61,5 +61,23 @@ public class ClientGrantTest extends OAuth2TestBase {
         testClientOnlyAccessTokenInfo(response);
         
     }
+
+    @Test
+    public void testClientSecretPost(){
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT;
+
+        
+        
+        THttpRequest request = forPost(tokenUri).addFormParam("grant_type","client_secret_post")
+                .addFormParam("client_id",Global.TEST_CLIENT_ID)
+                .addFormParam("client_secret",Global.TEST_CLIENT_SECRET);
+
+        TokenResponse response = resp(request.send(), new TokenResponse());
+
+        assertFalse(response.isError());
+
+        testClientOnlyAccessTokenInfo(response);
+        
+    }
 	
 }

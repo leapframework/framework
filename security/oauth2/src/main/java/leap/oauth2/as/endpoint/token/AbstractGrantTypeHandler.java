@@ -51,12 +51,11 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
             OAuth2Errors.invalidRequest(response, "client_secret required");
             return null;
         }
-        AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
-        AuthzClient client = clientManager.authenticate(context, credentials);
-        if(!context.errors().isEmpty()){
-            OAuth2Errors.invalidGrant(response, context.errors().getMessage());
+        AuthzClient client = clientManager.loadClientById(credentials.getClientId());
+        if(client == null){
+            OAuth2Errors.invalidGrant(response, "client not found");
+            return null;
         }
-        
         if(!client.acceptsRedirectUri(redirectUri)){
             OAuth2Errors.invalidGrant(response, "redirect_uri invalid");
             return null;         

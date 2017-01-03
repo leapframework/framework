@@ -38,7 +38,6 @@ import leap.web.Response;
 public class ClientCredentialsGrantTypeHandler extends AbstractGrantTypeHandler {
 	
 	protected @Inject OAuth2AuthzServerConfig config;
-	protected @Inject AuthzClientManager      clientManager;
 	protected @Inject AuthzTokenManager       tokenManager;
 	
 	@Override

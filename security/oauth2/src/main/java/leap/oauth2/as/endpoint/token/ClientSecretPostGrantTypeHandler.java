@@ -18,12 +18,16 @@
 
 package leap.oauth2.as.endpoint.token;
 
+import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
+import leap.oauth2.as.authc.SimpleAuthzAuthentication;
+import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientCredentials;
 import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.token.AuthzAccessToken;
+import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -33,6 +37,8 @@ import java.util.function.Consumer;
  * grant_type=client_secret_post
  */
 public class ClientSecretPostGrantTypeHandler extends AbstractGrantTypeHandler {
+    protected @Inject AuthzTokenManager tokenManager;
+    
     @Override
     public void handleRequest(Request request, Response response, OAuth2Params params,
                               Consumer<AuthzAccessToken> callback) throws Throwable {
@@ -41,9 +47,12 @@ public class ClientSecretPostGrantTypeHandler extends AbstractGrantTypeHandler {
         }
         AuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());
 
-        validateClientSecret(request, response,credentials);
+        AuthzClient client = validateClientSecret(request, response,credentials);
         
-        
-        
+        if(client == null){
+            return;
+        }
+
+        callback.accept(tokenManager.createAccessToken(new SimpleAuthzAuthentication(params, client)));
     }
 }
