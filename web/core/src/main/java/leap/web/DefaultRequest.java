@@ -93,6 +93,7 @@ public class DefaultRequest extends Request {
     private Map<String, List<String>>  queryParams;
     private Map<String, Object>        queryParamsMap;
     private Boolean                    acceptValidationError;
+    private RouteInfo                  externalRouteInfo;
 	
 	public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response){
 		this.app    		 = app;
@@ -738,6 +739,16 @@ public class DefaultRequest extends Request {
     @Override
     public void setAcceptValidationError(Boolean accept) {
         this.acceptValidationError = accept;
+    }
+
+    @Override
+    public RouteInfo getExternalRouteInfo() {
+        return externalRouteInfo;
+    }
+
+    @Override
+    public void setExternalRouteInfo(RouteInfo routeInfo) {
+        this.externalRouteInfo = routeInfo;
     }
 
     protected String extractRequestPath(){
