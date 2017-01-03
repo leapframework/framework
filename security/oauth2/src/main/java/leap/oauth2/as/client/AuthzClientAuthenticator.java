@@ -15,11 +15,15 @@
  */
 package leap.oauth2.as.client;
 
-import leap.lang.Out;
-
-
 public interface AuthzClientAuthenticator {
 
-	boolean authenticate(AuthzClientCredentials credentials, Out<AuthzClient> client) throws Throwable;
+	/**
+	 * authenticate this credentials is match this client
+	 * @param credentials
+	 * @param client
+	 * @return return true if credentials is match this client, otherwise false.
+	 * @throws Throwable
+	 */
+	boolean authenticate(AuthzClientCredentials credentials, AuthzClient client) throws Throwable;
 
 }

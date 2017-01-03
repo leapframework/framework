@@ -22,7 +22,7 @@ import leap.web.security.user.UsernamePasswordCredentials;
 /**
  * OAuth2.0 parameters.
  */
-public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCredentials {
+public interface OAuth2Params {
 	
 	String CLIENT_ID     = "client_id";
 	String CLIENT_SECRET = "client_secret";
@@ -141,4 +141,5 @@ public interface OAuth2Params extends AuthzClientCredentials, UsernamePasswordCr
 	}
 	
 	String getParameter(String name);
+	
 }

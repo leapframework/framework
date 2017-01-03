@@ -46,11 +46,6 @@ public class RequestOAuth2Params implements OAuth2Params {
     }
 
 	@Override
-    public Map<String, Object> getParameters() {
-	    return request.getParameters();
-    }
-
-	@Override
 	public String getResourceServerId() {
 		String rsId = request.getHeader(RS_ID);
 		if(Strings.isEmpty(rsId)){
@@ -58,4 +53,5 @@ public class RequestOAuth2Params implements OAuth2Params {
 		}
 		return rsId;
 	}
+	
 }

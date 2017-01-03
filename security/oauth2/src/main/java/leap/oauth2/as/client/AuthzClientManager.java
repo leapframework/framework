@@ -15,12 +15,9 @@
  */
 package leap.oauth2.as.client;
 
-import leap.lang.Result;
-
-
 public interface AuthzClientManager {
 
-    Result<AuthzClient> authenticate(AuthzClientCredentials credentials) throws Throwable;
+    AuthzClient authenticate(AuthzClientAuthenticationContext context, AuthzClientCredentials credentials) throws Throwable;
     
 	AuthzClient loadClientById(String clientId);
 	

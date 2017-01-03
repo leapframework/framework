@@ -17,8 +17,12 @@ package leap.oauth2;
 
 public class OAuth2Constants {
 
+	public static String TOKEN_HEADER= "Authorization";
+	
 	public static String BEARER_TYPE = "Bearer";
 
+	public static String BASIC_TYPE  = "Basic";
+	
 	public static String OAUTH2_TYPE = "OAuth2";
 
 	/**

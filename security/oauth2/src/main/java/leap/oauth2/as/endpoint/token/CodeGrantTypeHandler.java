@@ -24,6 +24,8 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.client.AuthzClientCredentials;
+import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
 import leap.oauth2.as.token.AuthzAccessToken;
@@ -55,8 +57,10 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 			OAuth2Errors.invalidRequest(response, "authorization code required");
 			return;
 		}
+
+		AuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());
 		
-		AuthzClient client = validateClientSecret(request, response, params);
+		AuthzClient client = validateClientSecret(request, response, credentials);
 		if(null == client) {
 		    return;
 		}

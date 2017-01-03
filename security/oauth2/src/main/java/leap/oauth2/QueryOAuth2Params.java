@@ -15,8 +15,6 @@
  */
 package leap.oauth2;
 
-import java.util.Map;
-
 import leap.lang.http.QueryString;
 
 public class QueryOAuth2Params implements OAuth2Params {
@@ -31,10 +29,5 @@ public class QueryOAuth2Params implements OAuth2Params {
     public String getParameter(String name) {
 	    return query.getParameter(name);
     }
-
-	@Override
-    public Map<String, Object> getParameters() {
-	    return query.getParameters();
-    }
-
+	
 }

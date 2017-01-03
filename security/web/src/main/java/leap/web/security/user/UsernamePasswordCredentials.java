@@ -20,8 +20,8 @@ import leap.web.security.authc.credentials.ParameterizedCredentials;
 
 public interface UsernamePasswordCredentials extends ParameterizedCredentials {
 	
-	public String USERNAME = "username";
-	public String PASSWORD = "password";
+	String USERNAME = "username";
+	String PASSWORD = "password";
 	
 	String getUsername();
 	

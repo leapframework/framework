@@ -24,7 +24,9 @@ import leap.oauth2.OAuth2Errors;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.client.AuthzClientCredentials;
 import leap.oauth2.as.client.AuthzClientManager;
+import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
@@ -33,7 +35,7 @@ import leap.web.Response;
 /**
  * grant_type=client_credentials
  */
-public class ClientGrantTypeHandler implements GrantTypeHandler {
+public class ClientCredentialsGrantTypeHandler extends AbstractGrantTypeHandler {
 	
 	protected @Inject OAuth2AuthzServerConfig config;
 	protected @Inject AuthzClientManager      clientManager;
@@ -46,15 +48,20 @@ public class ClientGrantTypeHandler implements GrantTypeHandler {
 			return;
 		}
 		
+		AuthzClientCredentials credentials = extractClientCredentials(request,response);
+		
+		if(credentials == null){
+			return;
+		}
+		
 		//Authenticate client.
-		Result<AuthzClient> client = clientManager.authenticate(params);
-		if(!client.isPresent()) {
-			OAuth2Errors.invalidClient(response, "invalid client credentials");
+		AuthzClient client = validateClientSecret(request,response,credentials);
+		if(client == null) {
 			return;
 		}
 		
 		//Generate token.
-		callback.accept(tokenManager.createAccessToken(new SimpleAuthzAuthentication(params, client.get())));
+		callback.accept(tokenManager.createAccessToken(new SimpleAuthzAuthentication(params, client)));
 	}
 
 }

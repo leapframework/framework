@@ -17,21 +17,24 @@ package leap.oauth2.as.endpoint.token;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.codec.Base64;
+import leap.oauth2.OAuth2Constants;
+import leap.oauth2.OAuth2Error;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
-import leap.oauth2.as.client.AuthzClient;
-import leap.oauth2.as.client.AuthzClientManager;
+import leap.oauth2.as.client.*;
 import leap.web.Request;
 import leap.web.Response;
 
 public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     
+    
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzClientManager      clientManager;
     
-    protected AuthzClient validateClient(Request request, Response response, OAuth2Params params) throws Throwable {
-        String clientId = params.getClientId();
+    protected AuthzClient validateClient(Request request, Response response, OAuth2Params params, AuthzClientCredentials credentials) throws Throwable {
+        String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
             OAuth2Errors.invalidRequest(response, "client_id required");
             return null;
@@ -43,66 +46,63 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
             return null;
         }
         
-        String clientSecret = params.getClientSecret();
+        String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
             OAuth2Errors.invalidRequest(response, "client_secret required");
             return null;
         }
-        
-        AuthzClient client = clientManager.loadClientById(clientId);
-        if(null == client) {
-            OAuth2Errors.invalidGrant(response, "client not found");
-            return null;
+        AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
+        AuthzClient client = clientManager.authenticate(context, credentials);
+        if(!context.errors().isEmpty()){
+            OAuth2Errors.invalidGrant(response, context.errors().getMessage());
         }
         
-        if(!client.isEnabled()) {
-            OAuth2Errors.invalidGrant(response, "client diabled");
-            return null;
-        }
-
         if(!client.acceptsRedirectUri(redirectUri)){
             OAuth2Errors.invalidGrant(response, "redirect_uri invalid");
             return null;         
         }
         
-        if(!Strings.equals(clientSecret, client.getSecret())) {
-            OAuth2Errors.invalidGrant(response, "client_secret invalid");
-            return null;
-        }
-        
         return client;
     }
     
-    protected AuthzClient validateClientSecret(Request request, Response response, OAuth2Params params) throws Throwable {
-        String clientId = params.getClientId();
+    protected AuthzClient validateClientSecret(Request request, Response response, AuthzClientCredentials credentials) throws Throwable {
+        String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
             OAuth2Errors.invalidRequest(response, "client_id required");
             return null;
         }
         
-        String clientSecret = params.getClientSecret();
+        String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
             OAuth2Errors.invalidRequest(response, "client_secret required");
             return null;
         }
-        
-        AuthzClient client = clientManager.loadClientById(clientId);
-        if(null == client) {
-            OAuth2Errors.invalidGrant(response, "client not found");
-            return null;
+        AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
+        AuthzClient client = clientManager.authenticate(context,credentials);
+        if(!context.errors().isEmpty()){
+            OAuth2Errors.invalidGrant(response, context.errors().getMessage());
         }
-        
-        if(!client.isEnabled()) {
-            OAuth2Errors.invalidGrant(response, "client diabled");
-            return null;
-        }
-        
-        if(!Strings.equals(clientSecret, client.getSecret())) {
-            OAuth2Errors.invalidGrant(response, "client_secret invalid");
-            return null;
-        }
-
         return client;
     }
 
+    protected AuthzClientCredentials extractClientCredentials(Request request, Response response){
+        String header = request.getHeader(OAuth2Constants.TOKEN_HEADER);
+        if(header == null || Strings.isEmpty(header)){
+            OAuth2Errors.invalidRequest(response,"Authorization header not found.");
+            return null;
+        }
+        if(!header.startsWith(OAuth2Constants.BASIC_TYPE)){
+            OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+            return null;
+        }
+        String base64Token = Strings.trim(header.substring(OAuth2Constants.BASIC_TYPE.length()));
+        String token = Base64.decode(base64Token);
+        String[] idAndSecret = Strings.split(token,":");
+        if(idAndSecret.length != 2){
+            OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+            return null;
+        }
+        return new SamplingAuthzClientCredentials(idAndSecret[0],idAndSecret[1]);
+    }
+    
 }
