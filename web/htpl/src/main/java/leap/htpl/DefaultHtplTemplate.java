@@ -163,12 +163,7 @@ public class DefaultHtplTemplate extends AbstractHtplTemplate implements HtplTem
 			}
 			
 			//add listener to handle reloading of layout template.
-			layoutTemplate.addListener(new HtplTemplateListener() {
-				@Override
-				public void onTemplateReloaded(HtplTemplate template) {
-					compileLayoutDocument(template);					
-				}
-			});
+			layoutTemplate.addListener(template -> compileLayoutDocument(template));
 
 			//compile it now
 			compileLayoutDocument(layoutTemplate);

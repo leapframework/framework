@@ -44,12 +44,7 @@ public class ReloadableHtplTemplate extends AbstractHtplTemplate implements Htpl
 		this.engine   = engine;
 		this.resource = resource;
         this.name = templateName;
-		this.reloadListener = new HtplTemplateListener() {
-			@Override
-			public void onTemplateReloaded(HtplTemplate template) {
-				reloadTemplate();
-			}
-		};
+		this.reloadListener = template -> reloadTemplate();
 		this.template = createWrappedTemplate(engine, resource);
 	}
 	
