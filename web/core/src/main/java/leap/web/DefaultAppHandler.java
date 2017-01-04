@@ -41,6 +41,7 @@ import leap.web.format.ResponseFormat;
 import leap.web.locale.LocaleResolver;
 import leap.web.multipart.MultipartContext;
 import leap.web.route.Route;
+import leap.web.route.Routes;
 import leap.web.theme.Theme;
 import leap.web.theme.ThemeManager;
 import leap.web.view.LinkedViewData;
@@ -161,19 +162,24 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
 				//routing to action
 				if (!handled) {
+                    RouteInfo routeInfo = request.getExternalRouteInfo();
+                    if(null == routeInfo) {
+                        routeInfo = new SimpleRouteInfo(app.routes(), null);
+                    }
+
 					DefaultActionContext ac = newActionContext(request, response);
 
                     //resolve action path
-                    String path = resolveActionPath(request, response, ac);
+                    String path = resolveActionPath(request, response, routeInfo, ac);
 
                     if (_debug) {
                         log.debug("Routing path '{}'", ac.getPath());
                     }
 
-                    if(handleCorePrelightRequest(request, response, ac)) {
+                    if(handleCorePrelightRequest(request, response, routeInfo, ac)) {
                         handled = true;
                     }else {
-                        int routeState = routeAndExecuteAction(request, response, ac);
+                        int routeState = routeAndExecuteAction(request, response, routeInfo, ac);
 
                         if (routeState == ROUTE_STATE_HANLDED) {
                             handled = true;
@@ -289,23 +295,25 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		return new DefaultActionContext(request, response);
 	}
 	
-	protected String resolveActionPath(Request request,Response response, DefaultActionContext ac) throws Exception {
-		String path = null;
-		
-		if(request.hasPathExtension()){
-			if(webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(request.getPathExtension())){
-				path = request.getServicePathWithoutExtension();
-			}else if(webConfig.isFormatExtensionEnabled()){
-				ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
-				if(null != fmt){
-					ac.setResponseFormat(fmt);
-				}
-			}
-		}
-		
-		if(null == path) {
-			path = request.getServicePath();	
-		}
+	protected String resolveActionPath(Request request,Response response, RouteInfo routeInfo, DefaultActionContext ac) throws Exception {
+		String path = routeInfo.getPath();
+
+        if(null == path) {
+            if (request.hasPathExtension()) {
+                if (webConfig.isActionExtensionEnabled() && webConfig.getActionExtensions().contains(request.getPathExtension())) {
+                    path = request.getServicePathWithoutExtension();
+                } else if (webConfig.isFormatExtensionEnabled()) {
+                    ResponseFormat fmt = request.getFormatManager().tryGetResponseFormat(request.getPathExtension());
+                    if (null != fmt) {
+                        ac.setResponseFormat(fmt);
+                    }
+                }
+            }
+
+            if (null == path) {
+                path = request.getServicePath();
+            }
+        }
 		
 		path = "".equals(path) ? "/" : path;
 		
@@ -321,6 +329,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected boolean handleCorePrelightRequest(Request request,
                                                 Response response,
+                                                RouteInfo routeInfo,
                                                 DefaultActionContext ac) throws Throwable{
 
         CorsHandler handler = webConfig.getCorsHandler();
@@ -329,7 +338,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         }
 
         if(!Strings.isEmpty(ac.getPath())) {
-            Route route = app.routes().match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            Route route = routeInfo.getRoutes().match(null, ac.getPath(), request.getParameters(), New.hashMap());
             if(null == route) {
                 return false;
             }
@@ -343,18 +352,21 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
 	protected int routeAndExecuteAction(Request request,
 										Response response,
+                                        RouteInfo routeInfo,
 										DefaultActionContext ac) throws Throwable{
 		
 		if(!Strings.isEmpty(ac.getPath())){
+            Routes routes = routeInfo.getRoutes();
+
 			Map<String, String> pathVariables = new LinkedHashMap<>();
 			
-			Route route = app.routes().match(request.getMethod(), 
+			Route route = routes.match(request.getMethod(),
 											 ac.getPath(),
 											 request.getParameters(),
 											 pathVariables);
 			
 			if(null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
-				route = app.routes().match(request.getMethod(), 
+				route = routes.match(request.getMethod(),
 										   request.getServicePathWithoutExtension(), 
 										   request.getParameters(), 
 										   pathVariables);
@@ -418,10 +430,15 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
 	@Override
 	public boolean handleAction(Request request,Response response, String actionPath) throws Throwable  {
+        RouteInfo routeInfo = request.getExternalRouteInfo();
+        if(null == routeInfo) {
+            routeInfo = new SimpleRouteInfo(app.routes(), null);
+        }
+
 		DefaultActionContext ac = newActionContext(request, response);
 		ac.setPath(actionPath);
 		
-		if(ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, ac) ){
+		if(ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, routeInfo, ac) ){
 			return true;
 		}
 		
