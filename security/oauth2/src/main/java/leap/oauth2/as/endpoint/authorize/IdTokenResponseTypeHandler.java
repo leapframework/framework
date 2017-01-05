@@ -52,6 +52,6 @@ public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler impl
         
         qs.add("id_token", idToken);
         
-        sendSuccessRedirect(response, authc, qs);
+        sendSuccessRedirect(request, response, authc, qs);
     }
 }

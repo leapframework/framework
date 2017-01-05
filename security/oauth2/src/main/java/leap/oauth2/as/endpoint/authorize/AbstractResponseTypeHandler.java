@@ -37,6 +37,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
     
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzClientManager      clientManager;
+    protected @Inject Oauth2RedirectHandler[] handlers;
     
     @Override
     public Result<AuthzClient> validateRequest(Request request, Response response, OAuth2Params params) throws Throwable {
@@ -83,12 +84,18 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
         return Result.of(client);
     }
     
-    protected void sendSuccessRedirect(Response response, AuthzAuthentication authc, QueryStringBuilder qs) {
+    protected void sendSuccessRedirect(Request request, Response response, AuthzAuthentication authc, QueryStringBuilder qs) {
         OAuth2Params params = authc.getParams();
         
         String state = params.getState();
         if(!Strings.isEmpty(state)) {
             qs.add("state", state);
+        }
+        
+        for(Oauth2RedirectHandler handler : handlers){
+            if(!handler.onOauth2LoginSuccessRedirect(request,response,authc,qs)){
+                return;
+            }
         }
         
         response.sendRedirect(Urls.appendQueryString(authc.getRedirectUri(), qs.build()));
