@@ -19,6 +19,7 @@ import leap.core.metamodel.ReservedMetaFieldName;
 import leap.lang.beans.BeanType;
 import leap.lang.jdbc.JdbcTypes;
 import leap.orm.OrmTestCase;
+import leap.orm.domain.FieldDomain;
 import leap.orm.tested.DomainEntity;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedTableName;
@@ -63,6 +64,16 @@ public class MappingTest extends OrmTestCase {
 		
 		fm = em.getFieldMapping("test2");
 		assertFalse(fm.isUpdate());
+	}
+	@Test
+	public void testNonDomainAnnotation(){
+		EntityMapping em = metadata.getEntityMapping(DomainEntity.class);
+		FieldMapping createdAt = em.getFieldMapping("createdAt");
+		FieldMapping updatedAt = em.getFieldMapping("updatedAt");
+		FieldDomain createdAtDomain = metadata.domains().getFieldDomain("createdAt");
+		FieldDomain updatedAtDomain = metadata.domains().getFieldDomain("updatedAt");
+		assertNotEquals(createdAt.getInsertValue(),createdAtDomain.getInsertValue());
+		assertEquals(updatedAt.getInsertValue(),updatedAtDomain.getInsertValue());
 	}
 
 	@Test

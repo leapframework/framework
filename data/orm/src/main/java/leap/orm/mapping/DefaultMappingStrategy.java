@@ -29,6 +29,7 @@ import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.TypeInfo;
 import leap.lang.beans.BeanProperty;
@@ -703,8 +704,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
             }else{
                 fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityName,fieldName);
             }
-
-            if(null != fieldDomain && fieldDomain.isAutoMapping()) {
+			NonDomain nonDomain = Classes.getAnnotation(fmb.getAnnotations(),NonDomain.class);
+			if(null != fieldDomain && fieldDomain.isAutoMapping() && nonDomain == null) {
                 log.trace("Found domain '{}' matched the field '{}' of entity '{}'",fieldDomain.getName(),fieldName,entityName);
                 configFieldMappingByDomain(emb, fmb, fieldDomain);
             }
