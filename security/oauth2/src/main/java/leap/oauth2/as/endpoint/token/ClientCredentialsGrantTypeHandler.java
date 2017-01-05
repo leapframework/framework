@@ -47,7 +47,7 @@ public class ClientCredentialsGrantTypeHandler extends AbstractGrantTypeHandler 
 			return;
 		}
 		
-		AuthzClientCredentials credentials = extractClientCredentials(request,response);
+		AuthzClientCredentials credentials = extractClientCredentials(request,response,params);
 		
 		if(credentials == null){
 			return;

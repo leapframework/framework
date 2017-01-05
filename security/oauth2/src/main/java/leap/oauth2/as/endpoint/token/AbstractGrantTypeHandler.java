@@ -84,24 +84,33 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         return client;
     }
 
-    protected AuthzClientCredentials extractClientCredentials(Request request, Response response){
+    protected AuthzClientCredentials extractClientCredentials(Request request, Response response,OAuth2Params params){
         String header = request.getHeader(OAuth2Constants.TOKEN_HEADER);
-        if(header == null || Strings.isEmpty(header)){
-            OAuth2Errors.invalidRequest(response,"Authorization header not found.");
+        if(header != null && !Strings.isEmpty(header)){
+            if(!header.startsWith(OAuth2Constants.BASIC_TYPE)){
+                OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+                return null;
+            }
+            String base64Token = Strings.trim(header.substring(OAuth2Constants.BASIC_TYPE.length()));
+            String token = Base64.decode(base64Token);
+            String[] idAndSecret = Strings.split(token,":");
+            if(idAndSecret.length != 2){
+                OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+                return null;
+            }
+            return new SamplingAuthzClientCredentials(idAndSecret[0],idAndSecret[1]);
+        }
+        String clientId = params.getClientId();
+        String clientSecret = params.getClientSecret();
+        if(Strings.isEmpty(clientId)){
+            OAuth2Errors.invalidRequest(response,"client_id is required.");
             return null;
         }
-        if(!header.startsWith(OAuth2Constants.BASIC_TYPE)){
-            OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+        if(Strings.isEmpty(clientSecret)){
+            OAuth2Errors.invalidRequest(response,"client_secret is required.");
             return null;
         }
-        String base64Token = Strings.trim(header.substring(OAuth2Constants.BASIC_TYPE.length()));
-        String token = Base64.decode(base64Token);
-        String[] idAndSecret = Strings.split(token,":");
-        if(idAndSecret.length != 2){
-            OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
-            return null;
-        }
-        return new SamplingAuthzClientCredentials(idAndSecret[0],idAndSecret[1]);
+        return new SamplingAuthzClientCredentials(clientId,clientSecret);
     }
     
 }
