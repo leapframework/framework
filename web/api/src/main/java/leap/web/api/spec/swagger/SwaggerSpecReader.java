@@ -342,7 +342,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
         if(Objects.equals(type,OAUTH2)){
             String authzUrl = Objects.toString(map.get(AUTHZ_URL));
             String tokenUrl = Objects.toString(map.get(TOKEN_URL));
-            MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,map);
+            String flow     = Objects.toString(map.get(FLOW));
+            MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,flow,map);
             return def;
         }
         throw new IllegalStateException("No supported security def : " + type);

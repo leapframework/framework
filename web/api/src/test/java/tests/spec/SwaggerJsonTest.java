@@ -24,6 +24,8 @@ import leap.lang.http.HTTP;
 import leap.lang.json.JSON;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiParameter;
+import leap.web.api.meta.model.MApiSecurityDef;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
@@ -109,6 +111,24 @@ public class SwaggerJsonTest extends WebTestBase {
         userRequired = xs.get("userRequired");
         assertEquals(Boolean.TRUE,userRequired);
         
+    }
+    @Test
+    public void testSecurityDef() throws IOException {
+        String swagger = get("/basepackage/swagger.json").getContent();
+        Map<String, Object> map = JSON.decodeMap(swagger);
+        Map<String, Object> secDef = getAsMap(map,SwaggerConstants.SECURITY_DEFINITIONS);
+        Map<String, Object> oauth = getAsMap(secDef,SwaggerConstants.OAUTH2);
+        Object flow = oauth.get(SwaggerConstants.FLOW);
+        assertEquals(SwaggerConstants.ACCESS_CODE,flow);
+        ApiMetadata m = specReader.read(new StringReader(swagger)).build();
+        boolean assertFlow = false;
+        for(MApiSecurityDef def : m.getSecurityDefs()){
+            if(def.isOAuth2()){
+                assertEquals(SwaggerConstants.ACCESS_CODE,def.getFlow());
+                assertFlow = true;
+            }
+        }
+        assertTrue(assertFlow);
     }
     
     protected Map<String, Object> getAsMap(Map<String, Object> map, String key){

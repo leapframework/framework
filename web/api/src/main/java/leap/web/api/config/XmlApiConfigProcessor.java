@@ -34,6 +34,7 @@ import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
 
@@ -44,7 +45,7 @@ import java.util.Map;
  * Created by kael on 2016/10/31.
  */
 public class XmlApiConfigProcessor implements AppConfigProcessor {
-    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis";
+    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
     private static final Log log = LogFactory.get(XmlApiConfigProcessor.class);
 
     protected static final String APIS                 = "apis";
@@ -65,6 +66,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String MAX_PAGE_SIZE        = "max-page-size";
     protected static final String DEFAULT_PAGE_SIZE    = "default-page-size";
     protected static final String ENABLED              = "enabled";
+    protected static final String FLOW                 = "flow";
     protected static final String AUTHZ_URL            = "authz-url";
     protected static final String TOKEN_URL            = "token-url";
     protected static final String SCOPE                = "scope";
@@ -484,7 +486,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
 
     public OauthConfig readOauth(AppConfigContext context, XmlReader reader){
         boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
-        OauthConfig oauth = new OauthConfig(defaultEnabled,null,null);
+        String defaultFlow = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
+        OauthConfig oauth = new OauthConfig(defaultEnabled, defaultFlow,null,null);
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();

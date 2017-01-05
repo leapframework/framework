@@ -40,6 +40,7 @@ import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
 
@@ -167,8 +168,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         OauthConfig oauthConfig = c.getOauthConfig();
         if(oauthConfig != null && oauthConfig.isOauthEnabled()) {
             MOAuth2ApiSecurityDef def =
-                    new MOAuth2ApiSecurityDef(oauthConfig.getOauthAuthzEndpointUrl(),
-                            oauthConfig.getOauthTokenEndpointUrl());
+                    new MOAuth2ApiSecurityDef(
+                            SwaggerConstants.OAUTH2,
+                            SwaggerConstants.OAUTH2,
+                            oauthConfig.getOauthAuthzEndpointUrl(),
+                            oauthConfig.getOauthTokenEndpointUrl(),
+                            oauthConfig.getFlow(),
+                            null);
             
             md.addSecurityDef(def);
         }

@@ -19,6 +19,7 @@
 package leap.web.api.config;
 
 import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.spec.swagger.SwaggerConstants;
 
 import java.util.Collections;
 import java.util.Map;

@@ -24,6 +24,7 @@ import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
 
 import java.util.*;

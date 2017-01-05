@@ -313,7 +313,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.startObject();
             
             w.property(TYPE, SwaggerConstants.OAUTH2)
-            .property(FLOW, IMPLICIT)
+            .property(FLOW, d.getFlow())
             .property(AUTHZ_URL, d.getAuthzEndpointUrl());
             
             writeOAuth2Scopes(context, m, w, d, m.getPermissions());
