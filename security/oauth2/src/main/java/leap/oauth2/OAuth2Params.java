@@ -37,7 +37,6 @@ public interface OAuth2Params {
 	String RESPONSE_TYPE = "response_type";
 	String TOKEN_TYPE    = "token_type";
 	String ACCESS_TOKEN  = "access_token";
-	String RS_ID 		 = "rs_id";
 	
 	//Error
     String ERROR             = "error";
