@@ -135,10 +135,6 @@ public interface OAuth2Params {
 	default boolean isError() {
 	    return !Strings.isEmpty(getError());
 	}
-
-	default String getResourceServerId(){
-		return getParameter(RS_ID);
-	}
 	
 	String getParameter(String name);
 	

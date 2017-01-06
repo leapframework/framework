@@ -18,7 +18,9 @@ package leap.oauth2.rs.token;
 import leap.core.annotation.Inject;
 import leap.lang.Result;
 import leap.lang.Strings;
+import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
+import leap.lang.http.Headers;
 import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
@@ -26,6 +28,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.OAuth2Constants;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.wac.OAuth2WebAppConfig;
@@ -51,7 +54,8 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
                                          .addQueryParam("access_token", credentials.getToken());
         if(null != config.getResourceServerId()){
-            request.addHeader("rs_id",config.getResourceServerId());
+            request.addHeader(Headers.AUTHORIZATION, 
+                    Base64.encode(config.getResourceServerId()+":"+config.getResourceServerSecret()));
         }
         HttpResponse response = request.get();
         
