@@ -230,8 +230,11 @@ public class DefaultActionStrategy implements ActionStrategy {
 		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
-			if(a.annotationType().isAnnotationPresent(HttpMethod.class)){
-				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
+            HttpMethod hm = a.annotationType().getAnnotation(HttpMethod.class);
+
+			if(null != hm){
+				defaultMethod = Strings.firstNotEmpty(hm.value().toUpperCase(),
+                                                        a.annotationType().getSimpleName().toUpperCase());
 
                 Method value = Reflection.findMethod(a.annotationType(), "value");
                 if(null != value){

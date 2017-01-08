@@ -44,4 +44,12 @@ public class RestTestControllerTest extends WebTestBase {
         get("/rest_test/rest_sub1").assertOk();
         get("/rest_test/rest_sub2").assertOk();
     }
+
+    @Test
+    public void testAnyHttpMethod() {
+        get("/rest_test/any_http_method?p=1").assertContentEquals("1");
+        post("/rest_test/any_http_method?p=2").assertContentEquals("2");
+        put("/rest_test/any_http_method?p=3").assertContentEquals("3");
+        delete("/rest_test/any_http_method?p=4").assertContentEquals("4");
+    }
 }
