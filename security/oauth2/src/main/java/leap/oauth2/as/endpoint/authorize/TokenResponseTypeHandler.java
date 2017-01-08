@@ -17,6 +17,7 @@ package leap.oauth2.as.endpoint.authorize;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.http.QueryStringBuilder;
 import leap.lang.net.Urls;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
@@ -27,6 +28,8 @@ import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
+
+import java.util.Objects;
 
 /**
  * Implicit authorization. 
@@ -52,19 +55,13 @@ public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implem
     }
 
     protected void sendAccessTokenRedirect(Request request, Response response, AuthzAuthentication authc, AuthzAccessToken at) {
-        OAuth2Params params = authc.getParams();
         
-        StringBuilder query = new StringBuilder();
+        QueryStringBuilder qs = new QueryStringBuilder(request.getCharacterEncoding());
+        qs.add("access_token",at.getToken());
+        qs.add("token_type",at.getTokenType());
+        qs.add("expires_in", Objects.toString(at.getExpiresIn()));
         
-        query.append("access_token=").append(at.getToken())
-             .append("&token_type=").append(at.getTokenType())
-             .append("&expires_in=").append(at.getExpiresIn());
+        sendSuccessRedirect(request,response,authc,qs);
         
-        String state = params.getState();
-        if(!Strings.isEmpty(state)) {
-            query.append("&state=").append(Urls.encode(state));
-        }
-        
-        response.sendRedirect(Urls.appendQueryString(authc.getRedirectUri(), query.toString()));
     }
 }

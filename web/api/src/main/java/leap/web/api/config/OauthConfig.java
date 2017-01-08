@@ -18,16 +18,24 @@
 
 package leap.web.api.config;
 
+import leap.web.api.spec.swagger.SwaggerConstants;
+
 /**
  * Created by kael on 2016/10/31.
  */
 public class OauthConfig {
     private boolean oauthEnabled;
-    private String  oauthAuthzEndpointUrl;
+    private String flow;
+    private String oauthAuthzEndpointUrl;
     private String oauthTokenEndpointUrl;
 
-    public OauthConfig(boolean oauthEnabled, String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
+    public OauthConfig(boolean oauthEnabled,String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
+        this(oauthEnabled, SwaggerConstants.IMPLICIT,oAuthAuthzEndpointUrl,oAuthTokenEndpointUrl);
+    }
+    
+    public OauthConfig(boolean oauthEnabled,String flow, String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
         this.oauthEnabled = oauthEnabled;
+        this.flow = flow;
         this.oauthAuthzEndpointUrl = oAuthAuthzEndpointUrl;
         this.oauthTokenEndpointUrl = oAuthTokenEndpointUrl;
     }
@@ -54,5 +62,13 @@ public class OauthConfig {
 
     public void setOauthTokenEndpointUrl(String oauthTokenEndpointUrl) {
         this.oauthTokenEndpointUrl = oauthTokenEndpointUrl;
+    }
+
+    public String getFlow() {
+        return flow;
+    }
+
+    public void setFlow(String flow) {
+        this.flow = flow;
     }
 }

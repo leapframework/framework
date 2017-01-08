@@ -49,6 +49,6 @@ public class CodeResponseTypeHandler extends AbstractResponseTypeHandler impleme
                 new QueryStringBuilder(request.getCharacterEncoding())
                     .add("code", code);
 
-        sendSuccessRedirect(response, authc, qs);
+        sendSuccessRedirect(request, response, authc, qs);
     }
 }

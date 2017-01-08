@@ -104,6 +104,7 @@
             <xsd:element name="token-url" type="xsd:string" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
         <xsd:attribute name="enabled" default="true" type="xsd:boolean" use="optional"/>
+        <xsd:attribute name="flow" default="implicit" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="oauth">

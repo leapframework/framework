@@ -26,8 +26,7 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
-import leap.oauth2.as.client.AuthzClient;
-import leap.oauth2.as.client.AuthzClientManager;
+import leap.oauth2.as.client.*;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.oauth2.as.token.SimpleAuthzAccessToken;
@@ -47,7 +46,7 @@ import java.util.function.Consumer;
  * Created by KAEL on 2016/6/13.
  * grant_type=token_client
  */
-public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateBean {
+public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler implements PostCreateBean {
 
     private Log log = LogFactory.get(TokenClientGrantTypeHandler.class);
 
@@ -77,14 +76,16 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
             OAuth2Errors.invalidRequest(response, "access_token is require");
             return;
         }
-        AuthzClient client = clientManager.authenticate(params).get();
+
+        SamplingAuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());
+
+        AuthzClient client = validateClientSecret(request,response, credentials);
         if(client == null){
-            OAuth2Errors.invalidRequest(response, "fail to authenticate client");
             return;
         }
         boolean isJwtToken =isJwtToken(request,response,params);
 
-        AuthzAccessToken at = null;
+        AuthzAccessToken at;
         if(isJwtToken){
             at = authenticateJwtToken(request,response,params,client);
         }else{

@@ -27,6 +27,7 @@ import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
+import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
 import leap.web.api.meta.model.MApiParameter.Location;
@@ -303,9 +304,20 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         //context.defaultSecurity = OAUTH2;
-
-        writeOAuth2Implicit(context, m, w, d);
-        //writeOAuth2AccesCode(context, m, w, d);
+		if(Strings.equals(d.getFlow(),SwaggerConstants.IMPLICIT)){
+			
+		}
+        switch (d.getFlow()){
+			case SwaggerConstants.IMPLICIT:
+				writeOAuth2Implicit(context, m, w, d);
+				break;
+			case SwaggerConstants.ACCESS_CODE:
+				writeOAuth2AccesCode(context, m, w, d);
+				break;
+			default:
+				throw new ApiConfigException("not support flow:"+d.getFlow());
+		}
+        //
     }
     
     protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
@@ -323,7 +335,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH2_ACCESS_CODE, () -> {
+        w.property(d.getName(), () -> {
             w.startObject();
             
             w.property(TYPE, SwaggerConstants.OAUTH2)

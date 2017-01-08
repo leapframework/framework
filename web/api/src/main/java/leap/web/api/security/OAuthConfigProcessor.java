@@ -25,6 +25,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.OauthConfig;
+import leap.web.api.spec.swagger.SwaggerConstants;
 
 public class OAuthConfigProcessor implements ApiConfigProcessor {
     
@@ -52,7 +53,7 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
                 String authzUrl = owc.getServerAuthorizationEndpointUrl();
                 String tokenUrl = owc.getServerTokenEndpointUrl();
                 if(oauthConfig == null){
-                    oauthConfig = new OauthConfig(false,authzUrl,tokenUrl);
+                    oauthConfig = new OauthConfig(false, authzUrl,tokenUrl);
                     c.setOAuthConfig(oauthConfig);
                     return;
                 }

@@ -93,8 +93,16 @@
 		  
 	<bean name="client_credentials"
 		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
-		  class="leap.oauth2.as.endpoint.token.ClientGrantTypeHandler"/>
+		  class="leap.oauth2.as.endpoint.token.ClientCredentialsGrantTypeHandler"/>
 
+	<bean name="client_secret_basic"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.ClientSecretBasicGrantTypeHandler"/>
+
+	<bean name="client_secret_post"
+		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
+		  class="leap.oauth2.as.endpoint.token.ClientSecretPostGrantTypeHandler"/>
+	
 	<bean name="token_client"
 		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
 		  class="leap.oauth2.as.endpoint.token.TokenClientGrantTypeHandler"/>

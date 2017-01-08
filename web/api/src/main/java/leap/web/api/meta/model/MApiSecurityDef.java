@@ -33,4 +33,6 @@ public abstract class MApiSecurityDef extends  MApiNamed {
     }
 
     public abstract boolean isOAuth2();
+    
+    public abstract String getFlow();
 }
