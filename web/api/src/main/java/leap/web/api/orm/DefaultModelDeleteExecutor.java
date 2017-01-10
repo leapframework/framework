@@ -18,25 +18,25 @@
 
 package leap.web.api.orm;
 
-import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.mvc.params.DeleteOptions;
 
-public abstract class ModelExecutorBase {
+public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
-    protected final ModelExecutorConfig c;
-    protected final MApiModel           am;
-    protected final Dao                 dao;
-    protected final EntityMapping       em;
-    protected final OrmMetadata         md;
+    protected DefaultModelDeleteExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
+        super(c, am, dao, em);
+    }
 
-    public ModelExecutorBase(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        this.c = c;
-        this.am = am;
-        this.dao = dao;
-        this.em = em;
-        this.md = dao.getOrmContext().getMetadata();
+    @Override
+    public DeleteOneResult deleteOne(Object id, DeleteOptions options) {
+        if(null == options || !options.isCascadeDelete()) {
+            return new DeleteOneResult(dao.delete(em, id) > 0);
+        }else{
+            return new DeleteOneResult(dao.cascadeDelete(em, id));
+        }
     }
 
 }
