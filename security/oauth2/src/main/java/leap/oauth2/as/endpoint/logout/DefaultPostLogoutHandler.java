@@ -38,6 +38,8 @@ public class DefaultPostLogoutHandler implements PostLogoutHandler {
         exposeViewAttributes(request, response, context, params);
 
         defaultLogoutView.render(request, response);
+        
+        response.markHandled();
     }
 
     protected void exposeViewAttributes(Request request, Response response, LogoutContext context, OAuth2Params params) throws Throwable {

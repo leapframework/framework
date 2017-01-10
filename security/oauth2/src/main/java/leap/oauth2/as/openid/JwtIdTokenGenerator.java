@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.JwtSigner;
 import leap.core.security.token.jwt.MacSigner;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.authc.AuthzAuthentication;
@@ -32,16 +33,21 @@ import leap.web.security.user.UserDetails;
 public class JwtIdTokenGenerator implements IdTokenGenerator {
 
     protected @Inject OAuth2AuthzServerConfig config;
-    
+
     @Override
     public String generateIdToken(AuthzAuthentication authc) {
-        return generateIdToken(authc, config.getDefaultIdTokenExpires());
+        return generateIdToken(authc,New.hashMap());
     }
 
     @Override
-    public String generateIdToken(AuthzAuthentication authc, int expires) {
+    public String generateIdToken(AuthzAuthentication authc, Map<String, Object> extend) {
+        return generateIdToken(authc, extend, config.getDefaultIdTokenExpires());
+    }
+
+    @Override
+    public String generateIdToken(AuthzAuthentication authc, Map<String, Object> extend, int expires) {
         JwtSigner           signer = getJwtSigner(authc, expires);
-        Map<String, Object> claims = getJwtClaims(authc, expires);
+        Map<String, Object> claims = getJwtClaims(authc, extend, expires);
         
         return signer.sign(claims);
     }
@@ -52,7 +58,7 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         return new MacSigner(client.getSecret(), expires);
     }
     
-    protected Map<String, Object> getJwtClaims(AuthzAuthentication authc, int expires) {
+    protected Map<String, Object> getJwtClaims(AuthzAuthentication authc, Map<String, Object> extend, int expires) {
         OAuth2Params params = authc.getParams();
         AuthzClient client = authc.getClientDetails();
         UserDetails user   = authc.getUserDetails();
@@ -88,7 +94,11 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         if(!Strings.isEmpty(nonce)) {
             claims.put(OAuth2Params.NONCE, nonce);
         }
-                
+        
+        if(extend != null){
+            extend.forEach((s, o) -> claims.put(s,o));
+        }
+        
         return claims;
     }
 
