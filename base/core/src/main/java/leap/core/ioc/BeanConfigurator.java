@@ -258,6 +258,10 @@ public class BeanConfigurator {
         }
 
         if(null != value) {
+            if(value.isNull()){
+                value.convert(defaultValue);
+            }
+            
             v.setValue(bean, value);
         }else if(!Strings.isEmpty(defaultValue)) {
             v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
