@@ -446,6 +446,11 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	}
 
 	protected boolean handleNoAction(Request request,Response response,String path) throws Throwable {
+    	
+    	if(response.isHandled()){
+    		return true;
+		}
+    	
 		if(path.equals("/")){
 			path = homePath;
 		}
