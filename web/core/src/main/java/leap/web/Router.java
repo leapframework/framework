@@ -18,7 +18,7 @@ package leap.web;
 
 import leap.web.route.Routes;
 
-public interface RouteInfo {
+public interface Router {
 
     /**
      * Returns the route registry or null if use internal routes.
@@ -30,4 +30,10 @@ public interface RouteInfo {
      */
     String getPath();
 
+    /**
+     * Returns <code>true</code> if the request has been handled when no route exists.
+     */
+    default boolean handleNotFound(Request request, Response response, String path) {
+        return false;
+    }
 }

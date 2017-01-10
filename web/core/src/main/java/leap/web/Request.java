@@ -267,14 +267,14 @@ public abstract class Request extends RequestBase {
 	public abstract void setUser(UserPrincipal user);
 
     /**
-     * Returns the external route info or null if use internal.
+     * Returns the external router or null if use internal.
      */
-    public abstract RouteInfo getExternalRouteInfo();
+    public abstract Router getExternalRouter();
 
     /**
-     * Sets the external route info.
+     * Sets the external router.
      */
-    public abstract void setExternalRouteInfo(RouteInfo routeInfo);
+    public abstract void setExternalRouter(Router router);
 
     @Override
     public Cookie getCookie(String name) {

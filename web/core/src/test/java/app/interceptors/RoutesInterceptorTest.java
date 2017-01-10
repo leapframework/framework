@@ -22,14 +22,17 @@ import org.junit.Test;
 public class RoutesInterceptorTest extends WebTestCase {
 
     @Test
-    public void testExternalRouteInfo() {
-        get("/test_route_info").assert404();
+    public void testExternalRouter() {
+        get("/test_router").assert404();
 
-        get("/test_route_info/simple/action1?p=1").assertContentEquals("1");
-        get("/test_route_info/restful/action1?p=2").assert404();
-        get("/test_route_info/restful/action2?p=3").assertContentEquals("3");
-        get("/test_route_info/action1?p=4").assertContentEquals("4");
+        get("/test_router/simple/action1?p=1").assertContentEquals("1");
+        get("/test_router/restful/action1?p=2").assert404();
+        get("/test_router/restful/action2?p=3").assertContentEquals("3");
+        get("/test_router/action1?p=4").assertContentEquals("4");
 
+        //not found
+        get("/test_router/404").assertContentEquals("404");
+        get("/test_router/404?not_found=1").assertContentEquals("not found");
     }
 
 }

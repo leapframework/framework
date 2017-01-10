@@ -18,23 +18,23 @@ package leap.web;
 
 import leap.web.route.Routes;
 
-public class SimpleRouteInfo implements RouteInfo {
+public class SimpleRouter implements Router {
 
     protected Routes routes;
     protected String path;
 
-    public SimpleRouteInfo() {
+    public SimpleRouter() {
     }
 
-    public SimpleRouteInfo(Routes routes) {
+    public SimpleRouter(Routes routes) {
         this.routes = routes;
     }
 
-    public SimpleRouteInfo(String path) {
+    public SimpleRouter(String path) {
         this.path = path;
     }
 
-    public SimpleRouteInfo(Routes routes, String path) {
+    public SimpleRouter(Routes routes, String path) {
         this.routes = routes;
         this.path = path;
     }

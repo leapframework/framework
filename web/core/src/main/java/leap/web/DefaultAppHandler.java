@@ -28,7 +28,6 @@ import leap.lang.time.StopWatch;
 import leap.web.action.ActionContext;
 import leap.web.action.ActionManager;
 import leap.web.action.DefaultActionContext;
-import leap.web.ajax.AjaxDetector;
 import leap.web.assets.AssetSource;
 import leap.web.config.WebConfig;
 import leap.web.cors.CorsHandler;
@@ -162,24 +161,24 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
 				//routing to action
 				if (!handled) {
-                    RouteInfo routeInfo = request.getExternalRouteInfo();
-                    if(null == routeInfo) {
-                        routeInfo = new SimpleRouteInfo(app.routes(), null);
+                    Router router = request.getExternalRouter();
+                    if(null == router) {
+                        router = new SimpleRouter(app.routes(), null);
                     }
 
 					DefaultActionContext ac = newActionContext(request, response);
 
                     //resolve action path
-                    String path = resolveActionPath(request, response, routeInfo, ac);
+                    String path = resolveActionPath(request, response, router, ac);
 
                     if (_debug) {
                         log.debug("Routing path '{}'", ac.getPath());
                     }
 
-                    if(handleCorePrelightRequest(request, response, routeInfo, ac)) {
+                    if(handleCorePrelightRequest(request, response, router, ac)) {
                         handled = true;
                     }else {
-                        int routeState = routeAndExecuteAction(request, response, routeInfo, ac);
+                        int routeState = routeAndExecuteAction(request, response, router, ac);
 
                         if (routeState == ROUTE_STATE_HANLDED) {
                             handled = true;
@@ -198,7 +197,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                                 handled = true;
                             }else{
-                                handled = handleNoAction(request, response, path);
+                                handled = handleNoAction(request, response, router, path);
                             }
                         } else {
                             return false;
@@ -295,7 +294,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 		return new DefaultActionContext(request, response);
 	}
 	
-	protected String resolveActionPath(Request request,Response response, RouteInfo routeInfo, DefaultActionContext ac) throws Exception {
+	protected String resolveActionPath(Request request, Response response, Router routeInfo, DefaultActionContext ac) throws Exception {
 		String path = routeInfo.getPath();
 
         if(null == path) {
@@ -329,7 +328,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected boolean handleCorePrelightRequest(Request request,
                                                 Response response,
-                                                RouteInfo routeInfo,
+                                                Router routeInfo,
                                                 DefaultActionContext ac) throws Throwable{
 
         CorsHandler handler = webConfig.getCorsHandler();
@@ -352,7 +351,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
 	protected int routeAndExecuteAction(Request request,
 										Response response,
-                                        RouteInfo routeInfo,
+                                        Router routeInfo,
 										DefaultActionContext ac) throws Throwable{
 		
 		if(!Strings.isEmpty(ac.getPath())){
@@ -430,25 +429,29 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 	
 	@Override
 	public boolean handleAction(Request request,Response response, String actionPath) throws Throwable  {
-        RouteInfo routeInfo = request.getExternalRouteInfo();
-        if(null == routeInfo) {
-            routeInfo = new SimpleRouteInfo(app.routes(), null);
+        Router router = request.getExternalRouter();
+        if(null == router) {
+            router = new SimpleRouter(app.routes(), null);
         }
 
 		DefaultActionContext ac = newActionContext(request, response);
 		ac.setPath(actionPath);
 		
-		if(ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, routeInfo, ac) ){
+		if(ROUTE_STATE_HANLDED == routeAndExecuteAction(request, response, router, ac) ){
 			return true;
 		}
-		
-		return handleNoAction(request, response, actionPath);
+
+		return handleNoAction(request, response, router, actionPath);
 	}
 
-	protected boolean handleNoAction(Request request,Response response,String path) throws Throwable {
+	protected boolean handleNoAction(Request request,Response response, Router router, String path) throws Throwable {
 		if(path.equals("/")){
 			path = homePath;
 		}
+
+        if(router.handleNotFound(request, response, path)) {
+            return true;
+        }
 		
 		View view = request.getViewSource().getView(path, request.getLocale());
 		if(null == view) {

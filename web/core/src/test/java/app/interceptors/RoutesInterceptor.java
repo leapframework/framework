@@ -23,7 +23,7 @@ import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.RequestInterceptor;
 import leap.web.Response;
-import leap.web.SimpleRouteInfo;
+import leap.web.SimpleRouter;
 import leap.web.annotation.Path;
 import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
@@ -33,7 +33,7 @@ import leap.web.route.Routes;
 
 public class RoutesInterceptor implements RequestInterceptor, PostCreateBean {
 
-    private static final String PATH_PREFIX = "/test_route_info/";
+    private static final String PATH_PREFIX = "/test_router/";
 
     private @Inject RouteManager rm;
 
@@ -51,7 +51,21 @@ public class RoutesInterceptor implements RequestInterceptor, PostCreateBean {
     @Override
     public State preHandleRequest(Request request, Response response) throws Throwable {
         if(request.getPath().startsWith(PATH_PREFIX)) {
-            request.setExternalRouteInfo(new SimpleRouteInfo(routes, request.getPath().substring(PATH_PREFIX.length()-1)));
+
+            String path = request.getPath().substring(PATH_PREFIX.length()-1);
+
+            if(request.hasQueryParameter("not_found")) {
+                request.setExternalRouter(new SimpleRouter(routes, path){
+                    @Override
+                    public boolean handleNotFound(Request request, Response response, String path) {
+                        response.setStatus(404);
+                        response.getWriter().write("not found");
+                        return true;
+                    }
+                });
+            }else{
+                request.setExternalRouter(new SimpleRouter(routes, path));
+            }
         }
         return State.CONTINUE;
     }
