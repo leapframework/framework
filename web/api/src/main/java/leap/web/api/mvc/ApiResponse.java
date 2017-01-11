@@ -46,6 +46,10 @@ public class ApiResponse<T> implements ResponseEntity {
         return err(HTTP.Status.BAD_REQUEST, "BadRequest", message);
     }
 
+    public static ApiResponse notFound(String message) {
+        return err(HTTP.Status.NOT_FOUND, message);
+    }
+
     public static ApiResponse err(HTTP.Status status, String message) {
         return of(status, new ApiError(status.name(), message));
     }
