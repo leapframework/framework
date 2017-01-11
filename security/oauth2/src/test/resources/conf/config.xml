@@ -46,7 +46,7 @@
                 VeJXqKBlEhsNckYIGQIDAQAB
         </property>
     </properties>
-    <property name="jwt.publicKey">
+    <property name="oauth2.rs.rsaPublicKeyStr">
         MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP
         fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb
         WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1

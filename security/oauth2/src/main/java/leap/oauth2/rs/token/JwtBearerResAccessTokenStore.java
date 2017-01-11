@@ -15,12 +15,16 @@
  */
 package leap.oauth2.rs.token;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
+import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Result;
 import leap.lang.security.RSA;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
@@ -31,21 +35,20 @@ import java.util.Map;
 /**
  * Created by KAEL on 2016/5/8.
  */
-public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  {
+public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
 
     protected RSAPublicKey               publicKey;
-    protected final JwtVerifier         verifier;
     protected @Inject SecurityConfig     sc;
-    protected @Inject OAuth2AuthzServerConfig config;
-
-    public JwtBearerResAccessTokenStore(String publicKey) {
-        this.publicKey = RSA.decodePublicKey(publicKey);
-        verifier = new RsaVerifier(this.publicKey);
-    }
+    protected @Inject OAuth2AuthzServerConfig asc;
+    protected @Inject OAuth2ResServerConfig rsc;
 
 
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {
+        JwtVerifier verifier = rsc.getJwtVerifier();
+        if(verifier == null){
+            throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
+        }
         Map<String,Object> jwtDetail = verifier.verify(token.getToken());
         SimpleResAccessTokenDetails resAccessTokenDetails = new SimpleResAccessTokenDetails();
         UserDetails ud = sc.getUserStore().loadUserDetailsByLoginName((String)jwtDetail.remove("username"));
@@ -57,13 +60,13 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore  
         try {
             Object expiresIn = jwtDetail.get("expires_in");
             if(expiresIn == null){
-                resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
+                resAccessTokenDetails.setExpiresIn(asc.getDefaultAccessTokenExpires());
             }else{
                 int second = expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString());
                 resAccessTokenDetails.setExpiresIn(second * 1000);
             }
         } catch (NumberFormatException e) {
-            resAccessTokenDetails.setExpiresIn(config.getDefaultAccessTokenExpires());
+            resAccessTokenDetails.setExpiresIn(asc.getDefaultAccessTokenExpires());
         }
         return Result.of(resAccessTokenDetails);
     }

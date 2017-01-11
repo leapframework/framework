@@ -13,7 +13,6 @@
 
 package tests.as;
 
-import app.Global;
 import org.junit.Test;
 import tests.JwtTokenResponse;
 import tests.OAuth2TestBase;

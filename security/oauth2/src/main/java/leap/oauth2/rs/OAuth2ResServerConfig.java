@@ -15,6 +15,8 @@
  */
 package leap.oauth2.rs;
 
+import leap.core.security.token.jwt.JwtVerifier;
+
 /**
  * The configuration of oauth2 resource server in web app.
  *
@@ -62,4 +64,10 @@ public interface OAuth2ResServerConfig {
 	 * @return resourceSecret
      */
 	String getResourceServerSecret();
+
+	/**
+	 * Returns the jwt verifier of this resource server
+	 * @return
+	 */
+	JwtVerifier getJwtVerifier();
 }
