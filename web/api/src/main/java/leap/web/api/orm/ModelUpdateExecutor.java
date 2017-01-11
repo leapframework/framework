@@ -18,6 +18,11 @@ package leap.web.api.orm;
 
 import leap.web.api.mvc.params.Partial;
 
+import java.util.Map;
+
 public interface ModelUpdateExecutor {
+
     UpdateOneResult partialUpdateOne(Object id, Partial partial);
+
+    UpdateOneResult partialUpdateOne(Object id, Map<String,Object> properties);
 }

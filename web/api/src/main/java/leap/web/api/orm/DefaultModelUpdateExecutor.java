@@ -51,9 +51,13 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
             throw new BadRequestException("No update properties");
         }
 
+        return partialUpdateOne(id, partial.getProperties());
+    }
+
+        @Override
+    public UpdateOneResult partialUpdateOne(Object id, Map<String, Object> properties) {
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
-        Map<String, Object> properties = partial.getProperties();
         for (Map.Entry<String, Object> entry : properties.entrySet()) {
             String name = entry.getKey();
 
@@ -92,7 +96,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
 
         UpdateCommand update =
-                dao.cmdUpdate(em.getEntityName()).id(id).setAll(partial.getProperties());
+                dao.cmdUpdate(em.getEntityName()).id(id).setAll(properties);
 
         AtomicInteger result = new AtomicInteger();
 
