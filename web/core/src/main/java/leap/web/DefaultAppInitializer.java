@@ -72,7 +72,7 @@ public class DefaultAppInitializer implements AppInitializer {
 
 		//Load web module's routes.
 		for(ModuleConfig module : app.getWebConfig().getModules()){
-			// don't duplicate load controller
+			// don't repeat load controller
 			if(Strings.startsWith(module.getBasePackage()+".",basePackage+".")){
 				if(Strings.isEmpty(module.getBasePath())||Strings.equals("/",module.getBasePath())){
 					continue;

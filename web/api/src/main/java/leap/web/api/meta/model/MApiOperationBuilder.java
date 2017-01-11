@@ -20,6 +20,7 @@ import java.util.*;
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
+import leap.web.App;
 import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
@@ -54,6 +55,8 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         }
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
+        }else{
+            
         }
     }
 
