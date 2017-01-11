@@ -97,18 +97,17 @@ public class SwaggerJsonTest extends WebTestBase {
     }
     @Test
     public void testXSecuritySwaggerJson(){
-        String swagger = get("/testing/swagger.json").getContent();
+        String swagger = get("/api/swagger.json").getContent();
         Map<String, Object> map = JSON.decodeMap(swagger);
-        Map<String, Object> path = getAsMap(getAsMap(map,"paths"),"/perms/test_anonymous");
+        Map<String, Object> path = getAsMap(getAsMap(map,"paths"),"/xs/anonymous");
         Map<String, Object> op = getAsMap(path,"get");
         Map<String, Object> xs = getAsMap(op,"x-security");
-        Object userRequired = xs.get("userRequired");
-        assertEquals(Boolean.FALSE,userRequired);
+        assertNull(xs);
 
-        path = getAsMap(getAsMap(map,"paths"),"/perms/test_perm");
+        path = getAsMap(getAsMap(map,"paths"),"/xs/client_only");
         op = getAsMap(path,"get");
         xs = getAsMap(op,"x-security");
-        userRequired = xs.get("userRequired");
+        Object userRequired = xs.get("userRequired");
         assertEquals(Boolean.TRUE,userRequired);
         
     }

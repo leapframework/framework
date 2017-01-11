@@ -37,6 +37,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	protected Set<String>                    produces   = new LinkedHashSet<>();
     protected Map<String, MApiSecurity>      security   = new HashMap<>();
     protected boolean                        allowAnonymous;
+    protected boolean                        allowClientOnly;
 	protected boolean           	         deprecated;
     protected OperationDescSet.OperationDesc desc;
 
@@ -55,8 +56,9 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         }
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
-        }else{
-            
+        }
+        if(null != route.getAllowClientOnly()){
+            this.allowClientOnly = route.getAllowClientOnly();
         }
     }
 
@@ -163,6 +165,14 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.allowAnonymous = allowAnonymous;
     }
 
+    public boolean isAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    public void setAllowClientOnly(boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+    }
+
     public void setDesc(OperationDescSet.OperationDesc desc){
         this.desc = desc;
         this.setSummary(desc.getSummary());
@@ -183,6 +193,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
                                 security.values().toArray(new MApiSecurity[security.size()]),
                                 allowAnonymous,
+                                allowClientOnly,
 								deprecated, attrs);
     }
 	

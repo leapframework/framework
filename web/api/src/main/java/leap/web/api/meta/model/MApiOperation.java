@@ -18,6 +18,7 @@ package leap.web.api.meta.model;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.org.apache.regexp.internal.RE;
 import leap.lang.Args;
 import leap.lang.http.HTTP;
 import leap.web.route.Route;
@@ -34,6 +35,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 	protected final String[]        produces;
     protected final MApiSecurity[]  security;
     protected final boolean         allowAnonymous;
+    protected final boolean			allowClientOnly;
 	protected final boolean         deprecated;
 
 	public MApiOperation(String id, String name, String title, String summary, String description,
@@ -46,6 +48,7 @@ public class MApiOperation extends MApiNamedWithDesc {
                          String[] produces,
 						 MApiSecurity[] security,
                          boolean allowAnonymous,
+						 boolean allowClientOnly,
                          boolean deprecated, Map<String, Object> attrs) {
 	    super(name, title, summary, description, attrs);
 
@@ -59,6 +62,7 @@ public class MApiOperation extends MApiNamedWithDesc {
 		this.produces    = produces;
         this.security    = security;
         this.allowAnonymous = allowAnonymous;
+        this.allowClientOnly = allowClientOnly;
 		this.deprecated  = deprecated;
 	}
 
@@ -147,7 +151,13 @@ public class MApiOperation extends MApiNamedWithDesc {
     public boolean isAllowAnonymous() {
         return allowAnonymous;
     }
-
+	/**
+	 * Returns true if this operation allows only client access.
+	 */
+    public boolean isAllowClientOnly(){
+		return allowClientOnly;
+	}
+    
     /**
 	 * Declares this operation to be deprecated.
 	 */

@@ -263,7 +263,7 @@ public class DefaultRouteManager implements RouteManager {
         }
 
         AllowClientOnly ac = act.searchAnnotation(AllowClientOnly.class);
-        if (null != ac) {
+         if (null != ac) {
             route.setAllowClientOnly(ac.value());
         }
 
