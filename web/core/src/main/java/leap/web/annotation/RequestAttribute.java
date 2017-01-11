@@ -13,21 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.web.annotation;
 
-package leap.web;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import leap.web.route.Routes;
-
-public interface RouteInfo {
-
-    /**
-     * Returns the route registry or null if use internal routes.
-     */
-    Routes getRoutes();
-
-    /**
-     * Returns the route path or null if use default path.
-     */
-    String getPath();
-
+@Target({ElementType.PARAMETER,ElementType.FIELD,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequestAttribute {
+	
+	/**
+	 * The name of request attribute.
+	 */
+	String value() default "";
+	
 }

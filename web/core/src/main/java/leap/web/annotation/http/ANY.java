@@ -13,11 +13,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.web.annotation.http;
 
-package leap.web.api.orm;
+import java.lang.annotation.*;
 
-import leap.web.api.mvc.params.Partial;
+@Target({ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@HttpMethod("*")
+@Inherited
+public @interface ANY {
 
-public interface ModelUpdateExecutor {
-    UpdateOneResult partialUpdateOne(Object id, Partial partial);
+    /**
+     * The jax-rs style path template.
+     */
+    String value() default "";
+
 }

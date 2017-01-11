@@ -14,10 +14,26 @@
  *  limitations under the License.
  */
 
-package leap.web.api.orm;
+package leap.web;
 
-import leap.web.api.mvc.params.Partial;
+import leap.web.route.Routes;
 
-public interface ModelUpdateExecutor {
-    UpdateOneResult partialUpdateOne(Object id, Partial partial);
+public interface Router {
+
+    /**
+     * Returns the route registry or null if use internal routes.
+     */
+    Routes getRoutes();
+
+    /**
+     * Returns the route path or null if use default path.
+     */
+    String getPath();
+
+    /**
+     * Returns <code>true</code> if the request has been handled when no route exists.
+     */
+    default boolean handleNotFound(Request request, Response response, String path) {
+        return false;
+    }
 }

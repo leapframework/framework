@@ -16,8 +16,24 @@
 
 package leap.web.api.orm;
 
-import leap.web.api.mvc.params.Partial;
+public class SimpleModelExecutorConfig implements ModelExecutorConfig {
 
-public interface ModelUpdateExecutor {
-    UpdateOneResult partialUpdateOne(Object id, Partial partial);
+    protected final int maxPageSize;
+    protected final int defaultPageSize;
+
+    public SimpleModelExecutorConfig(int maxPageSize, int defaultPageSize) {
+        this.maxPageSize = maxPageSize;
+        this.defaultPageSize = defaultPageSize;
+    }
+
+    @Override
+    public int getMaxPageSize() {
+        return maxPageSize;
+    }
+
+    @Override
+    public int getDefaultPageSize() {
+        return defaultPageSize;
+    }
+
 }

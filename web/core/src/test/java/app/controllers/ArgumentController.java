@@ -15,27 +15,35 @@
  */
 package app.controllers;
 
+import leap.core.validation.Validation;
 import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.Cookie;
+import leap.lang.intercepting.State;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
 import leap.web.Request;
+import leap.web.action.ActionContext;
+import leap.web.action.ActionInterceptor;
 import leap.web.action.ControllerBase;
-import leap.web.annotation.CookieParam;
-import leap.web.annotation.HeaderParam;
-import leap.web.annotation.ParamsWrapper;
-import leap.web.annotation.Path;
+import leap.web.annotation.*;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ArgumentController extends ControllerBase {
-	
-	public String int1(int value){
+public class ArgumentController extends ControllerBase implements ActionInterceptor {
+
+    @Override
+    public State preExecuteAction(ActionContext context, Validation validation) throws Throwable {
+        context.getRequest().setAttribute("simpleRequestAttribute", "Simple Request Attribute");
+        context.getRequest().setAttribute(SimpleModel.class.getName(), new SimpleModel("Complex Request Attribute"));
+        return State.CONTINUE;
+    }
+
+    public String int1(int value){
 		return String.valueOf(value);
 	}
 	
@@ -151,9 +159,25 @@ public class ArgumentController extends ControllerBase {
 	public String controllerPath() {
 		return Request.current().getActionContext().getRoute().getControllerPath();
 	}
+
+    public String simpleRequestAttribute(@RequestAttribute("simpleRequestAttribute") String value) {
+        return value;
+    }
+
+    public SimpleModel complexRequestAttribute(@RequestAttribute  SimpleModel model) {
+        return model;
+    }
 	
 	public static final class SimpleModel {
 	    protected String name;
+
+        public SimpleModel() {
+
+        }
+
+        public SimpleModel(String name) {
+            this.name = name;
+        }
 
         public String getName() {
             return name;

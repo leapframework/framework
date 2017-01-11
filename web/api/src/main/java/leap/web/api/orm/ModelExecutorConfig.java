@@ -16,8 +16,16 @@
 
 package leap.web.api.orm;
 
-import leap.web.api.mvc.params.Partial;
+public interface ModelExecutorConfig {
 
-public interface ModelUpdateExecutor {
-    UpdateOneResult partialUpdateOne(Object id, Partial partial);
+    /**
+     * Returns the max page size of pagination.
+     */
+    int getMaxPageSize();
+
+    /**
+     * Returns the default page size of pagination.
+     */
+    int getDefaultPageSize();
+
 }

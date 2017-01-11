@@ -30,4 +30,9 @@ import leap.lang.annotation.Internal;
 @Internal
 public @interface HttpMethod {
 
+    /**
+     * The name of http method.
+     */
+    String value() default "";
+
 }
