@@ -45,7 +45,7 @@ public class BeanConfigurator {
         this.config = config;
     }
 
-    public void configure(Object bean, BeanType bt, String keyPrefix) {
+    private String keyPrefix(String keyPrefix) {
         if(!Strings.isEmpty(keyPrefix)) {
             char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
             if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
@@ -54,6 +54,28 @@ public class BeanConfigurator {
         }else{
             keyPrefix = "";
         }
+        return keyPrefix;
+    }
+
+    public boolean configure(Object[] args, ReflectParameter p, String keyPrefix) {
+        keyPrefix = keyPrefix(keyPrefix);
+
+        if(Property.class.isAssignableFrom(p.getType())) {
+            doBeanConfigure(args, p, keyPrefix, p.getAnnotation(ConfigProperty.class));
+            return true;
+        }
+
+        ConfigProperty a = p.getAnnotation(ConfigProperty.class);
+        if(null != a) {
+            doBeanConfigure(args, p, keyPrefix, a);
+            return true;
+        }
+
+        return false;
+    }
+
+    public void configure(Object bean, BeanType bt, String keyPrefix) {
+        keyPrefix = keyPrefix(keyPrefix);
 
         Set<ReflectField> done = new HashSet<>();
 
