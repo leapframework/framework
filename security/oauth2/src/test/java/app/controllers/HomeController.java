@@ -15,10 +15,16 @@
  */
 package app.controllers;
 
+import leap.core.AppConfig;
+import leap.core.annotation.Inject;
 import leap.core.security.UserPrincipal;
+import leap.core.security.annotation.AllowAnonymous;
+import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.web.Request;
 
 public class HomeController {
+
+    
     
     public String checkLoginState(String username) {
         if(null == username) {
@@ -32,5 +38,6 @@ public class HomeController {
             return "Failed";
         }
     }
-
+    
+    
 }

@@ -16,6 +16,7 @@
 package resapp;
 
 import leap.core.annotation.Inject;
+import leap.oauth2.TokenVerifierFactory;
 import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;

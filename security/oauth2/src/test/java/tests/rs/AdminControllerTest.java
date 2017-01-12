@@ -16,7 +16,9 @@
 package tests.rs;
 
 import app.Global;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.Assert;
+import leap.oauth2.TokenVerifierFactory;
 import org.junit.Test;
 import tested.models.User;
 import tests.JwtTokenResponse;
@@ -78,5 +80,19 @@ public class AdminControllerTest extends OAuth2TestBase {
 
         assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
+    @Test
+    public void testUrlJwtVerifier(){
 
+        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
+        assertFalse(token.isError());
+
+        JwtTokenResponse jwtTokenResponse = testJwtResponseAccessTokenInfo(token);
+        
+        String publicKeyUrl = "https://localhost:8443/server/publickey";
+        JwtVerifier verifier = TokenVerifierFactory.createNetPublicKeyRSAJwtVerifier(publicKeyUrl);
+        Map<String, Object> claims = verifier.verify(jwtTokenResponse.jwtToken);
+        assertNotEmpty(claims);
+    }
+    
+    
 }
