@@ -23,7 +23,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 
-public class ReflectParameter implements Named {
+public class ReflectParameter implements Named,ReflectValued {
 
 	private final int 		index;
 	private final String	name;
@@ -74,4 +74,14 @@ public class ReflectParameter implements Named {
 	public final boolean isAnnotationPresent(Class<? extends Annotation> annotationType){
 		return getAnnotation(annotationType) != null;
 	}
+
+    @Override
+    public Object getValue(Object bean) {
+        return ((Object[])bean)[index-1];
+    }
+
+    @Override
+    public void setValue(Object bean, Object value) {
+        ((Object[])bean)[index-1] = value;
+    }
 }

@@ -1472,14 +1472,12 @@ public class BeanContainer implements BeanFactory {
                 for(int i=0;i<args.length;i++) {
                     ReflectParameter p = dc.getParameters()[i];
 
-                    if(p.isAnnotationPresent(Inject.class)) {
-                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
+                    if(beanConfigurator.configure(args, p, bd.getConfigurationPrefix())){
                         continue;
                     }
 
-                    ConfigProperty a = p.getAnnotation(ConfigProperty.class);
-                    if(null != a) {
-                        args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
+                    if(p.isAnnotationPresent(Inject.class)) {
+                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
                         continue;
                     }
                 }
