@@ -15,12 +15,21 @@
  */
 package app.controllers;
 
+import leap.core.annotation.Inject;
 import leap.web.security.SecurityTestCase;
 
 import org.junit.Test;
+import tested.bean.AdditionalBean;
 
 public class HomeControllerTest extends SecurityTestCase {
 
+	private @Inject AdditionalBean additionalBean;
+	@Test
+	public void testAdditionBean(){
+		assertNotNull(additionalBean);
+	}
+	
+	
 	@Test
 	public void testLoginView() {
 		get("/").assertContentContains("return_url");

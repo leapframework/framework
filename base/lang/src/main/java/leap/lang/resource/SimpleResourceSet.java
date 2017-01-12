@@ -211,7 +211,7 @@ public class SimpleResourceSet extends ArrayIterable<Resource> implements Resour
 
 	protected void loadAllClasses() {
 		if(null == classes){
-			classes = new LinkedHashSet<Class<?>>();
+			classes = new LinkedHashSet<>();
 			
 	        for(int i=0;i<values.length;i++){
 	        	Resource resource = values[i];

@@ -31,6 +31,7 @@ import java.security.PublicKey;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 public interface AppConfig extends PropertyGetter {
 
@@ -79,6 +80,11 @@ public interface AppConfig extends PropertyGetter {
 	 * Returns <code>null</code> if not configured.
 	 */
 	String getBasePackage();
+
+	/**
+	 * Returns the additional package of current application
+	 */
+	Set<String> getAdditionalPackages();
 	
 	/**
 	 * Returns the default {@link Locale} of current application.

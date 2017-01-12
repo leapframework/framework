@@ -215,7 +215,6 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
 
-        protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
         protected final Map<String, AppProperty>                     properties         = new ConcurrentHashMap<>();
         protected final Map<String, List<String>>                    arrayProperties    = new ConcurrentHashMap<>();
         protected final Set<Resource>                                resources          = new HashSet<>();
@@ -548,7 +547,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadResources(Map<String,Resource> urlResourceMap) throws IOException{
-            for(String basePackage : additionalPackages) {
+            for(String basePackage : config.additionalPackages) {
                 loadBasePackageResources(urlResourceMap, basePackage);
             }
             for(Resource resource : resources){
@@ -650,7 +649,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         @Override
         public Set<String> getAdditionalPackages() {
-            return loader.additionalPackages;
+            return loader.config.additionalPackages;
         }
 
         @Override

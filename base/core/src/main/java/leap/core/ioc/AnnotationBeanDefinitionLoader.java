@@ -33,7 +33,14 @@ class AnnotationBeanDefinitionLoader {
 
 		//TODO : currently only supports classes in base-package
 		for(Class<?> cls : classes){
-			if(cls.isAnnotationPresent(Bean.class) && cls.getName().startsWith(basePackage)){
+			boolean needLoad = cls.getName().startsWith(basePackage);
+			for(String additionalPackage : container.getAppConfig().getAdditionalPackages()){
+				if(needLoad){
+					break;
+				}
+				needLoad = needLoad || cls.getName().startsWith(additionalPackage);
+			}
+			if(cls.isAnnotationPresent(Bean.class) && needLoad){
 				readBean(container, cls);
 			}
 		}
