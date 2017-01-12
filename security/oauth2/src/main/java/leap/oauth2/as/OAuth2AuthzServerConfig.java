@@ -19,6 +19,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import leap.core.AppConfig;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.oauth2.as.client.AuthzClientStore;
 import leap.oauth2.as.code.AuthzCodeStore;
 import leap.oauth2.as.sso.AuthzSSOStore;
@@ -258,6 +259,11 @@ public interface OAuth2AuthzServerConfig {
 	 *  Returns <code>null</code> if the public key not configured.
 	 */
 	PublicKey getPublicKey();
+
+	/**
+	 * Returns the jwt verifier
+	 */
+	JwtVerifier getJwtVerifier();
 	
 	/**
 	 * Returns the global private key of authz server.

@@ -17,6 +17,7 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
@@ -46,7 +47,7 @@ import java.util.function.Consumer;
  * Created by KAEL on 2016/6/13.
  * grant_type=token_client
  */
-public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler implements PostCreateBean {
+public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
 
     private Log log = LogFactory.get(TokenClientGrantTypeHandler.class);
 
@@ -56,15 +57,6 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler implem
     protected @Inject AuthenticationManager authenticationManager;
     protected @Inject UserManager userManager;
 
-    protected RsaVerifier verifier;
-
-    @Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-        PublicKey publicKey = config.getPublicKey();
-        if(publicKey instanceof RSAPublicKey){
-            verifier = new RsaVerifier((RSAPublicKey)publicKey);
-        }
-    }
 
     @Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
@@ -83,7 +75,7 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler implem
         if(client == null){
             return;
         }
-        boolean isJwtToken =isJwtToken(request,response,params);
+        boolean isJwtToken = isJwtToken(request,response,params);
 
         AuthzAccessToken at;
         if(isJwtToken){
@@ -106,6 +98,7 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler implem
     }
 
     protected AuthzAccessToken authenticateJwtToken(Request request, Response response, OAuth2Params params, AuthzClient client){
+        JwtVerifier verifier = config.getJwtVerifier();
         if(verifier == null){
             OAuth2Errors.invalidRequest(response, "not support jwt token because public key is undefined!");
             return null;

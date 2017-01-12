@@ -15,12 +15,10 @@
  */
 package leap.oauth2.as;
 
-import java.security.PrivateKey;
-
-import leap.core.AppConfig;
-import leap.oauth2.as.client.AuthzClientStore;
-import leap.oauth2.as.code.AuthzCodeStore;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.oauth2.as.store.AuthzInMemoryStore;
+
+import java.security.PublicKey;
 
 /**
  * The configurator of {@link OAuth2AuthzServerConfig}.
@@ -272,4 +270,19 @@ public interface OAuth2AuthzServerConfigurator {
      * Default is {@link #DEFAULT_LOGIN_SESSION_EXPIRES}.
      */
 	OAuth2AuthzServerConfigurator setDefaultLoginSessionExpires(int seconds);
+
+    /**
+     * use rsa verifier as the jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator useRsaJwtVerifier();
+
+    /**
+     * use the specify erifier as the jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator useJwtVerifier(JwtVerifier verifier);
+    
+    /**
+     * set the public key for jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator setPublicKey(PublicKey publicKey);
 }

@@ -16,11 +16,14 @@
 package leap.oauth2.as;
 
 import leap.core.AppConfig;
+import leap.core.AppConfigException;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
 import leap.core.schedule.SchedulerManager;
+import leap.core.security.token.jwt.JwtVerifier;
+import leap.core.security.token.jwt.RsaVerifier;
 import leap.core.store.JdbcStore;
 import leap.lang.Args;
 import leap.lang.Try;
@@ -37,6 +40,7 @@ import leap.web.security.SecurityConfigurator;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.interfaces.RSAPublicKey;
 
 @Configurable(prefix="oauth2.as")
 public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, OAuth2AuthzServerConfigurator, AppInitializable {
@@ -87,6 +91,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected String     jdbcDataSourceName              = null;
     protected PrivateKey privateKey                      = null;
     protected PublicKey  publicKey                       = null;
+    protected JwtVerifier jwtVerifier                    = null;
 
 	private boolean hasDataSources;
 
@@ -516,7 +521,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.privateKey = privateKey;
         return this;
     }
-
+    @Override
     public OAuth2AuthzServerConfigurator setPublicKey(PublicKey publicKey) {
         this.publicKey = publicKey;
         return this;
@@ -538,6 +543,30 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         }else{
             this.publicKey = RSA.decodePublicKey(publicKey);
         }
+    }
+
+    @Override
+    public JwtVerifier getJwtVerifier() {
+        return jwtVerifier;
+    }
+
+    @Override
+    public OAuth2AuthzServerConfigurator useRsaJwtVerifier() {
+        if(this.publicKey == null){
+            throw new NullPointerException("public key is null! please use setPublicKeyStr(String publicKey) " +
+                    "or setPublicKey to set the public key.");
+        }
+        if(this.publicKey instanceof RSAPublicKey){
+            this.jwtVerifier = new RsaVerifier((RSAPublicKey)this.getPublicKey());
+        }else{
+            throw new AppConfigException("this public key is not a rsa public key!");
+        }
+        return this;
+    }
+
+    @Override
+    public OAuth2AuthzServerConfigurator useJwtVerifier(JwtVerifier verifier) {
+        return null;
     }
 
     @Override
