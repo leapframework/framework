@@ -118,7 +118,7 @@ public class ControllerDescriptionLoader implements DescriptionLoader {
             if(reader.isStartElement(METHOD_ELEMENT)){
                 String methodName = reader.getRequiredAttribute(METHOD_ATTR_NAME);
                 Action action = findAction(methodName,childController);
-                readMethod(container,action, reader,set);
+                readMethod(container,action, reader,childSet);
                 continue;
             }
         }

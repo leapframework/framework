@@ -95,12 +95,19 @@ public class TokenVerifierFactory {
                 PublicKeyGetter<RSAPublicKey> getter, int repeatCount) {
             Assert.notNull(getter,"public key getter can not be null.");
             this.getter = getter;
-            this.verifier = getVerifier();
+            try {
+                this.verifier = getVerifier();
+            } catch (Throwable throwable) {
+                log.warn("create verifier error",throwable);
+            }
             this.repeatCount = repeatCount;
         }
 
         @Override
         public Map<String, Object> verify(String token) throws TokenVerifyException {
+            if(this.verifier == null){
+                this.verifier = getVerifier();
+            }
             Map<String, Object> claims = null;
             TokenVerifyException error = null;
             for(int i = 0; i < this.repeatCount; i ++){

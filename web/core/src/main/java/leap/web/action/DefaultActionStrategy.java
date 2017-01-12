@@ -167,7 +167,11 @@ public class DefaultActionStrategy implements ActionStrategy {
                 String[] parentPaths = getControllerPaths(parent);
                 if(parentPaths.length == 1) {
                     String path = path(pathPrefix, a.value());
-                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                    if(parentPaths[0].endsWith("/")){
+                        return new String[]{parentPaths[0] + Paths.prefixWithoutSlash(path)};
+                    }else{
+                        return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                    }
                 }else{
                     throw new IllegalStateException("Controller only supports one path value");
                 }

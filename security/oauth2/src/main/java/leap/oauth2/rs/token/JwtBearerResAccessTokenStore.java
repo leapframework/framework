@@ -15,21 +15,16 @@
  */
 package leap.oauth2.rs.token;
 
-import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.core.ioc.PostCreateBean;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
-import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Result;
-import leap.lang.security.RSA;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
 import java.security.interfaces.RSAPublicKey;
-import java.util.Calendar;
 import java.util.Map;
 
 /**

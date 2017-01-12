@@ -56,8 +56,8 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 subPathsController = route.getController();
             }
         }
-        OperationDescSet set = container.getOperationDescSet(restApiController);
-        assertNotNull(set);
+        
+        
         boolean updateRestApi = false;
         boolean idArgument = false;
         boolean getApiPaths = false;
@@ -67,6 +67,8 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 String actionName = route.getAction().getName();
                 if(Strings.equals(actionName,"updateRestApi")){
                     updateRestApi = true;
+                    OperationDescSet set = container.getOperationDescSet(route.getAction().getController());
+                    assertNotNull(set);
                     OperationDescSet.OperationDesc desc = set.getOperationDesc(route.getAction());
                     assertEquals("简介",desc.getSummary());
                     assertEquals("描述",desc.getDescription());
@@ -87,6 +89,8 @@ public class TestXmlDescriptionLoader extends WebTestBase {
                 String actionName = route.getAction().getName();
                 if(Strings.equals(actionName,"getApiPaths")){
                     getApiPaths = true;
+                    OperationDescSet set = container.getOperationDescSet(route.getAction().getController());
+                    assertNotNull(set);
                     OperationDescSet.OperationDesc desc = set.getOperationDesc(route.getAction());
                     for(Argument argument:route.getAction().getArguments()){
                         if(Strings.equals(argument.getDeclaredName(),"apiId")){
