@@ -40,6 +40,7 @@ public class ParamPlaceholder extends NamedParamNode {
 			if(params.contains(name)) {
 				return params.get(name);
 			}else{
+				stm.increaseAndGetParameterIndex();
 				return params.get(stm.currentParameterIndex());
 			}
 		}else{

@@ -38,7 +38,7 @@ public abstract class ParamBase extends AstNode {
 
     @Override
 	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		stm.increaseAndGetParameterIndex();
+		//stm.increaseAndGetParameterIndex();
 		
 		Object p = eval(stm,params);
 		
@@ -54,6 +54,7 @@ public abstract class ParamBase extends AstNode {
      */
 	public Object eval(SqlStatementBuilder stm, Params params){
 		if(params.isIndexed()){
+			stm.increaseAndGetParameterIndex();
 			return params.get(stm.currentParameterIndex());
 		}else{
 			return getParameterValue(stm, params);

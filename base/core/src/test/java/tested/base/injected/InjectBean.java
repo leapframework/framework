@@ -23,5 +23,5 @@ import leap.core.annotation.Bean;
 /**
  * Created by kael on 2016/12/27.
  */
-@Bean(additionalTypeDef = {AbstractInjectBean.class})
+@Bean(additionalTypeDef = {AbstractInjectBean.class},type = InjectInterface1.class)
 public class InjectBean extends AbstractInjectBean implements InjectInterface1,InjectInterface2 {} 

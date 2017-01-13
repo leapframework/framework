@@ -261,7 +261,7 @@ class SqlShardingProcessor {
             if(null != value) {
                 return getTableName(stm.context().getOrmContext(), value);
             }else{
-                stm.increaseAndGetParameterIndex();
+                //stm.increaseAndGetParameterIndex();
 
                 Object v = param.eval(stm, params);
 

@@ -74,7 +74,7 @@ public class BeanAutoInjectTest extends CoreTestCase {
     @Test
     public void testInjectBeanWithImplement(){
         assertNotNull(injectBeanInterface1);
-        assertNotNull(injectBeanInterface2);
+        assertNull(injectBeanInterface2);
         assertNotNull(abstractInjectBean);
         assertNotNull(injectBean);
         

@@ -90,6 +90,9 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         long count = -1;
         List<Record> list;
         if(null == options) {
+            if(callback != null){
+                callback.accept(query);
+            }
             list = query.limit(c.getMaxPageSize()).list();
         }else{
             if(!Strings.isEmpty(options.getOrderBy())) {
