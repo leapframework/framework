@@ -60,8 +60,8 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
         AppResources resources = AppResources.get(appContext.getConfig());
 
 		this.beanContainer.setAppContext(appContext);
-		this.beanContainer.loadFromResources(resources.search("beans"))
-                          .loadFromClasses(config.getResources().searchClasses())
+		this.beanContainer.loadFromClasses(config.getResources().searchClasses())
+						  .loadFromResources(resources.search("beans"))
 						  .init()
 						  .registerShutdownHook();
 		return this;

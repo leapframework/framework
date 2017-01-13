@@ -40,6 +40,15 @@ public interface BeanDefinition extends TypeDefinition, Sourced,Ordered {
     boolean isConfigurable();
 
     /**
+     * Returns <code>true</code> if the bean is declare with annotation
+     */
+    boolean isAnnotation();
+
+    /**
+     * Returns <code>true</code> if the bean is declare to override the annotation definition.
+     */
+    boolean isOverrideAnnotation();
+    /**
      * Returns true if this bean can be exported as MBean.
      */
     boolean isExportMBean();

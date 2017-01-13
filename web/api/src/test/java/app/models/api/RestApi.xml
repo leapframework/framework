@@ -16,7 +16,7 @@
   ~  */
   -->
 
-<model xmlns="http://www.leapframework.org/schema/web/apis/models/description">
+<model xmlns="http://www.leapframework.org/schema/web/apis/models">
     <property name="name">
         <description>
             api名称

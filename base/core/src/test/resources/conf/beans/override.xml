@@ -3,4 +3,6 @@
 
     <bean name="now" type="leap.core.variable.Variable" class="tested.variables.NowVariable1" override="true"/>
 
+    <bean name="duplicate" class="tested.base.beans.XMLAndAnnotationBean" type="tested.base.beans.IXMLAndAnnotationBean" override-annotation="true"/>
+    <bean name="duplicate" class="tested.base.beans.XMLAndAnnotationBean" type="tested.base.beans.IXMLAndAnnotationBean" override-annotation="true"/>
 </beans>

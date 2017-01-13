@@ -1862,7 +1862,7 @@ public class BeanContainer implements BeanFactory {
         if(proxy) {
             bds = this.bpds;
         }
-
+		
         bds.add(bd);
 	}
 	
@@ -2144,6 +2144,28 @@ public class BeanContainer implements BeanFactory {
                 }
             }
 
+			Iterator<BeanDefinitionBase> iterator = typeSet.iterator();
+            
+			while (iterator.hasNext()){
+				BeanDefinitionBase bdf = iterator.next();
+				if(bdf == bd){
+					continue;
+				}
+				if(bdf.isAnnotation() &&
+						bdf.getType().equals(bd.getType()) &&
+						bdf.getBeanClass().equals(bd.getBeanClass())){
+					if(bd.isOverrideAnnotation()){
+						iterator.remove();
+					}else{
+						throw new BeanDefinitionException("duplicate bean definition in xml:"
+								+bd.getSource() + " and annotation:"+bdf.getSource()
+								+", if you want to override annotation bean definition, please "
+								+"use override-annotation=\"true\" in xml definition.");
+					}
+
+				}
+			}
+            
 			typeSet.add(bd);
 
 		}

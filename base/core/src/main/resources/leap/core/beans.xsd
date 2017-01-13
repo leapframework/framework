@@ -104,6 +104,7 @@
 	    <xsd:attribute name="lazy-init" type="xsd:boolean" default="true"/>
 	    <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
         <xsd:attribute name="override" type="xsd:boolean" use="optional" default="false"/>
+		<xsd:attribute name="override-annotation" type="xsd:boolean" use="optional" default="false"/>
         <xsd:attribute name="default-override" type="xsd:boolean" use="optional" default="false"/>
 	    <xsd:attribute name="init-method" type="xsd:string"/>
         <xsd:attribute name="destroy-method" type="xsd:string"/>

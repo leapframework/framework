@@ -123,6 +123,7 @@ class XmlBeanDefinitionLoader {
     public static final String QUALIFIER_ATTRIBUTE              = "qualifier";
     public static final String SORT_ORDER_ATTRIBUTE             = "sort-order";
     public static final String OVERRIDE_ATTRIBUTE               = "override";
+    public static final String OVERRIDE_ANNOTATION_ATTRIBUTE    = "override-annotation";
     public static final String DEFAULT_OVERRIDE_ATTRIBUTE       = "default-override";
     public static final String DEFAULT_LAZY_INIT_ATTRIBUTE      = "default-lazy-init";
     public static final String LIST_CLASS_ATTRIBUTE             = "list-class";
@@ -358,15 +359,15 @@ class XmlBeanDefinitionLoader {
 
         bean.setId(proxy ? reader.getAttribute(TARGET_ID_ATTRIBUTE) : reader.getAttribute(ID_ATTRIBUTE));
         bean.setName(proxy ? reader.getAttribute(TARGET_NAME_ATTRIBUTE) : reader.getAttribute(NAME_ATTRIBUTE));
-
+        
         String beanClassName = proxy ? reader.getRequiredAttribute(PROXY_CLASS_ATTRIBUTE) : reader.getRequiredAttribute(CLASS_ATTRIBUTE);
         String initMethodName = reader.getAttribute(INIT_METHOD_ATTRIBUTE);
         String destroyMethodName = reader.getAttribute(DESTROY_METHOD_ATTRIBUTE);
-
         String typeClassName = proxy ? reader.getRequiredAttribute(TARGET_TYPE_ATTRIBUTE) : reader.getAttribute(TYPE_ATTRIBUTE);
         String qualifierName = reader.getAttribute(QUALIFIER_ATTRIBUTE);
         Float sortOrder = reader.getFloatAttribute(SORT_ORDER_ATTRIBUTE);
         boolean override = reader.getBooleanAttribute(OVERRIDE_ATTRIBUTE, context.defaultOverride);
+        boolean overrideAnnotation = reader.getBooleanAttribute(OVERRIDE_ANNOTATION_ATTRIBUTE,false);
         boolean defaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, false);
 
         if (!Strings.isEmpty(beanClassName)) {
@@ -427,6 +428,7 @@ class XmlBeanDefinitionLoader {
         bean.setLazyInit(boolAttribute(reader, LAZY_INIT_ATTRIBUTE, context.defaultLazyInit));
         bean.setPrimary(boolAttribute(reader, proxy ? TARGET_PRIMARY_ATTRIBUTE : PRIMARY_ATTRIBUTE, false));
         bean.setOverride(override);
+        bean.setOverrideAnnotation(overrideAnnotation);
         bean.setDefaultOverride(defaultOverride);
         bean.setExportMBean(reader.getBooleanAttribute(EXPORT_MBEAN, false));
         bean.setMBeanName(reader.getAttribute(MBEAN_NAME));

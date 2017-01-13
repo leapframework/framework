@@ -15,15 +15,13 @@
  */
 package tests.core.ioc;
 
+import tested.base.beans.*;
 import tests.core.CoreTestCase;
 import leap.core.cache.Cache;
 import leap.core.variable.Variable;
 import leap.junit.concurrent.Concurrent;
 import leap.lang.Lazy;
 import org.junit.Test;
-import tested.base.beans.TAnnotationBean1;
-import tested.base.beans.TAnnotationBean2;
-import tested.base.beans.TAnnotationBeanType;
 import tested.beans.*;
 import tested.variables.NowVariable1;
 
@@ -106,6 +104,11 @@ public class BeanSimpleTest extends CoreTestCase {
                 assertSame(concurrentBeans.get(i), concurrentBeans.get(i-1));
             }
         }
+    }
+    @Test
+    public void testDuplicateBean(){
+        List<IXMLAndAnnotationBean> beans = factory.getBeans(IXMLAndAnnotationBean.class);
+        assertEquals(2,beans.size());
     }
 	
 }

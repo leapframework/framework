@@ -45,6 +45,8 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
     protected boolean           primary;
     protected Constructor       constructor;
     protected Boolean           configurable;
+    protected boolean			annotation;
+    protected boolean			overrideAnnotation;
     protected String            configurationPrefix;
     protected boolean           exportMBean;
     protected String            MBeanName;
@@ -344,7 +346,25 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		return configurable;
 	}
 
-    @Override
+	@Override
+	public boolean isAnnotation() {
+		return annotation;
+	}
+
+	@Override
+	public boolean isOverrideAnnotation() {
+		return overrideAnnotation;
+	}
+
+	public void setAnnotation(boolean annotation) {
+		this.annotation = annotation;
+	}
+
+	public void setOverrideAnnotation(boolean overrideAnnotation) {
+		this.overrideAnnotation = overrideAnnotation;
+	}
+
+	@Override
     public void setConfigurable(boolean b) {
         this.configurable = b;
     }

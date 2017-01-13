@@ -50,7 +50,7 @@ class AnnotationBeanDefinitionLoader {
 		Bean a = cls.getAnnotation(Bean.class);
 
 		BeanDefinitionBase bd = new BeanDefinitionBase(Classes.getClassResourcePath(cls));
-		
+		bd.setAnnotation(true);
 		if(!Strings.isEmpty(a.value())) {
 			bd.setId(a.value());
 		}else{
@@ -58,7 +58,7 @@ class AnnotationBeanDefinitionLoader {
 			if(!void.class.equals(a.type())){
 				bd.setType(a.type());
 			}else{
-				bd.setType(resolveBeanType(cls));
+				bd.setType(resolveBeanType(cls,a));
 			}
 			
 			if(!Strings.isEmpty(a.id())) {
@@ -91,20 +91,19 @@ class AnnotationBeanDefinitionLoader {
 		}
 	}
 	
-	protected Class<?> resolveBeanType(Class<?> cls) {
-		if(cls.getInterfaces().length == 1){
+	protected Class<?> resolveBeanType(Class<?> cls, Bean a) {
+		if(!a.type().equals(void.class)){
+			if(a.type().isAssignableFrom(cls)){
+				throw new BeanDefinitionException(a.type() + " is not assignable from " + cls.getName() + ", source:"+cls.getName());
+			}
+			return a.type();
+		}else if(cls.getInterfaces().length == 1){
 			return cls.getInterfaces()[0];
-		}else{
-			return cls;
 		}
+		return cls;
 	}
 	
 	protected void parseAdditionalTypeDef(BeanDefinitionBase bd,Class<?> cls,Bean a){
-		if(cls.getInterfaces().length > 1){
-			for(Class<?> interfaces : cls.getInterfaces()){
-				addNotRepeatAdditionalTypeDef(bd,interfaces);
-			}
-		}
 		if(a.additionalTypeDef() != null && a.additionalTypeDef().length > 0){
 			typeEach:
 			for(Class<?> additional : a.additionalTypeDef()){
@@ -112,6 +111,9 @@ class AnnotationBeanDefinitionLoader {
 					if(def.getType() == additional){
 						continue typeEach;
 					}
+				}
+				if(!additional.isAssignableFrom(cls)){
+					throw new BeanDefinitionException(additional.getName() + " is not assignable from " + cls.getName());
 				}
 				TypeDefinitionBase def = new TypeDefinitionBase();
 				def.setType(additional);
