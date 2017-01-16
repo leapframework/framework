@@ -40,9 +40,11 @@ public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements 
     public static final String CLEANUP_SSO_LOGINS_SQL_KEY     = "oauth2.as.cleanupSSOLogins";
     public static final String CLEANUP_SSO_SESSIONS_SQL_KEY   = "oauth2.as.cleanupSSOSessions";
     public static final String LOAD_SESSION_BY_TOKEN_SQL_KEY  = "oauth2.as.loadSSOSessionByToken";
+    public static final String LOAD_SESSION_BY_ID_SQL_KEY     = "oauth2.as.loadSSOSessionById";
     public static final String LOAD_LOGINS_IN_SESSION_SQL_KEY = "oauth2.as.loadSSOLoginsInSession";
 
     protected SqlCommand loadSessionByTokenCommand;
+    protected SqlCommand loadSessionByIdCommand;
     protected SqlCommand loadLoginsInSessionCommand;
     protected SqlCommand cleanupLoginsCommand;
     protected SqlCommand cleanupSessionsCommand;
@@ -56,6 +58,24 @@ public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements 
             session = dao.createCriteriaQuery(AuthzSSOSessionEntity.class)
                          .where("token = ? and user_name = ? and expiration > ?", new Object[]{token, username, new Date()})
                          .singleOrNull();
+        }
+
+        if(null == session) {
+            return null;
+        }
+
+        return createSessionFromEntity(session);
+    }
+
+    @Override
+    public AuthzSSOSession loadSessionById(String id) {
+        AuthzSSOSessionEntity session = null;
+        if(null != loadSessionByIdCommand) {
+            session = dao.createQuery(AuthzSSOSessionEntity.class, loadSessionByIdCommand).singleOrNull();
+        }else{
+            session = dao.createCriteriaQuery(AuthzSSOSessionEntity.class)
+                    .where("id = ? and expiration > ?", new Object[]{id, new Date()})
+                    .singleOrNull();
         }
 
         if(null == session) {
@@ -197,6 +217,7 @@ public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements 
 
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {
         loadSessionByTokenCommand  = md.tryGetSqlCommand(LOAD_SESSION_BY_TOKEN_SQL_KEY);
+        loadSessionByIdCommand     = md.tryGetSqlCommand(LOAD_SESSION_BY_ID_SQL_KEY);
         loadLoginsInSessionCommand = md.tryGetSqlCommand(LOAD_LOGINS_IN_SESSION_SQL_KEY);
         cleanupLoginsCommand       = md.tryGetSqlCommand(CLEANUP_SSO_LOGINS_SQL_KEY);
         cleanupSessionsCommand     = md.tryGetSqlCommand(CLEANUP_SSO_SESSIONS_SQL_KEY);

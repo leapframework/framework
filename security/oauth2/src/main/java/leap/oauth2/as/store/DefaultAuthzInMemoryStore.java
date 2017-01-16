@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import leap.core.el.BeansPropertyResolver;
 import leap.lang.Args;
 import leap.lang.Beans;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.convert.BeanConverter;
@@ -187,6 +188,16 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     @Override
     public AuthzSSOSession loadSessionByToken(String username, String token) {
         return ssoSessions.get(token);
+    }
+
+    @Override
+    public AuthzSSOSession loadSessionById(String id) {
+        for(AuthzSSOSession session : ssoSessions.values()){
+            if(Strings.equals(session.getId(),id)){
+                return session;
+            }
+        }
+        return null;
     }
 
     @Override
