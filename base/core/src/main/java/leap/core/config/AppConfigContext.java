@@ -31,6 +31,11 @@ import java.util.Set;
 public interface AppConfigContext extends AppConfigContextBase {
 
     /**
+     * Returns the extension processors.
+     */
+    AppConfigProcessors getProcessors();
+
+    /**
      * Returns an immutable view of current properties.
      */
     Map<String,String> getProperties();

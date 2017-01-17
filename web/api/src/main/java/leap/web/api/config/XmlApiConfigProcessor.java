@@ -281,6 +281,9 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
         while(reader.nextWhileNotEnd(API)) {
+            if(context.getProcessors().handleXmlElement(context, reader, NAMESPACE_URI)) {
+                continue;
+            }
 
             if(reader.isStartElement(VERSION)) {
                 String v = reader.getElementTextAndEnd();

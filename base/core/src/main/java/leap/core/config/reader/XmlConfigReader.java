@@ -44,7 +44,6 @@ import leap.lang.xml.XmlReader;
 import javax.xml.namespace.QName;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -53,8 +52,6 @@ import java.util.Map;
 public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigReader {
 
     private static final Log log = LogFactory.get(XmlConfigReader.class);
-
-    private static final List<AppConfigProcessor> processors = Factory.newInstances(AppConfigProcessor.class);
 
     @Override
     public boolean readConfig(AppConfigContext context, Resource resource) {
@@ -215,26 +212,7 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
     }
 
     private boolean processExtensionElement(AppConfigContext context,XmlReader reader){
-        String nsURI = reader.getElementName().getNamespaceURI();
-
-        if(Strings.isEmpty(nsURI)) {
-            return false;
-        }
-
-        for(AppConfigProcessor extension : processors){
-
-            if(nsURI.equals(extension.getNamespaceURI())){
-                extension.processElement(context,reader);
-                return true;
-            }
-
-        }
-
-        if(!isDefaultNamespaceUri(reader)) {
-            throw new AppConfigException("Namespace uri '" + nsURI + "' not supported, check your config : " + reader.getSource());
-        }
-
-        return false;
+        return context.getProcessors().handleXmlElement(context, reader, DEFAULT_NAMESPACE_URI);
     }
 
     /*

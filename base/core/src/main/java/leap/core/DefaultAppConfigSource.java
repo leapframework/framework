@@ -35,6 +35,7 @@ import leap.lang.resource.Resources;
 import leap.lang.resource.SimpleResourceSet;
 import leap.lang.text.DefaultPlaceholderResolver;
 import leap.lang.text.PlaceholderResolver;
+import leap.lang.xml.XmlReader;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -597,7 +598,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext implements AppConfigContext,AppPropertyContext,AppPropertySetter {
+    protected class ConfigContext implements AppConfigContext,AppPropertyContext,AppPropertySetter,AppConfigProcessors {
+
+        protected final AppConfigProcessor[] processors =
+                Factory.newInstances(AppConfigProcessor.class).toArray(new AppConfigProcessor[0]);
 
         protected final boolean          forProperty;
         protected final Loader           loader;
@@ -615,6 +619,40 @@ public class DefaultAppConfigSource implements AppConfigSource {
             this.originalDefaultOverride = defaultOverride;
             this.defaultOverride = defaultOverride;
             this.forProperty = forProperty;
+        }
+
+        @Override
+        public boolean handleXmlElement(AppConfigContext context, XmlReader reader, String defaultNsURI) {
+            if(!reader.isStartElement()) {
+                return false;
+            }
+
+            String nsURI = reader.getElementName().getNamespaceURI();
+            if(Strings.isEmpty(nsURI) || nsURI.equals(defaultNsURI)) {
+                return false;
+            }
+
+            for(AppConfigProcessor processor : processors){
+
+                if(nsURI.equals(processor.getNamespaceURI())){
+                    processor.processElement(context,reader);
+                    return true;
+                }
+
+            }
+
+            if(null != defaultNsURI && !nsURI.equals(defaultNsURI)) {
+                throw new AppConfigException("Namespace uri '" + nsURI +
+                                            "' not supported at '" + reader.getCurrentLocation() +
+                                            "', check your config : " + reader.getSource());
+            }
+
+            return false;
+        }
+
+        @Override
+        public AppConfigProcessors getProcessors() {
+            return this;
         }
 
         @Override
