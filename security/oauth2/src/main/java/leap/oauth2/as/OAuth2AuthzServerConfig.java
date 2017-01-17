@@ -79,14 +79,6 @@ public interface OAuth2AuthzServerConfig {
 	boolean isSingleLogoutEnabled();
 
     /**
-     * Returns <code>true</code> if login token (endpoint) enabled.
-     *
-     * <p/>
-     * Deault is <code>true</code>.
-     */
-	boolean isLoginTokenEnabled();
-
-    /**
      * Returns <code>true</code> if user info (endpoint) enabled.
      *
      * <p/>
@@ -159,14 +151,6 @@ public interface OAuth2AuthzServerConfig {
      * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_TOKENINFO_ENDPOINT_PATH}.
      */
 	String getTokenInfoEndpointPath();
-
-    /**
-     * Returns the path of logintoken endpoint.
-     *
-     * <p/>
-     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGINTOKEN_ENDPOINT_PATH}.
-     */
-	String getLoginTokenEndpointPath();
 
     /**
      * Returns the path of logout endopint.

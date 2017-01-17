@@ -38,11 +38,10 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     
     public static final String CLEANUP_ACCESS_TOKENS_SQL_KEY  = "oauth2.as.cleanupAccessTokens";
     public static final String CLEANUP_REFRESH_TOKENS_SQL_KEY = "oauth2.as.cleanupRefreshTokens";
-    public static final String CLEANUP_LOGIN_TOKENS_SQL_KEY   = "oauth2.as.cleanupLoginTokens";
 
     protected SqlCommand cleanupAccessTokensCommand;
     protected SqlCommand cleanupRefreshTokensCommand;
-    protected SqlCommand cleanupLoginTokensCommand;
+    
     
     @Override
     public void saveAccessToken(AuthzAccessToken token) {
@@ -54,10 +53,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         dao.insert(createEnttiyFromRefreshToken(token));
     }
 
-    @Override
-    public void saveLoginToken(AuthzLoginToken token) {
-        dao.insert(createEntityFromLoginToken(token));
-    }
+    
 
     @Override
     public AuthzAccessToken loadAccessToken(String accessToken) {
@@ -74,13 +70,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     }
 
     @Override
-    public AuthzLoginToken loadLoginToken(String loginToken) {
-        AuthzLoginTokenEntity entity = dao.findOrNull(AuthzLoginTokenEntity.class, loginToken);
-
-        return null == entity ? null : createLoginTokenFromEntity(entity);
-    }
-
-    @Override
     public void removeAccessToken(String accessToken) {
         dao.delete(AuthzAccessTokenEntity.class, accessToken);
     }
@@ -90,21 +79,9 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         dao.delete(AuthzRefreshTokenEntity.class, refreshToken);
     }
 
-    @Override
-    public void removeLoginToken(String loginToken) {
-        dao.delete(AuthzLoginTokenEntity.class, loginToken);
-    }
+    
 
-    @Override
-    public AuthzLoginToken removeAndLoadLoginToken(String loginToken) {
-        AuthzLoginToken token = loadLoginToken(loginToken);
-
-        if(null != token) {
-            removeLoginToken(token.getToken());
-        }
-
-        return token;
-    }
+    
 
     @Override
     public void cleanupTokens() {
@@ -112,7 +89,6 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         
         cleanupAccessTokens(now);
         cleanupRefreshTokens(now);
-        cleanupLoginTokens(now);
     }
     
     protected void cleanupAccessTokens(Date now) {
@@ -134,17 +110,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         }
         log.info("Cleanup {} expired refresh tokens", result);
     }
-
-    protected void cleanupLoginTokens(Date now) {
-        int result;
-        if(null != cleanupLoginTokensCommand) {
-            result = dao.executeUpdate(cleanupLoginTokensCommand, New.hashMap("now",now));
-        }else{
-            result = dao.createCriteriaQuery(AuthzLoginTokenEntity.class).where("expiration <= :now",now).delete();
-        }
-        log.info("Cleanup {} expired login tokens", result);
-    }
-
+    
     protected AuthzAccessTokenEntity createEntityFromAccessToken(AuthzAccessToken token) {
         AuthzAccessTokenEntity entity = new AuthzAccessTokenEntity();
         
@@ -203,28 +169,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         return token;
     }
 
-    protected AuthzLoginToken createLoginTokenFromEntity(AuthzLoginTokenEntity entity) {
-        SimpleAuthzLoginToken token = new SimpleAuthzLoginToken();
-        token.setToken(entity.getToken());
-        token.setClientId(entity.getClientId());
-        token.setUserId(entity.getUserId());
-        token.setCreated(entity.getCreatedMs());
-        token.setExpiresIn(entity.getExpiresIn());
-
-        return token;
-    }
-
-    protected AuthzLoginTokenEntity createEntityFromLoginToken(AuthzLoginToken token) {
-        AuthzLoginTokenEntity entity = new AuthzLoginTokenEntity();
-
-        entity.setToken(token.getToken());
-        entity.setClientId(token.getClientId());
-        entity.setUserId(token.getUserId());
-        entity.setCreatedMs(token.getCreated());
-        entity.setExpirationByExpiresIn(token.getExpiresIn());
-
-        return entity;
-    }
+    
 
     @Override
     protected void init(AppConfig config) {
@@ -252,6 +197,5 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         //TODO : 
         cleanupAccessTokensCommand  = md.tryGetSqlCommand(CLEANUP_ACCESS_TOKENS_SQL_KEY);
         cleanupRefreshTokensCommand = md.tryGetSqlCommand(CLEANUP_REFRESH_TOKENS_SQL_KEY);
-        cleanupLoginTokensCommand   = md.tryGetSqlCommand(CLEANUP_LOGIN_TOKENS_SQL_KEY);
     }
 }

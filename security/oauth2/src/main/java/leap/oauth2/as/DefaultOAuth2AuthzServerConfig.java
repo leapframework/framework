@@ -76,7 +76,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected String     tokenEndpointPath               = DEFAULT_TOKEN_ENDPOINT_PATH;
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
-    protected String     loginTokenEndpointPath          = DEFAULT_LOGINTOKEN_ENDPOINT_PATH;
     protected String     userInfoEndpointPath            = DEFAULT_USERINFO_ENDPOINT_PATH;
     protected String     logoutEndpointPath              = DEFAULT_LOGOUT_ENDPOINT_PATH;
     protected String     errorView                       = DEFAULT_ERROR_VIEW;
@@ -188,11 +187,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     }
 
     @Override
-    public boolean isLoginTokenEnabled() {
-        return loginTokenEnabled;
-    }
-
-    @Override
     public boolean isUserInfoEnabled() {
         return userInfoEnabled;
     }
@@ -230,11 +224,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     @Override
     public String getTokenInfoEndpointPath() {
         return tokenInfoEndpointPath;
-    }
-
-    @Override
-    public String getLoginTokenEndpointPath() {
-        return loginTokenEndpointPath;
     }
 
     public String getUserInfoEndpointPath() {
@@ -369,12 +358,6 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 	@ConfigProperty
     public OAuth2AuthzServerConfigurator setTokenInfoEndpointPath(String path) {
         this.tokenInfoEndpointPath = path;
-        return this;
-    }
-
-    @ConfigProperty
-    public OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path) {
-        this.loginTokenEndpointPath = path;
         return this;
     }
 
