@@ -15,6 +15,7 @@
  */
 package leap.web.api.config;
 
+import leap.lang.accessor.AttributeAccessor;
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.model.MApiResponse;
@@ -23,7 +24,7 @@ import leap.web.api.meta.model.MApiPermission;
 import leap.web.route.Route;
 
 
-public interface ApiConfigurator {
+public interface ApiConfigurator extends AttributeAccessor {
 	
 	String[] DEFAULT_PRODUCES = new String[]{MimeTypes.APPLICATION_JSON};
 	String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
