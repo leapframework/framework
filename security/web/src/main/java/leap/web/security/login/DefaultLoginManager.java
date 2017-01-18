@@ -17,6 +17,7 @@ package leap.web.security.login;
 
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
+import leap.lang.Out;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -68,7 +69,7 @@ public class DefaultLoginManager implements LoginManager {
         
         request.setAcceptValidationError(true);
         
-        if(request.isGet()) {
+        if(isGotoLoginView(request, response, context)) {
             handleLoginView(request, response, context);
         }else {
             handleLoginAuthentication(request, response, context);
@@ -76,7 +77,19 @@ public class DefaultLoginManager implements LoginManager {
         
         return true;
     }
-    
+
+    protected boolean isGotoLoginView(Request request, Response response, LoginContext context) {
+        LoginHandler.HandleType type = request.isGet()? 
+                LoginHandler.HandleType.VIEW : LoginHandler.HandleType.AUTHENTICATION;
+        Out<LoginHandler.HandleType> out = new Out<>();
+        out.set(type);
+        for(LoginHandler handler : handlers){
+            handler.parseHandleType(request,response,context,out);
+        }
+        
+        return out.get() == LoginHandler.HandleType.VIEW;
+    }
+
     @Override
     public void handleLoginSuccess(Request request, Response response, Authentication authc) throws Throwable {
         DefaultSecurityContextHolder context = new DefaultSecurityContextHolder(config, permissionManager, request);
