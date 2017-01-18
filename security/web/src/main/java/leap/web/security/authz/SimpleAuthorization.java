@@ -55,7 +55,15 @@ public class SimpleAuthorization implements Authorization {
     }
 
     @Override
-    public boolean hasAnyPermission(String... permissions) {
-        return Arrays2.contains(this.permissions, permissions);
+    public boolean hasAllPermission(String... permissions) {
+        if(permissions == null){
+            return true;
+        }
+        for(String permission:permissions){
+            if(!Arrays2.contains(this.permissions, permission)){
+                return false;
+            }
+        }
+        return true;
     }
 }

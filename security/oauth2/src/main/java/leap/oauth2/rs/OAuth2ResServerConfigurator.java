@@ -15,6 +15,8 @@
  */
 package leap.oauth2.rs;
 
+import leap.core.security.token.jwt.JwtVerifier;
+
 /**
  * The configurator of oauth2 resource server.
  */
@@ -71,6 +73,23 @@ public interface OAuth2ResServerConfigurator {
 	OAuth2ResServerConfigurator useRemoteAuthorizationServer(String tokenInfoEndpointUrl);
 
 	/**
+	 * 
+	 * Sets the ras public key string for rsa jwt verifier
+	 * 
+	 * @param publicKey ths rsa public key string
+	 */
+	OAuth2ResServerConfigurator setRsaPublicKeyStr(String publicKey);
+	/**
+	 * Use rsa jwt verifier to verify jwt token.
+	 */
+	OAuth2ResServerConfigurator useRsaJwtVerifier();
+	
+	/**
+	 * Use the specify jwt verifier to verify jwt token
+	 */
+	OAuth2ResServerConfigurator useJwtVerifier(JwtVerifier verifier);
+	
+	/**
 	 * Sets the mode of authz server.
      */
 	OAuth2ResServerConfigurator setAuthorizationServerMode(AuthzServerMode mode);
@@ -98,4 +117,6 @@ public interface OAuth2ResServerConfigurator {
 	 * use when use remote authz server to validate access token.
 	 */
 	OAuth2ResServerConfigurator setResourceServerSecret(String resourceServerSecret);
+
+	
 }

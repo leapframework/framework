@@ -60,10 +60,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_LOCALE);
     }
 
-    private static final AppProfileResolver      profileResolver = Factory.newInstance(AppProfileResolver.class);
-    private static final AppPropertyPrinter      propertyPrinter = Factory.newInstance(AppPropertyPrinter.class);
-    private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
-    private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
+    private static final AppProfileResolver      profileResolver           = Factory.newInstance(AppProfileResolver.class);
+    private static final AppPropertyPrinter      propertyPrinter           = Factory.newInstance(AppPropertyPrinter.class);
+    private static final List<AppPropertyReader> propertyReaders           = Factory.newInstances(AppPropertyReader.class);
+    private static final List<AppConfigReader>   configReaders             = Factory.newInstances(AppConfigReader.class);
+    private static final List<AppConfigInitializable> configInitializables = Factory.newInstances(AppConfigInitializable.class);
 
     protected AppPropertyProcessor propertyProcessor = new PropertyProcessorWrapper();
 
@@ -210,10 +211,10 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final DefaultAppConfig           config;
         final AppResources               appResources;
         final AppResource[]              configResources;
+        final Set<String>                externalConfig      = new HashSet<>();
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
 
-        protected final Set<String>                                  additionalPackages = new LinkedHashSet<>();
         protected final Map<String, AppProperty>                     properties         = new ConcurrentHashMap<>();
         protected final Map<String, List<String>>                    arrayProperties    = new ConcurrentHashMap<>();
         protected final Set<Resource>                                resources          = new HashSet<>();
@@ -242,6 +243,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected DefaultAppConfig load() {
             init();
+            // pre load configuration
+            preLoadConfig(new ConfigContext(this, false, false));
 
             //load local properties
             loadLocalProperties(new ConfigContext(this, false, true));
@@ -251,6 +254,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
             //Load configuration.
             loadConfig(new ConfigContext(this, false, false));
+            //post load configuration
+            postLoadConfig(new ConfigContext(this, false, false));
 
             //complete loading configuration.
             complete();
@@ -373,9 +378,18 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected void loadConfig(ConfigContext context) {
             AppResource[] files = appResources.search("config");
+            for(String path : externalConfig){
+                files = Arrays2.concat(files,appResources.search(path));
+            }
             if(files.length > 0) {
                 parent.loadConfig(context, files);
             }
+        }
+        protected void preLoadConfig(ConfigContext context) {
+            configInitializables.forEach(initializable->initializable.preLoadConfig(context,appResources));
+        }
+        protected void postLoadConfig(ConfigContext context){
+            configInitializables.forEach(initializable->initializable.postLoadConfig(context,appResources));
         }
 
         protected Map<String, String> getPropertiesMap() {
@@ -533,7 +547,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         protected void loadResources(Map<String,Resource> urlResourceMap) throws IOException{
-            for(String basePackage : additionalPackages) {
+            for(String basePackage : config.additionalPackages) {
                 loadBasePackageResources(urlResourceMap, basePackage);
             }
             for(Resource resource : resources){
@@ -635,7 +649,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         @Override
         public Set<String> getAdditionalPackages() {
-            return loader.additionalPackages;
+            return loader.config.additionalPackages;
         }
 
         @Override
@@ -725,6 +739,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
                     loader.resources.add(r);
                 }
             }
+        }
+
+        @Override
+        public void addExternalConfig(String name) {
+            loader.externalConfig.add(name);
         }
 
         @Override

@@ -21,6 +21,11 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import tested.base.factorybean.*;
+import tested.base.injected.AbstractInjectBean;
+import tested.base.injected.InjectBean;
+import tested.base.injected.InjectInterface1;
+import tested.base.injected.InjectInterface2;
 import tested.beans.TAutoInjectBean;
 import tests.core.CoreTestCase;
 
@@ -31,6 +36,15 @@ public class BeanAutoInjectTest extends CoreTestCase {
     protected @Inject AppConfig       config;
     protected @Inject TAutoInjectBean autoInjectBean;
 
+    protected @Inject InjectBean injectBean;
+    protected @Inject AbstractInjectBean abstractInjectBean;
+    protected @Inject InjectInterface1 injectBeanInterface1;
+    protected @Inject InjectInterface2 injectBeanInterface2;
+    
+    protected @Inject CusBean cusBean;
+    protected @Inject CusBean1 cusBean1;
+    protected @Inject CusBean2 cusBean2;
+    
     @BeforeClass
     public static void checkStaticInjection() {
         assertNotNull(factory);
@@ -56,5 +70,19 @@ public class BeanAutoInjectTest extends CoreTestCase {
     public void testInjectStaticField() {
         assertSame(config, autoInjectBean.config);
     }
-
+    
+    @Test
+    public void testInjectBeanWithImplement(){
+        assertNotNull(injectBeanInterface1);
+        assertNull(injectBeanInterface2);
+        assertNotNull(abstractInjectBean);
+        assertNotNull(injectBean);
+        
+        assertNotNull(cusBean);
+        assertNotNull(cusBean1);
+        assertNotNull(cusBean2);
+        assertEquals(CusFactoryBean.class.getName(),cusBean.getCreateBy());
+        assertEquals(CusFactoryBean12.class.getName(),cusBean1.getCreateBy());
+        assertEquals(CusFactoryBean12.class.getName(),cusBean2.getCreateBy());
+    }
 }

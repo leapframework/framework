@@ -17,8 +17,11 @@
 package leap.orm.sql.ast;
 
 import leap.core.el.EL;
+import leap.lang.New;
 import leap.lang.expression.Expression;
 import leap.lang.params.Params;
+import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 import java.io.IOException;
@@ -34,6 +37,15 @@ public class ConditionalNode extends SqlNodeContainer {
     public ConditionalNode(Expression condition, AstNode[] nodes) {
         super(nodes);
         this.condition = condition;
+    }
+
+
+    @Override
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
+
+        if(EL.test(condition, null, New.hashMap("sqlContext",context,"params",params))) {
+            super.prepareBatchStatement_(context, stm,params);
+        }
     }
 
     @Override

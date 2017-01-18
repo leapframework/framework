@@ -7,14 +7,11 @@
     <bean type="leap.web.api.config.ApiConfiguratorFactory"
           class="leap.web.api.config.DefaultApiConfiguratorFactory" primary="true"/>
 
-    <bean type="leap.web.api.config.ApiConfigSource"
-          class="leap.web.api.config.DefaultApiConfigSource" primary="true"/>
-
-    <bean type="leap.web.api.config.ApiConfigReader"
-          class="leap.web.api.config.XmlApiConfigReader"/>
-
     <bean type="leap.web.api.meta.ApiMetadataFactory"
           class="leap.web.api.meta.DefaultApiMetadataFactory" primary="true"/>
+
+    <bean type="leap.web.api.meta.ApiMetadataStrategy"
+          class="leap.web.api.meta.DefaultApiMetadataStrategy" primary="true"/>
 
     <bean name="swagger"
           type="leap.web.api.spec.ApiSpecWriter"
@@ -23,6 +20,9 @@
     <bean name="swagger"
           type="leap.web.api.spec.ApiSpecReader"
           class="leap.web.api.spec.swagger.SwaggerSpecReader" primary="true"/>
+
+    <!-- model -->
+    <bean type="leap.web.api.orm.ModelExecutorFactory" class="leap.web.api.orm.DefaultModelExecutorFactory" primary="true"/>
 
     <!-- built-in oauth2 processor : only the oauth2 module exists -->
     <beans if-class-present="leap.oauth2.OAuth2Constants">
@@ -46,4 +46,8 @@
     <bean type="leap.web.api.log.OpLogManager" class="leap.web.api.log.DefaultOpLogManager" init-method="init" primary="true"></bean>
     <bean type="leap.web.action.ActionInterceptor" class="leap.web.api.log.OpLogInterceptor"></bean>
 
+    <!-- description loader -->
+    <bean type="leap.web.api.meta.desc.ApiDescContainer" class="leap.web.api.meta.desc.DefaultApiDescContainer"/>
+    <bean name="controller" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ControllerDescriptionLoader"/>
+    <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
 </beans>

@@ -54,7 +54,7 @@ public class Text extends AstNode {
     }
 	
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		stm.append(buf);
     }
 

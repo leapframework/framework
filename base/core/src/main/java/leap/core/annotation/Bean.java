@@ -59,4 +59,23 @@ public @interface Bean {
 	 */
 	boolean lazyInit() default true;
 
+	/**
+	 * addition type def
+	 */
+	Class<?>[] additionalTypeDef() default {};
+
+	/**
+	 * sort order
+	 */
+	float sortOrder() default 100;
+
+	/**
+	 * register this bean as a bean factory
+	 */
+	boolean registerBeanFactory() default false;
+
+	/**
+	 * this factory will create target type
+	 */
+	Class<?>[] targetType() default {};
 }

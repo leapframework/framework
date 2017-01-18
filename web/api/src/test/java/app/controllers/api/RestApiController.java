@@ -18,10 +18,12 @@
 
 package app.controllers.api;
 
+import app.models.PartialModel;
 import app.models.api.RestApi;
 import app.models.api.RestModel;
 import app.models.api.RestOperation;
 import app.models.api.RestPath;
+import leap.core.security.annotation.AllowAnonymous;
 import leap.core.value.Record;
 import leap.lang.New;
 import leap.lang.Strings;
@@ -38,7 +40,6 @@ import leap.web.api.mvc.params.DeleteOptions;
 import leap.web.api.mvc.params.Partial;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
-import leap.core.security.annotation.AllowAnonymous;
 
 import java.util.List;
 
@@ -46,9 +47,30 @@ import java.util.List;
 @AllowAnonymous
 public class RestApiController extends ModelController<RestApi> {
 
+    @GET("/path_decode/{path}")
+    public ApiResponse<String> pathDecode(String path){
+        return ApiResponse.ok(path);
+    }
+    @POST("/create/{id}")
+    public ApiResponse<RestApi> createAndReturnWithId(Partial<RestApi> api,String id){
+        ApiResponse<RestApi> response = createAndReturn(api,id);
+        return response;
+    }
+    
+    @POST("/convert")
+    public ApiResponse<PartialModel> convertPartialToObject(Partial<PartialModel> api){
+        PartialModel o = api.getObject();
+        return ApiResponse.ok(o);
+    }
+
     @GET
     public ApiResponse<List<RestApi>> getRestApis(QueryOptions options) {
-        return getAll(options);
+        return queryList(options,query -> query.join((sqlBuilder, context) -> {
+            System.out.println("");
+            sqlBuilder.append(" left join RestOperation o on o.apiId="+query.alias()
+                    +".id AND o.name=:oname AND "+query.alias()+".name=:oname ");
+            query.param("oname","name");
+        }));
     }
 
     @POST

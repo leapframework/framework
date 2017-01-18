@@ -16,6 +16,8 @@
 package resapp;
 
 import leap.core.annotation.Inject;
+import leap.core.security.token.jwt.JwtVerifier;
+import leap.oauth2.TokenVerifierFactory;
 import leap.oauth2.rs.OAuth2ResServerConfigurator;
 import leap.web.App;
 import leap.web.config.WebConfigurator;
@@ -29,8 +31,10 @@ public class Global extends App {
 
     @Override
     protected void configure(WebConfigurator c) {
-        rsc.enable()
-           .useRemoteAuthorizationServer().setResourceServerId("resource_server_id")
+        String publicKeyUrl = "https://localhost:8443/server/publickey";
+        JwtVerifier verifier = TokenVerifierFactory.createNetPublicKeyRSAJwtVerifier(publicKeyUrl);
+        rsc.enable().useJwtVerifier(verifier)
+                .useRemoteAuthorizationServer().setResourceServerId("resource_server_id")
            .setRemoteTokenInfoEndpointUrl("https://localhost:8443/server/oauth2/tokeninfo");
     }
 

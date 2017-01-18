@@ -64,7 +64,9 @@ public class DefaultSecurityHandler implements SecurityHandler {
     @Override
     public boolean checkAuthorization(Request request, Response response, SecurityContextHolder context) throws Throwable {
         SecuredPath path = context.getSecuredPath();
-
+        if(!authzManager.checkAuthorization(request,response,context)){
+            return false;
+        }
         if(null != path) {
             return path.checkAuthorization(request, context);
         }

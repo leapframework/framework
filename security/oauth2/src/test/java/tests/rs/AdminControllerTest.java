@@ -16,7 +16,9 @@
 package tests.rs;
 
 import app.Global;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.Assert;
+import leap.oauth2.TokenVerifierFactory;
 import org.junit.Test;
 import tested.models.User;
 import tests.JwtTokenResponse;
@@ -57,14 +59,6 @@ public class AdminControllerTest extends OAuth2TestBase {
         withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
         withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
     }
-    @Test
-    public void testJwtTokenExpirseIn(){
-
-        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
-        TokenResponse token2 = obtainAccessTokenByTokenClient(token1.accessToken,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
-        JwtTokenResponse jwtTokenResponse = testJwtResponseAccessTokenInfo(token2);
-        withAccessToken(forGet("/resapp/admin/test"), jwtTokenResponse.jwtToken).send().assertOk();
-    }
 
     @Test
     public void testAccessTokenWithNotUser(){
@@ -78,5 +72,6 @@ public class AdminControllerTest extends OAuth2TestBase {
 
         assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
-
+    
+    
 }

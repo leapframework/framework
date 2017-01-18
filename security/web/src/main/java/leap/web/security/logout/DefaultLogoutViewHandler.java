@@ -19,6 +19,8 @@ import static leap.web.Renderable.FORWARD_PREFIX;
 import static leap.web.Renderable.REDIRECT_PREFIX;
 import static leap.web.Renderable.VIEW_PREFIX;
 import leap.lang.Strings;
+import leap.lang.http.Headers;
+import leap.lang.net.Urls;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -30,6 +32,10 @@ public class DefaultLogoutViewHandler implements LogoutViewHandler {
     }
 	
 	protected void gotoLocation(Request request,Response response,String location) throws Throwable {
+    	
+    	// disable cache
+		location = Urls.appendQueryParams(location,"_t_",System.currentTimeMillis()+"");
+		
 		if(location.startsWith(FORWARD_PREFIX)){
 			request.forward(location.substring(FORWARD_PREFIX.length()));
 			return;

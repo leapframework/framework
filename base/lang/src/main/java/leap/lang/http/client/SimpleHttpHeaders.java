@@ -76,4 +76,9 @@ public class SimpleHttpHeaders implements HttpHeaders {
         }
         return values;
     }
+
+    @Override
+    public Map<String, List<String>> all() {
+        return Collections.unmodifiableMap(map);
+    }
 }

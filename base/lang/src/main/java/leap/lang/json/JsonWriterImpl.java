@@ -16,8 +16,7 @@ package leap.lang.json;
  */
 
 
-import leap.lang.Enums;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
@@ -31,10 +30,7 @@ import java.text.DateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Date;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 public class JsonWriterImpl implements JsonWriter {
@@ -802,6 +798,26 @@ public class JsonWriterImpl implements JsonWriter {
 				Entry  entry = (Entry)item;
 				String key = ns(entry.getKey().toString());
 				Object val = entry.getValue();
+				if(isIgnoreNull() && val == null){
+					continue;
+				}
+				if(val != null){
+					if(val instanceof String){
+						if(isIgnoreEmptyString() && Strings.isEmpty((String)val)){
+							continue;
+						}
+					}
+					if(val.getClass().isArray()){
+						if(isIgnoreEmptyArray() && Arrays2.isEmpty((Object[])val)){
+							continue;
+						}
+					}
+					if(val instanceof Boolean){
+						if(isIgnoreFalse() && Objects.equals(val,Boolean.FALSE)){
+							continue;
+						}
+					}
+				}
 				property(key, val);
 			}
 			endObject();
@@ -834,12 +850,18 @@ public class JsonWriterImpl implements JsonWriter {
                         String propName = prop.getName();
 
                         JsonName named = prop.getAnnotation(JsonName.class);
-
+						
                         if(null != named){
                             propName = named.value();
                         }
 
-                        Object propValue = prop.getValue(bean);
+						Object propValue;
+                        
+                        if(jsonField != null && jsonField.useGetter() == false){
+							propValue = prop.getReflectField().getValue(bean,false);
+						}else{
+							propValue = prop.getValue(bean);
+						}
 
                         if(null == propValue && isIgnoreNull()){
                             continue;

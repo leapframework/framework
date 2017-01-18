@@ -15,12 +15,10 @@
  */
 package leap.oauth2.as;
 
-import java.security.PrivateKey;
-
-import leap.core.AppConfig;
-import leap.oauth2.as.client.AuthzClientStore;
-import leap.oauth2.as.code.AuthzCodeStore;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.oauth2.as.store.AuthzInMemoryStore;
+
+import java.security.PublicKey;
 
 /**
  * The configurator of {@link OAuth2AuthzServerConfig}.
@@ -30,7 +28,6 @@ public interface OAuth2AuthzServerConfigurator {
     String DEFAULT_AUTHZ_ENDPOINT_PATH      = "/oauth2/authorize";
     String DEFAULT_TOKEN_ENDPOINT_PATH      = "/oauth2/token";
     String DEFAULT_TOKENINFO_ENDPOINT_PATH  = "/oauth2/tokeninfo";
-    String DEFAULT_LOGINTOKEN_ENDPOINT_PATH = "/oauth2/logintoken";
     String DEFAULT_USERINFO_ENDPOINT_PATH   = "/oauth2/userinfo";
     String DEFAULT_LOGOUT_ENDPOINT_PATH     = "/oauth2/logout";
 
@@ -122,14 +119,6 @@ public interface OAuth2AuthzServerConfigurator {
 	OAuth2AuthzServerConfigurator setSingleLogoutEnabled(boolean enabled);
 
     /**
-     * Enables or Diables login token.
-     *
-     * <p/>
-     * Default is enabled.
-     */
-    OAuth2AuthzServerConfigurator setLoginTokenEnabled(boolean enabled);
-
-    /**
      * Enables or Disables client credentials grant type.
      *
      * <p/>
@@ -192,14 +181,6 @@ public interface OAuth2AuthzServerConfigurator {
      * Default is {@link #DEFAULT_TOKENINFO_ENDPOINT_PATH}.
      */
 	OAuth2AuthzServerConfigurator setTokenInfoEndpointPath(String path);
-
-    /**
-     * Sets the paht of logintoken endpoint.
-     *
-     * <p/>
-     * Default is {@link #DEFAULT_LOGINTOKEN_ENDPOINT_PATH}.
-     */
-    OAuth2AuthzServerConfigurator setLoginTokenEndpointPath(String path);
 
     /**
      * Sets the path logout endpoint.
@@ -272,4 +253,19 @@ public interface OAuth2AuthzServerConfigurator {
      * Default is {@link #DEFAULT_LOGIN_SESSION_EXPIRES}.
      */
 	OAuth2AuthzServerConfigurator setDefaultLoginSessionExpires(int seconds);
+
+    /**
+     * use rsa verifier as the jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator useRsaJwtVerifier();
+
+    /**
+     * use the specify erifier as the jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator useJwtVerifier(JwtVerifier verifier);
+    
+    /**
+     * set the public key for jwt verifier.
+     */
+    OAuth2AuthzServerConfigurator setPublicKey(PublicKey publicKey);
 }

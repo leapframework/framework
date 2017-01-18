@@ -168,9 +168,9 @@ public class DefaultSqlFactory implements SqlFactory {
         	boolean contains = false;
         	for(String field : fields){
         		if(Strings.equalsIgnoreCase(field, fm.getFieldName())){
-        			contains = true;
-        			break;
-        		}
+					contains = true;
+					break;
+				}
         	}
         	
         	if( contains || fm.isAutoGenerateValue()){

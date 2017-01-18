@@ -59,7 +59,7 @@ public class CodeIdTokenResponseTypeHandler extends AbstractResponseTypeHandler 
         qs.add("code", code.getCode());
         qs.add("id_token", idToken);
         
-        sendSuccessRedirect(response, authc, qs);
+        sendSuccessRedirect(request, response, authc, qs);
     }
 
 }

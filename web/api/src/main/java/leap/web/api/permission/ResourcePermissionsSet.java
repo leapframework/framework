@@ -28,7 +28,7 @@ import java.util.Set;
 public class ResourcePermissionsSet {
 
     private final Set<ResourcePermissions>           allResourcePermissions     = new LinkedHashSet<>();
-    private final Map<Class<?>, ResourcePermissions> resourceClassPermissions   = new HashMap<>();
+    private final Map<String, ResourcePermissions>   resourceClassPermissions   = new HashMap<>();
     private final Map<String, ResourcePermissions>   resourcePackagePermissions = new HashMap<>();
 
     public Set<ResourcePermissions> getAllResourcePermissions() {
@@ -60,7 +60,7 @@ public class ResourcePermissionsSet {
         rps.getResourceClasses().forEach(c -> {
 
             if(resourceClassPermissions.containsKey(c)) {
-                throw new IllegalStateException("Duplicate permissions definition of resource class '" + c.getName() + "'");
+                throw new IllegalStateException("Duplicate permissions definition of resource class '" + c + "'");
             }
 
             resourceClassPermissions.put(c, rps);

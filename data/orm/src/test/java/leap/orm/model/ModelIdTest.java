@@ -27,7 +27,9 @@ import leap.orm.tested.model.ModelWithId2;
 import leap.orm.tested.model.ModelWithId3;
 
 import leap.orm.tested.model.petclinic.DataTypeModel;
+import leap.orm.tested.model.petclinic.EnumType;
 import org.junit.Test;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 public class ModelIdTest extends OrmTestCase {
 
@@ -211,6 +213,20 @@ public class ModelIdTest extends OrmTestCase {
 
 		assertTrue(datatypes.size()>0);
 		dtm.delete();
+	}
+	@Test
+	public void testEnumColumn(){
+
+		DataTypeModel.deleteAll();
+		DataTypeModel dtm = new DataTypeModel();
+		dtm.setEnumType(EnumType.TYPE1);
+		dtm.create();
+
+		dtm = DataTypeModel.find(dtm.getId());
+		assertEquals(dtm.getEnumType(), EnumType.TYPE1);
+
+		String type = dao.createCriteriaQuery(DataTypeModel.class).select("enumType").where("id = ?",dtm.getId()).scalar().getString();
+		assertEquals(type, EnumType.TYPE1.toString());
 	}
 
 }

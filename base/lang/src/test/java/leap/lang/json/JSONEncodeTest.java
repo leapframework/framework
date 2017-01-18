@@ -15,20 +15,14 @@
  */
 package leap.lang.json;
 
+import leap.junit.concurrent.ConcurrentTestCase;
+import leap.lang.naming.NamingStyles;
+import org.junit.Test;
+
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import leap.junit.concurrent.ConcurrentTestCase;
-
-import leap.lang.naming.NamingStyles;
-import org.junit.Test;
+import java.util.*;
 
 public class JSONEncodeTest extends ConcurrentTestCase {
 	
@@ -107,6 +101,14 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		
 		assertEquals("1", bean.id);
 		assertEquals("xx", bean.name);
+	}
+	@Test
+	public void testUseField(){
+
+		String json = encode(new UseFieldBean());
+		Map<String, Object> map = JSON.decodeMap(json);
+		assertEquals("default",map.get("name1"));
+		assertEquals("no-default",map.get("name2"));
 	}
 	
 	@Test
@@ -323,6 +325,27 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		public NamingStyleBean(String userId, String userName) {
 			this.userId = userId;
 			this.userName = userName;
+		}
+	}
+	static final class UseFieldBean {
+		@JsonField(useGetter = false)
+		private String name1 = "default";
+		private String name2 = "default";
+		
+		public String getName1() {
+			return "no-default";
+		}
+
+		public void setName1(String name1) {
+			this.name1 = name1;
+		}
+
+		public String getName2() {
+			return "no-default";
+		}
+
+		public void setName2(String name2) {
+			this.name2 = name2;
 		}
 	}
 }

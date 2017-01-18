@@ -13,11 +13,9 @@
 
 package leap.oauth2.as.endpoint.token;
 
-import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
-import leap.core.security.token.jwt.RsaVerifier;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -28,6 +26,7 @@ import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientManager;
+import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.oauth2.as.token.SimpleAuthzAccessToken;
@@ -37,16 +36,15 @@ import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
  * Created by KAEL on 2016/6/13.
+ * grant_type=token_client
  */
-public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateBean {
+public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
 
     private Log log = LogFactory.get(TokenClientGrantTypeHandler.class);
 
@@ -56,15 +54,6 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
     protected @Inject AuthenticationManager authenticationManager;
     protected @Inject UserManager userManager;
 
-    protected RsaVerifier verifier;
-
-    @Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-        PublicKey publicKey = config.getPublicKey();
-        if(publicKey instanceof RSAPublicKey){
-            verifier = new RsaVerifier((RSAPublicKey)publicKey);
-        }
-    }
 
     @Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
@@ -76,14 +65,16 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
             OAuth2Errors.invalidRequest(response, "access_token is require");
             return;
         }
-        AuthzClient client = clientManager.authenticate(params).get();
+
+        SamplingAuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());
+
+        AuthzClient client = validateClientSecret(request,response, credentials);
         if(client == null){
-            OAuth2Errors.invalidRequest(response, "fail to authenticate client");
             return;
         }
-        boolean isJwtToken =isJwtToken(request,response,params);
+        boolean isJwtToken = isJwtToken(request,response,params);
 
-        AuthzAccessToken at = null;
+        AuthzAccessToken at;
         if(isJwtToken){
             at = authenticateJwtToken(request,response,params,client);
         }else{
@@ -104,6 +95,7 @@ public class TokenClientGrantTypeHandler implements GrantTypeHandler,PostCreateB
     }
 
     protected AuthzAccessToken authenticateJwtToken(Request request, Response response, OAuth2Params params, AuthzClient client){
+        JwtVerifier verifier = config.getJwtVerifier();
         if(verifier == null){
             OAuth2Errors.invalidRequest(response, "not support jwt token because public key is undefined!");
             return null;

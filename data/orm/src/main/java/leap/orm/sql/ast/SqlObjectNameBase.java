@@ -90,9 +90,9 @@ public abstract class SqlObjectNameBase extends SqlNode {
 	}
 	
     @Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
         if(quoted) {
-            super.prepareBatchStatement_(context, stm);
+            super.prepareBatchStatement_(context, stm,params);
         }else{
             toString(stm, context.dialect());    
         }

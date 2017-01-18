@@ -141,7 +141,10 @@ class SqlExprParser extends SqlParser {
 	
 	protected void parseExprLparenToken(){
 		parseExpr();
-		
+		if(lexer.token() == Token.LPAREN){
+			acceptText();
+			parseExprLparenToken();
+		}
 		if(lexer.token() != Token.RPAREN) {
 			do{
 				acceptText();
@@ -153,21 +156,6 @@ class SqlExprParser extends SqlParser {
 				parseExpr();
 			}while(lexer.token() != Token.RPAREN);
 		}
-		
-		/*
-		if(lexer.token() == Token.COMMA){
-			do{
-				accept();
-				
-				if(lexer.token() == Token.RPAREN){
-					break;
-				}
-				
-				parseExpr();
-			}while(lexer.token() == Token.COMMA);
-		}
-		*/
-		
 		expect(Token.RPAREN).acceptText();
 	}
 	

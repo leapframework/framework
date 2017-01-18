@@ -19,7 +19,6 @@
 package tests.model;
 
 import app.models.api.*;
-import leap.junit.contexual.Contextual;
 import leap.lang.New;
 import leap.lang.http.HTTP;
 import leap.lang.net.Urls;
@@ -30,6 +29,7 @@ import org.junit.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class RestApiControllerTest extends WebTestBase {
 
@@ -37,7 +37,19 @@ public class RestApiControllerTest extends WebTestBase {
     private static Category c2   = null;
     private static RestApi  api1 = null;
     private static RestApi  api2 = null;
+    
+    @Test
+    public void testCreateAndReturnWithId(){
+        String id = UUID.randomUUID().toString();
+        Map<String, Object> data = New.hashMap("name", "test",
+                "title", "test");
 
+        String apiId = (String) postJson("/api/restapi/create/"+id, data).decodeJsonMap().get("id");
+        assertEquals(apiId,id);
+        RestApi.delete(apiId);
+    }
+    
+    
     @Test
     public void testQueryOne() {
         RestApi result = get("/api/restapi/" + api1.getId()).decodeJson(RestApi.class);
@@ -135,6 +147,10 @@ public class RestApiControllerTest extends WebTestBase {
 
         apis = get("/api/restapi?filters=" + Urls.encode("name in api1,api2")).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
+        apis = get("/api/restapi?filters=" + Urls.encode("kindId is null")).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
+        apis = get("/api/restapi?filters=" + Urls.encode("name not null")).decodeJsonArray(RestApi.class);
+        assertEquals(2, apis.length);
     }
 
     @Test
@@ -159,6 +175,22 @@ public class RestApiControllerTest extends WebTestBase {
 
         apis = get("/api/restapi?filters=name%20eq%20api1%20or%20categories%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
+    }
+    @Test
+    public void testPartialConvertToObject(){
+        Map<String, Object> data = New.hashMap();
+        data.put("integer",1);
+        data.put("doubleNum",1.2D);
+        data.put("map",New.hashMap("key","value"));
+        data.put("list",New.arrayList("list1","list2"));
+        Map<String, Object> result = postJson("/api/restapi/convert", data).decodeJsonMap();
+        data.forEach((k,v)->assertEquals(v,result.get(k)));
+    }
+    @Test
+    public void testPathParamDecode(){
+        String path = "abc%20def";
+        String content = get("/api/restapi/path_decode/"+path).getContent();
+        assertEquals(Urls.decode("\""+path+"\""),content);
     }
 
     @Test

@@ -183,11 +183,6 @@
       },
       "flow": "implicit",
       "authorizationUrl": "http://petstore.swagger.io/oauth/dialog"
-    },
-    "internalApiKey": {
-      "type": "apiKey",
-      "in": "header",
-      "name": "api_key"
     }
   },
   "definitions": {

@@ -40,5 +40,4 @@ public interface Principal extends Serializable {
 	default boolean isAnonymous() {
         return false;
     }
-
 }

@@ -54,4 +54,13 @@ public class MultipartControllerTest extends WebTestCase {
 		
 		form.send().assertContentEquals("hello.txt!Hello");
 	}
+
+	@Test
+	public void testUploadFileWithExpressionPath() {
+		THttpMultipart form = client().request("/multipart/abc/upload").multipart();
+
+		form.addFile("file", "Hello", "hello.txt");
+
+		form.send().assertContentEquals("ok");
+	}
 }

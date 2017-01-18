@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonWriter;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2ResponseException;
@@ -91,6 +92,7 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 	}
 	
 	protected void handleDefaultSuccess(Request request, Response response, AuthzAccessToken token) {
+		response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
 		JsonWriter w = response.getJsonWriter();
 		w.startObject()
 		 .property("access_token", token.getToken())
@@ -99,10 +101,6 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 		int expiresIn = token.getExpiresIn() > 0 ? token.getExpiresIn() : config.getDefaultAccessTokenExpires();
 		
 		w.property("expires_in", expiresIn);
-
-		if(token.isAuthenticated()){
-			w.property("client_id",token.getClientId());
-		}
 
 		if(null != token.getRefreshToken()) {
 			w.property("refresh_token", token.getRefreshToken());

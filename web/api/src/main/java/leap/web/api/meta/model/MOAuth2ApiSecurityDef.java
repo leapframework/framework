@@ -16,6 +16,7 @@
 package leap.web.api.meta.model;
 
 import leap.lang.Args;
+import leap.web.api.spec.swagger.SwaggerConstants;
 
 import java.util.Map;
 
@@ -23,19 +24,29 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
     
     protected final String authzEndpointUrl;
     protected final String tokenEndpointUrl;
+    protected final String flow;
 
     public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl) {
-        this(authzEndpointUrl,tokenEndpointUrl, null);
+        this(SwaggerConstants.OAUTH2,authzEndpointUrl,tokenEndpointUrl);
     }
 
-    public MOAuth2ApiSecurityDef(String authzEndpointUrl, String tokenEndpointUrl, Map<String, Object> attrs) {
-        super(attrs);
+    public MOAuth2ApiSecurityDef(String name, String authzEndpointUrl, String tokenEndpointUrl) {
+        this(name,name,authzEndpointUrl,tokenEndpointUrl);
+    }
+
+    public MOAuth2ApiSecurityDef(String name,String title, String authzEndpointUrl, String tokenEndpointUrl) {
+        this(name,title,authzEndpointUrl,tokenEndpointUrl,SwaggerConstants.IMPLICIT, null);
+    }
+
+    public MOAuth2ApiSecurityDef(String name,String title, String authzEndpointUrl, String tokenEndpointUrl, String flow, Map<String, Object> attrs) {
+        super(name,title,attrs);
         
         Args.notEmpty(authzEndpointUrl, "authorization endpoint url");
         Args.notEmpty(tokenEndpointUrl, "token endpoint url");
         
         this.authzEndpointUrl = authzEndpointUrl;
         this.tokenEndpointUrl = tokenEndpointUrl;
+        this.flow = flow;
     }
 
     /**
@@ -55,5 +66,10 @@ public class MOAuth2ApiSecurityDef extends MApiSecurityDef {
     @Override
     public boolean isOAuth2() {
         return true;
+    }
+
+    @Override
+    public String getFlow() {
+        return flow;
     }
 }

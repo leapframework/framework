@@ -70,9 +70,9 @@ public class SqlNodeContainer extends SqlNode implements AstNodeContainer {
     }
 	
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		for(int i=0;i<nodes.length;i++) {
-			nodes[i].prepareBatchStatement(context, stm);
+			nodes[i].prepareBatchStatement(context, stm,params);
 		}
     }
 

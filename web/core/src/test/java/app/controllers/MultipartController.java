@@ -22,7 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
+import leap.lang.Strings;
 import leap.web.annotation.Multipart;
+import leap.web.annotation.Path;
 import leap.web.multipart.MultipartFile;
 import leap.web.multipart.Multiparts;
 
@@ -52,6 +54,13 @@ public class MultipartController {
 	
 	public String uploadFile(MultipartFile file1) throws IOException {
 		return file1.getOriginalFilename() + "!" + file1.getString();
+	}
+	@Path("{id}/upload")
+	public String uploadFileWithExpressionPath(String id, MultipartFile file){
+		if(Strings.isNotEmpty(id) && file != null){
+			return "ok";
+		}
+		return "fail";
 	}
 
 }

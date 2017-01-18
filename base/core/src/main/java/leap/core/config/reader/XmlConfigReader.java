@@ -193,6 +193,12 @@ public class XmlConfigReader extends XmlConfigReaderBase implements AppConfigRea
                             readAop(context, resource, reader);
                             continue;
                         }
+
+                        if(reader.isStartElement() && !isDefaultNamespaceUri(reader)){
+                            processExtensionElement(context,reader);
+                            continue;
+                        }
+                        
                     }
 
                 }else{

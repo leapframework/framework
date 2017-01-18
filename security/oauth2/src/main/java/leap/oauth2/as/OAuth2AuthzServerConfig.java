@@ -19,6 +19,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 
 import leap.core.AppConfig;
+import leap.core.security.token.jwt.JwtVerifier;
 import leap.oauth2.as.client.AuthzClientStore;
 import leap.oauth2.as.code.AuthzCodeStore;
 import leap.oauth2.as.sso.AuthzSSOStore;
@@ -76,14 +77,6 @@ public interface OAuth2AuthzServerConfig {
 	 * Default is <code>true</code>.
      */
 	boolean isSingleLogoutEnabled();
-
-    /**
-     * Returns <code>true</code> if login token (endpoint) enabled.
-     *
-     * <p/>
-     * Deault is <code>true</code>.
-     */
-	boolean isLoginTokenEnabled();
 
     /**
      * Returns <code>true</code> if user info (endpoint) enabled.
@@ -158,14 +151,6 @@ public interface OAuth2AuthzServerConfig {
      * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_TOKENINFO_ENDPOINT_PATH}.
      */
 	String getTokenInfoEndpointPath();
-
-    /**
-     * Returns the path of logintoken endpoint.
-     *
-     * <p/>
-     * Default is {@link OAuth2AuthzServerConfigurator#DEFAULT_LOGINTOKEN_ENDPOINT_PATH}.
-     */
-	String getLoginTokenEndpointPath();
 
     /**
      * Returns the path of logout endopint.
@@ -258,6 +243,11 @@ public interface OAuth2AuthzServerConfig {
 	 *  Returns <code>null</code> if the public key not configured.
 	 */
 	PublicKey getPublicKey();
+
+	/**
+	 * Returns the jwt verifier
+	 */
+	JwtVerifier getJwtVerifier();
 	
 	/**
 	 * Returns the global private key of authz server.

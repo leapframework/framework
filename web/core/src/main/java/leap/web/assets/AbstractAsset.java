@@ -19,6 +19,7 @@ package leap.web.assets;
 public abstract class AbstractAsset implements Asset {
 	
 	protected String 		path;
+	protected String 		debugPath;
 	protected String		contentType;
 	protected long          loadedAt = System.currentTimeMillis();
 	protected AssetResource resource;
@@ -30,12 +31,18 @@ public abstract class AbstractAsset implements Asset {
 
 	public AbstractAsset(String path) {
 		this.path = path;
+		this.debugPath = path;
 	}
 
 	public String getPath() {
 		return path;
 	}
-	
+
+	@Override
+	public String getDebugPath() {
+		return debugPath;
+	}
+
 	@Override
     public String getContentType() {
 	    return contentType;

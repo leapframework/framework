@@ -164,7 +164,7 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 		}
 		
 		if(resource == null){
-			resource = findAssetResoruce(path, pathAndFingerprint, locale);
+			resource = findAssetResource(path, pathAndFingerprint, locale);
 
 			if (resource == null) {
 				resource = UNRESOLVED_RESOURCE;
@@ -186,7 +186,7 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 		return requestUri + "_" + locale;
 	}
 	
-	protected AssetResource findAssetResoruce(String path, String[] pathAndFingerprint,  Locale locale) {
+	protected AssetResource findAssetResource(String path, String[] pathAndFingerprint, Locale locale) {
 		String assetPath   = path;
 		String fingerprint = null;
 		

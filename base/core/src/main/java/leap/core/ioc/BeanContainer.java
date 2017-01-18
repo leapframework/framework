@@ -894,7 +894,7 @@ public class BeanContainer implements BeanFactory {
 
 		//create factory beans
 		for(BeanDefinitionBase bd : bds.typedFactoryDefinitions.values()){
-		    for(FactoryDefinition fd : bd.getFactoryDefs()) {
+		    for(FactoryBeanDefinition fd : bd.getFactoryBeanDefs()) {
                 bds.typedFactoryBeans.put(fd.getTargetType(),(FactoryBean)doGetBean(bd));
 		    }
 		}
@@ -932,15 +932,60 @@ public class BeanContainer implements BeanFactory {
         }
 	}
 	
-	protected Object doCreateBean(BeanDefinitionBase bd){
-        return doCreateBean(bd, false);
-	}
+    protected Object doCreateProxy(BeanDefinitionBase pd, Class<?> type, Object bean){
 
-    protected Object doCreateProxy(BeanDefinitionBase bd){
-        return doCreateBean(bd, true);
+        Object proxy;
+
+        if(ProxyBean.class.isAssignableFrom(pd.getBeanClass())) {
+            proxy = doCreateBeanOnly(pd);
+            ((ProxyBean)proxy).setTargetBean(bean);
+        }else{
+            ReflectConstructor c = ReflectClass.of(pd.getBeanClass()).getConstructor(type);
+            if(null == c) {
+                throw new BeanCreationException("Can't create proxy '" + pd.getBeanClass() + "', No valid constructor");
+            }
+
+            proxy = c.newInstance(bean);
+
+            beforeBeanCreation(pd);
+
+            processBeanCreation(pd, proxy);
+
+            afterBeanCreation(pd);
+
+            pd.setInited(true);
+        }
+
+        return proxy;
     }
 
-    protected Object doCreateBean(BeanDefinitionBase bd, boolean proxy){
+    protected Object doCreateBean(BeanDefinitionBase bd){
+
+        Object bean = doCreateBeanOnly(bd);
+
+        BeanDefinitionBase pd = findProxy(bd);
+        if(null != pd) {
+            Object proxyBean = doCreateProxy(pd, bd.getType(), bean);
+
+            if(!isTypedProxy(pd)) {
+                pd = findTypedProxy(bd);
+                if(null != pd) {
+                    Object typedProxyBean = doCreateProxy(pd, bd.getType(), proxyBean);
+                    proxyBean = typedProxyBean;
+                }
+            }
+
+            if(bd.isSingleton()) {
+                bd.setProxyInstance(proxyBean);
+            }
+
+            return proxyBean;
+        }
+
+        return bean;
+    }
+
+    protected Object doCreateBeanOnly(BeanDefinitionBase bd) {
         if(initializing){
             throw new IllegalStateException("Cannot get bean when this container is initializing");
         }
@@ -964,29 +1009,6 @@ public class BeanContainer implements BeanFactory {
         afterBeanCreation(bd);
 
         bd.setInited(true);
-
-        if(!proxy) {
-            BeanDefinitionBase pd = findProxy(bd);
-            if(null != pd) {
-                Object proxyBean = doCreateProxy(pd);
-                ((ProxyBean)proxyBean).setTargetBean(bean);
-
-                if(!isTypedProxy(pd)) {
-                    pd = findTypedProxy(bd);
-                    if(null != pd) {
-                        Object typedProxyBean = doCreateProxy(pd);
-                        ((ProxyBean) typedProxyBean).setTargetBean(proxyBean);
-                        proxyBean = typedProxyBean;
-                    }
-                }
-
-                if(bd.isSingleton()) {
-                    bd.setProxyInstance(proxyBean);
-                }
-
-                return proxyBean;
-            }
-        }
 
         return bean;
     }
@@ -1040,74 +1062,79 @@ public class BeanContainer implements BeanFactory {
         }
         return false;
     }
-	
+
 	protected Object doBeanCreation(BeanDefinitionBase bd){
 		log.trace("Creating bean {}",bd);
 		
-		Object          bean = null;
-		ValueDefinition vd   = bd.getValueDefinition();
-		try {
-	        if(null != vd){
-	        	bean = doResolveValue(bd, vd, null);
-	        }else{
-	        	bean = doBeanCreationByConstructor(bd);
-	        }
-	        
-	        setBeanCurrentlyInCreation(bd, bean);
-	        
-	        doBeanAware(bd, bean);
-	        
-	        doBeanConfigure(bd, bean);
-	        if(bean instanceof PostConfigureBean){
-	            ((PostConfigureBean) bean).postConfigure(appContext.getBeanFactory(), appContext.getConfig());
-	        }
-	        
-	        doBeanSetProperties(bd,bean);
-	        doBeanInjection(bd,bean);
+		Object            bean;
+        FactoryDefinition fd = bd.getFactoryDefinition();
+		ValueDefinition   vd = bd.getValueDefinition();
+
+        if(null != fd) {
+            bean = doResolveValueFromFactory(bd, fd);
+        }else if(null != vd) {
+            bean = doResolveValue(bd, vd, null);
+        } else {
+            bean = doBeanCreationByConstructor(bd);
+        }
+
+        processBeanCreation(bd, bean);
+
+		return bean;
+	}
+
+    protected void processBeanCreation(BeanDefinitionBase bd, Object bean) {
+        try {
+            setBeanCurrentlyInCreation(bd, bean);
+
+            doBeanAware(bd, bean);
+
+            doBeanConfigure(bd, bean);
+            if(bean instanceof PostConfigureBean){
+                ((PostConfigureBean) bean).postConfigure(appContext.getBeanFactory(), appContext.getConfig());
+            }
+
+            doBeanSetProperties(bd,bean);
+            doBeanInjection(bd,bean);
             doBeanInvokeMethods(bd,bean);
-	        
-			if(null != bd.getInitMethod()){
-				Reflection.invokeMethod(bd.getInitMethod(), bean);
-			}
-			
-			//null if post processors not resolved, see #resolveAfterLoading 
-			if(null != processors){
-				for(int i=0;i<processors.length;i++){
-					processors[i].postCreateBean(appContext, beanFactory, bd, bean);
-				}
-			}
-			
-	        if(bean instanceof PostCreateBean){
-	        	((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
-	        }
+
+            if(null != bd.getInitMethod()){
+                Reflection.invokeMethod(bd.getInitMethod(), bean);
+            }
+
+            //null if post processors not resolved, see #resolveAfterLoading
+            if(null != processors){
+                for(int i=0;i<processors.length;i++){
+                    processors[i].postCreateBean(appContext, beanFactory, bd, bean);
+                }
+            }
+
+            if(bean instanceof PostCreateBean){
+                ((PostCreateBean) bean).postCreate(appContext.getBeanFactory());
+            }
 
             if(bean instanceof Initializable) {
                 ((Initializable) bean).init();
             }
-	        
-	        if(bean instanceof LoadableBean){
-	        	if(!((LoadableBean) bean).load(appContext.getBeanFactory())){
-	        		return null;
-	        	}
-	        }
-        } catch (Throwable e) {
-        	throw errorCreateBean(bd,e);
-        }
-		
-		if(bd.isSingleton()){
-			doBeanValidation(bd,bean);
-			bd.setSingletonInstance(bean);
-		}
-		
-		return bean;
-	}
-	
-	protected void postBeanCreation(Object bean) {
-		
-	}
 
+            if(bean instanceof LoadableBean){
+                if(!((LoadableBean) bean).load(appContext.getBeanFactory())){
+                    return;
+                }
+            }
+        } catch (Throwable e) {
+            throw errorCreateBean(bd,e);
+        }
+
+        if(bd.isSingleton()){
+            doBeanValidation(bd,bean);
+            bd.setSingletonInstance(bean);
+        }
+    }
+	
     protected Object resolveConfigProperty(BeanDefinitionBase bd, ConfigProperty p, String name, Class<?> type, Type genericType) {
         String keyPrefix = bd.getConfigurationPrefix();
+
         if(!Strings.isEmpty(keyPrefix)) {
             char lastChar = keyPrefix.charAt(keyPrefix.length() - 1);
             if(Character.isLetter(lastChar) || Character.isDigit(lastChar)) {
@@ -1116,6 +1143,7 @@ public class BeanContainer implements BeanFactory {
         }else{
             keyPrefix = "";
         }
+
         if(p.value().length > 0) {
             for(String key : p.value()) {
                 Object value = resolveConfigProperty(keyPrefix + key, type, genericType);
@@ -1444,14 +1472,12 @@ public class BeanContainer implements BeanFactory {
                 for(int i=0;i<args.length;i++) {
                     ReflectParameter p = dc.getParameters()[i];
 
-                    if(p.isAnnotationPresent(Inject.class)) {
-                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
+                    if(beanConfigurator.configure(args, p, bd.getConfigurationPrefix())){
                         continue;
                     }
 
-                    ConfigProperty a = p.getAnnotation(ConfigProperty.class);
-                    if(null != a) {
-                        args[i] = resolveConfigProperty(bd, a, p.getName(), p.getType(), p.getGenericType());
+                    if(p.isAnnotationPresent(Inject.class)) {
+                        args[i] = resolveInjectValue(beanFactory, bd, p.getName(), p.getType(), p.getGenericType(), p.getAnnotations());
                         continue;
                     }
                 }
@@ -1522,7 +1548,16 @@ public class BeanContainer implements BeanFactory {
         }
         return bean;
     }
-    
+
+    protected Object doResolveValueFromFactory(BeanDefinitionBase bd, FactoryDefinition fd) {
+        Method m = fd.getMethod();
+        try {
+            return m.invoke(null, doResolveArgs(bd, fd.getArguments()));
+        } catch (Exception e) {
+            throw new BeanCreationException("Error invoke factory method '" + m.getName() + "' in bean '" + bd + "' : " + e.getMessage(),e);
+        }
+    }
+
 	@SuppressWarnings({ "rawtypes", "unused" })
     protected Object doResolveValue(BeanDefinitionBase bd,ValueDefinition vd, String defaultValue){
 		if(vd.isResolved()){
@@ -1827,7 +1862,7 @@ public class BeanContainer implements BeanFactory {
         if(proxy) {
             bds = this.bpds;
         }
-
+		
         bds.add(bd);
 	}
 	
@@ -2022,7 +2057,7 @@ public class BeanContainer implements BeanFactory {
             }
             clsSet.add(bd);
 
-            for(FactoryDefinition fd : bd.getFactoryDefs()) {
+            for(FactoryBeanDefinition fd : bd.getFactoryBeanDefs()) {
                 typedFactoryDefinitions.put(fd.getTargetType(), bd);
             }
 
@@ -2109,6 +2144,28 @@ public class BeanContainer implements BeanFactory {
                 }
             }
 
+			Iterator<BeanDefinitionBase> iterator = typeSet.iterator();
+            
+			while (iterator.hasNext()){
+				BeanDefinitionBase bdf = iterator.next();
+				if(bdf == bd){
+					continue;
+				}
+				if(bdf.isAnnotation() &&
+						bdf.getType().equals(bd.getType()) &&
+						bdf.getBeanClass().equals(bd.getBeanClass())){
+					if(bd.isOverrideAnnotation()){
+						iterator.remove();
+					}else{
+						throw new BeanDefinitionException("duplicate bean definition in xml:"
+								+bd.getSource() + " and annotation:"+bdf.getSource()
+								+", if you want to override annotation bean definition, please "
+								+"use override-annotation=\"true\" in xml definition.");
+					}
+
+				}
+			}
+            
 			typeSet.add(bd);
 
 		}

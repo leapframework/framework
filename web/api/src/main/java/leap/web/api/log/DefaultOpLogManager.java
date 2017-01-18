@@ -62,6 +62,9 @@ public class DefaultOpLogManager implements OpLogManager {
         if(!Strings.isEmpty(logClassName)){
             logClass = (Class<? extends OpLogModel>) Class.forName(logClassName);
         }
+        if(dao == null){
+            return;
+        }
         dao.getOrmContext().getMetadata().getEntityMappingSnapshotList().forEach((em)->{
             Class<?> cls = em.getModelClass();
             if(cls == null || Modifier.isAbstract(cls.getModifiers())){

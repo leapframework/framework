@@ -31,7 +31,10 @@ public class DynamicSqlTest extends OrmTestCase {
 		
 		new Owner().setFullName("a", "0").save();
 		new Owner().setFullName("b", "1").save();
-		
+
+		assertEquals(1,Owner.where("1=1 AND firstName = :firstName {?AND lastName like '%$lastName$%'}")
+				.param("lastName","0").param("firstName","a").count());
+
 		Query<Record> query = dao.createNamedQuery("test.sql.dynamic.clause.simple");
 		assertEquals(2,query.count());
 		assertEquals(1,query.param("lastName", "1").count());
@@ -39,6 +42,7 @@ public class DynamicSqlTest extends OrmTestCase {
 		query = dao.createNamedQuery("test.sql.dynamic.clause.simple_1");
 		assertEquals(2,query.count());
 		assertEquals(1,query.param("lastName", "1").count());
+
 	}
 	
 	@Test
@@ -88,6 +92,11 @@ public class DynamicSqlTest extends OrmTestCase {
 		long nameLike1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","%1%").count();
 		long nameEq01 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").param("name","123456").count();
 		long nameEq1 = dao.createNamedQuery("test.sql.dynamic.clause.nest.if").count();
+		if(dao.getOrmContext().getName().equals("mysql")){
+			long count = dao.createNamedQuery("test.sql.dynamic.keyword.quota")
+					.param("group_max_quota",1).param("total",2).param("minQuota",0).count();
+			assertEquals(2,count);
+		}
 		assertEquals(nameLike1,Owner.count());
 		assertEquals(nameEq1,1L);
 		assertEquals(nameEq01,1L);
@@ -108,6 +117,14 @@ public class DynamicSqlTest extends OrmTestCase {
         dao.executeNamedUpdate("test.sql.dynamic.clause.update_with_null_column", new Object[]{null});
 
     }
+	@Test
+    public void testSqlUseEnvVariable(){
+		Owner.deleteAll();
+		new Owner().setFullName("a", "01").save();
+		int size = dao.createNamedQuery("test.sql.dynamic.env.params").list().size();
+		assertEquals(1,size);
+
+	}
 
 	@Test
 	public void testFragmentAndUnionWithLimit(){

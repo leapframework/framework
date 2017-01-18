@@ -27,18 +27,10 @@ import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
+import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiModel;
-import leap.web.api.meta.model.MApiOperation;
-import leap.web.api.meta.model.MApiParameter;
+import leap.web.api.meta.model.*;
 import leap.web.api.meta.model.MApiParameter.Location;
-import leap.web.api.meta.model.MApiParameterBase;
-import leap.web.api.meta.model.MApiPath;
-import leap.web.api.meta.model.MApiProperty;
-import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiSecurityDef;
-import leap.web.api.meta.model.MOAuth2ApiSecurityDef;
-import leap.web.api.meta.model.MPermission;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
@@ -74,7 +66,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		});
 		
 		w.propertyOptional(HOST, getHost(sc, m))
-		 .propertyOptional(BASE_PATH, m.getBasePath())
+		 .propertyOptional(BASE_PATH, sc.getContextPath() + m.getBasePath())
 		 .propertyOptional(SCHEMES, m.getProtocols())
 		 .propertyOptional(CONSUMES, m.getConsumes())
 		 .propertyOptional(PRODUCES, m.getProduces());
@@ -91,6 +83,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(SECURITY_DEFINITIONS, () -> writeSecurityDefs(context, m, w));
 
             writeDefaultSecurity(context, m, w);
+        }
+
+        if(!Arrays2.isEmpty(m.getTags())) {
+            w.property(TAGS, () -> writeTags(context, m, w));
         }
 
 		w.endObject();
@@ -159,29 +155,26 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         w.propertyOptional(SUMMARY, o.getSummary());
 		w.property(DESCRIPTION, nullToEmpty(o.getDescription()));
 
-        w.property(OPERATION_ID, o.getName()); //todo : unique id ?
+        w.propertyOptional(OPERATION_ID, o.getId());
 
         if(m.getSecurityDefs().length > 0 && !o.isAllowAnonymous()) {
 
-            w.property(SECURITY, () -> {
-
-                w.startObject();
-
-                //todo :
-
-                for(MApiSecurityDef sd : m.getSecurityDefs()) {
+            w.property(SECURITY, () -> 
+				w.array(m.getSecurityDefs(), (sd) -> {
                     if(!sd.isOAuth2()) {
                         throw new IllegalStateException("No supported security def : " + sd.getClass());
                     }
-                    w.property(OAUTH2, o.getPermissions());
-                }
-
-                w.endObject();
-
-            });
-
+					writeSecurities(context,m,w,o.getSecurity());
+                }));
+			if(o.getSecurity() != null){
+				w.property(X_SECURITY,writer -> {
+					writer.startObject();
+					writer.property(USER_REQUIRED,!o.isAllowAnonymous());
+					writer.endObject();
+				});
+			}
         }
-
+		
 		if(o.getConsumes().length > 0) {
 			w.property(CONSUMES, o.getConsumes());
 		}
@@ -205,6 +198,19 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.endObject();
 	}
 
+	protected void writeSecurities(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity[] sc){
+    	if(sc == null){
+			return;
+		}
+		for(MApiSecurity s : sc){
+			writeSecurity(context,m,w,s);
+		}
+	}
+	protected void writeSecurity(WriteContext context, ApiMetadata m, JsonWriter w, MApiSecurity sc){
+		w.startObject();
+		w.property(sc.getName(),sc.getScopes());
+		w.endObject();
+	}
 
 	protected void writeParameters(WriteContext context, ApiMetadata m, JsonWriter w, MApiParameter[] ps) {
         w.array(ps, p -> writeParameter(context, m, w, p));
@@ -294,14 +300,25 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        context.defaultSecurity = OAUTH2;
-
-        writeOAuth2Implicit(context, m, w, d);
-        //writeOAuth2AccesCode(context, m, w, d);
+        //context.defaultSecurity = OAUTH2;
+		if(Strings.equals(d.getFlow(),SwaggerConstants.IMPLICIT)){
+			
+		}
+        switch (d.getFlow()){
+			case SwaggerConstants.IMPLICIT:
+				writeOAuth2Implicit(context, m, w, d);
+				break;
+			case SwaggerConstants.ACCESS_CODE:
+				writeOAuth2AccesCode(context, m, w, d);
+				break;
+			default:
+				throw new ApiConfigException("not support flow:"+d.getFlow());
+		}
+        //
     }
     
     protected void writeOAuth2Implicit(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH2, () -> {
+        w.property(d.getName(), () -> {
             w.startObject();
             
             w.property(TYPE, SwaggerConstants.OAUTH2)
@@ -315,7 +332,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     }
     
     protected void writeOAuth2AccesCode(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
-        w.property(OAUTH2_ACCESS_CODE, () -> {
+        w.property(d.getName(), () -> {
             w.startObject();
             
             w.property(TYPE, SwaggerConstants.OAUTH2)
@@ -329,18 +346,33 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         });
     }
     
-    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d, MPermission[] scopes) {
+    protected void writeOAuth2Scopes(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d, MApiPermission[] scopes) {
         w.property(SCOPES, () -> {
             w.startObject();
             if(null != scopes) {
-                for (MPermission scope : scopes) {
+                for (MApiPermission scope : scopes) {
                     w.property(scope.getValue(), Strings.trim(scope.getDescription()));
                 }
             }
             w.endObject();
         });
     }
-	
+
+    protected void writeTags(WriteContext context, ApiMetadata m, JsonWriter w) {
+
+        w.array(m.getTags(), (tag) -> {
+
+            w.startObject();
+
+            w.property(NAME, tag.getName());
+            w.propertyOptional(DESCRIPTION, tag.descOrSummary());
+
+            w.endObject();
+
+        });
+
+    }
+
 	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
 		w.startObject();
 

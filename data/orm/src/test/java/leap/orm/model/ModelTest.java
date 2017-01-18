@@ -25,6 +25,36 @@ import leap.orm.tested.model.petclinic.Owner;
 import org.junit.Test;
 
 public class ModelTest extends OrmTestCase {
+	@Test
+	public void testUpsertModel(){
+		Owner.deleteAll();
+		Owner o = new Owner();
+		o.setFullName("a", "0").create();
+		Owner o1 = new Owner();
+		o1.setId(o.getId());
+		o1.setFullName("b","1");
+		o1.upsert();
+		o = Owner.find(o.id());
+		assertEquals(o1.getFirstName(),o.getFirstName());
+		assertEquals(o1.getLastName(),o.getLastName());
+
+		Owner o2 = new Owner();
+		o2.setId(o.getId());
+		o2.setFullName("c","2");
+		o2.setId(o1.getId()+100);
+		o2.upsert();
+		o = Owner.find(o2.id());
+		assertEquals(o2.getFirstName(),o.getFirstName());
+		assertEquals(o2.getLastName(),o.getLastName());
+
+		Owner o3 = new Owner();
+		o3.setId(o.getId());
+		o3.setFullName("d","3");
+		o3.upsert();
+		o = Owner.find(o2.id());
+		assertEquals(o3.getFirstName(),o.getFirstName());
+		assertEquals(o3.getLastName(),o.getLastName());
+	}
 
 	@Test
 	public void testCreatedAtAndUpdatedAt() {

@@ -15,28 +15,6 @@
  */
 package leap.core.ioc;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-
-class InvokeDefinition {
+class InvokeDefinition extends MethodDefinition{
 	
-	protected Method				   method;
-	protected List<ArgumentDefinition> arguments = new ArrayList<ArgumentDefinition>();
-
-	public Method getMethod() {
-		return method;
-	}
-
-	public void setMethod(Method method) {
-		this.method = method;
-	}
-
-	public List<ArgumentDefinition> getArguments() {
-		return arguments;
-	}
-	
-	public void addArgument(ArgumentDefinition argument){
-		arguments.add(argument);
-	}
 }

@@ -39,7 +39,7 @@ public class Global extends App {
 	        .setDefaultOAuthTokenUrl("http://127.0.0.1:8080/auth/oauth2/token");
 	    
 	    //Add simple api.
-		apis.add("testApi", "/testing");
+		//apis.add("testApi", "/testing");
 
 	}
 

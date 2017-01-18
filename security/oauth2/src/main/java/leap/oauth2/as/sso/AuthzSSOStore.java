@@ -28,6 +28,11 @@ public interface AuthzSSOStore {
     AuthzSSOSession loadSessionByToken(String username, String token);
 
     /**
+     * Returns the exists sso session by searching the id
+     */
+    AuthzSSOSession loadSessionById(String id);
+    
+    /**
      * Loads all the login(s) in the sso session.
      *
      * <p/>

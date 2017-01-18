@@ -56,7 +56,8 @@ public class Global extends App {
 		sc.interceptors().add(new SecurityInterceptor() {
 			@Override
 			public State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-				context.getAuthentication().setPermissions("permission2");
+				context.getAuthentication().setPermissions("permission2","p1","p2");
+				context.getAuthentication().setRoles("r1","r2");
 				return State.CONTINUE;
 			}
 		});

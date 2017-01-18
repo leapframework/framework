@@ -34,7 +34,9 @@ import leap.web.Response;
 import leap.core.security.Authentication;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.credentials.DefaultAuthenticateCredentialsContext;
+import leap.web.security.user.SimpleUsernamePasswordCredentials;
 import leap.web.security.user.UserManager;
+import leap.web.security.user.UsernamePasswordCredentials;
 
 /**
  * grant_type=password
@@ -48,15 +50,6 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
     protected @Inject AuthzClientValidator    clientValidator;
     protected @Inject UserManager             userManager;
 	
-	protected boolean validateClient = true;
-	
-	public boolean isValidateClient() {
-		return validateClient;
-	}
-
-	public void setValidateClient(boolean validate) {
-		this.validateClient = validate;
-	}
 
 	@Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable{
@@ -73,21 +66,26 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
 		}
 		
 		DefaultAuthenticateCredentialsContext context = new DefaultAuthenticateCredentialsContext(request.getValidation());
+
+		SimpleUsernamePasswordCredentials credentials = new SimpleUsernamePasswordCredentials(username,password);
 		
 		//Authenticate user.
-		Authentication authc = authenticationManager.authenticate(context, params);
+		Authentication authc = authenticationManager.authenticate(context, credentials);
 		if(null == authc) {
 			OAuth2Errors.invalidGrant(response, "invalid username or password");
 			return;
 		}
 
 		//Validates the client.
-		AuthzClient client = null;
-		if(validateClient) {
-            client = clientValidator.validatePasswordGrantRequest(request, response, params);
-            if (null == client) {
-                return;
-            }
+		String clientId = params.getClientId();
+		if(Strings.isEmpty(clientId)){
+			OAuth2Errors.invalidRequest(response, "client_id is required");
+			return;
+		}
+		AuthzClient client = clientManager.loadClientById(clientId);
+		if(client == null){
+			OAuth2Errors.invalidGrant(response, "invalid client_id");
+			return;
 		}
 		
 		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, userManager.getUserDetails(authc.getUser()));

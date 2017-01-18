@@ -34,7 +34,7 @@ import leap.web.route.Route;
 import leap.web.view.ViewSource;
 
 /**
- * Wrapps a {@link HttpServletRequest} to provide some more convenient methods.
+ * Wraps a {@link HttpServletRequest} to provide some more convenient methods.
  */
 public abstract class Request extends RequestBase {
 	
@@ -265,6 +265,16 @@ public abstract class Request extends RequestBase {
 	 * Sets current {@link UserPrincipal}.
 	 */
 	public abstract void setUser(UserPrincipal user);
+
+    /**
+     * Returns the external router or null if use internal.
+     */
+    public abstract Router getExternalRouter();
+
+    /**
+     * Sets the external router.
+     */
+    public abstract void setExternalRouter(Router router);
 
     @Override
     public Cookie getCookie(String name) {

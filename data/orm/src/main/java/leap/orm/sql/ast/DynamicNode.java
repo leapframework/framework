@@ -24,7 +24,7 @@ import leap.orm.sql.SqlContext;
 public abstract class DynamicNode extends AstNode {
 
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		throw new SqlClauseException("Batch executing sql cannot use the dynamic node[" + this + "]");	    
     }
 	

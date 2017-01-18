@@ -15,6 +15,9 @@
  */
 package tested.base.beans;
 
+import leap.core.annotation.Bean;
+
+@Bean
 public interface TAnnotationBeanType {
 
 }

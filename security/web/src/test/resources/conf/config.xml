@@ -3,6 +3,7 @@
 
 	<additional-packages>
 		tested.models
+        tested.bean
 	</additional-packages>
 
     <properties>

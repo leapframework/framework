@@ -15,14 +15,12 @@
  */
 package tests;
 
-import java.security.interfaces.RSAPublicKey;
-import java.util.Map;
-import java.util.function.BiConsumer;
-
+import app.Global;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.codec.Base64;
 import leap.lang.http.Headers;
 import leap.lang.http.QueryString;
 import leap.lang.http.QueryStringParser;
@@ -33,7 +31,10 @@ import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.webunit.WebTestBaseContextual;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;
-import app.Global;
+
+import java.security.interfaces.RSAPublicKey;
+import java.util.Map;
+import java.util.function.BiConsumer;
 
 public abstract class OAuth2TestBase extends WebTestBaseContextual implements OAuth2TestData {
 	
@@ -179,11 +180,14 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByClient(String clientId, String clientSecret) {
-        String tokenUri = serverContextPath + TOKEN_ENDPOINT + 
-                "?grant_type=client_credentials&client_id=" + Urls.encode(clientId) + 
-                "&client_secret=" + Urls.encode(clientSecret); 
+        String tokenUri = serverContextPath + TOKEN_ENDPOINT; 
         
-        return resp(post(tokenUri), new TokenResponse());
+        String token = "Basic " + Base64.encode(clientId + ":" + clientSecret);
+
+        THttpRequest request = forPost(tokenUri).addHeader("Authorization",token)
+                .addFormParam("grant_type","client_credentials");
+        
+        return resp(request.send(), new TokenResponse());
     }
     
     protected TokenResponse obtainAccessTokenByRefreshToken(String refreshToken) {

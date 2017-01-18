@@ -15,26 +15,21 @@
  */
 package leap.oauth2.as.client;
 
-import leap.core.annotation.Inject;
-import leap.lang.Out;
 import leap.lang.Strings;
 
 public class DefaultAuthzClientAuthenticator implements AuthzClientAuthenticator {
 
-    protected @Inject AuthzClientManager clientManager;
-    
     @Override
-    public boolean authenticate(AuthzClientCredentials credentials, Out<AuthzClient> out) throws Throwable {
+    public boolean authenticate(AuthzClientCredentials credentials, AuthzClient client) throws Throwable {
         String clientId     = credentials.getClientId();
         String clientSecret = credentials.getClientSecret();
         
         if(Strings.isEmpty(clientId) || Strings.isEmpty(clientSecret)) {
-            return true;
+            return false;
         }
         
-        AuthzClient client = clientManager.loadClientById(clientId);
         if(null == client) {
-            return true;
+            return false;
         }
         
         if(!client.acceptsSecret(clientSecret)) {
@@ -42,7 +37,6 @@ public class DefaultAuthzClientAuthenticator implements AuthzClientAuthenticator
         }
 
         client.setAuthenticated(Boolean.TRUE);
-        out.set(client);
         return true;
     }
 

@@ -16,6 +16,7 @@
 package leap.oauth2.rs.token;
 
 import java.util.Enumeration;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -33,16 +34,21 @@ public class ResBearerAccessTokenExtractor implements ResAccessTokenExtractor {
 	@Override
 	public ResAccessToken extractTokenFromRequest(Request request) {
 		String v = extractToken(request.getServletRequest());
-		
-		if(null == v || v.length() == 0) {
+		return extractTokenFromString(v,request.getParameters());
+	}
+
+	@Override
+	public ResAccessToken extractTokenFromString(String token, Map<String, Object> params) {
+		if(null == token || token.length() == 0) {
 			return null;
 		}
 
-		if(isJwt(v)){
-			return new SimpleJwtAccessToken(OAuth2Constants.BEARER_TYPE,v,request.getParameters());
+		if(isJwt(token)){
+			return new SimpleJwtAccessToken(OAuth2Constants.BEARER_TYPE,token,params);
 		}
-		return new SimpleResAccessToken(OAuth2Constants.BEARER_TYPE, v, request.getParameters());
+		return new SimpleResAccessToken(OAuth2Constants.BEARER_TYPE, token, params);
 	}
+
 
 	protected boolean isJwt(String token){
 		return Strings.contains(token,".");

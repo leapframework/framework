@@ -21,18 +21,17 @@ package leap.web.api.orm;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiModel;
 
 public abstract class ModelExecutorBase {
 
-    protected final ApiConfig     c;
-    protected final MApiModel     am;
-    protected final Dao           dao;
-    protected final EntityMapping em;
-    protected final OrmMetadata   md;
+    protected final ModelExecutorConfig c;
+    protected final MApiModel           am;
+    protected final Dao                 dao;
+    protected final EntityMapping       em;
+    protected final OrmMetadata         md;
 
-    public ModelExecutorBase(ApiConfig c, MApiModel am, Dao dao, EntityMapping em) {
+    public ModelExecutorBase(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
         this.c = c;
         this.am = am;
         this.dao = dao;

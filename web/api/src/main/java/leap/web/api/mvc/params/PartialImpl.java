@@ -16,14 +16,31 @@
 
 package leap.web.api.mvc.params;
 
+import leap.lang.Exceptions;
+import leap.lang.Types;
+import leap.lang.beans.BeanProperty;
+import leap.lang.beans.BeanType;
+import leap.lang.convert.Converter;
+import leap.lang.convert.MapConverter;
+import leap.lang.json.JSON;
+
+import java.lang.reflect.Type;
 import java.util.Map;
+import java.util.Objects;
 
-public class PartialImpl implements Partial {
+public class PartialImpl<T> implements Partial {
 
+    private final Class<T> clzz;
     private final Map m;
+    private T t;
 
-    public PartialImpl(Map m) {
+    public PartialImpl(Map m,Type genericType) throws IllegalAccessException, InstantiationException {
         this.m = m;
+        if(genericType != null){
+            clzz = (Class<T>)Types.getActualTypeArgument(genericType);
+        }else{
+            clzz = null;
+        }
     }
 
     @Override
@@ -36,4 +53,17 @@ public class PartialImpl implements Partial {
         return (Map<String,Object>)m;
     }
 
+    @Override
+    public T getObject() {
+        if(t != null){
+            return t;
+        }else if (clzz != null){
+            if(m != null){
+                t = JSON.decode(JSON.encode(m),clzz);
+            }
+            return t;
+        }else {
+            return (T)m;
+        }
+    }
 }

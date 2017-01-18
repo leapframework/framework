@@ -143,6 +143,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> alias(String alias);
 
     /**
+     * Add a customer join builder
+     */
+    CriteriaQuery<T> join(JoinBuilder builder);
+
+    /**
      * Inner join the target entity by id columns.
      */
     CriteriaQuery<T> join(Class<?> targetEntityClass, String alias);

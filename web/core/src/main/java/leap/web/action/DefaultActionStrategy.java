@@ -167,7 +167,11 @@ public class DefaultActionStrategy implements ActionStrategy {
                 String[] parentPaths = getControllerPaths(parent);
                 if(parentPaths.length == 1) {
                     String path = path(pathPrefix, a.value());
-                    return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                    if(parentPaths[0].endsWith("/")){
+                        return new String[]{parentPaths[0] + Paths.prefixWithoutSlash(path)};
+                    }else{
+                        return new String[]{parentPaths[0] + Paths.prefixWithSlash(path)};
+                    }
                 }else{
                     throw new IllegalStateException("Controller only supports one path value");
                 }
@@ -230,8 +234,11 @@ public class DefaultActionStrategy implements ActionStrategy {
 		String defaultPath   = "";
 		String defaultMethod = "*";
 		for(Annotation a : annotations){
-			if(a.annotationType().isAnnotationPresent(HttpMethod.class)){
-				defaultMethod = a.annotationType().getSimpleName().toUpperCase();
+            HttpMethod hm = a.annotationType().getAnnotation(HttpMethod.class);
+
+			if(null != hm){
+				defaultMethod = Strings.firstNotEmpty(hm.value().toUpperCase(),
+                                                        a.annotationType().getSimpleName().toUpperCase());
 
                 Method value = Reflection.findMethod(a.annotationType(), "value");
                 if(null != value){

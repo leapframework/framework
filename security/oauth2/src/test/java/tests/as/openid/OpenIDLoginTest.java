@@ -17,7 +17,11 @@ package tests.as.openid;
 
 import java.util.Map;
 
+import leap.core.annotation.Inject;
 import leap.core.security.token.jwt.MacSigner;
+import leap.lang.json.JsonObject;
+import leap.lang.json.JsonValue;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
 
@@ -26,7 +30,7 @@ import org.junit.Test;
 import app.Global;
 
 public class OpenIDLoginTest extends OAuth2TestBase {
-    
+    private @Inject OAuth2AuthzServerConfig asc;
     @Test
     public void testLogin() {
         TokenResponse token = obtainIdTokenImplicit();
@@ -53,5 +57,5 @@ public class OpenIDLoginTest extends OAuth2TestBase {
         
         assertLogout();
     }
-
+    
 }

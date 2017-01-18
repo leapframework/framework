@@ -79,4 +79,10 @@ public class PropertiesTest extends AppTestBase {
         assertEquals("e", config.getProperty("testElementProps.prop5"));
         assertEquals("f", config.getProperty("testElementProps.prop6"));
     }
+    @Test
+    public void testRecursiveProperties(){
+        assertEquals("recursive", config.getProperty("recursive.property"));
+        assertEquals("recursive1", config.getProperty("recursive.recursive1.property"));
+        assertEquals("recursive2", config.getProperty("recursive.recursive1.recursive2.property"));
+    }
 }

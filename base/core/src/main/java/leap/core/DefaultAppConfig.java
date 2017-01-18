@@ -58,6 +58,7 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     protected Boolean                       debug               = null;
     protected Boolean                       lazyTemplate        = null;
     protected String                        basePackage         = null;
+    protected Set<String>                   additionalPackages  = new LinkedHashSet<>();
     protected Locale                        defaultLocale       = null;
     protected Charset                       defaultCharset      = null;
     protected boolean                       reloadEnabled       = false;
@@ -145,8 +146,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 	public String getBasePackage() {
 		return basePackage;
 	}
-	
-	@Override
+
+    @Override
+    public Set<String> getAdditionalPackages() {
+        return additionalPackages;
+    }
+
+    @Override
     public Locale getDefaultLocale() {
 	    return defaultLocale;
     }

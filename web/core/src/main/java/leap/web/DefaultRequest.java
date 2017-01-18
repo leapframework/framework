@@ -25,7 +25,6 @@ import leap.lang.Arrays2;
 import leap.lang.Assert;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
-import leap.lang.collection.IterableEnumerable;
 import leap.lang.exception.NestedIOException;
 import leap.lang.exception.NestedServletException;
 import leap.lang.http.HTTP.Method;
@@ -83,16 +82,17 @@ public class DefaultRequest extends Request {
     private Validation                 validation;
     private ActionContext              actionContext;
     private Result                     result;
-    private Boolean                    ajax;
-    private Boolean                    pjax;
-    private Boolean                    debug;
-    private Boolean                    multipart;
-    private Boolean                    gzipSupport;
-    private UserPrincipal              user;
-    private Session                    session;
-    private Map<String, List<String>>  queryParams;
-    private Map<String, Object>        queryParamsMap;
-    private Boolean                    acceptValidationError;
+    private Boolean                   ajax;
+    private Boolean                   pjax;
+    private Boolean                   debug;
+    private Boolean                   multipart;
+    private Boolean                   gzipSupport;
+    private UserPrincipal             user;
+    private Session                   session;
+    private Map<String, List<String>> queryParams;
+    private Map<String, Object>       queryParamsMap;
+    private Boolean                   acceptValidationError;
+    private Router                    externalRouter;
 	
 	public DefaultRequest(App app, AppHandler handler, RequestWrapper servletRequest, Response response){
 		this.app    		 = app;
@@ -738,6 +738,15 @@ public class DefaultRequest extends Request {
     @Override
     public void setAcceptValidationError(Boolean accept) {
         this.acceptValidationError = accept;
+    }
+
+    @Override
+    public Router getExternalRouter() {
+        return externalRouter;
+    }
+
+    public void setExternalRouter(Router router) {
+        this.externalRouter = router;
     }
 
     protected String extractRequestPath(){

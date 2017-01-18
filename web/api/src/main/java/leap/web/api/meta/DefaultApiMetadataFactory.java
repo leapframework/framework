@@ -21,21 +21,26 @@ import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
 import leap.lang.Enums;
 import leap.lang.Strings;
-import leap.lang.Types;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.lang.meta.*;
+import leap.lang.meta.MComplexType;
+import leap.lang.meta.MSimpleTypes;
+import leap.lang.meta.MType;
+import leap.lang.meta.MTypeStrategy;
 import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
-import leap.web.api.annotation.Resource;
-import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.OauthConfig;
+import leap.web.api.meta.desc.ApiDescContainer;
+import leap.web.api.meta.desc.CommonDescContainer;
+import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
 
@@ -54,6 +59,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected @Inject App                    app;
 	protected @Inject ApiMetadataProcessor[] processors;
 	protected @Inject MTypeManager           mtypeManager;
+    protected @Inject ApiMetadataStrategy    strategy;
+    protected @Inject ApiDescContainer       apiDescContainer;
 	
 	@Override
     public ApiMetadata createMetadata(ApiConfig c) {
@@ -90,7 +97,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			public ApiConfig getConfig() {
 				return c;
 			}
-		};
+
+            @Override
+            public ApiDescContainer getDescContainer() {
+                return apiDescContainer;
+            }
+        };
 	}
 	
 	protected MTypeContainer createMTypeFactory(ApiConfig c, ApiMetadataBuilder md) {
@@ -134,7 +146,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 MComplexType ct = type.asComplexType();
 
                 if(!m.containsModel(ct.getName())) {
-                    m.addModel(new MApiModelBuilder(ct));
+                    m.addModel(new MApiModelBuilder(ct,apiDescContainer));
                 }
 
                 type = ct.createTypeRef();
@@ -153,10 +165,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
-        if(c.isOAuthEnabled()) {
+        OauthConfig oauthConfig = c.getOauthConfig();
+        if(oauthConfig != null && oauthConfig.isOauthEnabled()) {
             MOAuth2ApiSecurityDef def =
-                    new MOAuth2ApiSecurityDef(c.getOAuthAuthorizationUrl(),
-                                              c.getOAuthTokenUrl());
+                    new MOAuth2ApiSecurityDef(
+                            SwaggerConstants.OAUTH2,
+                            SwaggerConstants.OAUTH2,
+                            oauthConfig.getOauthAuthzEndpointUrl(),
+                            oauthConfig.getOauthTokenEndpointUrl(),
+                            oauthConfig.getFlow(),
+                            null);
             
             md.addSecurityDef(def);
         }
@@ -187,7 +205,14 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void preProcessPath(ApiMetadataContext context, ApiMetadataBuilder m, MApiPathBuilder p) {
 
         p.getOperations().forEach(op -> {
-            createTags(context, m, op.getRoute(), p, op);
+
+            //operation tag
+            createOperationTags(context, m, op.getRoute(), p, op);
+
+            //operation id
+            if(Strings.isEmpty(op.getId())) {
+                strategy.tryCreateOperationId(m, p, op);
+            }
         });
 
     }
@@ -218,9 +243,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 context.getMTypeContainer().getMType(t);
             }
         });
-
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
-            m.addModel(new MApiModelBuilder(ct));
+            m.addModel(new MApiModelBuilder(ct,apiDescContainer));
         });
 
     }
@@ -248,7 +272,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		setApiMethod(context, m, route, path, op);
 
         log.debug(" {}", op.getMethod());
-	
+
+        //Set description and summary
+        setOperationDesc(context, m, route, path, op);
+
+        //Create security
+        createApiSecurity(context, m, route, path, op);
+
 		//Create parameters.
 		createApiParameters(context, m, route, path, op);
 		
@@ -278,38 +308,84 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			op.setMethod(HTTP.Method.valueOf(method));
 		}
 	}
-	
-	protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+
+	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+        if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
+            OperationDescSet set = apiDescContainer.getOperationDescSet(route.getAction().getController());
+            if(set == null){
+                return;
+            }
+            OperationDescSet.OperationDesc desc = set.getOperationDesc(op.getRoute().getAction());
+            if(desc != null){
+                op.setDesc(desc);
+            }
+        }
+    }
+
+    protected void createApiSecurity(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+        // todo create operation security
+
+    }
+
+    protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
 		Action action = route.getAction();
 
         log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
             if(a.isWrapper()) {
-
-                for(Argument wa : a.getWrappedArguments()) {
-                    if(!wa.isContextual()) {
-                        createApiParameter(context, m, route, op, wa);
-                    }
-                }
-
+                createApiWrapperParameter(context, m, route, op, a);
                 if(!a.isRequestBody()) {
                     continue;
                 }
             }
 
             if(!a.isContextual()) {
-                createApiParameter(context, m, route, op, a);
+                String description = null;
+                if(op.getDesc() != null){
+                    OperationDescSet.ParameterDesc desc = op.getDesc().getParameter(a);
+                    if(desc != null){
+                        description = desc.getDescription();
+                    }
+                }
+                createApiParameter(context, m, route, op, a,description);
             }
         }
 	}
 
-    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a) {
+	protected void createApiWrapperParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a){
+        OperationDescSet.ParameterDesc desc = null;
+        if(op.getDesc() != null){
+            desc = op.getDesc().getParameter(a);
+        }
+
+        CommonDescContainer.Parameter parameter = apiDescContainer.getCommonParameter(a.getType());
+
+        for(Argument wa : a.getWrappedArguments()) {
+            if(!wa.isContextual()) {
+                String description = null;
+                if(desc != null){
+                    OperationDescSet.PropertyDesc propertyDesc = desc.getProperty(wa.getDeclaredName());
+                    if(propertyDesc != null){
+                        description = propertyDesc.getDesc();
+                    }
+                }else if(parameter != null){
+                    CommonDescContainer.Property property = parameter.getProperty(wa.getDeclaredName());
+                    if(property != null){
+                        description = property.getDesc();
+                    }
+                }
+                createApiParameter(context, m, route, op, wa,description);
+            }
+        }
+    }
+
+    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a, String desc) {
         MApiParameterBuilder p = new MApiParameterBuilder();
 
         p.setName(a.getName());
 
-        log.trace("   {}", a.getName(), p.getLocation());
+        log.trace("{}", a.getName(), p.getLocation());
 
         if(isParameterFileType(a.getType())) {
             p.setType(MSimpleTypes.BINARY);
@@ -330,6 +406,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         if(a.getType().isEnum()){
             p.setEnumValues(Enums.getValues(a.getType()));
         }
+
+        p.setDescription(desc);
 
         op.addParameter(p);
     }
@@ -377,7 +455,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         //todo : common responses ?
 	}
 
-    protected void createTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+    protected void createOperationTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
         if(null == route) {
             return;
         }
@@ -387,8 +465,17 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             MApiModelBuilder model = m.tryGetModel(resourceType);
             if(null != model) {
                 op.addTag(model.getName());
+
+                MApiTag tag = m.getTags().get(model.getName());
+                if(null == tag) {
+                    m.addTag(new MApiTag(model.getName(),model.getTitle(),model.getSummary(),model.getDescription(),null));
+                }
             }else{
                 op.addTag(resourceType.getSimpleName());
+                MApiTag tag = m.getTags().get(resourceType.getSimpleName());
+                if(null == tag) {
+                    m.addTag(new MApiTag(resourceType.getSimpleName()));
+                }
             }
         }
     }

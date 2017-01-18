@@ -15,22 +15,26 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Strings;
 import leap.lang.meta.MProperty;
+import leap.web.api.meta.desc.ModelDesc;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected MProperty property;
-    protected Boolean   creatable;
-    protected Boolean   updatable;
-    protected Boolean   sortable;
-    protected Boolean   filterable;
+    protected MProperty              property;
+    protected ModelDesc.PropertyDesc desc;
+    protected Boolean                creatable;
+    protected Boolean                updatable;
+    protected Boolean                sortable;
+    protected Boolean                filterable;
 	
 	public MApiPropertyBuilder() {
 	    super();
     }
 
-	public MApiPropertyBuilder(MProperty mp) {
+	public MApiPropertyBuilder(MProperty mp, ModelDesc.PropertyDesc desc) {
 	    super();
+        this.desc = desc;
 	    this.setMProperty(mp);
     }
 	
@@ -39,7 +43,12 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.name  = mp.getName();
 		this.title = mp.getTitle();
 		this.summary = mp.getSummary();
-		this.description = mp.getDefaultValue();
+
+		this.description = mp.getDescription();
+        if(desc != null && Strings.isEmpty(this.description)){
+            this.description = desc.getDesc();
+        }
+
         this.property = mp;
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();

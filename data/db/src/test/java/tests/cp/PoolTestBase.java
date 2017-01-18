@@ -55,36 +55,12 @@ public abstract class PoolTestBase extends AppTestBase {
         ds.setHealthCheckIntervalMs(100);
 	}
 	
-	ProxyConnection getConnection() throws SQLException {
-		return (ProxyConnection) ds.getConnection();
-	}
-	
-	protected PooledDataSource createDefaultDataSource() {
-		return new PooledDataSource(new MockDataSource());
-	}
-	
-	protected static PooledConnection proxy(Connection conn) {
-		return (PooledConnection)conn;
-	}
-	
-	protected static ProxyStatement proxy(Statement statement) {
-		return (ProxyStatement)statement;
-	}
-	
-	protected static ProxyPreparedStatement proxy(PreparedStatement ps) {
-		return (ProxyPreparedStatement)ps;
-	}
-	
-	protected static ProxyCallableStatement proxy(CallableStatement cs) {
-		return (ProxyCallableStatement)cs;
+	PooledConnection getConnection() throws SQLException {
+		return (PooledConnection) ds.getConnection();
 	}
 	
 	protected static MockConnection real(Connection conn) {
-		return (MockConnection)((ProxyConnection)conn).getReal();
+		return (MockConnection)((PooledConnection)conn).wrapped();
 	}
-	
-	protected static MockStatement real(Statement stmt) {
-		return (MockStatement)proxy(stmt).getReal();
-	}
-	
+
 }

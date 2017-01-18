@@ -52,6 +52,7 @@ public class FragmentTest extends HtplTestCase {
 	@Test
 	public void testRenderFragmentMulti() {
 		assertRender("11","<!--#fragment test--><!--#if(true)-->1<!--#endif--><!--#endfragment--><!--#render-fragment test-->");
+		assertRender("<div>1</div><div>1</div>","<!--#fragment test--><div ht:if=\"true\">1</div><!--#endfragment--><!--#render-fragment test-->");
 	}
 	
 	@Test

@@ -16,9 +16,12 @@
 package leap.orm.tested;
 
 import leap.orm.annotation.Entity;
+import leap.orm.annotation.NonDomain;
 import leap.orm.tested.domains.TestDomain;
 import leap.orm.tested.domains.TestDomain1;
 import leap.orm.tested.domains.TestDomain2;
+
+import java.sql.Timestamp;
 
 @Entity
 public class DomainEntity {
@@ -31,6 +34,10 @@ public class DomainEntity {
 
 	@TestDomain2
 	private String test2;
+	@NonDomain
+	private Timestamp createdAt;
+
+	private Timestamp updatedAt;
 	
 	public String getTest() {
 		return test;
@@ -54,5 +61,21 @@ public class DomainEntity {
 
 	public void setTest2(String test2) {
 		this.test2 = test2;
+	}
+
+	public Timestamp getCreatedAt() {
+		return createdAt;
+	}
+
+	public void setCreatedAt(Timestamp createdAt) {
+		this.createdAt = createdAt;
+	}
+
+	public Timestamp getUpdatedAt() {
+		return updatedAt;
+	}
+
+	public void setUpdatedAt(Timestamp updatedAt) {
+		this.updatedAt = updatedAt;
 	}
 }

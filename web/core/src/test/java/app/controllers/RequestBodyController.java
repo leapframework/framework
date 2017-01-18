@@ -40,7 +40,7 @@ public class RequestBodyController extends ControllerBase {
     public String jsonBody(@RequestBody String json) {
         return json;
     }
-	
+
 	public String stringBody1(@RequestBody String body,String p1) {
 		return body + ":" + p1;
 	}

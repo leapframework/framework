@@ -17,10 +17,14 @@ package leap.oauth2.as.openid;
 
 import leap.oauth2.as.authc.AuthzAuthentication;
 
-public interface IdTokenGenerator {
-    
-    String generateIdToken(AuthzAuthentication authc);
+import java.util.Map;
 
-    String generateIdToken(AuthzAuthentication authc, int expires);
+public interface IdTokenGenerator {
+
+    String generateIdToken(AuthzAuthentication authc);
+    
+    String generateIdToken(AuthzAuthentication authc, Map<String,Object> extend);
+
+    String generateIdToken(AuthzAuthentication authc, Map<String,Object> extendint, int expires);
     
 }

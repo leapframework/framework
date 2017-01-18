@@ -35,4 +35,9 @@ public class UserController extends ModelController<User> {
         return queryList(options);
     }
 
+    @GET("/{id}")
+    public ApiResponse<User> getUser(String id,QueryOptions options) {
+        return get(id,options);
+    }
+
 }

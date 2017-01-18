@@ -114,7 +114,7 @@ public class OAuth2Errors {
      * URI used in the authorizat
 	 */
 	public static void invalidGrant(Response response, String desc) {
-		response(response, HTTP.SC_BAD_REQUEST, ERROR_INVALID_GRANT, desc);
+		response(response, HTTP.SC_UNAUTHORIZED, ERROR_INVALID_GRANT, desc);
 	}
 	
 	/**

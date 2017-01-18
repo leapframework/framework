@@ -16,6 +16,7 @@
 package leap.core.ioc;
 
 import leap.core.annotation.Bean;
+import leap.lang.Arrays2;
 import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.beans.BeanType;
@@ -32,7 +33,14 @@ class AnnotationBeanDefinitionLoader {
 
 		//TODO : currently only supports classes in base-package
 		for(Class<?> cls : classes){
-			if(cls.isAnnotationPresent(Bean.class) && cls.getName().startsWith(basePackage)){
+			boolean needLoad = cls.getName().startsWith(basePackage);
+			for(String additionalPackage : container.getAppConfig().getAdditionalPackages()){
+				if(needLoad){
+					break;
+				}
+				needLoad = needLoad || cls.getName().startsWith(additionalPackage);
+			}
+			if(cls.isAnnotationPresent(Bean.class) && needLoad){
 				readBean(container, cls);
 			}
 		}
@@ -42,7 +50,7 @@ class AnnotationBeanDefinitionLoader {
 		Bean a = cls.getAnnotation(Bean.class);
 
 		BeanDefinitionBase bd = new BeanDefinitionBase(Classes.getClassResourcePath(cls));
-		
+		bd.setAnnotation(true);
 		if(!Strings.isEmpty(a.value())) {
 			bd.setId(a.value());
 		}else{
@@ -50,7 +58,7 @@ class AnnotationBeanDefinitionLoader {
 			if(!void.class.equals(a.type())){
 				bd.setType(a.type());
 			}else{
-				bd.setType(resolveBeanType(cls));
+				bd.setType(resolveBeanType(cls,a));
 			}
 			
 			if(!Strings.isEmpty(a.id())) {
@@ -60,22 +68,68 @@ class AnnotationBeanDefinitionLoader {
 			if(!Strings.isEmpty(a.name())){
 				bd.setName(a.name());
 			}
-			
+			parseAdditionalTypeDef(bd,cls,a);
 			bd.setBeanClass(cls);
 			bd.setBeanClassType(BeanType.of(cls));
 			bd.setPrimary(a.primary());
 			bd.setSingleton(a.singleton());
 			bd.setLazyInit(a.lazyInit());
-			
+			bd.setSortOrder(a.sortOrder());
+
+			if(a.registerBeanFactory()){
+				Class<?>[] targets = a.targetType();
+				if(Arrays2.isNotEmpty(targets)){
+					for(Class<?> target : targets){
+						if(void.class.equals(target)){
+							throw new BeanDefinitionException("Target type '" + target.getName() + "' not found, source : " + cls.getName());
+						}
+						bd.addFactoryBeanDef(new FactoryBeanDefinitionBase(target));
+					}
+				}
+			}
 			container.addBeanDefinition(bd);
 		}
 	}
 	
-	protected Class<?> resolveBeanType(Class<?> cls) {
-		if(cls.getInterfaces().length == 1){
+	protected Class<?> resolveBeanType(Class<?> cls, Bean a) {
+		if(!a.type().equals(void.class)){
+			if(a.type().isAssignableFrom(cls)){
+				throw new BeanDefinitionException(a.type() + " is not assignable from " + cls.getName() + ", source:"+cls.getName());
+			}
+			return a.type();
+		}else if(cls.getInterfaces().length == 1){
 			return cls.getInterfaces()[0];
-		}else{
-			return cls;
 		}
+		return cls;
+	}
+	
+	protected void parseAdditionalTypeDef(BeanDefinitionBase bd,Class<?> cls,Bean a){
+		if(a.additionalTypeDef() != null && a.additionalTypeDef().length > 0){
+			typeEach:
+			for(Class<?> additional : a.additionalTypeDef()){
+				for(TypeDefinition def : bd.getAdditionalTypeDefs()){
+					if(def.getType() == additional){
+						continue typeEach;
+					}
+				}
+				if(!additional.isAssignableFrom(cls)){
+					throw new BeanDefinitionException(additional.getName() + " is not assignable from " + cls.getName());
+				}
+				TypeDefinitionBase def = new TypeDefinitionBase();
+				def.setType(additional);
+				bd.addAdditionalTypeDef(def);
+			}
+		}
+	}
+	
+	protected void addNotRepeatAdditionalTypeDef(BeanDefinitionBase bd, Class<?> cls){
+		for(TypeDefinition def : bd.getAdditionalTypeDefs()){
+			if(def.getType() == cls){
+				return;
+			}
+		}
+		TypeDefinitionBase def = new TypeDefinitionBase();
+		def.setType(cls);
+		bd.addAdditionalTypeDef(def);
 	}
 }

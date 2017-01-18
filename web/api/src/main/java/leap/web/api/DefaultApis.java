@@ -19,8 +19,12 @@ import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
+import leap.core.meta.MTypeManager;
 import leap.lang.Args;
+import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
@@ -37,26 +41,24 @@ import leap.web.api.config.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
-import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
-public class DefaultApis implements Apis, AppInitializable  {
+public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
 	protected @Inject ApiConfiguratorFactory configuratorFactory;
-    protected @Inject ApiConfigSource        configSource;
 	protected @Inject ApiConfigProcessor[]   configProcessors;
 	protected @Inject ApiMetadataFactory     metadataFactory;
-	
+	protected @Inject MTypeManager           typeManager;
+
 	protected Map<String, ApiConfigurator> configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
 	protected Map<String, ApiConfig>       configurations = new ConcurrentHashMap<String, ApiConfig>();
 	protected Map<String, ApiMetadata>     metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
-	
-	protected boolean defaultOAuthEnabled;
-	protected String  defaultOAuthAuthorizationUrl;
-	protected String  defaultOAuthTokenUrl;
+
+    protected OauthConfig oauthConfig = new OauthConfig(false,null,null);
+
     protected Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
 
     @Override
@@ -108,17 +110,17 @@ public class DefaultApis implements Apis, AppInitializable  {
 	
 	@Override
     public boolean isDefaultOAuthEnabled() {
-        return defaultOAuthEnabled;
+        return oauthConfig.isOauthEnabled();
     }
 
     @Override
     public String getDefaultOAuthAuthorizationUrl() {
-        return defaultOAuthAuthorizationUrl;
+        return oauthConfig.getOauthAuthzEndpointUrl();
     }
 
     @Override
     public String getDefaultOAuthTokenUrl() {
-        return defaultOAuthTokenUrl;
+        return oauthConfig.getOauthTokenEndpointUrl();
     }
 
     @Override
@@ -128,13 +130,13 @@ public class DefaultApis implements Apis, AppInitializable  {
 
     @Override
     public Apis setDefaultOAuthEnabled(boolean enabled) {
-        this.defaultOAuthEnabled = enabled;
+        this.oauthConfig.setOauthEnabled(enabled);
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthAuthorizationUrl(String url) {
-        this.defaultOAuthAuthorizationUrl = url;
+        this.oauthConfig.setOauthAuthzEndpointUrl(url);
         return this;
     }
     
@@ -147,33 +149,73 @@ public class DefaultApis implements Apis, AppInitializable  {
           .add("redirect_uri", redirectUri)
           .add("response_type", "token");
         
-        this.defaultOAuthAuthorizationUrl = Urls.appendQueryString(endpoint, qs.build());
+        this.oauthConfig.setOauthAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthTokenUrl(String url) {
-        this.defaultOAuthTokenUrl = url;
+        this.oauthConfig.setOauthTokenEndpointUrl(url);
         return this;
     }
 
     @Override
-    public void postAppInit(App app) throws Throwable {
-        configSource.loadConfiguration(app, this);
+    public void postCreate(BeanFactory factory) throws Throwable {
+        ApiConfigExtension extension = factory.getAppConfig().getExtension(ApiConfigExtension.class);
+        if(extension == null){
+            return;
+        }
+        if(extension.getDefaultOauthConfig() != null){
+            this.oauthConfig = extension.getDefaultOauthConfig();
+        }
+        extension.getCommonMResponseBuilders().forEach((key,builder)->{
+            builder.setTypeManager(typeManager);
+            commonResponses.put(key,builder.build());
+        });
+        extension.getApiConfigurators().forEach((key, value)->{
+            // TODO
+            if(value.config().getOauthConfig() == null){
+                value.setOAuthConfig(oauthConfig);
+            }else{
+                OauthConfig oc = value.config().getOauthConfig();
+                if(Strings.isEmpty(oc.getOauthAuthzEndpointUrl())){
+                    oc.setOauthAuthzEndpointUrl(oauthConfig.getOauthAuthzEndpointUrl());
+                }
+                if(Strings.isEmpty(oc.getOauthTokenEndpointUrl())){
+                    oc.setOauthTokenEndpointUrl(oauthConfig.getOauthTokenEndpointUrl());
+                }
+            }
 
+            configurators.put(key.toLowerCase(),value);
+            configurations.put(key.toLowerCase(),value.config());
+        });
+    }
+
+    @Override
+    public void postAppInit(App app) throws Throwable {
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			String key = entry.getKey();
-			ApiConfigurator c = entry.getValue();
-			
+            ApiConfigurator c = entry.getValue();
 			//do configuration
 			doConfiguration(app, c);
-			
-			//create metadata
-			ApiMetadata m = createMetadata(c);
-			metadatas.put(key, m);
+		}
+        for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
+            String key = entry.getKey();
+            ApiConfigurator c = entry.getValue();
+            //configure by processors.
+            for(ApiConfigProcessor p : configProcessors) {
+                p.preProcess(c);
+            }
+
+            for(ApiConfigProcessor p : configProcessors) {
+                p.postProcess(c.config());
+            }
+
+            ApiMetadata m = createMetadata(c);
+            //create metadata
+            metadatas.put(key, m);
 
             postLoadApi(app, c.config(), m);
-		}
+        }
 	}
 	
 	protected void doConfiguration(App app, ApiConfigurator c) {
@@ -182,15 +224,6 @@ public class DefaultApis implements Apis, AppInitializable  {
 
 		//resolve routes of api.
 		resolveRoutes(app, c);
-
-		//configure by processors.
-		for(ApiConfigProcessor p : configProcessors) {
-			p.preProcess(c);
-		}
-		
-		for(ApiConfigProcessor p : configProcessors) {
-			p.postProcess(c.config());
-		}
 
 	}
 
@@ -263,7 +296,7 @@ public class DefaultApis implements Apis, AppInitializable  {
             return;
         }
 
-        MPermission[] permissions = rps.resolvePermissions(route, resourceType);
+        MApiPermission[] permissions = rps.resolvePermissions(route, resourceType);
         if(null != permissions && permissions.length > 0) {
             String[] values = new String[permissions.length];
             for(int i=0;i<values.length;i++) {
@@ -272,7 +305,7 @@ public class DefaultApis implements Apis, AppInitializable  {
 
             route.setPermissions(values);
 
-            for(MPermission p : permissions) {
+            for(MApiPermission p : permissions) {
                 c.tryAddPermission(p);
             }
         }

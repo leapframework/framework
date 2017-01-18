@@ -16,14 +16,23 @@
 package leap.core.ds;
 
 import leap.core.AppConfig;
+import leap.core.AppContext;
 import leap.core.BeanFactory;
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.ds.management.MDataSource;
+import leap.core.ds.management.MDataSourceConfig;
+import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ioc.BeanList;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.jmx.MBeanExporter;
 
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -32,18 +41,65 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean {
-	
+@Configurable(prefix = "dsm")
+public class DefaultDataSourceManager implements DataSourceManager,PostCreateBean,MDataSourceConfig {
+
+    protected @Inject @M AppContext                   context;
     protected @Inject @M AppConfig                    config;
     protected @Inject @M DataSourceFactory[]          dataSourceFactories;
     protected @Inject @M BeanList<DataSourceListener> listeners;
+    protected @Inject @M MBeanExporter                mbeanExporter;
 
+	protected String 						 defaultDataSourceBeanName;
     protected DataSource                     defaultDataSource;
     protected Map<String, DataSource>        allDataSources;
     protected Map<String, DataSource>        allDataSourcesImmutableView;
     protected UnPooledDataSourceFactory      unpooledDataSourceFactory = new UnPooledDataSourceFactory();
 
-	@Override
+    protected long                           slowSqlThreshold;
+    protected long                           verySlowSqlThreshold;
+    protected boolean                        logSlowSql;
+    protected boolean                        logVerySlowSql;
+
+    @Override
+    public long getSlowSqlThreshold() {
+        return slowSqlThreshold;
+    }
+
+    @ConfigProperty
+    public void setSlowSqlThreshold(long slowSqlThreshold) {
+        this.slowSqlThreshold = slowSqlThreshold;
+    }
+
+    @Override
+    public long getVerySlowSqlThreshold() {
+        return verySlowSqlThreshold;
+    }
+
+    @ConfigProperty
+    public void setVerySlowSqlThreshold(long verySlowSqlThreshold) {
+        this.verySlowSqlThreshold = verySlowSqlThreshold;
+    }
+
+    public boolean isLogSlowSql() {
+        return logSlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogSlowSql(boolean logSlowSql) {
+        this.logSlowSql = logSlowSql;
+    }
+
+    public boolean isLogVerySlowSql() {
+        return logVerySlowSql;
+    }
+
+    @ConfigProperty
+    public void setLogVerySlowSql(boolean logVerySlowSql) {
+        this.logVerySlowSql = logVerySlowSql;
+    }
+
+    @Override
     public void addListener(DataSourceListener listener) {
 		if(listeners.contains(listener)){
 			throw new ObjectExistsException("The listener already exists");
@@ -56,10 +112,6 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	    return listeners.remove(listener);
     }
 
-	public void setDataSourceFactories(DataSourceFactory[] dataSourceFactories) {
-		this.dataSourceFactories = dataSourceFactories;
-	}
-	
 	@Override
     public boolean hasDataSources() {
         return !allDataSources.isEmpty();
@@ -72,7 +124,12 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		}
 	    return defaultDataSource;
     }
-	
+
+	@Override
+	public String getDefaultDatasourceBeanName() throws ObjectNotFoundException {
+		return defaultDataSourceBeanName;
+	}
+
 	@Override
     public DataSource tryGetDefaultDataSource() {
 	    return defaultDataSource;
@@ -163,6 +220,10 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		if(null != ds) {
 			validateDataSource(ds);
 		}
+
+        if(null != ds && ! (ds instanceof MDataSourceProxy)) {
+            ds = new MDataSourceProxy(ds, this);
+        }
 		
 		return ds;
 	}
@@ -176,14 +237,21 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 	
 	@Override
     public boolean tryDestroyDataSource(DataSource ds) {
+
         try {
+            DataSource real = ds;
+            if(ds instanceof MDataSourceProxy) {
+                real = ((MDataSourceProxy) ds).wrapped();
+                ((MDataSourceProxy) ds).destroy();
+            }
+
             for (DataSourceFactory f : dataSourceFactories) {
-                if (f.tryDestroyDataSource(ds)) {
+                if (f.tryDestroyDataSource(real)) {
                     return true;
                 }
             }
 
-            return unpooledDataSourceFactory.tryDestroyDataSource(ds);
+            return unpooledDataSourceFactory.tryDestroyDataSource(real);
         }finally{
             String name = null;
             for(Entry<String, DataSource> entry : allDataSources.entrySet()) {
@@ -218,18 +286,55 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         	return false;
         }
     }
-	
-	protected void notifyDataSourceCreated(String name,DataSource ds) {
+
+    @Override
+    public MDataSource getManagedDataSource(DataSource ds) {
+        return null == ds ? null : (MDataSource)ds;
+    }
+
+    protected void notifyDataSourceCreated(String name, DataSource ds) {
+
+        if(ds instanceof MDataSourceProxy) {
+            ((MDataSourceProxy) ds).setName(name);
+        }
+
+        exportDataSourceMBean(name, ds);
+
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
 		}
 	}
 	
 	protected void notifyDataSourceDestroyed(String name,DataSource ds) {
+        unexportDataSourceMBean(name, ds);
+
 		for(DataSourceListener l : listeners){
 			l.onDataSourceDestroyed(name, ds);
 		}
 	}
+
+    protected void exportDataSourceMBean(String name, DataSource ds) {
+        if(!(ds instanceof MDataSource)) {
+            return;
+        }
+        mbeanExporter.export(objectName(name), ((MDataSource)ds).getMBean());
+    }
+
+    protected void unexportDataSourceMBean(String name, DataSource ds) {
+        if(!(ds instanceof MDataSource)) {
+            return;
+        }
+        mbeanExporter.unexport(objectName(name));
+    }
+
+    protected ObjectName objectName(String name) {
+        String fullName = "DataSources:name=" + context.getName() + "_" + name;
+        try {
+            return new ObjectName(fullName);
+        } catch (MalformedObjectNameException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 
 	@Override
     public void postCreate(BeanFactory factory) throws Throwable {
@@ -250,9 +355,19 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			    defaultDataSource = allDataSources.values().iterator().next();
 			}
 		}
-		
+
 		if(null != defaultDataSource && !allDataSources.containsValue(this.defaultDataSource)){
 		    allDataSources.put(DEFAULT_DATASOURCE_NAME, defaultDataSource);
+			defaultDataSourceBeanName = DEFAULT_DATASOURCE_NAME;
+		}
+
+		if(null != defaultDataSource && allDataSources.containsValue(this.defaultDataSource)){
+			for(Entry<String, DataSource> entry : allDataSources.entrySet()){
+				if(entry.getValue() == this.defaultDataSource){
+					defaultDataSourceBeanName = entry.getKey();
+					break;
+				}
+			}
 		}
 		
 		for(Entry<String, DataSource> entry : allDataSources.entrySet()){

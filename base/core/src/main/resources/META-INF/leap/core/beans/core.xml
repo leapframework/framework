@@ -11,7 +11,9 @@
     <bean type="leap.core.transaction.TransactionManager" class="leap.core.transaction.DefaultTransactionManager" primary="true"/>
     <bean type="leap.core.event.EventManager" class="leap.core.event.DefaultEventManager" primary="true"/>
     <bean type="leap.core.AppContextInitializable" class="leap.core.event.DefaultEventRegister"/>
-    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true"/>
+    <bean type="leap.core.ds.DataSourceManager" class="leap.core.ds.DefaultDataSourceManager" primary="true" lazy-init="false">
+        <additional-type-def type="leap.core.ds.management.MDataSourceConfig" primary="true"/>
+    </bean>
     <bean type="leap.core.params.ParamsFactory" class="leap.core.params.DefaultParamsFactory" primary="true"/>
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
 
@@ -36,6 +38,9 @@
         <bean name="tomcat-jdbc" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.integration.TomcatDataSourceFactory"/>
     </beans>
     <bean name="jndi" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.JndiDataSourceFactory"/>
+
+    <!-- proxy for all data source(s) -->
+    <bean-proxy target-type="javax.sql.DataSource" proxy-class="leap.core.ds.management.MDataSourceProxy"/>
 
     <!--meta-->
     <bean type="leap.core.meta.MPatternSource" class="leap.core.meta.DefaultMPatternSource" primary="true"/>
@@ -64,5 +69,15 @@
             <property name="defaultReadTimeout"    value="${httpClient.defaultReadTimeout}" default-value="30000"/>
         </bean>
     </beans>
+
+    <!-- jmx -->
+    <bean type="leap.lang.jmx.MBeanExporter" class="leap.lang.jmx.SimpleMBeanExporter" primary="true"/>
+        <!--<constructor-arg>-->
+            <!--<bean class="javax.management.MBeanServer">-->
+                <!--<factory class="javax.management.MBeanServerFactory" method="createMBeanServer"/>-->
+            <!--</bean>-->
+        <!--</constructor-arg>-->
+    <!--</bean>-->
+    <bean type="leap.core.ioc.BeanProcessor" class="leap.core.jmx.JmxBeanProcessor"/>
 
 </beans>

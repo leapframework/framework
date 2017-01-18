@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import leap.core.ds.management.MDataSource;
 import leap.lang.Listenable;
 import leap.lang.exception.NestedClassNotFoundException;
 import leap.lang.exception.ObjectExistsException;
@@ -40,6 +41,12 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * @throws ObjectNotFoundException if no default datasource.
 	 */
 	DataSource getDefaultDataSource() throws ObjectNotFoundException;
+
+	/**
+	 * Returns the default datasource bean name.
+	 * @throws ObjectNotFoundException
+	 */
+	String getDefaultDatasourceBeanName() throws ObjectNotFoundException;
 
 	/**
 	 * Returns the default datasource.
@@ -145,4 +152,9 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * Returns <code>true</code> if valid, returns <code>false</code> otherwise.
 	 */
 	boolean tryValidateDataSource(DataSource ds);
+
+    /**
+     * Returns the {@link MDataSource} for the given {@link DataSource}.
+     */
+    MDataSource getManagedDataSource(DataSource ds);
 }

@@ -134,7 +134,7 @@ class Pool {
 				
 				setupConnectionOnBorrow(conn);
 				
-				return new ProxyConnection(conn);
+				return conn;
 			}
 		}catch(InterruptedException e) {
 			throw new SQLException("Interrupted while connection borrowing");
@@ -534,7 +534,7 @@ class Pool {
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
 					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
 							  conn.getBusyDurationMs(), 
-							  new StackTraceStringBuilder(conn.getStackTraceOnBorrow()).toString());
+							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
 
                     syncPool.abandonConnection(conn);
 					continue;

@@ -16,11 +16,13 @@
 package leap.core.variable;
 
 
+import java.util.UUID;
+
 public class UUIDVariable implements Variable {
 
 	@Override
 	public Object getValue() {
-		return null;
+		return UUID.randomUUID().toString();
 	}
 
 }

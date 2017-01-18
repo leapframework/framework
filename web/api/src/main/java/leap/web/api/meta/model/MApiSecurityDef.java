@@ -18,16 +18,21 @@ package leap.web.api.meta.model;
 import java.util.Map;
 
 
-public abstract class MApiSecurityDef extends MApiObject {
+public abstract class MApiSecurityDef extends  MApiNamed {
 
-    public MApiSecurityDef() {
-        super();
+    public MApiSecurityDef(String name) {
+        super(name);
     }
 
-    public MApiSecurityDef(Map<String, Object> attrs) {
-        super(attrs);
+    public MApiSecurityDef(String name, String title) {
+        super(name, title);
+    }
+
+    public MApiSecurityDef(String name, String title, Map<String, Object> attrs) {
+        super(name, title, attrs);
     }
 
     public abstract boolean isOAuth2();
-
+    
+    public abstract String getFlow();
 }

@@ -18,11 +18,14 @@ package leap.web.api.meta.model;
 import java.util.List;
 import java.util.Map;
 
+import com.sun.org.apache.regexp.internal.RE;
+import leap.lang.Args;
 import leap.lang.http.HTTP;
 import leap.web.route.Route;
 
 public class MApiOperation extends MApiNamedWithDesc {
 
+    protected final String          id;
 	protected final Route			route;
 	protected final HTTP.Method     method;
     protected final String[]        tags;
@@ -30,11 +33,12 @@ public class MApiOperation extends MApiNamedWithDesc {
 	protected final MApiResponse[]  responses;
 	protected final String[]        consumes;
 	protected final String[]        produces;
-    protected final String[]        permissions;
+    protected final MApiSecurity[]  security;
     protected final boolean         allowAnonymous;
+    protected final boolean			allowClientOnly;
 	protected final boolean         deprecated;
 
-	public MApiOperation(String name, String title, String summary, String description,
+	public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
 						 Route 	  route,
                          String[] tags,
@@ -42,11 +46,13 @@ public class MApiOperation extends MApiNamedWithDesc {
                          List<MApiResponse> responses,
                          String[] consumes,
                          String[] produces,
-                         String[] permissions,
+						 MApiSecurity[] security,
                          boolean allowAnonymous,
+						 boolean allowClientOnly,
                          boolean deprecated, Map<String, Object> attrs) {
-		
 	    super(name, title, summary, description, attrs);
+
+        this.id          = id;
 	    this.route		 = route;
 		this.method      = method;
         this.tags        = tags;
@@ -54,12 +60,20 @@ public class MApiOperation extends MApiNamedWithDesc {
 		this.responses   = responses.toArray(new MApiResponse[]{});
 		this.consumes    = consumes;
 		this.produces    = produces;
-        this.permissions = permissions;
+        this.security    = security;
         this.allowAnonymous = allowAnonymous;
+        this.allowClientOnly = allowClientOnly;
 		this.deprecated  = deprecated;
 	}
 
-	/**
+    /**
+     * Returns the unique id of this operation.
+     */
+    public String getId() {
+        return id;
+    }
+
+    /**
 	 * The route of this operation
 	 */
 	public Route getRoute(){
@@ -127,8 +141,8 @@ public class MApiOperation extends MApiNamedWithDesc {
     /**
      * Returns the permissions required by this operation.
      */
-    public String[] getPermissions() {
-        return permissions;
+    public MApiSecurity[] getSecurity() {
+        return security;
     }
 
     /**
@@ -137,7 +151,13 @@ public class MApiOperation extends MApiNamedWithDesc {
     public boolean isAllowAnonymous() {
         return allowAnonymous;
     }
-
+	/**
+	 * Returns true if this operation allows only client access.
+	 */
+    public boolean isAllowClientOnly(){
+		return allowClientOnly;
+	}
+    
     /**
 	 * Declares this operation to be deprecated.
 	 */

@@ -18,6 +18,8 @@ package leap.web.format;
 import leap.lang.http.MimeType;
 import leap.web.Request;
 import leap.web.action.Action;
+import leap.web.action.Argument;
+import leap.web.action.ArgumentResolver;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -43,7 +45,7 @@ public abstract class AbstractRequestFormat extends AbstractHttpFormat implement
     }
 
 	@Override
-    public Object readRequestBody(Request request) throws IOException, IllegalStateException {
+    public Object readRequestBody(Request request, Argument argument) throws IOException, IllegalStateException {
 		throw new IllegalStateException("This format '" + name + "' does not supports request body");
 	}
 }

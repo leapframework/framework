@@ -83,7 +83,7 @@ public class Global extends App {
 	
 	protected void configureAuthzServer(OAuth2AuthzServerConfigurator c) {
 	    c.useInMemoryStore();
-	    
+	    c.useRsaJwtVerifier();
 	    //Enables in-memory store for testing.
 	    AuthzInMemoryStore ms = c.inMemoryStore();
 		AuthzClient testClient = new AuthzClientBuilder(Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET)

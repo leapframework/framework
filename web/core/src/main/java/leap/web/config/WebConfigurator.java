@@ -190,4 +190,10 @@ public interface WebConfigurator {
      * @param extension the extension name without dot prefix.
      */
 	WebConfigurator addActionExtension(String extension);
+
+    /**
+     * Adds an module config
+     * @param module the module config
+     */
+    WebConfigurator addModule(ModuleConfig module);
 }

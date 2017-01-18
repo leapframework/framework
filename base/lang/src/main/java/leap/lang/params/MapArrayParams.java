@@ -50,7 +50,7 @@ public class MapArrayParams extends NamedParamsBase {
 
 	@Override
     public Object get(int i) throws IllegalStateException {
-	    return values[i - start];
+	    return values[i];
     }
 	
 }

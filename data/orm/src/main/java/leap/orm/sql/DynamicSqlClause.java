@@ -119,7 +119,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
 
-		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls);
+		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
 		
 		return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
     }
@@ -239,13 +239,13 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		return newNodes;
 	}
 	
-	protected PreparedBatchSqlStatement prepareBatchSqlStatement(SqlContext context, DynamicSql.ExecutionSqls sqls) {
+	protected PreparedBatchSqlStatement prepareBatchSqlStatement(SqlContext context, DynamicSql.ExecutionSqls sqls,Object[] params) {
 		if(null == preparedBatchStatement) {
 			synchronized (this) {
 	            if(null == preparedBatchStatement){
 	            	DefaultPreparedBatchSqlStatementBuilder builder =
                             new DefaultPreparedBatchSqlStatementBuilder(sqls.sql);
-	            	sqls.sql.prepareBatchSqlStatement(context, builder);
+	            	sqls.sql.prepareBatchSqlStatement(context, builder,params);
 	            	preparedBatchStatement = builder.build();
 	            }
             }

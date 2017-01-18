@@ -74,7 +74,7 @@ public class DefaultAssetHandler implements AssetHandler,LoadableBean {
 	        	pathAndFingerprint = new String[]{path,null};
 	        }
 	        
-	        //Find AssetResoruce by the resource path.
+	        //Find AssetResource by the resource path.
 	        AssetResource resource = source.getAssetResource(path, pathAndFingerprint ,request.getLocale());
 	        if(null == resource){
 	        	pathAndFingerprint[0] = path;

@@ -29,7 +29,7 @@ public interface Authorization {
         return false;
     }
 
-    default boolean hasAnyPermission(String... permissions) {
+    default boolean hasAllPermission(String... permissions) {
         return false;
     }
 

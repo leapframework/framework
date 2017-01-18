@@ -80,7 +80,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
                 if(reader.isStartElement(PROPERTIES_ELEMENT)) {
                     foundValidRootElement = true;
 
-                    readProperties(context, resource, reader);
+                    readProperties(context, resource, reader,null);
 
                     break;
                 }
@@ -159,7 +159,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             }
 
             if(reader.isStartElement(PROPERTIES_ELEMENT)) {
-                readProperties(context, resource, reader);
+                readProperties(context, resource, reader,null);
                 continue;
             }
 
@@ -192,7 +192,7 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
         }
     }
 
-    protected void readProperties(AppPropertyContext context, Resource resource, XmlReader reader){
+    protected void readProperties(AppPropertyContext context, Resource resource, XmlReader reader, String prefix){
         if(!matchProfile(context.getProfile(), reader)){
             reader.nextToEndElement(PROPERTIES_ELEMENT);
             return;
@@ -200,8 +200,12 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
 
         boolean override = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE,context.isDefaultOverride());
         context.setDefaultOverride(override);
+        if(Strings.isEmpty(prefix)){
+            prefix = reader.resolveAttribute(PREFIX_ATTRIBUTE);
+        }else{
+            prefix = prefix + reader.resolveAttribute(PREFIX_ATTRIBUTE);
+        }
 
-        String prefix = reader.resolveAttribute(PREFIX_ATTRIBUTE);
         if(!Strings.isEmpty(prefix)) {
             char c = prefix.charAt(prefix.length() - 1);
             if(Character.isLetterOrDigit(c)) {
@@ -222,6 +226,12 @@ public class XmlPropertyReader extends XmlConfigReaderBase implements AppPropert
             if(reader.isStartElement(PROPERTY_ELEMENT)){
                 hasElement = true;
                 readProperty(context, resource, reader, prefix);
+                continue;
+            }
+
+            if(reader.isStartElement(PROPERTIES_ELEMENT)){
+                readProperties(context,resource,reader,prefix);
+                reader.next();
                 continue;
             }
 

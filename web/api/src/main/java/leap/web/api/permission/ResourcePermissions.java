@@ -20,20 +20,20 @@ package leap.web.api.permission;
 
 import leap.lang.New;
 import leap.lang.el.spel.SPEL;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.route.Route;
 
 import java.util.*;
 
 public class ResourcePermissions {
 
-    private final Set<Class<?>>           resourceClasses  = new HashSet<>();
+    private final Set<String>             resourceClasses  = new HashSet<>();
     private final Set<String>             resourcePackages = new HashSet<>();
     private final Set<ResourcePermission> permissions      = new TreeSet<>(ResourcePermission.COMPARATOR);
 
     private ResourcePermission defaultPermission;
 
-    public Set<Class<?>> getResourceClasses() {
+    public Set<String> getResourceClasses() {
         return resourceClasses;
     }
 
@@ -53,8 +53,8 @@ public class ResourcePermissions {
         this.defaultPermission = defaultPermission;
     }
 
-    public void addResourceClass(Class<?> c) {
-        resourceClasses.add(c);
+    public void addResourceClass(String clzzName) {
+        resourceClasses.add(clzzName);
     }
 
     public void addResourcePackage(String p) {
@@ -72,8 +72,8 @@ public class ResourcePermissions {
         permissions.add(p);
     }
 
-    public MPermission[] resolvePermissions(Route route, Class<?> resourceType) {
-        List<MPermission> list = New.arrayList();
+    public MApiPermission[] resolvePermissions(Route route, Class<?> resourceType) {
+        List<MApiPermission> list = New.arrayList();
 
         String resourceName = resourceType.getSimpleName();
         Map<String,Object> vars = New.hashMap("resource", resourceName);
@@ -84,16 +84,16 @@ public class ResourcePermissions {
                 String value = eval(p.getValue(), vars);
                 String desc  = eval(p.getDescription(), vars);
 
-                list.add(new MPermission(value, desc));
+                list.add(new MApiPermission(value, desc));
             }
 
         });
 
         if(list.isEmpty() && null != defaultPermission) {
-            list.add(new MPermission(defaultPermission.getValue(), defaultPermission.getDescription()));
+            list.add(new MApiPermission(defaultPermission.getValue(), defaultPermission.getDescription()));
         }
 
-        return list.toArray(new MPermission[0]);
+        return list.toArray(new MApiPermission[0]);
     }
 
     protected String eval(String value, Map<String, Object> vars) {

@@ -16,10 +16,12 @@
 
 package leap.web.api.mvc;
 
+import leap.core.annotation.Inject;
 import leap.lang.Types;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.query.CriteriaQuery;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -32,6 +34,7 @@ import leap.web.api.orm.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * The model class must be an orm model/entity class.
@@ -39,18 +42,23 @@ import java.util.Map;
 @ResourceWrapper
 public abstract class ModelController<T> extends ApiController implements ApiInitializable {
 
+    protected @Inject ModelExecutorFactory mef;
+
     protected final Class<T>      modelClass = getModelClass();
     protected final Dao           dao        = Dao.of(modelClass);
     protected final OrmMetadata   md         = dao.getOrmContext().getMetadata();
     protected final EntityMapping em         = md.getEntityMapping(modelClass);
-    protected MApiModel am;
+
+    protected ModelExecutorConfig mec;
+    protected MApiModel           am;
 
     private Class<T> getModelClass() {
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
     public void postApiInitialized(ApiConfig c, ApiMetadata m) {
-        am = m.getModel(modelClass);
+        am  = m.getModel(modelClass);
+        mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
     }
 
     /**
@@ -114,7 +122,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * @return the id of new record.
      */
     protected Object createRecordAndReturnId(Object request, Object id, Map<String, Object> extraProperties) {
-        ModelCreateExecutor executor = new ModelCreateExecutor(apiConfig, am, dao, em);
+        ModelCreateExecutor executor = mef.newCreateExecutor(mec, am, dao, em);
 
         return executor.createOne(request, id, extraProperties).id;
     }
@@ -130,7 +138,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Gets the record of the specified id.
      */
     protected ApiResponse get(Object id, QueryOptionsBase options) {
-        ModelQueryExecutor executor = new ModelQueryExecutor(apiConfig, am, dao, em);
+        ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, em);
 
         QueryOneResult result = executor.queryOne(id, options);
 
@@ -148,17 +156,28 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options) {
-        return queryList(options, null);
+        return queryList(options, null,null);
     }
-
     /**
      * Query the model records with the {@link QueryOptions}.
      */
-    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters) {
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Consumer<CriteriaQuery> callback){
+        return queryList(options, null, callback);
+    }
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters){
+        return queryList(options, filters, null);
+    }
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
 
-        ModelQueryExecutor executor = new ModelQueryExecutor(apiConfig, am, dao, em);
+        ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, em);
 
-        QueryListResult result = executor.queryList(options, filters);
+        QueryListResult result = executor.queryList(options, filters,callback);
 
         if (result.count == -1) {
             return ApiResponse.of(result.list);
@@ -171,7 +190,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Update partial properties of model.
      */
     protected ApiResponse updatePartial(Object id, Partial<T> partial) {
-        ModelUpdateExecutor executor = new ModelUpdateExecutor(apiConfig, am, dao, em);
+        ModelUpdateExecutor executor = mef.newUpdateExecutor(mec, am, dao, em);
 
         UpdateOneResult result = executor.partialUpdateOne(id, partial);
 
@@ -208,7 +227,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Deletes a record.
      */
     protected ApiResponse delete(Object id, DeleteOptions options) {
-        ModelDeleteExecutor executor = new ModelDeleteExecutor(apiConfig, am, dao, em);
+        ModelDeleteExecutor executor = mef.newDeleteExecutor(mec, am, dao, em);
 
         if(executor.deleteOne(id, options).success) {
             return ApiResponse.ACCEPTED;

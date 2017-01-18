@@ -28,7 +28,7 @@ public class PartialArgumentBinder implements ArgumentBinder {
     @Override
     public Optional bind(ActionContext context, Argument arg, Object value) throws Throwable {
         if(value instanceof Map) {
-            return Optional.of(new PartialImpl((Map)value));
+            return Optional.of(new PartialImpl((Map)value,arg.getGenericType()));
         }
         return null;
     }

@@ -62,6 +62,10 @@ public class ContextArgumentResolver implements ArgumentResolver {
         return r;
     }
 
+    public static ArgumentResolver ofAttribute(String name) {
+        return new ContextArgumentResolver((c) -> c.getRequest().getAttribute(name));
+    }
+
     protected static void addContextResolver(Class<?> type) {
         Function<ActionContext, Object> func;
 

@@ -36,7 +36,7 @@ public class IfCondition extends ExprParamBase {
     }
 
 	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException {
+    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
 		 new IllegalStateException("If condition not implemented");
     }
 

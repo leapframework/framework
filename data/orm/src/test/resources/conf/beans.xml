@@ -6,7 +6,7 @@
         <property name="jdbcUrl"         value="${h2.url}" />
         <property name="username"        value="${h2.username}" />
         <property name="password"        value="${h2.password}" />
-        <property name="maxActive" 		 value="10"/> 
+        <property name="maxActive" 		 value="10"/>
         <property name="maxWait" 		 value="10000"/>
     </bean>    
     
@@ -25,7 +25,9 @@
     </bean>
 
     <bean class="leap.orm.dao.TransactionBean"/>
-    
+
+    <bean name="sqlVariable" type="leap.core.variable.Variable" class="leap.orm.sql.SqlVariable"/>
+
     <import resource="beans_local.xml" check-existence="false"/>
     
 </beans>

@@ -105,6 +105,10 @@ public class SqlObjectName extends SqlObjectNameBase {
             return;
         }
 
-        out.append(dialect.quoteIdentifier(lastName, true));
+        if(isField()){
+            out.append(dialect.quoteIdentifier(lastName, true));
+        }else{
+            out.append(lastName);
+        }
     }
 }

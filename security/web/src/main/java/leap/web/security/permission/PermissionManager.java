@@ -20,10 +20,10 @@ import java.security.Permission;
 public interface PermissionManager extends PermissionChecker {
 
     /**
-     * Checks if any one of the specified permissions are "implied by" the "impliedBy" permissions.
+     * Checks if the specified permissions are implied all of the "impliedBy" permissions.
      *
      * see {@link java.security.Permission#implies(Permission)}.
      */
-    boolean checkPermissionImpliesAny(String[] checkingPermissions,String[] impliedByPermissions);
+    boolean checkPermissionImpliesAll(String[] checkingPermissions,String[] impliedByPermissions);
 
 }

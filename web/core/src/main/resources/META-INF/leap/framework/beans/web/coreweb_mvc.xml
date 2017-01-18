@@ -21,6 +21,7 @@
 	<!-- Routes -->
 	<bean type="leap.web.route.Routes" class="leap.web.route.DefaultRoutes" primary="true"/>
 	<bean type="leap.web.route.RoutesPrinter" class="leap.web.route.DefaultRoutesPrinter" primary="true"/>
+    <bean type="leap.web.route.RouteManager" class="leap.web.route.DefaultRouteManager" primary="true"/>
 	
 	<!-- Action Strategy -->
 	<bean type="leap.web.action.ActionStrategy" class="leap.web.action.DefaultActionStrategy" primary="true"/>

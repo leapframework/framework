@@ -24,6 +24,6 @@ public interface PermissionChecker {
      *
      * see {@link java.security.Permission#implies(Permission)}.
      */
-    boolean checkPermissionImplies(String checkingPermission,String impliedByPermission);
+    boolean checkPermissionImplies(String[] checkingPermission,String impliedByPermission);
 
 }

@@ -18,6 +18,7 @@ package app.controllers;
 import leap.web.annotation.Parent;
 import leap.web.annotation.Path;
 import leap.web.annotation.Restful;
+import leap.web.annotation.http.ANY;
 import leap.web.annotation.http.GET;
 import leap.web.annotation.http.POST;
 
@@ -43,6 +44,11 @@ public class RestTestController {
     @Path("/children")
     public void getChildren() {
 
+    }
+
+    @ANY("/any_http_method")
+    public String handleAnyMethod(String p) {
+        return p;
     }
 
     static final class TestObject {

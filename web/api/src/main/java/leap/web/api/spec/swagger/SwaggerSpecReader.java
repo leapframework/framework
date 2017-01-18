@@ -19,6 +19,7 @@
 package leap.web.api.spec.swagger;
 
 import leap.lang.Arrays2;
+import leap.lang.Collections2;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.io.IO;
@@ -34,9 +35,7 @@ import leap.web.api.spec.UnsupportedSpecException;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
@@ -71,8 +70,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         readBase(map, m);
         readPaths(swagger.getMap(PATHS), m);
+        readSecurityDefinitions(swagger.getMap(SECURITY_DEFINITIONS), m);
         readDefinitions(swagger.getMap(DEFINITIONS), m);
         readResponses(swagger.getMap(RESPONSES), m);
+        readTags(swagger.getList(TAGS), m);
+
+        //todo : security & securityDefinitions.
     }
 
     public void readBase(Map<String,Object> map, ApiMetadataBuilder m) {
@@ -132,6 +135,14 @@ public class SwaggerSpecReader implements ApiSpecReader {
     }
 
     public MApiPathBuilder readPath(String pathTemplate, Map<String,Object> map) {
+        return readPath(null, pathTemplate, map);
+    }
+
+    public MApiOperationBuilder readOperation(String method, Map<String,Object> map) {
+        return readOperation(null, null, method, map);
+    }
+
+    protected MApiPathBuilder readPath(ApiMetadataBuilder m, String pathTemplate, Map<String,Object> map) {
         MApiPathBuilder mp = new MApiPathBuilder();
 
         mp.setPathTemplate(pathTemplate);
@@ -143,17 +154,12 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return mp;
     }
 
-    public MApiOperationBuilder readOperation(String method, Map<String,Object> map) {
+    protected MApiOperationBuilder readOperation(ApiMetadataBuilder m, MApiPathBuilder p, String method, Map<String,Object> map) {
         MApiOperationBuilder mo = new MApiOperationBuilder();
 
         JsonObject o = JsonObject.of(map);
 
-        mo.setName(o.getString(OPERATION_ID));
         mo.setMethod(HTTP.Method.valueOf(method.toUpperCase()));
-
-        if(Strings.isEmpty(mo.getName())) {
-            mo.setName(method);
-        }
 
         //tags
         List<String> tags = o.getList(TAGS);
@@ -185,7 +191,29 @@ public class SwaggerSpecReader implements ApiSpecReader {
         List<MApiResponseBuilder> responses = readResponses(o.getMap(RESPONSES));
         responses.forEach(mo::addResponse);
 
-        //todo : security.
+        //security
+        List<Map<String,Object>> security = o.getList(SECURITY);
+        if(null != security) {
+            security.forEach(sc->{
+                for(Map.Entry<String, Object> entry:sc.entrySet()){
+                    MApiSecurity sec = new MApiSecurity(entry.getKey());
+                    sec.addScopes(Collections2.toStringArray((Collection<String>)entry.getValue()));
+                    mo.getSecurity().put(sec.getName(),sec);
+                    break;
+                }
+            });
+        }else{
+            mo.setAllowAnonymous(true);
+        }
+
+        String id = o.getString(OPERATION_ID);
+        if(!Strings.isEmpty(id)) {
+            mo.setId(id);
+            mo.setName(id);
+        }else {
+            mo.setName(mo.getMethod().name().toLowerCase());
+            //todo : create operation id ?
+        }
 
         return mo;
     }
@@ -231,9 +259,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         if(null != map) {
 
-            map.forEach((name, resp) -> {
-                responses.add(readResponse(name, (Map<String,Object>)resp));
-            });
+            map.forEach((name, resp) ->  responses.add(readResponse(name, (Map<String,Object>)resp)));
 
         }
 
@@ -263,6 +289,14 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return mr;
     }
 
+    public void readSecurityDefinitions(Map<String,Object> definitions, ApiMetadataBuilder m) {
+        if(null == definitions) {
+            return ;
+        }
+
+        definitions.forEach((name, def) -> m.addSecurityDef(readSecurityDef(name,(Map<String,Object>)def)));
+    }
+
     public void readDefinitions(Map<String,Object> definitions, ApiMetadataBuilder m) {
         if(null == definitions) {
             return ;
@@ -282,6 +316,37 @@ public class SwaggerSpecReader implements ApiSpecReader {
             m.putResponse(name, readResponse(name, (Map<String,Object>)resp));
         });
 
+    }
+
+    public void readTags(List<Map<String,Object>> tags, ApiMetadataBuilder m) {
+        if(null == tags) {
+            return;
+        }
+
+        for(Map<String,Object> map : tags) {
+
+            JsonObject tag = JsonObject.of(map);
+
+            String name = tag.getString(NAME);
+            String desc = tag.getString(DESCRIPTION);
+
+            m.addTag(new MApiTag(name, name, null ,desc, null));
+        }
+    }
+
+    public MApiSecurityDef readSecurityDef(String name, Map<String, Object> map){
+        if(map == null){
+            return null;
+        }
+        Object type = map.get(TYPE);
+        if(Objects.equals(type,OAUTH2)){
+            String authzUrl = Objects.toString(map.get(AUTHZ_URL));
+            String tokenUrl = Objects.toString(map.get(TOKEN_URL));
+            String flow     = Objects.toString(map.get(FLOW));
+            MOAuth2ApiSecurityDef def = new MOAuth2ApiSecurityDef(name, name, authzUrl,tokenUrl,flow,map);
+            return def;
+        }
+        throw new IllegalStateException("No supported security def : " + type);
     }
 
     public MApiModelBuilder readModel(String name, Map<String,Object> map) {

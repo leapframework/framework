@@ -52,9 +52,9 @@ public abstract class AstNode {
         }
 	}
 	
-	public final void prepareBatchStatement(SqlContext context, PreparedBatchSqlStatementBuilder stm) {
+	public final void prepareBatchStatement(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) {
 		try {
-			prepareBatchStatement_(context, stm);
+			prepareBatchStatement_(context, stm,params);
         } catch (IOException e) {
         	Exceptions.wrapAndThrow(e);
         }
@@ -98,6 +98,6 @@ public abstract class AstNode {
 	
 	protected abstract void buildStatement_(SqlStatementBuilder stm,Params params) throws IOException;
 	
-	protected abstract void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm) throws IOException;
+	protected abstract void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException;
 
 }

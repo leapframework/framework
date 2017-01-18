@@ -15,28 +15,31 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
+import leap.web.App;
+import leap.web.api.meta.desc.OperationDescSet;
+import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 
-    protected Route                      route;
-	protected HTTP.Method        		 method;
-    protected Set<String>                tags       = new LinkedHashSet<>();
-	protected List<MApiParameterBuilder> parameters = new ArrayList<>();
-	protected List<MApiResponseBuilder>  responses  = new ArrayList<>();
-	protected Set<String>                consumes   = new LinkedHashSet<>();
-	protected Set<String>                produces   = new LinkedHashSet<>();
-    protected String[]                   permissions;
-    protected boolean                    allowAnonymous;
-	protected boolean           	     deprecated;
+    protected String                         id;
+    protected Route                          route;
+	protected HTTP.Method        		     method;
+    protected Set<String>                    tags       = new LinkedHashSet<>();
+	protected List<MApiParameterBuilder>     parameters = new ArrayList<>();
+	protected List<MApiResponseBuilder>      responses  = new ArrayList<>();
+	protected Set<String>                    consumes   = new LinkedHashSet<>();
+	protected Set<String>                    produces   = new LinkedHashSet<>();
+    protected Map<String, MApiSecurity>      security   = new HashMap<>();
+    protected boolean                        allowAnonymous;
+    protected boolean                        allowClientOnly;
+	protected boolean           	         deprecated;
+    protected OperationDescSet.OperationDesc desc;
 
 	public MApiOperationBuilder() {
 		
@@ -44,11 +47,27 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     public MApiOperationBuilder(Route route) {
         this.route       = route;
-        this.permissions = route.getPermissions();
-
+        if(!security.containsKey(SwaggerConstants.OAUTH2)){
+            MApiSecurity sec = new MApiSecurity(SwaggerConstants.OAUTH2);
+            security.put(sec.getName(), sec);
+        }
+        if(route.getPermissions() != null){
+            security.get(SwaggerConstants.OAUTH2).addScopes(route.getPermissions());
+        }
         if(null != route.getAllowAnonymous()) {
             this.allowAnonymous = route.getAllowAnonymous();
         }
+        if(null != route.getAllowClientOnly()){
+            this.allowClientOnly = route.getAllowClientOnly();
+        }
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public Route getRoute() {
@@ -122,12 +141,12 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 		produces.add(mimeType);
 	}
 
-    public String[] getPermissions() {
-        return permissions;
+    public Map<String, MApiSecurity> getSecurity() {
+        return security;
     }
 
-    public void setPermissions(String[] permissions) {
-        this.permissions = permissions;
+    public void setSecurity(Map<String, MApiSecurity> security) {
+        this.security = security;
     }
 
     public boolean isDeprecated() {
@@ -146,16 +165,35 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.allowAnonymous = allowAnonymous;
     }
 
+    public boolean isAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    public void setAllowClientOnly(boolean allowClientOnly) {
+        this.allowClientOnly = allowClientOnly;
+    }
+
+    public void setDesc(OperationDescSet.OperationDesc desc){
+        this.desc = desc;
+        this.setSummary(desc.getSummary());
+        this.setDescription(desc.getDescription());
+    }
+
+    public OperationDescSet.OperationDesc getDesc() {
+        return desc;
+    }
+
     @Override
     public MApiOperation build() {
-		return new MApiOperation(name, title, summary, description, method,route,
+		return new MApiOperation(id, name, title, summary, description, method,route,
                                 tags.toArray(Arrays2.EMPTY_STRING_ARRAY),
 								Builders.buildList(parameters), 
 								Builders.buildList(responses), 
 								consumes.toArray(Arrays2.EMPTY_STRING_ARRAY), 
 								produces.toArray(Arrays2.EMPTY_STRING_ARRAY),
-                                permissions,
+                                security.values().toArray(new MApiSecurity[security.size()]),
                                 allowAnonymous,
+                                allowClientOnly,
 								deprecated, attrs);
     }
 	

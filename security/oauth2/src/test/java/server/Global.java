@@ -35,7 +35,7 @@ public class Global extends App implements OAuth2TestData {
     @Override
     protected void configure(WebConfigurator c) {
         oc.enable()
-          .useJdbcStore();
+          .useJdbcStore().useRsaJwtVerifier();
     }
     
     @Override

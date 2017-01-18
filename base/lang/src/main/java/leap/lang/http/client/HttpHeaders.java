@@ -16,6 +16,7 @@
 package leap.lang.http.client;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 public interface HttpHeaders {
@@ -59,5 +60,10 @@ public interface HttpHeaders {
      * Second argument is the value of header.
      */
     default void forEach(BiConsumer<String, String> consumer) {}
+
+    /**
+     * Returns all the headers with an immutable map
+     */
+    default Map<String, List<String>> all(){throw new IllegalStateException("Cannot get all header");}
 
 }

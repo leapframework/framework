@@ -24,7 +24,7 @@ import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MPermission;
+import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
@@ -84,30 +84,14 @@ public interface ApiConfig extends Named,Titled,Described {
 	boolean isCorsDisabled();
 
 	/**
-	 * Returns <code>true</code> if OAuth2.0 security is enabled.
+	 * Returns the oauth config
 	 */
-	boolean isOAuthEnabled();
-
-	/**
-	 * Returns the url of authorization endpoint in oauth2 server.
-	 *
-	 * <p>
-	 * Required if oauth enabled.
-	 */
-	String getOAuthAuthorizationUrl();
-
-	/**
-	 * Returns the url of token endpoint in oauth2 server.
-	 *
-	 * <p>
-	 * Required if oauth enabled.
-	 */
-	String getOAuthTokenUrl();
+	OauthConfig getOauthConfig();
 
 	/**
 	 * Returns the permissions required by this api.
 	 */
-	Map<String,MPermission> getPermissions();
+	Map<String,MApiPermission> getPermissions();
 
     /**
      * Returns an immutable {@link Map} contains all the common responses.
@@ -143,6 +127,11 @@ public interface ApiConfig extends Named,Titled,Described {
 	 * Returns all the routes in this api.
 	 */
 	Set<Route> getRoutes();
+
+	/**
+	 * Returns the base package of this api.
+	 */
+	String getBasePackage();
 
     /**
      * Returns all the resource types of route.

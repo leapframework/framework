@@ -28,6 +28,7 @@ import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
 import leap.web.annotation.Consumes;
+import leap.web.annotation.RequestAttribute;
 import leap.web.annotation.RequestBody;
 import leap.web.annotation.ResolvedBy;
 import leap.web.config.WebInterceptors;
@@ -171,7 +172,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
             log.error("Failed to execute action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setStatus(Execution.Status.FAILURE);
 			execution.setException(e);
-
+			
             if(!handleFailure(context, validation, execution, eas)) {
                 throw e;
             }else{
@@ -415,6 +416,13 @@ public class DefaultActionManager implements ActionManager,AppListener {
         if(ContextArgumentResolver.isContext(argument.getType())){
             argument.setContextual(true);
             return ContextArgumentResolver.of(argument.getType());
+        }
+
+        //request attribute is also a contextual parameter.
+        RequestAttribute ra = argument.getAnnotation(RequestAttribute.class);
+        if(null != ra) {
+            argument.setContextual(true);
+            return ContextArgumentResolver.ofAttribute(Strings.firstNotEmpty(ra.value(), argument.getType().getName()));
         }
 
         ArgumentResolver resolver = null;

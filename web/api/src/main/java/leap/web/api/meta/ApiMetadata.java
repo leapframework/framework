@@ -34,20 +34,22 @@ public class ApiMetadata extends MApiNamedWithDesc {
     protected final String[]                  protocols;
     protected final String[]                  consumes;
     protected final String[]                  produces;
+
     protected final Map<String, MApiResponse> responses;
     protected final Map<String, MApiPath>     paths;
     protected final Map<String, MApiModel>    models;
-    protected final MPermission[]             permissions;
+    protected final MApiPermission[]          permissions;
     protected final MApiSecurityDef[]         securityDefs;
-
+    protected final MApiTag[]                 tags;
 	public ApiMetadata(String name, String title, String summary, String description,
                        String termsOfService, MApiContact concat, String version,
                        String host, String basePath, String[] protocols, String[] consumes, String[] produces,
                        Map<String, MApiResponse> responses,
                        Map<String, MApiPath> paths,
                        Map<String, MApiModel> models,
-                       MPermission[] permissions,
+                       MApiPermission[] permissions,
                        MApiSecurityDef[] securityDefs,
+                       MApiTag[] tags,
                        Map<String, Object> attrs)  {
 		super(name, title, summary, description, attrs);
 	    this.termsOfService = termsOfService;
@@ -63,8 +65,9 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		this.models   = Collections.unmodifiableMap(models);
         this.permissions = permissions;
 		this.securityDefs = securityDefs;
+        this.tags = tags;
 	}
-	
+
 	/**
 	 * The terms of service for the API.
 	 */
@@ -177,11 +180,15 @@ public class ApiMetadata extends MApiNamedWithDesc {
     /**
      * Returns all the permissions required by this api.
      */
-    public MPermission[] getPermissions() {
+    public MApiPermission[] getPermissions() {
         return permissions;
     }
 
     public MApiSecurityDef[] getSecurityDefs() {
         return securityDefs;
+    }
+
+    public MApiTag[] getTags() {
+        return tags;
     }
 }

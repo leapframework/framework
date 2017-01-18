@@ -755,7 +755,23 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 		    		return r;
 		    	});
     }
-    
+
+	/**
+	 * update or insert record
+	 */
+	public final <T extends Model> T upsert(){
+		_init();
+    	if(id() == null){
+    		return save();
+		}
+		Record r = dao.findOrNull(em,id());
+    	if(r == null){
+    		return insert();
+		}else{
+    		return update();
+		}
+	}
+
     /**
      * Updates an exists record.
      * 

@@ -29,33 +29,35 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	
 	protected final Object source;
     protected final Object singletonLock = new Object();
-	
-    protected String                   id;
-    protected String                   name;
-    protected Class<?>                 type;
-    protected Class<?>                 beanClass;
-    protected BeanType                 beanClassType;
-    protected Method                   initMethod;
-    protected Method                   destroyMethod;
+
     protected boolean override        = true;
     protected boolean defaultOverride = false;
-    protected boolean                  singleton;
-    protected boolean                  lazyInit;
-    protected boolean                  primary;
-    protected String                   factoryBeanName;
-    protected Object                   factoryBean;
-    protected String                   factoryMethodName;
-    protected Method                   factoryMethod;
-    protected Constructor              constructor;
-    protected Boolean                  configurable;
-    protected String                   configurationPrefix;
 
-    protected List<TypeDefinition>     additionalTypeDefs   = new ArrayList<>();
-    protected List<FactoryDefinition>  factoryDefs          = new ArrayList<>();
-    protected List<ArgumentDefinition> constructorArguments = new ArrayList<>();
-    protected List<PropertyDefinition> properties           = new ArrayList<>();
-    protected List<InvokeDefinition>   invokes              = new ArrayList<>();
-    protected Set<String>              qualifiers           = new LinkedHashSet<>();
+    protected String            id;
+    protected String            name;
+    protected Class<?>          type;
+    protected Class<?>          beanClass;
+    protected BeanType          beanClassType;
+    protected Method            initMethod;
+    protected Method            destroyMethod;
+    protected boolean           singleton;
+    protected boolean           lazyInit;
+    protected boolean           primary;
+    protected Constructor       constructor;
+    protected Boolean           configurable;
+    protected boolean			annotation;
+    protected boolean			overrideAnnotation;
+    protected String            configurationPrefix;
+    protected boolean           exportMBean;
+    protected String            MBeanName;
+    protected FactoryDefinition factoryDefinition;
+
+    protected List<TypeDefinition>        additionalTypeDefs   = new ArrayList<>();
+    protected List<FactoryBeanDefinition> factoryBeanDefs      = new ArrayList<>();
+    protected List<ArgumentDefinition>    constructorArguments = new ArrayList<>();
+    protected List<PropertyDefinition>    properties           = new ArrayList<>();
+    protected List<InvokeDefinition>      invokes              = new ArrayList<>();
+    protected Set<String>                 qualifiers           = new LinkedHashSet<>();
     protected ValueDefinition          valueDefinition;
 	
 	protected Object singletonInstance;
@@ -120,6 +122,14 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 
     public void setType(Class<?> type) {
         this.type = type;
+    }
+
+    public FactoryDefinition getFactoryDefinition() {
+        return factoryDefinition;
+    }
+
+    public void setFactoryDefinition(FactoryDefinition factoryDefinition) {
+        this.factoryDefinition = factoryDefinition;
     }
 
     public ValueDefinition getValueDefinition() {
@@ -211,39 +221,25 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	protected void setPrimary(boolean primary) {
 		this.primary = primary;
 	}
-	
-	public String getFactoryBeanName() {
-		return factoryBeanName;
-	}
 
-	public String getFactoryMethodName() {
-		return factoryMethodName;
-	}
+    @Override
+    public boolean isExportMBean() {
+        return exportMBean;
+    }
 
-	protected void setFactoryMethodName(String factoryMethod) {
-		this.factoryMethodName = factoryMethod;
-	}
-	
-	public Method getFactoryMethod() {
-		return factoryMethod;
-	}
+    public void setExportMBean(boolean exportMBean) {
+        this.exportMBean = exportMBean;
+    }
 
-	protected void setFactoryMethod(Method factoryMethod) {
-		this.factoryMethod = factoryMethod;
-	}
+    @Override
+    public String getMBeanName() {
+        return MBeanName;
+    }
 
-	protected void setFactoryBeanName(String factoryBean) {
-		this.factoryBeanName = factoryBean;
-	}
-	
-	public Object getFactoryBean() {
-		return factoryBean;
-	}
+    public void setMBeanName(String MBeanName) {
+        this.MBeanName = MBeanName;
+    }
 
-	protected void setFactoryBean(Object factoryBean) {
-		this.factoryBean = factoryBean;
-	}
-	
 	public Constructor getConstructor() {
 		return constructor;
 	}
@@ -268,12 +264,12 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 	    additionalTypeDefs.add(def);
 	}
 	
-	public List<FactoryDefinition> getFactoryDefs() {
-	    return factoryDefs;
+	public List<FactoryBeanDefinition> getFactoryBeanDefs() {
+	    return factoryBeanDefs;
 	}
 	
-	public void addFactoryDef(FactoryDefinition def) {
-	    factoryDefs.add(def);
+	public void addFactoryBeanDef(FactoryBeanDefinition def) {
+	    factoryBeanDefs.add(def);
 	}
 	
 	public List<PropertyDefinition> getProperties() {
@@ -350,7 +346,25 @@ class BeanDefinitionBase implements BeanDefinition,TypeDefinition,BeanDefinition
 		return configurable;
 	}
 
-    @Override
+	@Override
+	public boolean isAnnotation() {
+		return annotation;
+	}
+
+	@Override
+	public boolean isOverrideAnnotation() {
+		return overrideAnnotation;
+	}
+
+	public void setAnnotation(boolean annotation) {
+		this.annotation = annotation;
+	}
+
+	public void setOverrideAnnotation(boolean overrideAnnotation) {
+		this.overrideAnnotation = overrideAnnotation;
+	}
+
+	@Override
     public void setConfigurable(boolean b) {
         this.configurable = b;
     }

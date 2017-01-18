@@ -28,11 +28,6 @@ public interface AuthzTokenManager {
      * Creates a new access token.
      */
 	AuthzAccessToken createAccessToken(AuthzAuthentication authc, AuthzRefreshToken rt);
-
-	/**
-	 * Creates a new login token.
-     */
-	AuthzLoginToken createLoginToken(AuthzAuthentication authc);
 	
 	/**
 	 * Returns the {@link AuthzAccessToken} or <code>null</code> if not exists.
@@ -43,14 +38,6 @@ public interface AuthzTokenManager {
 	 * Returns the {@link AuthzRefreshToken} or <code>null</code> if not exists.
 	 */
 	AuthzRefreshToken loadRefreshToken(String refreshToken);
-
-	/**
-	 * Returns the consumed login token or <code>null</code> if not exists.
-	 *
-	 * <p/>
-	 * The login token will be removed after consumption.
-     */
-	AuthzLoginToken consumeLoginToken(String loginToken);
 	
 	/**
 	 * Removes the acces token.

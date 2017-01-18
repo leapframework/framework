@@ -21,6 +21,7 @@ package app.models.api.base;
 import app.models.api.domains.CreatedBy;
 import app.models.api.domains.UpdatedBy;
 import leap.lang.enums.Bool;
+import leap.lang.meta.annotation.Creatable;
 import leap.lang.meta.annotation.Property;
 import leap.lang.meta.annotation.Sortable;
 import leap.orm.annotation.Column;
@@ -34,10 +35,10 @@ import java.util.Date;
 public abstract class ModelBase extends Model {
 
     @Id(generator = "shortid")
+    @CreatedBy
     protected String id;
 
     @Column
-    @CreatedBy
     @Property(filterable = Bool.TRUE, creatable = Bool.FALSE, updatable = Bool.FALSE)
     protected String createdBy;
 

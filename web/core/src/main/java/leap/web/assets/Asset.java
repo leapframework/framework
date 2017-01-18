@@ -19,7 +19,9 @@ package leap.web.assets;
 public interface Asset {
 	
 	String getPath();
-	
+
+	String getDebugPath();
+
 	String getContentType();
 	
 	AssetResource getResource();
