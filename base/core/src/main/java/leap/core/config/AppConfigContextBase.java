@@ -16,11 +16,12 @@
 
 package leap.core.config;
 
+import leap.lang.accessor.AttributeAccessor;
 import leap.lang.resource.Resource;
 
 import java.util.Map;
 
-public interface AppConfigContextBase {
+public interface AppConfigContextBase extends AttributeAccessor {
 
     /**
      * Returns true if the config property is override by default.

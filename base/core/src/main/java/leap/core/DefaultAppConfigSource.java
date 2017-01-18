@@ -21,6 +21,7 @@ import leap.core.ioc.ConfigBean;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.Comparators;
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.accessor.SystemPropertyAccessor;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -598,7 +599,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext implements AppConfigContext,AppPropertyContext,AppPropertySetter,AppConfigProcessors {
+    protected class ConfigContext extends MapAttributeAccessor implements AppConfigContext,AppPropertyContext,AppPropertySetter,AppConfigProcessors {
 
         protected final AppConfigProcessor[] processors =
                 Factory.newInstances(AppConfigProcessor.class).toArray(new AppConfigProcessor[0]);
