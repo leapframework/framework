@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Set;
 
 import leap.lang.Described;
+import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
@@ -31,7 +32,7 @@ import leap.web.route.Route;
 /**
  * Represents the configuration of a web api.
  */
-public interface ApiConfig extends Named,Titled,Described {
+public interface ApiConfig extends Named,Titled,Described,Extensible {
 	
 	/**
 	 * Base path of the api, starts with a slash '/'.
