@@ -22,6 +22,7 @@ import leap.lang.jsoup.nodes.Document;
 
 import java.io.InputStream;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * The HTTP response in client side for testing only.
@@ -123,6 +124,10 @@ public interface THttpResponse {
         return JSON.decodeMap(getContent());
     }
 
+    default <R> R decode(Function<String,R> function){
+    	return function.apply(getContent());
+	}
+    
     /**
      * Parse the response content as json and decodes to array.
      */
