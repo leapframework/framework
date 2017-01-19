@@ -124,8 +124,8 @@ public interface THttpResponse {
         return JSON.decodeMap(getContent());
     }
 
-    default <R> R decode(Function<String,R> function){
-    	return function.apply(getContent());
+    default <R> R decode(Function<String,R> decoder){
+    	return decoder.apply(getContent());
 	}
     
     /**
