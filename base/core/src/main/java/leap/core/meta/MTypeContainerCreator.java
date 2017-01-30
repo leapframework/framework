@@ -22,7 +22,7 @@ import leap.lang.meta.MTypeFactory;
 import leap.lang.meta.MTypeListener;
 import leap.lang.meta.MTypeStrategy;
 
-public interface MTypeContainerCreator extends Creatable<MTypeFactory> {
+public interface MTypeContainerCreator extends Creatable<MTypeContainer> {
 
     /**
      * Sets the listener.

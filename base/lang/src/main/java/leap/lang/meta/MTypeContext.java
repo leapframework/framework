@@ -80,7 +80,7 @@ public interface MTypeContext extends AttributeGetter,AttributeSetter {
     void onComplexTypeCreated(Class<?> type);
 
     /**
-     * Returns the name complex type if creating.
+     * Returns the name of complex type if creating.
      */
     String getCreatingComplexType(Class type);
 

@@ -19,11 +19,18 @@
 package leap.core.meta;
 
 import leap.lang.meta.MComplexType;
+import leap.lang.meta.MTypeContext;
 import leap.lang.meta.MTypeFactory;
 
 import java.util.Map;
+import java.util.function.Consumer;
 
 public interface MTypeContainer extends MTypeFactory {
+
+    /**
+     * Runs the function with given {@link MTypeContext}.
+     */
+    void runWithContext(Consumer<MTypeContext> func);
 
     /**
      * Returns all complex types in this container.
