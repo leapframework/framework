@@ -16,11 +16,13 @@
 package leap.orm.metadata;
 
 import leap.core.annotation.Inject;
+import leap.core.meta.MTypeContainer;
 import leap.lang.Args;
 import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.meta.*;
 import leap.orm.OrmContext;
+import leap.orm.annotation.Entity;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
@@ -42,22 +44,28 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 
         for(OrmContext c : ormContexts) {
 			EntityMapping em = c.getMetadata().tryGetEntityMapping(type);
-			
+
 			if(null != em) {
-				return getMType(type, genericType, context, c, em);
+				return getMType(type, context, c, em);
 			}
-			
+
 		}
 
 		return null;
 	}
 
-	protected MType getMType(Class<?> type, Type genericType, MTypeContext context, OrmContext c,  EntityMapping em) {
+    public MType getMType(MTypeContainer container, OrmContext c, EntityMapping em) {
+        return container.runInContextWithResult((context) -> getMType(null, context, c, em));
+    }
+
+	protected MType getMType(Class<?> type, MTypeContext context, OrmContext c,  EntityMapping em) {
 		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());
 
-        context.onComplexTypeCreating(type, ct.getName());
+        if(null != type) {
+            context.onComplexTypeCreating(type, ct.getName());
+        }
 
         MTypeFactory root = context.root();
 
@@ -146,7 +154,9 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             ct.addProperty(p.build());
         }
 
-        context.onComplexTypeCreated(type);
+        if(null != type) {
+            context.onComplexTypeCreated(type);
+        }
 		
 		return ct.build();
 	}
