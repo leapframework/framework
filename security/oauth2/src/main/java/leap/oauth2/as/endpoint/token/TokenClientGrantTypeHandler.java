@@ -13,12 +13,9 @@
 
 package leap.oauth2.as.endpoint.token;
 
-import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
 import leap.core.security.token.jwt.JwtVerifier;
-import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -27,7 +24,9 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
-import leap.oauth2.as.client.*;
+import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.client.AuthzClientManager;
+import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.oauth2.as.token.SimpleAuthzAccessToken;
@@ -37,8 +36,6 @@ import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
-import java.security.PublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;

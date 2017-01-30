@@ -48,9 +48,6 @@ public interface OAuth2Params {
 	String LOGOUT_URI				= "logout_uri"; 			  //http://openid.net/specs/openid-connect-logout-1_0.html
 	String POST_LOGOUT_REDIRECT_URI = "post_logout_redirect_uri"; //http://openid.net/specs/openid-connect-logout-1_0.html
 
-    //non standard params
-    String LOGIN_TOKEN   = "login_token"; //non standard parameter.
-
 	default String getTokenType() {
 	    return getParameter(TOKEN_TYPE);
 	}
@@ -90,10 +87,6 @@ public interface OAuth2Params {
 	default String getRefreshToken() {
 		return getParameter(REFRESH_TOKEN);
 	}
-
-    default String getLoginToken() {
-        return getParameter(LOGIN_TOKEN);
-    }
 	
 	default String getScope() {
 		return getParameter(SCOPE);

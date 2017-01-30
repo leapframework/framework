@@ -25,15 +25,10 @@ import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.net.Urls;
-import leap.oauth2.OAuth2Errors;
-import leap.oauth2.OAuth2Params;
-import leap.oauth2.OAuth2ResponseException;
-import leap.oauth2.QueryOAuth2Params;
-import leap.oauth2.RequestOAuth2Params;
+import leap.oauth2.*;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
-import leap.oauth2.as.token.AuthzLoginToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.App;
 import leap.web.Request;
@@ -57,7 +52,6 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     protected @Inject AuthzTokenManager tokenManager;
     protected @Inject ViewSource        viewSource;
     protected @Inject UserManager       um;
-    
     protected String loginUrl;
     
 	@Override
@@ -69,29 +63,6 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
 	            loginUrl = "view:" + config.getLoginView();
 	        }
 	    }
-    }
-	
-    @Override
-    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-        if(config.isLoginTokenEnabled()) {
-            String loginToken = request.getParameter(OAuth2Params.LOGIN_TOKEN);
-            if(!Strings.isEmpty(loginToken)) {
-
-                log.debug("Found login token parameter : {}", loginToken);
-                AuthzLoginToken token = tokenManager.consumeLoginToken(loginToken);
-                if(null == token) {
-                    log.debug("The login token expired or invalid, ignore it");
-                    return State.CONTINUE;
-                }
-
-                log.debug("Create authentication for user {} by login token", token.getUserId());
-                Result<Authentication> authc = um.createAuthenticationByUserId(token.getUserId());
-                if(authc.isPresent()) {
-                    context.setAuthentication(authc.get());
-                }
-            }
-        }
-        return State.CONTINUE;
     }
 
     @Override

@@ -59,14 +59,6 @@ public class AdminControllerTest extends OAuth2TestBase {
         withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
         withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
     }
-    @Test
-    public void testJwtTokenExpirseIn(){
-
-        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
-        TokenResponse token2 = obtainAccessTokenByTokenClient(token1.accessToken,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
-        JwtTokenResponse jwtTokenResponse = testJwtResponseAccessTokenInfo(token2);
-        withAccessToken(forGet("/resapp/admin/test"), jwtTokenResponse.jwtToken).send().assertOk();
-    }
 
     @Test
     public void testAccessTokenWithNotUser(){
@@ -79,19 +71,6 @@ public class AdminControllerTest extends OAuth2TestBase {
         user.delete();
 
         assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
-    }
-    @Test
-    public void testUrlJwtVerifier(){
-
-        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
-        assertFalse(token.isError());
-
-        JwtTokenResponse jwtTokenResponse = testJwtResponseAccessTokenInfo(token);
-        
-        String publicKeyUrl = "https://localhost:8443/server/publickey";
-        JwtVerifier verifier = TokenVerifierFactory.createNetPublicKeyRSAJwtVerifier(publicKeyUrl);
-        Map<String, Object> claims = verifier.verify(jwtTokenResponse.jwtToken);
-        assertNotEmpty(claims);
     }
     
     

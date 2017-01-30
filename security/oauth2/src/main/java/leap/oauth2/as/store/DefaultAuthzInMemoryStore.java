@@ -15,19 +15,9 @@
  */
 package leap.oauth2.as.store;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
-import leap.core.el.BeansPropertyResolver;
 import leap.lang.Args;
 import leap.lang.Beans;
 import leap.lang.Strings;
-import leap.lang.beans.BeanProperty;
-import leap.lang.beans.BeanType;
-import leap.lang.convert.BeanConverter;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.as.client.AuthzClient;
@@ -36,8 +26,13 @@ import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.sso.AuthzSSOLogin;
 import leap.oauth2.as.sso.AuthzSSOSession;
 import leap.oauth2.as.token.AuthzAccessToken;
-import leap.oauth2.as.token.AuthzLoginToken;
 import leap.oauth2.as.token.AuthzRefreshToken;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     
@@ -48,7 +43,6 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     protected Map<String, AuthzCode>           codes         = new ConcurrentHashMap<>();
     protected Map<String, AuthzAccessToken>    accessTokens  = new ConcurrentHashMap<>();
     protected Map<String, AuthzRefreshToken>   refreshTokens = new ConcurrentHashMap<>();
-    protected Map<String, AuthzLoginToken>     loginTokens   = new ConcurrentHashMap<>();
     protected Map<String, AuthzSSOSession>     ssoSessions   = new ConcurrentHashMap<>();
     protected Map<String, List<AuthzSSOLogin>> ssoLogins     = new ConcurrentHashMap<>();
 
@@ -114,11 +108,7 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     public void saveRefreshToken(AuthzRefreshToken token) {
         refreshTokens.put(token.getToken(), token);
     }
-
-    @Override
-    public void saveLoginToken(AuthzLoginToken token) {
-        loginTokens.put(token.getToken(), token);
-    }
+    
 
     @Override
     public AuthzAccessToken loadAccessToken(String accessToken) {
@@ -129,12 +119,7 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     public AuthzRefreshToken loadRefreshToken(String refreshToken) {
         return refreshTokens.get(refreshToken);
     }
-
-    @Override
-    public AuthzLoginToken loadLoginToken(String loginToken) {
-        return loginTokens.get(loginToken);
-    }
-
+    
     @Override
     public void removeAccessToken(String accessToken) {
         accessTokens.remove(accessToken);
@@ -144,17 +129,7 @@ public class DefaultAuthzInMemoryStore implements AuthzInMemoryStore {
     public void removeRefreshToken(String refreshToken) {
         refreshTokens.remove(refreshToken);
     }
-
-    @Override
-    public void removeLoginToken(String loginToken) {
-        loginTokens.remove(loginToken);
-    }
-
-    @Override
-    public AuthzLoginToken removeAndLoadLoginToken(String loginToken) {
-        return loginTokens.remove(loginToken);
-    }
-
+    
     @Override
     public void cleanupTokens() {
         for(Entry<String, AuthzAccessToken> entry : accessTokens.entrySet()) {

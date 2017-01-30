@@ -30,23 +30,5 @@ public class TokenClientGrantTest extends OAuth2TestBase {
         assertNotEmpty(clientToken.scope);
         assertEquals(Global.TEST_CLIENT_GRANTED_SCOPE,clientToken.scope);
     }
-    @Test
-    public void testAuthenticateTokenClientWithJwtToken(){
-        if(isLogin()) {
-            logoutAuthzServer();
-        }
-        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID);
-        JwtTokenResponse jwt = obtainAccessTokenInfoWithJwtResponse(token.accessToken);
-        assertNotEmpty(jwt.jwtToken);
-        Map<String, Object> info = verifier.verify(jwt.jwtToken);
-        assertEquals(USER_XIAOMING,info.get("username"));
-        assertNull(info.get("client_id"));
-        TokenResponse newToken = obtainAccessTokenByTokenClient(jwt.jwtToken, Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET);
-        JwtTokenResponse newJwt = obtainAccessTokenInfoWithJwtResponse(newToken.accessToken);
-        assertNotEmpty(newJwt.jwtToken);
-        Map<String, Object> newInfo = verifier.verify(newJwt.jwtToken);
-        assertEquals(USER_XIAOMING,newInfo.get("username"));
-        assertEquals(Global.TEST_CLIENT_ID,newInfo.get("client_id"));
-    }
 
 }

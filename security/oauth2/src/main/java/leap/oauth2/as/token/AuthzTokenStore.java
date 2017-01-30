@@ -27,12 +27,7 @@ public interface AuthzTokenStore {
      * Saves the {@link AuthzRefreshToken} in store.
      */
     void saveRefreshToken(AuthzRefreshToken token);
-
-    /**
-     * Saves the {@link AuthzLoginToken} in store.
-     */
-    void saveLoginToken(AuthzLoginToken token);
-
+    
     /**
      * Returns the {@link AuthzAccessToken} or <code>null</code>
      */
@@ -43,10 +38,6 @@ public interface AuthzTokenStore {
      */
     AuthzRefreshToken loadRefreshToken(String refreshToken);
 
-    /**
-     * Returns the {@link AuthzLoginToken} or <code>null</code>
-     */
-    AuthzLoginToken loadLoginToken(String loginToken);
 
     /**
      * Removes the access token.
@@ -57,16 +48,6 @@ public interface AuthzTokenStore {
      * Removes the refresh token.
      */
     void removeRefreshToken(String refreshToken);
-
-    /**
-     * Removes the login token.
-     */
-    void removeLoginToken(String loginToken);
-
-    /**
-     * Returns the removed {@link AuthzLoginToken} in store or returns <code>null</code> if not exists.
-     */
-    AuthzLoginToken removeAndLoadLoginToken(String loginToken);
     
     /**
      * Cleanup expired tokens (access token & refresh token).
