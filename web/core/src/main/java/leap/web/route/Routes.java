@@ -163,9 +163,14 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	 * Adds all the routes. 
 	 */
 	Routes addAll(Iterable<Route> routes);
+
+    /**
+     * Returns the matched {@link Route} or <code>null</code> if no route matched.
+     */
+    Route match(String method, String path);
 	
 	/**
-	 * Returns a matched {@link DefaultRoute} or <code>null</code> if no route matched.
+	 * Returns a matched {@link Route} or <code>null</code> if no route matched.
 	 */
 	Route match(String method,String path,Map<String,Object> inParameters, Map<String,String> outVariables);
 
