@@ -177,6 +177,13 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         return path;
     }
 
+    public MApiPathBuilder addPath(String pathTemplate) {
+        MApiPathBuilder path = new MApiPathBuilder();
+        path.setPathTemplate(pathTemplate);
+        addPath(path);
+        return path;
+    }
+
 	public Map<String, MApiModelBuilder> getModels() {
 		return models;
 	}

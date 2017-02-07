@@ -16,7 +16,10 @@
 
 package leap.web;
 
+import leap.web.route.Route;
 import leap.web.route.Routes;
+
+import java.util.Map;
 
 public class SimpleRouter implements Router {
 
@@ -39,7 +42,6 @@ public class SimpleRouter implements Router {
         this.path = path;
     }
 
-    @Override
     public Routes getRoutes() {
         return routes;
     }
@@ -48,7 +50,6 @@ public class SimpleRouter implements Router {
         this.routes = routes;
     }
 
-    @Override
     public String getPath() {
         return path;
     }
@@ -57,4 +58,8 @@ public class SimpleRouter implements Router {
         this.path = path;
     }
 
+    @Override
+    public Route match(String method, String path, Map<String, Object> inParameters, Map<String, String> outVariables) {
+        return routes.match(method, null != this.path ? this.path : path, inParameters, outVariables);
+    }
 }

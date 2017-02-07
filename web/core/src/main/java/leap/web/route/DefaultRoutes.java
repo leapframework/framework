@@ -124,7 +124,16 @@ public class DefaultRoutes implements Routes {
 	    return this;
     }
 
-	@Override
+    @Override
+    public boolean remove(Route route) {
+        boolean r = set.remove(route);
+        if(r) {
+            this.setNewArray();
+        }
+        return r;
+    }
+
+    @Override
     public synchronized Routes addAll(Iterable<Route> routes) {
 		Args.notNull(routes,"routes");
 		for(Route route : routes){

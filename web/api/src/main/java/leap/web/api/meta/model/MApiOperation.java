@@ -15,56 +15,54 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.List;
-import java.util.Map;
-
-import com.sun.org.apache.regexp.internal.RE;
-import leap.lang.Args;
 import leap.lang.http.HTTP;
 import leap.web.route.Route;
+
+import java.util.List;
+import java.util.Map;
 
 public class MApiOperation extends MApiNamedWithDesc {
 
     protected final String          id;
-	protected final Route			route;
-	protected final HTTP.Method     method;
+    protected final Route           route;
+    protected final HTTP.Method     method;
     protected final String[]        tags;
-	protected final MApiParameter[] parameters;
-	protected final MApiResponse[]  responses;
-	protected final String[]        consumes;
-	protected final String[]        produces;
+    protected final MApiParameter[] parameters;
+    protected final MApiResponse[]  responses;
+    protected final String[]        consumes;
+    protected final String[]        produces;
     protected final MApiSecurity[]  security;
     protected final boolean         allowAnonymous;
-    protected final boolean			allowClientOnly;
-	protected final boolean         deprecated;
+    protected final boolean         allowClientOnly;
+    protected final boolean         deprecated;
 
-	public MApiOperation(String id, String name, String title, String summary, String description,
+    public MApiOperation(String id, String name, String title, String summary, String description,
                          HTTP.Method method,
-						 Route 	  route,
+                         Route route,
                          String[] tags,
                          List<MApiParameter> parameters,
                          List<MApiResponse> responses,
                          String[] consumes,
                          String[] produces,
-						 MApiSecurity[] security,
+                         MApiSecurity[] security,
                          boolean allowAnonymous,
-						 boolean allowClientOnly,
+                         boolean allowClientOnly,
                          boolean deprecated, Map<String, Object> attrs) {
-	    super(name, title, summary, description, attrs);
+        super(name, title, summary, description, attrs);
 
-        this.id          = id;
-	    this.route		 = route;
-		this.method      = method;
-        this.tags        = tags;
-		this.parameters  = parameters.toArray(new MApiParameter[]{});
-		this.responses   = responses.toArray(new MApiResponse[]{});
-		this.consumes    = consumes;
-		this.produces    = produces;
-        this.security    = security;
+        this.id = id;
+        this.route = route;
+        this.method = method;
+        this.tags = tags;
+        this.parameters = parameters.toArray(new MApiParameter[]{});
+        this.responses = responses.toArray(new MApiResponse[]{});
+        this.consumes = consumes;
+        this.produces = produces;
+        this.security = security;
         this.allowAnonymous = allowAnonymous;
         this.allowClientOnly = allowClientOnly;
-		this.deprecated  = deprecated;
-	}
+        this.deprecated = deprecated;
+    }
 
     /**
      * Returns the unique id of this operation.
@@ -74,36 +72,36 @@ public class MApiOperation extends MApiNamedWithDesc {
     }
 
     /**
-	 * The route of this operation
-	 */
-	public Route getRoute(){
-		return route;
-	}
+     * The route of this operation
+     */
+    public Route getRoute() {
+        return route;
+    }
 
-	/**
-	 * The short description of this operation.
-	 */
-	public String getSummary() {
-		return summary;
-	}
+    /**
+     * The short description of this operation.
+     */
+    public String getSummary() {
+        return summary;
+    }
 
-	/**
-	 * The long description of this operation.
-	 */
-	public String getDescription() {
-		return description;
-	}
+    /**
+     * The long description of this operation.
+     */
+    public String getDescription() {
+        return description;
+    }
 
-	/**
-	 * Returns the allowed http method on this operation.
-	 */
-	public HTTP.Method getMethod() {
-		return method;
-	}
+    /**
+     * Returns the allowed http method on this operation.
+     */
+    public HTTP.Method getMethod() {
+        return method;
+    }
 
     /**
      * A list of tags for API documentation control.
-     *
+     * <p>
      * Tags can be used for logical grouping of operations by resources or any other qualifier
      */
     public String[] getTags() {
@@ -111,32 +109,32 @@ public class MApiOperation extends MApiNamedWithDesc {
     }
 
     /**
-	 * Returns an array of {@link MApiParameter} of this operation.
-	 */
-	public MApiParameter[] getParameters() {
-		return parameters;
-	}
+     * Returns an array of {@link MApiParameter} of this operation.
+     */
+    public MApiParameter[] getParameters() {
+        return parameters;
+    }
 
-	/**
-	 * Returns an array of {@link MApiResponse} of this operation.
-	 */
-	public MApiResponse[] getResponses() {
-		return responses;
-	}
-	
-	/**
-	 * A list of MIME types the APIs can consume. This is global to all APIs but can be overridden on specific API calls.
-	 */
-	public String[] getConsumes() {
-		return consumes;
-	}
+    /**
+     * Returns an array of {@link MApiResponse} of this operation.
+     */
+    public MApiResponse[] getResponses() {
+        return responses;
+    }
 
-	/**
-	 * A list of MIME types the APIs can produce. This is global to all APIs but can be overridden on specific API calls.
-	 */
-	public String[] getProduces() {
-		return produces;
-	}
+    /**
+     * A list of MIME types the APIs can consume. This is global to all APIs but can be overridden on specific API calls.
+     */
+    public String[] getConsumes() {
+        return consumes;
+    }
+
+    /**
+     * A list of MIME types the APIs can produce. This is global to all APIs but can be overridden on specific API calls.
+     */
+    public String[] getProduces() {
+        return produces;
+    }
 
     /**
      * Returns the permissions required by this operation.
@@ -151,18 +149,19 @@ public class MApiOperation extends MApiNamedWithDesc {
     public boolean isAllowAnonymous() {
         return allowAnonymous;
     }
-	/**
-	 * Returns true if this operation allows only client access.
-	 */
-    public boolean isAllowClientOnly(){
-		return allowClientOnly;
-	}
-    
+
     /**
-	 * Declares this operation to be deprecated.
-	 */
-	public boolean isDeprecated() {
-		return deprecated;
-	}
+     * Returns true if this operation allows only client access.
+     */
+    public boolean isAllowClientOnly() {
+        return allowClientOnly;
+    }
+
+    /**
+     * Declares this operation to be deprecated.
+     */
+    public boolean isDeprecated() {
+        return deprecated;
+    }
 
 }

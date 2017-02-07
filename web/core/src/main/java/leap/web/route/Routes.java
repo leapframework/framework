@@ -165,6 +165,11 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	Routes addAll(Iterable<Route> routes);
 
     /**
+     * Removes the {@link Route}.
+     */
+    boolean remove(Route route);
+
+    /**
      * Returns the matched {@link Route} or <code>null</code> if no route matched.
      */
     Route match(String method, String path);

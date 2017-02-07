@@ -40,7 +40,6 @@ import leap.web.format.ResponseFormat;
 import leap.web.locale.LocaleResolver;
 import leap.web.multipart.MultipartContext;
 import leap.web.route.Route;
-import leap.web.route.Routes;
 import leap.web.theme.Theme;
 import leap.web.theme.ThemeManager;
 import leap.web.view.LinkedViewData;
@@ -297,7 +296,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected String resolveActionPath(Request request, Response response, Router routeInfo,
                                        DefaultActionContext ac) throws Exception {
-        String path = routeInfo.getPath();
+        String path = null;
 
         if (null == path) {
             if (request.hasPathExtension()) {
@@ -331,7 +330,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected boolean handleCorePrelightRequest(Request request,
                                                 Response response,
-                                                Router routeInfo,
+                                                Router router,
                                                 DefaultActionContext ac) throws Throwable {
 
         CorsHandler handler = webConfig.getCorsHandler();
@@ -340,7 +339,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         }
 
         if (!Strings.isEmpty(ac.getPath())) {
-            Route route = routeInfo.getRoutes().match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            Route route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
             if (null == route) {
                 return false;
             }
@@ -354,21 +353,19 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
     protected int routeAndExecuteAction(Request request,
                                         Response response,
-                                        Router routeInfo,
+                                        Router router,
                                         DefaultActionContext ac) throws Throwable {
 
         if (!Strings.isEmpty(ac.getPath())) {
-            Routes routes = routeInfo.getRoutes();
-
             Map<String, String> pathVariables = new LinkedHashMap<>();
 
-            Route route = routes.match(request.getMethod(),
+            Route route = router.match(request.getMethod(),
                     ac.getPath(),
                     request.getParameters(),
                     pathVariables);
 
             if (null == route && request.hasPathExtension() && null != ac.getResponseFormat()) {
-                route = routes.match(request.getMethod(),
+                route = router.match(request.getMethod(),
                         request.getServicePathWithoutExtension(),
                         request.getParameters(),
                         pathVariables);
