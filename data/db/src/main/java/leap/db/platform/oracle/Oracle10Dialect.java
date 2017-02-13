@@ -18,6 +18,7 @@ package leap.db.platform.oracle;
 import java.sql.Types;
 import java.util.List;
 
+import leap.db.model.DbColumn;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbSequence;
 import leap.db.platform.GenericDbDialect;
@@ -156,5 +157,10 @@ public class Oracle10Dialect extends GenericDbDialect {
 	@Override
     public List<String> getDropSequenceSqls(DbSchemaObjectName sequenceName) throws IllegalStateException {
 		return New.arrayList("DROP SEQUENCE " + qualifySchemaObjectName(sequenceName));
+    }
+
+    @Override
+    protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
+        return "";
     }
 }

@@ -198,21 +198,21 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			List<DbSequenceBuilder> sequences = new ArrayList<DbSequenceBuilder>();
 
 			rs = getSequences(connection, dm, params);
-			
-			while(rs.next()){
-				String sequenceCatalog = rs.getString(SEQUENCE_CATALOG);
-				String sequenceSchema  = rs.getString(SEQUENCE_SCHEMA);
-				String sequenceName    = rs.getString(SEQUENCE_NAME);
-				
-				if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(sequenceSchema)){
-					DbSequenceBuilder sequence = new DbSequenceBuilder(sequenceName).setCatalog(sequenceCatalog).setSchema(sequenceSchema);
+			if(rs != null){
+				while(rs.next()){
+					String sequenceCatalog = rs.getString(SEQUENCE_CATALOG);
+					String sequenceSchema  = rs.getString(SEQUENCE_SCHEMA);
+					String sequenceName    = rs.getString(SEQUENCE_NAME);
 
-					if(readSequenceProperties(sequence, rs)){
-						sequences.add(sequence);	
+					if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(sequenceSchema)){
+						DbSequenceBuilder sequence = new DbSequenceBuilder(sequenceName).setCatalog(sequenceCatalog).setSchema(sequenceSchema);
+
+						if(readSequenceProperties(sequence, rs)){
+							sequences.add(sequence);
+						}
 					}
 				}
 			}
-			
 			return Builders.buildList(sequences);
 		}finally{
 			JDBC.closeResultSetAndStatement(rs);

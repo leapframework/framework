@@ -343,6 +343,14 @@
             <version>${derby.version}</version>
             <scope>test</scope>
         </dependency>
+		<!-- need install in local repository
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ojdbc7_g</artifactId>
+			<version>12.1.0.2</version>
+			<scope>test</scope>
+		</dependency>
+		 -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

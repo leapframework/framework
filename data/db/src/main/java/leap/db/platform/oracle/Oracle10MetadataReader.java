@@ -142,4 +142,11 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 			throw e;
 		}
     }
+
+	@Override
+	protected ResultSet getSequences(Connection connection, DatabaseMetaData dm,
+									 MetadataParameters params) throws SQLException {
+		// TODO query sequences
+		return null;
+	}
 }

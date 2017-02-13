@@ -585,8 +585,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			commands.add(db.cmdCreateColumn(change.getTable(), change.getNewColumn()));
 		}
 	}
-	
-	protected void createSchemaChagneCommands(SchemaChangeContext context, ForeignKeyDefinitionChange change,List<DbCommand> commands) {
+	protected void createSchemaChangeCommands(SchemaChangeContext context, ForeignKeyDefinitionChange change,List<DbCommand> commands) {
 		//Recreate foreign key
 		commands.add(db.cmdDropForeignKey(change.getTable(), change.getOldForeignKey().getName()));
 		commands.add(db.cmdCreateForeignKey(change.getTable(), change.getNewForeignKey()));
