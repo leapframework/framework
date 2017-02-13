@@ -147,6 +147,28 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 	protected ResultSet getSequences(Connection connection, DatabaseMetaData dm,
 									 MetadataParameters params) throws SQLException {
 		// TODO query sequences
-		return null;
+		String sql = "SELECT ? AS SEQ_CAT, " +
+				"SEQUENCE_OWNER AS SEQ_SCHEM, " +
+				"SEQUENCE_NAME AS SEQ_NAME, " +
+				"MIN_VALUE AS SEQ_START, " +
+				"MIN_VALUE AS SEQ_MINVALUE, " +
+				"MAX_VALUE AS SEQ_MAXVALUE, " +
+				"INCREMENT_BY AS SEQ_INCREMENT, " +
+				"CASE CYCLE_FLAG WHEN 'N' THEN 0 ELSE 1 END SEQ_CYCLE, " +
+				"ORDER_FLAG, " +
+				"CACHE_SIZE AS SEQ_CACHE, " +
+				"LAST_NUMBER " +
+				"FROM all_sequences " +
+				"WHERE SEQUENCE_OWNER = ?";
+		PreparedStatement ps = null;
+		try {
+			ps = connection.prepareStatement(sql);
+			ps.setString(1, params.catalog);
+			ps.setString(2, params.schema);
+			return ps.executeQuery();
+		} catch(SQLException e) {
+			JDBC.closeStatementOnly(ps);
+			throw e;
+		}
 	}
 }

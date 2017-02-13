@@ -1104,7 +1104,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
         
         if(column.isAutoIncrement()){
-        	definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
+        	if(supportsAutoIncrement()){
+				definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
+			}else{
+        		log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
+			}
         }
         
         return definition.toString();

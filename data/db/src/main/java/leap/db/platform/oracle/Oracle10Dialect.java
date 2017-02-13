@@ -16,13 +16,18 @@
 package leap.db.platform.oracle;
 
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 
+import leap.db.change.ColumnDefinitionChange;
+import leap.db.change.SchemaChangeContext;
 import leap.db.model.DbColumn;
+import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbSequence;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.New;
+import leap.lang.Strings;
 
 public class Oracle10Dialect extends GenericDbDialect {
 
@@ -160,7 +165,60 @@ public class Oracle10Dialect extends GenericDbDialect {
     }
 
     @Override
-    protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
-        return "";
+    protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
+                                                              ColumnDefinitionChange change) {
+	    // TODO create safe alter column sqls for change
+        List<String> sqls = new ArrayList<String>();
+
+        if(change.isUniqueChanged()){
+            sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
+
+            if(change.getPropertyChanges().size() > 1){
+                DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
+                sqls.add(getAlterColumnSql(change.getTable(), c));
+            }
+        }else{
+            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
+        }
+
+        return sqls;
+    }
+    protected String getAddUniqueColumnSql(DbSchemaObjectName tableName,String columnName) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
+    }
+
+    protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn newColumn){
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " MODIFY (" + getColumnDefinitionForAlterTable(newColumn)+")";
+    }
+
+    @Override
+    public List<String> getCreateColumnSqls(DbSchemaObjectName tableName, DbColumn column) {
+        List<String> sqls = New.arrayList();
+        StringBuilder sql = new StringBuilder("ALTER TABLE ");
+        sql.append(qualifySchemaObjectName(tableName));
+        sql.append(" ADD (");
+        sql.append(getColumnDefinitionForAlterTable(column));
+        sql.append(")");
+        
+        sqls.add(sql.toString());
+        
+        if(Strings.isNotEmpty(column.getComment())){
+            sqls.addAll(getCommentOnColumnSqls(tableName,column.getName(),column.getComment()));
+        }
+        return sqls;
+    }
+
+    @Override
+    protected boolean supportsColumnCommentInDefinition() {
+        // Oracle not support column comment in definition
+        return false;
+    }
+
+    @Override
+    public boolean supportsAutoIncrement() {
+        // Oracle not support auto increment column
+        return false;
     }
 }

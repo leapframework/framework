@@ -101,12 +101,7 @@ public class GenericSchemaChanges extends ListEnumerable<SchemaChange> implement
 
 	@Override
     public DbExecution applyChanges() {
-		return db.executeWithResult(new ConnectionCallbackWithResult<DbExecution>() {
-			@Override
-            public DbExecution execute(Connection connection) throws SQLException {
-	            return GenericSchemaChanges.this.applyChanges(connection);
-            }
-		});
+		return db.executeWithResult(connection -> GenericSchemaChanges.this.applyChanges(connection));
 	}
 	
 	@Override
