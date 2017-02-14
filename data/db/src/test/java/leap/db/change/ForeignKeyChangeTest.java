@@ -51,7 +51,7 @@ public class ForeignKeyChangeTest extends DbTestCase {
 			fk.addColumn(new DbForeignKeyColumn("pid", "id"));
 			table.addForeignKey(fk);
 			
-			// in oracle，database will auto create index for primary
+			// todo: in oracle，database will auto create index for primary
 			for(DbIndex index:targetTable.getIndexes()){
 				table.addIndex(index);
 			}
