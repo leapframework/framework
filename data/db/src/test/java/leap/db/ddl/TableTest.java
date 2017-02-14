@@ -16,6 +16,7 @@
 package leap.db.ddl;
 
 import leap.db.DbTestCase;
+import leap.db.change.SchemaChanges;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
@@ -31,7 +32,7 @@ public class TableTest extends DbTestCase {
 		DbTable tableTobeCreate = new DbTableBuilder("simple_create_drop_table")
 										.addPrimaryKey(DbColumnBuilder.guid("id_"))
 										.addColumn(DbColumnBuilder.varchar("name", 150).notNull().unique())
-										.addColumn(DbColumnBuilder.bigint("bitint_"))
+										.addColumn(DbColumnBuilder.bigint("bigint_"))
 										.addColumn(DbColumnBuilder.integer("integer_"))
 										.addColumn(DbColumnBuilder.timestamp("timestamp_"))
 										.build();
@@ -44,8 +45,8 @@ public class TableTest extends DbTestCase {
 
 		DbTable tableCreated = db.getMetadata().tryGetTable(tableTobeCreate.getName());
 		assertNotNull(tableCreated);
-		
-		assertTrue(db.getComparator().compareTable(tableTobeCreate, tableCreated).isEmpty());
+		SchemaChanges changes = db.getComparator().compareTable(tableTobeCreate, tableCreated);
+		assertTrue(changes.isEmpty());
 		
 		assertTrue(db.cmdDropTable(tableTobeCreate).execute().success());
 		assertFalse(db.checkTableExists(tableTobeCreate));

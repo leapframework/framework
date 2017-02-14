@@ -27,7 +27,9 @@ import leap.db.platform.GenericDbComparator;
 public class OracleComparator extends GenericDbComparator {
     
     public static final String INTEGER = "integer";
+    public static final String BIG_INT = "bigint";
     public static final String INTEGER_TYPE = "number(10,0)";
+    public static final String BIG_INT_TYPE = "number(19,0)";
     
     @Override
     protected boolean compareColumnTypeDefinition(DbColumn sourceColumn, String sourceTypeDef, DbColumn targetColumn,
@@ -38,6 +40,7 @@ public class OracleComparator extends GenericDbComparator {
         if(INTEGER.equalsIgnoreCase(targetTypeDef)){
             targetTypeDef = INTEGER_TYPE;
         }
+        
         return super.compareColumnTypeDefinition(sourceColumn, sourceTypeDef, targetColumn, targetTypeDef);
     }
 }

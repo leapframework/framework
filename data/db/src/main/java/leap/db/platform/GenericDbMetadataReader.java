@@ -303,7 +303,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		column.setName(rs.getString(COLUMN_NAME));
 		column.setTypeCode(rs.getInt(COLUMN_TYPE));
 		
-		JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());;
+		JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());
 		
 		column.setTypeName(jdbcType.getName());
 		
@@ -324,7 +324,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
                 Object scale = rs.getObject(COLUMN_SCALE);
                 if (scale != null) {
                     int scaleValue = Converts.toInt(scale);
-                    if (scaleValue > 0) {
+						if (scaleValue > 0) {
                         column.setScale(scaleValue);
                     }
                 }

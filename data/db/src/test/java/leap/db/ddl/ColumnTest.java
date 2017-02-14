@@ -52,17 +52,13 @@ public class ColumnTest extends DbTestCase {
 		
 		DbColumn c1 = t1.findColumn(col1.getName());
 		assertNotNull(c1);
-		if(!(db.getPlatform() instanceof OraclePlatform)){
-			assertEquals(col1.getComment(), c1.getComment());
-		}
+		assertEquals(col1.getComment(), c1.getComment());
 		
 		//test column comment for alter table( add column )
 		db.cmdCreateColumn(table.getTableName(), col3.build()).execute();
 		t1 = db.getMetadata().tryGetTable(t1);
 		DbColumn c3 = t1.findColumn(col3.getName());
-		if(!(db.getPlatform() instanceof OraclePlatform)) {
-			assertEquals(col3.getComment(), c3.getComment());
-		}
+		assertEquals(col3.getComment(), c3.getComment());
 		//test column comment for alter column
 		col2.setComment("comm");
 		SchemaChanges changes = db.getComparator().compareTable(table.build(), t1);

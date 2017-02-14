@@ -31,6 +31,8 @@ import leap.lang.Strings;
 
 public class Oracle10Dialect extends GenericDbDialect {
 
+    private static final String NULLABLE_PLACEHOLDER="__IS_NULLABLE__";
+    
 	@Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
 	    return "select 1 from dual where 1 = ?";
@@ -175,12 +177,17 @@ public class Oracle10Dialect extends GenericDbDialect {
 
             if(change.getPropertyChanges().size() > 1){
                 DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
-                sqls.add(getAlterColumnSql(change.getTable(), c));
+                sqls.add(getAlterColumnSql(change.getTable(), c, change.getOldColumn()));
             }
         }else{
-            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
+            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn(), change.getOldColumn()));
         }
-
+        
+        DbColumn newColumn = change.getNewColumn();
+        if(!supportsColumnCommentInDefinition() && !Strings.isEmpty(newColumn.getComment())){
+            sqls.addAll(getCommentOnColumnSqls(change.getTable(),newColumn.getName(),newColumn.getComment()));
+        }
+        
         return sqls;
     }
     protected String getAddUniqueColumnSql(DbSchemaObjectName tableName,String columnName) {
@@ -188,9 +195,67 @@ public class Oracle10Dialect extends GenericDbDialect {
                 " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
     }
 
-    protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn newColumn){
+    protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn newColumn, DbColumn oldColumn){
         return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
-                " MODIFY (" + getColumnDefinitionForAlterTable(newColumn)+")";
+                " MODIFY (" + getColumnDefinitionForAlterTable(newColumn,oldColumn) +")";
+    }
+
+    protected String getColumnDefinitionForAlterTable(DbColumn newColumn, DbColumn oldColumn){
+        StringBuilder definition = new StringBuilder();
+
+        definition.append(quoteIdentifier(newColumn.getName()))
+                .append(' ')
+                .append(newColumn.isAutoIncrement() ? getAutoIncrementColumnTypeDefinition(newColumn) : getColumnTypeDefinition(newColumn));
+
+        if(isDefaultBeforeNullInColumnDefinition()){
+            //default
+            if(!Strings.isEmpty(newColumn.getDefaultValue())){
+                definition.append(' ').append(getColumnDefaultDefinition(newColumn));
+            }
+
+            //null
+            String nullDefinition = getColumnNullableDefinition(newColumn,oldColumn);
+            if(!Strings.isEmpty(nullDefinition)){
+                definition.append(" ").append(nullDefinition);
+            }
+        }else{
+            //null
+            String nullDefinition = getColumnNullableDefinition(newColumn,oldColumn);
+            if(!Strings.isEmpty(nullDefinition)){
+                definition.append(" ").append(nullDefinition);
+            }
+
+            //default
+            if(!Strings.isEmpty(newColumn.getDefaultValue())){
+                definition.append(' ').append(getColumnDefaultDefinition(newColumn));
+            }
+        }
+        
+        if(supportsColumnCommentInDefinition() && !Strings.isEmpty(newColumn.getComment())){
+            definition.append(' ').append(getColumnCommentDefinition(newColumn));
+        }
+
+        if(newColumn.isUnique() && supportsUniqueInColumnDefinition()){
+            definition.append(' ').append(getColumnUniqueDefinition(newColumn));
+        }
+
+        if(newColumn.isAutoIncrement()){
+            if(supportsAutoIncrement()){
+                definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(newColumn));
+            }else{
+                log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
+            }
+        }
+
+        return definition.toString();
+    }
+
+    protected String getColumnNullableDefinition(DbColumn newColumn, DbColumn oldColumn) {
+        if(newColumn.isNullable() == oldColumn.isNullable()){
+            return "";
+        }else{
+            return getColumnNullableDefinition(newColumn);
+        }
     }
 
     @Override
