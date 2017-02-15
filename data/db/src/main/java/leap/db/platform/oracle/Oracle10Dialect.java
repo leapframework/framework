@@ -58,7 +58,7 @@ public class Oracle10Dialect extends GenericDbDialect {
         
         columnTypes.add(Types.TINYINT,       "number(3,0)");
         columnTypes.add(Types.SMALLINT,      "number(5,0)");
-        columnTypes.add(Types.INTEGER,       "integer");
+        columnTypes.add(Types.INTEGER,       "number(10,0)");
         columnTypes.add(Types.BIGINT,        "number(19,0)");
 
         //JDBC's real type mapping to java's float, JDBC's float type mapping to java's double

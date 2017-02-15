@@ -19,7 +19,9 @@
 package leap.db.platform.oracle;
 
 import leap.db.model.DbColumn;
+import leap.db.model.DbTable;
 import leap.db.platform.GenericDbComparator;
+import leap.db.platform.GenericSchemaChanges;
 
 /**
  * Created by kael on 2017/2/13.
@@ -42,5 +44,10 @@ public class OracleComparator extends GenericDbComparator {
         }
         
         return super.compareColumnTypeDefinition(sourceColumn, sourceTypeDef, targetColumn, targetTypeDef);
+    }
+
+    @Override
+    protected void checkForIndexChanges(GenericSchemaChanges changes, DbTable sourceTable, DbTable targetTable) {
+        // oracle will auto create index, so ignore index check in oracle
     }
 }

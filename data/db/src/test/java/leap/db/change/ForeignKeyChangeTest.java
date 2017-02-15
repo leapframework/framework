@@ -23,69 +23,10 @@ import leap.junit.contexual.Contextual;
 import org.junit.Test;
 
 public class ForeignKeyChangeTest extends DbTestCase {
-	@Test
-	@Contextual("oracle")
-	public void testAddForeignKeyChangeInOracle(){
-		DbColumnBuilder colId  = DbColumnBuilder.integer("id").primaryKey();
-		DbColumnBuilder colPid = DbColumnBuilder.integer("pid");
-
-		DbTableBuilder table = new DbTableBuilder("test_addfk_change")
-				.addPrimaryKey(colId)
-				.addColumn(colPid);
-
-		//create table
-		db.cmdCreateTable(table.build()).execute();
-
-		try{
-			DbTable targetTable = db.getMetadata().tryGetTable(table.getName());
-			assertNotNull(targetTable);
-			assertEquals(0,targetTable.getForeignKeys().length);
-
-			//add foreignkey
-			DbForeignKeyBuilder fk = new DbForeignKeyBuilder();
-			fk.setName("fk_test_addfk_change");
-			fk.setForeignTable(targetTable);
-			// Oracle default
-			fk.setOnUpdate(DbCascadeAction.CASCADE);
-			
-			fk.addColumn(new DbForeignKeyColumn("pid", "id"));
-			table.addForeignKey(fk);
-			
-			// todo: in oracle，database will auto create index for primary
-			for(DbIndex index:targetTable.getIndexes()){
-				table.addIndex(index);
-			}
-			
-			//compare changes
-			SchemaChanges changes = db.getComparator().compareTable(table.build(), targetTable);
-			assertEquals(1,changes.size());
-			assertTrue(changes.get(0) instanceof AddForeignKeyChange);
-
-			//apply changes
-			changes.applyChanges();
-
-			//refresh target table
-			targetTable = db.getMetadata().tryGetTable(targetTable);
-			assertEquals(1,targetTable.getForeignKeys().length);
-
-			//compares again (should be no changes)
-			changes = db.getComparator().compareTable(table.build(), targetTable);
-			assertTrue(changes.isEmpty());
-		}finally{
-			//drop table
-			db.cmdDropTable(table.getTableName()).execute();
-		}
-	}
-	
-	
 	
 	@Test
 	@Contextual
 	public void testAddForeignKeyChange() {
-		if(db.getPlatform() instanceof OraclePlatform){
-			// Oracle platform is different form other platform
-			return;
-		}
 		DbColumnBuilder colId  = DbColumnBuilder.integer("id").primaryKey();
 		DbColumnBuilder colPid = DbColumnBuilder.integer("pid");
 		

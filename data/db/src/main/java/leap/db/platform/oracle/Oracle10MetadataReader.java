@@ -15,15 +15,15 @@
  */
 package leap.db.platform.oracle;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
+import leap.db.model.DbColumnBuilder;
+import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
+import leap.lang.jdbc.JdbcType;
+import leap.lang.jdbc.JdbcTypes;
 
 public class Oracle10MetadataReader extends GenericDbMetadataReader {
 
@@ -170,5 +170,15 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 			JDBC.closeStatementOnly(ps);
 			throw e;
 		}
+	}
+
+	@Override
+	protected boolean readColumnProperties(DbTableBuilder table, DbColumnBuilder column,
+										   ResultSet rs) throws SQLException {
+		boolean res = super.readColumnProperties(table, column, rs);
+		if(column.getTypeCode() == Types.DECIMAL){
+			column.setPrecision(rs.getInt(COLUMN_SIZE));
+		}
+		return res;
 	}
 }
