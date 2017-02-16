@@ -21,18 +21,13 @@ import java.util.List;
 
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
-import leap.db.model.DbColumn;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbSequence;
+import leap.db.model.*;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.New;
 import leap.lang.Strings;
 
 public class Oracle10Dialect extends GenericDbDialect {
 
-    private static final String NULLABLE_PLACEHOLDER="__IS_NULLABLE__";
-    
 	@Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
 	    return "select 1 from dual where 1 = ?";
@@ -275,6 +270,8 @@ public class Oracle10Dialect extends GenericDbDialect {
         return sqls;
     }
 
+    
+    
     @Override
     protected boolean supportsColumnCommentInDefinition() {
         // Oracle not support column comment in definition
@@ -285,5 +282,10 @@ public class Oracle10Dialect extends GenericDbDialect {
     public boolean supportsAutoIncrement() {
         // Oracle not support auto increment column
         return false;
+    }
+
+    @Override
+    public DbCascadeAction getForeignKeyDefaultOnUpdate() {
+        return DbCascadeAction.CASCADE;
     }
 }
