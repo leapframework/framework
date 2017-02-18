@@ -491,7 +491,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	@Override
     public List<DbCommand> getSchemaChangeCommands(SchemaChange change, SchemaChangeContext context) {
-		List<DbCommand> commands = new ArrayList<DbCommand>();
+		List<DbCommand> commands = new ArrayList<>();
 		
 		Method method = schemaChangeMethods.get(change.getClass());
 		if(null == method){
@@ -528,11 +528,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 		for(DbForeignKey fk : change.getOldTable().getForeignKeys()) {
 			commands.add(db.cmdDropForeignKey(change.getOldTable(), fk.getName()));
 		}
-		
+
 		for(DbIndex ix : change.getOldTable().getIndexes()) {
 			commands.add(db.cmdDropIndex(change.getOldTable(), ix.getName()));
 		}
-		
+
 		commands.add(db.cmdDropTable(change.getOldTable()));
 	}
 	

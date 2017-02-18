@@ -132,16 +132,20 @@ public class ModelQueryTest extends OrmTestCase {
 		new Owner().setFullName("f", "0").save();
 		new Owner().setFullName("g", "0").save();
 		
-		PageResult<Owner> result = Owner.<Owner>query().pageResult(1, 2);
+		PageResult<Owner> result = Owner.<Owner>query().orderBy("firstName ASC").pageResult(1, 2);
 		assertEquals(2, result.size());
 		assertEquals("a",result.list().get(0).getFirstName());
 		assertEquals("b",result.list().get(1).getFirstName());
+		
+		result = Owner.<Owner>query().pageResult(1, 2);
 		assertEquals(7,result.getTotalCount());
 		
-		result = Owner.<Owner>query().pageResult(2, 2);
+		result = Owner.<Owner>query().orderBy("firstName ASC").pageResult(2, 2);
 		assertEquals(2, result.size());
 		assertEquals("c",result.list().get(0).getFirstName());
 		assertEquals("d",result.list().get(1).getFirstName());
+		
+		result = Owner.<Owner>query().pageResult(1, 2);
 		assertEquals(7,result.getTotalCount());
 		
 		result = Owner.<Owner>query().pageResult(2, 100);

@@ -28,6 +28,8 @@
 
     <bean name="sqlVariable" type="leap.core.variable.Variable" class="leap.orm.sql.SqlVariable"/>
 
+    <bean name="globalFieldWhereIf" type="leap.core.variable.Variable" class="leap.orm.sql.GlobalFieldWhereIf"/>
+    
     <import resource="beans_local.xml" check-existence="false"/>
     
 </beans>

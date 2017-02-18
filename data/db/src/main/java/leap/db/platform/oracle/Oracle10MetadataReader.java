@@ -15,15 +15,13 @@
  */
 package leap.db.platform.oracle;
 
-import java.sql.*;
-
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
-import leap.lang.jdbc.JdbcType;
-import leap.lang.jdbc.JdbcTypes;
+
+import java.sql.*;
 
 public class Oracle10MetadataReader extends GenericDbMetadataReader {
 

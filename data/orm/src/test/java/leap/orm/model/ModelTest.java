@@ -58,12 +58,15 @@ public class ModelTest extends OrmTestCase {
 
 	@Test
 	public void testCreatedAtAndUpdatedAt() {
+		Model1.deleteAll();
+		Owner.deleteAll();
+		
 		Owner o = new Owner();
 		o.setFullName("a", "0").create();
 		assertNotNull(o.createdAt());
 		assertNotNull(o.updatedAt());
 		
-		Model1 m = new Model1().create();
+		Model1 m = new Model1().id("1").create();
 		assertNotNull(m.createdAt());
 		assertNotNull(m.updatedAt());
 		assertSame(m.get("creationTime"), m.createdAt());

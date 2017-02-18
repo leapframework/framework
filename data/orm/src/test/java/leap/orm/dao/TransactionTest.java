@@ -15,9 +15,11 @@
  */
 package leap.orm.dao;
 
+import com.sun.org.apache.xpath.internal.operations.Or;
 import leap.core.annotation.Inject;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionStatus;
+import leap.db.platform.oracle.OraclePlatform;
 import leap.lang.Try;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
@@ -173,32 +175,31 @@ public class TransactionTest extends OrmTestCase {
 		assertEquals(0, Owner.count());
 		assertEquals(0, Team.count());
 		
-		dao.doTransaction(new TransactionCallback() {
-			@Override
-			public void doInTransaction(TransactionStatus status) throws Throwable {
-				assertTrue(status.isNewTransaction());
-				
-				Owner o = new Owner();
-				o.setFirstName("a");
-				o.setLastName("b");
-				o.save();
-				
-				
-				dao.doTransaction(new TransactionCallback() {
-					
-					@Override
-					public void doInTransaction(TransactionStatus s1) throws Throwable {
-						assertFalse(s1.isNewTransaction());
-						
-						Team o1 = new Team();
-						o1.setName("team1");
-						o1.save();
-					}
-				}, false);
-				
-				status.setRollbackOnly();
+		dao.doTransaction(status -> {
+            assertTrue(status.isNewTransaction());
+            
+            Owner o = new Owner();
+            o.setFirstName("a");
+            o.setLastName("b");
+            if(db.getPlatform() instanceof OraclePlatform){
+            	o.setId(1);
 			}
-		});
+            o.create();
+            
+            
+            dao.doTransaction(s1 -> {
+                assertFalse(s1.isNewTransaction());
+                
+                Team o1 = new Team();
+                if(db.getPlatform() instanceof OraclePlatform){
+                	o1.setId(1L);
+				}
+                o1.setName("team1");
+                o1.create();
+            }, false);
+            
+            status.setRollbackOnly();
+        });
 		
 		assertEquals(0, Owner.count());
 		assertEquals(0, Team.count());
@@ -212,32 +213,33 @@ public class TransactionTest extends OrmTestCase {
 		assertEquals(0, Owner.count());
 		assertEquals(0, Team.count());
 		
-		dao.doTransaction(new TransactionCallback() {
-			@Override
-			public void doInTransaction(TransactionStatus status) throws Throwable {
-				assertTrue(status.isNewTransaction());
-				
-				Owner o = new Owner();
-				o.setFirstName("a");
-				o.setLastName("b");
-				o.save();
-				
-				
-				dao.doTransaction(new TransactionCallback() {
-					
-					@Override
-					public void doInTransaction(TransactionStatus s1) throws Throwable {
-						assertTrue(s1.isNewTransaction());
-						
-						Team o1 = new Team();
-						o1.setName("team1");
-						o1.save();
-					}
-				}, true);
-				
-				status.setRollbackOnly();
+		dao.doTransaction(status -> {
+            assertTrue(status.isNewTransaction());
+            
+            Owner o = new Owner();
+            o.setFirstName("a");
+            o.setLastName("b");
+            
+            if(db.getPlatform() instanceof OraclePlatform){
+            	o.setId(1);
 			}
-		});
+            
+            o.create();
+            
+            
+            dao.doTransaction(s1 -> {
+                assertTrue(s1.isNewTransaction());
+                
+                Team o1 = new Team();
+                o1.setName("team1");
+				if(db.getPlatform() instanceof OraclePlatform){
+					o1.setId(1L);
+				}
+                o1.create();
+            }, true);
+            
+            status.setRollbackOnly();
+        });
 		
 		assertEquals(0, Owner.count());
 		assertEquals(1, Team.count());

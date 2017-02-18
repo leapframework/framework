@@ -15,16 +15,24 @@
  */
 package leap.db.platform.oracle;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
 
+import leap.db.DbCommand;
+import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
+import leap.db.change.RemoveTableChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.*;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.jdbc.JdbcTypes;
+import leap.lang.value.Limit;
 
 public class Oracle10Dialect extends GenericDbDialect {
 
@@ -33,7 +41,12 @@ public class Oracle10Dialect extends GenericDbDialect {
 	    return "select 1 from dual where 1 = ?";
     }
 
-	@Override
+    @Override
+    protected boolean testDriverSupportsGetParameterType() {
+        return false;
+    }
+
+    @Override
     protected String getOpenQuoteString() {
 	    return "\"";
     }
@@ -69,11 +82,10 @@ public class Oracle10Dialect extends GenericDbDialect {
         columnTypes.add(Types.VARCHAR,       "long");
         columnTypes.add(Types.LONGVARCHAR,   "long");
 
-        columnTypes.add(Types.BINARY,        "raw($l)",0,2000);
-        columnTypes.add(Types.BINARY,        "long raw");
-        columnTypes.add(Types.VARBINARY,     "raw($l)",0,2000);
-        columnTypes.add(Types.VARBINARY,     "long raw");
-        columnTypes.add(Types.LONGVARBINARY, "long raw");
+        columnTypes.add(Types.BINARY,        "blob");
+        columnTypes.add(Types.BINARY,        "blob");
+        columnTypes.add(Types.VARBINARY,     "blob");
+        columnTypes.add(Types.LONGVARBINARY, "blob");
         
         columnTypes.add(Types.DATE,          "date");
         columnTypes.add(Types.TIME,          "date");
@@ -165,7 +177,7 @@ public class Oracle10Dialect extends GenericDbDialect {
     protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
                                                               ColumnDefinitionChange change) {
 	    // TODO create safe alter column sqls for change
-        List<String> sqls = new ArrayList<String>();
+        List<String> sqls = new ArrayList<>();
 
         if(change.isUniqueChanged()){
             sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
@@ -269,8 +281,13 @@ public class Oracle10Dialect extends GenericDbDialect {
         }
         return sqls;
     }
-
-    
+    @Override
+    protected void createSchemaChangeCommands(SchemaChangeContext context, RemoveTableChange change, List<DbCommand> commands){
+        for(DbForeignKey fk : change.getOldTable().getForeignKeys()) {
+            commands.add(db.cmdDropForeignKey(change.getOldTable(), fk.getName()));
+        }
+        commands.add(db.cmdDropTable(change.getOldTable()));
+    }
     
     @Override
     protected boolean supportsColumnCommentInDefinition() {
@@ -287,5 +304,55 @@ public class Oracle10Dialect extends GenericDbDialect {
     @Override
     public DbCascadeAction getForeignKeyDefaultOnUpdate() {
         return DbCascadeAction.CASCADE;
+    }
+
+    @Override
+    public String getLimitQuerySql(DbLimitQuery query) {
+
+        Limit limit = query.getLimit();
+
+        int start = limit.getStart();
+        int end   = limit.getEnd();
+        
+        
+        StringBuilder limitSql = new StringBuilder("SELECT * FROM ( ");
+        limitSql.append("SELECT A.*,ROWNUM ORACLE_ROWNUM FROM ( ");
+        String sql = query.getSql(db);
+        limitSql.append(sql);
+        
+        limitSql.append(" ) A WHERE ROWNUM <= ?");
+        limitSql.append(" ) WHERE ORACLE_ROWNUM >= ?");
+        
+        
+        query.getArgs().add(end);
+        query.getArgs().add(start);
+        return limitSql.toString();
+    }
+
+    @Override
+    protected Object getColumnValueTypeKnown(ResultSet rs, int index, int type) throws SQLException {
+        if(type == Types.TIMESTAMP){
+            return rs.getTimestamp(index);
+        }
+        if(type == Types.NUMERIC){
+            int scale = rs.getMetaData().getScale(index);
+            int precision = rs.getMetaData().getPrecision(index);
+            
+            if(scale == 0){
+                Object o = rs.getObject(index);
+                if(precision == 10){
+                    if(o != null){
+                        return rs.getInt(index);
+                    }
+                    return o;
+                }else if (precision > 10){
+                    if(o != null){
+                        return rs.getLong(index);
+                    }
+                    return o;
+                }
+            }
+        }
+        return super.getColumnValueTypeKnown(rs, index, type);
     }
 }

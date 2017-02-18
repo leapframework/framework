@@ -17,8 +17,10 @@ package leap.orm.tested.model.relation;
 
 import leap.orm.annotation.Entity;
 import leap.orm.annotation.ManyToMany;
+import leap.orm.annotation.Table;
 
 @Entity
+@Table("re1")
 @ManyToMany(target =RelationEntity2.class)
 public class RelationEntity1 {
 

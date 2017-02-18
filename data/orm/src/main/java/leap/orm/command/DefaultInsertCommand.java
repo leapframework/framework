@@ -182,7 +182,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		
 		if(null == command){
             String[] fields = entity.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-
+            
 			command = sf.createInsertCommand(context, em, fields);
 		}
 		

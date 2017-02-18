@@ -16,6 +16,7 @@
 package leap.orm.dao;
 
 import leap.core.value.Record;
+import leap.db.platform.oracle.OraclePlatform;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedIntIdentity;
@@ -59,17 +60,25 @@ public class DaoTest extends OrmTestCase {
 	@Test
 	public void testExecuteNamedUpdate() {
 		deleteAll(Owner.class);
-		
-		assertEquals(1,dao.executeNamedUpdate("simpleInsertOwner", new Object[]{"a","b", new Date(),new Date()}));
+		if(db.getPlatform() instanceof OraclePlatform){
+			// oracle must specified id but other database is not need.
+			assertEquals(1,dao.executeNamedUpdate("simpleInsertOwner_oracle", new Object[]{1,"a","b", new Date(),new Date()}));
+		}else{
+			assertEquals(1,dao.executeNamedUpdate("simpleInsertOwner", new Object[]{"a","b", new Date(),new Date()}));
+		}
 		assertEquals(1, Owner.count());
 		deleteAll(Owner.class);
 		
 		Map<String, Object> params = new HashMap<String, Object>();
+		params.put("id",2);
 		params.put("firstName", "c");
 		params.put("lastName",  "d");
 		params.put("now", new Date());
-		
-		assertEquals(1, dao.executeNamedUpdate("simpleInsertOwner1",params));
+		if(db.getPlatform() instanceof OraclePlatform){
+			assertEquals(1, dao.executeNamedUpdate("simpleInsertOwner1_oracle",params));
+		}else{
+			assertEquals(1, dao.executeNamedUpdate("simpleInsertOwner1",params));
+		}
 		assertEquals(1, Owner.count());
 	}
 	@Test

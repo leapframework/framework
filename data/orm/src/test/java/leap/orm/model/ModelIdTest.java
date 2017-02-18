@@ -17,6 +17,7 @@ package leap.orm.model;
 
 import java.util.List;
 
+import leap.db.platform.oracle.OraclePlatform;
 import leap.junit.contexual.Contextual;
 import leap.lang.Strings;
 import leap.orm.OrmTestCase;
@@ -54,14 +55,23 @@ public class ModelIdTest extends OrmTestCase {
 	    ModelWithId m = new ModelWithId();
 	    m.setField1("");
 	    m.save();
+	    if(db.getPlatform() instanceof OraclePlatform){
+	    	// empty string is again NULL in oracle 
+			ModelWithId m1 = ModelWithId.find(m.id());
+			assertNull(m1.getField1());
+			m1.setField1("");
+			ModelWithId m2 = ModelWithId.find(m.id());
+			assertNull(m2.getField1());
+		}else{
+			ModelWithId m1 = ModelWithId.find(m.id());
+			assertEquals("", m1.getField1());
+			m1.setField1(null);
+			m1.update();
+
+			ModelWithId m2 = ModelWithId.find(m.id());
+			assertNull(m2.getField1());
+		}
 	    
-	    ModelWithId m1 = ModelWithId.find(m.id());
-	    assertEquals("", m1.getField1());
-	    m1.setField1(null);
-	    m1.update();
-	    
-	    ModelWithId m2 = ModelWithId.find(m.id());
-	    assertNull(m2.getField1());
 	}
 	
     @Test
@@ -76,7 +86,13 @@ public class ModelIdTest extends OrmTestCase {
         m1.update();
 
         ModelWithId m2 = ModelWithId.find(m.id());
-        assertEquals("",m2.getField1());
+        
+        if(db.getPlatform() instanceof OraclePlatform){
+			// empty string is again NULL in oracle 
+			assertNull(m2.getField1());
+		}else {
+			assertEquals("",m2.getField1());
+		}
     }
 
 	@Test
