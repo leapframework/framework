@@ -17,6 +17,7 @@ package leap.oauth2.as.token;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import leap.lang.expirable.TimeExpirable;
 
@@ -84,6 +85,17 @@ public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	 * Optional.
 	 */
 	Map<String, Object> getExtendedParameters();
+
+	/**
+	 * Optional, add an extend parameter to this token.
+	 */
+	void addExtendedParameters(String key, Object value);
+
+	/**
+	 * Optional, ergodic all extend parameters of this token, if extended parameters is null, do nothing.
+	 * @param consumer
+	 */
+	void forEachExtendParams(BiConsumer<String,Object> consumer);
 	
 	/**
 	 * Returns <code>true</code> if the extended parameters is not empty.

@@ -27,6 +27,7 @@ import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerErrorHandler;
 import leap.oauth2.as.endpoint.token.GrantTypeHandler;
 import leap.oauth2.as.token.AuthzAccessToken;
+import leap.oauth2.as.token.TokenAuthzProcessor;
 import leap.web.App;
 import leap.web.Handler;
 import leap.web.Request;
@@ -38,6 +39,8 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
     
     protected @Inject OAuth2AuthzServerErrorHandler errorHandler;
 	
+    protected @Inject TokenAuthzProcessor[] processors;
+    
 	@Override
     public void startEndpoint(App app, Routes routes) {
 		if(config.isEnabled()) {
@@ -84,6 +87,14 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 		if(null == token) {
 			errorHandler.serverError(response, "Access token did not returned by granter '" + handler.getClass().getSimpleName() + "'");
 			return;
+		}
+		
+		if(processors != null){
+			for (TokenAuthzProcessor processor : processors){
+				if(!processor.process(request,response,params,handler,token)){
+					return;
+				}
+			}
 		}
 		
 		if(!handler.handleSuccess(request, response, params, token)) {

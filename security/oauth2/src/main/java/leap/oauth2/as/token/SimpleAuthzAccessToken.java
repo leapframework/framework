@@ -17,6 +17,7 @@ package leap.oauth2.as.token;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 import leap.lang.expirable.TimeExpirableSeconds;
 
@@ -87,6 +88,18 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 	}
 
 	@Override
+	public void addExtendedParameters(String key, Object value) {
+		putExtendedParameter(key,value);
+	}
+
+	@Override
+	public void forEachExtendParams(BiConsumer<String, Object> consumer) {
+		if(hasExtendedParameters()){
+			extendedParameters.forEach(consumer);
+		}
+	}
+
+	@Override
 	public boolean isAuthenticated() {
 		return authenticated;
 	}
@@ -103,7 +116,7 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 		this.extendedParameters = extendedParameters;
 	}
 	
-	public void putExtendedParameter(String name, String value) {
+	public void putExtendedParameter(String name, Object value) {
 		if(null == extendedParameters) {
 			extendedParameters = new LinkedHashMap<>();
 		}
