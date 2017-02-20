@@ -45,9 +45,4 @@ public class OracleComparator extends GenericDbComparator {
         
         return super.compareColumnTypeDefinition(sourceColumn, sourceTypeDef, targetColumn, targetTypeDef);
     }
-
-    @Override
-    protected void checkForIndexChanges(GenericSchemaChanges changes, DbTable sourceTable, DbTable targetTable) {
-        // oracle will auto create index, so ignore index check in oracle
-    }
 }

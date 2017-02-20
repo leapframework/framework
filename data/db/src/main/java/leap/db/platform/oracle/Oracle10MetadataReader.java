@@ -15,7 +15,9 @@
  */
 package leap.db.platform.oracle;
 
+import com.sun.org.apache.regexp.internal.RE;
 import leap.db.model.DbColumnBuilder;
+import leap.db.model.DbIndexBuilder;
 import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
@@ -178,5 +180,13 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 			column.setPrecision(rs.getInt(COLUMN_SIZE));
 		}
 		return res;
+	}
+
+	@Override
+	protected boolean isInternalIndex(DbTableBuilder table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
+		if(ix.getName().startsWith("SYS_")){
+			return true;
+		}
+		return super.isInternalIndex(table, ix, rs);
 	}
 }
