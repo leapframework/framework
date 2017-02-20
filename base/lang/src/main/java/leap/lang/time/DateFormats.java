@@ -30,11 +30,11 @@ public class DateFormats {
 	private static final Map<Class<?>,String>     defaultPatterns = new ConcurrentHashMap<Class<?>,String>();
 
     public static final String DATE_PATTERN          = "yyyy-MM-dd";
-    public static final String TIME_PATTERN          = "HH:mm:ss";
-    public static final String DATETIME_PATTERN      = "yyyy-MM-dd HH:mm:ss";
-    public static final String TIMESTAMP_PATTERN     = "yyyy-MM-dd HH:mm:ss.SSS";
-    public static final String ISO8601_DATE_PATTERN  = "yyyy-MM-dd'T'HH:mm:ssZ";
-    public static final String RFC3339_DATE_PATTERN1 = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
+	public static final String TIME_PATTERN          = "HH:mm:ss";
+	public static final String DATETIME_PATTERN      = "yyyy-MM-dd HH:mm:ss";
+	public static final String TIMESTAMP_PATTERN     = "yyyy-MM-dd HH:mm:ss.SSS";
+	public static final String ISO8601_DATE_PATTERN  = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+	public static final String RFC3339_DATE_PATTERN1 = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
     public static final String[] DEFAULT_PATTERNS = new String[]{
         DATETIME_PATTERN,
