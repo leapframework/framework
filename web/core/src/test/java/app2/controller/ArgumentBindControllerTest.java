@@ -18,8 +18,15 @@
 
 package app2.controller;
 
+import leap.lang.New;
+import leap.lang.json.JSON;
 import leap.webunit.WebTestBase;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by kael on 2017/2/19.
@@ -32,5 +39,15 @@ public class ArgumentBindControllerTest extends WebTestBase {
                 .addFormParam("timestamp","2017-02-17")
                 .send().assertOk().getContent();
         assertEquals("true",res);
+    }
+    @Test
+    @Ignore
+    public void testJsonArgumentResolver(){
+        List<Map<String, Object>> list = new ArrayList<>();
+        list.add(New.hashMap("name","name"));
+        String res = forPost("/app2/mvc/argument_bind/test_json_argument_resolver")
+                .addFormParam("json", JSON.encode(list))
+                .send().assertOk().getContent();
+        assertEquals(res,"name");
     }
 }

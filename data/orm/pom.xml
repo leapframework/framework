@@ -8,7 +8,9 @@
 	</parent>
 	<artifactId>leap-orm</artifactId>
 	<packaging>jar</packaging>
-
+	<properties>
+		<oracle.jdbc.path>${project.basedir}</oracle.jdbc.path>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
@@ -27,6 +29,14 @@
 			<artifactId>leap-orm-test-resources</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<!-- need install in local repository -->
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<version>12.1.0.2</version>
+			<scope>system</scope>
+			<systemPath>${oracle.jdbc.path}/../lib/ojdbc7-12.1.0.2.jar</systemPath>
 		</dependency>
 	</dependencies>
 </project>
