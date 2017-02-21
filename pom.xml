@@ -71,7 +71,7 @@
         <derby.version>10.10.2.0</derby.version>
         <jetty.version>9.2.2.v20140723</jetty.version>
         <httpclient.version>4.3.6</httpclient.version>
-
+		
         <!-- Sonar :
              The destination file for the code coverage report has to be set to the same value
              in the parent pom and in each module pom. Then JaCoCo will add up information in
@@ -343,13 +343,7 @@
             <version>${derby.version}</version>
             <scope>test</scope>
         </dependency>
-		<!-- need install in local repository -->
-		<dependency>
-			<groupId>com.oracle.jdbc</groupId>
-			<artifactId>ojdbc7_g</artifactId>
-			<version>12.1.0.2</version>
-			<scope>test</scope>
-		</dependency>
+		
 		
         <dependency>
             <groupId>mysql</groupId>

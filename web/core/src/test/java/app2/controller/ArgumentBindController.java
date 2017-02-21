@@ -19,9 +19,12 @@
 package app2.controller;
 
 import leap.web.annotation.Path;
+import leap.web.annotation.ResolveByJson;
 
 import java.sql.Timestamp;
 import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by kael on 2017/2/19.
@@ -33,6 +36,13 @@ public class ArgumentBindController {
             return false;
         }
         return true;
+    }
+    
+    public String testJsonArgumentResolver(@ResolveByJson List<Map<String, Object>> json){
+        if(json == null || json.isEmpty() || json.get(0).get("name") == null){
+            return "";
+        }
+        return json.get(0).get("name").toString();
     }
     
 }

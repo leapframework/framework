@@ -27,10 +27,7 @@ import leap.lang.logging.LogFactory;
 import leap.web.*;
 import leap.web.Result;
 import leap.web.action.Argument.Location;
-import leap.web.annotation.Consumes;
-import leap.web.annotation.RequestAttribute;
-import leap.web.annotation.RequestBody;
-import leap.web.annotation.ResolvedBy;
+import leap.web.annotation.*;
 import leap.web.config.WebInterceptors;
 import leap.web.exception.BadRequestException;
 import leap.web.exception.ResponseException;
@@ -441,7 +438,14 @@ public class DefaultActionManager implements ActionManager,AppListener {
                 resolver = app.factory().getBean(c);
             }
         }
-
+        /*
+        if(null == resolver){
+            ResolveByJson a = argument.getAnnotation(ResolveByJson.class);
+            if(a != null){
+                resolver = new JsonArgumentResolver(app,route,argument);
+            }
+        }
+        */
         if(null == resolver){
             TypeInfo typeInfo = argument.getTypeInfo();
             if(typeInfo.isCollectionType()){
