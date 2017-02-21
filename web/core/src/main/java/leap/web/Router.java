@@ -16,19 +16,16 @@
 
 package leap.web;
 
-import leap.web.route.Routes;
+import leap.web.route.Route;
+
+import java.util.Map;
 
 public interface Router {
 
     /**
-     * Returns the route registry or null if use internal routes.
+     * Returns a matched {@link Route} or <code>null</code> if no route matched.
      */
-    Routes getRoutes();
-
-    /**
-     * Returns the route path or null if use default path.
-     */
-    String getPath();
+    Route match(String method, String path, Map<String, Object> inParameters, Map<String, String> outVariables);
 
     /**
      * Returns <code>true</code> if the request has been handled when no route exists.
@@ -36,4 +33,5 @@ public interface Router {
     default boolean handleNotFound(Request request, Response response, String path) {
         return false;
     }
+
 }

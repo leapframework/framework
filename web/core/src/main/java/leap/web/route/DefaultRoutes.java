@@ -18,6 +18,7 @@ package leap.web.route;
 import leap.core.annotation.Inject;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
+import leap.lang.New;
 import leap.lang.collection.ArrayIterator;
 import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
@@ -123,7 +124,16 @@ public class DefaultRoutes implements Routes {
 	    return this;
     }
 
-	@Override
+    @Override
+    public boolean remove(Route route) {
+        boolean r = set.remove(route);
+        if(r) {
+            this.setNewArray();
+        }
+        return r;
+    }
+
+    @Override
     public synchronized Routes addAll(Iterable<Route> routes) {
 		Args.notNull(routes,"routes");
 		for(Route route : routes){
@@ -132,7 +142,12 @@ public class DefaultRoutes implements Routes {
 		return this;
     }
 
-	@Override
+    @Override
+    public Route match(String method, String path) {
+        return match(method, path, New.hashMap(), New.hashMap());
+    }
+
+    @Override
     public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
 		Route[] routes = this.array;
 		
