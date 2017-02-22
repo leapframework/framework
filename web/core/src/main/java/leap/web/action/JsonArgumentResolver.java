@@ -20,6 +20,8 @@ package leap.web.action;
 
 import leap.lang.Strings;
 import leap.lang.TypeInfo;
+import leap.lang.json.JSON;
+import leap.lang.json.JsonParsable;
 import leap.web.App;
 import leap.web.route.RouteBase;
 
@@ -32,14 +34,11 @@ public class JsonArgumentResolver extends AbstractArgumentResolver {
 
     protected final Class<?> cls;
     protected final Type genericType;
-    protected final TypeInfo typeInfo;
     
     protected JsonArgumentResolver(App app, RouteBase route, Argument arg) {
         super(app, route, arg);
         cls = arg.getType();
         genericType = arg.getGenericType();
-        typeInfo = arg.getTypeInfo();
-        String typeName = genericType.getTypeName();
     }
 
     @Override
@@ -48,8 +47,12 @@ public class JsonArgumentResolver extends AbstractArgumentResolver {
         if(Strings.isEmpty(json)){
             return null;
         }
-        
-        return null;
+        if(JsonParsable.class.isAssignableFrom(cls)){
+            JsonParsable parsable = (JsonParsable)cls.newInstance();
+            parsable.parseJson(json);
+            return parsable;
+        }
+        return JSON.decode(json,cls);
     }
     
 }

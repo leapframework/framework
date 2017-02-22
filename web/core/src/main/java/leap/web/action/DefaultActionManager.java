@@ -438,14 +438,12 @@ public class DefaultActionManager implements ActionManager,AppListener {
                 resolver = app.factory().getBean(c);
             }
         }
-        /*
         if(null == resolver){
             ResolveByJson a = argument.getAnnotation(ResolveByJson.class);
             if(a != null){
                 resolver = new JsonArgumentResolver(app,route,argument);
             }
         }
-        */
         if(null == resolver){
             TypeInfo typeInfo = argument.getTypeInfo();
             if(typeInfo.isCollectionType()){

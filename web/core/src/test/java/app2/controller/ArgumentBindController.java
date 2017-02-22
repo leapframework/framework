@@ -40,11 +40,19 @@ public class ArgumentBindController {
         return true;
     }
     
-    public String testJsonArgumentResolver(@ResolveByJson List<Map<String, Object>> json){
-        if(json == null || json.isEmpty() || json.get(0).get("name") == null){
+    public String testJsonArgumentResolver(@ResolveByJson List<Map<String, Object>> listMap, 
+                                           @ResolveByJson Map<String, Map<String, Object>> map,
+                                           @ResolveByJson JsonParseAbleImpl impl){
+        if(listMap == null || listMap.isEmpty() || listMap.get(0).get("name") == null){
             return "";
         }
-        return json.get(0).get("name").toString();
+        if(map == null || map.isEmpty() || map.get("impl") == null || map.get("impl").get("name") == null){
+            return "";
+        }
+        if(impl == null || impl.getExt() == null){
+            return "";
+        }
+        return listMap.get(0).get("name").toString();
     }
     
     public boolean testJsonParseAble(JsonParseAbleImpl json){
@@ -63,6 +71,22 @@ public class ArgumentBindController {
         public void parseJson(JsonValue json) {
             this.name = json.asJsonObject().get("name");
             this.ext = "ext";
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public String getExt() {
+            return ext;
+        }
+
+        public void setExt(String ext) {
+            this.ext = ext;
         }
     }
     

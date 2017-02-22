@@ -21,10 +21,10 @@ package app2.controller;
 import leap.lang.New;
 import leap.lang.json.JSON;
 import leap.webunit.WebTestBase;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,12 +41,19 @@ public class ArgumentBindControllerTest extends WebTestBase {
         assertEquals("true",res);
     }
     @Test
-    @Ignore
     public void testJsonArgumentResolver(){
         List<Map<String, Object>> list = new ArrayList<>();
         list.add(New.hashMap("name","name"));
+        Map<String, ArgumentBindController.JsonParseAbleImpl> map = new HashMap<>();
+        ArgumentBindController.JsonParseAbleImpl impl = new ArgumentBindController.JsonParseAbleImpl();
+        impl.setName("name");
+        map.put("impl",impl);
+        
+        
         String res = forPost("/app2/mvc/argument_bind/test_json_argument_resolver")
-                .addFormParam("json", JSON.encode(list))
+                .addFormParam("listMap", JSON.encode(list))
+                .addFormParam("map",JSON.encode(map))
+                .addFormParam("impl",JSON.encode(impl))
                 .send().assertOk().getContent();
         assertEquals(res,"name");
     }
