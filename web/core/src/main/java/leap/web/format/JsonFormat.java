@@ -18,11 +18,13 @@ package leap.web.format;
 import leap.core.annotation.Inject;
 import leap.core.validation.annotations.NotNull;
 import leap.core.validation.annotations.Required;
+import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.http.MimeTypes;
 import leap.lang.io.IO;
+import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -78,6 +80,11 @@ public class JsonFormat extends AbstractRequestFormat implements ResponseFormat,
             }else{
                 jsonObject = leap.lang.json.JSON.parse(request.getReader());
             }
+			if(JsonParsable.class.isAssignableFrom(argument.getType())){
+				JsonParsable obj = (JsonParsable)argument.getType().newInstance();
+				obj.parseJson(jsonObject);
+				return obj;
+			}
         } catch (Exception e) {
         	throw new InvalidFormatContentException("Error reading 'json' request body, " + e.getMessage(), e);
         }

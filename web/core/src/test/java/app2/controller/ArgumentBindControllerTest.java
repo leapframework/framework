@@ -50,4 +50,10 @@ public class ArgumentBindControllerTest extends WebTestBase {
                 .send().assertOk().getContent();
         assertEquals(res,"name");
     }
+    @Test
+    public void testJsonParseAble(){
+        Map<String,Object> map = New.hashMap("name","name");
+        String content = postJson("/app2/mvc/argument_bind/test_json_parse_able",map).assertOk().getContent();
+        assertEquals("true",content);
+    }
 }
