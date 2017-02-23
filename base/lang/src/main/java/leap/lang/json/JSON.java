@@ -17,8 +17,11 @@ package leap.lang.json;
 
 import java.io.Reader;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import leap.lang.New;
 import leap.lang.convert.Converts;
 
 public class JSON {
@@ -156,6 +159,26 @@ public class JSON {
         return Converts.convert(decoder.decode(json),targetType);
     }
 
+    /**
+     * Parse the json string and converts the raw value to the target type
+     * @since 0.5.0b
+     */
+    public static <T> Map<String, T> decodeMap(String json, Class<? extends T> valueType){
+        Map<String, Object> map = decodeMap(json);
+        for(Map.Entry<String, Object> entry : map.entrySet()){
+            entry.setValue(Converts.convert(entry.getValue(),valueType));
+        }
+        return (Map<String, T>) map;
+    }
+    /**
+     * Parse the json string and converts the raw value to the target type
+     * @since 0.5.0b
+     */
+    public static <T> List<T> decodeList(String json, Class<? extends T> valueType){
+        T[] obj = decodeArray(json,valueType);
+        return New.arrayList(obj);
+    }
+    
     /**
      * Parse the json string and converts the raw value to the target type.
      */
