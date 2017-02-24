@@ -18,6 +18,7 @@ package leap.web.action;
 import leap.lang.Classes;
 import leap.lang.convert.Converts;
 import leap.web.App;
+import leap.web.annotation.DefaultValue;
 import leap.web.route.RouteBase;
 
 import javax.servlet.http.Part;
@@ -35,6 +36,11 @@ public class SimpleArgumentResolver extends AbstractArgumentResolver {
     public Object resolveValue(ActionContext ac, Argument arg) throws Throwable {
 		Object value = getParameter(ac, arg);
 		if(null == value){
+			DefaultValue a = arg.getAnnotation(DefaultValue.class);
+			if(a != null){
+				String defVal = a.value();
+				return Converts.convert(defVal,arg.getType());
+			}
 			return Classes.getDefaultValue(arg.getType());
 		}else{
 			//TODO : hard code part.

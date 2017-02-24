@@ -32,9 +32,12 @@ import java.util.Map;
  * Created by kael on 2017/2/19.
  */
 public class ArgumentBindControllerTest extends WebTestBase {
+    
+    private static final String CONTEXT="/app2/mvc/argument_bind";
+    
     @Test
     public void testDateBind(){
-        String res = forPost("/app2/mvc/argument_bind/test_date")
+        String res = forPost(CONTEXT+"/test_date")
                 .addFormParam("date","2017-02-17")
                 .addFormParam("timestamp","2017-02-17")
                 .send().assertOk().getContent();
@@ -50,7 +53,7 @@ public class ArgumentBindControllerTest extends WebTestBase {
         map.put("impl",impl);
         
         
-        String res = forPost("/app2/mvc/argument_bind/test_json_argument_resolver")
+        String res = forPost(CONTEXT+"/test_json_argument_resolver")
                 .addFormParam("listMap", JSON.encode(list))
                 .addFormParam("map",JSON.encode(map))
                 .addFormParam("impl",JSON.encode(impl))
@@ -60,7 +63,14 @@ public class ArgumentBindControllerTest extends WebTestBase {
     @Test
     public void testJsonParseAble(){
         Map<String,Object> map = New.hashMap("name","name");
-        String content = postJson("/app2/mvc/argument_bind/test_json_parse_able",map).assertOk().getContent();
+        String content = postJson(CONTEXT+"/test_json_parse_able",map).assertOk().getContent();
         assertEquals("true",content);
     }
+    @Test
+    public void testDefaultValue(){
+        String content = forPost(CONTEXT+"/test_default_value")
+                .addFormParam("string1","str").send().assertOk().getContent();
+        assertEquals("true",content);
+    }
+    
 }

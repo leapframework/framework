@@ -20,7 +20,9 @@ package app2.controller;
 
 import leap.lang.json.JsonParsable;
 import leap.lang.json.JsonValue;
+import leap.web.annotation.DefaultValue;
 import leap.web.annotation.Path;
+import leap.web.annotation.RequestParam;
 import leap.web.annotation.ResolveByJson;
 
 import java.sql.Timestamp;
@@ -57,6 +59,16 @@ public class ArgumentBindController {
     
     public boolean testJsonParseAble(JsonParseAbleImpl json){
         if(json.ext != null && json.ext.equals("ext")){
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean testDefaultValue(@DefaultValue("string") String string,
+                                    @DefaultValue("string1") String string1,
+                                    @DefaultValue("1") int integer, 
+                                    @DefaultValue("false") boolean bool){
+        if("string".equals(string) && 1 == integer && false == bool && "str".equals(string1)){
             return true;
         }
         return false;
