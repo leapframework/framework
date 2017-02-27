@@ -47,6 +47,9 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
         Map<String,Object> jwtDetail = verifier.verify(token.getToken());
         SimpleResAccessTokenDetails resAccessTokenDetails = new SimpleResAccessTokenDetails();
         UserDetails ud = sc.getUserStore().loadUserDetailsByLoginName((String)jwtDetail.remove("username"));
+        if(ud == null){
+            return Result.EMPTY;
+        }
         resAccessTokenDetails.setUserId(ud==null?null:ud.getIdAsString());
         resAccessTokenDetails.setScope((String)jwtDetail.remove("scope"));
         resAccessTokenDetails.setClientId((String)jwtDetail.remove("client_id"));
