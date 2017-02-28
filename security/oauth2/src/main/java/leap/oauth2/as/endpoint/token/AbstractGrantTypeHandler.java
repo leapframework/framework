@@ -26,9 +26,9 @@ import leap.web.Response;
 
 public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     
-    
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzClientManager      clientManager;
+    protected @Inject GrantTypeHandleFailHandler[] failHandlers;
     
     protected AuthzClient validateClient(Request request, Response response, OAuth2Params params, AuthzClientCredentials credentials) throws Throwable {
         String clientId = credentials.getClientId();
@@ -115,5 +115,14 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
             OAuth2Errors.response(response,error);
         }
     }
-    
+
+    @Override
+    public boolean handleFail(Request request, Response response, OAuth2Params params, OAuth2Error error) {
+        for (GrantTypeHandleFailHandler h : failHandlers){
+            if(h.handle(request,response,params,error,this)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

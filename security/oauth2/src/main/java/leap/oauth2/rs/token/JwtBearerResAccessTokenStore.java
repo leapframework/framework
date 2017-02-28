@@ -26,6 +26,7 @@ import leap.web.security.user.UserDetails;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Created by KAEL on 2016/5/8.
@@ -46,7 +47,15 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
         }
         Map<String,Object> jwtDetail = verifier.verify(token.getToken());
         SimpleResAccessTokenDetails resAccessTokenDetails = new SimpleResAccessTokenDetails();
-        UserDetails ud = sc.getUserStore().loadUserDetailsByLoginName((String)jwtDetail.remove("user_id"));
+        
+        Object userId = jwtDetail.remove("user_id");
+        UserDetails ud;
+        if(userId != null){
+            ud = sc.getUserStore().loadUserDetailsById(userId);
+        }else{
+            String username = Objects.toString(jwtDetail.remove("username"));
+            ud = sc.getUserStore().loadUserDetailsByLoginName(username);
+        }
         if(ud == null){
             return Result.EMPTY;
         }
