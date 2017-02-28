@@ -15,12 +15,14 @@
  */
 package leap.oauth2.as.endpoint.token;
 
-import java.util.function.Consumer;
-
+import leap.oauth2.OAuth2Error;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.web.Request;
 import leap.web.Response;
+
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 public interface GrantTypeHandler {
 	
@@ -30,4 +32,7 @@ public interface GrantTypeHandler {
 		return false;
 	}
 	
+	default boolean handleFail(Request request, Response response, OAuth2Params params, OAuth2Error error){
+		return false;
+	}
 }

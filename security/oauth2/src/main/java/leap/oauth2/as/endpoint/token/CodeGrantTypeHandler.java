@@ -48,13 +48,13 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
 		if(!config.isAuthorizationCodeEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
+			handleError(request,response,params,OAuth2Errors.unsupportedGrantTypeError(null));
 			return;
 		}
 		
 		String code = params.getCode();
 		if(Strings.isEmpty(code)) {
-			OAuth2Errors.invalidRequest(response, "authorization code required");
+			handleError(request,response,params,OAuth2Errors.invalidRequestError("authorization code required"));
 			return;
 		}
 
@@ -66,19 +66,19 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		}
 		
         if(!client.isAllowAuthorizationCode()) {
-            OAuth2Errors.invalidGrant(response, "authorization code not allow");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("authorization code not allow"));
             return;
         }
         
         AuthzCode authzCode = codeManager.consumeAuthorizationCode(code);
         if (null == authzCode) {
-            OAuth2Errors.invalidGrant(response, "invalid authorization code");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid authorization code"));
             return;
         }
         
         if(authzCode.isExpired()) {
             codeManager.removeAuthorizationCode(authzCode);
-            OAuth2Errors.invalidGrant(response, "authorization code expired");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("authorization code expired"));
             return;
         }
 		
@@ -86,7 +86,7 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		UserStore us = sc.getUserStore();
 		UserDetails userDetails = us.loadUserDetailsByIdString(authzCode.getUserId());
 		if(null == userDetails) {
-            OAuth2Errors.invalidGrant(response, "user id '" + authzCode.getUserId() + "' not found");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("user id '" + authzCode.getUserId() + "' not found"));
             return;
 		}
 		

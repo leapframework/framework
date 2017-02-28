@@ -18,10 +18,7 @@ package leap.oauth2.as.endpoint.token;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
-import leap.oauth2.OAuth2Constants;
-import leap.oauth2.OAuth2Error;
-import leap.oauth2.OAuth2Errors;
-import leap.oauth2.OAuth2Params;
+import leap.oauth2.*;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.*;
 import leap.web.Request;
@@ -36,28 +33,28 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     protected AuthzClient validateClient(Request request, Response response, OAuth2Params params, AuthzClientCredentials credentials) throws Throwable {
         String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
-            OAuth2Errors.invalidRequest(response, "client_id required");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_id required"));
             return null;
         }
         
         String redirectUri = params.getRedirectUri();
         if(Strings.isEmpty(redirectUri)) {
-            OAuth2Errors.invalidRequest(response, "redirect_uri required");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("redirect_uri required"));
             return null;
         }
         
         String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
-            OAuth2Errors.invalidRequest(response, "client_secret required");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_secret required"));
             return null;
         }
         AuthzClient client = clientManager.loadClientById(credentials.getClientId());
         if(client == null){
-            OAuth2Errors.invalidGrant(response, "client not found");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidGrantError("client not found"));
             return null;
         }
         if(!client.acceptsRedirectUri(redirectUri)){
-            OAuth2Errors.invalidGrant(response, "redirect_uri invalid");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidGrantError("redirect_uri invalid"));
             return null;         
         }
         
@@ -67,13 +64,13 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     protected AuthzClient validateClientSecret(Request request, Response response, AuthzClientCredentials credentials) throws Throwable {
         String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
-            OAuth2Errors.invalidRequest(response, "client_id required");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_id required"));
             return null;
         }
         
         String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
-            OAuth2Errors.invalidRequest(response, "client_secret required");
+            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_secret required"));
             return null;
         }
         AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
@@ -88,14 +85,14 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         String header = request.getHeader(OAuth2Constants.TOKEN_HEADER);
         if(header != null && !Strings.isEmpty(header)){
             if(!header.startsWith(OAuth2Constants.BASIC_TYPE)){
-                OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+                handleError(request,response,params,OAuth2Errors.invalidRequestError("invalid Authorization header."));
                 return null;
             }
             String base64Token = Strings.trim(header.substring(OAuth2Constants.BASIC_TYPE.length()));
             String token = Base64.decode(base64Token);
             String[] idAndSecret = Strings.split(token,":");
             if(idAndSecret.length != 2){
-                OAuth2Errors.invalidRequest(response,"invalid Authorization header.");
+                handleError(request,response,params,OAuth2Errors.invalidRequestError("invalid Authorization header."));
                 return null;
             }
             return new SamplingAuthzClientCredentials(idAndSecret[0],idAndSecret[1]);
@@ -103,14 +100,20 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         String clientId = params.getClientId();
         String clientSecret = params.getClientSecret();
         if(Strings.isEmpty(clientId)){
-            OAuth2Errors.invalidRequest(response,"client_id is required.");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("client_id is required."));
             return null;
         }
         if(Strings.isEmpty(clientSecret)){
-            OAuth2Errors.invalidRequest(response,"client_secret is required.");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("client_secret is required."));
             return null;
         }
         return new SamplingAuthzClientCredentials(clientId,clientSecret);
+    }
+    
+    protected void handleError(Request request, Response response,OAuth2Params params,OAuth2Error error){
+        if(!handleFail(request,response,params,error)){
+            OAuth2Errors.response(response,error);
+        }
     }
     
 }

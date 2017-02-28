@@ -27,4 +27,8 @@ public interface OAuth2Error {
      */
     String getErrorDescription();
 
+    /**
+     * Required. Returns the http status.
+     */
+    int getStatus();
 }

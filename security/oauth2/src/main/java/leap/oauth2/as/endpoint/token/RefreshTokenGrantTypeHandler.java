@@ -41,7 +41,7 @@ import java.util.function.Consumer;
 /**
  * grant_type=refresh_token
  */
-public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
+public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler implements GrantTypeHandler {
 	
 	protected @Inject OAuth2AuthzServerConfig config;
 	protected @Inject AuthzTokenManager       tokenManager;
@@ -54,21 +54,21 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) {
 		String refreshToken = params.getRefreshToken();
 		if(Strings.isEmpty(refreshToken)) {
-			OAuth2Errors.invalidRequest(response, "refresh_token required");
+			handleError(request,response,params,OAuth2Errors.invalidRequestError("refresh_token required"));
 			return;
 		}
 		
 		//Load token.
 		AuthzRefreshToken token = tokenManager.loadRefreshToken(refreshToken);
 		if(null == token) {
-			OAuth2Errors.invalidGrant(response, "invalid refresh token");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid refresh token"));
 			return;
 		}
 		
 		//Check expired?
 		if(token.isExpired()) {
 			tokenManager.removeRefreshToken(token);
-			OAuth2Errors.invalidGrant(response, "refresh token expired");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("refresh token expired"));
 			return;
 		}
 		
@@ -80,7 +80,7 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 		    UserDetails ud = us.loadUserDetailsByIdString(token.getUserId());
 			if(null == ud || !ud.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
-				OAuth2Errors.invalidGrant(response, "invalid user");
+				handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid user"));
 				return;
 			}
 			user = ud;
@@ -92,7 +92,7 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 			client = clientManager.loadClientById(token.getClientId());
 			if(null == client || !client.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
-				OAuth2Errors.invalidGrant(response, "invalid client");
+				handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid client"));
 				return;
 			}
 		}

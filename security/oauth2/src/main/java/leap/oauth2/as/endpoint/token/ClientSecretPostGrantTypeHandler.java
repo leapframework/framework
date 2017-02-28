@@ -43,7 +43,8 @@ public class ClientSecretPostGrantTypeHandler extends AbstractGrantTypeHandler {
     public void handleRequest(Request request, Response response, OAuth2Params params,
                               Consumer<AuthzAccessToken> callback) throws Throwable {
         if(!HTTP.Method.valueOf(request.getMethod()).isPost()){
-            OAuth2Errors.invalidRequest(response,"this grant_type only accept post method.");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("this grant_type only accept post method."));
+            return;
         }
         AuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());
 

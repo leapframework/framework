@@ -41,7 +41,7 @@ import leap.web.security.user.UsernamePasswordCredentials;
 /**
  * grant_type=password
  */
-public class PasswordGrantTypeHandler implements GrantTypeHandler {
+public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implements GrantTypeHandler {
 	
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzTokenManager       tokenManager;
@@ -54,14 +54,14 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
 	@Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable{
 		if(!config.isPasswordCredentialsEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
+			handleError(request,response,params,OAuth2Errors.unsupportedGrantTypeError(null));
 			return;
 		}
 		
 		String username = params.getUsername();
 		String password = params.getPassword();
 		if(Strings.isEmpty(username) || Strings.isEmpty(password)) {
-			OAuth2Errors.invalidRequest(response, "username and password are requried.");
+			handleError(request,response,params,OAuth2Errors.invalidRequestError("username and password are requried."));
 			return;
 		}
 		
@@ -72,19 +72,19 @@ public class PasswordGrantTypeHandler implements GrantTypeHandler {
 		//Authenticate user.
 		Authentication authc = authenticationManager.authenticate(context, credentials);
 		if(null == authc) {
-			OAuth2Errors.invalidGrant(response, "invalid username or password");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid username or password"));
 			return;
 		}
 
 		//Validates the client.
 		String clientId = params.getClientId();
 		if(Strings.isEmpty(clientId)){
-			OAuth2Errors.invalidRequest(response, "client_id is required");
+			handleError(request,response,params,OAuth2Errors.invalidRequestError("client_id is required"));
 			return;
 		}
 		AuthzClient client = clientManager.loadClientById(clientId);
 		if(client == null){
-			OAuth2Errors.invalidGrant(response, "invalid client_id");
+			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid client_id"));
 			return;
 		}
 		

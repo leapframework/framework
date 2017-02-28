@@ -44,14 +44,14 @@ public class OAuth2Errors {
 	//Non Standards.
 	public static final String ERROR_INVALID_TOKEN             = "invalid_token";
 	
-	public static void response(Response response, int status, String error, String desc) {
-		response.setStatus(status);
+	public static void response(Response response, OAuth2Error error) {
+		response.setStatus(error.getStatus());
 		response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
 		
 		JsonWriter w = JSON.createWriter(response.getWriter());
 		w.startObject()
-		 .property("error", error)
-		 .propertyOptional("error_description", desc)
+		 .property("error", error.getError())
+		 .propertyOptional("error_description", error.getErrorDescription())
 		 .endObject();
 	}
 	
@@ -93,20 +93,33 @@ public class OAuth2Errors {
 	}
 	
 	public static void invalidRequest(Response response, String desc) {
-		response(response, HTTP.SC_BAD_REQUEST, ERROR_INVALID_REQUEST, desc);
+		OAuth2Error error = invalidRequestError(desc);
+		response(response, error);
+	}
+	public static OAuth2Error invalidRequestError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_BAD_REQUEST,ERROR_INVALID_REQUEST,desc);
+		return error;
 	}
 	
 	public static void unsupportedGrantType(Response response, String desc) {
-		response(response, HTTP.SC_BAD_REQUEST, ERROR_UNSUPPORTED_GRANT_TYPE, desc);
+		OAuth2Error error = unsupportedGrantTypeError(desc);
+		response(response, error);
 	}
-	
+	public static OAuth2Error unsupportedGrantTypeError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_BAD_REQUEST, ERROR_UNSUPPORTED_GRANT_TYPE, desc);
+		return error;
+	}
 	/**
 	 * Client authentication failed
 	 */
 	public static void invalidClient(Response response, String desc) {
-		response(response, HTTP.SC_UNAUTHORIZED, ERROR_INVALID_CLIENT, desc);
+		OAuth2Error error = invalidClientError(desc);
+		response(response, error);
 	}
-	
+	public static OAuth2Error invalidClientError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_UNAUTHORIZED, ERROR_INVALID_CLIENT, desc);
+		return error;
+	}
 	/**
 	 * The provided authorization grant (e.g., authorization
      * code, resource owner credentials) or refresh token is
@@ -114,18 +127,31 @@ public class OAuth2Errors {
      * URI used in the authorizat
 	 */
 	public static void invalidGrant(Response response, String desc) {
-		response(response, HTTP.SC_UNAUTHORIZED, ERROR_INVALID_GRANT, desc);
+		OAuth2Error error = invalidGrantError(desc);
+		response(response, error);
 	}
-	
+	public static OAuth2Error invalidGrantError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_UNAUTHORIZED, ERROR_INVALID_GRANT, desc);
+		return error;
+	}
 	/**
  	 * The authenticated client is not authorized to use this authorization grant type.
 	 */
 	public static void unauthorizedClient(Response response, String desc) {
-		response(response, HTTP.SC_BAD_REQUEST, ERROR_UNAUTHORIZED_CLIENT, desc);
-	}	
-	
+		OAuth2Error error = unauthorizedClientError(desc);
+		response(response, error);
+	}
+	public static OAuth2Error unauthorizedClientError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_BAD_REQUEST, ERROR_UNAUTHORIZED_CLIENT, desc);
+		return error;
+	}
 	public static void serverError(Response response, String desc) {
-		response(response, HTTP.SC_INTERNAL_SERVER_ERROR, ERROR_SERVER_ERROR, desc);
+		OAuth2Error error = serverErrorError(desc);
+		response(response, error);
+	}
+	public static OAuth2Error serverErrorError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_INTERNAL_SERVER_ERROR, ERROR_SERVER_ERROR, desc);
+		return error;
 	}
 	
 	public static OAuth2ResponseException invalidClientException(String desc) {
@@ -137,9 +163,13 @@ public class OAuth2Errors {
 	}
 	
     public static void invalidToken(Response response, String desc) {
-        response(response, HTTP.SC_UNAUTHORIZED, ERROR_INVALID_TOKEN, desc);
+		OAuth2Error error = invalidTokenError(desc);
+        response(response, error);
     }
-
+	public static OAuth2Error invalidTokenError(String desc) {
+		OAuth2Error error = new SimpleOAuth2Error(HTTP.SC_UNAUTHORIZED, ERROR_INVALID_TOKEN, desc);
+		return error;
+	}
 	protected OAuth2Errors() {
 		
 	}

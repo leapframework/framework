@@ -58,11 +58,11 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
     @Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
         if(!config.isTokenClientEnabled()){
-            OAuth2Errors.unsupportedGrantType(response,null);
+            handleError(request,response,params,OAuth2Errors.unsupportedGrantTypeError(null));
             return;
         }
         if(Strings.isEmpty(params.getAccessToken())){
-            OAuth2Errors.invalidRequest(response, "access_token is require");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("access_token is require"));
             return;
         }
 
@@ -97,7 +97,7 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
     protected AuthzAccessToken authenticateJwtToken(Request request, Response response, OAuth2Params params, AuthzClient client){
         JwtVerifier verifier = config.getJwtVerifier();
         if(verifier == null){
-            OAuth2Errors.invalidRequest(response, "not support jwt token because public key is undefined!");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("not support jwt token because public key is undefined!"));
             return null;
         }
         String at = params.getAccessToken();
@@ -108,11 +108,11 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
         Object expiresIn = claims.get("expires_in");
         Object expires = claims.get("expires");
         if(username == null){
-            OAuth2Errors.invalidToken(response,"jwt token must contain username");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("jwt token must contain username"));
             return null;
         }
         if(expiresIn == null){
-            OAuth2Errors.invalidToken(response,"jwt token must contain expires_in");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("jwt token must contain expires_in"));
             return null;
         }
         String userLoginId = Objects.toString(username);
@@ -124,12 +124,12 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
             atExpires = Long.parseLong(Objects.toString(expires));
         } catch (NumberFormatException e) {
             log.debug("authenticate jwt token error",e);
-            OAuth2Errors.invalidToken(response,"expires_in is not an integer or expires is not an long");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("expires_in is not an integer or expires is not an long"));
             return null;
         }
         Authentication authentication = userManager.createAuthenticationByUsername(userLoginId).get();
         if(authentication == null){
-            OAuth2Errors.invalidRequest(response, "invalid username");
+            handleError(request,response,params,OAuth2Errors.invalidRequestError("invalid username"));
             return null;
         }
 
@@ -139,7 +139,7 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
         accessToken.setExpiresIn(atExpiresIn);
         accessToken.setScope(userScope);
         if(System.currentTimeMillis() > atExpires){
-            OAuth2Errors.invalidToken(response, "jwt_token is expired");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("jwt_token is expired"));
             return null;
         }
         return createAuthenticatedAccessToken(request,response,accessToken,params,client);
@@ -149,16 +149,16 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
         String at = params.getAccessToken();
         AuthzAccessToken accessToken = tokenManager.loadAccessToken(at);
         if(accessToken == null){
-            OAuth2Errors.invalidToken(response, "invalid access_token");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("invalid access_token"));
             return null;
         }
         if(accessToken.isExpired()){
-            OAuth2Errors.invalidToken(response, "access_token is expired");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("access_token is expired"));
             tokenManager.removeAccessToken(accessToken);
             return null;
         }
         if(!Strings.equals(accessToken.getClientId(), client.getId())){
-            OAuth2Errors.invalidToken(response, "this access_token is not for the client:"+client.getId());
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("this access_token is not for the client:"+client.getId()));
             return null;
         }
         return createAuthenticatedAccessToken(request,response,accessToken,params,client);
@@ -167,7 +167,7 @@ public class TokenClientGrantTypeHandler extends AbstractGrantTypeHandler {
     protected AuthzAccessToken createAuthenticatedAccessToken(Request request, Response response, AuthzAccessToken accessToken,OAuth2Params params, AuthzClient client){
         UserDetails ud = userManager.loadUserDetails(accessToken.getUserId());
         if(ud == null){
-            OAuth2Errors.invalidToken(response, "invalid user");
+            handleError(request,response,params,OAuth2Errors.invalidTokenError("invalid user"));
             return null;
         }
         AuthzAuthentication authz = new SimpleAuthzAuthentication(params,client,ud);

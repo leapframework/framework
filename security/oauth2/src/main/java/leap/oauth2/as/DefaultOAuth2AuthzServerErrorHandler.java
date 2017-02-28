@@ -24,7 +24,9 @@ import static leap.oauth2.OAuth2Errors.ERROR_UNSUPPORTED_GRANT_TYPE;
 import leap.lang.http.HTTP;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.oauth2.OAuth2Error;
 import leap.oauth2.OAuth2Errors;
+import leap.oauth2.SimpleOAuth2Error;
 import leap.web.Response;
 
 public class DefaultOAuth2AuthzServerErrorHandler implements OAuth2AuthzServerErrorHandler {
@@ -33,7 +35,8 @@ public class DefaultOAuth2AuthzServerErrorHandler implements OAuth2AuthzServerEr
 
     @Override
     public void response(Response response, int status, String error, String desc){
-        OAuth2Errors.response(response, status, error, desc);
+        OAuth2Error err = new SimpleOAuth2Error(status, error, desc);
+        OAuth2Errors.response(response, err);
     }
     
     @Override
