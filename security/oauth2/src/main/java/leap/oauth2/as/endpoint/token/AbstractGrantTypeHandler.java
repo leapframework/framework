@@ -91,7 +91,7 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         AuthzClient client = clientManager.authenticate(context,credentials);
         if(!context.errors().isEmpty()){
             handleError(request,response,new RequestOAuth2Params(request),
-                    OAuth2Errors.invalidGrantError(request, new MessageKey(UUID.randomUUID().toString()),context.errors().getMessage()));
+                    OAuth2Errors.invalidGrantError(request, Oauth2MessageKey.createRandomKey(),context.errors().getMessage()));
         }
         return client;
     }

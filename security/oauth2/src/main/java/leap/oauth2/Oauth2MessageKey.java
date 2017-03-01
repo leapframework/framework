@@ -21,6 +21,8 @@ package leap.oauth2;
 import leap.core.RequestContext;
 import leap.core.i18n.MessageKey;
 
+import java.util.UUID;
+
 /**
  * Created by kael on 2017/3/1.
  */
@@ -63,5 +65,8 @@ public abstract class Oauth2MessageKey {
     
     public static MessageKey getMessageKey(String key, Object...args){
         return OAuth2Errors.messageKey(RequestContext.locale(),key,args);
+    }
+    public static MessageKey createRandomKey(){
+        return OAuth2Errors.messageKey(RequestContext.locale(), UUID.randomUUID().toString());
     }
 }

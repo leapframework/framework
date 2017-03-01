@@ -231,7 +231,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             throw e;
         }catch(Throwable e) {
             log.error("Internal server error : {}", e.getMessage(), e);
-            OAuth2Error error = OAuth2Errors.redirectServerErrorError(request,new MessageKey(UUID.randomUUID().toString()),e.getMessage());
+            OAuth2Error error = OAuth2Errors.redirectServerErrorError(request,Oauth2MessageKey.createRandomKey(),e.getMessage());
             OAuth2Errors.redirect(response, redirectUri, error);
         }
     }
