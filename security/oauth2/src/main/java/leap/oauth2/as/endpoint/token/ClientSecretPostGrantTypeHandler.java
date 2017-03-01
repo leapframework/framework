@@ -33,6 +33,8 @@ import leap.web.Response;
 
 import java.util.function.Consumer;
 
+import static leap.oauth2.Oauth2MessageKey.INVALID_REQUEST_INVALID_HTTP_METHOD;
+
 /**
  * grant_type=client_secret_post
  */
@@ -43,7 +45,8 @@ public class ClientSecretPostGrantTypeHandler extends AbstractGrantTypeHandler {
     public void handleRequest(Request request, Response response, OAuth2Params params,
                               Consumer<AuthzAccessToken> callback) throws Throwable {
         if(!HTTP.Method.valueOf(request.getMethod()).isPost()){
-            handleError(request,response,params,OAuth2Errors.invalidRequestError("this grant_type only accept post method."));
+            handleError(request,response,params,
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"this grant_type only accept post method."),INVALID_REQUEST_INVALID_HTTP_METHOD,"POST"));
             return;
         }
         AuthzClientCredentials credentials = new SamplingAuthzClientCredentials(params.getClientId(),params.getClientSecret());

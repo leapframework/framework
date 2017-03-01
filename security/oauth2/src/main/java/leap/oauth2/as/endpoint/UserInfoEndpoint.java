@@ -55,30 +55,30 @@ public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,
     public void handle(Request request, Response response) throws Throwable {
         ResAccessToken token = tokenExtractor.extractTokenFromRequest(request);
         if(null == token) {
-            OAuth2Errors.invalidRequest(response, "Invalid access token");
+            OAuth2Errors.invalidRequest(request,response, null,"Invalid access token");
             return;
         }
 
         AuthzAccessToken at = tokenManager.loadAccessToken(token.getToken());
         if(null == at) {
-            OAuth2Errors.invalidToken(response, "Invalid access token");
+            OAuth2Errors.invalidToken(request,response, null,"Invalid access token");
             return;
         }
 
         if(at.isClientOnly()) {
-            OAuth2Errors.invalidToken(response, "Invalid access token");
+            OAuth2Errors.invalidToken(request,response, null,"Invalid access token");
             return;
         }
 
         String userid = at.getUserId();
         UserDetails userDetails = userManager.loadUserDetails(userid);
         if(null == userDetails) {
-            OAuth2Errors.invalidToken(response, "User not found");
+            OAuth2Errors.invalidToken(request,response,null, "User not found");
             return;
         }
 
         if(!userDetails.isEnabled()) {
-            OAuth2Errors.invalidToken(response, "User disabled");
+            OAuth2Errors.invalidToken(request,response,null,"User disabled");
             return;
         }
 

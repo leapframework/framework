@@ -29,6 +29,8 @@ import leap.web.Response;
 
 import java.util.function.Consumer;
 
+import static leap.oauth2.Oauth2MessageKey.ERROR_UNSUPPORTED_GRANT_TYPE_TYPE;
+
 /**
  * grant_type=client_credentials
  */
@@ -40,7 +42,8 @@ public class ClientCredentialsGrantTypeHandler extends AbstractGrantTypeHandler 
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
 		if(!config.isClientCredentialsEnabled()) {
-			handleError(request,response,params,OAuth2Errors.invalidRequestError(null));
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,null),ERROR_UNSUPPORTED_GRANT_TYPE_TYPE,"client_credentials"));
 			return;
 		}
 		

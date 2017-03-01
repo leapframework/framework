@@ -16,6 +16,7 @@
 package leap.oauth2.as.endpoint;
 
 import leap.core.annotation.Inject;
+import leap.core.i18n.MessageKey;
 import leap.core.security.Authentication;
 import leap.lang.Result;
 import leap.lang.Strings;
@@ -40,6 +41,8 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.user.UserManager;
 import leap.web.view.ViewSource;
+
+import java.util.UUID;
 
 public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements SecurityInterceptor {
     
@@ -222,12 +225,14 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         try{
             handler.handleResponseType(request, response, authc);
         }catch(OAuth2ResponseException e) {
-            OAuth2Errors.redirect(response, redirectUri, e.getError(), e.getMessage());
+            OAuth2Error error = OAuth2Errors.oauth2Error(request,e.getStatus(),e.getError(),null,e.getMessage());
+            OAuth2Errors.redirect(response, redirectUri, error);
         }catch(ResponseException e) {
             throw e;
         }catch(Throwable e) {
             log.error("Internal server error : {}", e.getMessage(), e);
-            OAuth2Errors.redirectServerError(response, redirectUri, e.getMessage());
+            OAuth2Error error = OAuth2Errors.redirectServerErrorError(request,new MessageKey(UUID.randomUUID().toString()),e.getMessage());
+            OAuth2Errors.redirect(response, redirectUri, error);
         }
     }
     

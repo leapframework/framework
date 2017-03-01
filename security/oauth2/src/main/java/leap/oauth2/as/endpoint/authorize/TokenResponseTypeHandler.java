@@ -43,7 +43,7 @@ public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implem
     @Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         if(!config.isImplicitGrantEnabled()) {
-            OAuth2Errors.redirectUnsupportedResponseType(response, authc.getRedirectUri(), null);
+            OAuth2Errors.redirectUnsupportedResponseType(request, response, authc.getRedirectUri(),null);
             return;
         }
 
