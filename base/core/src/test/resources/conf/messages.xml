@@ -2,5 +2,6 @@
 <messages xmlns="http://www.leapframework.org/schema/messages">
 
     <message key="test.errors.notNull">Value cannot be null</message>
+    <message key="test.errors.override">xmloverride</message>
 
 </messages>

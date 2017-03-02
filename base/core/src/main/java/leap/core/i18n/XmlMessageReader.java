@@ -85,11 +85,11 @@ public class XmlMessageReader implements MessageReader {
 		while(reader.next()){
 			if(reader.isStartElement(MESSAGES_ELEMENT)){
 				foundValidRootElement = true;
-				
+				boolean override = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE,defaultOverride);
 				while(reader.next()){
 					if(reader.isStartElement(IMPORT_ELEMENT)){
 						boolean checkExistence = reader.getBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-						boolean importDefaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, defaultOverride);
+						boolean importDefaultOverride = reader.getBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, override);
 						String importResourceName = reader.getRequiredAttribute(RESOURCE_ATTRIBUTE);
 						
 						Resource importResource = Resources.getResource(resource,importResourceName);
@@ -106,7 +106,7 @@ public class XmlMessageReader implements MessageReader {
 					}
 					
 					if(reader.isStartElement(MESSAGE_ELEMENT)){
-						readMessage(context, resource, reader, locale, defaultOverride);
+						readMessage(context, resource, reader, locale, override);
 						continue;
 					}
 				}
