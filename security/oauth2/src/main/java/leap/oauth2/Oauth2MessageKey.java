@@ -46,7 +46,7 @@ public abstract class Oauth2MessageKey {
     
     public static String ERROR_INVALID_GRANT_CLIENT_NOT_FOUND = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".client_not_found";
     public static String ERROR_INVALID_GRANT_REDIRECT_URI_INVALID = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".redirect_uri_invalid";
-    public static String ERROR_INVALID_GRANT_AUTHORIZATION_NOT_ALLOW = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".authorization_not_allow";
+    public static String ERROR_INVALID_GRANT_AUTHORIZATION_CODE_NOT_ALLOW = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".authorization_code_not_allow";
     public static String ERROR_INVALID_GRANT_INVALID_AUTHORIZATION_CODE = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".invalid_authorization_code";
     public static String ERROR_INVALID_GRANT_AUTHORIZATION_CODE_EXPIRED = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".authorization_code_expired";
     public static String ERROR_INVALID_GRANT_USER_NOT_FOUND = OAuth2Errors.ERROR_INVALID_GRANT_KEY+".user_not_found";
@@ -55,13 +55,13 @@ public abstract class Oauth2MessageKey {
     
     public static String ERROR_UNSUPPORTED_GRANT_TYPE_TYPE = OAuth2Errors.ERROR_UNSUPPORTED_GRANT_TYPE+".type";
     
-    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_NOT_CONTAIN_USERNAME = OAuth2Errors.ERROR_INVALID_TOKEN + ".jwt_token_not_contain_username";
-    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_NOT_CONTAIN_EXPIRES_IN = OAuth2Errors.ERROR_INVALID_TOKEN + ".jwt_token_not_contain_expires_in";
-    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_EXPIRES_IN_FORMAT_ERROR = OAuth2Errors.ERROR_INVALID_TOKEN + ".jwt_token_expires_in_format_error";
-    public static String ERROR_INVALID_TOKEN_EXPIRED = OAuth2Errors.ERROR_INVALID_TOKEN + ".token_expired";
-    public static String ERROR_INVALID_TOKEN_INVALID = OAuth2Errors.ERROR_INVALID_TOKEN + ".token_invalid";
-    public static String ERROR_INVALID_TOKEN_NOT_FOR_CLIENT = OAuth2Errors.ERROR_INVALID_TOKEN + ".token_not_for_client";
-    public static String ERROR_INVALID_TOKEN_INVALID_USER = OAuth2Errors.ERROR_INVALID_TOKEN + ".invalid_user";
+    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_NOT_CONTAIN_USERNAME = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".jwt_token_not_contain_username";
+    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_NOT_CONTAIN_EXPIRES_IN = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".jwt_token_not_contain_expires_in";
+    public static String ERROR_INVALID_TOKEN_JWT_TOKEN_EXPIRES_IN_FORMAT_ERROR = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".jwt_token_expires_in_format_error";
+    public static String ERROR_INVALID_TOKEN_EXPIRED = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".token_expired";
+    public static String ERROR_INVALID_TOKEN_INVALID = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".token_invalid";
+    public static String ERROR_INVALID_TOKEN_NOT_FOR_CLIENT = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".token_not_for_client";
+    public static String ERROR_INVALID_TOKEN_INVALID_USER = OAuth2Errors.ERROR_INVALID_TOKEN_KEY + ".invalid_user";
     
     public static MessageKey getMessageKey(String key, Object...args){
         return OAuth2Errors.messageKey(RequestContext.locale(),key,args);

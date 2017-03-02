@@ -71,7 +71,8 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		
         if(!client.isAllowAuthorizationCode()) {
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code not allow"),ERROR_INVALID_GRANT_AUTHORIZATION_NOT_ALLOW,client.getId()));
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code not allow"),
+							ERROR_INVALID_GRANT_AUTHORIZATION_CODE_NOT_ALLOW,client.getId()));
             return;
         }
         

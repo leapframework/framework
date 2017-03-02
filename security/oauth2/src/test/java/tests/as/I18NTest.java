@@ -36,11 +36,11 @@ public class I18NTest extends OAuth2TestBase {
         THttpResponse response = post(errorUri);
         
         String message = response.assertFailure().getJson().asJsonObject().getString("error_description");
-        assertEquals("无效的请求。",message);
+        assertEquals("无效的请求",message);
         errorUri = errorUri+"&locale=en_US";
         response = post(errorUri);
         message = response.assertFailure().getJson().asJsonObject().getString("error_description");
-        assertEquals("The request is invalid.",message);
+        assertEquals("invalid request.",message);
 
         errorUri = SERVER_URL+"?key=not_exit_key";
         response = post(errorUri);
