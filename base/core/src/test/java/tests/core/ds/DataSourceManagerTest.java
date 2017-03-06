@@ -23,6 +23,7 @@ import leap.core.ds.management.MDataSourceProxy;
 import leap.core.ds.management.MSlowSql;
 import leap.core.junit.AppTestBase;
 import leap.lang.Exceptions;
+import leap.lang.Threads;
 import org.junit.Test;
 import tested.ds.MockDataSource;
 
@@ -97,6 +98,7 @@ public class DataSourceManagerTest extends AppTestBase {
 
         mockDataSource.setStatementDurationMs(20);
         for(int i=0;i<49;i++) {
+            Threads.sleep(10);
             dataSource.getConnection().createStatement().execute("sql1");
         }
         assertEquals(50, mDataSource.getSlowSqls().length);
