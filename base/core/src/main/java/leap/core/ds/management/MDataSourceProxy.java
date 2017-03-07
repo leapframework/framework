@@ -21,7 +21,6 @@ package leap.core.ds.management;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Dates;
-import leap.lang.jdbc.ConnectionProxy;
 import leap.lang.jdbc.DataSourceWrapper;
 import leap.lang.jdbc.StatementProxy;
 import leap.lang.jmx.Managed;
@@ -37,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.stream.Stream;
 
 public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
@@ -48,16 +46,18 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     protected @Inject @M MDataSourceConfig config;
 
     protected final DataSourceMBean   mbean             = new DataSourceMBean();
+    
     protected final List<MConnection> activeConnections = new CopyOnWriteArrayList<>(); //todo : check the performance?
 
     private final    SlowSql[] slowSqls     = new SlowSql[50];
     private volatile int       slowSqlIndex = 0;
+
     private final    Object    slowSqlLock  = new Object();
 
     private final    SlowSql[] verySlowSqls     = new SlowSql[50];
     private volatile int       verySlowSqlIndex = 0;
     private final    Object    verySlowSqlLock  = new Object();
-
+    
     public MDataSourceProxy(DataSource ds) {
         super(ds);
     }
@@ -154,12 +154,14 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
             }
         }else if(config.getSlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getSlowSqlThreshold()) {
+
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
             try{
                 slowSqls[slowSqlIndex++] = ss;
             }catch (ArrayIndexOutOfBoundsException e) {
                 synchronized (slowSqlLock) {
+
                     slowSqlIndex = 0;
                     slowSqls[slowSqlIndex++] = ss;
                 }

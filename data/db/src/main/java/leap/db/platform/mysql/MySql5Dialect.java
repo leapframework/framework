@@ -263,5 +263,5 @@ public class MySql5Dialect extends GenericDbDialect {
         }
 	    return super.quoteIdentifier(identifier,quoteKeywordOnly);
     }
-    
+
 }
