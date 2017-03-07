@@ -24,12 +24,17 @@ import leap.core.ds.management.MSlowSql;
 import leap.core.junit.AppTestBase;
 import leap.lang.Exceptions;
 import leap.lang.Threads;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import org.junit.Test;
 import tested.ds.MockDataSource;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class DataSourceManagerTest extends AppTestBase {
 
@@ -72,10 +77,12 @@ public class DataSourceManagerTest extends AppTestBase {
         DataSource     dataSource     = dsm.getDataSource("mock");
         MDataSource    mDataSource    = dsm.getManagedDataSource(dataSource);
         MockDataSource mockDataSource = dsm.getDataSource("mock").unwrap(MockDataSource.class);
-
+        
         //warm up.
         dataSource.getConnection().createStatement().execute("sql1");
-
+        mDataSource.clearSlowSqls();
+        mDataSource.clearVerySlowSqls();
+        
         //begin test
 
         mockDataSource.setStatementDurationMs(1);
@@ -98,7 +105,6 @@ public class DataSourceManagerTest extends AppTestBase {
 
         mockDataSource.setStatementDurationMs(20);
         for(int i=0;i<49;i++) {
-            Threads.sleep(10);
             dataSource.getConnection().createStatement().execute("sql1");
         }
         assertEquals(50, mDataSource.getSlowSqls().length);
@@ -119,5 +125,37 @@ public class DataSourceManagerTest extends AppTestBase {
         assertEquals(50, mDataSource.getVerySlowSqls().length);
         assertNotSame(vss0, mDataSource.getVerySlowSqls()[0]);
     }
-
+    @Test
+    public void testConcurrentSlowSql() throws SQLException, InterruptedException {
+        DataSource     dataSource     = dsm.getDataSource("mock");
+        MDataSource    mDataSource    = dsm.getManagedDataSource(dataSource);
+        MockDataSource mockDataSource = dsm.getDataSource("mock").unwrap(MockDataSource.class);
+        //warm up.
+        dataSource.getConnection().createStatement().execute("sql1");
+        //begin test
+        mockDataSource.setStatementDurationMs(20);
+        List<Thread> threads = new ArrayList<>();
+        int threadNum = 500;
+        CountDownLatch cdl=new CountDownLatch(threadNum);
+        Runnable run = () -> {
+            try {
+                Threads.sleep(100);
+                dataSource.getConnection().createStatement().execute("sql1");
+                cdl.countDown();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        };
+        
+        for(int i = 0; i < threadNum; i++){
+            threads.add(new Thread(run));
+        }
+        // start concurrent thread
+        threads.forEach(Thread::start);
+        cdl.await();
+        assertTrue(mDataSource.getSlowSqls().length == 50 || mDataSource.getVerySlowSqls().length==50);
+        assertTrue(mDataSource.getSlowSqls().length + mDataSource.getVerySlowSqls().length >= 50);
+        assertTrue(mDataSource.getSlowSqls().length + mDataSource.getVerySlowSqls().length <= 100);
+    }
+    
 }

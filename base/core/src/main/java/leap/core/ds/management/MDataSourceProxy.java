@@ -37,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.stream.Stream;
 
 public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
@@ -272,4 +273,31 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
         }
     }
 
+    @Override
+    public int clearSlowSqls() {
+        synchronized (slowSqlLock){
+            slowSqlIndex = 0;
+            return clearSqls(slowSqls);
+        }
+    }
+
+    @Override
+    public int clearVerySlowSqls() {
+        synchronized (verySlowSqlLock){
+            verySlowSqlIndex = 0;
+            return clearSqls(verySlowSqls);
+        }
+    }
+    
+    protected int clearSqls(SlowSql[] sqls){
+        int num = 0;
+        for(int i = 0; i < sqls.length; i++){
+            SlowSql ss = sqls[i];
+            if(ss != null){
+                num++;
+                sqls[i] = null;
+            }
+        }
+        return num;
+    }
 }
