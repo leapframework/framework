@@ -21,7 +21,6 @@ package leap.core.ds.management;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.Dates;
-import leap.lang.jdbc.ConnectionProxy;
 import leap.lang.jdbc.DataSourceWrapper;
 import leap.lang.jdbc.StatementProxy;
 import leap.lang.jmx.Managed;
@@ -47,14 +46,17 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
     protected @Inject @M MDataSourceConfig config;
 
     protected final DataSourceMBean   mbean             = new DataSourceMBean();
+    
     protected final List<MConnection> activeConnections = new CopyOnWriteArrayList<>(); //todo : check the performance?
 
     private final    SlowSql[] slowSqls     = new SlowSql[50];
     private volatile int       slowSqlIndex = 0;
+    protected final  Object    slowSqlsLock    = new Object();
 
     private final    SlowSql[] verySlowSqls     = new SlowSql[50];
     private volatile int       verySlowSqlIndex = 0;
-
+    protected final   Object   verySlowSqlsLock   = new Object();
+    
     public MDataSourceProxy(DataSource ds) {
         super(ds);
     }
@@ -134,13 +136,16 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
         if(config.getVerySlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getVerySlowSqlThreshold()) {
 
-            if(verySlowSqlIndex == verySlowSqls.length) {
-                verySlowSqlIndex = 0;
-            }
-
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
-            verySlowSqls[verySlowSqlIndex++] = ss;
+            try {
+                verySlowSqls[verySlowSqlIndex++] = ss;
+            } catch (IndexOutOfBoundsException e) {
+                synchronized (verySlowSqlsLock){
+                    verySlowSqlIndex = 0;
+                    verySlowSqls[verySlowSqlIndex++] = ss;
+                }
+            }
 
             if(config.isLogVerySlowSql()) {
                 log.warn("Found very slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
@@ -148,13 +153,17 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
             }
         }else if(config.getSlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getSlowSqlThreshold()) {
-            if(slowSqlIndex == slowSqls.length) {
-                slowSqlIndex = 0;
-            }
-
+            
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
-            slowSqls[slowSqlIndex++] = ss;
+            try {
+                slowSqls[slowSqlIndex++] = ss;
+            } catch (IndexOutOfBoundsException e) {
+                synchronized (verySlowSqlsLock){
+                    slowSqlIndex = 0;
+                    slowSqls[slowSqlIndex++] = ss;
+                }
+            }
 
             if(config.isLogSlowSql()) {
                 log.warn("Found slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",

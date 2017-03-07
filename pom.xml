@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-parent</artifactId>
-	<version>0.4.0b</version>
+	<version>0.4.1b</version>
 	<packaging>pom</packaging>
 	
 	<licenses>
@@ -25,7 +25,7 @@
 	
 	<scm>
 		<developerConnection>scm:git:git@github.com:leapframework/framework.git</developerConnection>
-		<tag>0.4.0b</tag>
+		<tag>0.4.1b</tag>
 	</scm>
 	
 	<properties>
