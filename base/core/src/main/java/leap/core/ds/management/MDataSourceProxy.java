@@ -51,9 +51,11 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
     private final    SlowSql[] slowSqls     = new SlowSql[50];
     private volatile int       slowSqlIndex = 0;
+    private final    Object    slowSqlLock  = new Object();
 
     private final    SlowSql[] verySlowSqls     = new SlowSql[50];
     private volatile int       verySlowSqlIndex = 0;
+    private final    Object    verySlowSqlLock  = new Object();
 
     public MDataSourceProxy(DataSource ds) {
         super(ds);
@@ -134,13 +136,16 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
         if(config.getVerySlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getVerySlowSqlThreshold()) {
 
-            if(verySlowSqlIndex == verySlowSqls.length) {
-                verySlowSqlIndex = 0;
-            }
-
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
-            verySlowSqls[verySlowSqlIndex++] = ss;
+            try{
+                verySlowSqls[verySlowSqlIndex++] = ss;
+            }catch (ArrayIndexOutOfBoundsException e) {
+                synchronized (verySlowSqlLock) {
+                    verySlowSqlIndex = 0;
+                    verySlowSqls[verySlowSqlIndex++] = ss;
+                }
+            }
 
             if(config.isLogVerySlowSql()) {
                 log.warn("Found very slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
@@ -148,13 +153,16 @@ public class MDataSourceProxy extends DataSourceWrapper implements MDataSource {
 
             }
         }else if(config.getSlowSqlThreshold() > 0 && stmt.getLastExecutingDurationMs() >= config.getSlowSqlThreshold()) {
-            if(slowSqlIndex == slowSqls.length) {
-                slowSqlIndex = 0;
-            }
-
             ss = new SlowSql(stmt.getLastExecutingSql(), stmt.getLastExecutingDurationMs(), conn.getStackTraceOnOpen());
 
-            slowSqls[slowSqlIndex++] = ss;
+            try{
+                slowSqls[slowSqlIndex++] = ss;
+            }catch (ArrayIndexOutOfBoundsException e) {
+                synchronized (slowSqlLock) {
+                    slowSqlIndex = 0;
+                    slowSqls[slowSqlIndex++] = ss;
+                }
+            }
 
             if(config.isLogSlowSql()) {
                 log.warn("Found slow sql ->\n time  : {}ms\n sql   : {}\n trace : [ \n{}]",
