@@ -13,34 +13,22 @@
 
 package leap.db.platform.sqlserver;
 
-import leap.db.platform.GenericDbDialect;
+import leap.db.platform.GenericDbMetadataReader;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
 
 /**
  * Created by KAEL on 2017/3/11.
  */
-public class SqlServerDialect extends GenericDbDialect {
+public class SqlServerMetadataReader extends GenericDbMetadataReader {
     @Override
-    protected String getTestDriverSupportsGetParameterTypeSQL() {
-        return "select 1";
-    }
-
-    @Override
-    protected String getOpenQuoteString() {
-        return "\"";
-    }
-
-    @Override
-    protected String getCloseQuoteString() {
-        return "\"";
-    }
-
-    @Override
-    protected void registerColumnTypes() {
-        columnTypes.add(Types.VARCHAR,       "varchar($l)",0,65535);
+    protected MetadataParameters createMetadataParameters(Connection connection, DatabaseMetaData dm, String catalog, String schema) {
+        MetadataParameters p = super.createMetadataParameters(connection, dm, catalog, schema);
+        
+        p.schema = "dbo";
+        p.schemaPattern = "%";
+        
+        return p;
     }
 }

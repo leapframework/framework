@@ -210,7 +210,7 @@ public class MySql5Dialect extends GenericDbDialect {
         columnTypes.add(Types.NUMERIC,       "decimal($p,$s)");
         
         columnTypes.add(Types.CHAR,          "char($l)",0,255);
-        columnTypes.add(Types.VARCHAR,       "varchar($l)",0,65535);      
+        columnTypes.add(Types.VARCHAR,       "varchar($l)",0,65535);
         columnTypes.add(Types.VARCHAR,       "longtext");
         columnTypes.add(Types.LONGVARCHAR,   "longtext");
 

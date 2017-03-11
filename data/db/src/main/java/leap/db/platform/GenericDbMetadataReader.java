@@ -168,7 +168,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected List<DbTableBuilder> readAllTables(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		ResultSet rs = null;
 		try{
-			List<DbTableBuilder> tables = new ArrayList<DbTableBuilder>();
+			List<DbTableBuilder> tables = new ArrayList<>();
 			rs = getTables(connection, dm, params);
 			if(null != rs){
                 while ( rs.next() ) {

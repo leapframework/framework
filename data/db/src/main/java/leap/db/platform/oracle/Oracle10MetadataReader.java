@@ -15,7 +15,6 @@
  */
 package leap.db.platform.oracle;
 
-import com.sun.org.apache.regexp.internal.RE;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbIndexBuilder;
 import leap.db.model.DbTableBuilder;
@@ -23,7 +22,12 @@ import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 
 public class Oracle10MetadataReader extends GenericDbMetadataReader {
 
