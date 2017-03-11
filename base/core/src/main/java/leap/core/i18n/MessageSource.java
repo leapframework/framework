@@ -50,4 +50,28 @@ public interface MessageSource {
 	 * Returns <code>null</code> if the given key not exists for the given {@link Locale}.
 	 */
 	String tryGetMessage(Locale locale,String key,Object... args);
+
+	/**
+	 * Returns a formatted {@link String} of the given key.
+	 *
+	 * @throws ObjectNotFoundException if the given key not exists.
+	 */
+	default String getMessage(MessageKey key) throws ObjectNotFoundException{
+		if(key == null){
+			return null;
+		}
+		return getMessage(key.getLocale(), key.getKey(), key.getArgs());
+	}
+	/**
+	 * Returns a formatted {@link String} of the given key for the given {@link Locale}.
+	 *
+	 * <p>
+	 * Returns <code>null</code> if the given key not exists for the given {@link Locale}.
+	 */
+	default String tryGetMessage(MessageKey key){
+		if(key == null){
+			return null;
+		}
+		return tryGetMessage(key.getLocale(), key.getKey(), key.getArgs());
+	}
 }

@@ -16,6 +16,7 @@
 package leap.oauth2.as.endpoint.token;
 
 import leap.core.annotation.Inject;
+import leap.core.i18n.MessageKey;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.oauth2.*;
@@ -23,6 +24,11 @@ import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.*;
 import leap.web.Request;
 import leap.web.Response;
+
+import java.util.UUID;
+import java.util.function.Function;
+
+import static leap.oauth2.Oauth2MessageKey.*;
 
 public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     
@@ -33,28 +39,34 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     protected AuthzClient validateClient(Request request, Response response, OAuth2Params params, AuthzClientCredentials credentials) throws Throwable {
         String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_id required"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_id required"),
+                            INVALID_REQUEST_CLIENT_ID_REQUIRED));
             return null;
         }
         
         String redirectUri = params.getRedirectUri();
         if(Strings.isEmpty(redirectUri)) {
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("redirect_uri required"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"redirect_uri required"),INVALID_REQUEST_REDIRECT_URI_REQUIRED));
             return null;
         }
         
         String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_secret required"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_secret required"),INVALID_REQUEST_CLIENT_SECRET_REQUIRED));
             return null;
         }
         AuthzClient client = clientManager.loadClientById(credentials.getClientId());
         if(client == null){
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidGrantError("client not found"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key, "client not found"),ERROR_INVALID_GRANT_CLIENT_NOT_FOUND));
             return null;
         }
         if(!client.acceptsRedirectUri(redirectUri)){
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidGrantError("redirect_uri invalid"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"redirect_uri invalid"),ERROR_INVALID_GRANT_REDIRECT_URI_INVALID));
             return null;         
         }
         
@@ -64,19 +76,22 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
     protected AuthzClient validateClientSecret(Request request, Response response, AuthzClientCredentials credentials) throws Throwable {
         String clientId = credentials.getClientId();
         if(Strings.isEmpty(clientId)) {
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_id required"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_id required"),INVALID_REQUEST_CLIENT_ID_REQUIRED));
             return null;
         }
         
         String clientSecret = credentials.getClientSecret();
         if(Strings.isEmpty(clientSecret)) {
-            handleError(request,response,new RequestOAuth2Params(request),OAuth2Errors.invalidRequestError("client_secret required"));
+            handleError(request,response,new RequestOAuth2Params(request),
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_secret required"),INVALID_REQUEST_CLIENT_SECRET_REQUIRED));
             return null;
         }
         AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
         AuthzClient client = clientManager.authenticate(context,credentials);
         if(!context.errors().isEmpty()){
-            OAuth2Errors.invalidGrant(response, context.errors().getMessage());
+            handleError(request,response,new RequestOAuth2Params(request),
+                    OAuth2Errors.invalidGrantError(request, Oauth2MessageKey.createRandomKey(),context.errors().getMessage()));
         }
         return client;
     }
@@ -85,14 +100,16 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         String header = request.getHeader(OAuth2Constants.TOKEN_HEADER);
         if(header != null && !Strings.isEmpty(header)){
             if(!header.startsWith(OAuth2Constants.BASIC_TYPE)){
-                handleError(request,response,params,OAuth2Errors.invalidRequestError("invalid Authorization header."));
+                handleError(request,response,params,
+                        getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"invalid Authorization header."),INVALID_REQUEST_INVALID_AUTHZ_HEADER));
                 return null;
             }
             String base64Token = Strings.trim(header.substring(OAuth2Constants.BASIC_TYPE.length()));
             String token = Base64.decode(base64Token);
             String[] idAndSecret = Strings.split(token,":");
             if(idAndSecret.length != 2){
-                handleError(request,response,params,OAuth2Errors.invalidRequestError("invalid Authorization header."));
+                handleError(request,response,params,
+                        getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"invalid Authorization header."),INVALID_REQUEST_INVALID_AUTHZ_HEADER));
                 return null;
             }
             return new SamplingAuthzClientCredentials(idAndSecret[0],idAndSecret[1]);
@@ -100,11 +117,13 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         String clientId = params.getClientId();
         String clientSecret = params.getClientSecret();
         if(Strings.isEmpty(clientId)){
-            handleError(request,response,params,OAuth2Errors.invalidRequestError("client_id is required."));
+            handleError(request,response,params,
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request, key,"client_id is required."),INVALID_REQUEST_CLIENT_ID_REQUIRED));
             return null;
         }
         if(Strings.isEmpty(clientSecret)){
-            handleError(request,response,params,OAuth2Errors.invalidRequestError("client_secret is required."));
+            handleError(request,response,params,
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request, key,"client_id is required."),INVALID_REQUEST_CLIENT_ID_REQUIRED));
             return null;
         }
         return new SamplingAuthzClientCredentials(clientId,clientSecret);
@@ -115,7 +134,12 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
             OAuth2Errors.response(response,error);
         }
     }
-
+    
+    protected OAuth2Error getOauth2Error(Function<MessageKey,OAuth2Error> function, String messageKey, Object...args){
+        MessageKey key = Oauth2MessageKey.getMessageKey(messageKey,args);
+        return function.apply(key);
+    }
+    
     @Override
     public boolean handleFail(Request request, Response response, OAuth2Params params, OAuth2Error error) {
         for (GrantTypeHandleFailHandler h : failHandlers){

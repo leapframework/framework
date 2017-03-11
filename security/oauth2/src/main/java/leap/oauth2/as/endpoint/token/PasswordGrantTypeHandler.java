@@ -38,6 +38,8 @@ import leap.web.security.user.SimpleUsernamePasswordCredentials;
 import leap.web.security.user.UserManager;
 import leap.web.security.user.UsernamePasswordCredentials;
 
+import static leap.oauth2.Oauth2MessageKey.*;
+
 /**
  * grant_type=password
  */
@@ -54,16 +56,24 @@ public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implement
 	@Override
     public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable{
 		if(!config.isPasswordCredentialsEnabled()) {
-			handleError(request,response,params,OAuth2Errors.unsupportedGrantTypeError(null));
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.unsupportedGrantTypeError(request,key,null),ERROR_UNSUPPORTED_GRANT_TYPE_TYPE,"password"));
 			return;
 		}
 		
 		String username = params.getUsername();
 		String password = params.getPassword();
-		if(Strings.isEmpty(username) || Strings.isEmpty(password)) {
-			handleError(request,response,params,OAuth2Errors.invalidRequestError("username and password are requried."));
+		if(Strings.isEmpty(username)) {
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"username are requried."),INVALID_REQUEST_USERNAME_REQUIRED));
 			return;
 		}
+		if(Strings.isEmpty(password)){
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"password are requried."),INVALID_REQUEST_PASSWORD_REQUIRED));
+			return;
+		}
+		
 		
 		DefaultAuthenticateCredentialsContext context = new DefaultAuthenticateCredentialsContext(request.getValidation());
 
@@ -72,19 +82,22 @@ public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implement
 		//Authenticate user.
 		Authentication authc = authenticationManager.authenticate(context, credentials);
 		if(null == authc) {
-			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid username or password"));
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid username or password"),INVALID_REQUEST_INVALID_USERNAME,credentials.getUsername()));
 			return;
 		}
 
 		//Validates the client.
 		String clientId = params.getClientId();
 		if(Strings.isEmpty(clientId)){
-			handleError(request,response,params,OAuth2Errors.invalidRequestError("client_id is required"));
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_id is required"),INVALID_REQUEST_CLIENT_ID_REQUIRED));
 			return;
 		}
 		AuthzClient client = clientManager.loadClientById(clientId);
 		if(client == null){
-			handleError(request,response,params,OAuth2Errors.invalidGrantError("invalid client_id"));
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid client_id"),INVALID_REQUEST_INVALID_CLIENT,clientId));
 			return;
 		}
 		

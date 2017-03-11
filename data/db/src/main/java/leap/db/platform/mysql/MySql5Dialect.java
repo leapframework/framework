@@ -180,6 +180,7 @@ public class MySql5Dialect extends GenericDbDialect {
 
     @Override
     protected void registerSQLKeyWords() {
+	    super.registerSQLKeyWords();
 	    this.sqlKeyWords.addAll(Arrays.asList(NONSQL92_RESERVED_WORDS));
     }
 
@@ -254,4 +255,13 @@ public class MySql5Dialect extends GenericDbDialect {
 
         return null;
     }
+
+    @Override
+    public String quoteIdentifier(String identifier, boolean quoteKeywordOnly) {
+	    if(Strings.equalsIgnoreCase(identifier,"dual")){
+	        return identifier;
+        }
+	    return super.quoteIdentifier(identifier,quoteKeywordOnly);
+    }
+
 }

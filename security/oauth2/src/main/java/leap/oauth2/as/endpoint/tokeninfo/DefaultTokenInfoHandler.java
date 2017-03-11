@@ -35,15 +35,15 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
         String accessToken = params.getAccessToken();
         if(null != accessToken) {
             if(accessToken.isEmpty()) {
-                OAuth2Errors.invalidRequest(response, "token required");
+                OAuth2Errors.invalidRequest(request,response,null,"token required");
                 return true;
             }            
 
             AuthzAccessToken at = tokenManager.loadAccessToken(accessToken);
             if(null == at) {
-                OAuth2Errors.invalidRequest(response, "invalid token");
+                OAuth2Errors.invalidRequest(request,response,null,"invalid token");
             }else if(at.isExpired()) {
-                OAuth2Errors.invalidRequest(response, "invalid token");
+                OAuth2Errors.invalidRequest(request,response,null,"invalid token");
                 tokenManager.removeAccessToken(at);
             }else{
                 if(processors != null && processors.length > 0){

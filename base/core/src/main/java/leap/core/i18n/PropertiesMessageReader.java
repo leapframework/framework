@@ -71,7 +71,7 @@ public class PropertiesMessageReader implements MessageReader,AppConfigAware {
 	protected void readMessage(MessageContext context,Resource resource,Locale locale,Properties props,String name) {
 		Message message = context.tryGetMessage(locale, name);
 		
-		if(null != message){
+		if(null != message && !context.isDefaultOverride()){
 			throw new AppConfigException("Message key '" + name + "' in locale '" + locale + 
 										 "' already exists in '" + message.getSource() +
 										 "', check the file : " + resource.getURLString());	
