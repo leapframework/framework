@@ -38,6 +38,7 @@ import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
+import leap.web.api.meta.desc.ModelDesc;
 import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
 import leap.web.api.spec.swagger.SwaggerConstants;
@@ -146,7 +147,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 MComplexType ct = type.asComplexType();
 
                 if(!m.containsModel(ct.getName())) {
-                    m.addModel(new MApiModelBuilder(ct,apiDescContainer));
+                    m.addModel(createModel(context, m, ct));
                 }
 
                 type = ct.createTypeRef();
@@ -244,9 +245,28 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
         });
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
-            m.addModel(new MApiModelBuilder(ct,apiDescContainer));
+            m.addModel(createModel(context, m, ct));
         });
 
+    }
+
+    protected MApiModelBuilder createModel(ApiMetadataContext context, ApiMetadataBuilder m, MComplexType ct) {
+
+        MApiModelBuilder model = new MApiModelBuilder(ct);
+
+        if(null != apiDescContainer) {
+            ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
+            if(null != mdesc) {
+                model.getProperties().forEach(p -> {
+                    ModelDesc.PropertyDesc pdesc = mdesc.getPropertyDesc(p.getName());
+                    if(null != pdesc && !Strings.isEmpty(pdesc.getDesc())) {
+                        p.setDescription(pdesc.getDesc());
+                    }
+                });
+            }
+        }
+
+        return model;
     }
 	
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
