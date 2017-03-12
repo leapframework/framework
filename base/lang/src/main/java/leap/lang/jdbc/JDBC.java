@@ -108,7 +108,7 @@ public class JDBC {
 			try {
 				stmt = rs.getStatement();
 			} catch (Throwable e) {
-				;
+				log.error(e);
 			}
             try {
                 rs.close();

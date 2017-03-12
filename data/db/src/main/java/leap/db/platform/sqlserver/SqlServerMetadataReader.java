@@ -14,9 +14,13 @@
 package leap.db.platform.sqlserver;
 
 import leap.db.platform.GenericDbMetadataReader;
+import leap.lang.jdbc.ResultSetWrapper;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by KAEL on 2017/3/11.
@@ -30,5 +34,25 @@ public class SqlServerMetadataReader extends GenericDbMetadataReader {
         p.schemaPattern = "%";
         
         return p;
+    }
+    
+    @Override
+    protected ResultSet getTables(Connection connection, DatabaseMetaData dm,
+                                  MetadataParameters params) throws SQLException {
+        return new SqlServerResultSetWrapper(super.getTables(connection,dm,params));
+    }
+    
+    
+    
+    private class SqlServerResultSetWrapper extends ResultSetWrapper{
+
+        public SqlServerResultSetWrapper(ResultSet rs) {
+            super(rs);
+        }
+
+        @Override
+        public Statement getStatement() throws SQLException {
+            return null;
+        }
     }
 }

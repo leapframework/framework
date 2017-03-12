@@ -15,9 +15,11 @@ package leap.db.platform.sqlserver;
 
 import leap.db.DbPlatforms;
 import leap.db.platform.GenericDbDialect;
+import leap.db.platform.GenericDbMetadata;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.db.platform.GenericDbPlatform;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
@@ -40,5 +42,12 @@ public class SqlServerPlatform extends GenericDbPlatform {
     @Override
     protected GenericDbMetadataReader createMetadataReader(DatabaseMetaData jdbcMetadata) throws SQLException {
         return new SqlServerMetadataReader();
+    }
+
+    @Override
+    protected GenericDbMetadata createMetadata(Connection connection, DatabaseMetaData jdbcMetadata,
+                                               String defaultSchemaName,
+                                               GenericDbMetadataReader metadataReader) throws SQLException {
+        return new SqlServerMetadata(jdbcMetadata,defaultSchemaName,metadataReader);
     }
 }
