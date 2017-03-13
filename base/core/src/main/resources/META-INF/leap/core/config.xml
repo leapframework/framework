@@ -25,6 +25,8 @@
 	</el:functions>
 
     <properties prefix="dsm">
+        <property name="monitoring"              value="true"/>
+
         <property name="slow-sql-threshold"      value="500"/>
         <property name="very-slow-sql-threshold" value="5000"/>
 

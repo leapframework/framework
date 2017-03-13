@@ -47,11 +47,47 @@ public class SqlServerDialect extends GenericDbDialect {
     }
 
     @Override
-    protected void registerColumnTypes() {
-        columnTypes.add(Types.VARCHAR,       "varchar($l)",0,65535);
+    protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
+        return "IDENTITY";
     }
-    
-    
+
+    @Override
+    protected void registerColumnTypes() {
+        //https://docs.microsoft.com/en-us/sql/connect/jdbc/using-basic-data-types
+
+        columnTypes.add(Types.BOOLEAN,       "bit");
+        columnTypes.add(Types.BIT,           "bit");
+
+        columnTypes.add(Types.TINYINT,       "tinyint");
+        columnTypes.add(Types.SMALLINT,      "smallint");
+        columnTypes.add(Types.INTEGER,       "int");
+        columnTypes.add(Types.BIGINT,        "bigint"  );
+
+        //JDBC's real type mapping to java's float, JDBC's float type mapping to java's double
+        columnTypes.add(Types.REAL,          "real");
+        columnTypes.add(Types.FLOAT,         "float");
+        columnTypes.add(Types.DOUBLE,        "float");
+
+        columnTypes.add(Types.DECIMAL,       "decimal($p,$s)");
+        columnTypes.add(Types.NUMERIC,       "decimal($p,$s)");
+
+        columnTypes.add(Types.CHAR,          "char($l)");
+        columnTypes.add(Types.VARCHAR,       "varchar($l)");
+        columnTypes.add(Types.LONGVARCHAR,   "text");
+
+        columnTypes.add(Types.BINARY,        "binary");
+        columnTypes.add(Types.VARBINARY,     "varbinary($l)");
+        columnTypes.add(Types.LONGVARBINARY, "image");
+
+        columnTypes.add(Types.DATE,          "date");
+        columnTypes.add(Types.TIME,          "time");
+        columnTypes.add(Types.TIMESTAMP,     "datetime");
+
+        //https://docs.microsoft.com/en-us/sql/connect/jdbc/using-advanced-data-types#blob-and-clob-and-nclob-data-types
+        columnTypes.add(Types.BLOB,          "image");
+        columnTypes.add(Types.CLOB,          "text");
+    }
+
     @Override
     protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
                                                               ColumnDefinitionChange change) {

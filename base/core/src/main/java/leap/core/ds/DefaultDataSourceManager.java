@@ -56,10 +56,16 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected Map<String, DataSource>        allDataSourcesImmutableView;
     protected UnPooledDataSourceFactory      unpooledDataSourceFactory = new UnPooledDataSourceFactory();
 
+    protected boolean                        monitoring;
     protected long                           slowSqlThreshold;
     protected long                           verySlowSqlThreshold;
     protected boolean                        logSlowSql;
     protected boolean                        logVerySlowSql;
+
+    @ConfigProperty
+    public void setMonitoring(boolean monitoring) {
+        this.monitoring = monitoring;
+    }
 
     @Override
     public long getSlowSqlThreshold() {
@@ -221,7 +227,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			validateDataSource(ds);
 		}
 
-        if(null != ds && ! (ds instanceof MDataSourceProxy)) {
+        if(monitoring && null != ds && ! (ds instanceof MDataSourceProxy)) {
             ds = new MDataSourceProxy(ds, this);
         }
 		

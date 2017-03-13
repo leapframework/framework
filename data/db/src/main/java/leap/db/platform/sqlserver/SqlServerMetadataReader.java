@@ -39,20 +39,22 @@ public class SqlServerMetadataReader extends GenericDbMetadataReader {
     @Override
     protected ResultSet getTables(Connection connection, DatabaseMetaData dm,
                                   MetadataParameters params) throws SQLException {
-        return new SqlServerResultSetWrapper(super.getTables(connection,dm,params));
-    }
-    
-    
-    
-    private class SqlServerResultSetWrapper extends ResultSetWrapper{
+        ResultSet rs = super.getTables(connection, dm, params);
 
-        public SqlServerResultSetWrapper(ResultSet rs) {
-            super(rs);
-        }
-
-        @Override
-        public Statement getStatement() throws SQLException {
-            return null;
-        }
+        return rs;
     }
+//
+//
+//
+//    private class SqlServerResultSetWrapper extends ResultSetWrapper{
+//
+//        public SqlServerResultSetWrapper(ResultSet rs) {
+//            super(rs);
+//        }
+//
+//        @Override
+//        public Statement getStatement() throws SQLException {
+//            return null;
+//        }
+//    }
 }
