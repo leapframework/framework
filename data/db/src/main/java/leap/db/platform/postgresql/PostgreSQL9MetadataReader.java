@@ -43,18 +43,8 @@ public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 					 "and cu.table_name = c.table_name " + 
 					 "and cu.constraint_name = c.constraint_name " +  
 					 "where c.table_schema = ? and c.constraint_type = 'PRIMARY KEY'";
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+		return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -74,18 +64,8 @@ public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 			    	 "join pg_catalog.pg_namespace n on n.oid = t.relnamespace " +  
 			    	 "join pg_catalog.pg_attribute a on a.attrelid = t.oid and a.attnum = ANY(ix.indkey) " + 
 			    	 "where n.nspname = ?";
-	
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeSchemaQuery(connection, params, sql);
 	}
 	
 	@Override
@@ -117,19 +97,9 @@ public class PostgreSQL9MetadataReader extends GenericDbMetadataReader {
 					 "INCREMENT SEQ_INCREMENT," + 
 					 "NULL SEQ_CACHE, " + 
 					 "CASE CYCLE_OPTION WHEN 'NO' THEN 0 ELSE 1 END SEQ_CYCLE " + 
-					 "FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA = ?";	 
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
+					 "FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA = ?";
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override

@@ -51,18 +51,7 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 					 "where o.OBJECT_TYPE in ('TABLE','VIEW') and o.object_name not like 'BIN$%$%' and o.object_name not like 'XDB$%' "  +  
 					 "and o.owner = ? and o.status = 'VALID' and o.object_name like ?";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			ps.setString(2, params.tablePattern);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaAndTablePatternQuery(connection, params, sql);
     }
 	
 	@Override
@@ -73,18 +62,8 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 		   			 "WHERE k.constraint_type = 'P' " +
 					 "AND k.owner = ? " +
 		   			 "AND k.constraint_name = c.constraint_name AND k.table_name = c.table_name AND k.owner = c.owner ";
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -107,18 +86,8 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 	                 "AND fc.table_name = f.table_name " + 
 	                 "AND fc.position = pc.position " + 
 	                 "ORDER BY pktable_schem, pktable_name, key_seq";
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -132,26 +101,16 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 					 "and i.table_owner = c.table_owner " + 
 					 "and i.table_name = c.table_name " + 
 					 "and i.owner = c.index_owner " + 
-					 "order by index_name,ordinal_position";	
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
+					 "order by index_name,ordinal_position";
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 
 	@Override
 	protected ResultSet getSequences(Connection connection, DatabaseMetaData dm,
 									 MetadataParameters params) throws SQLException {
-		// TODO query sequences
-		String sql = "SELECT ? AS SEQ_CAT, " +
+
+        String sql = "SELECT ? AS SEQ_CAT, " +
 				"SEQUENCE_OWNER AS SEQ_SCHEM, " +
 				"SEQUENCE_NAME AS SEQ_NAME, " +
 				"MIN_VALUE AS SEQ_START, " +
@@ -164,16 +123,8 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 				"LAST_NUMBER " +
 				"FROM all_sequences " +
 				"WHERE SEQUENCE_OWNER = ?";
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-			ps.setString(1, params.catalog);
-			ps.setString(2, params.schema);
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeCatalogAndSchemaQuery(connection, params, sql);
 	}
 
 	@Override

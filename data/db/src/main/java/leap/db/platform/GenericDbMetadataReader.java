@@ -24,10 +24,7 @@ import leap.lang.Builders;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionProxy;
-import leap.lang.jdbc.JDBC;
-import leap.lang.jdbc.JdbcType;
-import leap.lang.jdbc.JdbcTypes;
+import leap.lang.jdbc.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.time.StopWatch;
@@ -188,7 +185,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
             
             return tables;
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}
 	
@@ -215,7 +212,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			}
 			return Builders.buildList(sequences);
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}
 	
@@ -295,7 +292,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				}
 			}
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}	
 	
@@ -401,7 +398,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables){
@@ -421,7 +418,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}
@@ -483,7 +480,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables) {
@@ -519,7 +516,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}		
@@ -576,7 +573,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables) {
@@ -600,7 +597,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}
@@ -789,7 +786,27 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         }
         return index;
 	}
-	
+
+    protected ResultSet executeSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
+    protected ResultSet executeCatalogAndSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.catalog);
+        ps.setString(2, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
+    protected ResultSet executeSchemaAndTablePatternQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        ps.setString(2, params.tablePattern);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
 	protected String generateUpdateRuleClause() {
 		return "CASE WHEN R.UPDATE_RULE='CASCADE' THEN " + String.valueOf(importedKeyCascade) 
 				+ " WHEN R.UPDATE_RULE='SET NULL' THEN " + String.valueOf(importedKeySetNull)  
@@ -829,4 +846,20 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		public String   tablePattern;
 		public String[] tableTypes;
 	}
+
+    protected static class CloseStatementResultSet extends ResultSetWrapper {
+
+        private final Statement stmt;
+
+        public CloseStatementResultSet(Statement stmt, ResultSet rs) {
+            super(rs);
+            this.stmt = stmt;
+        }
+
+        @Override
+        public void close() throws SQLException {
+            JDBC.closeStatementOnly(stmt);
+            super.close();
+        }
+    }
 }

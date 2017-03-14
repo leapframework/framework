@@ -9,6 +9,8 @@
         h2.username        = sa
     </properties>
 
+    <property name="dsm.monitoring" value="false"/>
+
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 
 </config>
