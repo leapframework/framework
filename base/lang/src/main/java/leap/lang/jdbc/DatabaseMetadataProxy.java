@@ -168,15 +168,7 @@ public class DatabaseMetadataProxy<T extends ConnectionProxy> extends DatabaseMe
     }
 
     protected ResultSet proxyOfResultSet(ResultSet rs) throws SQLException {
-        Statement stmt = rs.getStatement();
-        if(null == stmt){
-            return new ResultSetProxy(null, rs);
-        }else{
-            return new ResultSetProxy(proxyOfStatement(stmt), rs);
-        }
-    }
-
-    protected Statement proxyOfStatement(Statement stmt) {
-        return conn.proxyOf(stmt);
+        //don't proxy the statement from result set, some jdbc driver will cache the statement, such as sql server.
+        return new ResultSetProxy(rs.getStatement(), rs);
     }
 }
