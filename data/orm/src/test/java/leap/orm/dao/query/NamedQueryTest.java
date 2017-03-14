@@ -133,8 +133,8 @@ public class NamedQueryTest extends OrmTestCase {
         Map<String, Object> olderFields = older.fields();
         Map<String, Object> newerFields = newer;
 
-        if (db.isMySql()) {
-            //TODO : the mill-seconds problem of mysql
+        if (db.isMySql() || db.isSqlServer()) {
+            //TODO : the mill-seconds problem of mysql and sql server
             olderFields.remove("createdAt");
             newerFields.remove("createdAt");
             olderFields.remove("updatedAt");

@@ -64,6 +64,20 @@ public interface DbDialect {
 	 * returns <code>true</code> if this db platform automatic generated index for primary key.
 	 */
 	boolean isAutoGenerateIndexForPrimaryKey();
+
+    /**
+     * "delete table_alias from table_name table_alias"
+     */
+    default boolean useTableAliasAfterDelete() {
+        return false;
+    }
+
+    /**
+     * "update table_alias set ... from table_name table_alias"
+     */
+    default boolean useTableAliasAfterUpdate() {
+        return false;
+    }
 	
 	/**
 	 * returns <code>true</code> if this db platform supoorts the given on delete {@link DbCascadeAction}.

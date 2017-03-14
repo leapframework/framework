@@ -62,8 +62,13 @@ public class MySql5Dialect extends GenericDbDialect {
     protected MySql5Dialect(){
     	
     }
-    
-	@Override
+
+    @Override
+    public boolean useTableAliasAfterDelete() {
+        return true;
+    }
+
+    @Override
     protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
 	    return "AUTO_INCREMENT";
     }

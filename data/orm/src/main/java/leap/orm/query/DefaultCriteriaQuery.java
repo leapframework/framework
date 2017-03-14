@@ -21,6 +21,7 @@ import leap.core.jdbc.SimpleScalarReader;
 import leap.core.jdbc.SimpleScalarsReader;
 import leap.core.value.Scalar;
 import leap.core.value.Scalars;
+import leap.db.DbDialect;
 import leap.lang.*;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
@@ -842,10 +843,10 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 				If you declare an alias for a table, you must use the alias when referring to the table:
 				DELETE t1 FROM test AS t1, test2 WHERE ...
 			 */
-			if(context.getDb().isMySql() || context.getDb().isMariaDB()) {
-				sql.append(" ").append(alias);
-			}
-			
+            if(context.getDb().getDialect().useTableAliasAfterDelete()) {
+                sql.append(" ").append(alias);
+            }
+
 			return this;
 		}
 		
@@ -860,8 +861,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 		
 		protected SqlBuilder updateSetColumns(Map<String, Object> columns, Map<String,Object> params) {
-			sql.append("update ").append(table).append(" ").append(alias).append(" set ");
-			
+            DbDialect dialect = context.getDb().getDialect();
+
+            if(dialect.useTableAliasAfterUpdate()) {
+                sql.append("update ").append(table).append(" set ");
+            }else{
+                sql.append("update ").append(table).append(" ").append(alias).append(" set ");
+            }
+
             int index = 0;
             for(Entry<String, Object> entry : columns.entrySet()){
             	String column = entry.getKey();
@@ -871,13 +878,18 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 if(index > 0){
                     sql.append(",");
                 }
-                
-                sql.append(alias).append('.').append(column).append("=").append(':').append(param);
+
+                if(!dialect.useTableAliasAfterUpdate()) {
+                    sql.append(alias).append('.');
+                }
+
+                sql.append(column).append("=").append(':').append(param);
                 
                 params.put(param, value);
                 
                 index++;
             }
+
 			return this;
 		}
 		

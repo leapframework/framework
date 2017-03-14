@@ -13,6 +13,7 @@
 
 package leap.db.platform.sqlserver;
 
+import leap.db.DbLimitQuery;
 import leap.db.change.ColumnDefinitionChange;
 import leap.db.change.SchemaChangeContext;
 import leap.db.model.DbColumn;
@@ -20,6 +21,8 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
 import leap.lang.New;
+import leap.lang.Strings;
+import leap.lang.value.Limit;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -64,6 +67,16 @@ public class SqlServer12Dialect extends GenericDbDialect {
     }
 
     @Override
+    public boolean useTableAliasAfterDelete() {
+        return true;
+    }
+
+    @Override
+    public boolean useTableAliasAfterUpdate() {
+        return true;
+    }
+
+    @Override
     protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
                                                               ColumnDefinitionChange change) {
         List<String> sqls = new ArrayList<String>();
@@ -92,6 +105,33 @@ public class SqlServer12Dialect extends GenericDbDialect {
     protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){
         return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
                 " MODIFY COLUMN " + getColumnDefinitionForAlterTable(column);
+    }
+
+    @Override
+    public String getLimitQuerySql(DbLimitQuery query) {
+        //sql server 2012
+        //https://msdn.microsoft.com/en-us/library/ms188385(v=SQL.110).aspx
+
+        //OFFSET { integer_constant | offset_row_count_expression } { ROW | ROWS }
+        //FETCH { FIRST | NEXT } { integer_constant | fetch_row_count_expression } { ROW | ROWS } ONLY
+
+        Limit limit = query.getLimit();
+
+        int offset = limit.getStart() - 1;
+        int rows   = limit.getEnd()   - offset;
+
+        String sql = query.getSql(db);
+
+        if(Strings.isEmpty(query.getOrderBy())) {
+            sql += " order by 1";
+        }
+
+        sql += " offset ? rows fetch next ? rows only";
+
+        query.getArgs().add(offset);
+        query.getArgs().add(rows);
+
+        return sql;
     }
 
     @Override
