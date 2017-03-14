@@ -13,6 +13,8 @@
 
 package leap.db.platform.sqlserver;
 
+import leap.db.model.DbIndexBuilder;
+import leap.db.model.DbTableBuilder;
 import leap.db.platform.GenericDbMetadataReader;
 import leap.lang.jdbc.ResultSetWrapper;
 
@@ -23,7 +25,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by KAEL on 2017/3/11.
+ * 12 means 2012
  */
 public class SqlServer12MetadataReader extends GenericDbMetadataReader {
 
@@ -53,7 +55,27 @@ public class SqlServer12MetadataReader extends GenericDbMetadataReader {
     }
 
     @Override
+    protected ResultSet getColumns(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
+        return dm.getColumns(params.catalog, params.schema, params.tablePattern, getDefaultColumnPattern());
+    }
+
+    @Override
+    protected ResultSet getPrimaryKeys(Connection connection, DatabaseMetaData dm, MetadataParameters params, String table) throws SQLException {
+        return dm.getPrimaryKeys(params.catalog, params.schema, table);
+    }
+
+    @Override
     protected ResultSet getForeignKeys(Connection connection, DatabaseMetaData dm, MetadataParameters params, String table) throws SQLException {
         return dm.getImportedKeys(params.catalog, params.schema, table);
+    }
+
+    @Override
+    protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getIndexInfo(params.catalog, params.schema, table, false, false);
+    }
+
+    @Override
+    protected boolean isInternalIndex(DbTableBuilder table, DbIndexBuilder ix, ResultSet rs) throws SQLException {
+        return ix.getName().startsWith("PK__") || ix.getName().startsWith("AK_");
     }
 }

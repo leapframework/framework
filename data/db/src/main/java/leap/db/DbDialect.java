@@ -166,6 +166,11 @@ public interface DbDialect {
 	 * Returns the generated primary key name of the given table.
 	 */
 	String generatePrimaryKeyName(DbSchemaObjectName tableName,String... pkColumnNames);
+
+    /**
+     * Returns the generated alternative key name of the given table.
+     */
+    String generateAlternativeKeyName(DbSchemaObjectName tableName,String... akColumnNames);
 	
 	/**
 	 * Returns the sql for querying table's count.
@@ -207,7 +212,16 @@ public interface DbDialect {
 	 * @see #supportsRenameColumn()
 	 */
 	List<String> getRenameColumnSqls(DbSchemaObjectName tableName,String columnName, String renameTo) throws IllegalStateException;
-	
+
+    /**
+     * Returns a new {@link List} contains the sql statements to alter an exists column to unique.
+     *
+     * @throws IllegalStateException if this dialect not supports column renaming.
+     *
+     * @see #supportsRenameColumn()
+     */
+    List<String> getAlterColumnUniqueSqls(DbSchemaObjectName tableName,String columnName) throws IllegalStateException;
+
 	/**
 	 * Returns a new {@link List} contains the sql statements to drop a exists column in the exists table.
 	 */

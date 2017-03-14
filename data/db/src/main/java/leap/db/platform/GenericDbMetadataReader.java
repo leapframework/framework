@@ -406,9 +406,9 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				try{
 					rs = getPrimaryKeys(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()){
+                            counter.incrementAndGet();
+
 							String schemaName = getPrimaryKeySchema(rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
@@ -488,9 +488,9 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				try{
 					rs = getForeignKeys(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()) {
+                            counter.incrementAndGet();
+
 							String schemaName = getForeignKeySchema(rs);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -579,19 +579,17 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
-					rs = dm.getIndexInfo(params.catalogPattern, params.schemaPattern, t.getName(), false, false);
+					rs = getIndexes(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()) {
+                            counter.incrementAndGet();
+
 							String schemaName = getIndexSchema(rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
 								if(Strings.equalsIgnoreCase(tableName, t.getName())){
-									if(!readIndex(t, rs)){
-										break;
-									}
+									readIndex(t, rs);
 								}
 							}
 						}
@@ -604,6 +602,12 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	}	
 	
 	protected boolean readIndex(DbTableBuilder t,ResultSet rs) throws SQLException {
+        // we're ignoring statistic indexes
+        short type = rs.getShort("TYPE");
+        if (type == DatabaseMetaData.tableIndexStatistic){
+            return false;
+        }
+
 		String ixName = rs.getString(INDEX_NAME);
 		
 		DbIndexBuilder ix = t.findIndex(ixName);
@@ -612,7 +616,6 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			ix = new DbIndexBuilder().setName(ixName);
 			
 			if(!readIndexInfo(t,ix,rs)){
-				//ignored
 				return false;
 			}
 			
@@ -635,19 +638,12 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	}
 	
 	protected boolean readIndexInfo(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
-		short type = rs.getShort("TYPE");
-		
-        // we're ignoring statistic indexes
-        if (type == DatabaseMetaData.tableIndexStatistic){
-        	return false;
-        }
-        
         ix.setUnique(!rs.getBoolean(NON_UNIQUE));
-        
+
         if(isInternalIndexGeneratedByApp(table, ix ,rs)|| isInternalIndex(table, ix, rs)){
         	ix.setInternal(true);
         }
-        
+
 		return true;
 	}	
 	
@@ -721,7 +717,11 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getIndexInfo(params.catalogPattern, params.schemaPattern, params.tablePattern, false, false);
 	}
-	
+
+    protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getIndexInfo(params.catalogPattern, params.schemaPattern, table, false, false);
+    }
+
 	protected ResultSet getSequences(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		throw new IllegalStateException("reading sequences metadata not supported");
 	}

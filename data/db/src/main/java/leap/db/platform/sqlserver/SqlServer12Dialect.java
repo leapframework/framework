@@ -19,6 +19,7 @@ import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbSchemaObjectName;
 import leap.db.platform.GenericDbDialect;
+import leap.lang.New;
 
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -28,7 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by KAEL on 2017/3/11.
+ * 12 means 2012
  */
 public class SqlServer12Dialect extends GenericDbDialect {
 
@@ -58,12 +59,17 @@ public class SqlServer12Dialect extends GenericDbDialect {
     }
 
     @Override
+    protected boolean supportsUniqueInColumnDefinition() {
+        return false;
+    }
+
+    @Override
     protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
                                                               ColumnDefinitionChange change) {
         List<String> sqls = new ArrayList<String>();
 
         if(change.isUniqueChanged()){
-            sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
+            sqls.addAll(getAlterColumnUniqueSqls(change.getTable(), change.getOldColumn().getName()));
 
             if(change.getPropertyChanges().size() > 1){
                 DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
@@ -76,9 +82,11 @@ public class SqlServer12Dialect extends GenericDbDialect {
         return sqls;
     }
 
-    protected String getAddUniqueColumnSql(DbSchemaObjectName tableName, String columnName) {
-        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
-                " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
+    @Override
+    public List<String> getAlterColumnUniqueSqls(DbSchemaObjectName tableName, String columnName) throws IllegalStateException {
+        return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                             " ADD CONSTRAINT " + generateAlternativeKeyName(tableName, columnName) +
+                             " UNIQUE(" + quoteIdentifier(columnName) + ")");
     }
 
     protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){

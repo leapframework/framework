@@ -27,7 +27,7 @@ import org.junit.Test;
 public class TableTest extends DbTestCase {
 
 	@Test
-	@Contextual()
+	@Contextual
 	public void testSimpleCreateDropTable(){
 		DbTable tableTobeCreate = new DbTableBuilder("simple_create_drop_table")
 										.addPrimaryKey(DbColumnBuilder.guid("id_"))

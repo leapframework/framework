@@ -267,8 +267,19 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     public String generatePrimaryKeyName(DbSchemaObjectName tableName, String... pkColumnNames) {
 		return "PK_" + Strings.upperCase(tableName.getName());
 	}
-	
-	@Override
+
+    @Override
+    public String generateAlternativeKeyName(DbSchemaObjectName tableName, String... akColumnNames) {
+        String name = "AK_" + Strings.left(Strings.upperCase(tableName.getName()), 8);
+
+        for(String c : akColumnNames) {
+            name = name + "_" + c;
+        }
+
+        return name;
+    }
+
+    @Override
     public List<String> getTruncateTableSqls(DbSchemaObjectName tableName) {
 	    return New.arrayList("TRUNCATE TABLE " + qualifySchemaObjectName(tableName));
     }
@@ -307,6 +318,14 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         		}
         	}
         }
+
+        if(!supportsUniqueInColumnDefinition()) {
+            for(DbColumn c : table.getColumns()) {
+                if(c.isUnique()) {
+                    sqls.addAll(getAlterColumnUniqueSqls(table, c.getName()));
+                }
+            }
+        }
 		
 	    return sqls;
     }
@@ -339,7 +358,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 		throw new IllegalStateException("This dialect '" + db.getDescription() + "' not supports column renaming");
 	}
 
-	@Override
+    @Override
+    public List<String> getAlterColumnUniqueSqls(DbSchemaObjectName tableName, String columnName) throws IllegalStateException {
+        return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                             " ADD UNIQUE(" + quoteIdentifier(columnName) + ")");
+    }
+
+    @Override
     public List<String> getDropColumnSqls(DbSchemaObjectName tableName, String columnName) {
 	    return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) + " DROP COLUMN " + quoteIdentifier(columnName));
     }
