@@ -63,13 +63,8 @@ public class ContextualRule implements TestRule {
 		    	}
 		    	
 		    	if(null != contextual){
-		    		String   contextName  = contextual.value();
-		    		String[] contextNames = contextual.values();
-		    		
-		    		if(null != contextName && contextName.length() > 0){
-		    			contextNames = new String[]{contextName};
-		    		}
-		    		
+		    		String[] contextNames = contextual.value();
+
 		    		//boolean executed = false;
 		    		
 		    		for(String name : provider.names(description)){

@@ -404,7 +404,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			for(DbTableBuilder t : tables){
 				ResultSet rs = null;
 				try{
-					rs = dm.getPrimaryKeys(params.catalog, params.schema, t.getName());
+					rs = getPrimaryKeys(connection, dm, params, t.getName());
 					if(null != rs){
 						counter.incrementAndGet();
 						
@@ -486,7 +486,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
-					rs = dm.getImportedKeys(params.catalogPattern, params.schemaPattern, t.getName());
+					rs = getForeignKeys(connection, dm, params, t.getName());
 					if(null != rs){
 						counter.incrementAndGet();
 						
@@ -705,10 +705,18 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected ResultSet getPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getPrimaryKeys(params.catalogPattern, params.schemaPattern, params.tablePattern);
 	}
-	
-	protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
+
+    protected ResultSet getPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getPrimaryKeys(params.catalogPattern, params.schemaPattern, table);
+    }
+
+    protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getImportedKeys(params.catalogPattern, params.schemaPattern, params.tablePattern);
 	}
+
+    protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getImportedKeys(params.catalogPattern, params.schemaPattern, table);
+    }
 	
 	protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getIndexInfo(params.catalogPattern, params.schemaPattern, params.tablePattern, false, false);

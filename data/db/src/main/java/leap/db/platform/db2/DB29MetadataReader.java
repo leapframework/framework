@@ -43,17 +43,7 @@ public class DB29MetadataReader extends GenericDbMetadataReader {
 				 "JOIN SYSCAT.COLUMNS C ON K.TABSCHEMA = C.TABSCHEMA AND K.TABNAME = C.TABNAME AND K.COLNAME = C.COLNAME " + 
 				 "WHERE C.KEYSEQ IS NOT NULL AND K.TABSCHEMA = ? ORDER BY K.CONSTNAME,K.COLSEQ";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-	
-			return ps.executeQuery();
-		} catch (SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
 	}
 
 	@Override
@@ -76,18 +66,8 @@ public class DB29MetadataReader extends GenericDbMetadataReader {
 				 "  JOIN SYSCAT.KEYCOLUSE FK ON C.CONSTRAINT_SCHEMA = FK.TABSCHEMA AND C.CONSTRAINT_NAME = FK.CONSTNAME " + 
 				 "  JOIN SYSCAT.KEYCOLUSE PK ON C.UNIQUE_CONSTRAINT_SCHEMA = PK.TABSCHEMA AND C.UNIQUE_CONSTRAINT_NAME = PK.CONSTNAME " +  
 				 "WHERE C.CONSTRAINT_SCHEMA = ? ORDER BY FK_NAME,KEY_SEQ";
-	
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-	
-			return ps.executeQuery();
-		} catch (SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}	
+
+        return executeSchemaQuery(connection, params, sql);
 	}
 
 	@Override
@@ -104,18 +84,8 @@ public class DB29MetadataReader extends GenericDbMetadataReader {
 				 "FROM SYSCAT.INDEXCOLUSE C " + 
 				 "  JOIN SYSCAT.INDEXES I ON C.INDSCHEMA = I.INDSCHEMA AND C.INDNAME = I.INDNAME " + 
 				 "WHERE I.UNIQUERULE != 'P' AND I.TABSCHEMA = ? ORDER BY INDEX_NAME,ORDINAL_POSITION";
-	
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-	
-			return ps.executeQuery();
-		} catch (SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeSchemaQuery(connection, params, sql);
 	}
 
 	@Override
@@ -133,17 +103,7 @@ public class DB29MetadataReader extends GenericDbMetadataReader {
 					 "FROM SYSCAT.SEQUENCES S " + 
 					 "WHERE S.SEQSCHEMA = ?";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 }

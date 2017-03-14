@@ -37,11 +37,11 @@ public class SqlServerPlatform extends GenericDbPlatform {
 
     @Override
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
-        return new SqlServerDialect();
+        return new SqlServer12Dialect();
     }
     @Override
     protected GenericDbMetadataReader createMetadataReader(DatabaseMetaData jdbcMetadata) throws SQLException {
-        return new SqlServerMetadataReader();
+        return new SqlServer12MetadataReader();
     }
 
     @Override

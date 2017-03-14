@@ -30,7 +30,8 @@ import java.util.List;
 /**
  * Created by KAEL on 2017/3/11.
  */
-public class SqlServerDialect extends GenericDbDialect {
+public class SqlServer12Dialect extends GenericDbDialect {
+
     @Override
     protected String getTestDriverSupportsGetParameterTypeSQL() {
         return "select 1";
@@ -49,6 +50,40 @@ public class SqlServerDialect extends GenericDbDialect {
     @Override
     protected String getAutoIncrementColumnDefinitionEnd(DbColumn column) {
         return "IDENTITY";
+    }
+
+    @Override
+    public boolean supportsColumnComment() {
+        return false;
+    }
+
+    @Override
+    protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
+                                                              ColumnDefinitionChange change) {
+        List<String> sqls = new ArrayList<String>();
+
+        if(change.isUniqueChanged()){
+            sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
+
+            if(change.getPropertyChanges().size() > 1){
+                DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
+                sqls.add(getAlterColumnSql(change.getTable(), c));
+            }
+        }else{
+            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
+        }
+
+        return sqls;
+    }
+
+    protected String getAddUniqueColumnSql(DbSchemaObjectName tableName, String columnName) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
+    }
+
+    protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                " MODIFY COLUMN " + getColumnDefinitionForAlterTable(column);
     }
 
     @Override
@@ -86,32 +121,5 @@ public class SqlServerDialect extends GenericDbDialect {
         //https://docs.microsoft.com/en-us/sql/connect/jdbc/using-advanced-data-types#blob-and-clob-and-nclob-data-types
         columnTypes.add(Types.BLOB,          "image");
         columnTypes.add(Types.CLOB,          "text");
-    }
-
-    @Override
-    protected List<String> createSafeAlterColumnSqlsForChange(SchemaChangeContext context,
-                                                              ColumnDefinitionChange change) {
-        List<String> sqls = new ArrayList<String>();
-
-        if(change.isUniqueChanged()){
-            sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
-
-            if(change.getPropertyChanges().size() > 1){
-                DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
-                sqls.add(getAlterColumnSql(change.getTable(), c));
-            }
-        }else{
-            sqls.add(getAlterColumnSql(change.getTable(), change.getNewColumn()));
-        }
-
-        return sqls;
-    }
-    protected String getAddUniqueColumnSql(DbSchemaObjectName tableName, String columnName) {
-        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
-                " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
-    }
-    protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){
-        return "ALTER TABLE " + qualifySchemaObjectName(tableName) +
-                " MODIFY COLUMN " + getColumnDefinitionForAlterTable(column);
     }
 }

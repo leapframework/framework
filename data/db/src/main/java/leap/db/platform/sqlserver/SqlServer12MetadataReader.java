@@ -25,7 +25,23 @@ import java.sql.Statement;
 /**
  * Created by KAEL on 2017/3/11.
  */
-public class SqlServerMetadataReader extends GenericDbMetadataReader {
+public class SqlServer12MetadataReader extends GenericDbMetadataReader {
+
+    @Override
+    protected boolean supportsReadAllPrimaryKeys() {
+        return false;
+    }
+
+    @Override
+    protected boolean supportsReadAllForeignKeys() {
+        return false;
+    }
+
+    @Override
+    protected boolean supportsReadAllIndexes() {
+        return false;
+    }
+
     @Override
     protected MetadataParameters createMetadataParameters(Connection connection, DatabaseMetaData dm, String catalog, String schema) {
         MetadataParameters p = super.createMetadataParameters(connection, dm, catalog, schema);
@@ -35,26 +51,9 @@ public class SqlServerMetadataReader extends GenericDbMetadataReader {
         
         return p;
     }
-    
-    @Override
-    protected ResultSet getTables(Connection connection, DatabaseMetaData dm,
-                                  MetadataParameters params) throws SQLException {
-        ResultSet rs = super.getTables(connection, dm, params);
 
-        return rs;
+    @Override
+    protected ResultSet getForeignKeys(Connection connection, DatabaseMetaData dm, MetadataParameters params, String table) throws SQLException {
+        return dm.getImportedKeys(params.catalog, params.schema, table);
     }
-//
-//
-//
-//    private class SqlServerResultSetWrapper extends ResultSetWrapper{
-//
-//        public SqlServerResultSetWrapper(ResultSet rs) {
-//            super(rs);
-//        }
-//
-//        @Override
-//        public Statement getStatement() throws SQLException {
-//            return null;
-//        }
-//    }
 }
