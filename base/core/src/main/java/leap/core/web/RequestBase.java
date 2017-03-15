@@ -55,6 +55,11 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * Returns the server's url without slash suffix , example : http://server_host[:server_port]
 	 */
 	public abstract String getServerUrl();
+
+	/**
+	 * Returns the reverse proxy server's url without slash suffix , example : http://server_host[:server_port]
+	 */
+	public abstract String getReverseProxyServerUrl();
 	
 	/**
 	 * @see HttpServletRequest#getContextPath()
@@ -65,6 +70,10 @@ public abstract class RequestBase extends RequestContext implements InputStreamS
 	 * Returns the url of server url and context path, example : http://server_host[:server_port][context_path]
 	 */
 	public abstract String getContextUrl();
+	/**
+	 * Returns the reverse proxy url of server url and context path, example : http://server_host[:server_port][context_path]
+	 */
+	public abstract String getReverseProxyContextUrl();
 	
 	/**
 	 * Returns the request uri(the path with context path and without query string).

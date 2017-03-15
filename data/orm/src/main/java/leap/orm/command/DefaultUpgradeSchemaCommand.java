@@ -192,24 +192,21 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
     protected boolean doExecute() {
 	    
 	    
-		Predicate<SchemaChange> changePredicate = new Predicate<SchemaChange>() {
-			@Override
-            public boolean test(SchemaChange change) {
-				if(change instanceof ColumnDefinitionChange){
-					if(!isAlterColumnEnabled()){
-						
-						ColumnDefinitionChange cdc = (ColumnDefinitionChange)change;
-						
-						log.info("Ignore the definition change of column '{}.{}'",
-								cdc.getTable().getName(),cdc.getOldColumn().getName());
-						
-						return false;
-					}
-					return true;
-				}
-	            return true;
+		Predicate<SchemaChange> changePredicate = change -> {
+            if(change instanceof ColumnDefinitionChange){
+                if(!isAlterColumnEnabled()){
+                    
+                    ColumnDefinitionChange cdc = (ColumnDefinitionChange)change;
+                    
+                    log.info("Ignore the definition change of column '{}.{}'",
+                            cdc.getTable().getName(),cdc.getOldColumn().getName());
+                    
+                    return false;
+                }
+                return true;
             }
-		};
+            return true;
+};
 		
 		execution = db.createExecution();
 		List<SchemaChanges> allChanges = compareChanges();

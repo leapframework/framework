@@ -10,6 +10,7 @@
 	<bean name="MariaDB" type="leap.db.DbPlatform" class="leap.db.platform.mariadb.MariaDBPlatform"/>
 	<bean name="MySql" type="leap.db.DbPlatform" class="leap.db.platform.mysql.MySqlPlatform"/>
 	<bean name="Oracle" type="leap.db.DbPlatform" class="leap.db.platform.oracle.OraclePlatform"/>
+	<bean name="SqlServer" type="leap.db.DbPlatform" class="leap.db.platform.sqlserver.SqlServerPlatform"/>
 	<bean name="PostgreSQL" type="leap.db.DbPlatform" class="leap.db.platform.postgresql.PostgreSQLPlatform"/>
 	
 	<!-- DataSource -->

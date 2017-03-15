@@ -75,15 +75,12 @@ public abstract class DbPlatformBase extends AbstractMNamedWithDesc implements D
 	}
 	
 	protected static Function<DatabaseMetaData,Boolean> productNameContainsIgnorecaseMatcher(final String name){
-		return new Function<DatabaseMetaData,Boolean>() {
-			@Override
-            public Boolean apply(DatabaseMetaData dm) {
-	            try {
-	                return Strings.containsIgnoreCase(dm.getDatabaseProductName(), name);
-                } catch (SQLException e) {
-	                throw new NestedSQLException(e);
-                }
-            }
+		return dm -> {
+			try {
+				return Strings.containsIgnoreCase(dm.getDatabaseProductName(), name);
+			} catch (SQLException e) {
+				throw new NestedSQLException(e);
+			}
 		};
 	}
 }

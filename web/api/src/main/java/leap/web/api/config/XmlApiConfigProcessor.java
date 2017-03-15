@@ -280,99 +280,109 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         addWebModule(context,api);
     }
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
-        while(reader.nextWhileNotEnd(API)) {
 
-            if(reader.isStartElement(VERSION)) {
-                String v = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(v)) {
-                    api.setVersion(v);
+        context.setAttribute(ApiConfigurator.class.getName(), api);
+
+        try{
+            while(reader.nextWhileNotEnd(API)) {
+                if(context.getProcessors().handleXmlElement(context, reader, NAMESPACE_URI)) {
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(TITLE)) {
-                String title = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(title)) {
-                    api.setTitle(title);
+                if(reader.isStartElement(VERSION)) {
+                    String v = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(v)) {
+                        api.setVersion(v);
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(SUMMARY)) {
-                String summary = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(summary)) {
-                    api.setSummary(summary);
+                if(reader.isStartElement(TITLE)) {
+                    String title = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(title)) {
+                        api.setTitle(title);
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(DESC)) {
-                String desc = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(desc)) {
-                    api.setDescription(desc);
+                if(reader.isStartElement(SUMMARY)) {
+                    String summary = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(summary)) {
+                        api.setSummary(summary);
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(PRODUCES)) {
-                String s = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(s)) {
-                    api.setProduces(Strings.splitMultiLines(s));
+                if(reader.isStartElement(DESC)) {
+                    String desc = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(desc)) {
+                        api.setDescription(desc);
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(CONSUMES)) {
-                String s = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(s)) {
-                    api.setConsumes(Strings.splitMultiLines(s));
+                if(reader.isStartElement(PRODUCES)) {
+                    String s = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(s)) {
+                        api.setProduces(Strings.splitMultiLines(s));
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(PROTOCOLS)) {
-                String s = reader.getElementTextAndEnd();
-                if(!Strings.isEmpty(s)) {
-                    api.setProtocols(Strings.splitMultiLines(s));
+                if(reader.isStartElement(CONSUMES)) {
+                    String s = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(s)) {
+                        api.setConsumes(Strings.splitMultiLines(s));
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(RESPONSES)) {
-                //todo : override exists responses.
-                readCommonResponses(reader).forEach(api::putCommonResponseBuilder);
-            }
-
-            if(reader.isStartElement(MAX_PAGE_SIZE)) {
-                Integer i = reader.getIntegerElementTextAndEnd();
-                if(null != i) {
-                    api.setMaxPageSize(i);
+                if(reader.isStartElement(PROTOCOLS)) {
+                    String s = reader.getElementTextAndEnd();
+                    if(!Strings.isEmpty(s)) {
+                        api.setProtocols(Strings.splitMultiLines(s));
+                    }
+                    continue;
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(DEFAULT_PAGE_SIZE)) {
-                Integer i = reader.getIntegerElementTextAndEnd();
-                if(null != i) {
-                    api.setDefaultPageSize(i);
+                if(reader.isStartElement(RESPONSES)) {
+                    //todo : override exists responses.
+                    readCommonResponses(reader).forEach(api::putCommonResponseBuilder);
                 }
-                continue;
-            }
 
-            if(reader.isStartElement(PERMISSIONS)) {
-                readPermissions(context, reader, api);
-                continue;
-            }
+                if(reader.isStartElement(MAX_PAGE_SIZE)) {
+                    Integer i = reader.getIntegerElementTextAndEnd();
+                    if(null != i) {
+                        api.setMaxPageSize(i);
+                    }
+                    continue;
+                }
 
-            if(reader.isStartElement(RESOURCE_PERMISSIONS)) {
-                readResourcePermissions(context, reader, api);
-                continue;
+                if(reader.isStartElement(DEFAULT_PAGE_SIZE)) {
+                    Integer i = reader.getIntegerElementTextAndEnd();
+                    if(null != i) {
+                        api.setDefaultPageSize(i);
+                    }
+                    continue;
+                }
+
+                if(reader.isStartElement(PERMISSIONS)) {
+                    readPermissions(context, reader, api);
+                    continue;
+                }
+
+                if(reader.isStartElement(RESOURCE_PERMISSIONS)) {
+                    readResourcePermissions(context, reader, api);
+                    continue;
+                }
+                if(reader.isStartElement(OAUTH)){
+                    OauthConfig oauth = readOauth(context,reader);
+                    api.setOAuthConfig(oauth);
+                    continue;
+                }
             }
-            if(reader.isStartElement(OAUTH)){
-                OauthConfig oauth = readOauth(context,reader);
-                api.setOAuthConfig(oauth);
-                continue;
-            }
+        }finally{
+            context.removeAttribute(ApiConfigurator.class.getName());
         }
     }
 

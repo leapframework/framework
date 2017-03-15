@@ -15,9 +15,8 @@
  */
 package leap.web.api.config;
 
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Collections2;
+import leap.lang.*;
+import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
@@ -29,7 +28,7 @@ import leap.web.route.Route;
 
 import java.util.*;
 
-public class DefaultApiConfig implements ApiConfig, ApiConfigurator {
+public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiConfigurator {
 	
 	protected final String name;
 	protected final String basePath;

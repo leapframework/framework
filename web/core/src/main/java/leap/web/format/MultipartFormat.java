@@ -59,7 +59,9 @@ public class MultipartFormat extends AbstractHttpFormat implements RequestFormat
         }
 
         Part part = request.getPart(argument.getName());
-
+        if(part == null){
+            return null;
+        }
         if(!argument.getType().equals(MultipartFile.class)) {
             return part;
         }else{

@@ -58,17 +58,7 @@ public class Derby10MetadataReader extends GenericDbMetadataReader {
 					 "FROM SYS.SYSSEQUENCES SE INNER JOIN SYS.SYSSCHEMAS SC ON SE.SCHEMAID = SC.SCHEMAID " + 
 					 "WHERE SC.SCHEMANAME = ?";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override

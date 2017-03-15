@@ -763,7 +763,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		if(!emb.hasPrimaryKey()){
 			DbTable table = emb.getPhysicalTable();
 			if(null == table){
-				emb.addPrimaryKey(createAutoIdentityMapping(context, emb));
+				FieldMappingBuilder primaryKey = createAutoIdentityMapping(context, emb);
+				log.warn("primary key of "+ emb.getEntityName() + 
+						" is not exists, leap will auto create a primary key named "+
+						primaryKey.getFieldName() +"[column:"+ primaryKey.getColumnName() +
+						"] for it.");
+				emb.addPrimaryKey(primaryKey);
 			}
 		}
 	}

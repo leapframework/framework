@@ -22,7 +22,6 @@ import leap.web.api.meta.desc.ModelDesc;
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
     protected MProperty              property;
-    protected ModelDesc.PropertyDesc desc;
     protected Boolean                creatable;
     protected Boolean                updatable;
     protected Boolean                sortable;
@@ -32,23 +31,17 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 	    super();
     }
 
-	public MApiPropertyBuilder(MProperty mp, ModelDesc.PropertyDesc desc) {
-	    super();
-        this.desc = desc;
-	    this.setMProperty(mp);
+    public MApiPropertyBuilder(MProperty mp) {
+        super();
+        this.setMProperty(mp);
     }
-	
+
 	public void setMProperty(MProperty mp) {
         this.property = mp;
 		this.name  = mp.getName();
 		this.title = mp.getTitle();
 		this.summary = mp.getSummary();
-
 		this.description = mp.getDescription();
-        if(desc != null && Strings.isEmpty(this.description)){
-            this.description = desc.getDesc();
-        }
-
         this.property = mp;
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();

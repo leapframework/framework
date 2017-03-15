@@ -15,7 +15,6 @@
  */
 package leap.oauth2;
 
-import leap.lang.Strings;
 import leap.web.Request;
 
 public class RequestOAuth2Params implements OAuth2Params {

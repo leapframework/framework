@@ -16,8 +16,10 @@
 package leap.orm.tested.model.relation;
 
 import leap.orm.annotation.Entity;
+import leap.orm.annotation.Table;
 
 @Entity
+@Table("re2")
 public class RelationEntity2 {
 
 	protected Integer id;

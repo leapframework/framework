@@ -267,8 +267,19 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
     public String generatePrimaryKeyName(DbSchemaObjectName tableName, String... pkColumnNames) {
 		return "PK_" + Strings.upperCase(tableName.getName());
 	}
-	
-	@Override
+
+    @Override
+    public String generateAlternativeKeyName(DbSchemaObjectName tableName, String... akColumnNames) {
+        String name = "AK_" + Strings.left(Strings.upperCase(tableName.getName()), 8);
+
+        for(String c : akColumnNames) {
+            name = name + "_" + c;
+        }
+
+        return name;
+    }
+
+    @Override
     public List<String> getTruncateTableSqls(DbSchemaObjectName tableName) {
 	    return New.arrayList("TRUNCATE TABLE " + qualifySchemaObjectName(tableName));
     }
@@ -307,6 +318,14 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         		}
         	}
         }
+
+        if(!supportsUniqueInColumnDefinition()) {
+            for(DbColumn c : table.getColumns()) {
+                if(c.isUnique()) {
+                    sqls.addAll(getAlterColumnUniqueSqls(table, c.getName()));
+                }
+            }
+        }
 		
 	    return sqls;
     }
@@ -339,7 +358,13 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 		throw new IllegalStateException("This dialect '" + db.getDescription() + "' not supports column renaming");
 	}
 
-	@Override
+    @Override
+    public List<String> getAlterColumnUniqueSqls(DbSchemaObjectName tableName, String columnName) throws IllegalStateException {
+        return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) +
+                             " ADD UNIQUE(" + quoteIdentifier(columnName) + ")");
+    }
+
+    @Override
     public List<String> getDropColumnSqls(DbSchemaObjectName tableName, String columnName) {
 	    return New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) + " DROP COLUMN " + quoteIdentifier(columnName));
     }
@@ -491,7 +516,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	@Override
     public List<DbCommand> getSchemaChangeCommands(SchemaChange change, SchemaChangeContext context) {
-		List<DbCommand> commands = new ArrayList<DbCommand>();
+		List<DbCommand> commands = new ArrayList<>();
 		
 		Method method = schemaChangeMethods.get(change.getClass());
 		if(null == method){
@@ -528,11 +553,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 		for(DbForeignKey fk : change.getOldTable().getForeignKeys()) {
 			commands.add(db.cmdDropForeignKey(change.getOldTable(), fk.getName()));
 		}
-		
+
 		for(DbIndex ix : change.getOldTable().getIndexes()) {
 			commands.add(db.cmdDropIndex(change.getOldTable(), ix.getName()));
 		}
-		
+
 		commands.add(db.cmdDropTable(change.getOldTable()));
 	}
 	
@@ -585,8 +610,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			commands.add(db.cmdCreateColumn(change.getTable(), change.getNewColumn()));
 		}
 	}
-	
-	protected void createSchemaChagneCommands(SchemaChangeContext context, ForeignKeyDefinitionChange change,List<DbCommand> commands) {
+	protected void createSchemaChangeCommands(SchemaChangeContext context, ForeignKeyDefinitionChange change,List<DbCommand> commands) {
 		//Recreate foreign key
 		commands.add(db.cmdDropForeignKey(change.getTable(), change.getOldForeignKey().getName()));
 		commands.add(db.cmdCreateForeignKey(change.getTable(), change.getNewForeignKey()));
@@ -1105,7 +1129,11 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         }
         
         if(column.isAutoIncrement()){
-        	definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
+        	if(supportsAutoIncrement()){
+				definition.append(' ').append(getAutoIncrementColumnDefinitionEnd(column));
+			}else{
+        		log.warn("Unsupported auto increment column in " + db.getPlatform().getName());
+			}
         }
         
         return definition.toString();

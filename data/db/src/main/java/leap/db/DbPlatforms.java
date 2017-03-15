@@ -30,7 +30,7 @@ public class DbPlatforms {
 	protected static final List<DbPlatform> platforms = new CopyOnWriteArrayList<DbPlatform>();
 	
     public static final String ORACLE     = "Oracle";
-    public static final String SQLSERVER  = "SqlServer";
+    public static final String SQLSERVER  = "Microsoft SQL Server";
     public static final String MARIADB	  = "MariaDB";
     public static final String MYSQL      = "MySql";
     public static final String POSTGRESQL = "PostgreSQL";

@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import leap.junit.concurrent.ConcurrentTestCase;
 import leap.lang.Beans;
+import leap.lang.New;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
 import leap.lang.resource.Resource;
@@ -156,6 +157,27 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     public void testDecode1(){
     	JSON.parse("[{ id : \"\", fields:[{ id:\"\",attrs:{}}]}]");
     }
+    
+    @Test
+    public void testDecodeToGenericType(){
+        Map<String, Bean> beanMap = New.hashMap();
+        beanMap.put("bean1",new Bean());
+
+        String json = JSON.encode(beanMap);
+        Map<String, Bean> beanMap1 = JSON.decodeMap(json,Bean.class);
+        assertEquals(beanMap.size(), beanMap1.size());
+        assertEquals(beanMap.get("bean1").getClass(), beanMap1.get("bean1").getClass());
+        assertEquals(beanMap.get("bean1").name, beanMap1.get("bean1").name);
+        
+        List<Bean> beanList = New.arrayList();
+        beanList.add(new Bean());
+        json = JSON.encode(beanList);
+        List<Bean> beanList1 = JSON.decodeList(json,Bean.class);
+        assertEquals(beanList.size(), beanList1.size());
+        assertEquals(beanList.get(0).name, beanList1.get(0).name);
+    }
+    
+    
     
     @Test
     public void testDecodeUpperCaseProperties(){

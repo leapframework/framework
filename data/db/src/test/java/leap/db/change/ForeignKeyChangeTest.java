@@ -16,11 +16,8 @@
 package leap.db.change;
 
 import leap.db.DbTestCase;
-import leap.db.model.DbColumnBuilder;
-import leap.db.model.DbForeignKeyBuilder;
-import leap.db.model.DbForeignKeyColumn;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder;
+import leap.db.model.*;
+import leap.db.platform.oracle.OraclePlatform;
 import leap.junit.contexual.Contextual;
 
 import org.junit.Test;
@@ -32,7 +29,7 @@ public class ForeignKeyChangeTest extends DbTestCase {
 	public void testAddForeignKeyChange() {
 		DbColumnBuilder colId  = DbColumnBuilder.integer("id").primaryKey();
 		DbColumnBuilder colPid = DbColumnBuilder.integer("pid");
-
+		
 		DbTableBuilder table = new DbTableBuilder("test_addfk_change")
 									.addPrimaryKey(colId)
 									.addColumn(colPid);

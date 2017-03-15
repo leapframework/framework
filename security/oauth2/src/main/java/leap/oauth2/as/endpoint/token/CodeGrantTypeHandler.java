@@ -36,6 +36,8 @@ import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserStore;
 
+import static leap.oauth2.Oauth2MessageKey.*;
+
 /**
  * grant_type=authorization_code
  */
@@ -48,13 +50,15 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
 		if(!config.isAuthorizationCodeEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.unsupportedGrantTypeError(request,key,null),ERROR_UNSUPPORTED_GRANT_TYPE_TYPE,"authorization_code"));
 			return;
 		}
 		
 		String code = params.getCode();
 		if(Strings.isEmpty(code)) {
-			OAuth2Errors.invalidRequest(response, "authorization code required");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"authorization code required"),INVALID_REQUEST_AUTHORIZATION_CODE_REQUIRED));
 			return;
 		}
 
@@ -66,19 +70,24 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		}
 		
         if(!client.isAllowAuthorizationCode()) {
-            OAuth2Errors.invalidGrant(response, "authorization code not allow");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code not allow"),
+							ERROR_INVALID_GRANT_AUTHORIZATION_CODE_NOT_ALLOW,client.getId()));
             return;
         }
         
         AuthzCode authzCode = codeManager.consumeAuthorizationCode(code);
         if (null == authzCode) {
-            OAuth2Errors.invalidGrant(response, "invalid authorization code");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid authorization code"),
+							ERROR_INVALID_GRANT_INVALID_AUTHORIZATION_CODE,authzCode));
             return;
         }
         
         if(authzCode.isExpired()) {
             codeManager.removeAuthorizationCode(authzCode);
-            OAuth2Errors.invalidGrant(response, "authorization code expired");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"authorization code expired"),ERROR_INVALID_GRANT_AUTHORIZATION_CODE_EXPIRED,authzCode));
             return;
         }
 		
@@ -86,7 +95,8 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		UserStore us = sc.getUserStore();
 		UserDetails userDetails = us.loadUserDetailsByIdString(authzCode.getUserId());
 		if(null == userDetails) {
-            OAuth2Errors.invalidGrant(response, "user id '" + authzCode.getUserId() + "' not found");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"user id '" + authzCode.getUserId() + "' not found"),ERROR_INVALID_GRANT_USER_NOT_FOUND,authzCode.getUserId()));
             return;
 		}
 		

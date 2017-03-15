@@ -436,7 +436,7 @@ public class RelationMapper implements Mapper {
 		String joinTableName   = rmb.getJoinTableName();
 		
 		if(Strings.isEmpty(joinEntityName)) {
-			joinEntityName = context.getNamingStrategy().getJoinEntityName(emb.getEntityName(), targetEmb.getEntityName());
+			joinEntityName = context.getNamingStrategy().getJoinEntityName(emb.getTableName(), targetEmb.getTableName());
 		}
 		
 		if(Strings.isEmpty(joinTableName)) {

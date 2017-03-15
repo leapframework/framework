@@ -23,6 +23,7 @@ import leap.lang.New;
 import leap.orm.OrmTestCase;
 import leap.orm.annotation.SqlKey;
 import leap.orm.dao.DaoCommand;
+import leap.orm.sql.GlobalFieldWhereIf;
 import leap.orm.sql.SqlNotFoundException;
 import leap.orm.tested.model.ECodeModel;
 import leap.orm.tested.model.ECodeModel1;
@@ -62,9 +63,9 @@ public class WhereColumnTest extends OrmTestCase {
     }
     @Test
     public void testDeleteWhere(){
-        ECodeModel.deleteAll();
-        ECodeModel o1 = new ECodeModel("1").create();
-        ECodeModel o2 = new ECodeModel("2").create();
+        executeWithoutGlobalField(aBoolean -> ECodeModel.deleteAll());
+        ECodeModel o1 = new ECodeModel("1").set("id",1).create();
+        ECodeModel o2 = new ECodeModel("2").set("id",2).create();
         assertEquals(2,ECodeModel.count());
         ECodeModel.deleteAll(new Object[]{o1.id(),o2.id()});
         assertEquals(0,ECodeModel.count());
@@ -72,23 +73,24 @@ public class WhereColumnTest extends OrmTestCase {
 
     @Test
     public void testUpdateWhere(){
-        ECodeModel.deleteAll();
-        ECodeModel o1 = new ECodeModel("1");
+        executeWithoutGlobalField(aBoolean -> ECodeModel.deleteAll());
+        ECodeModel o1 = new ECodeModel("1").id(1);
         o1.create();
-        ECodeModel o2 = new ECodeModel("2");
+        ECodeModel o2 = new ECodeModel("2").id(2);
         o2.create();
         o1.setName("e1");
         o2.setName("e2");
         ECodeModel.updateAll(new Object[]{o1,o2});
         o1 = ECodeModel.find(o1.id());
+        
     }
 
     @Test
     public void testSingleWhereQuery() {
         Confirm.execute( () -> dmo.truncate(ECodeModel.class));
 
-        ECodeModel o1 = new ECodeModel("1").create();
-        ECodeModel o2 = new ECodeModel("2").set("ecode","t1").create();
+        ECodeModel o1 = new ECodeModel("1").id(1).create();
+        ECodeModel o2 = new ECodeModel("2").id(2).set("ecode","t1").create();
 
         assertEquals(1,ECodeModel.where("1=1").count());
         assertEquals("1",ECodeModel.<ECodeModel>where("1=1").first().getName());
@@ -155,12 +157,15 @@ public class WhereColumnTest extends OrmTestCase {
 
     @Test
     public void testLeftJoinAndWhereQuery() {
-        ECodeModel.deleteAll();
-        ECodeModel1.deleteAll();
+        executeWithoutGlobalField(aBoolean -> {
+            ECodeModel.deleteAll();
+            ECodeModel1.deleteAll();
+        });
+        
 
         new ECodeModel("1").id("1").set("ecode","t1").create();
         new ECodeModel1("2").id("1").set("ecode","t1").create();
-        new ECodeModel1("3").id("1").set("ecode","t2").create();
+        new ECodeModel1("3").id("2").set("ecode","t2").create();
 
         long count =
             dao.createSqlQuery("select * from ECodeModel t1 left join ECodeModel1 t2 on t1.id = t2.id")
@@ -171,9 +176,12 @@ public class WhereColumnTest extends OrmTestCase {
 
     @Test
     public void testInnerJoinAndLeftJoinQuery() {
+        boolean source = GlobalFieldWhereIf.skip.get();
+        GlobalFieldWhereIf.skip.set(true);
         ECodeModel.deleteAll();
         ECodeModel1.deleteAll();
-
+        GlobalFieldWhereIf.skip.set(source);
+        
         new ECodeModel("2").id("1").set("ecode","t1").create();
         new ECodeModel1("2").id("1").set("ecode","t2").create();
 
@@ -182,14 +190,15 @@ public class WhereColumnTest extends OrmTestCase {
             "inner join ECodeModel1 t2 on t1.id = t2.id " +
             "left join EcodeModel1 t3 on t1.id = t3.id";
 
-        dao.createSqlQuery(sql).count();
+        assertEquals(0,dao.createSqlQuery(sql).count());
     }
 
     @Test
     public void testUnionQuery() {
-        ECodeModel.deleteAll();
-        ECodeModel1.deleteAll();
-
+        executeWithoutGlobalField(b -> {
+            ECodeModel.deleteAll();
+            ECodeModel1.deleteAll();
+        });
         new ECodeModel("1").id("1").set("ecode","t").create();
         new ECodeModel("2").id("2").set("ecode","t1").create();
         new ECodeModel1("3").id("1").set("ecode","t").create();

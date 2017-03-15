@@ -20,6 +20,7 @@ import java.util.List;
 import leap.core.validation.annotations.Email;
 import leap.core.validation.annotations.NotEmpty;
 import leap.orm.annotation.Finder;
+import leap.orm.annotation.Id;
 import leap.orm.model.Model;
 
 public class Person extends Model {
@@ -44,7 +45,9 @@ public class Person extends Model {
 	public static void test(){
 
 	}
-
+	@Id
+	private String id;
+	
 	@NotEmpty
 	private String name;
 	
@@ -95,5 +98,13 @@ public class Person extends Model {
 
 	public void setAge(int age) {
 		this.age = age;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }

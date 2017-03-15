@@ -81,18 +81,7 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 					 "TABLE_COMMENT AS REMARKS " + 
 					 "FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = ? AND TABLE_NAME LIKE ?";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			ps.setString(2, params.tablePattern);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaAndTablePatternQuery(connection, params, sql);
     }
 	
 	@Override
@@ -113,17 +102,7 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 					 " WHERE B.CONSTRAINT_TYPE = 'PRIMARY KEY' " + 
 					 " AND A.TABLE_SCHEMA = ? "; 
 		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -149,18 +128,8 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 				     " AND A.CONSTRAINT_NAME = R.CONSTRAINT_NAME " +
 				     " AND A.TABLE_NAME = R.TABLE_NAME " + 
 				     "WHERE A.TABLE_SCHEMA = ? ";
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		}catch(SQLException e){
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -180,19 +149,9 @@ public class MySql5MetadataReader extends GenericDbMetadataReader {
 				     "NULL AS PAGES," + 
 				     "NULL AS FILTER_CONDITION " + 
 					 "FROM INFORMATION_SCHEMA.STATISTICS " +
-					 "WHERE INDEX_NAME != 'PRIMARY' AND TABLE_SCHEMA = ? "; 
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
+					 "WHERE INDEX_NAME != 'PRIMARY' AND TABLE_SCHEMA = ? ";
 
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 
 	@Override

@@ -16,6 +16,9 @@
 package leap.orm;
 
 import leap.orm.junit.OrmTestBase;
+import leap.orm.sql.GlobalFieldWhereIf;
+
+import java.util.function.Consumer;
 
 
 public abstract class OrmTestCase extends OrmTestBase {
@@ -26,4 +29,11 @@ public abstract class OrmTestCase extends OrmTestBase {
 		removeContextualDataSource("ds1");
 	}
 
+	protected void executeWithoutGlobalField(Consumer<Boolean> consumer){
+		boolean source = GlobalFieldWhereIf.skip.get();
+		GlobalFieldWhereIf.skip.set(true);
+		consumer.accept(GlobalFieldWhereIf.skip.get());
+		GlobalFieldWhereIf.skip.set(source);
+	}
+	
 }

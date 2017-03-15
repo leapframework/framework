@@ -54,6 +54,9 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
 			if(c1 != null && c2 != null){
 				if(c1.getSortOrder() > c2.getSortOrder()){
 					return 1;
+				}else if(c1.getSortOrder() == c2.getSortOrder()){
+					// jdk 7以后采用TimSort算法，两个结果相同时，不返回0可能会抛出异常java.lang.IllegalArgumentException: Comparison method violates its general contract!
+					return 0;
 				}
 			}
 			return -1;
@@ -147,12 +150,7 @@ public class GenericDbCommands extends ListEnumerable<DbCommand> implements DbCo
         }
 
 		public DbExecution execute(){
-			return db.executeWithResult(new ConnectionCallbackWithResult<DbExecution>() {
-				@Override
-                public DbExecution execute(Connection connection) throws SQLException {
-	                return GenericDbCommand.this.execute(connection);
-                }
-			});
+			return db.executeWithResult(connection -> GenericDbCommand.this.execute(connection));
 		}
 		
 		public DbExecution execute(Connection connection) {

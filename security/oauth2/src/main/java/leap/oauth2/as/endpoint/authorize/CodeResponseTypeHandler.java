@@ -33,7 +33,7 @@ public class CodeResponseTypeHandler extends AbstractResponseTypeHandler impleme
 	@Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         if(!config.isAuthorizationCodeEnabled()) {
-            OAuth2Errors.redirectUnsupportedResponseType(response, authc.getRedirectUri(), null);
+            OAuth2Errors.redirectUnsupportedResponseType(request, response, authc.getRedirectUri(),null);
             return;
         } 
 

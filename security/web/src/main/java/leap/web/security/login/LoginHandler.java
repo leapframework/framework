@@ -15,6 +15,7 @@
  */
 package leap.web.security.login;
 
+import leap.lang.Out;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
@@ -28,5 +29,14 @@ public interface LoginHandler {
 	default State handleLoginAuthentication(Request request,Response response, LoginContext context) throws Throwable {
 	    return State.CONTINUE;
 	}
-
+	
+	default void parseHandleType(Request request, Response response, LoginContext context, Out<HandleType> out){
+    	
+	} 
+	
+	enum HandleType{
+    	VIEW,
+		AUTHENTICATION
+	}
+	
 }

@@ -22,6 +22,7 @@ import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
+import leap.db.platform.oracle.OraclePlatform;
 import leap.junit.contexual.Contextual;
 
 import leap.lang.exception.NestedSQLException;
@@ -58,7 +59,6 @@ public class ColumnTest extends DbTestCase {
 		t1 = db.getMetadata().tryGetTable(t1);
 		DbColumn c3 = t1.findColumn(col3.getName());
 		assertEquals(col3.getComment(), c3.getComment());
-		
 		//test column comment for alter column
 		col2.setComment("comm");
 		SchemaChanges changes = db.getComparator().compareTable(table.build(), t1);

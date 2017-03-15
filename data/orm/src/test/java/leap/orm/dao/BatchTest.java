@@ -21,6 +21,7 @@ import leap.orm.tested.model.petclinic.Owner;
 
 import org.junit.Test;
 
+import java.sql.Statement;
 import java.util.List;
 
 public class BatchTest extends OrmTestCase {
@@ -70,8 +71,10 @@ public class BatchTest extends OrmTestCase {
 
 	protected void assertSuccess(int[] results) {
 		assertEquals(2,results.length);
-		assertEquals(1,results[0]);
-		assertEquals(1,results[1]);
+		// batch insert will return Statement.SUCCESS_NO_INFO in oracle
+		// batch insert will return update count giving the number of rows in other database
+		assertTrue(Statement.SUCCESS_NO_INFO == results[0] || 1 == results[0]);
+		assertTrue(Statement.SUCCESS_NO_INFO == results[1] || 1 == results[1]);
 	}
 
 	@Test

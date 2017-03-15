@@ -131,7 +131,7 @@ public class DefaultDmo extends DmoBase {
 				defaultSchema.addTable(table);
 			}else{
 				if(null == extraSchemas){
-					extraSchemas = new HashMap<String, DbSchemaBuilder>();
+					extraSchemas = new HashMap<>();
 				}
 				
 				DbSchemaBuilder schema = extraSchemas.get(schemaName.toLowerCase());

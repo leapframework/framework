@@ -119,8 +119,13 @@ public abstract class DbBase implements Db {
     public DataSource getDataSource() {
 	    return dataSource;
     }
-	
-	public Log getLog(Class<?> cls){
+
+    @Override
+    public String toString() {
+        return super.toString() + "(" + name + ")";
+    }
+
+    public Log getLog(Class<?> cls){
         //leap.db.cls(type:host:port)
         String name = Classes.getPackageName(DbBase.class) + "." + cls.getSimpleName() +
                       "(" + platform.getName().toLowerCase() + (null == server ? ")" : (":" + server + ")"));

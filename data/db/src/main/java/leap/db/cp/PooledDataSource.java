@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Wrapper;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class PooledDataSource extends PoolProperties implements DataSource, Closeable {
@@ -32,6 +33,11 @@ public class PooledDataSource extends PoolProperties implements DataSource, Clos
 	
 	public PooledDataSource() {
 		
+	}
+	
+	public PooledDataSource(Map<String, String> properties){
+		Args.notNull(properties,"pool properties");
+		properties.forEach((k, v) -> dataSourceProperties.put(k,v));
 	}
 	
 	public PooledDataSource(PoolProperties props) {

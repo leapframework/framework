@@ -38,10 +38,12 @@ import leap.web.security.user.UserStore;
 
 import java.util.function.Consumer;
 
+import static leap.oauth2.Oauth2MessageKey.*;
+
 /**
  * grant_type=refresh_token
  */
-public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
+public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler implements GrantTypeHandler {
 	
 	protected @Inject OAuth2AuthzServerConfig config;
 	protected @Inject AuthzTokenManager       tokenManager;
@@ -54,21 +56,25 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) {
 		String refreshToken = params.getRefreshToken();
 		if(Strings.isEmpty(refreshToken)) {
-			OAuth2Errors.invalidRequest(response, "refresh_token required");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"refresh_token required"),INVALID_REQUEST_REFRESH_TOKEN_REQUIRED));
 			return;
 		}
 		
 		//Load token.
 		AuthzRefreshToken token = tokenManager.loadRefreshToken(refreshToken);
 		if(null == token) {
-			OAuth2Errors.invalidGrant(response, "invalid refresh token");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
 			return;
 		}
 		
 		//Check expired?
 		if(token.isExpired()) {
 			tokenManager.removeRefreshToken(token);
-			OAuth2Errors.invalidGrant(response, "refresh token expired");
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"refresh token expired"),
+							ERROR_INVALID_GRANT_REFRESH_TOKEN_EXPIRED,refreshToken));
 			return;
 		}
 		
@@ -80,7 +86,8 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 		    UserDetails ud = us.loadUserDetailsByIdString(token.getUserId());
 			if(null == ud || !ud.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
-				OAuth2Errors.invalidGrant(response, "invalid user");
+				handleError(request,response,params,
+						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid user"),INVALID_REQUEST_INVALID_USERNAME,token.getUserId()));
 				return;
 			}
 			user = ud;
@@ -92,7 +99,8 @@ public class RefreshTokenGrantTypeHandler implements GrantTypeHandler {
 			client = clientManager.loadClientById(token.getClientId());
 			if(null == client || !client.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
-				OAuth2Errors.invalidGrant(response, "invalid client");
+				handleError(request,response,params,
+						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid client"),INVALID_REQUEST_INVALID_CLIENT,token.getClientId()));
 				return;
 			}
 		}

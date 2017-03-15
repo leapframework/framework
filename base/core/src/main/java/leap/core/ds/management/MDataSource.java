@@ -41,8 +41,17 @@ public interface MDataSource extends Named {
     MSlowSql[] getSlowSqls();
 
     /**
+     * Clear all slow sqls an return the number of cleared.
+     */
+    int clearSlowSqls();
+
+    /**
      * Returns the last reported very slow sqls.
      */
     MSlowSql[] getVerySlowSqls();
 
+    /**
+     * Clear all very slow sqls an return the number of cleared.
+     */
+    int clearVerySlowSqls();
 }

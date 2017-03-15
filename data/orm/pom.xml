@@ -8,7 +8,10 @@
 	</parent>
 	<artifactId>leap-orm</artifactId>
 	<packaging>jar</packaging>
-
+	<properties>
+		<oracle.jdbc.path>${project.basedir}</oracle.jdbc.path>
+		<sqlserver.jdbc.path>${project.basedir}</sqlserver.jdbc.path>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>org.leapframework</groupId>
@@ -27,6 +30,22 @@
 			<artifactId>leap-orm-test-resources</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
+		</dependency>
+		<!-- oracle jdbc Driver -->
+		<dependency>
+			<groupId>com.oracle.jdbc</groupId>
+			<artifactId>ojdbc7</artifactId>
+			<version>12.1.0.2</version>
+			<scope>system</scope>
+			<systemPath>${oracle.jdbc.path}/../lib/ojdbc7-12.1.0.2.jar</systemPath>
+		</dependency>
+		<!-- sql server jdbc Driver -->
+		<dependency>
+			<groupId>com.microsoft.sqlserver</groupId>
+			<artifactId>sqljdbc42</artifactId>
+			<version>6.0</version>
+			<scope>system</scope>
+			<systemPath>${sqlserver.jdbc.path}/../lib/sqljdbc42.jar</systemPath>
 		</dependency>
 	</dependencies>
 </project>

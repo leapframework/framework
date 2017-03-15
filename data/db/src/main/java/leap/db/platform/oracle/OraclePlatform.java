@@ -19,8 +19,11 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 
 import leap.db.DbPlatforms;
+import leap.db.platform.GenericDbComparator;
 import leap.db.platform.GenericDbDialect;
+import leap.db.platform.GenericDbMetadataReader;
 import leap.db.platform.GenericDbPlatform;
+import leap.db.platform.mysql.MySql5MetadataReader;
 
 public class OraclePlatform extends GenericDbPlatform {
 	
@@ -36,5 +39,13 @@ public class OraclePlatform extends GenericDbPlatform {
     protected GenericDbDialect createDialect(DatabaseMetaData jdbcMetadata) throws SQLException {
 	    return new Oracle10Dialect();
     }
+	@Override
+	protected GenericDbMetadataReader createMetadataReader(DatabaseMetaData jdbcMetadata) throws SQLException {
+		return new Oracle10MetadataReader();
+	}
 
+	@Override
+	protected GenericDbComparator createComparator(DatabaseMetaData jdbcMetadata) throws SQLException {
+		return new OracleComparator();
+	}
 }

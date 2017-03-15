@@ -28,6 +28,7 @@ import java.util.Map.Entry;
 
 import leap.lang.Charsets;
 import leap.lang.Exceptions;
+import leap.lang.New;
 import leap.lang.Strings;
 
 //some codes copy from spring framework, under Apache License 2.0
@@ -263,6 +264,28 @@ public class Urls {
 		
 		return sb;
 	}
+	
+	public static Map<String, String> queryStringToMap(String queryString){
+		Map<String, String> map = New.hashMap();
+		if(Strings.isNotEmpty(queryString)){
+			String[] kvs = Strings.split(queryString,'&');
+			for(String kvStr : kvs){
+				int idx = kvStr.indexOf('=');
+				if(idx < 0){
+					map.put(kvStr.trim(),null);
+				}else if(idx >= kvStr.length()){
+					String k = kvStr.substring(0,idx);
+					map.put(k,null);
+				}else {
+					String k = kvStr.substring(0,idx);
+					String v = kvStr.substring(idx+1);
+					map.put(k,v);
+				}
+			}
+		}
+		return map;
+	}
+	
 	
 	protected Urls(){
 		

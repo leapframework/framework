@@ -19,8 +19,12 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
+import leap.oauth2.Oauth2MessageKey;
 import leap.web.Request;
 import leap.web.Response;
+
+import static leap.oauth2.Oauth2MessageKey.INVALID_REQUEST_CLIENT_ID_REQUIRED;
+import static leap.oauth2.Oauth2MessageKey.INVALID_REQUEST_INVALID_CLIENT;
 
 public class DefaultAuthzClientValidator implements AuthzClientValidator {
     
@@ -30,13 +34,13 @@ public class DefaultAuthzClientValidator implements AuthzClientValidator {
     public AuthzClient validatePasswordGrantRequest(Request request, Response response, OAuth2Params params) throws Throwable {
         String clientId = params.getClientId();
         if(Strings.isEmpty(clientId)) {
-            OAuth2Errors.invalidRequest(response, "client_id required");
+            OAuth2Errors.invalidRequest(request, response, Oauth2MessageKey.getMessageKey(INVALID_REQUEST_CLIENT_ID_REQUIRED),"client_id required");
             return null;
         }
         
         AuthzClient client = clientManager.loadClientById(clientId);
         if(null == client) {
-            OAuth2Errors.invalidClient(response, "invalid client id");
+            OAuth2Errors.invalidClient(request , response, Oauth2MessageKey.getMessageKey(INVALID_REQUEST_INVALID_CLIENT),"invalid client id");
             return null;
         }
         return client;

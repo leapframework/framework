@@ -27,13 +27,17 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
 
 public final class DriverDataSource implements DataSource {
 	public static final String USERNAME_PROPERTY = "user";
 	public static final String PASSWORD_PROPERTY = "password";
 	
+	public static final String SUB_PROTOCOL_ORACLE = "oracle";
+	
 	private final String	 jdbcUrl;
+	private final String 	 driverClassName;
 	private final Properties driverProperties;
 	private final Driver	 driver;
 	
@@ -59,7 +63,8 @@ public final class DriverDataSource implements DataSource {
 			if (password != null) {
 				driverProperties.put(PASSWORD_PROPERTY, driverProperties.getProperty(PASSWORD_PROPERTY, password));
 			}
-
+			this.driverClassName = driverClassName;
+			preGetDriver();
 			if (driverClassName != null) {
 				try {
 					Class.forName(driverClassName);
@@ -135,4 +140,37 @@ public final class DriverDataSource implements DataSource {
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
 		return false;
 	}
+	
+	protected String getSubProtocol(){
+		if(Strings.isEmpty(this.jdbcUrl)){
+			return null;
+		}
+		String protocol = "jdbc:";
+		int index = this.jdbcUrl.indexOf(protocol);
+		if(index < 0){
+			return null;
+		}
+		String uri = this.jdbcUrl.substring(protocol.length());
+		index = uri.indexOf(":");
+		if(index < 0){
+			return null;
+		}
+		String subProtocol = uri.substring(0,index);
+		return subProtocol;
+	}
+	
+	protected boolean isOracleUrl(){
+		String subProtocol = getSubProtocol();
+		return SUB_PROTOCOL_ORACLE.equals(subProtocol);
+	}
+	
+	protected void preGetDriver(){
+		if(isOracleUrl()){
+			String remarksReporting = driverProperties.getProperty("remarksReporting");
+			if(remarksReporting == null){
+				driverProperties.setProperty("remarksReporting","true");
+			}
+		}
+	}
+	
 }

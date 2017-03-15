@@ -63,13 +63,13 @@
     </bean>
     
     <!-- oauth2 standard endpoints -->
-	<bean type="leap.web.Endpoint"
+	<bean name="tokenEndpoint" type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.TokenEndpoint"/>
 
-	<bean type="leap.web.Endpoint"
+	<bean name="authorizationEndpoint" type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.AuthorizationEndpoint"/>
 		  
-	<bean type="leap.web.Endpoint"
+	<bean name="tokenInfoEndpoint" type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.TokenInfoEndpoint"/>
 
     <!-- authorize endpoint : response types -->
@@ -126,7 +126,7 @@
 		  class="leap.oauth2.as.openid.JwtIdTokenGenerator" primary="true"/>
           
     <!-- open id connect : logout endpoint -->
-    <bean type="leap.web.Endpoint"
+    <bean name="logoutEndpoint" type="leap.web.Endpoint"
           class="leap.oauth2.as.endpoint.LogoutEndpoint"/>
 
     <!-- open id connect : authorization endpoint extension -->
@@ -143,11 +143,11 @@
 	
 
 	<!-- userinfo endpoint -->
-	<bean type="leap.web.Endpoint"
+	<bean name="userInfoEndpoint" type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.UserInfoEndpoint"/>
 
 	<!-- userinfo endpoint : handlers -->
-	<bean type="leap.oauth2.as.endpoint.userinfo.UserInfoHandler"
+	<bean name="userInfoHandler" type="leap.oauth2.as.endpoint.userinfo.UserInfoHandler"
 		  class="leap.oauth2.as.endpoint.userinfo.DefaultUserInfoHandler"/>
 
 	

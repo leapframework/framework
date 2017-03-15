@@ -48,18 +48,8 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 					 "FROM INFORMATION_SCHEMA.INDEXES " + 
 					 "WHERE TABLE_SCHEMA = ? " + 
 					 "AND PRIMARY_KEY = TRUE ";
-		
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override
@@ -81,18 +71,8 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 					 "DEFERRABILITY " + 
 					 "FROM INFORMATION_SCHEMA.CROSS_REFERENCES " + 
 					 "WHERE FKTABLE_SCHEMA = ? ";
-	
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeSchemaQuery(connection, params, sql);
     }
 
 	@Override
@@ -112,18 +92,8 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 					 "CARDINALITY " + 
 					 "FROM INFORMATION_SCHEMA.INDEXES " + 
 					 "WHERE TABLE_SCHEMA = ? ";
-	
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+
+        return executeSchemaQuery(connection, params, sql);
     }
 
 	@Override
@@ -141,17 +111,7 @@ public class H2MetadataReader extends GenericDbMetadataReader {
 					 "FROM INFORMATION_SCHEMA.SEQUENCES " + 
 					 "WHERE SEQUENCE_SCHEMA = ?";
 
-		PreparedStatement ps = null;
-		try {
-			ps = connection.prepareStatement(sql);
-	
-			ps.setString(1, params.schema);
-			
-			return ps.executeQuery();
-		} catch(SQLException e) {
-			JDBC.closeStatementOnly(ps);
-			throw e;
-		}
+        return executeSchemaQuery(connection, params, sql);
     }
 	
 	@Override

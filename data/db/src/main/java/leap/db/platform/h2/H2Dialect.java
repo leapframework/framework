@@ -190,7 +190,7 @@ public class H2Dialect extends GenericDbDialect {
 		sqls.add("ALTER TABLE " + qualifySchemaObjectName(tableName) + " ADD COLUMN " + getColumnDefinitionForAlterTable(column));
 		
 		if(column.isUnique()){
-			sqls.add(getAddUniqueColumnSql(tableName, column.getName()));
+			sqls.addAll(getAlterColumnUniqueSqls(tableName, column.getName()));
 		}
 	
 		return sqls;
@@ -228,7 +228,7 @@ public class H2Dialect extends GenericDbDialect {
 		List<String> sqls = new ArrayList<String>();
 	
 		if(change.isUniqueChanged()){
-			sqls.add(getAddUniqueColumnSql(change.getTable(), change.getOldColumn().getName()));
+			sqls.addAll(getAlterColumnUniqueSqls(change.getTable(), change.getOldColumn().getName()));
 			
 			if(change.getPropertyChanges().size() > 1){
 				DbColumn c = new DbColumnBuilder(change.getNewColumn()).setUnique(false).build();
@@ -239,11 +239,6 @@ public class H2Dialect extends GenericDbDialect {
 		}
 
 		return sqls;
-	}
-	
-	protected String getAddUniqueColumnSql(DbSchemaObjectName tableName,String columnName) {
-		return "ALTER TABLE " + qualifySchemaObjectName(tableName) + 
-				 " ADD UNIQUE(" + quoteIdentifier(columnName) + ")";
 	}
 
 	protected String getAlterColumnSql(DbSchemaObjectName tableName,DbColumn column){

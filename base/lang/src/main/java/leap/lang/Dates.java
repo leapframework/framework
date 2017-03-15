@@ -195,7 +195,11 @@ public class Dates {
 			if (parsePattern.endsWith("ZZ")) {
 				str2 = string.replaceAll("([-+][0-9][0-9]):([0-9][0-9])$", "$1$2");
 			}
-
+			if(str2.endsWith("Z")){
+				// RFC 3339:https://xml2rfc.tools.ietf.org/public/rfc/html/rfc3339.html#anchor14
+				int index = string.lastIndexOf("Z");
+				str2 = string.substring(0,index)+"+0000";
+			}
 			Date date = parser.parse(str2, pos);
 			if (date != null && pos.getIndex() == str2.length()) {
 				return date;

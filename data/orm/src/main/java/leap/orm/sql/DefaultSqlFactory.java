@@ -124,17 +124,7 @@ public class DefaultSqlFactory implements SqlFactory {
             		sql.append(",");
             		values.append(",");
             	}
-        		
-        		DbColumn column = fm.getColumn();
-        		
-        		sql.append(dialect.quoteIdentifier(column.getName()));
-        		
-        		if(!Strings.isEmpty(fm.getSequenceName())){
-        			values.append("$").append(fm.getFieldName()).append("$");
-        		}else{
-            		values.append("#").append(fm.getFieldName()).append("#");
-        		}
-        		
+				parseFieldInsertSql(sql,values,fm,context);
         		index++;
         	}
         }
@@ -174,21 +164,11 @@ public class DefaultSqlFactory implements SqlFactory {
         	}
         	
         	if( contains || fm.isAutoGenerateValue()){
-            	if(index > 0){
-            		sql.append(",");
-            		values.append(",");
-            	}
-        		
-        		DbColumn column = fm.getColumn();
-        		
-        		sql.append(dialect.quoteIdentifier(column.getName()));
-        		
-        		if(!Strings.isEmpty(fm.getSequenceName())){
-        			values.append("$").append(fm.getFieldName()).append("$");
-        		}else{
-            		values.append("#").append(fm.getFieldName()).append("#");
-        		}
-        		
+				if(index > 0){
+					sql.append(",");
+					values.append(",");
+				}
+				parseFieldInsertSql(sql,values,fm,context);
         		index++;
         	}
         }
@@ -196,6 +176,20 @@ public class DefaultSqlFactory implements SqlFactory {
         sql.append(") values (").append(values).append(")");
         
 		return sql.toString();
+	}
+	
+	protected void parseFieldInsertSql(StringBuilder sql,StringBuilder values,FieldMapping fm,MetadataContext context){
+		DbDialect dialect = context.getDb().getDialect();
+
+		DbColumn column = fm.getColumn();
+
+		sql.append(dialect.quoteIdentifier(column.getName()));
+
+		if(!Strings.isEmpty(fm.getSequenceName())){
+			values.append(dialect.getNextSequenceValueSqlString(fm.getSequenceName()));
+		}else{
+			values.append("#").append(fm.getFieldName()).append("#");
+		}
 	}
 	
 	protected String getUpdateSql(MetadataContext context,EntityMapping em){
@@ -215,15 +209,7 @@ public class DefaultSqlFactory implements SqlFactory {
 					sql.append(",");
 				}
 				
-				sql.append(dialect.quoteIdentifier(fm.getColumnName())).append("=#");
-				
-				if(fm.isOptimisticLock()){
-					sql.append(fm.getNewOptimisticLockFieldName());
-				}else{
-					sql.append(fm.getFieldName());
-				}
-				
-				sql.append("#");
+				parseFieldUpdateSql(sql,context,fm);
 				
 				index++;
 			}
@@ -292,16 +278,8 @@ public class DefaultSqlFactory implements SqlFactory {
 				if(index > 0){
 					sql.append(",");
 				}
-				
-				sql.append(dialect.quoteIdentifier(fm.getColumnName())).append("=#");
-				
-				if(fm.isOptimisticLock()){
-					sql.append(fm.getNewOptimisticLockFieldName());
-				}else{
-					sql.append(fm.getFieldName());
-				}
-				
-				sql.append("#");
+
+				parseFieldUpdateSql(sql,context,fm);
 				
 				index++;
 			}
@@ -335,6 +313,20 @@ public class DefaultSqlFactory implements SqlFactory {
         }
 		
 		return sql.toString();
+	}
+	
+	protected void parseFieldUpdateSql(StringBuilder sql,MetadataContext context,FieldMapping fm){
+		DbDialect dialect = context.getDb().getDialect();
+		
+		sql.append(dialect.quoteIdentifier(fm.getColumnName())).append("=#");
+
+		if(fm.isOptimisticLock()){
+			sql.append(fm.getNewOptimisticLockFieldName());
+		}else{
+			sql.append(fm.getFieldName());
+		}
+
+		sql.append("#");
 	}
 	
 	protected String getDeleteSql(MetadataContext context,EntityMapping em){

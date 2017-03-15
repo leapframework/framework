@@ -24,10 +24,7 @@ import leap.lang.Builders;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.exception.NestedSQLException;
-import leap.lang.jdbc.ConnectionProxy;
-import leap.lang.jdbc.JDBC;
-import leap.lang.jdbc.JdbcType;
-import leap.lang.jdbc.JdbcTypes;
+import leap.lang.jdbc.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.time.StopWatch;
@@ -168,7 +165,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected List<DbTableBuilder> readAllTables(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		ResultSet rs = null;
 		try{
-			List<DbTableBuilder> tables = new ArrayList<DbTableBuilder>();
+			List<DbTableBuilder> tables = new ArrayList<>();
 			rs = getTables(connection, dm, params);
 			if(null != rs){
                 while ( rs.next() ) {
@@ -188,7 +185,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
             
             return tables;
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}
 	
@@ -198,24 +195,24 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			List<DbSequenceBuilder> sequences = new ArrayList<DbSequenceBuilder>();
 
 			rs = getSequences(connection, dm, params);
-			
-			while(rs.next()){
-				String sequenceCatalog = rs.getString(SEQUENCE_CATALOG);
-				String sequenceSchema  = rs.getString(SEQUENCE_SCHEMA);
-				String sequenceName    = rs.getString(SEQUENCE_NAME);
-				
-				if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(sequenceSchema)){
-					DbSequenceBuilder sequence = new DbSequenceBuilder(sequenceName).setCatalog(sequenceCatalog).setSchema(sequenceSchema);
+			if(rs != null){
+				while(rs.next()){
+					String sequenceCatalog = rs.getString(SEQUENCE_CATALOG);
+					String sequenceSchema  = rs.getString(SEQUENCE_SCHEMA);
+					String sequenceName    = rs.getString(SEQUENCE_NAME);
 
-					if(readSequenceProperties(sequence, rs)){
-						sequences.add(sequence);	
+					if(Strings.isEmpty(params.schema) || params.schema.equalsIgnoreCase(sequenceSchema)){
+						DbSequenceBuilder sequence = new DbSequenceBuilder(sequenceName).setCatalog(sequenceCatalog).setSchema(sequenceSchema);
+
+						if(readSequenceProperties(sequence, rs)){
+							sequences.add(sequence);
+						}
 					}
 				}
 			}
-			
 			return Builders.buildList(sequences);
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}
 	
@@ -295,7 +292,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 				}
 			}
 		}finally{
-			JDBC.closeResultSetAndStatement(rs);
+			JDBC.closeResultSetOnly(rs);
 		}
 	}	
 	
@@ -303,7 +300,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		column.setName(rs.getString(COLUMN_NAME));
 		column.setTypeCode(rs.getInt(COLUMN_TYPE));
 		
-		JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());;
+		JdbcType jdbcType = JdbcTypes.forTypeCode(column.getTypeCode());
 		
 		column.setTypeName(jdbcType.getName());
 		
@@ -324,7 +321,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
                 Object scale = rs.getObject(COLUMN_SCALE);
                 if (scale != null) {
                     int scaleValue = Converts.toInt(scale);
-                    if (scaleValue > 0) {
+						if (scaleValue > 0) {
                         column.setScale(scaleValue);
                     }
                 }
@@ -401,17 +398,17 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables){
 				ResultSet rs = null;
 				try{
-					rs = dm.getPrimaryKeys(params.catalog, params.schema, t.getName());
+					rs = getPrimaryKeys(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()){
+                            counter.incrementAndGet();
+
 							String schemaName = getPrimaryKeySchema(rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
@@ -421,7 +418,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}
@@ -483,17 +480,17 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
-					rs = dm.getImportedKeys(params.catalogPattern, params.schemaPattern, t.getName());
+					rs = getForeignKeys(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()) {
+                            counter.incrementAndGet();
+
 							String schemaName = getForeignKeySchema(rs);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
@@ -519,7 +516,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}		
@@ -576,37 +573,41 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 					}
 				}
 			}finally{
-				JDBC.closeResultSetAndStatement(rs);
+				JDBC.closeResultSetOnly(rs);
 			}
 		}else{
 			for(DbTableBuilder t : tables) {
 				ResultSet rs = null;
 				try{
-					rs = dm.getIndexInfo(params.catalogPattern, params.schemaPattern, t.getName(), false, false);
+					rs = getIndexes(connection, dm, params, t.getName());
 					if(null != rs){
-						counter.incrementAndGet();
-						
 						while(rs.next()) {
+                            counter.incrementAndGet();
+
 							String schemaName = getIndexSchema(rs);
 							String tableName  = rs.getString(TABLE_NAME);
 							
 							if(Strings.equalsIgnoreCase(params.schema, schemaName)){
 								if(Strings.equalsIgnoreCase(tableName, t.getName())){
-									if(!readIndex(t, rs)){
-										break;
-									}
+									readIndex(t, rs);
 								}
 							}
 						}
 					}
 				}finally{
-					JDBC.closeResultSetAndStatement(rs);
+					JDBC.closeResultSetOnly(rs);
 				}
 			}
 		}
 	}	
 	
 	protected boolean readIndex(DbTableBuilder t,ResultSet rs) throws SQLException {
+        // we're ignoring statistic indexes
+        short type = rs.getShort("TYPE");
+        if (type == DatabaseMetaData.tableIndexStatistic){
+            return false;
+        }
+
 		String ixName = rs.getString(INDEX_NAME);
 		
 		DbIndexBuilder ix = t.findIndex(ixName);
@@ -615,7 +616,6 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 			ix = new DbIndexBuilder().setName(ixName);
 			
 			if(!readIndexInfo(t,ix,rs)){
-				//ignored
 				return false;
 			}
 			
@@ -638,19 +638,12 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	}
 	
 	protected boolean readIndexInfo(DbTableBuilder table,DbIndexBuilder ix,ResultSet rs) throws SQLException {
-		short type = rs.getShort("TYPE");
-		
-        // we're ignoring statistic indexes
-        if (type == DatabaseMetaData.tableIndexStatistic){
-        	return false;
-        }
-        
         ix.setUnique(!rs.getBoolean(NON_UNIQUE));
-        
+
         if(isInternalIndexGeneratedByApp(table, ix ,rs)|| isInternalIndex(table, ix, rs)){
         	ix.setInternal(true);
         }
-        
+
 		return true;
 	}	
 	
@@ -708,15 +701,27 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected ResultSet getPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getPrimaryKeys(params.catalogPattern, params.schemaPattern, params.tablePattern);
 	}
-	
-	protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
+
+    protected ResultSet getPrimaryKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getPrimaryKeys(params.catalogPattern, params.schemaPattern, table);
+    }
+
+    protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getImportedKeys(params.catalogPattern, params.schemaPattern, params.tablePattern);
 	}
+
+    protected ResultSet getForeignKeys(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getImportedKeys(params.catalogPattern, params.schemaPattern, table);
+    }
 	
 	protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		return dm.getIndexInfo(params.catalogPattern, params.schemaPattern, params.tablePattern, false, false);
 	}
-	
+
+    protected ResultSet getIndexes(Connection connection,DatabaseMetaData dm,MetadataParameters params, String table) throws SQLException {
+        return dm.getIndexInfo(params.catalogPattern, params.schemaPattern, table, false, false);
+    }
+
 	protected ResultSet getSequences(Connection connection,DatabaseMetaData dm,MetadataParameters params) throws SQLException {
 		throw new IllegalStateException("reading sequences metadata not supported");
 	}
@@ -789,7 +794,27 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
         }
         return index;
 	}
-	
+
+    protected ResultSet executeSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
+    protected ResultSet executeCatalogAndSchemaQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.catalog);
+        ps.setString(2, params.schema);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
+    protected ResultSet executeSchemaAndTablePatternQuery(Connection connection, MetadataParameters params, String sql) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(sql);
+        ps.setString(1, params.schema);
+        ps.setString(2, params.tablePattern);
+        return new CloseStatementResultSet(ps, ps.executeQuery());
+    }
+
 	protected String generateUpdateRuleClause() {
 		return "CASE WHEN R.UPDATE_RULE='CASCADE' THEN " + String.valueOf(importedKeyCascade) 
 				+ " WHEN R.UPDATE_RULE='SET NULL' THEN " + String.valueOf(importedKeySetNull)  
@@ -829,4 +854,20 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 		public String   tablePattern;
 		public String[] tableTypes;
 	}
+
+    protected static class CloseStatementResultSet extends ResultSetWrapper {
+
+        private final Statement stmt;
+
+        public CloseStatementResultSet(Statement stmt, ResultSet rs) {
+            super(rs);
+            this.stmt = stmt;
+        }
+
+        @Override
+        public void close() throws SQLException {
+            JDBC.closeStatementOnly(stmt);
+            super.close();
+        }
+    }
 }

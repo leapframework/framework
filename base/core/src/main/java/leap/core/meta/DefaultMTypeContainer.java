@@ -26,6 +26,8 @@ import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DefaultMTypeContainer extends AbstractMTypeContainerCreator implements MTypeContainer, MTypeContext {
 
@@ -56,6 +58,16 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
     @Override
     public void setAttribute(String name, Object value) {
         attrs.put(name, value);
+    }
+
+    @Override
+    public void runInContext(Consumer<MTypeContext> func) {
+        func.accept(this);
+    }
+
+    @Override
+    public <T> T runInContextWithResult(Function<MTypeContext, T> func) {
+        return func.apply(this);
     }
 
     @Override

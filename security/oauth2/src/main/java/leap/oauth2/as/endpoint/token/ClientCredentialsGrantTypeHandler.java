@@ -15,22 +15,21 @@
  */
 package leap.oauth2.as.endpoint.token;
 
-import java.util.function.Consumer;
-
 import leap.core.annotation.Inject;
-import leap.lang.Result;
-import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
+import leap.oauth2.OAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.client.AuthzClientCredentials;
-import leap.oauth2.as.client.AuthzClientManager;
-import leap.oauth2.as.client.SamplingAuthzClientCredentials;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
+
+import java.util.function.Consumer;
+
+import static leap.oauth2.Oauth2MessageKey.ERROR_UNSUPPORTED_GRANT_TYPE_TYPE;
 
 /**
  * grant_type=client_credentials
@@ -43,7 +42,8 @@ public class ClientCredentialsGrantTypeHandler extends AbstractGrantTypeHandler 
 	@Override
 	public void handleRequest(Request request, Response response, OAuth2Params params, Consumer<AuthzAccessToken> callback) throws Throwable {
 		if(!config.isClientCredentialsEnabled()) {
-			OAuth2Errors.unsupportedGrantType(response,null);
+			handleError(request,response,params,
+					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,null),ERROR_UNSUPPORTED_GRANT_TYPE_TYPE,"client_credentials"));
 			return;
 		}
 		

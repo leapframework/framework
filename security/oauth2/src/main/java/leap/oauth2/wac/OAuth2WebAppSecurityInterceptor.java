@@ -195,11 +195,6 @@ public class OAuth2WebAppSecurityInterceptor implements SecurityInterceptor, App
         qs.add(OAuth2Params.CLIENT_ID,     config.getClientId());
         qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
         qs.add(OAuth2Params.LOGOUT_URI,    buildClientLogoutUri(request));
-
-        String login_token = request.getParameter(OAuth2Params.LOGIN_TOKEN);
-        if(!Strings.isEmpty(login_token)) {
-            qs.add(OAuth2Params.LOGIN_TOKEN, Urls.encode(login_token));
-        }
         
         return "redirect:" + Urls.appendQueryString(config.getServerAuthorizationEndpointUrl(), qs.build());
     }

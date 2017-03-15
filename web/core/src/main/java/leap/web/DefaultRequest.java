@@ -66,7 +66,9 @@ public class DefaultRequest extends Request {
 
     private String                     lowercaseRequestPath;
     private String                     serverUrl;
+    private String                     reverseProxyServerUrl;
     private String                     contextUrl;
+    private String                     reverseProxyContextUrl;
     private String                     servicePath;
     private String                     servicePathWithoutExtension;
     private String                     pathExtension;
@@ -332,13 +334,58 @@ public class DefaultRequest extends Request {
 	    
         return serverUrl;
     }
+    /**
+     * get the serverUrl, if has reverse proxy，you need set：host and x-forwarded-proto in header，such as:
+     *
+     * host:localhost:8080
+     * x-forwarded-proto:https
+     *
+     * otherwise, return <code>serverUrl()</code>
+     *
+     */
+    @Override
+    public String getReverseProxyServerUrl() {
+	    if(null == reverseProxyServerUrl){
+            String schema= getHeader("x-forwarded-proto");
+            String host = getHeader("host");
 
+            if(Strings.isEmpty(schema) || Strings.isEmpty(host)){
+                return getServerUrl();
+            }
+            
+            schema+="://";
+            String url=schema+host;
+            url=regularUrl(url);
+            reverseProxyServerUrl = url;
+        }
+        return reverseProxyServerUrl;
+    }
+    
+    protected String regularUrl(String url){
+        //remove default port
+        url += "/";
+        if(url.startsWith("https") || url.startsWith("HTTPS")){
+            url = url.replaceFirst(":443/", "/");
+        }else{
+            url = url.replaceFirst(":80/", "/");
+        }
+        return url.substring(0,url.length()-1);
+    }
+    
     @Override
     public String getContextUrl() {
         if(null == contextUrl) {
             contextUrl = getServerUrl() + getContextPath();
         }
         return contextUrl;
+    }
+
+    @Override
+    public String getReverseProxyContextUrl() {
+	    if(null == reverseProxyContextUrl){
+            reverseProxyContextUrl = getReverseProxyServerUrl() + getContextPath();
+        }
+        return reverseProxyContextUrl;
     }
 
     @Override

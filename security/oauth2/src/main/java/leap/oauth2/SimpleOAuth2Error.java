@@ -17,6 +17,7 @@ package leap.oauth2;
 
 public class SimpleOAuth2Error implements OAuth2Error {
 
+    protected int status;
     protected String error;
     protected String errorDescription;
 
@@ -24,7 +25,8 @@ public class SimpleOAuth2Error implements OAuth2Error {
         super();
     }
 
-    public SimpleOAuth2Error(String error, String errorDescription) {
+    public SimpleOAuth2Error(int status, String error, String errorDescription) {
+        this.status = status;
         this.error = error;
         this.errorDescription = errorDescription;
     }
@@ -45,4 +47,12 @@ public class SimpleOAuth2Error implements OAuth2Error {
         this.errorDescription = errorDescription;
     }
 
+    @Override
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
 }

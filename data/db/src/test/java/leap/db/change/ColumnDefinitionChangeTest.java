@@ -20,7 +20,6 @@ import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
-
 import org.junit.Test;
 
 public class ColumnDefinitionChangeTest extends DbTestCase {

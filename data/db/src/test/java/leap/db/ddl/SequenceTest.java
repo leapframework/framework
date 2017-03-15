@@ -63,16 +63,16 @@ public class SequenceTest extends DbTestCase {
 			
 			if(dialect.supportsCurrentSequenceValue()) {
 				db.executeUpdate(sql,Arrays2.EMPTY_OBJECT_ARRAY,Arrays2.EMPTY_INT_ARRAY,
-						 dialect.getInsertedSequenceValueHandler("tested_sequence",new Consumer<Object>() {
-
-							@Override
-			                public void accept(Object input) {
-								id.set(input);
-			                }
-							 
-						}));
-		
-				assertEquals(1, Converts.toInt(id.getValue()));
+						 dialect.getInsertedSequenceValueHandler("tested_sequence", input -> id.set(input)));
+				DbSequence[] sequences = db.getMetadata().getSchema().getSequences();
+				for(DbSequence seq : sequences){
+					if(seq.getName().equalsIgnoreCase(sequence.getName())){
+						sequence = seq;
+						break;
+					}
+				}
+				long current = sequence.getStart() == null?1:sequence.getStart()+1;
+				assertEquals(current, Converts.toInt(id.getValue()));
 			}else{
 				db.executeUpdate(sql);
 			}

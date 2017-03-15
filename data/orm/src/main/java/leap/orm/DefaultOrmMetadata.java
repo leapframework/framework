@@ -77,12 +77,12 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 
 	@Override
     public List<EntityMapping> getEntityMappingSnapshotList() {
-	    return new ArrayList<EntityMapping>(nameToEntityMappings.values());
+	    return new ArrayList<>(nameToEntityMappings.values());
     }
 
 	@Override
     public List<SequenceMapping> getSequenceMappingSnapshotList() {
-	    return new ArrayList<SequenceMapping>(nameToSequenceMappings.values());
+	    return new ArrayList<>(nameToSequenceMappings.values());
     }
 
 	@Override

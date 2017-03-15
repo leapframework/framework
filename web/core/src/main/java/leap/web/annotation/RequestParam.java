@@ -28,5 +28,4 @@ public @interface RequestParam {
 	 * The name of request parameter.
 	 */
 	String value();
-	
 }
