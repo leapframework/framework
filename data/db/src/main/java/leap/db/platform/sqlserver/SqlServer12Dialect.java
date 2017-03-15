@@ -24,10 +24,8 @@ import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.value.Limit;
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.io.ByteArrayInputStream;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +72,16 @@ public class SqlServer12Dialect extends GenericDbDialect {
     @Override
     public boolean useTableAliasAfterUpdate() {
         return true;
+    }
+
+    @Override
+    protected boolean testDriverSupportsGetParameterType() {
+        return true;
+    }
+
+    @Override
+    protected String getAddColumnSqlPrefix(DbSchemaObjectName tableName, DbColumn column) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) + " ADD ";
     }
 
     @Override
@@ -167,7 +175,7 @@ public class SqlServer12Dialect extends GenericDbDialect {
         columnTypes.add(Types.TIMESTAMP,     "datetime");
 
         //https://docs.microsoft.com/en-us/sql/connect/jdbc/using-advanced-data-types#blob-and-clob-and-nclob-data-types
-        columnTypes.add(Types.BLOB,          "image");
-        columnTypes.add(Types.CLOB,          "text");
+        columnTypes.add(Types.BLOB,          "varbinary(max");
+        columnTypes.add(Types.CLOB,          "varchar(max)");
     }
 }

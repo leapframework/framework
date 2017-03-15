@@ -342,7 +342,8 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 
 	@Override
     public List<String> getCreateColumnSqls(DbSchemaObjectName tableName, DbColumn column) {
-	    List<String> sqls = New.arrayList("ALTER TABLE " + qualifySchemaObjectName(tableName) + " ADD COLUMN " + getColumnDefinitionForAlterTable(column));
+	    List<String> sqls =
+                New.arrayList(getAddColumnSqlPrefix(tableName, column) + getColumnDefinitionForAlterTable(column));
 	    
 	    if(supportsColumnComment() && !supportsColumnCommentInDefinition()){
 	    	if(!Strings.isEmpty(column.getComment())){
@@ -351,6 +352,10 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 	    }
 	    
 	    return sqls;
+    }
+
+    protected String getAddColumnSqlPrefix(DbSchemaObjectName tableName, DbColumn column) {
+        return "ALTER TABLE " + qualifySchemaObjectName(tableName) + " ADD COLUMN ";
     }
 	
 	@Override
@@ -1020,7 +1025,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 			if (value instanceof BigDecimal) {
 				ps.setBigDecimal(index, (BigDecimal) value);
 			} else {
-				ps.setObject(index, value, type);
+                setObject(ps, index, value, type);
 			}
 		} else if (type == Types.DATE) {
 			if (value instanceof java.util.Date) {
@@ -1033,7 +1038,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 				Calendar cal = (Calendar) value;
 				ps.setDate(index, new java.sql.Date(cal.getTime().getTime()), cal);
 			} else {
-				ps.setObject(index, value, Types.DATE);
+                setObject(ps, index, value, type);
 			}
 		} else if (type == Types.TIME) {
 			if (value instanceof java.util.Date) {
@@ -1046,7 +1051,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 				Calendar cal = (Calendar) value;
 				ps.setTime(index, new java.sql.Time(cal.getTime().getTime()), cal);
 			} else {
-				ps.setObject(index, value, Types.TIME);
+                setObject(ps, index, value, type);
 			}
 		} else if (type == Types.TIMESTAMP) {
 			if (value instanceof java.util.Date) {
@@ -1059,7 +1064,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 				Calendar cal = (Calendar) value;
 				ps.setTimestamp(index, new java.sql.Timestamp(cal.getTime().getTime()), cal);
 			} else {
-				ps.setObject(index, value, Types.TIMESTAMP);
+                setObject(ps, index, value, type);
 			}
 		} else if (type == JdbcTypes.UNKNOW_TYPE_CODE) {
 			if (CharSequence.class.isAssignableFrom(valueType) || Character.class.equals(valueType)) {
@@ -1071,13 +1076,21 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
 				ps.setTimestamp(index, new java.sql.Timestamp(cal.getTime().getTime()), cal);
 			} else {
 				// Fall back to generic setObject call without SQL type specified.
-				ps.setObject(index, value);
+				setObject(ps, index, value);
 			}
 		} else {
 			// Fall back to generic setObject call with SQL type specified.
-			ps.setObject(index, value, type);
+			setObject(ps, index, value, type);
 		}
 	}
+
+    protected void setObject(PreparedStatement ps, int index, Object value) throws SQLException {
+        ps.setObject(index, value);
+    }
+
+    protected void setObject(PreparedStatement ps, int index, Object value, int type) throws SQLException {
+        ps.setObject(index, value, type);
+    }
 	
 	protected String getColumnDefinitionForCreateTable(DbColumn column){
         StringBuilder definition = new StringBuilder();
