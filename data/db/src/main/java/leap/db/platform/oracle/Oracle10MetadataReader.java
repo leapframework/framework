@@ -84,8 +84,7 @@ public class Oracle10MetadataReader extends GenericDbMetadataReader {
 	                 "AND fc.owner = f.owner " + 
 	                 "AND fc.constraint_name = f.constraint_name " + 
 	                 "AND fc.table_name = f.table_name " + 
-	                 "AND fc.position = pc.position " + 
-	                 "ORDER BY pktable_schem, pktable_name, key_seq";
+	                 "AND fc.position = pc.position ";// + "ORDER BY pktable_schem, pktable_name, key_seq";
 
         return executeSchemaQuery(connection, params, sql);
     }
