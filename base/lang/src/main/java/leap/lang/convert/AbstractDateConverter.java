@@ -48,9 +48,12 @@ public abstract class AbstractDateConverter<T> extends AbstractConverter<T> {
 		}else if(value instanceof Calendar){
 			out.set(convertFrom(targetType,(Calendar)value));
 			return true;
-		}else if(value instanceof Long){
-			out.set(convertFrom(targetType,(Long)value));
-			return true;
+		}else if(value instanceof Long) {
+            out.set(convertFrom(targetType, (Long) value));
+            return true;
+        }else if(value instanceof Number) {
+            out.set(convertFrom(targetType,((Number)value).longValue()));
+            return true;
 		}else if(value instanceof CharSequence){
 			String stringValue = value.toString();
 			

@@ -42,5 +42,11 @@ public class DateConverterTest extends TestCase{
 
         assertEquals("2014-11-01", Converts.toString(d));
 	}
+
+    @Test
+    public void testIntegerToTimestamp() {
+        Timestamp timestamp = Converts.convert(-28800000, Timestamp.class);
+        assertNotNull(timestamp);
+    }
 	
 }
