@@ -370,9 +370,9 @@ public class Element extends NodeContainer {
 			Attr a = attributes.get(i);
 			
 			if(a.isExpression()){
-				compiler.attribute(a.getPrefix(), a.getLocalName(), a.getExpression(), a.getQuotedCharacter(), a.getCondition());
+				compiler.attribute(a.getPrefix(), a.getOriginLocalName(), a.getExpression(), a.getQuotedCharacter(), a.isInlineExpression() ,a.getCondition());
 			}else{
-				compiler.attribute(a.getPrefix(), a.getLocalName(), a.getString(), a.getQuotedCharacter(), a.isInlineExpression(), a.getCondition());	
+				compiler.attribute(a.getPrefix(), a.getOriginLocalName(), a.getString(), a.getQuotedCharacter(), a.isInlineExpression(), a.getCondition());
 			}
 		}
 		

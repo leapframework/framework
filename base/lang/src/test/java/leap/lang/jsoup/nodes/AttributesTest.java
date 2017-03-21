@@ -18,7 +18,7 @@ public class AttributesTest {
         a.put("data-name", "Jsoup");
 
         assertEquals(3, a.size());
-        assertTrue(a.hasKey("tot"));
+        assertTrue(a.hasKey("Tot"));
         assertTrue(a.hasKey("Hello"));
         assertTrue(a.hasKey("data-name"));
         assertEquals(1, a.dataset().size());

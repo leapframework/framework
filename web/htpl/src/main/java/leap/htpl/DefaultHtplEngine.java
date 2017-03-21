@@ -189,7 +189,8 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
     public boolean resolveAttrProcessor(Element e, Attr a) {
 		String prefix = Strings.trim(a.getPrefix());
 		String name   = a.getLocalName();
-		
+		String originLocalName = a.getOriginLocalName();
+
 		if(Strings.isEmpty(prefix)){
 			/*
 			if(name.startsWith(HtplConstants.HTML5_DATA_PREFIX)){
@@ -200,6 +201,7 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 			prefix = Strings.substringBefore(name, "-");
 			if(!Strings.isEmpty(prefix)){
 				name = name.substring(prefix.length() + 1);
+				originLocalName = originLocalName.substring(prefix.length()+1);
 			}
 		}
 		
@@ -210,10 +212,11 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 
 		String originalPrefix    = a.getPrefix();
 		String originalLocalName = a.getLocalName();
-		
+		String originalOriginLocalName = a.getOriginLocalName();
 		//Set prefix and local name to prefix and name.
 		a.setPrefix(prefix);
 		a.setLocalName(name);
+		a.setOriginLocalName(originLocalName);
 
 		AttrProcessor processor = processors.lookupAttrProcessor(e, a);
 		if(null != processor){
@@ -223,6 +226,7 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 			//No processor, restore original prefix and local name
 			a.setPrefix(originalPrefix);
 			a.setLocalName(originalLocalName);
+			a.setOriginLocalName(originalOriginLocalName);
 			return false;
 		}
     }

@@ -39,7 +39,7 @@ public interface HtplCompiler {
 	 * Adds an attribute.
 	 */
 	HtplCompiler attribute(String prefix, String name, String value, Character quotedCharacter);
-	
+
 	/**
 	 * Adds an attribute with or without condition.
 	 */
@@ -58,12 +58,12 @@ public interface HtplCompiler {
 	/**
 	 * Adds an attribute with an expression value.
 	 */
-	HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter);
+	HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter, boolean inlineExpressions);
 	
 	/**
 	 * Adds an attribute with an expression value and with or without condition.
 	 */
-	HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter, Expression condition);
+	HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter, boolean inlineExpressions, Expression condition);
 	
 	/**
 	 * Adds a text content without inline expressions.

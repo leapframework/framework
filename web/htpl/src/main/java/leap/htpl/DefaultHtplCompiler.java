@@ -80,8 +80,8 @@ public class DefaultHtplCompiler implements HtplCompiler {
 
 	@Override
     public HtplCompiler attribute(String prefix, String name, String value, Character quotedCharacter, boolean inlineExpressions) {
-		append(" " + qname(prefix, name) + "=");
-		
+		compileAttrName(prefix,name,inlineExpressions);
+
 		if(null != quotedCharacter){
 			append(String.valueOf(quotedCharacter));
 		}
@@ -111,8 +111,8 @@ public class DefaultHtplCompiler implements HtplCompiler {
     }
 	
 	@Override
-    public HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter) {
-		append(" " + qname(prefix, name) + "=");
+    public HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter, boolean inlineExpressions) {
+		compileAttrName(prefix,name,inlineExpressions);
 		
 		if(null != quotedCharacter){
 			append(String.valueOf(quotedCharacter));
@@ -128,12 +128,12 @@ public class DefaultHtplCompiler implements HtplCompiler {
     }
 	
 	@Override
-    public HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter, Expression condition) {
+    public HtplCompiler attribute(String prefix, String name, Expression value, Character quotedCharacter,  boolean inlineExpressions, Expression condition) {
 		if(null == condition){
-			return attribute(prefix, name, value, quotedCharacter);
+			return attribute(prefix, name, value, quotedCharacter,inlineExpressions);
 		}
 		
-		append(new ConditionalRenderable(condition, newCompiler().attribute(prefix, name, value, quotedCharacter).compile()));
+		append(new ConditionalRenderable(condition, newCompiler().attribute(prefix, name, value, quotedCharacter,inlineExpressions).compile()));
 	    return this;
     }
 	
@@ -199,7 +199,17 @@ public class DefaultHtplCompiler implements HtplCompiler {
     public HtplRenderable compile() {
 	    return new HtplRenderableContainer(nodes);
     }
-	
+
+    protected void compileAttrName(String prefix, String name, boolean inlineExpressions){
+		if(inlineExpressions){
+			append(" ");
+			em.parseAttributeExpression(engine, name, attrParseHandler);
+			append("=");
+		}else{
+			append(" " + qname(prefix, name) + "=");
+		}
+	}
+
 	protected String qname(String prefix,String name){
 		return Strings.isEmpty(prefix) ? name : prefix + ":" + name;
 	}
