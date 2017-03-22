@@ -83,7 +83,33 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		
 		return processMetadata(context, md);
     }
-	
+
+    @Override
+    public MApiOperationBuilder createOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route) {
+        MApiOperationBuilder op = new MApiOperationBuilder(route);
+
+        op.setName(route.getAction().getName());
+
+        //Set http method
+        setApiMethod(context, m, route, op);
+
+        log.debug(" {}", op.getMethod());
+
+        //Set description and summary
+        setOperationDesc(context, m, route, op);
+
+        //Create security
+        createApiSecurity(context, m, route, op);
+
+        //Create parameters.
+        createApiParameters(context, m, route, op);
+
+        //Create responses.
+        createApiResponses(context, m, route, op);
+
+        return op;
+    }
+
     protected ApiMetadataContext createContext(ApiConfig c, ApiMetadataBuilder md) {
 		final MTypeContainer tf = createMTypeFactory(c, md);
 		
@@ -280,35 +306,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 
         log.debug("Path {} -> {} :", pt, route.getAction());
-		createApiOperation(context, md, route, path);
+		path.addOperation(createOperation(context, md, route));
 	}
 	
-	protected void createApiOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path) {
-		MApiOperationBuilder op = new MApiOperationBuilder(route);
-		
-		op.setName(route.getAction().getName());
-
-		//Set http method
-		setApiMethod(context, m, route, path, op);
-
-        log.debug(" {}", op.getMethod());
-
-        //Set description and summary
-        setOperationDesc(context, m, route, path, op);
-
-        //Create security
-        createApiSecurity(context, m, route, path, op);
-
-		//Create parameters.
-		createApiParameters(context, m, route, path, op);
-		
-		//Create responses.
-		createApiResponses(context, m, route, path, op);
-
-		path.addOperation(op);
-	}
-	
-	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
 		String method = route.getMethod();
 		
 		if("*".equals(method)) {
@@ -329,7 +330,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 	}
 
-	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op){
         if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
             OperationDescSet set = apiDescContainer.getOperationDescSet(route.getAction().getController());
             if(set == null){
@@ -342,12 +343,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
     }
 
-    protected void createApiSecurity(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op){
+    protected void createApiSecurity(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op){
         // todo create operation security
 
     }
 
-    protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+    protected void createApiParameters(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
 		Action action = route.getAction();
 
         log.trace("  Parameters({})", action.getArguments().length);
@@ -432,7 +433,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         op.addParameter(p);
     }
 	
-	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
+	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
         Response[] annotations =
                 route.getAction().getAnnotationsByType(Response.class);
 
