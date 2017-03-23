@@ -15,6 +15,7 @@
  */
 package app.controllers;
 
+import leap.web.Response;
 import leap.web.annotation.Cors;
 import leap.web.annotation.http.GET;
 
@@ -26,7 +27,8 @@ public class CorsTestController {
 	
     @GET
     @Cors
-	public String enabled() {
+	public String enabled(Response response) {
+        response.addHeader("TestCORS", "ok");
 		return "enabled";
 	}
 	

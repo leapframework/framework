@@ -33,13 +33,17 @@ public interface CorsHandler {
     String RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS     = "Access-Control-Allow-Headers";
 
     /**
-     * Returns true if the request is a cors preflight rquest.
+     * Returns true if the request is a CORS preflight request.
      */
     boolean isPreflightRequest(Request request);
 
     /**
-     * Handles the request and returns the state.
+     * Pre handles the request and returns the state.
      */
-	State handle(Request request,Response response) throws Throwable;
-	
+	State preHandle(Request request, Response response) throws Throwable;
+
+    /**
+     * Post handles the request.
+     */
+    void postHandle(Request request, Response response);
 }

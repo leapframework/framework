@@ -22,10 +22,25 @@ import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * @see <a href="http://www.w3.org/TR/cors/">CORS specification</a>
  */
 public class DefaultCorsHandler implements CorsHandler {
+
+    private static final String EXPOSE_ANY_HEADERS_ATTR = CorsHandler.class.getName() + "$EXPOSE_ANY_HEADERS";
+
+    private static final Set<String> RESPONSE_HEADERS = new HashSet<>();
+    static {
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS);
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS);
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS);
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN);
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS);
+        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE);
+    }
 
     protected @Inject CorsConfig conf;
 
@@ -38,7 +53,7 @@ public class DefaultCorsHandler implements CorsHandler {
         return false;
     }
 
-    public State handle(Request request, Response response) throws Throwable {
+    public State preHandle(Request request, Response response) throws Throwable {
 		if(!request.hasHeader(REQUEST_HEADER_ORIGIN)) {
 			return State.CONTINUE;
 		}
@@ -53,8 +68,27 @@ public class DefaultCorsHandler implements CorsHandler {
 		
 		return doProcess(request, response, conf, request.getHeader(REQUEST_HEADER_ORIGIN));
 	}
-	
-	protected State doProcess(Request request, Response response, CorsConfig conf, String origin) throws Throwable {
+
+    @Override
+    public void postHandle(Request request, Response response) {
+        if(null != request.getAttribute(EXPOSE_ANY_HEADERS_ATTR)) {
+            StringBuilder exposeHeaders = new StringBuilder();
+
+            for(String header : response.getHeaderNames()) {
+                if(RESPONSE_HEADERS.contains(header)) {
+                    continue;
+                }
+                if(exposeHeaders.length() > 0) {
+                    exposeHeaders.append(',');
+                }
+                exposeHeaders.append(header);
+            }
+
+            response.setHeader(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders.toString());
+        }
+    }
+
+    protected State doProcess(Request request, Response response, CorsConfig conf, String origin) throws Throwable {
 		//HTTP method
 		String method = request.getRawMethod();
 		
@@ -86,23 +120,16 @@ public class DefaultCorsHandler implements CorsHandler {
 		}
 		
 		//Section 6.1.3
-		if(conf.isSupportsCredentials()) {
-			setCorsOrigin(response,origin);
-			setCorsCredentials(response,"true");
-		}else{
-			if(conf.isAllowAnyOrigin()) {
-				setCorsOrigin(response,"*");
-			}else{
-				setCorsOrigin(response,origin);
-			}
-		}
+        processCorsOrigin(response, origin);
 		
 		//Section 6.1.4
 		/*
 		 	If the list of exposed headers is not empty add one or more Access-Control-Expose-Headers headers, 
 		 	with as values the header field names given in the list of exposed headers.
 		 */
-		if(conf.hasExposedHeaders()) {
+        if(conf.isExposeAnyHeaders()) {
+            request.setAttribute(EXPOSE_ANY_HEADERS_ATTR, Boolean.TRUE);
+        }else if(conf.hasExposedHeaders()) {
 			response.addHeader(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS, conf.getExposedHeadersValue());
 		}
 		
@@ -140,16 +167,7 @@ public class DefaultCorsHandler implements CorsHandler {
 		}
 		
 		//6.2.7
-		if(conf.isSupportsCredentials()) {
-			setCorsOrigin(response,origin);
-			setCorsCredentials(response,"true");
-		}else{
-			if(conf.isAllowAnyOrigin()) {
-				setCorsOrigin(response,"*");
-			}else{
-				setCorsOrigin(response,origin);
-			}
-		}	
+        processCorsOrigin(response, origin);
 		
 		//6.2.8
 		if(conf.getPreflightMaxAge() > 0) {
@@ -186,21 +204,39 @@ public class DefaultCorsHandler implements CorsHandler {
 		response.setStatus(HTTP.SC_FORBIDDEN);
 	}
 
+    protected void processCorsOrigin(Response response, String origin) {
+        if(conf.isSupportsCredentials()) {
+            setCorsOrigin(response,origin);
+            setCorsCredentials(response,"true");
+        }else{
+            if(conf.isAllowAnyOrigin()) {
+                setCorsOrigin(response,"*");
+            }else{
+                setCorsOrigin(response,origin);
+            }
+        }
+    }
+
 	protected void setCorsOrigin(Response response, String headerValue){
 		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN,headerValue);
 	}
+
 	protected void setCorsCredentials(Response response, String headerValue){
 		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS,headerValue);
 	}
+
 	protected void setCorsMaxAge(Response response, String headerValue){
 		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE,headerValue);
 	}
+
 	protected void setCorsMethod(Response response, String headerValue){
 		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS,headerValue);
 	}
+
 	protected void setCorsHeaders(Response response, String headerValue){
 		setHeaderWhenEmpty(response,RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS,headerValue);
 	}
+
 	protected void setHeaderWhenEmpty(Response response, String headerName, String headerValue){
 		if(Strings.isEmpty(response.getServletResponse().getHeader(headerName))){
 			response.addHeader(headerName,headerValue);

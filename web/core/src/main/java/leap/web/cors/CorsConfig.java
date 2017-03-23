@@ -43,6 +43,8 @@ public interface CorsConfig {
 
 	boolean isHeaderAllowedIgnoreCase(String header);
 
+    boolean isExposeAnyHeaders();
+
 	boolean hasExposedHeaders();
 
 	String getExposedHeadersValue();

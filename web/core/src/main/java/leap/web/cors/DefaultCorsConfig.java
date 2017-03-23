@@ -53,6 +53,7 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 	private boolean  allowAnyOrigin;
 	private boolean  allowAnyMethod;
 	private boolean  allowAnyHeader;
+    private boolean  exposeAnyHeaders;
 	private String	 exposedHeadersValue;
 	
 	public DefaultCorsConfig() {
@@ -187,10 +188,15 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
     public boolean isHeaderAllowedIgnoreCase(String header) {
 		return isAllow(allowAnyHeader, allowedHeaders, header, true);
 	}
-	
-	@Override
+
+    @Override
+    public boolean isExposeAnyHeaders() {
+        return exposeAnyHeaders;
+    }
+
+    @Override
     public boolean hasExposedHeaders() {
-		return null != exposedHeadersValue;
+		return !exposeAnyHeaders && null != exposedHeadersValue;
 	}
 
 	@Override
@@ -216,6 +222,10 @@ public class DefaultCorsConfig implements CorsConfig, CorsConfigurator {
 		}else{
 			this.exposedHeadersValue = Strings.join(exposedHeaders, ',');
 		}
+        this.exposeAnyHeaders = isAny(exposedHeaders);
+        if(exposeAnyHeaders) {
+            this.exposedHeadersValue = null;
+        }
 	}
 	
 	protected boolean isAllow(boolean any, String[] values, String value, boolean ignorecase) {

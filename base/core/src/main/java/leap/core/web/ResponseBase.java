@@ -18,6 +18,7 @@ package leap.core.web;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -84,6 +85,21 @@ public interface ResponseBase {
 	 * @see HttpServletResponse#addDateHeader(String, long)
 	 */
 	void addDateHeader(String name, long date);
+
+    /**
+     * @see HttpServletResponse#getHeader(String)
+     */
+    String getHeader(String name);
+
+    /**
+     * @see HttpServletResponse#getHeaders(String)
+     */
+    Collection<String> getHeaders(String name);
+
+    /**
+     * @see HttpServletResponse#getHeaderNames()
+     */
+    Collection<String> getHeaderNames();
 	
 	/**
 	 * @see HttpServletResponse#addCookie(Cookie)
