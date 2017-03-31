@@ -18,6 +18,11 @@
 	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.ServletAssetResolver"/>
 	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.ServletAssetResolver">
 		<property name="prefix" value="/"/>
+        <property name="excludedPaths">
+            <list>
+                <value>WEB-INF</value>
+            </list>
+        </property>
 	</bean>
 	<bean type="leap.web.assets.AssetResolver" class="leap.web.assets.WebjarsAssetResolver"/>
 	
