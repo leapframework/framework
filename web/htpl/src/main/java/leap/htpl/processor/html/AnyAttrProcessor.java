@@ -46,17 +46,20 @@ public class AnyAttrProcessor extends AbstractAnyAttrProcessor {
 		//remove the prefix 'attr-' if the attribute's local name like 'attr-{name}' 
 		if(Strings.startsWith(a.getLocalName(), ATTR_PREFIX, true)){
 			a.setLocalName(a.getLocalName().substring(ATTR_PREFIX.length()));
+			a.setOriginLocalName(a.getOriginLocalName().substring(ATTR_PREFIX.length()));
 		}
 		
 		if(Strings.endsWith(a.getLocalName(), IF_SUFFIX)){
 			Expression condition = engine.getExpressionManager().parseExpression(engine, a.getString());
 			
 			String attrName = a.getLocalName().substring(0,a.getLocalName().length() - IF_SUFFIX.length());
+			String originAttrName = a.getOriginLocalName().substring(0,a.getLocalName().length() - IF_SUFFIX.length());
 			Attr realAttr = e.getAttribute(attrName); 
 			if(null == realAttr){
 				a.setCondition(condition);
 				a.setLocalName(attrName);
-				
+				a.setOriginLocalName(originAttrName);
+
 				if(minimizedProcessor.supports(e, a)){
 					a.setValue(a.getLocalName());
 				}else{

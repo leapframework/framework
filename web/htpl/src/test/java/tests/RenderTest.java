@@ -277,4 +277,12 @@ public class RenderTest extends HtplTestCase {
 		assertRender("<html><body>\nHello\n</body></html>");
 		assertEquals(get("/test/simple.html?$debug=false").getContent().replaceAll("\r","").replaceAll("\n",""),"<html><body>Hello</body></html>");
 	}
+	@Test
+	public void testDynamicAttribute(){
+		context.setVariable("attrName","test1");
+		context.setVariable("attrValue","test2");
+		context.setVariable("childValue","test3");
+		assertRender("<div><span test1=\"test2\" attr=\"attr\">test3</span></div>","<div ht-inline-html=\"true\"><span ${attrName}=\"${attrValue}\" attr=\"attr\">${childValue}</span></div>");
+		//assertRender("<div><span ${attrName}=\"test2\" attr=\"attr\">test3</span></div>","<div ht-inline-html=\"false\"><span ${attrName}=\"${attrValue}\" attr=\"attr\">${childValue}</span></div>");
+	}
 }

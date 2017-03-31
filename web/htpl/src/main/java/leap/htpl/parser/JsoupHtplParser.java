@@ -281,7 +281,9 @@ public class JsoupHtplParser extends HtplParserBase {
 		List<Attr> attrs = new ArrayList<>();
 		for(Attribute a : e.attributes()){
 			QName1 name = new QName1(a.getKey());
+			QName1 originName = new QName1(a.getOriginKey());
 			Attr attr = new Attr(name.prefix,name.localName,a.getValue());
+			attr.setOriginLocalName(originName.localName);
 			attr.setQuotedCharacter(a.getQuotedCharacter());
 			attr.setInlineExpression(inlineExpression());
 			attrs.add(attr);

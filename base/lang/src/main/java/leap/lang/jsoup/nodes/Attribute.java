@@ -16,6 +16,7 @@ import leap.lang.jsoup.nodes.Entities;
  @author Jonathan Hedley, jonathan@hedley.net */
 public class Attribute implements Map.Entry<String, String>, Cloneable  {
     private String    key;
+    private String    originKey;
     private String    value;
     private Character quotedCharacter;
 
@@ -32,7 +33,10 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
     public Attribute(String key, String value, Character quotedCharacter) {
         Validate.notEmpty(key);
         Validate.notNull(value);
+        // case insensitive
         this.key = key.trim().toLowerCase();
+        // origin key
+        this.originKey = key.trim();
         this.value = value;
         this.quotedCharacter = quotedCharacter;
     }
@@ -52,6 +56,20 @@ public class Attribute implements Map.Entry<String, String>, Cloneable  {
     public void setKey(String key) {
         Validate.notEmpty(key);
         this.key = key.trim().toLowerCase();
+    }
+    /**
+     Get the attribute origin key.
+     @return the attribute origin key
+     */
+    public String getOriginKey() {
+        return originKey;
+    }
+    /**
+     Set the attribute origin key. Gets normalised as per the constructor method.
+     @param originKey the new origin key; must not be null
+     */
+    public void setOriginKey(String originKey) {
+        this.originKey = originKey;
     }
 
     /**

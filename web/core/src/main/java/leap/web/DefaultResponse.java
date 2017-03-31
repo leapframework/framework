@@ -18,6 +18,7 @@ package leap.web;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.Cookie;
@@ -74,8 +75,23 @@ public class DefaultResponse extends Response {
     public void addDateHeader(String name, long date) {
 		resp.addDateHeader(name, date);
     }
-	
-	@Override
+
+    @Override
+    public String getHeader(String name) {
+        return resp.getHeader(name);
+    }
+
+    @Override
+    public Collection<String> getHeaders(String name) {
+        return resp.getHeaders(name);
+    }
+
+    @Override
+    public Collection<String> getHeaderNames() {
+        return resp.getHeaderNames();
+    }
+
+    @Override
     public void addCookie(Cookie cookie) {
 		resp.addCookie(cookie);
     }

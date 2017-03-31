@@ -28,6 +28,7 @@ public class Attr extends AbstractHtplObject {
 	private String     	  namespacePrefix;	//indicates the 'prefix' part in 'xmlns:{prefix}'
 	private String     	  prefix;			//parsed prefix
 	private String     	  localName;		//parsed local name
+	private String 		  originLocalName;  //origin local name
 	private String     	  string;		    //parsed value
 	private Character	  quotedCharacter = '"'; //quoted character
 	private Expression    expression;	    //null if not an expression.
@@ -96,9 +97,20 @@ public class Attr extends AbstractHtplObject {
 		checkLocked();
 		Args.notEmpty(localName,"local name");
 		this.localName = localName;
+		if(Strings.isEmpty(originLocalName)){
+			this.setOriginLocalName(localName);
+		}
 		evalIsNamespace();
 	}
-	
+
+	public String getOriginLocalName() {
+		return Strings.isEmpty(originLocalName)?this.getLocalName():originLocalName;
+	}
+
+	public void setOriginLocalName(String originLocalName) {
+		this.originLocalName = originLocalName;
+	}
+
 	/**
 	 * Returns a {@link String} or {@link Expression} indicates the value of this attribute.
 	 */

@@ -17,6 +17,7 @@ package leap.lang.json;
 
 import leap.junit.concurrent.ConcurrentTestCase;
 import leap.lang.naming.NamingStyles;
+import leap.lang.serialize.JsonSerializer;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -158,12 +159,26 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		List<?> jsonArray3 = (List<?>)jsonArrayArray[2];
 		assertEquals(1, jsonArray3.size());
 	}
+
 	@Test
 	public void testNamingStyle(){
 		String json = "{\"user_id\":\"1\",\"user_name\":\"xx\"}";
 		assertEquals(json, encodeUpperCamelStyle(new NamingStyleBean("1","xx")));
 	}
-	
+
+    @Test
+    public void testMaxSettingsIgnoreNull() {
+        SimpleBean bean = new SimpleBean();
+        bean.setIntegerProp(100);
+        String json = JSON.encode(bean, JsonSettings.MAX);
+        assertContains(json, "\"strProp\":null");
+
+        List<SimpleBean> beans = new ArrayList<>();
+        beans.add(bean);
+        json = JSON.encode(beans, JsonSettings.MAX);
+        assertContains(json, "\"strProp\":null");
+    }
+
 	private static String encode(Object value){
 		return JSON.encode(value);
 	}
@@ -327,6 +342,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 			this.userName = userName;
 		}
 	}
+
 	static final class UseFieldBean {
 		@JsonField(useGetter = false)
 		private String name1 = "default";
@@ -348,4 +364,26 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 			this.name2 = name2;
 		}
 	}
+
+    static final class SimpleBean {
+
+        private String  strProp;
+        private Integer integerProp;
+
+        public String getStrProp() {
+            return strProp;
+        }
+
+        public void setStrProp(String strProp) {
+            this.strProp = strProp;
+        }
+
+        public Integer getIntegerProp() {
+            return integerProp;
+        }
+
+        public void setIntegerProp(Integer integerProp) {
+            this.integerProp = integerProp;
+        }
+    }
 }
