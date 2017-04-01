@@ -46,4 +46,8 @@ public interface SqlFactory {
 	
 	SqlCommand createFindAllCommand(MetadataContext context,EntityMapping em);
 
+    /**
+     * returns [alias.]col1,[alias].col2,...
+     */
+    String createSelectColumns(MetadataContext context, EntityMapping em, String tableAlias);
 }

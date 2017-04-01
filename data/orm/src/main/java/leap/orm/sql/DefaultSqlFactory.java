@@ -407,8 +407,11 @@ public class DefaultSqlFactory implements SqlFactory {
 		DbTable   table   = em.getTable();
 		
 		StringBuilder sql = new StringBuilder();
-		
-		sql.append("select * from ").append(dialect.qualifySchemaObjectName(table)).append(" where ");
+
+        sql.append("select ")
+            .append(createSelectColumns(context, em, null))
+            .append(" from ")
+            .append(dialect.qualifySchemaObjectName(table)).append(" where ");
 		
 		int index = 0;
 		for(FieldMapping key : em.getKeyFieldMappings()){
@@ -432,8 +435,11 @@ public class DefaultSqlFactory implements SqlFactory {
 		DbTable   table   = em.getTable();
 		
 		StringBuilder sql = new StringBuilder();
-		
-		sql.append("select * from ").append(dialect.qualifySchemaObjectName(table)).append(" where ");
+
+        sql.append("select ")
+            .append(createSelectColumns(context, em, null))
+            .append(" from ")
+            .append(dialect.qualifySchemaObjectName(table)).append(" where ");
 		
 		int index = 0;
 		for(FieldMapping key : em.getKeyFieldMappings()){
@@ -454,8 +460,35 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("select * from ").append(dialect.qualifySchemaObjectName(table));
+		sql.append("select ")
+            .append(createSelectColumns(context, em, null))
+            .append(" from ")
+            .append(dialect.qualifySchemaObjectName(table));
 		
 		return sql.toString();
 	}
+
+    @Override
+    public String createSelectColumns(MetadataContext context, EntityMapping em, String tableAlias) {
+        StringBuilder s = new StringBuilder();
+
+        int index = 0;
+
+        for(FieldMapping fm : em.getFieldMappings()){
+
+            if(index > 0) {
+                s.append(',');
+            }
+
+            if(!Strings.isEmpty(tableAlias)) {
+                s.append(tableAlias).append('.');
+            }
+
+            s.append(fm.getColumnName());
+
+            index++;
+        }
+
+        return s.toString();
+    }
 }

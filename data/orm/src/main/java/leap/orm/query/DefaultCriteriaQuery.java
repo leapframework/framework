@@ -35,6 +35,7 @@ import leap.orm.linq.Condition;
 import leap.orm.mapping.*;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
+import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlStatement;
 
 import java.io.IOException;
@@ -898,7 +899,8 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 			
             if(null == selects || selects.length == 0){
             	if(null == selectFilter) {
-            		sql.append(alias).append(".*");	
+                    SqlFactory sf = dao.getOrmContext().getSqlFactory();
+                    sql.append(sf.createSelectColumns(dao.getOrmContext(), em, alias));
             	}else{
             		int index = 0;
             		for(FieldMapping fm : em.getFieldMappings()) {
