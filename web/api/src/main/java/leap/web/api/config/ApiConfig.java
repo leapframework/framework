@@ -143,4 +143,12 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns the {@link ResourcePermissionsSet}.
      */
     ResourcePermissionsSet getResourcePermissionsSet();
+
+    /**
+     * Returns true if generated unique operation id for api operation.
+     *
+     * <p/>
+     * Default is <code>false</code>.
+     */
+    boolean isUniqueOperationId();
 }

@@ -19,13 +19,19 @@
 package leap.web.api.meta;
 
 import leap.lang.Strings;
+import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiPathBuilder;
 
 public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
 
     @Override
-    public boolean tryCreateOperationId(ApiMetadataBuilder m, MApiPathBuilder p, MApiOperationBuilder op) {
+    public boolean tryCreateOperationId(ApiConfig c, ApiMetadataBuilder m, MApiPathBuilder p, MApiOperationBuilder op) {
+        if(!c.isUniqueOperationId()) {
+            op.setId(op.getName());
+            return true;
+        }
+
         String name   = op.getName();
         String method = op.getMethod().name().toLowerCase();
 
@@ -36,13 +42,13 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
 
         if(!name.equalsIgnoreCase(method)) {
             //id = name
-            if (tryCreateOperationId(m, op, name)) {
+            if (trySetUniqueOperationId(m, op, name)) {
                 return true;
             }
 
             //id = name + "with" + method
             String id = name + "With" + Strings.upperFirst(method);
-            if (tryCreateOperationId(m, op, id)) {
+            if (trySetUniqueOperationId(m, op, id)) {
                 return true;
             }
         }
@@ -52,13 +58,13 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
                 //id = name + tag
                 String id = name + Strings.upperFirst(tag);
 
-                if(tryCreateOperationId(m, op, id)) {
+                if(trySetUniqueOperationId(m, op, id)) {
                     return true;
                 }
 
                 //id = id + "With" + method
                 id = id + "With" + Strings.upperFirst(method);
-                if(tryCreateOperationId(m, op, id)) {
+                if(trySetUniqueOperationId(m, op, id)) {
                     return true;
                 }
             }
@@ -67,7 +73,7 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
         return false;
     }
 
-    protected boolean tryCreateOperationId(ApiMetadataBuilder m, MApiOperationBuilder op, String id) {
+    protected boolean trySetUniqueOperationId(ApiMetadataBuilder m, MApiOperationBuilder op, String id) {
         if(m.getOperationIds().contains(id)) {
             return false;
         }
@@ -76,4 +82,5 @@ public class DefaultApiMetadataStrategy implements ApiMetadataStrategy {
         m.getOperationIds().add(id);
         return true;
     }
+
 }

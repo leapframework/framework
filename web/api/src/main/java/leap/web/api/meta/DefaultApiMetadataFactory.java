@@ -238,7 +238,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
             //operation id
             if(Strings.isEmpty(op.getId())) {
-                strategy.tryCreateOperationId(m, p, op);
+                strategy.tryCreateOperationId(context.getConfig(), m, p, op);
             }
         });
 

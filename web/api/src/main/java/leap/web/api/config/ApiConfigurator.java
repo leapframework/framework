@@ -169,4 +169,9 @@ public interface ApiConfigurator {
      * Sets the resource type of the route.
      */
     ApiConfigurator setResourceType(Route route, Class<?> resourceType);
+
+    /**
+     * Sets the unique operation id property to true or false.
+     */
+    ApiConfigurator setUniqueOperationId(boolean unqiueOperationId);
 }

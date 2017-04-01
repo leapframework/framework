@@ -16,14 +16,12 @@
 package leap.web.api.config;
 
 import leap.lang.*;
-import leap.lang.accessor.MapAttributeAccessor;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
-import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
 
 import java.util.*;
@@ -42,6 +40,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected String[]       produces;
     protected String[]       consumes;
     protected boolean        corsEnabled                 = true;
+    protected boolean        uniqueOperationId           = false;
     protected OauthConfig    oauthConfig;
     protected NamingStyle    parameterNamingStyle;
     protected NamingStyle    propertyNamingStyle;
@@ -332,6 +331,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator setBasePackage(String basePackage) {
         this.basePackage = basePackage;
+        return this;
+    }
+
+    @Override
+    public boolean isUniqueOperationId() {
+        return uniqueOperationId;
+    }
+
+    @Override
+    public ApiConfigurator setUniqueOperationId(boolean uniqueOperationId) {
+        this.uniqueOperationId = uniqueOperationId;
         return this;
     }
 }

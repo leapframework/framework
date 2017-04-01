@@ -18,11 +18,12 @@
 
 package leap.web.api.meta;
 
+import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiPathBuilder;
 
 public interface ApiMetadataStrategy {
 
-    boolean tryCreateOperationId(ApiMetadataBuilder m, MApiPathBuilder p, MApiOperationBuilder op);
+    boolean tryCreateOperationId(ApiConfig c, ApiMetadataBuilder m, MApiPathBuilder p, MApiOperationBuilder op);
 
 }

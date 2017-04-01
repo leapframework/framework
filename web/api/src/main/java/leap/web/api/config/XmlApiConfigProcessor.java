@@ -88,6 +88,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String DEFAULT              = "default";
     protected static final String HTTP_METHODS         = "http-methods";
     protected static final String PATH_PATTERN         = "path-pattern";
+    protected static final String UNIQUE_OPERATION_ID  = "unique-operation-id";
 
     @Override
     public String getNamespaceURI() {
@@ -268,12 +269,18 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         String name     = reader.resolveRequiredAttribute(NAME);
         String basePath = reader.resolveAttribute(BASE_PATH);
         String basePackage = reader.resolveAttribute(BASE_PACKAGE);
+        Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
+
         ApiConfigurator api = extensions.getApiConfigurator(name);
         if(null == api) {
             reader.getRequiredAttribute(BASE_PATH);
             api = new DefaultApiConfig(name,basePath);
             api.setBasePackage(basePackage);
             extensions.addApiConfigurator(api);
+        }
+
+        if(null != uniqueOperationId) {
+            api.setUniqueOperationId(uniqueOperationId);
         }
 
         readApi(context, reader, api);
