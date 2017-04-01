@@ -48,7 +48,7 @@ public class GenericDbMetadataReader extends GenericDbMetadataReaderBase impleme
 	protected String   defaultCatalogPattern = "%";
 	protected String   defaultSchemaPattern  = "%";
 	protected String   defaultTablePattern   = "%";
-	protected String   defaultColumnPattern  = null;
+	protected String   defaultColumnPattern  = "%";
 	protected String[] defaultTableTypes     = new String[]{DbTableTypes.TABLE,DbTableTypes.VIEW};
 
 	protected GenericDbMetadataReader(){
