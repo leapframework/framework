@@ -22,21 +22,42 @@ import leap.core.annotation.Inject;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.json.JSON;
+import leap.lang.resource.Resources;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.MApiParameter;
 import leap.web.api.meta.model.MApiSecurityDef;
+import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.swagger.SwaggerConstants;
+import leap.web.api.spec.swagger.SwaggerJsonWriter;
 import leap.web.api.spec.swagger.SwaggerSpecReader;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.io.Reader;
 import java.io.StringReader;
 import java.util.Map;
 
 public class SwaggerJsonTest extends WebTestBase {
 
     private @Inject SwaggerSpecReader specReader;
+    private @Inject SwaggerJsonWriter specWriter;
+
+    @Test
+    public void testOpenFormat() throws Exception {
+
+        try(Reader reader = Resources.getResource("classpath:/swagger/format.json").getInputStreamReader()) {
+            ApiMetadata m = specReader.read(reader).build();
+
+            StringBuilder out = new StringBuilder();
+            specWriter.write(m, out);
+            String json = out.toString();
+
+            assertContains(json, "uuid");
+            assertContains(json, "email");
+        }
+    }
 
     @Test
     public void testApiSwaggerJson() throws Exception {
