@@ -16,29 +16,9 @@
 package leap.web.api.meta.model;
 
 
-import leap.web.api.meta.desc.OperationDescSet;
-
 public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter> {
 
-    protected boolean                        file;
-    protected boolean                        password;
 	protected MApiParameter.Location         location;
-
-    public boolean isFile() {
-        return file;
-    }
-
-    public void setFile(boolean file) {
-        this.file = file;
-    }
-
-    public boolean isPassword() {
-        return password;
-    }
-
-    public void setPassword(boolean password) {
-        this.password = password;
-    }
 
     public MApiParameter.Location getLocation() {
 		return location;

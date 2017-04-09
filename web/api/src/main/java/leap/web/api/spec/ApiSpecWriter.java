@@ -25,6 +25,13 @@ public interface ApiSpecWriter {
 	 * Returns the content type of output spec.
 	 */
 	String getContentType();
+
+    /**
+     * Writes the given api metadata to spec's format.
+     */
+    default void write(ApiMetadata m, Appendable out) throws IOException {
+        write(ApiSpecContext.EMPTY, m, out);
+    }
 	
 	/**
 	 * Writes the given api metadata to spec's format.

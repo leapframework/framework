@@ -399,12 +399,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 				w.property(propertyName(p.getName()), () -> {
 					w.startObject();
 
-                    try {
-                        writeParameterType(context, m, w, p);
-                    }catch(RuntimeException e) {
-                        throw e;
-                    }
-
+                    writeParameterType(context, m, w, p);
 					w.propertyOptional(DESCRIPTION,	 p.getDescription());
 
 //                    if(isReadonly(p)) {
@@ -469,8 +464,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         if(p.isFile()) {
             w.property(TYPE, FILE);
         }else{
-            writeSimpleType(context, m, w, st);
+            SwaggerType type = writeSimpleType(context, m, w, st);
+
+            if(null != type && null == type.fomrat()) {
+                w.propertyOptional(FORMAT, p.getFormat());
+            }
         }
+
         w.propertyOptional(ENUM, p.getEnumValues());
 	}
 
@@ -542,7 +542,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "'");
 	}
 	
-	protected void writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
+	protected SwaggerType writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
 		SwaggerType type;
 		
 		MSimpleTypeKind k = st.getSimpleTypeKind();
@@ -578,5 +578,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         if(null != type.fomrat()) {
             w.property(FORMAT, type.fomrat());
         }
+
+        return type;
 	}
 }

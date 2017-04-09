@@ -22,6 +22,7 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	protected MType                 type;
 	protected String                format;
 	protected Boolean               required;
+    protected boolean               file;
     protected boolean               password;
 	protected String                defaultValue;
     protected String[]              enumValues;
@@ -42,6 +43,14 @@ public abstract class MApiParameterBaseBuilder<T extends MApiParameterBase> exte
 	public void setFormat(String format) {
 		this.format = format;
 	}
+
+    public boolean isFile() {
+        return file;
+    }
+
+    public void setFile(boolean file) {
+        this.file = file;
+    }
 
     public boolean isPassword() {
         return password;

@@ -242,14 +242,7 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mp.setLocation(readParameterIn(mp.getName(), p.getString(IN)));
         mp.setType(readParameterType(p));
 
-        String type   = p.getString(TYPE);
-        String format = p.getString(FORMAT);
-
-        if("file".equals(type)) {
-            mp.setFile(true);
-        }else if("password".equals(format)) {
-            mp.setPassword(true);
-        }
+        readFormat(p, mp);
 
         return mp;
     }
@@ -412,12 +405,25 @@ public class SwaggerSpecReader implements ApiSpecReader {
         mp.setCreatable(p.get(X_CREATABLE, Boolean.class));
         mp.setUpdatable(p.get(X_UPDATABLE, Boolean.class));
 
-        String format = p.getString(FORMAT);
-        if("password".equals(format)) {
-            mp.setPassword(true);
-        }
+        readFormat(p, mp);
 
         return mp;
+    }
+
+    protected void readFormat(JsonObject json, MApiParameterBaseBuilder p) {
+        String format = json.getString(FORMAT);
+        if(!Strings.isEmpty(format)) {
+            p.setFormat(format);
+
+            if("password".equals(format)) {
+                p.setPassword(true);
+            }
+        }
+
+        String type = json.getString(TYPE);
+        if("file".equals(type)) {
+            p.setFile(true);
+        }
     }
 
     protected MApiParameter.Location readParameterIn(String param, String in) {
@@ -572,7 +578,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
                 }
 
                 if(!Strings.isEmpty(format)) {
-                    throw new InvalidSpecException("Invalid format '" + format + "' of type '" + type + "'");
+                    /*
+                        the format property is an open string-valued property,
+                        and can have any value to support documentation needs.
+                        Formats such as "email", "uuid", etc.
+                     */
                 }
 
                 return MSimpleTypes.STRING;
