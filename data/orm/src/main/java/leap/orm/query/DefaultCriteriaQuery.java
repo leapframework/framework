@@ -740,6 +740,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 RelationMapping rjoin   = joinEntity.tryGetKeyRelationMappingOfTargetEntity(context.getSource().getEntityName());
                 RelationMapping rtarget = joinEntity.tryGetKeyRelationMappingOfTargetEntity(relation.getTargetEntityName());
 
+                if(null == rjoin) {
+                    rjoin = joinEntity.tryGetRefRelationMappingOfTargetEntity(context.getSource().getEntityName());
+                }
+
+                if(null == rtarget) {
+                    rtarget = joinEntity.tryGetRefRelationMappingOfTargetEntity(relation.getTargetEntityName());
+                }
+
                 String joinEntityAlias = context.getSourceAlias() + "_" + this.alias;
 
                 if(this.type == JoinType.LEFT) {

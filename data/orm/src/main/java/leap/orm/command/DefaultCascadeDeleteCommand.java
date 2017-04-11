@@ -111,10 +111,10 @@ public class DefaultCascadeDeleteCommand extends AbstractEntityDaoCommand implem
             //todo : cyclic reference.
 
             if(o1.entity.isReferenceTo(o2.entity.getEntityName())) {
-                return 1;
+                return -1;
             }
 
-            return -1;
+            return 1;
         };
 
         private final EntityMapping   entity;
