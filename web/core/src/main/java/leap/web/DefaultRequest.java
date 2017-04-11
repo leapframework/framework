@@ -325,7 +325,7 @@ public class DefaultRequest extends Request {
 	           .append(uri.getHost());
 	        
 	        int port = uri.getPort();
-	        if( req.isSecure() ? port != 443 : port != 80 ) {
+	        if( port != -1 && ( req.isSecure() ? port != 443 : port != 80 )) {
 	            url.append(':').append(port);
 	        }
 	        
