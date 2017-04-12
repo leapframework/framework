@@ -89,7 +89,7 @@ public @interface JsonType {
     /**
      * Specifies the type of sub-type's metadata.
      */
-    MetaType meta() default MetaType.CLASS_NAME;
+    MetaType meta();
 
     /**
      * Specifies the property name to save the sub-type's metadata.

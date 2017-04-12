@@ -853,11 +853,16 @@ public class JsonWriterImpl implements JsonWriter {
                     if(type.meta() == JsonType.MetaType.CLASS_NAME) {
                         property(metaPropertyName, bean.getClass().getName());
                     }else {
+                        boolean typed = false;
                         for(JsonType.SubType subType : type.types()) {
                             if(subType.type().equals(bean.getClass())) {
+                                typed = true;
                                 property(metaPropertyName, subType.name());
                                 break;
                             }
+                        }
+                        if(!typed) {
+                            throw new JsonException("No type name has been defined for class '" + bean.getClass() + "' in super class");
                         }
                     }
                 }
