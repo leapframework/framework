@@ -489,8 +489,29 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 	    return this;
     }
-	
-	@Override
+
+    @Override
+    public CriteriaQuery<T> selectExclude(String... fields) {
+        if(null != fields && fields.length > 0) {
+            List<String> select = new ArrayList<>();
+            for(FieldMapping fm : em.getFieldMappings()) {
+                boolean exclude = false;
+                for(String excludeField : fields) {
+                    if(fm.getFieldName().equalsIgnoreCase(excludeField)) {
+                        exclude = true;
+                        break;
+                    }
+                }
+                if(!exclude) {
+                    select.add(fm.getFieldName());
+                }
+            }
+            builder.selects = columns(select.toArray(new String[select.size()]));
+        }
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> select(Predicate<FieldMapping> filter) {
 		this.selectFilter = filter;
 	    return this;
