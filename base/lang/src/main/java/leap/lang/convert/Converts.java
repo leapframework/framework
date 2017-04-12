@@ -126,21 +126,29 @@ public class Converts {
 	}
 	
 	public static <T> T convert(Object value,Class<T> targetType) throws ConvertUnsupportedException {
-		return convert(value,targetType,null);
+		return convert(value,targetType,null,null);
 	}
 	
 	public static <T> T convert(Object value,Class<T> targetType, Type genericType) throws ConvertUnsupportedException {
-		Object v = doConvert(value, targetType, genericType);
-        
-		if(NOT_CONVERTED == v) {
-			throw new ConvertUnsupportedException(Strings.format("Cannot convert '{0}' to '{1}', value : {2}",value.getClass(),targetType.getName(),value.toString()));
-		}
-		
-		return (T)v;
+        return convert(value,targetType,genericType,null);
 	}
+
+    public static <T> T convert(Object value,Class<T> targetType, ConvertContext context) throws ConvertUnsupportedException {
+        return convert(value,targetType,null,null);
+    }
+
+    public static <T> T convert(Object value,Class<T> targetType, Type genericType, ConvertContext context) throws ConvertUnsupportedException {
+        Object v = doConvert(value, targetType, genericType, context);
+
+        if(NOT_CONVERTED == v) {
+            throw new ConvertUnsupportedException(Strings.format("Cannot convert '{0}' to '{1}', value : {2}",value.getClass(),targetType.getName(),value.toString()));
+        }
+
+        return (T)v;
+    }
 	
 	public static <T> T tryConvert(Object value,Class<T> targetType, Type genericType) {
-		Object v = doConvert(value, targetType, genericType);
+		Object v = doConvert(value, targetType, genericType, null);
         
 		if(NOT_CONVERTED == v) {
 			return null;
@@ -149,7 +157,7 @@ public class Converts {
 		return (T)v;
 	}
 	
-	protected static <T> Object doConvert(Object value,Class<T> targetType, Type genericType) {
+	protected static <T> Object doConvert(Object value,Class<T> targetType, Type genericType, ConvertContext context) {
 		Args.notNull(targetType,"targetType");
 		
 		if(!CharSequence.class.isAssignableFrom(targetType)){
@@ -202,7 +210,7 @@ public class Converts {
 	        Converter converter = findConverter(targetType);
 	        
 	        //convert from
-	        if(null != converter && converter.convertFrom(value, targetType, genericType, out)){
+	        if(null != converter && converter.convertFrom(value, targetType, genericType, out, context)){
 	        	return (T)out.getValue();
 	        }
 
@@ -214,7 +222,7 @@ public class Converts {
 	        	return (T)out.getValue();
 	        }
 	        
-	        //assignablefrom convert
+	        //assignable from convert
 	        if(targetType.isAssignableFrom(sourceType)){
 	        	return (T)value;
 	        }
@@ -222,11 +230,11 @@ public class Converts {
 	        for(Entry<Class<?>, Converter> entry : assignableFromConverters.entrySet()){
 	        	Class<?> superType = entry.getKey();
 	        
-	        	if(superType.isAssignableFrom(targetType) && entry.getValue().convertFrom(value, targetType, genericType, out)){
+	        	if(superType.isAssignableFrom(targetType) && entry.getValue().convertFrom(value, targetType, genericType, out, context)){
 	        		return (T)out.getValue();
 	        	}
 	        	
-	        	if(superType.isAssignableFrom(sourceType) && entry.getValue().convertTo(value, targetType, genericType, out)){
+	        	if(superType.isAssignableFrom(sourceType) && entry.getValue().convertTo(value, targetType, genericType, out, context)){
 	        		return (T)out.getValue();
 	        	}
 	        }
@@ -236,11 +244,11 @@ public class Converts {
 	            return (T)value;
 	        }
 	        
-	        if(beanConverter.convertFrom(value, targetType, genericType, out) ){
+	        if(beanConverter.convertFrom(value, targetType, genericType, out, context) ){
 	        	return (T)out.getValue();
 	        }
 	        
-	        if(beanConverter.convertTo(value, targetType, genericType, out)){
+	        if(beanConverter.convertTo(value, targetType, genericType, out, context)){
 	        	return (T)out.getValue();
 	        }
 	        

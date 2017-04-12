@@ -25,7 +25,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-public class JsonTypeTest extends TestBase {
+public class JsonDataTypeTest extends TestBase {
 
     @Test
     public void testLocalDate() {

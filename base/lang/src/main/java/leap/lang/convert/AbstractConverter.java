@@ -30,7 +30,4 @@ public abstract class AbstractConverter<T> implements Converter<T> {
 	    return false;
     }
 
-	public String convertToString(T value) throws Throwable {
-	    return null == value ? Strings.EMPTY : value.toString();
-    }
 }

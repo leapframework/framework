@@ -32,6 +32,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Consumer;
 
 public class JsonWriterImpl implements JsonWriter {
 	
@@ -714,13 +715,17 @@ public class JsonWriterImpl implements JsonWriter {
     
     @SuppressWarnings("rawtypes")
     public JsonWriter value(Object v) {
-    	depth++;
-    	if(depth == maxDepth) {
-    		throw new JsonException("Exceed max depth " + depth);
-    	}
-    	
-    	try{
-        	if (null == v) {
+    	return value(v, this::bean);
+    }
+
+    protected JsonWriter value(Object v, Consumer<Object> beanWriter) {
+        depth++;
+        if(depth == maxDepth) {
+            throw new JsonException("Exceed max depth " + depth);
+        }
+
+        try{
+            if (null == v) {
                 return null_();
             } else if (v instanceof String) {
                 return value((String)v);
@@ -743,48 +748,48 @@ public class JsonWriterImpl implements JsonWriter {
             } else if (v instanceof Class<?>) {
                 return value(((Class<?>) v).getName());
             } else if (v instanceof byte[]){
-            	return value((byte[])v);
+                return value((byte[])v);
             } else if(v instanceof Enum<?>){
-            	return value(Enums.getValue((Enum<?>)v));
+                return value(Enums.getValue((Enum<?>)v));
             } else if(v instanceof Object[]) {
                 return array((Object[])v);
             } else if(v instanceof Iterable) {
-            	return array((Iterable<?>)v);
+                return array((Iterable<?>)v);
             } else if(v instanceof Iterator) {
-            	return array((Iterator<?>)v);
+                return array((Iterator<?>)v);
             } else if(v.getClass().isArray()) {
-            	return objectArray(v);
+                return objectArray(v);
             } else if(v instanceof JsonStringable){
-            	((JsonStringable) v).toJson(this);
-            	return this;
+                ((JsonStringable) v).toJson(this);
+                return this;
             } else if(v instanceof Map) {
-               return map((Map)v);
+                return map((Map)v);
             } else {
-            	if(detectCyclicReferences) {
-            		if(references.containsKey(v)) {
-            			
-            			if(ignoreCyclicReferences) {
-            				return null_(); //TODO : write null for cyclic reference
-            			}
-            			
-            			throw new JsonException("Found cyclic reference : " + v.toString());
-            			
-            		}
-            		
-            		references.put(v, zero);
-            	}
-            
-                bean(v);
-            	
-            	if(detectCyclicReferences) {
-            		references.remove(v);
-            	}
-            	
-            	return this;
-            }    		
-    	}finally{
-    		depth--;
-    	}
+                if(detectCyclicReferences) {
+                    if(references.containsKey(v)) {
+
+                        if(ignoreCyclicReferences) {
+                            return null_(); //TODO : write null for cyclic reference
+                        }
+
+                        throw new JsonException("Found cyclic reference : " + v.toString());
+
+                    }
+
+                    references.put(v, zero);
+                }
+
+                beanWriter.accept(v);
+
+                if(detectCyclicReferences) {
+                    references.remove(v);
+                }
+
+                return this;
+            }
+        }finally{
+            depth--;
+        }
     }
 	
     @Override
@@ -827,13 +832,35 @@ public class JsonWriterImpl implements JsonWriter {
 	
 	@Override
     public JsonWriter bean(Object bean) {
-		if(null == bean) {
-			return null_();
-		}else{
+		return bean(bean, null);
+    }
+
+    protected JsonWriter bean(Object bean, JsonType type) {
+        if(null == bean) {
+            return null_();
+        }else{
             startObject();
 
             try {
                 BeanType beanType = BeanType.of(bean.getClass());
+
+                //process type metadata.
+                if(null != type) {
+                    String metaPropertyName = Strings.firstNotEmpty(type.property(),
+                                                                    type.meta().getDefaultPropertyName());
+
+                    //todo : cache
+                    if(type.meta() == JsonType.MetaType.CLASS_NAME) {
+                        property(metaPropertyName, bean.getClass().getName());
+                    }else {
+                        for(JsonType.SubType subType : type.types()) {
+                            if(subType.type().equals(bean.getClass())) {
+                                property(metaPropertyName, subType.name());
+                                break;
+                            }
+                        }
+                    }
+                }
 
                 for(BeanProperty prop : beanType.getProperties()){
                     if(prop.isTransient()){
@@ -850,18 +877,18 @@ public class JsonWriterImpl implements JsonWriter {
                         String propName = prop.getName();
 
                         JsonName named = prop.getAnnotation(JsonName.class);
-						
+
                         if(null != named){
                             propName = named.value();
                         }
 
-						Object propValue;
-                        
+                        Object propValue;
+
                         if(jsonField != null && jsonField.useGetter() == false){
-							propValue = prop.getReflectField().getValue(bean,false);
-						}else{
-							propValue = prop.getValue(bean);
-						}
+                            propValue = prop.getReflectField().getValue(bean,false);
+                        }else{
+                            propValue = prop.getValue(bean);
+                        }
 
                         if(null == propValue && isIgnoreNull()){
                             continue;
@@ -874,7 +901,11 @@ public class JsonWriterImpl implements JsonWriter {
                         keyUseNamingStyle(propName);
 
                         if(!writeDateValue(prop, propValue)) {
-                            value(propValue);
+
+                            //todo : performance
+                            value(propValue, (v) -> {
+                                bean(v,prop.getType().getAnnotation(JsonType.class));
+                            });
                         }
                     }
                 }
@@ -885,8 +916,7 @@ public class JsonWriterImpl implements JsonWriter {
             }
 
             return endObject();
-		}
-
+        }
     }
 
     protected boolean writeDateValue(BeanProperty bp, Object value) {
