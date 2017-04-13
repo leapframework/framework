@@ -21,6 +21,7 @@ import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.exception.ObjectExistsException;
 import leap.web.action.Argument;
+import leap.web.action.ActionParams;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +29,9 @@ import java.util.function.Function;
 
 public class DynaActionBuilder implements Buildable<DynaAction> {
 
-    protected Class<?>                     returnType;
-    protected List<DynaArgumentBuilder>    arguments = new ArrayList<>();
-    protected Function<DynaParams, Object> function;
+    protected Class<?>                       returnType;
+    protected List<DynaArgumentBuilder>      arguments = new ArrayList<>();
+    protected Function<ActionParams, Object> function;
 
     public Class<?> getReturnType() {
         return returnType;
@@ -57,11 +58,11 @@ public class DynaActionBuilder implements Buildable<DynaAction> {
         return this;
     }
 
-    public Function<DynaParams, Object> getFunction() {
+    public Function<ActionParams, Object> getFunction() {
         return function;
     }
 
-    public void setFunction(Function<DynaParams, Object> function) {
+    public void setFunction(Function<ActionParams, Object> function) {
         this.function = function;
     }
 

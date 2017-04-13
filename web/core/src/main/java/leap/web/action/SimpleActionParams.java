@@ -14,22 +14,21 @@
  *  limitations under the License.
  */
 
-package leap.web.action.dyna;
+package leap.web.action;
 
 import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
-import leap.web.action.Argument;
 
 import java.util.Map;
 
-public class DynaParamsImpl implements DynaParams {
+public class SimpleActionParams implements ActionParams {
 
     protected final Argument[] arguments;
     protected final Object[]   values;
 
     private final Map<String, Integer> nameIndexMap;
 
-    public DynaParamsImpl(Argument[] arguments, Object[] values) {
+    public SimpleActionParams(Argument[] arguments, Object[] values) {
         this.arguments = arguments;
         this.values = values;
 

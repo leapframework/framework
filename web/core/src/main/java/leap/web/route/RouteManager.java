@@ -18,16 +18,33 @@ package leap.web.route;
 
 public interface RouteManager {
 
+    /**
+     * Loads the {@link RouteBuilder} into the given {@link Routes}.
+     */
+    void loadRoute(Routes routes, RouteBuilder route);
+
+    /**
+     * Loads all the routes defined in the controller class into the given {@link Routes}.
+     */
     default void loadRoutesFromController(Routes routes, Class<?> controllerClass) {
         loadRoutesFromController(routes, controllerClass, "/");
     }
 
+    /**
+     * Loads all the routes defined in the controller class into the given {@link Routes}.
+     */
     void loadRoutesFromController(Routes routes, Class<?> controllerClass,String basePath);
 
+    /**
+     * Loads all the routes defined in the controller object into the given {@link Routes}.
+     */
     default void loadRoutesFromController(Routes routes, Object controller) {
         loadRoutesFromController(routes, controller, "/");
     }
 
+    /**
+     * Loads all the routes defined in the controller object into the given {@link Routes}.
+     */
     void loadRoutesFromController(Routes routes, Object controller,String basePath);
 
 }

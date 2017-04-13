@@ -17,19 +17,17 @@
 package leap.web.action.dyna;
 
 import leap.lang.Args;
-import leap.web.action.Action;
-import leap.web.action.ActionContext;
-import leap.web.action.Argument;
+import leap.web.action.*;
 
 import java.util.function.Function;
 
 public class DynaAction implements Action {
 
-    protected final Class<?>                     returnType;
-    protected final Argument[]                   arguments;
-    protected final Function<DynaParams, Object> function;
+    protected final Class<?>                       returnType;
+    protected final Argument[]                     arguments;
+    protected final Function<ActionParams, Object> function;
 
-    public DynaAction(Class<?> returnType, Argument[] arguments, Function<DynaParams, Object> function) {
+    public DynaAction(Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
         Args.notNull(arguments);
         Args.notNull(function);
         this.returnType = returnType;
@@ -49,7 +47,7 @@ public class DynaAction implements Action {
 
     @Override
     public Object execute(ActionContext context, Object[] args) throws Throwable {
-        DynaParamsImpl params = new DynaParamsImpl(arguments, args);
+        SimpleActionParams params = new SimpleActionParams(arguments, args);
 
         return function.apply(params);
     }
