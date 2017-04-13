@@ -215,9 +215,10 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 				log.debug("Request not authenticated!");
 			}
 		}
-
+		
+        request.setAuthentication(authc);
 		request.setUser(authc.getUser());
-
+        
 		for(SecurityInterceptor interceptor : interceptors) {
 			if(interceptor.postResolveAuthentication(request, response, context).isIntercepted()){
 				return State.INTERCEPTED;

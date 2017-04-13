@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
 import leap.core.web.RequestBase;
 import leap.web.assets.AssetSource;
@@ -266,6 +267,16 @@ public abstract class Request extends RequestBase {
 	 */
 	public abstract void setUser(UserPrincipal user);
 
+	/**
+	 * Returns current {@link Authentication} or <code>null</code>
+	 */
+	public abstract Authentication getAuthentication();
+
+	/**
+	 * Sets current {@link Authentication}
+	 */
+	public abstract void setAuthentication(Authentication authentication);
+	
     /**
      * Returns the external router or null if use internal.
      */
