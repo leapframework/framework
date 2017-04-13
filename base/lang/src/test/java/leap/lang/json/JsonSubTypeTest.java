@@ -110,6 +110,26 @@ public class JsonSubTypeTest extends TestCase {
         assertEquals(o1.p2, ((SubTypeNameCustom)decodeBean.typeNameCustom).p2);
     }
 
+    @Test
+    public void testTypeNameWithExistProperty() {
+        TestBean encodeBean = new TestBean();
+        SubTypeNameCustom1 o1 = new SubTypeNameCustom1();
+
+        encodeBean.typeNameCustom1 = o1;
+        o1.p1   = "1";
+        o1.type = "type1";
+        o1.p2   = "2";
+
+        String json = JSON.encode(encodeBean);
+        assertTrue(json.contains("\"type\":\"type1\""));
+
+        TestBean decodeBean = JSON.decode(json, TestBean.class);
+        assertNotNull(decodeBean.typeNameCustom1);
+        assertEquals(o1.p1, decodeBean.typeNameCustom1.p1);
+        assertEquals(o1.type, decodeBean.typeNameCustom1.type);
+        assertEquals(o1.p2, ((SubTypeNameCustom1)decodeBean.typeNameCustom1).p2);
+    }
+
     static final class TestBean {
 
         public SuperClassNameDefault classNameDefault;
@@ -118,6 +138,7 @@ public class JsonSubTypeTest extends TestCase {
         public SuperClassNameCustom classNameCustom;
         public SuperTypeNameCustom  typeNameCustom;
 
+        public SuperTypeNameCustom1 typeNameCustom1;
     }
 
 
@@ -164,6 +185,17 @@ public class JsonSubTypeTest extends TestCase {
         public String p1;
     }
     static final class SubTypeNameCustom extends SuperTypeNameCustom {
+        public String p2;
+    }
+
+    @JsonType(meta = JsonType.MetaType.TYPE_NAME, property = "type", types = {
+            @JsonType.SubType(type=SubTypeNameCustom1.class, name="type1")
+    })
+    static abstract class SuperTypeNameCustom1 {
+        public String p1;
+        public String type;
+    }
+    static final class SubTypeNameCustom1 extends SuperTypeNameCustom1 {
         public String p2;
     }
 

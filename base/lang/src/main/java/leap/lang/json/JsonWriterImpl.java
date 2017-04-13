@@ -857,7 +857,11 @@ public class JsonWriterImpl implements JsonWriter {
                         for(JsonType.SubType subType : type.types()) {
                             if(subType.type().equals(bean.getClass())) {
                                 typed = true;
-                                property(metaPropertyName, subType.name());
+
+                                if(!beanType.hasProperty(metaPropertyName)) {
+                                    property(metaPropertyName, subType.name());
+                                }
+
                                 break;
                             }
                         }
