@@ -17,7 +17,7 @@
 package tests;
 
 import leap.web.WebTestCase;
-import leap.web.action.func.FuncActionBuilder;
+import leap.web.action.dyna.DynaActionBuilder;
 import org.junit.Test;
 
 public class FuncActionTest extends WebTestCase {
@@ -25,7 +25,7 @@ public class FuncActionTest extends WebTestCase {
     @Test
     public void testCreateFuncAction() {
 
-        FuncActionBuilder action = new FuncActionBuilder();
+        DynaActionBuilder action = new DynaActionBuilder();
 
 
     }

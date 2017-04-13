@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.web.action.func;
+package leap.web.action.dyna;
 
 import leap.lang.Objects2;
 import leap.lang.convert.Converts;
@@ -22,7 +22,7 @@ import leap.lang.exception.ObjectNotFoundException;
 
 import java.math.BigDecimal;
 
-public interface FuncParams {
+public interface DynaParams {
 
     /**
      * Returns the parameter's value (may be null).

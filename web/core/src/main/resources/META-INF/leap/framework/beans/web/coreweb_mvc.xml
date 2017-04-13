@@ -27,10 +27,8 @@
 	<bean type="leap.web.action.ActionStrategy" class="leap.web.action.DefaultActionStrategy" primary="true"/>
 	
 	<!-- Action Manager -->
-	<bean type="leap.web.action.ActionManager" class="leap.web.action.DefaultActionManager" primary="true">
-        <additional-type-def type="leap.web.AppListener"/>
-    </bean>
-	
+	<bean type="leap.web.action.ActionManager" class="leap.web.action.DefaultActionManager" primary="true"/>
+
 	<!-- View Strategy -->
 	<bean type="leap.web.view.ViewStrategy" class="leap.web.view.DefaultViewStrategy" primary="true"/>
 
