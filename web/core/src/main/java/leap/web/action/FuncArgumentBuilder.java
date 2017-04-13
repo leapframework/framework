@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.web.action.dyna;
+package leap.web.action;
 
 import leap.lang.Buildable;
 import leap.lang.Classes;
@@ -22,43 +22,56 @@ import leap.lang.Types;
 import leap.web.action.Argument;
 import leap.web.action.ArgumentValidator;
 
-public class DynaArgumentBuilder implements Buildable<Argument> {
+public class FuncArgumentBuilder implements Buildable<Argument> {
 
     protected String            name;
     protected Class<?>          type;
     protected Boolean           required;
     protected Argument.Location location;
 
+    public FuncArgumentBuilder() {
+
+    }
+
+    public FuncArgumentBuilder(String name, Class<?> type) {
+        this.name = name;
+        this.type = type;
+    }
+
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public FuncArgumentBuilder setName(String name) {
         this.name = name;
+        return this;
     }
 
     public Class<?> getType() {
         return type;
     }
 
-    public void setType(Class<?> type) {
+    public FuncArgumentBuilder setType(Class<?> type) {
         this.type = type;
+        return this;
     }
 
     public Boolean getRequired() {
         return required;
     }
 
-    public void setRequired(Boolean required) {
+    public FuncArgumentBuilder setRequired(Boolean required) {
         this.required = required;
+        return this;
     }
 
     public Argument.Location getLocation() {
         return location;
     }
 
-    public void setLocation(Argument.Location location) {
+    public FuncArgumentBuilder setLocation(Argument.Location location) {
         this.location = location;
+        return this;
     }
 
     @Override

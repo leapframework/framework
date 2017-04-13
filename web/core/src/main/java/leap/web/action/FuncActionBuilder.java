@@ -14,23 +14,21 @@
  *  limitations under the License.
  */
 
-package leap.web.action.dyna;
+package leap.web.action;
 
 import leap.lang.Assert;
 import leap.lang.Buildable;
 import leap.lang.Builders;
 import leap.lang.exception.ObjectExistsException;
-import leap.web.action.Argument;
-import leap.web.action.ActionParams;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class DynaActionBuilder implements Buildable<DynaAction> {
+public class FuncActionBuilder implements Buildable<FuncAction> {
 
     protected Class<?>                       returnType;
-    protected List<DynaArgumentBuilder>      arguments = new ArrayList<>();
+    protected List<FuncArgumentBuilder> arguments = new ArrayList<>();
     protected Function<ActionParams, Object> function;
 
     public Class<?> getReturnType() {
@@ -41,14 +39,14 @@ public class DynaActionBuilder implements Buildable<DynaAction> {
         this.returnType = returnType;
     }
 
-    public List<DynaArgumentBuilder> getArguments() {
+    public List<FuncArgumentBuilder> getArguments() {
         return arguments;
     }
 
-    public DynaActionBuilder addArgument(DynaArgumentBuilder argument) throws ObjectExistsException{
+    public FuncActionBuilder addArgument(FuncArgumentBuilder argument) throws ObjectExistsException{
         Assert.notNull(argument);
 
-        for(DynaArgumentBuilder exists : arguments) {
+        for(FuncArgumentBuilder exists : arguments) {
             if(exists.getName().equalsIgnoreCase(argument.getName())) {
                 throw new ObjectExistsException("The argument '" + argument.getName() + "' already exists!");
             }
@@ -67,8 +65,8 @@ public class DynaActionBuilder implements Buildable<DynaAction> {
     }
 
     @Override
-    public DynaAction build() {
-        return new DynaAction(returnType, Builders.buildArray(arguments,new Argument[arguments.size()]), function);
+    public FuncAction build() {
+        return new FuncAction(returnType, Builders.buildArray(arguments,new Argument[arguments.size()]), function);
     }
 
 }

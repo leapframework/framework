@@ -16,18 +16,35 @@
 
 package tests;
 
+import leap.core.annotation.Inject;
+import leap.core.web.path.PathTemplateFactory;
 import leap.web.WebTestCase;
-import leap.web.action.dyna.DynaActionBuilder;
+import leap.web.action.ActionManager;
+import leap.web.action.FuncActionBuilder;
+import leap.web.action.FuncArgumentBuilder;
+import leap.web.route.RouteBuilder;
+import leap.web.route.RouteManager;
+import leap.web.route.Routes;
 import org.junit.Test;
 
 public class FuncActionTest extends WebTestCase {
 
+    protected @Inject RouteManager        rm;
+    protected @Inject ActionManager       am;
+    protected @Inject PathTemplateFactory ptf;
+
     @Test
     public void testCreateFuncAction() {
+        Routes routes = rm.createRoutes();
 
-        DynaActionBuilder action = new DynaActionBuilder();
+        FuncActionBuilder action = new FuncActionBuilder();
+        action.addArgument(new FuncArgumentBuilder("p", String.class));
+        action.setFunction((params) -> {
+            return params.get(0) + "_hello";
+        });
 
-
+        RouteBuilder route = new RouteBuilder("*", ptf.createPathTemplate("/t"),action.build());
+        rm.loadRoute(routes, route);
     }
 
 }

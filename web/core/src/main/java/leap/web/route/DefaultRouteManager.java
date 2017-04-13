@@ -65,6 +65,11 @@ public class DefaultRouteManager implements RouteManager {
     protected @Inject @M App                 app;
 
     @Override
+    public Routes createRoutes() {
+        return factory.createBean(DefaultRoutes.class);
+    }
+
+    @Override
     public void loadRoute(Routes routes, RouteBuilder route) {
         Action act = route.getAction();
 

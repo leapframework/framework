@@ -19,6 +19,11 @@ package leap.web.route;
 public interface RouteManager {
 
     /**
+     * Creates a new {@link Routes} object.
+     */
+    Routes createRoutes();
+
+    /**
      * Loads the {@link RouteBuilder} into the given {@link Routes}.
      */
     void loadRoute(Routes routes, RouteBuilder route);

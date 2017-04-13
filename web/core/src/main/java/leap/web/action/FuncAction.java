@@ -14,20 +14,20 @@
  *  limitations under the License.
  */
 
-package leap.web.action.dyna;
+package leap.web.action;
 
 import leap.lang.Args;
 import leap.web.action.*;
 
 import java.util.function.Function;
 
-public class DynaAction implements Action {
+public class FuncAction implements Action {
 
     protected final Class<?>                       returnType;
     protected final Argument[]                     arguments;
     protected final Function<ActionParams, Object> function;
 
-    public DynaAction(Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
+    public FuncAction(Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
         Args.notNull(arguments);
         Args.notNull(function);
         this.returnType = returnType;
