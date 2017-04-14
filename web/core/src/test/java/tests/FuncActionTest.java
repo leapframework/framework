@@ -20,8 +20,8 @@ import leap.core.annotation.Inject;
 import leap.core.web.path.PathTemplateFactory;
 import leap.web.WebTestCase;
 import leap.web.action.ActionManager;
+import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
-import leap.web.action.FuncArgumentBuilder;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 import leap.web.route.Routes;
@@ -38,7 +38,7 @@ public class FuncActionTest extends WebTestCase {
         Routes routes = rm.createRoutes();
 
         FuncActionBuilder action = new FuncActionBuilder();
-        action.addArgument(new FuncArgumentBuilder("p", String.class));
+        action.addArgument(new ArgumentBuilder("p", String.class));
         action.setFunction((params) -> {
             return params.get(0) + "_hello";
         });

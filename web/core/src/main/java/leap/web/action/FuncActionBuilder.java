@@ -28,7 +28,7 @@ import java.util.function.Function;
 public class FuncActionBuilder implements Buildable<FuncAction> {
 
     protected Class<?>                       returnType;
-    protected List<FuncArgumentBuilder> arguments = new ArrayList<>();
+    protected List<ArgumentBuilder>          arguments = new ArrayList<>();
     protected Function<ActionParams, Object> function;
 
     public Class<?> getReturnType() {
@@ -39,14 +39,14 @@ public class FuncActionBuilder implements Buildable<FuncAction> {
         this.returnType = returnType;
     }
 
-    public List<FuncArgumentBuilder> getArguments() {
+    public List<ArgumentBuilder> getArguments() {
         return arguments;
     }
 
-    public FuncActionBuilder addArgument(FuncArgumentBuilder argument) throws ObjectExistsException{
+    public FuncActionBuilder addArgument(ArgumentBuilder argument) throws ObjectExistsException{
         Assert.notNull(argument);
 
-        for(FuncArgumentBuilder exists : arguments) {
+        for(ArgumentBuilder exists : arguments) {
             if(exists.getName().equalsIgnoreCase(argument.getName())) {
                 throw new ObjectExistsException("The argument '" + argument.getName() + "' already exists!");
             }

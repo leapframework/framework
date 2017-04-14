@@ -18,12 +18,7 @@
 
 package leap.lang;
 
-public interface Extensible {
-
-    /**
-     * Returns the extension of the type or null if not exists.
-     */
-    <T> T getExtension(Class<?> type);
+public interface Extensible extends ExtensibleGetter {
 
     /**
      * Set extension.

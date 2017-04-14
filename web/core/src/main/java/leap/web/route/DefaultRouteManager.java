@@ -80,7 +80,7 @@ public class DefaultRouteManager implements RouteManager {
     }
 
     @Override
-    public void loadRoute(Routes routes, RouteBuilder route) {
+    public Route loadRoute(Routes routes, RouteBuilder route) {
         Action act = route.getAction();
 
         //success status.
@@ -160,7 +160,11 @@ public class DefaultRouteManager implements RouteManager {
         am.prepareAction(route);
 
         //add route
-        routes.add(route.build());
+        Route result = route.build();
+
+        routes.add(result);
+
+        return result;
     }
 
     @Override

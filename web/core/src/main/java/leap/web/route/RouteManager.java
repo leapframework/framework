@@ -42,7 +42,7 @@ public interface RouteManager {
     /**
      * Loads the {@link RouteBuilder} into the given {@link Routes}.
      */
-    void loadRoute(Routes routes, RouteBuilder route);
+    Route loadRoute(Routes routes, RouteBuilder route);
 
     /**
      * Loads all the routes defined in the controller class into the given {@link Routes}.

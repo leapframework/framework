@@ -17,6 +17,7 @@
 package leap.web.action;
 
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.web.action.*;
 
 import java.util.function.Function;
