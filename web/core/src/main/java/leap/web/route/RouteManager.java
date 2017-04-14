@@ -16,12 +16,28 @@
 
 package leap.web.route;
 
+import leap.web.action.Action;
+
 public interface RouteManager {
 
     /**
      * Creates a new {@link Routes} object.
      */
     Routes createRoutes();
+
+    /**
+     * Creates a new {@link RouteBuilder} for building a {@link Route}.
+     *
+     * @param method http method name, can use "*".
+     */
+    RouteBuilder createRoute(String method, String pathTemplate);
+
+    /**
+     * Creates a new {@link RouteBuilder} for building a {@link Route}.
+     *
+     * @param method http method name, can use "*".
+     */
+    RouteBuilder createRoute(String method, String pathTemplate, Action action);
 
     /**
      * Loads the {@link RouteBuilder} into the given {@link Routes}.

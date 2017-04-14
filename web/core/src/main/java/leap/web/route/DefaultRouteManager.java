@@ -70,6 +70,16 @@ public class DefaultRouteManager implements RouteManager {
     }
 
     @Override
+    public RouteBuilder createRoute(String method, String pathTemplate) {
+        return new RouteBuilder(method, pathTemplateFactory.createPathTemplate(pathTemplate));
+    }
+
+    @Override
+    public RouteBuilder createRoute(String method, String pathTemplate, Action action) {
+        return new RouteBuilder(method, pathTemplateFactory.createPathTemplate(pathTemplate), action);
+    }
+
+    @Override
     public void loadRoute(Routes routes, RouteBuilder route) {
         Action act = route.getAction();
 
