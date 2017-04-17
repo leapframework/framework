@@ -431,7 +431,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             p.setFile(true);
             op.addConsume(MimeTypes.MULTIPART_FORM_DATA);
         }else{
-            p.setType(createMType(context, m, a.getType(), a.getGenericType()));
+            p.setType(createMType(context, m, route.getAction().getControllerClass(), a.getType(), a.getGenericType()));
         }
 
         p.setLocation(getParameterLocation(context, route.getAction(), a, op, p));
@@ -481,7 +481,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
                 MApiResponseBuilder resp = MApiResponseBuilder.success(status);
 
-                resolveApiResponseType(context, m, returnType, genericReturnType, resp);
+                resolveApiResponseType(context, m, route.getAction().getControllerClass(), returnType, genericReturnType, resp);
 
                 op.addResponse(resp);
             }else{
@@ -534,22 +534,22 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             genericType = route.getAction().getGenericReturnType();
         }
 
-        resolveApiResponseType(context, m, returnType, genericType, resp);
+        resolveApiResponseType(context, m, route.getAction().getControllerClass(), returnType, genericType, resp);
 
         return resp;
     }
 
-    protected void resolveApiResponseType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType, MApiResponseBuilder resp) {
+    protected void resolveApiResponseType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> declaringClass, Class<?> type, Type genericType, MApiResponseBuilder resp) {
         if(isResponseFileType(type)) {
             resp.setType(MSimpleTypes.BINARY);
             resp.setFile(true);
         }else{
-            resp.setType(createMType(context, m, type, genericType));
+            resp.setType(createMType(context, m, declaringClass, type, genericType));
         }
     }
 	
-	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> type, Type genericType) {
-        return context.getMTypeContainer().getMType(type, genericType);
+	protected MType createMType(ApiMetadataContext context, ApiMetadataBuilder m, Class<?> declaringClass, Class<?> type, Type genericType) {
+        return context.getMTypeContainer().getMType(declaringClass, type, genericType);
 	}
 	
 	protected MApiParameter.Location getParameterLocation(ApiMetadataContext context, Action action, Argument arg, MApiOperationBuilder o, MApiParameterBuilder p) {

@@ -16,8 +16,13 @@
 
 package tests.model;
 
+import leap.lang.http.HTTP;
+import leap.lang.meta.MType;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiOperation;
+import leap.web.api.meta.model.MApiPath;
+import leap.web.api.meta.model.MApiResponse;
 import org.junit.Test;
 import tests.ApiTestCase;
 
@@ -31,5 +36,18 @@ public class ApiModelTest extends ApiTestCase {
 
         MApiModel model = md.getModel("TScannedModel");
         assertNotNull(model);
+    }
+
+    @Test
+    public void testGenericTypeLost() {
+        ApiMetadata md = md("testing");
+
+        MApiPath      path = md.getPath("/user_crud");
+        MApiOperation op   = path.getOperation(HTTP.Method.GET);
+        MApiResponse resp  = op.getResponses()[0];
+
+        MType type = resp.getType();
+
+        assertEquals("User", type.asTypeRef().getRefTypeName());
     }
 }
