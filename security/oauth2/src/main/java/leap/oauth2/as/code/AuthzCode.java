@@ -15,26 +15,37 @@
  */
 package leap.oauth2.as.code;
 
+import java.util.Map;
+
 import leap.lang.expirable.TimeExpirable;
 
 /**
  * The authorization code issued by authorization server.
  */
 public interface AuthzCode extends TimeExpirable {
-    
+
     /**
      * Required. The string value of code.
      */
     String getCode();
-    
+
     /**
      * Returns the client id or <code>null</code>.
      */
     String getClientId();
-    
+
     /**
      * Required. Returns the id of user.
      */
     String getUserId();
 
+    /**
+	 * Optional.
+	 */
+	Map<String, Object> getExtendedParameters();
+
+	/**
+	 * Optional, add an extend parameter to this token.
+	 */
+	void addExtendedParameters(String key, Object value);
 }

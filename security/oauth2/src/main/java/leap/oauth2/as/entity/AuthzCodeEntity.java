@@ -15,23 +15,30 @@
  */
 package leap.oauth2.as.entity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import leap.oauth2.OAuth2ExpirableEntity;
+import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
 @Table("oauth2_authz_code")
 public class AuthzCodeEntity extends OAuth2ExpirableEntity {
-    
+
     @Id
     @Token
     protected String code;
-    
+
     @ClientId
     protected String clientId;
-    
+
     @UserId
     protected String userId;
-    
+
+    @Column("ex_data")
+	private Map<String,Object> exData=new HashMap<>();
+
     public String getCode() {
         return code;
     }
@@ -55,5 +62,13 @@ public class AuthzCodeEntity extends OAuth2ExpirableEntity {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+	public Map<String,Object> getExData() {
+		return exData;
+	}
+
+	public void setExData(Map<String,Object> exData) {
+		this.exData = exData;
+	}
 
 }

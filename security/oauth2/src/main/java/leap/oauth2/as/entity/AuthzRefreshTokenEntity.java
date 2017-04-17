@@ -22,20 +22,21 @@ import leap.orm.annotation.Table;
 
 @Table("oauth2_refresh_token")
 public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
-    
+
     @Id
     @Token
     protected String token;
-    
+
     @ClientId
     protected String clientId;
-    
+
     @UserId
     protected String userId;
-    
+
     @Column
     @Scope
     protected String scope;
+
 
     public String getToken() {
         return token;
