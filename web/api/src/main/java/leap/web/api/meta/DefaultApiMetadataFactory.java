@@ -33,6 +33,7 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
+import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.OauthConfig;
@@ -270,6 +271,14 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 context.getMTypeContainer().getMType(t);
             }
         });
+
+        app.config().getResources().processClasses((c) -> {
+            if(c.isAnnotationPresent(ApiModel.class) && !context.getMTypeContainer().getComplexTypes().containsKey(c)) {
+                //create model for resource type.
+                context.getMTypeContainer().getMType(c);
+            }
+        });
+
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
             m.addModel(createModel(context, m, ct));
         });
@@ -279,6 +288,15 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected MApiModelBuilder createModel(ApiMetadataContext context, ApiMetadataBuilder m, MComplexType ct) {
 
         MApiModelBuilder model = new MApiModelBuilder(ct);
+
+        ApiModel a = null == ct.getJavaType() ? null : ct.getJavaType().getAnnotation(ApiModel.class);
+        if(null != a) {
+            //name
+            String name = Strings.firstNotEmpty(a.name(),a.value());
+            if(!Strings.isEmpty(name)) {
+                model.setName(name);
+            }
+        }
 
         if(null != apiDescContainer) {
             ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
@@ -294,7 +312,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         return model;
     }
-	
+
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();
 
