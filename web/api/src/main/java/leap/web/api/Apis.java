@@ -22,9 +22,9 @@ import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
+import leap.web.api.config.model.ModelConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
 
 /**
  * Contains all the api configurators.
@@ -92,6 +92,11 @@ public interface Apis {
      * Returns a mutable {@link Map} contains all the common responses.
      */
     Map<String, MApiResponse> getCommonResponses();
+
+    /**
+     * Returns a mutable {@link Map} contains all the configurations of model types.
+     */
+    Map<Class<?>, ModelConfig> getCommonModelTypes();
 
 	/**
 	 * Sets all the apis default enable oauth2.

@@ -36,7 +36,8 @@ import leap.web.action.Argument.Location;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.OauthConfig;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.desc.ModelDesc;
@@ -193,7 +194,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
-        OauthConfig oauthConfig = c.getOauthConfig();
+        OAuthConfig oauthConfig = c.getOAuthConfig();
         if(oauthConfig != null && oauthConfig.isOauthEnabled()) {
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(
@@ -272,10 +273,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
         });
 
-        app.config().getResources().processClasses((c) -> {
-            if(c.isAnnotationPresent(ApiModel.class) && !context.getMTypeContainer().getComplexTypes().containsKey(c)) {
-                //create model for resource type.
-                context.getMTypeContainer().getMType(c);
+        context.getConfig().getModelTypes().forEach((t, c)-> {
+            if(null == m.tryGetModel(t)) {
+                context.getMTypeContainer().getMType(t);
             }
         });
 
@@ -289,14 +289,24 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         MApiModelBuilder model = new MApiModelBuilder(ct);
 
-        ApiModel a = null == ct.getJavaType() ? null : ct.getJavaType().getAnnotation(ApiModel.class);
-        if(null != a) {
-            //name
-            String name = Strings.firstNotEmpty(a.name(),a.value());
-            if(!Strings.isEmpty(name)) {
-                model.setName(name);
+        if(null != model.getJavaType()) {
+            ApiModel a = model.getJavaType().getAnnotation(ApiModel.class);
+            if(null != a) {
+                //name
+                String name = Strings.firstNotEmpty(a.name(),a.value());
+                if(!Strings.isEmpty(name)) {
+                    model.setName(name);
+                }
+            }
+
+            ModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
+            if(null != c) {
+                if(!Strings.isEmpty(c.getName())) {
+                    model.setName(c.getName());
+                }
             }
         }
+
 
         if(null != apiDescContainer) {
             ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());

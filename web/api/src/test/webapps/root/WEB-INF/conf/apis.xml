@@ -26,6 +26,10 @@
             </param>
         </parameters>
 
+        <models>
+            <model class="app.models.testing.ConfiguredModel" name="TConfiguredModel"/>
+        </models>
+
     </global>
 
     <api name="api" base-path="/api"/>

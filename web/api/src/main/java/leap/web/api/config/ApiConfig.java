@@ -23,6 +23,8 @@ import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
@@ -87,7 +89,7 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
 	/**
 	 * Returns the oauth config
 	 */
-	OauthConfig getOauthConfig();
+	OAuthConfig getOAuthConfig();
 
 	/**
 	 * Returns the permissions required by this api.
@@ -98,6 +100,11 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns an immutable {@link Map} contains all the common responses.
      */
     Map<String, MApiResponse> getCommonResponses();
+
+    /**
+     * Returns an immutable {@link Map} contains all the configurations of model types.
+     */
+    Map<Class<?>, ModelConfig> getModelTypes();
 
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.

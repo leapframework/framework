@@ -14,20 +14,26 @@
  *  limitations under the License.
  */
 
-package app.models.testing;
+package leap.web.api.config.model;
 
-import leap.web.api.annotation.ApiModel;
+import leap.lang.annotation.Nullable;
 
-@ApiModel("TScannedModel")
-public class ScannedModel {
+/**
+ * The configuration of api model.
+ */
+public class ModelConfig {
 
-    protected String name;
+    protected final String name;
 
-    public String getName() {
-        return name;
+    public ModelConfig(String name) {
+        this.name = name;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    /**
+     * The name of model.
+     */
+    @Nullable
+    public String getName() {
+        return name;
     }
 }

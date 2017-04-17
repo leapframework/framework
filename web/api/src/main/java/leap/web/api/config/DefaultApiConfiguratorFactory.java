@@ -16,14 +16,25 @@
 package leap.web.api.config;
 
 import leap.web.api.Apis;
+import leap.web.api.config.model.OAuthConfig;
 
 public class DefaultApiConfiguratorFactory implements ApiConfiguratorFactory {
 
 	@Override
     public ApiConfigurator createConfigurator(Apis apis, String name, String basePath) {
 	    DefaultApiConfig c = new DefaultApiConfig(name, basePath);
-		c.setOAuthConfig(new OauthConfig(apis.isDefaultOAuthEnabled(),apis.getDefaultOAuthAuthorizationUrl(),apis.getDefaultOAuthTokenUrl()));
+
+		c.setOAuthConfig(newOAuthConfig(apis));
+
+        apis.getCommonModelTypes().forEach(c::putModelType);
+
 	    return c;
+    }
+
+    protected OAuthConfig newOAuthConfig(Apis apis) {
+        return new OAuthConfig(apis.isDefaultOAuthEnabled(),
+                               apis.getDefaultOAuthAuthorizationUrl(),
+                               apis.getDefaultOAuthTokenUrl());
     }
 	
 }

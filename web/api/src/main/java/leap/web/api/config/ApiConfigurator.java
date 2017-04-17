@@ -17,6 +17,8 @@ package leap.web.api.config;
 
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
@@ -81,6 +83,11 @@ public interface ApiConfigurator {
     ApiConfigurator putCommonResponse(String name, MApiResponse response);
 
     /**
+     * Puts a model type config.
+     */
+    ApiConfigurator putModelType(Class<?> type, ModelConfig c);
+
+    /**
      * Puts a common response builder for build common response.
      * <p>
      * <p/>
@@ -136,7 +143,7 @@ public interface ApiConfigurator {
     /**
      * Sets oauth config
      */
-    ApiConfigurator setOAuthConfig(OauthConfig oauth);
+    ApiConfigurator setOAuthConfig(OAuthConfig oauth);
 
 
     /**

@@ -29,12 +29,11 @@ import tests.ApiTestCase;
 public class ApiModelTest extends ApiTestCase {
 
     @Test
-    public void testScannedModel() {
-        //The scanned model is a class not referenced by any api controllers.
-        //scanned by annotation.
+    public void testConfiguredModel() {
+        //The configured model is a class not referenced by any api controllers.
         ApiMetadata md = md("testing");
 
-        MApiModel model = md.getModel("TScannedModel");
+        MApiModel model = md.getModel("TConfiguredModel");
         assertNotNull(model);
     }
 

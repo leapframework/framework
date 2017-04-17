@@ -25,10 +25,10 @@ import leap.lang.Classes;
 import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -41,12 +41,8 @@ import leap.web.config.ModuleConfigExtension;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-/**
- * Created by kael on 2016/10/31.
- */
 public class XmlApiConfigProcessor implements AppConfigProcessor {
     private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
-    private static final Log log = LogFactory.get(XmlApiConfigProcessor.class);
 
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";
@@ -55,6 +51,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String PARAMETER            = "param";
     protected static final String PROPERTIES           = "properties";
     protected static final String PROPERTY             = "property";
+    protected static final String MODELS               = "models";
+    protected static final String MODEL                = "model";
     protected static final String OAUTH                = "oauth";
     protected static final String VERSION              = "version";
     protected static final String TITLE                = "title";
@@ -116,19 +114,18 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     protected void readGlobal(AppConfigContext context, XmlReader reader) {
-        ApiConfigExtension extension = context.getOrCreateExtension(ApiConfigExtension.class);
-        Map<String, MApiResponseBuilder> commonResponses = new LinkedHashMap<>();
+        ApiConfigurations configs = context.getOrCreateExtension(ApiConfigurations.class);
 
         while(reader.nextWhileNotEnd(GLOBAL)) {
 
             if(reader.isStartElement(OAUTH)) {
-                OauthConfig oauth = readOauth(context,reader);
-                extension.setDefaultOauthConfig(oauth);
+                OAuthConfig oauth = readOAuth(context,reader);
+                configs.setDefaultOAuthConfig(oauth);
                 continue;
             }
 
             if(reader.isStartElement(RESPONSES)) {
-                readCommonResponses(reader).forEach(extension::addCommonResponseBuilder);
+                readCommonResponses(reader).forEach(configs::addCommonResponse);
                 continue;
             }
 
@@ -136,10 +133,16 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                 readCommonParameters(context,reader);
                 continue;
             }
+
+            if(reader.isStartElement(MODELS)) {
+                readModels(context, reader).forEach(configs::addCommonModelType);
+                continue;
+            }
+
         }
 
-        commonResponses.forEach(extension::addCommonResponseBuilder);
     }
+
     protected Map<String,MApiResponseBuilder> readCommonResponses(XmlReader reader) {
         Map<String, MApiResponseBuilder> responses = new LinkedHashMap<>();
 
@@ -227,6 +230,25 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         return parameter;
     }
 
+    protected Map<Class<?>, ModelConfig> readModels(AppConfigContext context, XmlReader reader) {
+        Map<Class<?>, ModelConfig> modelTypes = new LinkedHashMap<>();
+
+        reader.loopInsideElement(() -> {
+            if(reader.isStartElement(MODEL)) {
+                String className = reader.getRequiredAttribute(CLASS);
+                String modelName = reader.getAttribute(NAME);
+
+                Class<?> modelType = Classes.forName(className);
+
+                ModelConfig modelConfig = new ModelConfig(modelName);
+
+                modelTypes.put(modelType, modelConfig);
+            }
+        });
+
+        return modelTypes;
+    }
+
     protected void readProperties(CommonDescContainer.Parameter parameter,XmlReader reader){
         while(reader.nextWhileNotEnd(PROPERTIES)){
             if(reader.isStartElement(PROPERTY)){
@@ -265,18 +287,19 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader) {
-        ApiConfigExtension extensions = context.getOrCreateExtension(ApiConfigExtension.class);
-        String name     = reader.resolveRequiredAttribute(NAME);
-        String basePath = reader.resolveAttribute(BASE_PATH);
-        String basePackage = reader.resolveAttribute(BASE_PACKAGE);
+        ApiConfigurations extensions = context.getOrCreateExtension(ApiConfigurations.class);
+
+        String  name              = reader.resolveRequiredAttribute(NAME);
+        String  basePath          = reader.resolveAttribute(BASE_PATH);
+        String  basePackage       = reader.resolveAttribute(BASE_PACKAGE);
         Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
 
-        ApiConfigurator api = extensions.getApiConfigurator(name);
+        ApiConfigurator api = extensions.getConfigurator(name);
         if(null == api) {
             reader.getRequiredAttribute(BASE_PATH);
             api = new DefaultApiConfig(name,basePath);
             api.setBasePackage(basePackage);
-            extensions.addApiConfigurator(api);
+            extensions.addConfigurator(api);
         }
 
         if(null != uniqueOperationId) {
@@ -284,8 +307,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         }
 
         readApi(context, reader, api);
+
         addWebModule(context,api);
     }
+
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
 
         context.setAttribute(ApiConfigurator.class.getName(), api);
@@ -355,6 +380,12 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                 if(reader.isStartElement(RESPONSES)) {
                     //todo : override exists responses.
                     readCommonResponses(reader).forEach(api::putCommonResponseBuilder);
+                    continue;
+                }
+
+                if(reader.isStartElement(MODELS)) {
+                    readModels(context, reader).forEach(api::putModelType);
+                    continue;
                 }
 
                 if(reader.isStartElement(MAX_PAGE_SIZE)) {
@@ -383,7 +414,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     continue;
                 }
                 if(reader.isStartElement(OAUTH)){
-                    OauthConfig oauth = readOauth(context,reader);
+                    OAuthConfig oauth = readOAuth(context,reader);
                     api.setOAuthConfig(oauth);
                     continue;
                 }
@@ -501,10 +532,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 
-    public OauthConfig readOauth(AppConfigContext context, XmlReader reader){
+    public OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
         boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
         String defaultFlow = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
-        OauthConfig oauth = new OauthConfig(defaultEnabled, defaultFlow,null,null);
+        OAuthConfig oauth = new OAuthConfig(defaultEnabled, defaultFlow,null,null);
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
