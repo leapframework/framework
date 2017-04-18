@@ -16,7 +16,7 @@
 
 package app.models.testing;
 
-public class ConfiguredModel {
+public class ConfiguredModel1 {
 
     protected String name;
 

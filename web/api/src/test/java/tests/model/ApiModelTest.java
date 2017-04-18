@@ -33,8 +33,11 @@ public class ApiModelTest extends ApiTestCase {
         //The configured model is a class not referenced by any api controllers.
         ApiMetadata md = md("testing");
 
-        MApiModel model = md.getModel("TConfiguredModel");
-        assertNotNull(model);
+        MApiModel model1 = md.getModel("TConfiguredModel");
+        assertNotNull(model1);
+
+        MApiModel model2 = md.getModel("ConfiguredModel2");
+        assertNotNull(model2);
     }
 
     @Test
