@@ -28,6 +28,8 @@
 
         <models>
             <model class="app.models.testing.ConfiguredModel" name="TConfiguredModel"/>
+            <model class="app.models.testing.ParentModel"/>
+            <model class="app.models.testing.SubModel"/>
         </models>
 
     </global>

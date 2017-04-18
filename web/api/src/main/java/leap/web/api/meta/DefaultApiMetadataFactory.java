@@ -228,6 +228,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 
     protected void preProcessDefault(ApiMetadataContext context, ApiMetadataBuilder m) {
+        //process paths.
         m.getPaths().forEach((k,p) -> preProcessPath(context, m, p));
     }
 
@@ -255,6 +256,39 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         if(m.getProduces().isEmpty()) {
             m.addProduce(defaultMimeType);
+        }
+
+        //process models.
+        m.getModels().forEach((name,model) -> postProcessModel(context, m, name, model));
+    }
+
+    protected void postProcessModel(ApiMetadataContext context, ApiMetadataBuilder m, String name, MApiModelBuilder model) {
+        postProcessModelInheritance(context, m, name, model);
+    }
+
+    protected void postProcessModelInheritance(ApiMetadataContext context, ApiMetadataBuilder m, String name, MApiModelBuilder model) {
+        if(null != model.getJavaType()) {
+
+            //already processed.
+            if(null != model.getBaseName()) {
+                return;
+            }
+
+            Class<?> c = model.getJavaType().getSuperclass();
+            MApiModelBuilder parent = m.tryGetModel(c);
+
+            if(null != parent) {
+                //the parent's inheritance must be processed firstly.
+                postProcessModelInheritance(context, m, name, parent);
+
+                //process child.
+                model.setBaseName(parent.getName());
+
+                //removes the properties inherited from base model.
+                parent.getProperties().keySet().forEach((p) -> {
+                    model.removeProperty(p);
+                });
+            }
         }
     }
 	
@@ -311,7 +345,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         if(null != apiDescContainer) {
             ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
             if(null != mdesc) {
-                model.getProperties().forEach(p -> {
+                model.getProperties().forEach((n, p) -> {
                     ModelDesc.PropertyDesc pdesc = mdesc.getPropertyDesc(p.getName());
                     if(null != pdesc && !Strings.isEmpty(pdesc.getDesc())) {
                         p.setDescription(pdesc.getDesc());

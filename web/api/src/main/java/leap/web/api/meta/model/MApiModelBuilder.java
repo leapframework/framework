@@ -16,19 +16,20 @@
 package leap.web.api.meta.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import leap.lang.Builders;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
-import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.ModelDesc;
 
 public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
-	protected MComplexType      	    type;
-    protected Class<?>                  javaType;
-	protected List<MApiPropertyBuilder> properties = new ArrayList<MApiPropertyBuilder>();
+    protected String       baseName;
+	protected MComplexType type;
+    protected Class<?>     javaType;
+	protected Map<String,MApiPropertyBuilder> properties = new LinkedHashMap<>();
 	
 	public MApiModelBuilder() {
 	    super();
@@ -47,6 +48,17 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         }
     }
 
+    /**
+     * The name of base model.
+     */
+    public String getBaseName() {
+        return baseName;
+    }
+
+    public void setBaseName(String baseName) {
+        this.baseName = baseName;
+    }
+
     public Class<?> getJavaType() {
         return javaType;
     }
@@ -55,18 +67,22 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.javaType = javaType;
     }
 
-    public List<MApiPropertyBuilder> getProperties() {
-		return properties;
+    public Map<String, MApiPropertyBuilder> getProperties() {
+        return properties;
+    }
+
+    public void addProperty(MApiPropertyBuilder p) {
+		properties.put(p.getName(), p);
 	}
-	
-	public void addProperty(MApiPropertyBuilder p) {
-		properties.add(p);
-	}
+
+    public MApiPropertyBuilder removeProperty(String name) {
+        return properties.remove(name);
+    }
 
 	@Override
     public MApiModel build() {
-	    return new MApiModel(name, title, summary, description, javaType,
-	    					Builders.buildArray(properties, new MApiProperty[properties.size()]), attrs);
+	    return new MApiModel(baseName, name, title, summary, description, javaType,
+	    					Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
     }
 	
 }

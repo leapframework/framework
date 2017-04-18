@@ -24,18 +24,20 @@ import leap.lang.meta.MType;
 public class MApiProperty extends MApiParameterBase {
 
     protected final MProperty property;
+    protected final boolean   discriminator;
     protected final Boolean   creatable;
     protected final Boolean   updatable;
     protected final Boolean   sortable;
     protected final Boolean   filterable;
 
 	public MApiProperty(String name, String title, String summary, String description, MProperty property,
-                        MType type, String format, boolean password, Boolean required,
+                        MType type, String format, boolean discriminator, boolean password, Boolean required,
                         String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
                         Boolean creatable, Boolean updatable, Boolean sortable, Boolean filterable) {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
+        this.discriminator = discriminator;
         this.property  = property;
         this.creatable = creatable;
         this.updatable = updatable;
@@ -45,6 +47,10 @@ public class MApiProperty extends MApiParameterBase {
 
     public MProperty getProperty() {
         return property;
+    }
+
+    public boolean isDiscriminator() {
+        return discriminator;
     }
 
     public boolean isReference() {
