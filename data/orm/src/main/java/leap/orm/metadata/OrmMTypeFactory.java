@@ -35,7 +35,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 	protected @Inject OrmContext[] ormContexts;
 	
 	@Override
-	public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+	public MType getMType(Class<?> declaringClass, Class<?> type, Type genericType, MTypeContext context) {
         Args.notNull(context.root(), "Root factory must be exists!");
 
         if(Types.isSimpleType(type,genericType) || Types.isCollectionType(type,genericType)) {
@@ -58,7 +58,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
         return container.runInContextWithResult((context) -> getMType(null, context, c, em));
     }
 
-	protected MComplexType getMType(Class<?> type, MTypeContext context, OrmContext c,  EntityMapping em) {
+	protected MComplexType getMType(Class<?> type, MTypeContext context, OrmContext c, EntityMapping em) {
 		MComplexTypeBuilder ct = new MComplexTypeBuilder(type);
 
 		ct.setName(em.getEntityName());

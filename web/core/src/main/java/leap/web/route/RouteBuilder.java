@@ -58,7 +58,22 @@ public class RouteBuilder extends ExtensibleBase implements RouteBase, Buildable
     protected Boolean              allowRememberMe;
     protected String[]             permissions;
     protected String[]             roles;
-	
+
+    public RouteBuilder() {
+
+    }
+
+    public RouteBuilder(String method, PathTemplate pathTemplate) {
+        this.method       = method;
+        this.pathTemplate = pathTemplate;
+    }
+
+    public RouteBuilder(String method, PathTemplate pathTemplate, Action action) {
+        this.method       = method;
+        this.pathTemplate = pathTemplate;
+        this.action       = action;
+    }
+
 	public Object getSource() {
 		return source;
 	}

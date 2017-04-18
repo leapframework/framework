@@ -15,19 +15,34 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Strings;
+
 import java.util.Map;
 
 public class MApiModel extends MApiNamedWithDesc {
 
+    protected final String         baseName;
     protected final Class<?>       javaType;
     protected final MApiProperty[] properties;
 
-    public MApiModel(String name, String title, String summary, String description,
+    public MApiModel(String baseName, String name, String title, String summary, String description,
                      Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
         super(name, title, summary, description, attrs);
 
+        this.baseName = baseName;
         this.javaType = javaType;
         this.properties = properties;
+    }
+
+    public boolean hasBaseModel() {
+        return !Strings.isEmpty(baseName);
+    }
+
+    /**
+     * The name of base model.
+     */
+    public String getBaseName() {
+        return baseName;
     }
 
     /**

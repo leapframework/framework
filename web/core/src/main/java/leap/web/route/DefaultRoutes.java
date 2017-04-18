@@ -30,11 +30,11 @@ import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
 	
-	private @Inject PathTemplateFactory pathTemplateFactory;
-	private @Inject ActionManager		actionManager;
-	
-	private Route[]    array = new Route[]{};
-	private Set<Route> set   = new TreeSet<Route>(Route.COMPARATOR);
+	protected @Inject PathTemplateFactory pathTemplateFactory;
+    protected @Inject ActionManager		actionManager;
+
+    protected Route[]    array = new Route[]{};
+    protected Set<Route> set   = new TreeSet<Route>(Route.COMPARATOR);
 	
 	@Override
     public int size() {
@@ -48,7 +48,7 @@ public class DefaultRoutes implements Routes {
 
 	@Override
     public Iterator<Route> iterator() {
-	    return new ArrayIterator<Route>(array);
+	    return new ArrayIterator<>(array);
     }
 	
 	@Override

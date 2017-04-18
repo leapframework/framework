@@ -16,18 +16,56 @@
 
 package leap.web.route;
 
+import leap.web.action.Action;
+
 public interface RouteManager {
 
+    /**
+     * Creates a new {@link Routes} object.
+     */
+    Routes createRoutes();
+
+    /**
+     * Creates a new {@link RouteBuilder} for building a {@link Route}.
+     *
+     * @param method http method name, can use "*".
+     */
+    RouteBuilder createRoute(String method, String pathTemplate);
+
+    /**
+     * Creates a new {@link RouteBuilder} for building a {@link Route}.
+     *
+     * @param method http method name, can use "*".
+     */
+    RouteBuilder createRoute(String method, String pathTemplate, Action action);
+
+    /**
+     * Loads the {@link RouteBuilder} into the given {@link Routes}.
+     */
+    Route loadRoute(Routes routes, RouteBuilder route);
+
+    /**
+     * Loads all the routes defined in the controller class into the given {@link Routes}.
+     */
     default void loadRoutesFromController(Routes routes, Class<?> controllerClass) {
         loadRoutesFromController(routes, controllerClass, "/");
     }
 
+    /**
+     * Loads all the routes defined in the controller class into the given {@link Routes}.
+     */
     void loadRoutesFromController(Routes routes, Class<?> controllerClass,String basePath);
 
+    /**
+     * Loads all the routes defined in the controller object into the given {@link Routes}.
+     */
     default void loadRoutesFromController(Routes routes, Object controller) {
         loadRoutesFromController(routes, controller, "/");
     }
 
+    /**
+     * Loads all the routes defined in the controller object into the given {@link Routes}.
+     */
     void loadRoutesFromController(Routes routes, Object controller,String basePath);
 
 }

@@ -111,7 +111,12 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
     }
 
     @Override
-    public MType getMType(Class<?> type, Type genericType, MTypeContext context) {
+    public MType getMType(Class<?> declaringClass, Class<?> type, Type genericType) {
+        return getMType(declaringClass, type, genericType, this);
+    }
+
+    @Override
+    public MType getMType(Class<?> declaringClass, Class<?> type, Type genericType, MTypeContext context) {
         MType mtype;
 
         TypeWrapper tw = type.getAnnotation(TypeWrapper.class);
@@ -125,7 +130,7 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
                 } else {
                     Type typeArgument = Types.getTypeArgument(genericType);
 
-                    type = Types.getActualType(typeArgument);
+                    type = Types.getActualType(declaringClass, typeArgument);
                     genericType = typeArgument;
                 }
             }
@@ -148,7 +153,7 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
 
         if (null == mtype) {
             for (MTypeFactory f : externalFactories) {
-                mtype = f.getMType(type, genericType, context);
+                mtype = f.getMType(declaringClass, type, genericType, context);
 
                 if (null != mtype) {
                     break;
@@ -157,7 +162,7 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
         }
 
         if (null == mtype) {
-            mtype = defaultFactory.getMType(type, genericType, context);
+            mtype = defaultFactory.getMType(declaringClass, type, genericType, context);
 
             //Cache the complex type from default factory in global scope.
             //Don't cache the complex type from external factories.

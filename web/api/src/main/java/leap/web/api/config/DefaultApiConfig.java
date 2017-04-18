@@ -18,6 +18,8 @@ package leap.web.api.config;
 import leap.lang.*;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -41,7 +43,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected String[]       consumes;
     protected boolean        corsEnabled                 = true;
     protected boolean        uniqueOperationId           = false;
-    protected OauthConfig    oauthConfig;
+    protected OAuthConfig    oauthConfig;
     protected NamingStyle    parameterNamingStyle;
     protected NamingStyle    propertyNamingStyle;
     protected int            maxPageSize                 = MAX_PAGE_SIZE;
@@ -57,6 +59,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
+
+    protected Map<Class<?>, ModelConfig> modelTypeConfigs    = new LinkedHashMap<>();
+    protected Map<Class<?>, ModelConfig> modelTypeConfigsImv = Collections.unmodifiableMap(modelTypeConfigs);
 
     protected Map<String, MApiResponseBuilder> commonResponseBuilders    = new LinkedHashMap<>();
     protected Map<String, MApiResponseBuilder> commonResponseBuildersImv = Collections.unmodifiableMap(commonResponseBuilders);
@@ -138,6 +143,11 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         return commonResponsesImv;
     }
 
+    @Override
+    public Map<Class<?>, ModelConfig> getModelTypes() {
+        return modelTypeConfigs;
+    }
+
     public NamingStyle getParameterNamingStyle() {
 		return parameterNamingStyle;
 	}
@@ -192,6 +202,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
+    public ApiConfigurator putModelType(Class<?> type, ModelConfig c) {
+        modelTypeConfigs.put(type, c);
+        return this;
+    }
+
+    @Override
     public ApiConfigurator setProduces(String... produces) {
 		this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
 	    return this;
@@ -226,7 +242,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public ApiConfigurator setOAuthConfig(OauthConfig oauth) {
+    public ApiConfigurator setOAuthConfig(OAuthConfig oauth) {
         this.oauthConfig = oauth;
         return this;
     }
@@ -234,7 +250,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator enableOAuth() {
         if(oauthConfig == null){
-            oauthConfig = new OauthConfig(true,null,null);
+            oauthConfig = new OAuthConfig(true,null,null);
         }else{
             oauthConfig.setOauthEnabled(true);
         }
@@ -242,7 +258,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public OauthConfig getOauthConfig() {
+    public OAuthConfig getOAuthConfig() {
         return oauthConfig;
     }
 

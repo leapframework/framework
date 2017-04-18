@@ -34,7 +34,7 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ArgumentBuilder implements Buildable<Argument> {
+public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argument>,Extensible {
 
     protected String         name;
     protected String         declaredName;
@@ -54,6 +54,17 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	    super();
     }
 
+    public ArgumentBuilder(String name, Class<?> type) {
+        this.name         = name;
+        this.declaredName = name;
+        this.type         = type;
+        this.typeInfo     = Types.getTypeInfo(type);
+        this.annotations  = Classes.EMPTY_ANNOTATION_ARRAY;
+    }
+
+    /**
+     * Creates a new {@link ArgumentBuilder} by a bean's property.
+     */
 	public ArgumentBuilder(ValidationManager validationManager, BeanProperty p) {
 		this.name 		  = p.getName();
         this.declaredName = this.name;
@@ -63,10 +74,13 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.genericType  = p.getGenericType();
 		this.annotations  = p.getAnnotations();
 
-		this.autoConfigure();
+		this.autoConfigureAnnotations();
         this.resolveValidators(validationManager);
 	}
-	
+
+    /**
+     * Creates a new {@link ArgumentBuilder} by a method's parameter.
+     */
 	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
 		this.name        = p.getName();
         this.declaredName = this.name;
@@ -74,35 +88,9 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		this.typeInfo    = p.getTypeInfo();
 		this.genericType = p.getGenericType();
 		this.annotations = p.getAnnotations();
-		this.autoConfigure();
+		this.autoConfigureAnnotations();
         this.resolveValidators(validationManager);
 	}
-
-    protected void resolveValidators(ValidationManager validationManager) {
-        Validator v;
-        for(Annotation pa : annotations){
-            if((v = validationManager.tryCreateValidator(pa, type)) != null){
-                addValidator(new SimpleArgumentValidator(v));
-            }
-        }
-
-        if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
-            Valid valid = Classes.getAnnotation(annotations, Valid.class);
-            if(valid.value()) {
-                addValidator(new NestedArgumentValidator(valid));
-            }
-        }else if(type.isAnnotationPresent(Valid.class)) {
-            Valid valid = type.getAnnotation(Valid.class);
-            if(valid.value()) {
-                addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
-            }
-        }else {
-			ParamsWrapper a = type.getAnnotation(ParamsWrapper.class);
-			if(null != a && a.valid()){
-                addValidator(new NestedArgumentValidator(true));
-            }
-		}
-    }
 
 	public String getName() {
 		return name;
@@ -126,26 +114,17 @@ public class ArgumentBuilder implements Buildable<Argument> {
 		return genericType;
 	}
 
-	public ArgumentBuilder setGenericType(Type genericType) {
-		this.genericType = genericType;
-		return this;
-	}
-
 	public TypeInfo getTypeInfo() {
 		return typeInfo;
 	}
 
-	public ArgumentBuilder setTypeInfo(TypeInfo typeInfo) {
-		this.typeInfo = typeInfo;
-		return this;
-	}
-	
 	public Boolean getRequired() {
 		return required;
 	}
 
-	public void setRequired(Boolean required) {
+	public ArgumentBuilder setRequired(Boolean required) {
 		this.required = required;
+        return this;
 	}
 
 	public Location getLocation() {
@@ -159,11 +138,6 @@ public class ArgumentBuilder implements Buildable<Argument> {
 	
 	public Annotation[] getAnnotations() {
 		return annotations;
-	}
-
-	public ArgumentBuilder setAnnotations(Annotation[] annotations) {
-		this.annotations = annotations;
-		return this;
 	}
 
     public ArgumentBinder getBinder() {
@@ -193,10 +167,58 @@ public class ArgumentBuilder implements Buildable<Argument> {
         return wrappedArguments;
     }
 
-    private void autoConfigure() {
+	@Override
+    public Argument build() {
+		ArgumentValidator[] validators = this.validators.toArray(new ArgumentValidator[0]);
+
+        Argument[] wrappedArguments =
+                Builders.buildArray(this.wrappedArguments, new Argument[this.wrappedArguments.size()]);
+		
+	    return new Argument(name,
+                            declaredName,
+                            beanProperty,
+                            type,
+                            genericType,
+                            typeInfo,
+                            required,
+                            location,
+                            annotations,
+                            binder,
+                            validators,
+                            wrappedArguments,
+                            extensions);
+    }
+
+    protected void resolveValidators(ValidationManager validationManager) {
+        Validator v;
+        for(Annotation pa : annotations){
+            if((v = validationManager.tryCreateValidator(pa, type)) != null){
+                addValidator(new SimpleArgumentValidator(v));
+            }
+        }
+
+        if(Classes.isAnnotatioinPresent(annotations,Valid.class) ){
+            Valid valid = Classes.getAnnotation(annotations, Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(valid));
+            }
+        }else if(type.isAnnotationPresent(Valid.class)) {
+            Valid valid = type.getAnnotation(Valid.class);
+            if(valid.value()) {
+                addValidator(new NestedArgumentValidator(type.getAnnotation(Valid.class)));
+            }
+        }else {
+            ParamsWrapper a = type.getAnnotation(ParamsWrapper.class);
+            if(null != a && a.valid()){
+                addValidator(new NestedArgumentValidator(true));
+            }
+        }
+    }
+
+    private void autoConfigureAnnotations() {
         autoConfigureLocation();
         autoConfigureValidation();
-	}
+    }
 
     private void autoConfigureLocation() {
         RequestParam rp = Classes.getAnnotation(annotations, RequestParam.class, true);
@@ -289,17 +311,5 @@ public class ArgumentBuilder implements Buildable<Argument> {
         if(null != r) {
             required = true;
         }
-    }
-
-	@Override
-    public Argument build() {
-		ArgumentValidator[] validators = this.validators.toArray(new ArgumentValidator[0]);
-
-        Argument[] wrappedArguments =
-                Builders.buildArray(this.wrappedArguments, new Argument[this.wrappedArguments.size()]);
-		
-	    return new Argument(name, declaredName,beanProperty, type, genericType, typeInfo,
-                            required, location, annotations, binder,
-                            validators, wrappedArguments);
     }
 }

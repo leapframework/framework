@@ -17,23 +17,17 @@
  */
 package tests;
 
-import leap.core.annotation.Inject;
 import leap.lang.http.HTTP;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiError;
-import leap.web.api.spec.swagger.SwaggerSpecReader;
-import leap.webunit.WebTestBase;
 import org.junit.Test;
 
-public class ApiMetadataTest extends WebTestBase {
-
-    private @Inject SwaggerSpecReader swaggerReader;
+public class ApiMetadataTest extends ApiTestCase {
 
 	@Test
     public void testMetadataBySwaggerSpec() {
-        ApiMetadata m =
-                swaggerReader.read(get("/testing/swagger.json").getContent()).build();
+        ApiMetadata m = md("testing");
 
         assertPaths(m);
         assertTags(m);

@@ -87,12 +87,30 @@ public class Types {
     }
     
     public static Type getTypeArgument(Type genericType) {
-    	Type[] typeArguments = getTypeArguments(genericType);
-    	if(typeArguments.length == 0){
-    		return Object.class;
-    	}
-    	Assert.isTrue(typeArguments.length == 1,"Type argument's length must be 1,should not be " + typeArguments.length);
-    	return typeArguments[0];
+        Type[] types = getTypeArguments(genericType);
+
+        if(types.length == 0) {
+            return Object.class;
+        }
+
+        if(types.length == 1) {
+            Type type = types[0];
+
+            if (type instanceof WildcardType) {
+
+                types = ((WildcardType) type).getUpperBounds();
+
+                if (types.length != 1) {
+                    throw new IllegalArgumentException("Found multi upper bounds at type argument '" + type + "'");
+                }
+
+                type = types[0];
+            }
+
+            return type;
+        }
+
+        throw new IllegalArgumentException("Found multi type arguments of '" + genericType + "'");
     }
 
 	public static Type[] getTypeArguments(Type genericType) {
@@ -110,9 +128,58 @@ public class Types {
 		return EMPTY_TYPES;
 	}
 
-	public static Class<?> getActualTypeArgument(Type genericType) {
-		Args.notNull(genericType);
+    public static Class<?> getActualTypeArgument(Class<?> declaringClass, Type genericType) {
+        if(null == declaringClass) {
+            return getActualTypeArgument(genericType);
+        }else{
+            return getActualType(declaringClass, getTypeArgument(genericType));
+        }
+    }
 
+    public static Class<?> getActualType(Class<?> declaringClass, Type type) {
+        if(null == declaringClass) {
+            return getActualType(type);
+        }
+
+        if(type instanceof TypeVariable) {
+            TypeVariable var = (TypeVariable)type;
+            Class<?> actualType = getActualType(declaringClass.getGenericSuperclass(), var);
+            if(null != actualType) {
+                return actualType;
+            }
+
+            for(Type genericInterface : declaringClass.getGenericInterfaces()) {
+                actualType = getActualType(genericInterface, var);
+                if(null != actualType) {
+                    return actualType;
+                }
+            }
+        }
+
+        return getActualType(type);
+    }
+
+    protected static Class<?> getActualType(Type type, TypeVariable var) {
+        if(type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType)type;
+            Class<?> rawClass = (Class<?>)parameterizedType.getRawType();
+            Type[] vars = rawClass.getTypeParameters();
+            Type[] typeArgs = parameterizedType.getActualTypeArguments();
+            for(int i=0;i<vars.length;i++) {
+                if(vars[i].equals(var)) {
+                    return getActualType(typeArgs[i]);
+                }
+            }
+        }
+        return null;
+    }
+
+	public static Class<?> getActualTypeArgument(Type genericType) {
+        Type type = getTypeArgument(genericType);
+
+        return type == Object.class ? Object.class : getActualType(type);
+
+        /*
 		if (genericType instanceof ParameterizedType) {
 			Type[] types = ((ParameterizedType) genericType).getActualTypeArguments();
 
@@ -158,6 +225,7 @@ public class Types {
 		}
 
 		return Object.class;
+		*/
 	}
 	
 	public static Class<?>[] getActualTypeArguments(Type genericType){
@@ -204,8 +272,7 @@ public class Types {
 	
 	/**
 	 * <p>
-	 * Checks if the subject type may be implicitly cast to the target type following the Java generics rules. If both
-	 * types are {@link Class} objects, the method returns the result of {@link ClassUtils#isAssignable(Class, Class)}.
+	 * Checks if the subject type may be implicitly cast to the target type following the Java generics rules.
 	 * </p>
 	 * 
 	 * @param type the subject type to be assigned to the target type

@@ -65,6 +65,109 @@ public class DefaultRouteManager implements RouteManager {
     protected @Inject @M App                 app;
 
     @Override
+    public Routes createRoutes() {
+        return factory.createBean(DefaultRoutes.class);
+    }
+
+    @Override
+    public RouteBuilder createRoute(String method, String pathTemplate) {
+        return new RouteBuilder(method, pathTemplateFactory.createPathTemplate(pathTemplate));
+    }
+
+    @Override
+    public RouteBuilder createRoute(String method, String pathTemplate, Action action) {
+        return new RouteBuilder(method, pathTemplateFactory.createPathTemplate(pathTemplate), action);
+    }
+
+    @Override
+    public Route loadRoute(Routes routes, RouteBuilder route) {
+        Action act = route.getAction();
+
+        //success status.
+        Success success = act.getAnnotation(Success.class);
+        if (null != success) {
+            HTTP.Status s1 = success.status();
+            HTTP.Status s2 = success.value();
+
+            if (s1.value() != 200) {
+                route.setSuccessStatus(s1.value());
+            } else {
+                route.setSuccessStatus(s2.value());
+            }
+        }
+
+        //validation
+        AcceptValidationError acceptValidationError = act.searchAnnotation(AcceptValidationError.class);
+        if (null != acceptValidationError) {
+            route.setAcceptValidationError(true);
+        }
+
+        //https only
+        HttpsOnly httpsOnly = act.searchAnnotation(HttpsOnly.class);
+        if (null != httpsOnly) {
+            route.setHttpsOnly(httpsOnly.value());
+        }
+
+        //resolve failure handlers
+        Failures failures = act.searchAnnotation(Failures.class);
+        if (null != failures) {
+            for (Failure failure : failures.value()) {
+                addFailureHandler(route, failure);
+            }
+        }
+
+        Failure failure = route.getAction().searchAnnotation(Failure.class);
+        if (null != failure) {
+            addFailureHandler(route, failure);
+        }
+
+        //security.
+
+        AllowAnonymous aa = act.searchAnnotation(AllowAnonymous.class);
+        if (null != aa) {
+            route.setAllowAnonymous(aa.value());
+        }
+
+        AllowClientOnly ac = act.searchAnnotation(AllowClientOnly.class);
+        if (null != ac) {
+            route.setAllowClientOnly(ac.value());
+        }
+
+        AllowRememberMe ar = act.searchAnnotation(AllowRememberMe.class);
+        if (null != ar) {
+            route.setAllowRememberMe(ar.value());
+        }
+
+        Permissions permissions = act.searchAnnotation(Permissions.class);
+        if (null != permissions) {
+            route.setPermissions(permissions.value());
+        }
+
+        Secured secured = act.searchAnnotation(Secured.class);
+        if (null != secured) {
+            route.setAllowRememberMe(secured.allowRememberMe());
+
+            if (!Arrays2.isEmpty(secured.roles())) {
+                route.setRoles(secured.roles());
+            }
+
+            if (!Arrays2.isEmpty(secured.permissions())) {
+                route.setPermissions(secured.permissions());
+            }
+        }
+
+        //prepare the action
+        am.prepareAction(route);
+
+        //add route
+        Route result = route.build();
+
+        routes.add(result);
+
+        return result;
+    }
+
+    @Override
     public void loadRoutesFromController(Routes routes, Class<?> controllerClass, String basePath) {
         Object controller = as.getControllerInstance(controllerClass);
 
@@ -217,84 +320,8 @@ public class DefaultRouteManager implements RouteManager {
         //create action.
         route.setAction(act);
 
-        //success status.
-        Success success = act.getAnnotation(Success.class);
-        if (null != success) {
-            HTTP.Status s1 = success.status();
-            HTTP.Status s2 = success.value();
-
-            if (s1.value() != 200) {
-                route.setSuccessStatus(s1.value());
-            } else {
-                route.setSuccessStatus(s2.value());
-            }
-        }
-
-        //validation
-        AcceptValidationError acceptValidationError = act.searchAnnotation(AcceptValidationError.class);
-        if (null != acceptValidationError) {
-            route.setAcceptValidationError(true);
-        }
-
-        //https only
-        HttpsOnly httpsOnly = act.searchAnnotation(HttpsOnly.class);
-        if (null != httpsOnly) {
-            route.setHttpsOnly(httpsOnly.value());
-        }
-
-        //resolve failure handlers
-        Failures failures = act.searchAnnotation(Failures.class);
-        if (null != failures) {
-            for (Failure failure : failures.value()) {
-                addFailureHandler(route, failure);
-            }
-        }
-
-        Failure failure = route.getAction().searchAnnotation(Failure.class);
-        if (null != failure) {
-            addFailureHandler(route, failure);
-        }
-
-        //security.
-
-        AllowAnonymous aa = act.searchAnnotation(AllowAnonymous.class);
-        if (null != aa) {
-            route.setAllowAnonymous(aa.value());
-        }
-
-        AllowClientOnly ac = act.searchAnnotation(AllowClientOnly.class);
-         if (null != ac) {
-            route.setAllowClientOnly(ac.value());
-        }
-
-        AllowRememberMe ar = act.searchAnnotation(AllowRememberMe.class);
-        if (null != ar) {
-            route.setAllowRememberMe(ar.value());
-        }
-
-        Permissions permissions = act.searchAnnotation(Permissions.class);
-        if (null != permissions) {
-            route.setPermissions(permissions.value());
-        }
-
-        Secured secured = act.searchAnnotation(Secured.class);
-        if (null != secured) {
-            route.setAllowRememberMe(secured.allowRememberMe());
-
-            if (!Arrays2.isEmpty(secured.roles())) {
-                route.setRoles(secured.roles());
-            }
-
-            if (!Arrays2.isEmpty(secured.permissions())) {
-                route.setPermissions(secured.permissions());
-            }
-        }
-
-        //prepare the action
-        am.prepareAction(route);
-
-        //add route
-        routes.add(route.build());
+        //load the route
+        loadRoute(routes, route);
     }
 
     protected void addFailureHandler(RouteBuilder route, Failure a) {
