@@ -26,7 +26,6 @@ import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.generator.ValueGeneratorContext;
 import leap.orm.interceptor.EntityExecutionContext;
-import leap.orm.listener.PreCreateEntity;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
@@ -125,10 +124,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     public InsertCommand setAll(Object bean) {
 		Args.notNull(bean,"bean");
 		
-		if(bean instanceof PreCreateEntity) {
-		    ((PreCreateEntity) bean).preCreate();
-		}
-		
 		if(bean instanceof Map){
 			return setAll((Map)bean);
 		}else{
@@ -182,15 +177,52 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		
 		if(null == command){
             String[] fields = entity.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-            
 			command = sf.createInsertCommand(context, em, fields);
 		}
-		
-		if(null != handler){
-			return command.executeUpdate(this,entity,handler);	
-		}else{
-			return command.executeUpdate(this,entity);
-		}
+
+        //todo : check event handlers
+        boolean haveEventHandlers = false;
+
+        if(haveEventHandlers) {
+            return doExecuteWithEvents(command, handler);
+        }else{
+            return doExecuteUpdate(command, handler);
+        }
+    }
+
+    protected int doExecuteWithEvents(SqlCommand command, PreparedStatementHandler<Db> handler) {
+        int result;
+
+        boolean transactional = false;
+
+        //pre without transaction.
+
+        if(transactional) {
+            result = dao.doTransaction((status) -> {
+                //pre with transaction.
+
+                int affected = doExecuteUpdate(command, handler);
+
+                //post with transaction.
+
+                return affected;
+            });
+
+        }else{
+            result = doExecuteUpdate(command, handler);
+        }
+
+        //post without transaction.
+
+        return result;
+    }
+
+    protected int doExecuteUpdate(SqlCommand command, PreparedStatementHandler<Db> handler) {
+        if(null != handler){
+            return command.executeUpdate(this,entity,handler);
+        }else{
+            return command.executeUpdate(this,entity);
+        }
     }
 	
 	protected void prepare(){
