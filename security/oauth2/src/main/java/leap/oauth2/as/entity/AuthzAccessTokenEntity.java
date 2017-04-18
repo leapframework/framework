@@ -15,6 +15,9 @@
  */
 package leap.oauth2.as.entity;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import leap.oauth2.OAuth2ExpirableEntity;
 import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
@@ -26,22 +29,25 @@ public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
     @Id
     @Token
     protected String token;
-    
+
     @Column(name="token_type", length=20)
     protected String tokenType;
-    
+
     @ClientId
     protected String clientId;
-    
+
     @UserId
     protected String userId;
-    
+
     @Token
     @Column("refresh_token")
     protected String refreshToken;
 
+    @Column("ex_data")
+	private Map<String,Object> exData=new HashMap<>();
+
     protected Boolean authenticated;
-    
+
     @Column
     @Scope
     protected String scope;
@@ -101,4 +107,12 @@ public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
     public void setAuthenticated(Boolean authenticated) {
         this.authenticated = authenticated;
     }
+
+	public Map<String,Object> getExData() {
+		return exData;
+	}
+
+	public void setExData(Map<String,Object> exData) {
+		this.exData = exData;
+	}
 }

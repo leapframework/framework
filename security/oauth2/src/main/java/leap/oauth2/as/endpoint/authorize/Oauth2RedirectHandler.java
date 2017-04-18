@@ -13,12 +13,13 @@
  *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  * See the License for the specific language governing permissions and
  *  * limitations under the License.
- *  
+ *
  */
 
 package leap.oauth2.as.endpoint.authorize;
 
-import leap.lang.http.QueryStringBuilder;
+import java.util.Map;
+
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.web.Request;
 import leap.web.Response;
@@ -35,5 +36,5 @@ public interface Oauth2RedirectHandler {
      * @param qs
      * @return true if want to go to redirect, otherwise false
      */
-    boolean onOauth2LoginSuccessRedirect(Request request, Response response, AuthzAuthentication authc, QueryStringBuilder qs);
+    boolean onOauth2LoginSuccessRedirect(Request request, Response response, AuthzAuthentication authc, Map<String,String> qs);
 }

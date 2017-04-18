@@ -49,7 +49,7 @@ public class DefaultTokenInfoResponseHandler implements TokenInfoResponseHandler
 
         if(at.hasExtendedParameters()) {
             for(Map.Entry<String, Object> entry : at.getExtendedParameters().entrySet()) {
-                w.propertyOptional(entry.getKey(), entry.getValue());
+                w.property(entry.getKey(), entry.getValue());
             }
         }
 
