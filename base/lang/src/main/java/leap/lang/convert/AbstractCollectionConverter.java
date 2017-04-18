@@ -27,15 +27,15 @@ import leap.lang.Types;
 public abstract class AbstractCollectionConverter<T extends Collection> extends AbstractConverter<T>{
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 
 		Class<?> elementType = null == genericType ? Object.class : Types.getActualTypeArgument(genericType);
 		
 		if(value instanceof Iterable<?>){
-			out.set(toCollection(targetType, elementType, (Iterable<?>)value));
+			out.set(toCollection(targetType, elementType, (Iterable<?>)value, context));
 			return true;
 		}else if(value.getClass().isArray()){
-			out.set(toCollection(targetType, elementType, (Object[])value));
+			out.set(toCollection(targetType, elementType, (Object[])value, context));
 			return true;
 		}else if(value instanceof CharSequence){
 			out.set(toCollection(targetType, elementType, value.toString()));
@@ -65,33 +65,33 @@ public abstract class AbstractCollectionConverter<T extends Collection> extends 
         return buf.toString();
     }
 
-    public T toCollection(Class<?> targetType,Class<?> elementType,Iterable iterable) throws Throwable {
+    public T toCollection(Class<?> targetType,Class<?> elementType,Iterable iterable, ConvertContext context) throws Throwable {
 		
 		T collection = newInstance(targetType);
 		
 		for(Object e : iterable){
-			collection.add(Converts.convert(e,elementType));
+			collection.add(Converts.convert(e,elementType,context));
 		}
 		
 		return collection;
 	}
 	
-    public T toCollection(Class<?> targetType,Class<?> elementType,Object[] array) throws Throwable {
+    public T toCollection(Class<?> targetType,Class<?> elementType,Object[] array, ConvertContext context) throws Throwable {
 		
 		T collection = newInstance(targetType);
 		
 		for(Object e : array){
-			collection.add(Converts.convert(e,elementType));
+			collection.add(Converts.convert(e,elementType, context));
 		}
 		
 		return collection;
 	}
     
-    public T toCollectionFromArray(Class<?> targetType,Class<?> elementType,Object array) throws Throwable {
+    public T toCollectionFromArray(Class<?> targetType,Class<?> elementType,Object array, ConvertContext context) throws Throwable {
     	T collection = newInstance(targetType);
     	
     	for(int i=0;i<Array.getLength(array);i++){
-    		collection.add(Converts.convert(Array.get(array, i),elementType));
+    		collection.add(Converts.convert(Array.get(array, i),elementType, context));
     	}
     	
     	return collection;

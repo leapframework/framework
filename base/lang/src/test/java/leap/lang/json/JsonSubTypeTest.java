@@ -19,6 +19,9 @@ package leap.lang.json;
 import junit.framework.TestCase;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class JsonSubTypeTest extends TestCase {
 
     @Test
@@ -37,6 +40,25 @@ public class JsonSubTypeTest extends TestCase {
         assertNotNull(decodeBean.classNameDefault);
         assertEquals(o1.p1, decodeBean.classNameDefault.p1);
         assertEquals(o1.p2, ((SubClassNameDefault)decodeBean.classNameDefault).p2);
+    }
+
+    @Test
+    public void testListProperty() {
+        TestBean encodeBean = new TestBean();
+        SubClassNameDefault o1 = new SubClassNameDefault();
+        o1.p1 = "1";
+        o1.p2 = "2";
+
+        encodeBean.classNameDefaultList = new ArrayList<>();
+        encodeBean.classNameDefaultList.add(o1);
+
+        String json = JSON.encode(encodeBean);
+        assertTrue(json.contains("\"@class\":\"" + SubClassNameDefault.class.getName() + "\""));
+
+        TestBean decodeBean = JSON.decode(json, TestBean.class);
+        assertNotNull(decodeBean.classNameDefaultList);
+        assertEquals(o1.p1, decodeBean.classNameDefaultList.get(0).p1);
+        assertEquals(o1.p2, ((SubClassNameDefault)decodeBean.classNameDefaultList.get(0)).p2);
     }
 
     @Test
@@ -139,6 +161,8 @@ public class JsonSubTypeTest extends TestCase {
         public SuperTypeNameCustom  typeNameCustom;
 
         public SuperTypeNameCustom1 typeNameCustom1;
+
+        public List<SuperClassNameDefault> classNameDefaultList;
     }
 
 
@@ -157,7 +181,7 @@ public class JsonSubTypeTest extends TestCase {
     @JsonType(meta = JsonType.MetaType.TYPE_NAME, types = {
         @JsonType.SubType(type=SubTypeNameDefault.class, name="type1")
     })
-    static abstract class SuperTypeNameDefault {
+    static class SuperTypeNameDefault {
         public String p1;
     }
     static final class SubTypeNameDefault extends SuperTypeNameDefault {

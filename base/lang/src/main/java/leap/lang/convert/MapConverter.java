@@ -29,7 +29,7 @@ public class MapConverter extends AbstractConverter<Map> {
 
     @Override
     @SuppressWarnings("unchecked")
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof Map){
 			Map map = (Map)value;
 			
@@ -48,8 +48,8 @@ public class MapConverter extends AbstractConverter<Map> {
 			for(Object o : map.entrySet()){
 				Entry entry = (Entry)o;
 				
-				Object key = Converts.convert(entry.getKey(), keyType);
-				Object val = Converts.convert(entry.getValue(), valType);
+				Object key = Converts.convert(entry.getKey(), keyType, context);
+				Object val = Converts.convert(entry.getValue(), valType, context);
 				
 				targetMap.put(key,val);
 			}

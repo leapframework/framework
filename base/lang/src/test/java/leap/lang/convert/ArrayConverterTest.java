@@ -152,7 +152,7 @@ public class ArrayConverterTest extends ConcurrentTestCase {
     private void checkConvertFrom(String msg, Object convertResult, Class<?> targetType, Type genericType) {
     	Out<Object> out = new Out<Object>();
     	try {
-			assertTrue(msg + " ConvertFrom Check Error", new ArrayConverter().convertFrom(convertResult, targetType, genericType, out));
+			assertTrue(msg + " ConvertFrom Check Error", new ArrayConverter().convertFrom(convertResult, targetType, genericType, out, null));
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}

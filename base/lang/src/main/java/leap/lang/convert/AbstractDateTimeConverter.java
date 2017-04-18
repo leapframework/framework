@@ -23,7 +23,7 @@ import leap.lang.Out;
 public abstract class AbstractDateTimeConverter<T> implements Converter<T> {
 	
 	@Override
-    public boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(targetType.equals(Instant.class)) {
 			out.set(convertToInstant(value));
 			return true;
@@ -32,7 +32,7 @@ public abstract class AbstractDateTimeConverter<T> implements Converter<T> {
     }
 	
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof CharSequence) {
 			out.set(convertFromString((CharSequence)value));
 			return true;

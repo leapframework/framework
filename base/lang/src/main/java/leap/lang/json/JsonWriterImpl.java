@@ -845,6 +845,10 @@ public class JsonWriterImpl implements JsonWriter {
                 BeanType beanType = BeanType.of(bean.getClass());
 
                 //process type metadata.
+                if(null == type && !bean.getClass().isInterface()) {
+                    type = bean.getClass().getSuperclass().getAnnotation(JsonType.class);
+                }
+
                 if(null != type) {
                     String metaPropertyName = Strings.firstNotEmpty(type.property(),
                                                                     type.meta().getDefaultPropertyName());

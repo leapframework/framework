@@ -21,6 +21,7 @@ import leap.lang.Args;
 import leap.lang.Out;
 import leap.lang.Strings;
 import leap.lang.convert.AbstractConverter;
+import leap.lang.convert.ConvertContext;
 import leap.lang.convert.Converts;
 import leap.lang.jdbc.JdbcType;
 
@@ -149,7 +150,7 @@ public class MSimpleType extends MType implements MNamed {
 	public static class MSimpleTypeConverter extends AbstractConverter<MSimpleType> {
 
 		@Override
-        public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+        public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 			if(value instanceof CharSequence){
 				String name = value.toString();
 				out.set(MSimpleTypes.forName(name));

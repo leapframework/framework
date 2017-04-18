@@ -128,13 +128,13 @@ public class Converts {
 	public static <T> T convert(Object value,Class<T> targetType) throws ConvertUnsupportedException {
 		return convert(value,targetType,null,null);
 	}
-	
+
 	public static <T> T convert(Object value,Class<T> targetType, Type genericType) throws ConvertUnsupportedException {
         return convert(value,targetType,genericType,null);
 	}
 
     public static <T> T convert(Object value,Class<T> targetType, ConvertContext context) throws ConvertUnsupportedException {
-        return convert(value,targetType,null,null);
+        return convert(value,targetType,null,context);
     }
 
     public static <T> T convert(Object value,Class<T> targetType, Type genericType, ConvertContext context) throws ConvertUnsupportedException {
@@ -218,7 +218,7 @@ public class Converts {
 	        converter = findConverter(sourceType);
 	        
 	        //convert to
-	        if(null != converter && converter.convertTo(value, targetType, genericType, out)){
+	        if(null != converter && converter.convertTo(value, targetType, genericType, out, context)){
 	        	return (T)out.getValue();
 	        }
 	        
@@ -283,7 +283,7 @@ public class Converts {
 	public static <T> T toBean(Map<String, ?> map,Class<T> beanClass) {
 		Out<T> out = new Out<T>();
 		try {
-	        beanConverter.convertFrom(map, beanClass, null, out);
+	        beanConverter.convertFrom(map, beanClass, null, out, null);
         } catch (ConvertException e){
         	throw e;
         } catch (Throwable e) {
@@ -360,9 +360,9 @@ public class Converts {
 			if(value instanceof String){
 				return listConverter.toCollection(List.class, elementType, (String)value);
 			}else if(value instanceof Iterable){
-	        	return listConverter.toCollection(List.class, elementType, (Iterable)value);
+	        	return listConverter.toCollection(List.class, elementType, (Iterable)value, null);
 	        }else if(value.getClass().isArray()){
-	        	return listConverter.toCollectionFromArray(List.class, elementType, value);
+	        	return listConverter.toCollectionFromArray(List.class, elementType, value, null);
 	        }
 		} catch (ConvertException e){
 			throw e;

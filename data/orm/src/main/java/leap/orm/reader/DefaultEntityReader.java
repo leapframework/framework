@@ -220,12 +220,22 @@ public class DefaultEntityReader implements EntityReader {
                 Class<?> targetType = JdbcTypes.forTypeCode(cm.getColumnType()).getDefaultReadType();
                 value = Converts.convert(value, targetType);
             }else{
-                if(null != fm.getSerializer()) {
-                    value = fm.getSerializer().deserialize(fm, value);
-                }
                 BeanProperty bp = fm.getBeanProperty();
+
                 if(null != bp) {
-                    value = Converts.convert(value, bp.getType(), bp.getGenericType());
+
+                    if(null != fm.getSerializer()) {
+                        value = fm.getSerializer().deserialize(fm, value, bp.getType(), bp.getGenericType());
+                    }else{
+                        value = Converts.convert(value, bp.getType(), bp.getGenericType());
+                    }
+
+                }else {
+
+                    if(null != fm.getSerializer()){
+                        value = fm.getSerializer().deserialize(fm, value);
+                    }
+
                 }
             }
 		}

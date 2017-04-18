@@ -23,7 +23,7 @@ import leap.lang.Out;
 public class URLConverter extends AbstractConverter<URL> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		out.set(new URL(value.toString()));
 		return true;
     }

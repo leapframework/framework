@@ -24,7 +24,7 @@ import leap.lang.Out;
 public class CharsetConverter extends AbstractConverter<Charset> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		out.set(Charsets.forName(value.toString()));
 		return true;
     }

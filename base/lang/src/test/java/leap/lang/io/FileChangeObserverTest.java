@@ -16,6 +16,8 @@
  */
 package leap.lang.io;
 
+import org.junit.Ignore;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Iterator;
@@ -23,6 +25,7 @@ import java.util.Iterator;
 /**
  * {@link FileChangeObserver} Test Case.
  */
+@Ignore
 public class FileChangeObserverTest extends AbstractMonitorTestCase {
 
     /**

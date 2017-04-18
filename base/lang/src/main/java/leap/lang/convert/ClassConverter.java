@@ -23,7 +23,7 @@ import leap.lang.Out;
 public class ClassConverter extends AbstractConverter<Class<?>> implements Converter<Class<?>> {
 	
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		out.set(Classes.forName(value.toString()));
 		
 		return true;

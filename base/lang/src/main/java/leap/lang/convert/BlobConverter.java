@@ -26,7 +26,7 @@ import leap.lang.jdbc.SimpleBlob;
 public class BlobConverter extends AbstractConverter<Blob> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof byte[]){
 			out.set(new SimpleBlob((byte[])value));
 			return true;
@@ -35,7 +35,7 @@ public class BlobConverter extends AbstractConverter<Blob> {
     }
 
 	@Override
-    public boolean convertTo(Blob value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(Blob value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		//TODO : close inputstream ?
 	    byte[] data = IO.readByteArray(value.getBinaryStream());
 	    

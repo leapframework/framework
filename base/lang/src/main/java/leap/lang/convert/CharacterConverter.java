@@ -22,7 +22,7 @@ import leap.lang.Out;
 public class CharacterConverter extends AbstractConverter<Character> implements Converter<Character> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
         String string = value.toString();
         
         out.set(string.charAt(0));

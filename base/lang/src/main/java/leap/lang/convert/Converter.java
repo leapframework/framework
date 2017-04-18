@@ -35,36 +35,12 @@ public interface Converter<T> {
      *
      * that means the converter does not supports both the value type and the target type.
      */
-    boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable;
-
-    /**
-     * Converts the value to the target type.
-     *
-     * <p/>
-     * Returns <code>true</code> if the converter can converts the value to the target type,
-     *
-     * and sets the converted value to the out object.
-     *
-     * <p/>
-     * Returns <code>false</code> if the converter cannot converts the value to the target type,
-     *
-     * that means the converter does not supports both the value type and the target type.
-     */
-    default boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
-        return convertFrom(value, targetType, genericType, out);
-    }
+    boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable;
 
     /**
      * todo : doc
      */
-	boolean convertTo(T value,Class<?> targetType,Type genericType,Out<Object> out) throws Throwable;
-
-    /**
-     * todo : doc
-     */
-    default boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
-        return convertTo(value, targetType, genericType, out);
-    }
+    boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable;
 
     /**
      * Converts the value to {@link String}.

@@ -27,7 +27,7 @@ public abstract class AbstractNumberConverter<T extends Number> extends Abstract
 	private static final String  FALSE = "false";
     
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof Number){
 			out.set(toNumber(targetType, ((Number)value)));
 		}else if(value instanceof Boolean){
