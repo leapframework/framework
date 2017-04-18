@@ -14,29 +14,12 @@
  *  limitations under the License.
  */
 
-package app.models.testing;
+package leap.lang.meta.annotation;
 
-import leap.lang.meta.annotation.Discriminator;
+import java.lang.annotation.*;
 
-public class ParentModel {
-
-    protected String prop1;
-    protected String type;
-
-    public String getProp1() {
-        return prop1;
-    }
-
-    public void setProp1(String prop1) {
-        this.prop1 = prop1;
-    }
-
-    @Discriminator
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.FIELD,ElementType.METHOD})
+@Inherited
+public @interface Discriminator {
 }

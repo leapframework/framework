@@ -46,6 +46,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required =  mp.getRequired();
+        this.discriminator = mp.isDiscriminator();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();

@@ -52,4 +52,5 @@ public class ApiModelTest extends ApiTestCase {
 
         assertEquals("User", type.asTypeRef().getRefTypeName());
     }
+
 }

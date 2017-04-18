@@ -381,6 +381,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         if(!model.hasBaseModel()) {
             w.property(TYPE, OBJECT);
         }
+
         w.propertyOptional(TITLE, model.getTitle());
         w.propertyOptional(SUMMARY, model.getSummary());
         w.propertyOptional(DESCRIPTION, model.getDescription());
@@ -414,6 +415,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 
     protected void writeModelProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
+        for(MApiProperty p : model.getProperties()) {
+            if(p.isDiscriminator()) {
+                w.property(DISCRIMINATOR, p.getName());
+                break;
+            }
+        }
+
         List<String> requiredProperties = New.arrayList();
         for(MApiProperty p : model.getProperties()) {
             if(isRequired(p)) {
