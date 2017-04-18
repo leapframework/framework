@@ -275,8 +275,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
 
             Class<?> c = model.getJavaType().getSuperclass();
-            MApiModelBuilder parent = m.tryGetModel(c);
+            if(null == c) {
+                return;
+            }
 
+            MApiModelBuilder parent = m.tryGetModel(c);
             if(null != parent) {
                 //the parent's inheritance must be processed firstly.
                 postProcessModelInheritance(context, m, name, parent);
