@@ -17,7 +17,10 @@
 package leap.orm.tested.model.json;
 
 import leap.lang.json.JsonIgnore;
+import leap.orm.annotation.Column;
 import leap.orm.model.Model;
+
+import java.util.List;
 
 public class JsonModel extends Model {
 
@@ -25,6 +28,9 @@ public class JsonModel extends Model {
 
     @JsonIgnore
     private String ignoredField;
+
+    @Column
+    private List<Bean> beanList;
 
     public String getName() {
         return name;
@@ -42,4 +48,32 @@ public class JsonModel extends Model {
         this.ignoredField = ignoredField;
     }
 
+    public List<Bean> getBeanList() {
+        return beanList;
+    }
+
+    public void setBeanList(List<Bean> beanList) {
+        this.beanList = beanList;
+    }
+
+    public static final class Bean {
+
+        private String prop1;
+
+        public Bean() {
+
+        }
+
+        public Bean(String prop1) {
+            this.prop1 = prop1;
+        }
+
+        public String getProp1() {
+            return prop1;
+        }
+
+        public void setProp1(String prop1) {
+            this.prop1 = prop1;
+        }
+    }
 }

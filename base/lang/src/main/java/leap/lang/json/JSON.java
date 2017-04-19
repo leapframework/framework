@@ -17,6 +17,7 @@ package leap.lang.json;
 
 import java.io.Reader;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -168,6 +169,13 @@ public class JSON {
     }
 
     /**
+     * Parse the json string and converts the raw value to the target type.
+     */
+    public static <T> T decode(String json, Class<? extends T> targetType, Type genericType){
+        return Converts.convert(decoder.decode(json), targetType, genericType, convertContext);
+    }
+
+    /**
      * Parse the json string and converts the raw value to the target type
      * @since 0.5.0b
      */
@@ -193,6 +201,13 @@ public class JSON {
      */
     public static <T> T decode(Reader json,Class<? extends T> targetType){
         return Converts.convert(decoder.decode(json),targetType, null, convertContext);
+    }
+
+    /**
+     * Parse the json string and converts the raw value to the target type.
+     */
+    public static <T> T decode(Reader json,Class<? extends T> targetType, Type genericType){
+        return Converts.convert(decoder.decode(json),targetType, genericType, convertContext);
     }
 
     /**

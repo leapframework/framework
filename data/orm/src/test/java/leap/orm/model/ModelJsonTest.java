@@ -16,6 +16,7 @@
 
 package leap.orm.model;
 
+import leap.lang.New;
 import leap.lang.json.JSON;
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.json.JsonModel;
@@ -37,6 +38,21 @@ public class ModelJsonTest extends OrmTestCase {
         Map<String,Object> map = JSON.decode(json);
         assertEquals("test", map.get("name"));
         assertFalse(map.containsKey("ignoredField"));
+    }
+
+    @Test
+    public void testBeanList() {
+        JsonModel m = new JsonModel();
+
+        m.setBeanList(New.arrayList(new JsonModel.Bean("a")));
+
+        m.create();
+
+        JsonModel loaded = JsonModel.find(m.id());
+        assertEquals(1, loaded.getBeanList().size());
+        assertEquals("a", loaded.getBeanList().get(0).getProp1());
+
+        m.delete();
     }
 
 }
