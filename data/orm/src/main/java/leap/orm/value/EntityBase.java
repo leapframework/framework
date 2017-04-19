@@ -19,16 +19,38 @@ import leap.lang.Named;
 
 public interface EntityBase {
 
+    /**
+     * Returns the name of entity.
+     */
 	String getEntityName();
-	
+
+    /**
+     * Returns true if the field exists.
+     */
 	boolean hasField(String field);
-	
+
+    /**
+     * Returns the value of field.
+     */
 	Object get(String field);
-	
-	Object get(Named field);
-	
+
+    /**
+     * Returns the value of field.
+     */
+	default Object get(Named field) {
+        return get(field.getName());
+    }
+
+    /**
+     * Sets the value of field.
+     */
 	<T extends EntityBase> T set(String field,Object value);
-	
-	<T extends EntityBase> T set(Named field,Object value);
+
+    /**
+     * Sets the value of field.
+     */
+	default <T extends EntityBase> T set(Named field,Object value) {
+        return set(field.getName(), value);
+    }
 
 }

@@ -21,7 +21,9 @@ import leap.lang.Args;
 import leap.lang.Named;
 import leap.lang.params.ParamsMap;
 
-@SuppressWarnings("unchecked")
+/**
+ * Wraps a {@link Map} as a record of entity
+ */
 public class Entity extends ParamsMap implements EntityBase {
 
 	private static final long serialVersionUID = 5313900644420987429L;
@@ -38,10 +40,8 @@ public class Entity extends ParamsMap implements EntityBase {
 		this.entityName = name;
 		this.putAll(fields);
 	}
-	
-	/**
-	 * Returns the entity name.
-	 */
+
+    @Override
 	public String getEntityName() {
 		return entityName;
 	}
@@ -51,20 +51,9 @@ public class Entity extends ParamsMap implements EntityBase {
 	    return get((Object)field);
     }
 	
-	@Override
-    public Object get(Named field) {
-	    return get((Object)field.getName());
-    }
-	
     @Override
     public Entity set(String field, Object value) {
 		put(field,value);
-	    return this;
-    }
-
-	@Override
-    public Entity set(Named field, Object value) {
-		put(field.getName(),value);
 	    return this;
     }
 

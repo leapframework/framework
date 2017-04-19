@@ -18,12 +18,14 @@ package leap.orm.value;
 import java.util.Map;
 
 import leap.lang.Args;
-import leap.lang.Named;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.orm.mapping.EntityMapping;
 
+/**
+ * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
+ */
 public abstract class EntityWrapper implements EntityBase {
 	
 	/**
@@ -33,7 +35,7 @@ public abstract class EntityWrapper implements EntityBase {
 	 * The supported entity type must be a {@link Map}, a {@link DynaBean} , a {@link Entity} or a pojo bean.
 	 */
 	@SuppressWarnings("rawtypes")
-    public static EntityWrapper wrap(EntityMapping em,Object entity) {
+    public static EntityWrapper wrap(EntityMapping em, Object entity) {
 		Args.notNull(em,"entity mapping");
 		Args.notNull(entity,"entity");
 		
@@ -48,42 +50,39 @@ public abstract class EntityWrapper implements EntityBase {
 		return new BeanEntityWrapper(em, entity);
 	}
 
-	protected final EntityMapping mapping;
-	protected final Object		  wrapped;
+	protected final EntityMapping em;
+	protected final Object        raw;
 	
-	protected EntityWrapper(EntityMapping mapping,Object wrapped) {
-		this.mapping = mapping;
-		this.wrapped = wrapped;
+	protected EntityWrapper(EntityMapping em, Object raw) {
+		this.em  = em;
+		this.raw = raw;
 	}
 
-	/**
-	 * Returns the {@link EntityMapping} of the wrapped entity object.
-	 */
-	public final EntityMapping getMapping() {
-		return mapping;
-	}
-	
-	/**
-	 * Returns the wrapped entity object.
-	 */
-	public final Object getWrapped() {
-		return wrapped;
-	}
-	
-	@Override
+    /**
+     * Returns the wrapped entity.
+     */
+    public final <T> T raw() {
+        return (T) raw;
+    }
+
+    /**
+     * Returns <code>true</code> if the wrapped entity is a POJO bean.
+     */
+    public boolean isBean() {
+        return false;
+    }
+
+    @Override
     public final String getEntityName() {
-	    return mapping.getEntityName();
-    }
-	
-	@Override
-    public final Object get(Named field) {
-        return get(field.getName());
+        return em.getEntityName();
     }
 
-	@Override
-    public final <T extends EntityBase> T set(Named field, Object value) {
-	    return set(field.getName(),value);
-    }
+    /**
+	 * Returns the {@link EntityMapping}.
+	 */
+	public final EntityMapping getEntityMapping() {
+		return em;
+	}
 
 	@SuppressWarnings("rawtypes")
 	protected static final class MapEntityWrapper extends EntityWrapper {
@@ -123,7 +122,12 @@ public abstract class EntityWrapper implements EntityBase {
 	        this.beanType = BeanType.of(entity.getClass());
         }
 
-		@Override
+        @Override
+        public boolean isBean() {
+            return true;
+        }
+
+        @Override
         public boolean hasField(String field) {
 	        return beanType.tryGetProperty(field, true) != null;
         }
@@ -131,13 +135,13 @@ public abstract class EntityWrapper implements EntityBase {
 		@Override
         public Object get(String field) {
 	        BeanProperty bp = beanType.tryGetProperty(field,true);
-	        return null == bp ? null : bp.getValue(wrapped);
+	        return null == bp ? null : bp.getValue(raw);
         }
 		
         @Override
         @SuppressWarnings("unchecked")
         public <T extends EntityBase> T set(String field, Object value) {
-        	beanType.setProperty(wrapped, field, value, true);
+        	beanType.setProperty(raw, field, value, true);
 	        return (T)this;
         }
 	}
