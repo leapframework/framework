@@ -19,6 +19,9 @@ package leap.orm.event;
 import leap.core.transaction.TransactionStatus;
 import leap.orm.value.EntityWrapper;
 
+/**
+ * The handler interface for handling events of creating an entity (save an entity record to db).
+ */
 public interface CreateEntityEventHandler {
 
     /**
@@ -31,12 +34,30 @@ public interface CreateEntityEventHandler {
      */
     boolean isTransactional();
 
+    /**
+     * Executed before saving the entity record to db outside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
     void preCreateEntity(EntityWrapper entity);
 
+    /**
+     * Executed before saving the entity record to db inside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
     void preCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
 
-    void postCreateEntity(EntityWrapper entity);
-
+    /**
+     * Executed after saving the the entity record to db inside transaction.
+     */
     void postCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
+
+    /**
+     * Executed after saving the the entity record to db outside transaction.
+     */
+    void postCreateEntity(EntityWrapper entity);
 
 }

@@ -24,9 +24,15 @@ import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
 public interface ParameterStrategy extends ParamsFactory {
-	
+
+    /**
+     * Extracts properties as {@link Map} of the given object.
+     */
 	Map<String, Object> toMap(Object object) throws InvalidParametersException;
 
+    /**
+     * Creates a {@link Params} object wraps the id object of entity.
+     */
 	Params createIdParameters(OrmContext context, EntityMapping em,Object id) throws InvalidParametersException;
 	
 }

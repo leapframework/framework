@@ -152,7 +152,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         }
 
         //Creates map for saving.
-        Map<String,Object> map = context.getParameterStrategy().createParams(entity.raw()).map();
+        Map<String,Object> map = context.getParameterStrategy().toMap(entity.raw());
 
         //Prepared id
         if(null != id) {
@@ -160,7 +160,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
             if(keyNames.length == 1){
                 map.put(keyNames[0],id);
             }else{
-                Params idParams = context.getParameterStrategy().createParams(id);
+                Params idParams = context.getParameterStrategy().createIdParameters(context, em, id);
                 for(int i=0;i<keyNames.length;i++){
                     map.put(keyNames[i], idParams.get(keyNames[i]));
                 }
