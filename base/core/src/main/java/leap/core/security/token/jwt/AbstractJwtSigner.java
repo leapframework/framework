@@ -51,7 +51,7 @@ public abstract class AbstractJwtSigner extends AbstractTokenSigner implements J
 		
 		//Set expiration time.
 		if(!claims.containsKey(JWT.CLAIM_EXPIRATION_TIME)) {
-			claims.put(JWT.CLAIM_EXPIRATION_TIME, getExpirationTimeMs(expiresInSecond));
+			claims.put(JWT.CLAIM_EXPIRATION_TIME, getExpirationTimeInSecond(expiresInSecond));
 		}
 		
 		String content  = encodeContent(claims);
