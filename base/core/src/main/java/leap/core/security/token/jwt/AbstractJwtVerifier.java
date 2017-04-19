@@ -84,8 +84,8 @@ public abstract class AbstractJwtVerifier implements JwtVerifier {
     
     protected void verifyExpiration(Map<String, Object> claims) {
         Object exp = claims.get(JWT.CLAIM_EXPIRATION_TIME);
-        if (null != exp && exp instanceof Long) {
-            long expirationTimeSecond = (Long) exp;
+        if (null != exp && exp instanceof Number) {
+            long expirationTimeSecond = ((Number) exp).longValue();
             long nowTimeInSecond = System.currentTimeMillis()/1000L;
             if(expirationTimeSecond <= 0 || nowTimeInSecond >= expirationTimeSecond){
                 throw new TokenExpiredException("Token expired");
