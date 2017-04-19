@@ -24,27 +24,24 @@ import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.event.CreateEntityEvent;
 import leap.orm.event.CreateEntityEventHandler;
-import leap.orm.generator.ValueGeneratorContext;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.value.Entity;
+import leap.orm.value.EntityWrapper;
 
 import java.util.Map;
 
-public class DefaultInsertCommand extends AbstractEntityDaoCommand
-        implements InsertCommand,ValueGeneratorContext,EntityExecutionContext,CreateEntityEvent {
+public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,EntityExecutionContext {
 
     protected final SqlFactory               sf;
     protected final Entity                   entity;
     protected final CreateEntityEventHandler eventHandler;
 
     protected SqlCommand   command;
-	protected FieldMapping fm;
     protected Object       bean;
     protected Object       id;
 	protected Object	   generatedId;
@@ -161,11 +158,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
     }
 
 	@Override
-    public FieldMapping getFieldMapping() {
-	    return fm;
-    }
-
-	@Override
     public Params getParameters() {
 	    return entity;
     }
@@ -194,31 +186,24 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
         }
     }
 
-    @Override
-    public Entity entity() {
-        return entity;
-    }
-
-    @Override
-    public <T> T bean() {
-        return (T)bean;
-    }
-
     protected int doExecuteWithEvent(SqlCommand command, PreparedStatementHandler<Db> handler) {
         int result;
 
+        //todo :
+        EntityWrapper entity = null;
+
         //pre without transaction.
-        eventHandler.preCreateEntity(this);
+        eventHandler.preCreateEntity(entity);
 
         if(eventHandler.isTransactional()) {
             result = dao.doTransaction((status) -> {
                 //pre with transaction.
-                eventHandler.preCreateEntityWithTransaction(this, status);
+                eventHandler.preCreateEntityWithTransaction(entity, status);
 
                 int affected = doExecuteUpdate(command, handler);
 
                 //post with transaction.
-                eventHandler.postCreateEntityWithTransaction(this, status);
+                eventHandler.postCreateEntityWithTransaction(entity, status);
 
                 return affected;
             });
@@ -228,7 +213,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
         }
 
         //post without transaction.
-        eventHandler.postCreateEntity(this);
+        eventHandler.postCreateEntity(entity);
 
         return result;
     }
@@ -243,8 +228,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
 	
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
-			this.fm = fm;
-
             Object value = entity.get(fm.getFieldName());
 
             if(null == value) {
@@ -281,7 +264,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
                 }
             }
 		}
-		this.fm = null;
 	}
 	
 	protected void setGeneratedValue(FieldMapping fm,Object value){

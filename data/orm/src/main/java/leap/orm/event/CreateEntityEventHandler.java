@@ -17,6 +17,7 @@
 package leap.orm.event;
 
 import leap.core.transaction.TransactionStatus;
+import leap.orm.value.EntityWrapper;
 
 public interface CreateEntityEventHandler {
 
@@ -24,18 +25,18 @@ public interface CreateEntityEventHandler {
      * Returns <code>true</code> if the handler should be executed in a transaction.
      *
      * <p/>
-     * That means the {@link #preCreateEntityWithTransaction(CreateEntityEvent, TransactionStatus)}
+     * That means the {@link #preCreateEntityWithTransaction(EntityWrapper, TransactionStatus)}
      *
-     * and {@link #postCreateEntityWithTransaction(CreateEntityEvent, TransactionStatus)} will be invoked.
+     * and {@link #postCreateEntityWithTransaction(EntityWrapper, TransactionStatus)} will be invoked.
      */
     boolean isTransactional();
 
-    void preCreateEntity(CreateEntityEvent e);
+    void preCreateEntity(EntityWrapper entity);
 
-    void preCreateEntityWithTransaction(CreateEntityEvent e, TransactionStatus status);
+    void preCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
 
-    void postCreateEntity(CreateEntityEvent e);
+    void postCreateEntity(EntityWrapper entity);
 
-    void postCreateEntityWithTransaction(CreateEntityEvent e, TransactionStatus status);
+    void postCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
 
 }

@@ -26,7 +26,6 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.dao.Dao;
-import leap.orm.generator.ValueGeneratorContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.Mappings;
@@ -34,7 +33,7 @@ import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
 import leap.orm.value.Entity;
 
-public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements UpdateCommand,ValueGeneratorContext {
+public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements UpdateCommand {
 
     private static final Log log = LogFactory.get(DefaultUpdateCommand.class);
 	
@@ -42,7 +41,6 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     protected final Entity     entity;
 	
 	protected SqlCommand   command;
-	protected FieldMapping fm;
 	protected Params   	   parameters;
 	protected Object	   oldOptimisticLockValue;
 	protected Object	   newOptimisticLockValue;
@@ -120,21 +118,6 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 	
 	@Override
-    public EntityMapping getEntityMapping() {
-	    return em;
-    }
-
-	@Override
-    public FieldMapping getFieldMapping() {
-	    return fm;
-    }
-
-	@Override
-    public Params getParameters() {
-	    return parameters;
-    }
-
-	@Override
     public int execute() {
 		prepare();
 		
@@ -163,7 +146,6 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 	
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
-			this.fm = fm;
 
 			if(fm.isOptimisticLock()){
 				prepareOptimisticLock(fm);
@@ -186,8 +168,6 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
                 }
 			}
 		}
-		
-		this.fm = null;
 	}
 	
 	protected void prepareOptimisticLock(FieldMapping fm){
