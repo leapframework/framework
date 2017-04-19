@@ -2108,9 +2108,11 @@ public class BeanContainer implements BeanFactory {
 				if(!type.isOverride()) {
 					BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
 					if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
-						throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
-								" for type '" + beanType.getName() +
-								"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
+						if(bd.getSortOrder() > existsBeanDefinition.getSortOrder() || !existsBeanDefinition.isOverride()){
+							throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
+									" for type '" + beanType.getName() +
+									"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
+						}
 					}
 				}
 				primaryBeanDefinitions.put(beanType, bd);
