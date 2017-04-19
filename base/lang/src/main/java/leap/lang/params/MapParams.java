@@ -24,7 +24,7 @@ public class MapParams extends NamedParamsBase implements Params {
 	private final Map<String,Object> raw;
 	
 	public MapParams() {
-		this(new LinkedHashMap<String, Object>(1));
+		this(new LinkedHashMap<>(1));
 	}
 
 	public MapParams(Map<String, Object> map) {

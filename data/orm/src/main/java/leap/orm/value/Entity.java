@@ -16,6 +16,7 @@
 package leap.orm.value;
 
 import java.util.Map;
+import java.util.Set;
 
 import leap.lang.Args;
 import leap.lang.Named;
@@ -45,8 +46,13 @@ public class Entity extends ParamsMap implements EntityBase {
 	public String getEntityName() {
 		return entityName;
 	}
-	
-	@Override
+
+    @Override
+    public Set<String> getFieldNames() {
+        return map().keySet();
+    }
+
+    @Override
     public Object get(String field) {
 	    return get((Object)field);
     }

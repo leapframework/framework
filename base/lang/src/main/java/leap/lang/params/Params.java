@@ -130,6 +130,16 @@ public interface Params extends Emptiable {
 	 * Set all parameters from the given map.
 	 */
 	Params setAll(Map<String,? extends Object> m);
+
+    /**
+     * Returns <code>true</code> if this params object is a named params.
+     *
+     * <p>
+     * A named params can use {@link #get(String)} to get parameter's value.
+     */
+    default boolean isNamed() {
+        return true;
+    }
 	
 	/**
 	 * Returns <code>true</code> if this params object is readonly.
@@ -144,15 +154,9 @@ public interface Params extends Emptiable {
 	 * <p>
 	 * An indexed params can used {@link #get(int)} to get parameter's value.
 	 */
-	boolean isIndexed();
-	
-	/**
-	 * Returns <code>true</code> if this params object is a named params.
-	 * 
-	 * <p>
-	 * A named params can use {@link #get(String)} to get parameter's value.
-	 */
-	boolean isNamed();
+	default boolean isIndexed() {
+        return false;
+    }
 	
 	/**
 	 * Returns the max index if this params is indexed.
@@ -160,12 +164,16 @@ public interface Params extends Emptiable {
 	 * <p>
 	 * Returns -1 if this params is not indexed.
 	 */
-	int maxIndex();
+	default int maxIndex() {
+        return -1;
+    }
 	
 	/**
 	 * Index starts from 0.
 	 * 
 	 * @throws IllegalStateException if not an indexed parameters.
 	 */
-	Object get(int i) throws IllegalStateException,IndexOutOfBoundsException;
+	default Object get(int i) throws IllegalStateException,IndexOutOfBoundsException {
+        throw new IllegalStateException("Not an indexed parameters");
+    }
 }

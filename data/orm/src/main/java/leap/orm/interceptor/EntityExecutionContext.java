@@ -15,7 +15,6 @@
  */
 package leap.orm.interceptor;
 
-import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
@@ -24,8 +23,6 @@ public interface EntityExecutionContext  {
 	OrmContext getOrmContext();
 
 	EntityMapping getEntityMapping();
-	
-	Params getParameters();
 	
 	boolean isReturnGeneratedId();
 	

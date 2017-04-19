@@ -18,14 +18,8 @@ package leap.core.params;
 import java.util.Map;
 
 import leap.lang.Beans;
-import leap.lang.params.BeanParams;
-import leap.lang.params.CompositeParams;
-import leap.lang.params.EmptyParams;
-import leap.lang.params.MapParams;
-import leap.lang.params.Params;
-import leap.lang.params.ParamsMap;
-import leap.lang.params.ParamsWrappable;
-import leap.lang.params.UnsupportedParametersException;
+import leap.lang.beans.DynaBean;
+import leap.lang.params.*;
 
 public class DefaultParamsFactory implements ParamsFactory {
 	
@@ -48,6 +42,10 @@ public class DefaultParamsFactory implements ParamsFactory {
 		if(param instanceof Map){
 			return new MapParams((Map<String,Object>)param);
 		}
+
+        if(param instanceof DynaBean) {
+            return new DynaParams((DynaBean)param);
+        }
 		
 		if(isBeanParameters(param.getClass())){
 			return new BeanParams(param);

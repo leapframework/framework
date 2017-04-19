@@ -16,13 +16,21 @@
 package leap.orm.value;
 
 import leap.lang.Named;
+import leap.lang.accessor.Getter;
 
-public interface EntityBase {
+import java.util.Set;
+
+public interface EntityBase extends Getter {
 
     /**
      * Returns the name of entity.
      */
 	String getEntityName();
+
+    /**
+     * Returns all the field names in this entity.
+     */
+    Set<String> getFieldNames();
 
     /**
      * Returns true if the field exists.

@@ -28,7 +28,6 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
@@ -97,13 +96,10 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
             throw new ValidationException(errors);
         }
 
-        InsertCommand insert = dao.cmdInsert(em.getEntityName());
-
+        InsertCommand insert = dao.cmdInsert(em.getEntityName()).from(properties);
         if(null != id) {
-            insert.id(id);
+            insert.withId(id);
         }
-
-        insert.setAll(properties);
 
         if(relationProperties.isEmpty()) {
             insert.execute();

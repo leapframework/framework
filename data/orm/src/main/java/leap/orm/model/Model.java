@@ -1093,7 +1093,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
     
     protected boolean doCreate() {
-    	return dao.cmdInsert(em).setAll(createParameters()).execute() > 0;
+    	return dao.cmdInsert(em).from(this).execute() > 0;
     }
     
     protected boolean doUpdate(Object id) {
