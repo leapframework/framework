@@ -19,11 +19,13 @@ import leap.core.metamodel.ReservedMetaFieldName;
 import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
 import leap.lang.*;
+import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.domain.EntityDomain;
+import leap.orm.event.CreateEntityEventHandler;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.sharding.ShardingAlgorithm;
@@ -62,8 +64,12 @@ public class EntityMapping extends ExtensibleBase {
     protected final ShardingAlgorithm      shardingAlgorithm;
     protected final boolean                selfReferencing;
     protected final RelationMapping[]      selfReferencingRelations;
-	
-	private final Map<String,FieldMapping>    columnNameToFields;
+
+    //events
+    protected final CreateEntityEventHandler createEntityEventHandler;
+
+
+    private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
 	private final Map<String,FieldMapping>    metaNameToFields;
     private final Map<String,RelationMapping> nameToRelations;
@@ -71,7 +77,8 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String,RelationMapping> targetEntityRelations;
     private final Map<String,RelationMapping> referenceToRelations;
     private final FieldMapping                shardingField;
-	
+
+
 	public EntityMapping(String entityName,
                          Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
@@ -81,7 +88,8 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
-                         boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm) {
+                         boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm,
+                         CreateEntityEventHandler createEntityEventHandler) {
 		
 		Args.notEmpty(entityName,"entity name");
 		Args.notNull(table,"table");
@@ -129,6 +137,8 @@ public class EntityMapping extends ExtensibleBase {
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
+
+        this.createEntityEventHandler = createEntityEventHandler;
     }
 
     /**
@@ -469,7 +479,11 @@ public class EntityMapping extends ExtensibleBase {
         return false;
     }
 
-	private FieldMapping[] evalKeyFieldMappings(){
+    public CreateEntityEventHandler getCreateEntityEventHandler() {
+        return createEntityEventHandler;
+    }
+
+    private FieldMapping[] evalKeyFieldMappings(){
 		List<FieldMapping> list = New.arrayList();
 		
 		for(FieldMapping fm : this.fieldMappings){

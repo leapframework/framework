@@ -24,6 +24,8 @@ import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
+import leap.orm.event.CreateEntityEvent;
+import leap.orm.event.CreateEntityEventHandler;
 import leap.orm.generator.ValueGeneratorContext;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
@@ -34,13 +36,16 @@ import leap.orm.value.Entity;
 
 import java.util.Map;
 
-public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,ValueGeneratorContext,EntityExecutionContext {
-	
-    protected final SqlFactory sf;
-    protected final Entity     entity;
-	
-	protected SqlCommand   command;
+public class DefaultInsertCommand extends AbstractEntityDaoCommand
+        implements InsertCommand,ValueGeneratorContext,EntityExecutionContext,CreateEntityEvent {
+
+    protected final SqlFactory               sf;
+    protected final Entity                   entity;
+    protected final CreateEntityEventHandler eventHandler;
+
+    protected SqlCommand   command;
 	protected FieldMapping fm;
+    protected Object       bean;
     protected Object       id;
 	protected Object	   generatedId;
 	protected Params       parameters;
@@ -51,9 +56,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	
 	public DefaultInsertCommand(Dao dao,EntityMapping em, SqlCommand command) {
 	    super(dao,em);
-	    this.sf		 = dao.getOrmContext().getSqlFactory();
-	    this.entity  = new Entity(em.getEntityName());
-	    this.command = command;
+	    this.sf		      = dao.getOrmContext().getSqlFactory();
+	    this.entity       = new Entity(em.getEntityName());
+	    this.command      = command;
+        this.eventHandler = em.getCreateEntityEventHandler();
     }
 	
 	@Override
@@ -127,6 +133,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		if(bean instanceof Map){
 			return setAll((Map)bean);
 		}else{
+            this.bean       = bean;
 			this.parameters = context.getParameterStrategy().createParams(bean);
 			this.entity.putAll(parameters.map());
 		    return this;
@@ -180,30 +187,38 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 			command = sf.createInsertCommand(context, em, fields);
 		}
 
-        //todo : check event handlers
-        boolean haveEventHandlers = false;
-
-        if(haveEventHandlers) {
-            return doExecuteWithEvents(command, handler);
+        if(null != eventHandler) {
+            return doExecuteWithEvent(command, handler);
         }else{
             return doExecuteUpdate(command, handler);
         }
     }
 
-    protected int doExecuteWithEvents(SqlCommand command, PreparedStatementHandler<Db> handler) {
+    @Override
+    public Entity entity() {
+        return entity;
+    }
+
+    @Override
+    public <T> T bean() {
+        return (T)bean;
+    }
+
+    protected int doExecuteWithEvent(SqlCommand command, PreparedStatementHandler<Db> handler) {
         int result;
 
-        boolean transactional = false;
-
         //pre without transaction.
+        eventHandler.preCreateEntity(this);
 
-        if(transactional) {
+        if(eventHandler.isTransactional()) {
             result = dao.doTransaction((status) -> {
                 //pre with transaction.
+                eventHandler.preCreateEntityWithTransaction(this, status);
 
                 int affected = doExecuteUpdate(command, handler);
 
                 //post with transaction.
+                eventHandler.postCreateEntityWithTransaction(this, status);
 
                 return affected;
             });
@@ -213,6 +228,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         }
 
         //post without transaction.
+        eventHandler.postCreateEntity(this);
 
         return result;
     }
