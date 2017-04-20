@@ -138,6 +138,10 @@
           type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
           class="leap.oauth2.as.endpoint.authorize.CodeIdTokenResponseTypeHandler"/>
 
+	<bean name="id_token token"
+		  type="leap.oauth2.as.endpoint.authorize.ResponseTypeHandler"
+		  class="leap.oauth2.as.endpoint.authorize.IdTokenTokenResponseTypeHandler"/>
+
 	<!-- sso -->
 	<bean type="leap.oauth2.as.sso.AuthzSSOManager" class="leap.oauth2.as.sso.DefaultAuthzSSOManager" primary="true"/>
 

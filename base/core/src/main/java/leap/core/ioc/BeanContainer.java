@@ -1403,6 +1403,10 @@ public class BeanContainer implements BeanFactory {
 				}
 			}
 		}
+
+        if(injectedBean == null && inject.create() && Classes.isConcreteClass(type)) {
+            injectedBean = createBean(type);
+        }
 		
 		return injectedBean;
 	}

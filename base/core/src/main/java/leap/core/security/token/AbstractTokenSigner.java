@@ -42,4 +42,14 @@ public abstract class AbstractTokenSigner implements TokenSigner {
 		}
 	}
 	
+	protected long getExpirationTimeInSecond(Integer expiresInSecond){
+		long now = System.currentTimeMillis()/1000L;
+
+		if(null == expiresInSecond || expiresInSecond <= 0) {
+			return now + defaultExpires;
+		}else{
+			return now + expiresInSecond;
+		}
+	}
+	
 }

@@ -59,7 +59,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
     public AuthzAccessToken loadAccessToken(String accessToken) {
         AuthzAccessTokenEntity entity = dao.findOrNull(AuthzAccessTokenEntity.class, accessToken);
 
-        return null == entity ? null : createAccesTokenFromEntity(entity);
+        return null == entity ? null : createAccessTokenFromEntity(entity);
     }
 
     @Override
@@ -141,7 +141,7 @@ public class DefaultJdbcAuthzTokenStore extends AbstractJdbcAuthzStore implement
         return entity;
     }
 
-    protected AuthzAccessToken createAccesTokenFromEntity(AuthzAccessTokenEntity entity) {
+    protected AuthzAccessToken createAccessTokenFromEntity(AuthzAccessTokenEntity entity) {
         SimpleAuthzAccessToken token = new SimpleAuthzAccessToken();
         // add user login name
         UserDetails ud = sc.getUserStore().loadUserDetailsById(entity.getUserId());

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <aop>
+        <method-interception>
+            <interceptor class="app.beans.NopAopInterceptor"/>
+            <matches>
+                <annotation type="app.beans.NopAop"/>
+            </matches>
+        </method-interception>
+    </aop>
+
+</config>

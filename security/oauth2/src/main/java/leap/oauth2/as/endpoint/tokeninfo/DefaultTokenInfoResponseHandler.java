@@ -40,7 +40,7 @@ public class DefaultTokenInfoResponseHandler implements TokenInfoResponseHandler
 
                 .property("user_id",       at.getUserId())
                 .property("username",      at.getUsername())
-                .property("expires_in",    at.getExpiresIn())
+                .property("expires_in",    at.getExpiresInFormNow())
                 .propertyOptional("scope", at.getScope());
 
         if(at.isAuthenticated()){

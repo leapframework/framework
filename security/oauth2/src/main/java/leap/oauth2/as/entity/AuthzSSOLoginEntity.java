@@ -104,6 +104,6 @@ public class AuthzSSOLoginEntity implements OAuth2Entity {
     }
 
     public void setExpiration(TimeExpirable expirable) {
-        this.expiration = new Timestamp(expirable.getCreated() + expirable.getExpiresIn() * 1000l);
+        this.expiration = new Timestamp(expirable.getCreated() + expirable.getExpiresIn() * 1000L);
     }
 }

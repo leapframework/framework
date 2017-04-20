@@ -45,9 +45,9 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
     }
 
     @Override
-    public String generateIdToken(AuthzAuthentication authc, Map<String, Object> extend, int expires) {
-        JwtSigner           signer = getJwtSigner(authc, expires);
-        Map<String, Object> claims = getJwtClaims(authc, extend, expires);
+    public String generateIdToken(AuthzAuthentication authc, Map<String, Object> extend, int expiresIn) {
+        JwtSigner           signer = getJwtSigner(authc, expiresIn);
+        Map<String, Object> claims = getJwtClaims(authc, extend, expiresIn);
         
         return signer.sign(claims);
     }
@@ -58,7 +58,7 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         return new MacSigner(client.getSecret(), expires);
     }
     
-    protected Map<String, Object> getJwtClaims(AuthzAuthentication authc, Map<String, Object> extend, int expires) {
+    protected Map<String, Object> getJwtClaims(AuthzAuthentication authc, Map<String, Object> extend, int expiresIn) {
         OAuth2Params params = authc.getParams();
         AuthzClient client = authc.getClientDetails();
         UserDetails user   = authc.getUserDetails();
@@ -85,6 +85,7 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         
         claims.put(JWT.CLAIM_AUDIENCE, client.getId());
         claims.put(JWT.CLAIM_SUBJECT,  user.getId().toString());
+        claims.put(JWT.CLAIM_EXPIRATION_TIME, System.currentTimeMillis()/1000L+expiresIn);
         claims.put("name",             user.getName());
         claims.put("login_name",       user.getLoginName());
         
