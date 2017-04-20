@@ -19,6 +19,7 @@ package tests.core.aop;
 import leap.core.annotation.Inject;
 import leap.core.aop.MethodInvocation;
 import leap.core.junit.AppTestBase;
+import leap.lang.Types;
 import leap.lang.enums.Bool;
 import org.junit.Test;
 import tested.aop.TAopBean;
@@ -28,6 +29,9 @@ import tested.aop.TIntercepted;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.util.List;
 
 public class MethodInterceptionTest extends AppTestBase {
 
@@ -83,5 +87,24 @@ public class MethodInterceptionTest extends AppTestBase {
         bean.perfRoot();
 
         assertEquals(50, interceptor1.getInterceptedCount());
+    }
+
+    @Test
+    public void testComplexMethod() throws Exception {
+        Method m = TAopBean.class.getMethod("complex", String.class, List.class);
+
+        //Test annotation in parameter.
+        Parameter p1 = m.getParameters()[0];
+        assertEquals(2, p1.getAnnotations().length);
+
+        //Test generic type in parameter.
+        Type p2GenericType = m.getGenericParameterTypes()[1];
+        assertEquals(String.class,Types.getActualTypeArgument(p2GenericType));
+
+        //Test annotation in method
+        assertEquals(2, m.getAnnotations().length);
+
+        //Test generic type in return type.
+        assertEquals(Integer.class, Types.getActualTypeArgument(m.getGenericReturnType()));
     }
 }

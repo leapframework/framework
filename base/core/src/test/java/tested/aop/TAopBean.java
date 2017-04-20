@@ -16,9 +16,14 @@
 
 package tested.aop;
 
+import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.M;
+import leap.core.validation.annotations.NotNull;
+import leap.core.validation.annotations.Required;
 import leap.lang.enums.Bool;
 
 import java.io.IOException;
+import java.util.List;
 
 public class TAopBean {
 
@@ -46,6 +51,12 @@ public class TAopBean {
     @TIntercepted
     public String getHello(String name) {
         return "hello " + name;
+    }
+
+    @TIntercepted
+    @ConfigProperty
+    public List<Integer> complex(@NotNull @Required String name, List<String> list) {
+        return null;
     }
 
     @TException

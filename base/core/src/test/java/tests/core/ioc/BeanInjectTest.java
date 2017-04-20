@@ -29,7 +29,7 @@ import tested.base.injected.InjectInterface2;
 import tested.beans.TAutoInjectBean;
 import tests.core.CoreTestCase;
 
-public class BeanAutoInjectTest extends CoreTestCase {
+public class BeanInjectTest extends CoreTestCase {
 
     protected static @Inject BeanFactory factory;
 
@@ -44,6 +44,8 @@ public class BeanAutoInjectTest extends CoreTestCase {
     protected @Inject CusBean cusBean;
     protected @Inject CusBean1 cusBean1;
     protected @Inject CusBean2 cusBean2;
+
+    protected @Inject(create = true) AutoCreateBean autoCreateBean;
     
     @BeforeClass
     public static void checkStaticInjection() {
@@ -70,6 +72,12 @@ public class BeanAutoInjectTest extends CoreTestCase {
     public void testInjectStaticField() {
         assertSame(config, autoInjectBean.config);
     }
+
+    @Test
+    public void testAutoCreateBean() {
+        assertNotNull(autoCreateBean);
+        assertNotNull(autoCreateBean.config);
+    }
     
     @Test
     public void testInjectBeanWithImplement(){
@@ -84,5 +92,9 @@ public class BeanAutoInjectTest extends CoreTestCase {
         assertEquals(CusFactoryBean.class.getName(),cusBean.getCreateBy());
         assertEquals(CusFactoryBean12.class.getName(),cusBean1.getCreateBy());
         assertEquals(CusFactoryBean12.class.getName(),cusBean2.getCreateBy());
+    }
+
+    public static final class AutoCreateBean {
+        public @Inject AppConfig config;
     }
 }
