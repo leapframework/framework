@@ -87,8 +87,8 @@ public abstract class AbstractAuthzEndpoint implements Endpoint {
         query.put("access_token", token.getToken());
         query.put("token_type", "bearer"); //TODO : supports other token type.
         
-        if(token.getExpiresIn() > 0) {
-            query.put("expires_in", String.valueOf(token.getExpiresIn()));
+        if(token.getExpiresInFormNow() > 0) {
+            query.put("expires_in", String.valueOf(token.getExpiresInFormNow()));
         }
         
         if(!Strings.isEmpty(token.getScope())) {

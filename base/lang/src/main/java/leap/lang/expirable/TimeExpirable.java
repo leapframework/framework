@@ -20,9 +20,18 @@ import leap.lang.Expirable;
 public interface TimeExpirable extends Expirable {
 
     /**
-     * Returns the expires in.
+     * Returns the expires in from created.
+     * unit:second
      */
     int getExpiresIn();
+
+    /**
+     * Return the expires in from now
+     * unit:second
+     */
+    default int getExpiresInFormNow(){
+        return getExpiresIn() - (int)(System.currentTimeMillis()-getCreated())/1000;
+    }
     
     /**
      * Returns the creation time in mill-seconds.

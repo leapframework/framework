@@ -61,7 +61,7 @@ public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implem
 
     	qs.put("access_token",at.getToken());
     	qs.put("token_type",at.getTokenType());
-    	qs.put("expires_in", Objects.toString(at.getExpiresIn()));
+    	qs.put("expires_in", Objects.toString(at.getExpiresInFormNow()));
 
         sendSuccessRedirect(request,response,authc,qs);
 

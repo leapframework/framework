@@ -36,7 +36,7 @@ public class TimeExpirableMs implements TimeExpirable {
     
     @Override
     public int getExpiresIn() {
-        return expiresIn;
+        return expiresIn/1000;
     }
 
     @Override
