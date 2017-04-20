@@ -25,6 +25,11 @@ public interface IdTokenGenerator {
     
     String generateIdToken(AuthzAuthentication authc, Map<String,Object> extend);
 
-    String generateIdToken(AuthzAuthentication authc, Map<String,Object> extendint, int expires);
+    /**
+     * 
+     * @param expiresIn seconds number of expired time from now 
+     * @return
+     */
+    String generateIdToken(AuthzAuthentication authc, Map<String,Object> extend, int expiresIn);
     
 }

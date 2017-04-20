@@ -65,7 +65,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         //Set refresh token.
         at.setRefreshToken(rt.getToken());
-
+        
         //Set expires & created
         at.setExpiresIn(getAccessTokenExpires(client));
         at.setCreated(System.currentTimeMillis());

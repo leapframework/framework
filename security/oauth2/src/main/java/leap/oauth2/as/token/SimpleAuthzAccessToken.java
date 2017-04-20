@@ -26,13 +26,12 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
     private static final long serialVersionUID = -4427485425591978410L;
     
     protected String              token;
+    protected String			  refreshToken;
     protected String              clientId;
     protected String              userId;
-	protected String 			   username;
-	protected String 			  refreshToken;
-	protected int                 refreshTokenExpiresIn;
+	protected String 			  username;
 	protected String 			  scope;
-	protected Boolean				authenticated = false;
+	protected Boolean			  authenticated = false;
 	protected Map<String, Object> extendedParameters;
 
 	public String getToken() {
@@ -67,15 +66,7 @@ public class SimpleAuthzAccessToken extends TimeExpirableSeconds implements Auth
 		this.refreshToken = refreshToken;
 	}
 	
-	public int getRefreshTokenExpiresIn() {
-        return refreshTokenExpiresIn;
-    }
-
-    public void setRefreshTokenExpiresIn(int refreshTokenExpiresIn) {
-        this.refreshTokenExpiresIn = refreshTokenExpiresIn;
-    }
-
-    public String getScope() {
+	public String getScope() {
 		return scope;
 	}
 

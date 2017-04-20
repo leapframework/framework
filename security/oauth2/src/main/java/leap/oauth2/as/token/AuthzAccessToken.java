@@ -59,19 +59,6 @@ public interface AuthzAccessToken extends TimeExpirable, Serializable {
 	String getRefreshToken();
 	
 	/**
-	 * Returns the expires in of refresh token.
-	 */
-	int getRefreshTokenExpiresIn();
-	
-	/**
-	 * Returns <code>true</code> if the refresh token was expired.
-	 */
-	default boolean isRefreshTokenExpired() {
-	    return getRefreshTokenExpiresIn() > 0 &&
-	           (System.currentTimeMillis() - getCreated() >= getRefreshTokenExpiresIn() * 1000l);
-	}
-	
-	/**
 	 * Optional.
 	 */
 	String getScope();
