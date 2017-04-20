@@ -106,12 +106,16 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		}
 	}
 
-	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Entity annotation){
-		if(null != annotation){
-			emb.setEntityName(Strings.firstNotEmpty(annotation.name(),annotation.value()));
-			emb.setTableSchema(annotation.schema());
-			emb.setTableName(annotation.table());
+	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Entity a){
+		if(null != a){
+			emb.setEntityName(Strings.firstNotEmpty(a.name(), a.value()));
+			emb.setTableSchema(a.schema());
+			emb.setTableName(a.table());
 			emb.setTableNameDeclared(true);
+
+            if(a.listeners().length > 0) {
+                //collects listeners
+            }
 		}
 	}
 	

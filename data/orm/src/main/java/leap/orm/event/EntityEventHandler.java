@@ -16,23 +16,23 @@
 
 package leap.orm.event;
 
-import leap.core.transaction.TransactionStatus;
-import leap.orm.value.EntityWrapper;
+import leap.orm.OrmContext;
+import leap.orm.mapping.EntityMapping;
 
 /**
- * The handler interface for handling events of creating an entity (save an entity record to db).
+ * The handler interface for handling events of entity (create, update, delete and load).
  */
-public interface CreateEntityEventHandler {
+public interface EntityEventHandler {
 
     /**
-     * Returns <code>true</code> if the handler should be executed in a transaction.
-     *
-     * <p/>
-     * That means the {@link #preCreateEntityWithTransaction(EntityWrapper, TransactionStatus)}
-     *
-     * and {@link #postCreateEntityWithTransaction(EntityWrapper, TransactionStatus)} will be invoked.
+     * Returns true if handles the 'Create' event of the given entity.
      */
-    boolean isTransactional();
+    boolean isHandleCreateEvent(OrmContext context, EntityMapping em);
+
+    /**
+     * Returns true if the create event should be handled in a transaction.
+     */
+    boolean isCreateEventTransactional(OrmContext context, EntityMapping em);
 
     /**
      * Executed before saving the entity record to db outside transaction.
@@ -40,7 +40,7 @@ public interface CreateEntityEventHandler {
      * <p/>
      * The entity fields can be changed and all the changes will be saved to db.
      */
-    void preCreateEntity(EntityWrapper entity);
+    void preCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e);
 
     /**
      * Executed before saving the entity record to db inside transaction.
@@ -48,16 +48,16 @@ public interface CreateEntityEventHandler {
      * <p/>
      * The entity fields can be changed and all the changes will be saved to db.
      */
-    void preCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
+    void preCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e);
 
     /**
      * Executed after saving the the entity record to db inside transaction.
      */
-    void postCreateEntityWithTransaction(EntityWrapper entity, TransactionStatus status);
+    void postCreateEntityInTrans(OrmContext context, EntityMapping em, CreateEntityEvent e);
 
     /**
      * Executed after saving the the entity record to db outside transaction.
      */
-    void postCreateEntity(EntityWrapper entity);
+    void postCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e);
 
 }

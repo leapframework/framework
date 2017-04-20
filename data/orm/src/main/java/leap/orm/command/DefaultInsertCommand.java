@@ -23,7 +23,8 @@ import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.event.CreateEntityEventHandler;
+import leap.orm.event.CreateEntityEventImpl;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -35,8 +36,8 @@ import java.util.Map;
 
 public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,EntityExecutionContext {
 
-    protected final SqlFactory               sf;
-    protected final CreateEntityEventHandler eventHandler;
+    protected final SqlFactory         sf;
+    protected final EntityEventHandler eventHandler;
 
     protected SqlCommand    command;
     protected EntityWrapper entity;
@@ -51,7 +52,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	    super(dao,em);
 	    this.sf		      = dao.getOrmContext().getSqlFactory();
 	    this.command      = command;
-        this.eventHandler = em.getCreateEntityEventHandler();
+        this.eventHandler = context.getEntityEventHandler();
     }
 
     @Override
@@ -101,7 +102,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     public int execute() {
 		prepare();
 
-        if(null != eventHandler) {
+        if(eventHandler.isHandleCreateEvent(context, em)) {
             return doExecuteWithEvent();
         }else{
             return doExecuteUpdate();
@@ -111,18 +112,24 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected int doExecuteWithEvent() {
         int result;
 
-        //pre without transaction.
-        eventHandler.preCreateEntity(entity);
+        CreateEntityEventImpl e = new CreateEntityEventImpl(context, entity);
 
-        if(eventHandler.isTransactional()) {
+        //pre without transaction.
+        eventHandler.preCreateEntityNoTrans(context, em, e);
+
+        if(eventHandler.isCreateEventTransactional(context, em)) {
             result = dao.doTransaction((status) -> {
+                e.setTransactionStatus(status);
+
                 //pre with transaction.
-                eventHandler.preCreateEntityWithTransaction(entity, status);
+                eventHandler.preCreateEntityInTrans(context, em, e);
 
                 int affected = doExecuteUpdate();
 
                 //post with transaction.
-                eventHandler.postCreateEntityWithTransaction(entity, status);
+                eventHandler.postCreateEntityInTrans(context, em, e);
+
+                e.setTransactionStatus(null);
 
                 return affected;
             });
@@ -132,7 +139,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         }
 
         //post without transaction.
-        eventHandler.postCreateEntity(entity);
+        eventHandler.postCreateEntityNoTrans(context, em, e);
 
         return result;
     }

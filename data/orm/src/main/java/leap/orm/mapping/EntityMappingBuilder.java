@@ -19,9 +19,8 @@ import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
 import leap.lang.*;
-import leap.lang.tostring.ToStringBuilder;
 import leap.orm.domain.EntityDomain;
-import leap.orm.event.CreateEntityEventHandler;
+import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
 import leap.orm.sharding.ShardingAlgorithm;
@@ -55,9 +54,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     protected boolean                      sharding;
     protected boolean                      autoCreateShardingTable;
     protected ShardingAlgorithm            shardingAlgorithm;
+    protected EntityListenersBuilder       listeners = new EntityListenersBuilder();
 
-    protected CreateEntityEventHandler     createEntityEventHandler;
-	
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
 	}
@@ -376,13 +374,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return this;
     }
 
-    public CreateEntityEventHandler getCreateEntityEventHandler() {
-        return createEntityEventHandler;
-    }
-
-    public EntityMappingBuilder setCreateEntityEventHandler(CreateEntityEventHandler createEntityEventHandler) {
-        this.createEntityEventHandler = createEntityEventHandler;
-        return this;
+    public EntityListenersBuilder listeners() {
+        return listeners();
     }
 
     @Override
@@ -405,7 +398,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,
                                  sharding, autoCreateShardingTable, shardingAlgorithm,
-                                 createEntityEventHandler);
+                                 listeners.build());
     }
 	
 	public DbSchemaObjectName getTableSchemaObjectName() {
