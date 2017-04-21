@@ -62,6 +62,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
 			mappingEntityByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
+            mappingListenerByAnnotations(context, emb, sourceClass.getDeclaredAnnotationsByType(Entity.Listener.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
 		}
@@ -121,15 +122,17 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			emb.setTableName(a.table());
 			emb.setTableNameDeclared(true);
 
-            if(a.listeners().length > 0) {
-                for(Entity.Listener listener : a.listeners()) {
-                    mappingEntityByAnnotation(context, emb, listener);
-                }
-            }
+            mappingListenerByAnnotations(context, emb, a.listeners());
 		}
 	}
 
-    protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity.Listener a) {
+    protected void mappingListenerByAnnotations(MetadataContext context, EntityMappingBuilder emb, Entity.Listener[] listeners) {
+        for(Entity.Listener listener : listeners) {
+            mappingListenerByAnnotation(context, emb, listener);
+        }
+    }
+
+    protected void mappingListenerByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity.Listener a) {
         EntityListenersBuilder listeners = emb.listeners;
 
         Class<?> type  = a.type();
@@ -139,40 +142,33 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         //create
         if(PreCreateListener.class.isAssignableFrom(type)) {
             listeners.addPreCreateListener((PreCreateListener)inst, trans);
-            return;
         }
 
         if(PostCreateListener.class.isAssignableFrom(type)) {
             listeners.addPostCreateListener((PostCreateListener)inst, trans);
-            return;
         }
 
         //update
         if(PreUpdateListener.class.isAssignableFrom(type)) {
             listeners.addPreUpdateListener((PreUpdateListener)inst, trans);
-            return;
         }
 
         if(PostUpdateListener.class.isAssignableFrom(type)) {
             listeners.addPostUpdateListener((PostUpdateListener)inst, trans);
-            return;
         }
 
         //delete
         if(PreDeleteListener.class.isAssignableFrom(type)) {
             listeners.addPreDeleteListener((PreDeleteListener)inst, trans);
-            return;
         }
 
         if(PostDeleteListener.class.isAssignableFrom(type)) {
             listeners.addPostDeleteListener((PostDeleteListener)inst, trans);
-            return;
         }
 
         //load
         if(PostLoadListener.class.isAssignableFrom(type)) {
             listeners.addPostLoadListener((PostLoadListener)inst, trans);
-            return;
         }
 
         ReflectClass c = ReflectClass.of(type);
@@ -225,7 +221,6 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             }
         }
     }
-
 
 	protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Table a){
 		if(null != a){

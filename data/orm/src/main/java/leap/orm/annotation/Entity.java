@@ -22,8 +22,9 @@ import java.lang.annotation.*;
 @AEntity
 public @interface Entity {
 
-    @Target({ElementType.ANNOTATION_TYPE})
+    @Target({ElementType.ANNOTATION_TYPE,ElementType.TYPE})
     @Retention(RetentionPolicy.RUNTIME)
+    @Repeatable(Listeners.class)
     @Inherited
     @interface Listener {
 
@@ -36,6 +37,13 @@ public @interface Entity {
          * Set to <code>true</code> will invokes the listener in a transaction.
          */
         boolean transactional() default false;
+    }
+
+    @Target({ElementType.TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface Listeners {
+        Listener[] value();
     }
 	
 	/**
