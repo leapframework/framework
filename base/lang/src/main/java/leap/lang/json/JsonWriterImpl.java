@@ -838,7 +838,7 @@ public class JsonWriterImpl implements JsonWriter {
 		JsonProcessResult result = new JsonProcessResult(key, val);
 		if(Collections2.isNotEmpty(processors)) {
             for (JsonProcessor processor : processors) {
-                result = processor.process(result.getKey(), result.getValue());
+                processor.process(result);
             }
         }
 		return result;

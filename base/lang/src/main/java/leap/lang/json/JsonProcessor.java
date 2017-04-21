@@ -17,5 +17,5 @@ package leap.lang.json;
 
 public interface JsonProcessor {
 
-    JsonProcessResult process(String name, Object value);
+    void process(JsonProcessResult result);
 }

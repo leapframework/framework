@@ -97,10 +97,8 @@ public class HomeController {
 	class Processor implements JsonProcessor {
 
 		@Override
-		public JsonProcessResult process(String name, Object value) {
-			if(null == value) value = "";
-			JsonProcessResult result = new JsonProcessResult(name, value);
-			return result;
+		public void process(JsonProcessResult result) {
+			if(null == result.getValue()) result.setValue("");
 		}
 	}
 }
