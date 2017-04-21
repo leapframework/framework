@@ -17,10 +17,8 @@ package leap.web.format;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.json.JSON;
-import leap.lang.json.JsonProcessor;
 import leap.lang.json.JsonSettings;
 import leap.lang.json.JsonStringable;
 import leap.lang.logging.Log;
@@ -36,8 +34,6 @@ import leap.web.route.RouteBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
 
 public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 
@@ -99,18 +95,8 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
+		boolean nullToEmptyString = a.nullToEmptyString().isNone() ? false : a.nullToEmptyString().getValue();
         String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
-		Class[] processors = a.processors();
-		List<JsonProcessor> processorInstances = null;
-		if(Arrays2.isNotEmpty(processors)) {
-			processorInstances = new ArrayList<>();
-			for (Class clazz : processors) {
-				if(JsonProcessor.class.isAssignableFrom(clazz)) {
-					Object processorInstance = factory.getBean(clazz);
-					if(null != processorInstance) processorInstances.add((JsonProcessor) processorInstance);
-				}
-			}
-		}
 
         NamingStyle ns;
 
@@ -132,7 +118,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
                     .setDateFormat(dateFormat)
-					.setProcessors(processorInstances)
+					.setNullToEmptyString(nullToEmptyString)
                     .build();
 	}
 }

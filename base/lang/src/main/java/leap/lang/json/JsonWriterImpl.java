@@ -212,6 +212,9 @@ public class JsonWriterImpl implements JsonWriter {
     }
 
 	public JsonWriter property(String key,String stringValue) {
+		if(settings.isNullToEmptyString() && null == stringValue) {
+			stringValue = "";
+		}
 		return key(key).value(stringValue);
 	}
 	
@@ -823,26 +826,15 @@ public class JsonWriterImpl implements JsonWriter {
 						}
 					}
 				}
-
-				JsonProcessResult result = processResult(key, val);
-
-				property(result.getKey(), result.getValue());
+				if(settings.isNullToEmptyString() && val == null) {
+					val = "";
+				}
+				property(key, val);
 			}
 			endObject();
 		}
 	    return this;
     }
-
-	private JsonProcessResult processResult(String key, Object val) {
-		List<JsonProcessor> processors = settings.getProcessors();
-		JsonProcessResult result = new JsonProcessResult(key, val);
-		if(Collections2.isNotEmpty(processors)) {
-            for (JsonProcessor processor : processors) {
-                processor.process(result);
-            }
-        }
-		return result;
-	}
 
 	@Override
     public JsonWriter bean(Object bean) {
@@ -924,11 +916,9 @@ public class JsonWriterImpl implements JsonWriter {
                         if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
                             continue;
                         }
-
-                        JsonProcessResult result = processResult(propName, propValue);
-                        propName = result.getKey();
-                        propValue = result.getValue();
-
+                        if(prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
+                        	propValue = "";
+						}
                         keyUseNamingStyle(propName);
 
                         if(!writeDateValue(prop, propValue)) {

@@ -191,7 +191,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     @Test
     public void testJsonWriterWithJsonSetting(){
         JsonWriter writer = JSON.createWriter(new JsonSettings(true,true,
-                true,true,true,null,null, null));
+                true,true,true, false,null, null));
         writer.map(Beans.toMap(new JsonWriterBean()));
         Map map = JSON.decode(writer.toString());
         assertNull(map.get("strEmpty"));

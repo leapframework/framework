@@ -30,10 +30,10 @@ public @interface JsonSerialize {
 	
 	Bool ignoreEmpty() default Bool.NONE;
 
+	Bool nullToEmptyString() default Bool.FALSE;
+
 	String namingStyle() default "";
 
     String dateFormat() default "";
-
-    Class[] processors() default {};
 
 }

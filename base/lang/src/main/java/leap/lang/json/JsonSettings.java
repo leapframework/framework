@@ -20,7 +20,6 @@ import leap.lang.naming.NamingStyles;
 import leap.lang.time.DateFormats;
 
 import java.text.DateFormat;
-import java.util.List;
 
 public class JsonSettings {
 	
@@ -35,13 +34,13 @@ public class JsonSettings {
     private final boolean     ignoreFalse;
     private final boolean     ignoreEmptyString;
     private final boolean     ignoreEmptyArray;
+    private final boolean     nullToEmptyString;
     private final NamingStyle namingStyle;
     private final DateFormat  dateFormat;
-    private final List<JsonProcessor> processors;
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
-                        boolean ignoreEmptyString, boolean ignoreEmptyArray,
-                        NamingStyle namingStyle, DateFormat dateFormat, List<JsonProcessor> processors) {
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
+                        NamingStyle namingStyle, DateFormat dateFormat) {
 		this.keyQuoted         = keyQuoted;
 		this.ignoreNull        = ignoreNull;
         this.ignoreFalse       = ignoreFalse;
@@ -49,7 +48,7 @@ public class JsonSettings {
         this.ignoreEmptyArray  = ignoreEmptyArray;
 		this.namingStyle       = namingStyle;
         this.dateFormat        = dateFormat;
-        this.processors        = processors;
+        this.nullToEmptyString = nullToEmptyString;
 	}
 	public boolean isKeyQuoted() {
 		return keyQuoted;
@@ -79,20 +78,20 @@ public class JsonSettings {
         return dateFormat;
     }
 
-    public List<JsonProcessor> getProcessors() {
-        return processors;
+    public boolean isNullToEmptyString() {
+        return nullToEmptyString;
     }
 
-	public static final class Builder {
+    public static final class Builder {
 
         private boolean     keyQuoted   = true;
         private boolean     ignoreNull  = false;
         private boolean     ignoreFalse = false;
         private boolean     ignoreEmptyString = false;
         private boolean     ignoreEmptyArray  = false;
+        private boolean     nullToEmptyString = false;
         private NamingStyle namingStyle = NamingStyles.RAW;
         private DateFormat  dateFormat  = null;
-        private List<JsonProcessor> processors;
 
         public Builder() {
 	        super();
@@ -173,12 +172,12 @@ public class JsonSettings {
             return this;
         }
 
-        public List<JsonProcessor> getProcessors() {
-            return processors;
+        public boolean isNullToEmptyString() {
+            return nullToEmptyString;
         }
 
-        public Builder setProcessors(List<JsonProcessor> processors) {
-            this.processors = processors;
+        public Builder setNullToEmptyString(boolean nullToEmptyString) {
+            this.nullToEmptyString = nullToEmptyString;
             return this;
         }
 
@@ -188,16 +187,17 @@ public class JsonSettings {
             this.ignoreFalse = settings.ignoreFalse;
             this.ignoreEmptyString = settings.ignoreEmptyString;
             this.ignoreEmptyArray = settings.ignoreEmptyArray;
+            this.nullToEmptyString = settings.nullToEmptyString;
             this.namingStyle = settings.namingStyle;
             this.dateFormat = settings.dateFormat;
-            this.processors = settings.processors;
             return this;
         }
 
         public JsonSettings build(){
 			return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
-                                    ignoreEmptyString, ignoreEmptyArray,
-                                    namingStyle, dateFormat, processors);
+                                    ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
+                                    namingStyle, dateFormat);
 		}
-	}
+
+    }
 }

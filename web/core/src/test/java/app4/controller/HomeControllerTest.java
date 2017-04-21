@@ -60,9 +60,5 @@ public class HomeControllerTest extends WebTestCase {
 		assertEquals("test", map.get("prop1"));
 		assertEquals("", map.get("prop2"));
 
-		json = get("/app4/mvc/map1").getContent();
-		map = JSON.decode(json);
-		assertEquals("test", map.get("prop1"));
-		assertEquals("", map.get("prop2"));
 	}
 }

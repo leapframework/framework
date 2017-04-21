@@ -28,10 +28,8 @@
  */
 package app4.controller;
 
-import leap.core.annotation.Bean;
 import leap.lang.New;
-import leap.lang.json.JsonProcessResult;
-import leap.lang.json.JsonProcessor;
+import leap.lang.enums.Bool;
 import leap.lang.naming.NamingStyles;
 import leap.web.json.JsonSerialize;
 
@@ -51,12 +49,12 @@ public class HomeController {
 		return new DefinedProcessBean().setProp1("test").setProp2(null);
 	}
 
-	@JsonSerialize(processors = {Processor.class})
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
 	public Object bean1(){
 		return new DefinedProcessBean().setProp1("test").setProp2(null);
 	}
 
-	@JsonSerialize(processors = {Processor.class})
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
 	public Object bean1array(){
 		DefinedProcessBean bean =  new DefinedProcessBean().setProp1("test").setProp2(null);
 		List<DefinedProcessBean> list = new ArrayList<>();
@@ -64,7 +62,7 @@ public class HomeController {
 		return list;
 	}
 
-	@JsonSerialize(processors = {Processor.class})
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
 	public Object map1(){
 		Map<String, Object> map = New.hashMap("prop1", "test", "prop2", null);
 		return map;
@@ -90,15 +88,6 @@ public class HomeController {
 		public DefinedProcessBean setProp2(String prop2) {
 			this.prop2 = prop2;
 			return this;
-		}
-	}
-
-	@Bean
-	class Processor implements JsonProcessor {
-
-		@Override
-		public void process(JsonProcessResult result) {
-			if(null == result.getValue()) result.setValue("");
 		}
 	}
 }
