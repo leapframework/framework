@@ -56,7 +56,12 @@ public class ReflectDeleteEntityListener implements PreDeleteListener,PostDelete
             ReflectParameter p1 = m.getParameters()[1];
 
             if(p0.getType().equals(Object.class) && p1.getType().equals(TransactionStatus.class)) {
-                func = (e) -> m.invoke(e.getId(), e.getTransactionStatus());
+                func = (e) -> m.invoke(inst, e.getId(), e.getTransactionStatus());
+                return;
+            }
+
+            if(p0.getType().equals(DeleteEntityEvent.class) && p1.getType().equals(TransactionStatus.class)) {
+                func = (e) -> m.invoke(inst, e, e.getTransactionStatus());
                 return;
             }
         }

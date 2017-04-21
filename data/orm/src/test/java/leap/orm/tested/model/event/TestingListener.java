@@ -17,17 +17,13 @@
 package leap.orm.tested.model.event;
 
 import leap.core.transaction.TransactionStatus;
-import leap.orm.annotation.event.PostCreate;
-import leap.orm.annotation.event.PostUpdate;
-import leap.orm.annotation.event.PreCreate;
-import leap.orm.annotation.event.PreUpdate;
-import leap.orm.event.CreateEntityEvent;
-import leap.orm.event.PreCreateListener;
-import leap.orm.event.PreUpdateListener;
-import leap.orm.event.UpdateEntityEvent;
+import leap.orm.annotation.event.*;
+import leap.orm.event.*;
 import leap.orm.value.EntityWrapper;
 
-public class TestingListener implements PreCreateListener,PreUpdateListener {
+import java.util.concurrent.atomic.AtomicInteger;
+
+public class TestingListener implements PreCreateListener,PreUpdateListener,PreDeleteListener {
 
     public static final int POST_CREATE_NO_TRANS_WITH_ERROR = 1;
     public static final int POST_CREATE_IN_TRANS_WITH_ERROR = 2;
@@ -78,6 +74,35 @@ public class TestingListener implements PreCreateListener,PreUpdateListener {
     @PostUpdate
     public void postUpdateNoTransWithError(EventModel m, TransactionStatus ts) {
         if(m.getTestType() == POST_UPDATE_IN_TRANS_WITH_ERROR) {
+            throw new RuntimeException("error");
+        }
+    }
+
+    public static final ThreadLocal<AtomicInteger> PRE_DELETE_CONTEXT  = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+    public static final ThreadLocal<AtomicInteger> POST_DELETE_CONTEXT = ThreadLocal.withInitial(() -> new AtomicInteger(0));
+
+    @PreDelete
+    public void preDelete(Object id) {
+        PRE_DELETE_CONTEXT.get().incrementAndGet();
+    }
+
+    @Override
+    public void preDeleteEntity(DeleteEntityEvent e) {
+        PRE_DELETE_CONTEXT.get().incrementAndGet();
+    }
+
+    @PostDelete
+    public void postDeleteNoTransWithError(Object id) {
+        if(POST_DELETE_CONTEXT.get().get() == 1) {
+            POST_DELETE_CONTEXT.get().set(0);
+            throw new RuntimeException("error");
+        }
+    }
+
+    @PostDelete
+    public void postDeleteNoTransWithError(DeleteEntityEvent d, TransactionStatus ts) {
+        if(POST_DELETE_CONTEXT.get().get() == 2) {
+            POST_DELETE_CONTEXT.get().set(0);
             throw new RuntimeException("error");
         }
     }

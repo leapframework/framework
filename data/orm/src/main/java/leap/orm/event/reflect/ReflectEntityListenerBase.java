@@ -80,6 +80,11 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
                     return;
                 }
 
+                if(p0.getType().equals(eventType) && p1.getType().equals(TransactionStatus.class)) {
+                    func = (e) -> m.invoke(inst, e, e.getTransactionStatus());
+                    return;
+                }
+
                 if(isEntityType(p0) && p1.getType().equals(TransactionStatus.class)) {
                     BeanType bt = BeanType.of(p0.getType());
                     func = (e) -> invoke((EntityEventWithWrapper)e, bt, (bean) -> m.invoke(inst, bean, e.getTransactionStatus()));
