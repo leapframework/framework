@@ -55,4 +55,9 @@ public @interface Inject {
 	 * The bean qualifier value , only use in bean list injection.
 	 */
 	String qualifier() default "";
+
+    /**
+     * Creates a new instance if the bean not found.
+     */
+    boolean create() default false;
 }
