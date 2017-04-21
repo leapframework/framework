@@ -28,15 +28,66 @@
  */
 package app4.controller;
 
-import app.models.products.Product;
 import leap.lang.New;
+import leap.lang.enums.Bool;
+import leap.lang.naming.NamingStyles;
+import leap.web.json.JsonSerialize;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class HomeController {
+	@JsonSerialize(namingStyle = NamingStyles.NAME_LOWER_UNDERSCORE)
 	public Map<String, Object> map(){
 		Map<String, Object> map = New.hashMap("userId","userId");
 		map.put("userProperty",New.hashMap("userName","userName"));
 		return map;
+	}
+
+	public Object bean1origin(){
+		return new DefinedProcessBean().setProp1("test").setProp2(null);
+	}
+
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
+	public Object bean1(){
+		return new DefinedProcessBean().setProp1("test").setProp2(null);
+	}
+
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
+	public Object bean1array(){
+		DefinedProcessBean bean =  new DefinedProcessBean().setProp1("test").setProp2(null);
+		List<DefinedProcessBean> list = new ArrayList<>();
+		list.add(bean);
+		return list;
+	}
+
+	@JsonSerialize(nullToEmptyString = Bool.TRUE)
+	public Object map1(){
+		Map<String, Object> map = New.hashMap("prop1", "test", "prop2", null);
+		return map;
+	}
+
+	final static class DefinedProcessBean {
+		private String prop1;
+		private String prop2;
+
+		public String getProp1() {
+			return prop1;
+		}
+
+		public DefinedProcessBean setProp1(String prop1) {
+			this.prop1 = prop1;
+			return this;
+		}
+
+		public String getProp2() {
+			return prop2;
+		}
+
+		public DefinedProcessBean setProp2(String prop2) {
+			this.prop2 = prop2;
+			return this;
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.json;
+package leap.htpl.exception;
 
-import leap.lang.enums.Bool;
+import leap.htpl.HtplException;
 
-import java.lang.annotation.*;
+public class DomDefinitionException extends HtplException {
 
-@Target({ElementType.METHOD,ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface JsonSerialize {
-	
-	Bool keyQuoted() default Bool.NONE;
+	private static final long serialVersionUID = 3526169376806028058L;
 
-	Bool ignoreNull() default Bool.NONE;
-	
-	Bool ignoreEmpty() default Bool.NONE;
+	public DomDefinitionException() {
+	}
 
-	Bool nullToEmptyString() default Bool.FALSE;
+	public DomDefinitionException(String message) {
+		super(message);
+	}
 
-	String namingStyle() default "";
+	public DomDefinitionException(Throwable cause) {
+		super(cause);
+	}
 
-    String dateFormat() default "";
+	public DomDefinitionException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }
