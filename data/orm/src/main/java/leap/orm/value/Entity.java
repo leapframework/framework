@@ -64,7 +64,7 @@ public class Entity extends ParamsMap implements EntityBase {
     }
 
 	@Override
-    public boolean hasField(String field) {
+    public boolean contains(String field) {
 	    return containsKey(field);
     }
 }

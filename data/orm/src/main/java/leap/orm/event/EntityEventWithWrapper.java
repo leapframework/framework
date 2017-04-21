@@ -14,23 +14,15 @@
  *  limitations under the License.
  */
 
-package leap.orm.tested.model.event;
+package leap.orm.event;
 
-import leap.orm.annotation.event.PreCreate;
-import leap.orm.event.CreateEntityEvent;
-import leap.orm.event.PreCreateListener;
 import leap.orm.value.EntityWrapper;
 
-public class EventListener implements PreCreateListener {
+public interface EntityEventWithWrapper extends EntityEvent {
 
-    @PreCreate
-    public void setColumn1Value(EntityWrapper entity) {
-        entity.set("col1","Test1");
-    }
-
-    @Override
-    public void preCreateEntity(CreateEntityEvent e) {
-        e.getEntity().set("col2", "Test2");
-    }
+    /**
+     * Required. A wrapper wraps the {@link leap.orm.mapping.EntityMapping} meta model and the record object.
+     */
+    EntityWrapper getEntity();
 
 }

@@ -17,14 +17,18 @@
 package leap.orm.tested.model.event;
 
 import leap.orm.annotation.Entity;
+import leap.orm.annotation.NonColumn;
 import leap.orm.model.Model;
 
-@Entity.Listener(type=EventListener.class)
+@Entity.Listener(type=TestingListener.class)
 public class EventModel extends Model {
 
     protected String id;
     protected String col1;
     protected String col2;
+
+    @NonColumn
+    protected int testType;
 
     public String getId() {
         return id;
@@ -48,5 +52,13 @@ public class EventModel extends Model {
 
     public void setCol2(String col2) {
         this.col2 = col2;
+    }
+
+    public int getTestType() {
+        return testType;
+    }
+
+    public void setTestType(int testType) {
+        this.testType = testType;
     }
 }

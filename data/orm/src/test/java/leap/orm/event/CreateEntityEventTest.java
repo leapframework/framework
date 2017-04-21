@@ -18,6 +18,7 @@ package leap.orm.event;
 
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.event.EventModel;
+import leap.orm.tested.model.event.TestingListener;
 import org.junit.Test;
 
 public class CreateEntityEventTest extends OrmTestCase {
@@ -35,6 +36,32 @@ public class CreateEntityEventTest extends OrmTestCase {
         assertEquals(m1.getCol2(), m2.getCol2());
 
         m1.delete();
+    }
+
+    @Test
+    public void testPostCreateNoTransWithError() {
+        EventModel m1 = new EventModel();
+        try {
+            m1.setTestType(TestingListener.POST_CREATE_NO_TRANS_WITH_ERROR);
+            m1.create();
+
+            fail();
+        }catch (Exception e) {
+            assertNotNull(EventModel.find(m1.id()));
+        }
+    }
+
+    @Test
+    public void testPostCreateInTransWithError() {
+        EventModel m1 = new EventModel();
+        try {
+            m1.setTestType(TestingListener.POST_CREATE_IN_TRANS_WITH_ERROR);
+            m1.create();
+
+            fail();
+        }catch (Exception e) {
+            assertNull(EventModel.findOrNull(m1.id()));
+        }
     }
 
 }

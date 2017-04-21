@@ -17,10 +17,11 @@ package leap.orm.value;
 
 import leap.lang.Named;
 import leap.lang.accessor.Getter;
+import leap.lang.accessor.NamedGetter;
 
 import java.util.Set;
 
-public interface EntityBase extends Getter {
+public interface EntityBase extends NamedGetter {
 
     /**
      * Returns the name of entity.
@@ -31,23 +32,6 @@ public interface EntityBase extends Getter {
      * Returns all the field names in this entity.
      */
     Set<String> getFieldNames();
-
-    /**
-     * Returns true if the field exists.
-     */
-	boolean hasField(String field);
-
-    /**
-     * Returns the value of field.
-     */
-	Object get(String field);
-
-    /**
-     * Returns the value of field.
-     */
-	default Object get(Named field) {
-        return get(field.getName());
-    }
 
     /**
      * Sets the value of field.

@@ -175,49 +175,49 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         for(ReflectMethod m : c.getMethods()){
             //Excludes non-public and static methods.
             if(!m.isPublic() || m.isStatic()) {
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PreCreate.class)) {
                 ReflectCreateEntityListener listener = new ReflectCreateEntityListener(inst, m);
                 listeners.addPreCreateListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PostCreate.class)) {
                 ReflectCreateEntityListener listener = new ReflectCreateEntityListener(inst, m);
                 listeners.addPostCreateListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PreUpdate.class)) {
                 ReflectUpdateEntityListener listener = new ReflectUpdateEntityListener(inst, m);
                 listeners.addPreUpdateListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PostUpdate.class)) {
                 ReflectUpdateEntityListener listener = new ReflectUpdateEntityListener(inst, m);
                 listeners.addPostUpdateListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PreDelete.class)) {
                 ReflectDeleteEntityListener listener = new ReflectDeleteEntityListener(inst, m);
                 listeners.addPreDeleteListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PostDelete.class)) {
                 ReflectDeleteEntityListener listener = new ReflectDeleteEntityListener(inst, m);
                 listeners.addPostDeleteListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
 
             if(m.isAnnotationPresent(PostLoad.class)) {
                 ReflectLoadEntityListener listener = new ReflectLoadEntityListener(inst, m);
                 listeners.addPostLoadListener(listener, listener.isTransactional());
-                break;
+                continue;
             }
         }
     }

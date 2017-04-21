@@ -16,6 +16,7 @@
 package leap.lang.params;
 
 import leap.lang.Emptiable;
+import leap.lang.accessor.NamedGetter;
 import leap.lang.beans.DynaBean;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Map;
  * <p>
  * Note : the implementation must guarantee case insensitive.
  */
-public interface Params extends Emptiable {
+public interface Params extends Emptiable,NamedGetter {
 	
 	/**
 	 * Returns an readonly empty params.
@@ -105,22 +106,6 @@ public interface Params extends Emptiable {
 	 */
 	Map<String,Object> map();
 
-	/**
-	 * Returns <code>true</code> if this parameters contains the given parameter name .
-	 * 
-	 * <p>
-	 * Returns <code>false</code> if the parameter not exists.
-	 */
-	boolean contains(String name);
-	
-	/**
-	 * Returns the parameter's value of the given name.
-	 * 
-	 * <p>
-	 * Returns <code>null</code> if the parameter not exists or the parameter's value is <code>null</code>
-	 */
-	Object get(String name);
-	
 	/**
 	 * Update parameter's value in the underlying data object, such as {@link Map} or java bean. 
 	 */

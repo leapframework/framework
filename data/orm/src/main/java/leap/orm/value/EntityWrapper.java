@@ -68,8 +68,8 @@ public abstract class EntityWrapper implements EntityBase {
     /**
      * Returns the wrapped entity.
      */
-    public final Object raw() {
-        return raw;
+    public final <T> T raw() {
+        return (T)raw;
     }
 
     /**
@@ -134,11 +134,11 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public boolean hasField(String field) {
-	        return map.containsKey(field);
+        public boolean contains(String name) {
+            return map.containsKey(name);
         }
 
-		@Override
+        @Override
         public Object get(String field) {
 	        return map.get(field);
         }
@@ -171,7 +171,7 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public boolean hasField(String field) {
+        public boolean contains(String field) {
             return params.contains(field);
         }
 
@@ -207,7 +207,7 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public boolean hasField(String field) {
+        public boolean contains(String field) {
             return bean.getProperties().containsKey(field);
         }
 
@@ -253,7 +253,7 @@ public abstract class EntityWrapper implements EntityBase {
         }
 
         @Override
-        public boolean hasField(String field) {
+        public boolean contains(String field) {
 	        return beanType.tryGetProperty(field, true) != null;
         }
 
