@@ -18,20 +18,18 @@ package leap.orm.event;
 
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.value.EntityWrapper;
 
-public class EntityEventWithWrapperImpl extends EntityEventBase implements CreateEntityEvent,UpdateEntityEvent {
+public class DeleteEntityEventImpl extends EntityEventBase implements DeleteEntityEvent {
 
-    private final EntityWrapper entity;
+    private Object id;
 
-    public EntityEventWithWrapperImpl(OrmContext context, EntityMapping em, EntityWrapper entity) {
+    public DeleteEntityEventImpl(OrmContext context, EntityMapping em, Object id) {
         super(context, em);
-        this.entity  = entity;
     }
 
     @Override
-    public EntityWrapper getEntity() {
-        return entity;
+    public Object getId() {
+        return id;
     }
 
 }

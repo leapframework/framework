@@ -96,5 +96,40 @@ public interface EntityEventHandler {
      */
     void postUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e);
 
+    /**
+     * Returns true if handles the 'Delete' event of the given entity.
+     */
+    boolean isHandleDeleteEvent(OrmContext context, EntityMapping em);
+
+    /**
+     * Returns true if the 'Delete' event should be handled in a transaction.
+     */
+    boolean isDeleteEventTransactional(OrmContext context, EntityMapping em);
+
+    /**
+     * Executed before saving the entity record to db outside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
+    void preDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e);
+
+    /**
+     * Executed before saving the entity record to db inside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
+    void preDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e);
+
+    /**
+     * Executed after saving the the entity record to db inside transaction.
+     */
+    void postDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e);
+
+    /**
+     * Executed after saving the the entity record to db outside transaction.
+     */
+    void postDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e);
 
 }

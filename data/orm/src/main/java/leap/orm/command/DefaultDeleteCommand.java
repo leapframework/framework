@@ -17,26 +17,70 @@ package leap.orm.command;
 
 import leap.lang.params.Params;
 import leap.orm.dao.Dao;
+import leap.orm.event.DeleteEntityEventImpl;
+import leap.orm.event.EntityEventHandler;
+import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlCommand;
 
 public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements DeleteCommand {
-	
-	protected final Object	   id;
-	protected final Params     idParameter;
-	protected final SqlCommand sqlCommand;
-	
-	public DefaultDeleteCommand(Dao dao,EntityMapping em,Object id) {
+
+    protected final EntityEventHandler eventHandler;
+    protected final Object             id;
+    protected final Params             idParameter;
+    protected final SqlCommand         sqlCommand;
+
+    public DefaultDeleteCommand(Dao dao,EntityMapping em,Object id) {
 	    super(dao,em);
-	    
-	    this.sqlCommand  = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
-	    this.id 		 = id;
-    	this.idParameter = context.getParameterStrategy().createIdParameters(context, em, id);
+
+        this.eventHandler = context.getEntityEventHandler();
+	    this.sqlCommand   = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
+	    this.id 		  = id;
+    	this.idParameter  = context.getParameterStrategy().createIdParameters(context, em, id);
     }
 
 	@Override
 	public int execute() {
-		return sqlCommand.executeUpdate(this, idParameter);
+        if(eventHandler.isHandleDeleteEvent(context, em)) {
+            int result;
+
+            DeleteEntityEventImpl e = new DeleteEntityEventImpl(context, em, id);
+
+            //pre without transaction.
+            eventHandler.preDeleteEntityNoTrans(context, em, e);
+
+            if(eventHandler.isDeleteEventTransactional(context, em)) {
+                result = dao.doTransaction((status) -> {
+                    e.setTransactionStatus(status);
+
+                    //pre with transaction.
+                    eventHandler.preDeleteEntityInTrans(context, em, e);
+
+                    int affected = doExecuteDelete();
+
+                    //post with transaction.
+                    eventHandler.postDeleteEntityInTrans(context, em, e);
+
+                    e.setTransactionStatus(null);
+
+                    return affected;
+                });
+
+            }else{
+                result = doExecuteDelete();
+            }
+
+            //post without transaction.
+            eventHandler.postDeleteEntityNoTrans(context, em, e);
+
+            return result;
+        }else{
+            return doExecuteDelete();
+        }
 	}
+
+    protected int doExecuteDelete() {
+        return sqlCommand.executeUpdate(this, idParameter);
+    }
 
 }

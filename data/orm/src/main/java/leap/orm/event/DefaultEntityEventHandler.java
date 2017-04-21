@@ -97,4 +97,42 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
             listener.postUpdateEntity(e);
         }
     }
+
+    @Override
+    public boolean isHandleDeleteEvent(OrmContext context, EntityMapping em) {
+        return em.getListeners().hasDeleteListeners();
+    }
+
+    @Override
+    public boolean isDeleteEventTransactional(OrmContext context, EntityMapping em) {
+        return em.getListeners().hasTransDeleteListeners();
+    }
+
+    @Override
+    public void preDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
+        for(PreDeleteListener listener : em.getListeners().getNoTransPreDeleteListeners()) {
+            listener.preDeleteEntity(e);
+        }
+    }
+
+    @Override
+    public void preDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
+        for(PreDeleteListener listener : em.getListeners().getInTransPreDeleteListeners()) {
+            listener.preDeleteEntity(e);
+        }
+    }
+
+    @Override
+    public void postDeleteEntityInTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
+        for(PostDeleteListener listener : em.getListeners().getInTransPostDeleteListeners()) {
+            listener.postDeleteEntity(e);
+        }
+    }
+
+    @Override
+    public void postDeleteEntityNoTrans(OrmContext context, EntityMapping em, DeleteEntityEvent e) {
+        for(PostDeleteListener listener : em.getListeners().getNoTransPostDeleteListeners()) {
+            listener.postDeleteEntity(e);
+        }
+    }
 }
