@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@SuppressWarnings("unchecked")
 @ComplexType
 public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	
@@ -1097,7 +1096,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
     
     protected boolean doUpdate(Object id) {
-		return dao.cmdUpdate(em).from(createParameters()).execute() > 0;
+		return dao.cmdUpdate(em).from(this).execute() > 0;
     }
     
     protected boolean doDelete(){

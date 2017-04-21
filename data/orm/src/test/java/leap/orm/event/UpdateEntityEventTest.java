@@ -21,65 +21,50 @@ import leap.orm.tested.model.event.EventModel;
 import leap.orm.tested.model.event.TestingListener;
 import org.junit.Test;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class CreateEntityEventTest extends OrmTestCase {
+public class UpdateEntityEventTest extends OrmTestCase {
 
     @Test
-    public void testPreCreateNoTrans() {
+    public void testPreUpdateNoTrans() {
+        EventModel m1 = new EventModel();
+        m1.create().update();
+
+        assertEquals("UpdateCol1", m1.getCol1());
+        assertEquals("UpdateCol2", m1.getCol2());
+
+        EventModel m2 = EventModel.find(m1.id());
+        assertEquals(m1.getCol1(), m2.getCol1());
+        assertEquals(m1.getCol2(), m2.getCol2());
+
+        m1.delete();
+    }
+
+    @Test
+    public void testPostUpdateNoTransWithError() {
         EventModel m1 = new EventModel();
         m1.create();
 
-        assertEquals("Test1", m1.getCol1());
-        assertEquals("Test2", m1.getCol2());
-
-        EventModel m2 = EventModel.find(m1.id());
-        assertEquals(m1.getCol1(), m2.getCol1());
-        assertEquals(m1.getCol2(), m2.getCol2());
-
-        m1.delete();
-    }
-
-    @Test
-    public void testPreCreateNoTransByMap() {
-        Map<String,Object> map = new HashMap<>();
-        EventModel.dao().insert(EventModel.metamodel(), map);
-
-        EventModel m1 = new EventModel().setAll(map);
-        assertEquals("Test1", m1.getCol1());
-        assertEquals("Test2", m1.getCol2());
-
-        EventModel m2 = EventModel.find(m1.id());
-        assertEquals(m1.getCol1(), m2.getCol1());
-        assertEquals(m1.getCol2(), m2.getCol2());
-
-        m1.delete();
-    }
-
-    @Test
-    public void testPostCreateNoTransWithError() {
-        EventModel m1 = new EventModel();
         try {
-            m1.setTestType(TestingListener.POST_CREATE_NO_TRANS_WITH_ERROR);
-            m1.create();
+            m1.setTestType(TestingListener.POST_UPDATE_NO_TRANS_WITH_ERROR);
+            m1.update();
 
             fail();
         }catch (Exception e) {
-            assertNotNull(EventModel.find(m1.id()));
+            assertEquals("UpdateCol1", EventModel.<EventModel>findOrNull(m1.id()).getCol1());
         }
     }
 
     @Test
-    public void testPostCreateInTransWithError() {
+    public void testPostUpdateInTransWithError() {
         EventModel m1 = new EventModel();
+        m1.create();
+
         try {
-            m1.setTestType(TestingListener.POST_CREATE_IN_TRANS_WITH_ERROR);
-            m1.create();
+            m1.setTestType(TestingListener.POST_UPDATE_IN_TRANS_WITH_ERROR);
+            m1.update();
 
             fail();
         }catch (Exception e) {
-            assertNull(EventModel.findOrNull(m1.id()));
+            assertEquals("Test1", EventModel.<EventModel>findOrNull(m1.id()).getCol1());
         }
     }
 

@@ -18,18 +18,24 @@ package leap.orm.tested.model.event;
 
 import leap.core.transaction.TransactionStatus;
 import leap.orm.annotation.event.PostCreate;
+import leap.orm.annotation.event.PostUpdate;
 import leap.orm.annotation.event.PreCreate;
+import leap.orm.annotation.event.PreUpdate;
 import leap.orm.event.CreateEntityEvent;
 import leap.orm.event.PreCreateListener;
+import leap.orm.event.PreUpdateListener;
+import leap.orm.event.UpdateEntityEvent;
 import leap.orm.value.EntityWrapper;
 
-public class TestingListener implements PreCreateListener {
+public class TestingListener implements PreCreateListener,PreUpdateListener {
 
     public static final int POST_CREATE_NO_TRANS_WITH_ERROR = 1;
     public static final int POST_CREATE_IN_TRANS_WITH_ERROR = 2;
+    public static final int POST_UPDATE_NO_TRANS_WITH_ERROR = 3;
+    public static final int POST_UPDATE_IN_TRANS_WITH_ERROR = 4;
 
     @PreCreate
-    public void setColumn1Value(EntityWrapper entity) {
+    public void preCreateEntity(EntityWrapper entity) {
         entity.set("col1","Test1");
     }
 
@@ -51,4 +57,29 @@ public class TestingListener implements PreCreateListener {
             throw new RuntimeException("error");
         }
     }
+
+    @PreUpdate
+    public void preUpdateEntity(EventModel m) {
+        m.setCol1("UpdateCol1");
+    }
+
+    @Override
+    public void preUpdateEntity(UpdateEntityEvent e) {
+        e.getEntity().set("col2", "UpdateCol2");
+    }
+
+    @PostUpdate
+    public void postUpdateNoTransWithError(EventModel m) {
+        if(m.getTestType() == POST_UPDATE_NO_TRANS_WITH_ERROR) {
+            throw new RuntimeException("error");
+        }
+    }
+
+    @PostUpdate
+    public void postUpdateNoTransWithError(EventModel m, TransactionStatus ts) {
+        if(m.getTestType() == POST_UPDATE_IN_TRANS_WITH_ERROR) {
+            throw new RuntimeException("error");
+        }
+    }
+
 }

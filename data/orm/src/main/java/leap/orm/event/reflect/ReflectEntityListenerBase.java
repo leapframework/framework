@@ -121,7 +121,9 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
 
         if(!typeMatches) {
             for (BeanProperty bp : bt.getProperties()) {
-                entity.set(bp.getName(), bp.getValue(bean));
+                if(bp.isWritable()) {
+                    entity.set(bp.getName(), bp.getValue(bean));
+                }
             }
         }
     }
