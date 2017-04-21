@@ -32,6 +32,7 @@ import leap.core.annotation.Bean;
 import leap.lang.New;
 import leap.lang.json.JsonProcessResult;
 import leap.lang.json.JsonProcessor;
+import leap.lang.naming.NamingStyles;
 import leap.web.json.JsonSerialize;
 
 import java.util.ArrayList;
@@ -39,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HomeController {
+	@JsonSerialize(namingStyle = NamingStyles.NAME_LOWER_UNDERSCORE)
 	public Map<String, Object> map(){
 		Map<String, Object> map = New.hashMap("userId","userId");
 		map.put("userProperty",New.hashMap("userName","userName"));
