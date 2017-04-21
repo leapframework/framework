@@ -16,13 +16,11 @@
 
 package leap.orm.event;
 
-import leap.orm.value.EntityWrapper;
-
-public interface CreateEntityEvent extends EntityEvent {
+public interface DeleteEntityEvent extends EntityEvent {
 
     /**
-     * Required. A wrapper wraps the {@link leap.orm.mapping.EntityMapping} meta model and the record object.
+     * Required. Returns the id of entity to be deleted.
      */
-    EntityWrapper getEntity();
+    Object getId();
 
 }

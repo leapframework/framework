@@ -112,7 +112,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected int doExecuteWithEvent() {
         int result;
 
-        CreateEntityEventImpl e = new CreateEntityEventImpl(context, entity);
+        CreateEntityEventImpl e = new CreateEntityEventImpl(context, em, entity);
 
         //pre without transaction.
         eventHandler.preCreateEntityNoTrans(context, em, e);

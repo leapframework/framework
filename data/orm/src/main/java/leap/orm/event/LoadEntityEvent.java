@@ -18,7 +18,7 @@ package leap.orm.event;
 
 import leap.orm.value.EntityWrapper;
 
-public interface CreateEntityEvent extends EntityEvent {
+public interface LoadEntityEvent extends EntityEvent {
 
     /**
      * Required. A wrapper wraps the {@link leap.orm.mapping.EntityMapping} meta model and the record object.

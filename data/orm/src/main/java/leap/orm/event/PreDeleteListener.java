@@ -16,13 +16,8 @@
 
 package leap.orm.event;
 
-import leap.orm.value.EntityWrapper;
+public interface PreDeleteListener {
 
-public interface CreateEntityEvent extends EntityEvent {
-
-    /**
-     * Required. A wrapper wraps the {@link leap.orm.mapping.EntityMapping} meta model and the record object.
-     */
-    EntityWrapper getEntity();
+    void preDeleteEntity(DeleteEntityEvent e);
 
 }

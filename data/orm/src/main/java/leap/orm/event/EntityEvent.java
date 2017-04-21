@@ -16,13 +16,25 @@
 
 package leap.orm.event;
 
-import leap.orm.value.EntityWrapper;
+import leap.core.transaction.TransactionStatus;
+import leap.orm.OrmContext;
+import leap.orm.mapping.EntityMapping;
 
-public interface CreateEntityEvent extends EntityEvent {
+public interface EntityEvent {
 
     /**
-     * Required. A wrapper wraps the {@link leap.orm.mapping.EntityMapping} meta model and the record object.
+     * Required.
      */
-    EntityWrapper getEntity();
+    OrmContext getContext();
+
+    /**
+     * Required.
+     */
+    EntityMapping getMapping();
+
+    /**
+     * Optional. Returns null if the event not in transaction.
+     */
+    TransactionStatus getTransactionStatus();
 
 }

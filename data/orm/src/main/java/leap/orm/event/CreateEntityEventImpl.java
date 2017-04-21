@@ -18,23 +18,31 @@ package leap.orm.event;
 
 import leap.core.transaction.TransactionStatus;
 import leap.orm.OrmContext;
+import leap.orm.mapping.EntityMapping;
 import leap.orm.value.EntityWrapper;
 
-public class CreateEntityEventImpl implements CreateEntityEvent {
+public class CreateEntityEventImpl implements CreateEntityEvent,UpdateEntityEvent {
 
     private final OrmContext    context;
+    private final EntityMapping mapping;
     private final EntityWrapper entity;
 
     private TransactionStatus transactionStatus;
 
-    public CreateEntityEventImpl(OrmContext context, EntityWrapper entity) {
+    public CreateEntityEventImpl(OrmContext context, EntityMapping em, EntityWrapper entity) {
         this.context = context;
+        this.mapping = em;
         this.entity  = entity;
     }
 
     @Override
     public OrmContext getContext() {
         return context;
+    }
+
+    @Override
+    public EntityMapping getMapping() {
+        return mapping;
     }
 
     @Override
