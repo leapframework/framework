@@ -16,7 +16,6 @@
 package leap.web.json;
 
 import leap.lang.enums.Bool;
-import leap.lang.json.JsonProcessor;
 
 import java.lang.annotation.*;
 
@@ -35,6 +34,6 @@ public @interface JsonSerialize {
 
     String dateFormat() default "";
 
-    Class<JsonProcessor>[] processors() default {};
+    Class[] processors() default {};
 
 }

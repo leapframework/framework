@@ -100,13 +100,15 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
         String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
-		Class<JsonProcessor>[] processors = a.processors();
+		Class[] processors = a.processors();
 		List<JsonProcessor> processorInstances = null;
 		if(Arrays2.isNotEmpty(processors)) {
 			processorInstances = new ArrayList<>();
-			for (Class<JsonProcessor> clazz : processors) {
-				JsonProcessor processorInstance = factory.getBean(clazz);
-				processorInstances.add(processorInstance);
+			for (Class clazz : processors) {
+				if(JsonProcessor.class.isAssignableFrom(clazz)) {
+					Object processorInstance = factory.getBean(clazz);
+					if(null != processorInstance) processorInstances.add((JsonProcessor) processorInstance);
+				}
 			}
 		}
 

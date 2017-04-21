@@ -51,12 +51,12 @@ public class HomeController {
 		return new DefinedProcessBean().setProp1("test").setProp2(null);
 	}
 
-	@JsonSerialize(processors = {JsonProcessor.class})
+	@JsonSerialize(processors = {Processor.class})
 	public Object bean1(){
 		return new DefinedProcessBean().setProp1("test").setProp2(null);
 	}
 
-	@JsonSerialize(processors = {JsonProcessor.class})
+	@JsonSerialize(processors = {Processor.class})
 	public Object bean1array(){
 		DefinedProcessBean bean =  new DefinedProcessBean().setProp1("test").setProp2(null);
 		List<DefinedProcessBean> list = new ArrayList<>();
@@ -64,7 +64,7 @@ public class HomeController {
 		return list;
 	}
 
-	@JsonSerialize(processors = {JsonProcessor.class})
+	@JsonSerialize(processors = {Processor.class})
 	public Object map1(){
 		Map<String, Object> map = New.hashMap("prop1", "test", "prop2", null);
 		return map;
