@@ -15,15 +15,19 @@
  */
 package leap.oauth2.as.code;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import leap.lang.expirable.TimeExpirableSeconds;
 
 
 public class SimpleAuthzCode extends TimeExpirableSeconds implements AuthzCode {
-    
+
     protected String code;
     protected String clientId;
     protected String userId;
-    
+    private Map<String, Object> extendedParameters= new LinkedHashMap<>();
+
     public SimpleAuthzCode() {
         super();
     }
@@ -51,5 +55,29 @@ public class SimpleAuthzCode extends TimeExpirableSeconds implements AuthzCode {
     public void setUserId(String userId) {
         this.userId = userId;
     }
+
+	public Map<String, Object> getExtendedParameters() {
+		return extendedParameters;
+	}
+
+	public void setExtendedParameters(Map<String, Object> extendedParameters) {
+		if(null == extendedParameters) {
+			extendedParameters = new LinkedHashMap<>();
+		}
+		this.extendedParameters.putAll(extendedParameters);
+		//this.extendedParameters = extendedParameters;
+	}
+
+	@Override
+	public void addExtendedParameters(String key, Object value) {
+		putExtendedParameter(key,value);
+	}
+
+	public void putExtendedParameter(String name, Object value) {
+		if(null == extendedParameters) {
+			extendedParameters = new LinkedHashMap<>();
+		}
+		extendedParameters.put(name, value);
+	}
 
 }

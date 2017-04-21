@@ -48,6 +48,7 @@ public class SwaggerConstants {
     public static final String SECURITY_DEFINITIONS  = "securityDefinitions";
     public static final String SCHEMA                = "schema";
     public static final String TYPE                  = "type";
+    public static final String DISCRIMINATOR         = "discriminator";
     public static final String FORMAT                = "format";
     public static final String ENUM                  = "enum";
     public static final String ARRAY                 = "array";
@@ -58,6 +59,7 @@ public class SwaggerConstants {
     public static final String PROPERTIES            = "properties";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
     public static final String DEPRECATED            = "deprecated";
+    public static final String ALL_OF                = "allOf";
 
     //oauth2
 	public static final String OAUTH2               = "oauth2";

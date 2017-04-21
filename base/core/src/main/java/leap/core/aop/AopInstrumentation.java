@@ -327,23 +327,15 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
         protected void visitInterceptedMethod(AopMethod am, String newName) {
             MethodNode m = am.getMethod();
 
-            MethodVisitor real = cw.visitMethod(m.access, m.name, m.desc, null,
+            MethodVisitor real = cw.visitMethod(m.access, m.name, m.desc, m.signature,
                     m.exceptions == null ? null : m.exceptions.toArray(Arrays2.EMPTY_STRING_ARRAY));
 
             GeneratorAdapter mv = new GeneratorAdapter(real, m.access, m.name, m.desc);
 
-            if(null != m.visibleAnnotations) {
-                for (AnnotationNode an : m.visibleAnnotations) {
-                    AnnotationVisitor av = mv.visitAnnotation(an.desc, true);
-                    an.accept(av);
-                }
-            }
-            if(null != m.invisibleAnnotations) {
-                for (AnnotationNode an : m.invisibleAnnotations) {
-                    AnnotationVisitor av = mv.visitAnnotation(an.desc, true);
-                    an.accept(av);
-                }
-            }
+            visitAnnotations(mv, m.visibleAnnotations);
+            visitAnnotations(mv, m.invisibleAnnotations);
+            visitParametersAnnotations(mv, m.visibleParameterAnnotations);
+            visitParametersAnnotations(mv, m.invisibleParameterAnnotations);
 
             mv.visitCode();
 
@@ -454,6 +446,29 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
             mv.visitEnd();
         }
 
+        protected void visitAnnotations(MethodVisitor mv, List<AnnotationNode> annotations) {
+            if(null != annotations) {
+                for (AnnotationNode an : annotations) {
+                    AnnotationVisitor av = mv.visitAnnotation(an.desc, true);
+                    an.accept(av);
+                }
+            }
+        }
+
+        protected void visitParametersAnnotations(MethodVisitor mv, List<AnnotationNode>[] annotationsArray) {
+            if(null != annotationsArray) {
+                for(int i=0;i<annotationsArray.length;i++) {
+                    List<AnnotationNode> anList = annotationsArray[i];
+                    if(null != anList) {
+                        for(AnnotationNode an : anList) {
+                            AnnotationVisitor av = mv.visitParameterAnnotation(i, an.desc, true);
+                            an.accept(av);
+                        }
+                    }
+                }
+            }
+        }
+
         @Override
         public void visitEnd() {
 
@@ -481,6 +496,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                 fv = cw.visitField(Opcodes.ACC_PRIVATE, field.getValue(), ASM.getObjectTypeDescriptor(field.getKey()), null, null);
                 {
                     AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
+                    av.visit("create", Boolean.TRUE);
                     av.visitEnd();
                 }
                 {
@@ -496,6 +512,7 @@ public class AopInstrumentation extends AsmInstrumentProcessor {
                 {
                     AnnotationVisitor av = fv.visitAnnotation(INJECT_TYPE.getDescriptor(), true);
                     av.visit("name", field.getKey());
+                    av.visit("create", Boolean.TRUE);
                     av.visitEnd();
                 }
                 {

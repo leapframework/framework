@@ -40,6 +40,11 @@ public abstract class AbstractMTypeFactory implements MTypeFactory {
             }
         }
 
+        Discriminator discriminator = Classes.getAnnotation(annotations, Discriminator.class);
+        if(null != discriminator) {
+            mp.setDiscriminator(true);
+        }
+
         Sortable sortable = Classes.getAnnotation(annotations, Sortable.class, true);
         if(null != sortable) {
             mp.setSortable(sortable.value());

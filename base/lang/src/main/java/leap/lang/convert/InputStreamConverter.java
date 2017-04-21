@@ -26,7 +26,7 @@ import leap.lang.io.IO;
 public class InputStreamConverter extends AbstractConverter<InputStream> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof byte[]){
 			out.set(new ByteArrayInputStream((byte[])value));
 			return true;
@@ -35,7 +35,7 @@ public class InputStreamConverter extends AbstractConverter<InputStream> {
     }
 
 	@Override
-    public boolean convertTo(InputStream value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(InputStream value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		byte[] data = IO.readByteArray(value);
 		
 		out.set(Converts.convert(data, targetType,genericType));

@@ -22,15 +22,12 @@ import leap.lang.Strings;
 
 public abstract class AbstractConverter<T> implements Converter<T> {
 
-	public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+	public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 	    return false;
     }
 
-	public boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+	public boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 	    return false;
     }
 
-	public String convertToString(T value) throws Throwable {
-	    return null == value ? Strings.EMPTY : value.toString();
-    }
 }

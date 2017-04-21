@@ -23,7 +23,7 @@ import leap.lang.Out;
 public class EnumConverter extends AbstractConverter<Enum<?>> implements Converter<Enum<?>> {
 
 	@SuppressWarnings("unchecked")
-	public boolean convertFrom(Object value, Class<?> targetType, Class<?> genericType, Out<Object> out) throws Throwable {
+	public boolean convertFrom(Object value, Class<?> targetType, Class<?> genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		Enum<?> enumObject = Enums.valueOf((Class<Enum<?>>)targetType, value);
 		
 		if(null != enumObject){
@@ -35,7 +35,7 @@ public class EnumConverter extends AbstractConverter<Enum<?>> implements Convert
     }
 	
 	@Override
-    public boolean convertTo(Enum<?> value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(Enum<?> value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		Object realValue = Enums.getValue(value);
 		
 	    out.set(Converts.convert(realValue, targetType, genericType));

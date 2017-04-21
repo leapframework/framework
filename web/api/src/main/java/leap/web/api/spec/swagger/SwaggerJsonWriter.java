@@ -34,6 +34,8 @@ import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
+import javax.rmi.PortableRemoteObject;
+
 public class SwaggerJsonWriter extends JsonSpecWriter {
 
     protected static final String OAUTH2             = "oauth2";
@@ -376,10 +378,49 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	protected void writeModel(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
 		w.startObject();
 
-        w.property(TYPE, OBJECT);
+        if(!model.hasBaseModel()) {
+            w.property(TYPE, OBJECT);
+        }
+
         w.propertyOptional(TITLE, model.getTitle());
         w.propertyOptional(SUMMARY, model.getSummary());
         w.propertyOptional(DESCRIPTION, model.getDescription());
+
+        if(!model.hasBaseModel()) {
+            writeModelProperties(context, m, w, model);
+        }else{
+            w.property(ALL_OF, () -> {
+
+                w.startArray();
+
+                    //item1 : the base model.
+                    w.startObject()
+                     .property(REF, ref(model.getBaseName()))
+                     .endObject();
+
+                    w.separator();
+
+                    //item2 : self
+                    w.startObject()
+                     .property(TYPE, OBJECT);
+                     writeModelProperties(context, m, w, model);
+                    w.endObject();
+
+                w.endArray();
+
+            });
+        }
+		
+		w.endObject();
+	}
+
+    protected void writeModelProperties(WriteContext context, ApiMetadata m, JsonWriter w, MApiModel model) {
+        for(MApiProperty p : model.getProperties()) {
+            if(p.isDiscriminator()) {
+                w.property(DISCRIMINATOR, p.getName());
+                break;
+            }
+        }
 
         List<String> requiredProperties = New.arrayList();
         for(MApiProperty p : model.getProperties()) {
@@ -392,20 +433,15 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             w.property(REQUIRED, requiredProperties);
         }
 
-		w.property(PROPERTIES, () -> {
-			w.startObject();
-			
-			for(MApiProperty p : model.getProperties()) {
-				w.property(propertyName(p.getName()), () -> {
-					w.startObject();
+        w.property(PROPERTIES, () -> {
+            w.startObject();
 
-                    try {
-                        writeParameterType(context, m, w, p);
-                    }catch(RuntimeException e) {
-                        throw e;
-                    }
+            for(MApiProperty p : model.getProperties()) {
+                w.property(propertyName(p.getName()), () -> {
+                    w.startObject();
 
-					w.propertyOptional(DESCRIPTION,	 p.getDescription());
+                    writeParameterType(context, m, w, p);
+                    w.propertyOptional(DESCRIPTION,	 p.getDescription());
 
 //                    if(isReadonly(p)) {
 //                        w.property(READONLY, true);
@@ -417,14 +453,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     w.propertyOptional(X_FILTERABLE, p.getFilterable());
 
                     w.endObject();
-				});
-			}
-			
-			w.endObject();
-		});
-		
-		w.endObject();
-	}
+                });
+            }
+
+            w.endObject();
+        });
+    }
 
     protected boolean isRequired(MApiProperty p) {
         return !isReadonly(p) && (null != p.getRequired() && p.getRequired());
@@ -469,8 +503,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         if(p.isFile()) {
             w.property(TYPE, FILE);
         }else{
-            writeSimpleType(context, m, w, st);
+            SwaggerType type = writeSimpleType(context, m, w, st);
+
+            if(null != type && null == type.fomrat()) {
+                w.propertyOptional(FORMAT, p.getFormat());
+            }
         }
+
         w.propertyOptional(ENUM, p.getEnumValues());
 	}
 
@@ -496,10 +535,13 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 	
 	protected void writeRefType(WriteContext context, ApiMetadata m, JsonWriter w, MTypeRef tr) {
-		String ref = "#/definitions/" + tr.getRefTypeName();
-		w.property(REF, ref);
+		w.property(REF, ref(tr.getRefTypeName()));
 	}
-	
+
+    protected String ref(String name) {
+        return "#/definitions/" + name;
+    }
+
 	protected void writeArrayType(WriteContext context, ApiMetadata m, JsonWriter w, MCollectionType ct) {
 		w.property(TYPE, ARRAY)
 		 .property(ITEMS,() -> {
@@ -542,7 +584,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "'");
 	}
 	
-	protected void writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
+	protected SwaggerType writeSimpleType(WriteContext context, ApiMetadata m, JsonWriter w, MSimpleType st) {
 		SwaggerType type;
 		
 		MSimpleTypeKind k = st.getSimpleTypeKind();
@@ -578,5 +620,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
         if(null != type.fomrat()) {
             w.property(FORMAT, type.fomrat());
         }
+
+        return type;
 	}
 }

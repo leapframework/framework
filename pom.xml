@@ -68,6 +68,7 @@
         <mysql.version>5.1.26</mysql.version>
         <postgresql.version>9.1-901.jdbc4</postgresql.version>
         <mariadb.version>1.1.7</mariadb.version>
+        <mssql.version>6.1.0.jre8</mssql.version>
         <derby.version>10.10.2.0</derby.version>
         <jetty.version>9.2.2.v20140723</jetty.version>
         <httpclient.version>4.3.6</httpclient.version>
@@ -343,8 +344,6 @@
             <version>${derby.version}</version>
             <scope>test</scope>
         </dependency>
-		
-		
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -362,6 +361,32 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>${mariadb.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.microsoft.sqlserver</groupId>
+            <artifactId>mssql-jdbc</artifactId>
+            <version>${mssql.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.microsoft.azure</groupId>
+                    <artifactId>azure-keyvault</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <!--
+            Oracle jdbc driver cannot public access, download it and install locally.
+
+            url : http://download.oracle.com/otn/utilities_drivers/jdbc/121020/ojdbc7.jar
+
+            $ mvn install:install-file -Dfile={path/ojdbc7.jar} -DgroupId=com.oracle.jdbc -DartifactId=ojdbc7 -Dversion=12.1.0.2 -Dpackaging=jar
+        -->
+        <dependency>
+            <groupId>com.oracle.jdbc</groupId>
+            <artifactId>ojdbc7</artifactId>
+            <version>12.1.0.2</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

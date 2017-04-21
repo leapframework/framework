@@ -26,7 +26,7 @@ abstract class ConverterTestBase extends ConcurrentTestCase {
 		Out<Object> out = new Out<Object>();
 		
 		try {
-	        if(converter.convertFrom(value, targetType, null, out)){
+	        if(converter.convertFrom(value, targetType, null, out, null)){
 	        	return out.getValue();
 	        }
         } catch (Throwable e) {

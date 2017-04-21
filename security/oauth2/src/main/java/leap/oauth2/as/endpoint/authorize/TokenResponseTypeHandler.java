@@ -29,13 +29,15 @@ import leap.oauth2.as.token.AuthzTokenManager;
 import leap.web.Request;
 import leap.web.Response;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
- * Implicit authorization. 
+ * Implicit authorization.
  */
 public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implements ResponseTypeHandler {
-    
+
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzCodeManager        codeManager;
     protected @Inject AuthzTokenManager       tokenManager;
@@ -49,19 +51,19 @@ public class TokenResponseTypeHandler extends AbstractResponseTypeHandler implem
 
         //Create a new access token.
         AuthzAccessToken at = tokenManager.createAccessToken(authc);
-        
+
         //Response
         sendAccessTokenRedirect(request, response, authc, at);
     }
 
     protected void sendAccessTokenRedirect(Request request, Response response, AuthzAuthentication authc, AuthzAccessToken at) {
-        
-        QueryStringBuilder qs = new QueryStringBuilder(request.getCharacterEncoding());
-        qs.add("access_token",at.getToken());
-        qs.add("token_type",at.getTokenType());
-        qs.add("expires_in", Objects.toString(at.getExpiresIn()));
-        
+        Map<String,String> qs=new HashMap<>();
+
+    	qs.put("access_token",at.getToken());
+    	qs.put("token_type",at.getTokenType());
+    	qs.put("expires_in", Objects.toString(at.getExpiresInFormNow()));
+
         sendSuccessRedirect(request,response,authc,qs);
-        
+
     }
 }

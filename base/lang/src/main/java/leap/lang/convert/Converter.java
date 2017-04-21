@@ -18,12 +18,35 @@ package leap.lang.convert;
 import java.lang.reflect.Type;
 
 import leap.lang.Out;
+import leap.lang.Strings;
 
 public interface Converter<T> {
 
-	boolean convertFrom(Object value,Class<?> targetType,Type genericType, Out<Object> out) throws Throwable;
-	
-	boolean convertTo(T value,Class<?> targetType,Type genericType,Out<Object> out) throws Throwable;
+    /**
+     * Converts the value to the target type.
+     *
+     * <p/>
+     * Returns <code>true</code> if the converter can converts the value to the target type,
+     *
+     * and sets the converted value to the out object.
+     *
+     * <p/>
+     * Returns <code>false</code> if the converter cannot converts the value to the target type,
+     *
+     * that means the converter does not supports both the value type and the target type.
+     */
+    boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable;
 
-	String convertToString(T value) throws Throwable;
+    /**
+     * todo : doc
+     */
+    boolean convertTo(T value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable;
+
+    /**
+     * Converts the value to {@link String}.
+     */
+	default String convertToString(T value) throws Throwable {
+        return null == value ? Strings.EMPTY : value.toString();
+    }
+
 }

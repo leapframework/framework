@@ -24,9 +24,10 @@ import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
+import leap.orm.event.CreateEntityEvent;
+import leap.orm.event.CreateEntityEventHandler;
 import leap.orm.generator.ValueGeneratorContext;
 import leap.orm.interceptor.EntityExecutionContext;
-import leap.orm.listener.PreCreateEntity;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
@@ -35,13 +36,16 @@ import leap.orm.value.Entity;
 
 import java.util.Map;
 
-public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,ValueGeneratorContext,EntityExecutionContext {
-	
-    protected final SqlFactory sf;
-    protected final Entity     entity;
-	
-	protected SqlCommand   command;
+public class DefaultInsertCommand extends AbstractEntityDaoCommand
+        implements InsertCommand,ValueGeneratorContext,EntityExecutionContext,CreateEntityEvent {
+
+    protected final SqlFactory               sf;
+    protected final Entity                   entity;
+    protected final CreateEntityEventHandler eventHandler;
+
+    protected SqlCommand   command;
 	protected FieldMapping fm;
+    protected Object       bean;
     protected Object       id;
 	protected Object	   generatedId;
 	protected Params       parameters;
@@ -52,9 +56,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	
 	public DefaultInsertCommand(Dao dao,EntityMapping em, SqlCommand command) {
 	    super(dao,em);
-	    this.sf		 = dao.getOrmContext().getSqlFactory();
-	    this.entity  = new Entity(em.getEntityName());
-	    this.command = command;
+	    this.sf		      = dao.getOrmContext().getSqlFactory();
+	    this.entity       = new Entity(em.getEntityName());
+	    this.command      = command;
+        this.eventHandler = em.getCreateEntityEventHandler();
     }
 	
 	@Override
@@ -125,13 +130,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     public InsertCommand setAll(Object bean) {
 		Args.notNull(bean,"bean");
 		
-		if(bean instanceof PreCreateEntity) {
-		    ((PreCreateEntity) bean).preCreate();
-		}
-		
 		if(bean instanceof Map){
 			return setAll((Map)bean);
 		}else{
+            this.bean       = bean;
 			this.parameters = context.getParameterStrategy().createParams(bean);
 			this.entity.putAll(parameters.map());
 		    return this;
@@ -182,15 +184,61 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 		
 		if(null == command){
             String[] fields = entity.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-            
 			command = sf.createInsertCommand(context, em, fields);
 		}
-		
-		if(null != handler){
-			return command.executeUpdate(this,entity,handler);	
-		}else{
-			return command.executeUpdate(this,entity);
-		}
+
+        if(null != eventHandler) {
+            return doExecuteWithEvent(command, handler);
+        }else{
+            return doExecuteUpdate(command, handler);
+        }
+    }
+
+    @Override
+    public Entity entity() {
+        return entity;
+    }
+
+    @Override
+    public <T> T bean() {
+        return (T)bean;
+    }
+
+    protected int doExecuteWithEvent(SqlCommand command, PreparedStatementHandler<Db> handler) {
+        int result;
+
+        //pre without transaction.
+        eventHandler.preCreateEntity(this);
+
+        if(eventHandler.isTransactional()) {
+            result = dao.doTransaction((status) -> {
+                //pre with transaction.
+                eventHandler.preCreateEntityWithTransaction(this, status);
+
+                int affected = doExecuteUpdate(command, handler);
+
+                //post with transaction.
+                eventHandler.postCreateEntityWithTransaction(this, status);
+
+                return affected;
+            });
+
+        }else{
+            result = doExecuteUpdate(command, handler);
+        }
+
+        //post without transaction.
+        eventHandler.postCreateEntity(this);
+
+        return result;
+    }
+
+    protected int doExecuteUpdate(SqlCommand command, PreparedStatementHandler<Db> handler) {
+        if(null != handler){
+            return command.executeUpdate(this,entity,handler);
+        }else{
+            return command.executeUpdate(this,entity);
+        }
     }
 	
 	protected void prepare(){

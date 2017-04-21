@@ -25,6 +25,14 @@ public abstract class ExtensibleBase implements Extensible {
 
     protected final Map<Class<?>, Object> extensions = new ConcurrentHashMap<>();
 
+    protected ExtensibleBase() {
+
+    }
+
+    protected ExtensibleBase(Map<Class<?>,Object> extensions) {
+        this.putExtensions(extensions);
+    }
+
     @Override
     public final <T> T getExtension(Class<?> type) {
         return (T)extensions.get(type);
@@ -38,5 +46,11 @@ public abstract class ExtensibleBase implements Extensible {
     @Override
     public <T> T removeExtension(Class<?> type) {
         return (T)extensions.remove(type);
+    }
+
+    protected final void putExtensions(Map<Class<?>, Object> extensions) {
+        if(null != extensions) {
+            this.extensions.putAll(extensions);
+        }
     }
 }

@@ -17,16 +17,25 @@ package leap.lang.json;
 
 import java.io.Reader;
 import java.lang.reflect.Array;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import leap.lang.New;
+import leap.lang.convert.ConvertContext;
 import leap.lang.convert.Converts;
 
 public class JSON {
 	
     private static final JsonDecoder decoder = new JsonDecoder();
+
+    private static final ConvertContext convertContext = new ConvertContext() {
+        @Override
+        public ConcreteTypes getConcreteTypes() {
+            return JsonConcreteTypes.INSTANCE;
+        }
+    };
 
     /**
      * Returns the {@link JsonWriterCreator} for creating a new {@link JsonWriter}.
@@ -156,7 +165,14 @@ public class JSON {
      * Parse the json string and converts the raw value to the target type.
      */
     public static <T> T decode(String json,Class<? extends T> targetType){
-        return Converts.convert(decoder.decode(json),targetType);
+        return Converts.convert(decoder.decode(json), targetType, null, convertContext);
+    }
+
+    /**
+     * Parse the json string and converts the raw value to the target type.
+     */
+    public static <T> T decode(String json, Class<? extends T> targetType, Type genericType){
+        return Converts.convert(decoder.decode(json), targetType, genericType, convertContext);
     }
 
     /**
@@ -166,10 +182,11 @@ public class JSON {
     public static <T> Map<String, T> decodeMap(String json, Class<? extends T> valueType){
         Map<String, Object> map = decodeMap(json);
         for(Map.Entry<String, Object> entry : map.entrySet()){
-            entry.setValue(Converts.convert(entry.getValue(),valueType));
+            entry.setValue(Converts.convert(entry.getValue(),valueType, null, convertContext));
         }
         return (Map<String, T>) map;
     }
+
     /**
      * Parse the json string and converts the raw value to the target type
      * @since 0.5.0b
@@ -183,7 +200,14 @@ public class JSON {
      * Parse the json string and converts the raw value to the target type.
      */
     public static <T> T decode(Reader json,Class<? extends T> targetType){
-        return Converts.convert(decoder.decode(json),targetType);
+        return Converts.convert(decoder.decode(json),targetType, null, convertContext);
+    }
+
+    /**
+     * Parse the json string and converts the raw value to the target type.
+     */
+    public static <T> T decode(Reader json,Class<? extends T> targetType, Type genericType){
+        return Converts.convert(decoder.decode(json),targetType, genericType, convertContext);
     }
 
     /**
@@ -212,7 +236,7 @@ public class JSON {
      */
     public static <T> T[] decodeArray(String json, Class<T> componentType){
         T[] a = (T[])Array.newInstance(componentType, 0);
-        return (T[])Converts.convert(parse(json).asArray(), a.getClass());
+        return (T[])Converts.convert(parse(json).asArray(), a.getClass(), null, convertContext);
     }
 
     /**
@@ -220,6 +244,6 @@ public class JSON {
      */
     public static <T> T[] decodeArray(Reader json, Class<T> componentType){
         T[] a = (T[])Array.newInstance(componentType, 0);
-        return (T[])Converts.convert(parse(json).asArray(), a.getClass());
+        return (T[])Converts.convert(parse(json).asArray(), a.getClass(), null, convertContext);
     }
 }

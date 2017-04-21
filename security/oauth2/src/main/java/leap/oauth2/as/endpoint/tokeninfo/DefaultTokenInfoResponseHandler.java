@@ -40,7 +40,7 @@ public class DefaultTokenInfoResponseHandler implements TokenInfoResponseHandler
 
                 .property("user_id",       at.getUserId())
                 .property("username",      at.getUsername())
-                .property("expires_in",    at.getExpiresIn())
+                .property("expires_in",    at.getExpiresInFormNow())
                 .propertyOptional("scope", at.getScope());
 
         if(at.isAuthenticated()){
@@ -49,7 +49,7 @@ public class DefaultTokenInfoResponseHandler implements TokenInfoResponseHandler
 
         if(at.hasExtendedParameters()) {
             for(Map.Entry<String, Object> entry : at.getExtendedParameters().entrySet()) {
-                w.propertyOptional(entry.getKey(), entry.getValue());
+                w.property(entry.getKey(), entry.getValue());
             }
         }
 

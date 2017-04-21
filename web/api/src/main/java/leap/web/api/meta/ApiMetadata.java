@@ -41,6 +41,7 @@ public class ApiMetadata extends MApiNamedWithDesc {
     protected final MApiPermission[]          permissions;
     protected final MApiSecurityDef[]         securityDefs;
     protected final MApiTag[]                 tags;
+
 	public ApiMetadata(String name, String title, String summary, String description,
                        String termsOfService, MApiContact concat, String version,
                        String host, String basePath, String[] protocols, String[] consumes, String[] produces,
@@ -152,6 +153,14 @@ public class ApiMetadata extends MApiNamedWithDesc {
 	public Map<String,MApiPath> getPaths() {
 		return paths;
 	}
+
+    public MApiPath getPath(String pathTemplate) {
+        MApiPath p = paths.get(pathTemplate);
+        if(null == p) {
+            throw new ObjectNotFoundException("The path '" + pathTemplate + "' not exists!");
+        }
+        return p;
+    }
 
     /**
      * Returns all the models.

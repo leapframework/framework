@@ -19,24 +19,36 @@ import leap.core.validation.Validation;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.web.config.WebInterceptors;
 
 
-public class ActionInterceptors implements ActionInterceptor {
+class ActionInterceptors implements ActionInterceptor {
 	
 	private static final Log log = LogFactory.get(ActionInterceptors.class);
-	
-	private final ActionInterceptor[] interceptors;
 
-	public ActionInterceptors(ActionInterceptor[] interceptors) {
-		this.interceptors = interceptors;
+    private final WebInterceptors interceptors;
+	private final Action          action;
+
+	public ActionInterceptors(WebInterceptors interceptors, Action action) {
+        this.interceptors = interceptors;
+		this.action = action;
 	}
 
 	public State preExecuteAction(ActionContext context, Validation validation) throws Throwable {
 		State state = null;
-		for(int i=0;i<interceptors.length;i++){
-			if(!State.isContinue(state = interceptors[i].preExecuteAction(context, validation))){
+
+        for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
+            if(!State.isContinue(state = interceptor.preExecuteAction(context, validation))){
+                context.getResponse().markHandled();
+                return state;
+            }
+        }
+
+        ActionInterceptor[] actionInterceptors = action.getInterceptors();
+		for(int i = 0; i< actionInterceptors.length; i++){
+			if(!State.isContinue(state = actionInterceptors[i].preExecuteAction(context, validation))){
 				context.getResponse().markHandled();
-				break;
+				return state;
 			}
 		}
 		return state;
@@ -45,10 +57,18 @@ public class ActionInterceptors implements ActionInterceptor {
 	@Override
     public State postExecuteAction(ActionContext context, Validation validation, ActionExecution execution) throws Throwable {
 		State state = null;
-		
-		for(int i=0;i<interceptors.length;i++){
-			if(!State.isContinue(state = interceptors[i].postExecuteAction(context, validation, execution))){
-				break;
+
+        for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
+            if(!State.isContinue(state = interceptor.postExecuteAction(context, validation, execution))){
+                context.getResponse().markHandled();
+                return state;
+            }
+        }
+
+        ActionInterceptor[] actionInterceptors = action.getInterceptors();
+		for(int i = 0; i< actionInterceptors.length; i++){
+			if(!State.isContinue(state = actionInterceptors[i].postExecuteAction(context, validation, execution))){
+				return state;
 			}
 		}
 		
@@ -58,9 +78,18 @@ public class ActionInterceptors implements ActionInterceptor {
 	@Override
     public State onActionFailure(ActionContext context, Validation validation, ActionExecution execution) throws Throwable {
 		State state = null;
-		for(int i=0;i<interceptors.length;i++){
-			if(!State.isContinue(state = interceptors[i].onActionFailure(context, validation, execution))){
-				break;
+
+        for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
+            if(!State.isContinue(state = interceptor.onActionFailure(context, validation, execution))){
+                context.getResponse().markHandled();
+                return state;
+            }
+        }
+
+        ActionInterceptor[] actionInterceptors = action.getInterceptors();
+		for(int i = 0; i< actionInterceptors.length; i++){
+			if(!State.isContinue(state = actionInterceptors[i].onActionFailure(context, validation, execution))){
+				return state;
 			}
 		}
 		return state;
@@ -68,11 +97,21 @@ public class ActionInterceptors implements ActionInterceptor {
 
 	@Override
     public void completeExecuteAction(ActionContext context, Validation validation, ActionExecution execution) throws Throwable {
-		for(int i=0;i<interceptors.length;i++){
-			try {
-	            interceptors[i].completeExecuteAction(context, validation, execution);
+
+        for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
+            try {
+                interceptor.completeExecuteAction(context, validation, execution);
             } catch (Throwable e) {
-            	log.info("Error executing 'completeExecuteAction' on interceptor '{}' : {}", interceptors[i], e.getMessage(), e);
+                log.info("Error executing 'completeExecuteAction' on interceptor '{}' : {}", interceptor, e.getMessage(), e);
+            }
+        }
+
+        ActionInterceptor[] actionInterceptors = action.getInterceptors();
+		for(int i = 0; i< actionInterceptors.length; i++){
+			try {
+	            actionInterceptors[i].completeExecuteAction(context, validation, execution);
+            } catch (Throwable e) {
+            	log.info("Error executing 'completeExecuteAction' on interceptor '{}' : {}", actionInterceptors[i], e.getMessage(), e);
             }
 		}
     }

@@ -15,6 +15,9 @@
  */
 package leap.oauth2.as.endpoint.authorize;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import leap.core.annotation.Inject;
 import leap.lang.http.QueryStringBuilder;
 import leap.oauth2.as.authc.AuthzAuthentication;
@@ -31,7 +34,7 @@ public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler impl
     protected @Inject OAuth2AuthzServerErrorHandler errorHandler;
     protected @Inject IdTokenGenerator              idTokenGenerator;
     protected @Inject AuthzSSOManager               ssoManager;
-    
+
     @Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         if(!config.isSingleLoginEnabled()) {
@@ -46,12 +49,11 @@ public class IdTokenResponseTypeHandler extends AbstractResponseTypeHandler impl
         String idToken = idTokenGenerator.generateIdToken(authc);
         sendIdTokenRedirect(request, response, authc, idToken);
     }
-    
+
     protected void sendIdTokenRedirect(Request request, Response response, AuthzAuthentication authc, String idToken) {
-        QueryStringBuilder qs = new QueryStringBuilder(request.getCharacterEncoding());
-        
-        qs.add("id_token", idToken);
-        
+    	Map<String,String> qs=new HashMap<>();
+    	qs.put("id_token", idToken);
+
         sendSuccessRedirect(request, response, authc, qs);
     }
 }

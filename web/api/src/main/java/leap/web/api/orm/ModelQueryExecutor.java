@@ -23,10 +23,23 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Not thread-safe, creates a new instance for a query.
+ */
 public interface ModelQueryExecutor {
+
+    /**
+     * Excludes the field names in the result record.
+     */
+    ModelQueryExecutor selectExclude(String... names);
+
+    /**
+     * Finds the record by the given id.
+     */
     QueryOneResult queryOne(Object id, QueryOptionsBase options);
 
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters);
 
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
+
 }

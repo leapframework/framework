@@ -24,7 +24,7 @@ import leap.lang.jdbc.SimpleClob;
 public class ClobConverter extends AbstractConverter<Clob> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 	    String string = Converts.toString(value);
 	    out.set(new SimpleClob(string));
 	    
@@ -32,7 +32,7 @@ public class ClobConverter extends AbstractConverter<Clob> {
     }
 
 	@Override
-    public boolean convertTo(Clob value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(Clob value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 	    out.set(Converts.convert(convertToString(value), targetType,genericType));
 	    return true;
     }

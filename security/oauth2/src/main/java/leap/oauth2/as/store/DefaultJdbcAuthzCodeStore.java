@@ -32,17 +32,17 @@ import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
 
 public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements AuthzCodeStore {
-    
+
     private static final Log log = LogFactory.get(DefaultJdbcAuthzCodeStore.class);
-    
+
     public static final String LOAD_AUTHORIZATION_CODE_SQL_KEY     = "oauth2.as.loadAuthorizationCode";
     public static final String DELETE_AUTHORIZATION_CODE_SQL_KEY   = "oauth2.as.deleteAuthorizationCode";
     public static final String CLEANUP_AUTHORIZATION_CODES_SQL_KEY = "oauth2.as.cleanupAuthorizationCodes";
-    
+
     protected SqlCommand loadAuthorizationCodeCommand;
     protected SqlCommand deleteAuthorizationCodeCommand;
     protected SqlCommand cleanupAuthorizationCodesCommand;
-    
+
     @Override
     public void saveAuthorizationCode(AuthzCode code) {
         dao.insert(createEntityFromAuthzCode(code));
@@ -56,7 +56,7 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
         }else{
             entity = dao.createQuery(AuthzCodeEntity.class, loadAuthorizationCodeCommand).firstOrNull();
         }
-        
+
         return null == entity ? null : createAuthzCodeFromEntity(entity);
     }
 
@@ -94,7 +94,7 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
             return dao.executeUpdate(deleteAuthorizationCodeCommand,New.hashMap("code", code)) > 0;
         }
     }
-    
+
     protected AuthzCode createAuthzCodeFromEntity(AuthzCodeEntity entity) {
         SimpleAuthzCode code = new SimpleAuthzCode();
 
@@ -103,19 +103,23 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
         code.setUserId(entity.getUserId());
         code.setCreated(entity.getCreatedMs());
         code.setExpiresIn(entity.getExpiresIn());
-        
+        code.setExtendedParameters(entity.getExData());
+
         return code;
     }
-    
+
     protected AuthzCodeEntity createEntityFromAuthzCode(AuthzCode code) {
         AuthzCodeEntity entity = new AuthzCodeEntity();
-        
+
         entity.setCode(code.getCode());
         entity.setClientId(code.getClientId());
         entity.setUserId(code.getUserId());
         entity.setCreatedMs(code.getCreated());
         entity.setExpirationByExpiresIn(code.getExpiresIn());
-        
+        if(code.getExtendedParameters()!=null){
+        	entity.setExData(code.getExtendedParameters());
+        }
+
         return entity;
     }
 
@@ -124,21 +128,21 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
         createEntityMapping(dmo, config.isDebug());
         resolveSqlCommands(dao, dao.getOrmContext().getMetadata());
     }
-    
+
     protected void createEntityMapping(Dmo dmo, boolean debug) {
         CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzCodeEntity.class);
-        
+
         if(debug) {
             cmd.setUpgradeTable(true);
         }
-        
+
         cmd.execute();
     }
-    
+
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {
         loadAuthorizationCodeCommand    = md.tryGetSqlCommand(LOAD_AUTHORIZATION_CODE_SQL_KEY);
         deleteAuthorizationCodeCommand  = md.tryGetSqlCommand(DELETE_AUTHORIZATION_CODE_SQL_KEY);
         cleanupAuthorizationCodesCommand = md.tryGetSqlCommand(CLEANUP_AUTHORIZATION_CODES_SQL_KEY);
     }
-    
+
 }

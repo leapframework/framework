@@ -37,22 +37,22 @@ import leap.lang.serialize.Serializes;
 @SuppressWarnings({"rawtypes"})
 public class BeanConverter extends AbstractConverter<Object>{
 
-	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
-		if(Modifier.isAbstract(targetType.getModifiers()) || Modifier.isInterface(targetType.getModifiers())){
-			return false;
-		}
-		
-		if(value instanceof Map){
-			out.set(convertFromMap(targetType, genericType, (Map)value));
-			return true;
-		}
-		
-		return false;
+    @Override
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
+//        if(Modifier.isAbstract(targetType.getModifiers()) || Modifier.isInterface(targetType.getModifiers())){
+//            return false;
+//        }
+
+        if(value instanceof Map){
+            out.set(convertFromMap(targetType, genericType, (Map)value, context));
+            return true;
+        }
+
+        return false;
     }
-	
-	@Override
-    public boolean convertTo(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+
+    @Override
+    public boolean convertTo(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(Map.class.isAssignableFrom(targetType)){
 			out.set(convertToMap(value));
 			return true;
@@ -60,11 +60,16 @@ public class BeanConverter extends AbstractConverter<Object>{
 		return false;
     }
 
-	protected Object convertFromMap(Class<?> targetType, Type genericType,Map map) {
+	protected Object convertFromMap(Class<?> targetType, Type genericType, Map map, ConvertContext context) {
 		BeanType bt = BeanType.of(targetType);
 		
 		@SuppressWarnings("unchecked")
-        Object bean = newInstance(bt, map);
+        Object bean = newInstance(context, bt, map);
+
+        //Check is the concrete type.
+        if(bean.getClass() != targetType) {
+            bt = BeanType.of(bean.getClass());
+        }
 		
 		for(BeanProperty prop : bt.getProperties()){
 			String name = prop.getName();
@@ -96,7 +101,7 @@ public class BeanConverter extends AbstractConverter<Object>{
 		            }
 		            
 		            if(prop.isWritable()){
-		                prop.setValue(bean, Converts.convert(param,prop.getType(),prop.getGenericType()));
+		                prop.setValue(bean, Converts.convert(param, prop.getType(), prop.getGenericType(), context));
 		                break;
 		            }
 	            }
@@ -106,10 +111,20 @@ public class BeanConverter extends AbstractConverter<Object>{
 		return bean;
 	}
 	
-	protected Object newInstance(BeanType bt,Map<String, Object> map){
+	protected Object newInstance(ConvertContext context, BeanType bt, Map<String, Object> map){
 		ReflectClass cls = bt.getReflectClass();
-		
-		if(cls.hasDefaultConstructor()){
+
+        ConvertContext.ConcreteTypes types = null == context ? null : context.getConcreteTypes();
+        if(null != types) {
+            Object instance = types.newInstance(context, bt.getBeanClass(), null, map);
+            if(null != instance) {
+                return instance;
+            }
+        }
+
+        if(cls.isAbstract() || cls.isInterface()) {
+            throw new ConvertException("Cannot new instance for abstract class or interface '" + bt.getBeanClass().getName() + "'");
+        }else if(cls.hasDefaultConstructor()){
 			return bt.newInstance();
 		}else{
 			ReflectConstructor c  = cls.getConstructors()[0];
@@ -119,7 +134,7 @@ public class BeanConverter extends AbstractConverter<Object>{
 			
 			for(int i=0;i<args.length;i++){
 				ReflectParameter p = ps[i];
-				args[i] = Converts.convert(map.get(p.getName()), p.getType(), p.getGenericType());
+				args[i] = Converts.convert(map.get(p.getName()), p.getType(), p.getGenericType(), context);
 			}
 			
 			return c.newInstance(args);

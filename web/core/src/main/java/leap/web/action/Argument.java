@@ -25,8 +25,10 @@ import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collections;
+import java.util.Map;
 
-public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
+public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,TypeInfoGetter,Extensible {
 
     public enum Location {
 		UNDEFINED,
@@ -46,24 +48,24 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
 		REQUEST_BODY
 	}
 
-	protected final String              name;
-	protected final String 				declaredName;
-	protected final Class<?>            type;
-	protected final Type                genericType;
-	protected final TypeInfo            typeInfo;
-    protected final BeanType            beanType;
-    protected final BeanProperty        beanProperty;
-	protected final Boolean             required;
-	protected final Location            location;
-	protected final Annotation[]        annotations;
-    protected final ArgumentBinder      binder;
-	protected final ArgumentValidator[] validators;
-    protected final Argument[]          wrappedArguments;
+    protected final String                name;
+    protected final String                declaredName;
+    protected final Class<?>              type;
+    protected final Type                  genericType;
+    protected final TypeInfo              typeInfo;
+    protected final BeanType              beanType;
+    protected final BeanProperty          beanProperty;
+    protected final Boolean               required;
+    protected final Location              location;
+    protected final Annotation[]          annotations;
+    protected final ArgumentBinder        binder;
+    protected final ArgumentValidator[]   validators;
+    protected final Argument[]            wrappedArguments;
 
     protected boolean contextual;
 
 	public Argument(String name,
-					String declaredName,
+                    String declaredName,
                     BeanProperty beanProperty,
                     Class<?> type,
                     Type genericType,
@@ -73,7 +75,8 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
                     Annotation[] annotations,
                     ArgumentBinder binder,
                     ArgumentValidator[] validators,
-                    Argument[] wrappedArguments) {
+                    Argument[] wrappedArguments,
+                    Map<Class<?>, Object> extensions) {
 		
 		Args.notEmpty(name,   "name");
 		Args.notNull(type,    "type");
@@ -92,14 +95,20 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
         this.binder            = binder;
 		this.validators        = null == validators ? (ArgumentValidator[])Arrays2.EMPTY_OBJECT_ARRAY : validators;
         this.wrappedArguments  = wrappedArguments;
-	}
+
+        putExtensions(extensions);
+    }
 
 	@Override
     public String getName() {
 	    return name;
     }
 
-	/**
+    public String getDeclaredName() {
+        return declaredName;
+    }
+
+    /**
 	 * Returns the type of this {@link Argument}.
 	 */
 	public Class<?> getType() {
@@ -227,8 +236,4 @@ public class Argument implements Named,AnnotationsGetter,TypeInfoGetter {
     public String toString() {
         return "Argument[name=" + name + ",type=" + type + "]";
     }
-
-	public String getDeclaredName() {
-		return declaredName;
-	}
 }

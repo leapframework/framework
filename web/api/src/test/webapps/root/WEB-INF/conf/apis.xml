@@ -26,6 +26,12 @@
             </param>
         </parameters>
 
+        <models>
+            <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
+            <model class="app.models.testing.ParentModel"/>
+            <model class="app.models.testing.SubModel"/>
+        </models>
+
     </global>
 
     <api name="api" base-path="/api"/>
@@ -49,6 +55,10 @@
 
             <permission value="ManageUser" desc="Manage User"/>
         </resource-permissions>
+
+        <models>
+            <model class="app.models.testing.ConfiguredModel2"/>
+        </models>
 
     </api>
 

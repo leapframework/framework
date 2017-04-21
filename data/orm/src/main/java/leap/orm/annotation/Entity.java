@@ -15,34 +15,51 @@
  */
 package leap.orm.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @AEntity
 public @interface Entity {
+
+    @Target({ElementType.ANNOTATION_TYPE})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Inherited
+    @interface Listener {
+
+        /**
+         * The listener's class.
+         */
+        Class<?> type();
+
+        /**
+         * Set to <code>true</code> will invokes the listener in a transaction.
+         */
+        boolean transactional() default false;
+    }
 	
 	/**
 	 * (Optional) The name of the entity.
 	 */
-	public String value() default "";
+	String value() default "";
 	
 	/**
 	 * (Optional) The name of the entity.
 	 */
-	public String name() default "";
+	String name() default "";
 	
 	/**
 	 * (Optional) The database schema name of the entity.
 	 */
-	public String schema() default "";
+	String schema() default "";
 	
 	/**
 	 * (Optional) The database table name of the entity.
 	 */
-	public String table() default "";
-	
+	String table() default "";
+
+    /**
+     * The entity listeners.
+     */
+    Listener[] listeners() default {};
 }

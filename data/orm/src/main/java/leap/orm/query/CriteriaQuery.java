@@ -122,6 +122,11 @@ public interface CriteriaQuery<T> extends Query<T> {
     CriteriaQuery<T> select(String... fields);
 
     /**
+     * Removes the fields(columns) in the CriteriaQuery result.
+     */
+    CriteriaQuery<T> selectExclude(String... fields);
+
+    /**
      * Sets the filter of selected fields.
      * <p>
      * <p>

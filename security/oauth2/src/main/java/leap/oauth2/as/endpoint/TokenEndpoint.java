@@ -109,7 +109,7 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 		 .property("access_token", token.getToken())
 		 .property("token_type", "bearer"); //TODO : supports other token type.
 
-		int expiresIn = token.getExpiresIn() > 0 ? token.getExpiresIn() : config.getDefaultAccessTokenExpires();
+		int expiresIn = token.getExpiresInFormNow() > 0 ? token.getExpiresInFormNow() : config.getDefaultAccessTokenExpires();
 		
 		w.property("expires_in", expiresIn);
 

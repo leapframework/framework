@@ -41,7 +41,7 @@ public class BooleanConverter extends AbstractConverter<Boolean> implements Conv
     }
     
 	@Override
-    public boolean convertTo(Boolean value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertTo(Boolean value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(Number.class.isAssignableFrom(targetType)){
 			out.set(Converts.convert(value.booleanValue() ? 1 : 0, targetType));
 			return true;
@@ -53,7 +53,7 @@ public class BooleanConverter extends AbstractConverter<Boolean> implements Conv
     }
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
         Class<?> type = value.getClass();
         if(type.equals(byte[].class)) {
             byte[] bytes = (byte[])value;

@@ -42,34 +42,37 @@ import java.util.function.Consumer;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
+    protected String[] excludedFields;
+
     protected DefaultModelQueryExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
         super(c, am, dao, em);
     }
 
     @Override
-    public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
-        if(null == options) {
-            return new QueryOneResult(dao.findOrNull(em, id));
-        }
+    public ModelQueryExecutor selectExclude(String... names) {
+        this.excludedFields = names;
+        return this;
+    }
 
+    @Override
+    public QueryOneResult queryOne(Object id, QueryOptionsBase options) {
         Record record;
 
-        if(Strings.isEmpty(options.getSelect())) {
-            record = dao.findOrNull(em, id);
-        }else{
-            CriteriaQuery<Record> query = dao.createCriteriaQuery(em).whereById(id);
+        CriteriaQuery<Record> query = dao.createCriteriaQuery(em).whereById(id);
+        if(null != options && !Strings.isEmpty(options.getSelect())) {
             applySelect(query, options.getSelect());
-            record = query.firstOrNull();
+        }else{
+            query.selectExclude(excludedFields);
         }
 
-        if(null == record) {
-            return new QueryOneResult(record);
-        }
+        record = query.firstOrNull();
 
-        Expand[] expands = ExpandParser.parse(options.getExpand());
-        if(expands.length > 0) {
-            for(Expand expand : expands) {
-                expand(record, id, expand);
+        if(null != record) {
+            Expand[] expands = ExpandParser.parse(options.getExpand());
+            if (expands.length > 0) {
+                for (Expand expand : expands) {
+                    expand(record, id, expand);
+                }
             }
         }
 
@@ -90,10 +93,15 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         long count = -1;
         List<Record> list;
         if(null == options) {
+
             if(callback != null){
                 callback.accept(query);
             }
+
+            query.selectExclude(excludedFields);
+
             list = query.limit(c.getMaxPageSize()).list();
+
         }else{
             if(!Strings.isEmpty(options.getOrderBy())) {
                 applyOrderBy(query, options.getOrderBy());
@@ -101,6 +109,8 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             if(!Strings.isEmpty(options.getSelect())) {
                 applySelect(query, options.getSelect());
+            }else{
+                query.selectExclude(excludedFields);
             }
 
             applyFilters(query, options.getParams(), options.getFilters(), filters);
@@ -202,7 +212,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 s.append(name);
             }
 
-
             if(!item.isAscending()) {
                 s.append(" desc");
             }
@@ -231,6 +240,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
 
             fields.add(p.getFieldName());
+        }
+
+        if(null != excludedFields) {
+            for(String name : excludedFields) {
+                fields.remove(name);
+            }
         }
 
         query.select(fields.toArray(new String[fields.size()]));

@@ -24,7 +24,7 @@ import leap.lang.Out;
 public class LocaleConverter extends AbstractConverter<Locale> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		out.set(Locales.forName(value.toString()));
 		return true;
     }

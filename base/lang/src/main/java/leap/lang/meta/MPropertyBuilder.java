@@ -25,6 +25,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     protected Integer  length;
     protected Integer  precision;
     protected Integer  scale;
+    protected boolean  discriminator;
     protected Boolean  creatable;
     protected Boolean  updatable;
     protected Boolean  sortable;
@@ -95,6 +96,14 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
         this.scale = scale;
     }
 
+    public boolean isDiscriminator() {
+        return discriminator;
+    }
+
+    public void setDiscriminator(boolean discriminator) {
+        this.discriminator = discriminator;
+    }
+
     public Boolean getCreatable() {
         return creatable;
     }
@@ -139,7 +148,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
     public MProperty build() {
         return new MProperty(name, title, summary, description, type, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
-                             creatable, updatable, sortable, filterable, reference);
+                             discriminator, creatable, updatable, sortable, filterable, reference);
     }
 
 }

@@ -15,6 +15,8 @@
  */
 package leap.oauth2.as.endpoint.authorize;
 
+import java.util.Map;
+
 import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
 import leap.lang.Result;
@@ -34,15 +36,15 @@ import leap.web.Response;
 
 public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler {
     private static final Log log = LogFactory.get(AbstractResponseTypeHandler.class);
-    
+
     protected @Inject OAuth2AuthzServerConfig config;
     protected @Inject AuthzClientManager      clientManager;
     protected @Inject Oauth2RedirectHandler[] handlers;
-    
+
     @Override
     public Result<AuthzClient> validateRequest(Request request, Response response, OAuth2Params params) throws Throwable {
         Validation validation = request.getValidation();
-        
+
         String clientId = params.getClientId();
         if(Strings.isEmpty(clientId)) {
             log.debug("error : client_id required");
@@ -50,7 +52,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             request.forwardToView(config.getErrorView());
             return Result.intercepted();
         }
-        
+
         String redirectUri = params.getRedirectUri();
         if(Strings.isEmpty(redirectUri)) {
             log.debug("error : redirect_uri required");
@@ -58,7 +60,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             request.forwardToView(config.getErrorView());
             return Result.intercepted();
         }
-        
+
         AuthzClient client = clientManager.loadClientById(clientId);
         if(null == client) {
             log.debug("error : client_id {} not found", clientId);
@@ -66,7 +68,7 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             request.forwardToView(config.getErrorView());
             return Result.intercepted();
         }
-        
+
         if(!client.isEnabled()) {
             log.debug("error : client '{}' disabled", clientId);
             validation.addError(OAuth2Errors.ERROR_INVALID_REQUEST, "client disabled");
@@ -80,24 +82,30 @@ public abstract class AbstractResponseTypeHandler implements ResponseTypeHandler
             request.forwardToView(config.getErrorView());
             return Result.intercepted();
         }
-        
+
         return Result.of(client);
     }
-    
-    protected void sendSuccessRedirect(Request request, Response response, AuthzAuthentication authc, QueryStringBuilder qs) {
+
+    protected void sendSuccessRedirect(Request request, Response response, AuthzAuthentication authc, Map<String,String> qs) {
         OAuth2Params params = authc.getParams();
-        
+
         String state = params.getState();
         if(!Strings.isEmpty(state)) {
-            qs.add("state", state);
+            qs.put("state", state);
         }
-        
+
         for(Oauth2RedirectHandler handler : handlers){
             if(!handler.onOauth2LoginSuccessRedirect(request,response,authc,qs)){
                 return;
             }
         }
-        
-        response.sendRedirect(Urls.appendQueryString(authc.getRedirectUri(), qs.build()));
+
+        QueryStringBuilder queryString =
+                new QueryStringBuilder(request.getCharacterEncoding());
+        for (Map.Entry<String, String> entry : qs.entrySet()) {
+        	queryString.add(entry.getKey(), entry.getValue());
+		}
+
+        response.sendRedirect(Urls.appendQueryString(authc.getRedirectUri(), queryString.build()));
     }
 }

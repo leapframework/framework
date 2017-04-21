@@ -21,7 +21,6 @@ import leap.core.jdbc.ResultSetReader;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.dao.Dao;
-import leap.orm.listener.PostLoadEntity;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
@@ -63,10 +62,6 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
 	    
 	    if(null == result && checkNotFound) {
 	        throw new RecordNotFoundException("Record not found for the id '" + id + "'");
-	    }
-	    
-	    if(result instanceof PostLoadEntity) {
-	        ((PostLoadEntity) result).postLoad();
 	    }
 	    
 	    return result;

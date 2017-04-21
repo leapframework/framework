@@ -24,7 +24,7 @@ import leap.lang.Out;
 public class URIConverter extends AbstractConverter<URI> {
 
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		if(value instanceof URL){
 			out.set(((URL) value).toURI());
 		}else{

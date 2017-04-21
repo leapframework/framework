@@ -156,28 +156,44 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options) {
-        return queryList(options, null,null);
+        return queryList(options, null, null, null);
     }
+
     /**
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options, Consumer<CriteriaQuery> callback){
-        return queryList(options, null, callback);
+        return queryList(options, null, null, callback);
     }
+
+    /**
+     * Query the model records with the {@link QueryOptions}.
+     */
+    protected ApiResponse<List<T>> queryListWithExecutorCallback(QueryOptions options, Consumer<ModelQueryExecutor> callback){
+        return queryList(options, null, callback, null);
+    }
+
     /**
      * Query the model records with the {@link QueryOptions}.
      */
     protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters){
-        return queryList(options, filters, null);
+        return queryList(options, filters, null, null);
     }
+
     /**
      * Query the model records with the {@link QueryOptions}.
      */
-    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback) {
+    protected ApiResponse<List<T>> queryList(QueryOptions options, Map<String, Object> filters,
+                                             Consumer<ModelQueryExecutor> executorCallback,
+                                             Consumer<CriteriaQuery> queryCallback) {
 
         ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, em);
 
-        QueryListResult result = executor.queryList(options, filters,callback);
+        if(null != executorCallback) {
+            executorCallback.accept(executor);
+        }
+
+        QueryListResult result = executor.queryList(options, filters, queryCallback);
 
         if (result.count == -1) {
             return ApiResponse.of(result.list);

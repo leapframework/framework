@@ -15,19 +15,18 @@
  */
 package leap.web.api.meta.model;
 
-import leap.lang.Strings;
 import leap.lang.meta.MProperty;
-import leap.web.api.meta.desc.ModelDesc;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected MProperty              property;
-    protected Boolean                creatable;
-    protected Boolean                updatable;
-    protected Boolean                sortable;
-    protected Boolean                filterable;
-	
-	public MApiPropertyBuilder() {
+    protected MProperty property;
+    protected boolean   discriminator;
+    protected Boolean   creatable;
+    protected Boolean   updatable;
+    protected Boolean   sortable;
+    protected Boolean   filterable;
+
+    public MApiPropertyBuilder() {
 	    super();
     }
 
@@ -47,6 +46,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
 		this.required =  mp.getRequired();
+        this.discriminator = mp.isDiscriminator();
         this.creatable = mp.getCreatable();
         this.updatable = mp.getUpdatable();
         this.sortable = mp.getSortable();
@@ -59,6 +59,14 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     public void setProperty(MProperty property) {
         this.property = property;
+    }
+
+    public boolean isDiscriminator() {
+        return discriminator;
+    }
+
+    public void setDiscriminator(boolean discriminator) {
+        this.discriminator = discriminator;
     }
 
     public Boolean getCreatable() {
@@ -95,7 +103,7 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     @Override
     public MApiProperty build() {
-	    return new MApiProperty(name, title, summary, description, property, type, format, password, required,
+	    return new MApiProperty(name, title, summary, description, property, type, format, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
                                 creatable, updatable, sortable, filterable);

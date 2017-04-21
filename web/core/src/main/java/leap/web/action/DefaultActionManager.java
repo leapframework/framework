@@ -46,7 +46,7 @@ import javax.servlet.http.Part;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DefaultActionManager implements ActionManager,AppListener {
+public class DefaultActionManager implements ActionManager {
 	
 	private static final Log log = LogFactory.get(DefaultActionManager.class);
 	
@@ -56,8 +56,6 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		}
 	};
 	
-	private List<ExecutionAttributes> easList = new ArrayList<>();
-
 	protected @Inject App                        app;
 	protected @Inject RequestFormat[]            requestFormats;
 	protected @Inject FormatManager              formatManager;
@@ -67,23 +65,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 	protected @Inject WebInterceptors            interceptors;
 
 	@Override
-    public void postAppStart(App app) throws Throwable {
-		ActionInterceptor[] actionInterceptors = interceptors.getActionInterceptors().toArray(new ActionInterceptor[]{});
-
-		for(ExecutionAttributes eas : easList) {
-			eas.interceptors = new ActionInterceptors(Arrays2.concat(actionInterceptors, eas.action.getInterceptors()));
-		}
-		
-		easList.clear();
-		easList = null;
-    }
-
-	@Override
     public void prepareAction(RouteBuilder route) {
-		if(null == easList) {
-			throw new IllegalStateException("Cannot create action when app started");
-		}
-		
 		for(ActionInitializable init : actionInitializables){
 			init.postActionInit(route,route.getAction());
 		}
@@ -110,11 +92,9 @@ public class DefaultActionManager implements ActionManager,AppListener {
     	//prepare formats
     	eas.annotatedFormats = getAnnotatedFormats(route);
     	eas.supportedFormats = getSupportedFormats(route);
-    	eas.action           = route.getAction();
-    	
-    	easList.add(eas);
+        eas.interceptors     = new ActionInterceptors(interceptors, route.getAction());
     }
-	
+
 	@Override
     public Object executeAction(ActionContext context, Validation validation) throws Throwable {
 		ExecutionAttributes eas = (ExecutionAttributes)context.getRoute().getExecutionAttributes();
@@ -574,22 +554,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		return supportedFormats.toArray(new RequestFormat[]{});
 	}
 	
-	public static final class ExecutionAttributes {
-		static ExecutionAttributes EMPTY = new ExecutionAttributes();
-		
-		static {
-			EMPTY.interceptors       = new ActionInterceptors(Action.EMPTY_INTERCEPTORS);
-			EMPTY.executionArguments = new ExecutionArgument[]{};
-			EMPTY.annotatedFormats   = new RequestFormat[]{};
-			EMPTY.supportedFormats   = EMPTY.annotatedFormats;
-		}
-		
-		static ExecutionAttributes get(Route route) {
-			ExecutionAttributes o = (ExecutionAttributes)route.getExecutionAttributes();
-			return null == o ? EMPTY : o;
-		}
-		
-		public Action			   action;
+	protected static final class ExecutionAttributes {
     	public ActionInterceptors  interceptors;
     	public ResultProcessor     resultProcessor;
     	public ExecutionArgument[] executionArguments;
@@ -597,7 +562,7 @@ public class DefaultActionManager implements ActionManager,AppListener {
 		public RequestFormat[] 	   supportedFormats;
     }
 	
-	public static final class ExecutionArgument {
+	protected static final class ExecutionArgument {
 		public ArgumentResolver resolver;
 		public boolean          isContextual;
 		//public boolean          isRequestBody;

@@ -24,8 +24,7 @@ import leap.web.App;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.config.OauthConfig;
-import leap.web.api.spec.swagger.SwaggerConstants;
+import leap.web.api.config.model.OAuthConfig;
 
 public class OAuthConfigProcessor implements ApiConfigProcessor {
     
@@ -44,7 +43,7 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
         }
         
         ApiConfig conf = c.config();
-        OauthConfig oauthConfig = conf.getOauthConfig();
+        OAuthConfig oauthConfig = conf.getOAuthConfig();
         if(oauthConfig == null ||
                 (Strings.isEmpty(oauthConfig.getOauthAuthzEndpointUrl()) && Strings.isEmpty(oauthConfig.getOauthTokenEndpointUrl()))) {
             
@@ -53,7 +52,7 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
                 String authzUrl = owc.getServerAuthorizationEndpointUrl();
                 String tokenUrl = owc.getServerTokenEndpointUrl();
                 if(oauthConfig == null){
-                    oauthConfig = new OauthConfig(false, authzUrl,tokenUrl);
+                    oauthConfig = new OAuthConfig(false, authzUrl,tokenUrl);
                     c.setOAuthConfig(oauthConfig);
                     return;
                 }
@@ -69,7 +68,7 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
                 String authzUrl = contextPath + asc.getAuthzEndpointPath();
                 String tokenUrl = contextPath + asc.getTokenEndpointPath();
                 if(oauthConfig == null){
-                    oauthConfig = new OauthConfig(false,authzUrl,tokenUrl);
+                    oauthConfig = new OAuthConfig(false,authzUrl,tokenUrl);
                     c.setOAuthConfig(oauthConfig);
                     return;
                 }

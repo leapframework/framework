@@ -157,6 +157,24 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 
         return resp;
     }
+
+    protected TokenResponse obtainIdTokenTokenImplicit() {
+        String uri = serverContextPath + AUTHZ_ENDPOINT +
+                "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token%20token";
+
+        login();
+        String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
+
+        QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
+
+        TokenResponse resp = new TokenResponse();
+
+        if(!setErrorResponse(qs.getParameters(), resp)) {
+            setSuccessResponse(qs.getParameters(), resp);
+        }
+
+        return resp;
+    }
     
     protected TokenResponse obtainAccessTokenByPassword(String username, String password) {
         return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID);
@@ -243,11 +261,6 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 
         return resp(get(uri), new TokenInfoResponse());
     }
-    protected JwtTokenResponse obtainAccessTokenInfoWithJwtResponse(String accessToken) {
-        String uri = serverContextPath + TOKENINFO_ENDPOINT + "?access_token=" + accessToken + "&response_type=jwt";
-        JwtTokenResponse token = resp(get(uri), new JwtTokenResponse());
-        return token;
-    }
 
     protected TokenInfoResponse testAccessTokenInfo(TokenResponse token) {
         TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
@@ -255,11 +268,6 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         assertNotEmpty(info.userId);
         assertEquals(token.expiresIn, info.expiresIn);
         
-        return info;
-    }
-
-    protected JwtTokenResponse testJwtResponseAccessTokenInfo(TokenResponse token){
-        JwtTokenResponse info = obtainAccessTokenInfoWithJwtResponse(token.accessToken);
         return info;
     }
 

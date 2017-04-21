@@ -15,39 +15,41 @@
  */
 package leap.oauth2.as.endpoint.authorize;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import leap.core.annotation.Inject;
-import leap.lang.http.QueryStringBuilder;
 import leap.oauth2.OAuth2Errors;
-import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
 import leap.web.Request;
 import leap.web.Response;
 
 public class CodeResponseTypeHandler extends AbstractResponseTypeHandler implements ResponseTypeHandler {
-	
+
 	protected @Inject OAuth2AuthzServerConfig config;
 	protected @Inject AuthzCodeManager        codeManager;
-	
+
 	@Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         if(!config.isAuthorizationCodeEnabled()) {
             OAuth2Errors.redirectUnsupportedResponseType(request, response, authc.getRedirectUri(),null);
             return;
-        } 
+        }
 
         //Create a new authorization code.
         AuthzCode code = codeManager.createAuthorizationCode(authc);
-        
+
         //Response
-        sendAuthorizationCodeRedirect(request, response, authc, code.getCode());
+        sendAuthorizationCodeRedirect(request, response, authc, code);
     }
 
-    protected void sendAuthorizationCodeRedirect(Request request, Response response, AuthzAuthentication authc, String code) {
-        QueryStringBuilder qs = 
-                new QueryStringBuilder(request.getCharacterEncoding())
-                    .add("code", code);
+    protected void sendAuthorizationCodeRedirect(Request request, Response response, AuthzAuthentication authc, AuthzCode code) {
+    	Map<String,String> qs=new HashMap<>();
+    	qs.put("code", code.getCode());
+
 
         sendSuccessRedirect(request, response, authc, qs);
     }

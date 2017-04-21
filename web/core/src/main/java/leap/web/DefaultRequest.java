@@ -19,6 +19,7 @@ import leap.core.AppContext;
 import leap.core.AppException;
 import leap.core.Session;
 import leap.core.i18n.MessageSource;
+import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
 import leap.lang.Arrays2;
@@ -90,6 +91,7 @@ public class DefaultRequest extends Request {
     private Boolean                   multipart;
     private Boolean                   gzipSupport;
     private UserPrincipal             user;
+    private Authentication            authentication;
     private Session                   session;
     private Map<String, List<String>> queryParams;
     private Map<String, Object>       queryParamsMap;
@@ -325,7 +327,7 @@ public class DefaultRequest extends Request {
 	           .append(uri.getHost());
 	        
 	        int port = uri.getPort();
-	        if( req.isSecure() ? port != 443 : port != 80 ) {
+	        if( port != -1 && ( req.isSecure() ? port != 443 : port != 80 )) {
 	            url.append(':').append(port);
 	        }
 	        
@@ -756,7 +758,17 @@ public class DefaultRequest extends Request {
 		this.user = user;
     }
 
-	@Override
+    @Override
+    public Authentication getAuthentication() {
+        return authentication;
+    }
+
+    @Override
+    public void setAuthentication(Authentication authentication) {
+        this.authentication = authentication;
+    }
+
+    @Override
     public FormatManager getFormatManager() {
 	    return formatManager;
     }

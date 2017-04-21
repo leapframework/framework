@@ -40,6 +40,10 @@ public interface Action extends Named,AnnotationsGetter {
     default Object getController() {
         return null;
     }
+
+    default Class<?> getControllerClass() {
+        return null == getController() ? null : getController().getClass();
+    }
 	
 	default boolean hasReturnValue() {
 		return false;

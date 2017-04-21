@@ -489,8 +489,29 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 	    return this;
     }
-	
-	@Override
+
+    @Override
+    public CriteriaQuery<T> selectExclude(String... fields) {
+        if(null != fields && fields.length > 0) {
+            List<String> select = new ArrayList<>();
+            for(FieldMapping fm : em.getFieldMappings()) {
+                boolean exclude = false;
+                for(String excludeField : fields) {
+                    if(fm.getFieldName().equalsIgnoreCase(excludeField)) {
+                        exclude = true;
+                        break;
+                    }
+                }
+                if(!exclude) {
+                    select.add(fm.getFieldName());
+                }
+            }
+            builder.selects = columns(select.toArray(new String[select.size()]));
+        }
+        return this;
+    }
+
+    @Override
     public CriteriaQuery<T> select(Predicate<FieldMapping> filter) {
 		this.selectFilter = filter;
 	    return this;
@@ -739,6 +760,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
                 RelationMapping rjoin   = joinEntity.tryGetKeyRelationMappingOfTargetEntity(context.getSource().getEntityName());
                 RelationMapping rtarget = joinEntity.tryGetKeyRelationMappingOfTargetEntity(relation.getTargetEntityName());
+
+                if(null == rjoin) {
+                    rjoin = joinEntity.tryGetRefRelationMappingOfTargetEntity(context.getSource().getEntityName());
+                }
+
+                if(null == rtarget) {
+                    rtarget = joinEntity.tryGetRefRelationMappingOfTargetEntity(relation.getTargetEntityName());
+                }
 
                 String joinEntityAlias = context.getSourceAlias() + "_" + this.alias;
 

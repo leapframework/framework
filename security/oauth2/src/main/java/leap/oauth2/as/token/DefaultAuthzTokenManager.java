@@ -15,20 +15,23 @@
  */
 package leap.oauth2.as.token;
 
+import java.util.HashMap;
+
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.beans.DynaBean;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
 import leap.web.security.user.UserDetails;
 
 public class DefaultAuthzTokenManager implements AuthzTokenManager {
-	
+
 	protected @Inject OAuth2AuthzServerConfig      config;
 	protected @Inject AuthzAccessTokenGenerator    defaultAccessTokenGenerator;
 	protected @Inject AuthzRefreshTokenGenerator   defaultRefreshTokenGenerator;
-    
+
 	protected @Inject BeanFactory                  factory;
     protected @Inject CreateAccessTokenProcessor[] processors;
 
@@ -38,21 +41,28 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         UserDetails               user        = authc.getUserDetails();
         AuthzAccessTokenGenerator atGenerator = getAccessTokenGenerator(authc);
         boolean                   rtCreated   = false;
-        
+
         //Create access token.
         SimpleAuthzAccessToken at = new SimpleAuthzAccessToken();
         SimpleAuthzRefreshToken rt = new SimpleAuthzRefreshToken();
-        
+
+        if(user instanceof DynaBean && ((DynaBean)user).getProperties()!=null){
+			if(at.getExtendedParameters()==null){
+				at.setExtendedParameters(new HashMap<>());
+			}
+			at.getExtendedParameters().putAll(((DynaBean)user).getProperties());
+		}
+
         //Generate token value
         at.setToken(atGenerator.generateAccessToken(authc));
-        
+
         //Create refresh token
         if(isAllowRefreshToken(client)) {
             rtCreated = true;
             rt.setToken(getRefreshTokenGenerator(authc).generateRefreshToken(authc));
             rt.setExpiresIn(getRefreshTokenExpires(client));
         }
-        
+
         //Set refresh token.
         at.setRefreshToken(rt.getToken());
         
@@ -60,7 +70,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         at.setExpiresIn(getAccessTokenExpires(client));
         at.setCreated(System.currentTimeMillis());
         rt.setCreated(at.getCreated());
-        
+
         //Set client & user info
         if(null != client) {
             at.setClientId(client.getId());
@@ -69,7 +79,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
                 at.setAuthenticated(client.isAuthenticated());
             }
         }
-        
+
         if(null != user) {
             at.setUserId(user.getId().toString());
             rt.setUserId(at.getUserId());
@@ -104,7 +114,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         if(rtCreated) {
             config.getTokenStore().saveRefreshToken(rt);
         }
-        
+
         return at;
     }
 
@@ -125,17 +135,17 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
         }
         return client.getGrantedScope() + "," + authc.getScope();
     }
-    
+
     @Override
     public AuthzAccessToken createAccessToken(AuthzAuthentication authc, AuthzRefreshToken rt) {
         //TODO : creates a new rt ?
-        
+
         //create new one
         AuthzAccessToken at = createAccessToken(authc);
-        
+
         //removes the old
         removeRefreshToken(rt);
-        
+
         return at;
     }
 
@@ -148,7 +158,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
     public AuthzRefreshToken loadRefreshToken(String refreshToken) {
         return config.getTokenStore().loadRefreshToken(refreshToken);
     }
-    
+
 	@Override
     public void removeAccessToken(AuthzAccessToken token) {
 	    removeAccessTokenOnly(token.getToken());
@@ -158,25 +168,25 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
     public void removeRefreshToken(AuthzRefreshToken token) {
 	    removeRefreshTokenOnly(token.getToken());
     }
-    
+
     protected void removeAccessTokenOnly(String token) {
         config.getTokenStore().removeAccessToken(token);
     }
-	
+
 	protected void removeRefreshTokenOnly(String token) {
 	    config.getTokenStore().removeRefreshToken(token);
 	}
 
     protected int getAccessTokenExpires(AuthzClient client) {
 	    int expires = config.getDefaultAccessTokenExpires();
-	    
+
 	    if(null != client && client.getAccessTokenExpires() != null) {
 	        expires = client.getAccessTokenExpires();
 	    }
-	    
+
 	    return expires;
 	}
-	
+
     protected int getRefreshTokenExpires(AuthzClient client) {
         int expires = config.getDefaultRefreshTokenExpires();
 
@@ -186,7 +196,7 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 
         return expires;
     }
-	
+
 	protected boolean isAllowRefreshToken(AuthzClient client) {
 	    return null == client || client.isAllowRefreshToken();
 	}
@@ -194,9 +204,9 @@ public class DefaultAuthzTokenManager implements AuthzTokenManager {
 	protected AuthzAccessTokenGenerator getAccessTokenGenerator(AuthzAuthentication authc) {
 	    return defaultAccessTokenGenerator;
 	}
-	
+
 	protected AuthzRefreshTokenGenerator getRefreshTokenGenerator(AuthzAuthentication authc) {
 	    return defaultRefreshTokenGenerator;
 	}
-    
+
 }

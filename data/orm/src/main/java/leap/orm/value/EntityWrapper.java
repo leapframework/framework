@@ -27,7 +27,7 @@ import leap.orm.mapping.EntityMapping;
 public abstract class EntityWrapper implements EntityBase {
 	
 	/**
-	 * Wrapps the given entity object to a {@link EntityWrapper} object.
+	 * Wraps the given entity object to a {@link EntityWrapper} object.
 	 * 
 	 * <p>
 	 * The supported entity type must be a {@link Map}, a {@link DynaBean} , a {@link Entity} or a pojo bean.

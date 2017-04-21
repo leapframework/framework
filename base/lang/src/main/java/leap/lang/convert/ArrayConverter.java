@@ -25,7 +25,7 @@ import leap.lang.Strings;
 public class ArrayConverter extends AbstractConverter<Object>{
 
 	@SuppressWarnings("unused")
-	public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+	public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		Class<?> sourceType = value.getClass();
 		Class<?> targetComponentType = targetType.getComponentType();
 

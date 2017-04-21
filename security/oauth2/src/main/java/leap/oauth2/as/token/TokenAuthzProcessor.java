@@ -13,7 +13,7 @@
  *  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  * See the License for the specific language governing permissions and
  *  * limitations under the License.
- *  
+ *
  */
 
 package leap.oauth2.as.token;
@@ -36,6 +36,6 @@ public interface TokenAuthzProcessor {
      * @param token access token
      * @return true if want continue to process, otherwise false will stop to continue
      */
-    boolean process(Request request, Response response, OAuth2Params params, GrantTypeHandler handler, AuthzAccessToken token);
-    
+    boolean process(Request request, Response response,  OAuth2Params params, GrantTypeHandler handler, AuthzAccessToken token);
+
 }

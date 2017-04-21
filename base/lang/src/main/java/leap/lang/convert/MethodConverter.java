@@ -24,7 +24,7 @@ import leap.lang.reflect.Reflection;
 public class MethodConverter extends AbstractConverter<Method> implements Converter<Method> {
 	
 	@Override
-    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out) throws Throwable {
+    public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
 		String fqName = value.toString();
 		
 		out.set(Reflection.getMethodByFqName(fqName));
