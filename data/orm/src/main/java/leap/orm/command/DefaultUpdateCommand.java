@@ -15,35 +15,40 @@
  */
 package leap.orm.command;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
+import leap.core.jdbc.PreparedStatementHandler;
+import leap.db.Db;
 import leap.lang.Args;
+import leap.lang.Arrays2;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEventWithWrapperImpl;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.Mappings;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
-import leap.orm.value.Entity;
+import leap.orm.value.EntityWrapper;
 
 public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements UpdateCommand {
 
-    private static final Log log = LogFactory.get(DefaultUpdateCommand.class);
-	
-    protected final SqlFactory sf;
-    protected final Entity     entity;
-	
-	protected SqlCommand   command;
-	protected Params   	   parameters;
-	protected Object	   oldOptimisticLockValue;
-	protected Object	   newOptimisticLockValue;
+    protected final SqlFactory         sf;
+    protected final EntityEventHandler eventHandler;
+
+	protected SqlCommand    command;
+    protected EntityWrapper entity;
+    protected Object        id;
+	protected Object        oldOptimisticLockValue;
+	protected Object        newOptimisticLockValue;
 
 	public DefaultUpdateCommand( Dao dao, EntityMapping em) {
 		this(dao,em,null);
@@ -51,119 +56,125 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 	
 	public DefaultUpdateCommand(Dao dao, EntityMapping em, SqlCommand command) {
 	    super(dao,em);
-	    this.sf = dao.getOrmContext().getSqlFactory();
-	    this.entity = new Entity(em.getEntityName());
-	    this.command = command;
+	    this.sf           = dao.getOrmContext().getSqlFactory();
+        this.eventHandler = context.getEntityEventHandler();
+	    this.command      = command;
     }
 	
     @Override
-    @SuppressWarnings("rawtypes")
-    public UpdateCommand id(Object id) {
-    	Args.notNull(id,"id");
-    	
-		String[] keyNames = em.getKeyFieldNames();
-		if(keyNames.length == 1){
-			entity.put(keyNames[0],id);
-			return this;
-		}
-		
-		if(keyNames.length == 0){
-			throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");
-		}
-		
-		if(id == null){
-			for(int i=0;i<keyNames.length;i++){
-				entity.put(keyNames[i],null);
-			}
-		}else{
-			if(!(id instanceof Map)){
-				throw new IllegalArgumentException("The given id must be a Map object for composite id model");
-			}
-            Map map = (Map)id;
-			for(int i=0;i<keyNames.length;i++){
-				entity.put(keyNames[i], map.get(keyNames[i]));
-			}
-		}
-    	
+    public UpdateCommand withId(Object id) {
+        if(em.getKeyFieldNames().length == 0){
+            throw new IllegalStateException("Entity '" + em.getEntityName() + "' has no id");
+        }
+
+        this.id = id;
     	return this;
     }
 
 	@Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public UpdateCommand setAll(Object bean) {
-		Args.notNull(bean,"bean");
-		
-		if(bean instanceof Map){
-			return setAll((Map)bean);
-		}else{
-			this.parameters = context.getParameterStrategy().createParams(bean);
-			this.entity.putAll(parameters.map());
-		    return this;
-		}
+    public UpdateCommand from(Object record) {
+		Args.notNull(record,"record");
+        entity = EntityWrapper.wrap(em, record);
+        return this;
     }
 	
 	@Override
-    public UpdateCommand setAll(Map<String, Object> fields) {
-		Args.notNull(fields,"fields");
-		this.parameters = context.getParameterStrategy().createParams(fields);
-		entity.putAll(fields);
-		return this;
-    }
-
-	@Override
     public UpdateCommand set(String name, Object value) {
 		Args.notEmpty(name,"name");
-		this.entity.put(name, value);
+        if(null == entity) {
+            entity = EntityWrapper.wrap(em, new HashMap<>());
+        }
+		entity.set(name, value);
 	    return this;
     }
 	
 	@Override
     public int execute() {
 		prepare();
-		
-		SqlCommand command = this.command;
-		
-		if(null == command){
-            command = sf.createUpdateCommand(context, em, entity.keySet().toArray(new String[entity.size()]));
-            log.debug("Create update sql : {}", command.getSql());
-		}
-		
-	    int result = command.executeUpdate(this, entity);
-	    
-	    if(em.hasOptimisticLock()){
-		    if(result < 1){
-		    	String id  = Mappings.getIdToString(em, entity);
-		    	throw new OptimisticLockException("Failed to update entity '" + em.getEntityName() + 
-		    									  "', id=[" + id + "], verion=[" + oldOptimisticLockValue + 
-		    									  "], may be an optimistic locking conflict occured");
-		    }else{ 
-		    	setGeneratedValue(em.getOptimisticLockField(), newOptimisticLockValue);
-		    }
-	    }
-	    
-	    return result;
+
+        if(eventHandler.isHandleUpdateEvent(context, em)) {
+            return doExecuteWithEvent();
+        }else{
+            return doExecuteUpdate();
+        }
+    }
+
+    protected int doExecuteWithEvent() {
+        int result;
+
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, em, entity);
+
+        //pre without transaction.
+        eventHandler.preUpdateEntityNoTrans(context, em, e);
+
+        if(eventHandler.isUpdateEventTransactional(context, em)) {
+            result = dao.doTransaction((status) -> {
+                e.setTransactionStatus(status);
+
+                //pre with transaction.
+                eventHandler.preUpdateEntityInTrans(context, em, e);
+
+                int affected = doExecuteUpdate();
+
+                //post with transaction.
+                eventHandler.postUpdateEntityInTrans(context, em, e);
+
+                e.setTransactionStatus(null);
+
+                return affected;
+            });
+
+        }else{
+            result = doExecuteUpdate();
+        }
+
+        //post without transaction.
+        eventHandler.postUpdateEntityNoTrans(context, em, e);
+
+        return result;
+    }
+
+    protected int doExecuteUpdate() {
+
+        //Create command.
+        if(null == command) {
+            String[] fields = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            command = sf.createUpdateCommand(context, em, fields);
+        }
+
+        //Creates map for saving.
+        Map<String,Object> fields = context.getParameterStrategy().toMap(entity.raw());
+
+        //Prepared id and serialization.
+        prepareIdAndSerialization(id, fields);
+
+        int result = command.executeUpdate(this, fields);
+        if(em.hasOptimisticLock()){
+            if(result < 1){
+                String id  = Mappings.getIdToString(em, fields);
+                throw new OptimisticLockException("Failed to update entity '" + em.getEntityName() +
+                        "', id=[" + id + "], version=[" + oldOptimisticLockValue +
+                        "], may be an optimistic locking conflict occured");
+            }else{
+                setGeneratedValue(em.getOptimisticLockField(), newOptimisticLockValue);
+            }
+        }
+
+        return result;
     }
 	
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
-
 			if(fm.isOptimisticLock()){
 				prepareOptimisticLock(fm);
 			}else{
                 Object value = entity.get(fm.getFieldName());
-
                 if(null == value) {
                     Expression expression = fm.getUpdateValue();
                     if (null != expression) {
-                        value = expression.getValue(this, entity);
+                        value = expression.getValue(entity);
                         setGeneratedValue(fm, value);
-                    }
-                }
-
-                if(null != value && null != fm.getSerializer()) {
-                    Object encoded = fm.getSerializer().trySerialize(fm, value);
-                    if(encoded != value) {
-                        entity.set(fm.getFieldName(), encoded);
                     }
                 }
 			}
@@ -182,7 +193,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
             oldValue = Converts.toLong(oldOptimisticLockValue);
         } catch (Exception e) {
         	throw new InvalidOptimisticLockException("Optimistic locking value '" + oldOptimisticLockValue + 
-        											 "' in field '" + fm.getFieldName() + "' is invalid,must be integer value");
+        											 "' in field '" + fm.getFieldName() + "' is invalid,must be long value");
         } 
 		
 		//TODO : check max value 
@@ -191,9 +202,6 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 	}
 	
 	protected void setGeneratedValue(FieldMapping fm,Object value){
-		entity.put(fm.getFieldName(), value);
-		if(null != parameters){
-			parameters.set(fm.getFieldName(), value);
-		}
+        entity.set(fm.getFieldName(), value);
 	}
 }

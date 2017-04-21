@@ -23,7 +23,7 @@ import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.event.CreateEntityEventImpl;
+import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.event.EntityEventHandler;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
@@ -51,8 +51,8 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
 	public DefaultInsertCommand(Dao dao,EntityMapping em, SqlCommand command) {
 	    super(dao,em);
 	    this.sf		      = dao.getOrmContext().getSqlFactory();
-	    this.command      = command;
         this.eventHandler = context.getEntityEventHandler();
+	    this.command      = command;
     }
 
     @Override
@@ -86,7 +86,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     @Override
     public InsertCommand withId(Object id) {
         if(em.getKeyFieldNames().length == 0){
-            throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");
+            throw new IllegalStateException("Entity '" + em.getEntityName() + "' has no id");
         }
         this.id = id;
         return this;
@@ -112,7 +112,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     protected int doExecuteWithEvent() {
         int result;
 
-        CreateEntityEventImpl e = new CreateEntityEventImpl(context, em, entity);
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, em, entity);
 
         //pre without transaction.
         eventHandler.preCreateEntityNoTrans(context, em, e);
@@ -145,7 +145,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
     }
 
     protected int doExecuteUpdate() {
-
         //Create command.
         if(null == command) {
             String[] fields = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
@@ -161,30 +160,10 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         //Creates map for saving.
         Map<String,Object> map = context.getParameterStrategy().toMap(entity.raw());
 
-        //Prepared id
-        if(null != id) {
-            String[] keyNames = em.getKeyFieldNames();
-            if(keyNames.length == 1){
-                map.put(keyNames[0],id);
-            }else{
-                Params idParams = context.getParameterStrategy().createIdParameters(context, em, id);
-                for(int i=0;i<keyNames.length;i++){
-                    map.put(keyNames[i], idParams.get(keyNames[i]));
-                }
-            }
-        }
+        //Prepared id and serialization
+        prepareIdAndSerialization(id, map);
 
-        //Serialize field(s).
-        for(FieldMapping fm : em.getFieldMappings()){
-            if(null != fm.getSerializer()) {
-                Object value = entity.get(fm.getFieldName());
-                Object encoded = fm.getSerializer().trySerialize(fm, value);
-                if(encoded != value) {
-                    map.put(fm.getFieldName(), encoded);
-                }
-            }
-        }
-
+        //Executes
         if(null != preparedStatementHandler){
             return command.executeUpdate(this, map, preparedStatementHandler);
         }else{

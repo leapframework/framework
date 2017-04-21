@@ -30,7 +30,7 @@ public interface EntityEventHandler {
     boolean isHandleCreateEvent(OrmContext context, EntityMapping em);
 
     /**
-     * Returns true if the create event should be handled in a transaction.
+     * Returns true if the 'Create' event should be handled in a transaction.
      */
     boolean isCreateEventTransactional(OrmContext context, EntityMapping em);
 
@@ -59,5 +59,42 @@ public interface EntityEventHandler {
      * Executed after saving the the entity record to db outside transaction.
      */
     void postCreateEntityNoTrans(OrmContext context, EntityMapping em, CreateEntityEvent e);
+
+    /**
+     * Returns true if handles the 'Update' event of the given entity.
+     */
+    boolean isHandleUpdateEvent(OrmContext context, EntityMapping em);
+
+    /**
+     * Returns true if the 'Update' event should be handled in a transaction.
+     */
+    boolean isUpdateEventTransactional(OrmContext context, EntityMapping em);
+
+    /**
+     * Executed before saving the entity record to db outside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
+    void preUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e);
+
+    /**
+     * Executed before saving the entity record to db inside transaction.
+     *
+     * <p/>
+     * The entity fields can be changed and all the changes will be saved to db.
+     */
+    void preUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e);
+
+    /**
+     * Executed after saving the the entity record to db inside transaction.
+     */
+    void postUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e);
+
+    /**
+     * Executed after saving the the entity record to db outside transaction.
+     */
+    void postUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e);
+
 
 }

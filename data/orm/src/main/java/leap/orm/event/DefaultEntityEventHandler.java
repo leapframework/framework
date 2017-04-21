@@ -17,6 +17,7 @@
 package leap.orm.event;
 
 import leap.orm.OrmContext;
+import leap.orm.annotation.event.PreUpdate;
 import leap.orm.mapping.EntityMapping;
 
 public class DefaultEntityEventHandler implements EntityEventHandler {
@@ -59,4 +60,41 @@ public class DefaultEntityEventHandler implements EntityEventHandler {
         }
     }
 
+    @Override
+    public boolean isHandleUpdateEvent(OrmContext context, EntityMapping em) {
+        return em.getListeners().hasUpdateListeners();
+    }
+
+    @Override
+    public boolean isUpdateEventTransactional(OrmContext context, EntityMapping em) {
+        return em.getListeners().hasTransUpdateListeners();
+    }
+
+    @Override
+    public void preUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
+        for(PreUpdateListener listener : em.getListeners().getNoTransPreUpdateListeners()) {
+            listener.preUpdateEntity(e);
+        }
+    }
+
+    @Override
+    public void preUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
+        for(PreUpdateListener listener : em.getListeners().getInTransPreUpdateListeners()) {
+            listener.preUpdateEntity(e);
+        }
+    }
+
+    @Override
+    public void postUpdateEntityInTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
+        for(PostUpdateListener listener : em.getListeners().getInTransPostUpdateListeners()) {
+            listener.postUpdateEntity(e);
+        }
+    }
+
+    @Override
+    public void postUpdateEntityNoTrans(OrmContext context, EntityMapping em, UpdateEntityEvent e) {
+        for(PostUpdateListener listener : em.getListeners().getNoTransPostUpdateListeners()) {
+            listener.postUpdateEntity(e);
+        }
+    }
 }

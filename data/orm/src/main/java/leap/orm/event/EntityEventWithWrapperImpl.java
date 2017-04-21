@@ -21,7 +21,7 @@ import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.value.EntityWrapper;
 
-public class CreateEntityEventImpl implements CreateEntityEvent,UpdateEntityEvent {
+public class EntityEventWithWrapperImpl implements CreateEntityEvent,UpdateEntityEvent {
 
     private final OrmContext    context;
     private final EntityMapping mapping;
@@ -29,7 +29,7 @@ public class CreateEntityEventImpl implements CreateEntityEvent,UpdateEntityEven
 
     private TransactionStatus transactionStatus;
 
-    public CreateEntityEventImpl(OrmContext context, EntityMapping em, EntityWrapper entity) {
+    public EntityEventWithWrapperImpl(OrmContext context, EntityMapping em, EntityWrapper entity) {
         this.context = context;
         this.mapping = em;
         this.entity  = entity;

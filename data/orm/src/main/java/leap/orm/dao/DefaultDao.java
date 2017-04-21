@@ -152,7 +152,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		
 		EntityMapping em = emForObject(entity);
 		
-	    return commandFactory().newUpdateCommand(this, em).setAll(entity).execute();
+	    return commandFactory().newUpdateCommand(this, em).from(entity).execute();
     }
 
 	@Override

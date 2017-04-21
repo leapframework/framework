@@ -18,14 +18,30 @@ package leap.orm.command;
 import java.util.Map;
 
 public interface UpdateCommand {
-	
-	UpdateCommand id(Object id);
-	
+
+    /**
+     * Sets the id of record.
+     */
+	UpdateCommand withId(Object id);
+
+    /**
+     * Sets the fields from the given record.
+     *
+     * <p/>
+     * The record must be a pojo bean, or a {@link Map},
+     *
+     * or a {@link leap.lang.params.Params}, or a {@link leap.lang.beans.DynaBean}.
+     */
+    UpdateCommand from(Object record);
+
+    /**
+     * Sets the field's value for update.
+     */
 	UpdateCommand set(String name,Object value);
-	
-	UpdateCommand setAll(Object bean);
-	
-	UpdateCommand setAll(Map<String, Object> map);
-	
+
+    /**
+     * Executes update and returns the affected rows.
+     */
 	int execute();
+
 }
