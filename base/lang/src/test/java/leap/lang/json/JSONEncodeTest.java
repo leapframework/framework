@@ -17,7 +17,6 @@ package leap.lang.json;
 
 import leap.junit.concurrent.ConcurrentTestCase;
 import leap.lang.naming.NamingStyles;
-import leap.lang.serialize.JsonSerializer;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -91,6 +90,11 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 	public void testSimpleBean() throws Exception {
 		assertEquals("{\"name\":\"xiaoming\",\"age\":100}", encode(new ParentBean("xiaoming",100)));
 		assertEquals("{\"key\":\"key\",\"name\":\"xiaoming\",\"age\":100}", encode(new ChildBean("xiaoming",100,"key")));
+	}
+
+	@Test
+	public void test() {
+		System.out.println(encode(new ParentBean("ck", 28)));
 	}
 	
 	@Test
@@ -218,6 +222,7 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		
 		private String name;
 		private int    age;
+		public String testField;
 		
 		private ParentBean(String name,int age){
 			this.name = name;
@@ -247,6 +252,15 @@ public class JSONEncodeTest extends ConcurrentTestCase {
 		public final void setIgnoreField(int ignoreField) {
         	this.ignoreField = ignoreField;
         }
+
+		public String getTestField() {
+			return null == testField? "" : testField;
+		}
+
+		public ParentBean setTestField(String testField) {
+			this.testField = testField;
+			return this;
+		}
 	}
 	
 	static final class ChildBean extends ParentBean{

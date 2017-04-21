@@ -17,9 +17,10 @@ package leap.web.format;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.lang.Classes;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.json.JSON;
+import leap.lang.json.JsonProcessor;
 import leap.lang.json.JsonSettings;
 import leap.lang.json.JsonStringable;
 import leap.lang.logging.Log;
@@ -35,8 +36,8 @@ import leap.web.route.RouteBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.List;
 
 public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 
@@ -99,6 +100,15 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
         String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
+		Class<JsonProcessor>[] processors = a.processors();
+		List<JsonProcessor> processorInstances = null;
+		if(Arrays2.isNotEmpty(processors)) {
+			processorInstances = new ArrayList<>();
+			for (Class<JsonProcessor> clazz : processors) {
+				JsonProcessor processorInstance = factory.getBean(clazz);
+				processorInstances.add(processorInstance);
+			}
+		}
 
         NamingStyle ns;
 
@@ -120,6 +130,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
                     .setDateFormat(dateFormat)
+					.setProcessors(processorInstances)
                     .build();
 	}
 }

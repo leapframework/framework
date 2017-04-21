@@ -28,7 +28,6 @@
  */
 package app4.controller;
 
-import app.models.products.Product;
 import leap.lang.json.JSON;
 import leap.web.WebTestCase;
 import org.junit.Test;
@@ -42,5 +41,28 @@ public class HomeControllerTest extends WebTestCase {
 		Map<String, Object> map = JSON.decode(json);
 		assertEquals("userId", map.get("user_id"));
 		assertEquals("userName", ((Map<String, Object>)map.get("user_property")).get("user_name"));
+	}
+
+	@Test
+	public void testGetBeanWithJsonProcessorDefined(){
+		String json = get("/app4/mvc/bean1origin").getContent();
+		Map<String, Object> map = JSON.decode(json);
+		assertEquals("test", map.get("prop1"));
+		assertNull(map.get("prop2"));
+
+		json = get("/app4/mvc/bean1").getContent();
+		map = JSON.decode(json);
+		assertEquals("test", map.get("prop1"));
+		assertEquals("", map.get("prop2"));
+
+		json = get("/app4/mvc/bean1array").getContent();
+		map = JSON.decodeArray(json, Map.class)[0];
+		assertEquals("test", map.get("prop1"));
+		assertEquals("", map.get("prop2"));
+
+		json = get("/app4/mvc/map1").getContent();
+		map = JSON.decode(json);
+		assertEquals("test", map.get("prop1"));
+		assertEquals("", map.get("prop2"));
 	}
 }

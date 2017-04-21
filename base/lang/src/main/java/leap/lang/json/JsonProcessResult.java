@@ -13,28 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package leap.web.json;
+package leap.lang.json;
 
-import leap.lang.enums.Bool;
-import leap.lang.json.JsonProcessor;
+public class JsonProcessResult {
+    private String key;
+    private Object value;
 
-import java.lang.annotation.*;
+    public JsonProcessResult() {
+    }
 
-@Target({ElementType.METHOD,ElementType.TYPE})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface JsonSerialize {
-	
-	Bool keyQuoted() default Bool.NONE;
+    public JsonProcessResult(String key, Object value) {
+        this.key = key;
+        this.value = value;
+    }
 
-	Bool ignoreNull() default Bool.NONE;
-	
-	Bool ignoreEmpty() default Bool.NONE;
+    public String getKey() {
+        return key;
+    }
 
-	String namingStyle() default "";
+    public JsonProcessResult setKey(String key) {
+        this.key = key;
+        return this;
+    }
 
-    String dateFormat() default "";
+    public Object getValue() {
+        return value;
+    }
 
-    Class<JsonProcessor>[] processors() default {};
-
+    public JsonProcessResult setValue(Object value) {
+        this.value = value;
+        return this;
+    }
 }

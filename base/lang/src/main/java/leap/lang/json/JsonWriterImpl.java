@@ -818,13 +818,27 @@ public class JsonWriterImpl implements JsonWriter {
 						}
 					}
 				}
-				property(key, val);
+
+				JsonProcessResult result = processResult(key, val);
+
+				property(result.getKey(), result.getValue());
 			}
 			endObject();
 		}
 	    return this;
     }
-	
+
+	private JsonProcessResult processResult(String key, Object val) {
+		List<JsonProcessor> processors = settings.getProcessors();
+		JsonProcessResult result = new JsonProcessResult(key, val);
+		if(Collections2.isNotEmpty(processors)) {
+            for (JsonProcessor processor : processors) {
+                result = processor.process(result.getKey(), result.getValue());
+            }
+        }
+		return result;
+	}
+
 	@Override
     public JsonWriter bean(Object bean) {
 		if(null == bean) {
@@ -870,6 +884,10 @@ public class JsonWriterImpl implements JsonWriter {
                         if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
                             continue;
                         }
+
+                        JsonProcessResult result = processResult(propName, propValue);
+                        propName = result.getKey();
+                        propValue = result.getValue();
 
                         keyUseNamingStyle(propName);
 
