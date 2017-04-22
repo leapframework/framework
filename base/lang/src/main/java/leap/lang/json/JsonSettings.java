@@ -34,11 +34,12 @@ public class JsonSettings {
     private final boolean     ignoreFalse;
     private final boolean     ignoreEmptyString;
     private final boolean     ignoreEmptyArray;
+    private final boolean     nullToEmptyString;
     private final NamingStyle namingStyle;
     private final DateFormat  dateFormat;
 
-	public JsonSettings(boolean keyQuoted,boolean ignoreNull,boolean ignoreFalse,
-                        boolean ignoreEmptyString,boolean ignoreEmptyArray,
+    public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
                         NamingStyle namingStyle, DateFormat dateFormat) {
 		this.keyQuoted         = keyQuoted;
 		this.ignoreNull        = ignoreNull;
@@ -47,6 +48,7 @@ public class JsonSettings {
         this.ignoreEmptyArray  = ignoreEmptyArray;
 		this.namingStyle       = namingStyle;
         this.dateFormat        = dateFormat;
+        this.nullToEmptyString = nullToEmptyString;
 	}
 	public boolean isKeyQuoted() {
 		return keyQuoted;
@@ -76,13 +78,18 @@ public class JsonSettings {
         return dateFormat;
     }
 
-	public static final class Builder {
+    public boolean isNullToEmptyString() {
+        return nullToEmptyString;
+    }
+
+    public static final class Builder {
 
         private boolean     keyQuoted   = true;
         private boolean     ignoreNull  = false;
         private boolean     ignoreFalse = false;
         private boolean     ignoreEmptyString = false;
         private boolean     ignoreEmptyArray  = false;
+        private boolean     nullToEmptyString = false;
         private NamingStyle namingStyle = NamingStyles.RAW;
         private DateFormat  dateFormat  = null;
 
@@ -165,12 +172,22 @@ public class JsonSettings {
             return this;
         }
 
+        public boolean isNullToEmptyString() {
+            return nullToEmptyString;
+        }
+
+        public Builder setNullToEmptyString(boolean nullToEmptyString) {
+            this.nullToEmptyString = nullToEmptyString;
+            return this;
+        }
+
         public Builder setSettings(JsonSettings settings) {
             this.keyQuoted = settings.keyQuoted;
             this.ignoreNull = settings.ignoreNull;
             this.ignoreFalse = settings.ignoreFalse;
             this.ignoreEmptyString = settings.ignoreEmptyString;
             this.ignoreEmptyArray = settings.ignoreEmptyArray;
+            this.nullToEmptyString = settings.nullToEmptyString;
             this.namingStyle = settings.namingStyle;
             this.dateFormat = settings.dateFormat;
             return this;
@@ -178,8 +195,9 @@ public class JsonSettings {
 
         public JsonSettings build(){
 			return new JsonSettings(keyQuoted, ignoreNull, ignoreFalse,
-                                    ignoreEmptyString, ignoreEmptyArray,
+                                    ignoreEmptyString, ignoreEmptyArray, nullToEmptyString,
                                     namingStyle, dateFormat);
 		}
-	}
+
+    }
 }

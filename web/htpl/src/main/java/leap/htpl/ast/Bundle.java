@@ -15,21 +15,17 @@
  */
 package leap.htpl.ast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
+import leap.htpl.*;
+import leap.htpl.exception.DomDefinitionException;
+import leap.lang.Strings;
 import leap.web.assets.Asset;
 import leap.web.assets.AssetBundleBuilder;
 import leap.web.assets.AssetManager;
 import leap.web.assets.AssetSource;
-import leap.htpl.HtplContext;
-import leap.htpl.HtplDocument;
-import leap.htpl.HtplEngine;
-import leap.htpl.HtplRenderable;
-import leap.htpl.HtplTemplate;
-import leap.htpl.HtplWriter;
-import leap.lang.Strings;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Bundle extends NodeContainer implements HtplRenderable {
 	
@@ -86,7 +82,9 @@ public class Bundle extends NodeContainer implements HtplRenderable {
                     
                     if(e.isElement("link")) {
                         String type = e.getAttributeValue("type");
+                        if(Strings.isBlank(type)) throw new DomDefinitionException("Element <link> must has 'type' field");
                         String rel  = e.getAttributeValue("rel");
+                        if(Strings.isBlank(rel)) throw new DomDefinitionException("Element <link> must has 'rel' field");
                         if(type.equalsIgnoreCase("text/css") && "stylesheet".equalsIgnoreCase(rel)) {
                             if(!bundle.hasType()) {
                                 bundle.cssType();
@@ -103,6 +101,7 @@ public class Bundle extends NodeContainer implements HtplRenderable {
                         }
                     } if(e.isElement("script")) {
                         String type = e.getAttributeValue("type");
+                        if(Strings.isBlank(type)) throw new DomDefinitionException("Element <script> must has 'type' field");
                         if(type.equalsIgnoreCase("text/javascript")) {
                             if(!bundle.hasType()) {
                                 bundle.jsType();

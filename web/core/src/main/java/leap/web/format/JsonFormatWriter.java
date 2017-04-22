@@ -17,7 +17,6 @@ package leap.web.format;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
-import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonSettings;
@@ -35,8 +34,6 @@ import leap.web.route.RouteBuilder;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 
@@ -98,6 +95,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
 		boolean keyQuoted   = a.keyQuoted().isNone()   ? defaultJsonConfig.isDefaultSerializationKeyQuoted()   : a.keyQuoted().getValue();
 		boolean ignoreNull  = a.ignoreNull().isNone()  ? defaultJsonConfig.isDefaultSerializationIgnoreNull()  : a.ignoreNull().getValue();
 		boolean ignoreEmpty = a.ignoreEmpty().isNone() ? defaultJsonConfig.isDefaultSerializationIgnoreEmpty() : a.ignoreEmpty().getValue();
+		boolean nullToEmptyString = a.nullToEmptyString().isNone() ? false : a.nullToEmptyString().getValue();
         String  dateFormat  = Strings.isEmpty(a.dateFormat()) ? defaultJsonConfig.getDefaultDateFormat() : a.dateFormat();
 
         NamingStyle ns;
@@ -120,6 +118,7 @@ public class JsonFormatWriter implements FormatWriter,ActionInitializable {
                     .setIgnoreEmpty(ignoreEmpty)
                     .setNamingStyle(ns)
                     .setDateFormat(dateFormat)
+					.setNullToEmptyString(nullToEmptyString)
                     .build();
 	}
 }

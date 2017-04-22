@@ -16,23 +16,21 @@
  */
 package leap.lang.json;
 
+import leap.junit.concurrent.ConcurrentTestCase;
+import leap.lang.Beans;
+import leap.lang.New;
+import leap.lang.io.IO;
+import leap.lang.resource.Resource;
+import leap.lang.resource.ResourceSet;
+import leap.lang.resource.Resources;
+import org.junit.Test;
+
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import leap.junit.concurrent.ConcurrentTestCase;
-import leap.lang.Beans;
-import leap.lang.New;
-import leap.lang.convert.Converts;
-import leap.lang.io.IO;
-import leap.lang.resource.Resource;
-import leap.lang.resource.ResourceSet;
-import leap.lang.resource.Resources;
-
-import org.junit.Test;
 
 @SuppressWarnings("unchecked")
 public class JSONDecodeTest extends ConcurrentTestCase {
@@ -193,7 +191,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     @Test
     public void testJsonWriterWithJsonSetting(){
         JsonWriter writer = JSON.createWriter(new JsonSettings(true,true,
-                true,true,true,null,null));
+                true,true,true, false,null, null));
         writer.map(Beans.toMap(new JsonWriterBean()));
         Map map = JSON.decode(writer.toString());
         assertNull(map.get("strEmpty"));

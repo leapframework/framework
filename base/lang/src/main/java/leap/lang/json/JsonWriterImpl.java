@@ -212,6 +212,9 @@ public class JsonWriterImpl implements JsonWriter {
     }
 
 	public JsonWriter property(String key,String stringValue) {
+		if(settings.isNullToEmptyString() && null == stringValue) {
+			stringValue = "";
+		}
 		return key(key).value(stringValue);
 	}
 	
@@ -823,13 +826,16 @@ public class JsonWriterImpl implements JsonWriter {
 						}
 					}
 				}
+				if(settings.isNullToEmptyString() && val == null) {
+					val = "";
+				}
 				property(key, val);
 			}
 			endObject();
 		}
 	    return this;
     }
-	
+
 	@Override
     public JsonWriter bean(Object bean) {
 		return bean(bean, null);
@@ -910,7 +916,9 @@ public class JsonWriterImpl implements JsonWriter {
                         if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
                             continue;
                         }
-
+                        if(prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
+                        	propValue = "";
+						}
                         keyUseNamingStyle(propName);
 
                         if(!writeDateValue(prop, propValue)) {
