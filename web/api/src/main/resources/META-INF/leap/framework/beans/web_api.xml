@@ -50,4 +50,13 @@
     <bean type="leap.web.api.meta.desc.ApiDescContainer" class="leap.web.api.meta.desc.DefaultApiDescContainer"/>
     <bean name="controller" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ControllerDescriptionLoader"/>
     <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
+
+    <!-- restd -->
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiProcessor"/>
+
+    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.COperationCreator"/>
+    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.ROperationCreator"/>
+    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.UOperationCreator"/>
+    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.DOperationCreator"/>
+
 </beans>

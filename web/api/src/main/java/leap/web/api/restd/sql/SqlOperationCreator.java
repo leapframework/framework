@@ -14,4 +14,18 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd;
+package leap.web.api.restd.sql;
+
+import leap.web.App;
+import leap.web.api.config.ApiConfigurator;
+import leap.web.api.restd.RestdApiCreator;
+import leap.web.api.restd.RestdApiCreatorContext;
+
+public class SqlOperationCreator implements RestdApiCreator {
+
+    @Override
+    public void process(App app, ApiConfigurator api, RestdApiCreatorContext context) {
+
+    }
+
+}
