@@ -57,7 +57,7 @@ public class TokenInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint
 	    if(config.isEnabled()) {
 	        sc.ignore(config.getTokenInfoEndpointPath());
 	        routes.create()
-	              .handle(config.getTokenInfoEndpointPath(), this).disableCsrf()
+	              .handle(config.getTokenInfoEndpointPath(), this).disableCsrf().enableCors()
 	              .apply();
 	    }
     }

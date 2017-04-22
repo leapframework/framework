@@ -48,7 +48,7 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 			
 			routes.create()
 				  .post(config.getTokenEndpointPath(), this)
-				  .setCsrfEnabled(false).setCorsEnabled(true)
+				  .disableCsrf().enableCors()
 				  .apply();
 		}
 
