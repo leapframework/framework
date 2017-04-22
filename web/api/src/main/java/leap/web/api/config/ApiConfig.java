@@ -25,6 +25,7 @@ import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
@@ -85,11 +86,6 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
 	 * Default is enabled.
 	 */
 	boolean isCorsDisabled();
-
-	/**
-	 * Returns the oauth config
-	 */
-	OAuthConfig getOAuthConfig();
 
 	/**
 	 * Returns the permissions required by this api.
@@ -158,4 +154,21 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Default is <code>false</code>.
      */
     boolean isUniqueOperationId();
+
+    /**
+     * Returns true if the RESTful data api is enabled.
+     */
+    default boolean isRestdEnabled() {
+        return null != getRestdConfig();
+    }
+
+    /**
+     * Returns the oauth config
+     */
+    OAuthConfig getOAuthConfig();
+
+    /**
+     * Returns the {@link RestdConfig} or null if restd is not enabled.
+     */
+    RestdConfig getRestdConfig();
 }

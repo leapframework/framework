@@ -18,14 +18,12 @@ package leap.web.api.config.model;
 
 import leap.web.api.spec.swagger.SwaggerConstants;
 
-/**
- * Created by kael on 2016/10/31.
- */
 public class OAuthConfig {
+
     private boolean oauthEnabled;
-    private String flow;
-    private String oauthAuthzEndpointUrl;
-    private String oauthTokenEndpointUrl;
+    private String  flow;
+    private String  oauthAuthzEndpointUrl;
+    private String  oauthTokenEndpointUrl;
 
     public OAuthConfig(boolean oauthEnabled, String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
         this(oauthEnabled, SwaggerConstants.IMPLICIT,oAuthAuthzEndpointUrl,oAuthTokenEndpointUrl);
@@ -38,27 +36,27 @@ public class OAuthConfig {
         this.oauthTokenEndpointUrl = oAuthTokenEndpointUrl;
     }
 
-    public boolean isOauthEnabled() {
+    public boolean isOAuthEnabled() {
         return oauthEnabled;
     }
 
-    public void setOauthEnabled(boolean oauthEnabled) {
+    public void setOAuthEnabled(boolean oauthEnabled) {
         this.oauthEnabled = oauthEnabled;
     }
 
-    public String getOauthAuthzEndpointUrl() {
+    public String getOAuthAuthzEndpointUrl() {
         return oauthAuthzEndpointUrl;
     }
 
-    public void setOauthAuthzEndpointUrl(String oauthAuthzEndpointUrl) {
+    public void setOAuthAuthzEndpointUrl(String oauthAuthzEndpointUrl) {
         this.oauthAuthzEndpointUrl = oauthAuthzEndpointUrl;
     }
 
-    public String getOauthTokenEndpointUrl() {
+    public String getOAuthTokenEndpointUrl() {
         return oauthTokenEndpointUrl;
     }
 
-    public void setOauthTokenEndpointUrl(String oauthTokenEndpointUrl) {
+    public void setOAuthTokenEndpointUrl(String oauthTokenEndpointUrl) {
         this.oauthTokenEndpointUrl = oauthTokenEndpointUrl;
     }
 

@@ -45,7 +45,7 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
         ApiConfig conf = c.config();
         OAuthConfig oauthConfig = conf.getOAuthConfig();
         if(oauthConfig == null ||
-                (Strings.isEmpty(oauthConfig.getOauthAuthzEndpointUrl()) && Strings.isEmpty(oauthConfig.getOauthTokenEndpointUrl()))) {
+                (Strings.isEmpty(oauthConfig.getOAuthAuthzEndpointUrl()) && Strings.isEmpty(oauthConfig.getOAuthTokenEndpointUrl()))) {
             
             //auto set endpoint url if oauth2 client app is enabled locally.
             if(null != owc && owc.isEnabled()) {
@@ -56,8 +56,8 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
                     c.setOAuthConfig(oauthConfig);
                     return;
                 }
-                oauthConfig.setOauthAuthzEndpointUrl(authzUrl);
-                oauthConfig.setOauthTokenEndpointUrl(tokenUrl);
+                oauthConfig.setOAuthAuthzEndpointUrl(authzUrl);
+                oauthConfig.setOAuthTokenEndpointUrl(tokenUrl);
                 return;
             }
 
@@ -72,8 +72,8 @@ public class OAuthConfigProcessor implements ApiConfigProcessor {
                     c.setOAuthConfig(oauthConfig);
                     return;
                 }
-                oauthConfig.setOauthAuthzEndpointUrl(authzUrl);
-                oauthConfig.setOauthTokenEndpointUrl(tokenUrl);
+                oauthConfig.setOAuthAuthzEndpointUrl(authzUrl);
+                oauthConfig.setOAuthTokenEndpointUrl(tokenUrl);
             }
         }
     }

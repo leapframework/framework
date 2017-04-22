@@ -28,7 +28,7 @@
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[
                                 The relative resource location of the XML file to import,
-                                for example "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
+                                for edxample "myImport.xml" or "includes/myImport.xml" or "../myImport.xml".
                             ]]></xsd:documentation>
                         </xsd:annotation>
                     </xsd:attribute>
@@ -78,6 +78,7 @@
                 <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="restd" type="restd" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="produces" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="consumes" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="protocols" type="xsd:string" minOccurs="0" maxOccurs="1"/>
@@ -95,8 +96,36 @@
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
             <xsd:attribute name="base-package" type="xsd:string" use="optional"/>
             <xsd:attribute name="unique-operation-id" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="restd-enable" type="xsd:boolean" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Enables RESTful data api.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
+            <xsd:attribute name="restd-data-source" type="xsd:string" use="optional">
+                <xsd:annotation>
+                    <xsd:documentation>
+                        Sets the data source name for RESTful data api, keep empty use 'default' data source.
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:attribute>
         </xsd:complexType>
     </xsd:element>
+
+    <xsd:complexType name="restd">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for restd api.
+            </xsd:documentation>
+        </xsd:annotation>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="included-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="excluded-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            </xsd:choice>
+            <xsd:attribute name="enabled"     type="xsd:boolean" use="optional" default="true"/>
+            <xsd:attribute name="data-source" type="xsd:string" use="optional"/>
+    </xsd:complexType>
 
     <xsd:complexType name="cors">
         <xsd:attribute name="enabled" default="true" type="xsd:boolean" use="optional"/>

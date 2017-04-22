@@ -22,6 +22,7 @@ import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.lang.Classes;
+import leap.lang.Collections2;
 import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
@@ -29,6 +30,7 @@ import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -87,6 +89,13 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String HTTP_METHODS         = "http-methods";
     protected static final String PATH_PATTERN         = "path-pattern";
     protected static final String UNIQUE_OPERATION_ID  = "unique-operation-id";
+    protected static final String RESTD                = "restd";
+    protected static final String RESTD_ENABLED        = "restd-enabled";
+    protected static final String RESTD_DATA_SOURCE    = "restd-data-source";
+    protected static final String DATA_SOURCE          = "data-source";
+    protected static final String INCLUDED_MODELS      = "included-models";
+    protected static final String EXCLUDED_MODELS      = "excluded-models";
+
 
     @Override
     public String getNamespaceURI() {
@@ -293,6 +302,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         String  basePath          = reader.resolveAttribute(BASE_PATH);
         String  basePackage       = reader.resolveAttribute(BASE_PACKAGE);
         Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
+        boolean restdEnabled      = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
 
         ApiConfigurator api = extensions.getConfigurator(name);
         if(null == api) {
@@ -304,6 +314,14 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
 
         if(null != uniqueOperationId) {
             api.setUniqueOperationId(uniqueOperationId);
+        }
+
+        if(restdEnabled && null == api.getRestdConfig()) {
+            api.setRestdConfig(new RestdConfig());
+        }
+
+        if(null != api.getRestdConfig()) {
+            api.getRestdConfig().setDataSourceName(reader.resolveAttribute(RESTD_DATA_SOURCE));
         }
 
         readApi(context, reader, api);
@@ -413,9 +431,15 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     readResourcePermissions(context, reader, api);
                     continue;
                 }
+
                 if(reader.isStartElement(OAUTH)){
                     OAuthConfig oauth = readOAuth(context,reader);
                     api.setOAuthConfig(oauth);
+                    continue;
+                }
+
+                if(reader.isStartElement(RESTD)) {
+                    readRestd(context, api, reader);
                     continue;
                 }
             }
@@ -532,7 +556,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 
-    public OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
+    protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
         boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
         String defaultFlow = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
         OAuthConfig oauth = new OAuthConfig(defaultEnabled, defaultFlow,null,null);
@@ -540,7 +564,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             if(reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOauthAuthzEndpointUrl(url);
+                    oauth.setOAuthAuthzEndpointUrl(url);
                 }
                 return;
             }
@@ -548,11 +572,47 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             if(reader.isStartElement(TOKEN_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOauthTokenEndpointUrl(url);
+                    oauth.setOAuthTokenEndpointUrl(url);
                 }
                 return;
             }
         });
         return oauth;
+    }
+
+    private void readRestd(AppConfigContext context, ApiConfigurator api, XmlReader reader){
+        boolean enabled = reader.resolveBooleanAttribute(ENABLED, true);
+        if(!enabled) {
+            api.setRestdConfig(null);
+            return;
+        }
+
+        RestdConfig c = api.getRestdConfig();
+        if(null == c) {
+            c = new RestdConfig();
+            api.setRestdConfig(c);
+        }
+
+        String dataSourceName = reader.resolveAttribute(DATA_SOURCE);
+        if(!Strings.isEmpty(dataSourceName)) {
+            c.setDataSourceName(dataSourceName);
+        }
+
+        final RestdConfig rc = c;
+
+        reader.loopInsideElement(() -> {
+            //included models
+            if (reader.isStartElement(INCLUDED_MODELS)) {
+                Collections2.addAll(rc.getIncludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+
+            //excluded models
+            if (reader.isStartElement(EXCLUDED_MODELS)) {
+                Collections2.addAll(rc.getExcludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+        });
+
     }
 }

@@ -20,6 +20,7 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -43,7 +44,6 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected String[]       consumes;
     protected boolean        corsEnabled                 = true;
     protected boolean        uniqueOperationId           = false;
-    protected OAuthConfig    oauthConfig;
     protected NamingStyle    parameterNamingStyle;
     protected NamingStyle    propertyNamingStyle;
     protected int            maxPageSize                 = MAX_PAGE_SIZE;
@@ -70,6 +70,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<Route, Class<?>> resourceTypesImv = Collections.unmodifiableMap(resourceTypes);
 
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
+
+    protected OAuthConfig    oauthConfig;
+    protected RestdConfig    restdConfig;
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -252,7 +255,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         if(oauthConfig == null){
             oauthConfig = new OAuthConfig(true,null,null);
         }else{
-            oauthConfig.setOauthEnabled(true);
+            oauthConfig.setOAuthEnabled(true);
         }
         return this;
     }
@@ -358,6 +361,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator setUniqueOperationId(boolean uniqueOperationId) {
         this.uniqueOperationId = uniqueOperationId;
+        return this;
+    }
+
+    @Override
+    public RestdConfig getRestdConfig() {
+        return restdConfig;
+    }
+
+    @Override
+    public ApiConfigurator setRestdConfig(RestdConfig c) {
+        this.restdConfig = c;
         return this;
     }
 }

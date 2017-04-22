@@ -113,17 +113,17 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
 	@Override
     public boolean isDefaultOAuthEnabled() {
-        return oauthConfig.isOauthEnabled();
+        return oauthConfig.isOAuthEnabled();
     }
 
     @Override
     public String getDefaultOAuthAuthorizationUrl() {
-        return oauthConfig.getOauthAuthzEndpointUrl();
+        return oauthConfig.getOAuthAuthzEndpointUrl();
     }
 
     @Override
     public String getDefaultOAuthTokenUrl() {
-        return oauthConfig.getOauthTokenEndpointUrl();
+        return oauthConfig.getOAuthTokenEndpointUrl();
     }
 
     @Override
@@ -138,13 +138,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public Apis setDefaultOAuthEnabled(boolean enabled) {
-        this.oauthConfig.setOauthEnabled(enabled);
+        this.oauthConfig.setOAuthEnabled(enabled);
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthAuthorizationUrl(String url) {
-        this.oauthConfig.setOauthAuthzEndpointUrl(url);
+        this.oauthConfig.setOAuthAuthzEndpointUrl(url);
         return this;
     }
     
@@ -157,13 +157,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
           .add("redirect_uri", redirectUri)
           .add("response_type", "token");
         
-        this.oauthConfig.setOauthAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
+        this.oauthConfig.setOAuthAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthTokenUrl(String url) {
-        this.oauthConfig.setOauthTokenEndpointUrl(url);
+        this.oauthConfig.setOAuthTokenEndpointUrl(url);
         return this;
     }
 
@@ -195,12 +195,12 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             }else{
                 OAuthConfig oc = api.config().getOAuthConfig();
 
-                if(Strings.isEmpty(oc.getOauthAuthzEndpointUrl())){
-                    oc.setOauthAuthzEndpointUrl(oauthConfig.getOauthAuthzEndpointUrl());
+                if(Strings.isEmpty(oc.getOAuthAuthzEndpointUrl())){
+                    oc.setOAuthAuthzEndpointUrl(oauthConfig.getOAuthAuthzEndpointUrl());
                 }
 
-                if(Strings.isEmpty(oc.getOauthTokenEndpointUrl())){
-                    oc.setOauthTokenEndpointUrl(oauthConfig.getOauthTokenEndpointUrl());
+                if(Strings.isEmpty(oc.getOAuthTokenEndpointUrl())){
+                    oc.setOAuthTokenEndpointUrl(oauthConfig.getOAuthTokenEndpointUrl());
                 }
             }
 
