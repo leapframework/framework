@@ -14,13 +14,18 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd;
+package leap.web.api.restd.crud;
 
 import leap.web.App;
 import leap.web.api.config.ApiConfigurator;
+import leap.web.api.restd.RestdContext;
+import leap.web.api.restd.RestdProcessor;
 
-public interface RestdApiCreator {
+public class QueryOperation implements RestdProcessor {
 
-    void process(App app, ApiConfigurator api, RestdApiConfigContext context);
+    @Override
+    public void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
+        //todo
+    }
 
 }

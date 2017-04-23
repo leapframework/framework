@@ -53,14 +53,14 @@
 
     <!-- restd -->
     <bean type="leap.web.api.restd.RestdStrategy"       class="leap.web.api.restd.DefaultRestdStrategy" primary="true"/>
-    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiProcessor">
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiConfigProcessor">
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
     </bean>
 
-    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.COperationCreator"/>
-    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.ROperationCreator"/>
-    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.UOperationCreator"/>
-    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.DOperationCreator"/>
-    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.sql.SqlOperationCreator"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.RetrieveOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperation"/>
 
 </beans>

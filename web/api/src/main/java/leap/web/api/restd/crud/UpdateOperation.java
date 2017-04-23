@@ -18,13 +18,13 @@ package leap.web.api.restd.crud;
 
 import leap.web.App;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdApiCreator;
-import leap.web.api.restd.RestdApiConfigContext;
+import leap.web.api.restd.RestdProcessor;
+import leap.web.api.restd.RestdContext;
 
-public class DOperationCreator implements RestdApiCreator {
+public class UpdateOperation implements RestdProcessor {
 
     @Override
-    public void process(App app, ApiConfigurator api, RestdApiConfigContext context) {
+    public void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
         //todo
     }
 

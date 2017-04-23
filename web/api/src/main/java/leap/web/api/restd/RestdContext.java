@@ -14,18 +14,29 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
+package leap.web.api.restd;
 
-import leap.web.App;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdApiCreator;
-import leap.web.api.restd.RestdApiConfigContext;
+import leap.orm.OrmContext;
+import leap.orm.dao.Dao;
+import leap.web.api.config.model.RestdConfig;
 
-public class UOperationCreator implements RestdApiCreator {
+import java.util.Set;
 
-    @Override
-    public void process(App app, ApiConfigurator api, RestdApiConfigContext context) {
-        //todo
-    }
+public interface RestdContext {
+
+    /**
+     * Returns the config of restd api.
+     */
+    RestdConfig getConfig();
+
+    /**
+     * Returns the dao object.
+     */
+    Dao getDao();
+
+    /**
+     * Returns the included models of restd api.
+     */
+    Set<RestdModel> getModels();
 
 }

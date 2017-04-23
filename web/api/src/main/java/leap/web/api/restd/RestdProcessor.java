@@ -16,26 +16,25 @@
 
 package leap.web.api.restd;
 
-import leap.orm.OrmContext;
-import leap.web.api.config.model.RestdConfig;
+import leap.web.App;
+import leap.web.api.config.ApiConfigurator;
 
-import java.util.Set;
+public interface RestdProcessor {
 
-public interface RestdApiConfigContext {
+    default void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
 
-    /**
-     * Returns the config of restd api.
-     */
-    RestdConfig getConfig();
+    }
 
-    /**
-     * Returns the orm context of restd api.
-     */
-    OrmContext getOrmContext();
+    default void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
 
-    /**
-     * Returns the included models of restd api.
-     */
-    Set<RestdModel> getModels();
+    }
+
+    default void postProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+
+    }
+
+    default void postProcessApi(App app, ApiConfigurator api, RestdContext context) {
+
+    }
 
 }

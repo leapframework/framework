@@ -23,8 +23,10 @@ import leap.core.meta.MTypeContainer;
 import leap.lang.Strings;
 import leap.lang.meta.MComplexType;
 import leap.lang.path.AntPathPattern;
+import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.metadata.OrmMTypeFactory;
 import leap.web.App;
@@ -37,18 +39,18 @@ import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.meta.model.MApiModelBuilder;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
-public class RestdApiProcessor implements ApiConfigProcessor, ApiMetadataProcessor {
+/**
+ * Api configuration processor for restd.
+ */
+public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataProcessor {
 
-    protected @Inject App               app;
-    protected @Inject BeanFactory       factory;
-    protected @Inject RestdStrategy     strategy;
-    protected @Inject RestdApiCreator[] creators;
-    protected @Inject OrmMTypeFactory   omf;
+    protected @Inject App              app;
+    protected @Inject BeanFactory      factory;
+    protected @Inject RestdStrategy    strategy;
+    protected @Inject RestdProcessor[] processors;
+    protected @Inject OrmMTypeFactory  omf;
 
     @Override
     public void preProcess(ApiConfigurator api) {
@@ -57,49 +59,60 @@ public class RestdApiProcessor implements ApiConfigProcessor, ApiMetadataProcess
             return;
         }
 
-        OrmContext oc = lookupOrmContext(c);
-        OrmMetadata om = oc.getMetadata();
+        OrmContext  oc  = lookupOrmContext(c);
+        OrmMetadata om  = oc.getMetadata();
+        Dao         dao = Orm.dao(oc.getName());
 
         Set<EntityMapping> ormModels = computeOrmModels(c, om);
         Set<RestdModel> restdModels = createRestdModels(api, c, oc, ormModels);
 
-        RestdApiConfigContext context = new RestdApiConfigContext() {
-            @Override
-            public RestdConfig getConfig() {
-                return c;
-            }
+        SimpleRestdContext context = new SimpleRestdContext();
+        context.setConfig(c);
+        context.setDao(dao);
+        context.setModels(Collections.unmodifiableSet(restdModels));
 
-            @Override
-            public OrmContext getOrmContext() {
-                return oc;
-            }
+        api.setExtension(RestdContext.class, context);
 
-            @Override
-            public Set<RestdModel> getModels() {
-                return restdModels;
-            }
-        };
-
-        for (RestdApiCreator creator : creators) {
-            creator.process(app, api, context);
-        }
-
-        api.setExtension(RestdApiConfigContext.class, context);
+        processRestdApi(api, context);
     }
 
     @Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
-        RestdApiConfigContext cc = context.getConfig().removeExtension(RestdApiConfigContext.class);
+        RestdContext cc = context.getConfig().removeExtension(RestdContext.class);
         if (null != cc) {
             MTypeContainer mtc = context.getMTypeContainer();
             for (RestdModel rm : cc.getModels()) {
 
-                MComplexType mtype = omf.getMType(mtc, cc.getOrmContext(), rm.getEntityMapping());
+                MComplexType mtype = omf.getMType(mtc, cc.getDao().getOrmContext(), rm.getEntityMapping());
                 MApiModelBuilder model = new MApiModelBuilder(mtype);
 
                 m.addModel(model);
             }
         }
+    }
+
+    protected void processRestdApi(ApiConfigurator api, RestdContext context) {
+
+        for(RestdProcessor p : processors) {
+            p.preProcessApi(app, api, context);
+        }
+
+        for(RestdModel model : context.getModels()) {
+            for(RestdProcessor p : processors) {
+                p.preProcessModel(app, api, context, model);
+            }
+        }
+
+        for(RestdModel model : context.getModels()) {
+            for(RestdProcessor p : processors) {
+                p.postProcessModel(app, api, context, model);
+            }
+        }
+
+        for(RestdProcessor p : processors) {
+            p.postProcessApi(app, api, context);
+        }
+
     }
 
     protected OrmContext lookupOrmContext(RestdConfig c) {
