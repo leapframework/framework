@@ -564,6 +564,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             return;
         }
 
+        MApiTag[] tags = route.getAction().removeExtension(MApiTag[].class);
+        if(null != tags) {
+            for(MApiTag tag : tags) {
+                op.addTag(tag.getName());
+                if(m.getTags().get(tag.getName()) == null) {
+                    m.addTag(tag);
+                }
+            }
+        }
+
         Class<?> resourceType = context.getConfig().getResourceTypes().get(route);
         if(null != resourceType) {
             MApiModelBuilder model = m.tryGetModel(resourceType);

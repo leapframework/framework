@@ -58,8 +58,10 @@ public class CreateOperation extends ModelOperationBase implements RestdProcesso
         addModelArgument(action, model);
         addModelResponse(action, model).setStatus(201);
 
+        configure(context, model, action);
         route.setAction(action.build());
-        configRoute(context, route);
+
+        configure(context, model, route);
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 

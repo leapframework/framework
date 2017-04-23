@@ -56,8 +56,10 @@ public class QueryOperation extends ModelOperationBase implements RestdProcessor
         addArgument(action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
 
+        configure(context, model, action);
         route.setAction(action.build());
-        configRoute(context, route);
+
+        configure(context, model, route);
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 

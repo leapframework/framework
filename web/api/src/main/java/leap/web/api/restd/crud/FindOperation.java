@@ -57,8 +57,10 @@ public class FindOperation extends ModelOperationBase implements RestdProcessor 
         addArgument(action, QueryOptionsBase.class, "options");
         addModelResponse(action, model);
 
+        configure(context, model, action);
         route.setAction(action.build());
-        configRoute(context, route);
+
+        configure(context, model, route);
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 

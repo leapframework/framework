@@ -192,7 +192,11 @@ public abstract class ModelOperationBase implements RestdProcessor {
         return p;
     }
 
-    protected void configRoute(RestdContext context, RouteBuilder route) {
+    protected void configure(RestdContext context, RestdModel model, FuncActionBuilder action) {
+        action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
+    }
+
+    protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
         RestdConfig c = context.getConfig();
 
         if(c.isAnonymous()) {
