@@ -22,22 +22,23 @@ import leap.lang.meta.MType;
 import java.util.Map;
 
 public class MApiResponse extends MApiObjectWithDesc {
-	
-    protected final String  name;
-    protected final Integer status;
-    protected final MType   type;
-    protected final boolean file;
+
+    protected final String       name;
+    protected final Integer      status;
+    protected final MType        type;
+    protected final boolean      file;
+    protected final MApiHeader[] headers;
 
 	public MApiResponse(String name, MType type) {
-		this(name, null, null, HTTP.SC_OK, type, false, null);
+		this(name, null, null, HTTP.SC_OK, type, false, null, null);
 	}
 
     public MApiResponse(String name, MType type, boolean file) {
-        this(name, null, null, HTTP.SC_OK, type, file, null);
+        this(name, null, null, HTTP.SC_OK, type, file, null, null);
     }
 
     public MApiResponse(String name, String summary, String description, Integer status, MType type,
-                        boolean file, Map<String, Object> attrs) {
+                        boolean file, MApiHeader[] headers, Map<String, Object> attrs) {
 	    super(summary, description, attrs);
 
         Args.notEmpty(name, "name");
@@ -46,6 +47,7 @@ public class MApiResponse extends MApiObjectWithDesc {
 	    this.status = status;
 	    this.type   = type;
         this.file   = file;
+        this.headers = null == headers ? new MApiHeader[0] : headers;
     }
 
     /**
@@ -74,5 +76,12 @@ public class MApiResponse extends MApiObjectWithDesc {
      */
     public boolean isFile() {
         return file;
+    }
+
+    /**
+     * Returns the response headers.
+     */
+    public MApiHeader[] getHeaders() {
+        return headers;
     }
 }

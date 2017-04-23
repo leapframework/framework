@@ -21,7 +21,9 @@ import leap.core.validation.ValidationManager;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.meta.MCollectionType;
 import leap.lang.meta.MComplexTypeRef;
+import leap.lang.meta.MSimpleTypes;
 import leap.orm.mapping.FieldMapping;
 import leap.web.action.Argument;
 import leap.web.action.ArgumentBuilder;
@@ -31,16 +33,10 @@ import leap.web.annotation.ParamsWrapper;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiParameter;
-import leap.web.api.meta.model.MApiParameterBuilder;
-import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.ModelExecutorFactory;
-import leap.web.api.restd.RestdProcessor;
-import leap.web.api.restd.RestdContext;
-import leap.web.api.restd.RestdModel;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 
@@ -111,11 +107,36 @@ public abstract class ModelOperationBase implements RestdProcessor {
         return r;
     }
 
+    protected MApiResponseBuilder addModelQueryResponse(FuncActionBuilder action, RestdModel model) {
+        action.setReturnType(ApiResponse.class);
+
+        MApiResponseBuilder r = newModelQueryResponse(model);
+
+        action.setExtension(new MApiResponseBuilder[]{r});
+
+        return r;
+    }
+
     protected MApiResponseBuilder newModelResponse(RestdModel model) {
         MApiResponseBuilder r = new MApiResponseBuilder();
 
         r.setStatus(200);
         r.setType(new MComplexTypeRef(model.getName()));
+
+        return r;
+    }
+
+    private MApiResponseBuilder newModelQueryResponse(RestdModel model) {
+        MApiResponseBuilder r = new MApiResponseBuilder();
+
+        r.setStatus(200);
+        r.setType(new MCollectionType(new MComplexTypeRef(model.getName())));
+
+        MApiHeaderBuilder header = new MApiHeaderBuilder();
+        header.setName("X-Total-Count");
+        header.setType(MSimpleTypes.BIGINT);
+        header.setDescription("The total count of query records.");
+        r.addHeader(header);
 
         return r;
     }

@@ -14,21 +14,30 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
+package leap.web.api.meta.model;
 
-import leap.web.App;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdProcessor;
-import leap.web.api.restd.RestdContext;
+import leap.lang.Args;
+import leap.lang.meta.MType;
 
-/**
- * Delete by id operation.
- */
-public class DeleteOperation implements RestdProcessor {
+import java.util.Map;
 
-    @Override
-    public void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
-        //todo
+public class MApiHeader extends MApiNamedWithDesc {
+
+    protected final MType type;
+
+    public MApiHeader(String name, MType type) {
+        super(name);
+        this.type = type;
+    }
+
+    public MApiHeader(String name, MType type, String title, String summary, String description, Map<String, Object> attrs) {
+        super(name, title, summary, description, attrs);
+        Args.notNull(type);
+        this.type = type;
+    }
+
+    public MType getType() {
+        return type;
     }
 
 }

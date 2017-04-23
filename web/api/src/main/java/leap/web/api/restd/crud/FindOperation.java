@@ -37,7 +37,10 @@ import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
-public class RetrieveOperation extends ModelOperationBase implements RestdProcessor {
+/**
+ * Find by id operation.
+ */
+public class FindOperation extends ModelOperationBase implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {

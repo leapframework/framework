@@ -16,8 +16,13 @@
 package leap.web.api.meta.model;
 
 import leap.core.meta.MTypeManager;
+import leap.lang.Builders;
+import leap.lang.Collections2;
 import leap.lang.http.HTTP;
 import leap.lang.meta.MType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse> {
 	
@@ -39,6 +44,14 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
         return r;
     }
 
+    protected MTypeManager typeManager;
+    protected String       name;
+    protected Integer      status;
+    protected Class<?>     typeClass;
+    protected MType        type;
+    protected boolean      file;
+    protected List<MApiHeaderBuilder> headers = new ArrayList<>();
+
     public MApiResponseBuilder() {
 
     }
@@ -50,13 +63,11 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
         this.file = r.isFile();
         this.setSummary(r.getSummary());
         this.setDescription(r.getDescription());
+
+        for(MApiHeader header : r.getHeaders()) {
+            headers.add(new MApiHeaderBuilder(header));
+        }
     }
-    protected MTypeManager typeManager;
-    protected String   name;
-	protected Integer  status;
-    protected Class<?> typeClass;
-	protected MType    type;
-    protected boolean  file;
 
     public String getName() {
         return name;
@@ -102,6 +113,14 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
         this.file = file;
     }
 
+    public List<MApiHeaderBuilder> getHeaders() {
+        return headers;
+    }
+
+    public void addHeader(MApiHeaderBuilder header) {
+        headers.add(header);
+    }
+
     @Override
     public MApiResponse build() {
         if(name == null && status == null) {
@@ -119,7 +138,9 @@ public class MApiResponseBuilder extends MApiObjectWithDescBuilder<MApiResponse>
             type = typeManager.getMType(typeClass);
         }
 
-	    return new MApiResponse(name, summary, description, status, type, file, attrs);
+        MApiHeader[] headerArray = Builders.buildArray(headers, new MApiHeader[headers.size()]);
+
+	    return new MApiResponse(name, summary, description, status, type, file, headerArray, attrs);
     }
 	
 }

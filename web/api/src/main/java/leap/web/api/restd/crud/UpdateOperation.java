@@ -21,6 +21,9 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
 
+/**
+ * Update a record operation.
+ */
 public class UpdateOperation implements RestdProcessor {
 
     @Override

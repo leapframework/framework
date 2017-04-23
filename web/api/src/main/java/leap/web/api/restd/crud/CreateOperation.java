@@ -39,7 +39,7 @@ import leap.web.route.RouteBuilder;
 import java.util.Map;
 
 /**
- * Defines the 'Create' operation in 'CRUD' for all models.
+ * Create a new record operation.
  */
 public class CreateOperation extends ModelOperationBase implements RestdProcessor {
 
