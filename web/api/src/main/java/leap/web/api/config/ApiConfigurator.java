@@ -21,6 +21,7 @@ import leap.lang.naming.NamingStyle;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
@@ -88,6 +89,11 @@ public interface ApiConfigurator extends Extensible {
      * Puts a model type config.
      */
     ApiConfigurator putModelType(Class<?> type, ModelConfig c);
+
+    /**
+     * Registered a {@link MApiModelBuilder}.
+     */
+    ApiConfigurator addModel(MApiModelBuilder model);
 
     /**
      * Puts a common response builder for build common response.

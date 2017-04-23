@@ -16,16 +16,78 @@
 
 package leap.web.api.restd.crud;
 
+import leap.core.annotation.Inject;
+import leap.lang.Strings;
+import leap.orm.Orm;
+import leap.orm.dao.Dao;
 import leap.web.App;
+import leap.web.action.ActionParams;
+import leap.web.action.FuncActionBuilder;
+import leap.web.api.Apis;
+import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
+import leap.web.api.mvc.ApiResponse;
+import leap.web.api.orm.*;
 import leap.web.api.restd.RestdApiCreator;
-import leap.web.api.restd.RestdApiCreatorContext;
+import leap.web.api.restd.RestdApiConfigContext;
+import leap.web.api.restd.RestdModel;
+import leap.web.route.RouteBuilder;
 
-public class COperationCreator implements RestdApiCreator {
+import java.util.Map;
+
+/**
+ * Defines the 'C' operation in 'CRUD' for all models.
+ */
+public class COperationCreator extends CRUDOperationCreatorBase implements RestdApiCreator {
+
+    protected @Inject Apis                 apis;
+    protected @Inject ModelExecutorFactory mef;
 
     @Override
-    public void process(App app, ApiConfigurator api, RestdApiCreatorContext context) {
+    public void process(App app, ApiConfigurator api, RestdApiConfigContext context) {
 
+        for(RestdModel model : context.getModels()) {
+            createOperation(app, api, context, model);
+        }
+
+    }
+
+    protected void createOperation(App app, ApiConfigurator api, RestdApiConfigContext context, RestdModel model) {
+        //todo : check is creatable?
+
+        Dao dao = Orm.dao(context.getOrmContext().getName());
+
+        String path = fullModelPath(api, model);
+
+        FuncActionBuilder action = new FuncActionBuilder();
+        RouteBuilder      route  = rm.createRoute("POST", path);
+
+        action.setName(Strings.lowerCamel("create", model.getName()));
+        action.setFunction((params) -> execute(api.config(), dao, model, params));
+        addModelArgument(action, model);
+        addModelResponse(action, model).setStatus(201);
+
+        route.setAction(action.build());
+
+        configRoute(context, route);
+
+        api.addRoute(rm.loadRoute(app.routes(), route));
+    }
+
+    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata md = apis.tryGetMetadata(c.getName());
+        MApiModel   am = md.getModel(model.getName());
+        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
+
+        Map<String,Object> record = params.get(0);
+
+        ModelCreateExecutor executor = mef.newCreateExecutor(mec, am, dao, model.getEntityMapping());
+
+        CreateOneResult result = executor.createOne(record);
+
+        return ApiResponse.created(dao.find(model.getEntityMapping(), result.id));
     }
 
 }

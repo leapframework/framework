@@ -21,6 +21,6 @@ import leap.web.api.config.ApiConfigurator;
 
 public interface RestdApiCreator {
 
-    void process(App app, ApiConfigurator api, RestdApiCreatorContext context);
+    void process(App app, ApiConfigurator api, RestdApiConfigContext context);
 
 }

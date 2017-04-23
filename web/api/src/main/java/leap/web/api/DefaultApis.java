@@ -30,7 +30,6 @@ import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.net.Urls;
-import leap.lang.path.Paths;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectField;
 import leap.web.App;
@@ -113,17 +112,17 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
 	@Override
     public boolean isDefaultOAuthEnabled() {
-        return oauthConfig.isOAuthEnabled();
+        return oauthConfig.isEnabled();
     }
 
     @Override
     public String getDefaultOAuthAuthorizationUrl() {
-        return oauthConfig.getOAuthAuthzEndpointUrl();
+        return oauthConfig.getAuthzEndpointUrl();
     }
 
     @Override
     public String getDefaultOAuthTokenUrl() {
-        return oauthConfig.getOAuthTokenEndpointUrl();
+        return oauthConfig.getTokenEndpointUrl();
     }
 
     @Override
@@ -138,13 +137,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public Apis setDefaultOAuthEnabled(boolean enabled) {
-        this.oauthConfig.setOAuthEnabled(enabled);
+        oauthConfig.setEnabled(enabled);
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthAuthorizationUrl(String url) {
-        this.oauthConfig.setOAuthAuthzEndpointUrl(url);
+        this.oauthConfig.setAuthzEndpointUrl(url);
         return this;
     }
     
@@ -157,13 +156,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
           .add("redirect_uri", redirectUri)
           .add("response_type", "token");
         
-        this.oauthConfig.setOAuthAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
+        this.oauthConfig.setAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthTokenUrl(String url) {
-        this.oauthConfig.setOAuthTokenEndpointUrl(url);
+        this.oauthConfig.setTokenEndpointUrl(url);
         return this;
     }
 
@@ -195,12 +194,12 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             }else{
                 OAuthConfig oc = api.config().getOAuthConfig();
 
-                if(Strings.isEmpty(oc.getOAuthAuthzEndpointUrl())){
-                    oc.setOAuthAuthzEndpointUrl(oauthConfig.getOAuthAuthzEndpointUrl());
+                if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
+                    oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
                 }
 
-                if(Strings.isEmpty(oc.getOAuthTokenEndpointUrl())){
-                    oc.setOAuthTokenEndpointUrl(oauthConfig.getOAuthTokenEndpointUrl());
+                if(Strings.isEmpty(oc.getTokenEndpointUrl())){
+                    oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
                 }
             }
 
@@ -261,11 +260,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 	
     protected void resolveRoutes(App app, ApiConfigurator c) {
-		String basePath				   = c.config().getBasePath();
-		String basePathSuffixWithSlash = Paths.suffixWithSlash(basePath);
+		String basePath	= c.config().getBasePath();
 		for(Route route : app.routes()) {
 			String pathTemplate = route.getPathTemplate().getTemplate();
-			if(pathTemplate.equals(basePath) || pathTemplate.startsWith(basePathSuffixWithSlash)) {
+			if(pathTemplate.equals(basePath) || pathTemplate.startsWith(basePath)) {
 				
 				if(!c.config().isCorsDisabled() && !route.isCorsDisabled()) {
 					route.setCorsEnabled(true);

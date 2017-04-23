@@ -14,29 +14,4 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd;
-
-import leap.orm.OrmContext;
-import leap.orm.mapping.EntityMapping;
-import leap.web.api.config.model.RestdConfig;
-
-import java.util.Set;
-
-public interface RestdApiCreatorContext {
-
-    /**
-     * Returns the config of restd api.
-     */
-    RestdConfig getConfig();
-
-    /**
-     * Returns the orm context of restd api.
-     */
-    OrmContext getOrmContext();
-
-    /**
-     * Returns the included models of restd api.
-     */
-    Set<EntityMapping> getIncludedModels();
-
-}
+package leap.web.api.restd.annotation;

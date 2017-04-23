@@ -78,4 +78,12 @@
 
     </api>
 
+    <api name="restd" base-path="/restd" restd-enabled="true" restd-data-source="restd">
+
+        <restd anonymous="true">
+
+        </restd>
+
+    </api>
+
 </apis>

@@ -19,5 +19,14 @@ package leap.web.api.orm;
 import java.util.Map;
 
 public interface ModelCreateExecutor {
+
+    default CreateOneResult createOne(Object request) {
+        return createOne(request, null, null);
+    }
+
+    default CreateOneResult createOne(Object request, Object id) {
+        return createOne(request, id, null);
+    }
+
     CreateOneResult createOne(Object request, Object id, Map<String, Object> extraProperties);
 }

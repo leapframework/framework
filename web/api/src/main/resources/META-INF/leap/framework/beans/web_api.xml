@@ -52,11 +52,15 @@
     <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
 
     <!-- restd -->
-    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiProcessor"/>
+    <bean type="leap.web.api.restd.RestdStrategy"       class="leap.web.api.restd.DefaultRestdStrategy" primary="true"/>
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiProcessor">
+        <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
+    </bean>
 
     <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.COperationCreator"/>
     <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.ROperationCreator"/>
     <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.UOperationCreator"/>
     <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.crud.DOperationCreator"/>
+    <bean type="leap.web.api.restd.RestdApiCreator" class="leap.web.api.restd.sql.SqlOperationCreator"/>
 
 </beans>

@@ -21,9 +21,7 @@ import leap.lang.path.Paths;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
-import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
 
@@ -62,6 +60,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected Map<Class<?>, ModelConfig> modelTypeConfigs    = new LinkedHashMap<>();
     protected Map<Class<?>, ModelConfig> modelTypeConfigsImv = Collections.unmodifiableMap(modelTypeConfigs);
+
+    protected Map<String, MApiModelBuilder> models    = new LinkedHashMap<>();
+    protected Map<String, MApiModelBuilder> modelsImv = Collections.unmodifiableMap(models);
 
     protected Map<String, MApiResponseBuilder> commonResponseBuilders    = new LinkedHashMap<>();
     protected Map<String, MApiResponseBuilder> commonResponseBuildersImv = Collections.unmodifiableMap(commonResponseBuilders);
@@ -149,6 +150,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public Map<Class<?>, ModelConfig> getModelTypes() {
         return modelTypeConfigs;
+    }
+
+    @Override
+    public Map<String, MApiModelBuilder> getModels() {
+        return modelsImv;
+    }
+
+    @Override
+    public ApiConfigurator addModel(MApiModelBuilder model) {
+        models.put(model.getName(), model);
+        return this;
     }
 
     public NamingStyle getParameterNamingStyle() {
@@ -255,7 +267,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         if(oauthConfig == null){
             oauthConfig = new OAuthConfig(true,null,null);
         }else{
-            oauthConfig.setOAuthEnabled(true);
+            oauthConfig.setEnabled(true);
         }
         return this;
     }

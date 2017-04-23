@@ -40,12 +40,13 @@ public class SimpleActionParams implements ActionParams {
     }
 
     @Override
-    public <T> T get(String name) throws ObjectNotFoundException {
-        Integer index = nameIndexMap.get(name);
-        if(null == index) {
-            throw new ObjectNotFoundException("The parameter '" + name + "' not exists!");
-        }
+    public boolean contains(String name) {
+        return nameIndexMap.containsKey(name);
+    }
 
+    @Override
+    public <T> T get(String name)  {
+        Integer index = nameIndexMap.get(name);
         return get(index);
     }
 

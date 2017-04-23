@@ -20,44 +20,28 @@ import leap.web.api.spec.swagger.SwaggerConstants;
 
 public class OAuthConfig {
 
-    private boolean oauthEnabled;
+    private boolean enabled;
     private String  flow;
-    private String  oauthAuthzEndpointUrl;
-    private String  oauthTokenEndpointUrl;
+    private String  authzEndpointUrl;
+    private String  tokenEndpointUrl;
 
-    public OAuthConfig(boolean oauthEnabled, String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
-        this(oauthEnabled, SwaggerConstants.IMPLICIT,oAuthAuthzEndpointUrl,oAuthTokenEndpointUrl);
+    public OAuthConfig(boolean enabled, String authzEndpointUrl, String tokenEndpointUrl) {
+        this(enabled, SwaggerConstants.IMPLICIT, authzEndpointUrl, tokenEndpointUrl);
     }
     
-    public OAuthConfig(boolean oauthEnabled, String flow, String oAuthAuthzEndpointUrl, String oAuthTokenEndpointUrl) {
-        this.oauthEnabled = oauthEnabled;
-        this.flow = flow;
-        this.oauthAuthzEndpointUrl = oAuthAuthzEndpointUrl;
-        this.oauthTokenEndpointUrl = oAuthTokenEndpointUrl;
+    public OAuthConfig(boolean enabled, String flow, String authzEndpointUrl, String tokenEndpointUrl) {
+        this.enabled          = enabled;
+        this.flow             = flow;
+        this.authzEndpointUrl = authzEndpointUrl;
+        this.tokenEndpointUrl = tokenEndpointUrl;
     }
 
-    public boolean isOAuthEnabled() {
-        return oauthEnabled;
+    public boolean isEnabled() {
+        return enabled;
     }
 
-    public void setOAuthEnabled(boolean oauthEnabled) {
-        this.oauthEnabled = oauthEnabled;
-    }
-
-    public String getOAuthAuthzEndpointUrl() {
-        return oauthAuthzEndpointUrl;
-    }
-
-    public void setOAuthAuthzEndpointUrl(String oauthAuthzEndpointUrl) {
-        this.oauthAuthzEndpointUrl = oauthAuthzEndpointUrl;
-    }
-
-    public String getOAuthTokenEndpointUrl() {
-        return oauthTokenEndpointUrl;
-    }
-
-    public void setOAuthTokenEndpointUrl(String oauthTokenEndpointUrl) {
-        this.oauthTokenEndpointUrl = oauthTokenEndpointUrl;
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public String getFlow() {
@@ -66,5 +50,21 @@ public class OAuthConfig {
 
     public void setFlow(String flow) {
         this.flow = flow;
+    }
+
+    public String getAuthzEndpointUrl() {
+        return authzEndpointUrl;
+    }
+
+    public void setAuthzEndpointUrl(String url) {
+        this.authzEndpointUrl = url;
+    }
+
+    public String getTokenEndpointUrl() {
+        return tokenEndpointUrl;
+    }
+
+    public void setTokenEndpointUrl(String url) {
+        this.tokenEndpointUrl = url;
     }
 }

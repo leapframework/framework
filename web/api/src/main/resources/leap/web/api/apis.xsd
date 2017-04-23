@@ -96,7 +96,7 @@
             <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
             <xsd:attribute name="base-package" type="xsd:string" use="optional"/>
             <xsd:attribute name="unique-operation-id" type="xsd:boolean" use="optional"/>
-            <xsd:attribute name="restd-enable" type="xsd:boolean" use="optional">
+            <xsd:attribute name="restd-enabled" type="xsd:boolean" use="optional">
                 <xsd:annotation>
                     <xsd:documentation>
                         Enables RESTful data api.
@@ -124,7 +124,8 @@
                 <xsd:element name="excluded-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
             </xsd:choice>
             <xsd:attribute name="enabled"     type="xsd:boolean" use="optional" default="true"/>
-            <xsd:attribute name="data-source" type="xsd:string" use="optional"/>
+            <xsd:attribute name="data-source" type="xsd:string"  use="optional" default="default"/>
+            <xsd:attribute name="anonymous"   type="xsd:boolean" use="optional" default="false"/>
     </xsd:complexType>
 
     <xsd:complexType name="cors">

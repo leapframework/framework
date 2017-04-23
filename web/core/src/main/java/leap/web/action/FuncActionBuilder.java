@@ -19,17 +19,27 @@ package leap.web.action;
 import leap.lang.Assert;
 import leap.lang.Buildable;
 import leap.lang.Builders;
+import leap.lang.ExtensibleBase;
 import leap.lang.exception.ObjectExistsException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class FuncActionBuilder implements Buildable<FuncAction> {
+public class FuncActionBuilder extends ExtensibleBase implements Buildable<FuncAction> {
 
+    protected String                         name;
     protected Class<?>                       returnType;
     protected List<ArgumentBuilder>          arguments = new ArrayList<>();
     protected Function<ActionParams, Object> function;
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public Class<?> getReturnType() {
         return returnType;
@@ -66,7 +76,12 @@ public class FuncActionBuilder implements Buildable<FuncAction> {
 
     @Override
     public FuncAction build() {
-        return new FuncAction(returnType, Builders.buildArray(arguments,new Argument[arguments.size()]), function);
+        FuncAction action =
+                new FuncAction(name, returnType, Builders.buildArray(arguments,new Argument[arguments.size()]), function);
+
+        extensions.forEach(action::setExtension);
+
+        return action;
     }
 
 }

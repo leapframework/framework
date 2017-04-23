@@ -306,6 +306,14 @@ public class Paths {
     		return "/" + suffixWithSlash(path);
     	}
     }
+
+    public static String prefixAndSuffixWithoutSlash(String path){
+        if(Strings.isEmpty(path)){
+            return path;
+        }
+
+        return suffixWithoutSlash(prefixWithoutSlash(path));
+    }
     
     public static String prefixWithAndSuffixWithoutSlash(String path) {
     	if(Strings.isEmpty(path)){

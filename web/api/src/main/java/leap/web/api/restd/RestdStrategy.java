@@ -14,18 +14,13 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
+package leap.web.api.restd;
 
-import leap.web.App;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdApiCreator;
-import leap.web.api.restd.RestdApiConfigContext;
+public interface RestdStrategy {
 
-public class UOperationCreator implements RestdApiCreator {
-
-    @Override
-    public void process(App app, ApiConfigurator api, RestdApiConfigContext context) {
-        //todo
-    }
+    /**
+     * Returns the path name for the model name.
+     */
+    String getDefaultModelPath(String modelName);
 
 }

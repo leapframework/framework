@@ -22,6 +22,7 @@ import java.util.Set;
 public class RestdConfig {
 
     protected String      dataSourceName;
+    protected boolean     anonymous;
     protected Set<String> includedModels = new LinkedHashSet<>();
     protected Set<String> excludedModels = new LinkedHashSet<>();
 
@@ -31,6 +32,14 @@ public class RestdConfig {
 
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
+    }
+
+    public boolean isAnonymous() {
+        return anonymous;
+    }
+
+    public void setAnonymous(boolean anonymous) {
+        this.anonymous = anonymous;
     }
 
     public Set<String> getIncludedModels() {

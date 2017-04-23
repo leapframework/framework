@@ -195,13 +195,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         OAuthConfig oauthConfig = c.getOAuthConfig();
-        if(oauthConfig != null && oauthConfig.isOAuthEnabled()) {
+        if(oauthConfig != null && oauthConfig.isEnabled()) {
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(
                             SwaggerConstants.OAUTH2,
                             SwaggerConstants.OAUTH2,
-                            oauthConfig.getOAuthAuthzEndpointUrl(),
-                            oauthConfig.getOAuthTokenEndpointUrl(),
+                            oauthConfig.getAuthzEndpointUrl(),
+                            oauthConfig.getTokenEndpointUrl(),
                             oauthConfig.getFlow(),
                             null);
             
@@ -303,6 +303,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
 
+        context.getConfig().getModels().forEach((name,model) -> {
+            m.addModel(model);
+        });
+
         context.getConfig().getResourceTypes().values().forEach((t) -> {
             if(null == m.tryGetModel(t)) {
                 //create model for resource type.
@@ -343,7 +347,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
         }
-
 
         if(null != apiDescContainer) {
             ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
@@ -419,6 +422,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
+            MApiParameterBuilder p = a.getExtension(MApiParameterBuilder.class);
+            if(null != p) {
+                op.addParameter(p);
+                continue;
+            }
+
             if(a.isWrapper()) {
                 createApiWrapperParameter(context, m, route, op, a);
                 if(!a.isRequestBody()) {
@@ -499,6 +508,15 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
+        MApiResponseBuilder[] resps = route.getAction().getExtension(MApiResponseBuilder[].class);
+        if(null != resps && resps.length > 0) {
+            for(MApiResponseBuilder resp : resps) {
+                op.addResponse(resp);
+            }
+            return;
+        }
+
+
         Response[] annotations =
                 route.getAction().getAnnotationsByType(Response.class);
 

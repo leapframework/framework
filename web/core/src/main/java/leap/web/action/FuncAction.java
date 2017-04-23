@@ -22,18 +22,25 @@ import leap.web.action.*;
 
 import java.util.function.Function;
 
-public class FuncAction implements Action {
+public class FuncAction extends ExtensibleBase implements Action {
 
+    protected final String                         name;
     protected final Class<?>                       returnType;
     protected final Argument[]                     arguments;
     protected final Function<ActionParams, Object> function;
 
-    public FuncAction(Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
+    public FuncAction(String name, Class<?> returnType, Argument[] arguments, Function<ActionParams, Object> function) {
         Args.notNull(arguments);
         Args.notNull(function);
+        this.name       = name == null ? function.toString() : name;
         this.returnType = returnType;
         this.arguments = arguments;
         this.function = function;
+    }
+
+    @Override
+    public String getName() {
+        return name;
     }
 
     @Override
@@ -53,4 +60,16 @@ public class FuncAction implements Action {
         return function.apply(params);
     }
 
+    @Override
+    public String toString() {
+        String s = function.toString();
+        int lambdaIndex = s.indexOf("$$Lambda");
+        if(lambdaIndex > 0) {
+            int lastDotIndex = s.lastIndexOf('.',lambdaIndex);
+            if(lastDotIndex > 0) {
+                s = s.substring(lastDotIndex + 1);
+            }
+        }
+        return s;
+    }
 }

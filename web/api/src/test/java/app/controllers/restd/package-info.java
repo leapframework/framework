@@ -14,18 +14,4 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
-
-import leap.web.App;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdApiCreator;
-import leap.web.api.restd.RestdApiConfigContext;
-
-public class UOperationCreator implements RestdApiCreator {
-
-    @Override
-    public void process(App app, ApiConfigurator api, RestdApiConfigContext context) {
-        //todo
-    }
-
-}
+package app.controllers.restd;

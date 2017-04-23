@@ -95,7 +95,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String DATA_SOURCE          = "data-source";
     protected static final String INCLUDED_MODELS      = "included-models";
     protected static final String EXCLUDED_MODELS      = "excluded-models";
-
+    protected static final String ANONYMOUS            = "anonymous";
 
     @Override
     public String getNamespaceURI() {
@@ -176,7 +176,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     if(null == c) {
                         throw new ApiConfigException("Invalid response type '" + type + "', check : " + reader.getCurrentLocation());
                     }
-
+                    //todo :
                     r.setTypeClass(c);
                 }else{
                     r.setType(MVoidType.TYPE);
@@ -433,8 +433,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                 }
 
                 if(reader.isStartElement(OAUTH)){
-                    OAuthConfig oauth = readOAuth(context,reader);
-                    api.setOAuthConfig(oauth);
+                    api.setOAuthConfig(readOAuth(context,reader));
                     continue;
                 }
 
@@ -557,14 +556,16 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
-        boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
-        String defaultFlow = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
-        OAuthConfig oauth = new OAuthConfig(defaultEnabled, defaultFlow,null,null);
+        boolean enabled = reader.resolveBooleanAttribute(ENABLED,false);
+        String  flow    = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
+
+        OAuthConfig oauth = new OAuthConfig(enabled, flow, null, null);
+
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOAuthAuthzEndpointUrl(url);
+                    oauth.setAuthzEndpointUrl(url);
                 }
                 return;
             }
@@ -572,11 +573,12 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             if(reader.isStartElement(TOKEN_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOAuthTokenEndpointUrl(url);
+                    oauth.setTokenEndpointUrl(url);
                 }
                 return;
             }
         });
+
         return oauth;
     }
 
@@ -597,6 +599,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         if(!Strings.isEmpty(dataSourceName)) {
             c.setDataSourceName(dataSourceName);
         }
+
+        c.setAnonymous(reader.resolveBooleanAttribute(ANONYMOUS, false));
 
         final RestdConfig rc = c;
 

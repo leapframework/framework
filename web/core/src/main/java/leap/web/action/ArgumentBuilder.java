@@ -167,12 +167,21 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
         return wrappedArguments;
     }
 
+    public ArgumentBuilder withExtension(Class<?> extension) {
+        setExtension(extension);
+        return this;
+    }
+
 	@Override
     public Argument build() {
 		ArgumentValidator[] validators = this.validators.toArray(new ArgumentValidator[0]);
 
         Argument[] wrappedArguments =
                 Builders.buildArray(this.wrappedArguments, new Argument[this.wrappedArguments.size()]);
+
+        if(null == typeInfo) {
+            typeInfo = Types.getTypeInfo(type, genericType);
+        }
 		
 	    return new Argument(name,
                             declaredName,
