@@ -217,14 +217,14 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public void postAppInit(App app) throws Throwable {
+
 		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-            ApiConfigurator c = entry.getValue();
-			//do configuration
-			doConfiguration(app, c);
+			doConfiguration(app, entry.getValue());
 		}
+
         for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-            String key = entry.getKey();
             ApiConfigurator c = entry.getValue();
+
             //configure by processors.
             for(ApiConfigProcessor p : configProcessors) {
                 p.preProcess(c);
@@ -234,10 +234,15 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
                 p.postProcess(c.config());
             }
 
-            ApiMetadata m = createMetadata(c);
+            //post config
+            postConfigApi(app, c.config());
+
             //create metadata
+            String key = entry.getKey();
+            ApiMetadata m = createMetadata(c);
             metadatas.put(key, m);
 
+            //post load
             postLoadApi(app, c.config(), m);
         }
 	}
@@ -334,11 +339,20 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         }
     }
 
+    protected void postConfigApi(App app, ApiConfig c) {
+        for(Route route : c.getRoutes()) {
+            if(c.isDefaultAnonymous() && null == route.getAllowAnonymous()) {
+                route.setAllowAnonymous(true);
+            }
+        }
+    }
+
     protected void postLoadApi(App app, ApiConfig c, ApiMetadata m) {
 
         Set<Object> controllers = new HashSet<>();
 
         for(Route route : c.getRoutes()) {
+            //Inject ApiConfig & ApiMetadata.
             Object controller = route.getAction().getController();
             if(null != controller && !controllers.contains(controller)) {
                 controllers.add(controller);
@@ -362,6 +376,8 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
             }
         }
+
+        controllers.clear();
     }
 
 	protected ApiMetadata createMetadata(ApiConfigurator c) {

@@ -144,6 +144,11 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
 	String getBasePackage();
 
     /**
+     * Returns the if all the api operations are anonymous access by default.
+     */
+    boolean isDefaultAnonymous();
+
+    /**
      * Returns all the resource types of route.
      */
     Map<Route, Class<?>> getResourceTypes();

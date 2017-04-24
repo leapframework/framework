@@ -40,6 +40,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected String[]       protocols;
     protected String[]       produces;
     protected String[]       consumes;
+    protected boolean        defaultAnonymous            = false;
     protected boolean        corsEnabled                 = true;
     protected boolean        uniqueOperationId           = false;
     protected NamingStyle    parameterNamingStyle;
@@ -132,8 +133,19 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     public String[] getConsumes() {
 	    return consumes;
     }
-	
-	public boolean isCorsDisabled() {
+
+    @Override
+    public boolean isDefaultAnonymous() {
+        return defaultAnonymous;
+    }
+
+    @Override
+    public ApiConfigurator setDefaultAnonymous(boolean anonymous) {
+        this.defaultAnonymous = anonymous;
+        return this;
+    }
+
+    public boolean isCorsDisabled() {
 		return !corsEnabled;
 	}
 

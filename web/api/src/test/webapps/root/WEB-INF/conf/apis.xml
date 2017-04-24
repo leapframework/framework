@@ -78,9 +78,9 @@
 
     </api>
 
-    <api name="restd" base-path="/restd" restd-enabled="true" restd-data-source="restd">
+    <api name="restd" base-path="/restd" default-anonymous="true" restd-enabled="true" restd-data-source="restd">
 
-        <restd anonymous="true">
+        <restd>
             <model name="Model1" delete="false"/>
         </restd>
 

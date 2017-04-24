@@ -90,6 +90,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String HTTP_METHODS         = "http-methods";
     protected static final String PATH_PATTERN         = "path-pattern";
     protected static final String UNIQUE_OPERATION_ID  = "unique-operation-id";
+    protected static final String DEFAULT_ANONYMOUS    = "default-anonymous";
     protected static final String RESTD                = "restd";
     protected static final String RESTD_ENABLED        = "restd-enabled";
     protected static final String RESTD_DATA_SOURCE    = "restd-data-source";
@@ -312,6 +313,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         String  basePath          = reader.resolveAttribute(BASE_PATH);
         String  basePackage       = reader.resolveAttribute(BASE_PACKAGE);
         Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
+        Boolean defaultAnonymous  = reader.resolveBooleanAttribute(DEFAULT_ANONYMOUS);
         boolean restdEnabled      = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
 
         ApiConfigurator api = extensions.getConfigurator(name);
@@ -320,6 +322,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             api = new DefaultApiConfig(name,basePath);
             api.setBasePackage(basePackage);
             extensions.addConfigurator(api);
+        }
+
+        if(null != defaultAnonymous) {
+            api.setDefaultAnonymous(defaultAnonymous);
         }
 
         if(null != uniqueOperationId) {
@@ -610,7 +616,6 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             c.setDataSourceName(dataSourceName);
         }
 
-        c.setAnonymous(reader.resolveBooleanAttribute(ANONYMOUS, false));
         c.setReadonly(reader.resolveBooleanAttribute(READONLY, false));
 
         final RestdConfig rc = c;

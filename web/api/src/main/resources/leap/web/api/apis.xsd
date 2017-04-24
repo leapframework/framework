@@ -92,11 +92,11 @@
                 <xsd:element name="resource-permissions" type="resource-permissions" minOccurs="0" maxOccurs="unbounded"/>
                 <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
             </xsd:choice>
-            <xsd:attribute name="name"      type="xsd:string" use="required"/>
-            <xsd:attribute name="base-path" type="xsd:string" use="optional"/>
-            <xsd:attribute name="base-package" type="xsd:string" use="optional"/>
-            <xsd:attribute name="unique-operation-id" type="xsd:boolean" use="optional"/>
-            <xsd:attribute name="restd-enabled" type="xsd:boolean" use="optional">
+            <xsd:attribute name="name"              type="xsd:string" use="required"/>
+            <xsd:attribute name="base-path"         type="xsd:string" use="optional"/>
+            <xsd:attribute name="base-package"      type="xsd:string" use="optional"/>
+            <xsd:attribute name="default-anonymous" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="restd-enabled"     type="xsd:boolean" use="optional">
                 <xsd:annotation>
                     <xsd:documentation>
                         Enables RESTful data api.
@@ -110,6 +110,7 @@
                     </xsd:documentation>
                 </xsd:annotation>
             </xsd:attribute>
+            <xsd:attribute name="unique-operation-id" type="xsd:boolean" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 
@@ -127,7 +128,6 @@
             </xsd:choice>
             <xsd:attribute name="enabled"     type="xsd:boolean" use="optional" default="true"/>
             <xsd:attribute name="data-source" type="xsd:string"  use="optional" default="default"/>
-            <xsd:attribute name="anonymous"   type="xsd:boolean" use="optional" default="false"/>
             <xsd:attribute name="readonly"    type="xsd:boolean" use="optional" default="false"/>
     </xsd:complexType>
 

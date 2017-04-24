@@ -23,7 +23,6 @@ import java.util.*;
 public class RestdConfig {
 
     protected String      dataSourceName;
-    protected boolean     anonymous;
     protected boolean     readonly;
 
     protected Set<String>                   includedModels = new LinkedHashSet<>();
@@ -37,14 +36,6 @@ public class RestdConfig {
 
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
-    }
-
-    public boolean isAnonymous() {
-        return anonymous;
-    }
-
-    public void setAnonymous(boolean anonymous) {
-        this.anonymous = anonymous;
     }
 
     public boolean isReadonly() {
@@ -105,7 +96,7 @@ public class RestdConfig {
             return model.getAnonymous();
         }
 
-        return anonymous;
+        return false;
     }
 
     public boolean allowCreateModel(String name) {

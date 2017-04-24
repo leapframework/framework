@@ -129,6 +129,11 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setDefaultPageSize(int size);
 
     /**
+     * Sets all the api operations to default anonymous or not.
+     */
+    ApiConfigurator setDefaultAnonymous(boolean anonymous);
+
+    /**
      * Disables cors of this api.
      * <p>
      * <p>
