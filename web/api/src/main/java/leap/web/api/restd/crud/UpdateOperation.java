@@ -41,7 +41,9 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
-        //todo : check is creatable?
+        if(!context.getConfig().allowUpdateModel(model.getName())) {
+            return;
+        }
 
         Dao dao  = context.getDao();
         String path = fullModelPath(api, model) + "/{id}";

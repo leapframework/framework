@@ -18,7 +18,7 @@
 
 package leap.web.api.config;
 
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.MApiResponseBuilder;
 
@@ -29,7 +29,7 @@ public class ApiConfigurations {
 
     private final Map<String, ApiConfigurator>     configurators    = new LinkedHashMap<>();
     private final Map<String, MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
-    private final Map<Class<?>, ModelConfig>       commonModelTypes = new LinkedHashMap<>();
+    private final Map<Class<?>, ApiModelConfig>    commonModelTypes = new LinkedHashMap<>();
 
     private OAuthConfig defaultOAuthConfig = new OAuthConfig(false, null, null);
 
@@ -72,11 +72,11 @@ public class ApiConfigurations {
         commonResponses.put(name, resp);
     }
 
-    public Map<Class<?>, ModelConfig> getCommonModelTypes() {
+    public Map<Class<?>, ApiModelConfig> getCommonModelTypes() {
         return commonModelTypes;
     }
 
-    public void addCommonModelType(Class<?> type, ModelConfig c) {
+    public void addCommonModelType(Class<?> type, ApiModelConfig c) {
         if(commonModelTypes.containsKey(type)) {
             throw new ApiConfigException("Found duplicated common model config of type : " + type);
         }

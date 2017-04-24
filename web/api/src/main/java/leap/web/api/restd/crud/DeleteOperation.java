@@ -40,6 +40,10 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+        if(!context.getConfig().allowDeleteModel(model.getName())) {
+            return;
+        }
+
         Dao    dao  = context.getDao();
         String path = fullModelPath(api, model) + "/{id}";
 

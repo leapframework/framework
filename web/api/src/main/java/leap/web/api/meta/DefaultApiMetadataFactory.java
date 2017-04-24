@@ -36,7 +36,7 @@ import leap.web.action.Argument.Location;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
@@ -340,7 +340,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            ModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
+            ApiModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
             if(null != c) {
                 if(!Strings.isEmpty(c.getName())) {
                     model.setName(c.getName());

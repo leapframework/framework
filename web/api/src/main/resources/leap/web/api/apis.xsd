@@ -122,10 +122,76 @@
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element name="included-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="excluded-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="readonly-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="model" type="restd-model" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:choice>
             <xsd:attribute name="enabled"     type="xsd:boolean" use="optional" default="true"/>
             <xsd:attribute name="data-source" type="xsd:string"  use="optional" default="default"/>
             <xsd:attribute name="anonymous"   type="xsd:boolean" use="optional" default="false"/>
+            <xsd:attribute name="readonly"    type="xsd:boolean" use="optional" default="false"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="restd-model">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for restd model.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:choice minOccurs="0" maxOccurs="unbounded">
+            <xsd:element name="sql-operation" type="sql-operation" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:choice>
+        <xsd:attribute name="name"   type="xsd:string"  use="required"/>
+        <xsd:attribute name="read"   type="xsd:boolean" use="optional" default="true">
+            <xsd:annotation>
+                <xsd:documentation>
+                    'read' includes 'find' and 'query' operations.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="write"  type="xsd:boolean" use="optional" default="true">
+            <xsd:annotation>
+                <xsd:documentation>
+                    'write' includes 'create', 'update' and 'delete' operations.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="create"    type="xsd:boolean" use="optional" default="true"/>
+        <xsd:attribute name="update"    type="xsd:boolean" use="optional" default="true"/>
+        <xsd:attribute name="delete"    type="xsd:boolean" use="optional" default="true"/>
+        <xsd:attribute name="find"      type="xsd:boolean" use="optional" default="true"/>
+        <xsd:attribute name="query"     type="xsd:boolean" use="optional" default="true"/>
+        <xsd:attribute name="anonymous" type="xsd:boolean" use="optional"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="sql-operation">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for sql operation.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="name" type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The name of operation.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+        <xsd:attribute name="key"  type="xsd:string" use="required">
+            <xsd:annotation>
+                <xsd:documentation>
+                    The key of sql command.
+                </xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
+    </xsd:complexType>
+
+    <xsd:complexType name="restd-operation-sql">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for restd sql operation.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:attribute name="key" type="xsd:string" use="required"/>
     </xsd:complexType>
 
     <xsd:complexType name="cors">

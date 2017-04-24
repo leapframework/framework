@@ -37,7 +37,7 @@ import leap.web.AppInitializable;
 import leap.web.api.annotation.Resource;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.*;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
@@ -60,8 +60,8 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     protected OAuthConfig oauthConfig = new OAuthConfig(false,null,null);
 
-    protected Map<String, MApiResponse>   commonResponses  = new LinkedHashMap<>();
-    protected Map<Class<?>, ModelConfig>  commonModelTypes = new LinkedHashMap<>();
+    protected Map<String, MApiResponse>     commonResponses  = new LinkedHashMap<>();
+    protected Map<Class<?>, ApiModelConfig> commonModelTypes = new LinkedHashMap<>();
 
     @Override
     public ApiConfigurator tryGetConfigurator(String name) {
@@ -131,7 +131,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     @Override
-    public Map<Class<?>, ModelConfig> getCommonModelTypes() {
+    public Map<Class<?>, ApiModelConfig> getCommonModelTypes() {
         return commonModelTypes;
     }
 

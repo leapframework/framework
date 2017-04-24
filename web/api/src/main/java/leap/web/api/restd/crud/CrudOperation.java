@@ -39,24 +39,16 @@ import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.ModelExecutorFactory;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
+import leap.web.api.restd.RestdOperationBase;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 
 import java.util.Map;
 
-public abstract class CrudOperation implements RestdProcessor {
+public abstract class CrudOperation extends RestdOperationBase implements RestdProcessor {
 
-    protected @Inject RouteManager         rm;
     protected @Inject ModelExecutorFactory mef;
-    protected @Inject Apis                 apis;
-    protected @Inject ValidationManager    validationManager;
-    protected @Inject ApiFailureHandler    failureHandler;
-
-    protected String fullModelPath(ApiConfigurator api, RestdModel model) {
-        String basePath = api.config().getBasePath();
-        return basePath.equals("/") ? model.getPath() : basePath + model.getPath();
-    }
 
     protected ArgumentBuilder addModelArgument(FuncActionBuilder action,RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
@@ -68,32 +60,6 @@ public abstract class CrudOperation implements RestdProcessor {
 
     protected ArgumentBuilder addIdArgument(FuncActionBuilder action,RestdModel model) {
         ArgumentBuilder a = newIdArgument(model);
-
-        action.addArgument(a);
-
-        return a;
-    }
-
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name) {
-        return addArgument(action, type, name, null);
-    }
-
-    protected ArgumentBuilder addArgument(FuncActionBuilder action, Class<?> type, String name, Boolean required) {
-        ArgumentBuilder a = new ArgumentBuilder();
-
-        a.setName(name);
-        a.setType(type);
-        a.setRequired(required);
-
-        if(type.isAnnotationPresent(ParamsWrapper.class)) {
-            BeanType bt = BeanType.of(type);
-            for (BeanProperty bp : bt.getProperties()) {
-                if (bp.isField() && !bp.isAnnotationPresent(NonParam.class)) {
-                    ArgumentBuilder wrapped = new ArgumentBuilder(validationManager, bp);
-                    a.addWrappedArgument(wrapped);
-                }
-            }
-        }
 
         action.addArgument(a);
 
@@ -212,16 +178,6 @@ public abstract class CrudOperation implements RestdProcessor {
 
     protected void configure(RestdContext context, RestdModel model, FuncActionBuilder action) {
         action.setExtension(new MApiTag[]{new MApiTag(model.getName())});
-    }
-
-    protected void configure(RestdContext context, RestdModel model, RouteBuilder route) {
-        RestdConfig c = context.getConfig();
-
-        if(c.isAnonymous()) {
-            route.setAllowAnonymous(true);
-        }
-
-        route.addFailureHandler(failureHandler);
     }
 
 }

@@ -23,11 +23,10 @@ import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
@@ -102,7 +101,7 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns an immutable {@link Map} contains all the configurations of model types.
      */
-    Map<Class<?>, ModelConfig> getModelTypes();
+    Map<Class<?>, ApiModelConfig> getModelTypes();
 
     /**
      * Returns an immutable {@link Map} contains the registered api models.

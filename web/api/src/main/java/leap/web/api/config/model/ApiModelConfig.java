@@ -21,11 +21,11 @@ import leap.lang.annotation.Nullable;
 /**
  * The configuration of api model.
  */
-public class ModelConfig {
+public class ApiModelConfig {
 
     protected final String name;
 
-    public ModelConfig(String name) {
+    public ApiModelConfig(String name) {
         this.name = name;
     }
 

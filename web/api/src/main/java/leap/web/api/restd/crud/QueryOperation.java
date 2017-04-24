@@ -43,6 +43,10 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+        if(!context.getConfig().allowQueryModel(model.getName())) {
+            return;
+        }
+
         Dao    dao  = context.getDao();
         String path = fullModelPath(api, model);
 

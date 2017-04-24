@@ -28,9 +28,10 @@ import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.RestdModelConfig;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -95,7 +96,16 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String DATA_SOURCE          = "data-source";
     protected static final String INCLUDED_MODELS      = "included-models";
     protected static final String EXCLUDED_MODELS      = "excluded-models";
+    protected static final String READONLY_MODELS      = "readonly-models";
     protected static final String ANONYMOUS            = "anonymous";
+    protected static final String READONLY             = "readonly";
+    protected static final String READ                 = "read";
+    protected static final String WRITE                = "write";
+    protected static final String CREATE               = "create";
+    protected static final String UPDATE               = "update";
+    protected static final String DELETE               = "delete";
+    protected static final String FIND                 = "find";
+    protected static final String QUERY                = "query";
 
     @Override
     public String getNamespaceURI() {
@@ -239,8 +249,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         return parameter;
     }
 
-    protected Map<Class<?>, ModelConfig> readModels(AppConfigContext context, XmlReader reader) {
-        Map<Class<?>, ModelConfig> modelTypes = new LinkedHashMap<>();
+    protected Map<Class<?>, ApiModelConfig> readModels(AppConfigContext context, XmlReader reader) {
+        Map<Class<?>, ApiModelConfig> modelTypes = new LinkedHashMap<>();
 
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(MODEL)) {
@@ -249,7 +259,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
 
                 Class<?> modelType = Classes.forName(className);
 
-                ModelConfig modelConfig = new ModelConfig(modelName);
+                ApiModelConfig modelConfig = new ApiModelConfig(modelName);
 
                 modelTypes.put(modelType, modelConfig);
             }
@@ -601,6 +611,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         }
 
         c.setAnonymous(reader.resolveBooleanAttribute(ANONYMOUS, false));
+        c.setReadonly(reader.resolveBooleanAttribute(READONLY, false));
 
         final RestdConfig rc = c;
 
@@ -616,7 +627,73 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                 Collections2.addAll(rc.getExcludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
                 return;
             }
+
+            //readonly models
+            if (reader.isStartElement(READONLY_MODELS)) {
+                Collections2.addAll(rc.getReadonlyModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+
+            //model
+            if(reader.isStartElement(MODEL)) {
+                readRestdModel(context, api, reader, rc);
+                return;
+            }
         });
+
+    }
+
+    private void readRestdModel(AppConfigContext context, ApiConfigurator api, XmlReader reader, RestdConfig config) {
+        String  name      = reader.getRequiredAttribute(NAME);
+        Boolean anonymous = reader.getBooleanAttribute(ANONYMOUS);
+        Boolean read      = reader.getBooleanAttribute(READ);
+        Boolean write     = reader.getBooleanAttribute(WRITE);
+        Boolean create    = reader.getBooleanAttribute(CREATE);
+        Boolean update    = reader.getBooleanAttribute(UPDATE);
+        Boolean delete    = reader.getBooleanAttribute(DELETE);
+        Boolean find      = reader.getBooleanAttribute(FIND);
+        Boolean query     = reader.getBooleanAttribute(QUERY);
+
+        RestdModelConfig model = config.getModel(name);
+        if(null == model) {
+            model = new RestdModelConfig(name);
+            config.addModel(model);
+        }
+
+        if(null != anonymous) {
+            model.setAnonymous(anonymous);
+        }
+
+        if(null != read) {
+            model.setFindOperationEnabled(read);
+            model.setQueryOperationEnabled(read);
+        }
+
+        if(null != write) {
+            model.setCreateOperationEnabled(write);
+            model.setUpdateOperationEnabled(write);
+            model.setDeleteOperationEnabled(write);
+        }
+
+        if(null != create) {
+            model.setCreateOperationEnabled(create);
+        }
+
+        if(null != update) {
+            model.setUpdateOperationEnabled(update);
+        }
+
+        if(null != delete) {
+            model.setDeleteOperationEnabled(delete);
+        }
+
+        if(null != find) {
+            model.setFindOperationEnabled(find);
+        }
+
+        if(null != query) {
+            model.setQueryOperationEnabled(query);
+        }
 
     }
 }

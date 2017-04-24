@@ -18,7 +18,7 @@ package leap.web.api.config;
 import leap.lang.*;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.*;
@@ -58,8 +58,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
 
-    protected Map<Class<?>, ModelConfig> modelTypeConfigs    = new LinkedHashMap<>();
-    protected Map<Class<?>, ModelConfig> modelTypeConfigsImv = Collections.unmodifiableMap(modelTypeConfigs);
+    protected Map<Class<?>, ApiModelConfig> modelTypeConfigs    = new LinkedHashMap<>();
+    protected Map<Class<?>, ApiModelConfig> modelTypeConfigsImv = Collections.unmodifiableMap(modelTypeConfigs);
 
     protected Map<String, MApiModelBuilder> models    = new LinkedHashMap<>();
     protected Map<String, MApiModelBuilder> modelsImv = Collections.unmodifiableMap(models);
@@ -148,7 +148,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public Map<Class<?>, ModelConfig> getModelTypes() {
+    public Map<Class<?>, ApiModelConfig> getModelTypes() {
         return modelTypeConfigs;
     }
 
@@ -217,7 +217,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public ApiConfigurator putModelType(Class<?> type, ModelConfig c) {
+    public ApiConfigurator putModelType(Class<?> type, ApiModelConfig c) {
         modelTypeConfigs.put(type, c);
         return this;
     }
