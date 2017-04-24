@@ -30,7 +30,6 @@ import leap.web.api.orm.CreateOneResult;
 import leap.web.api.orm.ModelCreateExecutor;
 import leap.web.api.orm.ModelExecutorConfig;
 import leap.web.api.orm.SimpleModelExecutorConfig;
-import leap.web.api.restd.ModelOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
@@ -41,7 +40,7 @@ import java.util.Map;
 /**
  * Create a new record operation.
  */
-public class CreateOperation extends ModelOperationBase implements RestdProcessor {
+public class CreateOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {

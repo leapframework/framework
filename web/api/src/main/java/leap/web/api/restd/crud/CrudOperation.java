@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd;
+package leap.web.api.restd.crud;
 
 import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
@@ -37,12 +37,15 @@ import leap.web.api.meta.model.*;
 import leap.web.api.mvc.ApiFailureHandler;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.ModelExecutorFactory;
+import leap.web.api.restd.RestdContext;
+import leap.web.api.restd.RestdModel;
+import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
 
 import java.util.Map;
 
-public abstract class ModelOperationBase implements RestdProcessor {
+public abstract class CrudOperation implements RestdProcessor {
 
     protected @Inject RouteManager         rm;
     protected @Inject ModelExecutorFactory mef;

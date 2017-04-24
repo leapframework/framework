@@ -27,9 +27,7 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.DeleteOptions;
-import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.*;
-import leap.web.api.restd.ModelOperationBase;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
@@ -38,7 +36,7 @@ import leap.web.route.RouteBuilder;
 /**
  * Delete by id operation.
  */
-public class DeleteOperation extends ModelOperationBase implements RestdProcessor {
+public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {

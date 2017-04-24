@@ -31,7 +31,6 @@ import leap.web.api.orm.ModelExecutorConfig;
 import leap.web.api.orm.ModelQueryExecutor;
 import leap.web.api.orm.QueryListResult;
 import leap.web.api.orm.SimpleModelExecutorConfig;
-import leap.web.api.restd.ModelOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
@@ -40,7 +39,7 @@ import leap.web.route.RouteBuilder;
 /**
  * Query records operation.
  */
-public class QueryOperation extends ModelOperationBase implements RestdProcessor {
+public class QueryOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {

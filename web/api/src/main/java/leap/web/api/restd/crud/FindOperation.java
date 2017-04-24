@@ -31,7 +31,6 @@ import leap.web.api.orm.ModelExecutorConfig;
 import leap.web.api.orm.ModelQueryExecutor;
 import leap.web.api.orm.QueryOneResult;
 import leap.web.api.orm.SimpleModelExecutorConfig;
-import leap.web.api.restd.ModelOperationBase;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
@@ -40,7 +39,7 @@ import leap.web.route.RouteBuilder;
 /**
  * Find by id operation.
  */
-public class FindOperation extends ModelOperationBase implements RestdProcessor {
+public class FindOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {

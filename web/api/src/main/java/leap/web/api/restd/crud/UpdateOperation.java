@@ -27,7 +27,6 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.orm.*;
-import leap.web.api.restd.ModelOperationBase;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
@@ -38,7 +37,7 @@ import java.util.Map;
 /**
  * Update a record operation.
  */
-public class UpdateOperation extends ModelOperationBase implements RestdProcessor {
+public class UpdateOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
