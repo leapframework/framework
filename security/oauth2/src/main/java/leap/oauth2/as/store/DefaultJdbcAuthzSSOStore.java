@@ -34,9 +34,9 @@ import java.util.Date;
 import java.util.List;
 
 public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements AuthzSSOStore {
-    
+
     private static final Log log = LogFactory.get(DefaultJdbcAuthzSSOStore.class);
-    
+
     public static final String CLEANUP_SSO_LOGINS_SQL_KEY     = "oauth2.as.cleanupSSOLogins";
     public static final String CLEANUP_SSO_SESSIONS_SQL_KEY   = "oauth2.as.cleanupSSOSessions";
     public static final String LOAD_SESSION_BY_TOKEN_SQL_KEY  = "oauth2.as.loadSSOSessionByToken";
@@ -57,7 +57,7 @@ public class DefaultJdbcAuthzSSOStore extends AbstractJdbcAuthzStore implements 
         }else{
             session = dao.createCriteriaQuery(AuthzSSOSessionEntity.class)
                          .where("token = ? and user_name = ? and expiration > ?", new Object[]{token, username, new Date()})
-                         .singleOrNull();
+                         .firstOrNull();
         }
 
         if(null == session) {
