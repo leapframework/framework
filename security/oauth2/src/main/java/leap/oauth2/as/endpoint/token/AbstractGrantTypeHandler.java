@@ -123,7 +123,7 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         }
         if(Strings.isEmpty(clientSecret)){
             handleError(request,response,params,
-                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request, key,"client_id is required."),INVALID_REQUEST_CLIENT_ID_REQUIRED));
+                    getOauth2Error(key -> OAuth2Errors.invalidRequestError(request, key,"client_secret is required."),INVALID_REQUEST_CLIENT_SECRET_REQUIRED));
             return null;
         }
         return new SamplingAuthzClientCredentials(clientId,clientSecret);

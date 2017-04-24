@@ -66,7 +66,11 @@ public class CodeGrantTypeHandler extends AbstractGrantTypeHandler implements Gr
 		}
 
 		AuthzClientCredentials credentials=extractClientCredentials(request, response, params);
-
+		
+		if(credentials == null){
+			return;
+		}
+		
 		AuthzClient client = validateClientSecret(request, response, credentials);
 		if(null == client) {
 		    return;

@@ -44,7 +44,7 @@ import java.security.interfaces.RSAPublicKey;
 
 @Configurable(prefix="oauth2.as")
 public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, OAuth2AuthzServerConfigurator, AppInitializable {
-	
+
     protected @Inject                AppConfig            appConfig;
     protected @Inject                SecurityConfigurator sc;
     protected @Inject                DataSourceManager    dsm;
@@ -103,7 +103,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public AuthzInMemoryStore inMemoryStore() {
         return inMemoryStore;
     }
-	
+
     @Override
     public OAuth2AuthzServerConfigurator useInMemoryStore() {
         clientStore = inMemoryStore;
@@ -205,12 +205,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public boolean isAuthorizationCodeEnabled() {
 	    return authorizationCodeEnabled;
     }
-	
+
 	@Override
     public boolean isImplicitGrantEnabled() {
 	    return implicitGrantEnabled;
     }
-	
+
 	@Override
     public String getTokenEndpointPath() {
 	    return tokenEndpointPath;
@@ -220,7 +220,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public String getAuthzEndpointPath() {
 	    return authzEndpointPath;
     }
-	
+
     @Override
     public String getTokenInfoEndpointPath() {
         return tokenInfoEndpointPath;
@@ -239,12 +239,12 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public String getErrorView() {
 	    return errorView;
     }
-	
+
 	@Override
     public String getLoginView() {
         return loginView;
     }
-	
+
     @Override
     public String getLogoutView() {
         return logoutView;
@@ -253,7 +253,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public int getDefaultAccessTokenExpires() {
 		return defaultAccessTokenExpires;
 	}
-	
+
 	@Override
     public int getDefaultRefreshTokenExpires() {
 	    return defaultRefreshTokenExpires;
@@ -268,7 +268,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     public int getDefaultAuthorizationCodeExpires() {
         return defaultAuthorizationCodeExpires;
     }
-	
+
 	@Override
     public int getDefaultIdTokenExpires() {
         return defaultIdTokenExpires;
@@ -289,19 +289,19 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 		this.enabled = enabled;
 		return this;
 	}
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setHttpsOnly(boolean httpsOnly) {
 	    this.httpsOnly = httpsOnly;
 	    return this;
 	}
-	
+
     @ConfigProperty
 	public OAuth2AuthzServerConfigurator setAuthorizationCodeEnabled(boolean authorazationCodeEnabled) {
 		this.authorizationCodeEnabled = authorazationCodeEnabled;
 		return this;
 	}
-	
+
     @ConfigProperty
     public OAuth2AuthzServerConfigurator setImplicitGrantEnabled(boolean enabled) {
 		this.implicitGrantEnabled = enabled;
@@ -366,25 +366,25 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.userInfoEndpointPath = path;
         return this;
     }
-    
+
     @ConfigProperty
     public OAuth2AuthzServerConfigurator setLogoutEndpointPath(String path) {
         this.logoutEndpointPath = path;
         return this;
     }
-	
+
 	@ConfigProperty
     public OAuth2AuthzServerConfigurator setErrorView(String view) {
 		this.errorView = view;
 	    return this;
     }
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setLoginView(String view) {
 	    this.loginView = view;
 	    return this;
 	}
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setLogoutView(String view) {
 	    this.loginView = view;
@@ -408,13 +408,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.defaultLoginTokenExpires = seconds;
         return this;
     }
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setDefaultAuthorizationCodeExpires(int seconds) {
 	    this.defaultAuthorizationCodeExpires = seconds;
 	    return this;
 	}
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setDefaultIdTokenExpires(int seconds) {
 	    this.defaultIdTokenExpires = seconds;
@@ -426,13 +426,13 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.defaultLoginSessionExpires = seconds;
         return this;
     }
-	
+
 	@ConfigProperty
 	public OAuth2AuthzServerConfigurator setJdbcDataSourceName(String name) {
 	    this.jdbcDataSourceName = name;
 	    return this;
 	}
-	
+
     @Override
     public PrivateKey getPrivateKey() {
         return privateKey;
@@ -455,16 +455,22 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.clientStore = store;
         return this;
     }
-    
+
     public OAuth2AuthzServerConfigurator setCodeStore(AuthzCodeStore store) {
         Args.notNull(store);
         this.codeStore = store;
         return this;
     }
-    
+
     public OAuth2AuthzServerConfigurator setTokenStore(AuthzTokenStore store) {
         Args.notNull(store);
         this.tokenStore = store;
+        return this;
+    }
+
+    public OAuth2AuthzServerConfigurator setSSOStore(AuthzSSOStore store) {
+        Args.notNull(store);
+        this.ssoStore = store;
         return this;
     }
 
@@ -475,7 +481,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         }
         return clientStore;
     }
-    
+
     @Override
     public AuthzCodeStore getCodeStore() {
         if(null == codeStore) {
@@ -483,7 +489,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         }
         return codeStore;
     }
-    
+
     @Override
     public AuthzTokenStore getTokenStore() {
         if(null == tokenStore) {
@@ -558,20 +564,20 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
             if(!sc.config().isEnabled()) {
                 sc.enable(true);
             }
-            
+
             this.hasDataSources = dsm.hasDataSources();
-            
+
             if(hasDataSources) {
                 String dataSourceName = Strings.firstNotEmpty(jdbcDataSourceName, DataSourceManager.DEFAULT_DATASOURCE_NAME);
-                
+
                 if(getTokenStore() instanceof JdbcStore) {
                     ((JdbcStore) getTokenStore()).setDataSourceName(dataSourceName);
                 }
-                
+
                 if(getCodeStore() instanceof JdbcStore) {
                     ((JdbcStore)getCodeStore()).setDataSourceName(dataSourceName);
                 }
-                
+
                 if(getClientStore() instanceof JdbcStore) {
                     ((JdbcStore)getClientStore()).setDataSourceName(dataSourceName);
                 }
@@ -580,7 +586,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
                     ((JdbcStore) getSSOStore()).setDataSourceName(dataSourceName);
                 }
             }
-            
+
             if(isCleanupEnabled()) {
                 schedulerManager
                     .newFixedThreadPoolScheduler("auth-cleanup")
@@ -588,7 +594,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
             }
         }
     }
-    
+
     protected void cleanup() {
         Try.catchAll(() -> getCodeStore().cleanupAuthorizationCodes());
         Try.catchAll(() -> getTokenStore().cleanupTokens());

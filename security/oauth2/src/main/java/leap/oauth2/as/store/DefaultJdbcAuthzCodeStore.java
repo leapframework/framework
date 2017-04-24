@@ -52,7 +52,7 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
     public AuthzCode loadAuthorizationCode(String code) {
         AuthzCodeEntity entity;
         if(null == loadAuthorizationCodeCommand) {
-            entity = dao.find(AuthzCodeEntity.class, code);
+            entity = dao.findOrNull(AuthzCodeEntity.class, code);
         }else{
             entity = dao.createQuery(AuthzCodeEntity.class, loadAuthorizationCodeCommand).firstOrNull();
         }
