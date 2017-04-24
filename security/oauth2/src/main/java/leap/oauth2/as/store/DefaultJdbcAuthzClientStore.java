@@ -29,27 +29,32 @@ import leap.orm.dmo.Dmo;
 import leap.orm.sql.SqlCommand;
 
 public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implements AuthzClientStore {
-    
+
     public static final String LOAD_CLIENT_SQL_KEY = "oauth2.as.loadClient";
 
     protected SqlCommand loadClientCommand;
-    
+
     @Override
     public AuthzClient loadClient(String clientId) {
-        AuthzClientEntity entity;
-        
+    	AuthzClientEntity entity=loadAuthzClientEntity(clientId);
+
+        return null == entity ? null : createAuthzClientFromEntity(entity);
+    }
+
+    protected AuthzClientEntity loadAuthzClientEntity(String clientId){
+    	AuthzClientEntity entity;
+
         if(null == loadClientCommand) {
             entity = dao.findOrNull(AuthzClientEntity.class, clientId);
         }else{
             entity = dao.createQuery(AuthzClientEntity.class, loadClientCommand).firstOrNull();
         }
-        
-        return null == entity ? null : createAuthzClientFromEntity(entity);
+        return entity;
     }
-    
+
     protected AuthzClient createAuthzClientFromEntity(AuthzClientEntity entity) {
         SimpleAuthzClient client = new SimpleAuthzClient();
-        
+
         client.setId(entity.getId());
         client.setSecret(entity.getSecret());
         client.setRedirectUri(entity.getRedirectUri());
@@ -62,7 +67,7 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
         if(!Strings.isEmpty(entity.getLogoutUriPattern())) {
             client.setLogoutUriPattern(new AntPathPattern(entity.getLogoutUriPattern()));
         }
-        
+
         client.setAccessTokenExpires(entity.getAccessTokenExpires());
         client.setRefreshTokenExpires(entity.getRefreshTokenExpires());
         client.setAllowAuthorizationCode(entity.getAllowAuthorizationCode());
@@ -70,7 +75,7 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
         client.setAllowLoginToken(entity.getAllowLoginToken());
         client.setGrantedScope(entity.getGrantedScope());
         client.setEnabled(entity.isEnabled());
-        
+
         return client;
     }
 
@@ -79,17 +84,17 @@ public class DefaultJdbcAuthzClientStore extends AbstractJdbcAuthzStore implemen
         createEntityMapping(dmo, config.isDebug());
         resolveSqlCommands(dao, dao.getOrmContext().getMetadata());
     }
-    
+
     protected void createEntityMapping(Dmo dmo, boolean debug) {
         CreateEntityCommand cmd = dmo.cmdCreateEntity(AuthzClientEntity.class);
-        
+
         if(debug) {
             cmd.setUpgradeTable(true);
         }
-        
+
         cmd.execute();
     }
-    
+
     protected void resolveSqlCommands(Dao dao, OrmMetadata md) {
         loadClientCommand = md.tryGetSqlCommand(LOAD_CLIENT_SQL_KEY);
     }

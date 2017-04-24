@@ -41,9 +41,9 @@ public class DefaultTokenInfoHandler implements TokenInfoHandler {
 
             AuthzAccessToken at = tokenManager.loadAccessToken(accessToken);
             if(null == at) {
-                OAuth2Errors.invalidRequest(request,response,null,"invalid token");
+                OAuth2Errors.invalidToken(request,response,null,"invalid token");
             }else if(at.isExpired()) {
-                OAuth2Errors.invalidRequest(request,response,null,"invalid token");
+                OAuth2Errors.invalidToken(request,response,null,"invalid token");
                 tokenManager.removeAccessToken(at);
             }else{
                 if(processors != null && processors.length > 0){
