@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.validation.ValidationManager;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.json.JsonSettings;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.annotation.NonParam;
@@ -76,7 +77,11 @@ public abstract class RestdOperationBase {
             route.setAllowAnonymous(true);
         }
 
+        route.setAllowClientOnly(true);
         route.addFailureHandler(failureHandler);
+
+        JsonSettings settings = new JsonSettings.Builder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").build();
+        route.setExtension(settings);
     }
 
 }
