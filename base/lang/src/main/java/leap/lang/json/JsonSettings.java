@@ -39,6 +39,11 @@ public class JsonSettings {
     private final DateFormat  dateFormat;
 
     public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
+                        boolean ignoreEmptyString, boolean ignoreEmptyArray,
+                        NamingStyle namingStyle, DateFormat dateFormat) {
+        this(keyQuoted, ignoreNull, ignoreFalse, ignoreEmptyString, ignoreEmptyArray, false, namingStyle, dateFormat);
+    }
+    public JsonSettings(boolean keyQuoted, boolean ignoreNull, boolean ignoreFalse,
                         boolean ignoreEmptyString, boolean ignoreEmptyArray, boolean nullToEmptyString,
                         NamingStyle namingStyle, DateFormat dateFormat) {
 		this.keyQuoted         = keyQuoted;
