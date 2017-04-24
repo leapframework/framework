@@ -222,7 +222,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse delete(Object id) {
         if (dao.delete(modelClass, id) > 0) {
-            return ApiResponse.ACCEPTED;
+            return ApiResponse.NO_CONTENT;
         } else {
             return ApiResponse.NOT_FOUND;
         }
@@ -233,7 +233,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse cascadeDelete(Object id) {
         if (dao.cascadeDelete(modelClass, id)) {
-            return ApiResponse.ACCEPTED;
+            return ApiResponse.NO_CONTENT;
         } else {
             return ApiResponse.NOT_FOUND;
         }
@@ -246,7 +246,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         ModelDeleteExecutor executor = mef.newDeleteExecutor(mec, am, dao, em);
 
         if(executor.deleteOne(id, options).success) {
-            return ApiResponse.ACCEPTED;
+            return ApiResponse.NO_CONTENT;
         }else{
             return ApiResponse.NOT_FOUND;
         }
