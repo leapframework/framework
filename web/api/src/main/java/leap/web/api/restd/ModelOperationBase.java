@@ -101,6 +101,19 @@ public abstract class ModelOperationBase implements RestdProcessor {
         action.setReturnType(ApiResponse.class);
 
         MApiResponseBuilder r = newModelResponse(model);
+        r.setDescription("Success");
+
+        action.setExtension(new MApiResponseBuilder[]{r});
+
+        return r;
+    }
+
+    protected MApiResponseBuilder addNoContentResponse(FuncActionBuilder action, RestdModel model) {
+        action.setReturnType(ApiResponse.class);
+
+        MApiResponseBuilder r = new MApiResponseBuilder();
+        r.setStatus(204);
+        r.setDescription("Success");
 
         action.setExtension(new MApiResponseBuilder[]{r});
 
@@ -122,6 +135,7 @@ public abstract class ModelOperationBase implements RestdProcessor {
 
         r.setStatus(200);
         r.setType(new MComplexTypeRef(model.getName()));
+        r.setDescription("Success");
 
         return r;
     }
@@ -131,6 +145,7 @@ public abstract class ModelOperationBase implements RestdProcessor {
 
         r.setStatus(200);
         r.setType(new MCollectionType(new MComplexTypeRef(model.getName())));
+        r.setDescription("Success");
 
         MApiHeaderBuilder header = new MApiHeaderBuilder();
         header.setName("X-Total-Count");
