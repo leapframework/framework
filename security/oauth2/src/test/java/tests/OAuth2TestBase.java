@@ -177,30 +177,25 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByPassword(String username, String password) {
-        return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID);
+        return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
     }
 
-    protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId) {
-        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
-                "?grant_type=password&username=" + Urls.encode(username) +
-                "&password=" + Urls.encode(password) +
-                "&client_id=" + Urls.encode(clientId);
+    protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId, String clientSecret) {
 
-        return resp(post(tokenUri), new TokenResponse());
+        THttpRequest request = forPost(serverContextPath + TOKEN_ENDPOINT)
+                .addFormParam("grant_type","password")
+                .addFormParam("password",Urls.encode(password))
+                .addFormParam("username",Urls.encode(username))
+                .addHeader("Authorization", "Basic " + Base64.encode(clientId+":"+clientSecret));
+        
+        return resp(request.send(), new TokenResponse());
     }
-
-    protected TokenResponse obtainAccessTokenByTokenClient(String accesstoken, String clientId, String clientSecret){
-        String tokenUri = serverContextPath + TOKEN_ENDPOINT +
-                "?grant_type=token_client&access_token=" + Urls.encode(accesstoken) +
-                "&client_id=" + Urls.encode(clientId) +
-                "&client_secret="+Urls.encode(clientSecret);
-        return resp(post(tokenUri),new TokenResponse());
-    }
+    
     
     protected TokenResponse obtainAccessTokenByClient(String clientId, String clientSecret) {
         String tokenUri = serverContextPath + TOKEN_ENDPOINT; 
         
-        String token = "Basic " + Base64.encode(clientId + ":" + clientSecret);
+        String token = encodeToBasicAuthcHeader(clientId,clientSecret);
 
         THttpRequest request = forPost(tokenUri).addHeader("Authorization",token)
                 .addFormParam("grant_type","client_credentials");
@@ -254,6 +249,10 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         if(null != mapProperty) {
             mapProperty.setValue(resp, map);
         }
+    }
+    
+    protected String encodeToBasicAuthcHeader(String clientId, String clientSecret){
+        return "Basic " + Base64.encode(clientId+":"+clientSecret);
     }
     
     protected TokenInfoResponse obtainAccessTokenInfo(String accessToken) {

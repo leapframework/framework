@@ -20,6 +20,7 @@ package tests.log;
 
 import app.models.api.TestLogModel;
 import auth.AuthTestData;
+import leap.lang.codec.Base64;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
@@ -40,7 +41,7 @@ public class OpLogControllerTest extends WebTestBase {
                 .addQueryParam("grant_type","password")
                 .addQueryParam("username", AuthTestData.USERNAME1)
                 .addQueryParam("password",AuthTestData.PASSWORD1)
-                .addQueryParam("client_id","client1")
+                .addHeader("Authorization", encodeBasicAuthcHeader("client1","client1_secret"))
                 .send().getJson().asJsonObject().get("access_token");
         assertNotNull(at);
         TestLogModel.deleteAll();
@@ -58,4 +59,8 @@ public class OpLogControllerTest extends WebTestBase {
         assertEquals("testtestlog",TestLogModel.<TestLogModel>first().getDescription());
     }
 
+    protected String encodeBasicAuthcHeader(String clientId, String clientSecret){
+        return "Basic " + Base64.encode(clientId+":"+clientSecret);
+    }
+    
 }

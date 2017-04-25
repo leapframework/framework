@@ -19,6 +19,7 @@ import leap.core.Session;
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
+import leap.lang.codec.Base64;
 import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
@@ -45,11 +46,10 @@ public class DefaultWacTokenManager implements WacTokenManager {
     public OAuth2AccessToken fetchAndSaveAccessToken(Request request, Authentication authc, String code) {
         HttpRequest req = 
                 hc.request(config.getServerTokenEndpointUrl())
-                  .addQueryParam("grant_type", "authorization_code")
-                  .addQueryParam("code", code)
-                  .addQueryParam("client_id", config.getClientId())
-                  .addQueryParam("client_secret", config.getClientSecret());
-        
+                  .addFormParam("grant_type", "authorization_code")
+                  .addFormParam("code", code)
+                        .addHeader("Authorization", "Basic " + 
+                                Base64.encode(config.getClientId()+":"+config.getClientSecret()));
         HttpResponse resp = req.post();
         if(resp.isOk()) {
             Map<String, Object> map = JSON.decode(resp.getString());

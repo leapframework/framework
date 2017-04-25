@@ -18,17 +18,11 @@ public class TokenClientGrantTest extends OAuth2TestBase {
         if(isLogin()) {
             logoutAuthzServer();
         }
-        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID);
+        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
         assertFalse(token.isError());
         TokenInfoResponse userToken = testAccessTokenInfo(token);
-        assertEmpty(userToken.clientId);
-        assertEmpty(userToken.scope);
-        TokenResponse newToken = obtainAccessTokenByTokenClient(token.accessToken, Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET);
-        assertNotEquals(token.accessToken,newToken.accessToken);
-        TokenInfoResponse clientToken = testAccessTokenInfo(newToken);
-        assertNotEmpty(clientToken.clientId);
-        assertNotEmpty(clientToken.scope);
-        assertEquals(Global.TEST_CLIENT_GRANTED_SCOPE,clientToken.scope);
+        assertNotEmpty(userToken.clientId);
+        assertNotEmpty(userToken.scope);
     }
 
 }

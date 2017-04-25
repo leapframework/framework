@@ -102,10 +102,6 @@
 		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
 		  class="leap.oauth2.as.endpoint.token.ClientSecretPostGrantTypeHandler"/>
 
-	<bean name="token_client"
-		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
-		  class="leap.oauth2.as.endpoint.token.TokenClientGrantTypeHandler"/>
-
 	<bean name="authorization_code"
 		  type="leap.oauth2.as.endpoint.token.GrantTypeHandler"
 		  class="leap.oauth2.as.endpoint.token.CodeGrantTypeHandler"/>

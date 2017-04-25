@@ -16,16 +16,11 @@
 package tests.rs;
 
 import app.Global;
-import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.Assert;
-import leap.oauth2.TokenVerifierFactory;
 import org.junit.Test;
 import tested.models.User;
-import tests.JwtTokenResponse;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
-
-import java.util.Map;
 
 public class AdminControllerTest extends OAuth2TestBase {
 
@@ -53,11 +48,11 @@ public class AdminControllerTest extends OAuth2TestBase {
     }
     @Test
     public void testClientTokenGrantedScope(){
-        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING);
-        TokenResponse token2 = obtainAccessTokenByTokenClient(token1.accessToken,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+        TokenResponse token2 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,"app2","app2_secret");
 
-        withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertOk();
-        withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertFailure();
+        withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertOk();
+        withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertFailure();
     }
 
     @Test

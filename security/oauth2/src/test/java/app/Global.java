@@ -90,7 +90,7 @@ public class Global extends App {
 				.setRedirectUri(Global.TEST_CLIENT_REDIRECT_URI).build();
 		((SimpleAuthzClient)testClient).setGrantedScope(Global.TEST_CLIENT_GRANTED_SCOPE);
 	    ms.addClient(testClient);
-	    
+
 	    ms.addClient(new AuthzClientBuilder("app2", "app2_secret").setRedirectUriPattern("http*://*/app2/oauth2_redirect").build());
 	    ms.addClient(new AuthzClientBuilder("app3", "app3_secret").setRedirectUriPattern("http*://*/app3/auth_redirect").build());
 	}

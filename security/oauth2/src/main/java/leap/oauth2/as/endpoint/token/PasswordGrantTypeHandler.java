@@ -25,6 +25,7 @@ import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.client.AuthzClientCredentials;
 import leap.oauth2.as.client.AuthzClientManager;
 import leap.oauth2.as.client.AuthzClientValidator;
 import leap.oauth2.as.token.AuthzAccessToken;
@@ -88,16 +89,9 @@ public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implement
 		}
 
 		//Validates the client.
-		String clientId = params.getClientId();
-		if(Strings.isEmpty(clientId)){
-			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidRequestError(request,key,"client_id is required"),INVALID_REQUEST_CLIENT_ID_REQUIRED));
-			return;
-		}
-		AuthzClient client = clientManager.loadClientById(clientId);
+		AuthzClientCredentials clientCredentials = extractClientCredentials(request,response,params);
+		AuthzClient client = validateClientSecret(request,response,clientCredentials);
 		if(client == null){
-			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid client_id"),INVALID_REQUEST_INVALID_CLIENT,clientId));
 			return;
 		}
 		
