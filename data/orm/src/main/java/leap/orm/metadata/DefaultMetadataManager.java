@@ -212,7 +212,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		private final OrmContext	 				     ormContext;
 		private final Map<Class<?>,EntityMappingBuilder> classToEntityMappings = new ConcurrentHashMap<>();
 		private final Map<String,EntityMappingBuilder>   nameToEntityMappings  = new ConcurrentHashMap<>();
-		
+
 		protected LoadingContext(OrmContext ormContext){
 			this.ormContext = ormContext;
 		}
@@ -253,14 +253,14 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 	        Args.notEmpty(emb.getEntityName(),"entity name");
 
 	        if(nameToEntityMappings.containsKey(emb.getEntityName().toLowerCase())){
-	        	throw new MappingExistsException("entity name '" + emb.getEntityName() + "' aleady exists in this mapping context");
+	        	throw new MappingExistsException("entity name '" + emb.getEntityName() + "' already exists in this mapping context");
 	        }
 	        
 	        nameToEntityMappings.put(emb.getEntityName().toLowerCase(), emb);
 	        
 	        if(null != emb.getEntityClass()){
 	        	if(classToEntityMappings.containsKey(emb.getEntityClass())){
-	        		throw new MappingExistsException("entity class '" + emb.getEntityClass().getName() + "' aleady exists in this mapping context");
+	        		throw new MappingExistsException("entity class '" + emb.getEntityClass().getName() + "' already exists in this mapping context");
 	        	}
 	        	classToEntityMappings.put(emb.getEntityClass(), emb);
 	        }

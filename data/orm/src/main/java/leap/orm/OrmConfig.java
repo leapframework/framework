@@ -33,11 +33,11 @@ public interface OrmConfig {
      * Default is false.
      */
     boolean isAutoCreateTables();
-	
-	/**
-	 * zero means no limitation.
-	 */
-	long getDefaultMaxResults();
+
+    /**
+     * Returns true if auto mapping db tables to entities.
+     */
+    boolean isAutoMappingTables();
 
 	/**
 	 * Returns true if auto generate fields for {@link leap.orm.model.Model}.
@@ -62,6 +62,11 @@ public interface OrmConfig {
      * Default is true.
 	 */
 	boolean isAutoGenerateOptimisticLock();
+
+    /**
+     * zero means no limitation.
+     */
+    long getDefaultMaxResults();
 
     /**
      * Returns the field name of optimistic lock column.

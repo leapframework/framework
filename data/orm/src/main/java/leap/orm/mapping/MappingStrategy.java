@@ -16,6 +16,7 @@
 package leap.orm.mapping;
 
 import leap.db.model.DbColumn;
+import leap.db.model.DbTable;
 import leap.lang.beans.BeanProperty;
 import leap.orm.OrmContext;
 import leap.orm.domain.FieldDomain;
@@ -86,6 +87,11 @@ public interface MappingStrategy {
 	 * 
 	 */
 	EntityMappingBuilder createModelMapping(MetadataContext context, Class<? extends Model> modelClass) throws MetadataException;
+
+    /**
+     * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>table</code> to an entity.
+     */
+    EntityMappingBuilder createEntityMappingByTable(MetadataContext context, DbTable table) throws MetadataException;
 	
 	/**
 	 * 

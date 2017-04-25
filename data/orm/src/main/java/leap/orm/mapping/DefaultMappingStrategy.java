@@ -28,6 +28,7 @@ import leap.db.DbMetadata;
 import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbTable;
+import leap.db.model.DbTableBuilder;
 import leap.lang.Args;
 import leap.lang.Classes;
 import leap.lang.Strings;
@@ -53,6 +54,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.model.ModelField;
+import leap.orm.naming.NamingStrategy;
 import leap.orm.serialize.FieldSerializer;
 
 import java.lang.annotation.Annotation;
@@ -324,7 +326,30 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		return emb;
     }
 
-	protected void mappingBeanProperties(MetadataContext context,EntityMappingBuilder emb,BeanType beanType) {
+    @Override
+    public EntityMappingBuilder createEntityMappingByTable(MetadataContext context, DbTable t) throws MetadataException {
+        //todo : to be implemented.
+        DbTableBuilder       table = new DbTableBuilder(t);
+        EntityMappingBuilder emb   = new EntityMappingBuilder().setTable(table);
+
+        //entity
+        emb.setEntityName(context.getNamingStrategy().tableToEntityName(table.getName()));
+        emb.setTableNameDeclared(true);
+
+        //fields.
+        for(DbColumnBuilder col : table.getColumns()) {
+            FieldMappingBuilder fmb = createFieldMappingByColumn(context, emb, col.build());
+            fmb.setColumnNameDeclared(true);
+            emb.addFieldMapping(fmb);
+        }
+
+        //post mappings
+        postMapping(context, emb);
+
+        return emb;
+    }
+
+    protected void mappingBeanProperties(MetadataContext context, EntityMappingBuilder emb, BeanType beanType) {
 		for(BeanProperty bp : beanType.getProperties()){
 			if(isExplicitNonField(context,bp)){
 				continue;

@@ -15,12 +15,6 @@
  */
 package leap.orm.naming;
 
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import leap.core.AppConfigException;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -36,6 +30,12 @@ import leap.lang.naming.NamingStyles;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import leap.orm.OrmConfig;
+
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class DefaultNamingStrategy implements NamingStrategy,PostCreateBean {
 
@@ -247,7 +247,7 @@ public class DefaultNamingStrategy implements NamingStrategy,PostCreateBean {
 		if(columnName.indexOf('_') >= 0){
 			return Strings.lowerCamel(columnName.toLowerCase(),'_');
 		}else{
-			return columnName;
+			return fieldName(columnName(columnName));
 		}
     }
 	

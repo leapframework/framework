@@ -979,13 +979,17 @@ public class Strings {
 			return EMPTY;
 		}
 		
-		String[]	  parts = split(string,seperator);
+		String[] parts = split(string,seperator);
+        if(parts.length == 1) {
+            return parts[0].substring(0, 1).toLowerCase() + parts[0].substring(1);
+        }
+
 		StringBuilder out   = new StringBuilder(string.length());
 		for (String part : parts) {
 			if (out.length() == 0) {
-				out.append(part.substring(0, 1).toLowerCase() + part.substring(1));
+				out.append(part.substring(0, 1).toLowerCase() + part.substring(1).toLowerCase());
 			}else{
-				out.append(part.substring(0, 1).toUpperCase() + part.substring(1));
+				out.append(part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase());
 			}
 		}
 		return out.toString();
@@ -1018,10 +1022,17 @@ public class Strings {
 			return EMPTY;
 		}
 		
-		String[] parts 	  = split(string,seperator);
+		String[] parts = split(string,seperator);
+        if(parts.length == 1) {
+            return parts[0].substring(0, 1).toUpperCase() + parts[0].substring(1);
+        }
+
 		StringBuilder out = new StringBuilder();
 		for (String part : parts) {
-			out.append(part.substring(0, 1).toUpperCase() + part.substring(1));
+            if(part.length() == 0) {
+                continue;
+            }
+			out.append(part.substring(0, 1).toUpperCase() + part.substring(1).toLowerCase());
 		}
 		return out.toString();
 	}
