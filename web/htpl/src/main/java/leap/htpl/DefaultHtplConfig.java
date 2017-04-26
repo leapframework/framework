@@ -15,14 +15,21 @@
  */
 package leap.htpl;
 
+import leap.core.AppConfig;
+import leap.core.BeanFactory;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
-import leap.core.validation.annotations.NotEmpty;
+import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 
 @Configurable(prefix="htpl.")
-public class DefaultHtplConfig implements HtplConfig {
+public class DefaultHtplConfig implements HtplConfig,PostCreateBean {
 
-	protected @NotEmpty String prefix;
+    protected @Inject AppConfig appConfig;
+
+	protected String  prefix;
+    protected Boolean reloadEnabled;
+    protected int     reloadInterval = HtplConstants.DEFAULT_RELOAD_INTERVAL;
 	
 	@Override
 	public String getPrefix() {
@@ -34,4 +41,30 @@ public class DefaultHtplConfig implements HtplConfig {
 		this.prefix = prefix;
 	}
 
+    @Override
+    public boolean isReloadEnabled() {
+        return reloadEnabled;
+    }
+
+    @ConfigProperty
+    public void setReloadEnabled(boolean reloadEnabled) {
+        this.reloadEnabled = reloadEnabled;
+    }
+
+    @Override
+    public int getReloadInterval() {
+        return reloadInterval;
+    }
+
+    @ConfigProperty
+    public void setReloadInterval(int reloadInterval) {
+        this.reloadInterval = reloadInterval;
+    }
+
+    @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        if(null == this.reloadEnabled) {
+            this.reloadEnabled = appConfig.isReloadEnabled();
+        }
+    }
 }

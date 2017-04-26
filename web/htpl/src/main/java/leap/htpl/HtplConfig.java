@@ -15,8 +15,28 @@
  */
 package leap.htpl;
 
+import leap.core.AppConfig;
+
 public interface HtplConfig {
-	
+
+    /**
+     * The prefix of htpl attributes.
+     */
 	String getPrefix();
 
+    /**
+     * Returns true if the reloading of htpl templates is enabled.
+     *
+     * <p/>
+     * Default is {@link AppConfig#isReloadEnabled()}.
+     */
+    boolean isReloadEnabled();
+
+    /**
+     * Returns the reload interval in mills-seconds.
+     *
+     * <p/>
+     * Default is {@link HtplConstants#DEFAULT_RELOAD_INTERVAL}.
+     */
+    int getReloadInterval();
 }

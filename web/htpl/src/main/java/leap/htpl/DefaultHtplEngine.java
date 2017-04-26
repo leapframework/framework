@@ -73,7 +73,6 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 
     protected Locale                           defaultLocale;
     protected Scheduler                        reloadScheduler;
-    protected int                              reloadInterval      = HtplConstants.DEFAULT_RELOAD_INTERVAL;
     protected List<ReloadableHtplTemplate>     reloadableTemplates = new CopyOnWriteArrayList<>();
     protected Map<String, HtplProcessors>      processorsMap       = new SimpleCaseInsensitiveMap<>();
     protected Map<EscapeType, HtplEscaper>     escapersMap         = new HashMap<>();
@@ -127,10 +126,6 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 		this.reloadScheduler = reloadScheduler;
 	}
 	
-	public void setReloadInterval(int reloadInterval) {
-		this.reloadInterval = reloadInterval;
-	}
-
 	public HtplTemplateSource getTemplateSource() {
 		return templateSource;
 	}
@@ -315,14 +310,14 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 				reloadableTemplates.add(tpl);
 			}
 			
-			if(!reloadScheduled){
+			if(config.isReloadEnabled() && !reloadScheduled){
 				synchronized (this) {
 					if(!reloadScheduled){
 					    if(reloadScheduler == null) {
 					        reloadScheduler = schedulerManager.newFixedThreadPoolScheduler("htpl-reload");
 					    }
 						//Start reload task
-						reloadScheduler.scheduleAtFixedRate(new ReloadTask(), reloadInterval);
+						reloadScheduler.scheduleAtFixedRate(new ReloadTask(), config.getReloadInterval());
 					}
                 }
 			}
