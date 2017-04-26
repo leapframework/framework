@@ -90,6 +90,9 @@ public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implement
 
 		//Validates the client.
 		AuthzClientCredentials clientCredentials = extractClientCredentials(request,response,params);
+		if(clientCredentials == null){
+			return;
+		}
 		AuthzClient client = validateClientSecret(request,response,clientCredentials);
 		if(client == null){
 			return;
