@@ -15,10 +15,12 @@
  */
 package app.controllers;
 
+import leap.core.security.annotation.AllowAnonymous;
 import leap.web.Response;
 import leap.web.annotation.Cors;
 import leap.web.annotation.http.GET;
 
+@AllowAnonymous
 public class CorsTestController {
 
 	public String normal() {
@@ -36,5 +38,18 @@ public class CorsTestController {
 	public String disabled() {
 		return "disabled";
 	}
+
+    @GET
+    @Cors
+    public String largeData(Response response) {
+        response.addHeader("X-Test-Large-Data", "1");
+
+        StringBuilder s = new StringBuilder();
+        for(int i=0;i<1000000;i++) {
+            s.append('c');
+        }
+
+        return s.toString();
+    }
 	
 }

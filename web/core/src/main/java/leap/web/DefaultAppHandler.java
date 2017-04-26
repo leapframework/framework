@@ -257,8 +257,6 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                     log.error("Error executing 'completeHandle' in interceptors, {}", e.getMessage(), e);
                 }
                 throwException(e);
-            }finally {
-                webConfig.getCorsHandler().postHandle(request, response);
             }
         }
     }
@@ -601,6 +599,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         if (log.isDebugEnabled()) {
             log.debug("Rendering result : {} , locale : {}", result, request.getLocale());
         }
+
+        //todo : hard code cors exposed headers processing before writing data.
+        webConfig.getCorsHandler().postHandle(request, response);
 
         Renderable renderable = result.getRenderable();
 

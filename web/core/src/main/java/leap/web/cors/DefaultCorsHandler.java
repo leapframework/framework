@@ -32,14 +32,23 @@ public class DefaultCorsHandler implements CorsHandler {
 
     private static final String EXPOSE_ANY_HEADERS_ATTR = CorsHandler.class.getName() + "$EXPOSE_ANY_HEADERS";
 
-    private static final Set<String> RESPONSE_HEADERS = new HashSet<>();
+    private static final Set<String> CORS_RESPONSE_HEADERS   = new HashSet<>();
+    private static final Set<String> SIMPLE_RESPONSE_HEADERS = new HashSet<>();
     static {
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS);
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS);
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS);
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN);
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS);
-        RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_CREDENTIALS);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_HEADERS);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_METHODS);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_ALLOW_ORIGIN);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_EXPOSE_HEADERS);
+        CORS_RESPONSE_HEADERS.add(RESPONSE_HEADER_ACCESS_CONTROL_MAX_AGE);
+
+        //see : https://www.w3.org/TR/cors/#list-of-exposed-headers
+        SIMPLE_RESPONSE_HEADERS.add("cache-control");
+        SIMPLE_RESPONSE_HEADERS.add("content-language");
+        SIMPLE_RESPONSE_HEADERS.add("content-type");
+        SIMPLE_RESPONSE_HEADERS.add("expires");
+        SIMPLE_RESPONSE_HEADERS.add("last-modified");
+        SIMPLE_RESPONSE_HEADERS.add("pragma");
     }
 
     protected @Inject CorsConfig conf;
@@ -75,12 +84,17 @@ public class DefaultCorsHandler implements CorsHandler {
             StringBuilder exposeHeaders = new StringBuilder();
 
             for(String header : response.getHeaderNames()) {
-                if(RESPONSE_HEADERS.contains(header)) {
+                if(CORS_RESPONSE_HEADERS.contains(header)) {
                     continue;
                 }
+                if(SIMPLE_RESPONSE_HEADERS.contains(header.toLowerCase())){
+                    continue;
+                }
+
                 if(exposeHeaders.length() > 0) {
                     exposeHeaders.append(',');
                 }
+
                 exposeHeaders.append(header);
             }
 

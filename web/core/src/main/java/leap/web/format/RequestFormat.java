@@ -15,16 +15,13 @@
  */
 package leap.web.format;
 
-import com.sun.org.apache.xpath.internal.Arg;
 import leap.lang.Named;
 import leap.lang.http.MimeType;
 import leap.web.Request;
 import leap.web.action.Action;
 import leap.web.action.Argument;
-import leap.web.action.ArgumentResolver;
 
 import java.io.IOException;
-import java.lang.reflect.Type;
 
 public interface RequestFormat extends Named {
 	
