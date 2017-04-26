@@ -16,6 +16,7 @@
 package leap.lang.params;
 
 import leap.lang.Emptiable;
+import leap.lang.accessor.NamedGetter;
 import leap.lang.beans.DynaBean;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Map;
  * <p>
  * Note : the implementation must guarantee case insensitive.
  */
-public interface Params extends Emptiable {
+public interface Params extends Emptiable,NamedGetter {
 	
 	/**
 	 * Returns an readonly empty params.
@@ -106,22 +107,6 @@ public interface Params extends Emptiable {
 	Map<String,Object> map();
 
 	/**
-	 * Returns <code>true</code> if this parameters contains the given parameter name .
-	 * 
-	 * <p>
-	 * Returns <code>false</code> if the parameter not exists.
-	 */
-	boolean contains(String name);
-	
-	/**
-	 * Returns the parameter's value of the given name.
-	 * 
-	 * <p>
-	 * Returns <code>null</code> if the parameter not exists or the parameter's value is <code>null</code>
-	 */
-	Object get(String name);
-	
-	/**
 	 * Update parameter's value in the underlying data object, such as {@link Map} or java bean. 
 	 */
 	Params set(String name,Object value);
@@ -130,6 +115,16 @@ public interface Params extends Emptiable {
 	 * Set all parameters from the given map.
 	 */
 	Params setAll(Map<String,? extends Object> m);
+
+    /**
+     * Returns <code>true</code> if this params object is a named params.
+     *
+     * <p>
+     * A named params can use {@link #get(String)} to get parameter's value.
+     */
+    default boolean isNamed() {
+        return true;
+    }
 	
 	/**
 	 * Returns <code>true</code> if this params object is readonly.
@@ -144,15 +139,9 @@ public interface Params extends Emptiable {
 	 * <p>
 	 * An indexed params can used {@link #get(int)} to get parameter's value.
 	 */
-	boolean isIndexed();
-	
-	/**
-	 * Returns <code>true</code> if this params object is a named params.
-	 * 
-	 * <p>
-	 * A named params can use {@link #get(String)} to get parameter's value.
-	 */
-	boolean isNamed();
+	default boolean isIndexed() {
+        return false;
+    }
 	
 	/**
 	 * Returns the max index if this params is indexed.
@@ -160,12 +149,16 @@ public interface Params extends Emptiable {
 	 * <p>
 	 * Returns -1 if this params is not indexed.
 	 */
-	int maxIndex();
+	default int maxIndex() {
+        return -1;
+    }
 	
 	/**
 	 * Index starts from 0.
 	 * 
 	 * @throws IllegalStateException if not an indexed parameters.
 	 */
-	Object get(int i) throws IllegalStateException,IndexOutOfBoundsException;
+	default Object get(int i) throws IllegalStateException,IndexOutOfBoundsException {
+        throw new IllegalStateException("Not an indexed parameters");
+    }
 }

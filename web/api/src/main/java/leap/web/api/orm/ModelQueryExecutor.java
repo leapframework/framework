@@ -38,6 +38,13 @@ public interface ModelQueryExecutor {
      */
     QueryOneResult queryOne(Object id, QueryOptionsBase options);
 
+    /**
+     * Query the records of model.
+     */
+    default QueryListResult queryList(QueryOptions options) {
+        return queryList(options, null);
+    }
+
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters);
 
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);

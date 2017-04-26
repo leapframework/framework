@@ -18,6 +18,8 @@ package leap.lang.el.spel.ast;
 import java.util.Map;
 
 import leap.lang.Named;
+import leap.lang.accessor.Getter;
+import leap.lang.accessor.ObjectPropertyGetter;
 import leap.lang.beans.DynaBean;
 import leap.lang.el.ElEvalContext;
 import leap.lang.el.ElException;
@@ -94,9 +96,13 @@ public class AstProperty extends AstExpr implements Named {
     		return ((ElPropertyResolver) o).resovleProperty(name);
     	}
     	
-    	if(o instanceof DynaBean){
-    		return ((DynaBean) o).getProperty(name);
+    	if(o instanceof ObjectPropertyGetter){
+    		return ((ObjectPropertyGetter) o).getProperty(name);
     	}
+
+        if(o instanceof Getter) {
+            return ((Getter) o).get(name);
+        }
     	
     	if(null == this.p){
     		synchronized (this) {

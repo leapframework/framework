@@ -11,9 +11,13 @@
         <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="jdbc.username">sa</property>
     </properties>
+
     <!--
     <property name="webapi.oplog.logClassName">app.models.api.TestLogModel</property>
     -->
+
     <orm:config auto-create-tables="true"/>
+
     <import resource="config_local.xml" check-existence="false" default-override="true"/>
+
 </config>

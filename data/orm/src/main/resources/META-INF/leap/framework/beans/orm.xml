@@ -19,6 +19,9 @@
 	<bean type="leap.orm.domain.DomainSource"  class="leap.orm.domain.XmlDomainSource"/>
 	<bean type="leap.orm.domain.DomainSource"  class="leap.orm.domain.ClassDomainSource"/>
 
+    <!-- event -->
+    <bean type="leap.orm.event.EntityEventHandler" class="leap.orm.event.DefaultEntityEventHandler" primary="true"/>
+
     <!-- metadata & mapping -->
     <bean type="leap.orm.metadata.OrmMetadataManager" class="leap.orm.metadata.DefaultMetadataManager" primary="true"/>
     <bean type="leap.lang.meta.MTypeFactory"       class="leap.orm.metadata.OrmMTypeFactory"/>
@@ -28,6 +31,7 @@
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.model.ModelMapper">
     	<additional-type-def type="leap.orm.OrmContextInitializable"/>
     </bean>
+    <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.SchemaMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.RelationMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.config.ConfigMapper"/>
 

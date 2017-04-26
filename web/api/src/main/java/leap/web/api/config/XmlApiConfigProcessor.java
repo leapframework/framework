@@ -22,13 +22,16 @@ import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
 import leap.core.config.AppConfigProcessor;
 import leap.lang.Classes;
+import leap.lang.Collections2;
 import leap.lang.Props;
 import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.RestdModelConfig;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -87,6 +90,23 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     protected static final String HTTP_METHODS         = "http-methods";
     protected static final String PATH_PATTERN         = "path-pattern";
     protected static final String UNIQUE_OPERATION_ID  = "unique-operation-id";
+    protected static final String DEFAULT_ANONYMOUS    = "default-anonymous";
+    protected static final String RESTD                = "restd";
+    protected static final String RESTD_ENABLED        = "restd-enabled";
+    protected static final String RESTD_DATA_SOURCE    = "restd-data-source";
+    protected static final String DATA_SOURCE          = "data-source";
+    protected static final String INCLUDED_MODELS      = "included-models";
+    protected static final String EXCLUDED_MODELS      = "excluded-models";
+    protected static final String READONLY_MODELS      = "readonly-models";
+    protected static final String ANONYMOUS            = "anonymous";
+    protected static final String READONLY             = "readonly";
+    protected static final String READ                 = "read";
+    protected static final String WRITE                = "write";
+    protected static final String CREATE               = "create";
+    protected static final String UPDATE               = "update";
+    protected static final String DELETE               = "delete";
+    protected static final String FIND                 = "find";
+    protected static final String QUERY                = "query";
 
     @Override
     public String getNamespaceURI() {
@@ -167,7 +187,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     if(null == c) {
                         throw new ApiConfigException("Invalid response type '" + type + "', check : " + reader.getCurrentLocation());
                     }
-
+                    //todo :
                     r.setTypeClass(c);
                 }else{
                     r.setType(MVoidType.TYPE);
@@ -230,8 +250,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         return parameter;
     }
 
-    protected Map<Class<?>, ModelConfig> readModels(AppConfigContext context, XmlReader reader) {
-        Map<Class<?>, ModelConfig> modelTypes = new LinkedHashMap<>();
+    protected Map<Class<?>, ApiModelConfig> readModels(AppConfigContext context, XmlReader reader) {
+        Map<Class<?>, ApiModelConfig> modelTypes = new LinkedHashMap<>();
 
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(MODEL)) {
@@ -240,7 +260,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
 
                 Class<?> modelType = Classes.forName(className);
 
-                ModelConfig modelConfig = new ModelConfig(modelName);
+                ApiModelConfig modelConfig = new ApiModelConfig(modelName);
 
                 modelTypes.put(modelType, modelConfig);
             }
@@ -293,6 +313,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         String  basePath          = reader.resolveAttribute(BASE_PATH);
         String  basePackage       = reader.resolveAttribute(BASE_PACKAGE);
         Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
+        Boolean defaultAnonymous  = reader.resolveBooleanAttribute(DEFAULT_ANONYMOUS);
+        boolean restdEnabled      = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
 
         ApiConfigurator api = extensions.getConfigurator(name);
         if(null == api) {
@@ -302,8 +324,20 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             extensions.addConfigurator(api);
         }
 
+        if(null != defaultAnonymous) {
+            api.setDefaultAnonymous(defaultAnonymous);
+        }
+
         if(null != uniqueOperationId) {
             api.setUniqueOperationId(uniqueOperationId);
+        }
+
+        if(restdEnabled && null == api.getRestdConfig()) {
+            api.setRestdConfig(new RestdConfig());
+        }
+
+        if(null != api.getRestdConfig()) {
+            api.getRestdConfig().setDataSourceName(reader.resolveAttribute(RESTD_DATA_SOURCE));
         }
 
         readApi(context, reader, api);
@@ -413,9 +447,14 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
                     readResourcePermissions(context, reader, api);
                     continue;
                 }
+
                 if(reader.isStartElement(OAUTH)){
-                    OAuthConfig oauth = readOAuth(context,reader);
-                    api.setOAuthConfig(oauth);
+                    api.setOAuthConfig(readOAuth(context,reader));
+                    continue;
+                }
+
+                if(reader.isStartElement(RESTD)) {
+                    readRestd(context, api, reader);
                     continue;
                 }
             }
@@ -532,15 +571,17 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 
-    public OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
-        boolean defaultEnabled = reader.resolveBooleanAttribute(ENABLED,false);
-        String defaultFlow = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
-        OAuthConfig oauth = new OAuthConfig(defaultEnabled, defaultFlow,null,null);
+    protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
+        boolean enabled = reader.resolveBooleanAttribute(ENABLED,false);
+        String  flow    = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
+
+        OAuthConfig oauth = new OAuthConfig(enabled, flow, null, null);
+
         reader.loopInsideElement(() -> {
             if(reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOauthAuthzEndpointUrl(url);
+                    oauth.setAuthzEndpointUrl(url);
                 }
                 return;
             }
@@ -548,11 +589,116 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
             if(reader.isStartElement(TOKEN_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if(!Strings.isEmpty(url)) {
-                    oauth.setOauthTokenEndpointUrl(url);
+                    oauth.setTokenEndpointUrl(url);
                 }
                 return;
             }
         });
+
         return oauth;
+    }
+
+    private void readRestd(AppConfigContext context, ApiConfigurator api, XmlReader reader){
+        boolean enabled = reader.resolveBooleanAttribute(ENABLED, true);
+        if(!enabled) {
+            api.setRestdConfig(null);
+            return;
+        }
+
+        RestdConfig c = api.getRestdConfig();
+        if(null == c) {
+            c = new RestdConfig();
+            api.setRestdConfig(c);
+        }
+
+        String dataSourceName = reader.resolveAttribute(DATA_SOURCE);
+        if(!Strings.isEmpty(dataSourceName)) {
+            c.setDataSourceName(dataSourceName);
+        }
+
+        c.setReadonly(reader.resolveBooleanAttribute(READONLY, false));
+
+        final RestdConfig rc = c;
+
+        reader.loopInsideElement(() -> {
+            //included models
+            if (reader.isStartElement(INCLUDED_MODELS)) {
+                Collections2.addAll(rc.getIncludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+
+            //excluded models
+            if (reader.isStartElement(EXCLUDED_MODELS)) {
+                Collections2.addAll(rc.getExcludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+
+            //readonly models
+            if (reader.isStartElement(READONLY_MODELS)) {
+                Collections2.addAll(rc.getReadonlyModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                return;
+            }
+
+            //model
+            if(reader.isStartElement(MODEL)) {
+                readRestdModel(context, api, reader, rc);
+                return;
+            }
+        });
+
+    }
+
+    private void readRestdModel(AppConfigContext context, ApiConfigurator api, XmlReader reader, RestdConfig config) {
+        String  name      = reader.getRequiredAttribute(NAME);
+        Boolean anonymous = reader.getBooleanAttribute(ANONYMOUS);
+        Boolean read      = reader.getBooleanAttribute(READ);
+        Boolean write     = reader.getBooleanAttribute(WRITE);
+        Boolean create    = reader.getBooleanAttribute(CREATE);
+        Boolean update    = reader.getBooleanAttribute(UPDATE);
+        Boolean delete    = reader.getBooleanAttribute(DELETE);
+        Boolean find      = reader.getBooleanAttribute(FIND);
+        Boolean query     = reader.getBooleanAttribute(QUERY);
+
+        RestdModelConfig model = config.getModel(name);
+        if(null == model) {
+            model = new RestdModelConfig(name);
+            config.addModel(model);
+        }
+
+        if(null != anonymous) {
+            model.setAnonymous(anonymous);
+        }
+
+        if(null != read) {
+            model.setFindOperationEnabled(read);
+            model.setQueryOperationEnabled(read);
+        }
+
+        if(null != write) {
+            model.setCreateOperationEnabled(write);
+            model.setUpdateOperationEnabled(write);
+            model.setDeleteOperationEnabled(write);
+        }
+
+        if(null != create) {
+            model.setCreateOperationEnabled(create);
+        }
+
+        if(null != update) {
+            model.setUpdateOperationEnabled(update);
+        }
+
+        if(null != delete) {
+            model.setDeleteOperationEnabled(delete);
+        }
+
+        if(null != find) {
+            model.setFindOperationEnabled(find);
+        }
+
+        if(null != query) {
+            model.setQueryOperationEnabled(query);
+        }
+
     }
 }

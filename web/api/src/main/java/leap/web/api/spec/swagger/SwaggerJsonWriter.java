@@ -268,6 +268,30 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 				w.endObject();
 			});
 		}
+
+        if(r.getHeaders().length > 0) {
+            w.property("headers",() -> {
+
+                w.startObject();
+
+                for(MApiHeader header : r.getHeaders()) {
+
+                    w.property(header.getName(),() -> {
+
+                        w.startObject();
+
+                        w.property(DESCRIPTION, nullToEmpty(header.getDescription()));
+                        writeType(context, m, w, header.getType());
+                        w.endObject();
+
+                    });
+
+                }
+
+                w.endObject();
+
+            });
+        }
 		
 		w.endObject();
 	}

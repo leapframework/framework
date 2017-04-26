@@ -78,4 +78,12 @@
 
     </api>
 
+    <api name="restd" base-path="/restd" default-anonymous="true" restd-enabled="true" restd-data-source="restd">
+
+        <restd>
+            <model name="Model1" delete="false"/>
+        </restd>
+
+    </api>
+
 </apis>

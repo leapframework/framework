@@ -16,19 +16,33 @@
 package leap.orm.value;
 
 import leap.lang.Named;
+import leap.lang.accessor.Getter;
+import leap.lang.accessor.NamedGetter;
 
-public interface EntityBase {
+import java.util.Set;
 
+public interface EntityBase extends NamedGetter {
+
+    /**
+     * Returns the name of entity.
+     */
 	String getEntityName();
-	
-	boolean hasField(String field);
-	
-	Object get(String field);
-	
-	Object get(Named field);
-	
+
+    /**
+     * Returns all the field names in this entity.
+     */
+    Set<String> getFieldNames();
+
+    /**
+     * Sets the value of field.
+     */
 	<T extends EntityBase> T set(String field,Object value);
-	
-	<T extends EntityBase> T set(Named field,Object value);
+
+    /**
+     * Sets the value of field.
+     */
+	default <T extends EntityBase> T set(Named field,Object value) {
+        return set(field.getName(), value);
+    }
 
 }

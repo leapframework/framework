@@ -15,17 +15,20 @@
  */
 package leap.web.api.config;
 
+import leap.lang.Extensible;
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.route.Route;
 
 
-public interface ApiConfigurator {
+public interface ApiConfigurator extends Extensible {
 
     String[] DEFAULT_PRODUCES = new String[]{MimeTypes.APPLICATION_JSON};
     String[] DEFAULT_CONSUMES = new String[]{MimeTypes.APPLICATION_JSON};
@@ -85,7 +88,12 @@ public interface ApiConfigurator {
     /**
      * Puts a model type config.
      */
-    ApiConfigurator putModelType(Class<?> type, ModelConfig c);
+    ApiConfigurator putModelType(Class<?> type, ApiModelConfig c);
+
+    /**
+     * Registered a {@link MApiModelBuilder}.
+     */
+    ApiConfigurator addModel(MApiModelBuilder model);
 
     /**
      * Puts a common response builder for build common response.
@@ -119,6 +127,11 @@ public interface ApiConfigurator {
      * Sets the default page size.
      */
     ApiConfigurator setDefaultPageSize(int size);
+
+    /**
+     * Sets all the api operations to default anonymous or not.
+     */
+    ApiConfigurator setDefaultAnonymous(boolean anonymous);
 
     /**
      * Disables cors of this api.
@@ -181,4 +194,14 @@ public interface ApiConfigurator {
      * Sets the unique operation id property to true or false.
      */
     ApiConfigurator setUniqueOperationId(boolean unqiueOperationId);
+
+    /**
+     * Sets the {@link RestdConfig}.
+     */
+    ApiConfigurator setRestdConfig(RestdConfig c);
+
+    /**
+     * Returns the {@link RestdConfig} or null if restd is not enabled.
+     */
+    RestdConfig getRestdConfig();
 }

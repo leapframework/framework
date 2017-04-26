@@ -1,6 +1,6 @@
 /*
  *
- *  * Copyright 2013 the original author or authors.
+ *  * Copyright 2016 the original author or authors.
  *  *
  *  * Licensed under the Apache License, Version 2.0 (the "License");
  *  * you may not use this file except in compliance with the License.
@@ -23,9 +23,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by kael on 2016/12/8.
- */
 public class MApiSecurity extends MApiNamed {
 
     private List<String> scopes = new ArrayList<>();

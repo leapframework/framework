@@ -276,13 +276,11 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
                 if(v.isGenerated()) {
 
-                    if(null == writeGeneratedValue) {
-                        if(parameters instanceof BeanParams || parameters instanceof Entity) {
-                            writeGeneratedValue = true;
-                        }
+                    if(null == writeGeneratedValue && !parameters.isReadonly()) {
+                        writeGeneratedValue = true;
                     }
 
-                    if(writeGeneratedValue) {
+                    if(null != writeGeneratedValue && writeGeneratedValue) {
                         String name = ((NamedSqlParameter) p).getName();
                         parameters.set(name, v.get());
                     }

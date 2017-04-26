@@ -16,6 +16,7 @@
 package leap.web.action;
 
 import leap.lang.Args;
+import leap.lang.ExtensibleBase;
 import leap.lang.New;
 import leap.lang.reflect.ReflectException;
 import leap.lang.reflect.ReflectMethod;
@@ -24,7 +25,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-public class MethodAction implements Action {
+public class MethodAction extends ExtensibleBase implements Action {
 	
 	private static final ActionInterceptor[] EMPTY_INTERCEPTORS = new ActionInterceptor[]{};
 	

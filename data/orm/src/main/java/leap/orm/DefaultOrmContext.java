@@ -28,6 +28,7 @@ import leap.db.DbFactory;
 import leap.lang.Assert;
 import leap.lang.Readonly;
 import leap.orm.command.CommandFactory;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.linq.ConditionParser;
 import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.MetadataContext;
@@ -60,6 +61,7 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
     protected @Inject @M RowReader          rowReader;
     protected @Inject @M ConditionParser    conditionParser;
     protected @Inject @M OrmConfig          config;
+    protected @Inject @M EntityEventHandler entityEventHandler;
     
     protected @NotEmpty String name;
 	
@@ -170,8 +172,13 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
     public RowReader getRowReader() {
 	    return rowReader;
     }
-	
-	@Override
+
+    @Override
+    public EntityEventHandler getEntityEventHandler() {
+        return entityEventHandler;
+    }
+
+    @Override
     public void preInject(BeanFactory factory) {
 		Assert.notNull(db,"The 'db' field must not be null");
 		

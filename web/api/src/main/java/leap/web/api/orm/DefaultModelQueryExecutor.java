@@ -67,7 +67,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
         record = query.firstOrNull();
 
-        if(null != record) {
+        if(null != record && null != options) {
             Expand[] expands = ExpandParser.parse(options.getExpand());
             if (expands.length > 0) {
                 for (Expand expand : expands) {

@@ -16,6 +16,7 @@
 package leap.web.api.meta.model;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import leap.lang.accessor.AttributeAccessor;
@@ -29,9 +30,19 @@ public abstract class MApiNamedWithDescBuilder<T extends MApiObject> extends MNa
         super();
     }
 
+    public MApiNamedWithDescBuilder(MApiNamedWithDesc m) {
+        this.name = m.getName();
+        this.title = m.getTitle();
+        this.summary = m.getSummary();
+        this.description = m.getDescription();
+        if(!m.getAttributes().isEmpty()) {
+            this.attrs = new LinkedHashMap<>(m.getAttributes());
+        }
+    }
+
 	public Map<String, Object> getAttributes() {
 		if(null == attrs){
-			attrs = new HashMap<String, Object>();
+			attrs = new HashMap<>();
 		}
 		return attrs;
 	}

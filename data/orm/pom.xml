@@ -9,10 +9,26 @@
     </parent>
     <artifactId>leap-orm</artifactId>
     <packaging>jar</packaging>
-    <properties>
-        <oracle.jdbc.path>${project.basedir}</oracle.jdbc.path>
-        <sqlserver.jdbc.path>${project.basedir}</sqlserver.jdbc.path>
-    </properties>
+
+    <build>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${plugins.surefire.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <file.encoding>UTF-8</file.encoding>
+                        <org.apache.jasper.compiler.disablejsr199>true</org.apache.jasper.compiler.disablejsr199>
+                    </systemPropertyVariables>
+                    <argLine>-javaagent:"${settings.localRepository}"/org/leapframework/leap-agent/${project.version}/leap-agent-${project.version}.jar</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
+
     <dependencies>
         <dependency>
             <groupId>org.leapframework</groupId>

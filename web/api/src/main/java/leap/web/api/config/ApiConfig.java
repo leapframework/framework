@@ -23,9 +23,11 @@ import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.permission.ResourcePermissionsSet;
@@ -87,11 +89,6 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
 	boolean isCorsDisabled();
 
 	/**
-	 * Returns the oauth config
-	 */
-	OAuthConfig getOAuthConfig();
-
-	/**
 	 * Returns the permissions required by this api.
 	 */
 	Map<String,MApiPermission> getPermissions();
@@ -104,7 +101,12 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns an immutable {@link Map} contains all the configurations of model types.
      */
-    Map<Class<?>, ModelConfig> getModelTypes();
+    Map<Class<?>, ApiModelConfig> getModelTypes();
+
+    /**
+     * Returns an immutable {@link Map} contains the registered api models.
+     */
+    Map<String, MApiModelBuilder> getModels();
 
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.
@@ -142,6 +144,11 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
 	String getBasePackage();
 
     /**
+     * Returns the if all the api operations are anonymous access by default.
+     */
+    boolean isDefaultAnonymous();
+
+    /**
      * Returns all the resource types of route.
      */
     Map<Route, Class<?>> getResourceTypes();
@@ -158,4 +165,28 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Default is <code>false</code>.
      */
     boolean isUniqueOperationId();
+
+    /**
+     * Returns true if the oauth2 security is enabled.
+     */
+    default boolean isOAuthEnabled() {
+        return null != getOAuthConfig() && getOAuthConfig().isEnabled();
+    }
+
+    /**
+     * Returns true if the RESTful data api is enabled.
+     */
+    default boolean isRestdEnabled() {
+        return null != getRestdConfig();
+    }
+
+    /**
+     * Returns the oauth config
+     */
+    OAuthConfig getOAuthConfig();
+
+    /**
+     * Returns the {@link RestdConfig} or null if restd is not enabled.
+     */
+    RestdConfig getRestdConfig();
 }

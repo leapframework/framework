@@ -38,7 +38,7 @@ public class DefaultEntityValidator implements EntityValidator {
 
     @Override
     public boolean validate(EntityWrapper entity, Validation validation, int maxErrors, Iterable<String> fields) {
-        EntityMapping em = entity.getMapping();
+        EntityMapping em = entity.getEntityMapping();
 
         if(null != fields) {
             for(String name : fields) {

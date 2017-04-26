@@ -66,7 +66,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-@SuppressWarnings("unchecked")
 @ComplexType
 public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	
@@ -127,7 +126,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	public static UpdateCommand cmdUpdate(Object id) {
 		Args.notNull(id,"id");
 		ModelContext context = context();
-		return context.getDao().cmdUpdate(context.getEntityMapping()).id(id);
+		return context.getDao().cmdUpdate(context.getEntityMapping()).withId(id);
 	}
 	
 	//---static create----
@@ -144,7 +143,7 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
 	//---static update---
 	@Instrument
 	public static boolean update(Object id,Map<String, Object> fields) {
-		return cmdUpdate(id).setAll(fields).execute() > 0;
+		return cmdUpdate(id).from(fields).execute() > 0;
 	}
 	
 	@Instrument
@@ -1093,11 +1092,11 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
     }
     
     protected boolean doCreate() {
-    	return dao.cmdInsert(em).setAll(createParameters()).execute() > 0;
+    	return dao.cmdInsert(em).from(this).execute() > 0;
     }
     
     protected boolean doUpdate(Object id) {
-		return dao.cmdUpdate(em).setAll(createParameters()).execute() > 0;
+		return dao.cmdUpdate(em).from(this).execute() > 0;
     }
     
     protected boolean doDelete(){

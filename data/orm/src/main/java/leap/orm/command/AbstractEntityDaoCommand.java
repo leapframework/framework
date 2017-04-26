@@ -15,8 +15,12 @@
  */
 package leap.orm.command;
 
+import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
+
+import java.util.Map;
 
 public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
 
@@ -30,5 +34,30 @@ public abstract class AbstractEntityDaoCommand extends AbstractDaoCommand {
 	@Override
     public EntityMapping getPrimaryEntityMapping() {
 	    return em;
+    }
+
+    protected void prepareIdAndSerialization(Object id, Map<String,Object> fields) {
+        if(null != id) {
+            String[] keyNames = em.getKeyFieldNames();
+            if(keyNames.length == 1){
+                fields.put(keyNames[0],id);
+            }else{
+                Params idParams = context.getParameterStrategy().createIdParameters(context, em, id);
+                for(int i=0;i<keyNames.length;i++){
+                    fields.put(keyNames[i], idParams.get(keyNames[i]));
+                }
+            }
+        }
+
+        //Serialize field(s).
+        for(FieldMapping fm : em.getFieldMappings()){
+            if(null != fm.getSerializer()) {
+                Object value = fields.get(fm.getFieldName());
+                Object encoded = fm.getSerializer().trySerialize(fm, value);
+                if(encoded != value) {
+                    fields.put(fm.getFieldName(), encoded);
+                }
+            }
+        }
     }
 }

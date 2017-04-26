@@ -15,129 +15,258 @@
  */
 package leap.orm.value;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import leap.lang.Args;
-import leap.lang.Named;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
+import leap.lang.params.Params;
 import leap.orm.mapping.EntityMapping;
 
+/**
+ * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
+ */
 public abstract class EntityWrapper implements EntityBase {
 	
 	/**
 	 * Wraps the given entity object to a {@link EntityWrapper} object.
 	 * 
 	 * <p>
-	 * The supported entity type must be a {@link Map}, a {@link DynaBean} , a {@link Entity} or a pojo bean.
+	 * The supported type must be a {@link Map}, a {@link DynaBean} , a {@link leap.lang.params.Params} or a pojo bean.
 	 */
 	@SuppressWarnings("rawtypes")
-    public static EntityWrapper wrap(EntityMapping em,Object entity) {
+    public static EntityWrapper wrap(EntityMapping em, Object entity) {
 		Args.notNull(em,"entity mapping");
 		Args.notNull(entity,"entity");
 		
 		if(entity instanceof Map){
-			return new MapEntityWrapper(em, entity,(Map)entity);
+			return new MapWrapper(em, (Map)entity);
 		}
 		
 		if(entity instanceof DynaBean){
-			return new MapEntityWrapper(em, entity, ((DynaBean) entity).getProperties());
+			return new DynaWrapper(em, ((DynaBean) entity));
 		}
+
+        if(entity instanceof Params) {
+            return new ParamsWrapper(em, (Params)entity);
+        }
 		
-		return new BeanEntityWrapper(em, entity);
+		return new BeanWrapper(em, entity);
 	}
 
-	protected final EntityMapping mapping;
-	protected final Object		  wrapped;
+	protected final EntityMapping em;
+	protected final Object        raw;
 	
-	protected EntityWrapper(EntityMapping mapping,Object wrapped) {
-		this.mapping = mapping;
-		this.wrapped = wrapped;
+	protected EntityWrapper(EntityMapping em, Object raw) {
+		this.em  = em;
+		this.raw = raw;
 	}
 
-	/**
-	 * Returns the {@link EntityMapping} of the wrapped entity object.
-	 */
-	public final EntityMapping getMapping() {
-		return mapping;
-	}
-	
-	/**
-	 * Returns the wrapped entity object.
-	 */
-	public final Object getWrapped() {
-		return wrapped;
-	}
-	
-	@Override
+    /**
+     * Returns the wrapped entity.
+     */
+    public final <T> T raw() {
+        return (T)raw;
+    }
+
+    /**
+     * Returns <code>true</code> if the wrapped entity is a POJO bean.
+     */
+    public boolean isBean() {
+        return false;
+    }
+
+    /**
+     * Returns <code>true</code> if the wrapped entity is a {@link Map}.
+     */
+    public boolean isMap() {
+        return false;
+    }
+
+    /**
+     * Returns <code>true</code> if the wrapped entity is a {@link DynaBean}.
+     */
+    public boolean isDyna() {
+        return false;
+    }
+
+    /**
+     * Returns <code>true</code> if the wrapped entity is a {@link Params}.
+     */
+    public boolean isParams() {
+        return false;
+    }
+
+    @Override
     public final String getEntityName() {
-	    return mapping.getEntityName();
-    }
-	
-	@Override
-    public final Object get(Named field) {
-        return get(field.getName());
+        return em.getEntityName();
     }
 
-	@Override
-    public final <T extends EntityBase> T set(Named field, Object value) {
-	    return set(field.getName(),value);
-    }
+    /**
+	 * Returns the {@link EntityMapping}.
+	 */
+	public final EntityMapping getEntityMapping() {
+		return em;
+	}
 
 	@SuppressWarnings("rawtypes")
-	protected static final class MapEntityWrapper extends EntityWrapper {
+	protected static final class MapWrapper extends EntityWrapper {
 		
-        protected final Map fields;
+        private final Map map;
 
-		public MapEntityWrapper(EntityMapping mapping, Object entity, Map fields) {
-	        super(mapping, entity);
-	        Args.notNull(fields,"fields");
-	        this.fields = fields;
-        }
-		
-		@Override
-        public boolean hasField(String field) {
-	        return fields.containsKey(field);
+		public MapWrapper(EntityMapping mapping, Map map) {
+	        super(mapping, map);
+	        Args.notNull(map,"fields");
+	        this.map = map;
         }
 
-		@Override
+        @Override
+        public boolean isMap() {
+            return true;
+        }
+
+        @Override
+        public Set<String> getFieldNames() {
+            return map.keySet();
+        }
+
+        @Override
+        public boolean contains(String name) {
+            return map.containsKey(name);
+        }
+
+        @Override
         public Object get(String field) {
-	        return fields.get(field);
+	        return map.get(field);
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public <T extends EntityBase> T set(String field, Object value) {
-        	fields.put(field, value);
+        	map.put(field, value);
 	        return (T)this;
         }
 	}
-	
-	protected static final class BeanEntityWrapper extends EntityWrapper {
 
-		protected final BeanType beanType;
-		
-		protected BeanEntityWrapper(EntityMapping mapping, Object entity) {
-	        super(mapping, entity);
-	        this.beanType = BeanType.of(entity.getClass());
+    protected static final class ParamsWrapper extends EntityWrapper {
+
+        private final Params params;
+
+        public ParamsWrapper(EntityMapping em, Params params) {
+            super(em, params);
+            this.params = params;
         }
 
-		@Override
-        public boolean hasField(String field) {
+        @Override
+        public boolean isParams() {
+            return true;
+        }
+
+        @Override
+        public Set<String> getFieldNames() {
+            return params.map().keySet();
+        }
+
+        @Override
+        public boolean contains(String field) {
+            return params.contains(field);
+        }
+
+        @Override
+        public Object get(String field) {
+            return params.get(field);
+        }
+
+        @Override
+        public <T extends EntityBase> T set(String field, Object value) {
+            params.set(field, value);
+            return (T)this;
+        }
+    }
+
+    protected static final class DynaWrapper extends EntityWrapper {
+
+        private final DynaBean bean;
+
+        public DynaWrapper(EntityMapping em, DynaBean bean) {
+            super(em, bean);
+            this.bean = bean;
+        }
+
+        @Override
+        public boolean isDyna() {
+            return true;
+        }
+
+        @Override
+        public Set<String> getFieldNames() {
+            return bean.getProperties().keySet();
+        }
+
+        @Override
+        public boolean contains(String field) {
+            return bean.getProperties().containsKey(field);
+        }
+
+        @Override
+        public Object get(String field) {
+            return bean.getProperty(field);
+        }
+
+        @Override
+        public <T extends EntityBase> T set(String field, Object value) {
+            bean.setProperty(field, value);
+            return (T)this;
+        }
+    }
+	
+	protected static final class BeanWrapper extends EntityWrapper {
+
+		protected final BeanType beanType;
+
+        private Set<String> fieldNames;
+		
+		protected BeanWrapper(EntityMapping mapping, Object bean) {
+	        super(mapping, bean);
+	        this.beanType = BeanType.of(bean.getClass());
+        }
+
+        @Override
+        public boolean isBean() {
+            return true;
+        }
+
+        @Override
+        public Set<String> getFieldNames() {
+            if(null != fieldNames) {
+                return fieldNames;
+            }
+
+            fieldNames = new LinkedHashSet<>();
+            for(BeanProperty bp : beanType.getProperties()) {
+                fieldNames.add(bp.getName());
+            }
+            return fieldNames;
+        }
+
+        @Override
+        public boolean contains(String field) {
 	        return beanType.tryGetProperty(field, true) != null;
         }
 
 		@Override
         public Object get(String field) {
 	        BeanProperty bp = beanType.tryGetProperty(field,true);
-	        return null == bp ? null : bp.getValue(wrapped);
+	        return null == bp ? null : bp.getValue(raw);
         }
 		
         @Override
         @SuppressWarnings("unchecked")
         public <T extends EntityBase> T set(String field, Object value) {
-        	beanType.setProperty(wrapped, field, value, true);
+        	beanType.setProperty(raw, field, value, true);
 	        return (T)this;
         }
 	}

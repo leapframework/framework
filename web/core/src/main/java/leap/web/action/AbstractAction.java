@@ -15,11 +15,12 @@
  */
 package leap.web.action;
 
+import leap.lang.ExtensibleBase;
 import leap.lang.http.HTTP;
 import leap.web.Request;
 import leap.web.Response;
 
-public abstract class AbstractAction implements Action {
+public abstract class AbstractAction extends ExtensibleBase implements Action {
 
 	@Override
 	public final Object execute(ActionContext context, Object[] args) throws Throwable {

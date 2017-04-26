@@ -111,16 +111,16 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 
 		EntityMapping em = emForObject(entity);
 		
-	    return commandFactory().newInsertCommand(this, em).setAll(entity).execute();
+	    return commandFactory().newInsertCommand(this, em).from(entity).execute();
     }
 
     @Override
     public int insert(EntityMapping em, Object entity, Object id) {
         InsertCommand insert =
-                commandFactory().newInsertCommand(this, em).setAll(entity);
+                commandFactory().newInsertCommand(this, em).from(entity);
 
         if(null != id) {
-            insert.id(id);
+            insert.withId(id);
         }
 
         return insert.execute();
@@ -152,7 +152,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		
 		EntityMapping em = emForObject(entity);
 		
-	    return commandFactory().newUpdateCommand(this, em).setAll(entity).execute();
+	    return commandFactory().newUpdateCommand(this, em).from(entity).execute();
     }
 
 	@Override

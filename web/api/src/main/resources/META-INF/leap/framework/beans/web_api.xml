@@ -50,4 +50,18 @@
     <bean type="leap.web.api.meta.desc.ApiDescContainer" class="leap.web.api.meta.desc.DefaultApiDescContainer"/>
     <bean name="controller" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ControllerDescriptionLoader"/>
     <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
+
+    <!-- restd -->
+    <bean type="leap.web.api.restd.RestdStrategy"       class="leap.web.api.restd.DefaultRestdStrategy" primary="true"/>
+    <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.restd.RestdApiConfigProcessor">
+        <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
+    </bean>
+
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.QueryOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.FindOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperation"/>
+
 </beans>

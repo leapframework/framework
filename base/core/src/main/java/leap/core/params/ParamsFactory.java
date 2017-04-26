@@ -21,6 +21,6 @@ public interface ParamsFactory {
 	
 	Params createParams(Object param);
 	
-	Params createParams(Object... params);
+	Params createParams(Object[] params);
 	
 }

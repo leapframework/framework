@@ -14,26 +14,13 @@
  *  limitations under the License.
  */
 
-package leap.web.api.config.model;
+package leap.orm.event;
 
-import leap.lang.annotation.Nullable;
-
-/**
- * The configuration of api model.
- */
-public class ModelConfig {
-
-    protected final String name;
-
-    public ModelConfig(String name) {
-        this.name = name;
-    }
+public interface DeleteEntityEvent extends EntityEvent {
 
     /**
-     * The name of model.
+     * Required. Returns the id of entity to be deleted.
      */
-    @Nullable
-    public String getName() {
-        return name;
-    }
+    Object getId();
+
 }

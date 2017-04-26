@@ -19,6 +19,7 @@ import javax.sql.DataSource;
 
 import leap.lang.Named;
 import leap.orm.command.CommandFactory;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.linq.ConditionParser;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.parameter.ParameterStrategy;
@@ -46,5 +47,7 @@ public interface OrmContext extends MetadataContext, Named {
 	EntityReader getEntityReader();
 	
 	RowReader getRowReader();
+
+    EntityEventHandler getEntityEventHandler();
 
 }

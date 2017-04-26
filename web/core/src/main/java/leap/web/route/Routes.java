@@ -165,6 +165,18 @@ public interface Routes extends Iterable<Route>,Emptiable {
 	Routes addAll(Iterable<Route> routes);
 
     /**
+     * Returns true if a {@link Route} with the given path tempalte exists.
+     */
+    default boolean exists(String pathTemplate) {
+        for(Route route : this) {
+            if(route.getPathTemplate().getTemplate().equals(pathTemplate)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Removes the {@link Route}.
      */
     boolean remove(Route route);

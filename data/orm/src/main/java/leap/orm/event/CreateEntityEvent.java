@@ -16,21 +16,8 @@
 
 package leap.orm.event;
 
-import leap.orm.value.Entity;
+public interface CreateEntityEvent extends EntityEventWithWrapper {
 
-public interface CreateEntityEvent {
 
-    /**
-     * Returns the entity to be created.
-     */
-    Entity entity();
-
-    /**
-     * Returns the raw bean if exists.
-     *
-     * <p/>
-     * Returns <code>null</code> if not exists.
-     */
-    <T> T bean();
 
 }

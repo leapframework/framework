@@ -15,14 +15,13 @@
  */
 package leap.lang.beans;
 
+import leap.lang.accessor.ObjectPropertyGetter;
+import leap.lang.accessor.ObjectPropertySetter;
+
 import java.util.Map;
 
-public interface DynaBean {
+public interface DynaBean extends ObjectPropertyGetter, ObjectPropertySetter {
 	
-	Object getProperty(String name);
-	
-	void setProperty(String name,Object value);
-
 	Map<String, Object> getProperties();
 
 }

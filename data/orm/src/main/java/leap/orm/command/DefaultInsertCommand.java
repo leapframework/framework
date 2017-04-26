@@ -17,38 +17,32 @@ package leap.orm.command;
 
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.db.Db;
-import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.params.Params;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.event.CreateEntityEvent;
-import leap.orm.event.CreateEntityEventHandler;
-import leap.orm.generator.ValueGeneratorContext;
+import leap.orm.event.EntityEventWithWrapperImpl;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.interceptor.EntityExecutionContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFactory;
-import leap.orm.value.Entity;
+import leap.orm.value.EntityWrapper;
 
 import java.util.Map;
 
-public class DefaultInsertCommand extends AbstractEntityDaoCommand
-        implements InsertCommand,ValueGeneratorContext,EntityExecutionContext,CreateEntityEvent {
+public class DefaultInsertCommand extends AbstractEntityDaoCommand implements InsertCommand,EntityExecutionContext {
 
-    protected final SqlFactory               sf;
-    protected final Entity                   entity;
-    protected final CreateEntityEventHandler eventHandler;
+    protected final SqlFactory         sf;
+    protected final EntityEventHandler eventHandler;
 
-    protected SqlCommand   command;
-	protected FieldMapping fm;
-    protected Object       bean;
-    protected Object       id;
-	protected Object	   generatedId;
-	protected Params       parameters;
+    protected SqlCommand    command;
+    protected EntityWrapper entity;
+    protected Object        id;
+	protected Object        generatedId;
 
 	public DefaultInsertCommand(Dao dao,EntityMapping em) {
 		this(dao, em, null);
@@ -57,12 +51,16 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
 	public DefaultInsertCommand(Dao dao,EntityMapping em, SqlCommand command) {
 	    super(dao,em);
 	    this.sf		      = dao.getOrmContext().getSqlFactory();
-	    this.entity       = new Entity(em.getEntityName());
+        this.eventHandler = context.getEntityEventHandler();
 	    this.command      = command;
-        this.eventHandler = em.getCreateEntityEventHandler();
     }
-	
-	@Override
+
+    @Override
+    public OrmContext getOrmContext() {
+        return dao.getOrmContext();
+    }
+
+    @Override
     public EntityMapping getEntityMapping() {
 	    return em;
     }
@@ -72,11 +70,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
         return null == id ? generatedId : id;
     }
 
-    @Override
-    public Object getGeneratedId() {
-	    return generatedId;
-    }
-	
 	@Override
     public boolean isReturnGeneratedId() {
 	    return true;
@@ -85,166 +78,101 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
 	@Override
     public void setGeneratedId(Object id) {
 		this.generatedId = id;
-		
-		if(null != parameters){
-			parameters.set(em.getKeyFieldNames()[0], id);
-		}
+        if(null != entity) {
+            entity.set(em.getKeyFieldNames()[0], id);
+        }
     }
 
     @Override
-    public InsertCommand id(Object id) {
-        Args.notNull(id,"id");
-
-        String[] keyNames = em.getKeyFieldNames();
-        if(keyNames.length == 1){
-            entity.put(keyNames[0],id);
-            this.id = id;
-            return this;
+    public InsertCommand withId(Object id) {
+        if(em.getKeyFieldNames().length == 0){
+            throw new IllegalStateException("Entity '" + em.getEntityName() + "' has no id");
         }
-
         this.id = id;
-
-        if(keyNames.length == 0){
-            throw new IllegalStateException("Model '" + em.getEntityName() + "' has no id fields");
-        }
-
-        if(id == null){
-            for(int i=0;i<keyNames.length;i++){
-                entity.put(keyNames[i],null);
-            }
-        }else{
-            if(!(id instanceof Map)){
-                throw new IllegalArgumentException("The given id must be a Map object for composite id model");
-            }
-            Map map = (Map)id;
-            for(int i=0;i<keyNames.length;i++){
-                entity.put(keyNames[i], map.get(keyNames[i]));
-            }
-        }
-
         return this;
     }
 
     @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public InsertCommand setAll(Object bean) {
-		Args.notNull(bean,"bean");
-		
-		if(bean instanceof Map){
-			return setAll((Map)bean);
-		}else{
-            this.bean       = bean;
-			this.parameters = context.getParameterStrategy().createParams(bean);
-			this.entity.putAll(parameters.map());
-		    return this;
-		}
+    public InsertCommand from(Object record) {
+        entity = EntityWrapper.wrap(em, record);
+        return this;
     }
 	
-	@Override
-    public InsertCommand setAll(Map<String, Object> fields) {
-		Args.notNull(fields,"properties");
-		this.parameters = context.getParameterStrategy().createParams(fields);
-		entity.putAll(fields);
-		return this;
-    }
-
-	@Override
-    public InsertCommand set(String name, Object value) {
-		Args.notEmpty(name,"name");
-		this.entity.put(name, value);
-	    return this;
-    }
-	
-	@Override
-    public OrmContext getOrmContext() {
-	    return dao.getOrmContext();
-    }
-
-	@Override
-    public FieldMapping getFieldMapping() {
-	    return fm;
-    }
-
-	@Override
-    public Params getParameters() {
-	    return entity;
-    }
-
 	@Override
     public int execute() {
 		prepare();
-		
-		PreparedStatementHandler<Db> handler = null;
-		
-		if(null != em.getInsertInterceptor()){
-			handler = em.getInsertInterceptor().getPreparedStatementHandler(this);
-		}
-		
-		SqlCommand command = this.command;
-		
-		if(null == command){
-            String[] fields = entity.keySet().toArray(Arrays2.EMPTY_STRING_ARRAY);
-			command = sf.createInsertCommand(context, em, fields);
-		}
 
-        if(null != eventHandler) {
-            return doExecuteWithEvent(command, handler);
+        if(eventHandler.isHandleCreateEvent(context, em)) {
+            return doExecuteWithEvent();
         }else{
-            return doExecuteUpdate(command, handler);
+            return doExecuteUpdate();
         }
     }
 
-    @Override
-    public Entity entity() {
-        return entity;
-    }
-
-    @Override
-    public <T> T bean() {
-        return (T)bean;
-    }
-
-    protected int doExecuteWithEvent(SqlCommand command, PreparedStatementHandler<Db> handler) {
+    protected int doExecuteWithEvent() {
         int result;
 
+        EntityEventWithWrapperImpl e = new EntityEventWithWrapperImpl(context, em, entity);
+
         //pre without transaction.
-        eventHandler.preCreateEntity(this);
+        eventHandler.preCreateEntityNoTrans(context, em, e);
 
-        if(eventHandler.isTransactional()) {
+        if(eventHandler.isCreateEventTransactional(context, em)) {
             result = dao.doTransaction((status) -> {
-                //pre with transaction.
-                eventHandler.preCreateEntityWithTransaction(this, status);
+                e.setTransactionStatus(status);
 
-                int affected = doExecuteUpdate(command, handler);
+                //pre with transaction.
+                eventHandler.preCreateEntityInTrans(context, em, e);
+
+                int affected = doExecuteUpdate();
 
                 //post with transaction.
-                eventHandler.postCreateEntityWithTransaction(this, status);
+                eventHandler.postCreateEntityInTrans(context, em, e);
+
+                e.setTransactionStatus(null);
 
                 return affected;
             });
 
         }else{
-            result = doExecuteUpdate(command, handler);
+            result = doExecuteUpdate();
         }
 
         //post without transaction.
-        eventHandler.postCreateEntity(this);
+        eventHandler.postCreateEntityNoTrans(context, em, e);
 
         return result;
     }
 
-    protected int doExecuteUpdate(SqlCommand command, PreparedStatementHandler<Db> handler) {
-        if(null != handler){
-            return command.executeUpdate(this,entity,handler);
+    protected int doExecuteUpdate() {
+        //Create command.
+        if(null == command) {
+            String[] fields = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+            command = sf.createInsertCommand(context, em, fields);
+        }
+
+        //Resolve statement handler.
+        PreparedStatementHandler<Db> preparedStatementHandler = null;
+        if(null != em.getInsertInterceptor()){
+            preparedStatementHandler = em.getInsertInterceptor().getPreparedStatementHandler(this);
+        }
+
+        //Creates map for saving.
+        Map<String,Object> map = context.getParameterStrategy().toMap(entity.raw());
+
+        //Prepared id and serialization
+        prepareIdAndSerialization(id, map);
+
+        //Executes
+        if(null != preparedStatementHandler){
+            return command.executeUpdate(this, map, preparedStatementHandler);
         }else{
-            return command.executeUpdate(this,entity);
+            return command.executeUpdate(this, map);
         }
     }
 	
 	protected void prepare(){
 		for(FieldMapping fm : em.getFieldMappings()){
-			this.fm = fm;
-
             Object value = entity.get(fm.getFieldName());
 
             if(null == value) {
@@ -255,7 +183,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
                 } else {
                     Expression expression = fm.getInsertValue();
                     if (null != expression) {
-                        value = expression.getValue(this, entity);
+                        value = expression.getValue(entity);
 
                         if (fm.isPrimaryKey()) {
                             generatedId = value;
@@ -266,29 +194,17 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand
                         expression = fm.getDefaultValue();
 
                         if (null != expression) {
-                            value = expression.getValue(this, entity);
+                            value = expression.getValue(entity);
 
                             setGeneratedValue(fm, value);
                         }
                     }
                 }
             }
-
-            if(null != value && null != fm.getSerializer()) {
-                Object encoded = fm.getSerializer().trySerialize(fm, value);
-                if(encoded != value) {
-                    entity.set(fm.getFieldName(), encoded);
-                }
-            }
 		}
-		this.fm = null;
 	}
 	
 	protected void setGeneratedValue(FieldMapping fm,Object value){
-		entity.put(fm.getFieldName(), value);
-		
-		if(null != parameters){
-			parameters.set(fm.getFieldName(), value);
-		}
+		entity.set(fm.getFieldName(), value);
 	}
 }

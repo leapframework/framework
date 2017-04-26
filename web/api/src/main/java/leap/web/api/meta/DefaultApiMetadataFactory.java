@@ -36,7 +36,7 @@ import leap.web.action.Argument.Location;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
@@ -195,13 +195,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
         ApiConfig c = context.getConfig();
         OAuthConfig oauthConfig = c.getOAuthConfig();
-        if(oauthConfig != null && oauthConfig.isOauthEnabled()) {
+        if(oauthConfig != null && oauthConfig.isEnabled()) {
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(
                             SwaggerConstants.OAUTH2,
                             SwaggerConstants.OAUTH2,
-                            oauthConfig.getOauthAuthzEndpointUrl(),
-                            oauthConfig.getOauthTokenEndpointUrl(),
+                            oauthConfig.getAuthzEndpointUrl(),
+                            oauthConfig.getTokenEndpointUrl(),
                             oauthConfig.getFlow(),
                             null);
             
@@ -303,6 +303,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
 
+        context.getConfig().getModels().forEach((name,model) -> {
+            m.addModel(model);
+        });
+
         context.getConfig().getResourceTypes().values().forEach((t) -> {
             if(null == m.tryGetModel(t)) {
                 //create model for resource type.
@@ -336,14 +340,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            ModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
+            ApiModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
             if(null != c) {
                 if(!Strings.isEmpty(c.getName())) {
                     model.setName(c.getName());
                 }
             }
         }
-
 
         if(null != apiDescContainer) {
             ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
@@ -419,6 +422,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         log.trace("  Parameters({})", action.getArguments().length);
 		
 		for(Argument a : action.getArguments()) {
+            MApiParameterBuilder p = a.getExtension(MApiParameterBuilder.class);
+            if(null != p) {
+                op.addParameter(p);
+                continue;
+            }
+
             if(a.isWrapper()) {
                 createApiWrapperParameter(context, m, route, op, a);
                 if(!a.isRequestBody()) {
@@ -499,6 +508,15 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
+        MApiResponseBuilder[] resps = route.getAction().getExtension(MApiResponseBuilder[].class);
+        if(null != resps && resps.length > 0) {
+            for(MApiResponseBuilder resp : resps) {
+                op.addResponse(resp);
+            }
+            return;
+        }
+
+
         Response[] annotations =
                 route.getAction().getAnnotationsByType(Response.class);
 
@@ -544,6 +562,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected void createOperationTags(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiPathBuilder path, MApiOperationBuilder op) {
         if(null == route) {
             return;
+        }
+
+        MApiTag[] tags = route.getAction().removeExtension(MApiTag[].class);
+        if(null != tags) {
+            for(MApiTag tag : tags) {
+                op.addTag(tag.getName());
+                if(m.getTags().get(tag.getName()) == null) {
+                    m.addTag(tag);
+                }
+            }
         }
 
         Class<?> resourceType = context.getConfig().getResourceTypes().get(route);

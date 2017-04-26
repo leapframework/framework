@@ -27,7 +27,6 @@ import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
 import leap.orm.mapping.RelationProperty;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
@@ -96,7 +95,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
         }
 
         UpdateCommand update =
-                dao.cmdUpdate(em.getEntityName()).id(id).setAll(properties);
+                dao.cmdUpdate(em.getEntityName()).withId(id).from(properties);
 
         AtomicInteger result = new AtomicInteger();
 

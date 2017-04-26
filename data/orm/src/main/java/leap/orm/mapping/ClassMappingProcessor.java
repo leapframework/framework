@@ -29,11 +29,19 @@ import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.reflect.ReflectClass;
+import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
+import leap.orm.annotation.event.*;
 import leap.orm.annotation.meta.MetaName;
 import leap.orm.domain.Domains;
 import leap.orm.domain.EntityDomain;
 import leap.orm.domain.FieldDomain;
+import leap.orm.event.*;
+import leap.orm.event.reflect.ReflectCreateEntityListener;
+import leap.orm.event.reflect.ReflectDeleteEntityListener;
+import leap.orm.event.reflect.ReflectLoadEntityListener;
+import leap.orm.event.reflect.ReflectUpdateEntityListener;
 import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
 import leap.orm.metadata.MetadataContext;
@@ -50,10 +58,11 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     public void preMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
 		Class<?> sourceClass = emb.getSourceClass();
 		if(null != sourceClass){
-			mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
-			mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
-            mappingEntityTableByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
-			mappingEntityTableByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
+			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
+			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
+            mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
+			mappingEntityByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
+            mappingListenerByAnnotations(context, emb, sourceClass.getDeclaredAnnotationsByType(Entity.Listener.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
 		}
@@ -106,16 +115,114 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		}
 	}
 
-	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Entity annotation){
-		if(null != annotation){
-			emb.setEntityName(Strings.firstNotEmpty(annotation.name(),annotation.value()));
-			emb.setTableSchema(annotation.schema());
-			emb.setTableName(annotation.table());
+	protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity a){
+		if(null != a){
+			emb.setEntityName(Strings.firstNotEmpty(a.name(), a.value()));
+			emb.setTableSchema(a.schema());
+			emb.setTableName(a.table());
 			emb.setTableNameDeclared(true);
+
+            mappingListenerByAnnotations(context, emb, a.listeners());
 		}
 	}
-	
-	protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,Table a){
+
+    protected void mappingListenerByAnnotations(MetadataContext context, EntityMappingBuilder emb, Entity.Listener[] listeners) {
+        for(Entity.Listener listener : listeners) {
+            mappingListenerByAnnotation(context, emb, listener);
+        }
+    }
+
+    protected void mappingListenerByAnnotation(MetadataContext context, EntityMappingBuilder emb, Entity.Listener a) {
+        EntityListenersBuilder listeners = emb.listeners;
+
+        Class<?> type  = a.type();
+        Object   inst  = factory.getOrCreateBean(type);
+        boolean  trans = a.transactional();
+
+        //create
+        if(PreCreateListener.class.isAssignableFrom(type)) {
+            listeners.addPreCreateListener((PreCreateListener)inst, trans);
+        }
+
+        if(PostCreateListener.class.isAssignableFrom(type)) {
+            listeners.addPostCreateListener((PostCreateListener)inst, trans);
+        }
+
+        //update
+        if(PreUpdateListener.class.isAssignableFrom(type)) {
+            listeners.addPreUpdateListener((PreUpdateListener)inst, trans);
+        }
+
+        if(PostUpdateListener.class.isAssignableFrom(type)) {
+            listeners.addPostUpdateListener((PostUpdateListener)inst, trans);
+        }
+
+        //delete
+        if(PreDeleteListener.class.isAssignableFrom(type)) {
+            listeners.addPreDeleteListener((PreDeleteListener)inst, trans);
+        }
+
+        if(PostDeleteListener.class.isAssignableFrom(type)) {
+            listeners.addPostDeleteListener((PostDeleteListener)inst, trans);
+        }
+
+        //load
+        if(PostLoadListener.class.isAssignableFrom(type)) {
+            listeners.addPostLoadListener((PostLoadListener)inst, trans);
+        }
+
+        ReflectClass c = ReflectClass.of(type);
+        for(ReflectMethod m : c.getMethods()){
+            //Excludes non-public and static methods.
+            if(!m.isPublic() || m.isStatic()) {
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PreCreate.class)) {
+                ReflectCreateEntityListener listener = new ReflectCreateEntityListener(inst, m);
+                listeners.addPreCreateListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PostCreate.class)) {
+                ReflectCreateEntityListener listener = new ReflectCreateEntityListener(inst, m);
+                listeners.addPostCreateListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PreUpdate.class)) {
+                ReflectUpdateEntityListener listener = new ReflectUpdateEntityListener(inst, m);
+                listeners.addPreUpdateListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PostUpdate.class)) {
+                ReflectUpdateEntityListener listener = new ReflectUpdateEntityListener(inst, m);
+                listeners.addPostUpdateListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PreDelete.class)) {
+                ReflectDeleteEntityListener listener = new ReflectDeleteEntityListener(inst, m);
+                listeners.addPreDeleteListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PostDelete.class)) {
+                ReflectDeleteEntityListener listener = new ReflectDeleteEntityListener(inst, m);
+                listeners.addPostDeleteListener(listener, listener.isTransactional());
+                continue;
+            }
+
+            if(m.isAnnotationPresent(PostLoad.class)) {
+                ReflectLoadEntityListener listener = new ReflectLoadEntityListener(inst, m);
+                listeners.addPostLoadListener(listener, listener.isTransactional());
+                continue;
+            }
+        }
+    }
+
+	protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Table a){
 		if(null != a){
             String name = null;
             String configName = a.configName();
@@ -133,13 +240,13 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		}
 	}
 
-    protected void mappingEntityTableByAnnotation(MetadataContext context,EntityMappingBuilder emb,AutoCreateTable a){
+    protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, AutoCreateTable a){
         if(null != a){
             emb.setAutoCreateTable(a.value());
         }
     }
 	
-	protected void mappingEntityTableByDomain(MetadataContext context,EntityMappingBuilder emb,Domain annotation){
+	protected void mappingEntityByDomain(MetadataContext context, EntityMappingBuilder emb, Domain annotation){
 		Domains domains = context.getMetadata().domains();
 		if(null != annotation){
 			emb.setDomain(domains.getEntityDomain(annotation.value()));
