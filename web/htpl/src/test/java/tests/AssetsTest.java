@@ -97,4 +97,11 @@ public class AssetsTest extends HtplTestCase {
 
 		assertContains(content, "url(/root/assets/img/line1-");
 	}
+
+    @Test
+    public void testAssetsInTheme() {
+        Document html = get("/test_assets/theme.html").getDocument();
+        String src = html.getElementsByTag("script").first().attr("src");
+        assertTrue(src.startsWith("/assets/js/hello1-"));
+    }
 }

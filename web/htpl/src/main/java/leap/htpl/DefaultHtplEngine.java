@@ -285,7 +285,7 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
     public HtplTemplate createTemplate(HtplResource resource, String templateName, Locale locale){
 		Args.notNull(resource,"resource");
 		
-		if(resource.reloadable()){
+		if(config.isReloadEnabled() && resource.reloadable()){
 			ReloadableHtplTemplate tpl = null;
 			File file = resource.getFile();
 			
@@ -310,7 +310,7 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 				reloadableTemplates.add(tpl);
 			}
 			
-			if(config.isReloadEnabled() && !reloadScheduled){
+			if(!reloadScheduled){
 				synchronized (this) {
 					if(!reloadScheduled){
 					    if(reloadScheduler == null) {

@@ -15,7 +15,6 @@
  */
 package leap.htpl.processor.assets;
 
-import leap.web.assets.Asset;
 import leap.htpl.HtplDocument;
 import leap.htpl.HtplEngine;
 import leap.htpl.ast.Attr;
@@ -29,18 +28,11 @@ public class AssetsAnyAttrProcessor extends AbstractAnyAttrProcessor {
 	public Node processStartElement(HtplEngine engine, HtplDocument doc, Element e, Attr a) throws Throwable {
 		acceptAttrWithProcessor(e, a);
 		
-		Asset asset = engine.getAssetSource().getAsset(a.getString(), null);
-		
-		return processAsset(engine, doc, e, a, asset);
+		return processAsset(engine, doc, e, a);
 	}
 	
-	protected Node processAsset(HtplEngine engine, HtplDocument doc, Element e, Attr a, Asset asset){
-		if(null == asset){
-			return e;
-		}
-		
-		a.setValue(new AssetsAttrExpression(engine.getAssetSource(),a));
-		
+	protected Node processAsset(HtplEngine engine, HtplDocument doc, Element e, Attr a){
+		a.setValue(new AssetsAttrExpression(a));
 		return e;
 	}
 	

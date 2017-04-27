@@ -15,13 +15,6 @@
  */
 package leap.web.assets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.annotation.Inject;
@@ -32,6 +25,13 @@ import leap.core.schedule.SchedulerManager;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 

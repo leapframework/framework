@@ -17,6 +17,10 @@
     <properties prefix="webassets">
         <property name="reloadEnabled" value="false"/>
     </properties>
+
+    <properties prefix="webmvc">
+        <property name="default-theme-name" value="test"/>
+    </properties>
 	
 	<el:functions prefix="json" class="app.function.JsonFuncs">
 		<el:function method="test(java.lang.String)"/>	
