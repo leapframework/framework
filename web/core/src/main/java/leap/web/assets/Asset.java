@@ -36,6 +36,10 @@ public interface Asset {
 	
 	boolean reload();
 
+    boolean isExpired();
+
+    void access();
+
 	/**
 	 * Returns <code>true</code> if the asset is a bundle asset.
      */

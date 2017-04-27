@@ -62,4 +62,8 @@ public interface AssetResource extends AssetContent {
 	 * @throws IllegalStateException if this resource is expired.
 	 */
 	void expire() throws IllegalStateException;
+
+    default void access() {
+
+    }
 }

@@ -34,11 +34,11 @@ public interface AssetContent {
     /**
      * Returns the last modified time of this resoruce.
      */
-    long getLastModified();
+    long getLastModified() throws IOException;
     
     /**
      * Returns the size of this resource.
      */
-    long getContentLength();
+    long getContentLength() throws IOException;
 
 }

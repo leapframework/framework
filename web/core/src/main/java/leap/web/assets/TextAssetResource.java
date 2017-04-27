@@ -28,11 +28,15 @@ public final class TextAssetResource extends AbstractAssetResource {
     public TextAssetResource(AssetManager manager, Asset asset, byte[] content) {
         super(manager, asset);
         this.content = content;
-        this.contentLength = content.length;
-        
+
         this.fingerprint = manager.getFingerprint(content);
         this.resolveClientPathAndUrl();
         this.publishResource();
+    }
+
+    @Override
+    public long getContentLength() throws IOException {
+        return content.length;
     }
 
     @Override

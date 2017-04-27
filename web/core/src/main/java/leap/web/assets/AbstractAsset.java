@@ -43,7 +43,23 @@ public abstract class AbstractAsset implements Asset {
 		return debugPath;
 	}
 
-	@Override
+    @Override
+    public boolean isExpired() {
+        return (null != resource && resource.isExpired()) || (null != debugResource && debugResource.isExpired());
+    }
+
+    @Override
+    public void access() {
+        if(null != resource) {
+            resource.access();
+        }
+
+        if(null != debugResource) {
+            debugResource.access();
+        }
+    }
+
+    @Override
     public String getContentType() {
 	    return contentType;
     }

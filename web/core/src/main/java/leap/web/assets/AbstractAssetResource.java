@@ -36,7 +36,6 @@ public abstract class AbstractAssetResource implements AssetResource {
     protected String         serverPath;
     protected String         fingerprint;
     protected long           lastModified;
-    protected long           contentLength;
     protected boolean        expired;
     
     protected AbstractAssetResource() {
@@ -79,13 +78,8 @@ public abstract class AbstractAssetResource implements AssetResource {
 	}
 
 	@Override
-    public long getLastModified() {
+    public long getLastModified() throws IOException {
 	    return lastModified;
-    }
-
-	@Override
-    public long getContentLength() {
-	    return contentLength;
     }
 
 	@Override
