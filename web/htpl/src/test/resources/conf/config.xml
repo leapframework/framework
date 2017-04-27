@@ -7,7 +7,11 @@
 	<properties>
 		<property name="debug-enabled" value="true"/>
 	</properties>
-	
+	<!--
+	<properties>
+		<property name="htpl.reloadEnable" value="false"/>
+	</properties>
+	-->
 	<el:functions prefix="json" class="app.function.JsonFuncs">
 		<el:function method="test(java.lang.String)"/>	
 	</el:functions>		

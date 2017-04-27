@@ -278,7 +278,7 @@ public class DefaultHtplEngine implements HtplEngine, PostCreateBean {
 	public HtplTemplate createTemplate(HtplResource resource,Locale locale){
 		Args.notNull(resource,"resource");
 		
-		if(resource.reloadable()){
+		if(resource.reloadable() && config.isReloadEnable()){
 			ReloadableHtplTemplate tpl = null;
 			File file = resource.getFile();
 			

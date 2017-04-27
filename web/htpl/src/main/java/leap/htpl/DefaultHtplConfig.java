@@ -22,6 +22,8 @@ import leap.core.validation.annotations.NotEmpty;
 public class DefaultHtplConfig implements HtplConfig {
 
 	protected @NotEmpty String prefix;
+	protected boolean reloadEnable = true;
+	
 	
 	@Override
 	public String getPrefix() {
@@ -32,5 +34,12 @@ public class DefaultHtplConfig implements HtplConfig {
 	public void setPrefix(String prefix) {
 		this.prefix = prefix;
 	}
-
+	@Override
+	public boolean isReloadEnable() {
+		return reloadEnable;
+	}
+	@Configurable.Property
+	public void setReloadEnable(boolean reloadEnable) {
+		this.reloadEnable = reloadEnable;
+	}
 }

@@ -19,4 +19,6 @@ public interface HtplConfig {
 	
 	String getPrefix();
 
+	boolean isReloadEnable();
+	
 }
