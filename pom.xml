@@ -4,29 +4,75 @@
 	<artifactId>leap-parent</artifactId>
 	<version>0.6.0b-SNAPSHOT</version>
 	<packaging>pom</packaging>
+
+    <name>leapframework</name>
+    <description>A full-stack java web framework.</description>
+    <url>https://github.com/leapframework/framework</url>
 	
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
-	</licenses>	
-	
-	<distributionManagement>
-		<repository>
-			<id>leap-repo-releases</id>
-			<url>${leap.repository}/releases</url>
-		</repository>
-		<snapshotRepository>
-			<id>leap-repo-snapshots</id>
-			<url>${leap.repository}/snapshots</url>
-		</snapshotRepository>
-	</distributionManagement>
-	
-	<scm>
-		<developerConnection>scm:git:git@github.com:leapframework/framework.git</developerConnection>
-		<tag>v@{project.version}</tag>
-	</scm>
+	</licenses>
+
+    <developers>
+        <developer>
+            <name>Evan feng</name>
+            <email>live.evan@gmail.com</email>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git@github.com:leapframework/framework.git</connection>
+        <developerConnection>scm:git:git@github.com:leapframework/framework.git</developerConnection>
+        <url>http://github.com/leapframework/framework/tree/master</url>
+        <tag>v@{project.version}</tag>
+    </scm>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ossrh-leap</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>ossrh-leap</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+    </distributionManagement>
+
+    <profiles>
+        <profile>
+            <id>release-sign</id>
+            <activation>
+                <property>
+                    <name>performRelease</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>1.5</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                                <configuration>
+                                    <keyname>170DF22A</keyname>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 	
 	<properties>
 		<!-- common properties -->
