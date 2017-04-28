@@ -2109,17 +2109,38 @@ public class BeanContainer implements BeanFactory {
 
 			//Add to primary bean definition collection
 			if(type.isPrimary()){
-				if(!type.isOverride()) {
-					BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
-					if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
-						if(bd.getSortOrder() > existsBeanDefinition.getSortOrder() || !existsBeanDefinition.isOverride()){
-							throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
+				// this type is primary
+				BeanDefinitionBase existsBeanDefinition = primaryBeanDefinitions.get(beanType);
+				if(null != existsBeanDefinition && existsBeanDefinition != NULL_BD && !existsBeanDefinition.isDefaultOverride()){
+					Optional<TypeDefinition> op = existsBeanDefinition.getAdditionalTypeDefs().stream()
+							.filter(td -> td.getType().equals(type.getType())).findAny();
+					TypeDefinition existTd = op.orElse(existsBeanDefinition);
+					
+					if(!type.isOverride() && !existTd.isOverride()){
+						throw new BeanDefinitionException("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
+								" for type '" + beanType.getName() +
+								"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
+					}
+					
+					if(type.isOverride() && !existTd.isOverride()){
+						primaryBeanDefinitions.put(beanType, bd);
+					}else if(type.isOverride() && existTd.isOverride()){
+						if(bd.getSortOrder() == existsBeanDefinition.getSortOrder()){
+							log.warn("Found duplicated primary " + (proxy ? "proxy " : "bean ") + definition +
 									" for type '" + beanType.getName() +
-									"' with exists " + (proxy ? "proxy" : "bean") + " in " + existsBeanDefinition.getSource());
+									"' with exists " + (proxy ? "proxy" : "bean") + " in " +
+									existsBeanDefinition.getSource()+", please use sort-order to defined which bean definition to be use.");
+							log.warn("Now use is "+bd);
+						}
+						// todo: when profile is test, use '>=', but in dev or prod, use '>'? 
+						if(bd.getSortOrder() >= existsBeanDefinition.getSortOrder()){
+							log.info("In profile '"+config.getProfile()+"' override exist bean definition " + existsBeanDefinition + " with " + definition);
+							primaryBeanDefinitions.put(beanType, bd);
 						}
 					}
+				}else{
+					primaryBeanDefinitions.put(beanType, bd);
 				}
-				primaryBeanDefinitions.put(beanType, bd);
 			}
 
 			//add to bean type definition collection

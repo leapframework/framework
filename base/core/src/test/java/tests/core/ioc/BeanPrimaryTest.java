@@ -16,6 +16,9 @@
 
 package tests.core.ioc;
 
+import leap.core.annotation.Inject;
+import tested.beans.PrimaryTypeBean;
+import tested.beans.PrimaryTypeBean3;
 import tests.core.CoreTestCase;
 import org.junit.Test;
 import tested.beans.TPrimaryBean1;
@@ -24,7 +27,8 @@ import tested.beans.TPrimaryBeanType1;
 import tested.beans.TPrimaryBeanType2;
 
 public class BeanPrimaryTest extends CoreTestCase {
-
+    
+    
     @Test
     public void testDeclaredPrimaryBean(){
         assertEquals("1",factory.getBean(TPrimaryBeanType1.class).getValue());
@@ -35,5 +39,9 @@ public class BeanPrimaryTest extends CoreTestCase {
     public void testSelfPrimaryBean() {
         assertNotNull(factory.getBean(TPrimaryBean1.class));
         assertNotNull(factory.getBean(TPrimaryBean2.class));
+    }
+    @Test
+    public void testPrimaryDuplicateOverride(){
+        assertTrue(factory.getBean(PrimaryTypeBean.class) instanceof PrimaryTypeBean3);
     }
 }
