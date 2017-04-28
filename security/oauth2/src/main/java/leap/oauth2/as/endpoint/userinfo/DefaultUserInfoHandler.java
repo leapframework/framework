@@ -18,10 +18,13 @@ package leap.oauth2.as.endpoint.userinfo;
 import leap.lang.http.ContentTypes;
 import leap.lang.json.JsonWriter;
 import leap.oauth2.as.token.AuthzAccessToken;
+import leap.oauth2.as.userinfo.AuthzUserInfo;
+import leap.oauth2.as.userinfo.SimpleAuthzUserInfo;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.user.UserDetails;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,27 +32,32 @@ public class DefaultUserInfoHandler implements UserInfoHandler {
 
     @Override
     public boolean handleUserInfoResponse(Request request, Response response, AuthzAccessToken at, UserDetails details) throws Throwable {
-        writeClaims(request, response, createClaims(at, details));
+        AuthzUserInfo userInfo = createAuthzUserInfo(request,response,at,details);
+        writeClaims(request, response, createClaims(at, userInfo));
         return true;
     }
 
-    protected Map<String,Object> createClaims(AuthzAccessToken at, UserDetails user) throws Throwable{
-        Map<String,Object> claims = new LinkedHashMap<>();
-
+    protected AuthzUserInfo createAuthzUserInfo(Request request, Response response, AuthzAccessToken at, UserDetails details){
+        SimpleAuthzUserInfo userInfo = new SimpleAuthzUserInfo();
+        userInfo.setSubject(details.getIdAsString());
+        userInfo.setFullName(details.getName());
+        userInfo.putExtProperty("login_name",details.getLoginName());
+        return userInfo;
+    }
+    
+    protected Map<String, Object> createClaims(AuthzAccessToken at, AuthzUserInfo userInfo) throws Throwable{
         //see http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         //sub, name, email, gender
-
         //TODO :
-
-        return claims;
+        return userInfo.toMap();
     }
 
-    protected void writeClaims(Request request, Response response, Map<String, Object> claims) throws Throwable {
+    protected void writeClaims(Request request, Response response, Map<String, Object> claim) throws Throwable {
         response.setContentType(ContentTypes.APPLICATION_JSON_UTF8);
 
         JsonWriter w = response.getJsonWriter();
 
-        w.map(claims);
+        w.map(claim);
 
         return;
     }

@@ -18,6 +18,7 @@
 
 package leap.oauth2.as.userinfo;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +47,9 @@ public class SimpleAuthzUserInfo implements AuthzUserInfo {
     protected boolean phoneNumberVerified;
     protected AuthzAddress address;
     protected long updatedAt;
-        
+    
+    protected Map<String, Object> ext = new HashMap<>();
+    
     @Override
     public String getSubject() {
         return subject;
@@ -170,7 +173,22 @@ public class SimpleAuthzUserInfo implements AuthzUserInfo {
         map.put(PHONE_NUMBER_VERIFIED,isPhoneNumberVerified());
         map.put(ADDRESS,getAddress());
         map.put(UPDATED_AT,getUpdatedAt());
+        ext.forEach((s, o) -> {
+            if (!map.containsKey(s)){
+                map.put(s,o);
+            }
+        });
         return map;
+    }
+
+    @Override
+    public Map<String, Object> getExtProperties() {
+        return Collections.unmodifiableMap(ext);
+    }
+
+    @Override
+    public void putExtProperty(String name, Object value) {
+        ext.put(name,value);
     }
 
     public void setSubject(String subject) {

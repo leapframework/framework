@@ -68,5 +68,15 @@ public interface AuthzAddress {
      * convert this object to a map
      */
     Map<String, Object> toMap();
+
+    /**
+     * Returns an unmodifiable extend properties map
+     */
+    Map<String, Object> getExtProperties();
+
+    /**
+     * put an extend property
+     */
+    void putExtProperty(String name, Object value);
     
 }
