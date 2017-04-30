@@ -18,6 +18,7 @@ package tests.core.ioc;
 
 import leap.core.annotation.Inject;
 import tested.beans.PrimaryTypeBean;
+import tested.beans.PrimaryTypeBean1;
 import tested.beans.PrimaryTypeBean3;
 import tests.core.CoreTestCase;
 import org.junit.Test;
@@ -43,5 +44,6 @@ public class BeanPrimaryTest extends CoreTestCase {
     @Test
     public void testPrimaryDuplicateOverride(){
         assertTrue(factory.getBean(PrimaryTypeBean.class) instanceof PrimaryTypeBean3);
+        assertTrue(factory.getBean(PrimaryTypeBean.class,"overridebean") instanceof PrimaryTypeBean1);
     }
 }

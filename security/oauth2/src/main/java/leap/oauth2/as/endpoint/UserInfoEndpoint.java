@@ -47,7 +47,7 @@ public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,
 
             routes.create()
                   .handle(config.getUserInfoEndpointPath(), this)
-                  .enableCors()
+                  .enableCors().disableCsrf()
                   .apply();
         }
     }

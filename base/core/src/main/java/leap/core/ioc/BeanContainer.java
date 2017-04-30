@@ -2096,15 +2096,38 @@ public class BeanContainer implements BeanFactory {
 			//add to named bean definition collection
 			if(!Strings.isEmpty(type.getName())){
 				String key = key(beanType, type.getName());
-				if(!type.isOverride()) {
-					BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
-					if(null != existsBeanDefinition && !existsBeanDefinition.isDefaultOverride()){
+				BeanDefinitionBase existsBeanDefinition = namedBeanDefinitions.get(key);
+				if(existsBeanDefinition != null){
+					Optional<TypeDefinition> op = existsBeanDefinition.getAdditionalTypeDefs().stream()
+							.filter(td -> td.getType().equals(type.getType())).findAny();
+					TypeDefinition existTd = op.orElse(existsBeanDefinition);
+
+					if(!type.isOverride() && !existTd.isOverride()){
 						throw new BeanDefinitionException("Found duplicated " + (proxy ? "proxy" : "bean") + " name '" + definition.getName() +
 								"' for type '" + beanType.getName() +
 								"' in resource : " + definition.getSource() + " with exists " + (proxy ? "proxy " : "bean ") + existsBeanDefinition);
 					}
+
+					if(type.isOverride() && !existTd.isOverride()){
+						namedBeanDefinitions.put(key, bd);
+					}else if(type.isOverride() && existTd.isOverride()){
+						if(bd.getSortOrder() == existsBeanDefinition.getSortOrder()){
+							log.warn("Found duplicated name bean " + (proxy ? "proxy " : "bean ") + definition +
+									" for type '" + beanType.getName() +
+									"' with exists " + (proxy ? "proxy" : "bean") + " in " +
+									existsBeanDefinition.getSource()+", please use sort-order to defined which bean definition to be use.");
+							log.warn("Now use is "+bd);
+						}
+						// todo: when profile is test, use '>=', but in dev or prod, use '>'? 
+						if(bd.getSortOrder() >= existsBeanDefinition.getSortOrder()){
+							log.info("In profile '"+config.getProfile()+"' override exist bean definition " + existsBeanDefinition + " with " + definition);
+							namedBeanDefinitions.put(key, bd);
+						}
+					}
+					
+				}else {
+					namedBeanDefinitions.put(key, bd);
 				}
-				namedBeanDefinitions.put(key, bd);
 			}
 
 			//Add to primary bean definition collection
