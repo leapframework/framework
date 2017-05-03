@@ -92,8 +92,8 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		sw.restart();
 		
 		//init sql commands
-		for(SqlSource commandSource : sqlSources){
-			commandSource.loadSqlCommands(loadingContext);
+		for(SqlSource ss : sqlSources){
+			ss.loadSqlCommands(loadingContext);
 		}
 
 		log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());

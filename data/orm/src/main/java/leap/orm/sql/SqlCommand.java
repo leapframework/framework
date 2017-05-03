@@ -46,14 +46,19 @@ public interface SqlCommand extends Sourced {
     void prepare(MetadataContext context);
 
     /**
+     * Returns the name of db platform or <code>null</code> if this command supports all db platforms.
+     */
+    String getDbType();
+
+    /**
+     * Optional. Returns the data source name if declared.
+     */
+    String getDataSourceName();
+
+    /**
      * Returns the sql text.
      */
     String getSql();
-	
-	/**
-	 * Returns the name of db platform or <code>null</code> if this command supports all db platforms.
-	 */
-	String getDbType();
 	
 	/**
 	 * Executes update and returns the affected rows.

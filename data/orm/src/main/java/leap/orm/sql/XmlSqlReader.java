@@ -28,8 +28,12 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 import leap.orm.OrmMetadata;
+import leap.orm.metadata.SqlRegistry;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class XmlSqlReader implements SqlReader {
 	
@@ -49,32 +53,81 @@ public class XmlSqlReader implements SqlReader {
 	
 	protected @Inject @M BeanFactory beanFactory;
 	protected @Inject @M SqlLanguage defaultLanguage;
+    protected @Inject @M SqlRegistry registry;
+
+    protected Map<String, Map<String, DefaultSqlCommand>> loadedSqls = new HashMap<>();
 	
 	@Override
     public boolean readSqlCommands(SqlReaderContext context, Resource resource) throws IOException {
 		if(Strings.endsWith(resource.getFilename(),".xml")){
-			loadSqls(context,resource,context.isDefaultOverride());
+
+            Map<String, DefaultSqlCommand> sqls = loadedSqls.get(resource.getURLString());
+            if(null == sqls) {
+                sqls = new HashMap<>();
+                loadedSqls.put(resource.getURLString(), sqls);
+                loadSqls(context,resource,context.isDefaultOverride(), sqls);
+            }
+
+            loadSqls(context, sqls);
 			return true;
 		}
+
 	    return false;
     }
-	
-	protected void loadSqls(SqlReaderContext context, Resource resource, boolean defaultOverride) throws IOException {
+
+    protected void loadSqls(SqlReaderContext context, Map<String,DefaultSqlCommand> sqls) {
+
+        final OrmMetadata md = context.getConfigContext().getMetadata();
+
+        sqls.forEach((key,sql) -> {
+            if(!matchContext(context, sql)) {
+                return;
+            }
+
+            //Overrides the exists command if the new one declares the db type.
+            if(!Strings.isEmpty(sql.getDbType())) {
+                md.removeSqlCommand(key);
+            }
+
+            //Clones a new one for current orm context.
+            DefaultSqlCommand cloned = new DefaultSqlCommand(sql.source,sql.desc,sql.dbType,sql.lang,sql.content,sql.dataSourceName);
+            md.addSqlCommand(key, cloned);
+        });
+    }
+
+    protected boolean matchContext(SqlReaderContext context, SqlCommand sql) {
+        if(!Strings.isEmpty(sql.getDbType())) {
+
+            final String currentDbType = context.getConfigContext().getDb().getType();
+            if(!currentDbType.equalsIgnoreCase(sql.getDbType())) {
+                return false;
+            }
+
+        }
+
+        if(!Strings.isEmpty(sql.getDataSourceName())) {
+            final String currentDataSourceName = context.getConfigContext().getName();
+
+            if(!currentDataSourceName.equalsIgnoreCase(sql.getDataSourceName())) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    protected void loadSqls(SqlReaderContext context, Resource resource, boolean defaultOverride, Map<String,DefaultSqlCommand> sqls) throws IOException{
         try(XmlReader reader = XML.createReader(resource) ){
         	reader.setPlaceholderResolver(context.getConfigContext().getAppContext().getConfig().getPlaceholderResolver());	
-        	loadSqls(context, resource, reader, defaultOverride);
+        	loadSqls(context, resource, reader, defaultOverride, sqls);
         }
 	}
 
-	protected void loadSqls(SqlReaderContext context, Resource resource, XmlReader reader, boolean defaultOverride) throws IOException{
+	protected void loadSqls(SqlReaderContext context, Resource resource, XmlReader reader, boolean defaultOverride, Map<String,DefaultSqlCommand> sqls) throws IOException{
 		boolean foundValidRootElement = false;
 		
 		String dbType = resolveDbType(resource);
-		if(!context.acceptDbType(dbType)){
-			return;
-		}
-
-        String defaultDataSource = null;
+        String defaultDataSource;
 		
 		while(reader.next()){
 			if(reader.isStartElement(SQLS_ELEMENT)){
@@ -95,18 +148,19 @@ public class XmlSqlReader implements SqlReader {
 								throw new SqlConfigException("the import resource '" + importResourceName + "' not exists");	
 							}
 						}else{
-							loadSqls(context,importResource,override);
+							loadSqls(context, importResource, override, sqls);
 							reader.nextToEndElement(IMPORT_ELEMENT);
 						}
 						continue;
 					}
 					
 					if(reader.isStartElement(COMMAND_ELEMENT)){
-						readSqlCommand(context, resource, reader, dbType, defaultDataSource, defaultOverride);
+						readSqlCommand(context, reader, dbType, defaultDataSource, defaultOverride, sqls);
 						continue;
 					}
+
 					if(reader.isStartElement(FRAGMENT_ELEMENT)){
-						readSqlFragment(context, resource, reader, dbType, defaultDataSource, defaultOverride);
+						readSqlFragment(context, reader, dbType, defaultDataSource, defaultOverride);
 						continue;
 					}
 				}
@@ -119,53 +173,40 @@ public class XmlSqlReader implements SqlReader {
 		}
 	}
 
-	private void readSqlFragment(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, String dataSource, boolean defaultOverride) {
-        if(!matchDataSource(context, reader, dataSource)) {
-            return;
-        }
-
-		String key 	   = reader.resolveAttribute(KEY_ATTRIBUTE);
+	private void readSqlFragment(SqlReaderContext context, XmlReader reader, String dbType, String dataSource, boolean defaultOverride) {
+		String key 	   = reader.resolveRequiredAttribute(KEY_ATTRIBUTE);
 		String content = reader.resolveElementTextAndEnd();
-
-		if(Strings.isEmpty(key)){
-			throw new SqlConfigException("'key' attribute must be defined in sql fragment, xml : " + reader.getSource());
-		}
 
 		String fragmentDescription = "[ key =" + key + "]";
 		if(Strings.isEmpty(content)){
 			throw new SqlConfigException("The content body of sql fragment " + fragmentDescription + " must not be empty, xml : " + reader.getSource());
 		}
+
 		log.debug("Load sql fragment {} from [{}]",fragmentDescription,reader.getSource());
-
-		OrmMetadata metadata = context.getConfigContext().getMetadata();
-
-		metadata.addSqlFragment(key,new SimpleSqlFragment(reader.getSource(),content));
+		registry.addSqlFragment(key,new SimpleSqlFragment(reader.getSource(),content));
 	}
 
     protected boolean matchDataSource(SqlReaderContext context, XmlReader reader, String defaultDataSource) {
         String dataSource = reader.getAttribute(DATA_SOURCE);
+
         if(Strings.isEmpty(dataSource)) {
             dataSource = defaultDataSource;
         }
+
         if(Strings.isEmpty(dataSource)) {
             return true;
         }
+
         return context.getConfigContext().getName().equalsIgnoreCase(dataSource);
     }
 
-	protected void readSqlCommand(SqlReaderContext context, Resource resource, XmlReader reader, String dbType, String dataSource, boolean defaultOverride){
-        if(!matchDataSource(context, reader, dataSource)) {
-            return;
-        }
-
-		OrmMetadata metadata = context.getConfigContext().getMetadata();
-		
+	protected void readSqlCommand(SqlReaderContext context, XmlReader reader, String dbType, String defaultDataSource, boolean defaultOverride, Map<String,DefaultSqlCommand> sqls){
 		String  key                 = reader.resolveRequiredAttribute(KEY_ATTRIBUTE);
 		String  langName     	    = reader.resolveAttribute(LANG_ATTRIBUTE);
 		boolean override            = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 		String	content             = reader.getElementTextAndEnd();
-		String  datasource			= reader.resolveAttribute(DATA_SOURCE);
-		
+		String  datasource			= reader.resolveAttribute(DATA_SOURCE, defaultDataSource);
+
 		if(Strings.containsWhitespaces(key)) {
 			throw new SqlConfigException("'key' attribute cannot contains whitespace characters [" + key + "], xml : " + reader.getSource());
 		}
@@ -178,7 +219,7 @@ public class XmlSqlReader implements SqlReader {
 		
 		//check is sql command exists
 		if(!Strings.isEmpty(key)){
-			SqlCommand exists = metadata.tryGetSqlCommand(key);
+			SqlCommand exists = registry.tryGetSqlCommand(key, dbType);
 			if(null != exists){
 				
 				if(Strings.isEmpty(dbType) && !Strings.isEmpty(exists.getDbType())){
@@ -194,10 +235,9 @@ public class XmlSqlReader implements SqlReader {
 					throw new SqlConfigException("Found duplicated sql key '" + key + "', xmls : " + exists.getSource() + "," + reader.getSource());
 				}
 				
-				metadata.removeSqlCommand(key);
+				registry.removeSqlCommand(key, dbType);
 			}
 		}
-		
 
 		SqlLanguage language;
 		if(!Strings.isEmpty(langName)){
@@ -210,10 +250,10 @@ public class XmlSqlReader implements SqlReader {
 		}
 		
 		log.trace("SQL(s) : \n\n  {}\n",content);
-		SqlCommand command = new DefaultSqlCommand(reader.getSource(), key, dbType, language, content, new DefaultSqlIdentity(key,datasource));
-		if(!Strings.isEmpty(key)){
-			metadata.addSqlCommand(key, command);
-		}
+		DefaultSqlCommand command = new DefaultSqlCommand(reader.getSource(), key, dbType, language, content, datasource);
+
+        registry.addSqlCommand(key, dbType, command);
+        sqls.put(key, command);
 	}
 	
 	protected String resolveDbType(Resource r) {

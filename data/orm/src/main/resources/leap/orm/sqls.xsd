@@ -78,7 +78,6 @@
             <xsd:simpleContent>
                 <xsd:extension base="xsd:string">
                     <xsd:attribute name="key" type="xsd:string" use="optional"/>
-                    <xsd:attribute name="data-source" type="xsd:string" use="optional"/>
                     <xsd:attribute name="override" type="xsd:boolean">
                         <xsd:annotation>
                             <xsd:documentation><![CDATA[

@@ -19,7 +19,6 @@ import leap.core.jdbc.BatchPreparedStatementHandler;
 import leap.core.jdbc.PreparedStatementHandler;
 import leap.core.jdbc.ResultSetReader;
 import leap.db.Db;
-import leap.lang.Assert;
 import leap.lang.Chars;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
@@ -32,25 +31,25 @@ import leap.orm.reader.ResultSetReaders;
 public class DefaultSqlCommand implements SqlCommand {
 
     private static final Log log = LogFactory.get(DefaultSqlCommand.class);
-	
-	protected final Object 	           source;
-    protected final String             desc;
-	protected final String	           dbType;
-    protected final SqlLanguage        lang;
-    protected final String             content;
-    protected final DefaultSqlIdentity identity;
+
+    protected final Object      source;
+    protected final String      desc;
+    protected final String      dbType;
+    protected final SqlLanguage lang;
+    protected final String      content;
+    protected final String      dataSourceName;
 
     private boolean prepared;
 
 	protected SqlClause[] clauses;
 
-    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, DefaultSqlIdentity identity) {
+    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, String dataSourceName) {
         this.source  = source;
         this.desc    = desc;
         this.dbType  = dbType;
         this.lang    = lang;
         this.content = content;
-        this.identity   = identity;
+        this.dataSourceName = dataSourceName;
     }
 
     @Override
@@ -79,13 +78,18 @@ public class DefaultSqlCommand implements SqlCommand {
     }
 
     @Override
-    public String getSql() {
-        return content;
+    public String getDbType() {
+        return dbType;
     }
 
     @Override
-    public String getDbType() {
-	    return dbType;
+    public String getDataSourceName() {
+        return dataSourceName;
+    }
+
+    @Override
+    public String getSql() {
+        return content;
     }
 
 	public SqlClause getClause() throws IllegalStateException {
@@ -97,26 +101,20 @@ public class DefaultSqlCommand implements SqlCommand {
 
 	@Override
     public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
-        if(identity != null){
-            log.debug("sql identity:{}",identity.identity());
-        }
+        log.debug("Execute update : sql '{}'", desc);
 		return doExecuteUpdate(context, params, null);
     }
 	
 	@Override
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
-        if(identity != null){
-            log.debug("sql identity:{}",identity.identity());
-        }
+        log.debug("Execute update : sql '{}'", desc);
 	    return doExecuteUpdate(context, params, psHandler);
     }
 
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-        if(identity != null){
-            log.debug("sql identity:{}",identity.identity());
-        }
+        log.debug("Execute query : sql '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -128,9 +126,7 @@ public class DefaultSqlCommand implements SqlCommand {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
-        if(identity != null){
-            log.debug("sql identity:{}",identity.identity());
-        }
+        log.debug("Execute count : sql '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -163,9 +159,7 @@ public class DefaultSqlCommand implements SqlCommand {
 	}
 	
 	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
-        if(identity != null){
-            log.debug("sql identity:{}",identity.identity());
-        }
+        log.debug("Execute batch update : sql '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
