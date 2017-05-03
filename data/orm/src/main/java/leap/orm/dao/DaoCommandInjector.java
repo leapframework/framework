@@ -87,7 +87,7 @@ public class DaoCommandInjector implements BeanInjector {
         if(Strings.isEmpty(key)){
             key = v.getName();
         }
-        return new DefaultSqlIdentity(key, null, null, null, null);
+        return new DefaultSqlIdentity(key,null);
     }
 
     protected SqlIdentity resolveSqlIdentity(BeanDefinition bd, ReflectValued v, SqlKey a) {
@@ -99,6 +99,6 @@ public class DaoCommandInjector implements BeanInjector {
         if(Strings.isEmpty(key)) {
             throw new BeanCreationException("The value of '" + SqlKey.class + "' must not be empty, check the bean : " + bd);
         }
-        return new DefaultSqlIdentity(key, null, null, null, datasource);
+        return new DefaultSqlIdentity(key, datasource);
     }
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sqls xmlns="http://www.leapframework.org/schema/sqls">
     
-    <command key="findOwnerByLastName" entity-name="Owner" name="findByLastName">
+    <command key="findOwnerByLastName">
         select * from owners where last_name like :lastName
     </command>
 
@@ -9,7 +9,7 @@
         select first_name as FIRST_NAME from owners where last_name = ?
     </command>
     
-    <command key="findOwnerByLastNameSimple" entity-name="Owner" name="findByLastNameSimple" lang="dynamic:simple">
+    <command key="findOwnerByLastNameSimple" lang="dynamic:simple">
         select * from owners where last_name like :lastName
     </command>    
     

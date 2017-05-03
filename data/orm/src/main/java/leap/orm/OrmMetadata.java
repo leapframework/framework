@@ -101,7 +101,14 @@ public interface OrmMetadata {
 	 */
 	SqlCommand getSqlCommand(String key) throws ObjectNotFoundException;
 
-	/**
+    /**
+     * Returns the {@link SqlCommand} for the given entity name and the command name.
+     *
+     * @throws ObjectNotFoundException if sql command does not exists.
+     */
+    SqlCommand getSqlCommand(String entityName,String commandName) throws ObjectNotFoundException;
+
+    /**
 	 * Returns the {@link SqlFragment} for the given command key.
 	 *
 	 * @throws ObjectNotFoundException if sql fragment does not exists.
@@ -109,21 +116,7 @@ public interface OrmMetadata {
 	SqlFragment getSqlFragment(String key) throws ObjectNotFoundException;
 
 	/**
-	 * Returns the {@link SqlCommand} for the given entity type's <code>class</code> and the command name.
-	 * 
-	 * @throws ObjectNotFoundException if sql command does not exists.
-	 */
-	SqlCommand getSqlCommand(Class<?> entityClass,String commandName) throws ObjectNotFoundException;
-	
-	/**
-	 * Returns the {@link SqlCommand} for the given entity name and the command name.
-	 * 
-	 * @throws ObjectNotFoundException if sql command does not exists.
-	 */
-	SqlCommand getSqlCommand(String entityName,String commandName) throws ObjectNotFoundException;
-	
-	/**
-	 * Returns the {@link EntityMapping} for the given <code>class</code> reprenents a entity type.
+	 * Returns the {@link EntityMapping} for the given <code>class</code> represents a entity type.
 	 * 
 	 * <p>
 	 * Returns <code>null</code> if no mapping exists for the given entity class.
@@ -176,14 +169,6 @@ public interface OrmMetadata {
 	SqlFragment tryGetSqlFragment(String key);
 	
 	/**
-	 * Returns the {@link SqlCommand} for the given entity <code>class</code> and the command name.
-	 * 
-	 * <p>
-	 * Returns <code>null</code> if sql command does not exists.
-	 */
-	SqlCommand tryGetSqlCommand(Class<?> entityClass,String commandName);
-	
-	/**
 	 * Returns the {@link SqlCommand} for the given entity name and the command name.
 	 * 
 	 * <p>
@@ -224,7 +209,12 @@ public interface OrmMetadata {
 	 */
 	void addSqlCommand(String key,SqlCommand cmd) throws ObjectExistsException;
 
-	/**
+    /**
+     * Adds a new {@link SqlCommand} objects to this metadata.
+     */
+    void addSqlCommand(EntityMapping em, String name, SqlCommand cmd) throws ObjectExistsException;
+
+    /**
 	 * Adds a new {@link SqlFragment} object to this metadata.
 	 *
 	 * <p>
@@ -232,11 +222,6 @@ public interface OrmMetadata {
 	 */
 	void addSqlFragment(String key, SqlFragment fragment) throws ObjectExistsException;
 
-	/**
-	 * Adds a new {@link SqlCommand} objects to this metadata.
-	 */
-	void addSqlCommand(EntityMapping em,String commandName,SqlCommand cmd) throws ObjectExistsException;
-	
 	/**
 	 * Removes an exists {@link SqlCommand} object from this metadata.
 	 * 
@@ -248,25 +233,4 @@ public interface OrmMetadata {
 	 */
 	SqlCommand removeSqlCommand(String key);
 	
-	/**
-	 * Removes an exists {@link SqlCommand} object from this metadata.
-	 * 
-	 * <p>
-	 * Returns the removed {@link SqlCommand} if the given entity class and command name mapped to an exists {@link SqlCommand}.
-	 * 
-	 * <p>
-	 * Returns <code>null<code> if there was no mapping for the given entity class and command name.
-	 */
-	SqlCommand removeSqlCommand(Class<?> entityClass,String commandName);
-	
-	/**
-	 * Removes an exists {@link SqlCommand} object from this metadata.
-	 * 
-	 * <p>
-	 * Returns the removed {@link SqlCommand} if the given entity name and command name mapped to an exists {@link SqlCommand}.
-	 * 
-	 * <p>
-	 * Returns <code>null<code> if there was no mapping for the given entity name and command name.
-	 */
-	SqlCommand removeSqlCommand(String entityName,String commandName);
 }
