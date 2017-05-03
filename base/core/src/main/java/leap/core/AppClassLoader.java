@@ -129,7 +129,7 @@ public class AppClassLoader extends ClassLoader {
         try {
             parentLoaderDefineClass =
                     ClassLoader.class.getDeclaredMethod("defineClass",
-                        new Class[] {String.class, byte[].class, int.class,int.class});
+                            new Class[] {String.class, byte[].class, int.class,int.class});
             parentLoaderDefineClass.setAccessible(true);
 
             parentFindLoadedClass =
@@ -342,6 +342,9 @@ public class AppClassLoader extends ClassLoader {
 
         Boolean instrumented = handledUrls.get(url);
         if(null != instrumented) {
+            if(null == name) {
+                name = resource.getClasspath();
+            }
             log.trace("class '{}' already {}, ignore", name, instrumented ? "instrumented" : "handled");
             return null;
         }
@@ -361,6 +364,8 @@ public class AppClassLoader extends ClassLoader {
                 if(null != dep.getSuperClassName() && !"java.lang.Object".equals(dep.getSuperClassName())) {
                     log.trace("Loading super class '{}' of '{}'", dep.getSuperClassName(), dep.getClassName());
                     instrumentClass(dep.getSuperClassName());
+                } else {
+                    instrumentClass(name, resource, false);
                 }
 
                 if(!dep.getDependentClassNames().isEmpty()) {
