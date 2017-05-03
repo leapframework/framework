@@ -106,7 +106,7 @@ public class DefaultValidation implements Validation {
     public Validation addError(String name, String messageKey, String defaultMessage, Object[] messageArguments) {
 		Args.notEmpty(messageKey,"messageKey");
 		
-		String message = messageSource.tryGetMessage(messageKey, messageArguments);
+		String message = messageSource.tryGetMessage(locale(),messageKey, messageArguments);
 		
 		if(Strings.isEmpty(message)){
 			message = defaultMessage;

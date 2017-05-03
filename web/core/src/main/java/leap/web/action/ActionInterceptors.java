@@ -81,7 +81,7 @@ class ActionInterceptors implements ActionInterceptor {
 
         for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
             if(!State.isContinue(state = interceptor.onActionFailure(context, validation, execution))){
-                context.getResponse().markHandled();
+//                context.getResponse().markHandled();
                 return state;
             }
         }

@@ -5,4 +5,11 @@
 
     <bean name="duplicate" class="tested.base.beans.XMLAndAnnotationBean" type="tested.base.beans.IXMLAndAnnotationBean" override-annotation="true"/>
     <bean name="duplicate" class="tested.base.beans.XMLAndAnnotationBean" type="tested.base.beans.IXMLAndAnnotationBean" override-annotation="true"/>
+    
+    <bean type="tested.beans.PrimaryTypeBean" class="tested.beans.PrimaryTypeBean1" primary="true" sort-order="100"/>
+    <bean type="tested.beans.PrimaryTypeBean" class="tested.beans.PrimaryTypeBean2" primary="true" sort-order="101"/>
+    <bean type="tested.beans.PrimaryTypeBean" class="tested.beans.PrimaryTypeBean3" primary="true" sort-order="102"/>
+
+    <bean name="overridebean" type="tested.beans.PrimaryTypeBean" class="tested.beans.PrimaryTypeBean1" sort-order="101"/>
+    <bean name="overridebean" type="tested.beans.PrimaryTypeBean" class="tested.beans.PrimaryTypeBean3"/>
 </beans>

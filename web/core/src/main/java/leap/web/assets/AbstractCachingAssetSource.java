@@ -15,13 +15,6 @@
  */
 package leap.web.assets;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.AppConfig;
 import leap.core.AppConfigAware;
 import leap.core.annotation.Inject;
@@ -32,6 +25,13 @@ import leap.core.schedule.SchedulerManager;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.path.Paths;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractCachingAssetSource implements AssetSource,AppConfigAware {
 
@@ -55,7 +55,12 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 	};
 	
 	protected final AssetResource UNRESOLVED_RESOURCE = new AbstractAssetResource() {
-		@Override
+        @Override
+        public long getContentLength() throws IOException {
+            return -1L;
+        }
+
+        @Override
         public InputStream getInputStream() throws IOException {
 	        return null;
         }
@@ -103,8 +108,18 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 		
 		Object cacheKey = getAssetCacheKey(path, locale);
 		Asset asset = cache.get(cacheKey);
-		
+
+        if(null != asset) {
+            asset.access();
+
+            if(asset.isExpired()) {
+                cache.remove(cacheKey);
+                asset = null;
+            }
+        }
+
 		if (asset == null) {
+            //todo : concurrent loading asset.
 			try {
                 asset = loadAsset(path, locale);
             } catch (Throwable e) {
@@ -112,7 +127,7 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
             }
 			
 			//check default locale cacheKey
-			if(asset == null){
+			if(asset == null && locale != defaultLocale){
 				cacheKey = getAssetCacheKey(path, defaultLocale);
 				asset = cache.get(cacheKey);
 			}
@@ -120,18 +135,16 @@ public abstract class AbstractCachingAssetSource implements AssetSource,AppConfi
 			if (asset == null) {
 				asset = UNRESOLVED_ASSET;
 			}
-			
-			if (asset != null) {
-				cache.put(cacheKey, asset);
-				
-				if (log.isTraceEnabled()) {
-					if(asset == UNRESOLVED_ASSET){
-						log.trace("Cached asset [" + cacheKey + " : unresolved]");
-					}else{
-						log.trace("Cached asset [" + cacheKey + " : " + asset.toString() + "]");
-					}
-				}
-			}
+
+            cache.put(cacheKey, asset);
+
+            if (log.isTraceEnabled()) {
+                if(asset == UNRESOLVED_ASSET){
+                    log.trace("Cached asset [" + cacheKey + " : unresolved]");
+                }else{
+                    log.trace("Cached asset [" + cacheKey + " : " + asset.toString() + "]");
+                }
+            }
 		}
 		
 		if(asset != UNRESOLVED_ASSET){

@@ -28,12 +28,11 @@ public class AssetsAttrExpression extends AttrExpression {
 	
 	protected final String assetPath;
 	
-	public AssetsAttrExpression(AssetSource assetSource, Attr attr) {
-	    super(attr);
-	    this.assetPath = attr.getString();
+	public AssetsAttrExpression(Attr attr) {
+        this(attr, attr.getString());
     }
-	
-	public AssetsAttrExpression(AssetSource assetSource, Attr attr,String assetPath) {
+
+	public AssetsAttrExpression(Attr attr,String assetPath) {
 	    super(attr);
 	    this.assetPath = assetPath;
 	}

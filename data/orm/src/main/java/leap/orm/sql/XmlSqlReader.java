@@ -19,7 +19,6 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.db.DbPlatforms;
-import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -29,7 +28,6 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 import leap.orm.OrmMetadata;
-import leap.orm.mapping.EntityMapping;
 
 import java.io.IOException;
 
@@ -44,11 +42,8 @@ public class XmlSqlReader implements SqlReader {
 	private static final String RESOURCE_ATTRIBUTE          = "resource";
 	private static final String OVERRIDE_ATTRIBUTE          = "override";
 	private static final String KEY_ATTRIBUTE               = "key";
-	private static final String ENTITY_CLASS_ATTRIBUTE      = "entity-class";
-	private static final String ENTITY_NAME_ATTRIBUTE       = "entity-name";
 	private static final String CHECK_EXISTENCE_ATTRIBUTE   = "check-existence";
 	private static final String DEFAULT_OVERRIDE_ATTRIBUTE  = "default-override";
-	private static final String NAME_ATTRIBUTE              = "name";
 	private static final String LANG_ATTRIBUTE              = "lang";
     private static final String DATA_SOURCE                 = "data-source";
 	
@@ -165,135 +160,59 @@ public class XmlSqlReader implements SqlReader {
 
 		OrmMetadata metadata = context.getConfigContext().getMetadata();
 		
-		String  key                 = reader.resolveAttribute(KEY_ATTRIBUTE);
-		String  name                = reader.resolveAttribute(NAME_ATTRIBUTE);
+		String  key                 = reader.resolveRequiredAttribute(KEY_ATTRIBUTE);
 		String  langName     	    = reader.resolveAttribute(LANG_ATTRIBUTE);
 		boolean override            = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 		String	content             = reader.getElementTextAndEnd();
-		String  entityName          = reader.resolveAttribute(ENTITY_NAME_ATTRIBUTE);
-		String  entityClassName     = reader.resolveAttribute(ENTITY_CLASS_ATTRIBUTE);
 		String  datasource			= reader.resolveAttribute(DATA_SOURCE);
 		
-		//check key,name,entity-class,entity-name
-		if(Strings.isEmpty(key) && Strings.isEmpty(name)){
-			throw new SqlConfigException("'key' or 'name' attribute must be defined in sql command, xml : " + reader.getSource());
-		}
-		
-		if(!Strings.isEmpty(key) && Strings.containsWhitespaces(key)) {
+		if(Strings.containsWhitespaces(key)) {
 			throw new SqlConfigException("'key' attribute cannot contains whitespace characters [" + key + "], xml : " + reader.getSource());
 		}
 		
-		if(!Strings.isEmpty(name) && Strings.containsWhitespaces(name)) {
-			throw new SqlConfigException("'name' attribute cannot contains whitespace characters [" + name + "], xml : " + reader.getSource());
-		}
-		
-		if(Strings.isEmpty(key) && Strings.isEmpty(entityClassName) && Strings.isEmpty(entityName)){
-			throw new SqlConfigException("'entity-class', or 'entity-name' attribute must be defined if 'name' attribute was defined, xml : " + reader.getSource());
-		}
-		
-		String commandDescription = "[" + (Strings.isEmpty(key) ? "name=" + name + ",entity-class=" + entityClassName + ",entity-name=" + entityName : "key=" + key ) + "]";
-		
-		log.debug("Load sql command {} from [{}]",commandDescription,reader.getSource());
+		log.debug("Load sql '{}' from [{}]", key, reader.getSource());
 		
 		if(Strings.isEmpty(content = Strings.trim(content))){
-			throw new SqlConfigException("The content body of sql command" + commandDescription + " must not be empty, xml : " + reader.getSource());
-		}
-		
-		//find entity mapping of entity-class, entity-name
-		EntityMapping em = null;
-		
-		if(!Strings.isEmpty(entityClassName)){
-			Class<?> clazz = Classes.tryForName(entityClassName);
-			if(null == clazz){
-				throw new SqlConfigException("Class '" + entityClassName + "' not found, command" + commandDescription + 
-											 ", xml : " + reader.getSource());
-			}
-			em = metadata.tryGetEntityMapping(clazz);
-			if(null == em){
-				log.info("Entity class '{}' not found in metadata of data source '{}'.", entityClassName, context.getConfigContext().getDb().getName());
-				return;
-				/*
-				throw new SqlConfigException("Class '" + entityClassName + "' is not an entity class in command" + commandDescription + 
-										     ", xml : " + reader.getSource());
-										     */
-			}
-		}else if(!Strings.isEmpty(entityName)){
-			em = metadata.tryGetEntityMapping(entityName);
-			if(null == em){
-				log.info("Entity name '{}' not found in metadata of data source '{}'.", entityName, context.getConfigContext().getDb().getName());
-				return;
-				//throw new SqlConfigException("Entity '" + entityName + "' not found, command" + commandDescription + ", xml : " + reader.getSource());
-			}
+			throw new SqlConfigException("The content body of sql '" + key + "' must not be empty, xml : " + reader.getSource());
 		}
 		
 		//check is sql command exists
 		if(!Strings.isEmpty(key)){
-			SqlCommand existsCommand = metadata.tryGetSqlCommand(key);
-			if(null != existsCommand){
+			SqlCommand exists = metadata.tryGetSqlCommand(key);
+			if(null != exists){
 				
-				if(Strings.isEmpty(dbType) && !Strings.isEmpty(existsCommand.getDbType())){
+				if(Strings.isEmpty(dbType) && !Strings.isEmpty(exists.getDbType())){
 					return;
 				}
 				
 				//override
-				if(!Strings.isEmpty(dbType) && Strings.isEmpty(existsCommand.getDbType())){
+				if(!Strings.isEmpty(dbType) && Strings.isEmpty(exists.getDbType())){
 					override = true;
 				}
 				
 				if(!override){
-					throw new SqlConfigException("Found duplicated sql command key '" + key + "' in command" + commandDescription + 
-							 ", xmls : " + existsCommand.getSource() + "," + reader.getSource());
+					throw new SqlConfigException("Found duplicated sql key '" + key + "', xmls : " + exists.getSource() + "," + reader.getSource());
 				}
 				
 				metadata.removeSqlCommand(key);
 			}
 		}
 		
-		if(null != em && !Strings.isEmpty(name)){
-			SqlCommand existsCommand = metadata.tryGetSqlCommand(em.getEntityName(),name);
-			if(null != existsCommand){
 
-				if(Strings.isEmpty(dbType) && !Strings.isEmpty(existsCommand.getDbType())){
-					return;
-				}
-				
-				//override
-				if(!Strings.isEmpty(dbType) && Strings.isEmpty(existsCommand.getDbType())){
-					override = true;
-				}
-				
-				if(!override){
-					throw new SqlConfigException("Found duplicated sql command name '" + name + "' of entity '" + em.getEntityName() + 
-							 "' in command" + commandDescription + 
-							 ", xmls : " + existsCommand.getSource() + "," + reader.getSource());
-				}
-				
-				metadata.removeSqlCommand(em.getEntityName(),name);
-				
-				if(null != em.getEntityClass()){
-					metadata.removeSqlCommand(em.getEntityClass(),name);	
-				}
-			}
-		}
-		
-		SqlLanguage language = null;
+		SqlLanguage language;
 		if(!Strings.isEmpty(langName)){
 			language = beanFactory.tryGetBean(SqlLanguage.class,langName);
 			if(null == language){
-				throw new SqlConfigException("Sql language '" + langName + "' not found in command" + commandDescription +", xml : " + reader.getSource());
+				throw new SqlConfigException("Sql language '" + langName + "' not found in sql '" + key + "', xml : " + reader.getSource());
 			}
 		}else{
 			language = defaultLanguage;
 		}
 		
 		log.trace("SQL(s) : \n\n  {}\n",content);
-		SqlCommand command = new DefaultSqlCommand(reader.getSource(), name, dbType, language, content, new DefaultSqlIdentity(key,name,entityName,entityClassName,datasource));
+		SqlCommand command = new DefaultSqlCommand(reader.getSource(), key, dbType, language, content, new DefaultSqlIdentity(key,datasource));
 		if(!Strings.isEmpty(key)){
 			metadata.addSqlCommand(key, command);
-		}
-		
-		if(null != em && !Strings.isEmpty(name)){
-			metadata.addSqlCommand(em, name, command);
 		}
 	}
 	

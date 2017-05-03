@@ -45,16 +45,11 @@ public class AssetsUrlAttrProcessor extends UrlAttrProcessor {
 		
 		if(Strings.startsWith(url, assetConfig.getPathPrefix())){
 			String assetPath = url.substring(assetConfig.getPathPrefix().length());
-			Asset asset = engine.getAssetSource().getAsset(assetPath, null);
-			if(null != asset){
-				a.setValue(new AssetsAttrExpression(engine.getAssetSource(), a, assetPath));
-				return e;	
-			}
+            a.setValue(new AssetsAttrExpression(a, assetPath));
+            return e;
 		}
 		
 		return super.processStartElement(engine, doc, e, a);
     }
-
-	
 
 }

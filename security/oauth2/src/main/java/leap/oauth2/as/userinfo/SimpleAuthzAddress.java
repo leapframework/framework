@@ -18,6 +18,7 @@
 
 package leap.oauth2.as.userinfo;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class SimpleAuthzAddress implements AuthzAddress {
     protected String region;
     protected String postalCode;
     protected String country;
-    
+    protected Map<String, Object> ext = new HashMap<>();
     @Override
     public String getFormatted() {
         return formatted;
@@ -72,7 +73,22 @@ public class SimpleAuthzAddress implements AuthzAddress {
         map.put(REGION,getRegion());
         map.put(POSTAL_CODE,getPostalCode());
         map.put(COUNTRY,getCountry());
+        ext.forEach((s, o) -> {
+            if (!map.containsKey(s)){
+                map.put(s,o);
+            }
+        });
         return map;
+    }
+
+    @Override
+    public Map<String, Object> getExtProperties() {
+        return Collections.unmodifiableMap(ext);
+    }
+
+    @Override
+    public void putExtProperty(String name, Object value) {
+        ext.put(name,value);
     }
 
     public void setFormatted(String formatted) {

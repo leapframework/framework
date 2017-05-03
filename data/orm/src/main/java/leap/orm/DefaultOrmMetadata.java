@@ -60,7 +60,7 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 		return domains;
 	}
 
-	@Override
+    @Override
     public int getEntityMappingSize() {
 	    return nameToEntityMappings.size();
     }
@@ -144,17 +144,6 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	}
 
 	@Override
-    public SqlCommand getSqlCommand(Class<?> entityClass, String commandName) throws ObjectNotFoundException {
-		SqlCommand cmd = tryGetSqlCommand(entityClass, commandName);
-		
-		if(null == cmd){
-			throwSqlNotFound(entityClass, commandName);
-		}
-		
-	    return cmd;
-    }
-
-	@Override
     public SqlCommand getSqlCommand(String entityName, String commandName) throws ObjectNotFoundException {
 		SqlCommand cmd = tryGetSqlCommand(entityName, commandName);
 		
@@ -214,14 +203,6 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 		Args.notEmpty(key,"fragment key");
 		return keyToSqlFragments.get(key);
 	}
-
-	@Override
-    public SqlCommand tryGetSqlCommand(Class<?> entityClass, String commandName) {
-		Args.notNull(entityClass,"entity class");
-		Args.notEmpty(commandName,"command name");
-		
-		return keyToSqlCommands.get(formatSqlCommandKey(entityClass, commandName));
-    }
 
 	@Override
     public SqlCommand tryGetSqlCommand(String entityName, String commandName) {
@@ -367,25 +348,6 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 		Args.notEmpty(key,"command key");
 		return keyToSqlCommands.remove(key);
     }
-	
-	@Override
-    public SqlCommand removeSqlCommand(Class<?> entityClass, String commandName) {
-		Args.notNull(entityClass,"entity class");
-		Args.notEmpty(commandName,"command name");
-		return keyToSqlCommands.remove(formatSqlCommandKey(entityClass, commandName));
-    }
-
-	@Override
-    public SqlCommand removeSqlCommand(String entityName, String commandName) {
-		Args.notEmpty(entityName,"entity name");
-		Args.notEmpty(commandName,"command name");
-	    return keyToSqlCommands.remove(formatSqlCommandKey(entityName, commandName));
-    }
-	
-	public void setDomains(Domains domains) {
-		checkReadonly();
-		this.domains = domains;
-	}
 	
 	protected static String formatSqlCommandKey(Class<?> entityClass,String commandName){
 		return Strings.format(SQL_COMMAND_KEY_ENTITY_CLASS_TEMPLATE,entityClass.getName(),commandName.toLowerCase());

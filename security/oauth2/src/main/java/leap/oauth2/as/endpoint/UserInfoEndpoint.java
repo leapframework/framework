@@ -16,6 +16,7 @@
 package leap.oauth2.as.endpoint;
 
 import leap.core.annotation.Inject;
+import leap.lang.http.HTTP;
 import leap.oauth2.OAuth2Errors;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.endpoint.userinfo.UserInfoHandler;
@@ -45,8 +46,8 @@ public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,
             sc.ignore(config.getUserInfoEndpointPath());
 
             routes.create()
-                  .get(config.getUserInfoEndpointPath(), this)
-                  .enableCors()
+                  .handle(config.getUserInfoEndpointPath(), this)
+                  .enableCors().disableCsrf()
                   .apply();
         }
     }

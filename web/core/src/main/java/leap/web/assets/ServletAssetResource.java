@@ -18,17 +18,20 @@ package leap.web.assets;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.util.concurrent.CountDownLatch;
 
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.servlet.ServletResource;
 
-public class ServletAssetResource extends AbstractAssetResource{
+public class ServletAssetResource extends AbstractAssetResource {
 	
 	private static final Log log = LogFactory.get(ServletAssetResource.class);
 	
 	protected final ServletResource resource;
+
+    private volatile long lastChecked;
 	
 	public ServletAssetResource(AssetManager manager, Asset asset, ServletResource resource, boolean debug) throws IOException {
 		this(manager,asset,resource,debug,null);
@@ -41,8 +44,8 @@ public class ServletAssetResource extends AbstractAssetResource{
 		this.resource      = resource;
 		this.serverPath    = resource.getPathWithinContext();
 		this.lastModified  = resource.lastModified();
-		this.contentLength = resource.contentLength();
-		
+        this.lastChecked   = System.currentTimeMillis();
+
 		if(Strings.isEmpty(fingerprint)) {
 			this.generateFingerprint(resource.getPathWithinContext());
 		}else{
@@ -58,8 +61,36 @@ public class ServletAssetResource extends AbstractAssetResource{
 	public ServletResource getServletResource(){
 		return resource;
 	}
-	
-	@Override
+
+    @Override
+    public void access() {
+        if(isExpired()) {
+            return;
+        }
+
+        //check changed? if changed, expires it.
+        long now      = System.currentTimeMillis();
+        long duration = now - lastChecked;
+        if(duration > 30000) { //todo : hard code 30 seconds
+            lastChecked = now;
+            try {
+                if(resource.lastModified() != lastModified) {
+                    //Expires it, so next time we will use the new asset resource.
+                    this.expire();
+                }
+            } catch (IOException e) {
+                //todo : throw exception?
+                log.error(e);
+            }
+        }
+    }
+
+    @Override
+    public long getContentLength() throws IOException {
+        return resource.contentLength();
+    }
+
+    @Override
     public InputStream getInputStream() throws IOException {
 	    return resource.getInputStream();
     }

@@ -37,14 +37,14 @@ public class NamedQueryTest extends OrmTestCase {
 	public void testFindOwnersByLastName() {
 		deleteAll(Owner.class);
 
-		assertTrue(dao.createNamedQuery(Owner.class, "findByLastName").param("lastName", "test").result().isEmpty());
+		assertTrue(dao.createNamedQuery(Owner.class, "findOwnerByLastName").param("lastName", "test").result().isEmpty());
 
 		Owner older = dmo.getDataFactory().generate(Owner.class);
 		older.setLastName("test");
 
 		dao.insert(older);
 
-		Owner newer = dao.createNamedQuery(Owner.class, "findByLastName").params(older).single();
+		Owner newer = dao.createNamedQuery(Owner.class, "findOwnerByLastName").params(older).single();
 		newer.getPets();//force to create pets set
 
 		compareFields(older, newer.fields());

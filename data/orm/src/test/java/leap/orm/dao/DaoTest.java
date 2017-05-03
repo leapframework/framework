@@ -97,5 +97,5 @@ public class DaoTest extends OrmTestCase {
 		assertEquals(new Integer(1),record.getInteger("additional"));
 		assertEquals(new Integer(2),record.getInteger("secondAdditional"));
 	}
-
+	
 }

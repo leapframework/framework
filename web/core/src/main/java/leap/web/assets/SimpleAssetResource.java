@@ -41,8 +41,7 @@ public class SimpleAssetResource extends AbstractAssetResource{
 		this.debug		   = debug;
 		this.resource      = resource;
 		this.lastModified  = resource.lastModified();
-		this.contentLength = resource.contentLength();
-		
+
 		if(Strings.isEmpty(fingerprint)) {
 			this.generateFingerprint(resource.getFilepath());
 		}else{
@@ -58,8 +57,13 @@ public class SimpleAssetResource extends AbstractAssetResource{
 	public Resource getResource() {
         return resource;
     }
-	
-	@Override
+
+    @Override
+    public long getContentLength() throws IOException {
+        return resource.contentLength();
+    }
+
+    @Override
     public InputStream getInputStream() throws IOException {
 	    return resource.getInputStream();
     }

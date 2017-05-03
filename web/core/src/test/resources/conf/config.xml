@@ -10,7 +10,15 @@
         <property name="jdbc.url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="jdbc.username">sa</property>
     </properties>
+
     <property name="app.debugEnabled">true</property>
+
+    <!--
+    <properties prefix="webassets">
+        <property name="reloadEnabled" value="false"/>
+    </properties>
+    -->
+
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 
 	<web:mvc>

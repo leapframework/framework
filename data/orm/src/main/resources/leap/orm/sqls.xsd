@@ -59,9 +59,6 @@
         	<xsd:simpleContent>
         		<xsd:extension base="xsd:string">
         			<xsd:attribute name="key" type="xsd:string" use="optional"/>
-        			<xsd:attribute name="entity-class" type="xsd:string" use="optional"/>
-        			<xsd:attribute name="entity-name" type="xsd:string" use="optional"/>
-        			<xsd:attribute name="name" type="xsd:string" use="optional"/>
         			<xsd:attribute name="lang" type="xsd:string" use="optional"/>
                     <xsd:attribute name="data-source" type="xsd:string" use="optional"/>
         			<xsd:attribute name="override" type="xsd:boolean">
