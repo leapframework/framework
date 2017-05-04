@@ -49,7 +49,6 @@ import leap.web.route.Route;
 
 public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
-	protected @Inject ApiConfiguratorFactory configuratorFactory;
 	protected @Inject ApiConfigProcessor[]   configProcessors;
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	protected @Inject MTypeManager           typeManager;
@@ -93,10 +92,9 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 			throw new ObjectExistsException("The api '" + name + "' already exists");
 		}
  
-		ApiConfigurator configurator = configuratorFactory.createConfigurator(this, name, basePath);
-		configurators.put(key, configurator);
-		configurations.put(key, configurator.config());
-		return configurator;
+		ApiConfigurator api = new DefaultApiConfig(name,basePath);
+        doAdd(name, api);
+		return api;
     }
 
 	@Override
@@ -123,16 +121,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     @Override
     public String getDefaultOAuthTokenUrl() {
         return oauthConfig.getTokenEndpointUrl();
-    }
-
-    @Override
-    public Map<String, MApiResponse> getCommonResponses() {
-        return commonResponses;
-    }
-
-    @Override
-    public Map<Class<?>, ApiModelConfig> getCommonModelTypes() {
-        return commonModelTypes;
     }
 
     @Override
@@ -186,33 +174,33 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             commonModelTypes.put(t,c);
         });
 
-        configs.getConfigurators().forEach((name, api)->{
+        configs.getConfigurators().forEach(this::doAdd);
+    }
 
-            //oauth TODO
-            if(api.config().getOAuthConfig() == null){
-                api.setOAuthConfig(oauthConfig);
-            }else{
-                OAuthConfig oc = api.config().getOAuthConfig();
-
-                if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
-                    oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
-                }
-
-                if(Strings.isEmpty(oc.getTokenEndpointUrl())){
-                    oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
-                }
+    protected void doAdd(String name, ApiConfigurator api) {
+        //oauth TODO
+        if(api.config().getOAuthConfig() == null){
+            api.setOAuthConfig(oauthConfig);
+        }else{
+            OAuthConfig oc = api.config().getOAuthConfig();
+            if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
+                oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
             }
 
-            //common model types.
-            commonModelTypes.forEach((t,c) -> {
-                if(!api.config().getModelTypes().containsKey(t)) {
-                    api.putModelType(t, c);
-                }
-            });
+            if(Strings.isEmpty(oc.getTokenEndpointUrl())){
+                oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
+            }
+        }
 
-            configurators.put(name.toLowerCase(), api);
-            configurations.put(name.toLowerCase(), api.config());
+        //common model types.
+        commonModelTypes.forEach((t,c) -> {
+            if(!api.config().getModelTypes().containsKey(t)) {
+                api.putModelType(t, c);
+            }
         });
+
+        configurators.put(name.toLowerCase(), api);
+        configurations.put(name.toLowerCase(), api.config());
     }
 
     @Override
@@ -253,7 +241,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
 		//resolve routes of api.
 		resolveRoutes(app, c);
-
 	}
 
     protected void doCommonConfiguration(App app, ApiConfigurator c) {

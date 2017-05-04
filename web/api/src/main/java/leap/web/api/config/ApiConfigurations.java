@@ -27,9 +27,9 @@ import java.util.Map;
 
 public class ApiConfigurations {
 
-    private final Map<String, ApiConfigurator>     configurators    = new LinkedHashMap<>();
-    private final Map<String, MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
-    private final Map<Class<?>, ApiModelConfig>    commonModelTypes = new LinkedHashMap<>();
+    private final Map<String,   ApiConfigurator>     configurators    = new LinkedHashMap<>();
+    private final Map<String,   MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
+    private final Map<Class<?>, ApiModelConfig>      commonModelTypes = new LinkedHashMap<>();
 
     private OAuthConfig defaultOAuthConfig = new OAuthConfig(false, null, null);
 
