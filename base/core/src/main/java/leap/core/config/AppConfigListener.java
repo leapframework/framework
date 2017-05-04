@@ -18,12 +18,29 @@
 
 package leap.core.config;
 
-import leap.core.AppResources;
+import leap.core.AppConfig;
 
-/**
- * Created by kael on 2016/10/31.
- */
-public interface AppConfigInitializable {
-    default void preLoadConfig(AppConfigContext context, AppResources appResources){}
-    default void postLoadConfig(AppConfigContext context, AppResources appResources){}
+public interface AppConfigListener {
+
+    /**
+     * Called before loading all configurations.
+     */
+    default void preLoadConfig(AppConfigContext context, AppConfigPaths paths) {
+
+    }
+
+    /**
+     * Called after loading all configurations.
+     */
+    default void postLoadConfig(AppConfigContext context) {
+
+    }
+
+    /**
+     * Called after all listener's {@link #postLoadConfig(AppConfigContext)} have been executed.
+     */
+    default void completeLoadConfig(AppConfig config) {
+
+    }
+
 }

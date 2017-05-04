@@ -20,6 +20,8 @@ package leap.web.api.config;
 
 import leap.core.AppConfigException;
 import leap.core.config.AppConfigContext;
+import leap.core.config.AppConfigListener;
+import leap.core.config.AppConfigPaths;
 import leap.core.config.AppConfigProcessor;
 import leap.lang.Classes;
 import leap.lang.Collections2;
@@ -44,7 +46,7 @@ import leap.web.config.ModuleConfigExtension;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class XmlApiConfigProcessor implements AppConfigProcessor {
+public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListener {
     private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
 
     protected static final String APIS                 = "apis";
@@ -114,8 +116,26 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     @Override
+    public void preLoadConfig(AppConfigContext context, AppConfigPaths paths) {
+        paths.addConfigName("apis");
+    }
+
+    @Override
     public void processElement(AppConfigContext context, XmlReader reader) throws AppConfigException {
         readApis(context, reader);
+    }
+
+    @Override
+    public void postLoadConfig(AppConfigContext context) {
+        ApiConfigs configs = context.getExtension(ApiConfigs.class);
+        if(configs != null){
+            configs.getConfigurators().forEach((k, v)->{
+                String basePackage = v.config().getBasePackage();
+                if(Strings.isNotEmpty(basePackage)){
+                    context.getAdditionalPackages().add(basePackage);
+                }
+            });
+        }
     }
 
     protected void readApis(AppConfigContext context, XmlReader reader) {
