@@ -211,17 +211,19 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	
 	protected ApiMetadata processMetadata(ApiMetadataContext context, ApiMetadataBuilder md) {
         preProcessDefault(context, md);
-
 		for(ApiMetadataProcessor p : processors) {
 			p.preProcess(context, md);
 		}
 
         postProcessDefault(context, md);
+        for(ApiMetadataProcessor p : processors) {
+            p.postProcess(context, md);
+        }
 
 		ApiMetadata m = md.build();
 		
 		for(ApiMetadataProcessor p : processors) {
-			p.postProcess(context, m);
+			p.completeProcess(context, m);
 		}
 		
 		return m;

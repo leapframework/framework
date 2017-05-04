@@ -21,8 +21,12 @@ public interface ApiMetadataProcessor {
 	default void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
 		
 	}
-	
-	default void postProcess(ApiMetadataContext context, ApiMetadata m) {
+
+    default void postProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
+
+    }
+
+	default void completeProcess(ApiMetadataContext context, ApiMetadata m) {
 		
 	}
 	
