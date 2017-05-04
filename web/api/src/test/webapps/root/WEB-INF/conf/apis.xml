@@ -36,11 +36,6 @@
 
     <api name="api" base-path="/api"/>
 
-
-    <api name="basepackage" base-path="/basepackage" base-package="api.basepackage">
-        <oauth flow="accessCode"/>
-    </api>
-
     <api name="testApi" base-path="/testing">
 
         <permissions>
@@ -58,30 +53,6 @@
         <models>
             <model type="app.models.testing.ConfiguredModel2"/>
         </models>
-
-    </api>
-
-    <api name="petstore" base-path="/petstore">
-
-        <title>Swagger Petstore</title>
-
-        <desc>
-            This is a sample server Petstore server. You can find out more about Swagger at
-            [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/). For this
-            sample, you can use the api key `special-key` to test the authorization filters.
-        </desc>
-
-        <protocols>
-            http
-        </protocols>
-
-    </api>
-
-    <api name="restd" base-path="/restd" default-anonymous="true" restd-enabled="true" restd-data-source="restd">
-
-        <restd>
-            <model name="Model1" delete="false"/>
-        </restd>
 
     </api>
 
