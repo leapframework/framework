@@ -25,6 +25,7 @@ import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.OAuthConfigImpl;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModelBuilder;

@@ -193,16 +193,17 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
-        ApiConfig c = context.getConfig();
-        OAuthConfig oauthConfig = c.getOAuthConfig();
-        if(oauthConfig != null && oauthConfig.isEnabled()) {
+        OAuthConfig oc = context.getConfig().getOAuthConfig();
+
+        if(oc != null && oc.isEnabled()) {
+
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(
                             SwaggerConstants.OAUTH2,
                             SwaggerConstants.OAUTH2,
-                            oauthConfig.getAuthzEndpointUrl(),
-                            oauthConfig.getTokenEndpointUrl(),
-                            oauthConfig.getFlow(),
+                            oc.getAuthorizationUrl(),
+                            oc.getTokenUrl(),
+                            oc.getFlow(),
                             null);
             
             md.addSecurityDef(def);

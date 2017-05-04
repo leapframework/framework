@@ -21,11 +21,6 @@
     <!-- model -->
     <bean type="leap.web.api.orm.ModelExecutorFactory" class="leap.web.api.orm.DefaultModelExecutorFactory" primary="true"/>
 
-    <!-- built-in oauth2 processor : only the oauth2 module exists -->
-    <beans if-class-present="leap.oauth2.OAuth2Constants">
-        <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuthConfigProcessor"/>
-    </beans>
-
     <beans if-class-present="leap.web.security.SecurityConfig">
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>

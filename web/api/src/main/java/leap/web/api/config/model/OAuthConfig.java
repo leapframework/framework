@@ -16,59 +16,36 @@
 
 package leap.web.api.config.model;
 
-import leap.web.api.spec.swagger.SwaggerConstants;
+/**
+ * The configuration of OAuth2.
+ */
+public interface OAuthConfig {
 
-public class OAuthConfig {
-
-    private boolean enabled;
-    private String  flow;
-    private String  authzEndpointUrl;
-    private String  tokenEndpointUrl;
-
-    public OAuthConfig() {
-        
+    /**
+     * Is OAuth2 security enabled explicitly.
+     * @return
+     */
+    default boolean isEnabled() {
+        return Boolean.TRUE.equals(getEnabled());
     }
 
-    public OAuthConfig(boolean enabled, String authzEndpointUrl, String tokenEndpointUrl) {
-        this(enabled, SwaggerConstants.IMPLICIT, authzEndpointUrl, tokenEndpointUrl);
-    }
-    
-    public OAuthConfig(boolean enabled, String flow, String authzEndpointUrl, String tokenEndpointUrl) {
-        this.enabled          = enabled;
-        this.flow             = flow;
-        this.authzEndpointUrl = authzEndpointUrl;
-        this.tokenEndpointUrl = tokenEndpointUrl;
-    }
+    /**
+     * Is OAuth2 security enabled, returns null if did not configured.
+     */
+    Boolean getEnabled();
 
-    public boolean isEnabled() {
-        return enabled;
-    }
+    /**
+     * Optional. Returns the OAuth2 flow.
+     */
+    String getFlow();
 
-    public void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-    }
+    /**
+     * Required. Returns the authorization endpoint url of auth server.
+     */
+    String getAuthorizationUrl();
 
-    public String getFlow() {
-        return flow;
-    }
-
-    public void setFlow(String flow) {
-        this.flow = flow;
-    }
-
-    public String getAuthzEndpointUrl() {
-        return authzEndpointUrl;
-    }
-
-    public void setAuthzEndpointUrl(String url) {
-        this.authzEndpointUrl = url;
-    }
-
-    public String getTokenEndpointUrl() {
-        return tokenEndpointUrl;
-    }
-
-    public void setTokenEndpointUrl(String url) {
-        this.tokenEndpointUrl = url;
-    }
+    /**
+     * Required. Returns the token endpoint url of auth server.
+     */
+    String getTokenUrl();
 }

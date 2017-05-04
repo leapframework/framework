@@ -38,8 +38,7 @@
 
 
     <api name="basepackage" base-path="/basepackage" base-package="api.basepackage">
-        <oauth enabled="false" flow="accessCode">
-        </oauth>
+        <oauth flow="accessCode"/>
     </api>
 
     <api name="testApi" base-path="/testing">

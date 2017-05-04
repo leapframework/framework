@@ -20,6 +20,7 @@ import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.OAuthConfigImpl;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
@@ -73,8 +74,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 
-    protected OAuthConfig    oauthConfig;
-    protected RestdConfig    restdConfig;
+    protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
+    protected RestdConfig     restdConfig;
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -298,22 +299,18 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator setOAuthConfig(OAuthConfig oauth) {
-        this.oauthConfig = oauth;
+        this.oauthConfig.tryUpdateFrom(oauth);
         return this;
     }
 
     @Override
     public ApiConfigurator enableOAuth() {
-        if(oauthConfig == null){
-            oauthConfig = new OAuthConfig(true,null,null);
-        }else{
-            oauthConfig.setEnabled(true);
-        }
+        oauthConfig.setEnabled(true);
         return this;
     }
 
     @Override
-    public OAuthConfig getOAuthConfig() {
+    public OAuthConfigImpl getOAuthConfig() {
         return oauthConfig;
     }
 

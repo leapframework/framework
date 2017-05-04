@@ -158,8 +158,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
         while (reader.nextWhileNotEnd(GLOBAL)) {
 
             if (reader.isStartElement(OAUTH)) {
-                OAuthConfig oauth = readOAuth(context, reader);
-                configs.setOAuthConfig(oauth);
+                configs.setOAuthConfig(readOAuth(context, reader));
                 continue;
             }
 
@@ -596,17 +595,17 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 
-    protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader) {
-        boolean enabled = reader.resolveBooleanAttribute(ENABLED, false);
-        String flow = reader.resolveAttribute(FLOW, SwaggerConstants.IMPLICIT);
+    protected OAuthConfigImpl readOAuth(AppConfigContext context, XmlReader reader) {
+        Boolean enabled = reader.resolveBooleanAttribute(ENABLED);
+        String  flow    = reader.resolveAttribute(FLOW, SwaggerConstants.IMPLICIT);
 
-        OAuthConfig oauth = new OAuthConfig(enabled, flow, null, null);
+        OAuthConfigImpl oauth = new OAuthConfigImpl(enabled, flow, null, null);
 
         reader.loopInsideElement(() -> {
             if (reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if (!Strings.isEmpty(url)) {
-                    oauth.setAuthzEndpointUrl(url);
+                    oauth.setAuthorizationUrl(url);
                 }
                 return;
             }
@@ -614,7 +613,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
             if (reader.isStartElement(TOKEN_URL)) {
                 String url = reader.resolveElementTextAndEnd();
                 if (!Strings.isEmpty(url)) {
-                    oauth.setTokenEndpointUrl(url);
+                    oauth.setTokenUrl(url);
                 }
                 return;
             }

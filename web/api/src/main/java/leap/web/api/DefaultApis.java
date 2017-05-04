@@ -37,7 +37,7 @@ import leap.web.AppInitializable;
 import leap.web.api.annotation.Resource;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.*;
-import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.OAuthConfigImpl;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.model.MApiResponse;
@@ -56,10 +56,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected Map<String, ApiConfig>        configurations = new ConcurrentHashMap<String, ApiConfig>();
 	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
 
-    protected Map<String,   MApiResponse>   commonResponses  = new LinkedHashMap<>();
-    protected OAuthConfig                   oauthConfig      = new OAuthConfig();
+    protected Map<String,   MApiResponse> commonResponses = new LinkedHashMap<>();
 
-    private ApiConfigs configs;
+    private ApiConfigs      configs;
+    private OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
 
     @Override
     public ApiConfigurator tryGetConfigurator(String name) {
@@ -114,12 +114,12 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public String getDefaultOAuthAuthorizationUrl() {
-        return oauthConfig.getAuthzEndpointUrl();
+        return oauthConfig.getAuthorizationUrl();
     }
 
     @Override
     public String getDefaultOAuthTokenUrl() {
-        return oauthConfig.getTokenEndpointUrl();
+        return oauthConfig.getTokenUrl();
     }
 
     @Override
@@ -130,7 +130,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public Apis setDefaultOAuthAuthorizationUrl(String url) {
-        this.oauthConfig.setAuthzEndpointUrl(url);
+        this.oauthConfig.setAuthorizationUrl(url);
         return this;
     }
     
@@ -143,13 +143,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
           .add("redirect_uri", redirectUri)
           .add("response_type", "token");
         
-        this.oauthConfig.setAuthzEndpointUrl(Urls.appendQueryString(endpoint, qs.build()));
+        this.oauthConfig.setAuthorizationUrl(Urls.appendQueryString(endpoint, qs.build()));
         return this;
     }
 
     @Override
     public Apis setDefaultOAuthTokenUrl(String url) {
-        this.oauthConfig.setTokenEndpointUrl(url);
+        this.oauthConfig.setTokenUrl(url);
         return this;
     }
 
@@ -160,14 +160,12 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             return;
         }
 
-        if(configs.getOAuthConfig() != null){
-            this.oauthConfig = configs.getOAuthConfig();
-        }
-
         configs.getCommonResponses().forEach((key, builder)->{
             builder.setTypeManager(typeManager);
             commonResponses.put(key,builder.build());
         });
+
+        this.oauthConfig.updateFrom(configs.getOAuthConfig());
 
         configs.getApis().forEach(this::doAdd);
     }
@@ -176,18 +174,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         if(null != configs) {
             ApiConfig c = api.config();
 
-            //oauth TODO
-            if(api.config().getOAuthConfig() == null){
+            if(c.getOAuthConfig() == null){
                 api.setOAuthConfig(oauthConfig);
             }else{
-                OAuthConfig oc = api.config().getOAuthConfig();
-                if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
-                    oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
-                }
-
-                if(Strings.isEmpty(oc.getTokenEndpointUrl())){
-                    oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
-                }
+                api.setOAuthConfig(new OAuthConfigImpl().updateFrom(oauthConfig));
             }
 
             configs.getCommonModels().forEach(model -> {

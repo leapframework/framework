@@ -20,6 +20,7 @@ import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.OAuthConfigImpl;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
@@ -156,8 +157,7 @@ public interface ApiConfigurator extends Extensible {
     /**
      * Sets oauth config
      */
-    ApiConfigurator setOAuthConfig(OAuthConfig oauth);
-
+    ApiConfigurator setOAuthConfig(OAuthConfig c);
 
     /**
      * Adds a new or updates an exists permission.
