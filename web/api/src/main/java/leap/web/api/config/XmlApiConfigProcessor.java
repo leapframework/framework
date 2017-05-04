@@ -30,9 +30,7 @@ import leap.lang.Strings;
 import leap.lang.extension.ExProperties;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
-import leap.web.api.config.model.ApiModelConfig;
-import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.*;
 import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
@@ -45,6 +43,7 @@ import leap.web.api.config.model.RestdConfig.Model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListener {
     private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
@@ -175,7 +174,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
             }
 
             if (reader.isStartElement(MODELS)) {
-                readModels(context, reader).forEach(configs::addCommonModelType);
+                readModels(context, reader, configs::addCommonModel);
                 continue;
             }
 
@@ -270,23 +269,27 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
         return parameter;
     }
 
-    protected Map<Class<?>, ApiModelConfig> readModels(AppConfigContext context, XmlReader reader) {
-        Map<Class<?>, ApiModelConfig> modelTypes = new LinkedHashMap<>();
-
+    protected void readModels(AppConfigContext context, XmlReader reader, Consumer<ModelConfig> func) {
         reader.loopInsideElement(() -> {
             if (reader.isStartElement(MODEL)) {
-                String className = reader.getRequiredAttribute(CLASS);
+
+                String className = reader.getAttribute(TYPE);
                 String modelName = reader.getAttribute(NAME);
 
-                Class<?> modelType = Classes.forName(className);
+                if(Strings.isEmpty(className) && Strings.isEmpty(modelName)) {
+                    throw new ApiConfigException("One of the 'name' or 'type' attribute must not be empty, at " + reader.getCurrentLocation());
+                }
 
-                ApiModelConfig modelConfig = new ApiModelConfig(modelName);
+                Class<?> modelType = Strings.isEmpty(className) ? null : Classes.forName(className);
 
-                modelTypes.put(modelType, modelConfig);
+                ModelConfigImpl model = new ModelConfigImpl();
+                model.setName(modelName);
+                model.setType(modelType);
+
+                func.accept(model);
             }
         });
 
-        return modelTypes;
     }
 
     protected void readProperties(CommonDescContainer.Parameter parameter, XmlReader reader) {
@@ -438,7 +441,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
                 }
 
                 if (reader.isStartElement(MODELS)) {
-                    readModels(context, reader).forEach(api::putModelType);
+                    readModels(context, reader, api::addModel);
                     continue;
                 }
 

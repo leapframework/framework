@@ -271,8 +271,8 @@
     </xsd:complexType>
 
     <xsd:complexType name="model">
-        <xsd:attribute name="class" type="xsd:string" use="required"/>
-        <xsd:attribute name="name" type="xsd:string"  use="optional"/>
+        <xsd:attribute name="type" type="xsd:string" use="optional"/>
+        <xsd:attribute name="name" type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="properties">

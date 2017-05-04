@@ -18,38 +18,39 @@
 
 package leap.web.api.config;
 
-import leap.web.api.config.model.ApiModelConfig;
+import leap.lang.Strings;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.MApiResponseBuilder;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Global configurations of all api(s).
  */
 public class ApiConfigs {
 
-    private final Map<String,   ApiConfigurator>     apis             = new LinkedHashMap<>();
-    private final Map<String,   ModelConfig>         commonModels     = new LinkedHashMap<>();
-    private final Map<String,   MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
-    private final Map<Class<?>, ApiModelConfig>      commonModelTypes = new LinkedHashMap<>();
+    private final Map<String, ApiConfigurator>     apis            = new LinkedHashMap<>();
+    private final Set<ModelConfig>                 commonModels    = new LinkedHashSet<>();
+    private final Map<String, MApiResponseBuilder> commonResponses = new LinkedHashMap<>();
 
     private OAuthConfig oauthConfig;
 
-    public Map<String, ApiConfigurator> getApis(){
+    public Map<String, ApiConfigurator> getApis() {
         return apis;
     }
 
-    public ApiConfigurator getApi(String name){
+    public ApiConfigurator getApi(String name) {
         return apis.get(name);
     }
 
-    public void addApi(ApiConfigurator api){
+    public void addApi(ApiConfigurator api) {
         String key = api.config().getName().toLowerCase();
 
-        if(apis.containsKey(key)){
+        if (apis.containsKey(key)) {
             throw new ApiConfigException("Found duplicated api config with name : " + api.config().getName());
         }
 
@@ -64,38 +65,38 @@ public class ApiConfigs {
         this.oauthConfig = oauthConfig;
     }
 
-    public Map<String, ModelConfig> getCommonModels() {
+    public Set<ModelConfig> getCommonModels() {
         return commonModels;
     }
 
-    public void addCommonModel(String name, ModelConfig model) {
-        if(commonModels.containsKey(name.toLowerCase())) {
-            throw new ApiConfigException("Found duplicated model config '" + name + "'");
-        }
-        commonModels.put(name.toLowerCase(), model);
+    public void addCommonModel(ModelConfig model) {
+        addModel(commonModels, model);
     }
 
-    public Map<String,MApiResponseBuilder> getCommonResponses(){
+    public Map<String, MApiResponseBuilder> getCommonResponses() {
         return commonResponses;
     }
 
-    public void addCommonResponse(String name, MApiResponseBuilder resp){
-        if(commonResponses.containsKey(name)){
+    public void addCommonResponse(String name, MApiResponseBuilder resp) {
+        if (commonResponses.containsKey(name)) {
             throw new ApiConfigException("Found duplicated common response with name : " + name);
         }
 
         commonResponses.put(name, resp);
     }
 
-    public Map<Class<?>, ApiModelConfig> getCommonModelTypes() {
-        return commonModelTypes;
+    static void addModel(Set<ModelConfig> models, ModelConfig model) {
+        models.forEach(exists -> {
+            if (null != exists.getType() && exists.getType().equals(model.getType())) {
+                throw new ApiConfigException("Found duplicated model type '" + model.getType() + "'");
+            }
+
+            if (!Strings.isEmpty(exists.getName()) && exists.getName().equalsIgnoreCase(model.getName())) {
+                throw new ApiConfigException("Found duplicated model name '" + model.getName() + "'");
+            }
+        });
+
+        models.add(model);
     }
 
-    public void addCommonModelType(Class<?> type, ApiModelConfig c) {
-        if(commonModelTypes.containsKey(type)) {
-            throw new ApiConfigException("Found duplicated common model config of type : " + type);
-        }
-
-        commonModelTypes.put(type, c);
-    }
 }

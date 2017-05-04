@@ -37,7 +37,6 @@ import leap.web.AppInitializable;
 import leap.web.api.annotation.Resource;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.*;
-import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataFactory;
@@ -58,8 +57,9 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
 
     protected Map<String,   MApiResponse>   commonResponses  = new LinkedHashMap<>();
-    protected Map<Class<?>, ApiModelConfig> commonModelTypes = new LinkedHashMap<>();
     protected OAuthConfig                   oauthConfig      = new OAuthConfig();
+
+    private ApiConfigs configs;
 
     @Override
     public ApiConfigurator tryGetConfigurator(String name) {
@@ -155,7 +155,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
-        ApiConfigs configs = factory.getAppConfig().getExtension(ApiConfigs.class);
+        configs = factory.getAppConfig().getExtension(ApiConfigs.class);
         if(configs == null){
             return;
         }
@@ -169,37 +169,45 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             commonResponses.put(key,builder.build());
         });
 
-        configs.getCommonModelTypes().forEach((t,c) -> {
-            commonModelTypes.put(t,c);
-        });
-
         configs.getApis().forEach(this::doAdd);
     }
 
     protected void doAdd(String name, ApiConfigurator api) {
-        //oauth TODO
-        if(api.config().getOAuthConfig() == null){
-            api.setOAuthConfig(oauthConfig);
-        }else{
-            OAuthConfig oc = api.config().getOAuthConfig();
-            if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
-                oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
+        if(null != configs) {
+            ApiConfig c = api.config();
+
+            //oauth TODO
+            if(api.config().getOAuthConfig() == null){
+                api.setOAuthConfig(oauthConfig);
+            }else{
+                OAuthConfig oc = api.config().getOAuthConfig();
+                if(Strings.isEmpty(oc.getAuthzEndpointUrl())){
+                    oc.setAuthzEndpointUrl(oauthConfig.getAuthzEndpointUrl());
+                }
+
+                if(Strings.isEmpty(oc.getTokenEndpointUrl())){
+                    oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
+                }
             }
 
-            if(Strings.isEmpty(oc.getTokenEndpointUrl())){
-                oc.setTokenEndpointUrl(oauthConfig.getTokenEndpointUrl());
-            }
+            configs.getCommonModels().forEach(model -> {
+
+                if(null != c.getModel(model.getType())) {
+                    return;
+                }
+
+                if(null != c.getModel(model.getName())) {
+                    return;
+                }
+
+                api.addModel(model);
+            });
+
         }
 
-        //common model types.
-        commonModelTypes.forEach((t,c) -> {
-            if(!api.config().getModelTypes().containsKey(t)) {
-                api.putModelType(t, c);
-            }
-        });
-
-        configurators.put(name.toLowerCase(), api);
-        configurations.put(name.toLowerCase(), api.config());
+        String key = name.toLowerCase();
+        configurators.put(key, api);
+        configurations.put(key, api.config());
     }
 
     @Override

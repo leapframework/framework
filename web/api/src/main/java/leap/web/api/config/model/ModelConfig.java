@@ -21,4 +21,13 @@ package leap.web.api.config.model;
  */
 public interface ModelConfig {
 
+    /**
+     * Optional. The name of model.
+     */
+    String getName();
+
+    /**
+     * Optional. The type of model.
+     */
+    Class<?> getType();
 }

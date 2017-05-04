@@ -27,9 +27,9 @@
         </parameters>
 
         <models>
-            <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
-            <model class="app.models.testing.ParentModel"/>
-            <model class="app.models.testing.SubModel"/>
+            <model type="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
+            <model type="app.models.testing.ParentModel"/>
+            <model type="app.models.testing.SubModel"/>
         </models>
 
     </global>
@@ -57,7 +57,7 @@
         </resource-permissions>
 
         <models>
-            <model class="app.models.testing.ConfiguredModel2"/>
+            <model type="app.models.testing.ConfiguredModel2"/>
         </models>
 
     </api>

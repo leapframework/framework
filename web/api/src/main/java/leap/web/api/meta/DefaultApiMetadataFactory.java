@@ -36,7 +36,7 @@ import leap.web.action.Argument.Location;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.model.ApiModelConfig;
+import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
 import leap.web.api.meta.desc.CommonDescContainer;
@@ -305,20 +305,18 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
 
-        context.getConfig().getModels().forEach((name,model) -> {
-            m.addModel(model);
-        });
+        ApiConfig config = context.getConfig();
 
-        context.getConfig().getResourceTypes().values().forEach((t) -> {
+        config.getResourceTypes().values().forEach((t) -> {
             if(null == m.tryGetModel(t)) {
                 //create model for resource type.
                 context.getMTypeContainer().getMType(t);
             }
         });
 
-        context.getConfig().getModelTypes().forEach((t, c)-> {
-            if(null == m.tryGetModel(t)) {
-                context.getMTypeContainer().getMType(t);
+        config.getModelConfigs().forEach((c)-> {
+            if(null != c.getType() && null == m.tryGetModel(c.getType())) {
+                context.getMTypeContainer().getMType(c.getType());
             }
         });
 
@@ -329,6 +327,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected MApiModelBuilder createModel(ApiMetadataContext context, ApiMetadataBuilder m, MComplexType ct) {
+        ApiConfig config = context.getConfig();
 
         MApiModelBuilder model = new MApiModelBuilder(ct);
 
@@ -342,11 +341,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            ApiModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
-            if(null != c) {
-                if(!Strings.isEmpty(c.getName())) {
-                    model.setName(c.getName());
-                }
+            ModelConfig mc = config.getModel(model.getJavaType());
+            if(null != mc && !Strings.isEmpty(mc.getName())) {
+                model.setName(mc.getName());
             }
         }
 

@@ -16,24 +16,26 @@
 
 package leap.web.api.config.model;
 
-import leap.lang.annotation.Nullable;
+public class ModelConfigImpl implements ModelConfig {
 
-/**
- * The configuration of api model.
- */
-public class ApiModelConfig {
+    protected String   name;
+    protected Class<?> type;
 
-    protected final String name;
+    @Override
+    public String getName() {
+        return name;
+    }
 
-    public ApiModelConfig(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    /**
-     * The name of model.
-     */
-    @Nullable
-    public String getName() {
-        return name;
+    @Override
+    public Class<?> getType() {
+        return type;
+    }
+
+    public void setType(Class<?> type) {
+        this.type = type;
     }
 }
