@@ -33,20 +33,20 @@ import leap.lang.xml.XmlReader;
 import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.config.model.RestdModelConfig;
 import leap.web.api.meta.desc.CommonDescContainer;
-import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
+import leap.web.api.config.model.RestdConfig.Model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListener {
+public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListener {
     private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
 
     protected static final String APIS                 = "apis";
@@ -128,10 +128,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     @Override
     public void postLoadConfig(AppConfigContext context) {
         ApiConfigs configs = context.getExtension(ApiConfigs.class);
-        if(configs != null){
-            configs.getConfigurators().forEach((k, v)->{
+        if (configs != null) {
+            configs.getConfigurators().forEach((k, v) -> {
                 String basePackage = v.config().getBasePackage();
-                if(Strings.isNotEmpty(basePackage)){
+                if (Strings.isNotEmpty(basePackage)) {
                     context.getAdditionalPackages().add(basePackage);
                 }
             });
@@ -139,13 +139,13 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     }
 
     protected void readApis(AppConfigContext context, XmlReader reader) {
-        while(reader.nextWhileNotEnd(APIS)) {
-            if(reader.isStartElement(GLOBAL)) {
+        while (reader.nextWhileNotEnd(APIS)) {
+            if (reader.isStartElement(GLOBAL)) {
                 readGlobal(context, reader);
                 continue;
             }
 
-            if(reader.isStartElement(API)) {
+            if (reader.isStartElement(API)) {
                 readApi(context, reader);
                 continue;
             }
@@ -156,25 +156,25 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     protected void readGlobal(AppConfigContext context, XmlReader reader) {
         ApiConfigs configs = context.getOrCreateExtension(ApiConfigs.class);
 
-        while(reader.nextWhileNotEnd(GLOBAL)) {
+        while (reader.nextWhileNotEnd(GLOBAL)) {
 
-            if(reader.isStartElement(OAUTH)) {
-                OAuthConfig oauth = readOAuth(context,reader);
+            if (reader.isStartElement(OAUTH)) {
+                OAuthConfig oauth = readOAuth(context, reader);
                 configs.setDefaultOAuthConfig(oauth);
                 continue;
             }
 
-            if(reader.isStartElement(RESPONSES)) {
+            if (reader.isStartElement(RESPONSES)) {
                 readCommonResponses(reader).forEach(configs::addCommonResponse);
                 continue;
             }
 
-            if (reader.isStartElement(PARAMETERS)){
-                readCommonParameters(context,reader);
+            if (reader.isStartElement(PARAMETERS)) {
+                readCommonParameters(context, reader);
                 continue;
             }
 
-            if(reader.isStartElement(MODELS)) {
+            if (reader.isStartElement(MODELS)) {
                 readModels(context, reader).forEach(configs::addCommonModelType);
                 continue;
             }
@@ -183,17 +183,17 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
 
     }
 
-    protected Map<String,MApiResponseBuilder> readCommonResponses(XmlReader reader) {
+    protected Map<String, MApiResponseBuilder> readCommonResponses(XmlReader reader) {
         Map<String, MApiResponseBuilder> responses = new LinkedHashMap<>();
 
         reader.loopInsideElement(() -> {
 
-            if(reader.isStartElement(RESPONSE)) {
-                String name   = reader.getAttribute(NAME);
-                int    status = reader.getRequiredIntAttribute(STATUS);
-                String type   = reader.getAttribute(TYPE);
+            if (reader.isStartElement(RESPONSE)) {
+                String name = reader.getAttribute(NAME);
+                int status = reader.getRequiredIntAttribute(STATUS);
+                String type = reader.getAttribute(TYPE);
 
-                if(Strings.isEmpty(name)) {
+                if (Strings.isEmpty(name)) {
                     name = String.valueOf(status);
                 }
 
@@ -202,20 +202,20 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
                 r.setStatus(status);
                 r.setDescription(reader.getAttribute(DESC));
 
-                if(!Strings.isEmpty(type)) {
+                if (!Strings.isEmpty(type)) {
                     Class<?> c = Classes.tryForName(type);
-                    if(null == c) {
+                    if (null == c) {
                         throw new ApiConfigException("Invalid response type '" + type + "', check : " + reader.getCurrentLocation());
                     }
                     //todo :
                     r.setTypeClass(c);
-                }else{
+                } else {
                     r.setType(MVoidType.TYPE);
                 }
 
                 reader.loopInsideElement(() -> {
 
-                    if(reader.isStartElement(DESC)) {
+                    if (reader.isStartElement(DESC)) {
                         r.setDescription(reader.getElementTextAndEnd());
                     }
 
@@ -229,39 +229,39 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         return responses;
     }
 
-    protected void readCommonParameters(AppConfigContext context,XmlReader reader){
+    protected void readCommonParameters(AppConfigContext context, XmlReader reader) {
         CommonDescContainer container = context.getOrCreateExtension(CommonDescContainer.class);
-        while (reader.nextWhileNotEnd(PARAMETERS)){
-            if(reader.isStartElement(PARAMETER)){
+        while (reader.nextWhileNotEnd(PARAMETERS)) {
+            if (reader.isStartElement(PARAMETER)) {
                 CommonDescContainer.Parameter parameter = readParam(reader);
                 container.addCommonParam(parameter);
             }
         }
     }
 
-    protected CommonDescContainer.Parameter readParam(XmlReader reader){
+    protected CommonDescContainer.Parameter readParam(XmlReader reader) {
         String type = reader.resolveRequiredAttribute(TYPE);
         Class<?> clzz = Classes.forName(type);
         CommonDescContainer.Parameter parameter = new CommonDescContainer.Parameter(clzz);
         String title = null;
         String description = null;
-        while(reader.nextWhileNotEnd(PARAMETER)){
-            if(reader.isStartElement(TITLE)){
-                if(title != null){
-                    throw new ApiConfigException("duplicate title of parameter:"+clzz.getName() + " in " + reader.getSource());
+        while (reader.nextWhileNotEnd(PARAMETER)) {
+            if (reader.isStartElement(TITLE)) {
+                if (title != null) {
+                    throw new ApiConfigException("duplicate title of parameter:" + clzz.getName() + " in " + reader.getSource());
                 }
                 title = reader.resolveElementTextAndEnd();
                 continue;
             }
-            if(reader.isStartElement(DESC)){
-                if(description != null){
-                    throw new ApiConfigException("duplicate description of parameter:"+clzz.getName() + " in " + reader.getSource());
+            if (reader.isStartElement(DESC)) {
+                if (description != null) {
+                    throw new ApiConfigException("duplicate description of parameter:" + clzz.getName() + " in " + reader.getSource());
                 }
                 description = reader.resolveElementTextAndEnd();
                 continue;
             }
-            if(reader.isStartElement(PROPERTIES)){
-                readProperties(parameter,reader);
+            if (reader.isStartElement(PROPERTIES)) {
+                readProperties(parameter, reader);
                 continue;
             }
         }
@@ -274,7 +274,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         Map<Class<?>, ApiModelConfig> modelTypes = new LinkedHashMap<>();
 
         reader.loopInsideElement(() -> {
-            if(reader.isStartElement(MODEL)) {
+            if (reader.isStartElement(MODEL)) {
                 String className = reader.getRequiredAttribute(CLASS);
                 String modelName = reader.getAttribute(NAME);
 
@@ -289,32 +289,32 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         return modelTypes;
     }
 
-    protected void readProperties(CommonDescContainer.Parameter parameter,XmlReader reader){
-        while(reader.nextWhileNotEnd(PROPERTIES)){
-            if(reader.isStartElement(PROPERTY)){
-                CommonDescContainer.Property property = readProperty(parameter,reader);
+    protected void readProperties(CommonDescContainer.Parameter parameter, XmlReader reader) {
+        while (reader.nextWhileNotEnd(PROPERTIES)) {
+            if (reader.isStartElement(PROPERTY)) {
+                CommonDescContainer.Property property = readProperty(parameter, reader);
                 parameter.addProperty(property);
             }
         }
     }
 
-    protected CommonDescContainer.Property readProperty(CommonDescContainer.Parameter parameter,XmlReader reader){
+    protected CommonDescContainer.Property readProperty(CommonDescContainer.Parameter parameter, XmlReader reader) {
         String name = reader.resolveRequiredAttribute(NAME);
         CommonDescContainer.Property property = new CommonDescContainer.Property(name);
         String title = null;
         String desc = null;
-        while(reader.nextWhileNotEnd(PROPERTY)){
-            if(reader.isStartElement(TITLE)){
-                if(title != null){
-                    throw new ApiConfigException("duplicate title of property:"+name + " in "
+        while (reader.nextWhileNotEnd(PROPERTY)) {
+            if (reader.isStartElement(TITLE)) {
+                if (title != null) {
+                    throw new ApiConfigException("duplicate title of property:" + name + " in "
                             + parameter.getType().getName() + " source:" + reader.getSource());
                 }
                 title = reader.resolveElementTextAndEnd();
                 continue;
             }
-            if(reader.isStartElement(DESC)){
-                if(desc != null){
-                    throw new ApiConfigException("duplicate desc of property:"+name + " in "
+            if (reader.isStartElement(DESC)) {
+                if (desc != null) {
+                    throw new ApiConfigException("duplicate desc of property:" + name + " in "
                             + parameter.getType().getName() + " source:" + reader.getSource());
                 }
                 desc = reader.resolveElementTextAndEnd();
@@ -329,156 +329,156 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     protected void readApi(AppConfigContext context, XmlReader reader) {
         ApiConfigs extensions = context.getOrCreateExtension(ApiConfigs.class);
 
-        String  name              = reader.resolveRequiredAttribute(NAME);
-        String  basePath          = reader.resolveAttribute(BASE_PATH);
-        String  basePackage       = reader.resolveAttribute(BASE_PACKAGE);
+        String name = reader.resolveRequiredAttribute(NAME);
+        String basePath = reader.resolveAttribute(BASE_PATH);
+        String basePackage = reader.resolveAttribute(BASE_PACKAGE);
         Boolean uniqueOperationId = reader.resolveBooleanAttribute(UNIQUE_OPERATION_ID);
-        Boolean defaultAnonymous  = reader.resolveBooleanAttribute(DEFAULT_ANONYMOUS);
-        boolean restdEnabled      = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
+        Boolean defaultAnonymous = reader.resolveBooleanAttribute(DEFAULT_ANONYMOUS);
+        boolean restdEnabled = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
 
         ApiConfigurator api = extensions.getConfigurator(name);
-        if(null == api) {
+        if (null == api) {
             reader.getRequiredAttribute(BASE_PATH);
-            api = new DefaultApiConfig(name,basePath);
+            api = new DefaultApiConfig(name, basePath);
             api.setBasePackage(basePackage);
             extensions.addConfigurator(api);
         }
 
-        if(null != defaultAnonymous) {
+        if (null != defaultAnonymous) {
             api.setDefaultAnonymous(defaultAnonymous);
         }
 
-        if(null != uniqueOperationId) {
+        if (null != uniqueOperationId) {
             api.setUniqueOperationId(uniqueOperationId);
         }
 
-        if(restdEnabled && null == api.getRestdConfig()) {
+        if (restdEnabled && null == api.getRestdConfig()) {
             api.setRestdConfig(new RestdConfig());
         }
 
-        if(null != api.getRestdConfig()) {
+        if (null != api.getRestdConfig()) {
             api.getRestdConfig().setDataSourceName(reader.resolveAttribute(RESTD_DATA_SOURCE));
         }
 
         readApi(context, reader, api);
 
-        addWebModule(context,api);
+        addWebModule(context, api);
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
 
         context.setAttribute(ApiConfigurator.class.getName(), api);
 
-        try{
-            while(reader.nextWhileNotEnd(API)) {
-                if(context.getProcessors().handleXmlElement(context, reader, NAMESPACE_URI)) {
+        try {
+            while (reader.nextWhileNotEnd(API)) {
+                if (context.getProcessors().handleXmlElement(context, reader, NAMESPACE_URI)) {
                     continue;
                 }
 
-                if(reader.isStartElement(VERSION)) {
+                if (reader.isStartElement(VERSION)) {
                     String v = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(v)) {
+                    if (!Strings.isEmpty(v)) {
                         api.setVersion(v);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(TITLE)) {
+                if (reader.isStartElement(TITLE)) {
                     String title = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(title)) {
+                    if (!Strings.isEmpty(title)) {
                         api.setTitle(title);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(SUMMARY)) {
+                if (reader.isStartElement(SUMMARY)) {
                     String summary = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(summary)) {
+                    if (!Strings.isEmpty(summary)) {
                         api.setSummary(summary);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(DESC)) {
+                if (reader.isStartElement(DESC)) {
                     String desc = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(desc)) {
+                    if (!Strings.isEmpty(desc)) {
                         api.setDescription(desc);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(PRODUCES)) {
+                if (reader.isStartElement(PRODUCES)) {
                     String s = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(s)) {
+                    if (!Strings.isEmpty(s)) {
                         api.setProduces(Strings.splitMultiLines(s));
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(CONSUMES)) {
+                if (reader.isStartElement(CONSUMES)) {
                     String s = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(s)) {
+                    if (!Strings.isEmpty(s)) {
                         api.setConsumes(Strings.splitMultiLines(s));
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(PROTOCOLS)) {
+                if (reader.isStartElement(PROTOCOLS)) {
                     String s = reader.getElementTextAndEnd();
-                    if(!Strings.isEmpty(s)) {
+                    if (!Strings.isEmpty(s)) {
                         api.setProtocols(Strings.splitMultiLines(s));
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(RESPONSES)) {
+                if (reader.isStartElement(RESPONSES)) {
                     //todo : override exists responses.
                     readCommonResponses(reader).forEach(api::putCommonResponseBuilder);
                     continue;
                 }
 
-                if(reader.isStartElement(MODELS)) {
+                if (reader.isStartElement(MODELS)) {
                     readModels(context, reader).forEach(api::putModelType);
                     continue;
                 }
 
-                if(reader.isStartElement(MAX_PAGE_SIZE)) {
+                if (reader.isStartElement(MAX_PAGE_SIZE)) {
                     Integer i = reader.getIntegerElementTextAndEnd();
-                    if(null != i) {
+                    if (null != i) {
                         api.setMaxPageSize(i);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(DEFAULT_PAGE_SIZE)) {
+                if (reader.isStartElement(DEFAULT_PAGE_SIZE)) {
                     Integer i = reader.getIntegerElementTextAndEnd();
-                    if(null != i) {
+                    if (null != i) {
                         api.setDefaultPageSize(i);
                     }
                     continue;
                 }
 
-                if(reader.isStartElement(PERMISSIONS)) {
+                if (reader.isStartElement(PERMISSIONS)) {
                     readPermissions(context, reader, api);
                     continue;
                 }
 
-                if(reader.isStartElement(RESOURCE_PERMISSIONS)) {
+                if (reader.isStartElement(RESOURCE_PERMISSIONS)) {
                     readResourcePermissions(context, reader, api);
                     continue;
                 }
 
-                if(reader.isStartElement(OAUTH)){
-                    api.setOAuthConfig(readOAuth(context,reader));
+                if (reader.isStartElement(OAUTH)) {
+                    api.setOAuthConfig(readOAuth(context, reader));
                     continue;
                 }
 
-                if(reader.isStartElement(RESTD)) {
+                if (reader.isStartElement(RESTD)) {
                     readRestd(context, api, reader);
                     continue;
                 }
             }
-        }finally{
+        } finally {
             context.removeAttribute(ApiConfigurator.class.getName());
         }
     }
@@ -486,7 +486,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     protected void addWebModule(AppConfigContext context, ApiConfigurator api) {
         ApiConfig apiConf = api.config();
         String basePackage = apiConf.getBasePackage();
-        if(Strings.isNotEmpty(basePackage)){
+        if (Strings.isNotEmpty(basePackage)) {
             DefaultModuleConfig module = new DefaultModuleConfig();
             module.setName(apiConf.getName());
             module.setBasePath(apiConf.getBasePath());
@@ -496,23 +496,24 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         }
 
     }
-    protected void readPermissions(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
-        StringBuilder chars      = new StringBuilder();
-        boolean       hasElement = false;
 
-        while(reader.nextWhileNotEnd(PERMISSIONS)){
-            if(!hasElement && reader.isCharacters()) {
+    protected void readPermissions(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
+        StringBuilder chars = new StringBuilder();
+        boolean hasElement = false;
+
+        while (reader.nextWhileNotEnd(PERMISSIONS)) {
+            if (!hasElement && reader.isCharacters()) {
                 chars.append(reader.getCharacters());
                 continue;
             }
 
-            if(reader.isStartElement(PERMISSION)){
+            if (reader.isStartElement(PERMISSION)) {
                 hasElement = true;
 
                 String value = reader.getRequiredAttribute(VALUE);
-                String desc  = reader.getAttribute(DESC);
+                String desc = reader.getAttribute(DESC);
 
-                if(Strings.isEmpty(desc)) {
+                if (Strings.isEmpty(desc)) {
                     desc = reader.getElementTextAndEnd();
                 }
 
@@ -521,26 +522,27 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
             }
         }
 
-        if(!hasElement) {
+        if (!hasElement) {
             String text = chars.toString().trim();
-            if(text.length() > 0) {
+            if (text.length() > 0) {
                 ExProperties props = Props.loadKeyValues(text);
 
-                props.forEach((k,v) -> {
-                    String value = (String)k;
-                    String desc = (String)v;
+                props.forEach((k, v) -> {
+                    String value = (String) k;
+                    String desc = (String) v;
 
                     api.setPermission(new MApiPermission(value, desc));
                 });
             }
         }
     }
+
     protected void readResourcePermissions(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
         ResourcePermissions rps = new ResourcePermissions();
 
         reader.loopInsideElement(() -> {
 
-            if(reader.isStartElement(RESOURCE)) {
+            if (reader.isStartElement(RESOURCE)) {
                 String className = reader.getRequiredAttribute(CLASS);
 
                 rps.addResourceClass(className);
@@ -548,7 +550,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
                 return;
             }
 
-            if(reader.isStartElement(RESOURCES)) {
+            if (reader.isStartElement(RESOURCES)) {
 
                 String packageName = reader.getRequiredAttribute(PACKAGE);
 
@@ -557,7 +559,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
                 return;
             }
 
-            if(reader.isStartElement(PERMISSION)) {
+            if (reader.isStartElement(PERMISSION)) {
 
                 ResourcePermission rp = new ResourcePermission();
 
@@ -566,12 +568,12 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
                 rp.setDefault(reader.getBooleanAttribute(DEFAULT, false));
 
                 String httpMethods = reader.getAttribute(HTTP_METHODS);
-                if(!Strings.isEmpty(httpMethods)) {
+                if (!Strings.isEmpty(httpMethods)) {
                     //todo :
                 }
 
                 String pathPattern = reader.getAttribute(PATH_PATTERN);
-                if(!Strings.isEmpty(pathPattern)) {
+                if (!Strings.isEmpty(pathPattern)) {
                     //todo :
                 }
 
@@ -580,10 +582,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
             }
         });
 
-        if(null == rps.getDefaultPermission() && rps.getPermissions().size() == 1) {
+        if (null == rps.getDefaultPermission() && rps.getPermissions().size() == 1) {
             ResourcePermission rp = rps.getPermissions().iterator().next();
 
-            if(null == rp.getHttpMethods() && null == rp.getPathPattern()) {
+            if (null == rp.getHttpMethods() && null == rp.getPathPattern()) {
                 rps.setDefaultPermission(rp);
             }
         }
@@ -591,24 +593,24 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         api.config().getResourcePermissionsSet().addResourcePermissions(rps);
     }
 
-    protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader){
-        boolean enabled = reader.resolveBooleanAttribute(ENABLED,false);
-        String  flow    = reader.resolveAttribute(FLOW,SwaggerConstants.IMPLICIT);
+    protected OAuthConfig readOAuth(AppConfigContext context, XmlReader reader) {
+        boolean enabled = reader.resolveBooleanAttribute(ENABLED, false);
+        String flow = reader.resolveAttribute(FLOW, SwaggerConstants.IMPLICIT);
 
         OAuthConfig oauth = new OAuthConfig(enabled, flow, null, null);
 
         reader.loopInsideElement(() -> {
-            if(reader.isStartElement(AUTHZ_URL)) {
+            if (reader.isStartElement(AUTHZ_URL)) {
                 String url = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(url)) {
+                if (!Strings.isEmpty(url)) {
                     oauth.setAuthzEndpointUrl(url);
                 }
                 return;
             }
 
-            if(reader.isStartElement(TOKEN_URL)) {
+            if (reader.isStartElement(TOKEN_URL)) {
                 String url = reader.resolveElementTextAndEnd();
-                if(!Strings.isEmpty(url)) {
+                if (!Strings.isEmpty(url)) {
                     oauth.setTokenEndpointUrl(url);
                 }
                 return;
@@ -618,21 +620,21 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
         return oauth;
     }
 
-    private void readRestd(AppConfigContext context, ApiConfigurator api, XmlReader reader){
+    private void readRestd(AppConfigContext context, ApiConfigurator api, XmlReader reader) {
         boolean enabled = reader.resolveBooleanAttribute(ENABLED, true);
-        if(!enabled) {
+        if (!enabled) {
             api.setRestdConfig(null);
             return;
         }
 
         RestdConfig c = api.getRestdConfig();
-        if(null == c) {
+        if (null == c) {
             c = new RestdConfig();
             api.setRestdConfig(c);
         }
 
         String dataSourceName = reader.resolveAttribute(DATA_SOURCE);
-        if(!Strings.isEmpty(dataSourceName)) {
+        if (!Strings.isEmpty(dataSourceName)) {
             c.setDataSourceName(dataSourceName);
         }
 
@@ -660,7 +662,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
             }
 
             //model
-            if(reader.isStartElement(MODEL)) {
+            if (reader.isStartElement(MODEL)) {
                 readRestdModel(context, api, reader, rc);
                 return;
             }
@@ -669,54 +671,54 @@ public class XmlApiConfigProcessor implements AppConfigProcessor,AppConfigListen
     }
 
     private void readRestdModel(AppConfigContext context, ApiConfigurator api, XmlReader reader, RestdConfig config) {
-        String  name      = reader.getRequiredAttribute(NAME);
+        String name = reader.getRequiredAttribute(NAME);
         Boolean anonymous = reader.getBooleanAttribute(ANONYMOUS);
-        Boolean read      = reader.getBooleanAttribute(READ);
-        Boolean write     = reader.getBooleanAttribute(WRITE);
-        Boolean create    = reader.getBooleanAttribute(CREATE);
-        Boolean update    = reader.getBooleanAttribute(UPDATE);
-        Boolean delete    = reader.getBooleanAttribute(DELETE);
-        Boolean find      = reader.getBooleanAttribute(FIND);
-        Boolean query     = reader.getBooleanAttribute(QUERY);
+        Boolean read = reader.getBooleanAttribute(READ);
+        Boolean write = reader.getBooleanAttribute(WRITE);
+        Boolean create = reader.getBooleanAttribute(CREATE);
+        Boolean update = reader.getBooleanAttribute(UPDATE);
+        Boolean delete = reader.getBooleanAttribute(DELETE);
+        Boolean find = reader.getBooleanAttribute(FIND);
+        Boolean query = reader.getBooleanAttribute(QUERY);
 
-        RestdModelConfig model = config.getModel(name);
-        if(null == model) {
-            model = new RestdModelConfig(name);
+        Model model = config.getModel(name);
+        if (null == model) {
+            model = new Model(name);
             config.addModel(model);
         }
 
-        if(null != anonymous) {
+        if (null != anonymous) {
             model.setAnonymous(anonymous);
         }
 
-        if(null != read) {
+        if (null != read) {
             model.setFindOperationEnabled(read);
             model.setQueryOperationEnabled(read);
         }
 
-        if(null != write) {
+        if (null != write) {
             model.setCreateOperationEnabled(write);
             model.setUpdateOperationEnabled(write);
             model.setDeleteOperationEnabled(write);
         }
 
-        if(null != create) {
+        if (null != create) {
             model.setCreateOperationEnabled(create);
         }
 
-        if(null != update) {
+        if (null != update) {
             model.setUpdateOperationEnabled(update);
         }
 
-        if(null != delete) {
+        if (null != delete) {
             model.setDeleteOperationEnabled(delete);
         }
 
-        if(null != find) {
+        if (null != find) {
             model.setFindOperationEnabled(find);
         }
 
-        if(null != query) {
+        if (null != query) {
             model.setQueryOperationEnabled(query);
         }
 
