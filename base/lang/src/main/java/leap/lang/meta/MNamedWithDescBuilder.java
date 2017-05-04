@@ -15,6 +15,8 @@
  */
 package leap.lang.meta;
 
+import leap.lang.Strings;
+
 public abstract class MNamedWithDescBuilder<T extends MObject> extends MNamedBuilder<T> {
 
 	protected String summary;
@@ -28,6 +30,12 @@ public abstract class MNamedWithDescBuilder<T extends MObject> extends MNamedBui
 		this.summary = summary;
 	}
 
+    public void trySetSummary(String summary) {
+        if(Strings.isEmpty(this.summary)) {
+            this.summary = summary;
+        }
+    }
+
 	public String getDescription() {
 		return description;
 	}
@@ -35,5 +43,11 @@ public abstract class MNamedWithDescBuilder<T extends MObject> extends MNamedBui
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
+    public void trySetDescription(String description) {
+        if(Strings.isEmpty(this.description)) {
+            this.description = description;
+        }
+    }
+
 }

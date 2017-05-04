@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by kael on 2016/11/15.
  */
-public class CommonDescContainer {
+class CommonDescContainer {
     private static final Map<Class<?>, Parameter> parameters = new ConcurrentHashMap<>();
 
     public void addCommonParam(Parameter parameter){

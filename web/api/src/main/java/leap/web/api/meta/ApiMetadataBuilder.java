@@ -247,7 +247,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
     }
 
     public MApiModelBuilder tryGetModel(String name) {
-        if(null == name) {
+        if(Strings.isEmpty(name)) {
             return null;
         }
 
@@ -270,6 +270,21 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
                 return m;
             }
         }
+
+        return null;
+    }
+
+    public MApiModelBuilder tryGetModelByClassName(String className) {
+        if(Strings.isEmpty(className)) {
+            return null;
+        }
+
+        for(MApiModelBuilder m : models.values()){
+            if(className.equals(m.getJavaType().getName())) {
+                return m;
+            }
+        }
+
         return null;
     }
 

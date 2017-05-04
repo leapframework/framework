@@ -24,6 +24,7 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.meta.MTypeManager;
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.Types;
 import leap.lang.exception.ObjectExistsException;
@@ -160,12 +161,28 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             return;
         }
 
+        //oauth
+        this.oauthConfig.updateFrom(configs.getOAuthConfig());
+
+        //commone responses.
         configs.getCommonResponses().forEach((key, builder)->{
             builder.setTypeManager(typeManager);
             commonResponses.put(key,builder.build());
         });
 
-        this.oauthConfig.updateFrom(configs.getOAuthConfig());
+        //check model class name
+        configs.getCommonModels().forEach(m -> {
+            if(!Strings.isEmpty(m.getClassName()) && null == Classes.tryForName(m.getClassName())) {
+                throw new ApiConfigException("The model class '" + m.getClassName() + "' not found");
+            }
+        });
+
+        //check param class name
+        configs.getCommonParams().forEach(m -> {
+            if(!Strings.isEmpty(m.getClassName()) && null == Classes.tryForName(m.getClassName())) {
+                throw new ApiConfigException("The param class '" + m.getClassName() + "' not found");
+            }
+        });
 
         configs.getApis().forEach(this::doAdd);
     }
@@ -182,7 +199,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
             configs.getCommonModels().forEach(model -> {
 
-                if(null != c.getModel(model.getType())) {
+                if(null != c.getModelByClassName(model.getClassName())) {
                     return;
                 }
 
@@ -191,6 +208,15 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
                 }
 
                 api.addModel(model);
+            });
+
+            configs.getCommonParams().forEach(param -> {
+
+                if(null != c.getParam(param.getClassName(),param.getName())) {
+                    return;
+                }
+
+                api.addParam(param);
             });
 
         }

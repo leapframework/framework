@@ -18,10 +18,7 @@ package leap.web.api.config;
 import leap.lang.*;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.config.model.ModelConfig;
-import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.OAuthConfigImpl;
-import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.*;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
@@ -60,11 +57,11 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
 
-    protected Set<ModelConfig>          modelConfigs        = new LinkedHashSet<>();
-    protected Set<ModelConfig>          modelConfigsImv     = Collections.unmodifiableSet(modelConfigs);
+    protected Set<ModelConfig> models    = new LinkedHashSet<>();
+    protected Set<ModelConfig> modelsImv = Collections.unmodifiableSet(models);
 
-    protected Map<String, MApiModelBuilder> models    = new LinkedHashMap<>();
-    protected Map<String, MApiModelBuilder> modelsImv = Collections.unmodifiableMap(models);
+    protected Set<ParamConfig> params    = new LinkedHashSet<>();
+    protected Set<ParamConfig> paramsImv = Collections.unmodifiableSet(params);
 
     protected Map<String, MApiResponseBuilder> commonResponseBuilders    = new LinkedHashMap<>();
     protected Map<String, MApiResponseBuilder> commonResponseBuildersImv = Collections.unmodifiableMap(commonResponseBuilders);
@@ -161,18 +158,18 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public Set<ModelConfig> getModelConfigs() {
-        return modelConfigsImv;
+    public Set<ModelConfig> getModels() {
+        return modelsImv;
     }
 
     @Override
-    public ModelConfig getModel(Class<?> type) {
-        if(null == type) {
+    public ModelConfig getModelByClassName(String className) {
+        if(Strings.isEmpty(className)) {
             return null;
         }
 
-        for(ModelConfig model : modelConfigs) {
-            if(type.equals(model.getType())) {
+        for(ModelConfig model : models) {
+            if(className.equals(model.getClassName())) {
                 return model;
             }
         }
@@ -181,11 +178,11 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ModelConfig getModel(String name) {
-        if(null == name) {
+        if(Strings.isEmpty(name)) {
             return null;
         }
 
-        for(ModelConfig model : modelConfigs) {
+        for(ModelConfig model : models) {
             if(name.equalsIgnoreCase(model.getName())) {
                 return model;
             }
@@ -195,18 +192,33 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator addModel(ModelConfig model) {
-        ApiConfigs.addModel(modelConfigs, model);
+        ApiConfigs.addModel(models, model);
         return this;
     }
 
     @Override
-    public Map<String, MApiModelBuilder> getModels() {
-        return modelsImv;
+    public Set<ParamConfig> getParams() {
+        return paramsImv;
     }
 
     @Override
-    public ApiConfigurator addModel(MApiModelBuilder model) {
-        models.put(model.getName(), model);
+    public ParamConfig getParam(String className, String name) {
+        if(Strings.isEmpty(className) && Strings.isEmpty(name)) {
+            return null;
+        }
+
+        String key = ParamConfig.key(className, name);
+        for(ParamConfig param : params) {
+            if(key.equals(param.getKey())) {
+                return param;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ApiConfigurator addParam(ParamConfig param) {
+        ApiConfigs.addParam(params, param);
         return this;
     }
 

@@ -16,10 +16,19 @@
 
 package leap.web.api.config.model;
 
+import leap.web.api.config.ApiConfigException;
+
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+
 public class ModelConfigImpl implements ModelConfig {
 
-    protected String   name;
-    protected Class<?> type;
+    protected String name;
+    protected String className;
+
+    protected Map<String, Property> properties = new LinkedHashMap<>();
 
     @Override
     public String getName() {
@@ -31,11 +40,75 @@ public class ModelConfigImpl implements ModelConfig {
     }
 
     @Override
-    public Class<?> getType() {
-        return type;
+    public String getClassName() {
+        return className;
     }
 
-    public void setType(Class<?> type) {
-        this.type = type;
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    @Override
+    public Set<Property> getProperties() {
+        return new LinkedHashSet<>(properties.values());
+    }
+
+    public Property getProperty(String name) {
+        return properties.get(name.toLowerCase());
+    }
+
+    public void addProperty(Property p) {
+        if(properties.containsKey(p.getName().toLowerCase())) {
+            throw new ApiConfigException("Found duplicated property '" + p.getName() + "' of model " + this);
+        }
+        properties.put(p.getName().toLowerCase(), p);
+    }
+
+    @Override
+    public String toString() {
+        return "(name=" + name + ",class=" + className + ")";
+    }
+
+    public static class PropertyImpl implements Property,ConfigWithDocument {
+        protected String name;
+        protected String title;
+        protected String summary;
+        protected String description;
+
+        public PropertyImpl(String name) {
+            this.name = name;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public String getTitle() {
+            return title;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        @Override
+        public String getSummary() {
+            return summary;
+        }
+
+        public void setSummary(String summary) {
+            this.summary = summary;
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
     }
 }

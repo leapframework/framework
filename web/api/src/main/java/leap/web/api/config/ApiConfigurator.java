@@ -20,9 +20,8 @@ import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.OAuthConfigImpl;
+import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
@@ -79,22 +78,22 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setProtocols(String... protocols);
 
     /**
+     * Adds a model config.
+     */
+    ApiConfigurator addModel(ModelConfig model);
+
+    /**
+     * Adds a parameter config.
+     */
+    ApiConfigurator addParam(ParamConfig param);
+
+    /**
      * Puts a common response.
      * <p>
      * <p/>
      * see {@link ApiConfig#getCommonResponses()}.
      */
     ApiConfigurator putCommonResponse(String name, MApiResponse response);
-
-    /**
-     * Adds a model config.
-     */
-    ApiConfigurator addModel(ModelConfig model);
-
-    /**
-     * Registered a {@link MApiModelBuilder}.
-     */
-    ApiConfigurator addModel(MApiModelBuilder model);
 
     /**
      * Puts a common response builder for build common response.

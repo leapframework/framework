@@ -31,7 +31,6 @@ import leap.lang.extension.ExProperties;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
 import leap.web.api.config.model.*;
-import leap.web.api.meta.desc.CommonDescContainer;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.permission.ResourcePermission;
@@ -51,8 +50,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";
     protected static final String GLOBAL               = "global";
-    protected static final String PARAMETERS           = "parameters";
-    protected static final String PARAMETER            = "param";
+    protected static final String PARAMS               = "params";
+    protected static final String PARAM                = "param";
     protected static final String PROPERTIES           = "properties";
     protected static final String PROPERTY             = "property";
     protected static final String MODELS               = "models";
@@ -138,25 +137,9 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
     }
 
     protected void readApis(AppConfigContext context, XmlReader reader) {
-        while (reader.nextWhileNotEnd(APIS)) {
-            if (reader.isStartElement(GLOBAL)) {
-                readGlobal(context, reader);
-                continue;
-            }
-
-            if (reader.isStartElement(API)) {
-                readApi(context, reader);
-                continue;
-            }
-        }
-
-    }
-
-    protected void readGlobal(AppConfigContext context, XmlReader reader) {
         ApiConfigs configs = context.getOrCreateExtension(ApiConfigs.class);
 
-        while (reader.nextWhileNotEnd(GLOBAL)) {
-
+        while (reader.nextWhileNotEnd(APIS)) {
             if (reader.isStartElement(OAUTH)) {
                 configs.setOAuthConfig(readOAuth(context, reader));
                 continue;
@@ -167,8 +150,8 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
                 continue;
             }
 
-            if (reader.isStartElement(PARAMETERS)) {
-                readCommonParameters(context, reader);
+            if (reader.isStartElement(PARAMS)) {
+                readParams(context, reader, configs::addCommonParam);
                 continue;
             }
 
@@ -177,6 +160,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
                 continue;
             }
 
+            if (reader.isStartElement(API)) {
+                readApi(context, reader);
+                continue;
+            }
         }
 
     }
@@ -227,63 +214,73 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
         return responses;
     }
 
-    protected void readCommonParameters(AppConfigContext context, XmlReader reader) {
-        CommonDescContainer container = context.getOrCreateExtension(CommonDescContainer.class);
-        while (reader.nextWhileNotEnd(PARAMETERS)) {
-            if (reader.isStartElement(PARAMETER)) {
-                CommonDescContainer.Parameter parameter = readParam(reader);
-                container.addCommonParam(parameter);
+    protected void readParams(AppConfigContext context, XmlReader reader, Consumer<ParamConfig> func) {
+        reader.loopInsideElement(() -> {
+            if (reader.isStartElement(PARAM)) {
+
+                String className = reader.getRequiredAttribute(CLASS);
+                String paramName = reader.getAttribute(NAME);
+
+                ParamConfigImpl param = new ParamConfigImpl(paramName);
+                param.setClassName(className);
+
+                reader.loopInsideElement(() -> {
+                    if(reader.isStartElement(PROPERTIES)) {
+                        readWrappedParams(context, reader, (p) -> {
+                            if(null != param.getWrappedParam(p.getName())) {
+                                throw new ApiConfigException("Found duplicated wrapped param '" + p.getName() + "', at " + reader.getCurrentLocation());
+                            }
+                            param.addWrappedParam(p);
+                        });
+                    }
+                });
+
+                func.accept(param);
             }
-        }
+        });
+
     }
 
-    protected CommonDescContainer.Parameter readParam(XmlReader reader) {
-        String type = reader.resolveRequiredAttribute(TYPE);
-        Class<?> clzz = Classes.forName(type);
-        CommonDescContainer.Parameter parameter = new CommonDescContainer.Parameter(clzz);
-        String title = null;
-        String description = null;
-        while (reader.nextWhileNotEnd(PARAMETER)) {
-            if (reader.isStartElement(TITLE)) {
-                if (title != null) {
-                    throw new ApiConfigException("duplicate title of parameter:" + clzz.getName() + " in " + reader.getSource());
-                }
-                title = reader.resolveElementTextAndEnd();
-                continue;
-            }
-            if (reader.isStartElement(DESC)) {
-                if (description != null) {
-                    throw new ApiConfigException("duplicate description of parameter:" + clzz.getName() + " in " + reader.getSource());
-                }
-                description = reader.resolveElementTextAndEnd();
-                continue;
-            }
-            if (reader.isStartElement(PROPERTIES)) {
-                readProperties(parameter, reader);
-                continue;
+    protected void readWrappedParams(AppConfigContext context, XmlReader reader, Consumer<ParamConfig> func) {
+        while (reader.nextWhileNotEnd(PROPERTIES)) {
+            if (reader.isStartElement(PROPERTY)) {
+
+                String name = reader.getRequiredAttribute(NAME);
+
+                ParamConfigImpl p = new ParamConfigImpl(name);
+
+                readDocument(reader, p);
+
+                func.accept(p);
             }
         }
-        parameter.setTitle(title);
-        parameter.setDesc(description);
-        return parameter;
     }
 
     protected void readModels(AppConfigContext context, XmlReader reader, Consumer<ModelConfig> func) {
         reader.loopInsideElement(() -> {
             if (reader.isStartElement(MODEL)) {
 
-                String className = reader.getAttribute(TYPE);
+                String className = reader.getAttribute(CLASS);
                 String modelName = reader.getAttribute(NAME);
 
                 if(Strings.isEmpty(className) && Strings.isEmpty(modelName)) {
-                    throw new ApiConfigException("One of the 'name' or 'type' attribute must not be empty, at " + reader.getCurrentLocation());
+                    throw new ApiConfigException("One of the 'name' or 'class' attribute must not be empty, at " + reader.getCurrentLocation());
                 }
-
-                Class<?> modelType = Strings.isEmpty(className) ? null : Classes.forName(className);
 
                 ModelConfigImpl model = new ModelConfigImpl();
                 model.setName(modelName);
-                model.setType(modelType);
+                model.setClassName(className);
+
+                reader.loopInsideElement(() -> {
+                    if(reader.isStartElement(PROPERTIES)) {
+                        readProperties(context, reader, (p) -> {
+                            if(null != model.getProperty(p.getName())) {
+                                throw new ApiConfigException("Found duplicated property '" + p.getName() + "', at " + reader.getCurrentLocation());
+                            }
+                            model.addProperty(p);
+                        });
+                    }
+                });
 
                 func.accept(model);
             }
@@ -291,41 +288,53 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
 
     }
 
-    protected void readProperties(CommonDescContainer.Parameter parameter, XmlReader reader) {
+    protected void readProperties(AppConfigContext context, XmlReader reader, Consumer<ModelConfig.Property> func) {
         while (reader.nextWhileNotEnd(PROPERTIES)) {
             if (reader.isStartElement(PROPERTY)) {
-                CommonDescContainer.Property property = readProperty(parameter, reader);
-                parameter.addProperty(property);
+
+                String name = reader.getRequiredAttribute(NAME);
+
+                ModelConfigImpl.PropertyImpl p = new ModelConfigImpl.PropertyImpl(name);
+
+                readDocument(reader, p);
+
+                func.accept(p);
             }
         }
     }
 
-    protected CommonDescContainer.Property readProperty(CommonDescContainer.Parameter parameter, XmlReader reader) {
-        String name = reader.resolveRequiredAttribute(NAME);
-        CommonDescContainer.Property property = new CommonDescContainer.Property(name);
-        String title = null;
-        String desc = null;
-        while (reader.nextWhileNotEnd(PROPERTY)) {
-            if (reader.isStartElement(TITLE)) {
-                if (title != null) {
-                    throw new ApiConfigException("duplicate title of property:" + name + " in "
-                            + parameter.getType().getName() + " source:" + reader.getSource());
-                }
-                title = reader.resolveElementTextAndEnd();
-                continue;
+    protected void readDocument(XmlReader reader, ConfigWithDocument doc) {
+        readDocument(reader, doc, null);
+    }
+
+    protected void readDocument(XmlReader reader, ConfigWithDocument doc, Runnable subElementsHandler) {
+
+        doc.setTitle(reader.getAttribute(TITLE));
+        doc.setSummary(reader.getAttribute(SUMMARY));
+        doc.setDescription(reader.getAttribute(DESC));
+
+        reader.loopInsideElement(() -> {
+
+            if(reader.isStartElement(TITLE)) {
+                doc.setTitle(reader.getElementTextAndEnd());
+                return;
             }
-            if (reader.isStartElement(DESC)) {
-                if (desc != null) {
-                    throw new ApiConfigException("duplicate desc of property:" + name + " in "
-                            + parameter.getType().getName() + " source:" + reader.getSource());
-                }
-                desc = reader.resolveElementTextAndEnd();
-                continue;
+
+            if(reader.isStartElement(SUMMARY)) {
+                doc.setSummary(reader.getElementTextAndEnd());
+                return;
             }
-        }
-        property.setTitle(title);
-        property.setDesc(desc);
-        return property;
+
+            if(reader.isStartElement(DESC)) {
+                doc.setDescription(reader.getElementTextAndEnd());
+                return;
+            }
+
+            if(null != subElementsHandler) {
+                subElementsHandler.run();
+            }
+        });
+
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader) {

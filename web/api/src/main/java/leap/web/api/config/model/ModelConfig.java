@@ -16,6 +16,12 @@
 
 package leap.web.api.config.model;
 
+import leap.lang.Described;
+import leap.lang.Named;
+import leap.lang.Titled;
+
+import java.util.Set;
+
 /**
  * The configuration of an api model.
  */
@@ -27,7 +33,44 @@ public interface ModelConfig {
     String getName();
 
     /**
-     * Optional. The type of model.
+     * Optional. The class name of model.
      */
-    Class<?> getType();
+    String getClassName();
+
+    /**
+     * Optional.
+     */
+    Set<Property> getProperties();
+
+    /**
+     * Returns the property or null if not exists.
+     */
+    Property getProperty(String name);
+
+    /**
+     * The configuration a model's property.
+     */
+    interface Property extends Named,Titled,Described {
+
+        /**
+         * Required. The name of property.
+         */
+        String getName();
+
+        /**
+         * Optional.
+         */
+        String getTitle();
+
+        /**
+         * Optional.
+         */
+        String getSummary();
+
+        /**
+         * Optional.
+         */
+        String getDescription();
+    }
+
 }

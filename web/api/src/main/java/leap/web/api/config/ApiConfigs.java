@@ -21,6 +21,7 @@ package leap.web.api.config;
 import leap.lang.Strings;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.ParamConfig;
 import leap.web.api.meta.model.MApiResponseBuilder;
 
 import java.util.LinkedHashMap;
@@ -35,6 +36,7 @@ public class ApiConfigs {
 
     private final Map<String, ApiConfigurator>     apis            = new LinkedHashMap<>();
     private final Set<ModelConfig>                 commonModels    = new LinkedHashSet<>();
+    private final Set<ParamConfig>                 commonParams    = new LinkedHashSet<>();
     private final Map<String, MApiResponseBuilder> commonResponses = new LinkedHashMap<>();
 
     private OAuthConfig oauthConfig;
@@ -73,6 +75,14 @@ public class ApiConfigs {
         addModel(commonModels, model);
     }
 
+    public Set<ParamConfig> getCommonParams() {
+        return commonParams;
+    }
+
+    public void addCommonParam(ParamConfig param) {
+        addParam(commonParams, param);
+    }
+
     public Map<String, MApiResponseBuilder> getCommonResponses() {
         return commonResponses;
     }
@@ -87,8 +97,8 @@ public class ApiConfigs {
 
     static void addModel(Set<ModelConfig> models, ModelConfig model) {
         models.forEach(exists -> {
-            if (null != exists.getType() && exists.getType().equals(model.getType())) {
-                throw new ApiConfigException("Found duplicated model type '" + model.getType() + "'");
+            if (null != exists.getClassName() && exists.getClassName().equals(model.getClassName())) {
+                throw new ApiConfigException("Found duplicated model type '" + model.getClassName() + "'");
             }
 
             if (!Strings.isEmpty(exists.getName()) && exists.getName().equalsIgnoreCase(model.getName())) {
@@ -99,4 +109,13 @@ public class ApiConfigs {
         models.add(model);
     }
 
+    static void addParam(Set<ParamConfig> params, ParamConfig param) {
+        params.forEach(exists -> {
+            if(exists.getKey().equals(param.getKey())) {
+                throw new ApiConfigException("Found duplicated param '" + param.getKey() + "'");
+            }
+        });
+
+        params.add(param);
+    }
 }

@@ -7,7 +7,10 @@
         <xsd:complexType>
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element ref="import" />
-                <xsd:element name="global" type="api-global"/>
+                <xsd:element name="oauth"     type="oauth-base" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="params"    type="parameters" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="models"    type="models"     minOccurs="0" maxOccurs="1"/>
                 <xsd:element ref="api"/>
                 <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
             </xsd:choice>
@@ -50,21 +53,6 @@
             </xsd:complexContent>
         </xsd:complexType>
     </xsd:element>
-
-    <xsd:complexType name="api-global">
-        <xsd:annotation>
-            <xsd:documentation>
-                The global configuration for all api(s).
-            </xsd:documentation>
-        </xsd:annotation>
-        <xsd:choice minOccurs="0" maxOccurs="unbounded">
-            <xsd:element name="oauth"      type="oauth-base" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="cors"       type="cors"       minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="responses"  type="responses"  minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="parameters" type="parameters" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="models"     type="models"     minOccurs="0" maxOccurs="1"/>
-        </xsd:choice>
-    </xsd:complexType>
 
     <xsd:element name="api">
         <xsd:annotation>
@@ -256,12 +244,16 @@
 
     <xsd:complexType name="parameter">
         <xsd:sequence>
-            <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="title"   type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="desc"    type="xsd:string" minOccurs="0" maxOccurs="1"/>
             <xsd:element name="properties" type="properties" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
-        <xsd:attribute name="name" type="xsd:string" use="optional"/>
-        <xsd:attribute name="type" type="xsd:string" use="required"/>
+        <xsd:attribute name="class"   type="xsd:string" use="required"/>
+        <xsd:attribute name="name"    type="xsd:string" use="optional"/>
+        <xsd:attribute name="title"   type="xsd:string" use="optional"/>
+        <xsd:attribute name="summary" type="xsd:string" use="optional"/>
+        <xsd:attribute name="desc"    type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="models">
@@ -271,8 +263,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="model">
-        <xsd:attribute name="type" type="xsd:string" use="optional"/>
-        <xsd:attribute name="name" type="xsd:string" use="optional"/>
+        <xsd:sequence>
+            <xsd:element name="properties" type="properties" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="class" type="xsd:string" use="optional"/>
+        <xsd:attribute name="name"  type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="properties">
@@ -283,10 +278,14 @@
 
     <xsd:complexType name="property">
         <xsd:sequence>
-            <xsd:element name="title" type="xsd:string" minOccurs="0" maxOccurs="1"/>
-            <xsd:element name="desc" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="title"   type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="summary" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="desc"    type="xsd:string" minOccurs="0" maxOccurs="1"/>
         </xsd:sequence>
-        <xsd:attribute name="name" use="required"></xsd:attribute>
+        <xsd:attribute name="name"    type="xsd:string" use="required"/>
+        <xsd:attribute name="title"   type="xsd:string" use="optional"/>
+        <xsd:attribute name="summary" type="xsd:string" use="optional"/>
+        <xsd:attribute name="desc"    type="xsd:string" use="optional"/>
     </xsd:complexType>
 
     <xsd:complexType name="responses">
