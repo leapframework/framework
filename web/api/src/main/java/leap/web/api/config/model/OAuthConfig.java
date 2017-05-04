@@ -25,6 +25,10 @@ public class OAuthConfig {
     private String  authzEndpointUrl;
     private String  tokenEndpointUrl;
 
+    public OAuthConfig() {
+        
+    }
+
     public OAuthConfig(boolean enabled, String authzEndpointUrl, String tokenEndpointUrl) {
         this(enabled, SwaggerConstants.IMPLICIT, authzEndpointUrl, tokenEndpointUrl);
     }

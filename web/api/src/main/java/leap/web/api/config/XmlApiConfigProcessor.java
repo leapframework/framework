@@ -134,7 +134,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     protected void readGlobal(AppConfigContext context, XmlReader reader) {
-        ApiConfigurations configs = context.getOrCreateExtension(ApiConfigurations.class);
+        ApiConfigs configs = context.getOrCreateExtension(ApiConfigs.class);
 
         while(reader.nextWhileNotEnd(GLOBAL)) {
 
@@ -307,7 +307,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor {
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader) {
-        ApiConfigurations extensions = context.getOrCreateExtension(ApiConfigurations.class);
+        ApiConfigs extensions = context.getOrCreateExtension(ApiConfigs.class);
 
         String  name              = reader.resolveRequiredAttribute(NAME);
         String  basePath          = reader.resolveAttribute(BASE_PATH);

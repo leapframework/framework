@@ -53,14 +53,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	protected @Inject MTypeManager           typeManager;
 
-	protected Map<String, ApiConfigurator> configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
-	protected Map<String, ApiConfig>       configurations = new ConcurrentHashMap<String, ApiConfig>();
-	protected Map<String, ApiMetadata>     metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
+	protected Map<String, ApiConfigurator>  configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
+	protected Map<String, ApiConfig>        configurations = new ConcurrentHashMap<String, ApiConfig>();
+	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
 
-    protected OAuthConfig oauthConfig = new OAuthConfig(false,null,null);
-
-    protected Map<String, MApiResponse>     commonResponses  = new LinkedHashMap<>();
+    protected Map<String,   MApiResponse>   commonResponses  = new LinkedHashMap<>();
     protected Map<Class<?>, ApiModelConfig> commonModelTypes = new LinkedHashMap<>();
+    protected OAuthConfig                   oauthConfig      = new OAuthConfig();
 
     @Override
     public ApiConfigurator tryGetConfigurator(String name) {
@@ -156,7 +155,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
-        ApiConfigurations configs = factory.getAppConfig().getExtension(ApiConfigurations.class);
+        ApiConfigs configs = factory.getAppConfig().getExtension(ApiConfigs.class);
         if(configs == null){
             return;
         }

@@ -25,13 +25,16 @@ import leap.web.api.meta.model.MApiResponseBuilder;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class ApiConfigurations {
+/**
+ * Global configurations of all api(s).
+ */
+public class ApiConfigs {
 
     private final Map<String,   ApiConfigurator>     configurators    = new LinkedHashMap<>();
     private final Map<String,   MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
     private final Map<Class<?>, ApiModelConfig>      commonModelTypes = new LinkedHashMap<>();
 
-    private OAuthConfig defaultOAuthConfig = new OAuthConfig(false, null, null);
+    private OAuthConfig defaultOAuthConfig;
 
     public Map<String, ApiConfigurator> getConfigurators(){
         return configurators;

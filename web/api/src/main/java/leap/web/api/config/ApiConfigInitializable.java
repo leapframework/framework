@@ -35,7 +35,7 @@ public class ApiConfigInitializable implements AppConfigInitializable {
 
     @Override
     public void postLoadConfig(AppConfigContext context, AppResources appResources) {
-        ApiConfigurations extension = context.getExtension(ApiConfigurations.class);
+        ApiConfigs extension = context.getExtension(ApiConfigs.class);
         if(extension != null){
             extension.getConfigurators().forEach((k, v)->{
                 String basepackage = v.config().getBasePackage();
