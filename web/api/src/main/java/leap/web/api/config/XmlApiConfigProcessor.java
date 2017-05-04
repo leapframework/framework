@@ -129,7 +129,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
     public void postLoadConfig(AppConfigContext context) {
         ApiConfigs configs = context.getExtension(ApiConfigs.class);
         if (configs != null) {
-            configs.getConfigurators().forEach((k, v) -> {
+            configs.getApis().forEach((k, v) -> {
                 String basePackage = v.config().getBasePackage();
                 if (Strings.isNotEmpty(basePackage)) {
                     context.getAdditionalPackages().add(basePackage);
@@ -160,7 +160,7 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
 
             if (reader.isStartElement(OAUTH)) {
                 OAuthConfig oauth = readOAuth(context, reader);
-                configs.setDefaultOAuthConfig(oauth);
+                configs.setOAuthConfig(oauth);
                 continue;
             }
 
@@ -336,12 +336,12 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
         Boolean defaultAnonymous = reader.resolveBooleanAttribute(DEFAULT_ANONYMOUS);
         boolean restdEnabled = reader.resolveBooleanAttribute(RESTD_ENABLED, false);
 
-        ApiConfigurator api = extensions.getConfigurator(name);
+        ApiConfigurator api = extensions.getApi(name);
         if (null == api) {
             reader.getRequiredAttribute(BASE_PATH);
             api = new DefaultApiConfig(name, basePath);
             api.setBasePackage(basePackage);
-            extensions.addConfigurator(api);
+            extensions.addApi(api);
         }
 
         if (null != defaultAnonymous) {

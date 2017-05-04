@@ -19,6 +19,7 @@
 package leap.web.api.config;
 
 import leap.web.api.config.model.ApiModelConfig;
+import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.MApiResponseBuilder;
 
@@ -30,36 +31,48 @@ import java.util.Map;
  */
 public class ApiConfigs {
 
-    private final Map<String,   ApiConfigurator>     configurators    = new LinkedHashMap<>();
+    private final Map<String,   ApiConfigurator>     apis             = new LinkedHashMap<>();
+    private final Map<String,   ModelConfig>         commonModels     = new LinkedHashMap<>();
     private final Map<String,   MApiResponseBuilder> commonResponses  = new LinkedHashMap<>();
     private final Map<Class<?>, ApiModelConfig>      commonModelTypes = new LinkedHashMap<>();
 
-    private OAuthConfig defaultOAuthConfig;
+    private OAuthConfig oauthConfig;
 
-    public Map<String, ApiConfigurator> getConfigurators(){
-        return configurators;
+    public Map<String, ApiConfigurator> getApis(){
+        return apis;
     }
 
-    public ApiConfigurator getConfigurator(String name){
-        return configurators.get(name);
+    public ApiConfigurator getApi(String name){
+        return apis.get(name);
     }
 
-    public void addConfigurator(ApiConfigurator configurator){
-        String key = configurator.config().getName().toLowerCase();
+    public void addApi(ApiConfigurator api){
+        String key = api.config().getName().toLowerCase();
 
-        if(configurators.containsKey(key)){
-            throw new ApiConfigException("Found duplicated api config with name : " + configurator.config().getName());
+        if(apis.containsKey(key)){
+            throw new ApiConfigException("Found duplicated api config with name : " + api.config().getName());
         }
 
-        configurators.put(key,configurator);
+        apis.put(key, api);
     }
 
-    public OAuthConfig getDefaultOAuthConfig() {
-        return defaultOAuthConfig;
+    public OAuthConfig getOAuthConfig() {
+        return oauthConfig;
     }
 
-    public void setDefaultOAuthConfig(OAuthConfig defaultOAuthConfig) {
-        this.defaultOAuthConfig = defaultOAuthConfig;
+    public void setOAuthConfig(OAuthConfig oauthConfig) {
+        this.oauthConfig = oauthConfig;
+    }
+
+    public Map<String, ModelConfig> getCommonModels() {
+        return commonModels;
+    }
+
+    public void addCommonModel(String name, ModelConfig model) {
+        if(commonModels.containsKey(name.toLowerCase())) {
+            throw new ApiConfigException("Found duplicated model config '" + name + "'");
+        }
+        commonModels.put(name.toLowerCase(), model);
     }
 
     public Map<String,MApiResponseBuilder> getCommonResponses(){
@@ -67,7 +80,6 @@ public class ApiConfigs {
     }
 
     public void addCommonResponse(String name, MApiResponseBuilder resp){
-
         if(commonResponses.containsKey(name)){
             throw new ApiConfigException("Found duplicated common response with name : " + name);
         }

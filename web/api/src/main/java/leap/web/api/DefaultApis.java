@@ -160,8 +160,8 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             return;
         }
 
-        if(configs.getDefaultOAuthConfig() != null){
-            this.oauthConfig = configs.getDefaultOAuthConfig();
+        if(configs.getOAuthConfig() != null){
+            this.oauthConfig = configs.getOAuthConfig();
         }
 
         configs.getCommonResponses().forEach((key, builder)->{
@@ -173,7 +173,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             commonModelTypes.put(t,c);
         });
 
-        configs.getConfigurators().forEach(this::doAdd);
+        configs.getApis().forEach(this::doAdd);
     }
 
     protected void doAdd(String name, ApiConfigurator api) {
