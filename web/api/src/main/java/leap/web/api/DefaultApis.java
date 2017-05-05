@@ -242,7 +242,11 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             }
 
             for(ApiConfigProcessor p : configProcessors) {
-                p.postProcess(c.config());
+                p.postProcess(c);
+            }
+
+            for(ApiConfigProcessor p : configProcessors) {
+                p.completeProcess(c.config());
             }
 
             //post config

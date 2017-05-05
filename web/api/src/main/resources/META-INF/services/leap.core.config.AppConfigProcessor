@@ -1,1 +1,1 @@
-class=leap.web.api.config.XmlApiConfigProcessor
+class=leap.web.api.config.XmlApiConfigLoader
