@@ -7,10 +7,7 @@
         <xsd:complexType>
             <xsd:choice minOccurs="0" maxOccurs="unbounded">
                 <xsd:element ref="import" />
-                <xsd:element name="oauth"     type="oauth-base" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="params"    type="parameters" minOccurs="0" maxOccurs="1"/>
-                <xsd:element name="models"    type="models"     minOccurs="0" maxOccurs="1"/>
+                <xsd:element ref="global" />
                 <xsd:element ref="api"/>
                 <xsd:any namespace="##other" processContents="strict" minOccurs="0" maxOccurs="unbounded" />
             </xsd:choice>
@@ -51,6 +48,22 @@
                     </xsd:attribute>
                 </xsd:restriction>
             </xsd:complexContent>
+        </xsd:complexType>
+    </xsd:element>
+
+    <xsd:element name="global">
+        <xsd:annotation>
+            <xsd:documentation>
+                The configuration for all api.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:complexType>
+            <xsd:choice minOccurs="0" maxOccurs="unbounded">
+                <xsd:element name="oauth"     type="oauth-base" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="responses" type="responses"  minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="params"    type="parameters" minOccurs="0" maxOccurs="1"/>
+                <xsd:element name="models"    type="models"     minOccurs="0" maxOccurs="1"/>
+            </xsd:choice>
         </xsd:complexType>
     </xsd:element>
 

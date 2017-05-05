@@ -44,7 +44,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListener {
+public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener {
     private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
 
     protected static final String APIS                 = "apis";
@@ -137,26 +137,10 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
     }
 
     protected void readApis(AppConfigContext context, XmlReader reader) {
-        ApiConfigs configs = context.getOrCreateExtension(ApiConfigs.class);
-
         while (reader.nextWhileNotEnd(APIS)) {
-            if (reader.isStartElement(OAUTH)) {
-                configs.setOAuthConfig(readOAuth(context, reader));
-                continue;
-            }
 
-            if (reader.isStartElement(RESPONSES)) {
-                readCommonResponses(reader).forEach(configs::addCommonResponse);
-                continue;
-            }
-
-            if (reader.isStartElement(PARAMS)) {
-                readParams(context, reader, configs::addCommonParam);
-                continue;
-            }
-
-            if (reader.isStartElement(MODELS)) {
-                readModels(context, reader, configs::addCommonModel);
+            if(reader.isStartElement(GLOBAL)) {
+                readGlobal(context, reader);
                 continue;
             }
 
@@ -165,6 +149,35 @@ public class XmlApiConfigProcessor implements AppConfigProcessor, AppConfigListe
                 continue;
             }
         }
+
+    }
+
+    protected void readGlobal(AppConfigContext context, XmlReader reader) {
+        ApiConfigs configs = context.getOrCreateExtension(ApiConfigs.class);
+
+        reader.loopInsideElement(() -> {
+
+            if (reader.isStartElement(OAUTH)) {
+                configs.setOAuthConfig(readOAuth(context, reader));
+                return;
+            }
+
+            if (reader.isStartElement(RESPONSES)) {
+                readCommonResponses(reader).forEach(configs::addCommonResponse);
+                return;
+            }
+
+            if (reader.isStartElement(PARAMS)) {
+                readParams(context, reader, configs::addCommonParam);
+                return;
+            }
+
+            if (reader.isStartElement(MODELS)) {
+                readModels(context, reader, configs::addCommonModel);
+                return;
+            }
+
+        });
 
     }
 
