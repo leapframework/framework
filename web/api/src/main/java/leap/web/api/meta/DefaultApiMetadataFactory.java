@@ -383,7 +383,12 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		MApiPathBuilder path = md.getPath(pt.getTemplate());
 		if(null == path) {
 			path = new MApiPathBuilder();
-			path.setPathTemplate(pt.getTemplate());
+            String template = pt.getTemplate();
+            template = Strings.removeStart(template,context.getConfig().getBasePath());
+            if(!Strings.startsWith(template,"/")){
+                template = "/"+template;
+            }
+			path.setPathTemplate(template);
 			md.addPath(path);
 		}
 
