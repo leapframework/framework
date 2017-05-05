@@ -52,6 +52,16 @@ public interface SqlRegistry {
      * <p>
      * Returns <code>null</code> if sql command does not exists.
      */
+    default SqlCommand tryGetSqlCommand(String key) {
+        return tryGetSqlCommand(key, null);
+    }
+
+    /**
+     * Returns the {@link SqlCommand} for the given command key.
+     *
+     * <p>
+     * Returns <code>null</code> if sql command does not exists.
+     */
     SqlCommand tryGetSqlCommand(String key, String dbType);
 
     /**
