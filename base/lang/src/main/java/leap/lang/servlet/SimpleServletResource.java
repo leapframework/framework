@@ -55,7 +55,7 @@ import leap.lang.resource.Resources;
  * @see javax.servlet.ServletContext#getResource
  * @see javax.servlet.ServletContext#getRealPath
  */
-class SimpleServletResource extends AbstractFileResolvingResource implements ContextResource, ServletResource {
+public class SimpleServletResource extends AbstractFileResolvingResource implements ContextResource, ServletResource {
 
 	private static final Log log = LogFactory.get(SimpleServletResource.class);
 

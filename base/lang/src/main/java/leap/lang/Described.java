@@ -29,16 +29,10 @@ public interface Described {
 	String getDescription();
 
 	/**
-	 * Returns the description or summary if the description is empty. 
+	 * Returns the description or summary if the description is empty.
 	 */
 	default String descOrSummary() {
 		return Strings.isEmpty(getDescription()) ? getSummary() : getDescription();
 	}
 	
-	/**
-	 * Returns the summary or description if the summary is empty.
-	 */
-	default String summaryOrDesc() {
-		return Strings.isEmpty(getSummary()) ? getDescription() : getDescription();
-	}
 }

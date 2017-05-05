@@ -21,7 +21,7 @@ package leap.web.api.meta.desc;
 /**
  * Created by kael on 2016/11/14.
  */
-public interface ModelDesc {
+interface ModelDesc {
     /**
      * Returns the description object of the specified field.
      */

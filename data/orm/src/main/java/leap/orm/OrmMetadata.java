@@ -214,14 +214,6 @@ public interface OrmMetadata {
      */
     void addSqlCommand(EntityMapping em, String name, SqlCommand cmd) throws ObjectExistsException;
 
-    /**
-	 * Adds a new {@link SqlFragment} object to this metadata.
-	 *
-	 * <p>
-	 * Throws {@link ObjectExistsException} if the key exists.
-	 */
-	void addSqlFragment(String key, SqlFragment fragment) throws ObjectExistsException;
-
 	/**
 	 * Removes an exists {@link SqlCommand} object from this metadata.
 	 * 

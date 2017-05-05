@@ -29,6 +29,7 @@ import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
 import leap.lang.servlet.ServletResource;
 import leap.lang.servlet.Servlets;
+import leap.lang.servlet.SimpleServletResource;
 
 import javax.servlet.ServletContext;
 import java.util.*;
@@ -418,17 +419,25 @@ public class AppResources {
         final String pathPrefix = "/WEB-INF/";
 
         if(context instanceof ServletContext) {
-            ServletContext sc = (ServletContext)context;
-            Set<String> paths = sc.getResourcePaths(searchPath);
-            if(paths != null){
-                for(String path : paths) {
-                    ServletResource resource = Servlets.getResource(sc, path);
-                    if(!resource.isDirectory()) {
-                        add(resource, Strings.removeStart(path, pathPrefix));
-                    }
-                }
-            }
+            loadServletContextResources((ServletContext)context, searchPath, pathPrefix);
+        }
+    }
 
+    private void loadServletContextResources(ServletContext sc, String searchPath, String pathPrefix) {
+        Set<String> paths = sc.getResourcePaths(searchPath);
+        if(paths != null){
+            for(String path : paths) {
+                loadServletContextResource(sc, path, pathPrefix);
+            }
+        }
+    }
+
+    private void loadServletContextResource(ServletContext sc, String path, String pathPrefix) {
+        ServletResource resource = new SimpleServletResource(sc, path);
+        if(!resource.isDirectory()) {
+            add(resource, Strings.removeStart(path, pathPrefix));
+        }else{
+            loadServletContextResources(sc, path, pathPrefix);
         }
     }
 

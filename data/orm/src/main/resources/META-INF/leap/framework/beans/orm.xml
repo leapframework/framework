@@ -48,6 +48,7 @@
     <bean type="leap.orm.parameter.ParameterStrategy" class="leap.orm.parameter.DefaultParameterStrategy" primary="true"/>
   
     <!-- sql -->
+    <bean type="leap.orm.metadata.SqlRegistry" class="leap.orm.metadata.DefaultSqlRegistry" primary="true"/>
     <bean type="leap.orm.sql.SqlFactory" class="leap.orm.sql.DefaultSqlFactory" primary="true"/>
 	<bean type="leap.orm.sql.SqlSource"  class="leap.orm.sql.ClasspathSqlSource"/>
 	<bean type="leap.orm.sql.SqlReader"  class="leap.orm.sql.XmlSqlReader"/>

@@ -16,6 +16,7 @@
 package leap.lang.meta;
 
 import leap.lang.Buildable;
+import leap.lang.Strings;
 
 public abstract class MNamedBuilder<T extends MObject> implements Buildable<T>{
 
@@ -38,4 +39,13 @@ public abstract class MNamedBuilder<T extends MObject> implements Buildable<T>{
 		this.title = title;
 	}	
 
+    public void trySetTitle(String title) {
+        if(Strings.isEmpty(title)) {
+            return;
+        }
+
+        if(Strings.isEmpty(this.title) || this.title.equals(name)) {
+            this.title = title;
+        }
+    }
 }

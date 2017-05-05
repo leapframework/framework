@@ -1,46 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <apis xmlns="http://www.leapframework.org/schema/web/apis/apis">
 
-    <global>
-        <oauth enabled="true">
-            <authz-url>http://127.0.0.1:8080/auth/oauth2/authorize</authz-url>
-            <token-url>"http://127.0.0.1:8080/auth/oauth2/token</token-url>
-        </oauth>
+    <oauth enabled="true">
+        <authz-url>http://127.0.0.1:8080/auth/oauth2/authorize</authz-url>
+        <token-url>"http://127.0.0.1:8080/auth/oauth2/token</token-url>
+    </oauth>
 
-        <responses>
+    <responses>
+        <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
+    </responses>
 
-            <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
+    <params>
+        <param class="leap.web.api.mvc.params.QueryOptions">
+            <properties>
+                <property name="pageSize" title="页面大小">
+                    <desc>分页的每页大小</desc>
+                </property>
+            </properties>
+        </param>
+    </params>
 
-        </responses>
-
-        <parameters>
-            <param type="leap.web.api.mvc.params.QueryOptions">
-                <title>查询参数</title>
-                <desc>查询参数</desc>
-                <properties>
-                    <property name="pageSize">
-                        <title>页面大小</title>
-                        <desc>分页的每页大小</desc>
-                    </property>
-                </properties>
-            </param>
-        </parameters>
-
-        <models>
-            <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
-            <model class="app.models.testing.ParentModel"/>
-            <model class="app.models.testing.SubModel"/>
-        </models>
-
-    </global>
+    <models>
+        <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
+        <model class="app.models.testing.ParentModel"/>
+        <model class="app.models.testing.SubModel"/>
+    </models>
 
     <api name="api" base-path="/api"/>
-
-
-    <api name="basepackage" base-path="/basepackage" base-package="api.basepackage">
-        <oauth enabled="false" flow="accessCode">
-        </oauth>
-    </api>
 
     <api name="testApi" base-path="/testing">
 
@@ -58,31 +44,14 @@
 
         <models>
             <model class="app.models.testing.ConfiguredModel2"/>
+            <model class="app.models.testing.User">
+                <properties>
+                    <property name="loginName" title="登录账号"/>
+                    <property name="firstName" title="姓"/>
+                    <property name="lastName"  title="名"/>
+                </properties>
+            </model>
         </models>
-
-    </api>
-
-    <api name="petstore" base-path="/petstore">
-
-        <title>Swagger Petstore</title>
-
-        <desc>
-            This is a sample server Petstore server. You can find out more about Swagger at
-            [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/). For this
-            sample, you can use the api key `special-key` to test the authorization filters.
-        </desc>
-
-        <protocols>
-            http
-        </protocols>
-
-    </api>
-
-    <api name="restd" base-path="/restd" default-anonymous="true" restd-enabled="true" restd-data-source="restd">
-
-        <restd>
-            <model name="Model1" delete="false"/>
-        </restd>
 
     </api>
 

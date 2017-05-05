@@ -62,11 +62,11 @@ public class DefaultAppConfigSource implements AppConfigSource {
         INIT_PROPERTIES.add(AppConfig.INIT_PROPERTY_DEFAULT_LOCALE);
     }
 
-    private static final AppProfileResolver      profileResolver           = Factory.newInstance(AppProfileResolver.class);
-    private static final AppPropertyPrinter      propertyPrinter           = Factory.newInstance(AppPropertyPrinter.class);
-    private static final List<AppPropertyReader> propertyReaders           = Factory.newInstances(AppPropertyReader.class);
-    private static final List<AppConfigReader>   configReaders             = Factory.newInstances(AppConfigReader.class);
-    private static final List<AppConfigInitializable> configInitializables = Factory.newInstances(AppConfigInitializable.class);
+    private static final AppProfileResolver      profileResolver = Factory.newInstance(AppProfileResolver.class);
+    private static final AppPropertyPrinter      propertyPrinter = Factory.newInstance(AppPropertyPrinter.class);
+    private static final List<AppPropertyReader> propertyReaders = Factory.newInstances(AppPropertyReader.class);
+    private static final List<AppConfigReader>   configReaders   = Factory.newInstances(AppConfigReader.class);
+    private static final List<AppConfigListener> configListeners = Factory.newInstances(AppConfigListener.class);
 
     protected AppPropertyProcessor propertyProcessor = new PropertyProcessorWrapper();
 
@@ -213,7 +213,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final DefaultAppConfig           config;
         final AppResources               appResources;
         final AppResource[]              configResources;
-        final Set<String>                externalConfig      = new HashSet<>();
+        final Set<String>                extendedConfigNames = new HashSet<>();
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
 
@@ -245,22 +245,29 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected DefaultAppConfig load() {
             init();
-            // pre load configuration
-            preLoadConfig(new ConfigContext(this, false, false));
 
+            //===properties====
             //load local properties
             loadLocalProperties(new ConfigContext(this, false, true));
 
             //load external properties.
             loadExternalProperties(new ConfigContext(this, false, true));
 
+            //===config====
+            ConfigContext context = new ConfigContext(this, false, false);
+
+            // pre load configuration
+            configListeners.forEach(listener -> listener.preLoadConfig(context, context));
+
             //Load configuration.
-            loadConfig(new ConfigContext(this, false, false));
+            loadConfig(context);
+
             //post load configuration
-            postLoadConfig(new ConfigContext(this, false, false));
+            configListeners.forEach(listener -> listener.postLoadConfig(context));
 
             //complete loading configuration.
             complete();
+            configListeners.forEach(listener -> listener.completeLoadConfig(config));
 
             return config;
         }
@@ -380,18 +387,12 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
         protected void loadConfig(ConfigContext context) {
             AppResource[] files = appResources.search("config");
-            for(String path : externalConfig){
+            for(String path : extendedConfigNames){
                 files = Arrays2.concat(files,appResources.search(path));
             }
             if(files.length > 0) {
                 parent.loadConfig(context, files);
             }
-        }
-        protected void preLoadConfig(ConfigContext context) {
-            configInitializables.forEach(initializable->initializable.preLoadConfig(context,appResources));
-        }
-        protected void postLoadConfig(ConfigContext context){
-            configInitializables.forEach(initializable->initializable.postLoadConfig(context,appResources));
         }
 
         protected Map<String, String> getPropertiesMap() {
@@ -599,7 +600,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
     }
 
-    protected class ConfigContext extends MapAttributeAccessor implements AppConfigContext,AppPropertyContext,AppPropertySetter,AppConfigProcessors {
+    protected class ConfigContext extends MapAttributeAccessor implements AppConfigContext,AppPropertyContext,AppPropertySetter,AppConfigProcessors,AppConfigPaths {
 
         protected final AppConfigProcessor[] processors =
                 Factory.newInstances(AppConfigProcessor.class).toArray(new AppConfigProcessor[0]);
@@ -781,8 +782,8 @@ public class DefaultAppConfigSource implements AppConfigSource {
         }
 
         @Override
-        public void addExternalConfig(String name) {
-            loader.externalConfig.add(name);
+        public void addConfigName(String name) {
+            loader.extendedConfigNames.add(name);
         }
 
         @Override

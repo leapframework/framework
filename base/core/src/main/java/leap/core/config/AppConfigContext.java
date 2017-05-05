@@ -90,11 +90,6 @@ public interface AppConfigContext extends AppConfigContextBase {
 	void addResources(ResourceSet rs);
 
     /**
-     * Adds a external path of config
-     */
-    void addExternalConfig(String name);
-
-    /**
      * Returns a mutable set contains all the additional packages.
      */
     Set<String> getAdditionalPackages();

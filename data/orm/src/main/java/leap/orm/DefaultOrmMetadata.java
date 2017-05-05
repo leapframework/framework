@@ -26,6 +26,7 @@ import leap.orm.domain.Domains;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.EntityNotFoundException;
 import leap.orm.mapping.SequenceMapping;
+import leap.orm.metadata.SqlRegistry;
 import leap.orm.model.Model;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlFragment;
@@ -49,12 +50,12 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	protected final Map<String,EntityMapping>   nameToEntityMappings   = new ConcurrentHashMap<>();
 	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<>();
 	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<>();
-	protected final Map<String,SqlFragment>     keyToSqlFragments      = new ConcurrentHashMap<>();
 	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
     protected final Map<String,EntityMapping>   shardingEntityMappings = new ConcurrentHashMap<>();
 
-	protected @Inject @M Domains domains;
-	
+    protected @Inject @M Domains     domains;
+    protected @Inject @M SqlRegistry sqlRegistry;
+
 	@Override
 	public Domains domains() {
 		return domains;
@@ -200,8 +201,7 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 
 	@Override
 	public SqlFragment tryGetSqlFragment(String key) {
-		Args.notEmpty(key,"fragment key");
-		return keyToSqlFragments.get(key);
+		return sqlRegistry.tryGetSqlFragment(key);
 	}
 
 	@Override
@@ -306,18 +306,6 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			keyToSqlCommands.put(key, cmd);
         }
     }
-
-	@Override
-	public void addSqlFragment(String key, SqlFragment fragment) throws ObjectExistsException {
-		Args.notEmpty(key,"fragment key");
-		Args.notNull(fragment,"sql fragment");
-		synchronized (_sqlLock) {
-			if(keyToSqlFragments.containsKey(key)){
-				throw new ObjectExistsException("sql fragment '" + key + "' aleady exists");
-			}
-			keyToSqlFragments.put(key, fragment);
-		}
-	}
 
 	@Override
     public void addSqlCommand(EntityMapping entityMapping, String commandName, SqlCommand cmd) throws ObjectExistsException {

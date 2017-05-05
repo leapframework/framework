@@ -16,24 +16,21 @@
 
 package leap.web.api.config.model;
 
-import leap.lang.annotation.Nullable;
-
-/**
- * The configuration of api model.
- */
-public class ApiModelConfig {
-
-    protected final String name;
-
-    public ApiModelConfig(String name) {
-        this.name = name;
-    }
+public interface ConfigWithDocument {
 
     /**
-     * The name of model.
+     * Set title.
      */
-    @Nullable
-    public String getName() {
-        return name;
-    }
+    void setTitle(String title);
+
+    /**
+     * Set summary.
+     */
+    void setSummary(String summary);
+
+    /**
+     * Set description.
+     */
+    void setDescription(String description);
+
 }

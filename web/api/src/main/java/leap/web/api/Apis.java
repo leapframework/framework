@@ -15,37 +15,33 @@
  */
 package leap.web.api;
 
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
-import leap.web.api.config.model.ApiModelConfig;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiResponse;
+
+import java.util.Set;
 
 /**
  * Contains all the api configurators.
  */
 public interface Apis {
 
-	/**
-	 * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
-	 */
-	Set<ApiConfigurator> getConfigurators();
-	
-	/**
-	 * Returns an immutable {@link Set} contains all the api configurations.
-	 */
-	Set<ApiConfig> getConfigurations();
+    /**
+     * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
+     */
+    Set<ApiConfigurator> getConfigurators();
+
+    /**
+     * Returns an immutable {@link Set} contains all the api configurations.
+     */
+    Set<ApiConfig> getConfigurations();
 
     /**
      * Returns the configurator of the api.
      *
      * @param name the name of the api.
-     *
      * @throws ObjectNotFoundException if no api configuration exists for the given name.
      */
     ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
@@ -60,62 +56,51 @@ public interface Apis {
      */
     ApiMetadata tryGetMetadata(String name);
 
-	/**
-	 * Creates an api configuration and returns the configurator.
-	 * 
-	 * @param name the name of api.
-	 * @param basePath the base path of api, must starts with a slash '/'.
-	 * 
-	 * @throws ObjectExistsException if the given name aleady exists.
-	 */
-	ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
-	
-	/**
-	 * Returns <code>true</code> if default enabled.
-	 * 
-	 * <p>
-	 * Default is <code>false</code>.
-	 */
-	boolean isDefaultOAuthEnabled();
-	
-	/**
-	 * Optional. Returns the default oauth2 authorization endpoint url.
-	 */
-	String getDefaultOAuthAuthorizationUrl();
-	
-	/**
-	 * Optional. Returns the default oauth2 token endpoint url.
-	 */
-	String getDefaultOAuthTokenUrl();
+    /**
+     * Creates an api configuration and returns the configurator.
+     *
+     * @param name     the name of api.
+     * @param basePath the base path of api, must starts with a slash '/'.
+     * @throws ObjectExistsException if the given name already exists.
+     */
+    ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
 
     /**
-     * Returns a mutable {@link Map} contains all the common responses.
+     * Returns <code>true</code> if default enabled.
+     * <p>
+     * <p>
+     * Default is <code>false</code>.
      */
-    Map<String, MApiResponse> getCommonResponses();
+    boolean isDefaultOAuthEnabled();
 
     /**
-     * Returns a mutable {@link Map} contains all the configurations of model types.
+     * Sets all the apis default enable oauth2.
      */
-    Map<Class<?>, ApiModelConfig> getCommonModelTypes();
+    Apis setDefaultOAuthEnabled(boolean enabled);
 
-	/**
-	 * Sets all the apis default enable oauth2.
-	 */
-	Apis setDefaultOAuthEnabled(boolean enabled);
-	
-	/**
-	 * Sets the default oauth2 implicit authorization url for all apis.
-	 */
-	Apis setDefaultOAuthAuthorizationUrl(String url);
-	
-	/**
-	 * Sets the oauth2 authorization url by endpoint and standard query parameters.   
-	 */
-	Apis setDefaultOAuthAuthorizationUrl(String endpoint, String clientId, String redirectUri);
-	
-	/**
-	 * Sets the default oauth2 token url for all apis. 
-	 */
-	Apis setDefaultOAuthTokenUrl(String url);
+    /**
+     * Optional. Returns the default oauth2 authorization endpoint url.
+     */
+    String getDefaultOAuthAuthorizationUrl();
+
+    /**
+     * Sets the default oauth2 implicit authorization url for all apis.
+     */
+    Apis setDefaultOAuthAuthorizationUrl(String url);
+
+    /**
+     * Sets the oauth2 authorization url by endpoint and standard query parameters.
+     */
+    Apis setDefaultOAuthAuthorizationUrl(String endpoint, String clientId, String redirectUri);
+
+    /**
+     * Optional. Returns the default oauth2 token endpoint url.
+     */
+    String getDefaultOAuthTokenUrl();
+
+    /**
+     * Sets the default oauth2 token url for all apis.
+     */
+    Apis setDefaultOAuthTokenUrl(String url);
 
 }

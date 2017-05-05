@@ -19,8 +19,7 @@ import leap.core.annotation.Inject;
 import leap.core.meta.MTypeContainer;
 import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
-import leap.lang.Enums;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -36,11 +35,10 @@ import leap.web.action.Argument.Location;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.model.ApiModelConfig;
+import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.ParamConfig;
 import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.CommonDescContainer;
-import leap.web.api.meta.desc.ModelDesc;
 import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
 import leap.web.api.spec.swagger.SwaggerConstants;
@@ -193,16 +191,17 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void createSecurityDefs(ApiMetadataContext context, ApiMetadataBuilder md) {
-        ApiConfig c = context.getConfig();
-        OAuthConfig oauthConfig = c.getOAuthConfig();
-        if(oauthConfig != null && oauthConfig.isEnabled()) {
+        OAuthConfig oc = context.getConfig().getOAuthConfig();
+
+        if(oc != null && oc.isEnabled()) {
+
             MOAuth2ApiSecurityDef def =
                     new MOAuth2ApiSecurityDef(
                             SwaggerConstants.OAUTH2,
                             SwaggerConstants.OAUTH2,
-                            oauthConfig.getAuthzEndpointUrl(),
-                            oauthConfig.getTokenEndpointUrl(),
-                            oauthConfig.getFlow(),
+                            oc.getAuthorizationUrl(),
+                            oc.getTokenUrl(),
+                            oc.getFlow(),
                             null);
             
             md.addSecurityDef(def);
@@ -211,17 +210,19 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	
 	protected ApiMetadata processMetadata(ApiMetadataContext context, ApiMetadataBuilder md) {
         preProcessDefault(context, md);
-
 		for(ApiMetadataProcessor p : processors) {
 			p.preProcess(context, md);
 		}
 
         postProcessDefault(context, md);
+        for(ApiMetadataProcessor p : processors) {
+            p.postProcess(context, md);
+        }
 
 		ApiMetadata m = md.build();
 		
 		for(ApiMetadataProcessor p : processors) {
-			p.postProcess(context, m);
+			p.completeProcess(context, m);
 		}
 		
 		return m;
@@ -303,20 +304,18 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
 
-        context.getConfig().getModels().forEach((name,model) -> {
-            m.addModel(model);
-        });
+        ApiConfig config = context.getConfig();
 
-        context.getConfig().getResourceTypes().values().forEach((t) -> {
+        config.getResourceTypes().values().forEach((t) -> {
             if(null == m.tryGetModel(t)) {
                 //create model for resource type.
                 context.getMTypeContainer().getMType(t);
             }
         });
 
-        context.getConfig().getModelTypes().forEach((t, c)-> {
-            if(null == m.tryGetModel(t)) {
-                context.getMTypeContainer().getMType(t);
+        config.getModels().forEach((c)-> {
+            if(!Strings.isEmpty(c.getClassName()) && null == m.tryGetModelByClassName(c.getClassName())) {
+                context.getMTypeContainer().getMType(Classes.forName(c.getClassName()));
             }
         });
 
@@ -327,9 +326,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected MApiModelBuilder createModel(ApiMetadataContext context, ApiMetadataBuilder m, MComplexType ct) {
+        ApiConfig config = context.getConfig();
 
         MApiModelBuilder model = new MApiModelBuilder(ct);
 
+        ModelConfig mc = null;
+
+        //configure the model name.
         if(null != model.getJavaType()) {
             ApiModel a = model.getJavaType().getAnnotation(ApiModel.class);
             if(null != a) {
@@ -340,27 +343,38 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            ApiModelConfig c = context.getConfig().getModelTypes().get(model.getJavaType());
-            if(null != c) {
-                if(!Strings.isEmpty(c.getName())) {
-                    model.setName(c.getName());
-                }
+            mc = config.getModel(model.getJavaType());
+            if(null != mc && !Strings.isEmpty(mc.getName())) {
+                model.setName(mc.getName());
             }
         }
 
-        if(null != apiDescContainer) {
-            ModelDesc mdesc = apiDescContainer.getModelDesc(ct.getJavaType());
-            if(null != mdesc) {
-                model.getProperties().forEach((n, p) -> {
-                    ModelDesc.PropertyDesc pdesc = mdesc.getPropertyDesc(p.getName());
-                    if(null != pdesc && !Strings.isEmpty(pdesc.getDesc())) {
-                        p.setDescription(pdesc.getDesc());
-                    }
-                });
-            }
+        if(null == mc) {
+            mc = config.getModel(model.getName());
+        }
+
+        //configure the model properties.
+        for(MApiPropertyBuilder p : model.getProperties().values()) {
+            ModelConfig.Property c = null == mc ? null : mc.getProperty(p.getName());
+            trySetDoc(p, c, c);
         }
 
         return model;
+    }
+
+    protected void trySetDoc(MApiParameterBaseBuilder p, Titled titled, Described described) {
+        if(null != titled) {
+            p.trySetTitle(titled.getTitle());
+        }
+
+        if(null != described) {
+            p.trySetSummary(described.getSummary());
+            p.trySetDescription(described.getDescription());
+        }
+
+        if(!p.getName().equals(p.getTitle())) {
+            p.trySetDescription(p.getTitle());
+        }
     }
 
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
@@ -436,46 +450,25 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
 
             if(!a.isContextual()) {
-                String description = null;
-                if(op.getDesc() != null){
-                    OperationDescSet.ParameterDesc desc = op.getDesc().getParameter(a);
-                    if(desc != null){
-                        description = desc.getDescription();
-                    }
-                }
-                createApiParameter(context, m, route, op, a,description);
+                createApiParameter(context, m, route, op, a);
             }
         }
 	}
 
 	protected void createApiWrapperParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a){
-        OperationDescSet.ParameterDesc desc = null;
-        if(op.getDesc() != null){
-            desc = op.getDesc().getParameter(a);
-        }
-
-        CommonDescContainer.Parameter parameter = apiDescContainer.getCommonParameter(a.getType());
+        ParamConfig pc = context.getConfig().getParam(a.getType());
 
         for(Argument wa : a.getWrappedArguments()) {
             if(!wa.isContextual()) {
-                String description = null;
-                if(desc != null){
-                    OperationDescSet.PropertyDesc propertyDesc = desc.getProperty(wa.getDeclaredName());
-                    if(propertyDesc != null){
-                        description = propertyDesc.getDesc();
-                    }
-                }else if(parameter != null){
-                    CommonDescContainer.Property property = parameter.getProperty(wa.getDeclaredName());
-                    if(property != null){
-                        description = property.getDesc();
-                    }
-                }
-                createApiParameter(context, m, route, op, wa,description);
+                MApiParameterBuilder mp = createApiParameter(context, m, route, op, wa);
+
+                ParamConfig wp = null == pc ? null : pc.getWrappedParam(wa.getDeclaredName());
+                trySetDoc(mp, wp, wp);
             }
         }
     }
 
-    protected void createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a, String desc) {
+    protected MApiParameterBuilder createApiParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a) {
         MApiParameterBuilder p = new MApiParameterBuilder();
 
         p.setName(a.getName());
@@ -502,9 +495,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             p.setEnumValues(Enums.getValues(a.getType()));
         }
 
-        p.setDescription(desc);
-
         op.addParameter(p);
+
+        return p;
     }
 	
 	protected void createApiResponses(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {

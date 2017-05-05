@@ -23,9 +23,7 @@ import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.ApiModelConfig;
-import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.*;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiResponse;
@@ -99,14 +97,57 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     Map<String, MApiResponse> getCommonResponses();
 
     /**
-     * Returns an immutable {@link Map} contains all the configurations of model types.
+     * Returns an immutable {@link Set} contains all the configurations of models.
      */
-    Map<Class<?>, ApiModelConfig> getModelTypes();
+    Set<ModelConfig> getModels();
 
     /**
-     * Returns an immutable {@link Map} contains the registered api models.
+     * Returns the model config matches the name or null if not exists.
      */
-    Map<String, MApiModelBuilder> getModels();
+    ModelConfig getModel(String name);
+
+    /**
+     * Returns the model config matches the class or null if not exists.
+     */
+    default ModelConfig getModel(Class<?> type) {
+        return getModelByClassName(null == type ? null : type.getName());
+    }
+
+    /**
+     * Returns the model config matches the class name or null if not exists.
+     */
+    ModelConfig getModelByClassName(String className);
+
+    /**
+     * Returns an immutable {@link Set} contains all the configurations of parameters.
+     */
+    Set<ParamConfig> getParams();
+
+    /**
+     * todo : doc
+     */
+    default ParamConfig getParam(String className) {
+        return getParam(className, null);
+    }
+
+    /**
+     * todo : doc
+     */
+    ParamConfig getParam(String className, String name);
+
+    /**
+     * todo : doc
+     */
+    default ParamConfig getParam(Class<?> type) {
+        return getParam(type, null);
+    }
+
+    /**
+     * todo : doc
+     */
+    default ParamConfig getParam(Class<?> type, String name) {
+        return getParam(type.getName(), name);
+    }
 
 	/**
 	 * Returns the naming style of parameter names, may be <code>null</code>.

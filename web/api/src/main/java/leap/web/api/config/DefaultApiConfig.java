@@ -18,9 +18,7 @@ package leap.web.api.config;
 import leap.lang.*;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
-import leap.web.api.config.model.ApiModelConfig;
-import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.RestdConfig;
+import leap.web.api.config.model.*;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
@@ -59,11 +57,11 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
 
-    protected Map<Class<?>, ApiModelConfig> modelTypeConfigs    = new LinkedHashMap<>();
-    protected Map<Class<?>, ApiModelConfig> modelTypeConfigsImv = Collections.unmodifiableMap(modelTypeConfigs);
+    protected Set<ModelConfig> models    = new LinkedHashSet<>();
+    protected Set<ModelConfig> modelsImv = Collections.unmodifiableSet(models);
 
-    protected Map<String, MApiModelBuilder> models    = new LinkedHashMap<>();
-    protected Map<String, MApiModelBuilder> modelsImv = Collections.unmodifiableMap(models);
+    protected Set<ParamConfig> params    = new LinkedHashSet<>();
+    protected Set<ParamConfig> paramsImv = Collections.unmodifiableSet(params);
 
     protected Map<String, MApiResponseBuilder> commonResponseBuilders    = new LinkedHashMap<>();
     protected Map<String, MApiResponseBuilder> commonResponseBuildersImv = Collections.unmodifiableMap(commonResponseBuilders);
@@ -73,8 +71,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 
-    protected OAuthConfig    oauthConfig;
-    protected RestdConfig    restdConfig;
+    protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
+    protected RestdConfig     restdConfig;
 	
 	public DefaultApiConfig(String name, String basePath) {
 		Args.notEmpty(name, "name");
@@ -160,18 +158,67 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public Map<Class<?>, ApiModelConfig> getModelTypes() {
-        return modelTypeConfigs;
-    }
-
-    @Override
-    public Map<String, MApiModelBuilder> getModels() {
+    public Set<ModelConfig> getModels() {
         return modelsImv;
     }
 
     @Override
-    public ApiConfigurator addModel(MApiModelBuilder model) {
-        models.put(model.getName(), model);
+    public ModelConfig getModelByClassName(String className) {
+        if(Strings.isEmpty(className)) {
+            return null;
+        }
+
+        for(ModelConfig model : models) {
+            if(className.equals(model.getClassName())) {
+                return model;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ModelConfig getModel(String name) {
+        if(Strings.isEmpty(name)) {
+            return null;
+        }
+
+        for(ModelConfig model : models) {
+            if(name.equalsIgnoreCase(model.getName())) {
+                return model;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ApiConfigurator addModel(ModelConfig model) {
+        ApiConfigs.addModel(models, model);
+        return this;
+    }
+
+    @Override
+    public Set<ParamConfig> getParams() {
+        return paramsImv;
+    }
+
+    @Override
+    public ParamConfig getParam(String className, String name) {
+        if(Strings.isEmpty(className) && Strings.isEmpty(name)) {
+            return null;
+        }
+
+        String key = ParamConfig.key(className, name);
+        for(ParamConfig param : params) {
+            if(key.equals(param.getKey())) {
+                return param;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public ApiConfigurator addParam(ParamConfig param) {
+        ApiConfigs.addParam(params, param);
         return this;
     }
 
@@ -229,12 +276,6 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public ApiConfigurator putModelType(Class<?> type, ApiModelConfig c) {
-        modelTypeConfigs.put(type, c);
-        return this;
-    }
-
-    @Override
     public ApiConfigurator setProduces(String... produces) {
 		this.produces = null == produces ? Arrays2.EMPTY_STRING_ARRAY : produces;
 	    return this;
@@ -270,22 +311,18 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator setOAuthConfig(OAuthConfig oauth) {
-        this.oauthConfig = oauth;
+        this.oauthConfig.tryUpdateFrom(oauth);
         return this;
     }
 
     @Override
     public ApiConfigurator enableOAuth() {
-        if(oauthConfig == null){
-            oauthConfig = new OAuthConfig(true,null,null);
-        }else{
-            oauthConfig.setEnabled(true);
-        }
+        oauthConfig.setEnabled(true);
         return this;
     }
 
     @Override
-    public OAuthConfig getOAuthConfig() {
+    public OAuthConfigImpl getOAuthConfig() {
         return oauthConfig;
     }
 

@@ -18,23 +18,19 @@
 
 package tests;
 
-import leap.core.annotation.Inject;
-import leap.web.api.Apis;
-import leap.web.api.meta.model.MApiResponse;
 import leap.webunit.WebTestBase;
-import org.junit.Test;
 
 public class ApiConfigTest extends WebTestBase {
 
-    private @Inject Apis apis;
-
-    @Test
-    public void testCommonResponse() {
-        MApiResponse r = apis.getCommonResponses().get("NotFound");
-        assertNotNull(r);
-        assertEquals(new Integer(404), r.getStatus());
-        assertEquals("Resource not found", r.getDescription());
-        assertEquals("ApiError", r.getType().asComplexType().getName());
-    }
+//    private @Inject Apis apis;
+//
+//    @Test
+//    public void testCommonResponse() {
+//        MApiResponse r = apis.getCommonResponses().get("NotFound");
+//        assertNotNull(r);
+//        assertEquals(new Integer(404), r.getStatus());
+//        assertEquals("Resource not found", r.getDescription());
+//        assertEquals("ApiError", r.getType().asComplexType().getName());
+//    }
 
 }

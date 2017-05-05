@@ -20,15 +20,18 @@ import leap.lang.exception.ObjectExistsException;
 
 import java.util.*;
 
+/**
+ * Configuration for restd api.
+ */
 public class RestdConfig {
 
-    protected String      dataSourceName;
-    protected boolean     readonly;
+    protected String  dataSourceName;
+    protected boolean readonly;
 
-    protected Set<String>                   includedModels = new LinkedHashSet<>();
-    protected Set<String>                   excludedModels = new LinkedHashSet<>();
-    protected Set<String>                   readonlyModels = new HashSet<>();
-    protected Map<String, RestdModelConfig> models         = new HashMap<>();
+    protected Set<String>        includedModels = new LinkedHashSet<>();
+    protected Set<String>        excludedModels = new LinkedHashSet<>();
+    protected Set<String>        readonlyModels = new HashSet<>();
+    protected Map<String, Model> models         = new HashMap<>();
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -74,15 +77,15 @@ public class RestdConfig {
         return readonlyModels.contains(name.toLowerCase());
     }
 
-    public Map<String, RestdModelConfig> getModels() {
+    public Map<String, Model> getModels() {
         return models;
     }
 
-    public RestdModelConfig getModel(String name) {
+    public Model getModel(String name) {
         return models.get(name.toLowerCase());
     }
 
-    public void addModel(RestdModelConfig model) {
+    public void addModel(Model model) {
         String key = model.getName().toLowerCase();
         if(models.containsKey(key)) {
             throw new ObjectExistsException("The configuration of model '" + model.getName() + "' already exists!");
@@ -91,7 +94,7 @@ public class RestdConfig {
     }
 
     public boolean isModelAnonymous(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getAnonymous()) {
             return model.getAnonymous();
         }
@@ -100,7 +103,7 @@ public class RestdConfig {
     }
 
     public boolean allowCreateModel(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getCreateOperationEnabled()) {
             return model.getCreateOperationEnabled();
         }
@@ -113,7 +116,7 @@ public class RestdConfig {
     }
 
     public boolean allowUpdateModel(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getUpdateOperationEnabled()) {
             return model.getUpdateOperationEnabled();
         }
@@ -126,7 +129,7 @@ public class RestdConfig {
     }
 
     public boolean allowDeleteModel(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getDeleteOperationEnabled()) {
             return model.getDeleteOperationEnabled();
         }
@@ -139,7 +142,7 @@ public class RestdConfig {
     }
 
     public boolean allowFindModel(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getFindOperationEnabled()) {
             return model.getFindOperationEnabled();
         }
@@ -148,11 +151,82 @@ public class RestdConfig {
     }
 
     public boolean allowQueryModel(String name) {
-        RestdModelConfig model = getModel(name);
+        Model model = getModel(name);
         if(null != model && null != model.getQueryOperationEnabled()) {
             return model.getQueryOperationEnabled();
         }
 
         return true;
+    }
+
+    /**
+     * The configuration of restd model.
+     */
+    public static class Model {
+
+        protected final String name;
+
+        protected Boolean anonymous;
+        protected Boolean createOperationEnabled;
+        protected Boolean updateOperationEnabled;
+        protected Boolean deleteOperationEnabled;
+        protected Boolean findOperationEnabled;
+        protected Boolean queryOperationEnabled;
+
+        public Model(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Boolean getAnonymous() {
+            return anonymous;
+        }
+
+        public void setAnonymous(Boolean anonymous) {
+            this.anonymous = anonymous;
+        }
+
+        public Boolean getCreateOperationEnabled() {
+            return createOperationEnabled;
+        }
+
+        public void setCreateOperationEnabled(Boolean createOperationEnabled) {
+            this.createOperationEnabled = createOperationEnabled;
+        }
+
+        public Boolean getUpdateOperationEnabled() {
+            return updateOperationEnabled;
+        }
+
+        public void setUpdateOperationEnabled(Boolean updateOperationEnabled) {
+            this.updateOperationEnabled = updateOperationEnabled;
+        }
+
+        public Boolean getDeleteOperationEnabled() {
+            return deleteOperationEnabled;
+        }
+
+        public void setDeleteOperationEnabled(Boolean deleteOperationEnabled) {
+            this.deleteOperationEnabled = deleteOperationEnabled;
+        }
+
+        public Boolean getFindOperationEnabled() {
+            return findOperationEnabled;
+        }
+
+        public void setFindOperationEnabled(Boolean findOperationEnabled) {
+            this.findOperationEnabled = findOperationEnabled;
+        }
+
+        public Boolean getQueryOperationEnabled() {
+            return queryOperationEnabled;
+        }
+
+        public void setQueryOperationEnabled(Boolean queryOperationEnabled) {
+            this.queryOperationEnabled = queryOperationEnabled;
+        }
     }
 }

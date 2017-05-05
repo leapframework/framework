@@ -15,35 +15,33 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.Builders;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
     protected String       baseName;
-	protected MComplexType type;
+    protected MComplexType type;
     protected Class<?>     javaType;
-	protected Map<String,MApiPropertyBuilder> properties = new LinkedHashMap<>();
-	
-	public MApiModelBuilder() {
-	    super();
+    protected Map<String, MApiPropertyBuilder> properties = new LinkedHashMap<>();
+
+    public MApiModelBuilder() {
+        super();
     }
 
     public MApiModelBuilder(MComplexType type) {
         this.type = type;
-        this.name  = type.getName();
+        this.name = type.getName();
         this.title = type.getTitle();
         this.summary = type.getSummary();
         this.description = type.getDescription();
         this.javaType = type.getJavaType();
 
-        for(MProperty mp : type.getProperties()) {
+        for (MProperty mp : type.getProperties()) {
             addProperty(new MApiPropertyBuilder(mp));
         }
     }
@@ -72,17 +70,17 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     }
 
     public void addProperty(MApiPropertyBuilder p) {
-		properties.put(p.getName(), p);
-	}
+        properties.put(p.getName(), p);
+    }
 
     public MApiPropertyBuilder removeProperty(String name) {
         return properties.remove(name);
     }
 
-	@Override
+    @Override
     public MApiModel build() {
-	    return new MApiModel(baseName, name, title, summary, description, javaType,
-	    					Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
+        return new MApiModel(baseName, name, title, summary, description, javaType,
+                Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
     }
-	
+
 }
