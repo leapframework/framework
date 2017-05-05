@@ -83,8 +83,7 @@ public class SwaggerJsonTest extends WebTestBase {
         for(MApiParameter parameter : m.getPaths().get("/hello/say_hello").getOperation(HTTP.Method.GET).getParameters()){
             if(Strings.equals(parameter.getName(),"who")){
                 who =true;
-                //todo
-                //assertEquals("人名",parameter.getDescription());
+                assertEquals("人名",parameter.getDescription());
                 break;
             }
         }
@@ -95,6 +94,7 @@ public class SwaggerJsonTest extends WebTestBase {
     public void testApiCommonDesc() throws IOException {
         String swagger = get("/testing/swagger.json").getContent();
         ApiMetadata m = specReader.read(new StringReader(swagger)).build();
+
         boolean pageSize = false;
         for(MApiParameter parameter : m.getPaths().get("/user").getOperation(HTTP.Method.GET).getParameters()){
             if(Strings.equals(parameter.getName(),"page_size")){
@@ -104,21 +104,14 @@ public class SwaggerJsonTest extends WebTestBase {
             }
         }
         assertTrue(pageSize);
-        pageSize = false;
+
         boolean id = false;
         for(MApiParameter parameter : m.getPaths().get("/user/{id}").getOperation(HTTP.Method.GET).getParameters()){
-            if(Strings.equals(parameter.getName(),"page_size")){
-                pageSize = true;
-                //todo
-                //assertEquals("单独配置的分页大小",parameter.getDescription());
-            }
             if(Strings.equals(parameter.getName(),"id")){
                 id = true;
-                //todo :
-                //assertEquals("用户id",parameter.getDescription());
+                assertEquals("用户id",parameter.getDescription());
             }
         }
-        assertTrue(pageSize);
         assertTrue(id);
     }
 

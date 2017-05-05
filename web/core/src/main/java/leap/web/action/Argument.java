@@ -20,11 +20,14 @@ import leap.lang.accessor.AnnotationsGetter;
 import leap.lang.accessor.TypeInfoGetter;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
+import leap.lang.reflect.ReflectParameter;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.sql.Ref;
 import java.util.Collections;
 import java.util.Map;
 
@@ -50,6 +53,7 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
 
     protected final String                name;
     protected final String                declaredName;
+    protected final ReflectParameter      parameter;
     protected final Class<?>              type;
     protected final Type                  genericType;
     protected final TypeInfo              typeInfo;
@@ -66,6 +70,7 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
 
 	public Argument(String name,
                     String declaredName,
+                    ReflectParameter parameter,
                     BeanProperty beanProperty,
                     Class<?> type,
                     Type genericType,
@@ -84,11 +89,12 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
 		
 		this.name              = name;
 		this.declaredName	   = declaredName;
+        this.parameter         = parameter;
+        this.beanProperty      = beanProperty;
 		this.type              = type;
 		this.genericType       = genericType;
 		this.typeInfo	       = typeInfo;
         this.beanType          = typeInfo.isComplexType() ? BeanType.of(type) : null;
-        this.beanProperty      = beanProperty;
 		this.required		   = required;
 		this.location 		   = null == location ? Location.UNDEFINED : location;
 		this.annotations       = null == annotations ? Classes.EMPTY_ANNOTATION_ARRAY : annotations;
@@ -106,6 +112,13 @@ public class Argument extends ExtensibleBase implements Named,AnnotationsGetter,
 
     public String getDeclaredName() {
         return declaredName;
+    }
+
+    /**
+     * Optional.
+     */
+    public ReflectParameter getParameter() {
+        return parameter;
     }
 
     /**

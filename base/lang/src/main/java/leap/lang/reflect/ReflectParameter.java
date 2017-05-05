@@ -43,6 +43,9 @@ public class ReflectParameter implements Named,ReflectValued {
 		return p;
 	}
 
+    /**
+     * Starts from 1, different with {@link java.lang.reflect.Method}, the {@link java.lang.reflect.Method} is starts from 0.
+     */
 	public final int getIndex() {
 		return index;
 	}
