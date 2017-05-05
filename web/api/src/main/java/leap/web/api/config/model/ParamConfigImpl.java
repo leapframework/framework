@@ -25,7 +25,8 @@ import java.util.Set;
 
 public class ParamConfigImpl extends ModelConfigImpl.PropertyImpl implements ParamConfig {
 
-    protected String className;
+    protected String  className;
+    protected boolean override;
 
     protected Map<String, ParamConfig> wrappedParams = new LinkedHashMap<>();
 
@@ -40,6 +41,14 @@ public class ParamConfigImpl extends ModelConfigImpl.PropertyImpl implements Par
 
     public void setClassName(String className) {
         this.className = className;
+    }
+
+    public boolean isOverride() {
+        return override;
+    }
+
+    public void setOverride(boolean override) {
+        this.override = override;
     }
 
     @Override

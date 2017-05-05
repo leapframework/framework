@@ -65,6 +65,7 @@ public class DefaultAppInitializer implements AppInitializer {
 		app.config().getResources().processClasses((cls) -> {
 			if(cls.getName().startsWith(basePackage)){
 				if(as.isControllerClass(cls)){
+                    log.debug("  Load controller '{}'", cls.getName());
 					loadControllerClass(app, "/", cls);
 				}					
 			}
@@ -78,6 +79,7 @@ public class DefaultAppInitializer implements AppInitializer {
 					continue;
 				}
 			}
+            log.debug("Scanning module resource(s) in package '{}'...", module.getBasePackage());
             ResourceSet rs = Resources.scanPackage(module.getBasePackage());
 
             if(rs.isEmpty()) {

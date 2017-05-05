@@ -36,20 +36,21 @@ import java.util.List;
 
 public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argument>,Extensible {
 
-    protected String         name;
-    protected String         declaredName;
-    protected BeanProperty   beanProperty;
-    protected Class<?>       type;
-    protected Type           genericType;
-    protected TypeInfo       typeInfo;
-    protected Boolean        required;
-    protected Location       location;
-    protected Annotation[]   annotations;
-    protected ArgumentBinder binder;
+    protected String           name;
+    protected String           declaredName;
+    protected ReflectParameter parameter;
+    protected BeanProperty     beanProperty;
+    protected Class<?>         type;
+    protected Type             genericType;
+    protected TypeInfo         typeInfo;
+    protected Boolean          required;
+    protected Location         location;
+    protected Annotation[]     annotations;
+    protected ArgumentBinder   binder;
 
     protected List<ArgumentValidator> validators       = new ArrayList<>();
     protected List<ArgumentBuilder>   wrappedArguments = new ArrayList<>();
-	
+
 	public ArgumentBuilder() {
 	    super();
     }
@@ -82,12 +83,13 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
      * Creates a new {@link ArgumentBuilder} by a method's parameter.
      */
 	public ArgumentBuilder(ValidationManager validationManager, ReflectParameter p) {
-		this.name        = p.getName();
+		this.name         = p.getName();
         this.declaredName = this.name;
-		this.type        = p.getType();
-		this.typeInfo    = p.getTypeInfo();
-		this.genericType = p.getGenericType();
-		this.annotations = p.getAnnotations();
+        this.parameter    = p;
+		this.type         = p.getType();
+		this.typeInfo     = p.getTypeInfo();
+		this.genericType  = p.getGenericType();
+		this.annotations  = p.getAnnotations();
 		this.autoConfigureAnnotations();
         this.resolveValidators(validationManager);
 	}
@@ -135,7 +137,7 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
 		this.location = from;
 		return this;
 	}
-	
+
 	public Annotation[] getAnnotations() {
 		return annotations;
 	}
@@ -153,7 +155,7 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
 		validators.add(validator);
 		return this;
 	}
-		
+
 	public List<ArgumentValidator> getValidators() {
 		return validators;
 	}
@@ -182,9 +184,10 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
         if(null == typeInfo) {
             typeInfo = Types.getTypeInfo(type, genericType);
         }
-		
+
 	    return new Argument(name,
                             declaredName,
+                            parameter,
                             beanProperty,
                             type,
                             genericType,

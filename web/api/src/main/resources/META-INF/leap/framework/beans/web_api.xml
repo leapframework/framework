@@ -25,6 +25,11 @@
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>
 
+    <!-- doc -->
+    <bean type="leap.web.api.doc.DocResolver" class="leap.web.api.doc.DefaultDocResolver" primary="true"/>
+    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.AnnotationDescProcessor"/>
+    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.ConfigDescProcessor"/>
+
     <!-- built-in swagger processor -->
     <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
@@ -37,11 +42,6 @@
     <!-- operation log -->
     <bean type="leap.web.api.log.OpLogManager" class="leap.web.api.log.DefaultOpLogManager" init-method="init" primary="true"></bean>
     <bean type="leap.web.action.ActionInterceptor" class="leap.web.api.log.OpLogInterceptor"></bean>
-
-    <!-- description loader -->
-    <bean type="leap.web.api.meta.desc.ApiDescContainer" class="leap.web.api.meta.desc.DefaultApiDescContainer"/>
-    <bean name="controller" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ControllerDescriptionLoader"/>
-    <bean name="model" type="leap.web.api.meta.desc.DescriptionLoader" class="leap.web.api.meta.desc.ModelDescriptionLoader"/>
 
     <!-- restd -->
     <bean type="leap.web.api.restd.RestdStrategy"       class="leap.web.api.restd.DefaultRestdStrategy" primary="true"/>

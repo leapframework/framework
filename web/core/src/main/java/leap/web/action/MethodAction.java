@@ -22,6 +22,7 @@ import leap.lang.reflect.ReflectException;
 import leap.lang.reflect.ReflectMethod;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -67,6 +68,11 @@ public class MethodAction extends ExtensibleBase implements Action {
     @Override
     public Object getController() {
         return controller;
+    }
+
+    @Override
+    public ReflectMethod getMethod() {
+        return method;
     }
 
     @Override

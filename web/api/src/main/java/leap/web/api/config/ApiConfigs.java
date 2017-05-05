@@ -18,6 +18,8 @@
 
 package leap.web.api.config;
 
+import leap.lang.Collections2;
+import leap.lang.Keyed;
 import leap.lang.Strings;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
@@ -83,6 +85,10 @@ public class ApiConfigs {
         addParam(commonParams, param);
     }
 
+    public boolean removeCommonParam(Keyed param) {
+        return removeParam(commonParams, param);
+    }
+
     public Map<String, MApiResponseBuilder> getCommonResponses() {
         return commonResponses;
     }
@@ -117,5 +123,9 @@ public class ApiConfigs {
         });
 
         params.add(param);
+    }
+
+    static boolean removeParam(Set<ParamConfig> params, Keyed param) {
+        return null != Collections2.remove(params, (p) -> p.getKey().equals(param.getKey()));
     }
 }

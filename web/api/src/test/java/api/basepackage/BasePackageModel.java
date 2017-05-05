@@ -21,9 +21,6 @@ package api.basepackage;
 import leap.orm.annotation.Id;
 import leap.orm.model.Model;
 
-/**
- * Created by kael on 2016/10/28.
- */
 public class BasePackageModel extends Model {
     @Id
     private String id;

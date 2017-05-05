@@ -16,6 +16,7 @@
 package leap.lang;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 /**
  * null safe utils for {@link Collection}
@@ -95,7 +96,24 @@ public class Collections2 {
 		}
 		return c.toArray(new String[c.size()]);
 	}
-	
+
+    public static <T> T remove(Collection<T> c, Predicate<T> predicate) {
+        T found = null;
+
+        for(T item : c) {
+            if(predicate.test(item)) {
+                found = item;
+                break;
+            }
+        }
+
+        if(null != found) {
+            c.remove(found);
+        }
+
+        return found;
+    }
+
 	protected Collections2(){
 		
 	}

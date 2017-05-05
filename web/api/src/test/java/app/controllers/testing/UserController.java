@@ -28,7 +28,7 @@ import app.models.testing.User;
 import java.util.List;
 
 @AllowAnonymous
-public class UserController extends ModelController<User> {
+public class UserController extends ModelController<User> implements UserControllerDesc {
 
     @GET
     public ApiResponse<List<User>> getAllUsers(QueryOptions options) {

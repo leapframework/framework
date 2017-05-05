@@ -15,15 +15,13 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.*;
-
 import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.http.HTTP;
-import leap.web.App;
-import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.route.Route;
+
+import java.util.*;
 
 public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation> {
 
@@ -39,7 +37,6 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
     protected boolean                        allowAnonymous;
     protected boolean                        allowClientOnly;
 	protected boolean           	         deprecated;
-    protected OperationDescSet.OperationDesc desc;
 
 	public MApiOperationBuilder() {
 		
@@ -171,16 +168,6 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 
     public void setAllowClientOnly(boolean allowClientOnly) {
         this.allowClientOnly = allowClientOnly;
-    }
-
-    public void setDesc(OperationDescSet.OperationDesc desc){
-        this.desc = desc;
-        this.setSummary(desc.getSummary());
-        this.setDescription(desc.getDescription());
-    }
-
-    public OperationDescSet.OperationDesc getDesc() {
-        return desc;
     }
 
     @Override

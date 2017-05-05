@@ -12,13 +12,14 @@
         </responses>
 
         <params>
-            <param class="leap.web.api.mvc.params.QueryOptions">
+            <!-- for testing override exists parameter config -->
+            <param class="leap.web.api.mvc.params.QueryOptions" override="true">
                 <properties>
-                    <property name="pageSize" title="页面大小">
-                        <desc>分页的每页大小</desc>
-                    </property>
+                    <property name="pageIndex" desc="要显示的页数,从1开始"/>
+                    <property name="pageSize"  desc="每页显示的条数"/>
                 </properties>
             </param>
+
         </params>
 
         <models>

@@ -20,9 +20,11 @@ import leap.lang.Extensible;
 import leap.lang.ExtensibleBase;
 import leap.lang.Named;
 import leap.lang.accessor.AnnotationsGetter;
+import leap.lang.reflect.ReflectMethod;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
 public interface Action extends Named,AnnotationsGetter,Extensible {
@@ -46,8 +48,12 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
     default Class<?> getControllerClass() {
         return null == getController() ? null : getController().getClass();
     }
-	
-	default boolean hasReturnValue() {
+
+    default ReflectMethod getMethod() {
+        return null;
+    }
+
+    default boolean hasReturnValue() {
 		return null != getReturnType();
 	}
 	
@@ -62,7 +68,7 @@ public interface Action extends Named,AnnotationsGetter,Extensible {
 	default Type getGenericReturnType() {
 		return null;
 	}
-	
+
 	default Argument[] getArguments() {
 		return EMPTY_ARGUMENTS;
 	}

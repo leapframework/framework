@@ -116,6 +116,18 @@ public class MApiOperation extends MApiNamedWithDesc {
     }
 
     /**
+     * Returns the matched parameter of null if not exists.
+     */
+    public MApiParameter tryGetParameter(String name) {
+        for(MApiParameter p : parameters) {
+            if(p.getName().equals(name)) {
+                return p;
+            }
+        }
+        return null;
+    }
+
+    /**
      * Returns an array of {@link MApiResponse} of this operation.
      */
     public MApiResponse[] getResponses() {
