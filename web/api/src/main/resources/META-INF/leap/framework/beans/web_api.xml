@@ -26,6 +26,7 @@
     </beans>
 
     <!-- doc -->
+    <bean type="leap.web.api.doc.DocResolver" class="leap.web.api.doc.DefaultDocResolver" primary="true"/>
     <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.AnnotationDescProcessor"/>
     <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.ConfigDescProcessor"/>
 

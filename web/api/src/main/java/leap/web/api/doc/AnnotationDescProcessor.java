@@ -16,6 +16,7 @@
 
 package leap.web.api.doc;
 
+import leap.core.annotation.Inject;
 import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument;
@@ -32,6 +33,8 @@ import java.lang.reflect.Method;
  * Reads desc from annotations.
  */
 public class AnnotationDescProcessor implements ApiMetadataProcessor {
+
+    protected @Inject DocResolver docResolver;
 
     @Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
@@ -58,7 +61,7 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
                 desc = searchUp(method);
             }
             if(null != desc) {
-                o.setDescription(resolveDescription(desc));
+                o.setDescription(resolveDescription(context, desc));
             }
         }
 
@@ -76,7 +79,7 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
                 desc = searchUp(method, a.getParameter());
             }
             if (null != desc) {
-                param.setDescription(resolveDescription(desc));
+                param.setDescription(resolveDescription(context, desc));
             }
         }
     }
@@ -113,13 +116,7 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected String resolveDescription(Desc a) {
-        String s = a.value();
-
-        //todo : message key
-
-        //todo : external file
-
-        return s;
+    protected String resolveDescription(ApiMetadataContext context, Desc a) {
+        return docResolver.resolveDescription(context, a.value());
     }
 }
