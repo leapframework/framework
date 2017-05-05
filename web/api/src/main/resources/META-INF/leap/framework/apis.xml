@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<apis xmlns="http://www.leapframework.org/schema/web/apis/apis">
+    <global>
+        <params>
+            <param class="leap.web.api.mvc.params.QueryOptions">
+                <properties>
+                    <property name="pageSize" title="每页条数" desc="每页显示的记录数"/>
+                </properties>
+            </param>
+        </params>
+    </global>
+</apis>

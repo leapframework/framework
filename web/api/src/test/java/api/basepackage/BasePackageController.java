@@ -24,9 +24,6 @@ import leap.web.annotation.http.GET;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
 
-/**
- * Created by kael on 2016/10/28.
- */
 @Path("/base_package")
 public class BasePackageController extends ModelController<BasePackageModel> {
     @Path("/{id}")

@@ -11,16 +11,6 @@
             <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
         </responses>
 
-        <params>
-            <param class="leap.web.api.mvc.params.QueryOptions">
-                <properties>
-                    <property name="pageSize" title="页面大小">
-                        <desc>分页的每页大小</desc>
-                    </property>
-                </properties>
-            </param>
-        </params>
-
         <models>
             <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
             <model class="app.models.testing.ParentModel"/>

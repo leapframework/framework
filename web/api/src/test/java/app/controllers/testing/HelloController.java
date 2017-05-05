@@ -21,6 +21,7 @@ import leap.web.api.annotation.Desc;
 public class HelloController {
 
 	@Produces("json")
+    @Desc("Say hello to someone")
 	public String sayHello(@Desc("人名") String who) {
 		return "Hello " + who;
 	}

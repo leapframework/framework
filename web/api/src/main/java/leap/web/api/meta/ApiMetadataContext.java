@@ -17,26 +17,20 @@ package leap.web.api.meta;
 
 import leap.core.meta.MTypeContainer;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.meta.desc.ApiDescContainer;
 
 /**
  * The context used by {@link ApiMetadataProcessor}.
  */
 public interface ApiMetadataContext {
 
-	/**
-	 * Returns the configuration of api.
+    /**
+     * Returns the configuration of api.
      */
-	ApiConfig getConfig();
+    ApiConfig getConfig();
 
-	/**
-	 * Returns the {@link MTypeContainer}.
+    /**
+     * Returns the {@link MTypeContainer}.
      */
-	MTypeContainer getMTypeContainer();
+    MTypeContainer getMTypeContainer();
 
-	/**
-	 * Returns the {@link ApiDescContainer}
-	 * @return
-	 */
-	ApiDescContainer getDescContainer();
 }

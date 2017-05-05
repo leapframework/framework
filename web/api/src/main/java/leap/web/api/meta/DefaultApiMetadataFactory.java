@@ -19,7 +19,9 @@ import leap.core.annotation.Inject;
 import leap.core.meta.MTypeContainer;
 import leap.core.meta.MTypeManager;
 import leap.core.web.path.PathTemplate;
-import leap.lang.*;
+import leap.lang.Classes;
+import leap.lang.Enums;
+import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.http.MimeTypes;
 import leap.lang.logging.Log;
@@ -37,9 +39,6 @@ import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
-import leap.web.api.config.model.ParamConfig;
-import leap.web.api.meta.desc.ApiDescContainer;
-import leap.web.api.meta.desc.OperationDescSet;
 import leap.web.api.meta.model.*;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.multipart.MultipartFile;
@@ -61,8 +60,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	protected @Inject ApiMetadataProcessor[] processors;
 	protected @Inject MTypeManager           mtypeManager;
     protected @Inject ApiMetadataStrategy    strategy;
-    protected @Inject ApiDescContainer       apiDescContainer;
-	
+
 	@Override
     public ApiMetadata createMetadata(ApiConfig c) {
 		ApiMetadataBuilder md = new ApiMetadataBuilder();
@@ -95,9 +93,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         log.debug(" {}", op.getMethod());
 
-        //Set description and summary
-        setOperationDesc(context, m, route, op);
-
         //Create security
         createApiSecurity(context, m, route, op);
 
@@ -125,10 +120,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 				return c;
 			}
 
-            @Override
-            public ApiDescContainer getDescContainer() {
-                return apiDescContainer;
-            }
         };
 	}
 	
@@ -390,19 +381,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 			op.setMethod(HTTP.Method.valueOf(method));
 		}
 	}
-
-	protected void setOperationDesc(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op){
-        if(op.getRoute().getAction() != null && op.getRoute().getAction().hasController()){
-            OperationDescSet set = apiDescContainer.getOperationDescSet(route.getAction().getController());
-            if(set == null){
-                return;
-            }
-            OperationDescSet.OperationDesc desc = set.getOperationDesc(op.getRoute().getAction());
-            if(desc != null){
-                op.setDesc(desc);
-            }
-        }
-    }
 
     protected void createApiSecurity(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op){
         // todo create operation security

@@ -21,7 +21,7 @@ package leap.web.api.meta.desc;
 /**
  * Created by kael on 2016/11/8.
  */
-public interface ApiDescContainer {
+interface ApiDescContainer {
     /**
      * Returns an {@link OperationDescSet} of this controller
      */

@@ -16,6 +16,7 @@
 package leap.web.api.meta;
 
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.http.HTTP;
 import leap.web.api.meta.model.*;
 
 import java.util.Collections;
@@ -154,12 +155,29 @@ public class ApiMetadata extends MApiNamedWithDesc {
 		return paths;
 	}
 
+    /**
+     * Returns the matched path.
+     */
     public MApiPath getPath(String pathTemplate) {
         MApiPath p = paths.get(pathTemplate);
         if(null == p) {
             throw new ObjectNotFoundException("The path '" + pathTemplate + "' not exists!");
         }
         return p;
+    }
+
+    /**
+     * Returns the matched operation.
+     */
+    public MApiOperation getOperation(String path, HTTP.Method method) {
+        return getPath(path).getOperation(method);
+    }
+
+    /**
+     * Returns the matched operation.
+     */
+    public MApiOperation getOperation(String path, String method) {
+        return getPath(path).getOperation(HTTP.Method.valueOf(method));
     }
 
     /**

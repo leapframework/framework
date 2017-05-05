@@ -35,10 +35,10 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
 
     @Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
-        //parameters
+        //operations
         m.getPaths().forEach((k, p) -> {
             p.getOperations().forEach(o -> {
-                processParameters(context, o);
+                processOperation(context, o);
             });
         });
 
@@ -48,9 +48,18 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
 //        });
     }
 
-    protected void processParameters(ApiMetadataContext context, MApiOperationBuilder o) {
+    protected void processOperation(ApiMetadataContext context, MApiOperationBuilder o) {
         ReflectMethod method = o.getRoute().getAction().getMethod();
 
+        //operation
+        if(null != method) {
+            Desc desc = method.getAnnotation(Desc.class);
+            if(null != desc) {
+                o.setDescription(resolveDescription(desc));
+            }
+        }
+
+        //parameters
         o.getParameters().forEach((param) -> processParameter(context, param, method));
     }
 
