@@ -16,9 +16,29 @@
 package leap.web.api.meta.model;
 
 
+import leap.web.action.Argument;
+
 public class MApiParameterBuilder extends MApiParameterBaseBuilder<MApiParameter> {
 
-	protected MApiParameter.Location         location;
+    protected Argument               argument;
+    protected Argument               wrapperArgument;
+	protected MApiParameter.Location location;
+
+    public Argument getWrapperArgument() {
+        return wrapperArgument;
+    }
+
+    public void setWrapperArgument(Argument wrapperArgument) {
+        this.wrapperArgument = wrapperArgument;
+    }
+
+    public Argument getArgument() {
+        return argument;
+    }
+
+    public void setArgument(Argument argument) {
+        this.argument = argument;
+    }
 
     public MApiParameter.Location getLocation() {
 		return location;

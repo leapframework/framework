@@ -330,8 +330,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         MApiModelBuilder model = new MApiModelBuilder(ct);
 
-        ModelConfig mc = null;
-
         //configure the model name.
         if(null != model.getJavaType()) {
             ApiModel a = model.getJavaType().getAnnotation(ApiModel.class);
@@ -343,39 +341,15 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            mc = config.getModel(model.getJavaType());
+            ModelConfig mc = config.getModel(model.getJavaType());
             if(null != mc && !Strings.isEmpty(mc.getName())) {
                 model.setName(mc.getName());
             }
         }
 
-        if(null == mc) {
-            mc = config.getModel(model.getName());
-        }
-
-        //configure the model properties.
-        for(MApiPropertyBuilder p : model.getProperties().values()) {
-            ModelConfig.Property c = null == mc ? null : mc.getProperty(p.getName());
-            trySetDoc(p, c, c);
-        }
-
         return model;
     }
 
-    protected void trySetDoc(MApiParameterBaseBuilder p, Titled titled, Described described) {
-        if(null != titled) {
-            p.trySetTitle(titled.getTitle());
-        }
-
-        if(null != described) {
-            p.trySetSummary(described.getSummary());
-            p.trySetDescription(described.getDescription());
-        }
-
-        if(!p.getName().equals(p.getTitle())) {
-            p.trySetDescription(p.getTitle());
-        }
-    }
 
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();
@@ -461,14 +435,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 
 	protected void createApiWrapperParameter(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op, Argument a){
-        ParamConfig pc = context.getConfig().getParam(a.getType());
-
         for(Argument wa : a.getWrappedArguments()) {
             if(!wa.isContextual()) {
-                MApiParameterBuilder mp = createApiParameter(context, m, route, op, wa);
-
-                ParamConfig wp = null == pc ? null : pc.getWrappedParam(wa.getDeclaredName());
-                trySetDoc(mp, wp, wp);
+                createApiParameter(context, m, route, op, wa).setWrapperArgument(a);
             }
         }
     }
@@ -477,6 +446,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         MApiParameterBuilder p = new MApiParameterBuilder();
 
         p.setName(a.getName());
+        p.setArgument(a);
 
         log.trace("{}", a.getName(), p.getLocation());
 

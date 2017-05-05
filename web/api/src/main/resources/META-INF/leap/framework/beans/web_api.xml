@@ -25,6 +25,9 @@
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>
 
+    <!-- doc -->
+    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.ConfigDescProcessor"/>
+
     <!-- built-in swagger processor -->
     <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
         <additional-type-def type="leap.web.api.meta.ApiMetadataProcessor"/>
