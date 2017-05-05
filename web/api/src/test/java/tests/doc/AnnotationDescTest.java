@@ -41,6 +41,14 @@ public class AnnotationDescTest extends ApiTestCase {
     }
 
     @Test
+    public void testMethodDescExternalDoc() {
+        ApiMetadata m = md("testing");
+
+        MApiOperation o = m.getOperation("/user", "GET");
+        assertEquals("查询所有用户", o.getDescription());
+    }
+
+    @Test
     public void testParameterDesc()  {
         ApiMetadata m = md("testing");
 

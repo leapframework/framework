@@ -25,6 +25,11 @@ public @interface Desc {
 
     /**
      * The description.
+     *
+     * <p/>
+     * Syntax 'doc:{file}' : use the file's content as description,
+     *
+     * the file is located as 'classpath:doc/{file}'.
      */
     String value();
 

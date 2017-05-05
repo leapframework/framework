@@ -21,7 +21,12 @@ import leap.web.api.annotation.Desc;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
 
+import java.util.List;
+
 public interface UserControllerDesc {
+
+    @Desc("doc:user_get_all.md")
+    ApiResponse<List<User>> getAllUsers(QueryOptions options);
 
     @Desc("查询某个用户")
     ApiResponse<User> getUser(@Desc("用户id") String id, QueryOptions options);
