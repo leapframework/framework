@@ -112,6 +112,7 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
         AuthzCodeEntity entity = new AuthzCodeEntity();
 
         entity.setCode(code.getCode());
+        entity.setSessionId(code.getSessionId());
         entity.setClientId(code.getClientId());
         entity.setUserId(code.getUserId());
         entity.setCreatedMs(code.getCreated());

@@ -27,6 +27,7 @@ import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
 import leap.oauth2.as.openid.IdTokenGenerator;
 import leap.oauth2.as.sso.AuthzSSOManager;
+import leap.oauth2.as.sso.AuthzSSOSession;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -47,11 +48,11 @@ public class CodeIdTokenResponseTypeHandler extends AbstractResponseTypeHandler 
 
         //Notify sso manager.
         ssoManager.onOAuth2LoginSuccess(request, response, authc);
-
+        AuthzSSOSession session = ssoManager.getSSOSession(request,response,authc);
         //Create a new authorization code and id token.
-        AuthzCode code = codeManager.createAuthorizationCode(authc);
+        AuthzCode code = codeManager.createAuthorizationCode(authc,session);
         String idToken = idTokenGenerator.generateIdToken(authc);
-
+        
         //Response
         sendCodeIdTokenRedirect(request, response, authc, code, idToken);
     }

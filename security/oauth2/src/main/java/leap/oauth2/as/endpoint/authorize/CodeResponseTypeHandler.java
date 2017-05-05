@@ -24,6 +24,8 @@ import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.code.AuthzCode;
 import leap.oauth2.as.code.AuthzCodeManager;
+import leap.oauth2.as.sso.AuthzSSOManager;
+import leap.oauth2.as.sso.AuthzSSOSession;
 import leap.web.Request;
 import leap.web.Response;
 
@@ -31,16 +33,18 @@ public class CodeResponseTypeHandler extends AbstractResponseTypeHandler impleme
 
 	protected @Inject OAuth2AuthzServerConfig config;
 	protected @Inject AuthzCodeManager        codeManager;
-
+    protected @Inject AuthzSSOManager         ssoManager;
 	@Override
     public void handleResponseType(Request request, Response response, AuthzAuthentication authc) throws Throwable {
         if(!config.isAuthorizationCodeEnabled()) {
             OAuth2Errors.redirectUnsupportedResponseType(request, response, authc.getRedirectUri(),null);
             return;
         }
-
+        //Notify sso manager.
+        ssoManager.onOAuth2LoginSuccess(request, response, authc);
+        AuthzSSOSession session = ssoManager.getSSOSession(request,response,authc);
         //Create a new authorization code.
-        AuthzCode code = codeManager.createAuthorizationCode(authc);
+        AuthzCode code = codeManager.createAuthorizationCode(authc,session);
 
         //Response
         sendAuthorizationCodeRedirect(request, response, authc, code);

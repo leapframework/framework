@@ -17,6 +17,7 @@ package leap.web.security.user;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -40,6 +41,7 @@ import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator implements TokenAuthenticator, PostCreateBean {
 	
 	public static final String CLAIM_NAME = "name"; //username
+	public static final String JWT_ID = "jti"; // jwt id
 	
     @Inject
     protected SecurityConfig   config;
@@ -59,8 +61,9 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 			Map<String, Object> claims = verifier.verify(token);
 			
 			String username = (String)claims.get(CLAIM_NAME);
+			String jti = (String)claims.get(JWT_ID);
 			
-			if(Strings.isEmpty(username)) {
+			if(Strings.isEmpty(username)||Strings.isEmpty(jti)) {
 				return false;
 			}
 			
@@ -81,7 +84,8 @@ public class JwtTokenAuthenticator extends UsernameBasedTokenAuthenticator imple
 		UserPrincipal user = auth.getUser();
 		
 		Map<String, Object> claims = new HashMap<>();
-		
+
+		claims.put(JWT_ID, UUID.randomUUID().toString());
 		claims.put(CLAIM_NAME, user.getLoginName());
 		
 		return claims;

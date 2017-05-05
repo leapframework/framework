@@ -26,6 +26,8 @@ public class SimpleAuthzCode extends TimeExpirableSeconds implements AuthzCode {
     protected String code;
     protected String clientId;
     protected String userId;
+    protected String sessionId;
+    
     private Map<String, Object> extendedParameters= new LinkedHashMap<>();
 
     public SimpleAuthzCode() {
@@ -56,7 +58,16 @@ public class SimpleAuthzCode extends TimeExpirableSeconds implements AuthzCode {
         this.userId = userId;
     }
 
-	public Map<String, Object> getExtendedParameters() {
+    @Override
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
+
+    public Map<String, Object> getExtendedParameters() {
 		return extendedParameters;
 	}
 

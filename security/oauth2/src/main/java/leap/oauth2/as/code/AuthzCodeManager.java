@@ -16,13 +16,14 @@
 package leap.oauth2.as.code;
 
 import leap.oauth2.as.authc.AuthzAuthentication;
+import leap.oauth2.as.sso.AuthzSSOSession;
 
 public interface AuthzCodeManager {
     
     /**
      * Creates a new authorization code.
      */
-    AuthzCode createAuthorizationCode(AuthzAuthentication authc);
+    AuthzCode createAuthorizationCode(AuthzAuthentication authc, AuthzSSOSession session);
 	
 	/**
 	 * Returns the consumed code or <code>null</code>.

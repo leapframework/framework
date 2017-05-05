@@ -19,6 +19,7 @@ import leap.core.annotation.Inject;
 import leap.oauth2.as.authc.AuthzAuthentication;
 import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.sso.AuthzSSOSession;
 import leap.web.security.user.UserDetails;
 
 public class DefaultAuthzCodeManager implements AuthzCodeManager {
@@ -27,8 +28,8 @@ public class DefaultAuthzCodeManager implements AuthzCodeManager {
     protected @Inject AuthzCodeGenerator      codeGenerator;
 
     @Override
-    public AuthzCode createAuthorizationCode(AuthzAuthentication authc) {
-    	AuthzCode code=genAuthorizationCode(authc);
+    public AuthzCode createAuthorizationCode(AuthzAuthentication authc, AuthzSSOSession session) {
+    	AuthzCode code=genAuthorizationCode(authc,session);
 
         //Store it.
         config.getCodeStore().saveAuthorizationCode(code);
@@ -36,16 +37,20 @@ public class DefaultAuthzCodeManager implements AuthzCodeManager {
         return code;
     }
 
-    protected SimpleAuthzCode genAuthorizationCode(AuthzAuthentication authc){
+    protected SimpleAuthzCode genAuthorizationCode(AuthzAuthentication authc, AuthzSSOSession session){
     	//Geneate code string
         String codeString = codeGenerator.generateAuthorizationCode(authc);
 
         //Creates code object.
         SimpleAuthzCode code = new SimpleAuthzCode();
         code.setCode(codeString);
+        
+        if(session != null){
+            code.setSessionId(session.getId());
+        }
+        
         code.setExpiresIn(config.getDefaultAuthorizationCodeExpires());
         code.setCreated(System.currentTimeMillis());
-
         AuthzClient client = authc.getClientDetails();
         if(null != client) {
             code.setClientId(client.getId());

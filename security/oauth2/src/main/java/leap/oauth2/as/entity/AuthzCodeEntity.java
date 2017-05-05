@@ -35,7 +35,9 @@ public class AuthzCodeEntity extends OAuth2ExpirableEntity {
 
     @UserId
     protected String userId;
-
+    
+    protected String sessionId;
+    
     @Column("ex_data")
 	private Map<String,Object> exData=new HashMap<>();
 
@@ -71,4 +73,11 @@ public class AuthzCodeEntity extends OAuth2ExpirableEntity {
 		this.exData = exData;
 	}
 
+    public String getSessionId() {
+        return sessionId;
+    }
+
+    public void setSessionId(String sessionId) {
+        this.sessionId = sessionId;
+    }
 }

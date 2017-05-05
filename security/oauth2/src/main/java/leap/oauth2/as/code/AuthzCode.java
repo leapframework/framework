@@ -40,6 +40,11 @@ public interface AuthzCode extends TimeExpirable {
     String getUserId();
 
     /**
+     * Return the session id of this code.
+     */
+    String getSessionId();
+    
+    /**
 	 * Optional.
 	 */
 	Map<String, Object> getExtendedParameters();
