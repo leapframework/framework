@@ -16,6 +16,7 @@
 
 package leap.web.api.doc;
 
+import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -23,6 +24,10 @@ import leap.lang.path.Paths;
 import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import leap.web.api.meta.ApiMetadataContext;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
 
 //todo : extracts doc resolver to core module ?
 public class DefaultDocResolver implements DocResolver {
@@ -69,8 +74,49 @@ public class DefaultDocResolver implements DocResolver {
         if(Strings.isEmpty(fragment)) {
             return content;
         }else{
-            //todo : read fragment
-            return content;
+            //todo : optimize performance
+            return readFragment(cp, content, fragment);
+        }
+    }
+
+    protected String readFragment(String cp, String content, String fragment) {
+        //#fragment
+        BufferedReader reader = new BufferedReader(new StringReader(content));
+
+        String line;
+        try{
+            StringBuilder buf = null;
+
+            while((line = reader.readLine()) != null) {
+                line = line.trim();
+
+                if(line.startsWith("#")) {
+
+                    if(null != buf) {
+                        //fragment end
+                        break;
+                    }
+
+                    if(Strings.equalsIgnoreCase(fragment, line.substring(1).trim())) {
+                        //fragment start
+                        buf = new StringBuilder();
+                    }
+
+                }else {
+                    if(buf.length() > 0) {
+                        buf.append('\n');
+                    }
+                    buf.append(line);
+                }
+            }
+
+            if(null != buf) {
+                return buf.toString().trim();
+            }
+
+            return "!!!err!!! : fragment '" + fragment + "' not exists in '" + cp + "'";
+        }catch (IOException e) {
+            throw Exceptions.wrap(e);
         }
     }
 }

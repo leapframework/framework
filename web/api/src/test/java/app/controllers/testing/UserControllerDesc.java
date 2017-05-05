@@ -17,6 +17,7 @@
 package app.controllers.testing;
 
 import app.models.testing.User;
+import leap.web.annotation.http.GET;
 import leap.web.api.annotation.Desc;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
@@ -27,6 +28,9 @@ public interface UserControllerDesc {
 
     @Desc("doc:user_get_all.md")
     ApiResponse<List<User>> getAllUsers(QueryOptions options);
+
+    @Desc("doc:user.md#getAllWithoutPassword")
+    ApiResponse<List<User>> getAllUsersWithoutPassword(QueryOptions options);
 
     @Desc("查询某个用户")
     ApiResponse<User> getUser(@Desc("用户id") String id, QueryOptions options);
