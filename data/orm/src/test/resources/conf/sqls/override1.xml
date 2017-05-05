@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sqls xmlns="http://www.leapframework.org/schema/sqls">
+    <command key="test_override">
+        select 1
+    </command>
+</sqls>

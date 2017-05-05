@@ -84,10 +84,8 @@ public class XmlSqlReader implements SqlReader {
                 return;
             }
 
-            //Overrides the exists command if the new one declares the db type.
-            if(!Strings.isEmpty(sql.getDbType())) {
-                md.removeSqlCommand(key);
-            }
+            //Removes if exists.
+            md.removeSqlCommand(key);
 
             //Clones a new one for current orm context.
             DefaultSqlCommand cloned = new DefaultSqlCommand(sql.source,sql.desc,sql.dbType,sql.lang,sql.content,sql.dataSourceName);
@@ -128,7 +126,7 @@ public class XmlSqlReader implements SqlReader {
 		
 		String dbType = resolveDbType(resource);
         String defaultDataSource;
-		
+
 		while(reader.next()){
 			if(reader.isStartElement(SQLS_ELEMENT)){
 				foundValidRootElement = true;
