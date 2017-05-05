@@ -16,14 +16,11 @@
 
 package leap.web.api.config.model;
 
-import leap.lang.Described;
-import leap.lang.Named;
-import leap.lang.Strings;
-import leap.lang.Titled;
+import leap.lang.*;
 
 import java.util.Set;
 
-public interface ParamConfig extends Named,Titled,Described {
+public interface ParamConfig extends Named,Titled,Described,Keyed {
 
     /**
      * Builds a key.

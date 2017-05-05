@@ -39,6 +39,7 @@ public class ConfigDescTest extends ApiTestCase {
 
         MApiOperation o = m.getOperation("/user", "GET");
 
-        assertEquals("每页显示的记录数", o.tryGetParameter("page_size").getDescription());
+        assertEquals("要显示的页数,从1开始", o.tryGetParameter("page").getDescription());
+        assertEquals("每页显示的条数",  o.tryGetParameter("page_size").getDescription());
     }
 }

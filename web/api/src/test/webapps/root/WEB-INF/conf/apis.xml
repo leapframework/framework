@@ -11,6 +11,17 @@
             <response name="NotFound" status="404" type="leap.web.api.mvc.ApiError" desc="Resource not found"/>
         </responses>
 
+        <params>
+            <!-- for testing override exists parameter config -->
+            <param class="leap.web.api.mvc.params.QueryOptions" override="true">
+                <properties>
+                    <property name="pageIndex" desc="要显示的页数,从1开始"/>
+                    <property name="pageSize"  desc="每页显示的条数"/>
+                </properties>
+            </param>
+
+        </params>
+
         <models>
             <model class="app.models.testing.ConfiguredModel1" name="TConfiguredModel"/>
             <model class="app.models.testing.ParentModel"/>

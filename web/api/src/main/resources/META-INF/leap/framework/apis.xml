@@ -4,7 +4,8 @@
         <params>
             <param class="leap.web.api.mvc.params.QueryOptions">
                 <properties>
-                    <property name="pageSize" title="每页条数" desc="每页显示的记录数"/>
+                    <property name="pageIndex" desc="要显示的页数,从1开始"/>
+                    <property name="pageSize"  desc="每页显示的记录数"/>
                 </properties>
             </param>
         </params>

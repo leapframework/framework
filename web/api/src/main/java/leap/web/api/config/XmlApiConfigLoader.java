@@ -31,6 +31,7 @@ import leap.lang.extension.ExProperties;
 import leap.lang.meta.MVoidType;
 import leap.lang.xml.XmlReader;
 import leap.web.api.config.model.*;
+import leap.web.api.config.model.RestdConfig.Model;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.permission.ResourcePermission;
@@ -38,7 +39,6 @@ import leap.web.api.permission.ResourcePermissions;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
-import leap.web.api.config.model.RestdConfig.Model;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -107,6 +107,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String DELETE               = "delete";
     protected static final String FIND                 = "find";
     protected static final String QUERY                = "query";
+    protected static final String OVERRIDE             = "override";
 
     @Override
     public String getNamespaceURI() {
@@ -168,7 +169,12 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             }
 
             if (reader.isStartElement(PARAMS)) {
-                readParams(context, reader, configs::addCommonParam);
+                readParams(context, reader, (p) -> {
+                    if(p.isOverride()) {
+                        configs.removeCommonParam(p);
+                    }
+                    configs.addCommonParam(p);
+                });
                 return;
             }
 
@@ -227,15 +233,13 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         return responses;
     }
 
-    protected void readParams(AppConfigContext context, XmlReader reader, Consumer<ParamConfig> func) {
+    protected void readParams(AppConfigContext context, XmlReader reader, Consumer<ParamConfigImpl> func) {
         reader.loopInsideElement(() -> {
             if (reader.isStartElement(PARAM)) {
 
-                String className = reader.getRequiredAttribute(CLASS);
-                String paramName = reader.getAttribute(NAME);
-
-                ParamConfigImpl param = new ParamConfigImpl(paramName);
-                param.setClassName(className);
+                ParamConfigImpl param = new ParamConfigImpl(reader.getAttribute(NAME));
+                param.setClassName(reader.getRequiredAttribute(CLASS));
+                param.setOverride(reader.getBooleanAttribute(OVERRIDE, false));
 
                 reader.loopInsideElement(() -> {
                     if(reader.isStartElement(PROPERTIES)) {
