@@ -23,6 +23,7 @@ import leap.web.api.mvc.params.QueryOptions;
 
 public interface UserControllerDesc {
 
+    @Desc("查询某个用户")
     ApiResponse<User> getUser(@Desc("用户id") String id, QueryOptions options);
 
 }

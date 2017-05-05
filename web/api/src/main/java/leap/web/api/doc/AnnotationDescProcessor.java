@@ -54,6 +54,9 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         //operation
         if(null != method) {
             Desc desc = method.getAnnotation(Desc.class);
+            if(null == desc) {
+                desc = searchUp(method);
+            }
             if(null != desc) {
                 o.setDescription(resolveDescription(desc));
             }
@@ -76,6 +79,22 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
                 param.setDescription(resolveDescription(desc));
             }
         }
+    }
+
+    protected Desc searchUp(ReflectMethod m) {
+        Class<?> c = m.getReflectedMethod().getDeclaringClass();
+
+        for(Class<?> ic : c.getInterfaces()) {
+            try {
+                Method im = ic.getMethod(m.getName(), m.getReflectedMethod().getParameterTypes());
+
+                return im.getAnnotation(Desc.class);
+            } catch (NoSuchMethodException e) {
+                //do nothing.
+            }
+        }
+
+        return null;
     }
 
     protected Desc searchUp(ReflectMethod m, ReflectParameter p) {
