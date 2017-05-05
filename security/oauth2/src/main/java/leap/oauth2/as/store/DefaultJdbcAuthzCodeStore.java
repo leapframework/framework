@@ -104,6 +104,7 @@ public class DefaultJdbcAuthzCodeStore extends AbstractJdbcAuthzStore implements
         code.setCreated(entity.getCreatedMs());
         code.setExpiresIn(entity.getExpiresIn());
         code.setExtendedParameters(entity.getExData());
+        code.setSessionId(entity.getSessionId());
 
         return code;
     }
