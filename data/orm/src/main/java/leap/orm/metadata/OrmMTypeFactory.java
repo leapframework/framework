@@ -76,6 +76,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             BeanProperty bp = fm.getBeanProperty();
             if(null != bp) {
                 p.setType(root.getMType(bp.getType(), bp.getGenericType()));
+                p.setBeanProperty(bp);
             }else{
                 p.setType(root.getMType(fm.getJavaType()));
             }

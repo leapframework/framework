@@ -17,16 +17,19 @@
 package leap.web.api.doc;
 
 import leap.core.annotation.Inject;
+import leap.core.doc.DocResolver;
+import leap.lang.beans.BeanProperty;
 import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument;
-import leap.web.api.annotation.Desc;
+import leap.core.doc.annotation.Desc;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameterBuilder;
+import leap.web.api.meta.model.MApiPropertyBuilder;
 
 import java.lang.reflect.Method;
 
@@ -93,6 +96,20 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
                 model.setDescription(resolveDescription(context, desc));
             }
         }
+
+        model.getProperties().forEach((k,p) -> {
+            processProperty(context, p);
+        });
+    }
+
+    protected void processProperty(ApiMetadataContext context, MApiPropertyBuilder p) {
+        BeanProperty bp = p.getBeanProperty();
+        if(null != bp) {
+            Desc desc = bp.getAnnotation(Desc.class);
+            if(null != desc) {
+                p.setDescription(resolveDescription(context, desc));
+            }
+        }
     }
 
     protected Desc searchUp(ReflectMethod m) {
@@ -128,6 +145,6 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
     }
 
     protected String resolveDescription(ApiMetadataContext context, Desc a) {
-        return docResolver.resolveDescription(context, a.value());
+        return docResolver.resolveDesc(a.value());
     }
 }

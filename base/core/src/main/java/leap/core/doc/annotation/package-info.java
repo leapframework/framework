@@ -14,23 +14,4 @@
  *  limitations under the License.
  */
 
-package leap.web.api.annotation;
-
-import java.lang.annotation.*;
-
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER})
-@Retention(RetentionPolicy.RUNTIME)
-@Inherited
-public @interface Desc {
-
-    /**
-     * The description.
-     *
-     * <p/>
-     * Syntax 'doc:{file}' : use the file's content as description,
-     *
-     * the file is located as 'classpath:doc/{file}'.
-     */
-    String value();
-
-}
+package leap.core.doc.annotation;

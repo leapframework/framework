@@ -188,6 +188,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 
             mp.setName(bp.getName());
 			mp.setType(root.getMType(bp.getType(), bp.getGenericType(), context));
+            mp.setBeanProperty(bp);
 
             configureProperty(bp, mp);
 

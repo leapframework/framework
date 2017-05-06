@@ -80,4 +80,6 @@
     <!--</bean>-->
     <bean type="leap.core.ioc.BeanProcessor" class="leap.core.jmx.JmxBeanProcessor"/>
 
+    <!--doc-->
+    <bean type="leap.core.doc.DocResolver" class="leap.core.doc.DefaultDocResolver" primary="true"/>
 </beans>

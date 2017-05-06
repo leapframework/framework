@@ -16,13 +16,18 @@
 
 package tests.doc;
 
+import leap.core.annotation.Inject;
+import leap.core.doc.DocResolver;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiOperation;
+import leap.web.api.meta.model.MApiProperty;
 import org.junit.Test;
 import tests.ApiTestCase;
 
 public class AnnotationDescTest extends ApiTestCase {
+
+    protected @Inject DocResolver doc;
 
     @Test
     public void testMethodDesc() {
@@ -80,7 +85,10 @@ public class AnnotationDescTest extends ApiTestCase {
         ApiMetadata m = md("testing");
 
         MApiModel user = m.getModel("User");
-
         assertEquals("用户信息", user.getDescription());
+
+        //properties
+        MApiProperty enabled = user.tryGetProperty("enabled");
+        assertEquals(doc.resolveDoc("user.md#enabled"), enabled.getDescription());
     }
 }

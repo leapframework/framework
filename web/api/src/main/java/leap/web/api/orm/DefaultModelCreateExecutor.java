@@ -72,7 +72,7 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                 throw new BadRequestException("Property '" + name + "' is not creatable!");
             }
 
-            if(null != p.getProperty() && p.getProperty().isReference()) {
+            if(null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
 
                 Object v = properties.get(name);
 

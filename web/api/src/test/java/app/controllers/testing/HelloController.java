@@ -16,7 +16,7 @@
 package app.controllers.testing;
 
 import leap.web.annotation.Produces;
-import leap.web.api.annotation.Desc;
+import leap.core.doc.annotation.Desc;
 
 public class HelloController {
 

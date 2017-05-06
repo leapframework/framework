@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-package leap.web.api.doc;
-
-import leap.web.api.meta.ApiMetadataContext;
+package leap.core.doc;
 
 public interface DocResolver {
 
-    String resolveDescription(ApiMetadataContext context, String desc);
+    String resolveDesc(String desc);
+
+    String resolveDoc(String doc);
 
 }

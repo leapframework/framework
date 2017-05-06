@@ -17,26 +17,29 @@ package leap.lang.meta;
 
 import leap.lang.Args;
 import leap.lang.Strings;
+import leap.lang.beans.BeanProperty;
 
 public class MProperty extends ImmutableMNamedWithDesc {
 
-    protected final MType    type;
-    protected final Boolean  required;
-    protected final String   defaultValue;
-    protected final String[] enumValues;
-    protected final boolean  fixedLength;
-    protected final Integer  length;
-    protected final Integer  precision;
-    protected final Integer  scale;
-    protected final boolean  discriminator;
-    protected final Boolean  creatable;
-    protected final Boolean  updatable;
-    protected final Boolean  sortable;
-    protected final Boolean  filterable;
-    protected final boolean  reference;
+    protected final MType        type;
+    protected final BeanProperty beanProperty;
+    protected final Boolean      required;
+    protected final String       defaultValue;
+    protected final String[]     enumValues;
+    protected final boolean      fixedLength;
+    protected final Integer      length;
+    protected final Integer      precision;
+    protected final Integer      scale;
+    protected final boolean      discriminator;
+    protected final Boolean      creatable;
+    protected final Boolean      updatable;
+    protected final Boolean      sortable;
+    protected final Boolean      filterable;
+    protected final boolean      reference;
 
     public MProperty(String name, String title, String summary, String description,
-                     MType type, Boolean required, String defaultValue, String[] enumValues,
+                     MType type, BeanProperty beanProperty,
+                     Boolean required, String defaultValue, String[] enumValues,
                      boolean fixedLength,
                      Integer length, Integer precision, Integer scale,
                      boolean discriminator,
@@ -47,6 +50,7 @@ public class MProperty extends ImmutableMNamedWithDesc {
         Args.notNull(type, "type");
 
         this.type = type;
+        this.beanProperty = beanProperty;
         this.required = required;
         this.defaultValue = Strings.trimToNull(defaultValue);
         this.fixedLength = fixedLength;
@@ -64,6 +68,13 @@ public class MProperty extends ImmutableMNamedWithDesc {
 
     public MType getType() {
         return type;
+    }
+
+    /**
+     * Optional.
+     */
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
     }
 
     public Boolean getRequired() {

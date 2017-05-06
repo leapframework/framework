@@ -15,22 +15,24 @@
  */
 package leap.web.api.meta.model;
 
-import java.util.Map;
-
-import leap.lang.Args;
+import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MProperty;
 import leap.lang.meta.MType;
 
+import java.util.Map;
+
 public class MApiProperty extends MApiParameterBase {
 
-    protected final MProperty property;
-    protected final boolean   discriminator;
-    protected final Boolean   creatable;
-    protected final Boolean   updatable;
-    protected final Boolean   sortable;
-    protected final Boolean   filterable;
+    protected final MProperty    metaProperty;
+    protected final BeanProperty beanProperty;
+    protected final boolean      discriminator;
+    protected final Boolean      creatable;
+    protected final Boolean      updatable;
+    protected final Boolean      sortable;
+    protected final Boolean      filterable;
 
-	public MApiProperty(String name, String title, String summary, String description, MProperty property,
+	public MApiProperty(String name, String title, String summary, String description,
+                        MProperty metaProperty,BeanProperty beanProperty,
                         MType type, String format, boolean discriminator, boolean password, Boolean required,
                         String defaultValue, String[] enumValues,
                         MApiValidation validation, Map<String, Object> attrs,
@@ -38,15 +40,23 @@ public class MApiProperty extends MApiParameterBase {
 	    super(name, title, summary, description, type, format, false, password, required, defaultValue, enumValues, validation, attrs);
 
         this.discriminator = discriminator;
-        this.property  = property;
+        this.metaProperty = metaProperty;
+        this.beanProperty = beanProperty;
         this.creatable = creatable;
         this.updatable = updatable;
         this.sortable = sortable;
         this.filterable = filterable;
     }
 
-    public MProperty getProperty() {
-        return property;
+    public MProperty getMetaProperty() {
+        return metaProperty;
+    }
+
+    /**
+     * Optional.
+     */
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
     }
 
     public boolean isDiscriminator() {
@@ -54,7 +64,7 @@ public class MApiProperty extends MApiParameterBase {
     }
 
     public boolean isReference() {
-        return null != property && property.isReference();
+        return null != metaProperty && metaProperty.isReference();
     }
 
     public Boolean getCreatable() {

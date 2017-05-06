@@ -70,7 +70,7 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                 throw new BadRequestException("Property '" + name + "' is not updatable!");
             }
 
-            if (null != p.getProperty() && p.getProperty().isReference()) {
+            if (null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
                 Object v = properties.get(name);
 
                 if (null == v) {

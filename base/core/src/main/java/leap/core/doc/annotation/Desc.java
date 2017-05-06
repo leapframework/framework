@@ -14,24 +14,23 @@
  *  limitations under the License.
  */
 
-package app.controllers.testing;
+package leap.core.doc.annotation;
 
-import app.models.testing.User;
-import leap.core.doc.annotation.Desc;
-import leap.web.api.mvc.ApiResponse;
-import leap.web.api.mvc.params.QueryOptions;
+import java.lang.annotation.*;
 
-import java.util.List;
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface Desc {
 
-public interface UserControllerDesc {
-
-    @Desc("doc:user_get_all.md")
-    ApiResponse<List<User>> getAllUsers(QueryOptions options);
-
-    @Desc("doc:user.md#getAllWithoutPassword")
-    ApiResponse<List<User>> getAllUsersWithoutPassword(QueryOptions options);
-
-    @Desc("查询某个用户")
-    ApiResponse<User> getUser(@Desc("用户id") String id, QueryOptions options);
+    /**
+     * The description.
+     *
+     * <p/>
+     * Syntax 'doc:{file}' : use the file's content as description,
+     *
+     * the file is located as 'classpath:doc/{file}'.
+     */
+    String value();
 
 }

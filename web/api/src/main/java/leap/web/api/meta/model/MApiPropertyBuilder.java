@@ -15,16 +15,18 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.beans.BeanProperty;
 import leap.lang.meta.MProperty;
 
 public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> {
 
-    protected MProperty property;
-    protected boolean   discriminator;
-    protected Boolean   creatable;
-    protected Boolean   updatable;
-    protected Boolean   sortable;
-    protected Boolean   filterable;
+    protected MProperty    metaProperty;
+    protected BeanProperty beanProperty;
+    protected boolean      discriminator;
+    protected Boolean      creatable;
+    protected Boolean      updatable;
+    protected Boolean      sortable;
+    protected Boolean      filterable;
 
     public MApiPropertyBuilder() {
 	    super();
@@ -36,12 +38,13 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
     }
 
 	public void setMProperty(MProperty mp) {
-        this.property = mp;
+        this.metaProperty = mp;
+        this.beanProperty = mp.getBeanProperty();
 		this.name  = mp.getName();
 		this.title = mp.getTitle();
 		this.summary = mp.getSummary();
 		this.description = mp.getDescription();
-        this.property = mp;
+        this.metaProperty = mp;
 		this.type = mp.getType();
 		this.defaultValue = mp.getDefaultValue();
         this.enumValues = mp.getEnumValues();
@@ -53,12 +56,20 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
         this.filterable = mp.getFilterable();
 	}
 
-    public MProperty getProperty() {
-        return property;
+    public MProperty getMetaProperty() {
+        return metaProperty;
     }
 
-    public void setProperty(MProperty property) {
-        this.property = property;
+    public void setMetaProperty(MProperty metaProperty) {
+        this.metaProperty = metaProperty;
+    }
+
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
+    }
+
+    public void setBeanProperty(BeanProperty beanProperty) {
+        this.beanProperty = beanProperty;
     }
 
     public boolean isDiscriminator() {
@@ -103,7 +114,8 @@ public class MApiPropertyBuilder extends MApiParameterBaseBuilder<MApiProperty> 
 
     @Override
     public MApiProperty build() {
-	    return new MApiProperty(name, title, summary, description, property, type, format, discriminator, password, required,
+	    return new MApiProperty(name, title, summary, description, metaProperty, beanProperty,
+                                type, format, discriminator, password, required,
                                 defaultValue, enumValues,
 	    					    null == validation ? null : validation.build(), attrs,
                                 creatable, updatable, sortable, filterable);

@@ -15,22 +15,25 @@
  */
 package leap.lang.meta;
 
+import leap.lang.beans.BeanProperty;
+
 public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
-    protected MType    type;
-    protected Boolean  required;
-    protected String   defaultValue;
-    protected String[] enumValues;
-    protected boolean  fixedLength;
-    protected Integer  length;
-    protected Integer  precision;
-    protected Integer  scale;
-    protected boolean  discriminator;
-    protected Boolean  creatable;
-    protected Boolean  updatable;
-    protected Boolean  sortable;
-    protected Boolean  filterable;
-    protected boolean  reference;
+    protected MType        type;
+    protected BeanProperty beanProperty;
+    protected Boolean      required;
+    protected String       defaultValue;
+    protected String[]     enumValues;
+    protected boolean      fixedLength;
+    protected Integer      length;
+    protected Integer      precision;
+    protected Integer      scale;
+    protected boolean      discriminator;
+    protected Boolean      creatable;
+    protected Boolean      updatable;
+    protected Boolean      sortable;
+    protected Boolean      filterable;
+    protected boolean      reference;
 
     public MType getType() {
         return type;
@@ -38,6 +41,14 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     public void setType(MType type) {
         this.type = type;
+    }
+
+    public BeanProperty getBeanProperty() {
+        return beanProperty;
+    }
+
+    public void setBeanProperty(BeanProperty beanProperty) {
+        this.beanProperty = beanProperty;
     }
 
     public Boolean getRequired() {
@@ -146,7 +157,7 @@ public class MPropertyBuilder extends MNamedWithDescBuilder<MProperty> {
 
     @Override
     public MProperty build() {
-        return new MProperty(name, title, summary, description, type, required,
+        return new MProperty(name, title, summary, description, type, beanProperty, required,
                              defaultValue, enumValues, fixedLength, length, precision, scale,
                              discriminator, creatable, updatable, sortable, filterable, reference);
     }
