@@ -17,6 +17,7 @@
 package tests.doc;
 
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiOperation;
 import org.junit.Test;
 import tests.ApiTestCase;
@@ -72,5 +73,14 @@ public class AnnotationDescTest extends ApiTestCase {
         MApiOperation o = m.getOperation("/user/{id}", "GET");
 
         assertEquals("用户id",o.tryGetParameter("id").getDescription());
+    }
+
+    @Test
+    public void testModelDesc() {
+        ApiMetadata m = md("testing");
+
+        MApiModel user = m.getModel("User");
+
+        assertEquals("用户信息", user.getDescription());
     }
 }

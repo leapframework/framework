@@ -24,6 +24,7 @@ import leap.web.api.annotation.Desc;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.meta.model.MApiParameterBuilder;
 
@@ -46,9 +47,9 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         });
 
         //models
-//        m.getModels().forEach((k, model) -> {
-//            processModel(context, model);
-//        });
+        m.getModels().forEach((k, model) -> {
+            processModel(context, model);
+        });
     }
 
     protected void processOperation(ApiMetadataContext context, MApiOperationBuilder o) {
@@ -80,6 +81,16 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
             }
             if (null != desc) {
                 param.setDescription(resolveDescription(context, desc));
+            }
+        }
+    }
+
+    protected void processModel(ApiMetadataContext context, MApiModelBuilder model) {
+        Class<?> c = model.getJavaType();
+        if(null != c) {
+            Desc desc = c.getAnnotation(Desc.class);
+            if(null != desc) {
+                model.setDescription(resolveDescription(context, desc));
             }
         }
     }
