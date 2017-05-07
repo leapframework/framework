@@ -18,6 +18,8 @@ package leap.orm.dao;
 import leap.core.value.Record;
 import leap.db.platform.oracle.OraclePlatform;
 import leap.orm.OrmTestCase;
+import leap.orm.mapping.EntityMapping;
+import leap.orm.tested.NoIdEntity;
 import leap.orm.tested.TestedEntity;
 import leap.orm.tested.TestedIntIdentity;
 import leap.orm.tested.model.petclinic.Owner;
@@ -97,5 +99,16 @@ public class DaoTest extends OrmTestCase {
 		assertEquals(new Integer(1),record.getInteger("additional"));
 		assertEquals(new Integer(2),record.getInteger("secondAdditional"));
 	}
-	
+
+    @Test
+    public void testNoIdEntity() {
+        EntityMapping em = metadata.getEntityMapping(NoIdEntity.class);
+        assertEquals(0, em.getKeyFieldNames().length);
+
+        NoIdEntity entity = new NoIdEntity();
+        entity.setCol1("col1");
+        dao.insert(entity);
+
+        assertEquals(entity.getCol1(),dao.createCriteriaQuery(NoIdEntity.class).where("col1 =?", entity.getCol1()).first().getCol1());
+    }
 }

@@ -21,6 +21,8 @@ import leap.orm.model.Model;
 @DataSource("ds1")
 public class Model2 extends Model {
 
+    public String id;
+
 	protected String col1;
 
 	public String getCol1() {

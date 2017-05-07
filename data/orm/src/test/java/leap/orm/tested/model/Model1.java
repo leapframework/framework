@@ -25,6 +25,8 @@ import leap.orm.model.Model;
 
 public class Model1 extends Model {
 
+    public String id;
+
 	@CreatedAt
 	protected Timestamp creationTime;
 	

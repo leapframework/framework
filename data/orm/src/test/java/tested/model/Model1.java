@@ -18,6 +18,8 @@ package tested.model;
 import leap.orm.model.Model;
 
 public class Model1 extends Model {
+
+    public String id;
 	
 	protected String col1;
 

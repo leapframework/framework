@@ -24,6 +24,8 @@ import java.util.List;
 
 public class JsonModel extends Model {
 
+    private String id;
+
     private String name;
 
     @JsonIgnore
@@ -31,6 +33,14 @@ public class JsonModel extends Model {
 
     @Column
     private List<Bean> beanList;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getName() {
         return name;

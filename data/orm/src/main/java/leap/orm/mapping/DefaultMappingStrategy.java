@@ -276,9 +276,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 		
 		//primary keys must be defined
+        /* todo : review this strategy.
 		if(emb.getIdFieldMappings().isEmpty()){
 			throw new MetadataException("Entity's primary key(s) must not be empty in the java type '" + cls.getName() + "'");
 		}
+		*/
 		
 	    return emb;
     }
@@ -785,6 +787,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 		
 		//Ensure primary key exists : auto created identity field if table not exists
+        /* todo : review this strategy.
 		if(!emb.hasPrimaryKey()){
 			DbTable table = emb.getPhysicalTable();
 			if(null == table){
@@ -796,6 +799,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 				emb.addPrimaryKey(primaryKey);
 			}
 		}
+		*/
 	}
 	
 	protected void postMappingFinally(MetadataContext context, EntityMappingBuilder emb){

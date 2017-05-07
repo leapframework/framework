@@ -20,8 +20,17 @@ import leap.orm.model.Model;
 
 public class ShardingModel extends Model {
 
+    protected String id;
     protected String type;
     protected String value;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getType() {
         return type;

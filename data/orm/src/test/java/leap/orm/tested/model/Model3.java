@@ -19,6 +19,8 @@ import leap.orm.model.Model;
 
 public class Model3 extends Model {
 
+    public String id;
+
 	protected String col1;
 
 	public String getCol1() {
