@@ -18,11 +18,13 @@ package leap.web.api.doc;
 
 import leap.core.annotation.Inject;
 import leap.core.doc.DocResolver;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.meta.MNamedWithDescBuilder;
 import leap.lang.reflect.ReflectMethod;
 import leap.lang.reflect.ReflectParameter;
 import leap.web.action.Argument;
-import leap.core.doc.annotation.Desc;
+import leap.core.doc.annotation.Doc;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
@@ -34,9 +36,9 @@ import leap.web.api.meta.model.MApiPropertyBuilder;
 import java.lang.reflect.Method;
 
 /**
- * Reads desc from annotations.
+ * Reads doc from annotations.
  */
-public class AnnotationDescProcessor implements ApiMetadataProcessor {
+public class AnnotationDocProcessor implements ApiMetadataProcessor {
 
     protected @Inject DocResolver docResolver;
 
@@ -60,12 +62,12 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
 
         //operation
         if(null != method) {
-            Desc desc = method.getAnnotation(Desc.class);
-            if(null == desc) {
-                desc = searchUp(method);
+            Doc doc = method.getAnnotation(Doc.class);
+            if(null == doc) {
+                doc = searchUp(method);
             }
-            if(null != desc) {
-                o.setDescription(resolveDescription(context, desc));
+            if(null != doc) {
+                resolveDoc(context, o, doc);
             }
         }
 
@@ -77,13 +79,13 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         Argument a = param.getArgument();
 
         if (null != a) {
-            Desc desc = param.getArgument().getAnnotation(Desc.class);
-            if (null == desc && null == param.getWrapperArgument() && null != method && null != a.getParameter()) {
+            Doc doc = param.getArgument().getAnnotation(Doc.class);
+            if (null == doc && null == param.getWrapperArgument() && null != method && null != a.getParameter()) {
                 //search from super class or interface.
-                desc = searchUp(method, a.getParameter());
+                doc = searchUp(method, a.getParameter());
             }
-            if (null != desc) {
-                param.setDescription(resolveDescription(context, desc));
+            if (null != doc) {
+                resolveDoc(context, param, doc);
             }
         }
     }
@@ -91,9 +93,9 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
     protected void processModel(ApiMetadataContext context, MApiModelBuilder model) {
         Class<?> c = model.getJavaType();
         if(null != c) {
-            Desc desc = c.getAnnotation(Desc.class);
-            if(null != desc) {
-                model.setDescription(resolveDescription(context, desc));
+            Doc doc = c.getAnnotation(Doc.class);
+            if(null != doc) {
+                resolveDoc(context, model, doc);
             }
         }
 
@@ -105,21 +107,21 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
     protected void processProperty(ApiMetadataContext context, MApiPropertyBuilder p) {
         BeanProperty bp = p.getBeanProperty();
         if(null != bp) {
-            Desc desc = bp.getAnnotation(Desc.class);
-            if(null != desc) {
-                p.setDescription(resolveDescription(context, desc));
+            Doc doc = bp.getAnnotation(Doc.class);
+            if(null != doc) {
+                resolveDoc(context, p, doc);
             }
         }
     }
 
-    protected Desc searchUp(ReflectMethod m) {
+    protected Doc searchUp(ReflectMethod m) {
         Class<?> c = m.getReflectedMethod().getDeclaringClass();
 
         for(Class<?> ic : c.getInterfaces()) {
             try {
                 Method im = ic.getMethod(m.getName(), m.getReflectedMethod().getParameterTypes());
 
-                return im.getAnnotation(Desc.class);
+                return im.getAnnotation(Doc.class);
             } catch (NoSuchMethodException e) {
                 //do nothing.
             }
@@ -128,14 +130,14 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected Desc searchUp(ReflectMethod m, ReflectParameter p) {
+    protected Doc searchUp(ReflectMethod m, ReflectParameter p) {
         Class<?> c = m.getReflectedMethod().getDeclaringClass();
 
         for(Class<?> ic : c.getInterfaces()) {
             try {
                 Method im = ic.getMethod(m.getName(), m.getReflectedMethod().getParameterTypes());
 
-                return im.getParameters()[p.getIndex()-1].getAnnotation(Desc.class);
+                return im.getParameters()[p.getIndex()-1].getAnnotation(Doc.class);
             } catch (NoSuchMethodException e) {
                 //do nothing.
             }
@@ -144,7 +146,15 @@ public class AnnotationDescProcessor implements ApiMetadataProcessor {
         return null;
     }
 
-    protected String resolveDescription(ApiMetadataContext context, Desc a) {
-        return docResolver.resolveDesc(a.value());
+    protected void resolveDoc(ApiMetadataContext context, MNamedWithDescBuilder o, Doc a) {
+        String summary = Strings.firstNotEmpty(a.summary(), a.value());
+        if(!Strings.isEmpty(summary)) {
+            o.setSummary(docResolver.resolveDesc(summary));
+        }
+
+        String desc = a.desc();
+        if(!Strings.isEmpty(desc)) {
+            o.setDescription(docResolver.resolveDesc(desc));
+        }
     }
 }

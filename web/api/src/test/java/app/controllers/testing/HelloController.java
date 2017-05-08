@@ -16,13 +16,13 @@
 package app.controllers.testing;
 
 import leap.web.annotation.Produces;
-import leap.core.doc.annotation.Desc;
+import leap.core.doc.annotation.Doc;
 
 public class HelloController {
 
 	@Produces("json")
-    @Desc("Say hello to someone")
-	public String sayHello(@Desc("人名") String who) {
+    @Doc("Say hello to someone")
+	public String sayHello(@Doc("人名") String who) {
 		return "Hello " + who;
 	}
 

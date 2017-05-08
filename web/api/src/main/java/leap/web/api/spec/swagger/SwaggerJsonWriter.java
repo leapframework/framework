@@ -223,7 +223,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.property(NAME, p.getName())
          .propertyOptional(SUMMARY, p.getSummary())
-         .property(DESCRIPTION, nullToEmpty(p.getDescription()))
+         .property(DESCRIPTION, nullToEmpty(Strings.firstNotEmpty(p.getDescription(),p.getSummary())))
          .property(IN, SwaggerMappings.in(p.getLocation()))
          .propertyOptional(REQUIRED, p.getRequired());
 
@@ -465,7 +465,14 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
                     w.startObject();
 
                     writeParameterType(context, m, w, p);
-                    w.propertyOptional(DESCRIPTION,	 p.getDescription());
+
+                    if(Strings.equalsIgnoreCase(p.getTitle(), p.getName())) {
+                        w.propertyOptional(TITLE, p.getSummary());
+                        w.propertyOptional(DESCRIPTION,	 p.getDescription());
+                    }else{
+                        w.property(TITLE, p.getTitle());
+                        w.propertyOptional(DESCRIPTION,	Strings.firstNotEmpty(p.getDescription(),p.getSummary()));
+                    }
 
 //                    if(isReadonly(p)) {
 //                        w.property(READONLY, true);

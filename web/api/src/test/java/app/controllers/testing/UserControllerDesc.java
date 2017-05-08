@@ -17,7 +17,7 @@
 package app.controllers.testing;
 
 import app.models.testing.User;
-import leap.core.doc.annotation.Desc;
+import leap.core.doc.annotation.Doc;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
 
@@ -25,13 +25,13 @@ import java.util.List;
 
 public interface UserControllerDesc {
 
-    @Desc("doc:user_get_all.md")
+    @Doc("doc:user_get_all.md")
     ApiResponse<List<User>> getAllUsers(QueryOptions options);
 
-    @Desc("doc:user.md#getAllWithoutPassword")
+    @Doc("doc:user.md#getAllWithoutPassword")
     ApiResponse<List<User>> getAllUsersWithoutPassword(QueryOptions options);
 
-    @Desc("查询某个用户")
-    ApiResponse<User> getUser(@Desc("用户id") String id, QueryOptions options);
+    @Doc("查询某个用户")
+    ApiResponse<User> getUser(@Doc("用户id") String id, QueryOptions options);
 
 }

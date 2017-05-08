@@ -29,9 +29,9 @@ import leap.web.api.meta.model.MApiParameterBuilder;
 import leap.web.api.meta.model.MApiPropertyBuilder;
 
 /**
- * Reads desc from configurations.
+ * Reads doc from configurations.
  */
-public class ConfigDescProcessor implements ApiMetadataProcessor {
+public class ConfigDocProcessor implements ApiMetadataProcessor {
 
     @Override
     public void postProcess(ApiMetadataContext context, ApiMetadataBuilder m) {

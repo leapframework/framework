@@ -89,7 +89,7 @@ public class DefaultDocResolver implements DocResolver {
             while ((line = reader.readLine()) != null) {
                 line = line.trim();
 
-                if (line.startsWith("#")) {
+                if (line.startsWith("#") && !line.startsWith("##")) {
 
                     if (null != buf) {
                         //fragment end
