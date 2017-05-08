@@ -16,11 +16,9 @@
 
 package leap.orm.tested;
 
-import leap.orm.annotation.Entity;
+import leap.orm.model.Model;
 
-@Entity
-public class NoIdEntity {
-
+public class NoIdModel extends Model {
     protected String col1;
     protected String col2;
 
