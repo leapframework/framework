@@ -87,9 +87,9 @@ public class DefaultDocResolver implements DocResolver {
             StringBuilder buf = null;
 
             while ((line = reader.readLine()) != null) {
-                line = line.trim();
+                String lineTrimmed = line.trim();
 
-                if (line.startsWith("#") && !line.startsWith("##")) {
+                if (lineTrimmed.startsWith("#") && !lineTrimmed.startsWith("##")) {
 
                     if (null != buf) {
                         //fragment end

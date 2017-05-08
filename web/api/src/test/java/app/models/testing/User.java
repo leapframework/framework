@@ -38,7 +38,7 @@ public class User extends Model {
 	private String  firstName;
 	private String  lastName;
 
-    @Doc(desc="doc:user.md#enabled")
+    @Doc(desc="doc:user_doc.md#enabled")
 	private boolean enabled = true;
 
 	public User() {

@@ -52,6 +52,9 @@ public class AnnotationDescTest extends ApiTestCase {
 
         MApiOperation o = m.getOperation("/user", "GET");
         assertEquals("查询所有用户", o.getSummary());
+
+        assertEquals("根据选项参数查询所有用户信息", o.getDescription());
+        assertEquals("返回用户列表", o.getResponses()[0].getDescription());
     }
 
     @Test
@@ -60,6 +63,7 @@ public class AnnotationDescTest extends ApiTestCase {
 
         MApiOperation o = m.getOperation("/user/safe", "GET");
         assertEquals("查询所有用户(没有密码)", o.getSummary());
+        assertEquals("根据选项参数查询所有用户信息(返回字段不包含密码)", o.getDescription());
     }
 
     @Test
@@ -67,8 +71,15 @@ public class AnnotationDescTest extends ApiTestCase {
         ApiMetadata m = md("testing");
 
         MApiOperation o = m.getOperation("/hello/say_hello", "GET");
-
         assertEquals("人名", o.tryGetParameter("who").getDescription());
+    }
+
+    @Test
+    public void testParameterDescConventional()  {
+        ApiMetadata m = md("testing");
+
+        MApiOperation o = m.getOperation("/user/{id}", "DELETE");
+        assertEquals("用户标识", o.tryGetParameter("id").getDescription());
     }
 
     @Test
@@ -86,9 +97,13 @@ public class AnnotationDescTest extends ApiTestCase {
 
         MApiModel user = m.getModel("User");
         assertEquals("用户信息", user.getSummary());
+        assertEquals("用户基本信息", user.getDescription());
 
         //properties
         MApiProperty enabled = user.tryGetProperty("enabled");
-        assertEquals(doc.resolveDoc("user.md#enabled"), enabled.getDescription());
+        assertEquals(doc.resolveDoc("user_doc.md#enabled"), enabled.getDescription());
+
+        MApiProperty password = user.tryGetProperty("password");
+        assertEquals("用户密码", password.getDescription());
     }
 }

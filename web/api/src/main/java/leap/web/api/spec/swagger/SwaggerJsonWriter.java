@@ -258,7 +258,7 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		w.startObject();
 
         w.propertyOptional(SUMMARY, r.getSummary());
-		w.property(DESCRIPTION, nullToEmpty(r.getDescription()));
+		w.property(DESCRIPTION, nullToEmpty(Strings.firstNotEmpty(r.getDescription(), r.getSummary())));
 		
 		MType type = r.getType();
 		if(null != type && !type.isVoidType()) {

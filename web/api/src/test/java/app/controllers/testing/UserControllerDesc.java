@@ -28,7 +28,7 @@ public interface UserControllerDesc {
     @Doc("doc:user_get_all.md")
     ApiResponse<List<User>> getAllUsers(QueryOptions options);
 
-    @Doc("doc:user.md#getAllWithoutPassword")
+    @Doc("doc:user_doc.md#getAllWithoutPassword")
     ApiResponse<List<User>> getAllUsersWithoutPassword(QueryOptions options);
 
     @Doc("查询某个用户")
