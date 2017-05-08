@@ -25,7 +25,9 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.as.OAuth2AuthzServerErrorHandler;
+import leap.oauth2.as.endpoint.token.DefaultGrantTokenManager;
 import leap.oauth2.as.endpoint.token.GrantTypeHandler;
+import leap.oauth2.as.endpoint.token.GrantTokenInterceptor;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.TokenAuthzProcessor;
 import leap.web.App;
@@ -40,6 +42,8 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
     protected @Inject OAuth2AuthzServerErrorHandler errorHandler;
 	
     protected @Inject TokenAuthzProcessor[] processors;
+    
+    protected @Inject DefaultGrantTokenManager grantTokenManager;
     
 	@Override
     public void startEndpoint(App app, Routes routes) {
@@ -63,7 +67,7 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 			return;
 		}
 		
-		GrantTypeHandler handler = factory.tryGetBean(GrantTypeHandler.class, grantType);
+		GrantTypeHandler handler = grantTokenManager.getHandler(grantType);
 		if(null == handler) {
 			errorHandler.invalidRequest(response, "Unsupported grant type");
 			return;
@@ -72,8 +76,9 @@ public class TokenEndpoint extends AbstractAuthzEndpoint implements Handler {
 		try{
 			OAuth2Params params = new RequestOAuth2Params(request, grantType);
 			
-			handler.handleRequest(request, response, params,
-									(token) -> handleGrantedToken(request, response, params, handler, token));
+			AuthzAccessToken token = grantTokenManager.grantAccessToken(request,response,params,handler);
+			
+			handleGrantedToken(request, response, params, handler, token);
 		}catch(OAuth2ResponseException e) {
 			errorHandler.response(response, e.getStatus(), e.getError(), e.getMessage());
 		}catch(ResponseException e) {
