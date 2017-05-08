@@ -39,7 +39,7 @@ public class OpLogInterceptor implements ActionInterceptor {
     private OpLogManager manager;
 
     @Override
-    public State postExecuteAction(ActionContext context, Validation validation,
+    public void completeExecuteAction(ActionContext context, Validation validation,
                                    ActionExecution execution) throws Throwable {
         Action action = context.getAction();
         if(action != null){
@@ -51,7 +51,6 @@ public class OpLogInterceptor implements ActionInterceptor {
                 manager.saveLog(annotation,context,execution.getArgs());
             }
         }
-        return State.CONTINUE;
     }
 
 }
