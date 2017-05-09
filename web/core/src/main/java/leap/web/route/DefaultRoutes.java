@@ -150,7 +150,8 @@ public class DefaultRoutes implements Routes {
     @Override
     public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
 		Route[] routes = this.array;
-		
+
+		Route target = null;
 		for(int i=0;i<routes.length;i++){
 			Route route = routes[i];
 			
@@ -161,12 +162,16 @@ public class DefaultRoutes implements Routes {
 				}
 				
 				if(route.getPathTemplate().match(path, outVariables)){
-					return route;
+					if(null == target) {
+						target = route;
+					} else {
+						throw new IllegalStateException("Ambiguous handler methods mapped for path '" + path + "'");
+					}
 				}
 			}
 		}
 		
-		return null;
+		return target;
     }
 
 	@Override
