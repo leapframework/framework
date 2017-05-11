@@ -371,6 +371,9 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			for(Entry<String, DataSource> entry : allDataSources.entrySet()){
 				if(entry.getValue() == this.defaultDataSource){
 					defaultDataSourceBeanName = entry.getKey();
+					if(null == defaultDataSourceBeanName){
+                        defaultDataSourceBeanName = DEFAULT_DATASOURCE_NAME;
+                    }
 					break;
 				}
 			}

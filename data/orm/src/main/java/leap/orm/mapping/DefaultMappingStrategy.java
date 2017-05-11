@@ -65,6 +65,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import static leap.core.ds.DataSourceManager.DEFAULT_DATASOURCE_NAME;
+
 public class DefaultMappingStrategy extends AbstractReadonlyBean implements MappingStrategy, AppConfigAware  {
 	
 	private static final Log log = LogFactory.get(DefaultMappingStrategy.class);
@@ -86,8 +88,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 	@Override
 	protected void doInit(BeanFactory beanFactory) throws Exception {
+		defaultDatasourceName = beanFactory.tryGetBean(DataSourceManager.class).getDefaultDatasourceBeanName();
 		if(this.modelsConfigs != null){
-			defaultDatasourceName = beanFactory.tryGetBean(DataSourceManager.class).getDefaultDatasourceBeanName();
 			this.modelsConfigs.getModelsConfigMap().forEach((k,v)->{
 				if(Strings.isEmpty(v.getDataSource())){
 					v.setDataSource(defaultDatasourceName);
@@ -102,28 +104,29 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		//The datasource's name.
 		String ds = context.getName();
 		
-		if(null != modelsConfigs) {
+		boolean annotated = cls.isAnnotationPresent(DataSource.class);
+		
+ 		if(null != modelsConfigs) {
+			
+			OrmModelsConfig models = modelsConfigs.getModelsConfig(ds);
+			if(null != models) {
+				if(models.contains(cls)){
+					return true;
+				}else if(!annotated && !Strings.equals(ds,defaultDatasourceName)){
+					return false;
+				}
+			}
+			
 			for(Entry<String, OrmModelsConfig> entry : modelsConfigs.getModelsConfigMap().entrySet()) {
-				OrmModelsConfig models 				= entry.getValue();
-				String 			name   				= Strings.isEmpty(models.getDataSource())?entry.getKey():models.getDataSource(); //the datasource's name
-				boolean 		isDefaultDatasource = Strings.equals(name,defaultDatasourceName); // is default datasource
-				if(name.equalsIgnoreCase(ds)) {
-					if(models.contains(cls)){
-						return true;
-					}else if(isContextModelAnnotated(context, cls)){
-						return true;
-					}else{
-						if(!isDefaultDatasource){
-							// if this context is default datasource context, there can not return false;
-							return false;
-						}
-					}
-				}else{
-					if(models.contains(cls)) {
-						if(!isDefaultDatasource){
-							return false;
-						}
-					}
+				models = entry.getValue();
+				String  name = Strings.isEmpty(models.getDataSource())?entry.getKey():models.getDataSource(); //the datasource's name
+				
+				if(ds.equalsIgnoreCase(name)) {
+					continue;
+				}
+				
+				if(models.contains(cls)) {
+					return false;
 				}
 			}
 		}
@@ -137,7 +140,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			}
 		}
 		
-		return true;
+		return Strings.equals(ds,defaultDatasourceName);
 	}
 	
 	protected boolean isContextModelAnnotated(OrmContext context, Class<?> cls) {

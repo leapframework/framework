@@ -15,11 +15,12 @@
  */
 package leap.orm.model;
 
+import leap.junit.contexual.Contextual;
 import leap.junit.contexual.ContextualIgnore;
 import leap.orm.OrmTestCase;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityNotFoundException;
-import leap.orm.tested.model.Model2;
+import leap.orm.datasource.annotation.Model2;
 import leap.orm.tested.model.Model3;
 
 import org.junit.Test;
@@ -64,20 +65,18 @@ public class MultiDataSourceTest extends OrmTestCase {
 	}
 	
 	@Test
+	@Contextual("ds1")
 	public void testDataSource1Model3() {
 		Model3.deleteAll();
 		
 		Object id = new Model3().save().id();
 		
-		try {
-	        Dao.get().find(Model3.class, id);
-	        fail("should throw exception");
-        } catch (EntityNotFoundException e) {
-        	
-        }
-		
 		Model3 record = Dao.get("ds1").find(Model3.class, id);
 		assertEquals(record.id(), id);
+		
+		record = Dao.get("h2").find(Model3.class,id);
+		assertNull(record);
+		
 	}
 	
 }

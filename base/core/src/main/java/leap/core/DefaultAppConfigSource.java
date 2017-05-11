@@ -416,7 +416,7 @@ public class DefaultAppConfigSource implements AppConfigSource {
 
                 loadBasePackageResources(urlResourceMap,config.basePackage);
                 loadResources(urlResourceMap);
-
+                
                 config.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
             } catch (IOException e) {
                 throw new AppConfigException("Unexpected IOException : " + e.getMessage(), e);
