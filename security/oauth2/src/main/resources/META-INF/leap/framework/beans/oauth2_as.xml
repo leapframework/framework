@@ -49,6 +49,9 @@
 		  class="leap.oauth2.as.code.UUIDAuthzCodeGenerator" primary="true"/>
 
     <!-- token -->
+	<bean type="leap.oauth2.as.endpoint.token.GrantTokenManager"
+		  class="leap.oauth2.as.endpoint.token.DefaultGrantTokenManager" primary="true"/>
+	
     <bean type="leap.oauth2.as.token.AuthzTokenManager"
 		  class="leap.oauth2.as.token.DefaultAuthzTokenManager" primary="true"/>
 

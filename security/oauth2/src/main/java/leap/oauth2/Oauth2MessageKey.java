@@ -39,7 +39,9 @@ public abstract class Oauth2MessageKey {
     public static String INVALID_REQUEST_ACCESS_TOKEN_REQUIRED = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".access_token_required";
     public static String INVALID_REQUEST_JWT_PUBLIC_KEY_UNDEFINED = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".jwt_public_key_undefined";
     public static String INVALID_REQUEST_INVALID_USERNAME = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".invalid_username";
+    public static String INVALID_REQUEST_INVALID_PASSWORD = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".invalid_password";
     public static String INVALID_REQUEST_INVALID_CLIENT = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".invalid_client";
+    public static String INVALID_REQUEST_INVALID_CLIENT_SECRET = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".invalid_client_secret";
     public static String INVALID_REQUEST_AUTHORIZATION_CODE_REQUIRED = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".authorization_code_required";
     public static String INVALID_REQUEST_REFRESH_TOKEN_REQUIRED = OAuth2Errors.ERROR_INVALID_REQUEST_KEY+".refresh_token_required";
     

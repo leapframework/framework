@@ -21,16 +21,21 @@ import java.lang.annotation.*;
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface Desc {
+public @interface Doc {
+
+    /**
+     * The summary, same as {@link #summary()}.
+     */
+    String value() default "";
+
+    /**
+     * The summary.
+     */
+    String summary() default "";
 
     /**
      * The description.
-     *
-     * <p/>
-     * Syntax 'doc:{file}' : use the file's content as description,
-     *
-     * the file is located as 'classpath:doc/{file}'.
      */
-    String value();
+    String desc() default "";
 
 }

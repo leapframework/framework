@@ -22,10 +22,10 @@ import leap.orm.annotation.Column;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 import leap.orm.model.Model;
-import leap.core.doc.annotation.Desc;
+import leap.core.doc.annotation.Doc;
 
 @Table("auth_user")
-@Desc("用户信息")
+@Doc("用户信息")
 public class User extends Model {
 
     @Id
@@ -38,7 +38,7 @@ public class User extends Model {
 	private String  firstName;
 	private String  lastName;
 
-    @Desc("doc:user.md#enabled")
+    @Doc(desc="doc:user_doc.md#enabled")
 	private boolean enabled = true;
 
 	public User() {

@@ -17,6 +17,7 @@ package leap.oauth2.as.endpoint.token;
 
 import leap.core.annotation.Inject;
 import leap.core.i18n.MessageKey;
+import leap.lang.NamedError;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.oauth2.*;
@@ -90,8 +91,9 @@ public abstract class AbstractGrantTypeHandler implements GrantTypeHandler {
         AuthzClientAuthenticationContext context = new DefaultAuthzClientAuthenticationContext(request,response);
         AuthzClient client = clientManager.authenticate(context,credentials);
         if(!context.errors().isEmpty()){
+            NamedError error = context.errors().first();
             handleError(request,response,new RequestOAuth2Params(request),
-                    OAuth2Errors.invalidGrantError(request, Oauth2MessageKey.createRandomKey(),context.errors().getMessage()));
+                    getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,error.getMessage()),error.getName()));
             return null;
         }
         return client;

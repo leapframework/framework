@@ -18,6 +18,8 @@ package leap.oauth2.as.endpoint.token;
 import java.util.function.Consumer;
 
 import leap.core.annotation.Inject;
+import leap.core.validation.Validation;
+import leap.lang.NamedError;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.OAuth2Errors;
@@ -83,8 +85,16 @@ public class PasswordGrantTypeHandler extends AbstractGrantTypeHandler implement
 		//Authenticate user.
 		Authentication authc = authenticationManager.authenticate(context, credentials);
 		if(null == authc) {
+			Validation validation = context.validation();
+			String errorKey = INVALID_REQUEST_INVALID_USERNAME;
+			if(context.validation().hasErrors()){
+				NamedError error = validation.errors().first();
+				if(Strings.equals(error.getName(),UsernamePasswordCredentials.PASSWORD)){
+					errorKey = INVALID_REQUEST_INVALID_PASSWORD;
+				}
+			}
 			handleError(request,response,params,
-					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid username or password"),INVALID_REQUEST_INVALID_USERNAME,credentials.getUsername()));
+					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid username or password"),errorKey,credentials.getUsername()));
 			return;
 		}
 

@@ -18,6 +18,7 @@
 
 package app.controllers.testing;
 
+import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.ModelController;
@@ -47,4 +48,8 @@ public class UserController extends ModelController<User> implements UserControl
         return get(id,options);
     }
 
+    @DELETE("/{id}")
+    public ApiResponse deleteUser(String id) {
+        return delete(id);
+    }
 }

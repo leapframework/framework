@@ -26,8 +26,12 @@
     </beans>
 
     <!-- doc -->
-    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.AnnotationDescProcessor"/>
-    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.ConfigDescProcessor"/>
+    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.AnnotationDocProcessor"/>
+    <bean type="leap.web.api.meta.ApiMetadataProcessor" class="leap.web.api.doc.ConfigDocProcessor">
+        <property name="conventionalProcessor">
+            <bean class="leap.web.api.doc.ConventionalDocProcessor"/>
+        </property>
+    </bean>
 
     <!-- built-in swagger processor -->
     <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.spec.swagger.SwaggerProcessor">
