@@ -61,7 +61,7 @@ public class AnnotationDescTest extends ApiTestCase {
     public void testMethodDescExternalDocWithFragment() {
         ApiMetadata m = md("testing");
 
-        MApiOperation o = m.getOperation("/user/safe", "GET");
+        MApiOperation o = m.getOperation("/user/test/safe", "GET");
         assertEquals("查询所有用户(没有密码)", o.getSummary());
         assertEquals("根据选项参数查询所有用户信息(返回字段不包含密码)", o.getDescription());
     }
