@@ -25,16 +25,16 @@ public class MappingController {
 		
 	}
 
-	@RequestMapping(path="param_action",params="action=action1")
-	public String paramAction1(String action){
-		return "action1";
-	}
-	
-	@RequestMapping(path="param_action",params="action=action2")
-	public String paramAction2(String action){
-		return "action2";
-	}
-	
+//	@RequestMapping(path="param_action",params="action=action1")
+//	public String paramAction1(String action){
+//		return "action1";
+//	}
+//
+//	@RequestMapping(path="param_action",params="action=action2")
+//	public String paramAction2(String action){
+//		return "action2";
+//	}
+//
 	public String paramAction(){
 		return "otherAction";
 	}

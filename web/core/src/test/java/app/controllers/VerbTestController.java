@@ -33,9 +33,4 @@ public class VerbTestController {
 		return "post";
 	}
 	
-	@Path("t")
-	public String test() {
-		return "test";
-	}
-	
 }

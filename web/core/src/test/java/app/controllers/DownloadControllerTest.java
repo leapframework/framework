@@ -71,7 +71,7 @@ public class DownloadControllerTest extends WebTestCase {
 
 	@Test
 	public void testDownloadAny() throws Exception {
-		THttpResponse response = get("/download/test.txt");
+		THttpResponse response = get("/download/any/test.txt");
 		response.assertContentEquals("中文");
 		
 		/*

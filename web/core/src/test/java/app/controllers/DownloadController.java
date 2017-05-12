@@ -49,7 +49,7 @@ public class DownloadController {
 	    return new InputStreamDownload(in,"stream.txt", data.length);
 	}
 
-	@Path("{file:.*}")
+	@Path("any/{file:.*}")
 	public Content any(@NotEmpty String file) {
 		return new ServletResourceDownload("/WEB-INF/download" + Paths.prefixWithSlash(file));
 	}

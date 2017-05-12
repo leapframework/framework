@@ -36,7 +36,7 @@ public class UserController extends ModelController<User> implements UserControl
         return queryList(options);
     }
 
-    @GET("/safe")
+    @GET("/test/safe")
     public ApiResponse<List<User>> getAllUsersWithoutPassword(QueryOptions options) {
         return queryListWithExecutorCallback(options, (executor) -> {
            executor.selectExclude("password");

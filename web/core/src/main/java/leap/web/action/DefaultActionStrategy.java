@@ -288,9 +288,8 @@ public class DefaultActionStrategy implements ActionStrategy {
             //index path ""
             if(isIndexAction(action)){
                 mappings.add(new ActionMapping("", defaultMethod));
-            }
-
-            if(restful) {
+                mappings.add(new ActionMapping(config.getIndexActionName(), defaultMethod));
+            } else if(restful) {
                 //checks default-method
                 if("*".equals(defaultMethod)) {
                     if(action.hasReturnType()) {

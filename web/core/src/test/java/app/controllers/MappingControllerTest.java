@@ -33,11 +33,11 @@ public class MappingControllerTest extends WebTestCase {
 		get("/mapping/param_action");
 		assertTrue(response.isOk());
 		
-		get("/mapping/param_action?action=action1");
-		response.assertOk().assertContentEquals("action1");
-		
-		get("/mapping/param_action?action=action2");
-		response.assertOk().assertContentEquals("action2");
+//		get("/mapping/param_action?action=action1");
+//		response.assertOk().assertContentEquals("action1");
+//
+//		get("/mapping/param_action?action=action2");
+//		response.assertOk().assertContentEquals("action2");
 		
 		get("/mapping/param_action?action=action3").assertOk().assertContentEquals("otherAction");
 		

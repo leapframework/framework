@@ -162,14 +162,12 @@ public class DefaultRoutes implements Routes {
 				}
 				
 				if(route.getPathTemplate().match(path, outVariables)){
-					return route;
-					/*
 					if(null == target) {
 						target = route;
 					} else {
-						throw new IllegalStateException("Ambiguous handler methods mapped for path '" + route.getPathTemplate() + "' and " + target.getPathTemplate());
+						throw new IllegalStateException("Ambiguous handler methods mapped for path " +
+								"'" + route.getPathTemplate() + "' and '" + target.getPathTemplate() + "'");
 					}
-					*/
 				}
 			}
 		}

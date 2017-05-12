@@ -25,7 +25,7 @@ public class UserControllerTest extends WebTestBase {
 
     @Test
     public void testSelectExclude() {
-        Map<String,Object> user = get("/testing/user/safe").decodeJsonArray(Map.class)[0];
+        Map<String,Object> user = get("/testing/user/test/safe").decodeJsonArray(Map.class)[0];
         assertFalse(user.containsKey("password"));
 
         user = get("/testing/user").decodeJsonArray(Map.class)[0];
