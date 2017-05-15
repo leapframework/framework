@@ -54,7 +54,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
                                          .addQueryParam("access_token", credentials.getToken());
         if(null != config.getResourceServerId()){
-            request.addHeader(Headers.AUTHORIZATION, 
+            request.addHeader(Headers.AUTHORIZATION, "Basic " +
                     Base64.encode(config.getResourceServerId()+":"+config.getResourceServerSecret()));
         }
         HttpResponse response = request.get();
