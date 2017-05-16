@@ -38,6 +38,7 @@
     
     <orm:models datasource="h2">
         <orm:package name="leap.orm.tested"/>
+        <orm:class name="leap.orm.tested.OrmConfigTableModel" table="table_name_in_xml"></orm:class>
     </orm:models>
     
     <monitor enabled="true"/>

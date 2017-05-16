@@ -18,6 +18,7 @@ package leap.orm.mapping;
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 import leap.core.metamodel.ReservedMetaFieldName;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -34,6 +35,9 @@ import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
 import leap.orm.annotation.event.*;
 import leap.orm.annotation.meta.MetaName;
+import leap.orm.config.OrmModelClassConfig;
+import leap.orm.config.OrmModelsConfig;
+import leap.orm.config.OrmModelsConfigs;
 import leap.orm.domain.Domains;
 import leap.orm.domain.EntityDomain;
 import leap.orm.domain.FieldDomain;
@@ -49,12 +53,18 @@ import leap.orm.metadata.MetadataException;
 
 import java.lang.annotation.Annotation;
 
-public class ClassMappingProcessor extends MappingProcessorAdapter implements MappingProcessor {
+public class ClassMappingProcessor extends MappingProcessorAdapter implements MappingProcessor,PostCreateBean {
 
     protected @Inject AppConfig   config;
 	protected @Inject BeanFactory factory;
+    protected OrmModelsConfigs ormModelsConfigs;
 
-	@Override
+    @Override
+    public void postCreate(BeanFactory factory) throws Throwable {
+        ormModelsConfigs = config.getExtension(OrmModelsConfigs.class);
+    }
+
+    @Override
     public void preMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
 		Class<?> sourceClass = emb.getSourceClass();
 		if(null != sourceClass){
@@ -225,9 +235,23 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 	protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, Table a){
 		if(null != a){
             String name = null;
+            
+            /* todo: config table name of model?
             String configName = a.configName();
             if(!Strings.isEmpty(configName)) {
                 name = config.getProperty(configName);
+            }
+            */
+            if(null != ormModelsConfigs){
+                String className = emb.getEntityClass().getName();
+                OrmModelsConfig model = ormModelsConfigs.getModelsConfig(context.getDb().getName());
+                if(null != model){
+                    OrmModelClassConfig classConfig = model.getClasses().get(className);
+                    if(null != classConfig){
+                        String tableName = classConfig.getTableName();
+                        name = tableName;
+                    }
+                }
             }
             if(Strings.isEmpty(name)) {
                 name = Strings.firstNotEmpty(a.name(), a.value());

@@ -16,15 +16,18 @@
 package leap.orm.config;
 
 import leap.lang.Classes;
+import leap.lang.Strings;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class OrmModelsConfig {
 
 	private String dataSource;
 	private Set<String> basePackages = new LinkedHashSet<String>();
-	private Set<String> classNames	 = new LinkedHashSet<String>();
+	private Map<String, OrmModelClassConfig> classes = new LinkedHashMap<>();
 
 	public void addBasePackage(String p) {
 		if(!p.endsWith(".")) {
@@ -40,29 +43,29 @@ public class OrmModelsConfig {
         return basePackages.remove(p);
     }
 	
-	public void addClassName(String cn) {
-		classNames.add(cn);
+	public void addClassConfig(OrmModelClassConfig clzz) {
+		classes.put(clzz.getClassName(),clzz);
 	}
 
-    public boolean removeClassName(String cn) {
-        return classNames.remove(cn);
+    public OrmModelClassConfig removeClass(String cn) {
+        return classes.remove(cn);
     }
 	
 	public Set<String> getBasePackages() {
 		return basePackages;
 	}
 
-	public Set<String> getClassNames() {
-		return classNames;
+	public Map<String, OrmModelClassConfig> getClasses() {
+		return classes;
 	}
 
 	public void addAll(OrmModelsConfig models) {
 		basePackages.addAll(models.basePackages);
-		classNames.addAll(models.classNames);
+		classes.putAll(models.classes);
 	}
 	
 	public boolean contains(Class<?> cls) {
-		if(classNames.contains(cls.getName())) {
+		if(classes.containsKey(cls.getName())) {
 			return true;
 		}
 		

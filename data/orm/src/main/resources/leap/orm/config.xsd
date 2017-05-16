@@ -40,7 +40,8 @@
 				</xsd:element>
 				<xsd:element name="class" minOccurs="0" maxOccurs="unbounded">
 					<xsd:complexType>
-						<xsd:attribute name="name" type="xsd:string" use="required"/>					
+						<xsd:attribute name="name" type="xsd:string" use="required"/>
+                        <xsd:attribute name="table" type="xsd:string" use="optional"/>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>
