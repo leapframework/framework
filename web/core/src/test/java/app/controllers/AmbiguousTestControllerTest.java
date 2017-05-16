@@ -22,10 +22,11 @@ public class AmbiguousTestControllerTest extends WebTestCase {
 	
 	@Test
 	public void testAmbiguous() {
-		/*
-		forGet("/ambiguous/a/b").send().assertInternalServerError();
-		forGet("/ambiguous/a/c").send().assertSuccess();
-		forGet("/ambiguous/c/b").send().assertSuccess();
-		*/
+		forGet("/ambiguous/case1/user/inid").send().assertContentEquals("in_").assertSuccess();
+		forGet("/ambiguous/case2/user/inidin").send().assertContentEquals("in_").assertSuccess();
+		forGet("/ambiguous/case3/user/iniding").send().assertContentEquals("_ing").assertSuccess();
+		forGet("/ambiguous/case4/user/any").send().assertInternalServerError().assertContentContains("Ambiguous");
+		forGet("/ambiguous/case5/user/id").send().assertContentEquals("_").assertSuccess();
+		forGet("/ambiguous/case6/user/info").send().assertContentEquals("info").assertSuccess();
 	}
 }
