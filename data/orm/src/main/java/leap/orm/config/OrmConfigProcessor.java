@@ -35,6 +35,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
     private static final String PACKAGE               = "package";
     private static final String CLASS                 = "class";
     private static final String NAME                  = "name";
+	private static final String TABLE                 = "table";
     private static final String DATASOURCE            = "datasource";
     private static final String SERIALIZER            = "serializer";
     private static final String DEFAULT_COLUMN_TYPE   = "default-column-type";
@@ -127,9 +128,10 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			
 			if(reader.isStartElement(CLASS)) {
 				String className = reader.resolveAttribute(NAME);
+				String tableName = reader.resolveAttribute(TABLE);
 				if(!Strings.isEmpty(className)) {
-                    models.removeClassName(className);
-					models.addClassName(className);
+                    models.removeClass(className);
+					models.addClassConfig(new OrmModelClassConfig(className,tableName));
                     AppClassLoader.addInstrumentClass(className);
 				}
 				continue;

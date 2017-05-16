@@ -54,7 +54,7 @@ public class OrmModelsConfigs {
 
     public void removeClassName(String cn) {
         for(OrmModelsConfig c : modelsMap.values()) {
-            if(c.removeClassName(cn)){
+            if(c.removeClass(cn) != null){
                 return;
             }
         }
