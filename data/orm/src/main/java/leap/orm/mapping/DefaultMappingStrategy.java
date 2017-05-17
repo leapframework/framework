@@ -128,9 +128,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 									+ " with class " + cn;
 							throw new MappingConfigException(msg);
 						}else if(o1ClassContain){
-							return 1;
-						}else if(o2ClassContain){
 							return -1;
+						}else if(o2ClassContain){
+							return 1;
 						}else {
 							boolean o1PkgContain = o1.isPackageContains(cls);
 							boolean o2PkgContain = o2.isPackageContains(cls);
@@ -147,11 +147,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 										+ " with package ["+pkg2.getPkg()+"]";
 								throw new MappingConfigException(msg);
 							}else if(o1PkgContain){
-								return 1;
-							}else if(o2PkgContain){
 								return -1;
-							}else {
+							}else if(o2PkgContain){
 								return 1;
+							}else {
+								return -1;
 							}
 						}
 					}).findFirst();
