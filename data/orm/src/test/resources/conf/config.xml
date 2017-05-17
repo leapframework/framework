@@ -19,6 +19,7 @@
     <properties prefix="orm">
     	<property name="tableNamingStyle" value="lower_underscore_"/>
     	<property name="columnNamingStyle" value="lower_underscore_"/>
+        <property name="modelCrossContext" value="true"/>
     </properties>
      
     <el:functions prefix="orm_test" class="leap.orm.tested.model.Model1Ref">

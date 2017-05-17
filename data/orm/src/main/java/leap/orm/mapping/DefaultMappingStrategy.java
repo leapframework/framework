@@ -45,6 +45,7 @@ import leap.orm.OrmConfig;
 import leap.orm.OrmConstants;
 import leap.orm.OrmContext;
 import leap.orm.annotation.*;
+import leap.orm.config.OrmModelPkgConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
 import leap.orm.domain.EntityDomain;
@@ -54,18 +55,16 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
 import leap.orm.model.ModelField;
-import leap.orm.naming.NamingStrategy;
 import leap.orm.serialize.FieldSerializer;
 
+import javax.swing.text.html.Option;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-
-import static leap.core.ds.DataSourceManager.DEFAULT_DATASOURCE_NAME;
+import java.util.Optional;
 
 public class DefaultMappingStrategy extends AbstractReadonlyBean implements MappingStrategy, AppConfigAware  {
 	
@@ -100,56 +99,122 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 
 	@Override
-    public boolean isContextModel(OrmContext context, Class<?> cls) {
+    public boolean  isContextModel(OrmContext context, Class<?> cls) {
+		if(context.getConfig().isModelCrossContext()){
+			return isContextModelWhenCrossContext(context,cls);
+		}else {
+			return isContextModelWhenNoCrossContext(context,cls);
+		}
+	}
+
+	/**
+	 * no allow model cross context
+	 */
+	protected boolean isContextModelWhenNoCrossContext(OrmContext context, Class<?> cls){
+		String ds = context.getName();
+		boolean annotated = cls.isAnnotationPresent(DataSource.class);
+		if(null != modelsConfigs){
+			Optional<OrmModelsConfig> ormConfig = modelsConfigs.getModelsConfigMap().values().stream()
+					.filter(omc -> omc.contains(cls))
+					.sorted((o1, o2) -> {
+						String cn = cls.getName();
+						boolean o1ClassContain = o1.isClassesContains(cls);
+						boolean o2ClassContain = o2.isClassesContains(cls);
+						if(o1ClassContain && o2ClassContain){
+							String msg = "Duplicate orm class config in datasource["+o1.getDataSource()+","+o2.getDataSource()
+									+"], config location:"
+									+ o1.getClasses().get(cn).getSource()
+									+ " and " + o2.getClasses().get(cn).getSource()
+									+ " with class " + cn;
+							throw new MappingConfigException(msg);
+						}else if(o1ClassContain){
+							return 1;
+						}else if(o2ClassContain){
+							return -1;
+						}else {
+							boolean o1PkgContain = o1.isPackageContains(cls);
+							boolean o2PkgContain = o2.isPackageContains(cls);
+							if(o1PkgContain && o2PkgContain){
+								OrmModelPkgConfig pkg1 = o1.getBasePackages().values()
+										.stream().filter(omc -> cls.getName().startsWith(omc.getPkg()))
+										.findFirst().get();
+								OrmModelPkgConfig pkg2 = o2.getBasePackages().values()
+										.stream().filter(omc -> cls.getName().startsWith(omc.getPkg()))
+										.findFirst().get();
+								String msg = "Duplicate orm package config in datasource["+o1.getDataSource()
+										+","+o2.getDataSource()+"], config location:" + pkg1.getSource()
+										+ " with package ["+ pkg1.getPkg() +"] and " + pkg2.getSource()
+										+ " with package ["+pkg2.getPkg()+"]";
+								throw new MappingConfigException(msg);
+							}else if(o1PkgContain){
+								return 1;
+							}else if(o2PkgContain){
+								return -1;
+							}else {
+								return 1;
+							}
+						}
+					}).findFirst();
+			if(ormConfig.isPresent()){
+				return Strings.equalsIgnoreCase(ormConfig.get().getDataSource(),ds);
+			}else {
+				if(annotated){
+					return isContextModelAnnotated(context,cls);
+				}else {
+					return Strings.equals(ds,defaultDatasourceName);
+				}
+			}
+		}else {
+			if(annotated){
+				return isContextModelAnnotated(context,cls);
+			}else {
+				return Strings.equals(ds,defaultDatasourceName);
+			}
+		}
+	}
+
+	/**
+	 * allow model cross context
+	 */
+	protected boolean isContextModelWhenCrossContext(OrmContext context, Class<?> cls){
 		//The datasource's name.
 		String ds = context.getName();
-		
 		boolean annotated = cls.isAnnotationPresent(DataSource.class);
-		
- 		if(null != modelsConfigs) {
-			
+		if(null != modelsConfigs) {
 			OrmModelsConfig models = modelsConfigs.getModelsConfig(ds);
-			if(null != models) {
-				if(models.contains(cls)){
+			if(null != models && models.contains(cls)) {
+				return true;
+			}
+			if(annotated){
+				if(isContextModelAnnotated(context,cls)){
 					return true;
-				}else if(!annotated && !Strings.equals(ds,defaultDatasourceName)){
+				}else {
 					return false;
 				}
 			}
 			
-			for(Entry<String, OrmModelsConfig> entry : modelsConfigs.getModelsConfigMap().entrySet()) {
-				models = entry.getValue();
-				String  name = Strings.isEmpty(models.getDataSource())?entry.getKey():models.getDataSource(); //the datasource's name
-				
-				if(ds.equalsIgnoreCase(name)) {
-					continue;
-				}
-				
-				if(models.contains(cls)) {
-					return false;
-				}
-			}
-		}
-
-		DataSource a  = cls.getAnnotation(DataSource.class);
-		if(null != a) {
-			if(a.value().equalsIgnoreCase(ds)) {
-				return true;
-			}else{
+			boolean inOther = modelsConfigs.getModelsConfigMap().values().stream()
+					.filter(omc -> omc.contains(cls)&&!Strings.equalsIgnoreCase(omc.getDataSource(),ds))
+					.findAny().isPresent();
+			if(inOther){
 				return false;
 			}
+			return Strings.equals(ds,defaultDatasourceName);
+		}else {
+			if(annotated){
+				if(isContextModelAnnotated(context,cls)){
+					return true;
+				}else {
+					return false;
+				}
+			}else {
+				return Strings.equals(ds,defaultDatasourceName);
+			}
 		}
-		
-		return Strings.equals(ds,defaultDatasourceName);
 	}
-	
 	protected boolean isContextModelAnnotated(OrmContext context, Class<?> cls) {
 		DataSource a  = cls.getAnnotation(DataSource.class);
-		if(null != a && a.value().equalsIgnoreCase(context.getName())) {
-			return true;
-		}else{
-			return false;
-		}
+		return a.value().equalsIgnoreCase(context.getName());
 	}
 
 	@Override

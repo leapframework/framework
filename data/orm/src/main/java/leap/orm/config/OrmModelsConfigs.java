@@ -46,7 +46,7 @@ public class OrmModelsConfigs {
 
     public void removeBasePackage(String p) {
         for(OrmModelsConfig c : modelsMap.values()) {
-            if(c.removeBasePackage(p)){
+            if(c.removeBasePackage(p) != null){
                 return;
             }
         }

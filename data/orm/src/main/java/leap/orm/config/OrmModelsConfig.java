@@ -16,7 +16,6 @@
 package leap.orm.config;
 
 import leap.lang.Classes;
-import leap.lang.Strings;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -26,20 +25,14 @@ import java.util.Set;
 public class OrmModelsConfig {
 
 	private String dataSource;
-	private Set<String> basePackages = new LinkedHashSet<String>();
+	private Map<String, OrmModelPkgConfig> basePackages = new LinkedHashMap<>();
 	private Map<String, OrmModelClassConfig> classes = new LinkedHashMap<>();
 
-	public void addBasePackage(String p) {
-		if(!p.endsWith(".")) {
-			p = p + ".";
-		}
-		basePackages.add(p);
+	public void addBasePackage(OrmModelPkgConfig c) {
+		basePackages.put(c.getPkg(),c);
 	}
 
-    public boolean removeBasePackage(String p) {
-        if(!p.endsWith(".")) {
-            p = p + ".";
-        }
+    public OrmModelPkgConfig removeBasePackage(String p) {
         return basePackages.remove(p);
     }
 	
@@ -51,7 +44,7 @@ public class OrmModelsConfig {
         return classes.remove(cn);
     }
 	
-	public Set<String> getBasePackages() {
+	public Map<String, OrmModelPkgConfig> getBasePackages() {
 		return basePackages;
 	}
 
@@ -60,25 +53,28 @@ public class OrmModelsConfig {
 	}
 
 	public void addAll(OrmModelsConfig models) {
-		basePackages.addAll(models.basePackages);
+		basePackages.putAll(models.basePackages);
 		classes.putAll(models.classes);
 	}
 	
 	public boolean contains(Class<?> cls) {
-		if(classes.containsKey(cls.getName())) {
-			return true;
-		}
-		
+		return isClassesContains(cls)|| isPackageContains(cls);
+	}
+
+	public boolean isClassesContains(Class<?> cls){
+		return classes.containsKey(cls.getName());
+	}
+	
+	public boolean isPackageContains(Class<?> cls){
 		String clsPackageName = Classes.getPackageName(cls) + ".";
-		for(String basePackage : basePackages) {
-			if(clsPackageName.startsWith(basePackage)) {
+		for(OrmModelPkgConfig basePackage : basePackages.values()) {
+			if(clsPackageName.startsWith(basePackage.getPkg())) {
 				return true;
 			}
 		}
-		
 		return false;
 	}
-
+	
 	public String getDataSource() {
 		return dataSource;
 	}

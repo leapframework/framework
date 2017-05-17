@@ -63,6 +63,13 @@ public interface OrmConfig {
 	 */
 	boolean isAutoGenerateOptimisticLock();
 
+	/**
+	 * Returns true if allow model cross orm context, else false.
+	 * <p/>
+	 * Default is false
+	 */
+	boolean isModelCrossContext();
+	
     /**
      * zero means no limitation.
      */

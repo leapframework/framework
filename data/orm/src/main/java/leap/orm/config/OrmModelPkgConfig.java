@@ -21,35 +21,24 @@ package leap.orm.config;
 /**
  * @author kael.
  */
-public class OrmModelClassConfig {
-    private String className;
-    private String tableName;
+public class OrmModelPkgConfig {
+    private String pkg;
     private Object source;
-    
-    public OrmModelClassConfig(Object source,String className) {
-        this(source,className,null);
-    }
 
-    public OrmModelClassConfig( Object source, String className, String tableName) {
-        this.className = className;
-        this.tableName = tableName;
+    public OrmModelPkgConfig(String pkg, Object source) {
+        this.setPkg(pkg);
         this.source = source;
     }
 
-    public String getClassName() {
-        return className;
+    public String getPkg() {
+        return pkg;
     }
 
-    public void setClassName(String className) {
-        this.className = className;
-    }
-
-    public String getTableName() {
-        return tableName;
-    }
-
-    public void setTableName(String tableName) {
-        this.tableName = tableName;
+    public void setPkg(String pkg) {
+        if(!pkg.endsWith(".")) {
+            pkg = pkg + ".";
+        }
+        this.pkg = pkg;
     }
 
     public Object getSource() {

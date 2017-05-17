@@ -25,6 +25,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XmlReader;
 import leap.orm.Orm;
 import leap.orm.OrmConfig;
+import leap.orm.OrmException;
 
 public class OrmConfigProcessor implements AppConfigProcessor {
 
@@ -117,10 +118,9 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			if(reader.isStartElement(PACKAGE)) {
 				String basePackage = reader.resolveAttribute(NAME);
 				if(!Strings.isEmpty(basePackage)) {
-                    if(!models.removeBasePackage(basePackage)) {
-						context.addResources(Resources.scanPackage(basePackage));
-					}
-					models.addBasePackage(basePackage);
+					models.removeBasePackage(basePackage);
+					models.addBasePackage(new OrmModelPkgConfig(basePackage,reader.getSource()));
+					context.addResources(Resources.scanPackage(basePackage));
                     AppClassLoader.addInstrumentPackage(basePackage);
 				}
 				continue;
@@ -131,7 +131,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 				String tableName = reader.resolveAttribute(TABLE);
 				if(!Strings.isEmpty(className)) {
                     models.removeClass(className);
-					models.addClassConfig(new OrmModelClassConfig(className,tableName));
+					models.addClassConfig(new OrmModelClassConfig(reader.getSource(), className,tableName));
                     AppClassLoader.addInstrumentClass(className);
 				}
 				continue;
