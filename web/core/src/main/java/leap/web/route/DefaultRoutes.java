@@ -16,6 +16,7 @@
 package leap.web.route;
 
 import leap.core.annotation.Inject;
+import leap.core.web.path.JerseyUriTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
@@ -151,7 +152,7 @@ public class DefaultRoutes implements Routes {
     public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
 		Route[] routes = this.array;
 
-		Route target = null;
+		List<Route> matchedRoutes = new ArrayList<>();
 		for(int i=0;i<routes.length;i++){
 			Route route = routes[i];
 			
@@ -162,21 +163,40 @@ public class DefaultRoutes implements Routes {
 				}
 				
 				if(route.getPathTemplate().match(path, outVariables)){
-					return route;
-					/*
-					if(null == target) {
-						target = route;
-					} else {
-						throw new IllegalStateException("Ambiguous handler methods mapped for path " +
-								"'" + route.getPathTemplate() + "' and '" + target.getPathTemplate() + "'");
-					}
-					*/
+					matchedRoutes.add(route);
 				}
 			}
 		}
-		
+
+		if(matchedRoutes.isEmpty()) return null;
+
+		if(matchedRoutes.size() == 1) return matchedRoutes.get(0);
+
+		Route target = rematch(matchedRoutes);
+
 		return target;
     }
+
+	private Route rematch(List<Route> matchedRoutes) {
+		Route route = matchedRoutes.get(0);
+		JerseyUriTemplate template = new JerseyUriTemplate(route.getPathTemplate().getTemplate());
+
+		for (int i = 1; i < matchedRoutes.size(); i++) {
+			Route other = matchedRoutes.get(i);
+			JerseyUriTemplate otherTemplate = new JerseyUriTemplate(other.getPathTemplate().getTemplate());
+
+			int re = JerseyUriTemplate.COMPARATOR.compare(template, otherTemplate);
+			if(0 == re) {
+				throw new IllegalStateException("Ambiguous handler methods mapped for path " +
+						"'" + route.getPathTemplate() + "' and '" + other.getPathTemplate() + "'");
+			} else if(re > 0) {
+				route = other;
+				template = otherTemplate;
+			}
+		}
+
+		return route;
+	}
 
 	@Override
 	public Route[] getRoutesByController(Object controller) {

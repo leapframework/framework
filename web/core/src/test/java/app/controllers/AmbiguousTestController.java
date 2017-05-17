@@ -21,13 +21,62 @@ import leap.web.annotation.http.GET;
 
 public class AmbiguousTestController extends ControllerBase {
 
-	@GET("/ambiguous/{a}/b")
-	public String b(String a) {
-		return "b";
+	@GET("/ambiguous/case1/user/in{id}")
+	public String in_() {
+		return "in_";
+	}
+	@GET("/ambiguous/case1/user/{id}")
+	public String _1() {
+		return "_";
 	}
 
-	@GET("/ambiguous/a/{b}")
-	public String a(String b) {
-		return "a";
+
+	@GET("/ambiguous/case2/user/in{id}")
+	public String in_2() {
+		return "in_";
+	}
+	@GET("/ambiguous/case2/user/{id}in")
+	public String _in() {
+		return "_in";
+	}
+
+
+	@GET("/ambiguous/case3/user/in{id}")
+	public String in_3() {
+		return "in_";
+	}
+	@GET("/ambiguous/case3/user/{id}ing")
+	public String _ing() {
+		return "_ing";
+	}
+
+
+	@GET("/ambiguous/case4/user/{id}")
+	public String _() {
+		return "_";
+	}
+	@GET("/ambiguous/case4/user/{name}")
+	public String name() {
+		return "_";
+	}
+
+
+	@GET("/ambiguous/case5/user/{id}")
+	public String _5() {
+		return "_";
+	}
+	@GET("/ambiguous/case5/{user}/id")
+	public String id() {
+		return "id";
+	}
+
+
+	@GET("/ambiguous/case6/user/info")
+	public String info() {
+		return "info";
+	}
+	@GET("/ambiguous/case6/user/{id}")
+	public String info6() {
+		return "_";
 	}
 }
