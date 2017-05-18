@@ -67,7 +67,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @ComplexType
-public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
+public abstract class Model implements ValidatableBean,JsonStringable {
 	
 	//This variable will be accessed by sub-model-class in the instrumented code, cannot change to private modifier.
 	protected static final ThreadLocal<String> className = new ThreadLocal<String>();
@@ -1184,22 +1184,6 @@ public abstract class Model implements DynaBean,ValidatableBean,JsonStringable {
         }
 
         w.map(map);
-    }
-
-    //----implements DyanBean ---
-	@Override
-    public Object getProperty(String name) {
-	    return get(name);
-    }
-
-	@Override
-    public void setProperty(String name, Object value) {
-		set(name,value);
-    }
-
-	@Override
-    public Map<String, Object> getProperties() {
-	    return fields();
     }
 
 	@Override

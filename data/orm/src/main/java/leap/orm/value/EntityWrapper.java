@@ -20,11 +20,13 @@ import java.util.Map;
 import java.util.Set;
 
 import leap.lang.Args;
+import leap.lang.Beans;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
 import leap.lang.params.Params;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.model.Model;
 
 /**
  * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
@@ -45,6 +47,10 @@ public abstract class EntityWrapper implements EntityBase {
 		if(entity instanceof Map){
 			return new MapWrapper(em, (Map)entity);
 		}
+
+        if(entity instanceof Model){
+            return new ModelWrapper(em, ((Model) entity));
+        }
 		
 		if(entity instanceof DynaBean){
 			return new DynaWrapper(em, ((DynaBean) entity));
@@ -112,6 +118,8 @@ public abstract class EntityWrapper implements EntityBase {
 		return em;
 	}
 
+    public abstract Map<String,Object> toMap();
+
 	@SuppressWarnings("rawtypes")
 	protected static final class MapWrapper extends EntityWrapper {
 		
@@ -149,7 +157,12 @@ public abstract class EntityWrapper implements EntityBase {
         	map.put(field, value);
 	        return (T)this;
         }
-	}
+
+        @Override
+        public Map<String, Object> toMap() {
+            return map;
+        }
+    }
 
     protected static final class ParamsWrapper extends EntityWrapper {
 
@@ -184,6 +197,11 @@ public abstract class EntityWrapper implements EntityBase {
         public <T extends EntityBase> T set(String field, Object value) {
             params.set(field, value);
             return (T)this;
+        }
+
+        @Override
+        public Map<String, Object> toMap() {
+            return params.map();
         }
     }
 
@@ -220,6 +238,52 @@ public abstract class EntityWrapper implements EntityBase {
         public <T extends EntityBase> T set(String field, Object value) {
             bean.setProperty(field, value);
             return (T)this;
+        }
+
+        @Override
+        public Map<String, Object> toMap() {
+            return bean.getProperties();
+        }
+    }
+
+    protected static final class ModelWrapper extends EntityWrapper {
+
+        private final Model model;
+
+        public ModelWrapper(EntityMapping em, Model model) {
+            super(em, model);
+            this.model = model;
+        }
+
+        @Override
+        public boolean isDyna() {
+            return true;
+        }
+
+        @Override
+        public Set<String> getFieldNames() {
+            return model.fields().keySet();
+        }
+
+        @Override
+        public boolean contains(String field) {
+            return model.contains(field);
+        }
+
+        @Override
+        public Object get(String field) {
+            return model.get(field);
+        }
+
+        @Override
+        public <T extends EntityBase> T set(String field, Object value) {
+            model.set(field, value);
+            return (T)this;
+        }
+
+        @Override
+        public Map<String, Object> toMap() {
+            return model.fields();
         }
     }
 	
@@ -269,5 +333,10 @@ public abstract class EntityWrapper implements EntityBase {
         	beanType.setProperty(raw, field, value, true);
 	        return (T)this;
         }
-	}
+
+        @Override
+        public Map<String, Object> toMap() {
+            return Beans.toMap(raw);
+        }
+    }
 }

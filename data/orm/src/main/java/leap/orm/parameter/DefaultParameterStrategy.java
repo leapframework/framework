@@ -40,7 +40,6 @@ public class DefaultParameterStrategy implements ParameterStrategy {
 		this.factory = factory;
 	}
 
-	@Override
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public Map<String, Object> toMap(Object object) throws InvalidParametersException {
     	if(null == object){

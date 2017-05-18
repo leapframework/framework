@@ -144,7 +144,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
         }
 
         //Creates map for saving.
-        Map<String,Object> fields = context.getParameterStrategy().toMap(entity.raw());
+        Map<String,Object> fields = entity.toMap();
 
         //Prepared id and serialization.
         prepareIdAndSerialization(id, fields);

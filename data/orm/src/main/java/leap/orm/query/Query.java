@@ -25,6 +25,7 @@ import leap.lang.params.ArrayParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.lang.value.Page;
+import leap.orm.model.Model;
 
 import java.util.List;
 import java.util.Map;
@@ -44,8 +45,17 @@ public interface Query<T> {
 	/**
 	 * Sets all values in the given {@link Params} as query parameters.
 	 */
+
 	Query<T> params(@Nullable Params params);
-	
+
+    /**
+     * Sets all values in the given {@link Params} as query parameters.
+     */
+
+    default Query<T> params(@Nullable Model model) {
+        return params(model.fields());
+    }
+
 	/**
 	 * Sets all properties in the given pojo bean as query parameters. 
 	 */

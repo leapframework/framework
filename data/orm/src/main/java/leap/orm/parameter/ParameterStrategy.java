@@ -28,7 +28,7 @@ public interface ParameterStrategy extends ParamsFactory {
     /**
      * Extracts properties as {@link Map} of the given object.
      */
-	Map<String, Object> toMap(Object object) throws InvalidParametersException;
+	//Map<String, Object> toMap(Object object) throws InvalidParametersException;
 
     /**
      * Creates a {@link Params} object wraps the id object of entity.

@@ -69,7 +69,6 @@ public class ApiModel extends ModelWithDesc {
         this.title = title;
     }
 
-    @Override
     public Map<String, Object> getProperties() {
         return properties;
     }

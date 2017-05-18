@@ -158,7 +158,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         }
 
         //Creates map for saving.
-        Map<String,Object> map = context.getParameterStrategy().toMap(entity.raw());
+        Map<String,Object> map = entity.toMap();
 
         //Prepared id and serialization
         prepareIdAndSerialization(id, map);

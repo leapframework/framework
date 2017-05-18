@@ -31,12 +31,12 @@ public class NoneMappingColumnsTest extends OrmTestCase {
         NoneMappingColumnsModel row = new NoneMappingColumnsModel().create();
 
         //find one
-        Map<String,Object> result = NoneMappingColumnsModel.find(row.id).getProperties();
+        Map<String,Object> result = NoneMappingColumnsModel.find(row.id).fields();
         assertTrue(result.containsKey("col2"));
         assertFalse(result.containsKey("col3"));
 
         //find all
-        result = NoneMappingColumnsModel.findAll().get(0).getProperties();
+        result = NoneMappingColumnsModel.findAll().get(0).fields();
         assertTrue(result.containsKey("col2"));
         assertFalse(result.containsKey("col3"));
 
@@ -47,7 +47,7 @@ public class NoneMappingColumnsTest extends OrmTestCase {
     public void testCriteriaQuery() {
         NoneMappingColumnsModel row = new NoneMappingColumnsModel().create();
 
-        Map<String,Object> result = NoneMappingColumnsModel.where("id = ?", row.id).first().getProperties();
+        Map<String,Object> result = NoneMappingColumnsModel.where("id = ?", row.id).first().fields();
         assertTrue(result.containsKey("col2"));
         assertFalse(result.containsKey("col3"));
 

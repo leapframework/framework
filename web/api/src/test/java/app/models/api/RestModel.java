@@ -69,7 +69,6 @@ public class RestModel extends ModelWithDesc {
         this.title = title;
     }
 
-    @Override
     public Map<String, Object> getProperties() {
         return properties;
     }
