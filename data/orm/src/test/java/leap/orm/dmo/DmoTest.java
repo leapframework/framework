@@ -15,6 +15,9 @@
  */
 package leap.orm.dmo;
 
+import leap.db.model.DbColumnBuilder;
+import leap.db.model.DbTable;
+import leap.db.model.DbTableBuilder;
 import leap.junit.contexual.Contextual;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
@@ -25,6 +28,11 @@ import leap.orm.mapping.FieldMapping;
 import leap.orm.tested.CreationEntity;
 
 import org.junit.Test;
+
+import java.sql.JDBCType;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public class DmoTest extends OrmTestCase {
 	
@@ -45,8 +53,40 @@ public class DmoTest extends OrmTestCase {
 		metadata.removeEntityMapping(em);
 		db.cmdDropTable(em.getTable()).execute();
 	}
-
-
+	@Test
+	@Contextual
+	public void testConcurrentCreateTable() throws InterruptedException {
+		CountDownLatch cdl = new CountDownLatch(5);
+		List<String> tableNames = new ArrayList<>(5);
+		for(int i = 0; i < 5; i++){
+			String tn = "table_"+i;
+			tableNames.add(tn);
+			if(db.checkTableExists(tn)){
+				db.cmdDropTable(new DbTableBuilder(tn).getTableName()).execute();
+			}
+		}
+		
+		tableNames.forEach(s -> new Thread(() -> {
+			try {
+				DbTableBuilder builder = new DbTableBuilder(s);
+				builder.addColumn(new DbColumnBuilder("id").setTypeName(JDBCType.VARCHAR.getName()).setLength(10));
+				db.cmdCreateTable(builder.build()).execute();
+			}finally {
+				cdl.countDown();
+			}
+		}).start());
+		
+		cdl.await();
+		
+		tableNames.forEach(s -> {
+			assertTrue(db.checkTableExists(s));
+			db.cmdDropTable(new DbTableBuilder(s).getTableName()).execute();
+		});
+		
+		tableNames.forEach(s -> assertFalse(db.checkTableExists(s)));
+	}
+	
+	
 	//TODO : ERROR - DmoTest.testCreateTable:51 » Metadata Entity's primary key(s) must not be empt
 	/*
 	@Test
@@ -87,5 +127,6 @@ public class DmoTest extends OrmTestCase {
 			}
 		}
 	}
-
+	
+	
 }

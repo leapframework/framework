@@ -276,7 +276,6 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 
 	protected void refreshSchemasAsync(){
 		cachedSchemas.clear();
-		
         if(null != asyncSchemaReaderThread){
             try {
             	int times = 0;
@@ -298,26 +297,28 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
             	;
             }
         }
-        
-        asyncSchemaReaderThread = new Thread(){
-            @Override
-            public void run() {
-                try {
-					Thread.sleep(100);
-                    getSchema();
-                } catch (Throwable e) {
-                	log.info("Error reading schema : {}",e.getMessage(),e);
-                } finally{
-                	synchronized (asyncSchemaReaderMonitor) {
-                		asyncSchemaReaderMonitor.notifyAll();
-                		log.debug("Notify schema reader finished");
-                    }
-                }
-            }
-        };
-        
-        asyncSchemaReaderThread.setDaemon(true);
-        asyncSchemaReaderThread.setName("dbsr-" + Dates.format(new Date(),"HHmmss.SSS"));
-        asyncSchemaReaderThread.start();
+		if(null == asyncSchemaReaderThread){
+			synchronized (asyncSchemaReaderMonitor){
+				if(null == asyncSchemaReaderThread){
+					asyncSchemaReaderThread = new Thread(() -> {
+						try {
+							Thread.sleep(100);
+							getSchema();
+						} catch (Throwable e) {
+							log.info("Error reading schema : {}",e.getMessage(),e);
+						} finally{
+							synchronized (asyncSchemaReaderMonitor) {
+								asyncSchemaReaderMonitor.notifyAll();
+								log.debug("Notify schema reader finished");
+							}
+						}
+					});
+
+					asyncSchemaReaderThread.setDaemon(true);
+					asyncSchemaReaderThread.setName("dbsr-" + Dates.format(new Date(),"HHmmss.SSS"));
+					asyncSchemaReaderThread.start();
+				}
+			}
+		}
 	}
 }
