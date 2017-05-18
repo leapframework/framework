@@ -367,7 +367,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         ApiConfigurator api = extensions.getApi(name);
         if (null == api) {
             reader.getRequiredAttribute(BASE_PATH);
-            api = new DefaultApiConfig(name, basePath);
+            api = new DefaultApiConfig(name, basePath,reader.getSource());
             api.setBasePackage(basePackage);
             extensions.addApi(api);
         }

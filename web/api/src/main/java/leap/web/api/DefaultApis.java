@@ -53,9 +53,9 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected @Inject ApiMetadataFactory     metadataFactory;
 	protected @Inject MTypeManager           typeManager;
 
-	protected Map<String, ApiConfigurator>  configurators  = new ConcurrentHashMap<String, ApiConfigurator>();
-	protected Map<String, ApiConfig>        configurations = new ConcurrentHashMap<String, ApiConfig>();
-	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<String, ApiMetadata>();
+	protected Map<String, ApiConfigurator>  configurators  = new ConcurrentHashMap<>();
+	protected Map<String, ApiConfig>        configurations = new ConcurrentHashMap<>();
+	protected Map<String, ApiMetadata>      metadatas      = new ConcurrentHashMap<>();
 
     protected Map<String,   MApiResponse> commonResponses = new LinkedHashMap<>();
 
@@ -86,13 +86,8 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     public ApiConfigurator add(String name, String basePath) throws ObjectExistsException {
 		Args.notEmpty(name,     "name");
 		Args.notEmpty(basePath, "basePath");
-		
-		String key = name.toLowerCase();
-		if(configurators.containsKey(key)) {
-			throw new ObjectExistsException("The api '" + name + "' already exists");
-		}
- 
-		ApiConfigurator api = new DefaultApiConfig(name,basePath);
+        
+		ApiConfigurator api = new DefaultApiConfig(name,basePath,DefaultApis.class);
         doAdd(name, api);
 		return api;
     }
@@ -188,6 +183,18 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     protected void doAdd(String name, ApiConfigurator api) {
+
+        String key = name.toLowerCase();
+        if(configurators.containsKey(key)) {
+            throw new ObjectExistsException("The api '" + name + "' already exists");
+        }
+        configurators.values().forEach(c -> {
+            if(Strings.equalsIgnoreCase(c.config().getBasePath(),api.config().getBasePath())){
+                throw new ApiConfigException("Found duplicated api config with base path: " + api.config().getBasePath()
+                 + " in " + c.config().getSource() + " and " + api.config().getSource());
+            }
+        });
+        
         if(null != configs) {
             ApiConfig c = api.config();
 
@@ -220,8 +227,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             });
 
         }
-
-        String key = name.toLowerCase();
+        
         configurators.put(key, api);
         configurations.put(key, api.config());
     }

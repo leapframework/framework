@@ -26,7 +26,7 @@ import leap.web.route.Route;
 import java.util.*;
 
 public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiConfigurator {
-	
+	protected Object       source;
 	protected final String name;
 	protected final String basePath;
 
@@ -74,16 +74,22 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
     protected RestdConfig     restdConfig;
 	
-	public DefaultApiConfig(String name, String basePath) {
+	public DefaultApiConfig(String name, String basePath, Object source) {
 		Args.notEmpty(name, "name");
 		Args.notEmpty(basePath, "basePath");
 		Args.assertTrue(basePath.startsWith("/"), "The base path must be leading with a slash '/'");
+		this.source   = source;
 		this.name     = name;
 		this.title    = name;
 		this.basePath = Paths.suffixWithoutSlash(basePath);
 	}
-	
-	@Override
+
+    @Override
+    public Object getSource() {
+        return source;
+    }
+
+    @Override
 	public ApiConfig config() {
 		return this;
 	}

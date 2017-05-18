@@ -53,11 +53,7 @@ public class ApiConfigs {
 
     public void addApi(ApiConfigurator api) {
         String key = api.config().getName().toLowerCase();
-
-        if (apis.containsKey(key)) {
-            throw new ApiConfigException("Found duplicated api config with name : " + api.config().getName());
-        }
-
+        
         apis.put(key, api);
     }
 

@@ -35,6 +35,10 @@ import leap.web.route.Route;
  * Represents the configuration of a web api.
  */
 public interface ApiConfig extends Named,Titled,Described,Extensible {
+	/**
+	 * Returns config source.
+	 */
+	Object getSource();
 	
 	/**
 	 * Base path of the api, starts with a slash '/'.

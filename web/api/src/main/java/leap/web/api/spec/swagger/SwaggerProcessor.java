@@ -22,6 +22,7 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
@@ -39,9 +40,8 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 
 	@Override
 	public void preProcess(ApiConfigurator c) {
-		app.routes().create().get(getJsonSpecPath(c.config()), (req, resp) -> {
-			handleJsonSpecRequest(c.config(), req, resp, c.config().getName());
-		}).enableCors()
+		app.routes().create().get(getJsonSpecPath(c.config()), (req, resp) -> 
+                handleJsonSpecRequest(c.config(), req, resp, c.config().getName())).enableCors()
 		  .allowAnonymous()
 		  .apply();
 	}
@@ -91,5 +91,5 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
             return request.getContextPath();
         }
     }
-
+    
 }
