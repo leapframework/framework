@@ -50,9 +50,12 @@ import leap.web.view.WrappedViewData;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Enumeration;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+
+import static leap.web.cors.CorsHandler.REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD;
 
 public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
@@ -174,7 +177,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                         log.debug("Routing path '{}'", ac.getPath());
                     }
 
-                    if (handleCorePrelightRequest(request, response, router, ac)) {
+                    if (handleCorePreflightRequest(request, response, router, ac)) {
                         handled = true;
                     } else {
                         int routeState = routeAndExecuteAction(request, response, router, ac);
@@ -328,10 +331,10 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     private static final int ROUTE_STATE_HANLDED = 1;
     private static final int ROUTE_STATE_END = 2;
 
-    protected boolean handleCorePrelightRequest(Request request,
-                                                Response response,
-                                                Router router,
-                                                DefaultActionContext ac) throws Throwable {
+    protected boolean handleCorePreflightRequest(Request request,
+                                                 Response response,
+                                                 Router router,
+                                                 DefaultActionContext ac) throws Throwable {
 
         CorsHandler handler = webConfig.getCorsHandler();
         if (!handler.isPreflightRequest(request)) {
@@ -339,7 +342,18 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         }
 
         if (!Strings.isEmpty(ac.getPath())) {
-            Route route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            Enumeration<String> methods = request.getServletRequest().getHeaders(REQUEST_HEADER_ACCESS_CONTROL_REQUEST_METHOD);
+            Route route = null;
+            while (methods.hasMoreElements()){
+                String method = methods.nextElement();
+                route = router.match(method, ac.getPath(), request.getParameters(), New.hashMap());
+                if(null != route){
+                    break;
+                }
+            }
+            if(null == route){
+                route = router.match(null, ac.getPath(), request.getParameters(), New.hashMap());
+            }
             if (null == route) {
                 return false;
             }

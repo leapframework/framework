@@ -100,7 +100,7 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			context.setExtension(mc);
 		}
 		
-		String datasource = reader.resolveAttribute(DATASOURCE);
+		String datasource = reader.resolveAttribute(DATASOURCE,Orm.DEFAULT_NAME);
 
 		OrmModelsConfig models = mc.getModelsConfig(datasource);
 		if(null == models) {
@@ -118,7 +118,10 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 			if(reader.isStartElement(PACKAGE)) {
 				String basePackage = reader.resolveAttribute(NAME);
 				if(!Strings.isEmpty(basePackage)) {
-					models.removeBasePackage(basePackage);
+					if(models.getBasePackages().containsKey(basePackage)){
+						throw new AppConfigException("Duplicate orm package["+basePackage+"] config in " + reader.getSource() 
+						+ " and " + models.getBasePackages().get(basePackage).getSource());
+					}
 					models.addBasePackage(new OrmModelPkgConfig(basePackage,reader.getSource()));
 					context.addResources(Resources.scanPackage(basePackage));
                     AppClassLoader.addInstrumentPackage(basePackage);
@@ -130,7 +133,10 @@ public class OrmConfigProcessor implements AppConfigProcessor {
 				String className = reader.resolveAttribute(NAME);
 				String tableName = reader.resolveAttribute(TABLE);
 				if(!Strings.isEmpty(className)) {
-                    models.removeClass(className);
+					if(models.getClasses().containsKey(className)){
+						throw new AppConfigException("Duplicate orm class["+className+"] config in " + reader.getSource()
+								+ " and " + models.getClasses().get(className).getSource());
+					}
 					models.addClassConfig(new OrmModelClassConfig(reader.getSource(), className,tableName));
                     AppClassLoader.addInstrumentClass(className);
 				}

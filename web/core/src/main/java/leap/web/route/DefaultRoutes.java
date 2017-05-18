@@ -178,24 +178,17 @@ public class DefaultRoutes implements Routes {
     }
 
 	private Route rematch(List<Route> matchedRoutes) {
-		Route route = matchedRoutes.get(0);
-		JerseyUriTemplate template = new JerseyUriTemplate(route.getPathTemplate().getTemplate());
-
-		for (int i = 1; i < matchedRoutes.size(); i++) {
-			Route other = matchedRoutes.get(i);
-			JerseyUriTemplate otherTemplate = new JerseyUriTemplate(other.getPathTemplate().getTemplate());
-
-			int re = JerseyUriTemplate.COMPARATOR.compare(template, otherTemplate);
-			if(0 == re) {
+		// find the route of the highest priority
+		return matchedRoutes.stream().min((r1, r2) -> {
+			JerseyUriTemplate t1 = new JerseyUriTemplate(r1.getPathTemplate().getTemplate());
+			JerseyUriTemplate t2 = new JerseyUriTemplate(r2.getPathTemplate().getTemplate());
+			int re = JerseyUriTemplate.COMPARATOR.compare(t1, t2);
+			if(0 == re){
 				throw new IllegalStateException("Ambiguous handler methods mapped for path " +
-						"'" + route.getPathTemplate() + "' and '" + other.getPathTemplate() + "'");
-			} else if(re > 0) {
-				route = other;
-				template = otherTemplate;
+						"'" + r1.getPathTemplate() + "' and '" + r2.getPathTemplate() + "'");
 			}
-		}
-
-		return route;
+			return re;
+		}).get();
 	}
 
 	@Override
