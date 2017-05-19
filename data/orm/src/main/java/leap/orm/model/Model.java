@@ -28,6 +28,7 @@ import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.Named;
 import leap.lang.Strings;
+import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
@@ -67,7 +68,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 @ComplexType
-public abstract class Model implements ValidatableBean,JsonStringable {
+public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 	
 	//This variable will be accessed by sub-model-class in the instrumented code, cannot change to private modifier.
 	protected static final ThreadLocal<String> className = new ThreadLocal<String>();
