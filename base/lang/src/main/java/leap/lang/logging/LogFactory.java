@@ -25,7 +25,7 @@ public final class LogFactory {
 	static {
 		slf4j = slf4j();
 		
-		String lvName = System.getProperty("app.stdLog");
+		String lvName = System.getProperty("stdlog.level");
 		if(Strings.isEmpty(lvName)){
 			lvName = "warn";
 		}
