@@ -61,4 +61,12 @@ public class HomeControllerTest extends WebTestCase {
 		assertEquals("", map.get("prop2"));
 
 	}
+
+	@Test
+	public void testMultiSlashPath() {
+		String json = get("/app4/mvc//map").getContent();
+		Map<String, Object> map = JSON.decode(json);
+		assertEquals("userId", map.get("user_id"));
+		assertEquals("userName", ((Map<String, Object>)map.get("user_property")).get("user_name"));
+	}
 }

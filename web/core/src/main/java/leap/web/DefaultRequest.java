@@ -834,6 +834,9 @@ public class DefaultRequest extends Request {
 				path = path.substring(0,lastIndex);
 			}
 		}
+
+		// replace two or more slash with only one slash.
+        path = path.replaceAll("\\/+", "/");
 		
 		return path;	
 	}
