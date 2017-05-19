@@ -19,26 +19,40 @@ import leap.lang.Strings;
 
 final class StdLog implements Log {
 	
+	private boolean trace = false;
+	private boolean debug = false;
+	private boolean info = false;
+	private boolean warn = true;
+	private boolean error = true;
+	
 	public boolean isTraceEnabled() {
-		return false;
+		return trace;
 	}
 	
 	public boolean isDebugEnabled() {
-		return false;
+		return debug;
 	}
 
 	public boolean isInfoEnabled() {
-		return false;
+		return info;
 	}
 
 	public boolean isWarnEnabled() {
-		return true;
+		return warn;
 	}
 	
 	public boolean isErrorEnabled() {
-		return true;
+		return error;
 	}
-	
+
+	public StdLog(LogLevel lv) {
+		trace = lv.isTraceEnabled();
+		debug = lv.isDebugEnabled();
+		info = lv.isInfoEnabled();
+		warn = lv.isWarnEnabled();
+		error = lv.isErrorEnabled();
+	}
+
 	public void trace(String msg) {
 		if(isTraceEnabled()){
 			out(msg);
