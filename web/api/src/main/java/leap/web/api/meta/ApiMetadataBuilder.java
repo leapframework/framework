@@ -148,6 +148,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 		Args.notEmpty(path.getPathTemplate(), "path template");
 		
 		if(paths.containsKey(path.getPathTemplate())) {
+		    
 			throw new ObjectExistsException("The path template '" + path.getPathTemplate() + "' already exists");
 		}
 		
@@ -160,8 +161,7 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
 	
 	public MApiPathBuilder getPath(String pathTemplate) {
 		Args.notEmpty(pathTemplate,"path template");
-        String relativePath = Strings.removeStart(pathTemplate, basePath);
-		return paths.get(relativePath);
+		return paths.get(pathTemplate);
 	}
 
     public MApiPathBuilder getOrAddPath(String pathTemplate) {

@@ -344,16 +344,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();
-
-		MApiPathBuilder path = md.getPath(pt.getTemplate());
+		
+        String pathTemplate = Strings.removeStart(pt.getTemplate(), md.getBasePath());
+        if(!Strings.startsWith(pathTemplate,"/")){
+            pathTemplate = "/"+pathTemplate;
+        }
+        
+		MApiPathBuilder path = md.getPath(pathTemplate);
 		if(null == path) {
 			path = new MApiPathBuilder();
-            String template = pt.getTemplate();
-            template = Strings.removeStart(template,context.getConfig().getBasePath());
-            if(!Strings.startsWith(template,"/")){
-                template = "/"+template;
-            }
-			path.setPathTemplate(template);
+			path.setPathTemplate(pathTemplate);
 			md.addPath(path);
 		}
 
