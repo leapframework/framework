@@ -15,13 +15,22 @@
  */
 package leap.lang.logging;
 
+import leap.lang.Strings;
+
 public final class LogFactory {
 	
 	private static final boolean slf4j;
-	private static final StdLog  std = new StdLog();
+	private static final StdLog  std;
 	
 	static {
 		slf4j = slf4j();
+		
+		String lvName = System.getProperty("app.stdLog");
+		if(Strings.isEmpty(lvName)){
+			lvName = "warn";
+		}
+		LogLevel lv = LogLevel.byName(lvName);
+		std = new StdLog(lv);
 	}
 
 	public static Log get(String name) {

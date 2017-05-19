@@ -18,7 +18,6 @@
         <property name="reloadEnabled" value="false"/>
     </properties>
     -->
-
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 
 	<web:mvc>
