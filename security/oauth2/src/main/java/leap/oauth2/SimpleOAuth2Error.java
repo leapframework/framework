@@ -15,11 +15,14 @@
  */
 package leap.oauth2;
 
+import leap.core.i18n.MessageKey;
+
 public class SimpleOAuth2Error implements OAuth2Error {
 
     protected int status;
     protected String error;
     protected String errorDescription;
+    private MessageKey key;
 
     public SimpleOAuth2Error() {
         super();
@@ -29,6 +32,13 @@ public class SimpleOAuth2Error implements OAuth2Error {
         this.status = status;
         this.error = error;
         this.errorDescription = errorDescription;
+    }
+
+    public SimpleOAuth2Error(int status, String error, String errorDescription,MessageKey key) {
+        this.status = status;
+        this.error = error;
+        this.errorDescription = errorDescription;
+        this.key=key;
     }
 
     public String getError() {
@@ -55,4 +65,12 @@ public class SimpleOAuth2Error implements OAuth2Error {
     public void setStatus(int status) {
         this.status = status;
     }
+
+	public MessageKey getKey() {
+		return key;
+	}
+
+	public void setKey(MessageKey key) {
+		this.key = key;
+	}
 }
