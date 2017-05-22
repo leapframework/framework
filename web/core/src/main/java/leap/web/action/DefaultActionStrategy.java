@@ -86,6 +86,10 @@ public class DefaultActionStrategy implements ActionStrategy {
             return false;
         }
 
+        if(Modifier.isAbstract(m.getModifiers())) {
+            return false;
+        }
+
         if(Modifier.isStatic(m.getModifiers())) {
             return false;
         }
