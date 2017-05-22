@@ -133,7 +133,7 @@ public class DbColumn extends DbNamedObject implements JsonStringable {
 		writer.property("nullable", nullable);
 		
 		if(primaryKey){
-			writer.property("primaryKet", primaryKey);
+			writer.property("primaryKey", primaryKey);
 		}
 		
 		if(unique){
