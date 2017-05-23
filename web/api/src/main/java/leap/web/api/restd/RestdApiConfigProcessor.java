@@ -84,9 +84,13 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             for (RestdModel rm : cc.getModels()) {
 
                 MComplexType mtype = omf.getMType(mtc, cc.getDao().getOrmContext(), rm.getEntityMapping());
-                MApiModelBuilder model = new MApiModelBuilder(mtype);
 
-                m.addModel(model);
+                if(null == m.tryGetModel(rm.getEntityMapping().getEntityClass())) {
+
+                    MApiModelBuilder model = new MApiModelBuilder(mtype);
+
+                    m.addModel(model);
+                }
             }
         }
     }
