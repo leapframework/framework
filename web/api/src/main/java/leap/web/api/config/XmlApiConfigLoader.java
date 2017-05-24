@@ -719,6 +719,15 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             model.setAnonymous(anonymous);
         }
 
+        if (config.isReadonlyModel(name)) {
+            model.setFindOperationEnabled(true);
+            model.setQueryOperationEnabled(true);
+
+            model.setCreateOperationEnabled(false);
+            model.setUpdateOperationEnabled(false);
+            model.setDeleteOperationEnabled(false);
+        }
+
         if (null != read) {
             model.setFindOperationEnabled(read);
             model.setQueryOperationEnabled(read);
