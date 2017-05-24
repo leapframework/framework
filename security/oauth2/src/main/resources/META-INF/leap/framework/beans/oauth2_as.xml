@@ -145,10 +145,10 @@
 	<bean type="leap.oauth2.as.sso.AuthzSSOManager" class="leap.oauth2.as.sso.DefaultAuthzSSOManager" primary="true"/>
 
 
-	<!-- userinfo endpoint -->
+	<!-- userinfo endpoint: todo ：how to override endpoint
 	<bean name="userInfoEndpoint" type="leap.web.Endpoint"
 		  class="leap.oauth2.as.endpoint.UserInfoEndpoint"/>
-
+ 	-->
 	<!-- userinfo endpoint : handlers -->
 	<bean name="userInfoHandler" type="leap.oauth2.as.endpoint.userinfo.UserInfoHandler"
 		  class="leap.oauth2.as.endpoint.userinfo.DefaultUserInfoHandler"/>
