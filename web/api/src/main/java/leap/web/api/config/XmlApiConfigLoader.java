@@ -673,19 +673,19 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         reader.loopInsideElement(() -> {
             //included models
             if (reader.isStartElement(INCLUDED_MODELS)) {
-                Collections2.addAll(rc.getIncludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                Collections2.addAll(rc.getIncludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd(), ','));
                 return;
             }
 
             //excluded models
             if (reader.isStartElement(EXCLUDED_MODELS)) {
-                Collections2.addAll(rc.getExcludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                Collections2.addAll(rc.getExcludedModels(), Strings.splitMultiLines(reader.getElementTextAndEnd(), ','));
                 return;
             }
 
             //readonly models
             if (reader.isStartElement(READONLY_MODELS)) {
-                Collections2.addAll(rc.getReadonlyModels(), Strings.splitMultiLines(reader.getElementTextAndEnd()));
+                Collections2.addAll(rc.getReadonlyModels(), Strings.splitMultiLines(reader.getElementTextAndEnd(), ','));
                 return;
             }
 
@@ -717,6 +717,15 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
         if (null != anonymous) {
             model.setAnonymous(anonymous);
+        }
+
+        if (config.isReadonlyModel(name)) {
+            model.setFindOperationEnabled(true);
+            model.setQueryOperationEnabled(true);
+
+            model.setCreateOperationEnabled(false);
+            model.setUpdateOperationEnabled(false);
+            model.setDeleteOperationEnabled(false);
         }
 
         if (null != read) {

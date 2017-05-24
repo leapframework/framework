@@ -108,10 +108,6 @@ public class RestdConfig {
             return model.getCreateOperationEnabled();
         }
 
-        if(isReadonlyModel(name)) {
-            return false;
-        }
-
         return !readonly;
     }
 
@@ -121,10 +117,6 @@ public class RestdConfig {
             return model.getUpdateOperationEnabled();
         }
 
-        if(isReadonlyModel(name)) {
-            return false;
-        }
-
         return !readonly;
     }
 
@@ -132,10 +124,6 @@ public class RestdConfig {
         Model model = getModel(name);
         if(null != model && null != model.getDeleteOperationEnabled()) {
             return model.getDeleteOperationEnabled();
-        }
-
-        if(isReadonlyModel(name)) {
-            return false;
         }
 
         return !readonly;
