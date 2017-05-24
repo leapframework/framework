@@ -20,6 +20,7 @@ package tests.as;
 
 import leap.lang.json.JsonObject;
 import leap.webunit.client.THttpResponse;
+import org.junit.Ignore;
 import org.junit.Test;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
@@ -28,6 +29,8 @@ import tests.TokenResponse;
  * @author kael.
  */
 public class UserInfoEndpointTest extends OAuth2TestBase {
+    // todo
+    @Ignore
     @Test
     public void testGetUserinfo(){
         TokenResponse token = obtainAccessTokenByPassword(USER_ADMIN,PASS_ADMIN);

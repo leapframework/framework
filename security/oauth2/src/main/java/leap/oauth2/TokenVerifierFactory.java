@@ -87,27 +87,20 @@ public class TokenVerifierFactory {
         
         protected final Log log = LogFactory.get(PublicKeyGetterRSAJwtVerifier.class);
         
-        protected JwtVerifier verifier;
+        protected JwtVerifier verifier = null;
         protected int repeatCount;
         protected PublicKeyGetter<RSAPublicKey> getter;
-
+        private Object lock = new Object();
         public PublicKeyGetterRSAJwtVerifier(
                 PublicKeyGetter<RSAPublicKey> getter, int repeatCount) {
             Assert.notNull(getter,"public key getter can not be null.");
             this.getter = getter;
-            try {
-                this.verifier = getVerifier();
-            } catch (Throwable throwable) {
-                log.warn("create verifier error",throwable);
-            }
             this.repeatCount = repeatCount;
         }
 
         @Override
         public Map<String, Object> verify(String token) throws TokenVerifyException {
-            if(this.verifier == null){
-                this.verifier = getVerifier();
-            }
+            initVerifier();
             Map<String, Object> claims = null;
             TokenVerifyException error = null;
             for(int i = 0; i < this.repeatCount; i ++){
@@ -125,6 +118,20 @@ public class TokenVerifierFactory {
             }
             
             return claims;
+        }
+        
+        public void initVerifier(){
+            if(null == this.verifier){
+                synchronized (lock){
+                    if(null == this.verifier){
+                        try {
+                            this.verifier = getVerifier();
+                        } catch (Throwable throwable) {
+                            log.error("create verifier error",throwable);
+                        }
+                    }
+                }
+            }
         }
         
         public void setRepeatCount(int count){
