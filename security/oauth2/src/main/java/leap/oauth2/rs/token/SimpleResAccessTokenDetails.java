@@ -15,9 +15,9 @@
  */
 package leap.oauth2.rs.token;
 
-import leap.lang.expirable.TimeExpirableMs;
+import leap.lang.expirable.TimeExpirableSeconds;
 
-public class SimpleResAccessTokenDetails extends TimeExpirableMs implements ResAccessTokenDetails {
+public class SimpleResAccessTokenDetails extends TimeExpirableSeconds implements ResAccessTokenDetails {
 
     protected String clientId;
     protected String userId;
