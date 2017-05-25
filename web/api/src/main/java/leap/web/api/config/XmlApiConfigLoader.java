@@ -715,6 +715,8 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             config.addModel(model);
         }
 
+        model.setAnonymous(api.config().isDefaultAnonymous());
+
         if (null != anonymous) {
             model.setAnonymous(anonymous);
         }
