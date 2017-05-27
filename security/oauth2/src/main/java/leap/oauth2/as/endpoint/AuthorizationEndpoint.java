@@ -31,6 +31,7 @@ import leap.oauth2.as.authc.SimpleAuthzAuthentication;
 import leap.oauth2.as.client.AuthzClient;
 import leap.oauth2.as.endpoint.authorize.ResponseTypeHandler;
 import leap.oauth2.as.token.AuthzTokenManager;
+import leap.oauth2.rs.auth.ResAuthentication;
 import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
@@ -45,9 +46,9 @@ import leap.web.view.ViewSource;
 import java.util.UUID;
 
 public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements SecurityInterceptor {
-    
+
     private static final Log log = LogFactory.get(AuthorizationEndpoint.class);
-    
+
     public static final String CLIENT_ATTRIBUTE  = "oauth2.client";
     public static final String STATE_ATTRIBUTE   = "oauth2.state";
     public static final String PARAMS_ATTRIBUTE  = "oauth2.params";
@@ -56,7 +57,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
     protected @Inject ViewSource        viewSource;
     protected @Inject UserManager       um;
     protected String loginUrl;
-    
+
 	@Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
 	    if(config.isEnabled()) {
@@ -73,39 +74,39 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         if(!request.getPath().equals(config.getAuthzEndpointPath())) {
             return State.CONTINUE;
         }
-        
+
         OAuth2Params params = new RequestOAuth2Params(request);
-        
+
         ResponseTypeHandler handler = getResponseTypeHandler(request, response, params);
         if(null == handler) {
             return State.INTERCEPTED;
         }
-        
+
         Result<AuthzClient> result = handler.validateRequest(request, response, params);
         if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
-        
+
         AuthzClient client = result.get();
-        
+
         //If user not authenticated, redirect to login url.
         Authentication authc = context.getAuthentication();
-        if(null == authc || !authc.isAuthenticated()) {
+        if(null == authc || !authc.isAuthenticated() || (authc instanceof ResAuthentication)) {
             //Expose view data.
             exposeViewData(request, params, client);
-            
+
             return State.CONTINUE;
         }
-        
+
         //Handle authentication.
-        handleAuthenticated(request, response, 
+        handleAuthenticated(request, response,
                             new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc),
                             handler);
-        
+
         //Intercepted.
         return State.INTERCEPTED;
     }
-    
+
     @Override
     public State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
     	//set login url
@@ -114,7 +115,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         }
     	return State.CONTINUE;
     }
-    
+
     @Override
     public State preLoginAuthentication(Request request, Response response, LoginContext context) throws Throwable {
         String savedQueryString = request.getParameter(STATE_ATTRIBUTE);
@@ -125,12 +126,12 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         if(null != loginUrl) {
             context.setLoginUrl(loginUrl);
         }
-        
+
         QueryString qs = QueryStringParser.parse(Urls.decode(savedQueryString));
         if(qs.isEmpty()) {
             return State.CONTINUE;
         }
-        
+
         OAuth2Params params = new QueryOAuth2Params(qs);
         ResponseTypeHandler handler = getResponseTypeHandler(request, response, params);
         if(null == handler) {
@@ -141,9 +142,9 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         if(result.isIntercepted()) {
             return State.INTERCEPTED;
         }
-        
+
         exposeViewData(request, params, result.get(), savedQueryString);
-        
+
         return State.CONTINUE;
     }
 
@@ -153,21 +154,21 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
         if(Strings.isEmpty(savedQueryString)) {
             return State.CONTINUE;
         }
-        
+
         OAuth2Params params = (OAuth2Params)request.getAttribute(PARAMS_ATTRIBUTE);
         AuthzClient client = (AuthzClient)request.getAttribute(CLIENT_ATTRIBUTE);
-        
+
         ResponseTypeHandler handler = null;
         if(null != params) {
             handler = getResponseTypeHandler(request, response, params);
         }
-        
+
         if(null == client || null == params) {
             QueryString qs = QueryStringParser.parse(Urls.decode(savedQueryString));
             if(qs.isEmpty()) {
                 return State.CONTINUE;
             }
-            
+
             params = new QueryOAuth2Params(qs);
             handler = getResponseTypeHandler(request, response, params);
             if(null == handler){
@@ -181,29 +182,29 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
 
             client = result.get();
         }
-        
+
         //Handle authentication.
         handleAuthenticated(request, response, new SimpleAuthzAuthentication(params, client, um.getUserDetails(authc.getUser()), authc), handler);
-        
+
         //Intercepted.
         return State.INTERCEPTED;
     }
-    
+
     protected ResponseTypeHandler getResponseTypeHandler(Request request, Response response, OAuth2Params params) throws Throwable {
         //String redirectUri  = params.getRedirectUri();
         String responseType = params.getResponseType();
-        
+
         if(Strings.isEmpty(responseType)) {
             //if(Strings.isEmpty(redirectUri)) {
             log.debug("error : response_type required");
             request.getValidation().addError(OAuth2Errors.ERROR_INVALID_REQUEST, "response_type required");
             request.forwardToView(config.getErrorView());
             //}else{
-            //    OAuth2Errors.redirectInvalidRequest(response, redirectUri, "response_type required");    
+            //    OAuth2Errors.redirectInvalidRequest(response, redirectUri, "response_type required");
             //}
             return null;
         }
-        
+
         ResponseTypeHandler handler = factory.tryGetBean(ResponseTypeHandler.class, responseType);
         if(null == handler) {
             log.info("error : invalid response type {}", responseType);
@@ -211,17 +212,17 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
                 request.getValidation().addError(OAuth2Errors.ERROR_INVALID_REQUEST, "unsupported or invalid response type");
                 request.forwardToView(config.getErrorView());
             //}else{
-            //    OAuth2Errors.redirectUnsupportedResponseType(response, redirectUri, "unsupported or invalid response type");    
+            //    OAuth2Errors.redirectUnsupportedResponseType(response, redirectUri, "unsupported or invalid response type");
             //}
             return null;
         }
-        
+
         return handler;
     }
 
     protected void handleAuthenticated(Request request, Response response, SimpleAuthzAuthentication authc, ResponseTypeHandler handler) throws Throwable {
         String redirectUri = authc.getRedirectUri();
-        
+
         try{
             handler.handleResponseType(request, response, authc);
         }catch(OAuth2ResponseException e) {
@@ -235,13 +236,13 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             OAuth2Errors.redirect(response, redirectUri, error);
         }
     }
-    
+
     protected void exposeViewData(Request request, OAuth2Params params, AuthzClient client) {
         request.setAttribute(CLIENT_ATTRIBUTE, client);
         request.setAttribute(PARAMS_ATTRIBUTE, params);
         request.setAttribute(STATE_ATTRIBUTE,  Urls.encode(request.getQueryString()));
     }
-    
+
     protected void exposeViewData(Request request, OAuth2Params params, AuthzClient client, String state) {
         request.setAttribute(CLIENT_ATTRIBUTE, client);
         request.setAttribute(PARAMS_ATTRIBUTE, params);
