@@ -292,7 +292,7 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     }
 
     @Override
-    public int getDefaultAuthenticationExpires() {
+    public int  getDefaultAuthenticationExpires() {
         return defaultAuthenticationExpires;
     }
 

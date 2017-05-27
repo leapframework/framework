@@ -19,24 +19,21 @@ import leap.lang.Strings;
 import leap.lang.http.Headers;
 import leap.web.Request;
 
+import java.util.Enumeration;
+
 public class DefaultAjaxDetector implements AjaxDetector {
 	
 	public static final String ANDROID_41_X_REQUESTED_WITH_HEADER = "com.android.browser";
 	
 	@Override
     public boolean detectAjaxRequest(Request request) {
-		String header = request.getHeader(Headers.X_REQUESTED_WITH);
-		
-		if(Strings.isEmpty(header)){
-			return false;
+		Enumeration<String> headers = request.getServletRequest().getHeaders(Headers.X_REQUESTED_WITH);
+		while (headers.hasMoreElements()){
+			String header = headers.nextElement();
+			if(Strings.equalsIgnoreCase(header,"XMLHttpRequest")){
+				return true;
+			}
 		}
-		
-		//The default browser in Android 4.1+ has added 
-		//a new header to all requests "X-Requested-With: com.android.browser".
-		if(header.equals(ANDROID_41_X_REQUESTED_WITH_HEADER)){
-			return false;
-		}
-		
-		return true;
+		return false;
 	}
 }

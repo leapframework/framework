@@ -22,6 +22,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InvalidTokenException;
 import leap.oauth2.OAuth2ResponseException;
+import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.rs.auth.ResAuthentication;
 import leap.oauth2.rs.auth.ResAuthenticationResolver;
 import leap.oauth2.rs.auth.ResCredentialsAuthenticator;
@@ -43,6 +44,7 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
     private static final Log log = LogFactory.get(OAuth2ResServerSecurityInterceptor.class);
 
     protected @Inject OAuth2ResServerConfig       config;
+    protected @Inject OAuth2AuthzServerConfig     asc;
     protected @Inject ResAccessTokenExtractor     tokenExtractor;
     protected @Inject OAuth2ResServerErrorHandler errorHandler;
     protected @Inject ResCredentialsAuthenticator credentialsAuthenticator;
@@ -54,6 +56,10 @@ public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
 
     @Override
 	public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
+	    if(asc.isEnabled() && request.getPath().equals(asc.getAuthzEndpointPath())){
+            return State.CONTINUE;
+        }
+        
 		if (config.isEnabled()) {
             return doPreResolveAuthentication(request, response, context);
 		}
