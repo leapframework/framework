@@ -15,22 +15,24 @@
  */
 package leap.orm.command;
 
+import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlCommand;
 
 public class DefaultExistsCommand extends EntitySqlCommandBase implements ExistsCommand {
+	protected final Params idParameters;
 
 	public DefaultExistsCommand(Dao dao, EntityMapping em, Object id) {
 		super(dao, em, SqlCommand.EXISTS_COMMAND);
-		
-		id(id);
+
+		this.idParameters = context.getParameterStrategy().createIdParameters(context, em, id);
 	}
 
 	@Override
     public boolean execute() {
-	    return executeQuery(ResultSetReaders.forCheckExists());
+		return sqlCommand.executeQuery(this, idParameters, ResultSetReaders.forCheckExists());
     }
 	
 }

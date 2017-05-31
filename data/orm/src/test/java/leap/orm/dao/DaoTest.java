@@ -45,6 +45,18 @@ public class DaoTest extends OrmTestCase {
 		
 		assertFieldsEquals(entity, newEntity);
 	}
+
+	@Test
+	public void testExists() {
+		TestedEntity entity = new TestedEntity();
+		entity.setChar1('c');
+		dao.insert(entity);
+
+		assertNotNull(entity.getId());
+
+		boolean isexist = dao.exists(TestedEntity.class, entity.getId());
+		assertTrue(isexist);
+	}
 	
 	@Test
 	public void testIntIdentity(){
