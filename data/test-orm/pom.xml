@@ -21,7 +21,7 @@
     <parent>
         <artifactId>leap-parent</artifactId>
         <groupId>org.leapframework</groupId>
-        <version>0.6.0b</version>
+        <version>0.6.1b-SNAPSHOT</version>
         <relativePath>../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
