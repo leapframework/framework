@@ -43,7 +43,7 @@
         </dependency>
         <dependency>
             <groupId>org.leapframework</groupId>
-            <artifactId>leap-orm-test-resources</artifactId>
+            <artifactId>orm-test-resources</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
