@@ -11,6 +11,8 @@
 
 	<properties>
 		<plugins.archetype.version>2.2</plugins.archetype.version>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.install.skip>true</maven.install.skip>
 	</properties>
 
 	<build>

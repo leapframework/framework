@@ -21,6 +21,16 @@
             <name>Evan feng</name>
             <email>live.evan@gmail.com</email>
         </developer>
+        <developer>
+            <name>kael-aiur</name>
+        </developer>
+        <developer>
+            <name>Calvin Chen</name>
+            <email>Calvin.Chen.310@gmail.com</email>
+        </developer>
+        <developer>
+            <name>shenglfyu</name>
+        </developer>
     </developers>
 
     <scm>
@@ -118,15 +128,6 @@
         <derby.version>10.10.2.0</derby.version>
         <jetty.version>9.2.2.v20140723</jetty.version>
         <httpclient.version>4.3.6</httpclient.version>
-		
-        <!-- Sonar :
-             The destination file for the code coverage report has to be set to the same value
-             in the parent pom and in each module pom. Then JaCoCo will add up information in
-             the same report, so that, it will give the cross-module code coverage.
-        -->
-        <jacoco.dataFileDir>${project.basedir}/../../target</jacoco.dataFileDir>
-        <jacoco.dataFilePath>${jacoco.dataFileDir}/jacoco-it.exec</jacoco.dataFilePath>
-        <sonar.language>java</sonar.language>
 	</properties>
 	
 	<build>
@@ -293,13 +294,6 @@
 						</sourceExcludes>
 					</configuration>
 				</plugin>
-
-                <!-- jacoco -->
-                <plugin>
-                    <groupId>org.jacoco</groupId>
-                    <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.7.5.201505241946</version>
-                </plugin>
 			</plugins>
 		</pluginManagement>
 
@@ -315,44 +309,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 			</plugin>
-
-            <!-- jacoco
-            <plugin>
-                <groupId>org.jacoco</groupId>
-                <artifactId>jacoco-maven-plugin</artifactId>
-                <configuration>
-                    <destFile>${jacoco.dataFilePath}</destFile>
-                    <append>true</append>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>agent-for-ut</id>
-                        <goals>
-                            <goal>prepare-agent</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>agent-for-it</id>
-                        <goals>
-                            <goal>prepare-agent-integration</goal>
-                        </goals>
-                    </execution>
-                    -->
-                    <!--
-                    <execution>
-                        <id>jacoco-site</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
-                        <configuration>
-                            <dataFile>${jacoco.dataFilePath}</dataFile>
-                            <outputDirectory>${jacoco.dataFileDir}/jacoco-ut/${project.name}</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            -->
 		</plugins>
 	</build>
 
@@ -438,17 +394,23 @@
     </dependencies>
 	
 	<modules>
+        <!-- base -->
+        <module>base/agent</module>
         <module>base/junit</module>
         <module>base/lang</module>
-        <module>base/agent</module>
 		<module>base/core</module>
         <module>base/test-instrument</module>
         <module>base/test-profile</module>
         <module>base/test-profile1</module>
         <module>base/test-profile2</module>
+
+        <!-- data -->
 		<module>data/db</module>
 		<module>data/orm</module>
         <module>data/orm-test-resources</module>
+        <module>data/orm-test</module>
+
+        <!-- web -->
 		<module>web/core</module>
 		<module>web/api</module>
 		<module>web/htpl</module>
@@ -460,11 +422,16 @@
         <module>web/webunit-jsp</module>
         <module>web/webunit-test1</module>
         <module>web/webunit-test2</module>
+
 		<module>security/web</module>
 		<module>security/oauth2</module>
+
+        <!-- assembly & archetype -->
 		<module>assembly/fw</module>
 		<module>archetype/webapp-quickstart</module>
+
+        <!-- samples -->
         <module>samples/demo-profile</module>
-        <module>data/test-orm</module>
+
     </modules>
 </project>
