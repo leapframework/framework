@@ -120,6 +120,17 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     }
 
     protected State preHandleRequest(Request request, Response response, DefaultSecurityContextHolder context) throws Throwable {
+
+        //Handles request if login
+        if(handleLoginRequest(request, response, context)){
+            return State.INTERCEPTED;
+        }
+
+        //Handles request if logout.
+        if(handleLogoutRequest(request, response, context)) {
+            return State.INTERCEPTED;
+        }
+        
         //Resolve authentication.
         State state = resolveAuthentication(request,response,context);
         if(state.isIntercepted()){
@@ -131,15 +142,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
             CSRF.ignore(request);
         }
 
-        //Handles request if login
-        if(handleLoginRequest(request, response, context)){
-            return State.INTERCEPTED;
-        }
-
-        //Handles request if logout.
-        if(handleLogoutRequest(request, response, context)) {
-            return State.INTERCEPTED;
-        }
+        
 
         return State.CONTINUE;
     }

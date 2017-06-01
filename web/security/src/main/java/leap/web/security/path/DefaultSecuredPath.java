@@ -119,7 +119,7 @@ public class DefaultSecuredPath implements SecuredPath {
 
         Authentication authc = context.getAuthentication();
 		
-		if(!authc.isAuthenticated()){
+		if(authc == null || !authc.isAuthenticated()){
             log.debug("path [{}] : not authenticated, deny the request.", pattern);
 			return false;
 		}
