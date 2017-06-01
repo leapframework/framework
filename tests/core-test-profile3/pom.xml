@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.leapframework</groupId>
-		<artifactId>leap-tests</artifactId>
+		<artifactId>tests</artifactId>
         <version>0.6.1b-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
