@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-parent</artifactId>
-	<version>0.6.1b</version>
+	<version>0.6.2b-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
     <name>leapframework</name>
@@ -415,9 +415,6 @@
 
         <!-- tests -->
         <module>tests</module>
-
-        <!-- samples -->
-        <module>samples/demo-profile</module>
 
     </modules>
 </project>
