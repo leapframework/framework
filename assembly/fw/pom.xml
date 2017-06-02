@@ -87,5 +87,10 @@
 			<artifactId>leap-htpl</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.leapframework</groupId>
+			<artifactId>leap-webapi</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 	</dependencies>
 </project>
