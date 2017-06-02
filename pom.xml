@@ -399,6 +399,7 @@
         <module>base/junit</module>
         <module>base/lang</module>
 		<module>base/core</module>
+		<module>assembly/fw</module>
 
         <!-- data -->
 		<module>data/db</module>
