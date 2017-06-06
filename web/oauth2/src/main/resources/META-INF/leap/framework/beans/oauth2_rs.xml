@@ -12,7 +12,11 @@
           
           <additional-type-def type="leap.oauth2.rs.OAuth2ResServerConfigurator" primary="true"/>
           
-    </bean>          
+    </bean>
+
+    <if expr="null != properties['oauth2.enabled']">
+        <bean type="leap.web.AppListener" class="leap.oauth2.rs.OAuth2ResServerAutoConfig"/>
+    </if>
     	  
 	<bean type="leap.oauth2.rs.OAuth2ResServerErrorHandler"
           class="leap.oauth2.rs.DefaultOAuth2ResServerErrorHandler" primary="true"/>

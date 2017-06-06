@@ -1281,7 +1281,7 @@ class XmlBeanDefinitionLoader {
             return not == isServletEnvironment ? not : !not;
         }
 
-        return not;
+        return !not;
     }
 
     protected static final class IfAttr {
