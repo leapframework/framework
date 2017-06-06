@@ -62,8 +62,8 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 		this.enabled = enabled;
 	    return this;
     }
+
 	@ConfigProperty
-	@Override
 	public OAuth2ResServerConfigurator setRsaPublicKeyStr(String publicKey) {
 		this.rsaPublicKeyStr = publicKey;
 		return this;
