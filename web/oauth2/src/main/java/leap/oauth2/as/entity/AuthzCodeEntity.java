@@ -20,10 +20,11 @@ import java.util.Map;
 
 import leap.oauth2.OAuth2ExpirableEntity;
 import leap.orm.annotation.Column;
+import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("oauth2_authz_code")
+@Entity(name = "OAuth2AuthzCode", table = "oauth2_authz_code")
 public class AuthzCodeEntity extends OAuth2ExpirableEntity {
 
     @Id

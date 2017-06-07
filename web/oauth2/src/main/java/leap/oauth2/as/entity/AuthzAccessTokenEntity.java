@@ -15,15 +15,15 @@
  */
 package leap.oauth2.as.entity;
 
+import leap.oauth2.OAuth2ExpirableEntity;
+import leap.orm.annotation.Column;
+import leap.orm.annotation.Entity;
+import leap.orm.annotation.Id;
+
 import java.util.HashMap;
 import java.util.Map;
 
-import leap.oauth2.OAuth2ExpirableEntity;
-import leap.orm.annotation.Column;
-import leap.orm.annotation.Id;
-import leap.orm.annotation.Table;
-
-@Table("oauth2_access_token")
+@Entity(name = "OAuth2AccessToken", table = "oauth2_access_token")
 public class AuthzAccessTokenEntity extends OAuth2ExpirableEntity {
 
     @Id

@@ -16,10 +16,11 @@
 package leap.oauth2.as.entity;
 
 import leap.oauth2.OAuth2ExpirableEntity;
+import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("oauth2_sso_session")
+@Entity(name = "OAuth2SSOSession", table = "oauth2_sso_session")
 public class AuthzSSOSessionEntity extends OAuth2ExpirableEntity {
 
     @Id

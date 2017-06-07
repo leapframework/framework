@@ -17,10 +17,11 @@ package leap.oauth2.as.entity;
 
 import leap.oauth2.OAuth2ExpirableEntity;
 import leap.orm.annotation.Column;
+import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("oauth2_refresh_token")
+@Entity(name = "OAuth2RefreshToken", table = "oauth2_refresh_token")
 public class AuthzRefreshTokenEntity extends OAuth2ExpirableEntity {
 
     @Id
