@@ -3,10 +3,10 @@
 	<form action="/login" method="post">
 		<input type="hidden" name="oauth2.state" value="${oauth2.state}"/>
 		<input type="hidden" name="return_url" value="${return_url}"/>
-		User name : <input type="text" id="username" name="username" value="${param.username}"/>
+		Username : <input type="text" id="username" name="username" value="${param.username}"/>
 				    <span style="color:red" ht-errors="username">[error]</span>
 		<p/>
-		Password  : <input type="password" name="password"/><span style="color:red" ht-errors="password">[error]</span>
+		Password : <input type="password" name="password"/><span style="color:red" ht-errors="password">[error]</span>
 		<p/>
 		<input type="submit" value="Login Now"/>
 	</form>
