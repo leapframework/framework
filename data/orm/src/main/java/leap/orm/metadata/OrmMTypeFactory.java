@@ -91,7 +91,13 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             }
 
             if(null == p.getCreatable()) {
-                p.setCreatable(fm.isInsert());
+
+                if(fm.isPrimaryKey() && fm.isAutoGenerateValue()) {
+                    p.setCreatable(false);
+                }else{
+                    p.setCreatable(fm.isInsert());
+                }
+
             }
 
             if(null == p.getUpdatable()) {
