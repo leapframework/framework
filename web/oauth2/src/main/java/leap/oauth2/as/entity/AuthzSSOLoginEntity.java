@@ -18,12 +18,13 @@ package leap.oauth2.as.entity;
 import leap.lang.expirable.TimeExpirable;
 import leap.oauth2.OAuth2Entity;
 import leap.orm.annotation.Column;
+import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
 import java.sql.Timestamp;
 
-@Table("oauth2_sso_login")
+@Entity(name = "OAuth2SSOLogin", table = "oauth2_sso_login")
 public class AuthzSSOLoginEntity implements OAuth2Entity {
 
     @Id

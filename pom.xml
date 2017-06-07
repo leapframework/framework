@@ -23,6 +23,7 @@
         </developer>
         <developer>
             <name>kael-aiur</name>
+			<email>kael.peng@gmail.com</email>
         </developer>
         <developer>
             <name>Calvin Chen</name>
@@ -399,7 +400,6 @@
         <module>base/junit</module>
         <module>base/lang</module>
 		<module>base/core</module>
-		<module>assembly/fw</module>
 
         <!-- data -->
 		<module>data/db</module>
@@ -417,5 +417,7 @@
         <!-- tests -->
         <module>tests</module>
 
+        <!--assembly-->
+        <module>assembly/leap</module>
     </modules>
 </project>

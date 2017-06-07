@@ -161,6 +161,11 @@ public class BeanConfigurator {
         if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerHyphen(v.getName()), defaultValue)) {
             return;
         }
+
+        if(doBeanConfigureByKey(bean, v, keyPrefix + Strings.lowerUnderscore(v.getName()), defaultValue)) {
+            return;
+        }
+
     }
 
     protected boolean doBeanConfigureByKey(Object bean, ReflectValued v, String key, String defaultValue) {

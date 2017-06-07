@@ -26,10 +26,7 @@ import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
-import leap.web.api.mvc.params.DeleteOptions;
-import leap.web.api.mvc.params.Partial;
-import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.mvc.params.QueryOptionsBase;
+import leap.web.api.mvc.params.*;
 import leap.web.api.orm.*;
 
 import java.util.List;
@@ -128,6 +125,20 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     }
 
     /**
+     * Finds one record, same as {@link #get(Object)}
+     */
+    protected ApiResponse find(Object id) {
+        return get(id);
+    }
+
+    /**
+     * Finds one record, same as {@link #get(Object)}
+     */
+    protected ApiResponse find(Object id, FindOptions options) {
+        return get(id, options);
+    }
+
+    /**
      * Gets the record of the specified id.
      */
     protected ApiResponse get(Object id) {
@@ -146,7 +157,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     }
 
     /**
-     * Returns all the records.
+     * Returns all the records, same as {@link #queryList(QueryOptions)}.
      */
     protected ApiResponse<List<T>> getAll(QueryOptions options) {
         return queryList(options);

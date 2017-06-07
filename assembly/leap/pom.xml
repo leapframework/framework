@@ -47,11 +47,6 @@
     </reporting>     
     
 	<dependencies>
-        <dependency>
-            <groupId>org.leapframework</groupId>
-            <artifactId>leap-agent</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 		<dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-lang</artifactId>
@@ -82,6 +77,11 @@
 			<artifactId>leap-websecurity</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-oauth2</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.leapframework</groupId>
 			<artifactId>leap-htpl</artifactId>

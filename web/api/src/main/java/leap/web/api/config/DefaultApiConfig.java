@@ -441,4 +441,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
         this.restdConfig = c;
         return this;
     }
+
+    @Override
+    public ApiConfigurator enableRestd() {
+        if(null == restdConfig) {
+            restdConfig = new RestdConfig();
+        }
+        return this;
+    }
 }

@@ -25,6 +25,7 @@ import leap.core.security.UserPrincipal;
 import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.expirable.TimeExpirableMs;
+import leap.lang.expirable.TimeExpirableSeconds;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.rs.OAuth2ResServerConfig;
@@ -78,23 +79,23 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
             log.debug("Access token '{}' not found", at.getToken());
             return Result.empty();
         }
-        
+
         ResAccessTokenDetails details = result.get();
         if(details.isExpired()) {
             log.debug("Access token '{}' was expired", at.getToken());
             tokenManager.removeAccessToken(at);
             return Result.empty();
         }
-        
+
         String clientId = details.getClientId();
         String userId   = details.getUserId();
-        
+
         UserPrincipal   user   = null;
         ClientPrincipal client = null;
-        
+
         if(!Strings.isEmpty(userId)) {
             UserDetails userDetails = userManager.loadUserDetails(userId);
-            
+
             if(null == userDetails) {
                 log.debug("The user id '{}' created with access token '{}' is not found", userId, at.getToken());
                 return Result.empty();
@@ -102,16 +103,16 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
                 user = userDetails;
             }
         }
-        
+
         if(!Strings.isEmpty(clientId)) {
             client = new ResClientPrincipal(clientId);
         }
-        
+
         ResAuthentication authc = new SimpleResAuthentication(at, user, client);
         if(null != details.getScope()) {
             authc.setPermissions(Strings.split(details.getScope(), ","));
         }
-        
+
         cacheAuthentication(at, details, authc);
 
         return Result.of(authc);
@@ -132,30 +133,34 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
     public void setCacheExpiresInMs(int cacheExpiresInMs) {
         this.cacheExpiresInMs = cacheExpiresInMs;
     }
-    
+
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
         authcCache = cacheManager.createSimpleLRUCache(cacheSize);
     }
-    
+
     protected CachedAuthentication getCachedAuthentication(ResAccessToken at) {
         return authcCache.get(at.getToken());
     }
-    
+
     protected void cacheAuthentication(ResAccessToken at, ResAccessTokenDetails tokenDetails, ResAuthentication authc) {
-        authcCache.put(at.getToken(), new CachedAuthentication(tokenDetails, authc, cacheExpiresInMs));
+    	int cachedMs=cacheExpiresInMs;
+    	if(tokenDetails instanceof TimeExpirableSeconds){
+    		cachedMs=((TimeExpirableSeconds)tokenDetails).getExpiresInFormNow()*1000;
+    	}
+        authcCache.put(at.getToken(), new CachedAuthentication(tokenDetails, authc, cachedMs));
     }
-    
+
     protected void removeCachedAuthentication(ResAccessToken at, CachedAuthentication cached) {
         authcCache.remove(at.getToken());
     }
-    
+
     protected static final class CachedAuthentication {
         public final ResAccessTokenDetails tokenDetails;
         public final ResAuthentication     authentication;
-        
+
         private final TimeExpirableMs expirable;
-        
+
         public CachedAuthentication(ResAccessTokenDetails d, ResAuthentication a, int expiresInMs) {
             this.tokenDetails = d;
             this.authentication = a;
@@ -165,7 +170,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         public boolean isTokenExpired() {
             return tokenDetails.isExpired();
         }
-        
+
         public boolean isCacheExpired() {
             return expirable.isExpired();
         }

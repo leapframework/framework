@@ -18,10 +18,11 @@ package leap.oauth2.as.entity;
 import leap.lang.enums.Bool;
 import leap.oauth2.OAuth2Entity;
 import leap.orm.annotation.Column;
+import leap.orm.annotation.Entity;
 import leap.orm.annotation.Id;
 import leap.orm.annotation.Table;
 
-@Table("oauth2_client")
+@Entity(name = "OAuth2Client", table = "oauth2_client")
 public class AuthzClientEntity implements OAuth2Entity {
     
     @Id(generate=false)

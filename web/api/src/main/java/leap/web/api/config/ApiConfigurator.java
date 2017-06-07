@@ -200,6 +200,11 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setRestdConfig(RestdConfig c);
 
     /**
+     * Enables restd.
+     */
+    ApiConfigurator enableRestd();
+
+    /**
      * Returns the {@link RestdConfig} or null if restd is not enabled.
      */
     RestdConfig getRestdConfig();

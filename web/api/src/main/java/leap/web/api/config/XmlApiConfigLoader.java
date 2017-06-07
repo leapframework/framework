@@ -45,7 +45,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener {
-    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/web/apis/apis";
+    private static final String NAMESPACE_URI = "http://www.leapframework.org/schema/webapi";
 
     protected static final String APIS                 = "apis";
     protected static final String API                  = "api";

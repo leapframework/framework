@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties prefix="oauth2">
+        <property name="enabled"       value="true"/>
+        <property name="server_url"    value="http://localhost:8080/auth"/>
+        <property name="client_id"     value="client1"/>
+        <property name="client_secret" value="client1_secret"/>
+    </properties>
+
+</config>
