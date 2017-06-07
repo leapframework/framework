@@ -102,6 +102,19 @@ public interface OAuth2ResServerConfigurator {
      */
 	OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url);
 
+    /**
+     * Sets the url of user info endpoint in oauth2 authorization server.
+     *
+     * <p/>
+     * Valid when use remote authz server.
+     */
+    OAuth2ResServerConfigurator setRemoteUserInfoEndpointUrl(String url);
+
+    /**
+     * todo : doc
+     */
+    OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used);
+
 	/**
 	 * Sets the resource server Id of this server in oauth2 authorization server.
 	 *

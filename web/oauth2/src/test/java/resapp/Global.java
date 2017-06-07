@@ -32,10 +32,14 @@ public class Global extends App {
     @Override
     protected void configure(WebConfigurator c) {
         String publicKeyUrl = "https://localhost:8443/server/publickey";
+
         JwtVerifier verifier = TokenVerifierFactory.createNetPublicKeyRSAJwtVerifier(publicKeyUrl);
-        rsc.enable().useJwtVerifier(verifier)
+
+        rsc.enable()
+                .useJwtVerifier(verifier)
                 .useRemoteAuthorizationServer().setResourceServerId("resource_server_id")
-           .setRemoteTokenInfoEndpointUrl("https://localhost:8443/server/oauth2/tokeninfo");
+                .setRemoteTokenInfoEndpointUrl("https://localhost:8443/server/oauth2/tokeninfo")
+                .setRemoteUserInfoEndpointUrl("https://localhost:8443/server/oauth2/userinfo");
     }
 
 }

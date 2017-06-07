@@ -49,7 +49,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken credentials) {
         if(null == config.getRemoteTokenInfoEndpointUrl()) {
-            throw new IllegalStateException("The tokenInfoEndpointUrl must not be configured when use remote authz server");
+            throw new IllegalStateException("The tokenInfoEndpointUrl must be configured when use remote authz server");
         }
         HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
                                          .addQueryParam("access_token", credentials.getToken());

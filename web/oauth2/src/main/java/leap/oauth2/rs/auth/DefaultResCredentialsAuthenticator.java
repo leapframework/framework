@@ -32,6 +32,8 @@ import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.oauth2.rs.token.ResAccessTokenDetails;
 import leap.oauth2.rs.token.ResTokenManager;
+import leap.oauth2.rs.user.UserInfo;
+import leap.oauth2.rs.user.UserInfoLookup;
 import leap.web.security.user.UserDetails;
 import leap.web.security.user.UserManager;
 
@@ -44,6 +46,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
     protected @Inject BeanFactory           factory;
     protected @Inject OAuth2ResServerConfig config;
     protected @Inject ResTokenManager       tokenManager;
+    protected @Inject UserInfoLookup        userInfoLookup;
     protected @Inject UserManager           userManager;
     protected @Inject CacheManager          cacheManager;
 
@@ -94,13 +97,23 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         ClientPrincipal client = null;
 
         if(!Strings.isEmpty(userId)) {
-            UserDetails userDetails = userManager.loadUserDetails(userId);
-
-            if(null == userDetails) {
-                log.debug("The user id '{}' created with access token '{}' is not found", userId, at.getToken());
-                return Result.empty();
+            if(config.isUseRemoteUserInfo()) {
+                UserInfo userInfo = userInfoLookup.lookupUserInfo(at);
+                if(null == userInfo) {
+                    log.debug("User info not exists in remote authz server, user id -> {}, access token -> {}", userId, at.getToken());
+                    return Result.empty();
+                }else{
+                    user = userInfo;
+                }
             }else{
-                user = userDetails;
+                UserDetails userDetails = userManager.loadUserDetails(userId);
+
+                if(null == userDetails) {
+                    log.debug("The user id '{}' created with access token '{}' is not found", userId, at.getToken());
+                    return Result.empty();
+                }else{
+                    user = userDetails;
+                }
             }
         }
 
