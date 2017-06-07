@@ -141,6 +141,7 @@ class XmlBeanDefinitionLoader {
     public static final String EXPORT_MBEAN                   = "export-mbean";
     public static final String MBEAN_NAME                     = "mbean-name";
     public static final String FACTORY                        = "factory";
+    public static final String REMOVE_BEAN                    = "remove-bean";
 
 
     protected boolean defaultAutoInject = true;
@@ -281,6 +282,11 @@ class XmlBeanDefinitionLoader {
                         return;
                     }
 
+                    if (reader.isStartElement(REMOVE_BEAN)) {
+                        removeBean(container, reader, context);
+                        return;
+                    }
+
                     if (reader.isStartElement(BEAN_ELEMENT)) {
                         BeanDefinitionBase bd = readBean(container, reader, context);
                         if (null != bd) {
@@ -351,6 +357,11 @@ class XmlBeanDefinitionLoader {
     }
 
     protected void readInit(BeanContainer container, XmlReader reader, LoaderContext context) {
+        if(!testIfAttributes(container, reader)) {
+            reader.nextToEndElement();
+            return;
+        }
+
         container.addInitDefinition(new InitDefinition(reader.getSource(),
                 reader.getRequiredAttribute(CLASS_ATTRIBUTE),
                 reader.getAttribute(INIT_METHOD_ATTRIBUTE)));
@@ -371,6 +382,50 @@ class XmlBeanDefinitionLoader {
         );
     }
 
+    protected void removeBean(BeanContainer container, XmlReader reader, LoaderContext context) {
+        if(!testIfAttributes(container, reader)) {
+            reader.nextToEndElement();
+            return;
+        }
+
+        BeanContainer.BeanDefinitionsImpl bds = container.bds;
+
+        String id = reader.getAttribute(ID_ATTRIBUTE);
+        if(!Strings.isEmpty(id)) {
+            bds.remove(id);
+            return;
+        }
+
+        String typeName  = reader.getAttribute(TYPE_ATTRIBUTE);
+        String beanName  = reader.getAttribute(NAME_ATTRIBUTE);
+        String className = reader.getAttribute(CLASS_ATTRIBUTE);
+        Boolean primary  = reader.getBooleanAttribute(PRIMARY_ATTRIBUTE);
+
+        if(!Strings.isEmpty(typeName)) {
+
+            if(!Strings.isEmpty(beanName)) {
+                //type + name
+                bds.remove(forName(typeName), beanName);
+                return;
+            }else if(!Strings.isEmpty(className)) {
+                //type + class
+                bds.remove(forName(typeName), forName(className));
+                return;
+            }else if(null != primary && primary) {
+                //type + primary
+                //bds.removePrimary(forName(typeName));
+                //todo:
+                return;
+            }
+
+        }else if(!Strings.isEmpty(className)){
+            //todo : removes class only.
+        }
+
+        //todo : throw exception.
+        reader.nextToEndElement();
+    }
+
     protected BeanDefinitionBase readBean(BeanContainer container, XmlReader reader, LoaderContext context) {
         return readBean(container, reader, context, false);
     }
@@ -385,7 +440,7 @@ class XmlBeanDefinitionLoader {
 
         bean.setId(proxy ? reader.getAttribute(TARGET_ID_ATTRIBUTE) : reader.getAttribute(ID_ATTRIBUTE));
         bean.setName(proxy ? reader.getAttribute(TARGET_NAME_ATTRIBUTE) : reader.getAttribute(NAME_ATTRIBUTE));
-        
+
         String beanClassName = proxy ? reader.getRequiredAttribute(PROXY_CLASS_ATTRIBUTE) : reader.getRequiredAttribute(CLASS_ATTRIBUTE);
         String initMethodName = reader.getAttribute(INIT_METHOD_ATTRIBUTE);
         String destroyMethodName = reader.getAttribute(DESTROY_METHOD_ATTRIBUTE);

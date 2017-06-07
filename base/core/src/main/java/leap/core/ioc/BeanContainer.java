@@ -1869,7 +1869,7 @@ public class BeanContainer implements BeanFactory {
 		
         bds.add(bd);
 	}
-	
+
 	protected void addBeanList(BeanListDefinition bld){
 		String key = bld.getType().getName();
 		
@@ -1929,6 +1929,79 @@ public class BeanContainer implements BeanFactory {
 
         public String key(Class<?> type, String name) {
             return type.getName() + "$" + name;
+        }
+
+        public BeanDefinitionBase remove(String id) {
+            return removeAll(identifiedBeanDefinitions.remove(id));
+        }
+
+        public BeanDefinitionBase remove(Class<?> type, String name) {
+            String key = key(type, name);
+            return removeAll(namedBeanDefinitions.remove(key));
+        }
+
+        public BeanDefinitionBase remove(Class<?> type, Class<?> cls) {
+            Set<BeanDefinitionBase> set = beanTypeDefinitions.get(type);
+            if(null != set) {
+                Set<BeanDefinitionBase> found = new HashSet<>();
+                Set<BeanDefinitionBase> notFound = new LinkedHashSet<>();
+
+                for(BeanDefinitionBase bd : set) {
+                    if(bd.getBeanClass().equals(cls)) {
+                        found.add(bd);
+                    }else{
+                        notFound.add(bd);
+                    }
+                }
+
+                set.clear();
+                set.addAll(notFound);
+
+                for(BeanDefinitionBase bd : found) {
+                    removeAll(bd);
+                }
+            }
+            return null;
+        }
+
+        public BeanDefinitionBase removePrimary(Class<?> type) {
+            return removeAll(primaryBeanDefinitions.remove(type));
+        }
+
+        protected BeanDefinitionBase removeAll(BeanDefinitionBase bd) {
+            if(null != bd) {
+                allBeanDefinitions.remove(bd);
+
+                if(!Strings.isEmpty(bd.getId())) {
+                    identifiedBeanDefinitions.remove(bd.getId());
+                }
+
+                if(bd.isPrimary()) {
+                    primaryBeanDefinitions.remove(bd.getType());
+                }
+
+                if(!Strings.isEmpty(bd.getName())) {
+                    namedBeanDefinitions.remove(bd.getType(), bd.getName());
+                }
+
+                Set<BeanDefinitionBase> set = beanTypeDefinitions.get(bd.getType());
+                if(null != set) {
+                    Set<BeanDefinitionBase> found = new HashSet<>();
+                    Set<BeanDefinitionBase> notFound = new LinkedHashSet<>();
+
+                    for (BeanDefinitionBase item : set) {
+                        if (item == bd) {
+                            found.add(item);
+                        } else {
+                            notFound.add(item);
+                        }
+                    }
+
+                    set.clear();
+                    set.addAll(notFound);
+                }
+            }
+            return bd;
         }
 
         @Override

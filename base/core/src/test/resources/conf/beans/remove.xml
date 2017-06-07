@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+    <!-- id -->
+    <bean id="remove_id" class="tested.beans.remove.RemoveBean1"/>
+
+    <!-- type + name -->
+    <bean name="remove_name" type="tested.beans.remove.RemoveType" class="tested.beans.remove.RemoveBean1"/>
+
+    <!-- type + class -->
+    <bean type="tested.beans.remove.RemoveType" class="tested.beans.remove.RemoveBean2"/>
+
+    <remove-bean id="remove_id"/>
+    <remove-bean name="remove_name" type="tested.beans.remove.RemoveType"/>
+    <remove-bean type="tested.beans.remove.RemoveType" class="tested.beans.remove.RemoveBean2"/>
+</beans>
