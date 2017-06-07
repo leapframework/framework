@@ -15,6 +15,7 @@
  */
 package leap.web.action;
 
+import leap.core.security.UserPrincipal;
 import leap.core.validation.Validation;
 import leap.core.web.RequestBase;
 import leap.core.web.ResponseBase;
@@ -48,6 +49,7 @@ public class ContextArgumentResolver implements ArgumentResolver {
 		addContextResolver(ViewData.class);
 		addContextResolver(Params.class);
 		addContextResolver(Validation.class);
+        addContextResolver(UserPrincipal.class);
 	}
 	
 	public static boolean isContext(Class<?> type){
@@ -89,6 +91,8 @@ public class ContextArgumentResolver implements ArgumentResolver {
             func = c -> c.getRequest().getValidation();
         }else if(type.equals(ServletContext.class)) {
             func = c -> c.getRequest().getServletContext();
+        }else if(type.equals(UserPrincipal.class)) {
+            func = c -> c.getRequest().getUser();
         }else{
             throw new IllegalStateException("The argument type '" + type.getName() + "' is not a supported context type");
         }

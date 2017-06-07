@@ -46,7 +46,7 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
             throw new IllegalStateException("The userInfoEndpointUrl must be configured when use remote authz server");
         }
 
-        HttpRequest request = httpClient.request(config.getRemoteTokenInfoEndpointUrl())
+        HttpRequest request = httpClient.request(config.getRemoteUserInfoEndpointUrl())
                                         .addQueryParam("access_token", at.getToken());
 
         if(null != config.getResourceServerId()){
