@@ -665,14 +665,19 @@ public class SqlParser extends SqlParserBase {
 	}
 	
 	protected void parseTag(){
-        int counter = 1;
-        String name = lexer.literal();
-
+        int     counter  = 1;
+        String  name     = lexer.literal();
+        boolean optional = false;
 
         StringBuilder s = new StringBuilder();
-        for(;;) {
-            lexer.nextChar();
 
+        lexer.nextChar();
+        if(lexer.ch == '?') {
+            optional = true;
+            lexer.nextChar();
+        }
+
+        for(;;) {
             if(lexer.isEOF()) {
                 lexer.reportError("Unclosed tag '" + name + "'");
             }
@@ -680,25 +685,18 @@ public class SqlParser extends SqlParserBase {
             char c = lexer.ch;
 
             if(c == '{') {
-                s.append(c);
                 counter++;
-                continue;
-            }
-
-            if(c == '}') {
+            }else if(c == '}') {
                 counter--;
-
                 if(counter == 0) {
                     lexer.nextChar();
-                    acceptNode(new Tag(name, s.toString()));
+                    acceptNode(new Tag(name, s.toString(), optional));
                     return;
-                }else{
-                    s.append(c);
-                    continue;
                 }
             }
 
             s.append(c);
+            lexer.nextChar();
         }
 	}
 	

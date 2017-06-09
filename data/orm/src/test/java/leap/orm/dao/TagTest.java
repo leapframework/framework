@@ -32,4 +32,12 @@ public class TagTest extends OrmTestCase {
         assertEquals(1,dao.createSqlQuery("select * from owners where @nop { 1=1 }").count());
     }
 
+    @Test
+    public void testOptionalTag() {
+        deleteAll(Owner.class);
+
+        new Owner().setFullName("f1","l1").create();
+
+        assertEquals(1,dao.createSqlQuery("select * from owners @not_exists{? err }").count());
+    }
 }

@@ -23,15 +23,17 @@ import java.io.IOException;
 
 public class Tag extends DynamicNode implements SqlTag {
 
-    protected final String name;
-    protected final String content;
+    protected final String  name;
+    protected final String  content;
+    protected final boolean optional;
 
     protected Object          executionObject;
     protected SqlTagProcessor processor;
 
-    public Tag(String name, String content) {
+    public Tag(String name, String content, boolean optional) {
         this.name = name;
         this.content = content.trim();
+        this.optional = optional;
     }
 
     public String getName() {
@@ -40,6 +42,10 @@ public class Tag extends DynamicNode implements SqlTag {
 
     public String getContent() {
         return content;
+    }
+
+    public boolean isOptional() {
+        return optional;
     }
 
     @Override
@@ -53,21 +59,32 @@ public class Tag extends DynamicNode implements SqlTag {
     }
 
     @Override
-    public void prepare(MetadataContext context) {
-        processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
-        if(null == processor) {
-            throw new SqlConfigException("Tag processor '" + name + "' not exists, check it : " + toString());
+    protected void toString_(Appendable buf) throws IOException {
+        buf.append("@").append(name).append("{");
+
+        if(optional){
+            buf.append('?');
         }
-        processor.prepareTag(context, this);
+
+        buf.append(content).append("}");
     }
 
     @Override
-    protected void toString_(Appendable buf) throws IOException {
-        buf.append("@").append(name).append("{").append(content).append("}");
+    public void prepare(MetadataContext context) {
+        processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
+        if(null == processor) {
+            if(!optional) {
+                throw new SqlConfigException("Tag processor '" + name + "' not exists, check it : " + toString());
+            }
+        }else{
+            processor.prepareTag(context, this);
+        }
     }
 
 	@Override
     protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
-        processor.processTag(context, this, stm, params);
+        if(null != processor) {
+            processor.processTag(context, this, stm, params);
+        }
     }
 }
