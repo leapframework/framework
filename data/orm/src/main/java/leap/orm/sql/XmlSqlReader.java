@@ -50,6 +50,8 @@ public class XmlSqlReader implements SqlReader {
 	private static final String DEFAULT_OVERRIDE_ATTRIBUTE  = "default-override";
 	private static final String LANG_ATTRIBUTE              = "lang";
     private static final String DATA_SOURCE                 = "data-source";
+    private static final String WHERE_FIELDS                = "where-fields";
+    private static final String QUERY_FILTER                = "query-filter";
 	
 	protected @Inject @M BeanFactory beanFactory;
 	protected @Inject @M SqlLanguage defaultLanguage;
@@ -205,6 +207,9 @@ public class XmlSqlReader implements SqlReader {
 		String	content             = reader.getElementTextAndEnd();
 		String  datasource			= reader.resolveAttribute(DATA_SOURCE, defaultDataSource);
 
+        Boolean whereFields = reader.resolveBooleanAttribute(WHERE_FIELDS);
+        Boolean queryFilter = reader.resolveBooleanAttribute(QUERY_FILTER);
+
 		if(Strings.containsWhitespaces(key)) {
 			throw new SqlConfigException("'key' attribute cannot contains whitespace characters [" + key + "], xml : " + reader.getSource());
 		}
@@ -249,6 +254,8 @@ public class XmlSqlReader implements SqlReader {
 		
 		log.trace("SQL(s) : \n\n  {}\n",content);
 		DefaultSqlCommand command = new DefaultSqlCommand(reader.getSource(), key, dbType, language, content, datasource);
+        command.setWhereFieldsEnabled(whereFields);
+        command.setQueryFilterEnabled(queryFilter);
 
         registry.addSqlCommand(key, dbType, command);
         sqls.put(key, command);

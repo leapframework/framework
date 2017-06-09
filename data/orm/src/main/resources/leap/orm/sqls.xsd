@@ -70,7 +70,7 @@
                             ]]></xsd:documentation>
         				</xsd:annotation>
         			</xsd:attribute>
-                    <xsd:attribute name="where-column" type="xsd:boolean" use="optional"/>
+                    <xsd:attribute name="where-fields" type="xsd:boolean" use="optional"/>
                     <xsd:attribute name="query-filter" type="xsd:boolean" use="optional"/>
         		</xsd:extension>
         	</xsd:simpleContent>

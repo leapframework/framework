@@ -28,7 +28,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 
-public class DefaultSqlCommand implements SqlCommand {
+public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
     private static final Log log = LogFactory.get(DefaultSqlCommand.class);
 
@@ -39,11 +39,15 @@ public class DefaultSqlCommand implements SqlCommand {
     protected final String      content;
     protected final String      dataSourceName;
 
+    protected Boolean whereFieldsEnabled;
+    protected Boolean queryFilterEnabled;
+
     private boolean prepared;
 
 	protected SqlClause[] clauses;
 
-    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, String dataSourceName) {
+    public DefaultSqlCommand(Object source, String desc, String dbType,
+                             SqlLanguage lang, String content, String dataSourceName) {
         this.source  = source;
         this.desc    = desc;
         this.dbType  = dbType;
@@ -53,13 +57,31 @@ public class DefaultSqlCommand implements SqlCommand {
     }
 
     @Override
+    public Boolean getWhereFieldsEnabled() {
+        return whereFieldsEnabled;
+    }
+
+    @Override
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    public void setWhereFieldsEnabled(Boolean whereFieldsEnabled) {
+        this.whereFieldsEnabled = whereFieldsEnabled;
+    }
+
+    public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
+        this.queryFilterEnabled = queryFilterEnabled;
+    }
+
+    @Override
     public void prepare(MetadataContext context) {
         if(prepared) {
             return;
         }
 
         try {
-            this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
+            this.clauses = lang.parseClauses(context,prepareSql(context, content),this).toArray(new SqlClause[0]);
         } catch (Exception e) {
             throw new SqlConfigException("Error parsing sql (" + desc == null ? content : desc + "), source : " + source,e);
         }

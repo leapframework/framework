@@ -20,9 +20,30 @@ import java.util.List;
 import leap.orm.metadata.MetadataContext;
 
 public interface SqlLanguage {
+
+    interface Options {
+
+        Options EMPTY = new Options() {};
+
+        default Boolean getWhereFieldsEnabled() {
+            return null;
+        }
+
+        default Boolean getQueryFilterEnabled() {
+            return null;
+        }
+    }
+
+    default List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException {
+        return parseClauses(context, text, Options.EMPTY);
+    }
 	
-	List<SqlClause> parseClauses(MetadataContext context, String text) throws SqlClauseException;
-	
-	SqlClause parseClause(MetadataContext context,String sql) throws SqlClauseException;
+	List<SqlClause> parseClauses(MetadataContext context, String text, Options options) throws SqlClauseException;
+
+    default SqlClause parseClause(MetadataContext context,String sql) throws SqlClauseException {
+        return parseClause(context, sql, Options.EMPTY);
+    }
+
+	SqlClause parseClause(MetadataContext context,String sql, Options options) throws SqlClauseException;
 
 }

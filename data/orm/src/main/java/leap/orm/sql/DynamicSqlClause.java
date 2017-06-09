@@ -22,14 +22,12 @@ import leap.lang.*;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.ArrayParams;
-import leap.lang.params.BeanParams;
 import leap.lang.params.EmptyParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.orm.query.QueryContext;
 import leap.orm.sql.Sql.Type;
 import leap.orm.sql.ast.*;
-import leap.orm.value.Entity;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +52,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	@Override
     public SqlStatement createUpdateStatement(SqlContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
 
         return doCreateStatement(context, sqls, params, false);
     }
@@ -66,7 +64,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		}
 
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
 
         if(sqls.sql.isSelect()) {
             Limit limit = context.getLimit();
@@ -104,7 +102,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	@Override
     public SqlStatement createCountStatement(QueryContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
 
         createSqlForCount(sqls);
 		
@@ -117,7 +115,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 	@Override
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty(), SqlLanguage.Options.EMPTY);
 
 		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
 		
@@ -375,7 +373,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 					sqlWithOrderBy = db.getDialect().addOrderBy(sqlWithoutOrderBy, orderBy);
 				}
 				
-				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy).sql;
+				sql = lang.parseExecutionSqls(context.getOrmContext(), sqlWithOrderBy, SqlLanguage.Options.EMPTY).sql;
 			}
 
             if(sql.isSelect()) {
