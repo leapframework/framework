@@ -105,6 +105,17 @@ class Pool {
 	public DataSource getDataSource() {
 		return dataSource;
 	}
+
+    public String getStateInfo() {
+        State state = syncPool.state();
+
+        StringBuilder s = new StringBuilder();
+        s.append("total:").append(state.total)
+                .append(", active:").append(state.active)
+                .append(", idle:").append(state.idle);
+
+        return s.toString();
+    }
 	
 	/**
 	 * Get a connection from the pool, or timeout after {@link #maxWait} milliseconds.
@@ -209,10 +220,10 @@ class Pool {
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
-		Connection wrappd = factory.getConnection();
-		conn.setWrapped(wrappd);
+		Connection wrapped = factory.getConnection();
+		conn.setWrapped(wrapped);
 		conn.setNewCreatedConnection(true);
-		return wrappd;
+		return wrapped;
 	}
 	
 	protected void setupConnectionStateOnBorrow(PooledConnection conn, Connection wrapped, int count) throws SQLException {
@@ -335,6 +346,12 @@ class Pool {
 		}
 	}
 
+    final class State {
+        public int total;
+        public int active;
+        public int idle;
+    }
+
     /**
      * The underlying pool holds all the created connections and sync state.
      */
@@ -355,29 +372,27 @@ class Pool {
 			return list;
 		}
 		
-//		int getActiveCount() {
-//			int count = 0;
-//
-//			for(final PooledConnection conn : list) {
-//				if(conn.isActive()) {
-//					count++;
-//				}
-//			}
-//
-//			return count;
-//		}
-//
-//		int getRealCount() {
-//			int size = 0;
-//			for(final PooledConnection conn : list) {
-//				if(null != conn.getReal()) {
-//					size++;
-//				}
-//			}
-//			return size;
-//		}
+        State state() {
+            State state = new State();
+
+            for(final PooledConnection conn : list) {
+                if(conn.isActive()) {
+                    state.total++;
+                    state.active++;
+                    continue;
+                }
+
+                if(conn.isCreated()) {
+                    state.total++;
+                }
+            }
+
+            state.idle = state.total - state.active;
+            return state;
+        }
 		
 		int getIdleCount() {
+
 			int count = 0;
 			
 			for(final PooledConnection conn : list) {
