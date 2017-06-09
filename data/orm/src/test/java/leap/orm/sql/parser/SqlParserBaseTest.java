@@ -213,4 +213,19 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 		assertEquals("order by id asc", orderBy.toString());
 	}
 
+    @Test
+    public void testTag() {
+        String sql = "select * from table @security{hello}";
+        assertEquals(sql, parse(sql));
+
+        sql = "select * from table where @security{hello} and 1=1";
+        assertEquals(sql, parse(sql));
+
+        sql = "select * from table where @security{hello {} } and 1=1";
+        assertEquals(sql, parse(sql));
+
+        sql = "select * from table where @security{hello {} aa} and 1=1";
+        assertEquals(sql, parse(sql));
+    }
+
 }

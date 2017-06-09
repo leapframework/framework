@@ -24,9 +24,17 @@ import leap.orm.sql.SqlStatementBuilder;
 
 public class Tag extends AstNode {
 
-	@Override
+    protected final String name;
+    protected final String content;
+
+    public Tag(String name, String content) {
+        this.name = name;
+        this.content = content;
+    }
+
+    @Override
     protected void toString_(Appendable buf) throws IOException {
-		throw new IllegalStateException("Not implemented");
+        buf.append("@").append(name).append("{").append(content).append("}");
     }
 
 	@Override

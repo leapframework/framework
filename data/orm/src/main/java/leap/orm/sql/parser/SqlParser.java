@@ -665,7 +665,41 @@ public class SqlParser extends SqlParserBase {
 	}
 	
 	protected void parseTag(){
-		throw new IllegalStateException("Not implemented");
+        int counter = 1;
+        String name = lexer.literal();
+
+
+        StringBuilder s = new StringBuilder();
+        for(;;) {
+            lexer.nextChar();
+
+            if(lexer.isEOF()) {
+                lexer.reportError("Unclosed tag '" + name + "'");
+            }
+
+            char c = lexer.ch;
+
+            if(c == '{') {
+                s.append(c);
+                counter++;
+                continue;
+            }
+
+            if(c == '}') {
+                counter--;
+
+                if(counter == 0) {
+                    lexer.nextChar();
+                    acceptNode(new Tag(name, s.toString()));
+                    return;
+                }else{
+                    s.append(c);
+                    continue;
+                }
+            }
+
+            s.append(c);
+        }
 	}
 	
 	protected SqlTableName parseTableName(){
