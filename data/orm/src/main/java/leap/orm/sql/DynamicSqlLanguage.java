@@ -96,18 +96,25 @@ public class DynamicSqlLanguage implements SqlLanguage {
         return sqls.get(0);
     }
 
-    protected List<DynamicSql.ExecutionSqls> doParseExecutionSqls(MetadataContext context, String sql) {
-        String key = context.getName() + "___" + sql;
+    protected List<DynamicSql.ExecutionSqls> doParseExecutionSqls(MetadataContext context, String text) {
+        String key = context.getName() + "___" + text;
 
         List<DynamicSql.ExecutionSqls> sqls = executionCache.get(key);
 
         if(null == sqls) {
-            log.trace("Parsing sql :\n {}", sql);
+            log.trace("Parsing sql :\n {}", text);
             sqls = new ArrayList<>();
 
-            List<Sql> rawSqls = createParser(sql).sqls();
+            List<Sql> rawSqls = createParser(text).sqls();
+            for(Sql sql : rawSqls) {
+                sql.prepare(context);
+            }
+
             if(smart()) {
-                List<Sql> resolvedSqls = createParser(sql).sqls();
+                List<Sql> resolvedSqls = createParser(text).sqls();
+                for(Sql sql : resolvedSqls) {
+                    sql.prepare(context);
+                }
 
                 for(int i=0;i<resolvedSqls.size();i++) {
                     Sql s = resolvedSqls.get(i);
@@ -131,16 +138,19 @@ public class DynamicSqlLanguage implements SqlLanguage {
         return sqls;
     }
 	
-	protected List<Sql> doParseDynaSql(MetadataContext context, String sql) {
-        String key = context.getName() + "___" + sql;
+	protected List<Sql> doParseDynaSql(MetadataContext context, String text) {
+        String key = context.getName() + "___" + text;
 
 		List<Sql> sqls = cache.get(key);
 
 		if(null == sqls) {
-			log.trace("Parsing dyna sql :\n {}", sql);
+			log.trace("Parsing dyna sql :\n {}", text);
 
-            SqlParser parser = new SqlParser(new Lexer(sql, ParseLevel.DYNA), expressionLanguage);
+            SqlParser parser = new SqlParser(new Lexer(text, ParseLevel.DYNA), expressionLanguage);
             sqls = parser.sqls();
+            for(Sql sql : sqls) {
+                sql.prepare(context);
+            }
 
 			cache.put(key, sqls);
 		}

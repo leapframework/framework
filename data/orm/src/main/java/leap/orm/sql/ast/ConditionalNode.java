@@ -49,9 +49,9 @@ public class ConditionalNode extends SqlNodeContainer {
     }
 
     @Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
         if(EL.test(condition, null, params.map())) {
-            super.buildStatement_(stm, params);
+            super.buildStatement_(context, stm, params);
         }
     }
 }

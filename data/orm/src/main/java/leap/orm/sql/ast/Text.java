@@ -49,7 +49,7 @@ public class Text extends AstNode {
     }
 
 	@Override
-	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+	protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 		stm.append(buf);
     }
 	

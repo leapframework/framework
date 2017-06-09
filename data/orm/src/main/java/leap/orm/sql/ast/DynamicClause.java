@@ -23,6 +23,7 @@ import java.util.Map;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.params.Params;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 public class DynamicClause extends DynamicNode implements AstNodeContainer {
@@ -96,13 +97,13 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 	}
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 		if(!test(params)) {
 			return;
 		}
 		
 	    for(AstNode n : bodyNodes) {
-	    	n.buildStatement(stm, params);
+	    	n.buildStatement(context, stm, params);
 	    }
     }
 

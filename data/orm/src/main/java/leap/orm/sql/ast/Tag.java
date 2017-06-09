@@ -15,21 +15,50 @@
  */
 package leap.orm.sql.ast;
 
+import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
+import leap.orm.sql.*;
+
 import java.io.IOException;
 
-import leap.lang.params.Params;
-import leap.orm.sql.PreparedBatchSqlStatementBuilder;
-import leap.orm.sql.SqlContext;
-import leap.orm.sql.SqlStatementBuilder;
-
-public class Tag extends AstNode {
+public class Tag extends DynamicNode implements SqlTag {
 
     protected final String name;
     protected final String content;
 
+    protected Object          executionObject;
+    protected SqlTagProcessor processor;
+
     public Tag(String name, String content) {
         this.name = name;
-        this.content = content;
+        this.content = content.trim();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    @Override
+    public Object getExecutionObject() {
+        return executionObject;
+    }
+
+    @Override
+    public void setExecutionObject(Object o) {
+        this.executionObject = o;
+    }
+
+    @Override
+    public void prepare(MetadataContext context) {
+        processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
+        if(null == processor) {
+            throw new SqlConfigException("Tag processor '" + name + "' not exists, check it : " + toString());
+        }
+        processor.prepareTag(context, this);
     }
 
     @Override
@@ -38,13 +67,7 @@ public class Tag extends AstNode {
     }
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+        processor.processTag(context, this, stm, params);
     }
-
-	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
-    }
-
 }

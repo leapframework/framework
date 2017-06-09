@@ -18,6 +18,7 @@ package leap.orm.sql;
 import leap.lang.Strings;
 import leap.lang.annotation.Internal;
 import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.AstNode;
 import leap.orm.sql.ast.AstUtils;
 import leap.orm.sql.ast.DynamicNode;
@@ -121,12 +122,18 @@ public class Sql {
         return b.get();
     }
 	
-	public void buildStatement(SqlStatementBuilder stm,Params params){
+	public void buildStatement(SqlContext context, SqlStatementBuilder stm,Params params){
 		for(int i=0;i<nodes.length;i++){
 			AstNode node = nodes[i];
-			node.buildStatement(stm, params);
+			node.buildStatement(context, stm, params);
 		}
 	}
+
+    public void prepare(MetadataContext context) {
+        for(AstNode node : nodes) {
+            node.prepare(context);
+        }
+    }
 	
 	public void prepareBatchSqlStatement(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) {
 		for(int i=0;i<nodes.length;i++) {

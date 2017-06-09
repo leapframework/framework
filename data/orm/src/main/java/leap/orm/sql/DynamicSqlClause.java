@@ -110,7 +110,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		
 		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sqls.sqlForCount, true);
 	    
-		sqls.sqlForCount.buildStatement(statement, params);
+		sqls.sqlForCount.buildStatement(context, statement, params);
 		
 		return statement.build();
     }
@@ -300,7 +300,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	protected SqlStatement doCreateStatement(SqlContext context, Sql sql, Params params, boolean query){
 		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sql, query);
 	    
-		sql.buildStatement(statement, params);
+		sql.buildStatement(context, statement, params);
 		
 		return statement.build();
 	}
@@ -387,7 +387,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
             }
 
             this.statement = new DefaultSqlStatementBuilder(context, sql, true);
-			sql.buildStatement(statement, params);
+			sql.buildStatement(context, statement, params);
 			
 			return statement;
 		}
@@ -430,7 +430,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			return sql;
 		}
 
-		protected void buildSqlStatement(AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
+		protected void buildSqlStatement(SqlContext context, AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
 			
 			if(node instanceof SqlOrderBy){
 				statement.appendText(ORDER_BY_PLACEHOLDER);
@@ -453,12 +453,12 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 			
 			if(node instanceof SqlNodeContainer) {
 				for(AstNode c : ((SqlNodeContainer) node).getNodes()){
-					buildSqlStatement(c, statement, parameters);
+					buildSqlStatement(context, c, statement, parameters);
 				}
 				return;
 			}
 
-            node.buildStatement(statement, parameters);
+            node.buildStatement(context, statement, parameters);
 		}
 
 		@Override
