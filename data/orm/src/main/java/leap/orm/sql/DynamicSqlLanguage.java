@@ -23,6 +23,7 @@ import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.orm.OrmConfig;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.parser.Lexer;
@@ -30,7 +31,6 @@ import leap.orm.sql.parser.SqlParser;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Configurable(prefix="orm.dynamicSQL")
 public class DynamicSqlLanguage implements SqlLanguage {
@@ -123,6 +123,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
                     processShardingTable(s);
                     processWhereFields(s);
+                    processQueryFilter(context.getConfig(), s);
 
                     sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i),s));
                 }
@@ -171,7 +172,13 @@ public class DynamicSqlLanguage implements SqlLanguage {
     }
 
     protected void processWhereFields(Sql sql) {
-        new SqlWhereProcessor(sql).processWhereFields();
+        new SqlWhereColumnProcessor(sql).process();
+    }
+
+    protected void processQueryFilter(OrmConfig config, Sql sql) {
+        if(config.isQueryFilterEnabled()) {
+            new SqlQueryFilterProcessor(sql, config.getQueryFilterTag()).process();
+        }
     }
 	
 	protected boolean smart() {

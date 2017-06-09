@@ -99,7 +99,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 
 	@Override
-    public boolean  isContextModel(OrmContext context, Class<?> cls) {
+    public boolean isContextModel(OrmContext context, Class<?> cls) {
 		if(context.getConfig().isModelCrossContext()){
 			return isContextModelWhenCrossContext(context,cls);
 		}else {

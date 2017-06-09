@@ -96,6 +96,7 @@ public class DaoTest extends OrmTestCase {
 		}
 		assertEquals(1, Owner.count());
 	}
+
 	@Test
 	public void testSqlKeyWithMapParams(){
 		Map<String, Object> params = new HashMap<>();

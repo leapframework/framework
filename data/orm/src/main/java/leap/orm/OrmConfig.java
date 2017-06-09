@@ -69,6 +69,16 @@ public interface OrmConfig {
 	 * Default is false
 	 */
 	boolean isModelCrossContext();
+
+    /**
+     * Returns true if enables query filter by default.
+     */
+    boolean isQueryFilterEnabled();
+
+    /**
+     * Returns the tag name of query filter.
+     */
+    String getQueryFilterTag();
 	
     /**
      * zero means no limitation.

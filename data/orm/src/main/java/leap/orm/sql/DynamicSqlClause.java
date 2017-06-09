@@ -357,7 +357,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		@Override
         public String getSql(Db db) {
 			buildStatement(db);
-			return statement.getSql().toString();
+			return statement.getText().toString();
         }
 		
 		public DefaultSqlStatementBuilder buildStatement(Db db) {

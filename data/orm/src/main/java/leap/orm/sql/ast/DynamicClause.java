@@ -15,36 +15,44 @@
  */
 package leap.orm.sql.ast;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.lang.params.Params;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class DynamicClause extends DynamicNode implements AstNodeContainer {
-	
-	private final AstNode[]        bodyNodes;
-	private final NamedParamNode[] paramNodes;
-	
-	private boolean nullable;
-	
-	public DynamicClause(AstNode[] bodyNodes){
+
+    private AstNode[]        bodyNodes;
+    private NamedParamNode[] paramNodes;
+    private boolean          tagOnly;
+    private boolean          nullable;
+
+    public DynamicClause(AstNode[] bodyNodes){
 	    this(bodyNodes,null);
 	}
 	
     public DynamicClause(AstNode[] bodyNodes, Map<String,String> params) {
         this.bodyNodes = bodyNodes;
-        this.paramNodes = resolveParamNodes();
+
+        resolveParamNodes();
         
         if(null != params) {
             String nullableValue = params.remove("nullable");
             if(!Strings.isEmpty(nullableValue)) {
                this.nullable = Converts.toBoolean(nullableValue, false); 
+            }
+        }
+
+        //{? and @tagname{..} }
+        if(paramNodes.length == 0 && bodyNodes.length >= 2) {
+            if(bodyNodes[1] instanceof Tag) {
+                tagOnly = true;
             }
         }
     }
@@ -98,13 +106,32 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 
 	@Override
     protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
-		if(!test(params)) {
-			return;
-		}
-		
-	    for(AstNode n : bodyNodes) {
-	    	n.buildStatement(context, stm, params);
-	    }
+        if(!tagOnly) {
+            if(!test(params)) {
+                return;
+            }
+
+            for(AstNode n : bodyNodes) {
+                n.buildStatement(context, stm, params);
+            }
+        }else{
+            SqlStatementBuilder.SavePoint dynaPoint = stm.createSavePoint();
+
+            for(AstNode n : bodyNodes) {
+                if(n instanceof Tag) {
+                    SqlStatementBuilder.SavePoint tagPoint = stm.createSavePoint();
+
+                    n.buildStatement(context, stm, params);
+
+                    if(!tagPoint.hasChanges()) {
+                        dynaPoint.restore();
+                        return;
+                    }
+                }else{
+                    n.buildStatement(context, stm, params);
+                }
+            }
+        }
     }
 
 	@Override
@@ -117,7 +144,7 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 		return AstUtils.findLastNode(bodyNodes, type);
 	}
 
-	protected NamedParamNode[] resolveParamNodes() {
+	protected void resolveParamNodes() {
 		List<NamedParamNode> nodes = new ArrayList<NamedParamNode>();
 		
 		for(AstNode node : bodyNodes) {
@@ -126,7 +153,7 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 			}
 		}
 		
-		return nodes.toArray(new NamedParamNode[nodes.size()]);
+		paramNodes = nodes.toArray(new NamedParamNode[nodes.size()]);
 	}
 
 }

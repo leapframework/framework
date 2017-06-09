@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -7,11 +7,11 @@
  *
  *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 package leap.orm.sql;
@@ -28,15 +28,19 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class SqlWhereProcessor {
+class SqlQueryFilterProcessor {
 
-    private final Sql sql;
+    private final Sql    sql;
+    private final String tagName;
 
-    public SqlWhereProcessor(Sql sql) {
+    private boolean processed;
+
+    public SqlQueryFilterProcessor(Sql sql, String tagName) {
         this.sql = sql;
+        this.tagName = tagName;
     }
 
-    void processWhereFields() {
+    boolean process() {
         if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
 
             sql.traverse(node -> {
@@ -49,9 +53,11 @@ class SqlWhereProcessor {
             });
 
         }
+
+        return processed;
     }
 
-    protected void processQuery(SqlQuery query) {
+    private void processQuery(SqlQuery query) {
         Set<SqlTableSource> joinTables = new HashSet<>();
         Set<SqlTableSource> tables = new HashSet<>();
 
@@ -61,7 +67,7 @@ class SqlWhereProcessor {
 
                 EntityMapping em = ((SqlTableName)ts).getEntityMapping();
 
-                if(null != em && em.hasWhereFields()) {
+                if(null != em && em.isQueryFilterEnabled()) {
 
                     if(ts.isJoin()) {
                         joinTables.add(ts);
@@ -93,7 +99,7 @@ class SqlWhereProcessor {
                 SqlTableSource ts = join.getTable();
                 EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
 
-                if(isWhereFieldExists(node, em)) {
+                if(isQueryFilterExists(node, em)) {
                     return true;
                 }
 
@@ -108,15 +114,9 @@ class SqlWhereProcessor {
                 }
 
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                    FieldMapping fm = em.getWhereFieldMappings()[i];
 
-                    if(i > 0) {
-                        addWhereFieldNode(nodes, fm, alias);
-                    }else{
-                        addWhereFieldNode(nodes, fm, alias, join.hasOnExpression());
-                    }
-                }
+                addQueryFilter(nodes, em, alias, join.hasOnExpression());
+
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -135,7 +135,7 @@ class SqlWhereProcessor {
 
                 EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
 
-                if(isWhereFieldExists(node, em)) {
+                if(isQueryFilterExists(node, em)) {
                     return true;
                 }
 
@@ -157,19 +157,8 @@ class SqlWhereProcessor {
                 }
 
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                if(whereFields.length == 1) {
-                    addWhereFieldNode(nodes, whereFields[0], alias);
-                }else{
-                    nodes.add(new Text(" and ( 1=1"));
 
-                    for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                        FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                        addWhereFieldNode(nodes, fm, alias);
-                    }
-
-                    nodes.add(new Text(" ) "));
-                }
+                addQueryFilter(nodes, em, alias, true);
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -180,42 +169,32 @@ class SqlWhereProcessor {
         });
     }
 
-    protected void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias) {
-        addWhereFieldNode(nodes, fm, alias, true);
-    }
+    private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias, boolean and) {
 
-    protected void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias, boolean appendAndPrefix) {
-        List<AstNode> list = new ArrayList<>();
+        processed = true;
 
-        if(appendAndPrefix) {
-            list.add(new Text(" and "));
-        }
+        Tag tag = new Tag(tagName, em.getEntityName(), true);
 
-        list.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        list.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
-        list.add(new Text(" "));
-
-        if(null != fm.getWhereIf()) {
-            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
+        if(and) {
+            nodes.add(new DynamicClause(new AstNode[]{new Text(" and "), tag}));
         }else{
-            nodes.addAll(list);
+            nodes.add(tag);
         }
+
     }
 
     //checks the where field(s) exists in the expression.
-    protected boolean isWhereFieldExists(AstNode node, EntityMapping em) {
+    private boolean isQueryFilterExists(AstNode node, EntityMapping em) {
         AtomicBoolean exists = new AtomicBoolean(false);
-        node.traverse((n1) -> {
 
-            if(n1 instanceof SqlObjectName) {
+        node.traverse(n -> {
+            if (n instanceof Tag) {
+                String name = ((Tag) n).getName();
+                String content = ((Tag) n).getContent();
 
-                FieldMapping fmInSQL = ((SqlObjectName)n1).getFieldMapping();
-
-                for(FieldMapping fm : em.getWhereFieldMappings()) {
-                    if(fmInSQL == fm) {
-                        exists.set(true);
-                        return false;
-                    }
+                if (name.equalsIgnoreCase(tagName) && content.equalsIgnoreCase(em.getEntityName())) {
+                    exists.set(true);
+                    return false;
                 }
             }
 

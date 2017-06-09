@@ -34,36 +34,37 @@ import java.util.*;
 
 public class EntityMapping extends ExtensibleBase {
 	private static final Log log = LogFactory.get(EntityMapping.class);
-	
-	protected final String						 entityName;
-	protected final Class<?>      		         entityClass;
-	protected final BeanType                     beanType;
-	protected final DbTable		  		         table;
-	protected final FieldMapping[]               fieldMappings;
-    protected final FieldMapping[]               whereFieldMappings;
-	protected final FieldMapping[]               keyFieldMappings;
-	protected final String[]                     keyFieldNames;
-	protected final String[]					 keyColumnNames;
-	protected final boolean				         autoIncrementKey;
-	protected final DbColumn			         autoIncrementKeyColumn;
-	protected final FieldMapping                 autoIncrementKeyField;
-	protected final FieldMapping			     optimisticLockField;
-	protected final EntityExecutionInterceptor   insertInterceptor;
-	protected final EntityExecutionInterceptor   updateInterceptor;
-	protected final EntityExecutionInterceptor   deleteInterceptor;
-	protected final EntityExecutionInterceptor   findInterceptor;
-	protected final EntityDomain			     domain;
-	protected final Class<? extends Model> modelClass;
-	protected final EntityValidator[]      validators;
-	protected final RelationMapping[]      relationMappings;
-    protected final RelationProperty[]     relationProperties;
-    protected final boolean                autoCreateTable;
-    protected final boolean                sharding;
-    protected final boolean                autoCreateShardingTable;
-    protected final ShardingAlgorithm      shardingAlgorithm;
-    protected final boolean                selfReferencing;
-    protected final RelationMapping[]      selfReferencingRelations;
-    protected final EntityListeners        listeners;
+
+    protected final String                     entityName;
+    protected final Class<?>                   entityClass;
+    protected final BeanType                   beanType;
+    protected final DbTable                    table;
+    protected final FieldMapping[]             fieldMappings;
+    protected final FieldMapping[]             whereFieldMappings;
+    protected final FieldMapping[]             keyFieldMappings;
+    protected final String[]                   keyFieldNames;
+    protected final String[]                   keyColumnNames;
+    protected final boolean                    autoIncrementKey;
+    protected final DbColumn                   autoIncrementKeyColumn;
+    protected final FieldMapping               autoIncrementKeyField;
+    protected final FieldMapping               optimisticLockField;
+    protected final EntityExecutionInterceptor insertInterceptor;
+    protected final EntityExecutionInterceptor updateInterceptor;
+    protected final EntityExecutionInterceptor deleteInterceptor;
+    protected final EntityExecutionInterceptor findInterceptor;
+    protected final EntityDomain               domain;
+    protected final Class<? extends Model>     modelClass;
+    protected final EntityValidator[]          validators;
+    protected final RelationMapping[]          relationMappings;
+    protected final RelationProperty[]         relationProperties;
+    protected final boolean                    autoCreateTable;
+    protected final boolean                    sharding;
+    protected final boolean                    autoCreateShardingTable;
+    protected final ShardingAlgorithm          shardingAlgorithm;
+    protected final boolean                    selfReferencing;
+    protected final RelationMapping[]          selfReferencingRelations;
+    protected final EntityListeners            listeners;
+    protected final boolean                    queryFilterEnabled;
 
     private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
@@ -84,6 +85,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
+                         boolean queryFilterEnabled,
                          boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm,
                          EntityListeners listeners) {
 		
@@ -127,6 +129,7 @@ public class EntityMapping extends ExtensibleBase {
 	    this.autoIncrementKeyField  = autoIncrementKey ? keyFieldMappings[0] : null;
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
+        this.queryFilterEnabled     = queryFilterEnabled;
         this.sharding               = sharding;
         this.autoCreateShardingTable= autoCreateShardingTable;
         this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
@@ -305,6 +308,10 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isAutoCreateTable() {
         return autoCreateTable;
+    }
+
+    public boolean isQueryFilterEnabled() {
+        return queryFilterEnabled;
     }
 
     /**

@@ -31,7 +31,8 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	private final List<Object>  args = new ArrayList<Object>();
 	
 	private int pi = -1;
-	
+
+
 	public DefaultSqlStatementBuilder(SqlContext context, Sql sql, boolean query){
 		this.context = context;
         this.sql     = sql;
@@ -56,15 +57,22 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
 	    return pi;
     }
 
-	public StringBuilder getSql(){
-		return buf;
-	}
-	
-	public List<Object> getArgs() {
+    @Override
+    public StringBuilder getText() {
+        return buf;
+    }
+
+    @Override
+    public List<Object> getArgs() {
 		return args;
 	}
 
-	@Override
+    @Override
+    public SavePoint createSavePoint() {
+        return new SavePointImpl();
+    }
+
+    @Override
     public Appendable append(char c) throws IOException {
 		buf.append(c);
 	    return buf;
@@ -168,5 +176,31 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
                                         buf.toString(),
                                         args.toArray(new Object[args.size()]),
                                         Arrays2.EMPTY_INT_ARRAY);
+    }
+
+    protected class SavePointImpl implements SavePoint {
+        private final int len;
+        private final int size;
+
+        public SavePointImpl() {
+            this.len = buf.length();
+            this.size = args.size();
+        }
+
+        @Override
+        public void restore() {
+            if(buf.length() > len) {
+                buf.delete(len, buf.length());
+            }
+
+            while(args.size() > size) {
+                args.remove(args.size() - 1);
+            }
+        }
+
+        @Override
+        public boolean hasChanges() {
+            return buf.length() > len || args.size() > size;
+        }
     }
 }
