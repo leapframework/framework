@@ -15,10 +15,13 @@
  */
 package leap.orm.sql.ast;
 
+import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.*;
+import leap.orm.sql.parser.Lexer;
+import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
 
@@ -28,8 +31,9 @@ public class Tag extends DynamicNode implements SqlTag {
     protected final String  content;
     protected final boolean optional;
 
-    protected Object          executionObject;
-    protected SqlTagProcessor processor;
+    protected Object             executionObject;
+    protected ExpressionLanguage el;
+    protected SqlTagProcessor    processor;
 
     public Tag(String name, String content, boolean optional) {
         this.name = name;
@@ -80,12 +84,14 @@ public class Tag extends DynamicNode implements SqlTag {
         }else{
             processor.prepareTag(context, this);
         }
+
+        el = context.getAppContext().getBeanFactory().getBean(ExpressionLanguage.class);
     }
 
 	@Override
     protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
         if(null != processor) {
-            String expr = processor.processTag(context, this, params);
+            String expr = Strings.trim(processor.processTag(context, this, params));
             if(!Strings.isEmpty(expr)) {
                 buildStatement(context, stm, params, expr);
             }
@@ -100,8 +106,10 @@ public class Tag extends DynamicNode implements SqlTag {
         }
     }
 
-    public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String expr) throws IOException {
-        //todo :
-        stm.append(expr);
+    public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+        SqlParser parser = new SqlParser(new Lexer(text, Sql.ParseLevel.MORE), el);
+        SqlWhereExpr expr = parser.whereExpr();
+
+        expr.buildStatement(context, stm, params);
     }
 }

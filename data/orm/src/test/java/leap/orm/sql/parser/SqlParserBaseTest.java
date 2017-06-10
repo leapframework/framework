@@ -21,6 +21,7 @@ import leap.junit.contexual.Contextual;
 import leap.orm.sql.Sql;
 import leap.orm.sql.ast.IfClause;
 import leap.orm.sql.ast.ParamPlaceholder;
+import leap.orm.sql.ast.SqlWhereExpr;
 import leap.orm.sql.ast.SqlOrderBy;
 
 import org.junit.Test;
@@ -212,6 +213,15 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 		SqlOrderBy orderBy = SqlParser.parseOrderBy("order by id asc");
 		assertEquals("order by id asc", orderBy.toString());
 	}
+
+    @Test
+    public void testParseWhereExpr() {
+        SqlWhereExpr expr = SqlParser.parseWhereExpr("${env.var}");
+        assertEquals("${env.var}", expr.toString());
+
+        expr = SqlParser.parseWhereExpr("t.a = :a and b = ${env.var}");
+        assertEquals("t.a = :a and b = ${env.var}", expr.toString());
+    }
 
     @Test
     public void testTag() {

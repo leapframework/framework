@@ -49,6 +49,10 @@ public class SqlParser extends SqlParserBase {
 		Args.notEmpty(orderByExpression,"orderByExpression");
 		return new SqlParser(new Lexer(Strings.trim(orderByExpression)),null).orderBy();
 	}
+
+    public static SqlWhereExpr parseWhereExpr(String fragment) {
+        return new SqlParser(new Lexer(Strings.trim(fragment), Sql.ParseLevel.MORE)).whereExpr();
+    }
 	
 	public static List<String> split(String text){
 		return new SqlParser(new Lexer(Strings.trim(text))).split();
@@ -186,6 +190,29 @@ public class SqlParser extends SqlParserBase {
 		
 		return (SqlOrderBy)this.nodes.get(0);
 	}
+
+    public SqlWhereExpr whereExpr() {
+        nodes = new ArrayList<>();
+
+        lexer.nextToken();
+
+        for(;;){
+            if(lexer.isEOS()){
+                appendText();
+                break;
+            }
+
+            if(lexer.isIdentifier()) {
+                if(parseSqlObjectName()){
+                    continue;
+                }
+            }
+
+            parseToken();
+        }
+
+        return new SqlWhereExpr(this.nodes.toArray(new AstNode[this.nodes.size()]));
+    }
 	
 	protected Sql parseSql(){
 		type  = null;
