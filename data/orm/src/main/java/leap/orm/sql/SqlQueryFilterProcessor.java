@@ -117,13 +117,9 @@ class SqlQueryFilterProcessor {
 
                 Collections2.addAll(nodes, olds);
 
-                if(!join.hasOnExpression()) {
-                    nodes.add(new Text(" on "));
-                }
-
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
 
-                addQueryFilter(nodes, em, alias, join.hasOnExpression());
+                addQueryFilter(nodes, em, alias, join.hasOnExpression(), true);
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -163,7 +159,7 @@ class SqlQueryFilterProcessor {
 
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
 
-                addQueryFilter(nodes, em, alias, true);
+                addQueryFilter(nodes, em, alias, true, false);
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -174,7 +170,7 @@ class SqlQueryFilterProcessor {
         });
     }
 
-    private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias, boolean and) {
+    private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias, boolean and, boolean join) {
 
         processed = true;
 
@@ -186,7 +182,11 @@ class SqlQueryFilterProcessor {
         if(and) {
             nodes.add(new DynamicClause(new AstNode[]{new Text(" and "), tag}));
         }else{
-            nodes.add(tag);
+            if(join) {
+                nodes.add(new DynamicClause(new AstNode[]{new Text(" on "), tag}));
+            }else{
+                nodes.add(tag);
+            }
         }
 
     }

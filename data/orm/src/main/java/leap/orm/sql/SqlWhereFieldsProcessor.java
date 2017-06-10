@@ -153,23 +153,24 @@ class SqlWhereFieldsProcessor {
                     }
                     nodes.add(new Text(" )"));
                 }else {
-                    nodes.add(new Text(" where 1=1 "));
+                    nodes.add(new Text(" where"));
+                    nodes.add(new Text(" 1=1"));
                 }
+
+                nodes.add(new Text(" and ( 1=1 "));
 
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
                 if(whereFields.length == 1) {
-                    addWhereFieldNode(nodes, whereFields[0], alias);
+                    addWhereFieldNode(nodes, whereFields[0], alias, true);
                 }else{
-                    nodes.add(new Text(" and ( 1=1"));
-
                     for(int i=0;i<em.getWhereFieldMappings().length;i++) {
                         FieldMapping fm = em.getWhereFieldMappings()[i];
 
-                        addWhereFieldNode(nodes, fm, alias);
+                        addWhereFieldNode(nodes, fm, alias, true);
                     }
-
-                    nodes.add(new Text(" ) "));
                 }
+
+                nodes.add(new Text(")"));
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
