@@ -844,6 +844,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 	
 	protected void postMappingConventional(MetadataContext context, EntityMappingBuilder emb){
+        if(context.getConfig().isQueryFilterEnabled() && null == emb.getQueryFilterEnabled()) {
+            emb.setQueryFilterEnabled(true);
+        }
+
 		//Auto recognize primary key
 		if(!emb.hasPrimaryKey()){
 			for(FieldMappingBuilder fmb : emb.getFieldMappings()){

@@ -52,7 +52,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	@Override
     public SqlStatement createUpdateStatement(SqlContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
         return doCreateStatement(context, sqls, params, false);
     }
@@ -64,7 +64,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 		}
 
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
         if(sqls.sql.isSelect()) {
             Limit limit = context.getLimit();
@@ -102,7 +102,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	@Override
     public SqlStatement createCountStatement(QueryContext context, Object p) {
         Params params = createParameters(context, p);
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params, SqlLanguage.Options.EMPTY);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
         createSqlForCount(sqls);
 		
@@ -115,7 +115,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 
 	@Override
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
-        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty(), SqlLanguage.Options.EMPTY);
+        DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
 
 		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
 		

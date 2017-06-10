@@ -40,7 +40,7 @@ public class DynamicSql {
         }
     }
 
-    public ExecutionSqls resolveExecutionSqls(Params params, SqlLanguage.Options options) {
+    public ExecutionSqls resolveExecutionSqls(Params params) {
         if(null != sqls) {
             return sqls;
         }

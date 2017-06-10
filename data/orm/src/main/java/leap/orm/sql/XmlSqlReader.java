@@ -90,8 +90,7 @@ public class XmlSqlReader implements SqlReader {
             md.removeSqlCommand(key);
 
             //Clones a new one for current orm context.
-            DefaultSqlCommand cloned = new DefaultSqlCommand(sql.source,sql.desc,sql.dbType,sql.lang,sql.content,sql.dataSourceName);
-            md.addSqlCommand(key, cloned);
+            md.addSqlCommand(key, sql.clone());
         });
     }
 

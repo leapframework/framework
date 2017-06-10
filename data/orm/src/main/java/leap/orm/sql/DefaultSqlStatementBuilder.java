@@ -202,5 +202,15 @@ public class DefaultSqlStatementBuilder implements SqlStatementBuilder {
         public boolean hasChanges() {
             return buf.length() > len || args.size() > size;
         }
+
+        @Override
+        public String removeAppendedText() {
+            if(buf.length() > len) {
+                String s = buf.substring(len, buf.length());
+                buf.delete(len, buf.length());
+                return s;
+            }
+            return null;
+        }
     }
 }

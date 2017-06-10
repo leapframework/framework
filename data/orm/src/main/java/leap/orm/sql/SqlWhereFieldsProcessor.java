@@ -28,11 +28,11 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class SqlWhereColumnProcessor {
+class SqlWhereFieldsProcessor {
 
     private final Sql sql;
 
-    public SqlWhereColumnProcessor(Sql sql) {
+    public SqlWhereFieldsProcessor(Sql sql) {
         this.sql = sql;
     }
 

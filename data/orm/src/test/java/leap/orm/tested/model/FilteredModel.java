@@ -14,25 +14,13 @@
  *  limitations under the License.
  */
 
-package leap.orm.sql;
+package leap.orm.tested.model;
 
-import leap.lang.params.Params;
-import leap.orm.metadata.MetadataContext;
+import leap.orm.model.Model;
 
-import java.io.IOException;
+public class FilteredModel extends Model {
 
-public interface SqlTagProcessor {
-
-    /**
-     * Prepares the sql tag.
-     */
-    default void prepareTag(MetadataContext context, SqlTag tag) {
-
-    }
-
-    /**
-     * Process the tag and returns the result sql content.
-     */
-    void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException;
+    public String  id;
+    public int     num;
 
 }

@@ -14,25 +14,27 @@
  *  limitations under the License.
  */
 
-package leap.orm.sql;
+package leap.orm.tested.tag;
 
 import leap.lang.params.Params;
-import leap.orm.metadata.MetadataContext;
+import leap.orm.sql.SqlContext;
+import leap.orm.sql.SqlStatementBuilder;
+import leap.orm.sql.SqlTag;
+import leap.orm.sql.SqlTagProcessor;
 
 import java.io.IOException;
 
-public interface SqlTagProcessor {
+public class SimpleQueryFilterTag implements SqlTagProcessor {
 
-    /**
-     * Prepares the sql tag.
-     */
-    default void prepareTag(MetadataContext context, SqlTag tag) {
+    @Override
+    public void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException {
+
+        //only process FilteredModel
+        if(tag.getContent().endsWith("FilteredModel")) {
+            stm.append("t.num_ > ?");
+            stm.addParameter(10);
+        }
 
     }
-
-    /**
-     * Process the tag and returns the result sql content.
-     */
-    void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException;
 
 }

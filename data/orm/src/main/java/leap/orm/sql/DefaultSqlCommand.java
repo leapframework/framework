@@ -56,6 +56,13 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
         this.dataSourceName = dataSourceName;
     }
 
+    public DefaultSqlCommand clone() {
+        DefaultSqlCommand cloned = new DefaultSqlCommand(source, desc, dbType, lang, content, dataSourceName);
+        cloned.whereFieldsEnabled = whereFieldsEnabled;
+        cloned.queryFilterEnabled = queryFilterEnabled;
+        return cloned;
+    }
+
     @Override
     public Boolean getWhereFieldsEnabled() {
         return whereFieldsEnabled;

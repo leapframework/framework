@@ -23,7 +23,6 @@ import leap.core.cache.SimpleLRUCache;
 import leap.core.el.ExpressionLanguage;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.orm.OrmConfig;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.Sql.ParseLevel;
 import leap.orm.sql.parser.Lexer;
@@ -128,7 +127,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
                     }
 
                     if(null == options.getQueryFilterEnabled() || options.getQueryFilterEnabled()) {
-                        processQueryFilter(context.getConfig(), s);
+                        processQueryFilter(context, s);
                     }
 
                     sqls.add(new DynamicSql.ExecutionSqls(rawSqls.get(i),s));
@@ -178,12 +177,12 @@ public class DynamicSqlLanguage implements SqlLanguage {
     }
 
     protected void processWhereFields(Sql sql) {
-        new SqlWhereColumnProcessor(sql).process();
+        new SqlWhereFieldsProcessor(sql).process();
     }
 
-    protected void processQueryFilter(OrmConfig config, Sql sql) {
-        if(config.isQueryFilterEnabled()) {
-            new SqlQueryFilterProcessor(sql, config.getQueryFilterTag()).process();
+    protected void processQueryFilter(MetadataContext context, Sql sql) {
+        if(context.getConfig().isQueryFilterEnabled()) {
+            new SqlQueryFilterProcessor(context, sql).process();
         }
     }
 	

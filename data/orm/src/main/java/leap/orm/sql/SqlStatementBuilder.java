@@ -103,5 +103,10 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
          * Returns true if the statement builder has changes from this save point.
          */
         boolean hasChanges();
+
+        /**
+         * Removes the appended text from the save point and return it.
+         */
+        String removeAppendedText();
     }
 }

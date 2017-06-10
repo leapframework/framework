@@ -18,10 +18,14 @@ package leap.orm.sql;
 
 import leap.lang.Collections2;
 import leap.lang.Strings;
+import leap.lang.params.Params;
+import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -30,18 +34,22 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class SqlQueryFilterProcessor {
 
-    private final Sql    sql;
-    private final String tagName;
+    private final MetadataContext context;
+    private final OrmConfig       config;
+    private final Sql             sql;
 
     private boolean processed;
 
-    public SqlQueryFilterProcessor(Sql sql, String tagName) {
-        this.sql = sql;
-        this.tagName = tagName;
+    public SqlQueryFilterProcessor(MetadataContext context, Sql sql) {
+        this.context = context;
+        this.config  = context.getConfig();
+        this.sql     = sql;
     }
 
     boolean process() {
-        if(sql.isDelete() || sql.isSelect() || sql.isUpdate()) {
+        //todo : update and delete
+
+        if(sql.isSelect()) {
 
             sql.traverse(node -> {
 
@@ -117,7 +125,6 @@ class SqlQueryFilterProcessor {
 
                 addQueryFilter(nodes, em, alias, join.hasOnExpression());
 
-
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
                 return true;
@@ -138,8 +145,6 @@ class SqlQueryFilterProcessor {
                 if(isQueryFilterExists(node, em)) {
                     return true;
                 }
-
-                FieldMapping[] whereFields = em.getWhereFieldMappings();
 
                 AstNode[] olds = ((SqlWhere)node).getNodes();
 
@@ -173,7 +178,10 @@ class SqlQueryFilterProcessor {
 
         processed = true;
 
-        Tag tag = new Tag(tagName, em.getEntityName(), true);
+        String content = config.getQueryFilterPrefix() + em.getEntityName();
+
+        Tag tag = new QfTag(config.getQueryFilterName(), content, true, config.getQueryFilterAlias(), alias);
+        tag.prepare(context);
 
         if(and) {
             nodes.add(new DynamicClause(new AstNode[]{new Text(" and "), tag}));
@@ -183,16 +191,14 @@ class SqlQueryFilterProcessor {
 
     }
 
-    //checks the where field(s) exists in the expression.
+    //checks the query filter exists in the expression.
     private boolean isQueryFilterExists(AstNode node, EntityMapping em) {
         AtomicBoolean exists = new AtomicBoolean(false);
 
         node.traverse(n -> {
             if (n instanceof Tag) {
                 String name = ((Tag) n).getName();
-                String content = ((Tag) n).getContent();
-
-                if (name.equalsIgnoreCase(tagName) && content.equalsIgnoreCase(em.getEntityName())) {
+                if (name.equalsIgnoreCase(config.getQueryFilterName())) {
                     exists.set(true);
                     return false;
                 }
@@ -202,5 +208,33 @@ class SqlQueryFilterProcessor {
         });
 
         return exists.get();
+    }
+
+    protected static final class QfTag extends Tag {
+
+        private final String qfAlias;
+        private final String emAlias;
+
+        public QfTag(String name, String content, boolean optional, String qfAlias, String emAlias) {
+            super(name, content, optional);
+            this.qfAlias = qfAlias;
+            this.emAlias = emAlias;
+        }
+
+        @Override
+        protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+            SqlStatementBuilder.SavePoint sp = stm.createSavePoint();
+
+            super.buildStatement_(context, stm, params);
+
+            if(sp.hasChanges()) {
+
+                String text = sp.removeAppendedText();
+
+                text = Strings.replaceIgnoreCase(text, qfAlias + ".", Strings.isEmpty(emAlias) ? "" : emAlias + ".");
+
+                stm.append(text);
+            }
+        }
     }
 }

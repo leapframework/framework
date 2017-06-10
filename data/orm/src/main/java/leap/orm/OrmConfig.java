@@ -78,7 +78,17 @@ public interface OrmConfig {
     /**
      * Returns the tag name of query filter.
      */
-    String getQueryFilterTag();
+    String getQueryFilterName();
+
+    /**
+     * Returns the content prefix of query filter tag.
+     */
+    String getQueryFilterPrefix();
+
+    /**
+     * todo : doc
+     */
+    String getQueryFilterAlias();
 	
     /**
      * zero means no limitation.

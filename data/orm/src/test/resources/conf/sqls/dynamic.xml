@@ -18,7 +18,7 @@
         ]]>
     </command>
 
-    <command key="test.sql.dynamic.clause.nest.if">
+    <command key="test.sql.dynamic.clause.nest.if" query-filter="false">
         <![CDATA[
         select * from owners
         @if(name != null)
