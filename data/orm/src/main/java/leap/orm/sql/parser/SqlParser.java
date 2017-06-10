@@ -590,7 +590,7 @@ public class SqlParser extends SqlParserBase {
             KeyValueParser.parseKeyValuePairs(params, paramsString, ':');
             dc = new DynamicClause(nodes(), params);
         }else{
-            dc = new DynamicClause(nodes());    
+            dc = new DynamicClause(nodes());
         }
 		
 		restoreNodes();

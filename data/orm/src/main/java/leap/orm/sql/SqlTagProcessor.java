@@ -33,6 +33,6 @@ public interface SqlTagProcessor {
     /**
      * Process the tag and returns the result sql content.
      */
-    void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException;
+    String processTag(SqlContext context, SqlTag tag, Params params);
 
 }

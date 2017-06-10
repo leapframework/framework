@@ -27,14 +27,14 @@ import java.io.IOException;
 public class SimpleQueryFilterTag implements SqlTagProcessor {
 
     @Override
-    public void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException {
+    public String processTag(SqlContext context, SqlTag tag, Params params) {
 
         //only process FilteredModel
         if(tag.getContent().endsWith("FilteredModel")) {
-            stm.append("t.num_ > ?");
-            stm.addParameter(10);
+            return "t.num_ > 10";
         }
 
+        return null;
     }
 
 }

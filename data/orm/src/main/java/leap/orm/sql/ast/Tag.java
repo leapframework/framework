@@ -15,6 +15,7 @@
  */
 package leap.orm.sql.ast;
 
+import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.*;
@@ -84,7 +85,23 @@ public class Tag extends DynamicNode implements SqlTag {
 	@Override
     protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
         if(null != processor) {
-            processor.processTag(context, this, stm, params);
+            String expr = processor.processTag(context, this, params);
+            if(!Strings.isEmpty(expr)) {
+                buildStatement(context, stm, params, expr);
+            }
         }
+    }
+
+    public String process(SqlContext context, Params params) {
+        if(null == processor) {
+            return Strings.EMPTY;
+        }else{
+            return processor.processTag(context, this, params);
+        }
+    }
+
+    public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String expr) throws IOException {
+        //todo :
+        stm.append(expr);
     }
 }

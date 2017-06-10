@@ -28,13 +28,8 @@ import java.io.IOException;
 public class NopTagProcessor implements SqlTagProcessor {
 
     @Override
-    public void prepareTag(MetadataContext context, SqlTag tag) {
-
-    }
-
-    @Override
-    public void processTag(SqlContext context, SqlTag tag, SqlStatementBuilder stm, Params params) throws IOException {
-        stm.append(tag.getContent());
+    public String processTag(SqlContext context, SqlTag tag, Params params) {
+        return tag.getContent();
     }
 
 }

@@ -21,7 +21,6 @@ import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.FieldMapping;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.*;
 
