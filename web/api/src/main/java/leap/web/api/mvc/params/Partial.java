@@ -16,7 +16,6 @@
 
 package leap.web.api.mvc.params;
 
-import leap.core.validation.annotations.Required;
 import leap.lang.meta.annotation.TypeWrapper;
 import leap.web.annotation.BindBy;
 import leap.web.annotation.RequestBody;
@@ -29,7 +28,6 @@ import java.util.Map;
  * @param <T> the type of model.
  */
 @TypeWrapper
-@Required
 @RequestBody
 @BindBy(PartialArgumentBinder.class)
 public interface Partial<T> {

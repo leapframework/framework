@@ -49,7 +49,7 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "POST";
         String path = fullModelPath(api, model) + "/{id}";
-        if(isOpeationExists(app, verb, path)) {
+        if(isOperationExists(app, verb, path)) {
             return;
         }
 

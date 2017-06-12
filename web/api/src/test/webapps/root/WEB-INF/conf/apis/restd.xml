@@ -4,7 +4,10 @@
     <api name="restd" base-path="/restd" default-anonymous="true" restd-enabled="true" restd-data-source="restd">
 
         <restd>
-            <model name="Model1" delete="false"/>
+            <model name="Model1" delete="false">
+                <sql-operation name="testQuery"  sql-key="testModel1SqlQuery"/>
+                <sql-operation name="testUpdate" sql-key="testModel1SqlUpdate"/>
+            </model>
         </restd>
 
     </api>

@@ -46,7 +46,7 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "DELETE";
         String path = fullModelPath(api, model) + "/{id}";
-        if(isOpeationExists(app, verb, path)) {
+        if(isOperationExists(app, verb, path)) {
             return;
         }
 

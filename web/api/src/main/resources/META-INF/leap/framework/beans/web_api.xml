@@ -57,6 +57,6 @@
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperationProcessor"/>
 
 </beans>

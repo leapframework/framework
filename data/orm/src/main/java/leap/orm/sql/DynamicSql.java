@@ -40,6 +40,10 @@ public class DynamicSql {
         }
     }
 
+    public Sql raw() {
+        return sql;
+    }
+
     public ExecutionSqls resolveExecutionSqls(Params params) {
         if(null != sqls) {
             return sqls;

@@ -49,7 +49,7 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "GET";
         String path = fullModelPath(api, model);
-        if(isOpeationExists(app, verb, path)) {
+        if(isOperationExists(app, verb, path)) {
             return;
         }
 

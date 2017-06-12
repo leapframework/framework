@@ -9,4 +9,11 @@
         select * from User where loginName = :username
     </command>    
 
+    <command key="testModel1SqlQuery">
+        select * from model1 where name = :name
+    </command>
+
+    <command key="testModel1SqlUpdate">
+        update model1 set name = :name where id = :id
+    </command>
 </sqls>

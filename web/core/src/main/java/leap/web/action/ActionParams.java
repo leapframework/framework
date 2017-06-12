@@ -19,7 +19,18 @@ package leap.web.action;
 import leap.lang.accessor.IndexedGetter;
 import leap.lang.accessor.NamedGetter;
 
+import java.util.Map;
+
 public interface ActionParams extends NamedGetter,IndexedGetter {
 
+    /**
+     * Returns the action arguments.
+     */
+    Argument[] getArguments();
+
+    /**
+     * Converts the params as {@link Map}.
+     */
+    Map<String,Object> toMap();
 
 }

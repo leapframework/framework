@@ -29,27 +29,93 @@ import leap.orm.query.QueryContext;
 import leap.orm.sql.Sql.Type;
 import leap.orm.sql.ast.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
-public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
+public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,SqlMetadata {
 	
 	private static final Log log = LogFactory.get(DynamicSqlClause.class);
 	
 	public static final String ORDER_BY_PLACEHOLDER = "$orderBy$";
-	
-	protected final DynamicSqlLanguage lang;
-    protected final DynamicSql         sql;
+
+    protected final DynamicSqlLanguage     lang;
+    protected final DynamicSql             sql;
+    protected final Set<SqlMetadata.Param> parameters;
 
     private PreparedBatchSqlStatement preparedBatchStatement;
 	
     public DynamicSqlClause(DynamicSqlLanguage lang, DynamicSql sql){
         this.lang = lang;
         this.sql  = sql;
+
+        Map<String, ParamImpl> params = new LinkedHashMap<>();
+
+        sql.raw().traverse((n) -> {
+
+            if(n instanceof DynamicClause) {
+                NamedParamNode[] nodes = ((DynamicClause) n).getNamedParamNodes();
+                for(NamedParamNode pn : nodes) {
+                    String name = pn.getName();
+
+                    if(params.containsKey(name.toLowerCase())) {
+                       continue;
+                    }
+
+                    params.put(name.toLowerCase(), new ParamImpl(name, false));
+                }
+            }else if(n instanceof NamedParamNode) {
+                String name = ((NamedParamNode) n).getName();
+
+                ParamImpl param = params.get(name.toLowerCase());
+                if(null == param) {
+                    params.put(name.toLowerCase(), new ParamImpl(name, true));
+                }else{
+                    param.setRequired(true);
+                }
+            }
+
+            return true;
+
+        });
+
+        this.parameters = Collections.unmodifiableSet(new LinkedHashSet<>(params.values()));
     }
 
-	@Override
+    @Override
+    public boolean isSelect() {
+        return sql.raw().isSelect();
+    }
+
+    @Override
+    public boolean isInsert() {
+        return sql.raw().isInsert();
+    }
+
+    @Override
+    public boolean isUpdate() {
+        return sql.raw().isUpdate();
+    }
+
+    @Override
+    public boolean isDelete() {
+        return sql.raw().isDelete();
+    }
+
+    @Override
+    public Set<Param> getParameters() {
+        return parameters;
+    }
+
+    @Override
+    public boolean hasMetadata() {
+        return false;
+    }
+
+    @Override
+    public SqlMetadata getMetadata() {
+        return this;
+    }
+
+    @Override
     public SqlStatement createUpdateStatement(SqlContext context, Object p) {
         Params params = createParameters(context, p);
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
@@ -474,4 +540,30 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause {
 	        return statement.getArgs();
         }
 	}
+
+    protected static final class ParamImpl implements SqlMetadata.Param {
+
+        private final String name;
+
+        private boolean required;
+
+        public ParamImpl(String name, boolean required) {
+            this.name = name;
+            this.required = required;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public boolean isRequired() {
+            return required;
+        }
+
+        public void setRequired(boolean required) {
+            this.required = required;
+        }
+    }
 }

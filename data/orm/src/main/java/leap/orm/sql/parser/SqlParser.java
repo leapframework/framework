@@ -219,33 +219,49 @@ public class SqlParser extends SqlParserBase {
 		nodes = new ArrayList<>();
 
 		try {
-            if(parseDyna) {
-                parseDynaOnly();
-            }else{
-                Token token = lexer.token();
+            Token token = lexer.token();
 
-                switch (token) {
-                    case SELECT:
-                        type = Type.SELECT;
+            switch (token) {
+                case SELECT:
+                    type = Type.SELECT;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseSelect();
-                        break;
-                    case INSERT:
-                        type = Type.INSERT;
+                    }
+                    break;
+                case INSERT:
+                    type = Type.INSERT;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseInsert();
-                        break;
-                    case UPDATE:
-                        type = Type.UPDATE;
+                    }
+                    break;
+                case UPDATE:
+                    type = Type.UPDATE;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseUpdate();
-                        break;
-                    case DELETE:
-                        type = Type.DELETE;
+                    }
+                    break;
+                case DELETE:
+                    type = Type.DELETE;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseDelete();
-                        break;
-                    default:
-                        type = Type.UNRESOLVED;
+                    }
+                    break;
+                default:
+                    type = Type.UNRESOLVED;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseOther();
-                        break;
-                }
+                    }
+                    break;
             }
         } catch (Exception e) {
 	        error(e);

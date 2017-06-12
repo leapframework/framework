@@ -82,6 +82,11 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
     }
 
     @Override
+    public SqlMetadata getMetadata() {
+        return clauses.length == 1 ? clauses[0].getMetadata() : null;
+    }
+
+    @Override
     public void prepare(MetadataContext context) {
         if(prepared) {
             return;
@@ -92,6 +97,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
         } catch (Exception e) {
             throw new SqlConfigException("Error parsing sql (" + desc == null ? content : desc + "), source : " + source,e);
         }
+
         prepared = true;
     }
 

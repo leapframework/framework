@@ -64,6 +64,10 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
         return bodyNodes;
     }
 
+    public NamedParamNode[] getNamedParamNodes() {
+        return paramNodes;
+    }
+
     @Override
     public <T extends AstNode> T findLastNode(Class<T> type) {
         return AstUtils.findLastNode(bodyNodes, type);
