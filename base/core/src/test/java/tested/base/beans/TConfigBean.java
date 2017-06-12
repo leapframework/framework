@@ -20,6 +20,7 @@ import leap.core.annotation.Bean;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.config.dyna.*;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
 @Bean
 @Configurable(prefix="pbean")
@@ -57,6 +58,11 @@ public class TConfigBean {
     public String testNotFieldProperty1;
     public String testNotFieldProperty2;
     public String testNotFieldProperty3;
+
+    public @Configurable.Nested NestedConfig nested1 = new NestedConfig();
+    public @Configurable.Nested NestedConfig                      nested2;
+    public @Configurable.Nested(prefix = "nested3") NestedConfig nested;
+    public @Configurable.Nested NestedConfig                      nestedConfig;
 
     @ConfigProperty(key = "not_exists_property", defaultValue = "10")
     public int getIntPropertyWithDefaultValue() {
@@ -107,6 +113,13 @@ public class TConfigBean {
 
         public String name;
         public int    value;
+
+    }
+
+    public static final class NestedConfig {
+
+        @ConfigProperty
+        public String prop1;
 
     }
 }

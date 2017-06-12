@@ -18,6 +18,7 @@ package leap.core.ioc;
 
 import leap.core.AppConfig;
 import leap.core.annotation.ConfigProperty;
+import leap.core.annotation.Configurable;
 import leap.core.config.dyna.*;
 import leap.lang.Classes;
 import leap.lang.Collections2;
@@ -80,6 +81,30 @@ public class BeanConfigurator {
         Set<ReflectField> done = new HashSet<>();
 
         for(BeanProperty bp : bt.getProperties()){
+            Configurable.Nested nested = bp.getAnnotation(Configurable.Nested.class);
+            if(null != nested) {
+                String nestedPrefix = nested.prefix();
+
+                if(Strings.isEmpty(nestedPrefix)) {
+                    nestedPrefix = Strings.lowerUnderscore(bp.getName());
+                    if(nestedPrefix.endsWith("_config")) {
+                        nestedPrefix = Strings.removeEnd(nestedPrefix, "_config");
+                    }
+                }
+
+                String fullKeyPrefix = keyPrefix(keyPrefix + nestedPrefix);
+                Object nestedBean    = bp.getValue(bean);
+                BeanType nestedType  = BeanType.of(bp.getType());
+
+                if(null == nestedBean) {
+                    nestedBean = nestedType.newInstance();
+                    bp.setValue(bean, nestedBean);
+                }
+
+                configure(nestedBean, nestedType, fullKeyPrefix);
+                continue;
+            }
+
             ConfigProperty a = bp.getAnnotation(ConfigProperty.class);
             if(!Property.class.isAssignableFrom(bp.getType()) && null == a) {
                 continue;

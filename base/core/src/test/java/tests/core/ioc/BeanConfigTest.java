@@ -81,6 +81,12 @@ public class BeanConfigTest extends CoreTestCase {
         assertEquals("1", bean.testNotFieldProperty1);
         assertEquals("2", bean.testNotFieldProperty2);
         assertEquals("3", bean.testNotFieldProperty3);
+
+        //nested
+        assertNotNull("1", bean.nested1.prop1);
+        assertNotNull("2", bean.nested2.prop1);
+        assertNotNull("3", bean.nested.prop1);
+        assertNotNull("4", bean.nestedConfig.prop1);
     }
 
 }
