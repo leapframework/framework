@@ -29,16 +29,14 @@ public class Tag extends DynamicNode implements SqlTag {
 
     protected final String  name;
     protected final String  content;
-    protected final boolean optional;
 
     protected Object             executionObject;
     protected ExpressionLanguage el;
     protected SqlTagProcessor    processor;
 
-    public Tag(String name, String content, boolean optional) {
+    public Tag(String name, String content) {
         this.name = name;
         this.content = content.trim();
-        this.optional = optional;
     }
 
     public String getName() {
@@ -47,10 +45,6 @@ public class Tag extends DynamicNode implements SqlTag {
 
     public String getContent() {
         return content;
-    }
-
-    public boolean isOptional() {
-        return optional;
     }
 
     @Override
@@ -67,10 +61,6 @@ public class Tag extends DynamicNode implements SqlTag {
     protected void toString_(Appendable buf) throws IOException {
         buf.append("@").append(name).append("{");
 
-        if(optional){
-            buf.append('?');
-        }
-
         buf.append(content).append("}");
     }
 
@@ -78,9 +68,7 @@ public class Tag extends DynamicNode implements SqlTag {
     public void prepare(MetadataContext context) {
         processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
         if(null == processor) {
-            if(!optional) {
-                throw new SqlConfigException("Tag processor '" + name + "' not exists, check it : " + toString());
-            }
+            throw new SqlConfigException("Sql tag processor '" + name + "' not exists, check it : " + toString());
         }else{
             processor.prepareTag(context, this);
         }

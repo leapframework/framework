@@ -18,6 +18,7 @@ package leap.orm.dao;
 
 import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TagTest extends OrmTestCase {
@@ -32,6 +33,7 @@ public class TagTest extends OrmTestCase {
         assertEquals(1,dao.createSqlQuery("select * from owners where @nop { 1=1 }").count());
     }
 
+    /* the feature of optional tag has been removed.
     @Test
     public void testOptionalTag() {
         deleteAll(Owner.class);
@@ -40,4 +42,5 @@ public class TagTest extends OrmTestCase {
 
         assertEquals(1,dao.createSqlQuery("select * from owners @not_exists{? err }").count());
     }
+    */
 }

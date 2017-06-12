@@ -175,7 +175,7 @@ class SqlQueryFilterProcessor {
 
         String content = config.getQueryFilterPrefix() + em.getEntityName();
 
-        Tag tag = new QfTag(config.getQueryFilterName(), content, true, config.getQueryFilterAlias(), alias);
+        Tag tag = new QfTag(config.getQueryFilterName(), content, config.getQueryFilterAlias(), alias);
         tag.prepare(context);
 
         if(and) {
@@ -214,8 +214,8 @@ class SqlQueryFilterProcessor {
         private final String qfAlias;
         private final String emAlias;
 
-        public QfTag(String name, String content, boolean optional, String qfAlias, String emAlias) {
-            super(name, content, optional);
+        public QfTag(String name, String content, String qfAlias, String emAlias) {
+            super(name, content);
             this.qfAlias = qfAlias;
             this.emAlias = emAlias;
         }

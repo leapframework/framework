@@ -715,10 +715,6 @@ public class SqlParser extends SqlParserBase {
         StringBuilder s = new StringBuilder();
 
         lexer.nextChar();
-        if(lexer.ch == '?') {
-            optional = true;
-            lexer.nextChar();
-        }
 
         for(;;) {
             if(lexer.isEOF()) {
@@ -733,7 +729,7 @@ public class SqlParser extends SqlParserBase {
                 counter--;
                 if(counter == 0) {
                     lexer.nextChar();
-                    acceptNode(new Tag(name, s.toString(), optional));
+                    acceptNode(new Tag(name, s.toString()));
                     return;
                 }
             }
