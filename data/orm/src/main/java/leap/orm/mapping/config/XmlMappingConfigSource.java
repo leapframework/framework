@@ -63,11 +63,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String DEFAULT_VALUE_ATTRIBUTE    = "default-value";
     private static final String INSERT_ATTRIBUTE           = "insert";
     private static final String UPDATE_ATTRIBUTE           = "update";
-    private static final String WHERE_ATTRIBUTE            = "where";
+    private static final String FILTER                     = "filter";
     private static final String INSERT_VALUE_ATTRIBUTE     = "insert-value";
     private static final String UPDATE_VALUE_ATTRIBUTE     = "update-value";
-    private static final String WHERE_VALUE_ATTRIBUTE      = "where-value";
-    private static final String WHERE_IF_ATTRIBUTE         = "where-if";
+    private static final String FILTER_VALUE               = "filter-value";
     private static final String OVERRIDE_ATTRIBUTE         = "override";
 
     protected @Inject AppConfig appConfig;
@@ -236,11 +235,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         String  defaultValue   = reader.resolveAttribute(DEFAULT_VALUE_ATTRIBUTE);
         Boolean insert         = reader.resolveBooleanAttribute(INSERT_ATTRIBUTE);
         Boolean update         = reader.resolveBooleanAttribute(UPDATE_ATTRIBUTE);
-        Boolean where          = reader.resolveBooleanAttribute(WHERE_ATTRIBUTE);
+        Boolean filter         = reader.resolveBooleanAttribute(FILTER);
         String  insertValue    = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
         String  updateValue    = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
-        String  whereValue     = reader.getAttribute(WHERE_VALUE_ATTRIBUTE);
-        String  whereIf        = reader.getAttribute(WHERE_IF_ATTRIBUTE);
+        String  filterValue    = reader.getAttribute(FILTER_VALUE);
         boolean override       = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 
         //field-name
@@ -262,10 +260,9 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             column.setTypeCode(type.getCode());
         }
 
-        Expression insertValueExpression    = null;
-        Expression updateValueExpression    = null;
-        Expression whereValueExpression     = null;
-        Expression whereIfExpression = null;
+        Expression insertValueExpression = null;
+        Expression updateValueExpression = null;
+        Expression filterValueExpression = null;
 
         if(!Strings.isEmpty(insertValue)){
             insertValueExpression = EL.tryCreateValueExpression(insertValue);
@@ -275,12 +272,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             updateValueExpression = EL.tryCreateValueExpression(updateValue);
         }
 
-        if(!Strings.isEmpty(whereValue)){
-            whereValueExpression = EL.tryCreateValueExpression(whereValue);
-        }
-
-        if(!Strings.isEmpty(whereIf)){
-            whereIfExpression = EL.tryCreateValueExpression(whereIf);
+        if(!Strings.isEmpty(filterValue)){
+            filterValueExpression = EL.tryCreateValueExpression(filterValue);
         }
 
         field.setJavaType(type.getDefaultReadType());
@@ -291,11 +284,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setDefaultValue(defaultValue);
         field.setInsert(insert);
         field.setUpdate(update);
-        field.setWhere(where);
+        field.setFilter(filter);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);
-        field.setWhereValue(whereValueExpression);
-        field.setWhereIf(whereIfExpression);
+        field.setFilterValue(filterValueExpression);
 
         return field;
     }

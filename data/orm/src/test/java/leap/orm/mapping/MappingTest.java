@@ -114,7 +114,7 @@ public class MappingTest extends OrmTestCase {
 
         FieldMapping ecode = em.getFieldMapping("ecode");
         assertNotNull(ecode);
-        assertTrue(ecode.isWhere());
+        assertTrue(ecode.isFilter());
     }
 
     @Test

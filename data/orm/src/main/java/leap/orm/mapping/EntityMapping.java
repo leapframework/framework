@@ -40,7 +40,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final FieldMapping[]             fieldMappings;
-    protected final FieldMapping[]             whereFieldMappings;
+    protected final FieldMapping[]             filterFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
     protected final String[]                   keyFieldNames;
     protected final String[]                   keyColumnNames;
@@ -120,7 +120,7 @@ public class EntityMapping extends ExtensibleBase {
         this.primaryKeyRelations    = createPrimaryKeyRelations();
         this.targetEntityRelations  = createTargetEntityRelations();
         this.referenceToRelations   = createReferenceToRelations();
-        this.whereFieldMappings     = evalWhereFieldMappings();
+        this.filterFieldMappings    = evalFilterFieldMappings();
 	    this.keyFieldMappings       = evalKeyFieldMappings();
 	    this.keyFieldNames          = evalKeyFieldNames();
 	    this.keyColumnNames			= evalKeyColumnNames();
@@ -140,7 +140,7 @@ public class EntityMapping extends ExtensibleBase {
 
         this.listeners = listeners;
 
-        if(whereFieldMappings.length > 1) {
+        if(filterFieldMappings.length > 1) {
             throw new IllegalStateException("Two or more filter columns in an entity is not supported yet!");
         }
     }
@@ -442,12 +442,12 @@ public class EntityMapping extends ExtensibleBase {
 		return null != optimisticLockField;
 	}
 
-    public boolean hasWhereFields() {
-        return whereFieldMappings.length > 0;
+    public boolean hasFilterFields() {
+        return filterFieldMappings.length > 0;
     }
 
-    public FieldMapping[] getWhereFieldMappings() {
-        return whereFieldMappings;
+    public FieldMapping[] getFilterFieldMappings() {
+        return filterFieldMappings;
     }
 
     public FieldMapping getOptimisticLockField() {
@@ -503,13 +503,13 @@ public class EntityMapping extends ExtensibleBase {
 		return list.toArray(new FieldMapping[list.size()]);
 	}
 
-    private FieldMapping[] evalWhereFieldMappings(){
+    private FieldMapping[] evalFilterFieldMappings(){
         List<FieldMapping> list = New.arrayList();
 
         for(FieldMapping fm : this.fieldMappings){
-            if(fm.isWhere()){
-                Assert.isTrue(null != fm.getWhereValue(),
-                             "There where value expression must not be null of where field '" + fm.getFieldName() + "'");
+            if(fm.isFilter()){
+                Assert.isTrue(null != fm.getFilterValue(),
+                             "There filter value expression must not be null of filter field '" + fm.getFieldName() + "'");
                 list.add(fm);
             }
         }

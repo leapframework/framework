@@ -2,7 +2,7 @@
 <models xmlns="http://www.leapframework.org/schema/models">
 
     <global-field name="ecode" column="ecode" jdbc-type="varchar" length="100" nullable="false"
-                  insert="true" update="false" where="true" insert-value="${'t'}" where-value="${'t'}">
+                  insert="true" insert-value="${'t'}" update="false" filter="true" filter-value="${'t'}">
 
         <included-entities>ECodeModel, ECodeModel1</included-entities>
 

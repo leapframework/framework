@@ -45,12 +45,11 @@ public class FieldMapping extends ExtensibleBase {
 	protected final Integer          scale;
 	protected final boolean          insert;
 	protected final boolean          update;
-    protected final boolean          where;
+    protected final boolean          filter;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
-    protected final Expression       whereValue;
-    protected final Expression       whereIf;
+    protected final Expression       filterValue;
 	protected final FieldDomain      domain;
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
@@ -70,12 +69,11 @@ public class FieldMapping extends ExtensibleBase {
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
                         boolean insert, boolean update,
-                        boolean where,
+                        boolean filter,
                         Expression defaultValue,
                         Expression insertValue,
                         Expression updateValue,
-                        Expression whereValue,
-                        Expression whereIf,
+                        Expression filterValue,
                         boolean optimisticLock,
                         String newOptimisticLockFieldName,
                         FieldDomain domain,
@@ -98,14 +96,13 @@ public class FieldMapping extends ExtensibleBase {
 	    this.maxLength		= maxLength;
 	    this.precision		= precision;
 	    this.scale		    = scale;
-	    this.insert = insert;
-	    this.update = update;
-        this.where          = where;
+	    this.insert         = insert;
+	    this.update         = update;
+        this.filter         = filter;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
-        this.whereValue     = whereValue;
-        this.whereIf        = whereIf;
+        this.filterValue    = filterValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
@@ -172,8 +169,8 @@ public class FieldMapping extends ExtensibleBase {
 		return updateValue;
 	}
 
-    public Expression getWhereValue() {
-        return whereValue;
+    public Expression getFilterValue() {
+        return filterValue;
     }
 
     public boolean isAutoGenerateValue(){
@@ -192,8 +189,8 @@ public class FieldMapping extends ExtensibleBase {
 		return update;
 	}
 
-    public boolean isWhere() {
-        return where;
+    public boolean isFilter() {
+        return filter;
     }
 
     public boolean isPrimaryKey() {

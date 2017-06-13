@@ -65,7 +65,7 @@ class SqlWhereFieldsProcessor {
 
                 EntityMapping em = ((SqlTableName)ts).getEntityMapping();
 
-                if(null != em && em.hasWhereFields()) {
+                if(null != em && em.hasFilterFields()) {
 
                     if(ts.isJoin()) {
                         joinTables.add(ts);
@@ -102,7 +102,7 @@ class SqlWhereFieldsProcessor {
                 }
 
                 String       alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                FieldMapping fm    = em.getWhereFieldMappings()[0];
+                FieldMapping fm    = em.getFilterFieldMappings()[0];
 
                 AstNode[] olds = ((SqlJoin)node).getNodes();
 
@@ -145,7 +145,7 @@ class SqlWhereFieldsProcessor {
                 }
 
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                FieldMapping fm = em.getWhereFieldMappings()[0];
+                FieldMapping fm = em.getFilterFieldMappings()[0];
 
                 AstNode[] olds = ((SqlWhere)node).getNodes();
 
@@ -185,7 +185,7 @@ class SqlWhereFieldsProcessor {
 
     private void addFilterNodes(List<AstNode> nodes, FieldMapping fm, String alias) {
         nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
+        nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getFilterValue().toString(), fm.getFilterValue()));
         nodes.add(new Text(" "));
     }
 
@@ -198,7 +198,7 @@ class SqlWhereFieldsProcessor {
 
                 FieldMapping fmInSQL = ((SqlObjectName)n1).getFieldMapping();
 
-                for(FieldMapping fm : em.getWhereFieldMappings()) {
+                for(FieldMapping fm : em.getFilterFieldMappings()) {
                     if(fmInSQL == fm) {
                         exists.set(true);
                         return false;
