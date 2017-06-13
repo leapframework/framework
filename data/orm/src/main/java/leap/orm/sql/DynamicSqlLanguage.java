@@ -123,7 +123,7 @@ public class DynamicSqlLanguage implements SqlLanguage {
                     processShardingTable(s);
 
                     if(null == options.getWhereFieldsEnabled() || options.getWhereFieldsEnabled()) {
-                        processWhereFields(s);
+                        processWhereFields(context, s);
                     }
 
                     if(null == options.getQueryFilterEnabled() || options.getQueryFilterEnabled()) {
@@ -176,8 +176,8 @@ public class DynamicSqlLanguage implements SqlLanguage {
         new SqlShardingProcessor(sql).processShardingTable();
     }
 
-    protected void processWhereFields(Sql sql) {
-        new SqlWhereFieldsProcessor(sql).process();
+    protected void processWhereFields(MetadataContext context, Sql sql) {
+        new SqlWhereFieldsProcessor(context, sql).process();
     }
 
     protected void processQueryFilter(MetadataContext context, Sql sql) {

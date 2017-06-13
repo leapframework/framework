@@ -18,8 +18,10 @@ package leap.orm.sql;
 
 import leap.lang.Collections2;
 import leap.lang.Strings;
+import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.*;
 
 import java.util.ArrayList;
@@ -30,9 +32,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class SqlWhereFieldsProcessor {
 
-    private final Sql sql;
+    private final OrmConfig.FilterColumnConfig config;
+    private final Sql                          sql;
 
-    public SqlWhereFieldsProcessor(Sql sql) {
+    public SqlWhereFieldsProcessor(MetadataContext context, Sql sql) {
+        this.config = context.getConfig().getFilterColumnConfig();
         this.sql = sql;
     }
 
@@ -113,8 +117,8 @@ class SqlWhereFieldsProcessor {
                     filterNodes.add(new Text(" and "));
                 }
                 addFilterNodes(filterNodes, fm, alias);
-                if(null != fm.getWhereIf()) {
-                    nodes.add(new ConditionalNode(fm.getWhereIf(), filterNodes.toArray(new AstNode[0])));
+                if(null != config.getFilterIf()) {
+                    nodes.add(new ConditionalNode(config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
                     nodes.addAll(filterNodes);
                 }
@@ -164,8 +168,8 @@ class SqlWhereFieldsProcessor {
                 }
 
                 addFilterNodes(filterNodes, fm, alias);
-                if(null != fm.getWhereIf()) {
-                    nodes.add(new ConditionalNode(fm.getWhereIf(), filterNodes.toArray(new AstNode[0])));
+                if(null != config.getFilterIf()) {
+                    nodes.add(new ConditionalNode(config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
                     nodes.addAll(filterNodes);
                 }
@@ -183,12 +187,6 @@ class SqlWhereFieldsProcessor {
         nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
         nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
         nodes.add(new Text(" "));
-
-//        if(null != fm.getWhereIf()) {
-//            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
-//        }else{
-//            nodes.addAll(list);
-//        }
     }
 
     //checks the where field(s) exists in the expression.

@@ -16,6 +16,7 @@
 package leap.orm;
 
 import leap.lang.exception.ObjectNotFoundException;
+import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 import leap.lang.naming.NamingStyles;
 
@@ -71,7 +72,19 @@ public interface OrmConfig {
 	boolean isModelCrossContext();
 
     /**
-     * Returns true if enables query filter by default.
+     * Returns true if enables filter column(s).
+     */
+    default boolean isFilterColumnEnabled() {
+        return getFilterColumnConfig().isEnabled();
+    }
+
+    /**
+     * Returns the {@link FilterColumnConfig}.
+     */
+    FilterColumnConfig getFilterColumnConfig();
+
+    /**
+     * Returns true if enables query filter.
      */
     default boolean isQueryFilterEnabled() {
         return getQueryFilterConfig().isEnabled();
@@ -158,5 +171,22 @@ public interface OrmConfig {
         String getTagName();
 
         String getAlias();
+    }
+
+    /**
+     * todo : doc
+     */
+    interface FilterColumnConfig {
+
+        /**
+         * Default is <code>true</code>
+         */
+        boolean isEnabled();
+
+        /**
+         * Optional.
+         */
+        Expression getFilterIf();
+
     }
 }

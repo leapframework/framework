@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://www.leapframework.org/schema/config">
+
+    <properties prefix="orm.filter_column">
+        <property name="filter_if" value="${env.globalFieldWhereIf}"/>
+    </properties>
+
+</config>   

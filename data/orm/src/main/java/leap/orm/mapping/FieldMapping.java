@@ -176,10 +176,6 @@ public class FieldMapping extends ExtensibleBase {
         return whereValue;
     }
 
-    public Expression getWhereIf() {
-        return whereIf;
-    }
-
     public boolean isAutoGenerateValue(){
 		return null != insertValue || column.isAutoIncrement() || !Strings.isEmpty(sequenceName);
 	}

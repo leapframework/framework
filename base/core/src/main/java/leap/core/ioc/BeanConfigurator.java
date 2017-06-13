@@ -113,7 +113,12 @@ public class BeanConfigurator {
                 continue;
             }
 
-            if(bp.isWritable()) {
+            String setByStringMethodName = "set" + Strings.upperFirst(bp.getName()) + "ByString";
+            ReflectMethod setByStringMethod = bt.getReflectClass().getMethod(setByStringMethodName, new Class<?>[]{String.class});
+
+            if(null != setByStringMethod) {
+                doBeanConfigure(bean, new SetByStringValued(bean, bp, setByStringMethod), keyPrefix, a);
+            }else if(bp.isWritable()) {
                 doBeanConfigure(bean, bp, keyPrefix, a);
             }else{
                 ReflectField rf = bp.getReflectField();
@@ -316,10 +321,53 @@ public class BeanConfigurator {
             if(value.isNull()){
                 value.convert(defaultValue);
             }
-            
+
             v.setValue(bean, value);
         }else if(!Strings.isEmpty(defaultValue)) {
             v.setValue(bean, Converts.convert(defaultValue, v.getType(), v.getGenericType()));
+        }
+    }
+
+    protected final class SetByStringValued implements ReflectValued {
+
+        private final Object        o;
+        private final BeanProperty  p;
+        private final ReflectMethod m;
+
+        public SetByStringValued(Object o, BeanProperty p, ReflectMethod m) {
+            this.o = o;
+            this.p = p;
+            this.m = m;
+        }
+
+        @Override
+        public String getName() {
+            return p.getName();
+        }
+
+        @Override
+        public Class<?> getType() {
+            return String.class;
+        }
+
+        @Override
+        public Type getGenericType() {
+            return p.getGenericType();
+        }
+
+        @Override
+        public Annotation[] getAnnotations() {
+            return p.getAnnotations();
+        }
+
+        @Override
+        public Object getValue(Object bean) {
+            return p.getValue(bean);
+        }
+
+        @Override
+        public void setValue(Object bean, Object value) {
+            m.invoke(o, value);
         }
     }
 
