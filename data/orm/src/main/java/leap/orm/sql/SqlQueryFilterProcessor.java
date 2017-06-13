@@ -33,15 +33,15 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 class SqlQueryFilterProcessor {
 
-    private final MetadataContext context;
-    private final OrmConfig       config;
-    private final Sql             sql;
+    private final MetadataContext             context;
+    private final OrmConfig.QueryFilterConfig config;
+    private final Sql                         sql;
 
     private boolean processed;
 
     public SqlQueryFilterProcessor(MetadataContext context, Sql sql) {
         this.context = context;
-        this.config  = context.getConfig();
+        this.config  = context.getConfig().getQueryFilterConfig();
         this.sql     = sql;
     }
 
@@ -49,6 +49,24 @@ class SqlQueryFilterProcessor {
         //todo : update and delete
 
         if(sql.isSelect()) {
+
+            AtomicBoolean filterExists = new AtomicBoolean();
+
+            sql.traverse(n -> {
+                if (n instanceof Tag) {
+                    String name = ((Tag) n).getName();
+                    if (name.equalsIgnoreCase(config.getTagName())) {
+                        filterExists.set(true);
+                        return false;
+                    }
+                }
+
+                return true;
+            });
+
+            if(filterExists.get()) {
+                return false;
+            }
 
             sql.traverse(node -> {
 
@@ -106,10 +124,6 @@ class SqlQueryFilterProcessor {
                 SqlTableSource ts = join.getTable();
                 EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
 
-                if(isQueryFilterExists(node, em)) {
-                    return true;
-                }
-
                 String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
 
                 AstNode[] olds = ((SqlJoin)node).getNodes();
@@ -143,13 +157,8 @@ class SqlQueryFilterProcessor {
                     return true;
                 }
 
-                EntityMapping  em = ((SqlTableName)ts).getEntityMapping();
-
-                if(isQueryFilterExists(node, em)) {
-                    return true;
-                }
-
-                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                EntityMapping em    = ((SqlTableName)ts).getEntityMapping();
+                String        alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
 
                 AstNode[] olds = ((SqlWhere)node).getNodes();
 
@@ -184,31 +193,12 @@ class SqlQueryFilterProcessor {
     private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias) {
         processed = true;
 
-        String content = config.getQueryFilterPrefix() + em.getEntityName();
+        String content = em.getEntityName();
 
-        Tag tag = new QfTag(config.getQueryFilterName(), content, config.getQueryFilterAlias(), alias);
+        Tag tag = new QfTag(config.getTagName(), content, config.getAlias(), alias);
         tag.prepare(context);
 
         nodes.add(tag);
-    }
-
-    //checks the query filter exists in the expression.
-    private boolean isQueryFilterExists(AstNode node, EntityMapping em) {
-        AtomicBoolean exists = new AtomicBoolean(false);
-
-        node.traverse(n -> {
-            if (n instanceof Tag) {
-                String name = ((Tag) n).getName();
-                if (name.equalsIgnoreCase(config.getQueryFilterName())) {
-                    exists.set(true);
-                    return false;
-                }
-            }
-
-            return true;
-        });
-
-        return exists.get();
     }
 
     protected static final class QfTag extends Tag {

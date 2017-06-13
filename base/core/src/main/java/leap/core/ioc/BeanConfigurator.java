@@ -94,11 +94,14 @@ public class BeanConfigurator {
 
                 String fullKeyPrefix = keyPrefix(keyPrefix + nestedPrefix);
                 Object nestedBean    = bp.getValue(bean);
-                BeanType nestedType  = BeanType.of(bp.getType());
+                BeanType nestedType;
 
                 if(null == nestedBean) {
+                    nestedType = BeanType.of(bp.getType());
                     nestedBean = nestedType.newInstance();
                     bp.setValue(bean, nestedBean);
+                }else{
+                    nestedType = BeanType.of(nestedBean.getClass());
                 }
 
                 configure(nestedBean, nestedType, fullKeyPrefix);

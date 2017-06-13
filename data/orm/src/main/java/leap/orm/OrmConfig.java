@@ -73,23 +73,15 @@ public interface OrmConfig {
     /**
      * Returns true if enables query filter by default.
      */
-    boolean isQueryFilterEnabled();
+    default boolean isQueryFilterEnabled() {
+        return getQueryFilterConfig().isEnabled();
+    }
 
     /**
-     * Returns the tag name of query filter.
+     * Returns the {@link QueryFilterConfig}.
      */
-    String getQueryFilterName();
+    QueryFilterConfig getQueryFilterConfig();
 
-    /**
-     * Returns the content prefix of query filter tag.
-     */
-    String getQueryFilterPrefix();
-
-    /**
-     * todo : doc
-     */
-    String getQueryFilterAlias();
-	
     /**
      * zero means no limitation.
      */
@@ -154,5 +146,17 @@ public interface OrmConfig {
          */
         Integer getDefaultColumnLength();
 
+    }
+
+    /**
+     * todo : doc
+     */
+    interface QueryFilterConfig {
+
+        boolean isEnabled();
+
+        String getTagName();
+
+        String getAlias();
     }
 }
