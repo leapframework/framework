@@ -97,25 +97,26 @@ class SqlWhereFieldsProcessor {
                     return true;
                 }
 
+                String       alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                FieldMapping fm    = em.getWhereFieldMappings()[0];
+
                 AstNode[] olds = ((SqlJoin)node).getNodes();
 
                 List<AstNode> nodes = new ArrayList<>();
 
                 Collections2.addAll(nodes, olds);
 
+                List<AstNode> filterNodes = new ArrayList<>();
                 if(!join.hasOnExpression()) {
-                    nodes.add(new Text(" on "));
+                    filterNodes.add(new Text(" on "));
+                }else{
+                    filterNodes.add(new Text(" and "));
                 }
-
-                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                    FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                    if(i > 0) {
-                        addWhereFieldNode(nodes, fm, alias);
-                    }else{
-                        addWhereFieldNode(nodes, fm, alias, join.hasOnExpression());
-                    }
+                addFilterNodes(filterNodes, fm, alias);
+                if(null != fm.getWhereIf()) {
+                    nodes.add(new ConditionalNode(fm.getWhereIf(), filterNodes.toArray(new AstNode[0])));
+                }else{
+                    nodes.addAll(filterNodes);
                 }
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
@@ -139,11 +140,13 @@ class SqlWhereFieldsProcessor {
                     return true;
                 }
 
-                FieldMapping[] whereFields = em.getWhereFieldMappings();
+                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                FieldMapping fm = em.getWhereFieldMappings()[0];
 
                 AstNode[] olds = ((SqlWhere)node).getNodes();
 
                 List<AstNode> nodes = new ArrayList<>();
+                List<AstNode> filterNodes = new ArrayList<>();
 
                 if(olds.length > 0) {
                     //where ( original expression ) and (...)
@@ -152,25 +155,20 @@ class SqlWhereFieldsProcessor {
                         nodes.add(olds[i]);
                     }
                     nodes.add(new Text(" )"));
-                }else {
+
+                    filterNodes.add(new Text(" and "));
+                }else{
                     nodes.add(new Text(" where"));
                     nodes.add(new Text(" 1=1"));
+                    filterNodes.add(new Text(" and "));
                 }
 
-                nodes.add(new Text(" and ( 1=1 "));
-
-                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-                if(whereFields.length == 1) {
-                    addWhereFieldNode(nodes, whereFields[0], alias, true);
+                addFilterNodes(filterNodes, fm, alias);
+                if(null != fm.getWhereIf()) {
+                    nodes.add(new ConditionalNode(fm.getWhereIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
-                    for(int i=0;i<em.getWhereFieldMappings().length;i++) {
-                        FieldMapping fm = em.getWhereFieldMappings()[i];
-
-                        addWhereFieldNode(nodes, fm, alias, true);
-                    }
+                    nodes.addAll(filterNodes);
                 }
-
-                nodes.add(new Text(")"));
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -181,26 +179,16 @@ class SqlWhereFieldsProcessor {
         });
     }
 
-    private void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias) {
-        addWhereFieldNode(nodes, fm, alias, true);
-    }
+    private void addFilterNodes(List<AstNode> nodes, FieldMapping fm, String alias) {
+        nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
+        nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
+        nodes.add(new Text(" "));
 
-    private void addWhereFieldNode(List<AstNode> nodes, FieldMapping fm, String alias, boolean and) {
-        List<AstNode> list = new ArrayList<>();
-
-        if(and) {
-            list.add(new Text(" and "));
-        }
-
-        list.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        list.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getWhereValue().toString(), fm.getWhereValue()));
-        list.add(new Text(" "));
-
-        if(null != fm.getWhereIf()) {
-            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
-        }else{
-            nodes.addAll(list);
-        }
+//        if(null != fm.getWhereIf()) {
+//            nodes.add(new ConditionalNode(fm.getWhereIf(), list.toArray(new AstNode[0])));
+//        }else{
+//            nodes.addAll(list);
+//        }
     }
 
     //checks the where field(s) exists in the expression.

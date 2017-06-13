@@ -139,6 +139,10 @@ public class EntityMapping extends ExtensibleBase {
         this.selfReferencing = selfReferencingRelations.length > 0;
 
         this.listeners = listeners;
+
+        if(whereFieldMappings.length > 1) {
+            throw new IllegalStateException("Two or more filter columns in an entity is not supported yet!");
+        }
     }
 
     /**

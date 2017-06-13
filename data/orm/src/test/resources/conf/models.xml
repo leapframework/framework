@@ -9,12 +9,14 @@
 
     </global-field>
 
+    <!--
     <global-field name="ecode1" column="ecode1" jdbc-type="varchar" length="100" nullable="false"
                   insert="false" update="false" where="true" where-if="${false}" insert-value="${'t'}" where-value="${'t'}">
 
         <included-entities>ECodeModel, ECodeModel1</included-entities>
 
     </global-field>
+    -->
 
     <sharding entity="ShardingModel"  sharding-field="type" auto-create-table="true"/>
     <sharding entity="ShardingModel1" sharding-field="type" auto-create-table="true"/>

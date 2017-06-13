@@ -110,15 +110,23 @@ class SqlQueryFilterProcessor {
                     return true;
                 }
 
+                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+
                 AstNode[] olds = ((SqlJoin)node).getNodes();
 
                 List<AstNode> nodes = new ArrayList<>();
 
                 Collections2.addAll(nodes, olds);
 
-                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+                List<AstNode> filterNodes = new ArrayList<>();
+                if(!join.hasOnExpression()) {
+                    filterNodes.add(new Text(" on "));
+                }else{
+                    filterNodes.add(new Text(" and "));
+                }
+                addQueryFilter(filterNodes, em, alias);
 
-                addQueryFilter(nodes, em, alias, join.hasOnExpression(), true);
+                nodes.add(new DynamicClause(filterNodes.toArray(new AstNode[0])));
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -141,9 +149,12 @@ class SqlQueryFilterProcessor {
                     return true;
                 }
 
+                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
+
                 AstNode[] olds = ((SqlWhere)node).getNodes();
 
                 List<AstNode> nodes = new ArrayList<>();
+                List<AstNode> filterNodes = new ArrayList<>();
 
                 if(olds.length > 0) {
                     //where ( original expression ) and (...)
@@ -152,13 +163,14 @@ class SqlQueryFilterProcessor {
                         nodes.add(olds[i]);
                     }
                     nodes.add(new Text(" )"));
-                }else {
-                    nodes.add(new Text(" where 1=1 "));
+
+                    filterNodes.add(new Text(" and "));
+                }else{
+                    filterNodes.add(new Text(" where "));
                 }
 
-                String alias = Strings.isEmpty(ts.getAlias()) ? em.getTableName() : ts.getAlias();
-
-                addQueryFilter(nodes, em, alias, true, false);
+                addQueryFilter(filterNodes, em, alias);
+                nodes.add(new DynamicClause(filterNodes.toArray(new AstNode[0])));
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -169,8 +181,7 @@ class SqlQueryFilterProcessor {
         });
     }
 
-    private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias, boolean and, boolean join) {
-
+    private void addQueryFilter(List<AstNode> nodes, EntityMapping em, String alias) {
         processed = true;
 
         String content = config.getQueryFilterPrefix() + em.getEntityName();
@@ -178,16 +189,7 @@ class SqlQueryFilterProcessor {
         Tag tag = new QfTag(config.getQueryFilterName(), content, config.getQueryFilterAlias(), alias);
         tag.prepare(context);
 
-        if(and) {
-            nodes.add(new DynamicClause(new AstNode[]{new Text(" and "), tag}));
-        }else{
-            if(join) {
-                nodes.add(new DynamicClause(new AstNode[]{new Text(" on "), tag}));
-            }else{
-                nodes.add(tag);
-            }
-        }
-
+        nodes.add(tag);
     }
 
     //checks the query filter exists in the expression.
