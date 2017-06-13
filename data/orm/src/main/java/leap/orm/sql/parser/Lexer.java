@@ -915,7 +915,7 @@ public class Lexer {
 			skipWhitespaces();
 			
 			//@tagname { ... }
-			if(null == tok && ch == '{'){
+			if(null == tok && ch == '('){
 				tok = Token.TAG;
 			}
 		}

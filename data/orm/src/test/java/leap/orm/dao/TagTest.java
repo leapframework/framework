@@ -29,8 +29,8 @@ public class TagTest extends OrmTestCase {
 
         new Owner().setFullName("f1","l1").create();
 
-        assertEquals(0,dao.createSqlQuery("select * from owners where @nop { 1=0 }").count());
-        assertEquals(1,dao.createSqlQuery("select * from owners where @nop { 1=1 }").count());
+        assertEquals(0,dao.createSqlQuery("select * from owners where @nop ( 1=0 )").count());
+        assertEquals(1,dao.createSqlQuery("select * from owners where @nop ( 1=1 )").count());
     }
 
     /* the feature of optional tag has been removed.

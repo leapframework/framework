@@ -723,9 +723,9 @@ public class SqlParser extends SqlParserBase {
 
             char c = lexer.ch;
 
-            if(c == '{') {
+            if(c == '(') {
                 counter++;
-            }else if(c == '}') {
+            }else if(c == ')') {
                 counter--;
                 if(counter == 0) {
                     lexer.nextChar();

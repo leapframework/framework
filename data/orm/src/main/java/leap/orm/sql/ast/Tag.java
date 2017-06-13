@@ -59,9 +59,9 @@ public class Tag extends DynamicNode implements SqlTag {
 
     @Override
     protected void toString_(Appendable buf) throws IOException {
-        buf.append("@").append(name).append("{");
+        buf.append("@").append(name).append("(");
 
-        buf.append(content).append("}");
+        buf.append(content).append(")");
     }
 
     @Override

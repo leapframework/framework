@@ -225,28 +225,16 @@ public class SqlParserBaseTest extends SqlParserTestCase {
 
     @Test
     public void testTag() {
-        String sql = "select * from table @security{hello}";
+        String sql = "select * from table @security(hello)";
         assertEquals(sql, parse(sql));
 
-        sql = "select * from table @security{?hello}";
+        sql = "select * from table where @security(hello) and 1=1";
         assertEquals(sql, parse(sql));
 
-        sql = "select * from table where @security{hello} and 1=1";
+        sql = "select * from table where @security(hello ()) and 1=1";
         assertEquals(sql, parse(sql));
 
-        sql = "select * from table where @security{?hello} and 1=1";
-        assertEquals(sql, parse(sql));
-
-        sql = "select * from table where @security{hello {}} and 1=1";
-        assertEquals(sql, parse(sql));
-
-        sql = "select * from table where @security{?hello {}} and 1=1";
-        assertEquals(sql, parse(sql));
-
-        sql = "select * from table where @security{hello {} aa} and 1=1";
-        assertEquals(sql, parse(sql));
-
-        sql = "select * from table where @security{?hello {} aa} and 1=1";
+        sql = "select * from table where @security(hello () aa) and 1=1";
         assertEquals(sql, parse(sql));
     }
 
