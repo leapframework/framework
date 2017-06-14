@@ -20,10 +20,10 @@ package leap.lang.intercepting;
 public interface Execution {
 
     /**
-     * The execution status for intercepting.
+     * The execution state for intercepting.
      */
-    enum Status {
-        PREPARED, //The init status.
+    enum ExecutionState {
+        PREPARED, //The init state.
         INTERCEPTED,
         SUCCESS,
         FAILURE
@@ -32,7 +32,7 @@ public interface Execution {
     /**
      * Required. The execution status.
      */
-    Status getStatus();
+    ExecutionState getState();
 
     /**
      * Optional.
@@ -43,21 +43,21 @@ public interface Execution {
      * Returns <code>true</code> if intercepted.
      */
     default boolean isIntercepted() {
-        return Status.INTERCEPTED == getStatus();
+        return ExecutionState.INTERCEPTED == getState();
     }
 
     /**
      * Returns <code>true</code> if failure.
      */
     default boolean isFailure() {
-        return Status.FAILURE == getStatus();
+        return ExecutionState.FAILURE == getState();
     }
 
     /**
      * Returns <code>true</code> if success.
      */
     default boolean isSuccess() {
-        return Status.SUCCESS == getStatus();
+        return ExecutionState.SUCCESS == getState();
     }
 
     /**
