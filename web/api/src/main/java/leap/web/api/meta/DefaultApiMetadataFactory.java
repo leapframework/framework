@@ -211,7 +211,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         }
 
 		ApiMetadata m = md.build();
-		
+
+		completeProcessDefault(context, m);
 		for(ApiMetadataProcessor p : processors) {
 			p.completeProcess(context, m);
 		}
@@ -252,6 +253,20 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         //process models.
         m.getModels().forEach((name,model) -> postProcessModel(context, m, name, model));
+    }
+
+    protected void completeProcessDefault(ApiMetadataContext context, ApiMetadata m) {
+        m.getPaths().forEach((k,path) -> {
+
+            for(MApiOperation op : path.getOperations()) {
+                Route route = (Route)op.getAttribute("route");
+
+                route.setExtension(MApiPath.class,      path);
+                route.setExtension(MApiOperation.class, op);
+
+            }
+
+        });
     }
 
     protected void postProcessModel(ApiMetadataContext context, ApiMetadataBuilder m, String name, MApiModelBuilder model) {
@@ -358,7 +373,10 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 
         log.debug("Path {} -> {} :", pt, route.getAction());
-		path.addOperation(createOperation(context, md, route));
+        MApiOperationBuilder op = createOperation(context, md, route);
+		path.addOperation(op);
+
+        op.setAttribute("route", route);
 	}
 	
 	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {
