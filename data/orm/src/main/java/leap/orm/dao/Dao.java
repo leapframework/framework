@@ -20,6 +20,7 @@ import leap.core.exception.RecordNotFoundException;
 import leap.core.jdbc.JdbcExecutor;
 import leap.core.transaction.TransactionCallback;
 import leap.core.transaction.TransactionCallbackWithResult;
+import leap.core.transaction.TransactionDefinition;
 import leap.core.validation.Errors;
 import leap.core.value.Record;
 import leap.orm.Orm;
@@ -804,6 +805,10 @@ public abstract class Dao implements JdbcExecutor {
 	 * Executes the given callback transactional.
 	 */
 	public abstract void doTransaction(TransactionCallback callback, boolean requiresNew);
+	/**
+	 * Executes the given callback transactional.
+	 */
+	public abstract void doTransaction(TransactionCallback callback, TransactionDefinition definition);
 	
 	/**
 	 * Executes the given callback transactional.
