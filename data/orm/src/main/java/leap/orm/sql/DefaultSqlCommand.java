@@ -49,7 +49,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
     public DefaultSqlCommand(Object source, String desc, String dbType,
                              SqlLanguage lang, String content, String dataSourceName) {
         this.source  = source;
-        this.desc    = desc;
+        this.desc    = Strings.isEmpty(desc) ? content : desc;
         this.dbType  = dbType;
         this.lang    = lang;
         this.content = content;
@@ -136,20 +136,20 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
 	@Override
     public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
-        log.debug("Execute update : sql '{}'", desc);
+        log.info("Executing sql update: '{}'", desc);
 		return doExecuteUpdate(context, params, null);
     }
 	
 	@Override
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
-        log.debug("Execute update : sql '{}'", desc);
+        log.info("Executing sql update: '{}'", desc);
 	    return doExecuteUpdate(context, params, psHandler);
     }
 
 	@Override
     public <T> T executeQuery(QueryContext context, Object params,ResultSetReader<T> reader) throws NestedSQLException {
 		//Assert.isTrue(null != queryClause,"This command is not a query, cannot execute query");
-        log.debug("Execute query : sql '{}'", desc);
+        log.info("Executing sql query: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -161,7 +161,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 	
 	@Override
     public long executeCount(QueryContext context, Object params) {
-        log.debug("Execute count : sql '{}'", desc);
+        log.info("Executing sql count: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
@@ -194,7 +194,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 	}
 	
 	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
-        log.debug("Execute batch update : sql '{}'", desc);
+        log.info("Executing sql batch update: '{}'", desc);
         mustPrepare(context);
 
 		if(clauses.length == 1){
