@@ -29,13 +29,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
-class SqlWhereFieldsProcessor {
+class SqlFilterColumnProcessor {
 
     private final OrmConfig.FilterColumnConfig config;
     private final Sql                          sql;
 
-    public SqlWhereFieldsProcessor(MetadataContext context, Sql sql) {
+    public SqlFilterColumnProcessor(MetadataContext context, Sql sql) {
         this.config = context.getConfig().getFilterColumnConfig();
         this.sql = sql;
     }
@@ -117,10 +118,13 @@ class SqlWhereFieldsProcessor {
                     filterNodes.add(new Text(" and "));
                 }
                 addFilterNodes(filterNodes, fm, alias);
+
+                Function<SqlContext, Boolean> func = (c) -> null == c.getFilterColumnEnabled() || c.getFilterColumnEnabled();
+
                 if(null != config.getFilterIf()) {
-                    nodes.add(new ConditionalNode(config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
+                    nodes.add(new ConditionalNode(func, config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
-                    nodes.addAll(filterNodes);
+                    nodes.add(new ConditionalNode(func, filterNodes.toArray(new AstNode[0])));
                 }
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
@@ -168,10 +172,13 @@ class SqlWhereFieldsProcessor {
                 }
 
                 addFilterNodes(filterNodes, fm, alias);
+
+                Function<SqlContext, Boolean> func = (c) -> null == c.getFilterColumnEnabled() || c.getFilterColumnEnabled();
+
                 if(null != config.getFilterIf()) {
-                    nodes.add(new ConditionalNode(config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
+                    nodes.add(new ConditionalNode(func, config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
-                    nodes.addAll(filterNodes);
+                    nodes.add(new ConditionalNode(func, filterNodes.toArray(new AstNode[0])));
                 }
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));

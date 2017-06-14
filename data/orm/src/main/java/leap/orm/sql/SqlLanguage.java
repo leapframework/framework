@@ -25,7 +25,7 @@ public interface SqlLanguage {
 
         Options EMPTY = new Options() {};
 
-        default Boolean getWhereFieldsEnabled() {
+        default Boolean getFilterColumnEnabled() {
             return null;
         }
 

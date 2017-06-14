@@ -30,6 +30,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 class SqlQueryFilterProcessor {
 
@@ -140,7 +141,8 @@ class SqlQueryFilterProcessor {
                 }
                 addQueryFilter(filterNodes, em, alias);
 
-                nodes.add(new DynamicClause(filterNodes.toArray(new AstNode[0])));
+                Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
+                nodes.add(new ConditionalNode(func, new AstNode[]{new DynamicClause(filterNodes.toArray(new AstNode[0]))}));
 
                 ((SqlJoin)node).setNodes(nodes.toArray(new AstNode[0]));
 
@@ -179,7 +181,9 @@ class SqlQueryFilterProcessor {
                 }
 
                 addQueryFilter(filterNodes, em, alias);
-                nodes.add(new DynamicClause(filterNodes.toArray(new AstNode[0])));
+
+                Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
+                nodes.add(new ConditionalNode(func, new AstNode[]{new DynamicClause(filterNodes.toArray(new AstNode[0]))}));
 
                 ((SqlWhere)node).setNodes(nodes.toArray(new AstNode[0]));
 

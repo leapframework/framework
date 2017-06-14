@@ -39,7 +39,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
     protected final String      content;
     protected final String      dataSourceName;
 
-    protected Boolean whereFieldsEnabled;
+    protected Boolean filterColumnEnabled;
     protected Boolean queryFilterEnabled;
 
     private boolean prepared;
@@ -58,14 +58,14 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
     public DefaultSqlCommand clone() {
         DefaultSqlCommand cloned = new DefaultSqlCommand(source, desc, dbType, lang, content, dataSourceName);
-        cloned.whereFieldsEnabled = whereFieldsEnabled;
+        cloned.filterColumnEnabled = filterColumnEnabled;
         cloned.queryFilterEnabled = queryFilterEnabled;
         return cloned;
     }
 
     @Override
-    public Boolean getWhereFieldsEnabled() {
-        return whereFieldsEnabled;
+    public Boolean getFilterColumnEnabled() {
+        return filterColumnEnabled;
     }
 
     @Override
@@ -73,8 +73,8 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
         return queryFilterEnabled;
     }
 
-    public void setWhereFieldsEnabled(Boolean whereFieldsEnabled) {
-        this.whereFieldsEnabled = whereFieldsEnabled;
+    public void setFilterColumnEnabled(Boolean filterColumnEnabled) {
+        this.filterColumnEnabled = filterColumnEnabled;
     }
 
     public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
