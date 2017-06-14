@@ -32,6 +32,7 @@ import org.apache.http.conn.socket.ConnectionSocketFactory;
 import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.DefaultHttpRequestRetryHandler;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.protocol.HttpContext;
@@ -128,12 +129,7 @@ public class ApacheHttpClient extends AbstractHttpClient implements Initializabl
             cm.setDefaultConnectionConfig(cc);
         }
 
-        cb.setRetryHandler(new HttpRequestRetryHandler() {
-            @Override
-            public boolean retryRequest(IOException exception, int executionCount, HttpContext context) {
-                return false;
-            }
-        });
+        cb.setRetryHandler(new DefaultHttpRequestRetryHandler());
 
         cb.setConnectionManager(cm);
         cb.setDefaultRequestConfig(requestConfig);
