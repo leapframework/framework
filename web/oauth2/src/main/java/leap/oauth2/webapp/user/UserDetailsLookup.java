@@ -14,12 +14,13 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.rs.user;
+package leap.oauth2.webapp.user;
 
-import leap.oauth2.rs.token.ResAccessToken;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.web.security.user.UserDetails;
 
-public interface UserInfoLookup {
+public interface UserDetailsLookup {
 
-    UserInfo lookupUserInfo(ResAccessToken at);
+    UserDetails lookupUserDetails(AccessToken at, String userId);
 
 }

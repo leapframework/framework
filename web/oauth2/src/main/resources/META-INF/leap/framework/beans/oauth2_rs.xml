@@ -47,6 +47,6 @@
     </bean>
 
     <!-- userinfo -->
-    <bean type="leap.oauth2.rs.user.UserInfoLookup" class="leap.oauth2.rs.user.DefaultUserInfoLookup" primary="true"/>
+    <bean type="leap.oauth2.webapp.user.UserDetailsLookup" class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
 
 </beans>

@@ -36,6 +36,7 @@ public class OAuth2ResServerAutoConfig implements AppListener {
     private String  serverUrl;
     private String  clientId;
     private String  clientSecret;
+    private Boolean useRemoteUserinfo;
 
     @ConfigProperty
     public void setEnabled(Boolean enabled) {
@@ -57,6 +58,11 @@ public class OAuth2ResServerAutoConfig implements AppListener {
         this.clientSecret = clientSecret;
     }
 
+    @ConfigProperty
+    public void setUseRemoteUserinfo(Boolean useRemoteUserinfo) {
+        this.useRemoteUserinfo = useRemoteUserinfo;
+    }
+
     @Override
     public void postAppConfigure(App app, WebConfig c) throws Throwable {
         if(null == enabled) {
@@ -69,7 +75,14 @@ public class OAuth2ResServerAutoConfig implements AppListener {
 
             oc.useRemoteAuthorizationServer();
             oc.setRemoteTokenInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/tokeninfo"));
-            oc.setRemoteUserInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/userinfo"));
+
+            if(null == useRemoteUserinfo || useRemoteUserinfo) {
+                oc.setRemoteUserInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/userinfo"));
+                oc.setUseRemoteUserInfo(true);
+            }else{
+                oc.setUseRemoteUserInfo(false);
+            }
+
             oc.setResourceServerId(clientId);
             oc.setResourceServerSecret(clientSecret);
         }else{

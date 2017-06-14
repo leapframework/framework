@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.rs.user;
+package leap.oauth2.webapp.user;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
@@ -32,17 +32,26 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.rs.OAuth2ResServerConfig;
 import leap.oauth2.rs.token.ResAccessToken;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.web.security.user.SimpleUserDetails;
+import leap.web.security.user.UserDetails;
+import leap.web.security.user.UserManager;
 
-public class DefaultUserInfoLookup implements UserInfoLookup {
+public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
-    private static final Log log = LogFactory.get(DefaultUserInfoLookup.class);
+    private static final Log log = LogFactory.get(DefaultUserDetailsLookup.class);
 
     protected @Inject OAuth2ResServerConfig config;
     protected @Inject HttpClient            httpClient;
+    protected @Inject UserManager           userManager;
 
     @Override
-    public UserInfo lookupUserInfo(ResAccessToken at) {
-        if(null == config.getRemoteUserInfoEndpointUrl()) {
+    public UserDetails lookupUserDetails(AccessToken at, String userId) {
+        if(!config.isUseRemoteUserInfo()) {
+            return userManager.loadUserDetails(userId);
+        }
+
+        if(Strings.isEmpty(config.getRemoteUserInfoEndpointUrl())) {
             throw new IllegalStateException("The userInfoEndpointUrl must be configured when use remote authz server");
         }
 
@@ -71,7 +80,7 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
 
                     String error = o.getString ("error");
                     if(Strings.isEmpty(error)) {
-                        return newUserInfo(o);
+                        return newUserDetails(o);
                     }else{
                         return null;
                     }
@@ -85,8 +94,8 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
         }
     }
 
-    protected UserInfo newUserInfo(JsonObject json) {
-        UserInfo userInfo = new UserInfo();
+    protected UserDetails newUserDetails(JsonObject json) {
+        SimpleUserDetails userInfo = new SimpleUserDetails();
 
         userInfo.setId(json.getString("sub"));
         userInfo.setName(json.getString("name"));
