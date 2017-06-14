@@ -14,37 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.rs.user;
+package leap.oauth2.webapp.token;
 
-import leap.core.security.UserPrincipal;
+import leap.core.security.token.TokenCredentials;
 
-public class UserInfo implements UserPrincipal {
+public interface AccessToken extends TokenCredentials {
 
-    protected String id;
-    protected String name;
-    protected String loginName;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getLoginName() {
-        return loginName;
-    }
-
-    public void setLoginName(String loginName) {
-        this.loginName = loginName;
-    }
 }

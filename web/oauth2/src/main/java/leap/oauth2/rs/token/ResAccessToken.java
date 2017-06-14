@@ -15,10 +15,10 @@
  */
 package leap.oauth2.rs.token;
 
-import leap.core.security.token.TokenCredentials;
+import leap.oauth2.webapp.token.AccessToken;
 import leap.web.security.authc.credentials.ParameterizedCredentials;
 
-public interface ResAccessToken extends TokenCredentials, ParameterizedCredentials {
+public interface ResAccessToken extends AccessToken, ParameterizedCredentials {
     
     /**
      * Optional. The token type.
