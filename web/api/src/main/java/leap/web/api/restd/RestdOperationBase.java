@@ -44,7 +44,8 @@ public abstract class RestdOperationBase {
 
     protected boolean isOperationExists(App app, String verb, String path) {
         for(Route route : app.routes()) {
-            if(route.getPathTemplate().getTemplate().equalsIgnoreCase(path)) {
+            if(verb.equalsIgnoreCase(route.getMethod()) &&
+                    route.getPathTemplate().getTemplate().equals(path)) {
                 return true;
             }
         }
