@@ -17,6 +17,8 @@ package leap.orm.sql.ast;
 
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 
 public class DynamicClause extends DynamicNode implements AstNodeContainer {
+
+    private static final Log log = LogFactory.get(DynamicClause.class);
 
     private AstNode[]        bodyNodes;
     private NamedParamNode[] paramNodes;
@@ -122,6 +126,9 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
         if(null != tagNode){
             String s = tagNode.process(context, params);
             if(Strings.isEmpty(s)) {
+                if(log.isDebugEnabled()) {
+                    log.debug("Tag {} -> (empty)", tagNode.toString());
+                }
                 return;
             }
 

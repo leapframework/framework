@@ -18,11 +18,16 @@ package leap.orm.sql;
 
 import leap.lang.Collections2;
 import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.RelationMapper;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.ast.*;
+import leap.orm.sql.parser.Lexer;
+import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -175,12 +180,16 @@ class SqlQueryFilterProcessor {
                     }
                     nodes.add(new Text(" )"));
 
-                    filterNodes.add(new Text(" and "));
+                    filterNodes.add(new Text(" and ( "));
                 }else{
                     filterNodes.add(new Text(" where "));
                 }
 
                 addQueryFilter(filterNodes, em, alias);
+
+                if(olds.length > 0) {
+                    filterNodes.add(new Text(" )"));
+                }
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
                 nodes.add(new ConditionalNode(func, new AstNode[]{new DynamicClause(filterNodes.toArray(new AstNode[0]))}));
@@ -207,6 +216,8 @@ class SqlQueryFilterProcessor {
 
     protected static final class QfTag extends Tag {
 
+        private static final Log log = LogFactory.get(QfTag.class);
+
         private final String qfAlias;
         private final String emAlias;
 
@@ -217,19 +228,31 @@ class SqlQueryFilterProcessor {
         }
 
         @Override
-        protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
-            SqlStatementBuilder.SavePoint sp = stm.createSavePoint();
-
-            super.buildStatement_(context, stm, params);
-
-            if(sp.hasChanges()) {
-
-                String text = sp.removeAppendedText();
-
-                text = Strings.replaceIgnoreCase(text, qfAlias + ".", Strings.isEmpty(emAlias) ? "" : emAlias + ".");
-
-                stm.append(text);
+        public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+            if(log.isDebugEnabled()) {
+                log.debug("Tag '{}' -> {}", toString(), text);
             }
+
+            SqlParser parser = new SqlParser(new Lexer(text, Sql.ParseLevel.MORE), el);
+            SqlWhereExpr expr = parser.whereExpr();
+
+            boolean replaced = false;
+            for(AstNode node : expr.getNodes()) {
+                if(node instanceof SqlObjectName) {
+                    SqlObjectName objectName = (SqlObjectName)node;
+                    if(null == objectName.getSecondaryName() && Strings.equalsIgnoreCase(qfAlias, objectName.getFirstName())) {
+                        objectName.setFirstName(emAlias);
+                        replaced = true;
+                    }
+                }
+            }
+
+            if(replaced && log.isDebugEnabled()) {
+                log.debug("Filter ( {} ) -> ( {} )", text, expr.toString());
+            }
+
+            expr.buildStatement(context, stm, params);
         }
+
     }
 }

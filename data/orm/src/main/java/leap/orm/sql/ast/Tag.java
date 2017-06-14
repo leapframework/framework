@@ -17,6 +17,8 @@ package leap.orm.sql.ast;
 
 import leap.core.el.ExpressionLanguage;
 import leap.lang.Strings;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.sql.*;
@@ -26,6 +28,8 @@ import leap.orm.sql.parser.SqlParser;
 import java.io.IOException;
 
 public class Tag extends DynamicNode implements SqlTag {
+
+    private static final Log log = LogFactory.get(Tag.class);
 
     protected final String  name;
     protected final String  content;
@@ -77,9 +81,10 @@ public class Tag extends DynamicNode implements SqlTag {
     }
 
 	@Override
-    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+    protected final void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
         if(null != processor) {
             String expr = Strings.trim(processor.processTag(context, this, params));
+
             if(!Strings.isEmpty(expr)) {
                 buildStatement(context, stm, params, expr);
             }
@@ -95,6 +100,12 @@ public class Tag extends DynamicNode implements SqlTag {
     }
 
     public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+
+        if(log.isDebugEnabled()) {
+            log.debug("Tag {} -> {}", toString(), text);
+        }
+
+
         SqlParser parser = new SqlParser(new Lexer(text, Sql.ParseLevel.MORE), el);
         SqlWhereExpr expr = parser.whereExpr();
 
