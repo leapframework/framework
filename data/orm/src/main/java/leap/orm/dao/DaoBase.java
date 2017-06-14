@@ -144,6 +144,11 @@ public abstract class DaoBase extends Dao implements PostCreateBean,PostInjectBe
     }
 
 	@Override
+    public void doTransaction(TransactionCallback callback, TransactionDefinition definition) {
+		transactionProvider.doTransaction(callback,definition);
+    }
+
+	@Override
     public <T> T doTransaction(TransactionCallbackWithResult<T> callback, boolean requiresNew) {
 	    return transactionProvider.doTransaction(callback, requiresNew);
     }
