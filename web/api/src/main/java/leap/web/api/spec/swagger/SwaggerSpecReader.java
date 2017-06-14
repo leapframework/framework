@@ -161,6 +161,8 @@ public class SwaggerSpecReader implements ApiSpecReader {
 
         mo.setMethod(HTTP.Method.valueOf(method.toUpperCase()));
 
+        mo.setCorsEnabled(o.get(X_CORS, Boolean.class));
+
         //tags
         List<String> tags = o.getList(TAGS);
         if(null != tags){

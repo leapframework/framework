@@ -28,7 +28,7 @@ import leap.orm.metadata.MetadataContext;
 import leap.orm.query.QueryContext;
 import leap.orm.reader.ResultSetReaders;
 
-public class DefaultSqlCommand implements SqlCommand {
+public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
     private static final Log log = LogFactory.get(DefaultSqlCommand.class);
 
@@ -39,17 +39,51 @@ public class DefaultSqlCommand implements SqlCommand {
     protected final String      content;
     protected final String      dataSourceName;
 
+    protected Boolean filterColumnEnabled;
+    protected Boolean queryFilterEnabled;
+
     private boolean prepared;
 
 	protected SqlClause[] clauses;
 
-    public DefaultSqlCommand(Object source, String desc, String dbType, SqlLanguage lang, String content, String dataSourceName) {
+    public DefaultSqlCommand(Object source, String desc, String dbType,
+                             SqlLanguage lang, String content, String dataSourceName) {
         this.source  = source;
         this.desc    = desc;
         this.dbType  = dbType;
         this.lang    = lang;
         this.content = content;
         this.dataSourceName = dataSourceName;
+    }
+
+    public DefaultSqlCommand clone() {
+        DefaultSqlCommand cloned = new DefaultSqlCommand(source, desc, dbType, lang, content, dataSourceName);
+        cloned.filterColumnEnabled = filterColumnEnabled;
+        cloned.queryFilterEnabled = queryFilterEnabled;
+        return cloned;
+    }
+
+    @Override
+    public Boolean getFilterColumnEnabled() {
+        return filterColumnEnabled;
+    }
+
+    @Override
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    public void setFilterColumnEnabled(Boolean filterColumnEnabled) {
+        this.filterColumnEnabled = filterColumnEnabled;
+    }
+
+    public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
+        this.queryFilterEnabled = queryFilterEnabled;
+    }
+
+    @Override
+    public SqlMetadata getMetadata() {
+        return clauses.length == 1 ? clauses[0].getMetadata() : null;
     }
 
     @Override
@@ -59,10 +93,11 @@ public class DefaultSqlCommand implements SqlCommand {
         }
 
         try {
-            this.clauses = lang.parseClauses(context,prepareSql(context, content)).toArray(new SqlClause[0]);
+            this.clauses = lang.parseClauses(context,prepareSql(context, content),this).toArray(new SqlClause[0]);
         } catch (Exception e) {
             throw new SqlConfigException("Error parsing sql (" + desc == null ? content : desc + "), source : " + source,e);
         }
+
         prepared = true;
     }
 

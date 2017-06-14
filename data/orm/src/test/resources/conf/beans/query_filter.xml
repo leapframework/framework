@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean name="nop"    type="leap.orm.sql.SqlTagProcessor" class="leap.orm.tested.tag.NopTagProcessor"/>
+    <bean name="filter" type="leap.orm.sql.SqlTagProcessor" class="leap.orm.tested.tag.SimpleQueryFilterTag"/>
+    
+</beans>

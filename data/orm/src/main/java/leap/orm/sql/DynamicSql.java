@@ -21,21 +21,27 @@ import leap.orm.metadata.MetadataContext;
 
 public class DynamicSql {
 
-    private final DynamicSqlLanguage lang;
-    private final MetadataContext    context;
-    private final Sql                sql;
-    private final ExecutionSqls      sqls;
+    private final DynamicSqlLanguage  lang;
+    private final MetadataContext     context;
+    private final Sql                 sql;
+    private final ExecutionSqls       sqls;
+    private final SqlLanguage.Options options;
 
-    public DynamicSql(DynamicSqlLanguage lang, MetadataContext context, Sql sql) {
+    public DynamicSql(DynamicSqlLanguage lang, MetadataContext context, Sql sql, SqlLanguage.Options options) {
         this.lang = lang;
         this.context = context;
         this.sql = sql;
+        this.options = options;
 
         if(!sql.isDynamic()) {
-            sqls = lang.parseExecutionSqls(context, sql.toSql());
+            sqls = lang.parseExecutionSqls(context, sql.toSql(), options);
         }else{
             sqls = null;
         }
+    }
+
+    public Sql raw() {
+        return sql;
     }
 
     public ExecutionSqls resolveExecutionSqls(Params params) {
@@ -44,7 +50,7 @@ public class DynamicSql {
         }
 
         String text = sql.resolveDynamicSql(params);
-        return lang.parseExecutionSqls(context, text);
+        return lang.parseExecutionSqls(context, text, options);
     }
 
     @Override

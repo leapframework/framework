@@ -29,8 +29,13 @@ import javax.sql.DataSource;
 
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 
 public final class DriverDataSource implements DataSource {
+
+    private static final Log log = LogFactory.get(DriverDataSource.class);
+
 	public static final String USERNAME_PROPERTY = "user";
 	public static final String PASSWORD_PROPERTY = "password";
 	
@@ -99,7 +104,10 @@ public final class DriverDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		return driver.connect(jdbcUrl, driverProperties);
+        log.debug("{} : Connecting...", driverClassName);
+        Connection conn = driver.connect(jdbcUrl, driverProperties);
+        log.debug("{} : Connected!!!", driverClassName);
+		return conn;
 	}
 
 	@Override

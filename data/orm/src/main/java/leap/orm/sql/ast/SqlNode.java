@@ -25,7 +25,7 @@ import leap.orm.sql.SqlStatementBuilder;
 public abstract class SqlNode extends AstNode {
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 		toSql(stm);
     }
 

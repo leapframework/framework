@@ -168,6 +168,13 @@ public class SimpleAuthzClient implements AuthzClient {
         }
         
         if(null != redirectUriPattern) {
+
+            //todo: hack ant path matcher
+            String pattern = redirectUriPattern.pattern();
+            if(pattern.equals("*") || pattern.equals("**")) {
+                return true;
+            }
+
             return redirectUriPattern.matches(Urls.removeQueryString(uri));
         }
         

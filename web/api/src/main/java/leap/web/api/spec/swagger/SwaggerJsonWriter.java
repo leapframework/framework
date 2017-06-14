@@ -33,6 +33,7 @@ import leap.web.api.meta.model.*;
 import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
+import leap.web.route.Route;
 
 import javax.rmi.PortableRemoteObject;
 
@@ -152,6 +153,10 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	
 	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
+
+        if(null != o.getCorsEnabled()) {
+            w.property(X_CORS, o.getCorsEnabled());
+        }
 
         w.propertyOptional(TAGS, o.getTags());
         w.propertyOptional(SUMMARY, o.getSummary());

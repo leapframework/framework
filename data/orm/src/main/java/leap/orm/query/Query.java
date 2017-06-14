@@ -111,6 +111,16 @@ public interface Query<T> {
 	 * @see Page
 	 */
 	Query<T> limit(Limit limit);
+
+    /**
+     * todo : doc
+     */
+    Query<T> withoutFilterColumn();
+
+    /**
+     * todo : doc
+     */
+    Query<T> withoutQueryFilter();
 	
 	/**
 	 * Executes this query and return the query result.

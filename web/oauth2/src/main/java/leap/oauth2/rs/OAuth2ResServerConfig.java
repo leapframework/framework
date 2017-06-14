@@ -45,6 +45,11 @@ public interface OAuth2ResServerConfig {
      */
 	boolean isUseRemoteAuthorizationServer();
 
+    /**
+     * todo : doc
+     */
+    boolean isUseRemoteUserInfo();
+
 	/**
 	 * Returns the url of token info endpoint in oauth2 authorization server.
      *
@@ -52,6 +57,14 @@ public interface OAuth2ResServerConfig {
      * Required if use remote authorization server.
 	 */
 	String getRemoteTokenInfoEndpointUrl();
+
+    /**
+     * Returns the url of user info endpoint in oauth2 authorization server.
+     *
+     * <p/>
+     * Required if use remote authorization server.
+     */
+    String getRemoteUserInfoEndpointUrl();
 
 	/**
 	 * Returns the resource id of this resource server in authz server

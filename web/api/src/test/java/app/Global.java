@@ -31,7 +31,8 @@ public class Global extends App {
     protected void configure(WebConfigurator c) {
 	    //Enables oauth2 resource server.
 	    rsc.enable()
-	       .useRemoteAuthorizationServer("https://localhost:8443/auth/oauth2/tokeninfo");
+	       .useRemoteAuthorizationServer("https://localhost:8443/auth/oauth2/tokeninfo")
+           .setRemoteUserInfoEndpointUrl("https://localhost:8443/auth/oauth2/userinfo");
 	    
 	    apis.setDefaultOAuthAuthorizationUrl("http://127.0.0.1:8080/auth/oauth2/authorize", 
 	                                         "app", 

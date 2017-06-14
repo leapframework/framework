@@ -126,6 +126,7 @@
                 <xsd:element name="excluded-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="readonly-models" type="xsd:string" minOccurs="0" maxOccurs="1"/>
                 <xsd:element name="model" type="restd-model" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="sql-operation" type="sql-operation" minOccurs="0" maxOccurs="unbounded"/>
             </xsd:choice>
             <xsd:attribute name="enabled"     type="xsd:boolean" use="optional" default="true"/>
             <xsd:attribute name="data-source" type="xsd:string"  use="optional" default="default"/>
@@ -177,7 +178,7 @@
                 </xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
-        <xsd:attribute name="key"  type="xsd:string" use="required">
+        <xsd:attribute name="sql-key"  type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation>
                     The key of sql command.

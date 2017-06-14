@@ -19,6 +19,7 @@ import java.io.IOException;
 
 import leap.lang.Args;
 import leap.lang.params.Params;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 public class ElseStatement extends DynamicNode {
@@ -43,9 +44,9 @@ public class ElseStatement extends DynamicNode {
     }
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 		for(AstNode node : this.getBodyNodes()){
-			node.buildStatement(stm,params);
+			node.buildStatement(context, stm,params);
 		}
     }
 }

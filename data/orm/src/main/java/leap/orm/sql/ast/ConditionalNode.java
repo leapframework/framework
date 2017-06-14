@@ -25,33 +25,51 @@ import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 import java.io.IOException;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class ConditionalNode extends SqlNodeContainer {
 
-    private final Expression condition;
+    private final Expression                   exprCondition;
+    private final Function<SqlContext,Boolean> funcCondition;
 
-    public ConditionalNode(Expression condition) {
-        this.condition = condition;
+    public ConditionalNode(Expression exprCondition, AstNode[] nodes) {
+        this(null, exprCondition, nodes);
     }
 
-    public ConditionalNode(Expression condition, AstNode[] nodes) {
+    public ConditionalNode(Function<SqlContext,Boolean> funcCondition, AstNode[] nodes) {
+        this(funcCondition,null, nodes);
+    }
+
+    public ConditionalNode(Function<SqlContext,Boolean> funcCondition, Expression exprCondition, AstNode[] nodes) {
         super(nodes);
-        this.condition = condition;
+        this.exprCondition = exprCondition;
+        this.funcCondition = funcCondition;
     }
-
 
     @Override
     protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
-
-        if(EL.test(condition, null, New.hashMap("sqlContext",context,"params",params))) {
-            super.prepareBatchStatement_(context, stm,params);
+        if(null != funcCondition && !funcCondition.apply(context)) {
+            return;
         }
+
+        if(null != exprCondition && !EL.test(exprCondition, null, New.hashMap("sqlContext",context,"params",params))){
+            return;
+        }
+
+        super.prepareBatchStatement_(context, stm,params);
     }
 
     @Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-        if(EL.test(condition, null, params.map())) {
-            super.buildStatement_(stm, params);
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+        if(null != funcCondition && !funcCondition.apply(context)) {
+            return;
         }
+
+        if(null != exprCondition && !EL.test(exprCondition, null, params.map())){
+            return;
+        }
+
+        super.buildStatement_(context, stm, params);
     }
 }

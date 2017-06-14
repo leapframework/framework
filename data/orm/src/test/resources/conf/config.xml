@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-		xmlns="http://www.leapframework.org/schema/config" 
+<config xmlns="http://www.leapframework.org/schema/config"
 		xmlns:el="http://www.leapframework.org/schema/el/config"
-		xmlns:orm="http://www.leapframework.org/schema/orm/config"
-		xsi:schemaLocation="http://www.leapframework.org/schema/config http://www.leapframework.org/schema/config
-		http://www.leapframework.org/schema/el/config http://www.leapframework.org/schema/el-config
-		http://www.leapframework.org/schema/orm/config http://www.leapframework.org/schema/orm/config">
+        xmlns:orm="http://www.leapframework.org/schema/orm/config">
+
     <base-package>leap.orm.tested</base-package>
     <additional-packages>
         leap.orm.datasource.annotation
     </additional-packages>
+
     <properties>
         <property name="h2.driverClassName">org.h2.Driver</property>
         <property name="h2.url">jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE</property>
@@ -17,32 +15,16 @@
     </properties>
     
     <properties prefix="orm">
-    	<property name="tableNamingStyle" value="lower_underscore_"/>
+    	<property name="tableNamingStyle"  value="lower_underscore_"/>
     	<property name="columnNamingStyle" value="lower_underscore_"/>
         <property name="modelCrossContext" value="true"/>
     </properties>
+
+    <orm:config auto-generate-columns="true" query-filter-enabled="true"/>
      
     <el:functions prefix="orm_test" class="leap.orm.tested.model.Model1Ref">
     	<el:function method="test()"/>
     </el:functions>
-
-    <orm:config auto-generate-columns="true"/>
-
-    <orm:models datasource="ds1">
-		<orm:package name="tested.model"/>
-		<orm:class   name="leap.orm.tested.model.Model3"/>
-    </orm:models>
     
-    <orm:models datasource="derby">
-        <orm:package name="leap.orm.tested"/>
-    </orm:models>
-    
-    <orm:models datasource="h2">
-        <orm:package name="leap.orm.tested"/>
-        <orm:class name="leap.orm.tested.OrmConfigTableModel" table="table_name_in_xml"></orm:class>
-    </orm:models>
-    
-    <monitor enabled="true"/>
-
     <import resource="config.local.xml" check-existence="false" default-override="true"/>
 </config>   

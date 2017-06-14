@@ -69,6 +69,7 @@ public class OAuth2ResServerAutoConfig implements AppListener {
 
             oc.useRemoteAuthorizationServer();
             oc.setRemoteTokenInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/tokeninfo"));
+            oc.setRemoteUserInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/userinfo"));
             oc.setResourceServerId(clientId);
             oc.setResourceServerSecret(clientSecret);
         }else{

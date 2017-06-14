@@ -26,8 +26,6 @@ public class ECodeModel extends Model {
 
     private String ecode;
 
-    private String ecode1;
-
     public ECodeModel() {
 
     }
@@ -58,14 +56,6 @@ public class ECodeModel extends Model {
 
     public void setEcode(String ecode) {
         this.ecode = ecode;
-    }
-
-    public String getEcode1() {
-        return ecode1;
-    }
-
-    public void setEcode1(String ecode1) {
-        this.ecode1 = ecode1;
     }
 
 }

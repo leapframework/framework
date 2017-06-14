@@ -53,8 +53,10 @@ public class PoolFactory {
 	}
 	
 	public Connection getConnection() throws SQLException {
-		log.debug("Create a new underlying connection");
-		return dataSource.getConnection();
+		log.debug("Getting underlying connection...");
+		Connection connection = dataSource.getConnection();
+        log.debug("Got a underlying connection '{}'", connection);
+        return connection;
 	}
 	
 	private DataSource createDataSource(PoolProperties props) {

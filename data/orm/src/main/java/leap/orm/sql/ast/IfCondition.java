@@ -41,7 +41,7 @@ public class IfCondition extends ExprParamBase {
     }
 
 	@Override
-	protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+	protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 		throw new IllegalStateException("If condition not implemented");
     }
 }

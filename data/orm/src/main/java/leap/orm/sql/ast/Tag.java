@@ -15,28 +15,89 @@
  */
 package leap.orm.sql.ast;
 
+import leap.core.el.ExpressionLanguage;
+import leap.lang.Strings;
+import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
+import leap.orm.sql.*;
+import leap.orm.sql.parser.Lexer;
+import leap.orm.sql.parser.SqlParser;
+
 import java.io.IOException;
 
-import leap.lang.params.Params;
-import leap.orm.sql.PreparedBatchSqlStatementBuilder;
-import leap.orm.sql.SqlContext;
-import leap.orm.sql.SqlStatementBuilder;
+public class Tag extends DynamicNode implements SqlTag {
 
-public class Tag extends AstNode {
+    protected final String  name;
+    protected final String  content;
 
-	@Override
+    protected Object             executionObject;
+    protected ExpressionLanguage el;
+    protected SqlTagProcessor    processor;
+
+    public Tag(String name, String content) {
+        this.name = name;
+        this.content = content.trim();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    @Override
+    public Object getExecutionObject() {
+        return executionObject;
+    }
+
+    @Override
+    public void setExecutionObject(Object o) {
+        this.executionObject = o;
+    }
+
+    @Override
     protected void toString_(Appendable buf) throws IOException {
-		throw new IllegalStateException("Not implemented");
+        buf.append("@").append(name).append("(");
+
+        buf.append(content).append(")");
+    }
+
+    @Override
+    public void prepare(MetadataContext context) {
+        processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
+        if(null == processor) {
+            throw new SqlConfigException("Sql tag processor '" + name + "' not exists, check it : " + toString());
+        }else{
+            processor.prepareTag(context, this);
+        }
+
+        el = context.getAppContext().getBeanFactory().getBean(ExpressionLanguage.class);
     }
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+        if(null != processor) {
+            String expr = Strings.trim(processor.processTag(context, this, params));
+            if(!Strings.isEmpty(expr)) {
+                buildStatement(context, stm, params, expr);
+            }
+        }
     }
 
-	@Override
-    protected void prepareBatchStatement_(SqlContext context, PreparedBatchSqlStatementBuilder stm,Object[] params) throws IOException {
-		throw new IllegalStateException("Not implemented");	    
+    public String process(SqlContext context, Params params) {
+        if(null == processor) {
+            return Strings.EMPTY;
+        }else{
+            return processor.processTag(context, this, params);
+        }
     }
 
+    public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+        SqlParser parser = new SqlParser(new Lexer(text, Sql.ParseLevel.MORE), el);
+        SqlWhereExpr expr = parser.whereExpr();
+
+        expr.buildStatement(context, stm, params);
+    }
 }

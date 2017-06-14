@@ -35,6 +35,7 @@ import leap.orm.OrmTestCase;
 import leap.orm.tested.model.petclinic.Owner;
 
 public class CriteriaQueryTest extends OrmTestCase {
+
 	@Test
 	@Contextual("mysql")
 	public void testEmptyStringInInMySql(){

@@ -81,9 +81,9 @@ public abstract class SqlObjectNameBase extends SqlNode {
 	}
 
 	@Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
 	    if(quoted) {
-	        super.buildStatement_(stm, params);
+	        super.buildStatement_(context, stm, params);
 	    } else{
 	        toString(stm, stm.dialect());    
 	    }

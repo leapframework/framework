@@ -99,7 +99,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 
 	@Override
-    public boolean  isContextModel(OrmContext context, Class<?> cls) {
+    public boolean isContextModel(OrmContext context, Class<?> cls) {
 		if(context.getConfig().isModelCrossContext()){
 			return isContextModelWhenCrossContext(context,cls);
 		}else {
@@ -844,6 +844,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 	
 	protected void postMappingConventional(MetadataContext context, EntityMappingBuilder emb){
+        if(context.getConfig().isQueryFilterEnabled() && null == emb.getQueryFilterEnabled()) {
+            emb.setQueryFilterEnabled(true);
+        }
+
 		//Auto recognize primary key
 		if(!emb.hasPrimaryKey()){
 			for(FieldMappingBuilder fmb : emb.getFieldMappings()){

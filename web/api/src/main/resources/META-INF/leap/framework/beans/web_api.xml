@@ -42,9 +42,6 @@
 
     <bean type="leap.web.api.mvc.ApiErrorHandler"
           class="leap.web.api.mvc.DefaultApiErrorHandler" primary="true"/>
-    <!-- operation log -->
-    <bean type="leap.web.api.log.OpLogManager" class="leap.web.api.log.DefaultOpLogManager" init-method="init" primary="true"></bean>
-    <bean type="leap.web.action.ActionInterceptor" class="leap.web.api.log.OpLogInterceptor"></bean>
 
     <!-- restd -->
     <bean type="leap.web.api.restd.RestdStrategy"       class="leap.web.api.restd.DefaultRestdStrategy" primary="true"/>
@@ -57,6 +54,6 @@
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperationProcessor"/>
 
 </beans>

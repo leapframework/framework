@@ -14,18 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.sql;
+package tested.beans.remove;
 
-import leap.web.App;
-import leap.web.api.config.ApiConfigurator;
-import leap.web.api.restd.RestdProcessor;
-import leap.web.api.restd.RestdContext;
-
-public class SqlOperation implements RestdProcessor {
-
-    @Override
-    public void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
-        //todo
-    }
-
+public class RemoveBean2 implements RemoveType {
 }

@@ -40,10 +40,6 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
 
     protected @Inject ModelExecutorFactory mef;
 
-    protected boolean isOpeationExists(App app, String verb, String path) {
-        return null != app.routes().match(verb, path);
-    }
-
     protected ArgumentBuilder addModelArgument(FuncActionBuilder action,RestdModel model) {
         ArgumentBuilder a = newModelArgument(model);
 

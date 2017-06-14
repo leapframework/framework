@@ -34,9 +34,11 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
 	protected Set<String>                    consumes   = new LinkedHashSet<>();
 	protected Set<String>                    produces   = new LinkedHashSet<>();
     protected Map<String, MApiSecurity>      security   = new HashMap<>();
-    protected boolean                        allowAnonymous;
-    protected boolean                        allowClientOnly;
-	protected boolean           	         deprecated;
+
+    protected boolean allowAnonymous;
+    protected boolean allowClientOnly;
+	protected boolean deprecated;
+    protected Boolean CorsEnabled;
 
 	public MApiOperationBuilder() {
 		
@@ -170,6 +172,14 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         this.allowClientOnly = allowClientOnly;
     }
 
+    public Boolean getCorsEnabled() {
+        return CorsEnabled;
+    }
+
+    public void setCorsEnabled(Boolean corsEnabled) {
+        this.CorsEnabled = corsEnabled;
+    }
+
     @Override
     public MApiOperation build() {
 		return new MApiOperation(id, name, title, summary, description, method,route,
@@ -181,7 +191,7 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
                                 security.values().toArray(new MApiSecurity[security.size()]),
                                 allowAnonymous,
                                 allowClientOnly,
-								deprecated, attrs);
+								deprecated, CorsEnabled, attrs);
     }
 	
 }

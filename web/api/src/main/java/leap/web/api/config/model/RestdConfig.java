@@ -28,10 +28,11 @@ public class RestdConfig {
     protected String  dataSourceName;
     protected boolean readonly;
 
-    protected Set<String>        includedModels = new LinkedHashSet<>();
-    protected Set<String>        excludedModels = new LinkedHashSet<>();
-    protected Set<String>        readonlyModels = new HashSet<>();
-    protected Map<String, Model> models         = new HashMap<>();
+    protected Set<String>               includedModels = new LinkedHashSet<>();
+    protected Set<String>               excludedModels = new LinkedHashSet<>();
+    protected Set<String>               readonlyModels = new HashSet<>();
+    protected Map<String, Model>        models         = new HashMap<>();
+    protected Map<String, SqlOperation> sqlOperations  = new LinkedHashMap<>();
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -91,6 +92,22 @@ public class RestdConfig {
             throw new ObjectExistsException("The configuration of model '" + model.getName() + "' already exists!");
         }
         models.put(key, model);
+    }
+
+    public Map<String, SqlOperation> getSqlOperations() {
+        return sqlOperations;
+    }
+
+    public SqlOperation getSqlOperation(String name) {
+        return sqlOperations.get(name.toLowerCase());
+    }
+
+    public void addSqlOperation(SqlOperation op) {
+        String key = op.getName().toLowerCase();
+        if(sqlOperations.containsKey(key)) {
+            throw new ObjectExistsException("The sql operation '" + op.getName() + "' already exists!");
+        }
+        sqlOperations.put(key, op);
     }
 
     public boolean isModelAnonymous(String name) {
@@ -161,6 +178,8 @@ public class RestdConfig {
         protected Boolean findOperationEnabled;
         protected Boolean queryOperationEnabled;
 
+        protected Map<String, SqlOperation> sqlOperations = new LinkedHashMap<>();
+
         public Model(String name) {
             this.name = name;
         }
@@ -215,6 +234,53 @@ public class RestdConfig {
 
         public void setQueryOperationEnabled(Boolean queryOperationEnabled) {
             this.queryOperationEnabled = queryOperationEnabled;
+        }
+
+        public Map<String, SqlOperation> getSqlOperations() {
+            return sqlOperations;
+        }
+
+        public SqlOperation getSqlOperation(String name) {
+            return sqlOperations.get(name.toLowerCase());
+        }
+
+        public void addSqlOperation(SqlOperation op) {
+            String key = op.getName().toLowerCase();
+            if(sqlOperations.containsKey(key)) {
+                throw new ObjectExistsException("The sql operation '" + op.getName() + "' of model '" + name + "' already exists!");
+            }
+            sqlOperations.put(key, op);
+        }
+    }
+
+    /**
+     * The configuration of a restd sql operation.
+     */
+    public static class SqlOperation {
+
+        protected String name;
+        protected String sqlKey;
+
+        /**
+         * The name of operation.
+         */
+        public String getName() {
+            return name;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        /**
+         * The key of sql command.
+         */
+        public String getSqlKey() {
+            return sqlKey;
+        }
+
+        public void setSqlKey(String sqlKey) {
+            this.sqlKey = sqlKey;
         }
     }
 }

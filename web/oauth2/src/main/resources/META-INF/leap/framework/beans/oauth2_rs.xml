@@ -46,4 +46,7 @@
           class="leap.oauth2.rs.token.JwtBearerResAccessTokenStore">
     </bean>
 
+    <!-- userinfo -->
+    <bean type="leap.oauth2.rs.user.UserInfoLookup" class="leap.oauth2.rs.user.DefaultUserInfoLookup" primary="true"/>
+
 </beans>

@@ -19,6 +19,8 @@ import leap.db.Db;
 import leap.db.DbDialect;
 import leap.lang.Buildable;
 
+import java.util.List;
+
 public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> {
 
     /**
@@ -45,6 +47,16 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
 	 */
 	boolean isQuery();
 
+    /**
+     * Returns the sql text.
+     */
+    StringBuilder getText();
+
+    /**
+     * Returns the sql args.
+     */
+    List<Object> getArgs();
+
 	/**
 	 * Starts from 0
 	 */
@@ -63,13 +75,38 @@ public interface SqlStatementBuilder extends Appendable,Buildable<SqlStatement> 
 	SqlStatementBuilder addParameter(Object value);
 	
 	/**
-	 * 
+	 * todo : doc
 	 */
 	boolean isLastInOperator();
 	
 	/**
-	 * 
+	 * todo : doc
 	 */
 	boolean removeLastEqualsOperator();
 
+    /**
+     * Creates a new {@link SavePoint}.
+     */
+    SavePoint createSavePoint();
+
+    /**
+     * Records a state of statement.
+     */
+    interface SavePoint {
+
+        /**
+         * Reset the state of statement builder to this save point.
+         */
+        void restore();
+
+        /**
+         * Returns true if the statement builder has changes from this save point.
+         */
+        boolean hasChanges();
+
+        /**
+         * Removes the appended text from the save point and return it.
+         */
+        String removeAppendedText();
+    }
 }

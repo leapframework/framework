@@ -59,7 +59,21 @@ public interface SqlCommand extends Sourced {
      * Returns the sql text.
      */
     String getSql();
-	
+
+    /**
+     * Returns <code>true</code> if has {@link SqlMetadata}.
+     */
+    default boolean hasMetadata() {
+        return null != getMetadata();
+    }
+
+    /**
+     * Returns <code>null</code> if no metadata.
+     */
+    default SqlMetadata getMetadata() {
+        return null;
+    }
+
 	/**
 	 * Executes update and returns the affected rows.
 	 * 

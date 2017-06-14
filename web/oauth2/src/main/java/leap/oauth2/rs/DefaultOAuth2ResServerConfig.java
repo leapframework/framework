@@ -39,7 +39,9 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 
 	protected boolean               enabled;
 	protected AuthzServerMode		authzServerMode = AuthzServerMode.NONE;
+    protected Boolean               useRemoteUserInfo;
 	protected String                remoteTokenInfoEndpointUrl;
+    protected String                remoteUserInfoEndpointUrl;
 	protected String 				resourceServerId;
 	protected String 				resourceServerSecret;
 	protected Cache<String, Object> cachedInterceptUrls;
@@ -125,12 +127,34 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     public String getRemoteTokenInfoEndpointUrl() {
         return remoteTokenInfoEndpointUrl;
     }
-	
+
     @ConfigProperty
 	public OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url) {
 	    this.remoteTokenInfoEndpointUrl = url;
 	    return this;
 	}
+
+    @Override
+    public String getRemoteUserInfoEndpointUrl() {
+        return remoteUserInfoEndpointUrl;
+    }
+
+    @Override
+    public OAuth2ResServerConfigurator setRemoteUserInfoEndpointUrl(String url) {
+        this.remoteUserInfoEndpointUrl = url;
+        return this;
+    }
+
+    @Override
+    public boolean isUseRemoteUserInfo() {
+        return null == useRemoteUserInfo ? isUseRemoteAuthorizationServer() : useRemoteUserInfo;
+    }
+
+    @Override
+    public OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used) {
+        this.useRemoteUserInfo = used;
+        return this;
+    }
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {

@@ -50,7 +50,7 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
         String verb = "POST";
         String path = fullModelPath(api, model);
-        if(isOpeationExists(app, verb, path)) {
+        if(isOperationExists(app, verb, path)) {
             return;
         }
 

@@ -18,6 +18,7 @@ package leap.orm.sql.ast;
 import leap.db.DbDialect;
 import leap.lang.params.Params;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 import java.io.IOException;
@@ -71,11 +72,11 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 	}
 
     @Override
-    protected void buildStatement_(SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
         if(null != dynamicTableName) {
             toSql_(stm, dynamicTableName.get(stm, params));
         }else{
-            super.buildStatement_(stm, params);
+            super.buildStatement_(context, stm, params);
         }
     }
 

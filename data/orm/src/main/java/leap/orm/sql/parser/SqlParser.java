@@ -49,6 +49,10 @@ public class SqlParser extends SqlParserBase {
 		Args.notEmpty(orderByExpression,"orderByExpression");
 		return new SqlParser(new Lexer(Strings.trim(orderByExpression)),null).orderBy();
 	}
+
+    public static SqlWhereExpr parseWhereExpr(String fragment) {
+        return new SqlParser(new Lexer(Strings.trim(fragment), Sql.ParseLevel.MORE)).whereExpr();
+    }
 	
 	public static List<String> split(String text){
 		return new SqlParser(new Lexer(Strings.trim(text))).split();
@@ -186,39 +190,78 @@ public class SqlParser extends SqlParserBase {
 		
 		return (SqlOrderBy)this.nodes.get(0);
 	}
+
+    public SqlWhereExpr whereExpr() {
+        nodes = new ArrayList<>();
+
+        lexer.nextToken();
+
+        for(;;){
+            if(lexer.isEOS()){
+                appendText();
+                break;
+            }
+
+            if(lexer.isIdentifier()) {
+                if(parseSqlObjectName()){
+                    continue;
+                }
+            }
+
+            parseToken();
+        }
+
+        return new SqlWhereExpr(this.nodes.toArray(new AstNode[this.nodes.size()]));
+    }
 	
 	protected Sql parseSql(){
 		type  = null;
 		nodes = new ArrayList<>();
 
 		try {
-            if(parseDyna) {
-                parseDynaOnly();
-            }else{
-                Token token = lexer.token();
+            Token token = lexer.token();
 
-                switch (token) {
-                    case SELECT:
-                        type = Type.SELECT;
+            switch (token) {
+                case SELECT:
+                    type = Type.SELECT;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseSelect();
-                        break;
-                    case INSERT:
-                        type = Type.INSERT;
+                    }
+                    break;
+                case INSERT:
+                    type = Type.INSERT;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseInsert();
-                        break;
-                    case UPDATE:
-                        type = Type.UPDATE;
+                    }
+                    break;
+                case UPDATE:
+                    type = Type.UPDATE;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseUpdate();
-                        break;
-                    case DELETE:
-                        type = Type.DELETE;
+                    }
+                    break;
+                case DELETE:
+                    type = Type.DELETE;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseDelete();
-                        break;
-                    default:
-                        type = Type.UNRESOLVED;
+                    }
+                    break;
+                default:
+                    type = Type.UNRESOLVED;
+                    if(parseDyna) {
+                        parseDynaOnly();
+                    }else{
                         parseOther();
-                        break;
-                }
+                    }
+                    break;
             }
         } catch (Exception e) {
 	        error(e);
@@ -590,7 +633,7 @@ public class SqlParser extends SqlParserBase {
             KeyValueParser.parseKeyValuePairs(params, paramsString, ':');
             dc = new DynamicClause(nodes(), params);
         }else{
-            dc = new DynamicClause(nodes());    
+            dc = new DynamicClause(nodes());
         }
 		
 		restoreNodes();
@@ -665,7 +708,35 @@ public class SqlParser extends SqlParserBase {
 	}
 	
 	protected void parseTag(){
-		throw new IllegalStateException("Not implemented");
+        int     counter  = 1;
+        String  name     = lexer.literal();
+        boolean optional = false;
+
+        StringBuilder s = new StringBuilder();
+
+        lexer.nextChar();
+
+        for(;;) {
+            if(lexer.isEOF()) {
+                lexer.reportError("Unclosed tag '" + name + "'");
+            }
+
+            char c = lexer.ch;
+
+            if(c == '(') {
+                counter++;
+            }else if(c == ')') {
+                counter--;
+                if(counter == 0) {
+                    lexer.nextChar();
+                    acceptNode(new Tag(name, s.toString()));
+                    return;
+                }
+            }
+
+            s.append(c);
+            lexer.nextChar();
+        }
 	}
 	
 	protected SqlTableName parseTableName(){

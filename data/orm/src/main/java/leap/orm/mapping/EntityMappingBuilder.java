@@ -40,6 +40,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
     protected boolean                      autoCreateTable;
+    protected Boolean                      queryFilterEnabled;
 	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
 	protected EntityExecutionInterceptor   updateInterceptor;
@@ -170,6 +171,14 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     public EntityMappingBuilder setAutoCreateTable(boolean autoCreateTable) {
         this.autoCreateTable = autoCreateTable;
         return this;
+    }
+
+    public Boolean getQueryFilterEnabled() {
+        return queryFilterEnabled;
+    }
+
+    public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
+        this.queryFilterEnabled = queryFilterEnabled;
     }
 
     public List<FieldMappingBuilder> getFieldMappings() {
@@ -396,7 +405,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	    						 domain,modelClass,validators,
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
-                                 autoCreateTable,
+                                 autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
                                  sharding, autoCreateShardingTable, shardingAlgorithm,
                                  listeners.build());
     }

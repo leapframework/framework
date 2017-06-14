@@ -14,4 +14,25 @@
  *  limitations under the License.
  */
 
-package app.controllers.restd;
+package leap.orm.sql;
+
+import leap.lang.params.Params;
+import leap.orm.metadata.MetadataContext;
+
+import java.io.IOException;
+
+public interface SqlTagProcessor {
+
+    /**
+     * Prepares the sql tag.
+     */
+    default void prepareTag(MetadataContext context, SqlTag tag) {
+
+    }
+
+    /**
+     * Process the tag and returns the result sql content.
+     */
+    String processTag(SqlContext context, SqlTag tag, Params params);
+
+}

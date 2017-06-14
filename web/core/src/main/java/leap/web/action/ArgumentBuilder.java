@@ -19,6 +19,7 @@ import leap.core.validation.Valid;
 import leap.core.validation.ValidationManager;
 import leap.core.validation.Validator;
 import leap.core.validation.annotations.Required;
+import leap.core.validation.validators.RequiredValidator;
 import leap.lang.*;
 import leap.lang.annotation.Optional;
 import leap.lang.beans.BeanProperty;
@@ -176,6 +177,10 @@ public class ArgumentBuilder extends ExtensibleBase implements Buildable<Argumen
 
 	@Override
     public Argument build() {
+        if((null == annotations || annotations.length == 0) && validators.isEmpty() && (null != required && required)) {
+            validators.add(new SimpleArgumentValidator(new RequiredValidator()));
+        }
+
 		ArgumentValidator[] validators = this.validators.toArray(new ArgumentValidator[0]);
 
         Argument[] wrappedArguments =

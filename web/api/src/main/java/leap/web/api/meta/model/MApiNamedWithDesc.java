@@ -33,7 +33,7 @@ public abstract class MApiNamedWithDesc extends MApiNamed implements Described {
 	}
 	
 	public MApiNamedWithDesc(String name, String title, String summary, String description, Map<String, Object> attrs) {
-		super(name, title);
+		super(name, title, attrs);
 		
 		this.summary = summary;
 		this.description = description;
