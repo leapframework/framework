@@ -75,11 +75,14 @@ public class SwaggerConstants {
 	
     //extend
     public static final String X_SECURITY   = "x-security";
+
+    public static final String X_CORS       = "x-cors";
     
     public static final String X_CREATABLE  = "x-creatable";
     public static final String X_UPDATABLE  = "x-updatable";
     public static final String X_SORTABLE   = "x-sortable";
     public static final String X_FILTERABLE = "x-filterable";
+
 	
 	protected SwaggerConstants() {
 		

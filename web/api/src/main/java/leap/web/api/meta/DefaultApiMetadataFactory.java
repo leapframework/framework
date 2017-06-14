@@ -66,6 +66,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		ApiMetadataBuilder md = new ApiMetadataBuilder();
 		
 		ApiMetadataContext context = createContext(c, md);
+
+        prepareMetadata(context, md);
 		
 		setBaseInfo(context, md);
 
@@ -82,11 +84,25 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		return processMetadata(context, md);
     }
 
+    private void prepareMetadata(ApiMetadataContext context, ApiMetadataBuilder md) {
+
+        final ApiConfig c = context.getConfig();
+
+        c.getRoutes().forEach(route -> {
+
+            if(!c.isCorsDisabled() && !route.isCorsDisabled()) {
+                route.setCorsEnabled(true);
+            }
+
+        });
+    }
+
     @Override
     public MApiOperationBuilder createOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route) {
         MApiOperationBuilder op = new MApiOperationBuilder(route);
 
         op.setName(route.getAction().getName());
+        op.setCorsEnabled(route.isCorsEnabled());
 
         //Set http method
         setApiMethod(context, m, route, op);
@@ -256,14 +272,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void completeProcessDefault(ApiMetadataContext context, ApiMetadata m) {
+        final ApiConfig c = context.getConfig();
+
         m.getPaths().forEach((k,path) -> {
 
             for(MApiOperation op : path.getOperations()) {
-                Route route = (Route)op.getAttribute("route");
-
-                route.setExtension(MApiPath.class,      path);
-                route.setExtension(MApiOperation.class, op);
-
+                Route route = op.getRoute();
+                if(null != route) {
+                    route.setExtension(MApiPath.class,      path);
+                    route.setExtension(MApiOperation.class, op);
+                }
             }
 
         });
@@ -373,10 +391,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		}
 
         log.debug("Path {} -> {} :", pt, route.getAction());
-        MApiOperationBuilder op = createOperation(context, md, route);
-		path.addOperation(op);
-
-        op.setAttribute("route", route);
+		path.addOperation(createOperation(context, md, route));
 	}
 	
 	protected void setApiMethod(ApiMetadataContext context, ApiMetadataBuilder m, Route route, MApiOperationBuilder op) {

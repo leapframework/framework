@@ -289,11 +289,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		for(Route route : app.routes()) {
 			String pathTemplate = route.getPathTemplate().getTemplate();
 			if(pathTemplate.equals(basePath) || pathTemplate.startsWith(basePath)) {
-				
-				if(!c.config().isCorsDisabled() && !route.isCorsDisabled()) {
-					route.setCorsEnabled(true);
-				}
-
                 resolveResourceType(app, c, route);
 
 				c.addRoute(route);
