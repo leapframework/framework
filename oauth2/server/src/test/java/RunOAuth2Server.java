@@ -14,4 +14,11 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.server;
+import leap.webunit.server.TWebServer;
+
+public class RunOAuth2Server {
+
+    public static void main(String[] args) {
+        TWebServer.main(args);
+    }
+}
