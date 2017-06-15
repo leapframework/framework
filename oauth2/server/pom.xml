@@ -18,12 +18,6 @@
         </dependency>
         <dependency>
             <groupId>org.leapframework</groupId>
-            <artifactId>leap-oauth2-webapp</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.leapframework</groupId>
             <artifactId>leap-htpl</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
