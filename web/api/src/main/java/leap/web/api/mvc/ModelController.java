@@ -85,7 +85,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse createAndReturn(Object request, Object id) {
         id = createRecordAndReturnId(request, id);
-        return ApiResponse.created(dao.find(em, id));
+        return ApiResponse.created(dao.findOrNull(em, id));
     }
 
     /**
@@ -93,7 +93,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse createAndReturn(Object request, Map<String, Object> extraProperties) {
         Object id = createRecordAndReturnId(request, null, extraProperties);
-        return ApiResponse.created(dao.find(em, id));
+        return ApiResponse.created(dao.findOrNull(em, id));
     }
 
     /**
@@ -101,7 +101,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      */
     protected ApiResponse createAndReturn(Object request, Object id, Map<String, Object> extraProperties) {
         id = createRecordAndReturnId(request, id, extraProperties);
-        return ApiResponse.created(dao.find(em, id));
+        return ApiResponse.created(dao.findOrNull(em, id));
     }
 
     /**
