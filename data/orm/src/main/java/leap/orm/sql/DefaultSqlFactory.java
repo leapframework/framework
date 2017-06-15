@@ -411,7 +411,9 @@ public class DefaultSqlFactory implements SqlFactory {
         sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table)).append(" where ");
+            .append(dialect.qualifySchemaObjectName(table))
+			.append(" t ")
+			.append(" where ");
 		
 		int index = 0;
 		for(FieldMapping key : em.getKeyFieldMappings()){
@@ -439,7 +441,8 @@ public class DefaultSqlFactory implements SqlFactory {
         sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table)).append(" where ");
+            .append(dialect.qualifySchemaObjectName(table))
+			.append(" t ").append(" where ");
 		
 		int index = 0;
 		for(FieldMapping key : em.getKeyFieldMappings()){
@@ -463,7 +466,8 @@ public class DefaultSqlFactory implements SqlFactory {
 		sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table));
+            .append(dialect.qualifySchemaObjectName(table))
+			.append(" t ");
 		
 		return sql.toString();
 	}
