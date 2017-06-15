@@ -26,13 +26,13 @@ public interface SqlTagProcessor {
     /**
      * Prepares the sql tag.
      */
-    default void prepareTag(MetadataContext context, SqlTag tag) {
+    default void prepareTag(MetadataContext context, Sql sql, SqlTag tag) {
 
     }
 
     /**
      * Process the tag and returns the result sql content.
      */
-    String processTag(SqlContext context, SqlTag tag, Params params);
+    String processTag(SqlContext context, Sql sql, SqlTag tag, Params params);
 
 }

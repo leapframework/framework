@@ -20,6 +20,7 @@ import java.io.IOException;
 import leap.db.DbDialect;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.Sql.Scope;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
@@ -81,9 +82,9 @@ public abstract class SqlObjectNameBase extends SqlNode {
 	}
 
 	@Override
-    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 	    if(quoted) {
-	        super.buildStatement_(context, stm, params);
+	        super.buildStatement_(context, sql, stm, params);
 	    } else{
 	        toString(stm, stm.dialect());    
 	    }

@@ -209,7 +209,7 @@ class SqlQueryFilterProcessor {
         String content = em.getEntityName();
 
         Tag tag = new QfTag(config.getTagName(), content, config.getAlias(), alias);
-        tag.prepare(context);
+        tag.prepare(context, sql);
 
         nodes.add(tag);
     }
@@ -228,7 +228,7 @@ class SqlQueryFilterProcessor {
         }
 
         @Override
-        public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+        public void buildStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params, String text) throws IOException {
             if(log.isDebugEnabled()) {
                 log.debug("Tag '{}' -> {}", toString(), text);
             }
@@ -251,7 +251,7 @@ class SqlQueryFilterProcessor {
                 log.debug("Filter ( {} ) -> ( {} )", text, expr.toString());
             }
 
-            expr.buildStatement(context, stm, params);
+            expr.buildStatement(context, sql, stm, params);
         }
 
     }

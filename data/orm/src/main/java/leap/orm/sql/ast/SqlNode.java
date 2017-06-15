@@ -19,13 +19,14 @@ import java.io.IOException;
 
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
 public abstract class SqlNode extends AstNode {
 
 	@Override
-    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 		toSql(stm);
     }
 

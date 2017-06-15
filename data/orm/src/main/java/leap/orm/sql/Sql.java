@@ -125,13 +125,13 @@ public class Sql {
 	public void buildStatement(SqlContext context, SqlStatementBuilder stm,Params params){
 		for(int i=0;i<nodes.length;i++){
 			AstNode node = nodes[i];
-			node.buildStatement(context, stm, params);
+			node.buildStatement(context, this, stm, params);
 		}
 	}
 
     public void prepare(MetadataContext context) {
         for(AstNode node : nodes) {
-            node.prepare(context);
+            node.prepare(context, this);
         }
     }
 	
