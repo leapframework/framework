@@ -66,6 +66,16 @@ public interface OAuth2ResServerConfig {
      */
     String getRemoteUserInfoEndpointUrl();
 
+    /**
+     * todo : doc
+     */
+    String getTokenEndpointUrl();
+
+    /**
+     * todo : doc
+     */
+    String getAuthorizationEndpointUrl();
+
 	/**
 	 * Returns the resource id of this resource server in authz server
 	 * @return resourceId
