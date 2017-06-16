@@ -126,7 +126,7 @@
           class="leap.oauth2.as.endpoint.logout.DefaultPostLogoutHandler" primary="true"/>
 
     <!-- public key endpoint -->
-    <bean type="leap.web.Endpoint" class="leap.oauth2.server.endpoint.PublicKeyEndpoint1"/>
+    <bean type="leap.web.Endpoint" class="leap.oauth2.server.endpoint.PublicKeyEndpoint"/>
 
     <!-- openid connect : common -->
     <bean type="leap.oauth2.as.openid.IdTokenGenerator"
