@@ -40,6 +40,8 @@ public class QueryFilterTest extends OrmTestCase {
         List<FilteredModel> list = FilteredModel.findAll();
         assertEquals(1, list.size());
         assertEquals(m1.id, list.get(0).id);
+
+        assertEquals(1,FilteredModel.query("select * from FilteredModel order by id").list().size());
     }
 
 }

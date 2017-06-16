@@ -69,37 +69,37 @@ public class Tag extends DynamicNode implements SqlTag {
     }
 
     @Override
-    public void prepare(MetadataContext context) {
+    public void prepare(MetadataContext context, Sql sql) {
         processor = context.getAppContext().getBeanFactory().tryGetBean(SqlTagProcessor.class, name);
         if(null == processor) {
             throw new SqlConfigException("Sql tag processor '" + name + "' not exists, check it : " + toString());
         }else{
-            processor.prepareTag(context, this);
+            processor.prepareTag(context, sql, this);
         }
 
         el = context.getAppContext().getBeanFactory().getBean(ExpressionLanguage.class);
     }
 
 	@Override
-    protected final void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+    protected final void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
         if(null != processor) {
-            String expr = Strings.trim(processor.processTag(context, this, params));
+            String expr = Strings.trim(processor.processTag(context, sql, this, params));
 
             if(!Strings.isEmpty(expr)) {
-                buildStatement(context, stm, params, expr);
+                buildStatement(context, sql, stm, params, expr);
             }
         }
     }
 
-    public String process(SqlContext context, Params params) {
+    public String process(SqlContext context, Sql sql, Params params) {
         if(null == processor) {
             return Strings.EMPTY;
         }else{
-            return processor.processTag(context, this, params);
+            return processor.processTag(context, sql, this, params);
         }
     }
 
-    public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+    public void buildStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params, String text) throws IOException {
 
         if(log.isDebugEnabled()) {
             log.debug("Tag {} -> {}", toString(), text);
@@ -109,6 +109,6 @@ public class Tag extends DynamicNode implements SqlTag {
         SqlParser parser = new SqlParser(new Lexer(text, Sql.ParseLevel.MORE), el);
         SqlWhereExpr expr = parser.whereExpr();
 
-        expr.buildStatement(context, stm, params);
+        expr.buildStatement(context, sql, stm, params);
     }
 }

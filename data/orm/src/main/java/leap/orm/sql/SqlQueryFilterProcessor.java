@@ -145,6 +145,7 @@ class SqlQueryFilterProcessor {
                     filterNodes.add(new Text(" and "));
                 }
                 addQueryFilter(filterNodes, em, alias);
+                filterNodes.add(new Text(" "));
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
                 nodes.add(new ConditionalNode(func, new AstNode[]{new DynamicClause(filterNodes.toArray(new AstNode[0]))}));
@@ -188,7 +189,9 @@ class SqlQueryFilterProcessor {
                 addQueryFilter(filterNodes, em, alias);
 
                 if(olds.length > 0) {
-                    filterNodes.add(new Text(" )"));
+                    filterNodes.add(new Text(" ) "));
+                }else{
+                    filterNodes.add(new Text(" "));
                 }
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
@@ -209,7 +212,7 @@ class SqlQueryFilterProcessor {
         String content = em.getEntityName();
 
         Tag tag = new QfTag(config.getTagName(), content, config.getAlias(), alias);
-        tag.prepare(context);
+        tag.prepare(context, sql);
 
         nodes.add(tag);
     }
@@ -228,7 +231,7 @@ class SqlQueryFilterProcessor {
         }
 
         @Override
-        public void buildStatement(SqlContext context, SqlStatementBuilder stm, Params params, String text) throws IOException {
+        public void buildStatement(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params, String text) throws IOException {
             if(log.isDebugEnabled()) {
                 log.debug("Tag '{}' -> {}", toString(), text);
             }
@@ -251,7 +254,7 @@ class SqlQueryFilterProcessor {
                 log.debug("Filter ( {} ) -> ( {} )", text, expr.toString());
             }
 
-            expr.buildStatement(context, stm, params);
+            expr.buildStatement(context, sql, stm, params);
         }
 
     }

@@ -20,6 +20,7 @@ import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.params.Params;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
@@ -121,10 +122,10 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 	}
 
 	@Override
-    protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+    protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 
         if(null != tagNode){
-            String s = tagNode.process(context, params);
+            String s = tagNode.process(context, sql, params);
             if(Strings.isEmpty(s)) {
                 if(log.isDebugEnabled()) {
                     log.debug("Tag {} -> (empty)", tagNode.toString());
@@ -134,9 +135,9 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
 
             for(AstNode n : bodyNodes) {
                 if(n == tagNode) {
-                    tagNode.buildStatement(context, stm, params, s);
+                    tagNode.buildStatement(context, sql, stm, params, s);
                 }else{
-                    n.buildStatement(context, stm, params);
+                    n.buildStatement(context, sql, stm, params);
                 }
             }
         }else{
@@ -145,7 +146,7 @@ public class DynamicClause extends DynamicNode implements AstNodeContainer {
             }
 
             for(AstNode n : bodyNodes) {
-                n.buildStatement(context, stm, params);
+                n.buildStatement(context, sql, stm, params);
             }
         }
 

@@ -332,9 +332,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
     
     protected void writeOAuth2SecurityDef(WriteContext context, ApiMetadata m, JsonWriter w, MOAuth2ApiSecurityDef d) {
         //context.defaultSecurity = OAUTH2;
-		if(Strings.equals(d.getFlow(),SwaggerConstants.IMPLICIT)){
-			
-		}
         switch (d.getFlow()){
 			case SwaggerConstants.IMPLICIT:
 				writeOAuth2Implicit(context, m, w, d);

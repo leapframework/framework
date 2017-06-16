@@ -18,6 +18,7 @@ package leap.orm.sql.ast;
 import leap.lang.Strings;
 import leap.lang.params.Params;
 import leap.orm.sql.PreparedBatchSqlStatementBuilder;
+import leap.orm.sql.Sql;
 import leap.orm.sql.SqlContext;
 import leap.orm.sql.SqlStatementBuilder;
 
@@ -49,7 +50,7 @@ public class Text extends AstNode {
     }
 
 	@Override
-	protected void buildStatement_(SqlContext context, SqlStatementBuilder stm, Params params) throws IOException {
+	protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {
 		stm.append(buf);
     }
 	

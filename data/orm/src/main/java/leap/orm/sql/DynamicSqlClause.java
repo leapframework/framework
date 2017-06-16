@@ -494,6 +494,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 			return sql;
 		}
 
+        /*
 		protected void buildSqlStatement(SqlContext context, AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
 			
 			if(node instanceof SqlOrderBy){
@@ -524,6 +525,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 
             node.buildStatement(context, statement, parameters);
 		}
+		*/
 
 		@Override
         public String getOrderBy() {

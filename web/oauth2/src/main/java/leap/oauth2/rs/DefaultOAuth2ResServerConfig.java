@@ -42,9 +42,12 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     protected Boolean               useRemoteUserInfo;
 	protected String                remoteTokenInfoEndpointUrl;
     protected String                remoteUserInfoEndpointUrl;
+    protected String                tokenEndpointUrl;
+    protected String                authorizationEndpointUrl;
 	protected String 				resourceServerId;
 	protected String 				resourceServerSecret;
 	protected Cache<String, Object> cachedInterceptUrls;
+
 	
 	protected String				rsaPublicKeyStr;
 	protected JwtVerifier           jwtVerifier;
@@ -153,6 +156,26 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     @Override
     public OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used) {
         this.useRemoteUserInfo = used;
+        return this;
+    }
+
+    @Override
+    public String getTokenEndpointUrl() {
+        return tokenEndpointUrl;
+    }
+
+    public OAuth2ResServerConfigurator setTokenEndpointUrl(String tokenEndpointUrl) {
+        this.tokenEndpointUrl = tokenEndpointUrl;
+        return this;
+    }
+
+    @Override
+    public String getAuthorizationEndpointUrl() {
+        return authorizationEndpointUrl;
+    }
+
+    public OAuth2ResServerConfigurator setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
+        this.authorizationEndpointUrl = authorizationEndpointUrl;
         return this;
     }
 

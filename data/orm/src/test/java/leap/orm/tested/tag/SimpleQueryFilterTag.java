@@ -17,17 +17,14 @@
 package leap.orm.tested.tag;
 
 import leap.lang.params.Params;
-import leap.orm.sql.SqlContext;
-import leap.orm.sql.SqlStatementBuilder;
-import leap.orm.sql.SqlTag;
-import leap.orm.sql.SqlTagProcessor;
+import leap.orm.sql.*;
 
 import java.io.IOException;
 
 public class SimpleQueryFilterTag implements SqlTagProcessor {
 
     @Override
-    public String processTag(SqlContext context, SqlTag tag, Params params) {
+    public String processTag(SqlContext context, Sql sql, SqlTag tag, Params params) {
 
         //only process FilteredModel
         if(tag.getContent().endsWith("FilteredModel")) {
