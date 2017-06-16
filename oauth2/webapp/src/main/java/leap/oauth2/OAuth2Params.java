@@ -16,8 +16,6 @@
 package leap.oauth2;
 
 import leap.lang.Strings;
-import leap.oauth2.as.client.AuthzClientCredentials;
-import leap.web.security.user.UsernamePasswordCredentials;
 
 /**
  * OAuth2.0 parameters.
