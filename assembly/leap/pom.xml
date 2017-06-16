@@ -79,7 +79,7 @@
 		</dependency>
         <dependency>
             <groupId>org.leapframework</groupId>
-            <artifactId>leap-oauth2</artifactId>
+            <artifactId>leap-oauth2-webapp</artifactId>
             <version>${project.version}</version>
         </dependency>
 		<dependency>
