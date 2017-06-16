@@ -24,7 +24,7 @@ import leap.web.route.Routes;
 
 import java.util.Base64;
 
-public class PublicKeyEndpoint implements Endpoint, Handler {
+public class PublicKeyEndpoint1 implements Endpoint, Handler {
 
     protected @Inject OAuth2AuthzServerConfig config;
 
