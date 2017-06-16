@@ -22,7 +22,8 @@ import leap.oauth2.as.OAuth2AuthzServerConfig;
 import leap.oauth2.as.endpoint.userinfo.UserInfoHandler;
 import leap.oauth2.as.token.AuthzAccessToken;
 import leap.oauth2.as.token.AuthzTokenManager;
-import leap.oauth2.as.token.TokenExtractor;
+import leap.oauth2.server.token.Token;
+import leap.oauth2.server.token.TokenExtractor;
 import leap.web.*;
 import leap.web.route.Routes;
 import leap.web.security.user.UserDetails;
@@ -53,13 +54,13 @@ public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,
 
 	@Override
     public void handle(Request request, Response response) throws Throwable {
-        String token = tokenExtractor.extractTokenFromRequest(request);
-        if(Strings.isEmpty(token)) {
+        Token token = tokenExtractor.extractTokenFromRequest(request);
+        if(null == token) {
             OAuth2Errors.invalidRequest(request,response, null,"Invalid access token");
             return;
         }
 
-        AuthzAccessToken at = tokenManager.loadAccessToken(token);
+        AuthzAccessToken at = tokenManager.loadAccessToken(token.getValue());
         if(null == at) {
             OAuth2Errors.invalidToken(request,response, null,"Invalid access token");
             return;

@@ -170,6 +170,11 @@ public interface OAuth2AuthzServerConfig {
     String getUserInfoEndpointPath();
 
     /**
+     * todo : doc
+     */
+    String getPublicKeyEndpointPath();
+
+    /**
      * Retruns the error view for rendering oauth2 request error.
      *
      * <p/>

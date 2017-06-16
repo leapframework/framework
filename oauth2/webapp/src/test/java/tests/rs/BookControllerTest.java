@@ -25,12 +25,9 @@ public class BookControllerTest extends OAuth2TestBase {
     
 	@Test
 	public void testBadRequest() {
-	    serverContextPath = "";
-	    
 	    logout();
-		THttpResponse resp = ajaxGet("/book");
-		resp.assertNotOk();
-		
+		ajaxGet("/book").assertNotOk();
+
 	 	//resp.assert400();
 	 	/*
 		JsonValue json = resp.getJson();
@@ -40,26 +37,10 @@ public class BookControllerTest extends OAuth2TestBase {
 		*/
 	}
 	
-	@Test
-	public void testLocalAccessTokenStore() {
-	    serverContextPath = "";
-	    
-	    logout();
-	    
-	    TokenResponse token = obtainAccessTokenImplicit();
-	    
-	    withAccessToken(forGet("/book"), token.accessToken).send().assertOk();
-	}
-	
     @Test
     public void testRemoteAccessTokenStore() {
-        serverContextPath = "/server";
-        
-        login();
-
         TokenResponse token = obtainAccessTokenImplicit();
-
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertOk();
+        withAccessToken(forGet("/book"), token.accessToken).send().assertOk();
     }
 
 }

@@ -13,13 +13,31 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package app.controllers;
 
-package resapp2;
+import leap.core.security.annotation.AllowAnonymous;
+import leap.core.security.annotation.AllowClientOnly;
+import leap.core.security.annotation.Permissions;
 
-import leap.web.App;
+@AllowClientOnly
+public class AdminController {
 
-public class Global extends App {
+    public void hello() {
+        
+    }
 
+    @Permissions("admin:status")
+    public void status() {
 
+    }
 
+    @Permissions("admin:test")
+    public void test(){
+
+    }
+
+    @AllowAnonymous
+    public String allowAnonymous(){
+        return "success";
+    }
 }

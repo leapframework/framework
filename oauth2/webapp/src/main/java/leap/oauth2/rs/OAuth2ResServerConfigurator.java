@@ -113,6 +113,16 @@ public interface OAuth2ResServerConfigurator {
     /**
      * todo : doc
      */
+    OAuth2ResServerConfigurator setTokenEndpointUrl(String url);
+
+    /**
+     * todo : doc
+     */
+    OAuth2ResServerConfigurator setAuthorizationEndpointUrl(String url);
+
+    /**
+     * todo : doc
+     */
     OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used);
 
 	/**

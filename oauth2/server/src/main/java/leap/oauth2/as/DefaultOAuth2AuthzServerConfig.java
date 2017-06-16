@@ -78,6 +78,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
     protected String     userInfoEndpointPath            = DEFAULT_USERINFO_ENDPOINT_PATH;
     protected String     logoutEndpointPath              = DEFAULT_LOGOUT_ENDPOINT_PATH;
+    protected String     publicKeyEndpointPath           = DEFAULT_PUBLICKEY_ENDPOINT_PATH;
     protected String     errorView                       = DEFAULT_ERROR_VIEW;
     protected String     loginView                       = DEFAULT_LOGIN_VIEW;
     protected String     logoutView                      = DEFAULT_LOGOUT_VIEW;
@@ -228,6 +229,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
 
     public String getUserInfoEndpointPath() {
         return userInfoEndpointPath;
+    }
+
+    @Override
+    public String getPublicKeyEndpointPath() {
+        return publicKeyEndpointPath;
     }
 
     @Override
@@ -510,6 +516,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.privateKey = privateKey;
         return this;
     }
+
     @Override
     public OAuth2AuthzServerConfigurator setPublicKey(PublicKey publicKey) {
         this.publicKey = publicKey;
@@ -591,6 +598,11 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
                 schedulerManager
                     .newFixedThreadPoolScheduler("auth-cleanup")
                     .scheduleAtFixedRate(() -> cleanup(), getCleanupInterval() * 1000l);
+            }
+
+            if(null == privateKey) {
+                this.privateKey = app.config().ensureGetPrivateKey();
+                this.publicKey  = app.config().ensureGetPublicKey();
             }
         }
     }

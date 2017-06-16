@@ -14,12 +14,12 @@
  *  limitations under the License.
  */
 
-package resapp2.controllers;
+package leap.oauth2.server.token;
 
-public class GreetingController {
+import leap.web.Request;
 
-    public String greeting() {
-        return "Hello, World!";
-    }
+public interface TokenExtractor {
+
+    Token extractTokenFromRequest(Request request);
 
 }

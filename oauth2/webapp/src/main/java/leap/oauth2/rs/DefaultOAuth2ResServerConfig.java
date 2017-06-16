@@ -1,17 +1,17 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 package leap.oauth2.rs;
 
@@ -29,7 +29,6 @@ import leap.lang.security.RSA;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
-import sun.security.rsa.RSAPublicKeyImpl;
 
 @Configurable(prefix="oauth2.rs")
 public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAuth2ResServerConfigurator, PostCreateBean, AppInitializable {
@@ -42,9 +41,12 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     protected Boolean               useRemoteUserInfo;
 	protected String                remoteTokenInfoEndpointUrl;
     protected String                remoteUserInfoEndpointUrl;
+    protected String                tokenEndpointUrl;
+    protected String                authorizationEndpointUrl;
 	protected String 				resourceServerId;
 	protected String 				resourceServerSecret;
 	protected Cache<String, Object> cachedInterceptUrls;
+
 	
 	protected String				rsaPublicKeyStr;
 	protected JwtVerifier           jwtVerifier;
@@ -153,6 +155,26 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     @Override
     public OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used) {
         this.useRemoteUserInfo = used;
+        return this;
+    }
+
+    @Override
+    public String getTokenEndpointUrl() {
+        return tokenEndpointUrl;
+    }
+
+    public OAuth2ResServerConfigurator setTokenEndpointUrl(String tokenEndpointUrl) {
+        this.tokenEndpointUrl = tokenEndpointUrl;
+        return this;
+    }
+
+    @Override
+    public String getAuthorizationEndpointUrl() {
+        return authorizationEndpointUrl;
+    }
+
+    public OAuth2ResServerConfigurator setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
+        this.authorizationEndpointUrl = authorizationEndpointUrl;
         return this;
     }
 

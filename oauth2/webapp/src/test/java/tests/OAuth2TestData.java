@@ -15,8 +15,16 @@
  */
 package tests;
 
+import leap.lang.net.Urls;
+
 public interface OAuth2TestData {
-    
+
+    String TEST_CLIENT_ID                   = "test";
+    String TEST_CLIENT_SECRET               = "test_secret";
+    String TEST_CLIENT_GRANTED_SCOPE		= "admin:test";
+    String TEST_CLIENT_REDIRECT_URI         = "/oauth2/redirect_uri";
+    String TEST_CLIENT_REDIRECT_URI_ENCODED = Urls.encode(TEST_CLIENT_REDIRECT_URI);
+
     String USER_ADMIN    = "admin";
     String PASS_ADMIN    = "1";
     String USER_XIAOMING = "xiaoming";

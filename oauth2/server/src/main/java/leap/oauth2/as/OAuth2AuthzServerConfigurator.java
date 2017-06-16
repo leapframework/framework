@@ -30,6 +30,7 @@ public interface OAuth2AuthzServerConfigurator {
     String DEFAULT_TOKENINFO_ENDPOINT_PATH  = "/oauth2/tokeninfo";
     String DEFAULT_USERINFO_ENDPOINT_PATH   = "/oauth2/userinfo";
     String DEFAULT_LOGOUT_ENDPOINT_PATH     = "/oauth2/logout";
+    String DEFAULT_PUBLICKEY_ENDPOINT_PATH  = "/oauth2/publickey";
 
     String DEFAULT_ERROR_VIEW  = "/oauth2/error";
     String DEFAULT_LOGIN_VIEW  = "/oauth2/login";

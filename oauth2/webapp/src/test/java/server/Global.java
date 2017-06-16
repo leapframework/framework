@@ -17,6 +17,10 @@ package server;
 
 import leap.core.annotation.Inject;
 import leap.core.security.SEC;
+import leap.oauth2.as.client.AuthzClient;
+import leap.oauth2.as.client.AuthzClientBuilder;
+import leap.oauth2.as.client.SimpleAuthzClient;
+import leap.oauth2.as.store.AuthzInMemoryStore;
 import tests.OAuth2TestData;
 import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.orm.dmo.Dmo;
@@ -54,6 +58,13 @@ public class Global extends App implements OAuth2TestData {
     protected void registerClients() {
         Client.deleteAll();
 
+        //app.
+        Client app = new Client();
+        app.setId("app");
+        app.setSecret("app_secret");
+        app.setRedirectUriPattern("**");
+        app.create();
+
         //Client web app1.
         Client app2 = new Client();
         app2.setId("app1");
@@ -70,10 +81,10 @@ public class Global extends App implements OAuth2TestData {
 
         //Non web app client
         Client testClient = new Client();
-        testClient.setId(app.Global.TEST_CLIENT_ID);
-        testClient.setSecret(app.Global.TEST_CLIENT_SECRET);
-        testClient.setGrantedScope(app.Global.TEST_CLIENT_GRANTED_SCOPE);
-        testClient.setRedirectUri(app.Global.TEST_CLIENT_REDIRECT_URI);
+        testClient.setId(TEST_CLIENT_ID);
+        testClient.setSecret(TEST_CLIENT_SECRET);
+        testClient.setGrantedScope(TEST_CLIENT_GRANTED_SCOPE);
+        testClient.setRedirectUri(TEST_CLIENT_REDIRECT_URI);
         testClient.create();
         
         Client client1 = new Client();

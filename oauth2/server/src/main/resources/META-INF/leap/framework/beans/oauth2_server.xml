@@ -51,6 +51,9 @@
           class="leap.oauth2.as.code.UUIDAuthzCodeGenerator" primary="true"/>
 
     <!-- token -->
+    <bean type="leap.oauth2.server.token.TokenExtractor"
+          class="leap.oauth2.server.token.DefaultTokenExtractor" primary="true"/>
+
     <bean type="leap.oauth2.as.endpoint.token.GrantTokenManager"
           class="leap.oauth2.as.endpoint.token.DefaultGrantTokenManager" primary="true"/>
 
@@ -121,6 +124,9 @@
     <!-- logout endpoint : handlers -->
     <bean type="leap.oauth2.as.endpoint.logout.PostLogoutHandler"
           class="leap.oauth2.as.endpoint.logout.DefaultPostLogoutHandler" primary="true"/>
+
+    <!-- public key endpoint -->
+    <bean type="leap.web.Endpoint" class="leap.oauth2.server.endpoint.PublicKeyEndpoint"/>
 
     <!-- openid connect : common -->
     <bean type="leap.oauth2.as.openid.IdTokenGenerator"

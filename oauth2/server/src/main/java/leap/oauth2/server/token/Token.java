@@ -14,12 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.as.token;
+package leap.oauth2.server.token;
 
-import leap.web.Request;
+public interface Token {
 
-public interface TokenExtractor {
-
-    String extractTokenFromRequest(Request request);
+    String getValue();
 
 }

@@ -83,7 +83,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         */
     }
     
-    protected String serverContextPath = ""; //The context path of server.
+    protected String serverContextPath = "/server"; //The context path of server.
     
     protected <T extends AuthzResponse> T resp(THttpResponse httpResp, T resp) {
         return resp(httpResp, resp, null);
@@ -103,7 +103,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected String obtainAuthorizationCode() {
-        String codeUri = serverContextPath + AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
+        String codeUri = serverContextPath + AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
         
         login();
         String redirectUrl = get(codeUri).assertRedirect().getRedirectUrl();
@@ -117,14 +117,14 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         String tokenUri = serverContextPath + TOKEN_ENDPOINT + 
                 "?grant_type=authorization_code&code=" + code + 
                 "&client_id=test" + 
-                "&client_secret=" + Global.TEST_CLIENT_SECRET;
+                "&client_secret=" + TEST_CLIENT_SECRET;
         
         return resp(post(tokenUri), new TokenResponse());
     }	
     
     protected TokenResponse obtainAccessTokenImplicit() {
         String uri = serverContextPath + AUTHZ_ENDPOINT + 
-                        "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
+                        "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
         
         login();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
@@ -142,7 +142,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     
     protected TokenResponse obtainIdTokenImplicit() {
         String uri = serverContextPath + AUTHZ_ENDPOINT + 
-                        "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token";
+                        "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token";
         
         login();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
@@ -160,7 +160,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 
     protected TokenResponse obtainIdTokenTokenImplicit() {
         String uri = serverContextPath + AUTHZ_ENDPOINT +
-                "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token%20token";
+                "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token%20token";
 
         login();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
@@ -177,7 +177,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByPassword(String username, String password) {
-        return obtainAccessTokenByPassword(username,password,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+        return obtainAccessTokenByPassword(username,password,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
     }
 
     protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId, String clientSecret) {
@@ -204,7 +204,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
     
     protected TokenResponse obtainAccessTokenByRefreshToken(String refreshToken) {
-        return obtainAccessTokenByRefreshToken(refreshToken, Global.TEST_CLIENT_ID, Global.TEST_CLIENT_SECRET);
+        return obtainAccessTokenByRefreshToken(refreshToken, TEST_CLIENT_ID, TEST_CLIENT_SECRET);
     }
     
     protected TokenResponse obtainAccessTokenByRefreshToken(String refreshToken, String clientId, String clientSecret) {

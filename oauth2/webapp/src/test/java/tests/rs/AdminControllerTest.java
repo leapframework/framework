@@ -15,7 +15,6 @@
  */
 package tests.rs;
 
-import app.Global;
 import leap.lang.Assert;
 import org.junit.Test;
 import tested.models.User;
@@ -33,8 +32,8 @@ public class AdminControllerTest extends OAuth2TestBase {
     public void testClientOnlyAccessToken() {
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
         
-        withAccessToken(forGet("/resapp/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/resapp/admin/hello"), token.accessToken).send().assertOk();
+        withAccessToken(forGet("/book"), token.accessToken).send().assertNotOk();
+        withAccessToken(forGet("/admin/hello"), token.accessToken).send().assertOk();
     }
 
     @Test
@@ -42,17 +41,17 @@ public class AdminControllerTest extends OAuth2TestBase {
         TokenResponse token1 = obtainAccessTokenByClient("client1", "client1_secret");
         TokenResponse token2 = obtainAccessTokenByClient("client2", "client2_secret");
 
-        withAccessToken(forGet("/resapp/admin/status"), token1.accessToken).send().assertOk();
-        withAccessToken(forGet("/resapp/admin/status"), token2.accessToken).send().assertFailure();
+        withAccessToken(forGet("/admin/status"), token1.accessToken).send().assertOk();
+        withAccessToken(forGet("/admin/status"), token2.accessToken).send().assertFailure();
 
     }
     @Test
     public void testClientTokenGrantedScope(){
-        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,Global.TEST_CLIENT_ID,Global.TEST_CLIENT_SECRET);
+        TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
         TokenResponse token2 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,"app2","app2_secret");
 
-        withAccessToken(forGet("/resapp/admin/test"), token1.accessToken).send().assertOk();
-        withAccessToken(forGet("/resapp/admin/test"), token2.accessToken).send().assertFailure();
+        withAccessToken(forGet("/admin/test"), token1.accessToken).send().assertOk();
+        withAccessToken(forGet("/admin/test"), token2.accessToken).send().assertFailure();
     }
 
     @Test
@@ -65,7 +64,7 @@ public class AdminControllerTest extends OAuth2TestBase {
         Assert.notNull(token);
         user.delete();
 
-        assertEquals("success",withAccessToken(forGet("/resapp/admin/allow_anonymous"), token.accessToken).send().getContent());
+        assertEquals("success",withAccessToken(forGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
     
     
