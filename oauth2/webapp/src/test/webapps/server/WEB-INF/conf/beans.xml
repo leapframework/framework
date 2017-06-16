@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.leapframework.org/schema/beans">
+
+    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" primary="true">
+        <property name="driverClassName" value="${jdbc.driverClassName}" />
+        <property name="jdbcUrl"         value="${jdbc.url}" />
+        <property name="username"        value="${jdbc.username}" />
+        <property name="password"        value="${jdbc.password}" />
+    </bean>
+
+</beans>

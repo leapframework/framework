@@ -14,4 +14,12 @@
  *  limitations under the License.
  */
 
-package tests;
+package resapp2;
+
+import leap.web.App;
+
+public class Global extends App {
+
+
+
+}
