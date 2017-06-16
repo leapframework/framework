@@ -145,6 +145,7 @@ class SqlQueryFilterProcessor {
                     filterNodes.add(new Text(" and "));
                 }
                 addQueryFilter(filterNodes, em, alias);
+                filterNodes.add(new Text(" "));
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
                 nodes.add(new ConditionalNode(func, new AstNode[]{new DynamicClause(filterNodes.toArray(new AstNode[0]))}));
@@ -188,7 +189,9 @@ class SqlQueryFilterProcessor {
                 addQueryFilter(filterNodes, em, alias);
 
                 if(olds.length > 0) {
-                    filterNodes.add(new Text(" )"));
+                    filterNodes.add(new Text(" ) "));
+                }else{
+                    filterNodes.add(new Text(" "));
                 }
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getQueryFilterEnabled() || c.getQueryFilterEnabled();
