@@ -15,10 +15,8 @@
  */
 package leap.oauth2.webapp;
 
-import leap.core.security.token.jwt.JwtVerifier;
-
 /**
- * The configurator of oauth2 resource server.
+ * The configurator of oauth2 web app.
  */
 public interface OAuth2Configurator {
 
@@ -28,80 +26,59 @@ public interface OAuth2Configurator {
 	OAuth2Config config();
 
 	/**
-	 * Enables oauth2 resource server in current webapp.
+	 * Enables oauth2 in current web app.
      */
 	default OAuth2Configurator enable() {
 		return setEnabled(true);
 	}
 
 	/**
-	 * Sets enable or disable oauth2 resource server in current webapp.
+	 * Sets enable or disable oauth2 in current web app.
      */
 	OAuth2Configurator setEnabled(boolean enabled);
 
-	/**
-	 * 
-	 * Sets the ras public key string for rsa jwt verifier
-	 * 
-	 * @param publicKey ths rsa public key string
-	 */
-	OAuth2Configurator setRsaPublicKeyStr(String publicKey);
-	/**
-	 * Use rsa jwt verifier to verify jwt token.
-	 */
-	OAuth2Configurator useRsaJwtVerifier();
-	
-	/**
-	 * Use the specify jwt verifier to verify jwt token
-	 */
-	OAuth2Configurator useJwtVerifier(JwtVerifier verifier);
-	
+    /**
+     * Automatic sets all the urls by given the root url of oauth2 server.
+     */
+    OAuth2Configurator setServerUrl(String url);
+
+    /**
+     * todo : doc
+     */
+    OAuth2Configurator setAuthorizationUrl(String url);
+
 	/**
 	 * Sets the url of token info endpoint in oauth2 authorization server.
 	 *
 	 * <p/>
 	 * Valid when use remote authz server.
      */
-	OAuth2Configurator setRemoteTokenInfoEndpointUrl(String url);
+	OAuth2Configurator setTokenInfoUrl(String url);
 
     /**
      * Sets the url of user info endpoint in oauth2 authorization server.
-     *
-     * <p/>
-     * Valid when use remote authz server.
      */
-    OAuth2Configurator setRemoteUserInfoEndpointUrl(String url);
+    OAuth2Configurator setUserInfoUrl(String url);
 
     /**
      * todo : doc
      */
-    OAuth2Configurator setTokenEndpointUrl(String url);
+    OAuth2Configurator setTokenUrl(String url);
 
     /**
-     * todo : doc
+     * todo: doc
      */
-    OAuth2Configurator setAuthorizationEndpointUrl(String url);
-
-    /**
-     * todo : doc
-     */
-    OAuth2Configurator setUseRemoteUserInfo(Boolean used);
+    OAuth2Configurator setPublicKeyUrl(String url);
 
 	/**
-	 * Sets the resource server Id of this server in oauth2 authorization server.
-	 *
-	 * <p/>
-	 * use when use remote authz server to validate access token.
+     * todo: doc
 	 */
-	OAuth2Configurator setResourceServerId(String resourceServerId);
+	OAuth2Configurator setClientId(String clientId);
 
 	/**
-	 * Sets the resource server secret of this server in oauth2 authorization server.
-	 *
-	 * <p/>
-	 * use when use remote authz server to validate access token.
+     * todo: doc
 	 */
-	OAuth2Configurator setResourceServerSecret(String resourceServerSecret);
+	OAuth2Configurator setClientSecret(String clientSecret);
 
 	
 }

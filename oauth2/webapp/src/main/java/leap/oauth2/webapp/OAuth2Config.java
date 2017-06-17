@@ -18,63 +18,54 @@ package leap.oauth2.webapp;
 import leap.core.security.token.jwt.JwtVerifier;
 
 /**
- * The configuration of oauth2 resource server in web app.
+ * The configuration of oauth2 web app.
  *
  * @see OAuth2Configurator
  */
 public interface OAuth2Config {
 
 	/**
-	 * Returns <code>true</code> if oauth2.0 resource server is enabled in current web app.
+	 * Returns <code>true</code> if oauth2.0 is enabled in current web app.
 	 */
 	boolean isEnabled();
 
     /**
      * todo : doc
      */
-    boolean isUseRemoteUserInfo();
+    String getAuthorizationUrl();
+
+    /**
+     * todo : doc
+     */
+    String getTokenUrl();
 
 	/**
 	 * Returns the url of token info endpoint in oauth2 authorization server.
-     *
-     * <p/>
-     * Required if use remote authorization server.
 	 */
-	String getRemoteTokenInfoEndpointUrl();
+	String getTokenInfoUrl();
 
     /**
      * Returns the url of user info endpoint in oauth2 authorization server.
-     *
-     * <p/>
-     * Required if use remote authorization server.
      */
-    String getRemoteUserInfoEndpointUrl();
+    String getUserInfoUrl();
 
     /**
-     * todo : doc
+     * todo: doc
      */
-    String getTokenEndpointUrl();
-
-    /**
-     * todo : doc
-     */
-    String getAuthorizationEndpointUrl();
+    String getPublicKeyUrl();
 
 	/**
-	 * Returns the resource id of this resource server in authz server
-	 * @return resourceId
+	 * todo: doc
      */
-	String getResourceServerId();
+	String getClientId();
 
 	/**
-	 * Returns the resource secret of this resource server in authz server
-	 * @return resourceSecret
+	 * todo: doc
      */
-	String getResourceServerSecret();
+	String getClientSecret();
 
 	/**
 	 * Returns the jwt verifier of this resource server
-	 * @return
 	 */
 	JwtVerifier getJwtVerifier();
 }

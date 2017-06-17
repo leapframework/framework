@@ -14,10 +14,6 @@
 
     </bean>
 
-    <if expr="null != properties['oauth2.enabled']">
-        <bean type="leap.web.AppListener" class="leap.oauth2.webapp.OAuth2AutoConfig"/>
-    </if>
-
     <bean type="leap.oauth2.webapp.OAuth2ErrorHandler"
           class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 

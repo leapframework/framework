@@ -34,7 +34,6 @@ import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.AccessToken;
 import leap.web.security.user.SimpleUserDetails;
 import leap.web.security.user.UserDetails;
-import leap.web.security.user.UserManager;
 
 public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
@@ -42,24 +41,19 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;
-    protected @Inject UserManager  userManager;
 
     @Override
     public UserDetails lookupUserDetails(AccessToken at, String userId) {
-        if(!config.isUseRemoteUserInfo()) {
-            return userManager.loadUserDetails(userId);
-        }
-
-        if(Strings.isEmpty(config.getRemoteUserInfoEndpointUrl())) {
+        if(Strings.isEmpty(config.getUserInfoUrl())) {
             throw new IllegalStateException("The userInfoEndpointUrl must be configured when use remote authz server");
         }
 
-        HttpRequest request = httpClient.request(config.getRemoteUserInfoEndpointUrl())
+        HttpRequest request = httpClient.request(config.getUserInfoUrl())
                                         .addQueryParam("access_token", at.getToken());
 
-        if(null != config.getResourceServerId()){
+        if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
-                    Base64.encode(config.getResourceServerId()+":"+config.getResourceServerSecret()));
+                    Base64.encode(config.getClientId()+":"+config.getClientSecret()));
         }
 
         HttpResponse response = request.get();

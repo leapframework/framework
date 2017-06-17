@@ -24,29 +24,28 @@ import leap.core.cache.Cache;
 import leap.core.cache.CacheManager;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.token.jwt.JwtVerifier;
-import leap.core.security.token.jwt.RsaVerifier;
-import leap.lang.Assert;
-import leap.lang.security.RSA;
+import leap.lang.path.Paths;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
-@Configurable(prefix="oauth2.rs")
+@Configurable(prefix="oauth2")
 public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, PostCreateBean, AppInitializable {
 
 	protected @Inject SecurityConfigurator sc;
     protected @Inject CacheManager         cm;
 
 	protected boolean               enabled;
-    protected Boolean               useRemoteUserInfo;
-	protected String                remoteTokenInfoEndpointUrl;
-    protected String                remoteUserInfoEndpointUrl;
-    protected String                tokenEndpointUrl;
-    protected String                authorizationEndpointUrl;
-	protected String 				resourceServerId;
-	protected String 				resourceServerSecret;
-	protected Cache<String, Object> cachedInterceptUrls;
+    protected String                authorizationUrl;
+    protected String                tokenUrl;
+	protected String                tokenInfoUrl;
+    protected String                userInfoUrl;
+    protected String                publicKeyUrl;
 
+	protected String                clientId;
+	protected String                clientSecret;
+
+	protected Cache<String, Object> cachedInterceptUrls;
 	protected String				rsaPublicKeyStr;
 	protected JwtVerifier           jwtVerifier;
 
@@ -65,80 +64,105 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
 	    return this;
     }
 
-	@ConfigProperty
-	public OAuth2Configurator setRsaPublicKeyStr(String publicKey) {
-		this.rsaPublicKeyStr = publicKey;
-		return this;
-	}
+    @Override
+    @ConfigProperty
+    public OAuth2Configurator setServerUrl(String serverUrl) {//don't change the parameter name (used by config property)
+        serverUrl = Paths.suffixWithoutSlash(serverUrl);
+
+        this.authorizationUrl = serverUrl + "/oauth2/authorize";
+        this.tokenUrl         = serverUrl + "/oauth2/token";
+        this.tokenInfoUrl     = serverUrl + "/oauth2/tokeninfo";
+        this.userInfoUrl      = serverUrl + "/oauth2/userinfo";
+        this.publicKeyUrl     = serverUrl + "/oauth2/publickey";
+
+        return this;
+    }
+
+    @Override
+    public String getAuthorizationUrl() {
+        return authorizationUrl;
+    }
+
+    @Override
+    public OAuth2Configurator setAuthorizationUrl(String url) {
+        this.authorizationUrl = url;
+        return this;
+    }
+
+    @Override
+    public String getTokenUrl() {
+        return tokenUrl;
+    }
+
+    @Override
+    public OAuth2Configurator setTokenUrl(String url) {
+        this.tokenUrl = url;
+        return this;
+    }
 
 	@Override
-	public JwtVerifier getJwtVerifier() {
-		return jwtVerifier;
-	}
-
-	@Override
-	public OAuth2Configurator useRsaJwtVerifier() {
-		Assert.notEmpty(rsaPublicKeyStr,"rsa public key string can not be empty");
-		jwtVerifier = new RsaVerifier(RSA.decodePublicKey(rsaPublicKeyStr));
-		return this;
-	}
-
-	@Override
-	public OAuth2Configurator useJwtVerifier(JwtVerifier verifier) {
-		this.jwtVerifier = verifier;
-		return this;
-	}
-
-	@Override
-    public String getRemoteTokenInfoEndpointUrl() {
-        return remoteTokenInfoEndpointUrl;
+    public String getTokenInfoUrl() {
+        return tokenInfoUrl;
     }
 
     @ConfigProperty
-	public OAuth2Configurator setRemoteTokenInfoEndpointUrl(String url) {
-	    this.remoteTokenInfoEndpointUrl = url;
+	public OAuth2Configurator setTokenInfoUrl(String url) {
+	    this.tokenInfoUrl = url;
 	    return this;
 	}
 
     @Override
-    public String getRemoteUserInfoEndpointUrl() {
-        return remoteUserInfoEndpointUrl;
+    public String getUserInfoUrl() {
+        return userInfoUrl;
     }
 
     @Override
-    public OAuth2Configurator setRemoteUserInfoEndpointUrl(String url) {
-        this.remoteUserInfoEndpointUrl = url;
+    public OAuth2Configurator setUserInfoUrl(String url) {
+        this.userInfoUrl = url;
         return this;
     }
 
     @Override
-    public boolean isUseRemoteUserInfo() {
-        return null == useRemoteUserInfo ? true : useRemoteUserInfo;
+    public String getPublicKeyUrl() {
+        return publicKeyUrl;
     }
 
     @Override
-    public OAuth2Configurator setUseRemoteUserInfo(Boolean used) {
-        this.useRemoteUserInfo = used;
+    public OAuth2Configurator setPublicKeyUrl(String url) {
+        this.publicKeyUrl = url;
         return this;
     }
 
     @Override
-    public String getTokenEndpointUrl() {
-        return tokenEndpointUrl;
-    }
+	public String getClientId() {
+		return clientId;
+	}
 
-    public OAuth2Configurator setTokenEndpointUrl(String tokenEndpointUrl) {
-        this.tokenEndpointUrl = tokenEndpointUrl;
-        return this;
-    }
+	@Override
+	public String getClientSecret() {
+		return clientSecret;
+	}
+
+	@Override
+	public OAuth2Configurator setClientId(String clientId) {
+		this.clientId = clientId;
+		return this;
+	}
+
+	@ConfigProperty
+	public OAuth2Configurator setClientSecret(String clientSecret) {
+		this.clientSecret = clientSecret;
+		return this;
+	}
 
     @Override
-    public String getAuthorizationEndpointUrl() {
-        return authorizationEndpointUrl;
+    public JwtVerifier getJwtVerifier() {
+        return jwtVerifier;
     }
 
-    public OAuth2Configurator setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
-        this.authorizationEndpointUrl = authorizationEndpointUrl;
+    @ConfigProperty
+    public OAuth2Configurator setRsaPublicKeyStr(String publicKey) {
+        this.rsaPublicKeyStr = publicKey;
         return this;
     }
 
@@ -150,31 +174,12 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     @Override
     public void postAppInit(App app) throws Throwable {
         if(enabled) {
+
             if(!sc.config().isEnabled()) {
                 sc.enable(true);
             }
+
+
         }
     }
-
-	@Override
-	public String getResourceServerId() {
-		return resourceServerId;
-	}
-
-	@Override
-	public String getResourceServerSecret() {
-		return resourceServerSecret;
-	}
-
-	@Override
-	public OAuth2Configurator setResourceServerId(String resourceServerId) {
-		this.resourceServerId = resourceServerId;
-		return this;
-	}
-
-	@ConfigProperty
-	public OAuth2Configurator setResourceServerSecret(String resourceServerSecret) {
-		this.resourceServerSecret = resourceServerSecret;
-		return this;
-	}
 }
