@@ -18,24 +18,24 @@
           class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 
     <!-- auth -->
-    <bean type="leap.oauth2.webapp.authc.ResCredentialsAuthenticator"
-          class="leap.oauth2.webapp.authc.DefaultResCredentialsAuthenticator" primary="true"/>
+    <bean type="leap.oauth2.webapp.authc.OAuth2CredentialsAuthenticator"
+          class="leap.oauth2.webapp.authc.DefaultOAuth2CredentialsAuthenticator" primary="true"/>
 
     <!-- token -->
-    <bean type="leap.oauth2.webapp.token.ResTokenManager"
-          class="leap.oauth2.webapp.token.DefaultResTokenManager" primary="true"/>
+    <bean type="leap.oauth2.webapp.token.TokenManager"
+          class="leap.oauth2.webapp.token.DefaultTokenManager" primary="true"/>
 
     <bean name="bearer"
-          type="leap.oauth2.webapp.token.ResAccessTokenExtractor"
-          class="leap.oauth2.webapp.token.ResBearerAccessTokenExtractor" primary="true"/>
+          type="leap.oauth2.webapp.token.AccessTokenExtractor"
+          class="leap.oauth2.webapp.token.BearerAccessTokenExtractor" primary="true"/>
 
     <bean name="remote"
-          type="leap.oauth2.webapp.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.webapp.token.RemoteBearerResAccessTokenStore"/>
+          type="leap.oauth2.webapp.token.BearerAccessTokenStore"
+          class="leap.oauth2.webapp.token.RemoteBearerAccessTokenStore"/>
 
     <bean name="jwt"
-          type="leap.oauth2.webapp.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.webapp.token.JwtBearerResAccessTokenStore">
+          type="leap.oauth2.webapp.token.BearerAccessTokenStore"
+          class="leap.oauth2.webapp.token.JwtAccessTokenStore">
     </bean>
 
     <bean type="leap.oauth2.wac.OAuth2WebAppConfig"
@@ -58,6 +58,6 @@
     <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.wac.OAuth2WebAppSecurityInterceptor"/>
 
     <!-- userinfo -->
-    <bean type="leap.oauth2.webapp.user.UserDetailsLookup" class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
+    <bean type="leap.oauth2.webapp.user.UserInfoLookup" class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
 
 </beans>

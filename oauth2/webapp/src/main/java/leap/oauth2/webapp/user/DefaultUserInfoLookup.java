@@ -17,6 +17,8 @@
 package leap.oauth2.webapp.user;
 
 import leap.core.annotation.Inject;
+import leap.core.security.SimpleUserPrincipal;
+import leap.core.security.UserPrincipal;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
@@ -32,18 +34,16 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.AccessToken;
-import leap.web.security.user.SimpleUserDetails;
-import leap.web.security.user.UserDetails;
 
-public class DefaultUserDetailsLookup implements UserDetailsLookup {
+public class DefaultUserInfoLookup implements UserInfoLookup {
 
-    private static final Log log = LogFactory.get(DefaultUserDetailsLookup.class);
+    private static final Log log = LogFactory.get(DefaultUserInfoLookup.class);
 
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;
 
     @Override
-    public UserDetails lookupUserDetails(AccessToken at, String userId) {
+    public UserPrincipal lookupUserDetails(AccessToken at, String userId) {
         if(Strings.isEmpty(config.getUserInfoUrl())) {
             throw new IllegalStateException("The userInfoEndpointUrl must be configured when use remote authz server");
         }
@@ -73,7 +73,7 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
                     String error = o.getString ("error");
                     if(Strings.isEmpty(error)) {
-                        return newUserDetails(o);
+                        return newUserInfo(o);
                     }else{
                         return null;
                     }
@@ -87,12 +87,14 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
         }
     }
 
-    protected UserDetails newUserDetails(JsonObject json) {
-        SimpleUserDetails userInfo = new SimpleUserDetails();
+    protected UserPrincipal newUserInfo(JsonObject json) {
+        SimpleUserPrincipal userInfo = new SimpleUserPrincipal();
 
         userInfo.setId(json.getString("sub"));
         userInfo.setName(json.getString("name"));
         userInfo.setLoginName(json.getString("login_name"));
+
+        //todo: other user properties
 
         return userInfo;
     }

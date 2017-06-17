@@ -27,20 +27,20 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 
-public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
+public class JwtAccessTokenStore implements BearerAccessTokenStore {
 
     protected         RSAPublicKey   publicKey;
     protected @Inject SecurityConfig sc;
     protected @Inject OAuth2Config   rsc;
 
     @Override
-    public Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
+    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
         JwtVerifier verifier = rsc.getJwtVerifier();
         if(verifier == null){
             throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
         }
         Map<String,Object> jwtDetail = verifier.verify(token.getToken());
-        SimpleResAccessTokenDetails resAccessTokenDetails = new SimpleResAccessTokenDetails();
+        SimpleAccessTokenDetails resAccessTokenDetails = new SimpleAccessTokenDetails();
         
         Object userId = jwtDetail.remove("user_id");
         UserDetails ud;

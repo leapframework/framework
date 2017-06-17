@@ -25,19 +25,19 @@ import leap.lang.Result;
 import leap.oauth2.webapp.OAuth2Config;
 
 /**
- * The default implementation of {@link ResTokenManager}.
+ * The default implementation of {@link TokenManager}.
  */
-public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
+public class DefaultTokenManager implements TokenManager, PostCreateBean {
     
     protected @Inject BeanFactory  factory;
     protected @Inject OAuth2Config config;
     
-    protected Map<String, ResAccessTokenStore> typedTokenStores = new HashMap<>();
-    protected ResAccessTokenStore              bearerTokenStore = null;
-    protected ResAccessTokenStore              jwtTokenStore    = null;
+    protected Map<String, AccessTokenStore> typedTokenStores = new HashMap<>();
+    protected AccessTokenStore              bearerTokenStore = null;
+    protected AccessTokenStore              jwtTokenStore    = null;
     
     @Override
-    public Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
+    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
         return getAccessTokenStore(token).loadAccessTokenDetails(token);
     }
 
@@ -48,16 +48,16 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
-        this.typedTokenStores.putAll(factory.getNamedBeans(ResAccessTokenStore.class));
+        this.typedTokenStores.putAll(factory.getNamedBeans(AccessTokenStore.class));
     }
     
-    protected ResAccessTokenStore getAccessTokenStore(AccessToken token) {
-        ResAccessTokenStore store;
+    protected AccessTokenStore getAccessTokenStore(AccessToken token) {
+        AccessTokenStore store;
         
         if(token.isBearer()) {
-            if(token instanceof SimpleJwtAccessToken){
+            if(token instanceof JwtAccessToken){
                 if(null == jwtTokenStore){
-                    store = factory.getBean(ResBearerAccessTokenStore.class,"jwt");
+                    store = factory.getBean(BearerAccessTokenStore.class,"jwt");
                     if(null != store){
                         this.jwtTokenStore = store;
                         return store;
@@ -68,9 +68,9 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
                 }
             }
             if(null == bearerTokenStore) {
-                this.bearerTokenStore = factory.tryGetBean(ResBearerAccessTokenStore.class);
+                this.bearerTokenStore = factory.tryGetBean(BearerAccessTokenStore.class);
                 if(null == bearerTokenStore) {
-                    this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "remote");
+                    this.bearerTokenStore = factory.getBean(BearerAccessTokenStore.class, "remote");
                 }
             }
             store = bearerTokenStore;

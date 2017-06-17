@@ -15,21 +15,14 @@
  */
 package leap.oauth2.webapp.authc;
 
-import leap.core.security.ClientPrincipal;
+import leap.lang.Result;
+import leap.oauth2.webapp.token.AccessToken;
 
-public class ResClientPrincipal implements ClientPrincipal {
-	
-	private static final long serialVersionUID = -3438856033102626691L;
-	
-	protected String clientId;
+public interface OAuth2CredentialsAuthenticator {
 
-	public ResClientPrincipal(String clientId) {
-	    this.clientId = clientId;
-	}
-
-	@Override
-    public Object getId() {
-	    return clientId;
-	}
+    /**
+     * Authenticates the credentials.
+     */
+    Result<OAuth2Authentication> authenticate(AccessToken credentials);
 
 }

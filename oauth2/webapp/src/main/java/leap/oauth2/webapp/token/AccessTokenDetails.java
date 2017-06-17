@@ -15,13 +15,26 @@
  */
 package leap.oauth2.webapp.token;
 
-import leap.web.Request;
+public interface AccessTokenDetails {
 
-import java.util.Map;
-
-public interface ResAccessTokenExtractor {
-
-    AccessToken extractTokenFromRequest(Request request);
-
-    AccessToken extractTokenFromString(String token, Map<String, Object> params);
+    /**
+     * Returns the authenticated client id or <code>null</code> if user only.
+     */
+    String getClientId();
+    
+    /**
+     * Returns the authenticated user id or <code>null</code> if client only.
+     */
+    String getUserId();
+    
+    /**
+     * Returns the granted scope or <code>null</code>.
+     */
+    String getScope();
+    
+    /**
+     * Returns <code>true</code> if the token was expired.
+     */
+    boolean isExpired();
+    
 }

@@ -24,11 +24,11 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InvalidTokenException;
 import leap.oauth2.OAuth2ResponseException;
-import leap.oauth2.webapp.authc.ResAuthentication;
-import leap.oauth2.webapp.authc.ResAuthenticationResolver;
-import leap.oauth2.webapp.authc.ResCredentialsAuthenticator;
+import leap.oauth2.webapp.authc.OAuth2Authentication;
+import leap.oauth2.webapp.authc.OAuth2AuthenticationResolver;
+import leap.oauth2.webapp.authc.OAuth2CredentialsAuthenticator;
 import leap.oauth2.webapp.token.AccessToken;
-import leap.oauth2.webapp.token.ResAccessTokenExtractor;
+import leap.oauth2.webapp.token.AccessTokenExtractor;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityInterceptor;
@@ -42,11 +42,11 @@ public class OAuth2SecurityInterceptor implements SecurityInterceptor {
     
     private static final Log log = LogFactory.get(OAuth2SecurityInterceptor.class);
 
-    protected @Inject OAuth2Config                config;
-    protected @Inject ResAccessTokenExtractor     tokenExtractor;
-    protected @Inject OAuth2ErrorHandler          errorHandler;
-    protected @Inject ResCredentialsAuthenticator credentialsAuthenticator;
-    protected @Inject ResAuthenticationResolver[] authenticationResolvers;
+    protected @Inject OAuth2Config                   config;
+    protected @Inject AccessTokenExtractor           tokenExtractor;
+    protected @Inject OAuth2ErrorHandler             errorHandler;
+    protected @Inject OAuth2CredentialsAuthenticator credentialsAuthenticator;
+    protected @Inject OAuth2AuthenticationResolver[] authenticationResolvers;
 	
 	public OAuth2SecurityInterceptor() {
         super();
@@ -63,7 +63,7 @@ public class OAuth2SecurityInterceptor implements SecurityInterceptor {
 	
 	protected State doPreResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         Authentication authc = null;
-        for(ResAuthenticationResolver resolver : authenticationResolvers) {
+        for(OAuth2AuthenticationResolver resolver : authenticationResolvers) {
             Result<Authentication> result = resolver.resolveAuthentication(request, response, context);
             if(result.isPresent()) {
                 authc = result.get();
@@ -87,7 +87,7 @@ public class OAuth2SecurityInterceptor implements SecurityInterceptor {
         //Resolving authentication from access token.
         try {
             if(null == authc) {
-                Result<ResAuthentication> result = credentialsAuthenticator.authenticate(token);
+                Result<OAuth2Authentication> result = credentialsAuthenticator.authenticate(token);
                 if(!result.isPresent()) {
                     /*
                     errorHandler.handleInvalidToken(request, response, "Invalid access token");

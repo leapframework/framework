@@ -27,9 +27,9 @@ import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Constants;
 import leap.web.Request;
 
-public class ResBearerAccessTokenExtractor implements ResAccessTokenExtractor {
+public class BearerAccessTokenExtractor implements AccessTokenExtractor {
 	
-	private static final Log log = LogFactory.get(ResBearerAccessTokenExtractor.class);
+	private static final Log log = LogFactory.get(BearerAccessTokenExtractor.class);
 
 	@Override
 	public AccessToken extractTokenFromRequest(Request request) {
@@ -44,9 +44,9 @@ public class ResBearerAccessTokenExtractor implements ResAccessTokenExtractor {
 		}
 
 		if(isJwt(token)){
-			return new SimpleJwtAccessToken(OAuth2Constants.BEARER_TYPE,token);
+			return new JwtAccessToken(OAuth2Constants.BEARER_TYPE,token);
 		}
-		return new SimpleResAccessToken(OAuth2Constants.BEARER_TYPE, token);
+		return new SimpleAccessToken(OAuth2Constants.BEARER_TYPE, token);
 	}
 
 

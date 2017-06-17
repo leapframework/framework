@@ -24,7 +24,7 @@ import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
-import leap.oauth2.webapp.authc.ResClientPrincipal;
+import leap.oauth2.webapp.authc.OAuth2ClientPrincipal;
 import leap.oauth2.wac.OAuth2WebAppConfig;
 import leap.oauth2.wac.token.WacTokenManager;
 import leap.web.Request;
@@ -104,7 +104,7 @@ public class DefaultWacResponseHandler implements WacResponseHandler {
         }
         
         if(!Strings.isEmpty(clientId)) {
-            client = new ResClientPrincipal(clientId);
+            client = new OAuth2ClientPrincipal(clientId);
         }
         
         SimpleAuthentication authc = new SimpleAuthentication(user, details);

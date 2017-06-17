@@ -30,28 +30,28 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.AccessToken;
-import leap.oauth2.webapp.token.ResAccessTokenDetails;
-import leap.oauth2.webapp.token.ResTokenManager;
-import leap.oauth2.webapp.user.UserDetailsLookup;
+import leap.oauth2.webapp.token.AccessTokenDetails;
+import leap.oauth2.webapp.token.TokenManager;
+import leap.oauth2.webapp.user.UserInfoLookup;
 
 /**
- * Default implementation of {@link ResCredentialsAuthenticator}.
+ * Default implementation of {@link OAuth2CredentialsAuthenticator}.
  */
-public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthenticator, PostCreateBean {
-    private static final Log log = LogFactory.get(DefaultResCredentialsAuthenticator.class);
+public class DefaultOAuth2CredentialsAuthenticator implements OAuth2CredentialsAuthenticator, PostCreateBean {
+    private static final Log log = LogFactory.get(DefaultOAuth2CredentialsAuthenticator.class);
 
-    protected @Inject BeanFactory       factory;
-    protected @Inject OAuth2Config      config;
-    protected @Inject ResTokenManager   tokenManager;
-    protected @Inject UserDetailsLookup userDetailsLookup;
-    protected @Inject CacheManager      cacheManager;
+    protected @Inject BeanFactory    factory;
+    protected @Inject OAuth2Config   config;
+    protected @Inject TokenManager   tokenManager;
+    protected @Inject UserInfoLookup userInfoLookup;
+    protected @Inject CacheManager   cacheManager;
 
     protected Cache<String, CachedAuthentication> authcCache;
     protected int                                 cacheSize = 2048;              //caches max {cacheSize} access tokens.
     protected int                                 cacheExpiresInMs = 120 * 1000; //2 minutes
 
     @Override
-    public Result<ResAuthentication> authenticate(AccessToken at) {
+    public Result<OAuth2Authentication> authenticate(AccessToken at) {
         //Resolve from cache.
         CachedAuthentication cached = getCachedAuthentication(at);
         if(null != cached) {
@@ -73,13 +73,13 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
             }
         }
 
-        Result<ResAccessTokenDetails> result = tokenManager.loadAccessTokenDetails(at);
+        Result<AccessTokenDetails> result = tokenManager.loadAccessTokenDetails(at);
         if(!result.isPresent()) {
             log.debug("Access token '{}' not found", at.getToken());
             return Result.empty();
         }
 
-        ResAccessTokenDetails details = result.get();
+        AccessTokenDetails details = result.get();
         if(details.isExpired()) {
             log.debug("Access token '{}' was expired", at.getToken());
             tokenManager.removeAccessToken(at);
@@ -93,7 +93,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         ClientPrincipal client = null;
 
         if(!Strings.isEmpty(userId)) {
-            user = userDetailsLookup.lookupUserDetails(at, userId);
+            user = userInfoLookup.lookupUserDetails(at, userId);
             if(null == user) {
                 //todo: exception?
                 log.debug("User info not exists in remote authz server, user id -> {}, access token -> {}", userId, at.getToken());
@@ -102,10 +102,10 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         }
 
         if(!Strings.isEmpty(clientId)) {
-            client = new ResClientPrincipal(clientId);
+            client = new OAuth2ClientPrincipal(clientId);
         }
 
-        ResAuthentication authc = new SimpleResAuthentication(at, user, client);
+        OAuth2Authentication authc = new SimpleOAuth2Authentication(at, user, client);
         if(null != details.getScope()) {
             authc.setPermissions(Strings.split(details.getScope(), ","));
         }
@@ -140,7 +140,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         return authcCache.get(at.getToken());
     }
 
-    protected void cacheAuthentication(AccessToken at, ResAccessTokenDetails tokenDetails, ResAuthentication authc) {
+    protected void cacheAuthentication(AccessToken at, AccessTokenDetails tokenDetails, OAuth2Authentication authc) {
     	int cachedMs=cacheExpiresInMs;
     	if(tokenDetails instanceof TimeExpirableSeconds){
     		cachedMs=((TimeExpirableSeconds)tokenDetails).getExpiresInFormNow()*1000;
@@ -153,12 +153,12 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
     }
 
     protected static final class CachedAuthentication {
-        public final ResAccessTokenDetails tokenDetails;
-        public final ResAuthentication     authentication;
+        public final AccessTokenDetails   tokenDetails;
+        public final OAuth2Authentication authentication;
 
         private final TimeExpirableMs expirable;
 
-        public CachedAuthentication(ResAccessTokenDetails d, ResAuthentication a, int expiresInMs) {
+        public CachedAuthentication(AccessTokenDetails d, OAuth2Authentication a, int expiresInMs) {
             this.tokenDetails = d;
             this.authentication = a;
             this.expirable = new TimeExpirableMs(expiresInMs);

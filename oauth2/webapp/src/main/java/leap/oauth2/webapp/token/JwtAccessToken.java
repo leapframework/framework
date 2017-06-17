@@ -22,15 +22,12 @@ import leap.oauth2.OAuth2Constants;
 
 import java.util.Map;
 
-/**
- * Created by KAEL on 2016/5/8.
- */
-public class SimpleJwtAccessToken extends SimpleTokenCredentials implements AccessToken  {
+public class JwtAccessToken extends SimpleTokenCredentials implements AccessToken  {
 
     protected final String type;
     protected final boolean bearer;
 
-    public SimpleJwtAccessToken(String type, String token) {
+    public JwtAccessToken(String type, String token) {
         super(token);
         this.type = type;
         this.bearer = Strings.isEmpty(type) || OAuth2Constants.BEARER_TYPE.equalsIgnoreCase(type);;

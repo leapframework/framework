@@ -21,13 +21,13 @@ import leap.core.security.UserPrincipal;
 import leap.oauth2.webapp.token.AccessToken;
 import leap.web.security.authc.AbstractAuthentication;
 
-public class SimpleResAuthentication extends AbstractAuthentication implements Authentication, ResAuthentication {
+public class SimpleOAuth2Authentication extends AbstractAuthentication implements Authentication, OAuth2Authentication {
 	
     protected final AccessToken  credentials;
     protected final UserPrincipal   user;
     protected final ClientPrincipal client;
 
-	public SimpleResAuthentication(AccessToken credentials, UserPrincipal user, ClientPrincipal client) {
+	public SimpleOAuth2Authentication(AccessToken credentials, UserPrincipal user, ClientPrincipal client) {
         this.credentials = credentials;
         this.user   = user;
         this.client = client;

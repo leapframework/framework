@@ -13,23 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
 
-import leap.lang.Result;
+package leap.oauth2.webapp.user;
 
-/**
- * OAuth2.0 Access Token Store in Resource Server.
- */
-public interface ResAccessTokenStore {
+import leap.core.security.UserPrincipal;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.web.security.user.UserDetails;
 
-	/**
-	 * Returns the result of loading {@link ResAccessTokenDetails}.
-	 */
-	Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token);
+public interface UserInfoLookup {
 
-	/**
-	 * Removes the {@link AccessToken} when access token expired.
-	 */
-	void removeAccessToken(AccessToken token);
+    UserPrincipal lookupUserDetails(AccessToken at, String userId);
 
 }

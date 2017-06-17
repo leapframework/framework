@@ -13,24 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.oauth2.webapp.token;
 
-package leap.oauth2.webapp.authc;
+import leap.web.Request;
 
-import leap.core.security.Authentication;
-import leap.oauth2.webapp.token.AccessToken;
+import java.util.Map;
 
-public interface ResAuthentication extends Authentication {
+public interface AccessTokenExtractor {
 
-    /**
-     * The credentials must be the type of {@link leap.oauth2.webapp.token.AccessToken}.
-     */
-    AccessToken getCredentials();
+    AccessToken extractTokenFromRequest(Request request);
 
-    /**
-     * Returns the granted scopes.
-     */
-    default String[] getGrantedScope() {
-        return null;
-    }
-
+    AccessToken extractTokenFromString(String token, Map<String, Object> params);
 }

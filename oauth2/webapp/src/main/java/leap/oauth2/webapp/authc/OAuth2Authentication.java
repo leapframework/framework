@@ -13,23 +13,24 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.authc;
 
-import leap.lang.Result;
-import leap.web.Request;
-import leap.web.Response;
 import leap.core.security.Authentication;
-import leap.web.security.authc.AuthenticationContext;
-import leap.web.security.authc.AuthenticationResolver;
+import leap.oauth2.webapp.token.AccessToken;
 
-public interface ResAuthenticationResolver extends AuthenticationResolver {
+public interface OAuth2Authentication extends Authentication {
 
     /**
-     * Resolves {@link Authentication} in the request.
-     *
-     * <p/>
-     * Returns a failure result if failed to resolve authentication and the request was handled by the resolver.
+     * The credentials must be the type of {@link leap.oauth2.webapp.token.AccessToken}.
      */
-    Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
+    AccessToken getCredentials();
+
+    /**
+     * Returns the granted scopes.
+     */
+    default String[] getGrantedScope() {
+        return null;
+    }
 
 }

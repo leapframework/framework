@@ -20,12 +20,12 @@ import leap.core.security.token.SimpleTokenCredentials;
 import leap.lang.Strings;
 import leap.oauth2.OAuth2Constants;
 
-public class SimpleResAccessToken extends SimpleTokenCredentials implements AccessToken {
+public class SimpleAccessToken extends SimpleTokenCredentials implements AccessToken {
 
 	protected final String type;
 	protected final boolean bearer;
 
-	public SimpleResAccessToken(String type, String token) {
+	public SimpleAccessToken(String type, String token) {
 	    super(token);
 		this.type  = type;
 		this.bearer = Strings.isEmpty(type) || OAuth2Constants.BEARER_TYPE.equalsIgnoreCase(type);

@@ -15,21 +15,6 @@
  */
 package leap.oauth2.webapp.token;
 
-import leap.lang.Result;
-
-/**
- * The access token manager used by oauth2 resource server.
- */
-public interface ResTokenManager {
-    
-    /**
-     * Returns the result of {@link ResAccessTokenDetails}
-     */
-    Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token);
-
-    /**
-     * Removes the {@link AccessToken} when expired or invalid.
-     */
-    void removeAccessToken(AccessToken token);
+public interface BearerAccessTokenStore extends AccessTokenStore {
 
 }

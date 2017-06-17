@@ -33,9 +33,9 @@ import leap.oauth2.webapp.OAuth2Config;
 
 import java.util.Map;
 
-public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStore {
+public class RemoteBearerAccessTokenStore implements BearerAccessTokenStore {
     
-    private static final Log log = LogFactory.get(RemoteBearerResAccessTokenStore.class);;
+    private static final Log log = LogFactory.get(RemoteBearerAccessTokenStore.class);;
 
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;
@@ -45,7 +45,7 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
     }
 
     @Override
-    public Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken credentials) {
+    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken credentials) {
         if(null == config.getTokenInfoUrl()) {
             throw new IllegalStateException("The tokenInfoEndpointUrl must be configured when use remote authz server");
         }
@@ -91,8 +91,8 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
         //Do nothing.
     }
 
-    protected ResAccessTokenDetails createAccessTokenDetails(Map<String, Object> map) {
-        SimpleResAccessTokenDetails details = new SimpleResAccessTokenDetails();
+    protected AccessTokenDetails createAccessTokenDetails(Map<String, Object> map) {
+        SimpleAccessTokenDetails details = new SimpleAccessTokenDetails();
         
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
