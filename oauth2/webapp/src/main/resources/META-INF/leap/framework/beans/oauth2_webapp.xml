@@ -22,24 +22,24 @@
           class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 
     <!-- auth -->
-    <bean type="leap.oauth2.rs.auth.ResCredentialsAuthenticator"
-          class="leap.oauth2.rs.auth.DefaultResCredentialsAuthenticator" primary="true"/>
+    <bean type="leap.oauth2.webapp.authc.ResCredentialsAuthenticator"
+          class="leap.oauth2.webapp.authc.DefaultResCredentialsAuthenticator" primary="true"/>
 
     <!-- token -->
-    <bean type="leap.oauth2.rs.token.ResTokenManager"
-          class="leap.oauth2.rs.token.DefaultResTokenManager" primary="true"/>
+    <bean type="leap.oauth2.webapp.token.ResTokenManager"
+          class="leap.oauth2.webapp.token.DefaultResTokenManager" primary="true"/>
 
     <bean name="bearer"
-          type="leap.oauth2.rs.token.ResAccessTokenExtractor"
-          class="leap.oauth2.rs.token.ResBearerAccessTokenExtractor" primary="true"/>
+          type="leap.oauth2.webapp.token.ResAccessTokenExtractor"
+          class="leap.oauth2.webapp.token.ResBearerAccessTokenExtractor" primary="true"/>
 
     <bean name="remote"
-          type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.rs.token.RemoteBearerResAccessTokenStore"/>
+          type="leap.oauth2.webapp.token.ResBearerAccessTokenStore"
+          class="leap.oauth2.webapp.token.RemoteBearerResAccessTokenStore"/>
 
     <bean name="jwt"
-          type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.rs.token.JwtBearerResAccessTokenStore">
+          type="leap.oauth2.webapp.token.ResBearerAccessTokenStore"
+          class="leap.oauth2.webapp.token.JwtBearerResAccessTokenStore">
     </bean>
 
     <bean type="leap.oauth2.wac.OAuth2WebAppConfig"

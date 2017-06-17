@@ -14,21 +14,23 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp.authc;
 
-import leap.core.security.token.TokenCredentials;
+import leap.core.security.Authentication;
+import leap.oauth2.webapp.token.AccessToken;
 
-public interface AccessToken extends TokenCredentials {
-
-    /**
-     * Optional. The token type.
-     */
-    String getType();
+public interface ResAuthentication extends Authentication {
 
     /**
-     * Returns <code>true</code> if the token is <code>'Bearer'</code> type.
+     * The credentials must be the type of {@link leap.oauth2.webapp.token.AccessToken}.
      */
-    default boolean isBearer() {
-        return true;
+    AccessToken getCredentials();
+
+    /**
+     * Returns the granted scopes.
+     */
+    default String[] getGrantedScope() {
+        return null;
     }
+
 }

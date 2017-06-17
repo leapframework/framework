@@ -13,22 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 package leap.oauth2.webapp.token;
 
-import leap.core.security.token.TokenCredentials;
+import leap.lang.Result;
 
-public interface AccessToken extends TokenCredentials {
+/**
+ * OAuth2.0 Access Token Store in Resource Server.
+ */
+public interface ResAccessTokenStore {
 
-    /**
-     * Optional. The token type.
-     */
-    String getType();
+	/**
+	 * Returns the result of loading {@link ResAccessTokenDetails}.
+	 */
+	Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token);
 
-    /**
-     * Returns <code>true</code> if the token is <code>'Bearer'</code> type.
-     */
-    default boolean isBearer() {
-        return true;
-    }
+	/**
+	 * Removes the {@link AccessToken} when access token expired.
+	 */
+	void removeAccessToken(AccessToken token);
+
 }

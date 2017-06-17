@@ -13,22 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.oauth2.webapp.authc;
 
-package leap.oauth2.webapp.token;
+import leap.lang.Result;
+import leap.oauth2.webapp.token.AccessToken;
 
-import leap.core.security.token.TokenCredentials;
-
-public interface AccessToken extends TokenCredentials {
-
-    /**
-     * Optional. The token type.
-     */
-    String getType();
+public interface ResCredentialsAuthenticator {
 
     /**
-     * Returns <code>true</code> if the token is <code>'Bearer'</code> type.
+     * Authenticates the credentials.
      */
-    default boolean isBearer() {
-        return true;
-    }
+    Result<ResAuthentication> authenticate(AccessToken credentials);
+
 }

@@ -1,19 +1,19 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package leap.oauth2.rs.token;
+package leap.oauth2.webapp.token;
 
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
@@ -27,9 +27,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 
-/**
- * Created by KAEL on 2016/5/8.
- */
 public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
 
     protected         RSAPublicKey   publicKey;
@@ -37,7 +34,7 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
     protected @Inject OAuth2Config   rsc;
 
     @Override
-    public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {
+    public Result<ResAccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
         JwtVerifier verifier = rsc.getJwtVerifier();
         if(verifier == null){
             throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
@@ -78,7 +75,7 @@ public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
     }
 
     @Override
-    public void removeAccessToken(ResAccessToken token) {
+    public void removeAccessToken(AccessToken token) {
         //Do nothing
     }
 

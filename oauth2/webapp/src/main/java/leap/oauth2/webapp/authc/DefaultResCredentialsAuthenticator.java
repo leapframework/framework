@@ -1,19 +1,19 @@
 /*
- * Copyright 2015 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *       http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
-package leap.oauth2.rs.auth;
+package leap.oauth2.webapp.authc;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
@@ -29,9 +29,9 @@ import leap.lang.expirable.TimeExpirableSeconds;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.rs.token.ResAccessToken;
-import leap.oauth2.rs.token.ResAccessTokenDetails;
-import leap.oauth2.rs.token.ResTokenManager;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.ResAccessTokenDetails;
+import leap.oauth2.webapp.token.ResTokenManager;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 
 /**
@@ -51,7 +51,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
     protected int                                 cacheExpiresInMs = 120 * 1000; //2 minutes
 
     @Override
-    public Result<ResAuthentication> authenticate(ResAccessToken at) {
+    public Result<ResAuthentication> authenticate(AccessToken at) {
         //Resolve from cache.
         CachedAuthentication cached = getCachedAuthentication(at);
         if(null != cached) {
@@ -136,11 +136,11 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         authcCache = cacheManager.createSimpleLRUCache(cacheSize);
     }
 
-    protected CachedAuthentication getCachedAuthentication(ResAccessToken at) {
+    protected CachedAuthentication getCachedAuthentication(AccessToken at) {
         return authcCache.get(at.getToken());
     }
 
-    protected void cacheAuthentication(ResAccessToken at, ResAccessTokenDetails tokenDetails, ResAuthentication authc) {
+    protected void cacheAuthentication(AccessToken at, ResAccessTokenDetails tokenDetails, ResAuthentication authc) {
     	int cachedMs=cacheExpiresInMs;
     	if(tokenDetails instanceof TimeExpirableSeconds){
     		cachedMs=((TimeExpirableSeconds)tokenDetails).getExpiresInFormNow()*1000;
@@ -148,7 +148,7 @@ public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthent
         authcCache.put(at.getToken(), new CachedAuthentication(tokenDetails, authc, cachedMs));
     }
 
-    protected void removeCachedAuthentication(ResAccessToken at, CachedAuthentication cached) {
+    protected void removeCachedAuthentication(AccessToken at, CachedAuthentication cached) {
         authcCache.remove(at.getToken());
     }
 

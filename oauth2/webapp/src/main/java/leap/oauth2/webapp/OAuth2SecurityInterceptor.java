@@ -24,11 +24,11 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InvalidTokenException;
 import leap.oauth2.OAuth2ResponseException;
-import leap.oauth2.rs.auth.ResAuthentication;
-import leap.oauth2.rs.auth.ResAuthenticationResolver;
-import leap.oauth2.rs.auth.ResCredentialsAuthenticator;
-import leap.oauth2.rs.token.ResAccessToken;
-import leap.oauth2.rs.token.ResAccessTokenExtractor;
+import leap.oauth2.webapp.authc.ResAuthentication;
+import leap.oauth2.webapp.authc.ResAuthenticationResolver;
+import leap.oauth2.webapp.authc.ResCredentialsAuthenticator;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.ResAccessTokenExtractor;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityInterceptor;
@@ -74,7 +74,7 @@ public class OAuth2SecurityInterceptor implements SecurityInterceptor {
             }
         }
 
-        ResAccessToken token = null;
+        AccessToken token = null;
         if(null == authc) {
             //Extract access token from request.
             token = tokenExtractor.extractTokenFromRequest(request);
