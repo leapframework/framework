@@ -17,7 +17,7 @@
 package leap.web.api.security;
 
 import leap.core.annotation.Inject;
-import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.webapp.OAuth2Config;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.OAuthConfigImpl;
@@ -25,7 +25,7 @@ import leap.web.api.spec.swagger.SwaggerConstants;
 
 public class OAuth2ConfigProcessor implements ApiConfigProcessor {
 
-    protected @Inject OAuth2ResServerConfig rsc;
+    protected @Inject OAuth2Config rsc;
 
     @Override
     public void preProcess(ApiConfigurator c) {

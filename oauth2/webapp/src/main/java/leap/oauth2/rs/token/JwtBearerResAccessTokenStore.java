@@ -19,8 +19,7 @@ import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.Result;
-import leap.oauth2.OAuth2Entity;
-import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.webapp.OAuth2Config;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
@@ -33,9 +32,9 @@ import java.util.Objects;
  */
 public class JwtBearerResAccessTokenStore implements ResBearerAccessTokenStore {
 
-    protected         RSAPublicKey          publicKey;
-    protected @Inject SecurityConfig        sc;
-    protected @Inject OAuth2ResServerConfig rsc;
+    protected         RSAPublicKey   publicKey;
+    protected @Inject SecurityConfig sc;
+    protected @Inject OAuth2Config   rsc;
 
     @Override
     public Result<ResAccessTokenDetails> loadAccessTokenDetails(ResAccessToken token) {

@@ -30,8 +30,7 @@ import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
-import leap.oauth2.rs.OAuth2ResServerConfig;
-import leap.oauth2.rs.token.ResAccessToken;
+import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.AccessToken;
 import leap.web.security.user.SimpleUserDetails;
 import leap.web.security.user.UserDetails;
@@ -41,9 +40,9 @@ public class DefaultUserDetailsLookup implements UserDetailsLookup {
 
     private static final Log log = LogFactory.get(DefaultUserDetailsLookup.class);
 
-    protected @Inject OAuth2ResServerConfig config;
-    protected @Inject HttpClient            httpClient;
-    protected @Inject UserManager           userManager;
+    protected @Inject OAuth2Config config;
+    protected @Inject HttpClient   httpClient;
+    protected @Inject UserManager  userManager;
 
     @Override
     public UserDetails lookupUserDetails(AccessToken at, String userId) {

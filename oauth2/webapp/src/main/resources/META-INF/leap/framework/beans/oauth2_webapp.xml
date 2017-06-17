@@ -5,21 +5,21 @@
 
     <!-- common -->
     <bean type="leap.web.security.SecurityInterceptor"
-          class="leap.oauth2.rs.OAuth2ResServerSecurityInterceptor"/>
+          class="leap.oauth2.webapp.OAuth2SecurityInterceptor"/>
 
-    <bean type="leap.oauth2.rs.OAuth2ResServerConfig"
-          class="leap.oauth2.rs.DefaultOAuth2ResServerConfig" primary="true">
+    <bean type="leap.oauth2.webapp.OAuth2Config"
+          class="leap.oauth2.webapp.DefaultOAuth2Config" primary="true">
 
-        <additional-type-def type="leap.oauth2.rs.OAuth2ResServerConfigurator" primary="true"/>
+        <additional-type-def type="leap.oauth2.webapp.OAuth2Configurator" primary="true"/>
 
     </bean>
 
     <if expr="null != properties['oauth2.enabled']">
-        <bean type="leap.web.AppListener" class="leap.oauth2.rs.OAuth2ResServerAutoConfig"/>
+        <bean type="leap.web.AppListener" class="leap.oauth2.webapp.OAuth2AutoConfig"/>
     </if>
 
-    <bean type="leap.oauth2.rs.OAuth2ResServerErrorHandler"
-          class="leap.oauth2.rs.DefaultOAuth2ResServerErrorHandler" primary="true"/>
+    <bean type="leap.oauth2.webapp.OAuth2ErrorHandler"
+          class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 
     <!-- auth -->
     <bean type="leap.oauth2.rs.auth.ResCredentialsAuthenticator"

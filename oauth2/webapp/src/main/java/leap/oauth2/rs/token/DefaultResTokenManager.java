@@ -22,15 +22,15 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.lang.Result;
-import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.webapp.OAuth2Config;
 
 /**
  * The default implementation of {@link ResTokenManager}.
  */
 public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
     
-    protected @Inject BeanFactory           factory;
-    protected @Inject OAuth2ResServerConfig config;
+    protected @Inject BeanFactory  factory;
+    protected @Inject OAuth2Config config;
     
     protected Map<String, ResAccessTokenStore> typedTokenStores = new HashMap<>();
     protected ResAccessTokenStore              bearerTokenStore = null;
@@ -70,13 +70,7 @@ public class DefaultResTokenManager implements ResTokenManager, PostCreateBean {
             if(null == bearerTokenStore) {
                 this.bearerTokenStore = factory.tryGetBean(ResBearerAccessTokenStore.class);
                 if(null == bearerTokenStore) {
-                    if(config.isUseRemoteAuthorizationServer()) {
-                        this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "remote");
-                    }else if(config.isUseLocalAuthorizationServer()){
-                        this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "local");
-                    }else {
-                        throw new IllegalStateException("The mode 'local' or 'remote' of authz server must be configured in oauth2 resource server.");
-                    }
+                    this.bearerTokenStore = factory.getBean(ResBearerAccessTokenStore.class, "remote");
                 }
             }
             store = bearerTokenStore;

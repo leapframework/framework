@@ -28,7 +28,7 @@ import leap.lang.expirable.TimeExpirableMs;
 import leap.lang.expirable.TimeExpirableSeconds;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.rs.OAuth2ResServerConfig;
+import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.rs.token.ResAccessToken;
 import leap.oauth2.rs.token.ResAccessTokenDetails;
 import leap.oauth2.rs.token.ResTokenManager;
@@ -40,11 +40,11 @@ import leap.oauth2.webapp.user.UserDetailsLookup;
 public class DefaultResCredentialsAuthenticator implements ResCredentialsAuthenticator, PostCreateBean {
     private static final Log log = LogFactory.get(DefaultResCredentialsAuthenticator.class);
 
-    protected @Inject BeanFactory           factory;
-    protected @Inject OAuth2ResServerConfig config;
-    protected @Inject ResTokenManager       tokenManager;
-    protected @Inject UserDetailsLookup     userDetailsLookup;
-    protected @Inject CacheManager          cacheManager;
+    protected @Inject BeanFactory       factory;
+    protected @Inject OAuth2Config      config;
+    protected @Inject ResTokenManager   tokenManager;
+    protected @Inject UserDetailsLookup userDetailsLookup;
+    protected @Inject CacheManager      cacheManager;
 
     protected Cache<String, CachedAuthentication> authcCache;
     protected int                                 cacheSize = 2048;              //caches max {cacheSize} access tokens.

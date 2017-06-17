@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.rs;
+
+package leap.oauth2.webapp;
 
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
@@ -37,17 +38,17 @@ import leap.web.security.csrf.CSRF;
 /**
  * The {@link SecurityInterceptor} for protecting resource request in oauth2 resource server.
  */
-public class OAuth2ResServerSecurityInterceptor implements SecurityInterceptor {
+public class OAuth2SecurityInterceptor implements SecurityInterceptor {
     
-    private static final Log log = LogFactory.get(OAuth2ResServerSecurityInterceptor.class);
+    private static final Log log = LogFactory.get(OAuth2SecurityInterceptor.class);
 
-    protected @Inject OAuth2ResServerConfig       config;
+    protected @Inject OAuth2Config                config;
     protected @Inject ResAccessTokenExtractor     tokenExtractor;
-    protected @Inject OAuth2ResServerErrorHandler errorHandler;
+    protected @Inject OAuth2ErrorHandler          errorHandler;
     protected @Inject ResCredentialsAuthenticator credentialsAuthenticator;
     protected @Inject ResAuthenticationResolver[] authenticationResolvers;
 	
-	public OAuth2ResServerSecurityInterceptor() {
+	public OAuth2SecurityInterceptor() {
         super();
     }
 

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.rs;
+package leap.oauth2.webapp;
 
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
@@ -27,10 +27,10 @@ import leap.web.security.SecurityConfigurator;
 
 
 @Configurable(prefix = "oauth2")
-public class OAuth2ResServerAutoConfig implements AppListener {
+public class OAuth2AutoConfig implements AppListener {
 
-    private @Inject OAuth2ResServerConfigurator oc;
-    private @Inject SecurityConfigurator        sc;
+    private @Inject OAuth2Configurator   oc;
+    private @Inject SecurityConfigurator sc;
 
     private Boolean enabled;
     private String  serverUrl;
@@ -73,7 +73,6 @@ public class OAuth2ResServerAutoConfig implements AppListener {
             sc.setEnabled(true);
             oc.setEnabled(true);
 
-            oc.useRemoteAuthorizationServer();
             oc.setRemoteTokenInfoEndpointUrl(Paths.suffixWithSlash(serverUrl + "/oauth2/tokeninfo"));
             oc.setTokenEndpointUrl(serverUrl + "/oauth2/token");
             oc.setAuthorizationEndpointUrl(serverUrl + "/oauth2/authorize");

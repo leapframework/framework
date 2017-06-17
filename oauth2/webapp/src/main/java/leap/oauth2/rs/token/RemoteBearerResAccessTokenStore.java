@@ -28,10 +28,8 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.OAuth2Constants;
 import leap.oauth2.OAuth2InternalServerException;
-import leap.oauth2.rs.OAuth2ResServerConfig;
-import leap.oauth2.wac.OAuth2WebAppConfig;
+import leap.oauth2.webapp.OAuth2Config;
 
 import java.util.Map;
 
@@ -39,8 +37,8 @@ public class RemoteBearerResAccessTokenStore implements ResBearerAccessTokenStor
     
     private static final Log log = LogFactory.get(RemoteBearerResAccessTokenStore.class);;
 
-    protected @Inject OAuth2ResServerConfig config;
-    protected @Inject HttpClient            httpClient;
+    protected @Inject OAuth2Config config;
+    protected @Inject HttpClient   httpClient;
 
     public void setHttpClient(HttpClient httpClient) {
         this.httpClient = httpClient;

@@ -13,7 +13,8 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.rs;
+
+package leap.oauth2.webapp;
 
 import leap.core.BeanFactory;
 import leap.core.annotation.ConfigProperty;
@@ -31,13 +32,12 @@ import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
 @Configurable(prefix="oauth2.rs")
-public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAuth2ResServerConfigurator, PostCreateBean, AppInitializable {
+public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, PostCreateBean, AppInitializable {
 
 	protected @Inject SecurityConfigurator sc;
     protected @Inject CacheManager         cm;
 
 	protected boolean               enabled;
-	protected AuthzServerMode		authzServerMode = AuthzServerMode.NONE;
     protected Boolean               useRemoteUserInfo;
 	protected String                remoteTokenInfoEndpointUrl;
     protected String                remoteUserInfoEndpointUrl;
@@ -47,13 +47,11 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	protected String 				resourceServerSecret;
 	protected Cache<String, Object> cachedInterceptUrls;
 
-	
 	protected String				rsaPublicKeyStr;
 	protected JwtVerifier           jwtVerifier;
-	
-	
+
 	@Override
-	public OAuth2ResServerConfig config() {
+	public OAuth2Config config() {
 		return this;
 	}
 
@@ -62,43 +60,14 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     }
 
 	@ConfigProperty
-    public OAuth2ResServerConfigurator setEnabled(boolean enabled) {
+    public OAuth2Configurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	    return this;
     }
 
 	@ConfigProperty
-	public OAuth2ResServerConfigurator setRsaPublicKeyStr(String publicKey) {
+	public OAuth2Configurator setRsaPublicKeyStr(String publicKey) {
 		this.rsaPublicKeyStr = publicKey;
-		return this;
-	}
-
-	@Override
-	public boolean isUseLocalAuthorizationServer() {
-		return authzServerMode == AuthzServerMode.LOCAL;
-	}
-
-	@Override
-	public boolean isUseRemoteAuthorizationServer() {
-		return authzServerMode == AuthzServerMode.REMOTE;
-	}
-
-	@Override
-	public OAuth2ResServerConfigurator useLocalAuthorizationServer() {
-		authzServerMode = AuthzServerMode.LOCAL;
-		return this;
-	}
-
-	@Override
-	public OAuth2ResServerConfigurator useRemoteAuthorizationServer() {
-		authzServerMode = AuthzServerMode.REMOTE;
-		return this;
-	}
-
-	@Override
-	public OAuth2ResServerConfigurator useRemoteAuthorizationServer(String tokenInfoEndpointUrl) {
-		authzServerMode = AuthzServerMode.REMOTE;
-		this.setRemoteTokenInfoEndpointUrl(tokenInfoEndpointUrl);
 		return this;
 	}
 
@@ -108,20 +77,15 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	}
 
 	@Override
-	public OAuth2ResServerConfigurator useRsaJwtVerifier() {
+	public OAuth2Configurator useRsaJwtVerifier() {
 		Assert.notEmpty(rsaPublicKeyStr,"rsa public key string can not be empty");
 		jwtVerifier = new RsaVerifier(RSA.decodePublicKey(rsaPublicKeyStr));
 		return this;
 	}
 
 	@Override
-	public OAuth2ResServerConfigurator useJwtVerifier(JwtVerifier verifier) {
+	public OAuth2Configurator useJwtVerifier(JwtVerifier verifier) {
 		this.jwtVerifier = verifier;
-		return this;
-	}
-
-	@ConfigProperty
-	public OAuth2ResServerConfigurator setAuthorizationServerMode(AuthzServerMode mode) {
 		return this;
 	}
 
@@ -131,7 +95,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     }
 
     @ConfigProperty
-	public OAuth2ResServerConfigurator setRemoteTokenInfoEndpointUrl(String url) {
+	public OAuth2Configurator setRemoteTokenInfoEndpointUrl(String url) {
 	    this.remoteTokenInfoEndpointUrl = url;
 	    return this;
 	}
@@ -142,18 +106,18 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
     }
 
     @Override
-    public OAuth2ResServerConfigurator setRemoteUserInfoEndpointUrl(String url) {
+    public OAuth2Configurator setRemoteUserInfoEndpointUrl(String url) {
         this.remoteUserInfoEndpointUrl = url;
         return this;
     }
 
     @Override
     public boolean isUseRemoteUserInfo() {
-        return null == useRemoteUserInfo ? isUseRemoteAuthorizationServer() : useRemoteUserInfo;
+        return null == useRemoteUserInfo ? true : useRemoteUserInfo;
     }
 
     @Override
-    public OAuth2ResServerConfigurator setUseRemoteUserInfo(Boolean used) {
+    public OAuth2Configurator setUseRemoteUserInfo(Boolean used) {
         this.useRemoteUserInfo = used;
         return this;
     }
@@ -163,7 +127,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
         return tokenEndpointUrl;
     }
 
-    public OAuth2ResServerConfigurator setTokenEndpointUrl(String tokenEndpointUrl) {
+    public OAuth2Configurator setTokenEndpointUrl(String tokenEndpointUrl) {
         this.tokenEndpointUrl = tokenEndpointUrl;
         return this;
     }
@@ -173,7 +137,7 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
         return authorizationEndpointUrl;
     }
 
-    public OAuth2ResServerConfigurator setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
+    public OAuth2Configurator setAuthorizationEndpointUrl(String authorizationEndpointUrl) {
         this.authorizationEndpointUrl = authorizationEndpointUrl;
         return this;
     }
@@ -203,13 +167,13 @@ public class DefaultOAuth2ResServerConfig implements OAuth2ResServerConfig, OAut
 	}
 
 	@Override
-	public OAuth2ResServerConfigurator setResourceServerId(String resourceServerId) {
+	public OAuth2Configurator setResourceServerId(String resourceServerId) {
 		this.resourceServerId = resourceServerId;
 		return this;
 	}
 
 	@ConfigProperty
-	public OAuth2ResServerConfigurator setResourceServerSecret(String resourceServerSecret) {
+	public OAuth2Configurator setResourceServerSecret(String resourceServerSecret) {
 		this.resourceServerSecret = resourceServerSecret;
 		return this;
 	}
