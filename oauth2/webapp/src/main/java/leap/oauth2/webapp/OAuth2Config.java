@@ -30,6 +30,22 @@ public interface OAuth2Config {
 	boolean isEnabled();
 
     /**
+     * Returns true if login from oauth2 server.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isLogin();
+
+    /**
+     * Returns true if logout from oauth2 server.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isLogout();
+
+    /**
      * todo : doc
      */
     String getAuthorizationUrl();
@@ -54,6 +70,11 @@ public interface OAuth2Config {
      */
     String getPublicKeyUrl();
 
+    /**
+     * Returns the url of oauth2 server' logout endpoint.
+     */
+    String getLogoutUrl();
+
 	/**
 	 * todo: doc
      */
@@ -63,6 +84,11 @@ public interface OAuth2Config {
 	 * todo: doc
      */
 	String getClientSecret();
+
+    /**
+     * todo: doc
+     */
+    String getRedirectUri();
 
 	/**
 	 * Returns the jwt verifier of this resource server

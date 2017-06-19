@@ -36,14 +36,18 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     protected @Inject CacheManager         cm;
 
 	protected boolean               enabled;
+    protected boolean               login;
+    protected boolean               logout;
     protected String                authorizationUrl;
     protected String                tokenUrl;
 	protected String                tokenInfoUrl;
     protected String                userInfoUrl;
     protected String                publicKeyUrl;
+    protected String                logoutUrl;
 
 	protected String                clientId;
 	protected String                clientSecret;
+    protected String                redirectUri;
 
 	protected Cache<String, Object> cachedInterceptUrls;
 	protected String				rsaPublicKeyStr;
@@ -65,6 +69,26 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     }
 
     @Override
+    public boolean isLogin() {
+        return login;
+    }
+
+    @ConfigProperty
+    public void setLogin(boolean login) {
+        this.login = login;
+    }
+
+    @Override
+    public boolean isLogout() {
+        return logout;
+    }
+
+    @ConfigProperty
+    public void setLogout(boolean logout) {
+        this.logout = logout;
+    }
+
+    @Override
     @ConfigProperty
     public OAuth2Configurator setServerUrl(String serverUrl) {//don't change the parameter name (used by config property)
         serverUrl = Paths.suffixWithoutSlash(serverUrl);
@@ -74,6 +98,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
         this.tokenInfoUrl     = serverUrl + "/oauth2/tokeninfo";
         this.userInfoUrl      = serverUrl + "/oauth2/userinfo";
         this.publicKeyUrl     = serverUrl + "/oauth2/publickey";
+        this.logoutUrl        = serverUrl + "/oauth2/logout";
 
         return this;
     }
@@ -134,6 +159,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     }
 
     @Override
+    public String getLogoutUrl() {
+        return logoutUrl;
+    }
+
+    @ConfigProperty
+    public void setLogoutUrl(String logoutUrl) {
+        this.logoutUrl = logoutUrl;
+    }
+
+    @Override
 	public String getClientId() {
 		return clientId;
 	}
@@ -154,6 +189,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
 		this.clientSecret = clientSecret;
 		return this;
 	}
+
+    @Override
+    public String getRedirectUri() {
+        return redirectUri;
+    }
+
+    @ConfigProperty
+    public void setRedirectUri(String redirectUri) {
+        this.redirectUri = redirectUri;
+    }
 
     @Override
     public JwtVerifier getJwtVerifier() {
