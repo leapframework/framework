@@ -32,6 +32,7 @@ import leap.lang.http.MimeType;
 import leap.web.action.ActionContext;
 import leap.web.format.FormatManager;
 import leap.web.route.Route;
+import leap.web.view.View;
 import leap.web.view.ViewSource;
 
 /**
@@ -286,6 +287,13 @@ public abstract class Request extends RequestBase {
      * Sets the external router.
      */
     public abstract void setExternalRouter(Router router);
+
+    /**
+     * Returns the view of current locale.
+     */
+    public View getView(String viewName) {
+        return getViewSource().getView(viewName, getLocale());
+    }
 
     @Override
     public Cookie getCookie(String name) {

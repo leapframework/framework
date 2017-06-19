@@ -23,12 +23,14 @@ import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.MacSigner;
 import leap.lang.Strings;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.authc.OAuth2ClientPrincipal;
 import leap.oauth2.webapp.token.*;
 import leap.oauth2.webapp.user.UserInfoLookup;
@@ -38,15 +40,16 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.login.LoginManager;
+import leap.web.view.View;
+import leap.web.view.ViewData;
 
 import java.io.PrintWriter;
 import java.util.Map;
 
 public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
-    private static final Log log = LogFactory.get(DefaultOAuth2LoginHandler.class);
-
     protected @Inject OAuth2Config          config;
+    protected @Inject OAuth2ErrorHandler    errorHandler;
     protected @Inject AuthenticationManager am;
     protected @Inject LoginManager          lm;
     protected @Inject TokenInfoLookup       tokenInfoLookup;
@@ -63,40 +66,30 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
     }
 
-    protected State handleOAuth2ServerError(Request request, Response response, OAuth2Params params) {
-        //todo:
-//        if(null != defaultErrorView) {
-//            View view = request.getViewSource().getView(config.getErrorView(), request.getLocale());
-//            if(null == view) {
-//                view = defaultErrorView;
-//            }
-//
-//            view.render(request, response);
-//        }else{
-//            printError(response, params.getError(), params.getErrorDescription());
-//        }
-        return State.INTERCEPTED;
-    }
+    protected State handleOAuth2ServerError(Request request, Response response, OAuth2Params params) throws Throwable {
+        if(Strings.isEmpty(config.getErrorView())) {
+            View view = request.getView(config.getErrorView());
 
-    protected void printError(Response response, String error, String desc)  {
-        PrintWriter out = response.getWriter();
-        out.write(error);
+            //todo : handle null view
 
-        if(!Strings.isEmpty(desc)) {
-            out.write(":");
-            out.write(desc);
+            if(null != view) {
+                view.render(request, response);
+            }
+            return State.INTERCEPTED;
         }
+
+        return error(request, response, params.getError(), params.getErrorDescription());
     }
 
-    protected State error(Request request, Response response, String error, String desc) {
-        printError(response, error, desc);
+    protected State error(Request request, Response response, String code, String message) {
+        errorHandler.responseError(request,response, HTTP.Status.INTERNAL_SERVER_ERROR.value(), code, message);
         return State.INTERCEPTED;
     }
 
     protected State handleOAuth2ServerSuccess(Request request, Response response, OAuth2Params params) throws Throwable {
         String code = params.getCode();
         if(Strings.isEmpty(code)) {
-            return error(request, response, "illegal_state", "code required");
+            return error(request, response, "illegal_state", "code required from oauth2 server");
         }
 
         AccessTokenDetails at =
@@ -104,7 +97,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
         String idToken = params.getIdToken();
         if(Strings.isEmpty(idToken)) {
-            return error(request, response, "illegal_state", "id_token required");
+            return error(request, response, "illegal_state", "id_token required from oauth2 server");
         }
 
         try{

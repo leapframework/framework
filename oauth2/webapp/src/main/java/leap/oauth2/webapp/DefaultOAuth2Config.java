@@ -47,6 +47,8 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     protected String                clientId;
     protected String                clientSecret;
     protected String                redirectUri;
+    protected String                errorView;
+    protected String                logoutView;
     protected Cache<String, Object> cachedInterceptUrls;
     protected String                rsaPublicKeyStr;
     protected JwtVerifier           jwtVerifier;
@@ -205,6 +207,26 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     @ConfigProperty
     public void setRedirectUri(String redirectUri) {
         this.redirectUri = redirectUri;
+    }
+
+    @Override
+    public String getErrorView() {
+        return errorView;
+    }
+
+    @ConfigProperty
+    public void setErrorView(String errorView) {
+        this.errorView = errorView;
+    }
+
+    @Override
+    public String getLogoutView() {
+        return logoutView;
+    }
+
+    @ConfigProperty
+    public void setLogoutView(String logoutView) {
+        this.logoutView = logoutView;
     }
 
     @Override

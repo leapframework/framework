@@ -90,6 +90,16 @@ public interface OAuth2Config {
      */
     String getRedirectUri();
 
+    /**
+     * Optional. Returns the view for display error from oauth2 server.
+     */
+    String getErrorView();
+
+    /**
+     * Optional. Returns the view for logout success from oauth2 server.
+     */
+    String getLogoutView();
+
 	/**
 	 * Returns the jwt verifier of this resource server
 	 */

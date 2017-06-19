@@ -23,12 +23,15 @@ import leap.lang.intercepting.State;
 import leap.lang.net.Urls;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.web.App;
+import leap.web.AppInitializable;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
+import leap.web.view.View;
 
 public class OAuth2LoginInterceptor implements SecurityInterceptor {
     

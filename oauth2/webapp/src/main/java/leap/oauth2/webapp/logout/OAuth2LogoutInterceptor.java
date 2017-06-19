@@ -17,6 +17,7 @@
 package leap.oauth2.webapp.logout;
 
 import leap.core.annotation.Inject;
+import leap.lang.Strings;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.intercepting.State;
 import leap.lang.net.Urls;
@@ -30,6 +31,7 @@ import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.logout.LogoutContext;
 import leap.web.security.logout.LogoutManager;
+import leap.web.view.View;
 
 public class OAuth2LogoutInterceptor implements SecurityInterceptor {
 
@@ -44,6 +46,18 @@ public class OAuth2LogoutInterceptor implements SecurityInterceptor {
         if(config.isEnabled() && config.isLogout()) {
             if(isLogoutFromServer(request)) {
                 am.logoutImmediately(request, response);
+
+                if(!Strings.isEmpty(config.getLogoutView())) {
+
+                    View view = request.getView(config.getLogoutView());
+
+                    //todo: handle null view
+
+                    if(null != view) {
+                        view.render(request, response);
+                        return State.INTERCEPTED;
+                    }
+                }
             }
         }
         return State.CONTINUE;
