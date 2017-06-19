@@ -27,36 +27,40 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.authz.AuthorizationContext;
+import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.login.LoginContext;
 
 public class OAuth2LoginInterceptor implements SecurityInterceptor {
     
-    private static final String OAUTH2_REDIRECT = "oauth2_redirect";
+    private static final String REDIRECT_BACK_PARAM = "oauth2_redirect";
 
-    protected @Inject OAuth2Config   config;
-    protected @Inject SecurityConfig sc;
+    protected @Inject OAuth2Config       config;
+    protected @Inject SecurityConfig     sc;
+    protected @Inject OAuth2LoginHandler handler;
 
     @Override
-    public State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
+    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(config.isEnabled() && config.isLogin()) {
-            //Check cyclic redirect.
-            if(!Strings.isEmpty(request.getParameter(OAUTH2_REDIRECT))) {
-                //todo:
-                throw new IllegalStateException("Cannot promote login for oauth2 redirect request : " + request.getUri());
-            }else{
-                context.setLoginUrl(buildLoginUrl(request));
+            if(isRedirectBackFromServer(request)) {
+                return handler.handleServerRedirectRequest(config, request, response, context);
             }
         }
         return State.CONTINUE;
     }
 
     @Override
-    public State preResolveAuthorization(Request request, Response response, AuthorizationContext context) throws Throwable {
-        if("1".equals(request.getParameter(OAUTH2_REDIRECT))) {
-            
+    public State prePromoteLogin(Request request, Response response, LoginContext context) throws Throwable {
+        if(config.isEnabled() && config.isLogin()) {
+            if(!isRedirectBackFromServer(request)) {
+                context.setLoginUrl(buildLoginUrl(request));
+            }
         }
         return State.CONTINUE;
+    }
+
+    protected boolean isRedirectBackFromServer(Request request) {
+        String v = request.getParameter(REDIRECT_BACK_PARAM);
+        return "1".equals(v);
     }
 
     protected String buildLoginUrl(Request request) {
@@ -67,32 +71,36 @@ public class OAuth2LoginInterceptor implements SecurityInterceptor {
         qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
         qs.add(OAuth2Params.LOGOUT_URI,    buildClientLogoutUri(request));
 
-        return "redirect:" + Urls.appendQueryString(config.getAuthorizationUrl(), qs.build());
+        return "redirect:" + Urls.appendQueryString(config.getAuthorizeUrl(), qs.build());
     }
 
     protected String buildClientRedirectUri(Request request) {
-        String url;
+        String uri;
 
         //todo: reverse proxy
 
         String redirectUri = config.getRedirectUri();
         if (Strings.isEmpty(redirectUri)) {
-
-            url = request.getServletRequest().getRequestURL().toString();
+            uri = request.getServletRequest().getRequestURL().toString();
         }else{
             if(Strings.startsWithIgnoreCase(redirectUri,"http")) {
-                url = redirectUri;
+                uri = redirectUri;
             }else{
-                url = request.getContextUrl() + redirectUri;
+                uri = request.getContextUrl() + redirectUri;
             }
+
+            String returnUrl = sc.getReturnUrlParameterName() + "=" + Urls.encode(request.getUri());
+
+            uri = Urls.appendQueryString(uri, returnUrl);
         }
 
-        String qs = OAUTH2_REDIRECT + "=1&" + sc.getReturnUrlParameterName() + "=" + Urls.encode(request.getUriWithQueryString());
+        String redirectBack = REDIRECT_BACK_PARAM + "=1";
 
-        return Urls.appendQueryString(url, qs);
+        return Urls.appendQueryString(uri, redirectBack);
     }
 
     protected String buildClientLogoutUri(Request request) {
         return request.getContextUrl() + sc.getLogoutAction();
     }
+
 }

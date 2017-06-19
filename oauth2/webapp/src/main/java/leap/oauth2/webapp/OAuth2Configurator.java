@@ -45,7 +45,7 @@ public interface OAuth2Configurator {
     /**
      * todo : doc
      */
-    OAuth2Configurator setAuthorizationUrl(String url);
+    OAuth2Configurator setAuthorizeUrl(String url);
 
 	/**
 	 * Sets the url of token info endpoint in oauth2 authorization server.

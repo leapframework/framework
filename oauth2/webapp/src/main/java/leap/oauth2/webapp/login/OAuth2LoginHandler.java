@@ -13,38 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
 
-public interface AccessTokenDetails {
+package leap.oauth2.webapp.login;
 
-    /**
-     * todo : doc
-     */
-    String getAccessToken();
+import leap.lang.intercepting.State;
+import leap.oauth2.webapp.OAuth2Config;
+import leap.web.Request;
+import leap.web.Response;
+import leap.web.security.authc.AuthenticationContext;
 
-    /**
-     * todo : doc
-     */
-    String getRefreshToken();
+public interface OAuth2LoginHandler {
 
     /**
-     * Returns the authenticated client id or <code>null</code> if user only.
+     * Handles the redirect back request from oauth2 server.
      */
-    String getClientId();
-    
-    /**
-     * Returns the authenticated user id or <code>null</code> if client only.
-     */
-    String getUserId();
-    
-    /**
-     * Returns the granted scope or <code>null</code>.
-     */
-    String getScope();
-    
-    /**
-     * Returns <code>true</code> if the token was expired.
-     */
-    boolean isExpired();
-    
+    State handleServerRedirectRequest(OAuth2Config config, Request request, Response response, AuthenticationContext context) throws Throwable;
+
 }

@@ -34,7 +34,7 @@ public class OAuth2ConfigProcessor implements ApiConfigProcessor {
 
             ac.setEnabled(true);
             ac.setTokenUrl(rsc.getTokenUrl());
-            ac.setAuthorizationUrl(rsc.getAuthorizationUrl());
+            ac.setAuthorizationUrl(rsc.getAuthorizeUrl());
             ac.setFlow(SwaggerConstants.IMPLICIT);
 
             c.setOAuthConfig(ac);

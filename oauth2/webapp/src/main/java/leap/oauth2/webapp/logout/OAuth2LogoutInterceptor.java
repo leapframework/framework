@@ -14,10 +14,9 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.login;
+package leap.oauth2.webapp.logout;
 
 import leap.core.annotation.Inject;
-import leap.lang.Strings;
 import leap.lang.http.QueryStringBuilder;
 import leap.lang.intercepting.State;
 import leap.lang.net.Urls;
@@ -27,13 +26,16 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
-import leap.web.security.login.LoginContext;
+import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.logout.LogoutContext;
 
 public class OAuth2LogoutInterceptor implements SecurityInterceptor {
 
-    protected @Inject OAuth2Config   config;
-    protected @Inject SecurityConfig sc;
+    protected static final String OAUTH2_LOGOUT = "oauth2_logout";
+
+    protected @Inject OAuth2Config        config;
+    protected @Inject SecurityConfig      sc;
+    protected @Inject OAuth2LogoutHandler handler;
 
     @Override
     public State preLogout(Request request, Response response, LogoutContext context) throws Throwable {
@@ -55,6 +57,16 @@ public class OAuth2LogoutInterceptor implements SecurityInterceptor {
         return State.CONTINUE;
     }
 
+    @Override
+    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
+
+        if("1".equals(request.getParameter(OAUTH2_LOGOUT))) {
+            return handler.handleServerLogoutRequest(config, request, response, context);
+        }
+
+        return State.CONTINUE;
+    }
+
     protected String buildRemoteLogoutUrl(Request request) {
         QueryStringBuilder qs = new QueryStringBuilder();
 
@@ -67,7 +79,7 @@ public class OAuth2LogoutInterceptor implements SecurityInterceptor {
     protected String buildLogoutRedirectUri(Request request) {
         String url = request.getContextUrl() + sc.getLogoutAction();
 
-        url = Urls.appendQueryString(url, "oauth2_logout=1");
+        url = Urls.appendQueryString(url, OAUTH2_LOGOUT + "=1");
 
         return url;
     }

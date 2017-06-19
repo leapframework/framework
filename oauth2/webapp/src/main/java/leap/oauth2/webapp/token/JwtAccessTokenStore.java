@@ -40,7 +40,7 @@ public class JwtAccessTokenStore implements BearerAccessTokenStore {
             throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
         }
         Map<String,Object> jwtDetail = verifier.verify(token.getToken());
-        SimpleAccessTokenDetails resAccessTokenDetails = new SimpleAccessTokenDetails();
+        SimpleAccessTokenDetails resAccessTokenDetails = new SimpleAccessTokenDetails(token.getToken());
         
         Object userId = jwtDetail.remove("user_id");
         UserDetails ud;

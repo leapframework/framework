@@ -13,38 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.token;
 
-public interface AccessTokenDetails {
+public interface TokenInfoLookup {
 
-    /**
-     * todo : doc
-     */
-    String getAccessToken();
+    AccessTokenDetails lookupByAccessToken(String at);
 
-    /**
-     * todo : doc
-     */
-    String getRefreshToken();
+    AccessTokenDetails lookupByAuthorizationCode(String code);
 
-    /**
-     * Returns the authenticated client id or <code>null</code> if user only.
-     */
-    String getClientId();
-    
-    /**
-     * Returns the authenticated user id or <code>null</code> if client only.
-     */
-    String getUserId();
-    
-    /**
-     * Returns the granted scope or <code>null</code>.
-     */
-    String getScope();
-    
-    /**
-     * Returns <code>true</code> if the token was expired.
-     */
-    boolean isExpired();
-    
 }

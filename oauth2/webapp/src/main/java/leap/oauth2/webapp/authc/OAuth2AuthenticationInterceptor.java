@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp;
+package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
@@ -24,9 +24,8 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InvalidTokenException;
 import leap.oauth2.OAuth2ResponseException;
-import leap.oauth2.webapp.authc.OAuth2Authentication;
-import leap.oauth2.webapp.authc.OAuth2AuthenticationResolver;
-import leap.oauth2.webapp.authc.OAuth2CredentialsAuthenticator;
+import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.token.AccessToken;
 import leap.oauth2.webapp.token.AccessTokenExtractor;
 import leap.web.Request;
@@ -38,9 +37,9 @@ import leap.web.security.csrf.CSRF;
 /**
  * The {@link SecurityInterceptor} for protecting resource request in oauth2 resource server.
  */
-public class OAuth2SecurityInterceptor implements SecurityInterceptor {
+public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
     
-    private static final Log log = LogFactory.get(OAuth2SecurityInterceptor.class);
+    private static final Log log = LogFactory.get(OAuth2AuthenticationInterceptor.class);
 
     protected @Inject OAuth2Config                   config;
     protected @Inject AccessTokenExtractor           tokenExtractor;
@@ -48,7 +47,7 @@ public class OAuth2SecurityInterceptor implements SecurityInterceptor {
     protected @Inject OAuth2CredentialsAuthenticator credentialsAuthenticator;
     protected @Inject OAuth2AuthenticationResolver[] authenticationResolvers;
 	
-	public OAuth2SecurityInterceptor() {
+	public OAuth2AuthenticationInterceptor() {
         super();
     }
 

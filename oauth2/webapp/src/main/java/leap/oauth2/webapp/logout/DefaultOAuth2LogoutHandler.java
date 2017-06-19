@@ -14,16 +14,21 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package leap.oauth2.webapp.logout;
 
-import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.lang.intercepting.State;
+import leap.oauth2.webapp.OAuth2Config;
+import leap.web.Request;
+import leap.web.Response;
+import leap.web.security.authc.AuthenticationContext;
 
-public interface UserInfoLookup {
+public class DefaultOAuth2LogoutHandler implements OAuth2LogoutHandler {
 
-    /**
-     * By access token.
-     */
-    UserPrincipal lookupUserDetails(AccessToken at, String userId);
+    @Override
+    public State handleServerLogoutRequest(OAuth2Config config, Request request, Response response, AuthenticationContext context) {
+
+
+        return State.CONTINUE;
+    }
 
 }

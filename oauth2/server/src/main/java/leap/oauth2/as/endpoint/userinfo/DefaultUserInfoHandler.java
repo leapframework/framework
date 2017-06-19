@@ -31,13 +31,13 @@ import java.util.Map;
 public class DefaultUserInfoHandler implements UserInfoHandler {
 
     @Override
-    public boolean handleUserInfoResponse(Request request, Response response, AuthzAccessToken at, UserDetails details) throws Throwable {
-        AuthzUserInfo userInfo = createAuthzUserInfo(request,response,at,details);
-        writeClaims(request, response, createClaims(at, userInfo));
+    public boolean handleUserInfoResponse(Request request, Response response, UserDetails details) throws Throwable {
+        AuthzUserInfo userInfo = createAuthzUserInfo(request,response,details);
+        writeClaims(request, response, createClaims(userInfo));
         return true;
     }
 
-    protected AuthzUserInfo createAuthzUserInfo(Request request, Response response, AuthzAccessToken at, UserDetails details){
+    protected AuthzUserInfo createAuthzUserInfo(Request request, Response response, UserDetails details){
         SimpleAuthzUserInfo userInfo = new SimpleAuthzUserInfo();
         userInfo.setSubject(details.getIdAsString());
         userInfo.setFullName(details.getName());
@@ -45,7 +45,7 @@ public class DefaultUserInfoHandler implements UserInfoHandler {
         return userInfo;
     }
     
-    protected Map<String, Object> createClaims(AuthzAccessToken at, AuthzUserInfo userInfo) throws Throwable{
+    protected Map<String, Object> createClaims(AuthzUserInfo userInfo) throws Throwable{
         //see http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
         //sub, name, email, gender
         //TODO :

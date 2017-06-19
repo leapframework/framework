@@ -62,14 +62,14 @@ public class Global extends App implements OAuth2TestData {
         Client app = new Client();
         app.setId("app");
         app.setSecret("app_secret");
-        app.setRedirectUriPattern("**");
+        app.setRedirectUriPattern("*");
         app.create();
 
         //Client web app1.
         Client app2 = new Client();
         app2.setId("app1");
         app2.setSecret("app1_secret");
-        app2.setRedirectUriPattern("http*://*/clientapp1/oauth2_redirect");
+        app2.setRedirectUriPattern("*");
         app2.create();
 
         //Client web app2.

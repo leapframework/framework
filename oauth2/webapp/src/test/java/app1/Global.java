@@ -14,16 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package app1;
 
-import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.web.App;
 
-public interface UserInfoLookup {
-
-    /**
-     * By access token.
-     */
-    UserPrincipal lookupUserDetails(AccessToken at, String userId);
+public class Global extends App {
 
 }

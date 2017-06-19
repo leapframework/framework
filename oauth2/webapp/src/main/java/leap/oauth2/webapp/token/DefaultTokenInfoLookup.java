@@ -13,13 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.token;
 
 import leap.core.annotation.Inject;
-import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
+import leap.lang.http.HTTP;
 import leap.lang.http.Headers;
 import leap.lang.http.client.HttpClient;
 import leap.lang.http.client.HttpRequest;
@@ -33,67 +34,75 @@ import leap.oauth2.webapp.OAuth2Config;
 
 import java.util.Map;
 
-public class RemoteBearerAccessTokenStore implements BearerAccessTokenStore {
-    
-    private static final Log log = LogFactory.get(RemoteBearerAccessTokenStore.class);;
+public class DefaultTokenInfoLookup implements TokenInfoLookup {
+
+    private static final Log log = LogFactory.get(DefaultTokenInfoLookup.class);
 
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;
 
-    public void setHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
+    @Override
+    public AccessTokenDetails lookupByAccessToken(String at) {
+        if(null == config.getTokenInfoUrl()) {
+            throw new IllegalStateException("The tokenInfoUrl must be configured");
+        }
+
+        HttpRequest request = httpClient.request(config.getTokenUrl())
+                .addFormParam("access_token", at)
+                .setMethod(HTTP.Method.GET);
+
+        return requestTokenInfo(request);
     }
 
     @Override
-    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken credentials) {
-        if(null == config.getTokenInfoUrl()) {
-            throw new IllegalStateException("The tokenInfoEndpointUrl must be configured when use remote authz server");
+    public AccessTokenDetails lookupByAuthorizationCode(String code) {
+        if(null == config.getTokenUrl()) {
+            throw new IllegalStateException("The tokenUrl must be configured");
         }
-        HttpRequest request = httpClient.request(config.getTokenInfoUrl())
-                                         .addQueryParam("access_token", credentials.getToken());
+
+        HttpRequest request = httpClient.request(config.getTokenUrl())
+                        .addFormParam("grant_type", "authorization_code")
+                        .addFormParam("code", code)
+                        .setMethod(HTTP.Method.POST);
+
+        return requestTokenInfo(request);
+    }
+
+    protected AccessTokenDetails requestTokenInfo(HttpRequest request) {
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));
         }
-        HttpResponse response = request.get();
-        
+
+        HttpResponse response = request.send();
+
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
             String content = response.getString();
 
             log.debug("Received response : {}", content);
-            
-            try {
-                JsonValue json = JSON.parse(content);
-                
-                if(!json.isMap()) {
-                    throw new OAuth2InternalServerException("Invalid response from auth server : not a json map");
+
+            JsonValue json = JSON.parse(content);
+
+            if(!json.isMap()) {
+                throw new OAuth2InternalServerException("Invalid response from auth server : not a json map");
+            }else{
+                Map<String, Object> map = json.asMap();
+                String error = (String)map.get("error");
+                if(Strings.isEmpty(error)) {
+                    return createAccessTokenDetails(map);
                 }else{
-                    Map<String, Object> map = json.asMap();
-                    String error = (String)map.get("error");
-                    if(Strings.isEmpty(error)) {
-                        return Result.of(createAccessTokenDetails(map));
-                    }else{
-                        log.info("{} : {}", error, map.get("error_description"));
-                        return Result.empty();
-                    }
+                    throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
                 }
-            } catch (Exception e) {
-                log.error(e);
-                return Result.empty();
             }
         }else{
             throw new OAuth2InternalServerException("Invalid response from auth server");
         }
     }
 
-    @Override
-    public void removeAccessToken(AccessToken token) {
-        //Do nothing.
-    }
-
     protected AccessTokenDetails createAccessTokenDetails(Map<String, Object> map) {
         SimpleAccessTokenDetails details = new SimpleAccessTokenDetails((String)map.remove("access_token"));
-        
+
+        details.setRefreshToken((String)map.remove("refresh_token"));
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
         details.setCreated(System.currentTimeMillis());

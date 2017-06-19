@@ -48,7 +48,7 @@ public interface OAuth2Config {
     /**
      * todo : doc
      */
-    String getAuthorizationUrl();
+    String getAuthorizeUrl();
 
     /**
      * todo : doc

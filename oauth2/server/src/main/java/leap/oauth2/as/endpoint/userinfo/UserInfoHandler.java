@@ -15,7 +15,6 @@
  */
 package leap.oauth2.as.endpoint.userinfo;
 
-import leap.oauth2.as.token.AuthzAccessToken;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.user.UserDetails;
@@ -25,6 +24,6 @@ public interface UserInfoHandler {
     /**
      * Returns <code>true</code> if handles the response.
      */
-    boolean handleUserInfoResponse(Request request, Response response, AuthzAccessToken at, UserDetails details) throws Throwable;
+    boolean handleUserInfoResponse(Request request, Response response, UserDetails details) throws Throwable;
 
 }

@@ -35,33 +35,33 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
 	protected @Inject SecurityConfigurator sc;
     protected @Inject CacheManager         cm;
 
-	protected boolean               enabled;
+    protected boolean               enabled;
     protected boolean               login;
     protected boolean               logout;
-    protected String                authorizationUrl;
+    protected String                authorizeUrl;
     protected String                tokenUrl;
-	protected String                tokenInfoUrl;
+    protected String                tokenInfoUrl;
     protected String                userInfoUrl;
     protected String                publicKeyUrl;
     protected String                logoutUrl;
-
-	protected String                clientId;
-	protected String                clientSecret;
+    protected String                clientId;
+    protected String                clientSecret;
     protected String                redirectUri;
-
-	protected Cache<String, Object> cachedInterceptUrls;
-	protected String				rsaPublicKeyStr;
-	protected JwtVerifier           jwtVerifier;
+    protected Cache<String, Object> cachedInterceptUrls;
+    protected String                rsaPublicKeyStr;
+    protected JwtVerifier           jwtVerifier;
 
 	@Override
 	public OAuth2Config config() {
 		return this;
 	}
 
+    @Override
     public boolean isEnabled() {
 	    return enabled;
     }
 
+    @Override
 	@ConfigProperty
     public OAuth2Configurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -93,24 +93,25 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     public OAuth2Configurator setServerUrl(String serverUrl) {//don't change the parameter name (used by config property)
         serverUrl = Paths.suffixWithoutSlash(serverUrl);
 
-        this.authorizationUrl = serverUrl + "/oauth2/authorize";
-        this.tokenUrl         = serverUrl + "/oauth2/token";
-        this.tokenInfoUrl     = serverUrl + "/oauth2/tokeninfo";
-        this.userInfoUrl      = serverUrl + "/oauth2/userinfo";
-        this.publicKeyUrl     = serverUrl + "/oauth2/publickey";
-        this.logoutUrl        = serverUrl + "/oauth2/logout";
+        this.authorizeUrl = serverUrl + "/oauth2/authorize";
+        this.tokenUrl     = serverUrl + "/oauth2/token";
+        this.tokenInfoUrl = serverUrl + "/oauth2/tokeninfo";
+        this.userInfoUrl  = serverUrl + "/oauth2/userinfo";
+        this.publicKeyUrl = serverUrl + "/oauth2/publickey";
+        this.logoutUrl    = serverUrl + "/oauth2/logout";
 
         return this;
     }
 
     @Override
-    public String getAuthorizationUrl() {
-        return authorizationUrl;
+    public String getAuthorizeUrl() {
+        return authorizeUrl;
     }
 
     @Override
-    public OAuth2Configurator setAuthorizationUrl(String url) {
-        this.authorizationUrl = url;
+    @ConfigProperty
+    public OAuth2Configurator setAuthorizeUrl(String url) {
+        this.authorizeUrl = url;
         return this;
     }
 
@@ -120,6 +121,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     }
 
     @Override
+    @ConfigProperty
     public OAuth2Configurator setTokenUrl(String url) {
         this.tokenUrl = url;
         return this;
@@ -130,6 +132,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
         return tokenInfoUrl;
     }
 
+    @Override
     @ConfigProperty
 	public OAuth2Configurator setTokenInfoUrl(String url) {
 	    this.tokenInfoUrl = url;
@@ -142,6 +145,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     }
 
     @Override
+    @ConfigProperty
     public OAuth2Configurator setUserInfoUrl(String url) {
         this.userInfoUrl = url;
         return this;
@@ -153,6 +157,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     }
 
     @Override
+    @ConfigProperty
     public OAuth2Configurator setPublicKeyUrl(String url) {
         this.publicKeyUrl = url;
         return this;
@@ -174,16 +179,18 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
 	}
 
 	@Override
-	public String getClientSecret() {
-		return clientSecret;
-	}
-
-	@Override
+    @ConfigProperty
 	public OAuth2Configurator setClientId(String clientId) {
 		this.clientId = clientId;
 		return this;
 	}
 
+    @Override
+    public String getClientSecret() {
+        return clientSecret;
+    }
+
+    @Override
 	@ConfigProperty
 	public OAuth2Configurator setClientSecret(String clientSecret) {
 		this.clientSecret = clientSecret;
@@ -219,12 +226,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     @Override
     public void postAppInit(App app) throws Throwable {
         if(enabled) {
-
             if(!sc.config().isEnabled()) {
                 sc.enable(true);
             }
-
-
         }
     }
 }

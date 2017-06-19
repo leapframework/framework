@@ -19,6 +19,7 @@ package leap.oauth2.webapp.user;
 import leap.core.annotation.Inject;
 import leap.core.security.SimpleUserPrincipal;
 import leap.core.security.UserPrincipal;
+import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
@@ -35,6 +36,8 @@ import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.AccessToken;
 
+import java.util.Map;
+
 public class DefaultUserInfoLookup implements UserInfoLookup {
 
     private static final Log log = LogFactory.get(DefaultUserInfoLookup.class);
@@ -44,12 +47,18 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
 
     @Override
     public UserPrincipal lookupUserDetails(AccessToken at, String userId) {
+        return requestUserInfo(New.hashMap("access_token", at.getToken()));
+    }
+
+    protected UserPrincipal requestUserInfo(Map<String,String> params) {
         if(Strings.isEmpty(config.getUserInfoUrl())) {
             throw new IllegalStateException("The userInfoEndpointUrl must be configured when use remote authz server");
         }
 
-        HttpRequest request = httpClient.request(config.getUserInfoUrl())
-                                        .addQueryParam("access_token", at.getToken());
+        HttpRequest request = httpClient.request(config.getUserInfoUrl());
+        if(null != params) {
+            params.forEach(request::addQueryParam);
+        }
 
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
@@ -75,7 +84,7 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
                     if(Strings.isEmpty(error)) {
                         return newUserInfo(o);
                     }else{
-                        return null;
+                        throw new OAuth2InternalServerException("Auth server response error : " + error);
                     }
                 }
             } catch (Exception e) {
@@ -86,6 +95,7 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
             throw new OAuth2InternalServerException("Invalid response from auth server");
         }
     }
+
 
     protected UserPrincipal newUserInfo(JsonObject json) {
         SimpleUserPrincipal userInfo = new SimpleUserPrincipal();
