@@ -16,6 +16,8 @@
 
 package leap.web.api.doc;
 
+import leap.core.annotation.Inject;
+import leap.core.doc.DocResolver;
 import leap.lang.Classes;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
@@ -37,11 +39,19 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 public class ConventionalDocProcessor implements ApiMetadataProcessor {
+    @Inject
+    private DocResolver docResolver;
 
     private static final String CLASSPATH_PREFIX = "classpath:doc/";
 
     @Override
     public void postProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
+
+        String desc = m.getDescription();
+        if(Strings.isNotEmpty(desc)) {
+            m.setDescription(docResolver.resolveDesc(desc));
+        }
+
         Map<Class<?>,ClassDoc> docs = new HashMap<>();
 
         //operations
