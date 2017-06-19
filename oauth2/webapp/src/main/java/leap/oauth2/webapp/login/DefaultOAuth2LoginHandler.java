@@ -21,17 +21,16 @@ import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenVerifyException;
-import leap.core.security.token.jwt.MacSigner;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.authc.OAuth2ClientPrincipal;
+import leap.oauth2.webapp.token.id.IdToken;
+import leap.oauth2.webapp.token.id.IdTokenVerifier;
 import leap.oauth2.webapp.token.*;
 import leap.oauth2.webapp.user.UserInfoLookup;
 import leap.web.Request;
@@ -41,10 +40,6 @@ import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.login.LoginManager;
 import leap.web.view.View;
-import leap.web.view.ViewData;
-
-import java.io.PrintWriter;
-import java.util.Map;
 
 public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
@@ -52,6 +47,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     protected @Inject OAuth2ErrorHandler    errorHandler;
     protected @Inject AuthenticationManager am;
     protected @Inject LoginManager          lm;
+    protected @Inject IdTokenVerifier       idTokenVerifier;
     protected @Inject TokenInfoLookup       tokenInfoLookup;
     protected @Inject UserInfoLookup        userInfoLookup;
 
@@ -75,6 +71,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             if(null != view) {
                 view.render(request, response);
             }
+
             return State.INTERCEPTED;
         }
 
@@ -101,7 +98,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
 
         try{
-            IdToken credentials = verifyIdToken(params, idToken);
+            IdToken credentials = idTokenVerifier.verifyIdToken(params, idToken);
 
             Authentication authc = authenticate(params, credentials, at);
 
@@ -111,23 +108,9 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
     }
 
-    protected IdToken verifyIdToken(OAuth2Params params, String token) throws TokenVerifyException {
-        //todo: RSA or MAC ? more details userinfo ?
-
-        MacSigner signer = new MacSigner(config.getClientSecret());
-
-        Map<String, Object> claims = signer.verify(token);
-        SimpleIdToken idToken = new SimpleIdToken(token);
-
-        idToken.setClientId((String)claims.remove("aud"));
-        idToken.setUserId((String)claims.remove("sub"));
-
-        return idToken;
-    }
-
-    protected Authentication authenticate(OAuth2Params params, IdToken idToken, AccessTokenDetails at) {
-        String clientId = idToken.getClientId();
-        String userId   = idToken.getUserId();
+    protected Authentication authenticate(OAuth2Params params, IdToken idTokenCredentials, AccessTokenDetails at) {
+        String clientId = idTokenCredentials.getClientId();
+        String userId   = idTokenCredentials.getUserId();
 
         UserPrincipal user   = null;
         ClientPrincipal client = null;
@@ -140,7 +123,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             client = new OAuth2ClientPrincipal(clientId);
         }
 
-        SimpleAuthentication authc = new SimpleAuthentication(user, idToken);
+        SimpleAuthentication authc = new SimpleAuthentication(user, idTokenCredentials);
         if(null != client) {
             authc.setClientPrincipal(client);
         }

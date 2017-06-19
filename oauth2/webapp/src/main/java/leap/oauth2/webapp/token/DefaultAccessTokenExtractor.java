@@ -15,21 +15,20 @@
  */
 package leap.oauth2.webapp.token;
 
-import java.util.Enumeration;
-import java.util.Map;
-
-import javax.servlet.http.HttpServletRequest;
-
 import leap.lang.Strings;
 import leap.lang.http.Headers;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.OAuth2Constants;
+import leap.oauth2.webapp.OAuth2Constants;
 import leap.web.Request;
 
-public class BearerAccessTokenExtractor implements AccessTokenExtractor {
+import javax.servlet.http.HttpServletRequest;
+import java.util.Enumeration;
+import java.util.Map;
+
+public class DefaultAccessTokenExtractor implements AccessTokenExtractor {
 	
-	private static final Log log = LogFactory.get(BearerAccessTokenExtractor.class);
+	private static final Log log = LogFactory.get(DefaultAccessTokenExtractor.class);
 
 	@Override
 	public AccessToken extractTokenFromRequest(Request request) {
@@ -37,20 +36,20 @@ public class BearerAccessTokenExtractor implements AccessTokenExtractor {
 		return extractTokenFromString(v,request.getParameters());
 	}
 
-	@Override
-	public AccessToken extractTokenFromString(String token, Map<String, Object> params) {
+	protected AccessToken extractTokenFromString(String token, Map<String, Object> params) {
 		if(null == token || token.length() == 0) {
 			return null;
 		}
 
 		if(isJwt(token)){
-			return new JwtAccessToken(OAuth2Constants.BEARER_TYPE,token);
-		}
-		return new SimpleAccessToken(OAuth2Constants.BEARER_TYPE, token);
+			return new SimpleAccessToken(OAuth2Constants.JWT_TYPE, token);
+		}else{
+            return new SimpleAccessToken(OAuth2Constants.BEARER_TYPE, token);
+        }
 	}
 
-
 	protected boolean isJwt(String token){
+        //todo :
 		return Strings.contains(token,".");
 	}
 
@@ -74,8 +73,8 @@ public class BearerAccessTokenExtractor implements AccessTokenExtractor {
 		Enumeration<String> headers = request.getHeaders(Headers.AUTHORIZATION);
 		while (headers.hasMoreElements()) { // typically there is only one (most servers enforce that)
 			String value = headers.nextElement();
-			if ((value.toLowerCase().startsWith(OAuth2Constants.BEARER_TYPE.toLowerCase()))) {
-				String authHeaderValue = value.substring(OAuth2Constants.BEARER_TYPE.length()).trim();
+			if ((value.toLowerCase().startsWith(OAuth2Constants.BEARER.toLowerCase()))) {
+				String authHeaderValue = value.substring(OAuth2Constants.BEARER.length()).trim();
 				int commaIndex = authHeaderValue.indexOf(',');
 				if (commaIndex > 0) {
 					authHeaderValue = authHeaderValue.substring(0, commaIndex);

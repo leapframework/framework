@@ -13,18 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp;
 
-import leap.web.Request;
+public class OAuth2Constants {
 
-/**
- * Extracts the {@link AccessToken} from request.
- */
-public interface AccessTokenExtractor {
+	public static String BEARER = "Bearer";
 
-    /**
-     * Returns <code>null</code> if not found.
-     */
-    AccessToken extractTokenFromRequest(Request request);
+    public static String JWT_TYPE    = "jwt";
+    public static String BEARER_TYPE = "bearer";
 
+	/**
+	 * The access token issued by the authorization server. This value is REQUIRED.
+	 */
+	public static String ACCESS_TOKEN = "access_token";
+
+	protected OAuth2Constants() {
+		
+	}
 }

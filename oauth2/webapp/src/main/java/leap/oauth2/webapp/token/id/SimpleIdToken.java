@@ -14,15 +14,41 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp.token.id;
 
 import leap.core.security.Credentials;
 
-public interface IdToken extends Credentials {
+public class SimpleIdToken implements Credentials, IdToken {
 
-    String getToken();
+    protected String token;
+    protected String clientId;
+    protected String userId;
 
-    String getClientId();
+    public SimpleIdToken(String token) {
+        this.token = token;
+    }
 
-    String getUserId();
+    @Override
+    public String getToken() {
+        return token;
+    }
+
+    @Override
+    public String getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(String clientId) {
+        this.clientId = clientId;
+    }
+
+    @Override
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
 }

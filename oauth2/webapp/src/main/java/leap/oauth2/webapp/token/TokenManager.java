@@ -15,19 +15,19 @@
  */
 package leap.oauth2.webapp.token;
 
-/**
- * The access token manager used by oauth2 resource server.
- */
 public interface TokenManager {
     
     /**
-     * Returns the result of {@link AccessTokenDetails}
+     * Returns the result of {@link AccessTokenDetails}.
+     *
+     * <p/>
+     * Returns <code>null</code> if not found.
      */
     AccessTokenDetails loadAccessTokenDetails(AccessToken token);
 
     /**
      * Removes the {@link AccessToken} when expired or invalid.
      */
-    void removeAccessToken(AccessToken token);
+    void removeAccessTokenDetails(AccessToken token);
 
 }

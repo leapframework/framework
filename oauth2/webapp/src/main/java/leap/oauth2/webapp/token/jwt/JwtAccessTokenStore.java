@@ -13,13 +13,17 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
+
+package leap.oauth2.webapp.token.jwt;
 
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
-import leap.lang.Result;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.AccessTokenDetails;
+import leap.oauth2.webapp.token.AccessTokenStore;
+import leap.oauth2.webapp.token.SimpleAccessTokenDetails;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
@@ -27,7 +31,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 
-public class JwtAccessTokenStore implements BearerAccessTokenStore {
+public class JwtAccessTokenStore implements AccessTokenStore {
 
     protected         RSAPublicKey   publicKey;
     protected @Inject SecurityConfig sc;

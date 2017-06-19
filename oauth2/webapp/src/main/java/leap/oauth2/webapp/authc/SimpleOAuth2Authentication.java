@@ -23,7 +23,7 @@ import leap.web.security.authc.AbstractAuthentication;
 
 public class SimpleOAuth2Authentication extends AbstractAuthentication implements Authentication, OAuth2Authentication {
 	
-    protected final AccessToken  credentials;
+    protected final AccessToken     credentials;
     protected final UserPrincipal   user;
     protected final ClientPrincipal client;
 

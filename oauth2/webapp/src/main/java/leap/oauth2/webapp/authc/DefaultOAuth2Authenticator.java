@@ -22,7 +22,6 @@ import leap.core.cache.CacheManager;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
-import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.expirable.TimeExpirableMs;
 import leap.lang.expirable.TimeExpirableSeconds;
@@ -80,7 +79,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
         if(details.isExpired()) {
             log.debug("Access token '{}' was expired", token.getToken());
-            tokenManager.removeAccessToken(token);
+            tokenManager.removeAccessTokenDetails(token);
             return null;
         }
 
@@ -91,15 +90,17 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         ClientPrincipal client = null;
 
         if(!Strings.isEmpty(userId)) {
+            //user info lookup
             user = userInfoLookup.lookupUserDetails(token, userId);
             if(null == user) {
                 //todo: exception?
-                log.debug("User info not exists in remote authz server, user id -> {}, access token -> {}", userId, token.getToken());
+                log.warn("User info not exists in oauth2 server, user id -> {}, access token -> {}", userId, token.getToken());
                 return null;
             }
         }
 
         if(!Strings.isEmpty(clientId)) {
+            //todo : client info lookup
             client = new OAuth2ClientPrincipal(clientId);
         }
 

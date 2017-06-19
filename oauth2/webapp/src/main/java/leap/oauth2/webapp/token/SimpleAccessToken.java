@@ -18,17 +18,15 @@ package leap.oauth2.webapp.token;
 
 import leap.core.security.token.SimpleTokenCredentials;
 import leap.lang.Strings;
-import leap.oauth2.OAuth2Constants;
+import leap.oauth2.webapp.OAuth2Constants;
 
 public class SimpleAccessToken extends SimpleTokenCredentials implements AccessToken {
 
 	protected final String type;
-	protected final boolean bearer;
 
 	public SimpleAccessToken(String type, String token) {
 	    super(token);
-		this.type  = type;
-		this.bearer = Strings.isEmpty(type) || OAuth2Constants.BEARER_TYPE.equalsIgnoreCase(type);
+		this.type = Strings.isEmpty(type) ? OAuth2Constants.BEARER_TYPE : type;
 	}
 
 	/**
@@ -38,12 +36,4 @@ public class SimpleAccessToken extends SimpleTokenCredentials implements AccessT
 		return type;
 	}
 
-    @Override
-    public boolean isBearer() {
-        return bearer;
-    }
-
-	public boolean isJwt() {
-		return false;
-	}
 }

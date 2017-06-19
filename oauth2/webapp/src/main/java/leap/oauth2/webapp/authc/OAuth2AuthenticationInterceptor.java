@@ -17,8 +17,6 @@
 package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
-import leap.core.security.Authentication;
-import leap.lang.Result;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;

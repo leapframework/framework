@@ -21,7 +21,7 @@ import java.util.Map;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
-import leap.lang.Result;
+import leap.lang.Strings;
 import leap.oauth2.webapp.OAuth2Config;
 
 /**
@@ -29,58 +29,37 @@ import leap.oauth2.webapp.OAuth2Config;
  */
 public class DefaultTokenManager implements TokenManager, PostCreateBean {
     
-    protected @Inject BeanFactory  factory;
-    protected @Inject OAuth2Config config;
-    
-    protected Map<String, AccessTokenStore> typedTokenStores = new HashMap<>();
-    protected AccessTokenStore              bearerTokenStore = null;
-    protected AccessTokenStore              jwtTokenStore    = null;
-    
+    protected @Inject OAuth2Config     config;
+    protected @Inject AccessTokenStore defaultTokenStore;
+
+    protected final Map<String, AccessTokenStore> typedTokenStores = new HashMap<>();
+
     @Override
     public AccessTokenDetails loadAccessTokenDetails(AccessToken token) {
         return getAccessTokenStore(token).loadAccessTokenDetails(token);
     }
 
     @Override
-    public void removeAccessToken(AccessToken token) {
+    public void removeAccessTokenDetails(AccessToken token) {
         getAccessTokenStore(token).removeAccessToken(token);
+    }
+
+    protected AccessTokenStore getAccessTokenStore(AccessToken token) {
+        AccessTokenStore store;
+
+        String type = token.getType();
+
+        if(!Strings.isEmpty(type)) {
+            store = typedTokenStores.get(type);
+        }else{
+            store = defaultTokenStore;
+        }
+        
+        return store;
     }
 
     @Override
     public void postCreate(BeanFactory factory) throws Throwable {
         this.typedTokenStores.putAll(factory.getNamedBeans(AccessTokenStore.class));
     }
-    
-    protected AccessTokenStore getAccessTokenStore(AccessToken token) {
-        AccessTokenStore store;
-        
-        if(token.isBearer()) {
-            if(token instanceof JwtAccessToken){
-                if(null == jwtTokenStore){
-                    store = factory.getBean(BearerAccessTokenStore.class,"jwt");
-                    if(null != store){
-                        this.jwtTokenStore = store;
-                        return store;
-                    }
-                }else{
-                    store = this.jwtTokenStore;
-                    return store;
-                }
-            }
-            if(null == bearerTokenStore) {
-                this.bearerTokenStore = factory.tryGetBean(BearerAccessTokenStore.class);
-                if(null == bearerTokenStore) {
-                    this.bearerTokenStore = factory.getBean(BearerAccessTokenStore.class, "remote");
-                }
-            }
-            store = bearerTokenStore;
-        }else{
-            store = typedTokenStores.get(token.getType());
-            if(null == store) {
-                throw new IllegalStateException("No ResAccessTokenStore for token type '" + token.getType() + "'");
-            }
-        }
-        return store;
-    }
-    
 }

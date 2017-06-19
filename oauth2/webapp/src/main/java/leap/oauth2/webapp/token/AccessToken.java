@@ -18,6 +18,9 @@ package leap.oauth2.webapp.token;
 
 import leap.core.security.token.TokenCredentials;
 
+/**
+ * The access token credentials sent by oauth2 client.
+ */
 public interface AccessToken extends TokenCredentials {
 
     /**
@@ -25,10 +28,4 @@ public interface AccessToken extends TokenCredentials {
      */
     String getType();
 
-    /**
-     * Returns <code>true</code> if the token is <code>'Bearer'</code> type.
-     */
-    default boolean isBearer() {
-        return true;
-    }
 }

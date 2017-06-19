@@ -22,7 +22,7 @@ import leap.oauth2.webapp.token.AccessToken;
 public interface OAuth2Authentication extends Authentication {
 
     /**
-     * The credentials must be the type of {@link leap.oauth2.webapp.token.AccessToken}.
+     * The credentials must be the type of {@link AccessToken}.
      */
     AccessToken getCredentials();
 

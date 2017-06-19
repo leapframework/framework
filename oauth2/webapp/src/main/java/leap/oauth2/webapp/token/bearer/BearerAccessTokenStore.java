@@ -13,10 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
+
+package leap.oauth2.webapp.token.bearer;
 
 import leap.core.annotation.Inject;
-import leap.lang.Result;
 import leap.lang.Strings;
 import leap.lang.codec.Base64;
 import leap.lang.http.ContentTypes;
@@ -30,12 +30,16 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.AccessTokenDetails;
+import leap.oauth2.webapp.token.AccessTokenStore;
+import leap.oauth2.webapp.token.SimpleAccessTokenDetails;
 
 import java.util.Map;
 
-public class RemoteBearerAccessTokenStore implements BearerAccessTokenStore {
+public class BearerAccessTokenStore implements AccessTokenStore {
     
-    private static final Log log = LogFactory.get(RemoteBearerAccessTokenStore.class);;
+    private static final Log log = LogFactory.get(BearerAccessTokenStore.class);;
 
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;

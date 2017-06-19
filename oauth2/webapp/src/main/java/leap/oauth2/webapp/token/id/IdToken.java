@@ -13,8 +13,21 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
 
-public interface BearerAccessTokenStore extends AccessTokenStore {
+package leap.oauth2.webapp.token.id;
+
+import leap.core.security.token.TokenCredentials;
+
+/**
+ * The id token redirect back from oauth2 server.
+ *
+ * <p/>
+ * Used at web app login.
+ */
+public interface IdToken extends TokenCredentials {
+
+    String getClientId();
+
+    String getUserId();
 
 }

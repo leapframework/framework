@@ -13,18 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
 
-import leap.web.Request;
+package leap.oauth2.webapp.token.id;
 
-/**
- * Extracts the {@link AccessToken} from request.
- */
-public interface AccessTokenExtractor {
+import leap.core.security.token.TokenVerifyException;
+import leap.oauth2.OAuth2Params;
 
-    /**
-     * Returns <code>null</code> if not found.
-     */
-    AccessToken extractTokenFromRequest(Request request);
+public interface IdTokenVerifier {
+
+    IdToken verifyIdToken(OAuth2Params params, String token) throws TokenVerifyException;
 
 }
