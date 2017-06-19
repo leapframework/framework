@@ -15,21 +15,19 @@
  */
 package leap.oauth2.webapp.authc;
 
-import leap.lang.Result;
-import leap.web.Request;
-import leap.web.Response;
-import leap.core.security.Authentication;
-import leap.web.security.authc.AuthenticationContext;
-import leap.web.security.authc.AuthenticationResolver;
+import leap.oauth2.OAuth2Exception;
+import leap.oauth2.webapp.token.AccessToken;
 
-public interface OAuth2AuthenticationResolver extends AuthenticationResolver {
+public interface OAuth2Authenticator {
 
     /**
-     * Resolves {@link Authentication} in the request.
+     * Authenticates the token and returns the result.
      *
      * <p/>
-     * Returns a failure result if failed to resolve authentication and the request was handled by the resolver.
+     * Returns null if the token is invalid.
+     *
+     * @throws OAuth2Exception if error.
      */
-    Result<Authentication> resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable;
+    OAuth2Authentication authenticate(AccessToken token) throws OAuth2Exception;
 
 }

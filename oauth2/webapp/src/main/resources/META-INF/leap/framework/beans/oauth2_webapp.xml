@@ -30,8 +30,8 @@
     <bean type="leap.web.security.SecurityInterceptor"
           class="leap.oauth2.webapp.authc.OAuth2AuthenticationInterceptor"/>
 
-    <bean type="leap.oauth2.webapp.authc.OAuth2CredentialsAuthenticator"
-          class="leap.oauth2.webapp.authc.DefaultOAuth2CredentialsAuthenticator" primary="true"/>
+    <bean type="leap.oauth2.webapp.authc.OAuth2Authenticator"
+          class="leap.oauth2.webapp.authc.DefaultOAuth2Authenticator" primary="true"/>
 
     <!-- token -->
     <bean type="leap.oauth2.webapp.token.TokenManager"

@@ -37,7 +37,7 @@ public class DefaultTokenManager implements TokenManager, PostCreateBean {
     protected AccessTokenStore              jwtTokenStore    = null;
     
     @Override
-    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
+    public AccessTokenDetails loadAccessTokenDetails(AccessToken token) {
         return getAccessTokenStore(token).loadAccessTokenDetails(token);
     }
 

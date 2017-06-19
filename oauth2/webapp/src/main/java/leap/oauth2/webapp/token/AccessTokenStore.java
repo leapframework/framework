@@ -15,8 +15,6 @@
  */
 package leap.oauth2.webapp.token;
 
-import leap.lang.Result;
-
 /**
  * OAuth2.0 Access Token Store in Resource Server.
  */
@@ -25,7 +23,7 @@ public interface AccessTokenStore {
 	/**
 	 * Returns the result of loading {@link AccessTokenDetails}.
 	 */
-	Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken token);
+	AccessTokenDetails loadAccessTokenDetails(AccessToken token);
 
 	/**
 	 * Removes the {@link AccessToken} when access token expired.

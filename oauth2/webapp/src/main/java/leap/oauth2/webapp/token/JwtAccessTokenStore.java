@@ -34,7 +34,7 @@ public class JwtAccessTokenStore implements BearerAccessTokenStore {
     protected @Inject OAuth2Config   rsc;
 
     @Override
-    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken token) {
+    public AccessTokenDetails loadAccessTokenDetails(AccessToken token) {
         JwtVerifier verifier = rsc.getJwtVerifier();
         if(verifier == null){
             throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
@@ -51,7 +51,7 @@ public class JwtAccessTokenStore implements BearerAccessTokenStore {
             ud = sc.getUserStore().loadUserDetailsByLoginName(username);
         }
         if(ud == null){
-            return Result.EMPTY;
+            return null;
         }
         resAccessTokenDetails.setUserId(ud==null?null:ud.getIdAsString());
         resAccessTokenDetails.setScope((String)jwtDetail.remove("scope"));
@@ -71,7 +71,7 @@ public class JwtAccessTokenStore implements BearerAccessTokenStore {
             //todo :
             throw new IllegalStateException("Invalid expires_in : " + e.getMessage(), e);
         }
-        return Result.of(resAccessTokenDetails);
+        return resAccessTokenDetails;
     }
 
     @Override

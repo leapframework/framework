@@ -35,12 +35,11 @@ import leap.oauth2.webapp.token.TokenManager;
 import leap.oauth2.webapp.user.UserInfoLookup;
 
 /**
- * Default implementation of {@link OAuth2CredentialsAuthenticator}.
+ * Default implementation of {@link OAuth2Authenticator}.
  */
-public class DefaultOAuth2CredentialsAuthenticator implements OAuth2CredentialsAuthenticator, PostCreateBean {
-    private static final Log log = LogFactory.get(DefaultOAuth2CredentialsAuthenticator.class);
+public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCreateBean {
+    private static final Log log = LogFactory.get(DefaultOAuth2Authenticator.class);
 
-    protected @Inject BeanFactory    factory;
     protected @Inject OAuth2Config   config;
     protected @Inject TokenManager   tokenManager;
     protected @Inject UserInfoLookup userInfoLookup;
@@ -51,39 +50,38 @@ public class DefaultOAuth2CredentialsAuthenticator implements OAuth2CredentialsA
     protected int                                 cacheExpiresInMs = 120 * 1000; //2 minutes
 
     @Override
-    public Result<OAuth2Authentication> authenticate(AccessToken at) {
+    public OAuth2Authentication authenticate(AccessToken token) {
         //Resolve from cache.
-        CachedAuthentication cached = getCachedAuthentication(at);
+        CachedAuthentication cached = getCachedAuthentication(token);
         if(null != cached) {
 
             //Check expiration of token.
             if(cached.isTokenExpired()) {
-                log.debug("Access token '{}' was expired", at.getToken());
-                removeCachedAuthentication(at, cached);
-                return Result.empty();
+                log.debug("Access token '{}' was expired", token.getToken());
+                removeCachedAuthentication(token, cached);
+                return null;
             }
 
             //Check expiration of the cached item.
             if(cached.isCacheExpired()) {
                 log.debug("Cached authentication expired, remove it from cache only");
-                removeCachedAuthentication(at, cached);
+                removeCachedAuthentication(token, cached);
             }else{
-                log.debug("Returns the cached authentication of access token : {}", at.getToken());
-                return Result.of(cached.authentication);
+                log.debug("Returns the cached authentication of access token : {}", token.getToken());
+                return cached.authentication;
             }
         }
 
-        Result<AccessTokenDetails> result = tokenManager.loadAccessTokenDetails(at);
-        if(!result.isPresent()) {
-            log.debug("Access token '{}' not found", at.getToken());
-            return Result.empty();
+        AccessTokenDetails details = tokenManager.loadAccessTokenDetails(token);
+        if(null == details) {
+            log.debug("Access token '{}' not found", token.getToken());
+            return null;
         }
 
-        AccessTokenDetails details = result.get();
         if(details.isExpired()) {
-            log.debug("Access token '{}' was expired", at.getToken());
-            tokenManager.removeAccessToken(at);
-            return Result.empty();
+            log.debug("Access token '{}' was expired", token.getToken());
+            tokenManager.removeAccessToken(token);
+            return null;
         }
 
         String clientId = details.getClientId();
@@ -93,11 +91,11 @@ public class DefaultOAuth2CredentialsAuthenticator implements OAuth2CredentialsA
         ClientPrincipal client = null;
 
         if(!Strings.isEmpty(userId)) {
-            user = userInfoLookup.lookupUserDetails(at, userId);
+            user = userInfoLookup.lookupUserDetails(token, userId);
             if(null == user) {
                 //todo: exception?
-                log.debug("User info not exists in remote authz server, user id -> {}, access token -> {}", userId, at.getToken());
-                return Result.empty();
+                log.debug("User info not exists in remote authz server, user id -> {}, access token -> {}", userId, token.getToken());
+                return null;
             }
         }
 
@@ -105,14 +103,14 @@ public class DefaultOAuth2CredentialsAuthenticator implements OAuth2CredentialsA
             client = new OAuth2ClientPrincipal(clientId);
         }
 
-        OAuth2Authentication authc = new SimpleOAuth2Authentication(at, user, client);
+        OAuth2Authentication authc = new SimpleOAuth2Authentication(token, user, client);
         if(null != details.getScope()) {
             authc.setPermissions(Strings.split(details.getScope(), ","));
         }
 
-        cacheAuthentication(at, details, authc);
+        cacheAuthentication(token, details, authc);
 
-        return Result.of(authc);
+        return authc;
     }
 
     public int getCacheSize() {

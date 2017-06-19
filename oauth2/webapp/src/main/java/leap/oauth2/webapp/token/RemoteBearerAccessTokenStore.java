@@ -40,12 +40,8 @@ public class RemoteBearerAccessTokenStore implements BearerAccessTokenStore {
     protected @Inject OAuth2Config config;
     protected @Inject HttpClient   httpClient;
 
-    public void setHttpClient(HttpClient httpClient) {
-        this.httpClient = httpClient;
-    }
-
     @Override
-    public Result<AccessTokenDetails> loadAccessTokenDetails(AccessToken credentials) {
+    public AccessTokenDetails loadAccessTokenDetails(AccessToken credentials) {
         if(null == config.getTokenInfoUrl()) {
             throw new IllegalStateException("The tokenInfoEndpointUrl must be configured when use remote authz server");
         }
@@ -71,15 +67,15 @@ public class RemoteBearerAccessTokenStore implements BearerAccessTokenStore {
                     Map<String, Object> map = json.asMap();
                     String error = (String)map.get("error");
                     if(Strings.isEmpty(error)) {
-                        return Result.of(createAccessTokenDetails(map));
+                        return createAccessTokenDetails(map);
                     }else{
                         log.info("{} : {}", error, map.get("error_description"));
-                        return Result.empty();
+                        return null;
                     }
                 }
             } catch (Exception e) {
                 log.error(e);
-                return Result.empty();
+                return null;
             }
         }else{
             throw new OAuth2InternalServerException("Invalid response from auth server");

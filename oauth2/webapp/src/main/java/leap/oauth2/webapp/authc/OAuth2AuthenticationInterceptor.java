@@ -41,61 +41,29 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
     
     private static final Log log = LogFactory.get(OAuth2AuthenticationInterceptor.class);
 
-    protected @Inject OAuth2Config                   config;
-    protected @Inject AccessTokenExtractor           tokenExtractor;
-    protected @Inject OAuth2ErrorHandler             errorHandler;
-    protected @Inject OAuth2CredentialsAuthenticator credentialsAuthenticator;
-    protected @Inject OAuth2AuthenticationResolver[] authenticationResolvers;
-	
-	public OAuth2AuthenticationInterceptor() {
-        super();
-    }
+    protected @Inject OAuth2Config         config;
+    protected @Inject AccessTokenExtractor tokenExtractor;
+    protected @Inject OAuth2ErrorHandler   errorHandler;
+    protected @Inject OAuth2Authenticator  authenticator;
 
     @Override
 	public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-		if (config.isEnabled()) {
-            return doPreResolveAuthentication(request, response, context);
-		}
-		
-		return State.CONTINUE;
-	}
-	
-	protected State doPreResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-        Authentication authc = null;
-        for(OAuth2AuthenticationResolver resolver : authenticationResolvers) {
-            Result<Authentication> result = resolver.resolveAuthentication(request, response, context);
-            if(result.isPresent()) {
-                authc = result.get();
-                break;
-            }
-            if(result.isIntercepted()) {
-                return State.INTERCEPTED;
-            }
+		if (!config.isEnabled()) {
+            return State.CONTINUE;
         }
 
-        AccessToken token = null;
-        if(null == authc) {
-            //Extract access token from request.
-            token = tokenExtractor.extractTokenFromRequest(request);
-            if(null == token) {
-                //If no access token just ignore resolving authentication from access token.
-                return State.CONTINUE;
-            }
+        //Extract access token from request.
+        AccessToken token = tokenExtractor.extractTokenFromRequest(request);
+        if(null == token) {
+            return State.CONTINUE;
         }
 
         //Resolving authentication from access token.
         try {
+            OAuth2Authentication authc = authenticator.authenticate(token);
             if(null == authc) {
-                Result<OAuth2Authentication> result = credentialsAuthenticator.authenticate(token);
-                if(!result.isPresent()) {
-                    /*
-                    errorHandler.handleInvalidToken(request, response, "Invalid access token");
-                    return State.INTERCEPTED;
-                    */
-                    log.warn("Invalid access token");
-                    return State.CONTINUE;
-                }
-                authc = result.get();
+                log.warn("Invalid access token '{}'", token.getToken());
+                return State.CONTINUE;
             }
 
             //Set the authentication.
