@@ -64,6 +64,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     }
 
     protected State handleOAuth2ServerError(Request request, Response response, OAuth2Params params) {
+        //todo:
 //        if(null != defaultErrorView) {
 //            View view = request.getViewSource().getView(config.getErrorView(), request.getLocale());
 //            if(null == view) {
@@ -74,9 +75,6 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 //        }else{
 //            printError(response, params.getError(), params.getErrorDescription());
 //        }
-
-
-
         return State.INTERCEPTED;
     }
 

@@ -26,9 +26,6 @@
     <bean type="leap.web.security.SecurityInterceptor"
           class="leap.oauth2.webapp.logout.OAuth2LogoutInterceptor"/>
 
-    <bean type="leap.oauth2.webapp.logout.OAuth2LogoutHandler"
-          class="leap.oauth2.webapp.logout.DefaultOAuth2LogoutHandler" primary="true"/>
-
     <!-- authc -->
     <bean type="leap.web.security.SecurityInterceptor"
           class="leap.oauth2.webapp.authc.OAuth2AuthenticationInterceptor"/>

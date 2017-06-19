@@ -27,44 +27,42 @@ import leap.web.Response;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
 import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.logout.LogoutContext;
+import leap.web.security.logout.LogoutManager;
 
 public class OAuth2LogoutInterceptor implements SecurityInterceptor {
 
     protected static final String OAUTH2_LOGOUT = "oauth2_logout";
 
-    protected @Inject OAuth2Config        config;
-    protected @Inject SecurityConfig      sc;
-    protected @Inject OAuth2LogoutHandler handler;
+    protected @Inject OAuth2Config          config;
+    protected @Inject SecurityConfig        sc;
+    protected @Inject AuthenticationManager am;
 
     @Override
-    public State preLogout(Request request, Response response, LogoutContext context) throws Throwable {
+    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(config.isEnabled() && config.isLogout()) {
-
-            if(null != request.getAttribute("oauth2_logout")) {
-                return State.CONTINUE;
-            }
-
-            String remoteLogoutParam = request.getParameter("remote_logout");
-            if("0".equals(remoteLogoutParam)) {
-                return State.CONTINUE;
-            }else{
-                response.sendRedirect(buildRemoteLogoutUrl(request));
-                return State.INTERCEPTED;
+            if(isLogoutFromServer(request)) {
+                am.logoutImmediately(request, response);
             }
         }
-
         return State.CONTINUE;
     }
 
     @Override
-    public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
-
-        if("1".equals(request.getParameter(OAUTH2_LOGOUT))) {
-            return handler.handleServerLogoutRequest(config, request, response, context);
+    public State preLogout(Request request, Response response, LogoutContext context) throws Throwable {
+        if(config.isEnabled() && config.isLogout()) {
+            if(!isLogoutFromServer(request)) {
+                response.sendRedirect(buildRemoteLogoutUrl(request));
+                return State.INTERCEPTED;
+            }
         }
-
         return State.CONTINUE;
+    }
+
+    protected boolean isLogoutFromServer(Request request) {
+        String v = request.getParameter(OAUTH2_LOGOUT);
+        return "1".equals(v);
     }
 
     protected String buildRemoteLogoutUrl(Request request) {
