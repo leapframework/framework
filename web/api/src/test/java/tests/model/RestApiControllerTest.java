@@ -132,6 +132,9 @@ public class RestApiControllerTest extends WebTestBase {
 
         resp = get("/api/restapi?total=true");
         assertEquals(2, Integer.parseInt(resp.getHeader("X-Total-Count")));
+
+        resp = get("/api/restapi?total=true&orderby=name%20desc");
+        assertEquals(2, Integer.parseInt(resp.getHeader("X-Total-Count")));
     }
 
     @Test

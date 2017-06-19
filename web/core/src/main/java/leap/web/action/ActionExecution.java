@@ -16,6 +16,7 @@
 package leap.web.action;
 
 import leap.core.validation.Validation;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.Execution;
 
 /**
@@ -37,9 +38,14 @@ public interface ActionExecution extends Execution {
 	 * Returns the {@link Validation} object.
 	 */
 	Validation getValidation();
+
+    /**
+     * Optional. Returns the http status.
+     */
+    HTTP.Status getStatus();
 	
 	/**
-	 * Returns the return value of action.
+	 * Optional, Returns the return value of action.
 	 */
 	Object getReturnValue();
 

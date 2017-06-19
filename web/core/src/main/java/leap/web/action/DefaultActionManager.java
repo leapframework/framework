@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.validation.Validation;
 import leap.lang.*;
 import leap.lang.convert.ConvertException;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.Execution;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
@@ -37,7 +38,6 @@ import leap.web.format.FormatNotAcceptableException;
 import leap.web.format.FormatNotFoundException;
 import leap.web.format.RequestFormat;
 import leap.web.multipart.MultipartFile;
-import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.view.ViewData;
 
@@ -106,7 +106,7 @@ public class DefaultActionManager implements ActionManager {
 
             //pre-execute action interceptors
             if (State.isIntercepted(eas.interceptors.preExecuteAction(context, validation))) {
-                execution.setStatus(Execution.Status.INTERCEPTED);
+                execution.setState(Execution.ExecutionState.INTERCEPTED);
                 return null;
             }
 
@@ -127,7 +127,22 @@ public class DefaultActionManager implements ActionManager {
             Object value = action.execute(context, args);
 
             execution.setReturnValue(value);
-            execution.setStatus(Execution.Status.SUCCESS);
+
+            if(value instanceof ResponseEntity) {
+                HTTP.Status status = ((ResponseEntity) value).getStatus();
+                if(null != status) {
+                    execution.setStatus(status);
+                    if(status.value() >= 400) {
+                        execution.setState(Execution.ExecutionState.FAILURE);
+
+                        //todo : handled by failure handler
+
+                        return execution.getReturnValue();
+                    }
+                }
+            }
+
+            execution.setState(Execution.ExecutionState.SUCCESS);
 
             //post-execute action interceptors
             eas.interceptors.postExecuteAction(context, validation, execution);
@@ -140,6 +155,7 @@ public class DefaultActionManager implements ActionManager {
             if(e instanceof ResponseException) {
                 ResponseException re = (ResponseException)e;
                 int s = re.getStatus();
+                execution.setStatus(HTTP.Status.valueOf(s));
                 if (s >= 200 && s <= 300) {
                     log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
                     throw e;
@@ -147,10 +163,15 @@ public class DefaultActionManager implements ActionManager {
             }
 
             log.error("Failed to execute action {}, {}", context.getAction(), e.getMessage(), e);
-			execution.setStatus(Execution.Status.FAILURE);
+			execution.setState(Execution.ExecutionState.FAILURE);
 			execution.setException(e);
-			
-            if(!handleFailure(context, validation, execution, eas)) {
+
+            boolean handled = handleFailure(context, validation, execution, eas);
+            if(context.getResult().getStatus() > 0) {
+                execution.setStatus(HTTP.Status.valueOf(context.getResult().getStatus()));
+            }
+
+            if(!handled) {
                 throw e;
             }else{
             	//return null

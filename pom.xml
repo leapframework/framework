@@ -412,7 +412,10 @@
         <module>web/webunit</module>
         <module>web/webunit-jsp</module>
 		<module>web/security</module>
-		<module>web/oauth2</module>
+
+        <!-- oauth2 -->
+        <module>oauth2/server</module>
+        <module>oauth2/webapp</module>
 
         <!-- tests -->
         <module>tests</module>

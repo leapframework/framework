@@ -15,14 +15,21 @@
  */
 package leap.core.variable;
 
+import leap.core.security.Anonymous;
 import leap.core.security.SecurityContext;
+import leap.core.security.UserPrincipal;
 
 public class UserVariable implements Variable {
+
+    private static final Anonymous ANONYMOUS = new Anonymous();
 
 	@Override
     public Object getValue() {
 	    SecurityContext sc = SecurityContext.tryGetCurrent();
-	    return null == sc ? null : sc.getUser();
+
+        UserPrincipal user = null == sc ? null : sc.getUser();
+
+        return user == null ? ANONYMOUS : user;
     }
 
 }

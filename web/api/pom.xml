@@ -37,7 +37,7 @@
 		</dependency>
         <dependency>
             <groupId>org.leapframework</groupId>
-            <artifactId>leap-oauth2</artifactId>
+            <artifactId>leap-oauth2-webapp</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
@@ -65,5 +65,11 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+        <dependency>
+            <groupId>org.leapframework</groupId>
+            <artifactId>leap-oauth2-server</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 </project>

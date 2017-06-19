@@ -125,10 +125,6 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 	
 	@Override
     public SqlStatement createQueryStatement(QueryContext context, Object p) {
-		if(log.isDebugEnabled()) {
-			log.debug("Creating query statement for sql : \n {}",sql);
-		}
-
         Params params = createParameters(context, p);
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(params);
 
@@ -144,6 +140,10 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
                 createSqlWithoutOrderBy(sqls);
                 return createOrderByQueryStatement(context, sqls, params);
             }
+        }
+
+        if(log.isDebugEnabled()) {
+            log.debug("Creating query statement... \n\noriginal -> \n\n  {}\n\nprocessed -> \n\n  {}\n", sql, sqls.sql);
         }
 
 	    return doCreateStatement(context, sqls, params, true);
@@ -363,7 +363,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 
 	protected SqlStatement doCreateStatement(SqlContext context, Sql sql, Params params, boolean query){
 		DefaultSqlStatementBuilder statement = new DefaultSqlStatementBuilder(context, sql, query);
-	    
+
 		sql.buildStatement(context, statement, params);
 		
 		return statement.build();
@@ -494,6 +494,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 			return sql;
 		}
 
+        /*
 		protected void buildSqlStatement(SqlContext context, AstNode node,DefaultSqlStatementBuilder statement,Params parameters) {
 			
 			if(node instanceof SqlOrderBy){
@@ -524,6 +525,7 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 
             node.buildStatement(context, statement, parameters);
 		}
+		*/
 
 		@Override
         public String getOrderBy() {

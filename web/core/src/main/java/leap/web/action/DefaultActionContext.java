@@ -46,6 +46,7 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	public DefaultActionContext(Request request,Response response) {
 		this.request  = request;
 		this.response = response;
+        this.method   = request.getMethod();
 	}
 
 	@Override
@@ -66,10 +67,6 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	@Override
 	public String getMethod() {
 		return method;
-	}
-
-	public void setMethod(String method) {
-		this.method = method;
 	}
 
 	@Override
