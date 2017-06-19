@@ -105,6 +105,24 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
         return this;
     }
 
+    @ConfigProperty
+    public void setIndirectServerUrl(String indirectServerUrl) {//don't change the parameter name (used by config property)
+        indirectServerUrl = Paths.suffixWithoutSlash(indirectServerUrl);
+
+        this.authorizeUrl = indirectServerUrl + "/oauth2/authorize";
+        this.logoutUrl    = indirectServerUrl + "/oauth2/logout";
+    }
+
+    @ConfigProperty
+    public void setDirectServerUrl(String directServerUrl) {//don't change the parameter name (used by config property)
+        directServerUrl = Paths.suffixWithoutSlash(directServerUrl);
+
+        this.tokenUrl     = directServerUrl + "/oauth2/token";
+        this.tokenInfoUrl = directServerUrl + "/oauth2/tokeninfo";
+        this.userInfoUrl  = directServerUrl + "/oauth2/userinfo";
+        this.publicKeyUrl = directServerUrl + "/oauth2/publickey";
+    }
+
     @Override
     public String getAuthorizeUrl() {
         return authorizeUrl;

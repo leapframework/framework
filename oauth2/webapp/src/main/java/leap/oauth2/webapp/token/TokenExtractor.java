@@ -13,23 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.authc;
+package leap.oauth2.webapp.token;
 
-import leap.core.security.ClientPrincipal;
+import leap.web.Request;
 
-public class OAuth2ClientPrincipal implements ClientPrincipal {
-	
-	private static final long serialVersionUID = -3438856033102626691L;
-	
-	protected String clientId;
+/**
+ * Extracts the {@link AccessToken} from request.
+ */
+public interface TokenExtractor {
 
-	public OAuth2ClientPrincipal(String clientId) {
-	    this.clientId = clientId;
-	}
-
-	@Override
-    public Object getId() {
-	    return clientId;
-	}
+    /**
+     * Returns <code>null</code> if not found.
+     */
+    AccessToken extractTokenFromRequest(Request request);
 
 }

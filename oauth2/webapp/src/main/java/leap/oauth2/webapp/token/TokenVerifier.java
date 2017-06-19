@@ -13,21 +13,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.token;
 
-public interface TokenManager {
-    
-    /**
-     * Returns the result of {@link AccessTokenDetails}.
-     *
-     * <p/>
-     * Returns <code>null</code> if not found.
-     */
-    AccessTokenDetails loadAccessTokenDetails(AccessToken token);
+import leap.core.security.token.TokenVerifyException;
 
-    /**
-     * Removes the {@link AccessToken} when expired or invalid.
-     */
-    void removeAccessTokenDetails(AccessToken token);
+public interface TokenVerifier {
+
+    TokenInfo verifyAccessToken(AccessToken at) throws TokenVerifyException;
 
 }

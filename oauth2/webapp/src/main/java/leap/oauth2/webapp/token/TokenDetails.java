@@ -15,19 +15,11 @@
  */
 package leap.oauth2.webapp.token;
 
-/**
- * OAuth2.0 Access Token Store in Resource Server.
- */
-public interface AccessTokenStore {
+public interface TokenDetails extends TokenInfo {
 
-	/**
-	 * Returns the result of loading {@link AccessTokenDetails}.
-	 */
-	AccessTokenDetails loadAccessTokenDetails(AccessToken token);
-
-	/**
-	 * Removes the {@link AccessToken} when access token expired.
-	 */
-	void removeAccessToken(AccessToken token);
+    /**
+     * todo : doc
+     */
+    String getRefreshToken();
 
 }

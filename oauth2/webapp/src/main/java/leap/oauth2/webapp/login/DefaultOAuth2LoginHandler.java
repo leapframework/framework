@@ -28,7 +28,7 @@ import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
-import leap.oauth2.webapp.authc.OAuth2ClientPrincipal;
+import leap.oauth2.webapp.client.OAuth2Client;
 import leap.oauth2.webapp.token.id.IdToken;
 import leap.oauth2.webapp.token.id.IdTokenVerifier;
 import leap.oauth2.webapp.token.*;
@@ -89,7 +89,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             return error(request, response, "illegal_state", "code required from oauth2 server");
         }
 
-        AccessTokenDetails at =
+        TokenDetails at =
                 tokenInfoLookup.lookupByAuthorizationCode(code);
 
         String idToken = params.getIdToken();
@@ -108,7 +108,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
     }
 
-    protected Authentication authenticate(OAuth2Params params, IdToken idTokenCredentials, AccessTokenDetails at) {
+    protected Authentication authenticate(OAuth2Params params, IdToken idTokenCredentials, TokenDetails at) {
         String clientId = idTokenCredentials.getClientId();
         String userId   = idTokenCredentials.getUserId();
 
@@ -116,11 +116,11 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         ClientPrincipal client = null;
 
         if(!Strings.isEmpty(userId)) {
-            user = userInfoLookup.lookupUserDetails(new SimpleAccessToken(null, at.getAccessToken()), userId);
+            user = userInfoLookup.lookupUserDetails(new SimpleAccessToken(at.getAccessToken()), userId);
         }
 
         if(!Strings.isEmpty(clientId)) {
-            client = new OAuth2ClientPrincipal(clientId);
+            client = new OAuth2Client(clientId);
         }
 
         SimpleAuthentication authc = new SimpleAuthentication(user, idTokenCredentials);

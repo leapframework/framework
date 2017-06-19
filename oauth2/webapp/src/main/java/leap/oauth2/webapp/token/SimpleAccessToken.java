@@ -24,9 +24,13 @@ public class SimpleAccessToken extends SimpleTokenCredentials implements AccessT
 
 	protected final String type;
 
+    public SimpleAccessToken(String token) {
+        this(null, token);
+    }
+
 	public SimpleAccessToken(String type, String token) {
 	    super(token);
-		this.type = Strings.isEmpty(type) ? OAuth2Constants.BEARER_TYPE : type;
+		this.type = type;
 	}
 
 	/**

@@ -25,7 +25,7 @@ import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.token.AccessToken;
-import leap.oauth2.webapp.token.AccessTokenExtractor;
+import leap.oauth2.webapp.token.TokenExtractor;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.SecurityInterceptor;
@@ -39,10 +39,10 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
     
     private static final Log log = LogFactory.get(OAuth2AuthenticationInterceptor.class);
 
-    protected @Inject OAuth2Config         config;
-    protected @Inject AccessTokenExtractor tokenExtractor;
-    protected @Inject OAuth2ErrorHandler   errorHandler;
-    protected @Inject OAuth2Authenticator  authenticator;
+    protected @Inject OAuth2Config        config;
+    protected @Inject TokenExtractor      tokenExtractor;
+    protected @Inject OAuth2ErrorHandler  errorHandler;
+    protected @Inject OAuth2Authenticator authenticator;
 
     @Override
 	public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {

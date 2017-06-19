@@ -17,7 +17,7 @@ package leap.oauth2.webapp.token;
 
 import leap.lang.expirable.TimeExpirableSeconds;
 
-public class SimpleAccessTokenDetails extends TimeExpirableSeconds implements AccessTokenDetails {
+public class SimpleTokenDetails extends TimeExpirableSeconds implements TokenDetails {
 
     protected String accessToken;
     protected String refreshToken;
@@ -25,7 +25,7 @@ public class SimpleAccessTokenDetails extends TimeExpirableSeconds implements Ac
     protected String userId;
     protected String scope;
 
-    public SimpleAccessTokenDetails(String accessToken) {
+    public SimpleTokenDetails(String accessToken) {
         this.accessToken = accessToken;
     }
 

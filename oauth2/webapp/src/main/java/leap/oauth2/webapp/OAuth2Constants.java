@@ -19,8 +19,7 @@ public class OAuth2Constants {
 
 	public static String BEARER = "Bearer";
 
-    public static String JWT_TYPE    = "jwt";
-    public static String BEARER_TYPE = "bearer";
+    public static String JWT_TYPE = "jwt";
 
 	/**
 	 * The access token issued by the authorization server. This value is REQUIRED.

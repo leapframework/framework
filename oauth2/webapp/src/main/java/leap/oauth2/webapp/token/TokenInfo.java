@@ -13,18 +13,34 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.token;
 
-import leap.web.Request;
-
-/**
- * Extracts the {@link AccessToken} from request.
- */
-public interface AccessTokenExtractor {
+public interface TokenInfo {
 
     /**
-     * Returns <code>null</code> if not found.
+     * todo : doc
      */
-    AccessToken extractTokenFromRequest(Request request);
+    String getAccessToken();
+
+    /**
+     * Returns the authenticated client id or <code>null</code> if user only.
+     */
+    String getClientId();
+
+    /**
+     * Returns the authenticated user id or <code>null</code> if client only.
+     */
+    String getUserId();
+
+    /**
+     * Returns the granted scope or <code>null</code>.
+     */
+    String getScope();
+
+    /**
+     * Returns <code>true</code> if the token was expired.
+     */
+    boolean isExpired();
 
 }

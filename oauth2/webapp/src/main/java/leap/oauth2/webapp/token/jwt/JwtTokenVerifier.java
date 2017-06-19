@@ -20,10 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.webapp.token.AccessToken;
-import leap.oauth2.webapp.token.AccessTokenDetails;
-import leap.oauth2.webapp.token.AccessTokenStore;
-import leap.oauth2.webapp.token.SimpleAccessTokenDetails;
+import leap.oauth2.webapp.token.*;
 import leap.web.security.SecurityConfig;
 import leap.web.security.user.UserDetails;
 
@@ -31,20 +28,20 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.Objects;
 
-public class JwtAccessTokenStore implements AccessTokenStore {
+public class JwtTokenVerifier implements TokenVerifier {
 
     protected         RSAPublicKey   publicKey;
     protected @Inject SecurityConfig sc;
     protected @Inject OAuth2Config   rsc;
 
     @Override
-    public AccessTokenDetails loadAccessTokenDetails(AccessToken token) {
+    public TokenInfo verifyAccessToken(AccessToken at) throws TokenVerifyException {
         JwtVerifier verifier = rsc.getJwtVerifier();
         if(verifier == null){
             throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
         }
-        Map<String,Object> jwtDetail = verifier.verify(token.getToken());
-        SimpleAccessTokenDetails resAccessTokenDetails = new SimpleAccessTokenDetails(token.getToken());
+        Map<String,Object> jwtDetail = verifier.verify(at.getToken());
+        SimpleTokenDetails resAccessTokenDetails = new SimpleTokenDetails(at.getToken());
         
         Object userId = jwtDetail.remove("user_id");
         UserDetails ud;
@@ -76,11 +73,6 @@ public class JwtAccessTokenStore implements AccessTokenStore {
             throw new IllegalStateException("Invalid expires_in : " + e.getMessage(), e);
         }
         return resAccessTokenDetails;
-    }
-
-    @Override
-    public void removeAccessToken(AccessToken token) {
-        //Do nothing
     }
 
     public RSAPublicKey getPublicKey() {

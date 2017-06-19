@@ -14,12 +14,23 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp.client;
 
-public interface TokenInfoLookup {
+import leap.core.security.ClientPrincipal;
 
-    TokenDetails lookupByAccessToken(String at);
+public class OAuth2Client implements ClientPrincipal {
+	
+	private static final long serialVersionUID = -3438856033102626691L;
+	
+	protected String clientId;
 
-    TokenDetails lookupByAuthorizationCode(String code);
+	public OAuth2Client(String clientId) {
+	    this.clientId = clientId;
+	}
+
+	@Override
+    public Object getId() {
+	    return clientId;
+	}
 
 }

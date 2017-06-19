@@ -15,6 +15,7 @@
  */
 package tests.rs;
 
+import leap.core.security.SEC;
 import leap.lang.Assert;
 import org.junit.Test;
 import tested.models.User;
@@ -55,17 +56,20 @@ public class AdminControllerTest extends OAuth2TestBase {
     }
 
     @Test
-    public void testAccessTokenWithNotUser(){
-        User user = new User();
-        user.setLoginName("notuser");
-        user.setPassword("notuser");
-        user.create();
-        TokenResponse token = obtainAccessTokenByPassword(user.getLoginName(), user.getPassword());
-        Assert.notNull(token);
-        user.delete();
+    public void testAccessTokenUserNotExists(){
+        String username = "will_be_deleted";
+        String password = "1";
 
+        User user = new User();
+        user.setLoginName(username);
+        user.setPassword(SEC.encodePassword(password));
+        user.create();
+
+        TokenResponse token = obtainAccessTokenByPassword(user.getLoginName(), password);
+        Assert.notNull(token.accessToken);
+
+        user.delete();
         assertEquals("success",withAccessToken(forGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
-    
-    
+
 }

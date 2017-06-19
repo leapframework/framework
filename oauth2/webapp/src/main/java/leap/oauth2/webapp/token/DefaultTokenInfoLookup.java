@@ -42,20 +42,20 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     protected @Inject HttpClient   httpClient;
 
     @Override
-    public AccessTokenDetails lookupByAccessToken(String at) {
+    public TokenDetails lookupByAccessToken(String at) {
         if(null == config.getTokenInfoUrl()) {
             throw new IllegalStateException("The tokenInfoUrl must be configured");
         }
 
-        HttpRequest request = httpClient.request(config.getTokenUrl())
-                .addFormParam("access_token", at)
+        HttpRequest request = httpClient.request(config.getTokenInfoUrl())
+                .addQueryParam("access_token", at)
                 .setMethod(HTTP.Method.GET);
 
         return requestTokenInfo(request);
     }
 
     @Override
-    public AccessTokenDetails lookupByAuthorizationCode(String code) {
+    public TokenDetails lookupByAuthorizationCode(String code) {
         if(null == config.getTokenUrl()) {
             throw new IllegalStateException("The tokenUrl must be configured");
         }
@@ -68,7 +68,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         return requestTokenInfo(request);
     }
 
-    protected AccessTokenDetails requestTokenInfo(HttpRequest request) {
+    protected TokenDetails requestTokenInfo(HttpRequest request) {
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));
@@ -99,8 +99,8 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         }
     }
 
-    protected AccessTokenDetails createAccessTokenDetails(Map<String, Object> map) {
-        SimpleAccessTokenDetails details = new SimpleAccessTokenDetails((String)map.remove("access_token"));
+    protected TokenDetails createAccessTokenDetails(Map<String, Object> map) {
+        SimpleTokenDetails details = new SimpleTokenDetails((String)map.remove("access_token"));
 
         details.setRefreshToken((String)map.remove("refresh_token"));
         details.setClientId((String)map.remove("client_id"));

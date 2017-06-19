@@ -84,7 +84,8 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
                     if(Strings.isEmpty(error)) {
                         return newUserInfo(o);
                     }else{
-                        throw new OAuth2InternalServerException("Auth server response error : " + error);
+                        log.warn("Auth server response error '{}' : {}", error, o.getString("error_description"));
+                        return null;
                     }
                 }
             } catch (Exception e) {
@@ -95,7 +96,6 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
             throw new OAuth2InternalServerException("Invalid response from auth server");
         }
     }
-
 
     protected UserPrincipal newUserInfo(JsonObject json) {
         SimpleUserPrincipal userInfo = new SimpleUserPrincipal();

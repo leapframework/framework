@@ -3,7 +3,7 @@
        if-servlet-environment="true"
        if-class-present="leap.web.security.SecurityConfig">
 
-    <!-- common -->
+    <!-- error -->
     <bean type="leap.oauth2.webapp.OAuth2ErrorHandler"
           class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 
@@ -34,32 +34,23 @@
           class="leap.oauth2.webapp.authc.DefaultOAuth2Authenticator" primary="true"/>
 
     <!-- access token -->
-    <bean type="leap.oauth2.webapp.token.TokenManager"
-          class="leap.oauth2.webapp.token.DefaultTokenManager" primary="true"/>
-
-    <bean type="leap.oauth2.webapp.token.AccessTokenExtractor"
-          class="leap.oauth2.webapp.token.DefaultAccessTokenExtractor" primary="true"/>
-
-    <bean name="bearer"
-          type="leap.oauth2.webapp.token.AccessTokenStore"
-          class="leap.oauth2.webapp.token.bearer.BearerAccessTokenStore" primary="true"/>
+    <bean type="leap.oauth2.webapp.token.TokenExtractor"
+          class="leap.oauth2.webapp.token.DefaultTokenExtractor" primary="true"/>
 
     <bean name="jwt"
-          type="leap.oauth2.webapp.token.AccessTokenStore"
-          class="leap.oauth2.webapp.token.jwt.JwtAccessTokenStore">
-    </bean>
+          type="leap.oauth2.webapp.token.TokenVerifier"
+          class="leap.oauth2.webapp.token.jwt.JwtTokenVerifier"/>
+
+    <bean type="leap.oauth2.webapp.token.TokenInfoLookup"
+          class="leap.oauth2.webapp.token.DefaultTokenInfoLookup" primary="true"/>
 
     <!-- id token -->
     <bean type="leap.oauth2.webapp.token.id.IdTokenVerifier"
           class="leap.oauth2.webapp.token.id.DefaultIdTokenVerifier" primary="true"/>
 
-    <!-- userinfo -->
+    <!-- user -->
     <bean type="leap.oauth2.webapp.user.UserInfoLookup"
           class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
-
-    <!-- tokeninfo -->
-    <bean type="leap.oauth2.webapp.token.TokenInfoLookup"
-          class="leap.oauth2.webapp.token.DefaultTokenInfoLookup" primary="true"/>
 
     <!-- old wac -->
     <bean type="leap.oauth2.wac.OAuth2WebAppConfig"

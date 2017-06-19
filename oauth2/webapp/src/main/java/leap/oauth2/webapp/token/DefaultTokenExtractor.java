@@ -26,9 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 import java.util.Map;
 
-public class DefaultAccessTokenExtractor implements AccessTokenExtractor {
+public class DefaultTokenExtractor implements TokenExtractor {
 	
-	private static final Log log = LogFactory.get(DefaultAccessTokenExtractor.class);
+	private static final Log log = LogFactory.get(DefaultTokenExtractor.class);
 
 	@Override
 	public AccessToken extractTokenFromRequest(Request request) {
@@ -44,7 +44,7 @@ public class DefaultAccessTokenExtractor implements AccessTokenExtractor {
 		if(isJwt(token)){
 			return new SimpleAccessToken(OAuth2Constants.JWT_TYPE, token);
 		}else{
-            return new SimpleAccessToken(OAuth2Constants.BEARER_TYPE, token);
+            return new SimpleAccessToken(token);
         }
 	}
 
