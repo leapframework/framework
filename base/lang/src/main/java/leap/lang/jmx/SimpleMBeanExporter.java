@@ -84,10 +84,12 @@ public class SimpleMBeanExporter implements MBeanExporter {
 
         try {
             server.registerMBean(mbean, name);
-        } catch (InstanceAlreadyExistsException | MBeanRegistrationException e) {
+        } catch (MBeanRegistrationException e) {
             throw new MException(e.getMessage(), e);
         } catch (NotCompliantMBeanException e) {
             throw new IllegalStateException(e);
+        } catch (InstanceAlreadyExistsException e) {
+            // ignore when auto-redeploy.
         }
 
         exportedBeans.put(name, Boolean.TRUE);
