@@ -15,8 +15,6 @@
  */
 package leap.oauth2.webapp;
 
-import leap.core.security.token.jwt.JwtVerifier;
-
 /**
  * The configuration of oauth2 web app.
  *
@@ -100,8 +98,4 @@ public interface OAuth2Config {
      */
     String getLogoutView();
 
-	/**
-	 * Returns the jwt verifier of this resource server
-	 */
-	JwtVerifier getJwtVerifier();
 }

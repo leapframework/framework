@@ -30,7 +30,7 @@ public class DefaultIdTokenVerifier implements IdTokenVerifier {
 
     @Override
     public IdToken verifyIdToken(OAuth2Params params, String token) throws TokenVerifyException {
-        //todo: RSA or MAC ? more details userinfo ?
+        //todo: more details userinfo ?
 
         MacSigner signer = new MacSigner(config.getClientSecret());
 

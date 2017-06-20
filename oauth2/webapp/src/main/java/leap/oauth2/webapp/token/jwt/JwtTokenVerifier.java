@@ -16,13 +16,22 @@
 
 package leap.oauth2.webapp.token.jwt;
 
+import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JwtVerifier;
+import leap.core.security.token.jwt.RsaVerifier;
+import leap.lang.Strings;
+import leap.lang.http.client.HttpClient;
+import leap.lang.http.client.HttpRequest;
+import leap.lang.http.client.HttpResponse;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.lang.security.RSA;
+import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.*;
 import leap.web.security.SecurityConfig;
-import leap.web.security.user.UserDetails;
 
 import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
@@ -30,35 +39,62 @@ import java.util.Objects;
 
 public class JwtTokenVerifier implements TokenVerifier {
 
-    protected         RSAPublicKey   publicKey;
+    private static final Log log = LogFactory.get(JwtTokenVerifier.class);
+
     protected @Inject SecurityConfig sc;
-    protected @Inject OAuth2Config   rsc;
+    protected @Inject OAuth2Config   config;
+    protected @Inject HttpClient     httpClient;
+
+    private volatile JwtVerifier verifier;
 
     @Override
     public TokenInfo verifyAccessToken(AccessToken at) throws TokenVerifyException {
-        JwtVerifier verifier = rsc.getJwtVerifier();
-        if(verifier == null){
-            throw new TokenVerifyException(TokenVerifyException.ErrorCode.VERIFY_FAILED, "the jwt verifier must be specified!");
+        if(null == verifier) {
+            if(Strings.isEmpty(config.getPublicKeyUrl())) {
+                throw new AppConfigException("publicKeyUrl must be configured");
+            }
+            refreshJwtVerifier();
         }
-        Map<String,Object> jwtDetail = verifier.verify(at.getToken());
-        SimpleTokenDetails resAccessTokenDetails = new SimpleTokenDetails(at.getToken());
-        
-        Object userId = jwtDetail.remove("user_id");
-        UserDetails ud;
-        if(userId != null){
-            ud = sc.getUserStore().loadUserDetailsById(userId);
-        }else{
-            String username = Objects.toString(jwtDetail.remove("username"));
-            ud = sc.getUserStore().loadUserDetailsByLoginName(username);
+
+        return verify(verifier, at.getToken());
+    }
+
+    protected void refreshJwtVerifier() {
+        log.info("Fetching public key from server, url '{}' ...", config.getPublicKeyUrl());
+        HttpResponse response = httpClient.request(config.getPublicKeyUrl()).get();
+        if(!response.isOk()) {
+            throw new OAuth2InternalServerException("Error fetching public key from server, status " + response.getStatus() + "");
         }
-        if(ud == null){
-            return null;
+
+        String       encoded   = response.getString();
+        RSAPublicKey publicKey = RSA.decodePublicKey(encoded);
+
+        verifier = new RsaVerifier(publicKey);
+    }
+
+    protected TokenInfo verify(JwtVerifier verifier, String token) throws TokenVerifyException {
+        Map<String,Object> jwtDetail;
+
+        try {
+            jwtDetail = verifier.verify(token);
+        }catch (TokenVerifyException e) {
+            refreshJwtVerifier();
+            jwtDetail = verifier.verify(token);
         }
-        resAccessTokenDetails.setUserId(ud==null?null:ud.getIdAsString());
-        resAccessTokenDetails.setScope((String)jwtDetail.remove("scope"));
-        resAccessTokenDetails.setClientId((String)jwtDetail.remove("client_id"));
+
+        SimpleTokenDetails tokenInfo = new SimpleTokenDetails(token);
+
+        String userId   = (String)jwtDetail.remove("user_id");
+        String username = Objects.toString(jwtDetail.remove("username"));
+
+        tokenInfo.setUserId(userId);
+        tokenInfo.setScope((String)jwtDetail.remove("scope"));
+        tokenInfo.setClientId((String)jwtDetail.remove("client_id"));
+
+        //todo: userinfo
+
         //TODO How to ensure is expired?
-        resAccessTokenDetails.setCreated(System.currentTimeMillis());
+        tokenInfo.setCreated(System.currentTimeMillis());
         try {
             Object expiresIn = jwtDetail.get("expires_in");
             if(expiresIn == null){
@@ -66,20 +102,14 @@ public class JwtTokenVerifier implements TokenVerifier {
                 throw new IllegalStateException("'expires_in' not found in jwt token");
             }else{
                 int second = expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString());
-                resAccessTokenDetails.setExpiresIn(second * 1000);
+                tokenInfo.setExpiresIn(second * 1000);
             }
         } catch (NumberFormatException e) {
             //todo :
             throw new IllegalStateException("Invalid expires_in : " + e.getMessage(), e);
         }
-        return resAccessTokenDetails;
+
+        return tokenInfo;
     }
 
-    public RSAPublicKey getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(RSAPublicKey publicKey) {
-        this.publicKey = publicKey;
-    }
 }

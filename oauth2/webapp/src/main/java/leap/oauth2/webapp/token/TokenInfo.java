@@ -16,6 +16,8 @@
 
 package leap.oauth2.webapp.token;
 
+import leap.core.security.UserPrincipal;
+
 public interface TokenInfo {
 
     /**
@@ -43,4 +45,10 @@ public interface TokenInfo {
      */
     boolean isExpired();
 
+    /**
+     * Optional.
+     */
+    default UserPrincipal getUserInfo() {
+        return null;
+    }
 }

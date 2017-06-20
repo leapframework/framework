@@ -16,42 +16,33 @@
 
 package leap.oauth2.webapp;
 
-import leap.core.BeanFactory;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
-import leap.core.cache.Cache;
-import leap.core.cache.CacheManager;
-import leap.core.ioc.PostCreateBean;
-import leap.core.security.token.jwt.JwtVerifier;
 import leap.lang.path.Paths;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
 
 @Configurable(prefix="oauth2")
-public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, PostCreateBean, AppInitializable {
+public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable {
 
 	protected @Inject SecurityConfigurator sc;
-    protected @Inject CacheManager         cm;
 
-    protected boolean               enabled;
-    protected boolean               login;
-    protected boolean               logout;
-    protected String                authorizeUrl;
-    protected String                tokenUrl;
-    protected String                tokenInfoUrl;
-    protected String                userInfoUrl;
-    protected String                publicKeyUrl;
-    protected String                logoutUrl;
-    protected String                clientId;
-    protected String                clientSecret;
-    protected String                redirectUri;
-    protected String                errorView;
-    protected String                logoutView;
-    protected Cache<String, Object> cachedInterceptUrls;
-    protected String                rsaPublicKeyStr;
-    protected JwtVerifier           jwtVerifier;
+    protected boolean enabled;
+    protected boolean login;
+    protected boolean logout;
+    protected String  authorizeUrl;
+    protected String  tokenUrl;
+    protected String  tokenInfoUrl;
+    protected String  userInfoUrl;
+    protected String  publicKeyUrl;
+    protected String  logoutUrl;
+    protected String  clientId;
+    protected String  clientSecret;
+    protected String  redirectUri;
+    protected String  errorView;
+    protected String  logoutView;
 
 	@Override
 	public OAuth2Config config() {
@@ -245,22 +236,6 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Po
     @ConfigProperty
     public void setLogoutView(String logoutView) {
         this.logoutView = logoutView;
-    }
-
-    @Override
-    public JwtVerifier getJwtVerifier() {
-        return jwtVerifier;
-    }
-
-    @ConfigProperty
-    public OAuth2Configurator setRsaPublicKeyStr(String publicKey) {
-        this.rsaPublicKeyStr = publicKey;
-        return this;
-    }
-
-    @Override
-    public void postCreate(BeanFactory factory) throws Throwable {
-        this.cachedInterceptUrls = cm.createSimpleLRUCache(1024);
     }
 
     @Override

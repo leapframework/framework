@@ -118,10 +118,10 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         String clientId = tokenInfo.getClientId();
         String userId   = tokenInfo.getUserId();
 
-        UserPrincipal   user   = null;
+        UserPrincipal   user   = tokenInfo.getUserInfo();
         ClientPrincipal client = null;
 
-        if(!Strings.isEmpty(userId)) {
+        if(null == user && !Strings.isEmpty(userId)) {
             //user info lookup
             user = userInfoLookup.lookupUserDetails(at, userId);
             if(null == user) {

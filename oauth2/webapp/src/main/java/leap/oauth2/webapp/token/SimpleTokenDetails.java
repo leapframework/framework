@@ -15,15 +15,17 @@
  */
 package leap.oauth2.webapp.token;
 
+import leap.core.security.UserPrincipal;
 import leap.lang.expirable.TimeExpirableSeconds;
 
 public class SimpleTokenDetails extends TimeExpirableSeconds implements TokenDetails {
 
-    protected String accessToken;
-    protected String refreshToken;
-    protected String clientId;
-    protected String userId;
-    protected String scope;
+    protected String        accessToken;
+    protected String        refreshToken;
+    protected String        clientId;
+    protected String        userId;
+    protected String        scope;
+    protected UserPrincipal userInfo;
 
     public SimpleTokenDetails(String accessToken) {
         this.accessToken = accessToken;
@@ -67,4 +69,12 @@ public class SimpleTokenDetails extends TimeExpirableSeconds implements TokenDet
         this.scope = scope;
     }
 
+    @Override
+    public UserPrincipal getUserInfo() {
+        return userInfo;
+    }
+
+    public void setUserInfo(UserPrincipal userInfo) {
+        this.userInfo = userInfo;
+    }
 }
