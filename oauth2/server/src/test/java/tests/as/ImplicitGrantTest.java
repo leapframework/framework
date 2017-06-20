@@ -53,17 +53,22 @@ public class ImplicitGrantTest extends OAuth2TestBase {
 	    
 	    testAccessTokenInfo(token);
 	}
+
 	@Test
 	public void testSuccessIdTokenTokenRequest(){
 		TokenResponse response = obtainIdTokenTokenImplicit();
 		assertNotEmpty(response.accessToken);
 		assertNotEmpty(response.idToken);
+
 		MacSigner signer = new MacSigner(Global.TEST_CLIENT_SECRET);
 		Map<String, Object> claim = signer.verify(response.idToken);
-		long exp = Long.parseLong(claim.get(JWT.CLAIM_EXPIRATION_TIME).toString());
-		long except = System.currentTimeMillis()/1000+config.getDefaultIdTokenExpires();
-		assertEquals(except,exp);
+
+        long exp = Long.parseLong(claim.get(JWT.CLAIM_EXPIRATION_TIME).toString());
+		long expect = System.currentTimeMillis()/1000+config.getDefaultIdTokenExpires();
+		assertTrue(expect >= exp && expect <= exp + 100L);
+
 		assertNotEmpty(claim.get(JWT.CLAIM_SUBJECT).toString());
+
 		Threads.sleep(1000);
 		TokenInfoResponse tokeninfo = obtainAccessTokenInfo(response.accessToken);
 		assertNotEmpty(tokeninfo.userId);

@@ -17,13 +17,13 @@
 package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
+import leap.core.security.token.TokenVerifyException;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.OAuth2InvalidTokenException;
-import leap.oauth2.OAuth2ResponseException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
+import leap.oauth2.webapp.OAuth2ResponseException;
 import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenExtractor;
 import leap.web.Request;
@@ -71,7 +71,7 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
             CSRF.ignore(request.getServletRequest());
 
             return State.CONTINUE;
-        } catch (OAuth2InvalidTokenException e) {
+        } catch (TokenVerifyException e) {
             errorHandler.handleInvalidToken(request, response, e.getMessage());
             return State.INTERCEPTED;
         } catch (OAuth2ResponseException e) {

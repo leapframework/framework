@@ -19,7 +19,6 @@ import leap.lang.http.ContentTypes;
 import leap.lang.http.HTTP;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
-import leap.oauth2.OAuth2Errors;
 import leap.web.Request;
 import leap.web.Response;
 

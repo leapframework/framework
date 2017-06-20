@@ -27,7 +27,7 @@ import leap.lang.http.client.HttpResponse;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.lang.security.RSA;
-import leap.oauth2.OAuth2InternalServerException;
+import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.*;
 import leap.web.security.SecurityConfig;

@@ -59,24 +59,4 @@
     <bean type="leap.oauth2.webapp.user.UserInfoLookup"
           class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
 
-    <!-- old wac -->
-    <bean type="leap.oauth2.wac.OAuth2WebAppConfig"
-          class="leap.oauth2.wac.DefaultOAuth2WebAppConfig" primary="true">
-
-        <additional-type-def type="leap.oauth2.wac.OAuth2WebAppConfigurator" primary="true"/>
-
-    </bean>
-
-    <bean type="leap.oauth2.wac.token.WacTokenManager"
-          class="leap.oauth2.wac.token.DefaultWacTokenManager" primary="true"/>
-
-    <bean type="leap.oauth2.wac.auth.WacResponseHandler"
-          class="leap.oauth2.wac.auth.DefaultWacResponseHandler" primary="true"/>
-
-    <bean name="jdbc"
-          type="leap.oauth2.wac.token.WacTokenStore"
-          class="leap.oauth2.wac.token.JdbcWacTokenStore"/>
-
-    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.wac.OAuth2WebAppSecurityInterceptor"/>
-
 </beans>

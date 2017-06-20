@@ -26,8 +26,8 @@ import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.OAuth2Params;
-import leap.oauth2.RequestOAuth2Params;
+import leap.oauth2.webapp.OAuth2Params;
+import leap.oauth2.webapp.OAuth2RequestParams;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.client.OAuth2Client;
@@ -40,7 +40,6 @@ import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
 import leap.web.security.authc.AuthenticationManager;
-import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.login.LoginManager;
 import leap.web.view.View;
 
@@ -59,7 +58,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
     @Override
     public State handleServerRedirectRequest( Request request, Response response, AuthenticationContext context) throws Throwable{
-        OAuth2Params params = new RequestOAuth2Params(request);
+        OAuth2Params params = new OAuth2RequestParams(request);
 
         if(params.isError()) {
             return handleOAuth2ServerError(request, response, params);

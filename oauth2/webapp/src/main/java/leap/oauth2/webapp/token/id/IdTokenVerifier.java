@@ -17,7 +17,7 @@
 package leap.oauth2.webapp.token.id;
 
 import leap.core.security.token.TokenVerifyException;
-import leap.oauth2.OAuth2Params;
+import leap.oauth2.webapp.OAuth2Params;
 
 public interface IdTokenVerifier {
 

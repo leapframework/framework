@@ -13,21 +13,23 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.authc;
+package leap.oauth2.webapp;
 
-import leap.oauth2.webapp.OAuth2Exception;
-import leap.oauth2.webapp.token.Token;
+import leap.web.Request;
 
-public interface OAuth2Authenticator {
-
-    /**
-     * Authenticates the token and returns the result.
-     *
-     * <p/>
-     * Returns null if the token is invalid.
-     *
-     * @throws OAuth2Exception if error.
-     */
-    OAuth2Authentication authenticate(Token token) throws OAuth2Exception;
-
+public class OAuth2RequestParams implements OAuth2Params {
+	
+	protected final Request request;
+	protected final String  grantType;
+	
+	public OAuth2RequestParams(Request request) {
+		this.request   = request;
+		this.grantType = null;
+	}
+	
+	@Override
+    public String getParameter(String name) {
+	    return request.getParameter(name);
+    }
+	
 }

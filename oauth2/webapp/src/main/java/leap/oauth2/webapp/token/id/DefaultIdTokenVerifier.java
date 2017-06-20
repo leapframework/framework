@@ -18,11 +18,10 @@ package leap.oauth2.webapp.token.id;
 
 import leap.core.annotation.Inject;
 import leap.core.security.SimpleUserPrincipal;
-import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenVerifyException;
 import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.MacSigner;
-import leap.oauth2.OAuth2Params;
+import leap.oauth2.webapp.OAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
 
 import java.util.Map;

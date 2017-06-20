@@ -29,7 +29,7 @@ import leap.lang.json.JSON;
 import leap.lang.json.JsonValue;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.oauth2.OAuth2InternalServerException;
+import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 
 import java.util.Map;
