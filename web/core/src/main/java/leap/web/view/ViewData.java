@@ -22,6 +22,10 @@ import leap.web.Request;
 import leap.web.action.Action;
 
 public interface ViewData extends Map<String, Object> {
+
+    static ViewData of(Map<String,Object> m) {
+        return new WrappedViewData(m);
+    }
 	
 	/**
 	 * Returns current {@link Validation} object.

@@ -16,11 +16,10 @@
 
 package leap.oauth2.webapp.user;
 
-import leap.oauth2.webapp.token.AccessToken;
-import leap.web.security.user.UserDetails;
+import leap.core.security.UserPrincipal;
 
 public interface UserDetailsLookup {
 
-    UserDetails lookupUserDetails(AccessToken at, String userId);
+    UserPrincipal lookupUserDetails(String at, String userId);
 
 }

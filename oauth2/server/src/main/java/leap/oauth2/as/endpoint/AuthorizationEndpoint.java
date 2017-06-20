@@ -124,7 +124,9 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             context.setLoginUrl(loginUrl);
         }
 
-        QueryString qs = QueryStringParser.parse(Urls.decode(savedQueryString));
+        String savedQueryStringDecoded = Urls.decode(savedQueryString);
+
+        QueryString qs = QueryStringParser.parse(savedQueryStringDecoded);
         if(qs.isEmpty()) {
             return State.CONTINUE;
         }
@@ -140,7 +142,7 @@ public class AuthorizationEndpoint extends AbstractAuthzEndpoint implements Secu
             return State.INTERCEPTED;
         }
 
-        exposeViewData(request, params, result.get(), savedQueryString);
+        exposeViewData(request, params, result.get(), savedQueryStringDecoded);
 
         return State.CONTINUE;
     }

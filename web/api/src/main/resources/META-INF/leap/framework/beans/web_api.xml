@@ -25,7 +25,7 @@
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.SecurityConfigProcessor"/>
     </beans>
 
-    <beans if-class-present="leap.oauth2.rs.OAuth2ResServerConfig">
+    <beans if-class-present="leap.oauth2.webapp.OAuth2Config">
         <bean type="leap.web.api.config.ApiConfigProcessor" class="leap.web.api.security.OAuth2ConfigProcessor"/>
     </beans>
 

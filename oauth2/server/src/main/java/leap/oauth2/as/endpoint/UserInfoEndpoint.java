@@ -84,7 +84,7 @@ public class UserInfoEndpoint extends AbstractAuthzEndpoint implements Endpoint,
         }
 
         for(UserInfoHandler h : handlers) {
-            if(h.handleUserInfoResponse(request, response, at, userDetails)) {
+            if(h.handleUserInfoResponse(request, response, userDetails)) {
                 return ;
             }
         }

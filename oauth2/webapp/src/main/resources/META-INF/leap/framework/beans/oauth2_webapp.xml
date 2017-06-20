@@ -3,65 +3,60 @@
        if-servlet-environment="true"
        if-class-present="leap.web.security.SecurityConfig">
 
-    <!-- common -->
-    <bean type="leap.web.security.SecurityInterceptor"
-          class="leap.oauth2.rs.OAuth2ResServerSecurityInterceptor"/>
+    <!-- error -->
+    <bean type="leap.oauth2.webapp.OAuth2ErrorHandler"
+          class="leap.oauth2.webapp.DefaultOAuth2ErrorHandler" primary="true"/>
 
-    <bean type="leap.oauth2.rs.OAuth2ResServerConfig"
-          class="leap.oauth2.rs.DefaultOAuth2ResServerConfig" primary="true">
+    <!-- config -->
+    <bean type="leap.oauth2.webapp.OAuth2Config"
+          class="leap.oauth2.webapp.DefaultOAuth2Config" primary="true">
 
-        <additional-type-def type="leap.oauth2.rs.OAuth2ResServerConfigurator" primary="true"/>
+        <additional-type-def type="leap.oauth2.webapp.OAuth2Configurator" primary="true"/>
 
     </bean>
 
-    <if expr="null != properties['oauth2.enabled']">
-        <bean type="leap.web.AppListener" class="leap.oauth2.rs.OAuth2ResServerAutoConfig"/>
-    </if>
+    <!-- login -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.login.OAuth2LoginInterceptor"/>
 
-    <bean type="leap.oauth2.rs.OAuth2ResServerErrorHandler"
-          class="leap.oauth2.rs.DefaultOAuth2ResServerErrorHandler" primary="true"/>
+    <bean type="leap.oauth2.webapp.login.OAuth2LoginHandler"
+          class="leap.oauth2.webapp.login.DefaultOAuth2LoginHandler" primary="true"/>
 
-    <!-- auth -->
-    <bean type="leap.oauth2.rs.auth.ResCredentialsAuthenticator"
-          class="leap.oauth2.rs.auth.DefaultResCredentialsAuthenticator" primary="true"/>
+    <!-- logout -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.logout.OAuth2LogoutInterceptor"/>
 
-    <!-- token -->
-    <bean type="leap.oauth2.rs.token.ResTokenManager"
-          class="leap.oauth2.rs.token.DefaultResTokenManager" primary="true"/>
+    <!-- authc -->
+    <bean type="leap.web.security.SecurityInterceptor"
+          class="leap.oauth2.webapp.authc.OAuth2AuthenticationInterceptor"/>
 
-    <bean name="bearer"
-          type="leap.oauth2.rs.token.ResAccessTokenExtractor"
-          class="leap.oauth2.rs.token.ResBearerAccessTokenExtractor" primary="true"/>
+    <bean type="leap.oauth2.webapp.authc.OAuth2Authenticator"
+          class="leap.oauth2.webapp.authc.DefaultOAuth2Authenticator" primary="true"/>
 
-    <bean name="remote"
-          type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.rs.token.RemoteBearerResAccessTokenStore"/>
+    <!-- code -->
+    <bean type="leap.oauth2.webapp.code.CodeVerifier"
+          class="leap.oauth2.webapp.code.DefaultCodeVerifier" primary="true"/>
+
+    <!-- access token -->
+    <bean type="leap.oauth2.webapp.token.TokenExtractor"
+          class="leap.oauth2.webapp.token.DefaultTokenExtractor" primary="true"/>
+
+    <bean type="leap.oauth2.webapp.token.TokenStore"
+          class="leap.oauth2.webapp.token.DefaultTokenStore" primary="true"/>
 
     <bean name="jwt"
-          type="leap.oauth2.rs.token.ResBearerAccessTokenStore"
-          class="leap.oauth2.rs.token.JwtBearerResAccessTokenStore">
-    </bean>
+          type="leap.oauth2.webapp.token.TokenVerifier"
+          class="leap.oauth2.webapp.token.jwt.JwtTokenVerifier"/>
 
-    <bean type="leap.oauth2.wac.OAuth2WebAppConfig"
-          class="leap.oauth2.wac.DefaultOAuth2WebAppConfig" primary="true">
+    <bean type="leap.oauth2.webapp.token.TokenInfoLookup"
+          class="leap.oauth2.webapp.token.DefaultTokenInfoLookup" primary="true"/>
 
-        <additional-type-def type="leap.oauth2.wac.OAuth2WebAppConfigurator" primary="true"/>
+    <!-- id token -->
+    <bean type="leap.oauth2.webapp.token.id.IdTokenVerifier"
+          class="leap.oauth2.webapp.token.id.DefaultIdTokenVerifier" primary="true"/>
 
-    </bean>
-
-    <bean type="leap.oauth2.wac.token.WacTokenManager"
-          class="leap.oauth2.wac.token.DefaultWacTokenManager" primary="true"/>
-
-    <bean type="leap.oauth2.wac.auth.WacResponseHandler"
-          class="leap.oauth2.wac.auth.DefaultWacResponseHandler" primary="true"/>
-
-    <bean name="jdbc"
-          type="leap.oauth2.wac.token.WacTokenStore"
-          class="leap.oauth2.wac.token.JdbcWacTokenStore"/>
-
-    <bean type="leap.web.security.SecurityInterceptor" class="leap.oauth2.wac.OAuth2WebAppSecurityInterceptor"/>
-
-    <!-- userinfo -->
-    <bean type="leap.oauth2.webapp.user.UserDetailsLookup" class="leap.oauth2.webapp.user.DefaultUserDetailsLookup" primary="true"/>
+    <!-- user -->
+    <bean type="leap.oauth2.webapp.user.UserInfoLookup"
+          class="leap.oauth2.webapp.user.DefaultUserInfoLookup" primary="true"/>
 
 </beans>

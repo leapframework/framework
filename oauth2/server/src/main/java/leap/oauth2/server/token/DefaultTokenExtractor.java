@@ -25,11 +25,15 @@ public class DefaultTokenExtractor implements TokenExtractor {
 
     @Override
     public Token extractTokenFromRequest(Request request) {
-        String v = request.getHeader(Headers.AUTHORIZATION);
+        String v = request.getParameter(OAuth2Constants.ACCESS_TOKEN);
         if (Strings.isEmpty(v)) {
-            v = request.getParameter(OAuth2Constants.ACCESS_TOKEN);
-        } else if (Strings.startsWithIgnoreCase(v, OAuth2Constants.BEARER_TYPE)) {
-            v = v.substring(OAuth2Constants.BEARER_TYPE.length()).trim();
+            v = request.getHeader(Headers.AUTHORIZATION);
+
+            if (Strings.startsWithIgnoreCase(v, OAuth2Constants.BEARER_TYPE)) {
+                v = v.substring(OAuth2Constants.BEARER_TYPE.length()).trim();
+            } else {
+                v = null;
+            }
         }
 
         if (Strings.isEmpty(v)) {
