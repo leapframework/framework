@@ -3,11 +3,11 @@
 	<parent>
 		<groupId>org.leapframework</groupId>
 		<artifactId>leap-parent</artifactId>
-		<version>0.6.2b-SNAPSHOT</version>
+		<version>0.6.3b-SNAPSHOT</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	
     <build>
     	<finalName>leap-${project.version}</finalName>
