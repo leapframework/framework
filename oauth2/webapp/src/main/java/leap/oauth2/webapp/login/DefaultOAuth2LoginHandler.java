@@ -24,6 +24,8 @@ import leap.core.security.token.TokenVerifyException;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2Params;
 import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
@@ -43,6 +45,8 @@ import leap.web.security.login.LoginManager;
 import leap.web.view.View;
 
 public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
+
+    private static final Log log = LogFactory.get(DefaultOAuth2LoginHandler.class);
 
     protected @Inject OAuth2Config          config;
     protected @Inject OAuth2ErrorHandler    errorHandler;
@@ -80,6 +84,12 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
             }
 
             if(null != at) {
+
+                if(at.isExpired()) {
+                    log.info("AT '{}' expired, refresh it", at.getAccessToken());
+                    at = tokenStore.refreshAndSaveAccessToken(request, context, at);
+                }
+
                 TokenContext.setAccessToken(request, at);
             }
         }

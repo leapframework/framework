@@ -13,17 +13,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package app2.controllers;
 
-package leap.oauth2.webapp.token;
-
+import leap.oauth2.webapp.token.TokenContext;
 import leap.web.Request;
-import leap.web.security.authc.AuthenticationContext;
+import leap.web.view.ViewData;
 
-public interface TokenStore {
+public class HomeController {
+    
+    public void index(Request request, ViewData vd) {
+        vd.put("at", TokenContext.getAccessToken(request));
+    }
 
-    TokenDetails loadAccessToken(Request request, AuthenticationContext context);
-
-    void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at);
-
-    TokenDetails refreshAndSaveAccessToken(Request request, AuthenticationContext context, TokenDetails old);
 }

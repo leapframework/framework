@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package tests.rs;
+package tests.resource;
 
 import leap.core.security.SEC;
 import leap.lang.Assert;

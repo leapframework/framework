@@ -8,6 +8,10 @@
     <filter>
     	<filter-name>app-filter</filter-name>
         <filter-class>leap.web.AppFilter</filter-class>
+        <init-param>
+            <param-name>base-package</param-name>
+            <param-value>app1</param-value>
+        </init-param>
     </filter>
     
     <filter-mapping>

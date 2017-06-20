@@ -14,16 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package app2;
 
-import leap.web.Request;
-import leap.web.security.authc.AuthenticationContext;
+import leap.web.App;
 
-public interface TokenStore {
+public class Global extends App {
 
-    TokenDetails loadAccessToken(Request request, AuthenticationContext context);
-
-    void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at);
-
-    TokenDetails refreshAndSaveAccessToken(Request request, AuthenticationContext context, TokenDetails old);
 }

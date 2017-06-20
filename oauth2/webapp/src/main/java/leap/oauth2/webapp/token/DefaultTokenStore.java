@@ -17,6 +17,9 @@
 package leap.oauth2.webapp.token;
 
 import leap.core.Session;
+import leap.core.annotation.Inject;
+import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.token.refresh.TokenRefresher;
 import leap.web.Request;
 import leap.web.security.authc.AuthenticationContext;
 
@@ -26,6 +29,8 @@ import leap.web.security.authc.AuthenticationContext;
 public class DefaultTokenStore implements TokenStore {
 
     private static final String KEY = TokenDetails.class.getName();
+
+    protected @Inject TokenRefresher refresher;
 
     @Override
     public TokenDetails loadAccessToken(Request request, AuthenticationContext context) {
@@ -40,6 +45,15 @@ public class DefaultTokenStore implements TokenStore {
     @Override
     public void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at) {
         request.getSession(true).setAttribute(KEY, at);
+    }
+
+    @Override
+    public TokenDetails refreshAndSaveAccessToken(Request request, AuthenticationContext context, TokenDetails old) {
+        TokenDetails theNew = refresher.refreshAccessToken(old);
+
+        saveAccessToken(request, context, theNew);
+
+        return theNew;
     }
 
 }

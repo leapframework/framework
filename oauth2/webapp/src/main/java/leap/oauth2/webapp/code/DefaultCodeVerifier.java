@@ -55,6 +55,10 @@ public class DefaultCodeVerifier implements CodeVerifier {
                 .addFormParam("code", code)
                 .setMethod(HTTP.Method.POST);
 
+        return fetchAccessToken(request);
+    }
+
+    protected TokenDetails fetchAccessToken(HttpRequest request) {
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));

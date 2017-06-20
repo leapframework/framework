@@ -11,7 +11,7 @@
  * limitations under the License.
  */
 
-package tests.wac;
+package tests.login;
 
 import leap.lang.json.JSON;
 import leap.oauth2.proxy.XForwardedResolver;
@@ -20,16 +20,11 @@ import tests.OAuth2TestBase;
 
 import java.util.Map;
 
-/**
- * Created by KAEL on 2016/6/3.
- */
 public class ProxyServerTest extends OAuth2TestBase {
+
     @Test
     public void testProxyRequest(){
-        if(!isLogin()){
-            loginAuthzServer();
-        }
-        String json = client().request("/clientapp1/proxy_server")
+        String json = client().request("/app1/proxy_server")
                 .addHeader(XForwardedResolver.X_FORWARDED_FOR,"127.0.0.1")
                 .addHeader(XForwardedResolver.X_FORWARDED_SERVER,"www.leap.com")
                 .addHeader(XForwardedResolver.X_FORWARDED_HOST,"www.leap.org")
@@ -38,9 +33,10 @@ public class ProxyServerTest extends OAuth2TestBase {
         Map<String, Object> map = JSON.decode(json);
 
         assertEquals("true",map.get("isProxy"));
-        assertEquals("https://www.leap.org/clientapp1",map.get("host"));
+        assertEquals("https://www.leap.org/app1",map.get("host"));
         assertEquals("www.leap.com",map.get("serverName"));
         assertEquals("https",map.get("protocol"));
         assertEquals("127.0.0.1",map.get("ip"));
     }
+
 }
