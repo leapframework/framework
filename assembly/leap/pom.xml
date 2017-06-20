@@ -7,7 +7,7 @@
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>leap</artifactId>
-	<packaging>jar</packaging>
+	<packaging>pom</packaging>
 	
     <build>
     	<finalName>leap-${project.version}</finalName>
