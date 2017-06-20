@@ -16,21 +16,30 @@
 package app.controllers;
 
 import leap.core.security.UserPrincipal;
+import leap.core.security.annotation.AllowAnonymous;
+import leap.lang.Strings;
+import leap.lang.http.HTTP;
 import leap.web.Request;
+import leap.web.ResponseEntity;
 
 public class HomeController {
 
-    public String checkLoginState(String username) {
-        if(null == username) {
-            return "OK";
+    @AllowAnonymous
+    public ResponseEntity checkLoginState(UserPrincipal user, String username) {
+        if(null == user) {
+            return ResponseEntity.of(HTTP.Status.UNAUTHORIZED);
         }
-        
-        UserPrincipal user = Request.current().getUser();
-        if(user.getLoginName().equals(username)){
-            return "OK";
+
+        if(Strings.isEmpty(username)) {
+            return ResponseEntity.OK;
+        }
+
+        if(!user.getLoginName().equals(username)) {
+            return ResponseEntity.of(HTTP.Status.UNAUTHORIZED);
         }else{
-            return "Failed";
+            return ResponseEntity.OK;
         }
+
     }
 
 }

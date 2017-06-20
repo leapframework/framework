@@ -15,9 +15,6 @@
  */
 package tests;
 
-import app.Global;
-import leap.core.security.token.jwt.JwtVerifier;
-import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.codec.Base64;
@@ -26,13 +23,11 @@ import leap.lang.http.QueryString;
 import leap.lang.http.QueryStringParser;
 import leap.lang.naming.NamingStyles;
 import leap.lang.net.Urls;
-import leap.lang.security.RSA;
 import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.webunit.WebTestBaseContextual;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;
 
-import java.security.interfaces.RSAPublicKey;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
@@ -41,46 +36,9 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     public static final String AUTHZ_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_AUTHZ_ENDPOINT_PATH;
     public static final String TOKEN_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_TOKEN_ENDPOINT_PATH;
     public static final String TOKENINFO_ENDPOINT = OAuth2AuthzServerConfigurator.DEFAULT_TOKENINFO_ENDPOINT_PATH;
-    public static final String LOGOUT_ENDPOINT    = OAuth2AuthzServerConfigurator.DEFAULT_LOGOUT_ENDPOINT_PATH;
-
-    public static final String PUBLIC_KEY         =
-            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDDASOjIWexLpnXiJNJF2pL6NzP\n" +
-            "fBoF0tKEr2ttAkJ/7f3uUHhj2NIhQ01Wu9OjHfXjCvQSXMWqqc1+O9G1UwB2Xslb\n" +
-            "WNwEZFMwmQdP5VleGbJLR3wOl3IzdggkxBJ1Q9rXUlVtslK/CsMtkwkQEg0eZDH1\n" +
-            "VeJXqKBlEhsNckYIGQIDAQAB";
-
-    public static JwtVerifier verifier;
 
     static {
         defaultHttps = true;
-        RSAPublicKey publicKey = RSA.decodePublicKey(PUBLIC_KEY);
-        verifier = new RsaVerifier(publicKey);
-        /*
-        Dmo.get().cmdUpgradeSchema().execute();
-        
-        User.deleteAll();
-        
-        User admin = new User();
-        admin.setLoginName(USERNAME);
-        admin.setPassword(SEC.encodePassword(PASSWORD));
-        admin.save();
-        
-        User test1 = new User();
-        test1.setLoginName("test1");
-        test1.setPassword("bad password");
-        test1.save();
-        
-        User test2 = new User();
-        test2.setLoginName("test2");
-        test2.setPassword("1");
-        test2.setEnabled(false);
-        test2.save();
-        
-        User test3 = new User();
-        test3.setLoginName(USERNAME1);
-        test3.setPassword(SEC.encodePassword(PASSWORD1));
-        test3.save();
-        */
     }
     
     protected String serverContextPath = "/server"; //The context path of server.
@@ -105,7 +63,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     protected String obtainAuthorizationCode() {
         String codeUri = serverContextPath + AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
         
-        login();
+        loginServer();
         String redirectUrl = get(codeUri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
@@ -126,7 +84,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         String uri = serverContextPath + AUTHZ_ENDPOINT + 
                         "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=token";
         
-        login();
+        loginServer();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
@@ -144,7 +102,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         String uri = serverContextPath + AUTHZ_ENDPOINT + 
                         "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token";
         
-        login();
+        loginServer();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
         
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
@@ -162,7 +120,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         String uri = serverContextPath + AUTHZ_ENDPOINT +
                 "?client_id=test&redirect_uri=" + TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=id_token%20token";
 
-        login();
+        loginServer();
         String redirectUrl = get(uri).assertRedirect().getRedirectUrl();
 
         QueryString qs = QueryStringParser.parse(Urls.getQueryString(redirectUrl));
@@ -261,66 +219,16 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         return resp(get(uri), new TokenInfoResponse());
     }
 
-    protected TokenInfoResponse testAccessTokenInfo(TokenResponse token) {
-        TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
-        
-        assertNotEmpty(info.userId);
-        assertEquals(token.expiresIn, info.expiresIn);
-        
-        return info;
-    }
-
-    protected TokenInfoResponse testClientOnlyAccessTokenInfo(TokenResponse token) {
-        TokenInfoResponse info = obtainAccessTokenInfo(token.accessToken);
-        
-        assertNotEmpty(info.clientId);
-        assertEquals(token.expiresIn, info.expiresIn);
-        
-        return info;
-    }
-    
-	protected void login() {
-		login(serverContextPath, USER_ADMIN, PASS_ADMIN);
-	}
-	
-	protected void login(String contextPath) {
-		login(contextPath, USER_ADMIN, PASS_ADMIN);
-	}
-	
-	protected void assertLogin() {
-	    ajaxGet("/check_login_state").assertContentEquals("OK");
-	}
-
     protected boolean isLogin(){
         return "OK".equalsIgnoreCase(ajaxGet("/check_login_state").getContent());
     }
-	
-   protected void assertLogin(String username) {
-        forGet("/check_login_state").addQueryParam("username", username).ajax().get().assertContentEquals("OK");
-    }
-	
-	protected void assertLogout() {
-	    ajaxGet("/check_login_state").assert401();
-	}
-	
-	protected THttpRequest forLogin() {
-		return forLogin(contextPath, USER_ADMIN, PASS_ADMIN);
-	}
-	
-	protected THttpRequest forLogin(String contextPath) {
-		return forLogin(contextPath, USER_ADMIN, PASS_ADMIN);
-	}
 
+    protected THttpRequest forLogin(String contextPath, String username, String password) {
+        return client().request(contextPath + "/login").addFormParam("username", username).addFormParam("password", password);
+    }
+    
 	protected void login(String contextPath, String username,String password) {
 		forLogin(contextPath, username, password).sendAjax().assertOk();
-	}
-	
-	protected THttpRequest forLogin(String contextPath, String username, String password) {
-		return client().request(contextPath + "/login").addFormParam("username", username).addFormParam("password", password);
-	}
-	
-	protected void logout() {
-		logout(serverContextPath);
 	}
 	
 	protected void logout(String contextPath) {
@@ -331,11 +239,11 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 	    return request.setHeader(Headers.AUTHORIZATION, "Bearer " + token).ajax();
 	}
 
-    protected void loginAuthzServer() {
-        login("/server");
+    protected void loginServer() {
+        login("/server", USER_ADMIN, PASS_ADMIN);
     }
 
-    protected void logoutAuthzServer() {
+    protected void logoutServer() {
         logout("/server/oauth2");
     }
 }
