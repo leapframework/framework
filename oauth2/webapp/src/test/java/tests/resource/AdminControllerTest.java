@@ -24,11 +24,6 @@ import tests.TokenResponse;
 
 public class AdminControllerTest extends OAuth2TestBase {
 
-    @Override
-    protected void doSetUp() throws Exception {
-        serverContextPath = "/server";
-    }
-
     @Test
     public void testClientOnlyAccessToken() {
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
@@ -44,8 +39,8 @@ public class AdminControllerTest extends OAuth2TestBase {
 
         withAccessToken(forGet("/admin/status"), token1.accessToken).send().assertOk();
         withAccessToken(forGet("/admin/status"), token2.accessToken).send().assertFailure();
-
     }
+
     @Test
     public void testClientTokenGrantedScope(){
         TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,TEST_CLIENT_ID,TEST_CLIENT_SECRET);

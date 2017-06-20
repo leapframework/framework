@@ -25,7 +25,7 @@ public class ClientAppLoginTest extends OAuth2TestBase {
         runHttp(() -> {
 
             if(isLogin()) {
-                logoutAuthzServer();
+                logoutServer();
             }
 
             //login without access token
@@ -36,7 +36,7 @@ public class ClientAppLoginTest extends OAuth2TestBase {
             String redirectUrl2 = get("/app2").assertRedirect().getLocation();
             assertEquals(redirectUrl2, "http://localhost:8080/server/oauth2/authorize?response_type=code+id_token&client_id=app2&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Fapp2%2F%3Foauth2_redirect%3D1&logout_uri=http%3A%2F%2Flocalhost%3A8080%2Fapp2%2Flogout");
 
-            loginAuthzServer();
+            loginServer();
 
             String redirectBackUrl1 = get(redirectUrl1).assertRedirect().getLocation();
             get("/app1/").assertNotOk();

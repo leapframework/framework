@@ -24,7 +24,7 @@ public class BookControllerTest extends OAuth2TestBase {
     
 	@Test
 	public void testBadRequest() {
-	    logout();
+	    logout("");
 		ajaxGet("/book").assertNotOk();
 
 	 	//resp.assert400();

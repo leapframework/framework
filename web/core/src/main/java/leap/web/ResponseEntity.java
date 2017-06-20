@@ -21,6 +21,7 @@ import leap.lang.http.client.HttpHeaders;
 
 public interface ResponseEntity {
 
+    ResponseEntity OK         = of(HTTP.Status.OK, null);
     ResponseEntity NOT_FOUND  = of(HTTP.Status.NOT_FOUND, null);
     ResponseEntity NO_CONTENT = of(HTTP.Status.NO_CONTENT, null);
 

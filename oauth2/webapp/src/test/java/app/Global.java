@@ -17,6 +17,9 @@ package app;
 
 import leap.web.App;
 
+/**
+ * App with full oauth2 features.
+ */
 public class Global extends App {
 
 }
