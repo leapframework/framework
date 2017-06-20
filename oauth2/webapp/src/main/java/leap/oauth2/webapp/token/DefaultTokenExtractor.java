@@ -31,20 +31,20 @@ public class DefaultTokenExtractor implements TokenExtractor {
 	private static final Log log = LogFactory.get(DefaultTokenExtractor.class);
 
 	@Override
-	public AccessToken extractTokenFromRequest(Request request) {
+	public Token extractTokenFromRequest(Request request) {
 		String v = extractToken(request.getServletRequest());
 		return extractTokenFromString(v,request.getParameters());
 	}
 
-	protected AccessToken extractTokenFromString(String token, Map<String, Object> params) {
+	protected Token extractTokenFromString(String token, Map<String, Object> params) {
 		if(null == token || token.length() == 0) {
 			return null;
 		}
 
 		if(isJwt(token)){
-			return new SimpleAccessToken(OAuth2Constants.JWT_TYPE, token);
+			return new SimpleToken(OAuth2Constants.JWT_TYPE, token);
 		}else{
-            return new SimpleAccessToken(token);
+            return new SimpleToken(token);
         }
 	}
 

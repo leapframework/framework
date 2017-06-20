@@ -20,6 +20,7 @@ import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.lang.path.Paths;
+import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
 import leap.web.AppInitializable;
 import leap.web.security.SecurityConfigurator;
@@ -32,6 +33,7 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected boolean enabled;
     protected boolean login;
     protected boolean logout;
+    protected boolean loginWithAccessToken;
     protected String  authorizeUrl;
     protected String  tokenUrl;
     protected String  tokenInfoUrl;
@@ -43,6 +45,8 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected String  redirectUri;
     protected String  errorView;
     protected String  logoutView;
+
+    protected @Inject UserDetailsLookup userDetailsLookup;
 
 	@Override
 	public OAuth2Config config() {
@@ -79,6 +83,16 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     @ConfigProperty
     public void setLogout(boolean logout) {
         this.logout = logout;
+    }
+
+    @Override
+    public boolean isLoginWithAccessToken() {
+        return loginWithAccessToken;
+    }
+
+    @ConfigProperty
+    public void setLoginWithAccessToken(boolean loginWithAccessToken) {
+        this.loginWithAccessToken = loginWithAccessToken;
     }
 
     @Override
@@ -243,6 +257,11 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
         if(enabled) {
             if(!sc.config().isEnabled()) {
                 sc.enable(true);
+            }
+
+            //Auto enable login access token if user details lookup exists.
+            if(null != userDetailsLookup) {
+                loginWithAccessToken = true;
             }
         }
     }

@@ -18,8 +18,6 @@ package leap.oauth2.webapp.token;
 
 public interface TokenInfoLookup {
 
-    TokenDetails lookupByAccessToken(String at);
-
-    TokenDetails lookupByAuthorizationCode(String code);
+    TokenInfo lookupByAccessToken(String at);
 
 }

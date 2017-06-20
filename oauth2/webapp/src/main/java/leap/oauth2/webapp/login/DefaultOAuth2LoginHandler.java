@@ -29,10 +29,11 @@ import leap.oauth2.RequestOAuth2Params;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.client.OAuth2Client;
+import leap.oauth2.webapp.code.CodeVerifier;
 import leap.oauth2.webapp.token.id.IdToken;
 import leap.oauth2.webapp.token.id.IdTokenVerifier;
 import leap.oauth2.webapp.token.*;
-import leap.oauth2.webapp.user.UserInfoLookup;
+import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
@@ -47,12 +48,13 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     protected @Inject OAuth2ErrorHandler    errorHandler;
     protected @Inject AuthenticationManager am;
     protected @Inject LoginManager          lm;
+    protected @Inject TokenStore            tokenStore;
     protected @Inject IdTokenVerifier       idTokenVerifier;
-    protected @Inject TokenInfoLookup       tokenInfoLookup;
-    protected @Inject UserInfoLookup        userInfoLookup;
+    protected @Inject CodeVerifier          codeVerifier;
+    protected @Inject UserDetailsLookup     userDetailsLookup;
 
     @Override
-    public State handleServerRedirectRequest(OAuth2Config config, Request request, Response response, AuthenticationContext context) throws Throwable{
+    public State handleServerRedirectRequest( Request request, Response response, AuthenticationContext context) throws Throwable{
         OAuth2Params params = new RequestOAuth2Params(request);
 
         if(params.isError()) {
@@ -60,6 +62,29 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }else{
             return handleOAuth2ServerSuccess(request, response, params);
         }
+    }
+
+    @Override
+    public State handleAuthenticationResolved(Request request, Response response, AuthenticationContext context) throws Throwable {
+        Authentication authc = context.getAuthentication();
+
+        if(null != authc) {
+            TokenDetails at;
+            if(authc instanceof OAuth2LoginAuthentication) {
+                at = ((OAuth2LoginAuthentication) authc).getAccessToken();
+                if(null != at) {
+                    tokenStore.saveAccessToken(request, context, at);
+                }
+            }else{
+                at = tokenStore.loadAccessToken(request, context);
+            }
+
+            if(null != at) {
+                TokenContext.setAccessToken(request, at);
+            }
+        }
+
+        return State.CONTINUE;
     }
 
     protected State handleOAuth2ServerError(Request request, Response response, OAuth2Params params) throws Throwable {
@@ -84,13 +109,19 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     }
 
     protected State handleOAuth2ServerSuccess(Request request, Response response, OAuth2Params params) throws Throwable {
-        String code = params.getCode();
-        if(Strings.isEmpty(code)) {
-            return error(request, response, "illegal_state", "code required from oauth2 server");
-        }
+        TokenDetails at = null;
 
-        TokenDetails at =
-                tokenInfoLookup.lookupByAuthorizationCode(code);
+        if(config.isLoginWithAccessToken()) {
+            String code = params.getCode();
+            if(Strings.isEmpty(code)) {
+                return error(request, response, "illegal_state", "code required from oauth2 server");
+            }
+
+            at = codeVerifier.verifyCode(code);
+            if(null == at) {
+                return error(request, response, "illegal_state", "invalid authorization code");
+            }
+        }
 
         String idToken = params.getIdToken();
         if(Strings.isEmpty(idToken)) {
@@ -102,39 +133,43 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
 
             Authentication authc = authenticate(params, credentials, at);
 
-            return login(request,response,authc);
+            login(request, response, authc);
+
+            return State.CONTINUE;
         }catch (TokenVerifyException e) {
             return error(request, response, e.getErrorCode().name(), e.getMessage());
         }
     }
 
-    protected Authentication authenticate(OAuth2Params params, IdToken idTokenCredentials, TokenDetails at) {
-        String clientId = idTokenCredentials.getClientId();
-        String userId   = idTokenCredentials.getUserId();
+    protected Authentication authenticate(OAuth2Params params, IdToken idtoken, TokenDetails at) {
+        String clientId = idtoken.getClientId();
+        String userId   = idtoken.getUserId();
 
-        UserPrincipal user   = null;
-        ClientPrincipal client = null;
+        UserPrincipal   user   = idtoken.getUserInfo();
+        ClientPrincipal client = idtoken.getClientInfo();
 
-        if(!Strings.isEmpty(userId)) {
-            user = userInfoLookup.lookupUserDetails(new SimpleAccessToken(at.getAccessToken()), userId);
+        if(null != userDetailsLookup && !Strings.isEmpty(userId)) {
+            user = userDetailsLookup.lookupUserDetails(at.getAccessToken(), userId);
         }
 
-        if(!Strings.isEmpty(clientId)) {
+        if(null == client && !Strings.isEmpty(clientId)) {
             client = new OAuth2Client(clientId);
         }
 
-        SimpleAuthentication authc = new SimpleAuthentication(user, idTokenCredentials);
+        OAuth2LoginAuthentication authc = new OAuth2LoginAuthentication(user, idtoken);
         if(null != client) {
             authc.setClientPrincipal(client);
+        }
+        if(null != at) {
+            authc.setAccessToken(at);
         }
 
         return authc;
     }
 
-    protected State login(Request request, Response response, Authentication authc) throws Throwable {
+    protected void login(Request request, Response response, Authentication authc) throws Throwable {
         am.loginImmediately(request, response, authc);
         lm.handleLoginSuccess(request, response, authc);
-        return State.CONTINUE;
     }
 
 }

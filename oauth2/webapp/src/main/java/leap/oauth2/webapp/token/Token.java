@@ -14,16 +14,18 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package leap.oauth2.webapp.token;
 
-import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.Token;
+import leap.core.security.token.TokenCredentials;
 
-public interface UserInfoLookup {
+/**
+ * The access token credentials sent by oauth2 client.
+ */
+public interface Token extends TokenCredentials {
 
     /**
-     * By access token.
+     * Optional. The token type.
      */
-    UserPrincipal lookupUserInfo(String at, String userId);
+    String getType();
 
 }

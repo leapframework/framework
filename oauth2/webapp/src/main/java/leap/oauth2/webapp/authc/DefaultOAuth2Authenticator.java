@@ -30,7 +30,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.client.OAuth2Client;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.Token;
 import leap.oauth2.webapp.token.TokenInfo;
 import leap.oauth2.webapp.token.TokenVerifier;
 import leap.oauth2.webapp.token.TokenInfoLookup;
@@ -69,7 +69,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
     }
 
     @Override
-    public OAuth2Authentication authenticate(AccessToken at) {
+    public OAuth2Authentication authenticate(Token at) {
         //Resolve from cache.
         CachedAuthentication cached = getCachedAuthentication(at);
         if(null != cached) {
@@ -99,7 +99,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
             if(null == verifier) {
                 throw new AppConfigException("Cannot handle access token type '" + at.getType() + "'");
             }
-            tokenInfo = verifier.verifyAccessToken(at);
+            tokenInfo = verifier.verifyToken(at);
         }else{
             tokenInfo = tokenInfoLookup.lookupByAccessToken(at.getToken());
         }
@@ -123,7 +123,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
 
         if(null == user && !Strings.isEmpty(userId)) {
             //user info lookup
-            user = userInfoLookup.lookupUserDetails(at, userId);
+            user = userInfoLookup.lookupUserInfo(at.getToken(), userId);
             if(null == user) {
                 //todo: exception?
                 log.warn("User info not exists in oauth2 server, user id -> {}, access token -> {}", userId, at.getToken());
@@ -146,11 +146,11 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         return authc;
     }
 
-    protected CachedAuthentication getCachedAuthentication(AccessToken at) {
+    protected CachedAuthentication getCachedAuthentication(Token at) {
         return cache.get(at.getToken());
     }
 
-    protected void cacheAuthentication(AccessToken at, TokenInfo tokenDetails, OAuth2Authentication authc) {
+    protected void cacheAuthentication(Token at, TokenInfo tokenDetails, OAuth2Authentication authc) {
     	int cachedMs=cacheExpiresInMs;
     	if(tokenDetails instanceof TimeExpirableSeconds){
     		cachedMs=((TimeExpirableSeconds)tokenDetails).getExpiresInFormNow()*1000;
@@ -158,7 +158,7 @@ public class DefaultOAuth2Authenticator implements OAuth2Authenticator, PostCrea
         cache.put(at.getToken(), new CachedAuthentication(tokenDetails, authc, cachedMs));
     }
 
-    protected void removeCachedAuthentication(AccessToken at, CachedAuthentication cached) {
+    protected void removeCachedAuthentication(Token at, CachedAuthentication cached) {
         cache.remove(at.getToken());
     }
 

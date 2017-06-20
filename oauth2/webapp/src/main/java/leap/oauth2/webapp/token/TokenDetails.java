@@ -15,10 +15,18 @@
  */
 package leap.oauth2.webapp.token;
 
+/**
+ * The details of an access token.
+ */
 public interface TokenDetails extends TokenInfo {
 
     /**
-     * todo : doc
+     * Required.
+     */
+    String getAccessToken();
+
+    /**
+     * Required.
      */
     String getRefreshToken();
 

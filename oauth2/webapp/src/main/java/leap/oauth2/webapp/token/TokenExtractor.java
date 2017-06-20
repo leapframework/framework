@@ -18,13 +18,13 @@ package leap.oauth2.webapp.token;
 import leap.web.Request;
 
 /**
- * Extracts the {@link AccessToken} from request.
+ * Extracts the {@link Token} from request.
  */
 public interface TokenExtractor {
 
     /**
      * Returns <code>null</code> if not found.
      */
-    AccessToken extractTokenFromRequest(Request request);
+    Token extractTokenFromRequest(Request request);
 
 }

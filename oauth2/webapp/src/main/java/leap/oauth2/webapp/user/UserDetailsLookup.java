@@ -17,13 +17,9 @@
 package leap.oauth2.webapp.user;
 
 import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.Token;
 
-public interface UserInfoLookup {
+public interface UserDetailsLookup {
 
-    /**
-     * By access token.
-     */
-    UserPrincipal lookupUserInfo(String at, String userId);
+    UserPrincipal lookupUserDetails(String at, String userId);
 
 }

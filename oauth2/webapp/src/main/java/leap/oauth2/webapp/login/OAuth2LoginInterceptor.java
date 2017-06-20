@@ -45,10 +45,15 @@ public class OAuth2LoginInterceptor implements SecurityInterceptor {
     public State preResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         if(config.isEnabled() && config.isLogin()) {
             if(isRedirectBackFromServer(request)) {
-                return handler.handleServerRedirectRequest(config, request, response, context);
+                return handler.handleServerRedirectRequest(request, response, context);
             }
         }
         return State.CONTINUE;
+    }
+
+    @Override
+    public State postResolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
+        return handler.handleAuthenticationResolved(request, response, context);
     }
 
     @Override
@@ -69,7 +74,9 @@ public class OAuth2LoginInterceptor implements SecurityInterceptor {
     protected String buildLoginUrl(Request request) {
         QueryStringBuilder qs = new QueryStringBuilder();
 
-        qs.add(OAuth2Params.RESPONSE_TYPE, "code id_token");
+        String responseType = config.isLoginWithAccessToken() ? "code id_token" : "id_token";
+
+        qs.add(OAuth2Params.RESPONSE_TYPE, responseType);
         qs.add(OAuth2Params.CLIENT_ID,     config.getClientId());
         qs.add(OAuth2Params.REDIRECT_URI,  buildClientRedirectUri(request));
         qs.add(OAuth2Params.LOGOUT_URI,    buildClientLogoutUri(request));

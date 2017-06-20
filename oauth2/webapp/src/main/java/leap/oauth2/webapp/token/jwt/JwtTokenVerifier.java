@@ -23,7 +23,6 @@ import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Strings;
 import leap.lang.http.client.HttpClient;
-import leap.lang.http.client.HttpRequest;
 import leap.lang.http.client.HttpResponse;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -48,7 +47,7 @@ public class JwtTokenVerifier implements TokenVerifier {
     private volatile JwtVerifier verifier;
 
     @Override
-    public TokenInfo verifyAccessToken(AccessToken at) throws TokenVerifyException {
+    public TokenInfo verifyToken(Token token) throws TokenVerifyException {
         if(null == verifier) {
             if(Strings.isEmpty(config.getPublicKeyUrl())) {
                 throw new AppConfigException("publicKeyUrl must be configured");
@@ -56,7 +55,7 @@ public class JwtTokenVerifier implements TokenVerifier {
             refreshJwtVerifier();
         }
 
-        return verify(verifier, at.getToken());
+        return verify(verifier, token.getToken());
     }
 
     protected void refreshJwtVerifier() {

@@ -14,16 +14,18 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package leap.oauth2.webapp.code;
 
-import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.Token;
+import leap.oauth2.webapp.token.TokenDetails;
 
-public interface UserInfoLookup {
+/**
+ * Verifier for authorization code.
+ */
+public interface CodeVerifier {
 
     /**
-     * By access token.
+     * Verify the authorization code and returns the access token.
      */
-    UserPrincipal lookupUserInfo(String at, String userId);
+    TokenDetails verifyCode(String code);
 
 }

@@ -17,18 +17,16 @@
 package leap.oauth2.webapp.token;
 
 import leap.core.security.token.SimpleTokenCredentials;
-import leap.lang.Strings;
-import leap.oauth2.webapp.OAuth2Constants;
 
-public class SimpleAccessToken extends SimpleTokenCredentials implements AccessToken {
+public class SimpleToken extends SimpleTokenCredentials implements Token {
 
 	protected final String type;
 
-    public SimpleAccessToken(String token) {
+    public SimpleToken(String token) {
         this(null, token);
     }
 
-	public SimpleAccessToken(String type, String token) {
+	public SimpleToken(String type, String token) {
 	    super(token);
 		this.type = type;
 	}

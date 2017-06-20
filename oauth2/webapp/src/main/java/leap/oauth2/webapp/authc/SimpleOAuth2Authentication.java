@@ -18,16 +18,16 @@ package leap.oauth2.webapp.authc;
 import leap.core.security.Authentication;
 import leap.core.security.ClientPrincipal;
 import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.Token;
 import leap.web.security.authc.AbstractAuthentication;
 
 public class SimpleOAuth2Authentication extends AbstractAuthentication implements Authentication, OAuth2Authentication {
 	
-    protected final AccessToken     credentials;
+    protected final Token           credentials;
     protected final UserPrincipal   user;
     protected final ClientPrincipal client;
 
-	public SimpleOAuth2Authentication(AccessToken credentials, UserPrincipal user, ClientPrincipal client) {
+	public SimpleOAuth2Authentication(Token credentials, UserPrincipal user, ClientPrincipal client) {
         this.credentials = credentials;
         this.user   = user;
         this.client = client;
@@ -39,7 +39,7 @@ public class SimpleOAuth2Authentication extends AbstractAuthentication implement
 	}
 
     @Override
-	public AccessToken getCredentials() {
+	public Token getCredentials() {
 		return credentials;
 	}
 

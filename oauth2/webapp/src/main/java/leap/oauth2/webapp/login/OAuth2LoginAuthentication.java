@@ -14,16 +14,27 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package leap.oauth2.webapp.login;
 
+import leap.core.security.Authentication;
+import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.Token;
+import leap.oauth2.webapp.token.TokenDetails;
+import leap.web.security.authc.SimpleAuthentication;
 
-public interface UserInfoLookup {
+public class OAuth2LoginAuthentication extends SimpleAuthentication implements Authentication {
 
-    /**
-     * By access token.
-     */
-    UserPrincipal lookupUserInfo(String at, String userId);
+    protected TokenDetails accessToken;
 
+    public OAuth2LoginAuthentication(UserPrincipal user, Credentials credentials) {
+        super(user, credentials);
+    }
+
+    public TokenDetails getAccessToken() {
+        return accessToken;
+    }
+
+    public void setAccessToken(TokenDetails accessToken) {
+        this.accessToken = accessToken;
+    }
 }

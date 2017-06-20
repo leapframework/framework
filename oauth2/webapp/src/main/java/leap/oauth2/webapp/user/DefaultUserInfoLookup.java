@@ -34,7 +34,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.Token;
 
 import java.util.Map;
 
@@ -46,8 +46,8 @@ public class DefaultUserInfoLookup implements UserInfoLookup {
     protected @Inject HttpClient   httpClient;
 
     @Override
-    public UserPrincipal lookupUserDetails(AccessToken at, String userId) {
-        return requestUserInfo(New.hashMap("access_token", at.getToken()));
+    public UserPrincipal lookupUserInfo(String at, String userId) {
+        return requestUserInfo(New.hashMap("access_token", at));
     }
 
     protected UserPrincipal requestUserInfo(Map<String,String> params) {

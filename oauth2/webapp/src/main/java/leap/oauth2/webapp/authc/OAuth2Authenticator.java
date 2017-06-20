@@ -16,7 +16,7 @@
 package leap.oauth2.webapp.authc;
 
 import leap.oauth2.OAuth2Exception;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.Token;
 
 public interface OAuth2Authenticator {
 
@@ -28,6 +28,6 @@ public interface OAuth2Authenticator {
      *
      * @throws OAuth2Exception if error.
      */
-    OAuth2Authentication authenticate(AccessToken token) throws OAuth2Exception;
+    OAuth2Authentication authenticate(Token token) throws OAuth2Exception;
 
 }

@@ -16,16 +16,13 @@
 
 package leap.oauth2.webapp.token;
 
-import leap.core.security.token.TokenCredentials;
+import leap.web.Request;
+import leap.web.security.authc.AuthenticationContext;
 
-/**
- * The access token credentials sent by oauth2 client.
- */
-public interface AccessToken extends TokenCredentials {
+public interface TokenStore {
 
-    /**
-     * Optional. The token type.
-     */
-    String getType();
+    TokenDetails loadAccessToken(Request request, AuthenticationContext context);
+
+    void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at);
 
 }

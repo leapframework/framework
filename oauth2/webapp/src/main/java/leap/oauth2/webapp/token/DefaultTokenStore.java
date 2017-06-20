@@ -14,20 +14,32 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.login;
+package leap.oauth2.webapp.token;
 
-import leap.lang.intercepting.State;
-import leap.oauth2.webapp.OAuth2Config;
+import leap.core.Session;
 import leap.web.Request;
-import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
 
-public interface OAuth2LoginHandler {
+/**
+ * Simple save the access token in session.
+ */
+public class DefaultTokenStore implements TokenStore {
 
-    /**
-     * Handles the redirect back request from oauth2 server.
-     */
-    State handleServerRedirectRequest(Request request, Response response, AuthenticationContext context) throws Throwable;
+    private static final String KEY = TokenDetails.class.getName();
 
-    State handleAuthenticationResolved(Request request, Response response, AuthenticationContext context) throws Throwable;
+    @Override
+    public TokenDetails loadAccessToken(Request request, AuthenticationContext context) {
+        Session session = request.getSession(false);
+        if(null == session) {
+            return null;
+        }
+
+        return (TokenDetails)session.getAttribute(KEY);
+    }
+
+    @Override
+    public void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at) {
+        request.getSession(true).setAttribute(KEY, at);
+    }
+
 }

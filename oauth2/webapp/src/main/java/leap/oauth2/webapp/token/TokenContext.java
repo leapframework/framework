@@ -14,16 +14,29 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.user;
+package leap.oauth2.webapp.token;
 
-import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.Token;
+import leap.web.Request;
 
-public interface UserInfoLookup {
+public class TokenContext {
 
-    /**
-     * By access token.
-     */
-    UserPrincipal lookupUserInfo(String at, String userId);
+    public static final String KEY = "oauth2.access_token";
+
+    public static TokenDetails getAccessToken() {
+        Request request = Request.tryGetCurrent();
+        return null == request ? null : getAccessToken(request);
+    }
+
+    public static TokenDetails getAccessToken(Request request) {
+        return (TokenDetails)request.getAttribute(KEY);
+    }
+
+    public static void setAccessToken(Request request, TokenDetails at) {
+        request.setAttribute(KEY, at);
+    }
+
+    protected TokenContext() {
+
+    }
 
 }

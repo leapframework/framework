@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp.code;
 
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
@@ -31,10 +31,13 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.token.TokenDetails;
+import leap.oauth2.webapp.token.DefaultTokenInfoLookup;
+import leap.oauth2.webapp.token.SimpleTokenDetails;
 
 import java.util.Map;
 
-public class DefaultTokenInfoLookup implements TokenInfoLookup {
+public class DefaultCodeVerifier implements CodeVerifier {
 
     private static final Log log = LogFactory.get(DefaultTokenInfoLookup.class);
 
@@ -42,14 +45,15 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     protected @Inject HttpClient   httpClient;
 
     @Override
-    public TokenInfo lookupByAccessToken(String at) {
-        if(null == config.getTokenInfoUrl()) {
-            throw new IllegalStateException("The tokenInfoUrl must be configured");
+    public TokenDetails verifyCode(String code) {
+        if(null == config.getTokenUrl()) {
+            throw new IllegalStateException("The tokenUrl must be configured");
         }
 
-        HttpRequest request = httpClient.request(config.getTokenInfoUrl())
-                .addQueryParam("access_token", at)
-                .setMethod(HTTP.Method.GET);
+        HttpRequest request = httpClient.request(config.getTokenUrl())
+                .addFormParam("grant_type", "authorization_code")
+                .addFormParam("code", code)
+                .setMethod(HTTP.Method.POST);
 
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
@@ -71,7 +75,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                 Map<String, Object> map = json.asMap();
                 String error = (String)map.get("error");
                 if(Strings.isEmpty(error)) {
-                    return createTokenInfo(map);
+                    return createAccessToken(map);
                 }else{
                     throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
                 }
@@ -81,9 +85,10 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         }
     }
 
-    protected TokenInfo createTokenInfo(Map<String, Object> map) {
+    protected TokenDetails createAccessToken(Map<String, Object> map) {
         SimpleTokenDetails details = new SimpleTokenDetails((String)map.remove("access_token"));
 
+        details.setRefreshToken((String)map.remove("refresh_token"));
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));
         details.setCreated(System.currentTimeMillis());

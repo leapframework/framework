@@ -17,14 +17,14 @@
 package leap.oauth2.webapp.authc;
 
 import leap.core.security.Authentication;
-import leap.oauth2.webapp.token.AccessToken;
+import leap.oauth2.webapp.token.Token;
 
 public interface OAuth2Authentication extends Authentication {
 
     /**
-     * The credentials must be the type of {@link AccessToken}.
+     * The credentials must be the type of {@link Token}.
      */
-    AccessToken getCredentials();
+    Token getCredentials();
 
     /**
      * Returns the granted scopes.

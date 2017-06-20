@@ -21,11 +21,6 @@ import leap.core.security.UserPrincipal;
 public interface TokenInfo {
 
     /**
-     * todo : doc
-     */
-    String getAccessToken();
-
-    /**
      * Returns the authenticated client id or <code>null</code> if user only.
      */
     String getClientId();

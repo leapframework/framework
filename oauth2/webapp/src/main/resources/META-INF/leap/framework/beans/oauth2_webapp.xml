@@ -33,9 +33,16 @@
     <bean type="leap.oauth2.webapp.authc.OAuth2Authenticator"
           class="leap.oauth2.webapp.authc.DefaultOAuth2Authenticator" primary="true"/>
 
+    <!-- code -->
+    <bean type="leap.oauth2.webapp.code.CodeVerifier"
+          class="leap.oauth2.webapp.code.DefaultCodeVerifier" primary="true"/>
+
     <!-- access token -->
     <bean type="leap.oauth2.webapp.token.TokenExtractor"
           class="leap.oauth2.webapp.token.DefaultTokenExtractor" primary="true"/>
+
+    <bean type="leap.oauth2.webapp.token.TokenStore"
+          class="leap.oauth2.webapp.token.DefaultTokenStore" primary="true"/>
 
     <bean name="jwt"
           type="leap.oauth2.webapp.token.TokenVerifier"

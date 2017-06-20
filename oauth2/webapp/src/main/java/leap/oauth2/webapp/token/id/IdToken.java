@@ -16,6 +16,8 @@
 
 package leap.oauth2.webapp.token.id;
 
+import leap.core.security.ClientPrincipal;
+import leap.core.security.UserPrincipal;
 import leap.core.security.token.TokenCredentials;
 
 /**
@@ -30,4 +32,17 @@ public interface IdToken extends TokenCredentials {
 
     String getUserId();
 
+    /**
+     * Optional.
+     */
+    default UserPrincipal getUserInfo() {
+        return null;
+    }
+
+    /**
+     * Optional.
+     */
+    default ClientPrincipal getClientInfo() {
+        return null;
+    }
 }

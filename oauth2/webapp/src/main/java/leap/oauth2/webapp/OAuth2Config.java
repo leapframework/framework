@@ -44,6 +44,14 @@ public interface OAuth2Config {
     boolean isLogout();
 
     /**
+     * Returns true will obtains the access token details (includes refresh token) after login success.
+     *
+     * <p/>
+     * Default is false.
+     */
+    boolean isLoginWithAccessToken();
+
+    /**
      * todo : doc
      */
     String getAuthorizeUrl();

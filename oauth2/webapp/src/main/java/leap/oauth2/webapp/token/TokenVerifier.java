@@ -20,6 +20,11 @@ import leap.core.security.token.TokenVerifyException;
 
 public interface TokenVerifier {
 
-    TokenInfo verifyAccessToken(AccessToken at) throws TokenVerifyException;
+    /**
+     * Verify the token and returns the {@link TokenInfo}
+     *
+     * @throws TokenVerifyException
+     */
+    TokenInfo verifyToken(Token token) throws TokenVerifyException;
 
 }
