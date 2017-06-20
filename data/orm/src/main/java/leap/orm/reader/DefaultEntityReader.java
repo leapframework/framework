@@ -148,7 +148,9 @@ public class DefaultEntityReader implements EntityReader {
 
             if(null != fm) {
                 name = fm.getFieldName();
-            }
+            } else {
+				name = getKey(context, cm, name);
+			}
 
             model.set(name, value);
         }
@@ -205,13 +207,22 @@ public class DefaultEntityReader implements EntityReader {
 			Object value = readColumnValue(dialect, rs, cm, fm, i+1);
 			
 			if(null == fm) {
-				map.put(cm.getColumnLabel(), value);
+				String key = cm.getColumnLabel();
+				key = getKey(context, cm, key);
+				map.put(key, value);
 			}else{
                 map.put(fm.getFieldName(), value);
             }
 		}
 	}
-	
+
+	private String getKey(OrmContext context, ResultColumnMapping cm, String key) {
+		if(Strings.isBlank(cm.getColumnLabel()) || Strings.equals(cm.getColumnLabel(), cm.getColumnName())) {
+            key = Strings.lowerCamel(cm.getColumnName(), '_');
+        }
+		return key;
+	}
+
 	protected Object readColumnValue(DbDialect dialect,ResultSet rs,ResultColumnMapping cm,FieldMapping fm, int index) throws SQLException{
 		Object value = dialect.getColumnValue(rs, index, cm.getColumnType());
 		
