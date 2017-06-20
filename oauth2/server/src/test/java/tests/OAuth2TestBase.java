@@ -182,7 +182,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
 
     protected TokenResponse obtainAccessTokenByPassword(String username, String password, String clientId, String clientSecret) {
 
-        THttpRequest request = forPost(serverContextPath + TOKEN_ENDPOINT)
+        THttpRequest request = usePost(serverContextPath + TOKEN_ENDPOINT)
                 .addFormParam("grant_type","password")
                 .addFormParam("password",Urls.encode(password))
                 .addFormParam("username",Urls.encode(username))
@@ -197,7 +197,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
         
         String token = encodeToBasicAuthcHeader(clientId,clientSecret);
 
-        THttpRequest request = forPost(tokenUri).addHeader("Authorization",token)
+        THttpRequest request = usePost(tokenUri).addHeader("Authorization",token)
                 .addFormParam("grant_type","client_credentials");
         
         return resp(request.send(), new TokenResponse());
@@ -296,7 +296,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     }
 	
    protected void assertLogin(String username) {
-        forGet("/check_login_state").addQueryParam("username", username).ajax().get().assertContentEquals("OK");
+        useGet("/check_login_state").addQueryParam("username", username).ajax().get().assertContentEquals("OK");
     }
 	
 	protected void assertLogout() {

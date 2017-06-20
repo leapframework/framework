@@ -28,8 +28,8 @@ public class AdminControllerTest extends OAuth2TestBase {
     public void testClientOnlyAccessToken() {
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
         
-        withAccessToken(forGet("/book"), token.accessToken).send().assertNotOk();
-        withAccessToken(forGet("/admin/hello"), token.accessToken).send().assertOk();
+        withAccessToken(useGet("/book"), token.accessToken).send().assertNotOk();
+        withAccessToken(useGet("/admin/hello"), token.accessToken).send().assertOk();
     }
 
     @Test
@@ -37,8 +37,8 @@ public class AdminControllerTest extends OAuth2TestBase {
         TokenResponse token1 = obtainAccessTokenByClient("client1", "client1_secret");
         TokenResponse token2 = obtainAccessTokenByClient("client2", "client2_secret");
 
-        withAccessToken(forGet("/admin/status"), token1.accessToken).send().assertOk();
-        withAccessToken(forGet("/admin/status"), token2.accessToken).send().assertFailure();
+        withAccessToken(useGet("/admin/status"), token1.accessToken).send().assertOk();
+        withAccessToken(useGet("/admin/status"), token2.accessToken).send().assertFailure();
     }
 
     @Test
@@ -46,8 +46,8 @@ public class AdminControllerTest extends OAuth2TestBase {
         TokenResponse token1 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
         TokenResponse token2 = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,"app2","app2_secret");
 
-        withAccessToken(forGet("/admin/test"), token1.accessToken).send().assertOk();
-        withAccessToken(forGet("/admin/test"), token2.accessToken).send().assertFailure();
+        withAccessToken(useGet("/admin/test"), token1.accessToken).send().assertOk();
+        withAccessToken(useGet("/admin/test"), token2.accessToken).send().assertFailure();
     }
 
     @Test
@@ -64,7 +64,7 @@ public class AdminControllerTest extends OAuth2TestBase {
         Assert.notNull(token.accessToken);
 
         user.delete();
-        assertEquals("success",withAccessToken(forGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
+        assertEquals("success",withAccessToken(useGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
 
 }

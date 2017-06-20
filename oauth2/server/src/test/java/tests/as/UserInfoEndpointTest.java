@@ -34,7 +34,7 @@ public class UserInfoEndpointTest extends OAuth2TestBase {
     @Test
     public void testGetUserinfo(){
         TokenResponse token = obtainAccessTokenByPassword(USER_ADMIN,PASS_ADMIN);
-        THttpResponse response = withAccessToken(forGet("/oauth2/userinfo"),token.accessToken).send().assertSuccess();
+        THttpResponse response = withAccessToken(useGet("/oauth2/userinfo"),token.accessToken).send().assertSuccess();
         JsonObject json = response.getJson().asJsonObject();
         assertEquals(USER_ADMIN,json.getString("login_name"));
         assertEquals(testAccessTokenInfo(token).userId,json.getString("sub"));

@@ -27,14 +27,14 @@ public class AjaxTestControllerTest extends WebTestCase {
 	@Test
 	public void testIsAjax() {
 		//Non ajax
-		forGet("/ajax_test/get_is_ajax").send().assertOk().assertContentEquals("");
+		useGet("/ajax_test/get_is_ajax").send().assertOk().assertContentEquals("");
 		
-		forGet("/ajax_test/get_is_ajax")
+		useGet("/ajax_test/get_is_ajax")
 			.setHeader(Headers.X_REQUESTED_WITH, DefaultAjaxDetector.ANDROID_41_X_REQUESTED_WITH_HEADER)
 			.send().assertContentEquals("");		
 		
 		//Ajax
-		forGet("/ajax_test/get_is_ajax")
+		useGet("/ajax_test/get_is_ajax")
 			.setHeader(Headers.X_REQUESTED_WITH, "XMLHttpRequest")
 			.send().assertContentEquals("ajax");
 		// todo: is not empty string?

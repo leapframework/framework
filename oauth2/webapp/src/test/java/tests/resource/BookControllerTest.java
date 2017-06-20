@@ -39,7 +39,7 @@ public class BookControllerTest extends OAuth2TestBase {
     @Test
     public void testRemoteAccessTokenStore() {
         TokenResponse token = obtainAccessTokenImplicit();
-        withAccessToken(forGet("/book"), token.accessToken).send().assertOk();
+        withAccessToken(useGet("/book"), token.accessToken).send().assertOk();
     }
 
 }

@@ -28,14 +28,14 @@ public class AuthorizeEndpointTest extends OAuth2TestBase {
     @Test
     public void testRequestAuthzWithAt(){
         TokenResponse at = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,"app2","app2_secret");
-        forGet("/server"+AUTHZ_ENDPOINT).addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
+        useGet("/server"+AUTHZ_ENDPOINT).addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
                 .addQueryParam("response_type","code")
                 .addQueryParam("redirect_uri","http://localhost:8080/clientapp2/auth_redirect")
                 .addQueryParam("client_id","app2")
                 .send().assertOk().getContent()
                 .contains("/login");
         
-        forPost("/server/login").addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
+        usePost("/server/login").addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
                 .addFormParam("return_url","http://localhost:8080/clientapp2/auth_redirect")
                 .send().assertOk().getContent()
                 .contains("/login");

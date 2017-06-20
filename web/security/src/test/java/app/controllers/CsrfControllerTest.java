@@ -39,16 +39,16 @@ public class CsrfControllerTest extends SecurityTestCase {
 			
 			String token = get("/csrf/get_token").getContent();
 			post("/csrf/do_csrf","csrf_token",token).assertOk();
-			forPost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertOk();
+			usePost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertOk();
 			
 			post("csrf/do_csrf","csrf_attr_test_token",token).assertOk();
 			
 			post("csrf/do_csrf","csrf_ignored","1").assertOk();
 			
 			logout();
-			forPost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertNotOk();
+			usePost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertNotOk();
 			login();
-			forPost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertOk();
+			usePost("/csrf/do_csrf").ajax().setHeader("X-CSRF-Token", token).send().assertOk();
 		}finally{
 			logout();
 		}
@@ -60,7 +60,7 @@ public class CsrfControllerTest extends SecurityTestCase {
 		try{
 			String token = get("/public/csrf_token_1?$debug=0").getContent();
 			post("/csrf/do_csrf?$debug=0","csrf_token",token).assertOk();
-			forPost("/csrf/do_csrf").setHeader("X-CSRF-Token", token).send().assertOk();
+			usePost("/csrf/do_csrf").setHeader("X-CSRF-Token", token).send().assertOk();
 		}finally{
 			logout();
 		}

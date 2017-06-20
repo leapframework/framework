@@ -24,7 +24,7 @@ public class VerbTestControllerTest extends WebTestCase {
 
 	@Test
 	public void testHttpMethodOverride() {
-		forPost("/verb_test/t")
+		usePost("/verb_test/t")
 			.setHeader(Headers.X_HTTP_METHOD_OVERRIDE, "PUT")
 			.send()
 			.assertContentEquals("put");

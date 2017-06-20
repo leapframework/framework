@@ -27,7 +27,7 @@ import org.junit.Test;
 public class ArgumentBindControllerTest extends WebTestBase {
     @Test
     public void testDate(){
-        String content = forPost("/api/arg_bind/date")
+        String content = usePost("/api/arg_bind/date")
                 .addFormParam("DATE_PATTERN","2017-02-20")
                 .addFormParam("TIME_PATTERN","01:59:50")
                 .addFormParam("DATETIME_PATTERN","2017-02-20 01:59:50")

@@ -33,7 +33,7 @@ public class BasePackageControllerTest extends WebTestBase {
         m.setId(UUID.randomUUID().toString());
         m.setName("name");
         m.create();
-        Object name = forGet("/basepackage/base_package/"+m.getId()).send().assertSuccess().getJson().asJsonObject().get("name");
+        Object name = useGet("/basepackage/base_package/"+m.getId()).send().assertSuccess().getJson().asJsonObject().get("name");
         assertEquals(m.getName(),name);
         m.delete();
     }

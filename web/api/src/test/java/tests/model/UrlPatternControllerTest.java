@@ -27,7 +27,7 @@ import org.junit.Test;
 public class UrlPatternControllerTest extends WebTestBase {
     @Test
     public void testUrlPattern(){
-        String str = forGet("/url/test1/pattern").send().getContent();
+        String str = useGet("/url/test1/pattern").send().getContent();
         assertEquals("\"test1\"",str);
     }
     

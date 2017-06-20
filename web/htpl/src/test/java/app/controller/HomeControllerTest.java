@@ -39,7 +39,7 @@ public class HomeControllerTest extends HtplTestCase {
 	@Test
 	public void testIndexPjax() {
 		
-		THttpResponse response = forGet("/").setHeader("X-PJAX", "1").send();
+		THttpResponse response = useGet("/").setHeader("X-PJAX", "1").send();
 		
 		response.assertContentTypeHtml().assertContentContains("<h1>Hello world!</h1>");
 		
