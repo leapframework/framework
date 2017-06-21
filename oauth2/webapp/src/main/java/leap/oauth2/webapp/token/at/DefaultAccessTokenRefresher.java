@@ -14,17 +14,16 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token.refresh;
+package leap.oauth2.webapp.token.at;
 
 import leap.lang.http.HTTP;
 import leap.lang.http.client.HttpRequest;
 import leap.oauth2.webapp.code.DefaultCodeVerifier;
-import leap.oauth2.webapp.token.TokenDetails;
 
-public class DefaultTokenRefresher extends DefaultCodeVerifier implements TokenRefresher {
+public class DefaultAccessTokenRefresher extends DefaultCodeVerifier implements AccessTokenRefresher {
 
     @Override
-    public TokenDetails refreshAccessToken(TokenDetails old) {
+    public AccessToken refreshAccessToken(AccessToken old) {
         if(null == config.getTokenUrl()) {
             throw new IllegalStateException("The tokenUrl must be configured");
         }

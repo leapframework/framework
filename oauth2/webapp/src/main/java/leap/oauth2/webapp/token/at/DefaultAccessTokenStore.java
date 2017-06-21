@@ -14,42 +14,40 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token;
+package leap.oauth2.webapp.token.at;
 
 import leap.core.Session;
 import leap.core.annotation.Inject;
-import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.webapp.token.refresh.TokenRefresher;
 import leap.web.Request;
 import leap.web.security.authc.AuthenticationContext;
 
 /**
  * Simple save the access token in session.
  */
-public class DefaultTokenStore implements TokenStore {
+public class DefaultAccessTokenStore implements AccessTokenStore {
 
-    private static final String KEY = TokenDetails.class.getName();
+    private static final String KEY = AccessToken.class.getName();
 
-    protected @Inject TokenRefresher refresher;
+    protected @Inject AccessTokenRefresher refresher;
 
     @Override
-    public TokenDetails loadAccessToken(Request request, AuthenticationContext context) {
+    public AccessToken loadAccessToken(Request request, AuthenticationContext context) {
         Session session = request.getSession(false);
         if(null == session) {
             return null;
         }
 
-        return (TokenDetails)session.getAttribute(KEY);
+        return (AccessToken)session.getAttribute(KEY);
     }
 
     @Override
-    public void saveAccessToken(Request request, AuthenticationContext context, TokenDetails at) {
+    public void saveAccessToken(Request request, AuthenticationContext context, AccessToken at) {
         request.getSession(true).setAttribute(KEY, at);
     }
 
     @Override
-    public TokenDetails refreshAndSaveAccessToken(Request request, AuthenticationContext context, TokenDetails old) {
-        TokenDetails theNew = refresher.refreshAccessToken(old);
+    public AccessToken refreshAndSaveAccessToken(Request request, AuthenticationContext context, AccessToken old) {
+        AccessToken theNew = refresher.refreshAccessToken(old);
 
         saveAccessToken(request, context, theNew);
 

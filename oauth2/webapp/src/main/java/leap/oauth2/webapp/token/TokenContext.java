@@ -16,22 +16,23 @@
 
 package leap.oauth2.webapp.token;
 
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.web.Request;
 
 public class TokenContext {
 
     public static final String KEY = "oauth2.access_token";
 
-    public static TokenDetails getAccessToken() {
+    public static AccessToken getAccessToken() {
         Request request = Request.tryGetCurrent();
         return null == request ? null : getAccessToken(request);
     }
 
-    public static TokenDetails getAccessToken(Request request) {
-        return (TokenDetails)request.getAttribute(KEY);
+    public static AccessToken getAccessToken(Request request) {
+        return (AccessToken)request.getAttribute(KEY);
     }
 
-    public static void setAccessToken(Request request, TokenDetails at) {
+    public static void setAccessToken(Request request, AccessToken at) {
         request.setAttribute(KEY, at);
     }
 

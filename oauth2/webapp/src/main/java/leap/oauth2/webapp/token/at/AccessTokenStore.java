@@ -14,18 +14,16 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.code;
+package leap.oauth2.webapp.token.at;
 
-import leap.oauth2.webapp.token.at.AccessToken;
+import leap.web.Request;
+import leap.web.security.authc.AuthenticationContext;
 
-/**
- * Verifier for authorization code.
- */
-public interface CodeVerifier {
+public interface AccessTokenStore {
 
-    /**
-     * Verify the authorization code and returns the access token.
-     */
-    AccessToken verifyCode(String code);
+    AccessToken loadAccessToken(Request request, AuthenticationContext context);
 
+    void saveAccessToken(Request request, AuthenticationContext context, AccessToken at);
+
+    AccessToken refreshAndSaveAccessToken(Request request, AuthenticationContext context, AccessToken old);
 }

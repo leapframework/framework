@@ -13,37 +13,18 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+
 package leap.oauth2.webapp.token;
 
 import leap.core.security.UserPrincipal;
 import leap.lang.expirable.TimeExpirableSeconds;
 
-public class SimpleTokenDetails extends TimeExpirableSeconds implements TokenDetails {
+public class SimpleTokenInfo extends TimeExpirableSeconds implements TokenInfo {
 
-    protected String        accessToken;
-    protected String        refreshToken;
     protected String        clientId;
     protected String        userId;
     protected String        scope;
     protected UserPrincipal userInfo;
-
-    public SimpleTokenDetails(String accessToken) {
-        this.accessToken = accessToken;
-    }
-
-    @Override
-    public String getAccessToken() {
-        return accessToken;
-    }
-
-    @Override
-    public String getRefreshToken() {
-        return refreshToken;
-    }
-
-    public void setRefreshToken(String refreshToken) {
-        this.refreshToken = refreshToken;
-    }
 
     public String getClientId() {
         return clientId;

@@ -31,6 +31,7 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.token.at.SimpleAccessToken;
 
 import java.util.Map;
 
@@ -82,7 +83,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
     }
 
     protected TokenInfo createTokenInfo(Map<String, Object> map) {
-        SimpleTokenDetails details = new SimpleTokenDetails((String)map.remove("access_token"));
+        SimpleTokenInfo details = new SimpleTokenInfo();
 
         details.setClientId((String)map.remove("client_id"));
         details.setUserId((String)map.remove("user_id"));

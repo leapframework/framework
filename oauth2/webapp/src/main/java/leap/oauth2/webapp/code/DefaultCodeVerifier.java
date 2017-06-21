@@ -31,9 +31,9 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
-import leap.oauth2.webapp.token.TokenDetails;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.oauth2.webapp.token.DefaultTokenInfoLookup;
-import leap.oauth2.webapp.token.SimpleTokenDetails;
+import leap.oauth2.webapp.token.at.SimpleAccessToken;
 
 import java.util.Map;
 
@@ -45,7 +45,7 @@ public class DefaultCodeVerifier implements CodeVerifier {
     protected @Inject HttpClient   httpClient;
 
     @Override
-    public TokenDetails verifyCode(String code) {
+    public AccessToken verifyCode(String code) {
         if(null == config.getTokenUrl()) {
             throw new IllegalStateException("The tokenUrl must be configured");
         }
@@ -58,7 +58,7 @@ public class DefaultCodeVerifier implements CodeVerifier {
         return fetchAccessToken(request);
     }
 
-    protected TokenDetails fetchAccessToken(HttpRequest request) {
+    protected AccessToken fetchAccessToken(HttpRequest request) {
         if(null != config.getClientId()){
             request.addHeader(Headers.AUTHORIZATION, "Basic " +
                     Base64.encode(config.getClientId()+":"+config.getClientSecret()));
@@ -89,8 +89,8 @@ public class DefaultCodeVerifier implements CodeVerifier {
         }
     }
 
-    protected TokenDetails createAccessToken(Map<String, Object> map) {
-        SimpleTokenDetails details = new SimpleTokenDetails((String)map.remove("access_token"));
+    protected AccessToken createAccessToken(Map<String, Object> map) {
+        SimpleAccessToken details = new SimpleAccessToken((String)map.remove("access_token"));
 
         details.setRefreshToken((String)map.remove("refresh_token"));
         details.setClientId((String)map.remove("client_id"));

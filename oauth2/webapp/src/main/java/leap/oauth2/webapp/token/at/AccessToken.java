@@ -14,12 +14,23 @@
  *  limitations under the License.
  */
 
-package leap.oauth2.webapp.token.refresh;
+package leap.oauth2.webapp.token.at;
 
-import leap.oauth2.webapp.token.TokenDetails;
+import leap.oauth2.webapp.token.TokenInfo;
 
-public interface TokenRefresher {
+/**
+ * The details of an access token.
+ */
+public interface AccessToken extends TokenInfo {
 
-    TokenDetails refreshAccessToken(TokenDetails old);
+    /**
+     * Required. The value of access token.
+     */
+    String getToken();
+
+    /**
+     * Required. The value of refresh token.
+     */
+    String getRefreshToken();
 
 }

@@ -19,22 +19,22 @@ package leap.oauth2.webapp.login;
 import leap.core.security.Authentication;
 import leap.core.security.Credentials;
 import leap.core.security.UserPrincipal;
-import leap.oauth2.webapp.token.TokenDetails;
+import leap.oauth2.webapp.token.at.AccessToken;
 import leap.web.security.authc.SimpleAuthentication;
 
 public class OAuth2LoginAuthentication extends SimpleAuthentication implements Authentication {
 
-    protected TokenDetails accessToken;
+    protected AccessToken accessToken;
 
     public OAuth2LoginAuthentication(UserPrincipal user, Credentials credentials) {
         super(user, credentials);
     }
 
-    public TokenDetails getAccessToken() {
+    public AccessToken getAccessToken() {
         return accessToken;
     }
 
-    public void setAccessToken(TokenDetails accessToken) {
+    public void setAccessToken(AccessToken accessToken) {
         this.accessToken = accessToken;
     }
 }

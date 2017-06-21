@@ -13,21 +13,32 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package leap.oauth2.webapp.token;
 
-/**
- * The details of an access token.
- */
-public interface TokenDetails extends TokenInfo {
+package leap.oauth2.webapp.token.at;
 
-    /**
-     * Required.
-     */
-    String getAccessToken();
+import leap.oauth2.webapp.token.SimpleTokenInfo;
 
-    /**
-     * Required.
-     */
-    String getRefreshToken();
+public class SimpleAccessToken extends SimpleTokenInfo implements AccessToken {
+
+    protected String token;
+    protected String refreshToken;
+
+    public SimpleAccessToken(String token) {
+        this.token = token;
+    }
+
+    @Override
+    public String getToken() {
+        return token;
+    }
+
+    @Override
+    public String getRefreshToken() {
+        return refreshToken;
+    }
+
+    public void setRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
+    }
 
 }

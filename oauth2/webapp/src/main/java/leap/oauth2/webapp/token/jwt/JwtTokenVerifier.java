@@ -30,6 +30,7 @@ import leap.lang.security.RSA;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.token.*;
+import leap.oauth2.webapp.token.at.SimpleAccessToken;
 import leap.web.security.SecurityConfig;
 
 import java.security.interfaces.RSAPublicKey;
@@ -81,7 +82,7 @@ public class JwtTokenVerifier implements TokenVerifier {
             jwtDetail = verifier.verify(token);
         }
 
-        SimpleTokenDetails tokenInfo = new SimpleTokenDetails(token);
+        SimpleTokenInfo tokenInfo = new SimpleTokenInfo();
 
         String userId   = (String)jwtDetail.remove("user_id");
         String username = Objects.toString(jwtDetail.remove("username"));

@@ -32,6 +32,8 @@ import leap.oauth2.webapp.OAuth2Config;
 import leap.oauth2.webapp.OAuth2ErrorHandler;
 import leap.oauth2.webapp.client.OAuth2Client;
 import leap.oauth2.webapp.code.CodeVerifier;
+import leap.oauth2.webapp.token.at.AccessToken;
+import leap.oauth2.webapp.token.at.AccessTokenStore;
 import leap.oauth2.webapp.token.id.IdToken;
 import leap.oauth2.webapp.token.id.IdTokenVerifier;
 import leap.oauth2.webapp.token.*;
@@ -51,7 +53,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     protected @Inject OAuth2ErrorHandler    errorHandler;
     protected @Inject AuthenticationManager am;
     protected @Inject LoginManager          lm;
-    protected @Inject TokenStore            tokenStore;
+    protected @Inject AccessTokenStore      accessTokenStore;
     protected @Inject IdTokenVerifier       idTokenVerifier;
     protected @Inject CodeVerifier          codeVerifier;
     protected @Inject UserDetailsLookup     userDetailsLookup;
@@ -72,21 +74,21 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         Authentication authc = context.getAuthentication();
 
         if(null != authc) {
-            TokenDetails at;
+            AccessToken at;
             if(authc instanceof OAuth2LoginAuthentication) {
                 at = ((OAuth2LoginAuthentication) authc).getAccessToken();
                 if(null != at) {
-                    tokenStore.saveAccessToken(request, context, at);
+                    accessTokenStore.saveAccessToken(request, context, at);
                 }
             }else{
-                at = tokenStore.loadAccessToken(request, context);
+                at = accessTokenStore.loadAccessToken(request, context);
             }
 
             if(null != at) {
 
                 if(at.isExpired()) {
-                    log.info("AT '{}' expired, refresh it", at.getAccessToken());
-                    at = tokenStore.refreshAndSaveAccessToken(request, context, at);
+                    log.info("AT '{}' expired, refresh it", at.getToken());
+                    at = accessTokenStore.refreshAndSaveAccessToken(request, context, at);
                 }
 
                 TokenContext.setAccessToken(request, at);
@@ -118,7 +120,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
     }
 
     protected State handleOAuth2ServerSuccess(Request request, Response response, OAuth2Params params) throws Throwable {
-        TokenDetails at = null;
+        AccessToken at = null;
 
         if(config.isLoginWithAccessToken()) {
             String code = params.getCode();
@@ -150,7 +152,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         }
     }
 
-    protected Authentication authenticate(OAuth2Params params, IdToken idtoken, TokenDetails at) {
+    protected Authentication authenticate(OAuth2Params params, IdToken idtoken, AccessToken at) {
         String clientId = idtoken.getClientId();
         String userId   = idtoken.getUserId();
 
@@ -158,7 +160,7 @@ public class DefaultOAuth2LoginHandler implements OAuth2LoginHandler {
         ClientPrincipal client = idtoken.getClientInfo();
 
         if(null != userDetailsLookup && !Strings.isEmpty(userId)) {
-            user = userDetailsLookup.lookupUserDetails(at.getAccessToken(), userId);
+            user = userDetailsLookup.lookupUserDetails(at.getToken(), userId);
         }
 
         if(null == client && !Strings.isEmpty(clientId)) {
