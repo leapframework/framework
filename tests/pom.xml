@@ -30,6 +30,7 @@
         <module>core-test-profile1</module>
         <module>core-test-profile2</module>
         <module>core-test-profile3</module>
+        <module>leap-webapi-test</module>
 
         <module>orm-test</module>
         <module>orm-test-resources</module>
