@@ -1,0 +1,33 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Test"
+  },
+  "host": "api.example.com",
+  "basePath": "/",
+  "paths": {
+    "/t": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "t",
+            "type" : "string",
+            "format" : "uuid"
+          }
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "p1": {
+          "type": "string",
+          "format" : "email"
+        }
+      }
+    }
+  }
+}
