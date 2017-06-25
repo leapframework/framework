@@ -115,9 +115,15 @@ public class FiltersParser extends ParserBase {
     }
 
     private void scanName() {
-        String s = scanIdentifier();
+        String alias = null;
+        String name  = scanIdentifier(true);
 
-        nodes.add(new Node(Token.NAME,s));
+        if(ch == '.') {
+            alias = name;
+            name  = scanIdentifier(false);
+        }
+
+        nodes.add(new Name(alias, name));
     }
 
     private void scanOperator() {
@@ -128,7 +134,7 @@ public class FiltersParser extends ParserBase {
             return;
         }
 
-        String op = scanIdentifier();
+        String op = scanLetters();
 
         Token token = OPS.get(op.toUpperCase());
         if(null == token) {
@@ -186,7 +192,7 @@ public class FiltersParser extends ParserBase {
             return;
         }
 
-        String s = scanIdentifier();
+        String s = scanLetters();
 
         if(s.equalsIgnoreCase("and")) {
             nodes.add(new Node(Token.AND, s));
@@ -197,7 +203,7 @@ public class FiltersParser extends ParserBase {
         }
     }
 
-    private String scanIdentifier() {
+    private String scanIdentifier(boolean dot) {
         skipWhitespaces();
 
         int start = pos;
@@ -205,7 +211,37 @@ public class FiltersParser extends ParserBase {
         for(;;) {
             nextChar();
 
+            if(dot && ch == '.') {
+                break;
+            }
+
             if(ch == ':' || isWhitespace() || eof()) {
+                break;
+            }
+
+            if(!isIdentifierChar(ch)) {
+                error("Illegal identifier char '" + ch + "'");
+            }
+        }
+
+        String s = substring(start, pos);
+
+        if(s.isEmpty()) {
+            error("Unexpected eof");
+        }
+
+        return s;
+    }
+
+    private String scanLetters() {
+        skipWhitespaces();
+
+        int start = pos;
+
+        for(;;) {
+            nextChar();
+
+            if(isWhitespace() || eof()) {
                 break;
             }
 
@@ -246,7 +282,7 @@ public class FiltersParser extends ParserBase {
         OR;
     }
 
-    public static final class Node {
+    public static class Node {
         private final Token  token;
         private final String literal;
         private final boolean quoted;
@@ -286,5 +322,18 @@ public class FiltersParser extends ParserBase {
         }
     }
 
+    public static class Name extends Node {
+
+        private final String alias;
+
+        public Name(String alias, String name) {
+            super(Token.NAME, name);
+            this.alias = alias;
+        }
+
+        public String alias() {
+            return alias;
+        }
+    }
 
 }
