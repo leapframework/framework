@@ -28,7 +28,7 @@ abstract class ParserBase {
     protected int  pos;
 
     public ParserBase(String expr) {
-        this.chars = new StringBuilder(expr);
+        this.chars = new StringBuilder(expr.trim());
         this.pos   = -1;
     }
 
