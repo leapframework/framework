@@ -30,18 +30,19 @@
         <module>core-test-profile1</module>
         <module>core-test-profile2</module>
         <module>core-test-profile3</module>
-        <module>leap-webapi-test</module>
 
         <module>orm-test</module>
         <module>orm-test-resources</module>
+
+        <module>webunit-test1</module>
+        <module>webunit-test2</module>
 
         <module>web-test-resources</module>
         <module>web-test-module</module>
         <module>web-test-webapp1</module>
         <module>web-test-webapp2</module>
 
-        <module>webunit-test1</module>
-        <module>webunit-test2</module>
+        <module>webapi-test</module>
     </modules>
 
 </project>

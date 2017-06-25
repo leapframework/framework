@@ -21,9 +21,10 @@
         <groupId>org.leapframework</groupId>
         <artifactId>tests</artifactId>
         <version>0.6.3b-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>leap-webapi-test</artifactId>
-    <packaging>war</packaging>
+    <artifactId>webapi-test</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
@@ -48,28 +49,5 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.leapframework</groupId>
-            <artifactId>web-test-module</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
-
-    <build>
-        <pluginManagement>
-            <plugins>
-                <!-- compile -->
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>${plugins.compiler.version}</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                        <encoding>${maven.compile.encoding}</encoding>
-                    </configuration>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-    </build>
 </project>
