@@ -156,6 +156,7 @@ public class RestApiControllerTest extends WebTestBase {
         assertEquals(2, apis.length);
     }
 
+    /* todo : not supported now, use joins instead
     @Test
     public void testQueryListWithRelationalFilters() {
         RestApi[] apis = get("/api/restapi?categories=not_exists").decodeJsonArray(RestApi.class);
@@ -179,6 +180,8 @@ public class RestApiControllerTest extends WebTestBase {
         apis = get("/api/restapi?filters=name%20eq%20api1%20or%20categories%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
     }
+    */
+
     @Test
     public void testPartialConvertToObject(){
         Map<String, Object> data = New.hashMap();

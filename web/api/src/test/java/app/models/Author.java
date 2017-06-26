@@ -14,20 +14,33 @@
  *  limitations under the License.
  */
 
-package leap.web.api.query;
+package app.models;
 
-import leap.junit.TestBase;
-import org.junit.Test;
+import leap.lang.meta.annotation.Filterable;
+import leap.orm.annotation.AutoCreateTable;
+import leap.orm.model.Model;
 
-public class FiltersParserTest extends TestBase {
+@AutoCreateTable
+public class Author extends Model {
 
-    @Test
-    public void testExprWithAlias() {
-        Filters filters = FiltersParser.parse("a.b eq 1");
+    protected String id;
+    protected String name;
 
-        FiltersParser.Name name = (FiltersParser.Name)filters.nodes()[0];
-        assertEquals("a", name.alias());
-        assertEquals("b", name.literal());
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Filterable
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
 }

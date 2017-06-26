@@ -86,6 +86,16 @@ public class DefaultMTypeContainer extends AbstractMTypeContainerCreator impleme
     }
 
     @Override
+    public MComplexType getComplexType(String name) {
+        for(MComplexType ct : complexTypes.values()) {
+            if(ct.getName().equalsIgnoreCase(name)) {
+                return ct;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public void onComplexTypeCreating(Class<?> type, String name) {
         creatingComplexTypes.put(type, name);
     }

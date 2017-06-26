@@ -14,20 +14,18 @@
  *  limitations under the License.
  */
 
-package leap.web.api.query;
+package leap.web.api.orm;
 
-import leap.junit.TestBase;
-import org.junit.Test;
+import leap.orm.mapping.EntityMapping;
+import leap.web.api.meta.model.MApiModel;
 
-public class FiltersParserTest extends TestBase {
+public class ModelAndMapping {
 
-    @Test
-    public void testExprWithAlias() {
-        Filters filters = FiltersParser.parse("a.b eq 1");
+    public final MApiModel     model;
+    public final EntityMapping mapping;
 
-        FiltersParser.Name name = (FiltersParser.Name)filters.nodes()[0];
-        assertEquals("a", name.alias());
-        assertEquals("b", name.literal());
+    public ModelAndMapping(MApiModel model, EntityMapping mapping) {
+        this.model = model;
+        this.mapping = mapping;
     }
-
 }

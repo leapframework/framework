@@ -26,7 +26,6 @@ import leap.orm.mapping.*;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
 import leap.web.Params;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.QueryOptions;
@@ -35,23 +34,30 @@ import leap.web.api.query.*;
 import leap.web.exception.BadRequestException;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
+    protected Function<String,ModelAndMapping> joinModelsLookup;
     protected String[] excludedFields;
+
+    protected final ModelAndMapping modelAndMapping;
 
     protected DefaultModelQueryExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
         super(c, am, dao, em);
+        this.modelAndMapping = new ModelAndMapping(am, em);
     }
 
     @Override
     public ModelQueryExecutor selectExclude(String... names) {
         this.excludedFields = names;
         return this;
+    }
+
+    public void setJoinModelsLookup(Function<String, ModelAndMapping> func) {
+        this.joinModelsLookup = func;
     }
 
     @Override
@@ -113,7 +119,51 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 query.selectExclude(excludedFields);
             }
 
-            applyFilters(query, options.getParams(), options.getFilters(), filters);
+            Map<String, ModelAndMapping> joinedModels = null;
+
+            if(!Strings.isEmpty(options.getJoins())) {
+                Join[] joins = JoinParser.parse(options.getJoins());
+
+                Set<String> relations = new HashSet<>();
+
+                joinedModels = new HashMap<>(joins.length);
+
+                for(Join join : joins) {
+
+                    if(relations.contains(join.getRelation().toLowerCase())) {
+                        throw new BadRequestException("Duplicated join relation '" + join.getRelation() + "'");
+                    }
+
+                    if(joinedModels.containsKey(join.getAlias().toLowerCase())) {
+                        throw new BadRequestException("Duplicated join alias '" + join.getAlias() + "'");
+                    }
+
+                    if(join.getAlias().equalsIgnoreCase(query.alias())) {
+                        throw new BadRequestException("Alias '" + query.alias() + "' is reserved, please use another one");
+                    }
+
+                    RelationProperty rp = em.tryGetRelationProperty(join.getRelation());
+                    if(null == rp) {
+                        throw new BadRequestException("No relation '" + join.getRelation() + "' in model '" + am.getName());
+                    }
+
+                    if(rp.isOptional()) {
+                        query.leftJoin(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                    }else{
+                        query.join(rp.getTargetEntityName(), rp.getRelationName(), join.getAlias());
+                    }
+
+                    relations.add(join.getRelation().toLowerCase());
+
+                    ModelAndMapping joinedModel = joinModelsLookup.apply(rp.getTargetEntityName());
+                    if(null == joinedModel) {
+                        throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
+                    }
+                    joinedModels.put(join.getAlias().toLowerCase(), joinedModel);
+                }
+            }
+
+            applyFilters(query, options.getParams(), options.getFilters(), joinedModels, filters);
 
             if(callback != null){
                 callback.accept(query);
@@ -251,7 +301,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         query.select(fields.toArray(new String[fields.size()]));
     }
 
-    protected void applyFilters(CriteriaQuery query, Params params, String expr, Map<String, Object> fields) {
+    protected void applyFilters(CriteriaQuery query, Params params, String expr, Map<String, ModelAndMapping> jms, Map<String, Object> fields) {
         StringBuilder where = new StringBuilder();
         List<Object> args = new ArrayList<>();
 
@@ -268,41 +318,49 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             }
         }
 
-        int joins = 1;
+        if(null != params) {
+            for (String name : params.names()) {
 
-        for (String name : params.names()) {
+                String alias;
+                int dotIndex = name.indexOf('.');
+                if(dotIndex > 0) {
+                    alias = name.substring(0, dotIndex);
+                    name = name.substring(dotIndex + 1);
 
-            MApiProperty ap = am.tryGetProperty(name);
-            if (null != ap) {
-                if (ap.isNotFilterableExplicitly()) {
-                    throw new BadRequestException("Property '" + name + "' is not filterable!");
+                    if(null == jms || !jms.containsKey(alias.toLowerCase())) {
+                        throw new BadRequestException("Unknown alias '" + alias + "' at param '" + (alias + "." + name) + "'");
+                    }
+                }else{
+                    alias = query.alias();
                 }
 
-                String value = params.get(name);
-                if(Strings.isEmpty(value)) {
+                ModelAndProp modelAndProp = lookupProperty(jms, alias, name);
+                if(null == modelAndProp.property) {
                     continue;
                 }
 
-                if(!args.isEmpty()) {
+                checkProperty(modelAndProp, name);
+
+                String value = params.get(name);
+                if (Strings.isEmpty(value)) {
+                    continue;
+                }
+
+                if (!args.isEmpty()) {
                     where.append(" and ");
                 }
 
                 String[] a = params.getArray(name);
-                if(a.length == 1) {
+                if (a.length == 1) {
                     a = Strings.split(a[0], ',');
                 }
 
-                if(!ap.isReference()) {
-                    if(a.length > 1) {
-                        applyFieldFilterIn(query, where, args, name, a);
-                    }else{
-                        applyFieldFilter(query, where, args, name, value, "=");
-                    }
-                    continue;
-                }else{
-                    applyRelationalFilter(query, where, args, joins, name, a);
-                    continue;
+                if (a.length > 1) {
+                    applyFieldFilterIn(where, args, alias, modelAndProp.field, a);
+                } else {
+                    applyFieldFilter(where, args, alias, modelAndProp.field, value, "=");
                 }
+
             }
         }
 
@@ -336,46 +394,36 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         continue;
                     }
 
-                    String name = nodes[i].literal();
+                    FiltersParser.Name nameNode = (FiltersParser.Name)nodes[i];
+
+                    String alias = nameNode.alias();
+                    String name  = nameNode.literal();
                     FiltersParser.Token op = nodes[++i].token();
                     String value = nodes[++i].literal();
 
-                    MApiProperty ap = am.tryGetProperty(name);
-                    if(null == ap) {
-                        throw new BadRequestException("Property '" + name + "' not exists in model '" + am.getName() + "'");
+                    if(null != alias) {
+                        if(null == jms || !jms.containsKey(alias.toLowerCase())) {
+                            throw new BadRequestException("Unknown alias '" + alias + "' at property '" + nameNode.toString() + "'");
+                        }
+                    }else{
+                        alias = query.alias();
                     }
 
-                    if(ap.isNotFilterableExplicitly()) {
-                        throw new BadRequestException("Property '" + name + "' is not filterable!");
-                    }
+                    ModelAndProp modelAndProp = lookupProperty(jms, alias, name);
+                    checkProperty(modelAndProp, name);
 
                     String sqlOperator = toSqlOperator(op);
 
                     if(op == FiltersParser.Token.IS || op == FiltersParser.Token.NOT){
-                        where.append(query.alias()).append('.').append(name).append(' ').append(sqlOperator);
+                        where.append(alias).append('.').append(name).append(' ').append(sqlOperator);
                         continue;
                     }
 
-                    if(!ap.isReference()) {
-                        if(op == FiltersParser.Token.IN) {
-                            applyFieldFilterIn(query, where, args, name, Strings.split(value, ','));
-                        }else{
-                            applyFieldFilter(query, where, args, name, value, sqlOperator);
-                        }
-                        continue;
+                    if(op == FiltersParser.Token.IN) {
+                        applyFieldFilterIn(where, args, alias, modelAndProp.field, Strings.split(value, ','));
                     }else{
-                        if(op != FiltersParser.Token.EQ) {
-                            throw new BadRequestException("Relational property '" + name + "' only supports 'eq' operator");
-                        }
-
-                        String[] a = Strings.split(value, ',');
-                        applyRelationalFilter(query, where, args, joins, name, a);
-                        continue;
+                        applyFieldFilter(where, args, alias, modelAndProp.field, value, sqlOperator);
                     }
-
-//                    FieldMapping fm = em.getFieldMapping(name);
-//                    where.append(name).append(' ').append(toSqlOperator(op)).append(" ?");
-//                    args.add(Converts.convert(value, fm.getJavaType()));
                 }
 
                 if(and) {
@@ -389,28 +437,54 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected void applyFieldFilter(CriteriaQuery query, StringBuilder where, List<Object> args, String name, Object value, String op) {
-        FieldMapping fm = em.getFieldMapping(name);
+    protected void checkProperty(ModelAndProp modelAndProp, String name) {
+        boolean joined = modelAndProp.model != this.am;
 
-        where.append(query.alias()).append('.').append(name).append(' ').append(op).append(" ?");
+        String modelDesc = (joined ? "joined " : "") + "model '" + modelAndProp.model.getName() + "'";
+
+        if(null == modelAndProp.property) {
+            throw new BadRequestException("Property '" + name + "' not exists in " + modelDesc);
+        }
+
+        if(null == modelAndProp.field) {
+            throw new BadRequestException("No mapping field '" + name + "' in " + modelDesc);
+        }
+
+        MApiProperty ap = modelAndProp.property;
+
+        if(ap.isNotFilterableExplicitly()) {
+            throw new BadRequestException("Property '" + name + "' is not filterable in " + modelDesc);
+        }
+
+        if(ap.isReference()) {
+            throw new BadRequestException("Relation Property '" + name + "' is not filterable in " + modelDesc);
+        }
+    }
+
+    protected ModelAndProp lookupProperty(Map<String, ModelAndMapping> joinedModels, String alais, String name) {
+        ModelAndMapping modelAndMapping = null;
+        if(null != joinedModels) {
+            modelAndMapping = joinedModels.get(alais.toLowerCase());
+        }
+
+        if(null == modelAndMapping) {
+            modelAndMapping = this.modelAndMapping;
+        }
+
+        MApiProperty property = modelAndMapping.model.tryGetProperty(name);
+        FieldMapping field    = null == property ? null : modelAndMapping.mapping.tryGetFieldMapping(property.getName());
+
+        return new ModelAndProp(modelAndMapping, property, field);
+    }
+
+    protected void applyFieldFilter(StringBuilder where, List<Object> args, String alias, FieldMapping fm, Object value, String op) {
+        where.append(alias).append('.').append(fm.getFieldName()).append(' ').append(op).append(" ?");
         args.add(Converts.convert(value, fm.getJavaType()));
     }
 
-    protected void applyFieldFilterIn(CriteriaQuery query, StringBuilder where, List<Object> args, String name, String[] values) {
-        FieldMapping fm = em.getFieldMapping(name);
-
-        where.append(query.alias()).append('.').append(name).append(' ').append("in").append(" ?");
+    protected void applyFieldFilterIn(StringBuilder where, List<Object> args, String alias, FieldMapping fm, String[] values) {
+        where.append(alias).append('.').append(fm.getFieldName()).append(' ').append("in").append(" ?");
         args.add(Converts.convert(values, Array.newInstance(((FieldMapping)fm).getJavaType(), 0).getClass()));
-    }
-
-    protected void applyRelationalFilter(CriteriaQuery query, StringBuilder where, List<Object> args,  int joins, String name, String[] ids) {
-        RelationProperty rp = em.getRelationProperty(name);
-
-        String alias = "jn" + joins++;
-
-        query.joinWithWhere(rp.getTargetEntityName(), rp.getRelationName(), alias, where, (f) -> {
-            args.add(Converts.convert(ids, Array.newInstance(((FieldMapping)f).getJavaType(), 0).getClass()));
-        });
     }
 
     protected String toSqlOperator(FiltersParser.Token op) {
@@ -455,6 +529,17 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             return "is not null";
         }
         throw new IllegalStateException("Not supported operator '" + op + "'");
+    }
+
+    protected static final class ModelAndProp extends ModelAndMapping {
+        final MApiProperty property;
+        final FieldMapping field;
+
+        public ModelAndProp(ModelAndMapping mm, MApiProperty property, FieldMapping field) {
+            super(mm.model, mm.mapping);
+            this.property = property;
+            this.field    = field;
+        }
     }
 
 }

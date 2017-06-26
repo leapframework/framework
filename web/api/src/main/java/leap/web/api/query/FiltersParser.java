@@ -119,6 +119,7 @@ public class FiltersParser extends ParserBase {
         String name  = scanIdentifier(true);
 
         if(ch == '.') {
+            nextChar();
             alias = name;
             name  = scanIdentifier(false);
         }
@@ -333,6 +334,11 @@ public class FiltersParser extends ParserBase {
 
         public String alias() {
             return alias;
+        }
+
+        @Override
+        public String toString() {
+            return null == alias ? literal() : alias + "." + literal();
         }
     }
 
