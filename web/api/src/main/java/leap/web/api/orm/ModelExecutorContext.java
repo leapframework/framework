@@ -16,24 +16,36 @@
 
 package leap.web.api.orm;
 
-public class SimpleModelExecutorConfig implements ModelExecutorConfig {
+import leap.orm.dao.Dao;
+import leap.orm.mapping.EntityMapping;
+import leap.web.api.config.ApiConfig;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
 
-    protected final int maxPageSize;
-    protected final int defaultPageSize;
+public interface ModelExecutorContext {
 
-    public SimpleModelExecutorConfig(int maxPageSize, int defaultPageSize) {
-        this.maxPageSize = maxPageSize;
-        this.defaultPageSize = defaultPageSize;
-    }
+    /**
+     * Required.
+     */
+    ApiConfig getApiConfig();
 
-    @Override
-    public int getMaxPageSize() {
-        return maxPageSize;
-    }
+    /**
+     * Required.
+     */
+    ApiMetadata getApiMetadata();
 
-    @Override
-    public int getDefaultPageSize() {
-        return defaultPageSize;
-    }
+    /**
+     * Required.
+     */
+    MApiModel getApiModel();
 
+    /**
+     * Required.
+     */
+    Dao getDao();
+
+    /**
+     * Required.
+     */
+    EntityMapping getEntityMapping();
 }

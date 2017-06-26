@@ -45,7 +45,7 @@ public interface MTypeContext extends AttributeGetter,AttributeSetter {
         }
 
         @Override
-        public void onComplexTypeCreated(Class<?> type) {
+        public void onComplexTypeCreated(Class<?> type, MComplexType ct) {
             creatingComplexTypes.remove(type);
         }
 
@@ -77,7 +77,7 @@ public interface MTypeContext extends AttributeGetter,AttributeSetter {
     /**
      * Notify a complex type has been created.
      */
-    void onComplexTypeCreated(Class<?> type);
+    void onComplexTypeCreated(Class<?> type, MComplexType ct);
 
     /**
      * Returns the name of complex type if creating.

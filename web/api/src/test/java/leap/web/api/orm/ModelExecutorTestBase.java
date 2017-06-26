@@ -16,38 +16,48 @@
 
 package leap.web.api.orm;
 
+import app.models.Author;
+import app.models.Book;
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.core.ioc.PostCreateBean;
 import leap.core.junit.AppTestBase;
 import leap.core.meta.MTypeManager;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MComplexTypeRef;
 import leap.lang.meta.MType;
 import leap.orm.dao.Dao;
+import leap.web.api.config.ApiConfig;
+import leap.web.api.config.DefaultApiConfig;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiModelBuilder;
 
-public abstract class ModelExecutorTestBase extends AppTestBase implements ModelExecutorConfig {
+public abstract class ModelExecutorTestBase extends AppTestBase implements PostCreateBean {
 
     protected @Inject MTypeManager tm;
     protected @Inject Dao          dao;
 
-    protected int maxPageSize     = 100;
-    protected int defaultPageSize = 10;
+    protected ApiConfig   ac;
+    protected ApiMetadata amd;
 
     @Override
-    public int getMaxPageSize() {
-        return maxPageSize;
-    }
+    public void postCreate(BeanFactory factory) throws Throwable {
+        ac = new DefaultApiConfig("api", "/", "");
 
-    @Override
-    public int getDefaultPageSize() {
-        return defaultPageSize;
+        ApiMetadataBuilder m = new ApiMetadataBuilder();
+        m.setName("api");
+        m.addModel(am(Book.class));
+        m.addModel(am(Author.class));
+
+        amd = m.build();
     }
 
     /**
      * Returns the {@link MApiModel} for orm model.
      */
-    protected MApiModel am(Class<?> ormModel) {
+    protected MApiModelBuilder am(Class<?> ormModel) {
         MType type = tm.getMType(ormModel);
 
         MComplexType ct;
@@ -57,6 +67,6 @@ public abstract class ModelExecutorTestBase extends AppTestBase implements Model
             ct = (MComplexType)type;
         }
 
-        return new MApiModelBuilder(ct).build();
+        return new MApiModelBuilder(ct);
     }
 }

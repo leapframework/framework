@@ -21,7 +21,6 @@ package leap.web.api.orm;
 import leap.core.value.Record;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
-import leap.orm.dao.Dao;
 import leap.orm.mapping.*;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
@@ -36,17 +35,15 @@ import leap.web.exception.BadRequestException;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class DefaultModelQueryExecutor extends ModelExecutorBase implements ModelQueryExecutor {
 
-    protected Function<String,ModelAndMapping> joinModelsLookup;
-    protected String[] excludedFields;
-
     protected final ModelAndMapping modelAndMapping;
 
-    protected DefaultModelQueryExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        super(c, am, dao, em);
+    protected String[] excludedFields;
+
+    public DefaultModelQueryExecutor(ModelExecutorContext context) {
+        super(context);
         this.modelAndMapping = new ModelAndMapping(am, em);
     }
 
@@ -54,10 +51,6 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     public ModelQueryExecutor selectExclude(String... names) {
         this.excludedFields = names;
         return this;
-    }
-
-    public void setJoinModelsLookup(Function<String, ModelAndMapping> func) {
-        this.joinModelsLookup = func;
     }
 
     @Override
@@ -106,7 +99,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
             query.selectExclude(excludedFields);
 
-            list = query.limit(c.getMaxPageSize()).list();
+            list = query.limit(ac.getMaxPageSize()).list();
 
         }else{
             if(!Strings.isEmpty(options.getOrderBy())) {
@@ -155,7 +148,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 
                     relations.add(join.getRelation().toLowerCase());
 
-                    ModelAndMapping joinedModel = joinModelsLookup.apply(rp.getTargetEntityName());
+                    ModelAndMapping joinedModel = lookupModelAndMapping(rp.getTargetEntityName());
                     if(null == joinedModel) {
                         throw new BadRequestException("The joined model '" + rp.getTargetEntityName() + "' of relation '" + join.getRelation() + "' not found");
                     }
@@ -169,7 +162,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                 callback.accept(query);
             }
 
-            PageResult result = query.pageResult(options.getPage(c.getDefaultPageSize()));
+            PageResult result = query.pageResult(options.getPage(ac.getDefaultPageSize()));
 
             list = result.list();
 
@@ -334,7 +327,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     alias = query.alias();
                 }
 
-                ModelAndProp modelAndProp = lookupProperty(jms, alias, name);
+                ModelAndProp modelAndProp = lookupModelAndProp(jms, alias, name);
                 if(null == modelAndProp.property) {
                     continue;
                 }
@@ -409,7 +402,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                         alias = query.alias();
                     }
 
-                    ModelAndProp modelAndProp = lookupProperty(jms, alias, name);
+                    ModelAndProp modelAndProp = lookupModelAndProp(jms, alias, name);
                     checkProperty(modelAndProp, name);
 
                     String sqlOperator = toSqlOperator(op);
@@ -461,17 +454,31 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         }
     }
 
-    protected ModelAndProp lookupProperty(Map<String, ModelAndMapping> joinedModels, String alais, String name) {
+    protected ModelAndMapping lookupModelAndMapping(String entityName) {
+        MApiModel model = amd.getModel(entityName);
+        if(null == model) {
+            return null;
+        }
+
+        EntityMapping mapping = md.getEntityMapping(entityName);
+        if(null == mapping) {
+            throw new IllegalStateException("Entity mapping '" + entityName + "' should be exists!");
+        }
+
+        return new ModelAndMapping(model, mapping);
+    }
+
+    protected ModelAndProp lookupModelAndProp(Map<String, ModelAndMapping> joinedModels, String alias, String propertyName) {
         ModelAndMapping modelAndMapping = null;
         if(null != joinedModels) {
-            modelAndMapping = joinedModels.get(alais.toLowerCase());
+            modelAndMapping = joinedModels.get(alias.toLowerCase());
         }
 
         if(null == modelAndMapping) {
             modelAndMapping = this.modelAndMapping;
         }
 
-        MApiProperty property = modelAndMapping.model.tryGetProperty(name);
+        MApiProperty property = modelAndMapping.model.tryGetProperty(propertyName);
         FieldMapping field    = null == property ? null : modelAndMapping.mapping.tryGetFieldMapping(property.getName());
 
         return new ModelAndProp(modelAndMapping, property, field);
@@ -531,7 +538,18 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         throw new IllegalStateException("Not supported operator '" + op + "'");
     }
 
-    protected static final class ModelAndProp extends ModelAndMapping {
+    protected static class ModelAndMapping {
+
+        public final MApiModel     model;
+        public final EntityMapping mapping;
+
+        public ModelAndMapping(MApiModel model, EntityMapping mapping) {
+            this.model = model;
+            this.mapping = mapping;
+        }
+    }
+
+    protected static class ModelAndProp extends ModelAndMapping {
         final MApiProperty property;
         final FieldMapping field;
 

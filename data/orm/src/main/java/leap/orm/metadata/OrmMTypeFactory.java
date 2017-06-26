@@ -109,7 +109,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             }
 
             if(null == p.getFilterable()) {
-                p.setFilterable(false);
+                p.setFilterable(fm.isPrimaryKey());
             }
 
             if(null != bp) {
@@ -120,11 +120,10 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
 		}
 
         for(RelationProperty rp : em.getRelationProperties()) {
-
             RelationMapping rm = em.getRelationMapping(rp.getRelationName());
 
             EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
-
+            getMType(targetEntity.getEntityClass(), context, c, targetEntity);
 
             MPropertyBuilder p = new MPropertyBuilder();
             p.setName(rp.getName());
@@ -157,11 +156,13 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             ct.addProperty(p.build());
         }
 
+        MComplexType ret = ct.build();
+
         if(null != type) {
-            context.onComplexTypeCreated(type);
+            context.onComplexTypeCreated(type,ret);
         }
 		
-		return ct.build();
+		return ret;
 	}
 
 }

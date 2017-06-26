@@ -40,8 +40,8 @@ import java.util.Map;
 
 public class DefaultModelCreateExecutor extends ModelExecutorBase implements ModelCreateExecutor {
 
-    protected DefaultModelCreateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        super(c, am, dao, em);
+    public DefaultModelCreateExecutor(ModelExecutorContext context) {
+        super(context);
     }
 
     @Override

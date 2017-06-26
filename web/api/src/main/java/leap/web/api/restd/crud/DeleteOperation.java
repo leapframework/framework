@@ -68,13 +68,12 @@ public class DeleteOperation extends CrudOperation implements RestdProcessor {
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 
-    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata md = apis.tryGetMetadata(c.getName());
-        MApiModel   am = md.getModel(model.getName());
+    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+        MApiModel   am  = amd.getModel(model.getName());
 
-        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
-
-        ModelDeleteExecutor executor = mef.newDeleteExecutor(mec, am, dao, model.getEntityMapping());
+        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelDeleteExecutor executor = mef.newDeleteExecutor(context);
 
         Object        id      = params.get(0);
         DeleteOptions options = params.get(1);

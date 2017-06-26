@@ -32,17 +32,11 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
      * Creates the {@link DefaultModelQueryExecutor} of the orm model.
      */
     protected DefaultModelQueryExecutor newExecutor(Class<?> ormModel) {
-        MApiModel     am = am(ormModel);
+        MApiModel     am = amd.getModel(ormModel);
         EntityMapping em = dao.getOrmContext().getMetadata().getEntityMapping(ormModel);
 
-        DefaultModelQueryExecutor executor = new DefaultModelQueryExecutor(this, am, dao, em);
-
-        executor.setJoinModelsLookup((name) -> {
-            EntityMapping joinedEm = dao.getOrmContext().getMetadata().getEntityMapping(name);
-            MApiModel     joinedAm = am(joinedEm.getEntityClass());
-
-            return new ModelAndMapping(joinedAm, joinedEm);
-        });
+        ModelExecutorContext      context  = new SimpleModelExecutorContext(ac, amd, am, dao, em);
+        DefaultModelQueryExecutor executor = new DefaultModelQueryExecutor(context);
 
         return executor;
     }

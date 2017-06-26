@@ -46,16 +46,20 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
     protected final OrmMetadata   md         = dao.getOrmContext().getMetadata();
     protected final EntityMapping em         = md.getEntityMapping(modelClass);
 
-    protected ModelExecutorConfig mec;
-    protected MApiModel           am;
+    protected ApiConfig            ac;
+    protected ApiMetadata          amd;
+    protected MApiModel            am;
+    protected ModelExecutorContext mec;
 
     private Class<T> getModelClass() {
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
     public void postApiInitialized(ApiConfig c, ApiMetadata m) {
-        am  = m.getModel(modelClass);
-        mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
+        this.ac  = c;
+        this.amd = m;
+        this.am  = m.getModel(modelClass);
+        this.mec = new SimpleModelExecutorContext(ac, amd, am, dao, em);
     }
 
     /**
@@ -119,7 +123,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * @return the id of new record.
      */
     protected Object createRecordAndReturnId(Object request, Object id, Map<String, Object> extraProperties) {
-        ModelCreateExecutor executor = mef.newCreateExecutor(mec, am, dao, em);
+        ModelCreateExecutor executor = mef.newCreateExecutor(mec);
 
         return executor.createOne(request, id, extraProperties).id;
     }
@@ -149,7 +153,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Gets the record of the specified id.
      */
     protected ApiResponse get(Object id, QueryOptionsBase options) {
-        ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, em);
+        ModelQueryExecutor executor = mef.newQueryExecutor(mec);
 
         QueryOneResult result = executor.queryOne(id, options);
 
@@ -198,7 +202,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
                                              Consumer<ModelQueryExecutor> executorCallback,
                                              Consumer<CriteriaQuery> queryCallback) {
 
-        ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, em);
+        ModelQueryExecutor executor = mef.newQueryExecutor(mec);
 
         if(null != executorCallback) {
             executorCallback.accept(executor);
@@ -217,7 +221,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Update partial properties of model.
      */
     protected ApiResponse updatePartial(Object id, Partial<T> partial) {
-        ModelUpdateExecutor executor = mef.newUpdateExecutor(mec, am, dao, em);
+        ModelUpdateExecutor executor = mef.newUpdateExecutor(mec);
 
         UpdateOneResult result = executor.partialUpdateOne(id, partial);
 
@@ -254,7 +258,7 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
      * Deletes a record.
      */
     protected ApiResponse delete(Object id, DeleteOptions options) {
-        ModelDeleteExecutor executor = mef.newDeleteExecutor(mec, am, dao, em);
+        ModelDeleteExecutor executor = mef.newDeleteExecutor(mec);
 
         if(executor.deleteOne(id, options).success) {
             return ApiResponse.NO_CONTENT;

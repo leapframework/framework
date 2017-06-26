@@ -14,18 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.web.api.orm;
+import leap.webunit.server.TWebServer;
 
-public interface ModelExecutorConfig {
-
-    /**
-     * Returns the max page size of pagination.
-     */
-    int getMaxPageSize();
-
-    /**
-     * Returns the default page size of pagination.
-     */
-    int getDefaultPageSize();
-
+public class RunWebServer {
+    public static void main(String[] args) {
+        TWebServer.main(args);
+    }
 }
