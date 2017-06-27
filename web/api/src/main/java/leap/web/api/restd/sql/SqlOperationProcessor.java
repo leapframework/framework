@@ -17,7 +17,9 @@
 package leap.web.api.restd.sql;
 
 import leap.lang.Strings;
-import leap.lang.meta.*;
+import leap.lang.meta.MCollectionType;
+import leap.lang.meta.MDictionaryType;
+import leap.lang.meta.MSimpleTypes;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.sql.SqlCommand;
@@ -26,20 +28,16 @@ import leap.web.App;
 import leap.web.action.ActionParams;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiHeaderBuilder;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdOperationBase;
-import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.RestdContext;
+import leap.web.api.restd.RestdModel;
+import leap.web.api.restd.RestdProcessor;
 import leap.web.api.restd.crud.CrudOperation;
 import leap.web.route.RouteBuilder;
-import org.omg.PortableServer.THREAD_POLICY_ID;
 
 import java.util.Map;
 
@@ -86,8 +84,10 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
         String verb;
         if (sm.isSelect()) {
             verb = "GET";
-        } else if (sm.isInsert() || sm.isUpdate()) {
+        } else if (sm.isInsert()) {
             verb = "POST";
+        } else if (sm.isUpdate()) {
+            verb = "PATCH";
         } else {
             verb = "DELETE";
         }
