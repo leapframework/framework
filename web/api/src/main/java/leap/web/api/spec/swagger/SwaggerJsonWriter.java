@@ -15,12 +15,6 @@
  */
 package leap.web.api.spec.swagger;
 
-import static leap.lang.Strings.nullToEmpty;
-import static leap.web.api.spec.swagger.SwaggerConstants.*;
-
-import java.util.List;
-import java.util.Map.Entry;
-
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
@@ -33,9 +27,12 @@ import leap.web.api.meta.model.*;
 import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
-import leap.web.route.Route;
 
-import javax.rmi.PortableRemoteObject;
+import java.util.List;
+import java.util.Map.Entry;
+
+import static leap.lang.Strings.nullToEmpty;
+import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
 public class SwaggerJsonWriter extends JsonSpecWriter {
 
@@ -632,6 +629,8 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 			type = SwaggerType.BYTE;
 		}else if(k == MSimpleTypeKind.DATETIME) {
 			type = SwaggerType.DATETIME;
+		}else if(k == MSimpleTypeKind.TIME) {
+			type = SwaggerType.TIME;
 		}else if(k == MSimpleTypeKind.DECIMAL) {
 			type = SwaggerType.DOUBLE;
 		}else if(k == MSimpleTypeKind.DOUBLE) {
