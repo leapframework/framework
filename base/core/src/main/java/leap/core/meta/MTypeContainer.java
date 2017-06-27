@@ -43,4 +43,9 @@ public interface MTypeContainer extends MTypeFactory {
      */
     Map<Class<?>, MComplexType> getComplexTypes();
 
+    /**
+     * Returns the created complex type of null if not exists.
+     */
+    MComplexType getComplexType(String name);
+
 }

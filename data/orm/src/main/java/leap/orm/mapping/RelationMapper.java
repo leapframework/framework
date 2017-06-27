@@ -596,6 +596,7 @@ public class RelationMapper implements Mapper {
         RelationMappingBuilder rm = findRelation(emb, targetEntity, RelationType.ONE_TO_MANY, relation);
         if(null != rm) {
             rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
             return;
         }
 
@@ -603,6 +604,7 @@ public class RelationMapper implements Mapper {
         rm = findRelation(emb, targetEntity, RelationType.MANY_TO_MANY, relation);
         if(null != rm) {
             rp.setRelationName(rm.getName());
+            rp.setOptional(rm.isOptional());
             setManyToManyJoinEntity(rp, context.getEntityMapping(rm.getJoinEntityName()));
             return ;
         }
@@ -630,6 +632,7 @@ public class RelationMapper implements Mapper {
         }
 
         rp.setRelationName(rm.getName());
+        rp.setOptional(rm.isOptional());
     }
 
     protected RelationMappingBuilder findRelation(EntityMappingBuilder emb, EntityMappingBuilder targetEntity, RelationType type, String relation) {

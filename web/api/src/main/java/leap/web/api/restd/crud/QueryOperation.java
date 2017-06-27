@@ -27,10 +27,7 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.orm.ModelExecutorConfig;
-import leap.web.api.orm.ModelQueryExecutor;
-import leap.web.api.orm.QueryListResult;
-import leap.web.api.orm.SimpleModelExecutorConfig;
+import leap.web.api.orm.*;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
@@ -70,13 +67,12 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 
-    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata md = apis.tryGetMetadata(c.getName());
-        MApiModel   am = md.getModel(model.getName());
+    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+        MApiModel   am  = amd.getModel(model.getName());
 
-        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
-
-        ModelQueryExecutor executor = mef.newQueryExecutor(mec, am, dao, model.getEntityMapping());
+        ModelExecutorContext context  = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelQueryExecutor   executor = mef.newQueryExecutor(context);
 
         QueryOptions options = params.get(0);
 

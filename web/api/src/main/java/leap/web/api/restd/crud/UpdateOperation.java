@@ -68,16 +68,15 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 
-    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata md = apis.tryGetMetadata(c.getName());
-        MApiModel   am = md.getModel(model.getName());
-
-        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
+    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+        MApiModel   am  = amd.getModel(model.getName());
 
         Object             id     = params.get(0);
         Map<String,Object> record = params.get(1);
 
-        ModelUpdateExecutor executor = mef.newUpdateExecutor(mec, am, dao, model.getEntityMapping());
+        ModelExecutorContext context  = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelUpdateExecutor  executor = mef.newUpdateExecutor(context);
 
         UpdateOneResult result = executor.partialUpdateOne(id, record);
 

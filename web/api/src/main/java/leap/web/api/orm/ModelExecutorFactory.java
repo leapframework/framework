@@ -16,30 +16,26 @@
 
 package leap.web.api.orm;
 
-import leap.orm.dao.Dao;
-import leap.orm.mapping.EntityMapping;
-import leap.web.api.meta.model.MApiModel;
-
 public interface ModelExecutorFactory {
 
     /**
      * Returns a new {@link ModelCreateExecutor}.
      */
-    ModelCreateExecutor newCreateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em);
+    ModelCreateExecutor newCreateExecutor(ModelExecutorContext context);
 
     /**
      * Returns a new {@link ModelUpdateExecutor}.
      */
-    ModelUpdateExecutor newUpdateExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em);
+    ModelUpdateExecutor newUpdateExecutor(ModelExecutorContext context);
 
     /**
      * Returns a new {@link ModelDeleteExecutor}.
      */
-    ModelDeleteExecutor newDeleteExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em);
+    ModelDeleteExecutor newDeleteExecutor(ModelExecutorContext context);
 
     /**
      * Returns a new {@link ModelQueryExecutor}.
      */
-    ModelQueryExecutor newQueryExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em);
+    ModelQueryExecutor newQueryExecutor(ModelExecutorContext context);
 
 }

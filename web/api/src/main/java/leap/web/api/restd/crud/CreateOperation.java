@@ -26,10 +26,7 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.CreateOneResult;
-import leap.web.api.orm.ModelCreateExecutor;
-import leap.web.api.orm.ModelExecutorConfig;
-import leap.web.api.orm.SimpleModelExecutorConfig;
+import leap.web.api.orm.*;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
@@ -70,14 +67,14 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         api.addRoute(rm.loadRoute(app.routes(), route));
     }
 
-    protected Object execute(ApiConfig c, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata md = apis.tryGetMetadata(c.getName());
-        MApiModel   am = md.getModel(model.getName());
-        ModelExecutorConfig mec = new SimpleModelExecutorConfig(c.getMaxPageSize(), c.getDefaultPageSize());
+    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+        MApiModel   am  = amd.getModel(model.getName());
 
         Map<String,Object> record = params.get(0);
 
-        ModelCreateExecutor executor = mef.newCreateExecutor(mec, am, dao, model.getEntityMapping());
+        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelCreateExecutor executor = mef.newCreateExecutor(context);
 
         CreateOneResult result = executor.createOne(record);
 

@@ -18,16 +18,12 @@
 
 package leap.web.api.orm;
 
-import leap.orm.dao.Dao;
-import leap.orm.mapping.EntityMapping;
-import leap.web.api.config.ApiConfig;
-import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.params.DeleteOptions;
 
 public class DefaultModelDeleteExecutor extends ModelExecutorBase implements ModelDeleteExecutor {
 
-    protected DefaultModelDeleteExecutor(ModelExecutorConfig c, MApiModel am, Dao dao, EntityMapping em) {
-        super(c, am, dao, em);
+    public DefaultModelDeleteExecutor(ModelExecutorContext context) {
+        super(context);
     }
 
     @Override

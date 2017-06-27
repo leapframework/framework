@@ -30,9 +30,11 @@ public class RelationProperty {
     protected final String       relationName;
     protected final String       targetEntityName;
     protected final String       joinEntityName;
+    protected final boolean      optional;
     protected final BeanProperty beanProperty;
 
-    public RelationProperty(String name, boolean many, String relationName, String targetEntityName, String joinEntityName, BeanProperty bp) {
+    public RelationProperty(String name, boolean many, String relationName, String targetEntityName, String joinEntityName,
+                            boolean optional, BeanProperty bp) {
         Args.notEmpty(name, "name");
         Args.notEmpty(relationName, "relationName");
         Args.notEmpty(targetEntityName, "targetEntityName");
@@ -42,6 +44,7 @@ public class RelationProperty {
         this.relationName = relationName;
         this.targetEntityName = targetEntityName;
         this.joinEntityName = joinEntityName;
+        this.optional = optional;
         this.beanProperty = bp;
     }
 
@@ -75,6 +78,10 @@ public class RelationProperty {
     @Optional
     public String getJoinEntityName() {
         return joinEntityName;
+    }
+
+    public boolean isOptional() {
+        return optional;
     }
 
     @Optional

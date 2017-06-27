@@ -28,6 +28,7 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
     protected String       relationName;
     protected String       targetEntityName;
     protected String       joinEntityName;
+    protected boolean      optional;
     protected BeanProperty beanProperty;
 
     public RelationPropertyBuilder() {
@@ -78,6 +79,14 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
         this.joinEntityName = joinEntityName;
     }
 
+    public boolean isOptional() {
+        return optional;
+    }
+
+    public void setOptional(boolean optional) {
+        this.optional = optional;
+    }
+
     public BeanProperty getBeanProperty() {
         return beanProperty;
     }
@@ -88,6 +97,6 @@ public class RelationPropertyBuilder implements Buildable<RelationProperty> {
 
     @Override
     public RelationProperty build() {
-        return new RelationProperty(name, many, relationName, targetEntityName, joinEntityName, beanProperty);
+        return new RelationProperty(name, many, relationName, targetEntityName, joinEntityName, optional, beanProperty);
     }
 }

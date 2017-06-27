@@ -158,27 +158,22 @@ public class RestApiControllerTest extends WebTestBase {
 
     @Test
     public void testQueryListWithRelationalFilters() {
-        RestApi[] apis = get("/api/restapi?categories=not_exists").decodeJsonArray(RestApi.class);
+        RestApi[] apis = get("/api/restapi?joins=categories%20c&filters=c.id%20eq%20not_exists").decodeJsonArray(RestApi.class);
         assertEquals(0, apis.length);
 
-        apis = get("/api/restapi?categories=" + c1.getId()+"&orderby=createdAt").decodeJsonArray(RestApi.class);
+        apis = get("/api/restapi?joins=categories%20c&filters=c.id%20eq%20" + c1.getId()+"&orderby=createdAt").decodeJsonArray(RestApi.class);
         assertEquals(1, apis.length);
 
-        apis = get("/api/restapi?categories=" + c1.getId() + "," + c2.getId()).decodeJsonArray(RestApi.class);
+        apis = get("/api/restapi?joins=categories%20c&filters=c.id%20in%20" + c1.getId() + "," + c2.getId()).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
 
-        apis = get("/api/restapi?categories=" + c1.getId() + "&categories=" + c2.getId()).decodeJsonArray(RestApi.class);
-        assertEquals(2, apis.length);
-
-        apis = get("/api/restapi?filters=categories%20eq%20" + c1.getId()).decodeJsonArray(RestApi.class);
+        apis = get("/api/restapi?joins=categories%20c&filters=name%20eq%20api1%20and%20c.id%20eq%20" + c1.getId()).decodeJsonArray(RestApi.class);
         assertEquals(1, apis.length);
 
-        apis = get("/api/restapi?filters=name%20eq%20api1%20and%20categories%20eq%20" + c1.getId()).decodeJsonArray(RestApi.class);
-        assertEquals(1, apis.length);
-
-        apis = get("/api/restapi?filters=name%20eq%20api1%20or%20categories%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
+        apis = get("/api/restapi?joins=categories%20c&filters=name%20eq%20api1%20or%20c.id%20eq%20" + c2.getId()).decodeJsonArray(RestApi.class);
         assertEquals(2, apis.length);
     }
+
     @Test
     public void testPartialConvertToObject(){
         Map<String, Object> data = New.hashMap();

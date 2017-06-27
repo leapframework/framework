@@ -18,6 +18,7 @@ package leap.core.meta;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
+import leap.lang.meta.MComplexType;
 import leap.lang.meta.MType;
 import leap.lang.meta.MTypeFactory;
 
@@ -39,7 +40,12 @@ public class DefaultMTypeManager implements MTypeManager, PostCreateBean {
 		return defaultContainer.getMType(type, genericType);
     }
 
-	@Override
+    @Override
+    public MComplexType getComplexType(String name) {
+        return defaultContainer.getComplexType(name);
+    }
+
+    @Override
     public MTypeContainerCreator factory() {
 	    return new DefaultMTypeContainer(typeFactories);
     }

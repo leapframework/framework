@@ -14,26 +14,10 @@
  *  limitations under the License.
  */
 
-package leap.web.api.orm;
+import leap.webunit.server.TWebServer;
 
-public class SimpleModelExecutorConfig implements ModelExecutorConfig {
-
-    protected final int maxPageSize;
-    protected final int defaultPageSize;
-
-    public SimpleModelExecutorConfig(int maxPageSize, int defaultPageSize) {
-        this.maxPageSize = maxPageSize;
-        this.defaultPageSize = defaultPageSize;
+public class RunWebServer {
+    public static void main(String[] args) {
+        TWebServer.main(args);
     }
-
-    @Override
-    public int getMaxPageSize() {
-        return maxPageSize;
-    }
-
-    @Override
-    public int getDefaultPageSize() {
-        return defaultPageSize;
-    }
-
 }

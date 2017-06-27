@@ -14,20 +14,38 @@
  *  limitations under the License.
  */
 
-package leap.web.api.query;
+package leap.web.api.orm;
 
-import leap.junit.TestBase;
-import org.junit.Test;
+import leap.orm.dao.Dao;
+import leap.orm.mapping.EntityMapping;
+import leap.web.api.config.ApiConfig;
+import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
 
-public class FiltersParserTest extends TestBase {
+public interface ModelExecutorContext {
 
-    @Test
-    public void testExprWithAlias() {
-        Filters filters = FiltersParser.parse("a.b eq 1");
+    /**
+     * Required.
+     */
+    ApiConfig getApiConfig();
 
-        FiltersParser.Name name = (FiltersParser.Name)filters.nodes()[0];
-        assertEquals("a", name.alias());
-        assertEquals("b", name.literal());
-    }
+    /**
+     * Required.
+     */
+    ApiMetadata getApiMetadata();
 
+    /**
+     * Required.
+     */
+    MApiModel getApiModel();
+
+    /**
+     * Required.
+     */
+    Dao getDao();
+
+    /**
+     * Required.
+     */
+    EntityMapping getEntityMapping();
 }

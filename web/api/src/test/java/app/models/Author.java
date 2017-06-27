@@ -14,18 +14,33 @@
  *  limitations under the License.
  */
 
-package leap.web.api.orm;
+package app.models;
 
-public interface ModelExecutorConfig {
+import leap.lang.meta.annotation.Filterable;
+import leap.orm.annotation.AutoCreateTable;
+import leap.orm.model.Model;
 
-    /**
-     * Returns the max page size of pagination.
-     */
-    int getMaxPageSize();
+@AutoCreateTable
+public class Author extends Model {
 
-    /**
-     * Returns the default page size of pagination.
-     */
-    int getDefaultPageSize();
+    protected String id;
+    protected String name;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @Filterable
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 
 }

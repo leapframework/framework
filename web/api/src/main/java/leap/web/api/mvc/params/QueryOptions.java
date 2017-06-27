@@ -31,6 +31,7 @@ public class QueryOptions extends QueryOptionsBase {
     protected @QueryParam("total")       boolean total;
     protected @QueryParam("orderby")     String  orderBy;
     protected @QueryParam("filters")     String  filters;
+    protected @QueryParam("joins")       String  joins;
 
     public Integer getPageSize() {
         return pageSize;
@@ -86,6 +87,14 @@ public class QueryOptions extends QueryOptionsBase {
 
     public void setFilters(String filters) {
         this.filters = filters;
+    }
+
+    public String getJoins() {
+        return joins;
+    }
+
+    public void setJoins(String joins) {
+        this.joins = joins;
     }
 
     public Page getPage(int defaultPageSize) {
