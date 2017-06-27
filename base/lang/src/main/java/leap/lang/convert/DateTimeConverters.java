@@ -15,15 +15,17 @@
  */
 package leap.lang.convert;
 
+import leap.lang.DateTimes;
+import leap.lang.Out;
+import leap.lang.time.DateFormats;
+
+import java.lang.reflect.Type;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
-
-import leap.lang.DateTimes;
-import leap.lang.time.DateFormats;
 
 public class DateTimeConverters {
 	
@@ -71,7 +73,21 @@ public class DateTimeConverters {
         protected LocalTime convertFromInstant(Instant instant) {
             return LocalDateTime.ofInstant(instant, ZoneId.systemDefault()).toLocalTime();
         }
-    }
+
+		@Override
+		public boolean convertFrom(Object value, Class<?> targetType, Type genericType, Out<Object> out, ConvertContext context) throws Throwable {
+			boolean re = super.convertFrom(value, targetType, genericType, out, context);
+			if(re) return true;
+
+			if(value instanceof Time) {
+
+				out.set(((Time) value).toLocalTime());
+				return true;
+			}
+
+			return false;
+		}
+	}
 
     public static class LocalDateTimeConverter extends AbstractDateTimeConverter<LocalDateTime> {
 
