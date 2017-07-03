@@ -15,11 +15,6 @@
  */
 package leap.orm;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import leap.core.AppConfig;
 import leap.core.BeanFactory;
 import leap.core.annotation.ConfigProperty;
@@ -30,11 +25,17 @@ import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.naming.NamingStyles;
 import leap.orm.config.OrmConfigExtension;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
 @Configurable(prefix=OrmConfig.KEY_PREFIX)
 public class DefaultOrmConfig implements OrmConfig,PostConfigureBean {
 
     protected boolean     autoCreateTables           = false;
     protected boolean     autoMappingTables          = false;
+    protected boolean     readDbSchema               = true;
 	protected boolean     autoGenerateColumns        = false;
 	protected boolean     autoGenerateOptimisticLock = false;
 	protected boolean     modelCrossContext          = false;
@@ -57,6 +58,16 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean {
     @ConfigProperty
     public void setAutoCreateTables(boolean autoCreateTables) {
         this.autoCreateTables = autoCreateTables;
+    }
+
+    @Override
+    public boolean isReadDbSchema() {
+        return readDbSchema;
+    }
+
+    @ConfigProperty
+    public void setReadDbSchema(boolean readDbSchema) {
+        this.readDbSchema = readDbSchema;
     }
 
     @Override
