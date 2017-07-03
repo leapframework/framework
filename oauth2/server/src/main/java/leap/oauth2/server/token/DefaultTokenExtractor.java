@@ -18,7 +18,7 @@ package leap.oauth2.server.token;
 
 import leap.lang.Strings;
 import leap.lang.http.Headers;
-import leap.oauth2.OAuth2Constants;
+import leap.oauth2.server.OAuth2Constants;
 import leap.web.Request;
 
 public class DefaultTokenExtractor implements TokenExtractor {

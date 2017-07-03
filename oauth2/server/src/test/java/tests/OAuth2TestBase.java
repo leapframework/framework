@@ -27,7 +27,7 @@ import leap.lang.http.QueryStringParser;
 import leap.lang.naming.NamingStyles;
 import leap.lang.net.Urls;
 import leap.lang.security.RSA;
-import leap.oauth2.as.OAuth2AuthzServerConfigurator;
+import leap.oauth2.server.OAuth2AuthzServerConfigurator;
 import leap.webunit.WebTestBaseContextual;
 import leap.webunit.client.THttpRequest;
 import leap.webunit.client.THttpResponse;

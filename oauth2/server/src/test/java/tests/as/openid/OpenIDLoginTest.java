@@ -19,9 +19,7 @@ import java.util.Map;
 
 import leap.core.annotation.Inject;
 import leap.core.security.token.jwt.MacSigner;
-import leap.lang.json.JsonObject;
-import leap.lang.json.JsonValue;
-import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.server.OAuth2AuthzServerConfig;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
 

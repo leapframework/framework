@@ -18,7 +18,7 @@ package leap.oauth2.server.endpoint;
 
 import leap.core.annotation.Inject;
 import leap.lang.http.ContentTypes;
-import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.server.OAuth2AuthzServerConfig;
 import leap.web.*;
 import leap.web.route.Routes;
 

@@ -18,7 +18,7 @@
 
 package tests.as;
 
-import leap.oauth2.OAuth2Constants;
+import leap.oauth2.server.OAuth2Constants;
 import org.junit.Test;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;

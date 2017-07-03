@@ -19,7 +19,6 @@ package leap.oauth2.server;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
-import leap.oauth2.as.OAuth2AuthzServerConfigurator;
 import leap.web.App;
 import leap.web.AppListener;
 import leap.web.config.WebConfig;

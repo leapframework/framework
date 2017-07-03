@@ -19,7 +19,7 @@ import leap.core.annotation.Inject;
 import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.MacSigner;
 import leap.lang.Threads;
-import leap.oauth2.as.OAuth2AuthzServerConfig;
+import leap.oauth2.server.OAuth2AuthzServerConfig;
 import tests.TokenInfoResponse;
 import tests.TokenResponse;
 import tests.OAuth2TestBase;

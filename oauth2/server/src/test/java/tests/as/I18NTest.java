@@ -18,7 +18,7 @@
 
 package tests.as;
 
-import leap.oauth2.OAuth2Errors;
+import leap.oauth2.server.OAuth2Errors;
 import leap.webunit.client.THttpResponse;
 import org.junit.Test;
 import tests.OAuth2TestBase;
