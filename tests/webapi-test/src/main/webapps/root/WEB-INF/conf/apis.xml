@@ -40,7 +40,7 @@
         </permissions>
 
         <resource-permissions>
-            <resource class="app.models.testing.User"/>
+            <resource class="app.tested.models.testing.User"/>
 
             <permission value="ManageUser" desc="Manage User"/>
         </resource-permissions>

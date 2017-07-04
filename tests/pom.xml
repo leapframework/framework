@@ -43,6 +43,8 @@
         <module>web-test-webapp2</module>
 
         <module>webapi-test</module>
+        <module>oauth2-test-server</module>
+        <module>oauth2-test-webapp</module>
     </modules>
 
 </project>
