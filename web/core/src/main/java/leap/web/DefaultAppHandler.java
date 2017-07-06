@@ -69,9 +69,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     protected @Inject @M ViewSource viewSource;
     protected @Inject @M AssetSource assetSource;
     protected @Inject @M WebConfig webConfig;
+    protected @Inject @M AppListener[] listeners;
 
     protected LocaleResolver localeResolver;
     protected int maxExecutionCount = 10;
+    
+    protected ServerInfo serverInfo;
 
     @Override
     public void setApp(App app) {
@@ -83,7 +86,11 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
     public void prepareRequest(final Request request, final Response response) throws Throwable {
         //debug
         debugDetector.detectDebugStatus(request);
-
+        
+        if(null == serverInfo){
+            initServerInfoAnNotifyListener(request,response);
+        }
+        
         //set locale
         if (null != localeResolver) {
             request.setLocale(localeResolver.resolveLocale(request));
@@ -139,6 +146,23 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         //asset source
         if (null == request.getAssetSource()) {
             request.setAssetSource(assetSource);
+        }
+    }
+
+    protected synchronized void initServerInfoAnNotifyListener(Request request, Response response) {
+        if(null != serverInfo){
+            return;
+        }
+        String scheme = request.getServletRequest().getScheme();
+        String host = request.getServletRequest().getLocalAddr();
+        int port = request.getServletRequest().getLocalPort();
+        serverInfo = new ServerInfo();
+        serverInfo.setScheme(scheme);
+        serverInfo.setHost(host);
+        serverInfo.setPort(port);
+        
+        for(AppListener listener : listeners){
+            listener.onServerInfoResolved(app,serverInfo);
         }
     }
 

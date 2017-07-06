@@ -19,14 +19,25 @@ package leap.oauth2.webapp;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
+import leap.core.el.ExpressionLanguage;
+import leap.htpl.AbstractHtplContext;
+import leap.htpl.DefaultHtplContext;
+import leap.htpl.HtplEngine;
+import leap.htpl.HtplExpressionManager;
+import leap.lang.Out;
+import leap.lang.Result;
+import leap.lang.Strings;
+import leap.lang.expression.Expression;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
 import leap.web.AppInitializable;
+import leap.web.AppListener;
+import leap.web.ServerInfo;
 import leap.web.security.SecurityConfigurator;
 
 @Configurable(prefix="oauth2")
-public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable {
+public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable, AppListener {
 
 	protected @Inject SecurityConfigurator sc;
 
@@ -48,6 +59,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
 
     protected @Inject UserDetailsLookup userDetailsLookup;
 
+    protected @Inject HtplExpressionManager expressionManager;
+    protected @Inject HtplEngine engine;
+    
 	@Override
 	public OAuth2Config config() {
 		return this;
@@ -128,6 +142,57 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
         this.publicKeyUrl = directServerUrl + "/oauth2/publickey";
     }
 
+    @Override
+    public void onServerInfoResolved(App app, ServerInfo serverInfo) {
+        this.authorizeUrl = parseUrl(this.authorizeUrl,serverInfo);
+        this.tokenUrl = parseUrl(this.tokenUrl,serverInfo);
+        this.tokenInfoUrl = parseUrl(this.tokenInfoUrl,serverInfo);
+        this.userInfoUrl = parseUrl(this.userInfoUrl,serverInfo);
+        this.publicKeyUrl = parseUrl(this.publicKeyUrl,serverInfo);
+        this.logoutUrl = parseUrl(this.logoutUrl,serverInfo);
+    }
+    
+    protected boolean needParse(String url){
+	    if(Strings.isEmpty(url)){
+	        // if user never set the url, don't process.
+	        return false;
+        }
+        boolean startWithScheme = Strings.startsWith(url,"http://")||Strings.startsWith(url,"https://");
+	    return !startWithScheme;
+    }
+    
+    protected String parseUrl(String url,ServerInfo serverInfo){
+        if(!needParse(url)){
+            return url;
+        }
+        StringBuilder builder = new StringBuilder();
+        expressionManager.parseCompositeExpression(engine, url, new HtplExpressionManager.ParseHandler() {
+            @Override
+            public void textParsed(String text) {
+                builder.append(text);
+            }
+
+            @Override
+            public void exprParsed(Expression expr) {
+                DefaultHtplContext ctx = new DefaultHtplContext(engine);
+                ctx.setContextPath(serverInfo.getServerUrl());
+                Object s = expr.getValue(ctx);
+                if(null != s){
+                    builder.append(s.toString());
+                }
+            }
+        });
+        if(builder.length() > 0){
+            String u = builder.toString();
+            if(needParse(u)){
+                return serverInfo.getServerUrl()+Paths.prefixWithSlash(u);
+            }
+            return u;
+        }
+        return url;
+        
+    }
+    
     @Override
     public String getAuthorizeUrl() {
         return authorizeUrl;
