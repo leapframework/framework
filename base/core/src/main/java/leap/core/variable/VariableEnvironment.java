@@ -16,6 +16,8 @@
 package leap.core.variable;
 
 
+import leap.lang.el.ElEvalContext;
+
 public interface VariableEnvironment {
 	
 	/**
@@ -33,7 +35,15 @@ public interface VariableEnvironment {
 	 * Returns <code>null</code> if the given variable name not exists.
 	 */
 	Object resolveVariable(String variable);
-	
+
+	/**
+	 * Returns the value of the given variable name.
+	 *
+	 * <p>
+	 * Returns <code>null</code> if the given variable name not exists.
+	 */
+	Object resolveVariable(String variable, ElEvalContext context);
+
 	/**
 	 * Returns a {@link String} object converted from the value of the given variable name.
 	 */

@@ -15,17 +15,12 @@
  */
 package leap.lang.el.spel.ast;
 
-import java.util.Map;
-
 import leap.lang.Named;
 import leap.lang.accessor.Getter;
 import leap.lang.accessor.ObjectPropertyGetter;
-import leap.lang.beans.DynaBean;
-import leap.lang.el.ElEvalContext;
-import leap.lang.el.ElException;
-import leap.lang.el.ElParseContext;
-import leap.lang.el.ElProperty;
-import leap.lang.el.ElPropertyResolver;
+import leap.lang.el.*;
+
+import java.util.Map;
 
 
 public class AstProperty extends AstExpr implements Named {
@@ -93,7 +88,7 @@ public class AstProperty extends AstExpr implements Named {
     	}
     	
     	if(o instanceof ElPropertyResolver){
-    		return ((ElPropertyResolver) o).resovleProperty(name);
+    		return ((ElPropertyResolver) o).resolveProperty(name, context);
     	}
     	
     	if(o instanceof ObjectPropertyGetter){

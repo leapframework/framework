@@ -260,6 +260,9 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
                 emb.setTableName(name);
                 emb.setTableNameDeclared(true);
             }
+            if(!Strings.isEmpty(a.dynamicTableName())) {
+                emb.setDynamicTableName(a.dynamicTableName());
+            }
             emb.setAutoCreateTable(a.autoCreate());
 		}
 	}

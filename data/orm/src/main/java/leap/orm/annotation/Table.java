@@ -47,6 +47,8 @@ public @interface Table {
      */
     String configName() default "";
 
+    String dynamicTableName() default "";
+
     /**
      * If true will auto create the table if not exists.
      */

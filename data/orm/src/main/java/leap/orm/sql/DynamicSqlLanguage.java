@@ -120,8 +120,6 @@ public class DynamicSqlLanguage implements SqlLanguage {
 
                     s = new SqlResolver(context,s).resolve();
 
-                    processShardingTable(s);
-
                     if(null == options.getFilterColumnEnabled() || options.getFilterColumnEnabled()) {
                         processWhereFields(context, s);
                     }
@@ -171,10 +169,6 @@ public class DynamicSqlLanguage implements SqlLanguage {
 			return new SqlParser(new Lexer(text, ParseLevel.BASE),expressionLanguage);
 		}
 	}
-	
-    protected void processShardingTable(Sql sql) {
-        new SqlShardingProcessor(sql).processShardingTable();
-    }
 
     protected void processWhereFields(MetadataContext context, Sql sql) {
         new SqlFilterColumnProcessor(context, sql).process();

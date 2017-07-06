@@ -17,6 +17,6 @@ package leap.lang.el;
 
 public interface ElPropertyResolver {
 
-	Object resovleProperty(String name);
+	Object resolveProperty(String name, ElEvalContext context);
 	
 }

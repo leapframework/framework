@@ -37,6 +37,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected boolean					   _abstract;
 	protected DbTableBuilder			   table;
 	protected String					   tablePrefix;
+	protected String					   dynamicTableName;
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
     protected boolean                      autoCreateTable;
@@ -130,6 +131,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	public EntityMappingBuilder setTablePrefix(String tablePrefix) {
 		this.tablePrefix = tablePrefix;
+		return this;
+	}
+
+	public String getDynamicTableName() {
+		return dynamicTableName;
+	}
+
+	public EntityMappingBuilder setDynamicTableName(String dynamicTableName) {
+		this.dynamicTableName = dynamicTableName;
 		return this;
 	}
 
@@ -400,7 +410,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		List<RelationMapping> relations = Builders.buildList(relationMappings);
 		DbTable			      table     = buildTable(fields,relations);
 
-	    return new EntityMapping(entityName,entityClass,table,fields,
+	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 domain,modelClass,validators,
                                  relations,

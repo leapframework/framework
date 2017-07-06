@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 the original author or authors.
+ * Copyright 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,31 +12,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
+ *
  */
-package leap.core.el;
 
-import leap.core.BeanFactory;
+package leap.core.variable;
+
 import leap.lang.el.ElEvalContext;
-import leap.lang.el.ElException;
-import leap.lang.el.ElPropertyResolver;
 
-public class BeansPropertyResolver implements ElPropertyResolver {
-	
-	protected BeanFactory factory;
-	
-	public BeansPropertyResolver(BeanFactory factory) {
-		this.factory = factory;
-	}
+public interface VariableWithContext extends Variable {
 
-	@Override
-    public Object resolveProperty(String name, ElEvalContext context) {
-		Object bean = factory.tryGetBean(name);
-		
-		if(null == bean){
-			throw new ElException("Bean with id '" + name + "' cannot be resolved");
-		}
-		
-	    return bean;
+    default Object getValue() {
+        return getValue(null);
     }
-	
+
+    Object getValue(ElEvalContext context);
 }

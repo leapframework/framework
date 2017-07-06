@@ -15,12 +15,6 @@
  */
 package leap.core.variable;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-
 import leap.core.BeanFactory;
 import leap.core.RequestContext;
 import leap.core.ioc.BeanDefinition;
@@ -33,7 +27,14 @@ import leap.lang.Strings;
 import leap.lang.accessor.AttributeAccessor;
 import leap.lang.accessor.PropertyGetter;
 import leap.lang.convert.Converts;
+import leap.lang.el.ElEvalContext;
 import leap.lang.value.Null;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultVariableEnvironment implements VariableEnvironment,PostCreateBean {
 	
@@ -53,15 +54,20 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
     }
 
 	@Override
-    public Object resolveVariable(String variable) {
+    public Object resolveVariable(String variable, ElEvalContext context) {
 		String key = Strings.lowerCase(variable);
 		
 		VariableDefinition vd = variables.get(key);
 		if(null == vd){
 			return resolveVariableProperty(key,variable);
 		}else{
-			return resolveVariable(vd);
+			return resolveVariable(vd, context);
 		}
+	}
+
+	@Override
+	public Object resolveVariable(String variable) {
+		return resolveVariable(variable, null);
 	}
 
 	@Override
@@ -82,7 +88,7 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 		if(null == vd){
 			return null;
 		}else{
-			Object value = resolveVariable(vd);
+			Object value = resolveVariable(vd, null);
 			if(null == value){
 				return null;
 			}else if(value instanceof PropertyGetter){
@@ -93,17 +99,17 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 		}
 	}
 	
-	protected Object resolveVariable(VariableDefinition vd){
+	protected Object resolveVariable(VariableDefinition vd, ElEvalContext context){
 		Scope scope = vd.getScope();
 		
 		//prototype
 		if(scope.isPrototype()){
-			return vd.getVariable().getValue();
+			return getValue(vd.getVariable(), context);
 		}
 		
 		//singleton
 		if(scope.isSingleton()){
-			return resolveSingletonVariable(vd);
+			return resolveSingletonVariable(vd, context);
 		}
 		
 		//request
@@ -119,14 +125,14 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 		throw new IllegalStateException("Illegal variable scope '" + scope + "'");
 	}
 	
-	protected Object resolveSingletonVariable(VariableDefinition vd){
+	protected Object resolveSingletonVariable(VariableDefinition vd, ElEvalContext context){
 		Object singletonValue = vd.getSingletonValue();
 		
 		if(null != singletonValue){
 			return Null.is(singletonValue) ? null : singletonValue;
 		}
 		
-		singletonValue = vd.getVariable().getValue();
+		singletonValue = getValue(vd.getVariable(), context);
 		
 		if(null == singletonValue){
 			vd.setSingletonValue(Null.VALUE);
@@ -162,7 +168,7 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 			return Null.is(value) ? null : value;
 		}
 		
-		value = vd.getVariable().getValue();
+		value = getValue(vd.getVariable(), null);
 		
 		if(null == value){
 			scope.put(vd.getName(), Null.VALUE);
@@ -182,6 +188,8 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 	
 	protected void loadVariableFromBeans(BeanFactory beanFactory){
 		Map<Variable,BeanDefinition> beans = beanFactory.getBeansWithDefinition(Variable.class);
+
+		beans.putAll(beanFactory.getBeansWithDefinition(VariableWithContext.class));
 		
 		for(Entry<Variable,BeanDefinition> entry : beans.entrySet()){
 			BeanDefinition bd = entry.getValue();
@@ -222,6 +230,14 @@ public class DefaultVariableEnvironment implements VariableEnvironment,PostCreat
 				
 				variables.put(key,providerVd);
 			}
+		}
+	}
+
+	private Object getValue(Variable v, ElEvalContext context) {
+		if(v instanceof VariableWithContext) {
+			return ((VariableWithContext) v).getValue(context);
+		} else {
+			return v.getValue();
 		}
 	}
 	

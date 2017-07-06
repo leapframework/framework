@@ -101,5 +101,5 @@ public class ModelTest extends OrmTestCase {
 		m.doSetId(3);
 		assertEquals(3,m.getId());
 	}
-	
+
 }
