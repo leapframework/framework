@@ -36,6 +36,7 @@ public class EntityMapping extends ExtensibleBase {
 	private static final Log log = LogFactory.get(EntityMapping.class);
 
     protected final String                     entityName;
+    protected final String                     dynamicTableName;
     protected final Class<?>                   entityClass;
     protected final BeanType                   beanType;
     protected final DbTable                    table;
@@ -76,7 +77,7 @@ public class EntityMapping extends ExtensibleBase {
     private final FieldMapping                shardingField;
 
 
-	public EntityMapping(String entityName,
+	public EntityMapping(String entityName, String dynamicTableName,
                          Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
@@ -99,6 +100,7 @@ public class EntityMapping extends ExtensibleBase {
         }
 		
 		this.entityName		   = entityName;
+        this.dynamicTableName  = dynamicTableName;
 	    this.entityClass       = entityClass;
 	    this.beanType          = null == entityClass ? null : BeanType.of(entityClass);
 	    this.table             = table;
@@ -150,6 +152,13 @@ public class EntityMapping extends ExtensibleBase {
      */
 	public String getEntityName(){
 		return entityName;
+	}
+
+    /**
+     * Returns the dynamic table name.
+     */
+	public String getDynamicTableName(){
+		return dynamicTableName;
 	}
 
     /**
