@@ -156,11 +156,12 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         String scheme = request.getServletRequest().getScheme();
         String host = request.getServletRequest().getLocalAddr();
         int port = request.getServletRequest().getLocalPort();
+        String contextPath = request.getServletContext().getContextPath();
         serverInfo = new ServerInfo();
         serverInfo.setScheme(scheme);
         serverInfo.setHost(host);
         serverInfo.setPort(port);
-        
+        serverInfo.setContextPath(contextPath);
         for(AppListener listener : listeners){
             listener.onServerInfoResolved(app,serverInfo);
         }

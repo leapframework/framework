@@ -29,10 +29,10 @@ package leap.web;
  * 
  */
 public class ServerInfo {
-    
-    protected String host;
     protected String scheme;
+    protected String host;
     protected int port;
+    protected String contextPath;
 
     public String getHost() {
         return host;
@@ -57,8 +57,16 @@ public class ServerInfo {
     public void setPort(int port) {
         this.port = port;
     }
-    
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+
     public String getServerUrl(){
-        return scheme+"://"+host+":"+port;
+        return scheme+"://"+host+":"+port+contextPath;
     }
 }
