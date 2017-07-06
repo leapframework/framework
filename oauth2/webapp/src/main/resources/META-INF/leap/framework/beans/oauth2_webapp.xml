@@ -12,7 +12,7 @@
           class="leap.oauth2.webapp.DefaultOAuth2Config" primary="true">
 
         <additional-type-def type="leap.oauth2.webapp.OAuth2Configurator" primary="true"/>
-
+        <additional-type-def type="leap.web.AppListener"/>
     </bean>
 
     <!-- login -->
