@@ -88,7 +88,7 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         debugDetector.detectDebugStatus(request);
         
         if(null == serverInfo){
-            initServerInfoAnNotifyListener(request,response);
+            initServerInfoAndNotifyListener(request,response);
         }
         
         //set locale
@@ -149,19 +149,22 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
         }
     }
 
-    protected synchronized void initServerInfoAnNotifyListener(Request request, Response response) {
+    protected synchronized void initServerInfoAndNotifyListener(Request request, Response response) {
         if(null != serverInfo){
             return;
         }
+
         String scheme = request.getServletRequest().getScheme();
         String host = request.getServletRequest().getLocalAddr();
         int port = request.getServletRequest().getLocalPort();
         String contextPath = request.getServletContext().getContextPath();
+
         serverInfo = new ServerInfo();
         serverInfo.setScheme(scheme);
         serverInfo.setHost(host);
         serverInfo.setPort(port);
         serverInfo.setContextPath(contextPath);
+
         for(AppListener listener : listeners){
             listener.onServerInfoResolved(app,serverInfo);
         }
