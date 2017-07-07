@@ -18,6 +18,8 @@
 
 package leap.web;
 
+import leap.lang.path.Paths;
+
 /**
  * @author kael.
  * 
@@ -67,6 +69,7 @@ public class ServerInfo {
     }
 
     public String getServerUrl(){
-        return scheme+"://"+host+":"+port+contextPath;
+        String server = scheme+"://"+host+":"+port+contextPath;
+        return Paths.suffixWithoutSlash(server);
     }
 }

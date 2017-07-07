@@ -38,6 +38,7 @@ public class DefaultOAuth2ConfigTest extends WebTestBase {
         serverInfo.setScheme("https");
         serverInfo.setHost("127.0.0.1");
         serverInfo.setPort(8080);
+        serverInfo.setContextPath("/");
         DefaultOAuth2Config config = (DefaultOAuth2Config)oc;
         config.setServerUrl("/");
         config.setAuthorizeUrl("@{~/oauth2/authorize}");
