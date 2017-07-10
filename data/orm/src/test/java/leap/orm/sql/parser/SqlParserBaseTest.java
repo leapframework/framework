@@ -15,16 +15,15 @@
  */
 package leap.orm.sql.parser;
 
-import java.util.List;
-
 import leap.junit.contexual.Contextual;
 import leap.orm.sql.Sql;
 import leap.orm.sql.ast.IfClause;
 import leap.orm.sql.ast.ParamPlaceholder;
-import leap.orm.sql.ast.SqlWhereExpr;
 import leap.orm.sql.ast.SqlOrderBy;
-
+import leap.orm.sql.ast.SqlWhereExpr;
 import org.junit.Test;
+
+import java.util.List;
 
 public class SqlParserBaseTest extends SqlParserTestCase {
 	
@@ -237,5 +236,23 @@ public class SqlParserBaseTest extends SqlParserTestCase {
         sql = "select * from table where @security(hello () aa) and 1=1";
         assertEquals(sql, parse(sql));
     }
+
+	@Test
+	public void testSqlWhen() {
+		Sql.ParseLevel origin = level;
+		level = Sql.ParseLevel.MORE;
+		String sql = "select CASE WHEN id = 4 THEN 3 ELSE 0 end from table";
+		assertEquals(sql, parse(sql));
+
+		sql = "select CASE WHEN id = 1 AND name = 2 THEN 2 WHEN id = 4 THEN 3 ELSE 0 end from table";
+		assertEquals(sql, parse(sql));
+
+		sql = "select CASE WHEN id = 1 AND name = 1 THEN 1 WHEN id = 1 AND name = 2 THEN 2 WHEN id = 4 THEN 3 ELSE 0 end from table";
+		assertEquals(sql, parse(sql));
+
+		sql = "select CASE WHEN (id = 1 AND name = 1) THEN 1 WHEN (id = 1 AND name = 2) THEN 2 WHEN (id = 4) THEN 3 ELSE 0 end from table";
+		assertEquals(sql, parse(sql));
+		level = origin;
+	}
 
 }
