@@ -87,7 +87,7 @@ public class JwtIdTokenGenerator implements IdTokenGenerator {
         claims.put(JWT.CLAIM_SUBJECT,  user.getId().toString());
         claims.put(JWT.CLAIM_EXPIRATION_TIME, System.currentTimeMillis()/1000L+expiresIn);
         claims.put("name",             user.getName());
-        claims.put("login_name",       user.getLoginName());
+        claims.put("username",       user.getLoginName());
         
         //TODO : other user properties
 
