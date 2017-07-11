@@ -192,10 +192,18 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			if(allDataSources.containsKey(name)){
 				throw new ObjectExistsException("DataSource '" + name + "' already exists");
 			}
+
+            if(props.isDefault() && null != defaultDataSource) {
+                throw new ObjectExistsException("Default DataSource already exists!");
+            }
 			
 			DataSource ds = createDataSource(props);
 			
 			allDataSources.put(name,ds);
+
+            if(props.isDefault()) {
+                defaultDataSource = ds;
+            }
 			
 			notifyDataSourceCreated(name, ds);
 			

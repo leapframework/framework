@@ -32,6 +32,7 @@
         <module>core-test-profile3</module>
 
         <module>orm-test</module>
+        <module>orm-test-dyna</module>
         <module>orm-test-resources</module>
 
         <module>webunit-test1</module>
