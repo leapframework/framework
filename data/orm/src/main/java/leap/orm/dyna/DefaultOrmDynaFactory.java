@@ -16,24 +16,37 @@
 
 package leap.orm.dyna;
 
+import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
+import leap.db.Db;
+import leap.db.DbFactory;
+import leap.orm.OrmMetadata;
+import leap.orm.dao.Dao;
+import leap.orm.dao.DefaultDao;
 import leap.orm.metadata.OrmMetadataManager;
 
 import javax.sql.DataSource;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DefaultOrmDynaFactory implements OrmDynaFactory {
 
+    protected @Inject BeanFactory        bf;
     protected @Inject OrmMetadataManager omm;
+
+    private final AtomicLong counter = new AtomicLong();
 
     @Override
     public OrmDynaContext createDynaContext(DataSource ds) {
-        DefaultOrmDynaContext context = new DefaultOrmDynaContext();
+        final String      name = "dyna_" + counter.incrementAndGet();
+        final Db          db   = DbFactory.createInstance(ds);
+        final OrmMetadata md   = omm.createMetadata();
 
-        context.setDataSource(ds);
-        context.setMetadataManager(omm);
-        context.setMetadata(omm.createMetadata());
+        DefaultOrmDynaContext context = bf.inject(new DefaultOrmDynaContext(name, db, md));
 
-        return null;
+        Dao dao = bf.inject(new DefaultDao(context));
+        context.setDao(dao);
+
+        return context;
     }
 
 }

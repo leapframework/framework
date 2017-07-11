@@ -29,7 +29,7 @@ public interface OrmMetadataManager {
     /**
      * Adds a new entity to the given orm context.
      */
-	void createEntity(OrmContext context, EntityMapping em) throws MetadataException;
+	void createEntity(MetadataContext context, EntityMapping em) throws MetadataException;
 
     /**
      * Loads default metadata for the given orm context.

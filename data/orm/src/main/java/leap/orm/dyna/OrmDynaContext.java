@@ -16,19 +16,14 @@
 
 package leap.orm.dyna;
 
-import leap.lang.exception.ObjectExistsException;
-import leap.orm.OrmMetadata;
+import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.metadata.MetadataException;
 
 import javax.sql.DataSource;
 
-public interface OrmDynaContext {
-
-    /**
-     * Returns the underlying {@link DataSource}.
-     */
-    DataSource getDataSource();
+public interface OrmDynaContext extends OrmContext {
 
     /**
      * Returns the {@link Dao} for data access operation.
@@ -36,14 +31,9 @@ public interface OrmDynaContext {
     Dao getDao();
 
     /**
-     * Returns the {@link OrmMetadata}.
-     */
-    OrmMetadata getMetadata();
-
-    /**
      * Adds a new {@link EntityMapping} to this context.
      */
-    void addEntity(EntityMapping em) throws ObjectExistsException;
+    void addEntity(EntityMapping em) throws MetadataException;
 
     /**
      * Destroy this context, clearing all resources.

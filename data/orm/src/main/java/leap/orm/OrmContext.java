@@ -40,8 +40,6 @@ public interface OrmContext extends MetadataContext, Named {
 	
 	SqlFactory getSqlFactory();
 	
-	ConditionParser getConditionParser();
-	
 	QueryFactory getQueryFactory();
 	
 	EntityReader getEntityReader();

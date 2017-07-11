@@ -54,7 +54,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     }
 
     @Override
-    public void createEntity(OrmContext context, EntityMapping em) throws MetadataException {
+    public void createEntity(MetadataContext context, EntityMapping em) throws MetadataException {
         OrmMetadata md = context.getMetadata();
 
         //Adds entity to metadata.

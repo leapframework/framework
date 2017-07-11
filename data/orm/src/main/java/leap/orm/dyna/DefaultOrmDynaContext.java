@@ -16,29 +16,76 @@
 
 package leap.orm.dyna;
 
-import leap.lang.exception.ObjectExistsException;
+import leap.core.AppContext;
+import leap.core.annotation.Inject;
+import leap.db.Db;
+import leap.orm.OrmConfig;
 import leap.orm.OrmMetadata;
+import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
+import leap.orm.event.EntityEventHandler;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.OrmMetadataManager;
+import leap.orm.naming.NamingStrategy;
+import leap.orm.parameter.ParameterStrategy;
+import leap.orm.query.QueryFactory;
+import leap.orm.reader.EntityReader;
+import leap.orm.reader.RowReader;
+import leap.orm.sql.SqlFactory;
 
 import javax.sql.DataSource;
 
 public class DefaultOrmDynaContext implements OrmDynaContext {
 
-    protected DataSource         dataSource;
-    protected Dao                dao;
-    protected OrmMetadata        metadata;
-    protected OrmMetadataManager omm;
+    protected final String      name;
+    protected final Db          db;
+    protected final OrmMetadata metadata;
 
-    @Override
-    public DataSource getDataSource() {
-        return dataSource;
+    protected @Inject AppContext         appContext;
+    protected @Inject OrmConfig          config;
+    protected @Inject OrmMetadataManager omm;
+    protected @Inject MappingStrategy    mappingStrategy;
+    protected @Inject NamingStrategy     namingStrategy;
+    protected @Inject ParameterStrategy  parameterStrategy;
+    protected @Inject CommandFactory     commandFactory;
+    protected @Inject SqlFactory         sqlFactory;
+    protected @Inject QueryFactory       queryFactory;
+    protected @Inject EntityReader       entityReader;
+    protected @Inject RowReader          rowReader;
+    protected @Inject EntityEventHandler eventHandler;
+
+    protected Dao dao;
+
+    public DefaultOrmDynaContext(String name, Db db, OrmMetadata md) {
+        this.name     = name;
+        this.db       = db;
+        this.metadata = md;
     }
 
     @Override
-    public Dao getDao() {
-        return dao;
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public AppContext getAppContext() {
+        return appContext;
+    }
+
+    @Override
+    public OrmConfig getConfig() {
+        return config;
+    }
+
+    @Override
+    public Db getDb() {
+        return db;
+    }
+
+    @Override
+    public DataSource getDataSource() {
+        return db.getDataSource();
     }
 
     @Override
@@ -47,31 +94,71 @@ public class DefaultOrmDynaContext implements OrmDynaContext {
     }
 
     @Override
-    public void addEntity(EntityMapping em) throws ObjectExistsException {
-
+    public MappingStrategy getMappingStrategy() {
+        return mappingStrategy;
     }
 
     @Override
-    public void destroy() {
-        this.metadata   = null;
-        this.dao        = null;
-        this.dataSource = null;
+    public NamingStrategy getNamingStrategy() {
+        return namingStrategy;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    @Override
+    public OrmMetadataManager getMetadataManager() {
+        return omm;
+    }
+
+    @Override
+    public ParameterStrategy getParameterStrategy() {
+        return parameterStrategy;
+    }
+
+    @Override
+    public CommandFactory getCommandFactory() {
+        return commandFactory;
+    }
+
+    @Override
+    public SqlFactory getSqlFactory() {
+        return sqlFactory;
+    }
+
+    @Override
+    public QueryFactory getQueryFactory() {
+        return queryFactory;
+    }
+
+    @Override
+    public EntityReader getEntityReader() {
+        return entityReader;
+    }
+
+    @Override
+    public RowReader getRowReader() {
+        return rowReader;
+    }
+
+    @Override
+    public EntityEventHandler getEntityEventHandler() {
+        return eventHandler;
+    }
+
+    @Override
+    public Dao getDao() {
+        return dao;
     }
 
     public void setDao(Dao dao) {
         this.dao = dao;
     }
 
-    public void setMetadata(OrmMetadata metadata) {
-        this.metadata = metadata;
+    @Override
+    public void addEntity(EntityMapping em) {
+        omm.createEntity(this, em);
     }
 
-    public void setMetadataManager(OrmMetadataManager omm) {
-        this.omm = omm;
-    }
+    @Override
+    public void destroy() {
 
+    }
 }
