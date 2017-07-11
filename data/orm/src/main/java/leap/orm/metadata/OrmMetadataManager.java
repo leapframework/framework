@@ -23,7 +23,7 @@ public interface OrmMetadataManager {
     
 	OrmMetadata createMetadata(String name);
 	
-	void createEntity(OrmContext context, OrmMetadata md, EntityMapping em) throws MetadataException;
+	void createEntity(OrmContext context, EntityMapping em) throws MetadataException;
 	
 	void loadMetadata(OrmContext context) throws MetadataException;
 	

@@ -139,7 +139,7 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
 			    return false;
 			}
 		}
-		metadataManager.createEntity(context, metadata, em);
+		metadataManager.createEntity(context, em);
 		return true;
     }
 	
