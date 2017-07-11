@@ -49,7 +49,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     protected @Inject @M SqlFactory  sqlFactory;
     
 	@Override
-    public OrmMetadata createMetadata(String name) {
+    public OrmMetadata createMetadata() {
 	    return beanFactory.inject(new DefaultOrmMetadata());
     }
 

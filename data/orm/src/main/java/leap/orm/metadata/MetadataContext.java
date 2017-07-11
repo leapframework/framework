@@ -33,9 +33,9 @@ public interface MetadataContext {
 	AppContext getAppContext();
 	
 	OrmMetadata getMetadata();
-	
+
 	MappingStrategy getMappingStrategy();
-	
+
 	NamingStrategy getNamingStrategy();
 
 	OrmMetadataManager getMetadataManager();

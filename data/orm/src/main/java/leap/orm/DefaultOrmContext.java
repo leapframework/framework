@@ -202,7 +202,7 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
 		
     	if(null == metadata){
     		OrmMetadataManager mm = beanFactory.getBean(OrmMetadataManager.class);
-    		metadata = mm.createMetadata(name);
+    		metadata = mm.createMetadata();
     		mm.loadMetadata(this);
     	}
     	
