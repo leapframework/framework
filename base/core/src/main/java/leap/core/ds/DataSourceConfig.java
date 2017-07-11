@@ -51,6 +51,8 @@ public class DataSourceConfig {
 	public static final String MAX_IDLE						 = "maxIdle";
 	public static final String MIN_IDLE					     = "minIdle";
 	public static final String MAX_WAIT						 = "maxWait";
+
+    public static final String EXPORT_MBEAN                  = "exportMBean";
 	
 	private static final Set<String> keys = new HashSet<String>();
 	static {
@@ -92,6 +94,8 @@ public class DataSourceConfig {
 	protected final Integer				 maxIdle;
 	protected final Integer				 minIdle;
 	protected final Integer				 maxWait;
+
+    protected final boolean              exportMBean;
 	
 	protected final Map<String, String> allMap;
 	protected final Map<String, String> extMap;
@@ -127,6 +131,8 @@ public class DataSourceConfig {
 	    this.maxIdle					 = Maps.getInteger(properties, MAX_IDLE);
 	    this.minIdle					 = Maps.getInteger(properties, MIN_IDLE);
 	    this.maxWait					 = Maps.getInteger(properties, MAX_WAIT);
+
+        this.exportMBean                 = Maps.getBoolean(properties, EXPORT_MBEAN, false);
 	    
 	    this.allMap              		 = null == properties ? Collections.EMPTY_MAP : Collections.unmodifiableMap(properties);
 	    this.extMap	   			 	     = extraceExtProperties(properties);
@@ -257,8 +263,12 @@ public class DataSourceConfig {
 	public Integer getMaxWait() {
 		return maxWait;
 	}
-	
-	public boolean hasProperty(String name) {
+
+    public boolean isExportMBean() {
+        return exportMBean;
+    }
+
+    public boolean hasProperty(String name) {
 		return allMap.containsKey(name);
 	}
 	
@@ -425,7 +435,12 @@ public class DataSourceConfig {
 		    this._default = isDefault;
 		    return this;
 		}
-		
+
+        public Builder setExportMBean(boolean exportMBean) {
+            setProperty(EXPORT_MBEAN, String.valueOf(exportMBean));
+            return this;
+        }
+
 		public DataSourceConfig build() {
 			return new DataSourceConfig(dataSourceType,_default, properties);
 		}

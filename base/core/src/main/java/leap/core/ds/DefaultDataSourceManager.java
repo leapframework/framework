@@ -61,6 +61,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     protected long                           verySlowSqlThreshold;
     protected boolean                        logSlowSql;
     protected boolean                        logVerySlowSql;
+    protected boolean                        exportMBean;
 
     @ConfigProperty
     public void setMonitoring(boolean monitoring) {
@@ -103,6 +104,15 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     @ConfigProperty
     public void setLogVerySlowSql(boolean logVerySlowSql) {
         this.logVerySlowSql = logVerySlowSql;
+    }
+
+    public boolean isExportMBean() {
+        return exportMBean;
+    }
+
+    @ConfigProperty
+    public void setExportMBean(boolean exportMBean) {
+        this.exportMBean = exportMBean;
     }
 
     @Override
@@ -180,7 +190,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 			this.defaultDataSource = ds;
 			this.allDataSources.put(DEFAULT_DATASOURCE_NAME, ds);
 			
-			notifyDataSourceCreated(DEFAULT_DATASOURCE_NAME, ds);
+			notifyDataSourceCreated(DEFAULT_DATASOURCE_NAME, ds, conf.isExportMBean());
 			
 			return ds;
         }
@@ -205,7 +215,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
                 defaultDataSource = ds;
             }
 			
-			notifyDataSourceCreated(name, ds);
+			notifyDataSourceCreated(name, ds, props.isExportMBean());
 			
 			return ds;
         }
@@ -306,13 +316,15 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         return null == ds ? null : (MDataSource)ds;
     }
 
-    protected void notifyDataSourceCreated(String name, DataSource ds) {
+    protected void notifyDataSourceCreated(String name, DataSource ds, boolean exportMBean) {
 
         if(ds instanceof MDataSourceProxy) {
             ((MDataSourceProxy) ds).setName(name);
         }
 
-        exportDataSourceMBean(name, ds);
+        if(exportMBean) {
+            exportDataSourceMBean(name, ds);
+        }
 
 		for(DataSourceListener l : listeners){
 			l.onDataSourceCreated(name, ds);
@@ -388,7 +400,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		}
 		
 		for(Entry<String, DataSource> entry : allDataSources.entrySet()){
-			notifyDataSourceCreated(entry.getKey(), entry.getValue());
+			notifyDataSourceCreated(entry.getKey(), entry.getValue(), exportMBean);
 		}
 		
 		this.allDataSourcesImmutableView = Collections.unmodifiableMap(allDataSources);

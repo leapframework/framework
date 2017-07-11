@@ -106,6 +106,8 @@ public class SimpleMBeanExporter implements MBeanExporter {
         try {
             server.unregisterMBean(name);
             return true;
+        } catch (InstanceNotFoundException e) {
+            log.info("The mbean '{}' not exists!", name);
         } catch (Exception e) {
             log.warn("Error unexport mbean '" + name + "'", e);
         }
