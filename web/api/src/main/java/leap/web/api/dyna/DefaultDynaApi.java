@@ -36,4 +36,8 @@ public class DefaultDynaApi implements DynaApi {
         return config.getBasePath();
     }
 
+    public ApiConfig getConfig() {
+        return config;
+    }
+
 }

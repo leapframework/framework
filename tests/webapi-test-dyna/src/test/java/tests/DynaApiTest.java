@@ -41,8 +41,11 @@ public class DynaApiTest extends WebTestBase {
         MApiModel model1 = md.getModel("Entity1");
         assertNotNull(model1);
 
-        //destroy api.
+        get("/test/entity1").getJson().asArray();
 
+        //destroy api.
+        get("/destroy_api").assertOk();
+        get("/test/swagger.json").assertNotFound();
     }
 
 }

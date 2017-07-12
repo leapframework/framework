@@ -121,10 +121,7 @@ public abstract class AppHandlerBase implements AppHandler,PostCreateBean {
 			if(app.routes().isEmpty()){
 				log.info("No routes defined in app '{}'",getContextPathForPrint(app));
 			}else{
-				StringWriter printedRoutes = new StringWriter();
-				PrintWriter writer = new PrintWriter(printedRoutes);
-				routesPrinter.print(app.routes(), writer);
-				log.info("Routes of app '{}' : \n\n{}",getContextPathForPrint(app), printedRoutes.toString());	
+				log.info("Routes of app '{}' : \n\n{}",getContextPathForPrint(app), routesPrinter.print(app.routes()));
 			}
 		}
 	}

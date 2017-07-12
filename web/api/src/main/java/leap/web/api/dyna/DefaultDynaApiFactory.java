@@ -17,12 +17,22 @@
 package leap.web.api.dyna;
 
 import leap.core.annotation.Inject;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
+import leap.web.App;
 import leap.web.api.Apis;
+import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
+import leap.web.route.Route;
+import leap.web.route.RoutesPrinter;
 
 public class DefaultDynaApiFactory implements DynaApiFactory {
 
-    protected @Inject Apis apis;
+    private static final Log log = LogFactory.get(DefaultDynaApiFactory.class);
+
+    protected @Inject Apis          apis;
+    protected @Inject App           app;
+    protected @Inject RoutesPrinter routesPrinter;
 
     @Override
     public DynaApiCreator createDynaApi(String name, String basePath) {
@@ -33,6 +43,20 @@ public class DefaultDynaApiFactory implements DynaApiFactory {
 
     @Override
     public boolean destroyDynaApi(DynaApi api) {
+        ApiConfig config = ((DefaultDynaApi)api).getConfig();
+
+        if(log.isDebugEnabled()) {
+            log.debug("Routes before destroying api '{}': \n\n{}\n", api.getName(), routesPrinter.print(app.routes()));
+        }
+
+        for(Route route : config.getRoutes()) {
+            app.routes().remove(route);
+        }
+
+        if(log.isDebugEnabled()) {
+            log.debug("Routes after destroying api '{}': \n\n{}\n", api.getName(), routesPrinter.print(app.routes()));
+        }
+
         return apis.remove(api.getName());
     }
 
