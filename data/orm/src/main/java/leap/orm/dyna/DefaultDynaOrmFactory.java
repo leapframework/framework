@@ -21,8 +21,10 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.db.Db;
 import leap.db.DbFactory;
+import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmConfig;
 import leap.orm.OrmMetadata;
+import leap.orm.OrmRegistry;
 import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
@@ -39,12 +41,12 @@ import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
 
 import javax.sql.DataSource;
-import java.util.concurrent.atomic.AtomicLong;
 
 public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
     protected @Inject BeanFactory        bf;
     protected @Inject AppContext         appContext;
+    protected @Inject OrmRegistry        registry;
     protected @Inject OrmConfig          config;
     protected @Inject OrmMetadataManager omm;
     protected @Inject MappingStrategy    mappingStrategy;
@@ -57,11 +59,12 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
     protected @Inject RowReader          rowReader;
     protected @Inject EntityEventHandler eventHandler;
 
-    private final AtomicLong counter = new AtomicLong();
-
     @Override
-    public DynaOrmContext createDynaContext(DataSource ds) {
-        final String      name = "dyna_" + counter.incrementAndGet();
+    public DynaOrmContext createDynaContext(String name, DataSource ds) {
+        if(null != registry.findContext(name)) {
+            throw new ObjectExistsException("Orm context '" + name + "' already exists!");
+        }
+
         final Db          db   = DbFactory.createInstance(ds);
         final OrmMetadata md   = omm.createMetadata();
 
@@ -86,11 +89,14 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
         Dmo dmo = bf.inject(new DefaultDmo(context));
         context.setDmo(dmo);
 
+        registry.registerContext(context);
+
         return context;
     }
 
     @Override
     public void destroyDynaContext(DynaOrmContext context) {
-        //do nothing.
+        registry.removeContext(context.getName());
     }
+
 }

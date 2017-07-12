@@ -13,11 +13,10 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.core.ioc;
 
-package leap.orm.dyna;
+public interface BeanPrimaryAware {
 
-import leap.orm.OrmContext;
-
-public interface DynaOrmContext extends OrmContext {
-
+	void setBeanPrimary(boolean primary);
+	
 }

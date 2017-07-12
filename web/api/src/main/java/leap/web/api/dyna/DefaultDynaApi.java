@@ -14,10 +14,26 @@
  *  limitations under the License.
  */
 
-package leap.orm.dyna;
+package leap.web.api.dyna;
 
-import leap.orm.OrmContext;
+import leap.web.api.config.ApiConfig;
 
-public interface DynaOrmContext extends OrmContext {
+public class DefaultDynaApi implements DynaApi {
+
+    private final ApiConfig config;
+
+    public DefaultDynaApi(ApiConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public String getName() {
+        return config.getName();
+    }
+
+    @Override
+    public String getBasePath() {
+        return config.getBasePath();
+    }
 
 }

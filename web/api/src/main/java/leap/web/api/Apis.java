@@ -66,6 +66,16 @@ public interface Apis {
     ApiConfigurator add(String name, String basePath) throws ObjectExistsException;
 
     /**
+     * Removes the api.
+     */
+    boolean remove(String name);
+
+    /**
+     * Creates the api.
+     */
+    void create(ApiConfigurator c);
+
+    /**
      * Returns <code>true</code> if default enabled.
      * <p>
      * <p>

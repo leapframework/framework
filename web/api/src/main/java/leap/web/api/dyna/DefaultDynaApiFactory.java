@@ -14,10 +14,26 @@
  *  limitations under the License.
  */
 
-package leap.orm.dyna;
+package leap.web.api.dyna;
 
-import leap.orm.OrmContext;
+import leap.core.annotation.Inject;
+import leap.web.api.Apis;
+import leap.web.api.config.ApiConfigurator;
 
-public interface DynaOrmContext extends OrmContext {
+public class DefaultDynaApiFactory implements DynaApiFactory {
+
+    protected @Inject Apis apis;
+
+    @Override
+    public DynaApiCreator createDynaApi(String name, String basePath) {
+        ApiConfigurator configurator = apis.add(name, basePath);
+
+        return new DefaultDynaApiCreator(apis, configurator);
+    }
+
+    @Override
+    public boolean destroyDynaApi(DynaApi api) {
+        return apis.remove(api.getName());
+    }
 
 }

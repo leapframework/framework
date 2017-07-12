@@ -14,10 +14,16 @@
  *  limitations under the License.
  */
 
-package leap.orm.dyna;
+package leap.web.api.dyna;
 
-import leap.orm.OrmContext;
+import leap.lang.Creatable;
+import leap.web.api.config.ApiConfigurator;
 
-public interface DynaOrmContext extends OrmContext {
+public interface DynaApiCreator extends Creatable<DynaApi> {
+
+    /**
+     * Returns the {@link ApiConfigurator} for configuring the api.
+     */
+    ApiConfigurator configurator();
 
 }

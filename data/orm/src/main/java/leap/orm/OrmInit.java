@@ -22,6 +22,7 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.ds.DataSourceListener;
 import leap.core.ds.DataSourceManager;
+import leap.lang.beans.BeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dao.Dao;
@@ -46,6 +47,7 @@ public class OrmInit implements AppContextInitializable {
 	
     protected @Inject @M BeanFactory       beanFactory;
     protected @Inject @M DataSourceManager dataSourceManager;
+    protected @Inject @M OrmRegistry       registry;
 
 	@Override
     public void postInit(AppContext context) throws Exception {
@@ -75,16 +77,14 @@ public class OrmInit implements AppContextInitializable {
             log.debug("Init orm beans for default dataSource");
 			initOrmBeans(beanFactory, defaultDataSource, Orm.DEFAULT_NAME, true);
 		}
-		
-		//Force create default beans first
-		beanFactory.tryGetBean(OrmContext.class);
-		beanFactory.tryGetBean(Dao.class);
-		beanFactory.tryGetBean(Dmo.class);
-		
-		//Force create other beans later
-		beanFactory.getBeans(OrmContext.class);
-		beanFactory.getBeans(Dao.class);
-		beanFactory.getBeans(Dmo.class);
+
+        //Force create default context first
+        beanFactory.tryGetBean(OrmContext.class);
+
+        //Register all contexts.
+        beanFactory.getBeansWithDefinition(OrmContext.class).forEach((oc, bd) -> {
+            registry.registerContext(oc, bd.isPrimary());
+        });
     }
 	
 	private static void initOrmBeans(BeanFactory factory,DataSource dataSource,String name,boolean primary){
@@ -92,15 +92,6 @@ public class OrmInit implements AppContextInitializable {
 		if(null == namedContext){
 			factory.addBean(OrmContext.class, primary, name, true, DefaultOrmContext.class, name, dataSource);
 		}
-
-		Dao namedDao = factory.tryGetBean(Dao.class,name);
-		if(null == namedDao){
-			factory.addBean(Dao.class, primary, name, true, DefaultDao.class, name);
-		}
-		
-		Dmo namedDmo = factory.tryGetBean(Dmo.class,name);
-		if(null == namedDmo){
-			factory.addBean(Dmo.class, primary, name, true, DefaultDmo.class, name);
-		}
 	}
+
 }

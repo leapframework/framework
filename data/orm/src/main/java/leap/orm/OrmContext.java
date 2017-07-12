@@ -15,12 +15,11 @@
  */
 package leap.orm;
 
-import javax.sql.DataSource;
-
 import leap.lang.Named;
 import leap.orm.command.CommandFactory;
+import leap.orm.dao.Dao;
+import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
-import leap.orm.linq.ConditionParser;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.parameter.ParameterStrategy;
 import leap.orm.query.QueryFactory;
@@ -28,24 +27,63 @@ import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
 
+import javax.sql.DataSource;
+
 public interface OrmContext extends MetadataContext, Named {
-	
+
+    /**
+     * Required. Returns the {@link OrmConfig}.
+     */
 	OrmConfig getConfig();
-	
+
+    /**
+     * Required. Returns the underlying {@link DataSource}.
+     */
 	DataSource getDataSource();
-	
+
+    /**
+     * Required. Returns the {@link Dao}.
+     */
+    Dao getDao();
+
+    /**
+     * Required. Returns the {@link Dmo}.
+     */
+    Dmo getDmo();
+
+    /**
+     * Required.
+     */
 	ParameterStrategy getParameterStrategy();
-	
+
+    /**
+     * Required.
+     */
 	CommandFactory getCommandFactory();
-	
+
+    /**
+     * Required.
+     */
 	SqlFactory getSqlFactory();
-	
+
+    /**
+     * Required.
+     */
 	QueryFactory getQueryFactory();
-	
+
+    /**
+     * Required.
+     */
 	EntityReader getEntityReader();
-	
+
+    /**
+     * Required.
+     */
 	RowReader getRowReader();
 
+    /**
+     * Required.
+     */
     EntityEventHandler getEntityEventHandler();
 
 }

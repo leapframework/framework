@@ -26,6 +26,7 @@ import leap.lang.path.AntPathPattern;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.OrmRegistry;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.metadata.OrmMTypeFactory;
@@ -51,6 +52,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected @Inject RestdStrategy    strategy;
     protected @Inject RestdProcessor[] processors;
     protected @Inject OrmMTypeFactory  omf;
+    protected @Inject OrmRegistry      ormRegistry;
 
     @Override
     public void preProcess(ApiConfigurator api) {
@@ -61,7 +63,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
         OrmContext  oc  = lookupOrmContext(c);
         OrmMetadata om  = oc.getMetadata();
-        Dao         dao = Orm.dao(oc.getName());
+        Dao         dao = oc.getDao();
 
         Set<EntityMapping> ormModels = computeOrmModels(c, om);
         Set<RestdModel> restdModels = createRestdModels(api, c, oc, ormModels);
@@ -123,10 +125,9 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         String dataSourceName =
                 Strings.firstNotEmpty(c.getDataSourceName(), DataSourceManager.DEFAULT_DATASOURCE_NAME);
 
-        OrmContext oc = factory.tryGetBean(OrmContext.class, dataSourceName);
-
+        OrmContext oc = ormRegistry.findContext(dataSourceName);
         if (null == oc) {
-            throw new ApiConfigException("Can't create restd api , data source '" + dataSourceName + "' has not been configured!");
+            throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
         }
 
         return oc;

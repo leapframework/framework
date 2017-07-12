@@ -14,4 +14,18 @@
  *  limitations under the License.
  */
 
-package tests;
+package leap.web.api.dyna;
+
+public interface DynaApiFactory {
+
+    /**
+     * Creates a new {@link DynaApiCreator} for creating a new api.
+     */
+    DynaApiCreator createDynaApi(String name, String basePath);
+
+    /**
+     * Destroy the dyna api.
+     */
+    boolean destroyDynaApi(DynaApi api);
+
+}

@@ -19,15 +19,19 @@ import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
+import leap.core.ioc.BeanPrimaryAware;
 import leap.core.ioc.PostCreateBean;
 import leap.core.ioc.PostInjectBean;
 import leap.core.ioc.PreInjectBean;
-import leap.core.validation.annotations.NotEmpty;
 import leap.db.Db;
 import leap.db.DbFactory;
 import leap.lang.Assert;
 import leap.lang.Readonly;
 import leap.orm.command.CommandFactory;
+import leap.orm.dao.Dao;
+import leap.orm.dao.DefaultDao;
+import leap.orm.dmo.DefaultDmo;
+import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
 import leap.orm.linq.ConditionParser;
 import leap.orm.mapping.MappingStrategy;
@@ -42,7 +46,7 @@ import leap.orm.sql.SqlFactory;
 
 import javax.sql.DataSource;
 
-public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBean,PostInjectBean,MetadataContext {
+public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreateBean,PreInjectBean,PostInjectBean,MetadataContext {
 	
 	private final Readonly _readonly = new Readonly(this);
 	
@@ -62,10 +66,13 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
     protected @Inject @M ConditionParser    conditionParser;
     protected @Inject @M OrmConfig          config;
     protected @Inject @M EntityEventHandler entityEventHandler;
-    
-    protected @NotEmpty String name;
-	
-	public DefaultOrmContext(){
+
+    protected String name;
+    protected Dao    dao;
+    protected Dmo    dmo;
+    protected boolean primary;
+
+    public DefaultOrmContext(){
 		
 	}
 	
@@ -73,8 +80,13 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
 		this.setName(name);
 		this.setDataSource(dataSource);
 	}
-	
-	@Override
+
+    @Override
+    public void setBeanPrimary(boolean primary) {
+        this.primary = primary;
+    }
+
+    @Override
     public OrmConfig getConfig() {
 	    return config;
     }
@@ -104,7 +116,17 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
 	    return db;
     }
 
-	@Override
+    @Override
+    public Dao getDao() {
+        return dao;
+    }
+
+    @Override
+    public Dmo getDmo() {
+        return dmo;
+    }
+
+    @Override
     public OrmMetadata getMetadata() {
 	    return metadata;
     }
@@ -189,6 +211,14 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
 	    if(null == metadata){
 	    	this.metadata = factory.tryGetBean(OrmMetadata.class,name);
 	    }
+
+        if(null == dao) {
+            this.dao = factory.tryGetBean(Dao.class, name);
+        }
+
+        if(null == dmo) {
+            this.dmo = factory.tryGetBean(Dmo.class, name);
+        }
     }
 
 	@Override
@@ -205,6 +235,16 @@ public class DefaultOrmContext implements OrmContext,PostCreateBean,PreInjectBea
     		metadata = mm.createMetadata();
     		mm.loadMetadata(this);
     	}
+
+        if(null == dao) {
+            dao = beanFactory.inject(new DefaultDao(this));
+            beanFactory.addBean(Dao.class, dao, name, primary);
+        }
+
+        if(null == dmo) {
+            dmo = beanFactory.inject(new DefaultDmo(this));
+            beanFactory.addBean(Dmo.class, dmo, name, primary);
+        }
     	
     	for(OrmContextInitializable init : beanFactory.getBeans(OrmContextInitializable.class)){
     		init.postInitialize(this);

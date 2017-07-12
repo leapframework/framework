@@ -3,6 +3,8 @@
 
     <!-- init bean -->
     <bean type="leap.core.AppContextInitializable" class="leap.orm.OrmInit"/>
+
+    <bean type="leap.orm.OrmRegistry" class="leap.orm.DefaultOrmRegistry" primary="true"/>
     
     <!-- config -->
     <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>

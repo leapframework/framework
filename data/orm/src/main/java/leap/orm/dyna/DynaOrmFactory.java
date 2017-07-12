@@ -16,14 +16,18 @@
 
 package leap.orm.dyna;
 
+import leap.lang.exception.ObjectExistsException;
+
 import javax.sql.DataSource;
 
 public interface DynaOrmFactory {
 
     /**
      * Creates a new {@link DynaOrmContext}.
+     *
+     * @throws ObjectExistsException if the name already exists.
      */
-    DynaOrmContext createDynaContext(DataSource ds);
+    DynaOrmContext createDynaContext(String name, DataSource ds) throws ObjectExistsException;
 
     /**
      * Destroy the context, clearing all resources.

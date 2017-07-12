@@ -14,10 +14,15 @@
  *  limitations under the License.
  */
 
-package leap.orm.dyna;
+package leap.web.api.dyna;
 
-import leap.orm.OrmContext;
+import leap.lang.Named;
 
-public interface DynaOrmContext extends OrmContext {
+public interface DynaApi extends Named {
+
+    /**
+     * Returns the base path of api.
+     */
+    String getBasePath();
 
 }

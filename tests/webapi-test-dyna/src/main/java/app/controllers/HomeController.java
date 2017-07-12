@@ -14,10 +14,9 @@
  *  limitations under the License.
  */
 
-package app;
+package app.controllers;
 
 import app.models.Entity1;
-import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
@@ -25,43 +24,58 @@ import leap.lang.Try;
 import leap.orm.dmo.Dmo;
 import leap.orm.dyna.DynaOrmContext;
 import leap.orm.dyna.DynaOrmFactory;
+import leap.web.api.config.ApiConfigurator;
+import leap.web.api.config.model.RestdConfig;
+import leap.web.api.dyna.DynaApi;
+import leap.web.api.dyna.DynaApiCreator;
+import leap.web.api.dyna.DynaApiFactory;
 
 import javax.sql.DataSource;
 
-@Bean(lazyInit = false)
-public class DynaOrm {
-
-    public static final String NAME = "test";
+public class HomeController {
 
     private @Inject DataSourceManager dsm;
     private @Inject DynaOrmFactory    dyf;
+    private @Inject DynaApiFactory    daf;
 
-    private DataSource     testDataSource;
-    private DynaOrmContext testOrmContext;
+    private DataSource     dataSource;
+    private DynaOrmContext ormContext;
+    private DynaApi        api;
 
-    public DynaOrm() {
+    public void createApi() {
+        if(null != api) {
+            throw new IllegalStateException("Api already created");
+        }
 
+        createDataSource();
+        createOrmContext();
+        doCreateApi();
     }
 
-    public DynaOrmContext createTestContext() {
-        //create data source.
-        createTestDataSource();
+    public void destroyApi() {
+        if(null == api) {
+            throw new IllegalStateException("Api not created yet");
+        }
 
-        //create orm context.
-        createTestOrmContext();
+        daf.destroyDynaApi(api);
+        dyf.destroyDynaContext(ormContext);
+        dsm.destroyDataSource(dataSource);
 
-        return testOrmContext;
+        api = null;
     }
 
-    public void destroyTestContext() {
-        //destroy data source.
-        dsm.destroyDataSource(testDataSource);
+    protected void doCreateApi() {
+        DynaApiCreator  creator = daf.createDynaApi("test", "/test");
+        ApiConfigurator cfg     = creator.configurator();
 
-        //destroy orm context
-        dyf.destroyDynaContext(testOrmContext);
+        RestdConfig rc = new RestdConfig();
+        rc.setDataSourceName("test");
+        cfg.setRestdConfig(rc);
+
+        api = creator.create();
     }
 
-    protected void createTestDataSource() {
+    protected void createDataSource() {
         DataSourceConfig.Builder dsc = new DataSourceConfig.Builder();
         dsc.setDefault(true);
         dsc.setDriverClassName("org.h2.Driver");
@@ -69,21 +83,21 @@ public class DynaOrm {
         dsc.setUsername("sa");
 
         Try.throwUnchecked(() -> {
-            testDataSource = dsm.createDataSource(NAME, dsc.build());
+            dataSource = dsm.createDataSource("test", dsc.build());
         });
     }
 
-    protected void createTestOrmContext() {
+    protected void createOrmContext() {
         //create orm context
-        testOrmContext = dyf.createDynaContext(NAME,testDataSource);
+        ormContext = dyf.createDynaContext("test", dataSource);
 
         //create entities.
         createEntities();
     }
 
     protected void createEntities() {
-        Dmo dmo = testOrmContext.getDmo();
-
+        Dmo dmo = ormContext.getDmo();
         dmo.cmdCreateEntity(Entity1.class).setTableName("table1").setCreateTable(true).execute();
     }
+
 }
