@@ -23,8 +23,8 @@ import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Try;
 import leap.orm.dmo.Dmo;
-import leap.orm.dyna.OrmDynaContext;
-import leap.orm.dyna.OrmDynaFactory;
+import leap.orm.dyna.DynaOrmContext;
+import leap.orm.dyna.DynaOrmFactory;
 
 import javax.sql.DataSource;
 
@@ -34,16 +34,16 @@ public class DynaOrm {
     public static final String NAME = "test";
 
     private @Inject DataSourceManager dsm;
-    private @Inject OrmDynaFactory    dyf;
+    private @Inject DynaOrmFactory    dyf;
 
     private DataSource     testDataSource;
-    private OrmDynaContext testOrmContext;
+    private DynaOrmContext testOrmContext;
 
     public DynaOrm() {
 
     }
 
-    public OrmDynaContext createTestContext() {
+    public DynaOrmContext createTestContext() {
         //create data source.
         createTestDataSource();
 

@@ -41,7 +41,7 @@ import leap.orm.sql.SqlFactory;
 import javax.sql.DataSource;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class DefaultOrmDynaFactory implements OrmDynaFactory {
+public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
     protected @Inject BeanFactory        bf;
     protected @Inject AppContext         appContext;
@@ -60,7 +60,7 @@ public class DefaultOrmDynaFactory implements OrmDynaFactory {
     private final AtomicLong counter = new AtomicLong();
 
     @Override
-    public OrmDynaContext createDynaContext(DataSource ds) {
+    public DynaOrmContext createDynaContext(DataSource ds) {
         final String      name = "dyna_" + counter.incrementAndGet();
         final Db          db   = DbFactory.createInstance(ds);
         final OrmMetadata md   = omm.createMetadata();
@@ -90,7 +90,7 @@ public class DefaultOrmDynaFactory implements OrmDynaFactory {
     }
 
     @Override
-    public void destroyDynaContext(OrmDynaContext context) {
+    public void destroyDynaContext(DynaOrmContext context) {
         //do nothing.
     }
 }

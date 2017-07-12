@@ -112,7 +112,7 @@
           class="leap.orm.serialize.JsonFieldSerializer" primary="true"/>
 
     <!-- dyna -->
-    <bean type="leap.orm.dyna.OrmDynaFactory"
-          class="leap.orm.dyna.DefaultOrmDynaFactory" primary="true"/>
+    <bean type="leap.orm.dyna.DynaOrmFactory"
+          class="leap.orm.dyna.DefaultDynaOrmFactory" primary="true"/>
 
 </beans>

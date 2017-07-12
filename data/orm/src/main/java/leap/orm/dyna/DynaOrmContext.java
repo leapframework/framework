@@ -20,7 +20,7 @@ import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 
-public interface OrmDynaContext extends OrmContext {
+public interface DynaOrmContext extends OrmContext {
 
     /**
      * Returns the {@link Dao}.

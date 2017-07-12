@@ -35,7 +35,7 @@ import leap.orm.sql.SqlFactory;
 
 import javax.sql.DataSource;
 
-public class DefaultOrmDynaContext implements OrmDynaContext {
+public class DefaultOrmDynaContext implements DynaOrmContext {
 
     protected final String      name;
     protected final Db          db;

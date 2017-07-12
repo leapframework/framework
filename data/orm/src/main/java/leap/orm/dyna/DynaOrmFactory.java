@@ -18,12 +18,12 @@ package leap.orm.dyna;
 
 import javax.sql.DataSource;
 
-public interface OrmDynaFactory {
+public interface DynaOrmFactory {
 
     /**
-     * Creates a new {@link OrmDynaContext}.
+     * Creates a new {@link DynaOrmContext}.
      */
-    OrmDynaContext createDynaContext(DataSource ds);
+    DynaOrmContext createDynaContext(DataSource ds);
 
     /**
      * Destroy the context, clearing all resources.
@@ -31,6 +31,6 @@ public interface OrmDynaFactory {
      * <p/>
      * Notice: The {@link DataSource} will not be destroyed.
      */
-    void destroyDynaContext(OrmDynaContext context);
+    void destroyDynaContext(DynaOrmContext context);
 
 }
