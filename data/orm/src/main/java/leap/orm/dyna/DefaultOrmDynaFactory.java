@@ -16,14 +16,27 @@
 
 package leap.orm.dyna;
 
+import leap.core.AppContext;
 import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.db.Db;
 import leap.db.DbFactory;
+import leap.orm.OrmConfig;
 import leap.orm.OrmMetadata;
+import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
+import leap.orm.dmo.DefaultDmo;
+import leap.orm.dmo.Dmo;
+import leap.orm.event.EntityEventHandler;
+import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.OrmMetadataManager;
+import leap.orm.naming.NamingStrategy;
+import leap.orm.parameter.ParameterStrategy;
+import leap.orm.query.QueryFactory;
+import leap.orm.reader.EntityReader;
+import leap.orm.reader.RowReader;
+import leap.orm.sql.SqlFactory;
 
 import javax.sql.DataSource;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,7 +44,18 @@ import java.util.concurrent.atomic.AtomicLong;
 public class DefaultOrmDynaFactory implements OrmDynaFactory {
 
     protected @Inject BeanFactory        bf;
+    protected @Inject AppContext         appContext;
+    protected @Inject OrmConfig          config;
     protected @Inject OrmMetadataManager omm;
+    protected @Inject MappingStrategy    mappingStrategy;
+    protected @Inject NamingStrategy     namingStrategy;
+    protected @Inject ParameterStrategy  parameterStrategy;
+    protected @Inject CommandFactory     commandFactory;
+    protected @Inject SqlFactory         sqlFactory;
+    protected @Inject QueryFactory       queryFactory;
+    protected @Inject EntityReader       entityReader;
+    protected @Inject RowReader          rowReader;
+    protected @Inject EntityEventHandler eventHandler;
 
     private final AtomicLong counter = new AtomicLong();
 
@@ -41,12 +65,32 @@ public class DefaultOrmDynaFactory implements OrmDynaFactory {
         final Db          db   = DbFactory.createInstance(ds);
         final OrmMetadata md   = omm.createMetadata();
 
-        DefaultOrmDynaContext context = bf.inject(new DefaultOrmDynaContext(name, db, md));
+        DefaultOrmDynaContext context = new DefaultOrmDynaContext(name, db, md);
+
+        context.setAppContext(appContext);
+        context.setConfig(config);
+        context.setMetadataManager(omm);
+        context.setMappingStrategy(mappingStrategy);
+        context.setNamingStrategy(namingStrategy);
+        context.setParameterStrategy(parameterStrategy);
+        context.setCommandFactory(commandFactory);
+        context.setSqlFactory(sqlFactory);
+        context.setQueryFactory(queryFactory);
+        context.setEntityReader(entityReader);
+        context.setRowReader(rowReader);
+        context.setEventHandler(eventHandler);
 
         Dao dao = bf.inject(new DefaultDao(context));
         context.setDao(dao);
 
+        Dmo dmo = bf.inject(new DefaultDmo(context));
+        context.setDmo(dmo);
+
         return context;
     }
 
+    @Override
+    public void destroyDynaContext(OrmDynaContext context) {
+        //do nothing.
+    }
 }

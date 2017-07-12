@@ -29,6 +29,7 @@ import leap.orm.DefaultOrmMetadata;
 import leap.orm.OrmConfig;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.domain.Domains;
 import leap.orm.mapping.*;
 import leap.orm.naming.NamingStrategy;
 import leap.orm.sql.SqlCommand;
@@ -47,10 +48,17 @@ public class DefaultMetadataManager implements OrmMetadataManager {
     protected @Inject @M Mapper[]    mappers;
     protected @Inject @M SqlSource[] sqlSources;
     protected @Inject @M SqlFactory  sqlFactory;
+    protected @Inject @M Domains     domains;
+    protected @Inject @M SqlRegistry sqlRegistry;
     
 	@Override
     public OrmMetadata createMetadata() {
-	    return beanFactory.inject(new DefaultOrmMetadata());
+	    DefaultOrmMetadata md = new DefaultOrmMetadata();
+
+        md.setDomains(domains);
+        md.setSqlRegistry(sqlRegistry);
+
+        return md;
     }
 
     @Override

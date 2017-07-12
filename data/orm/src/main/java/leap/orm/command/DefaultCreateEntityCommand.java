@@ -134,10 +134,12 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
 					return false;
 				}
 			}
-			
-			if(!createTable(em)) {
-			    return false;
-			}
+
+            if(!db.checkTableExists(em.getTable())) {
+                if(!createTable(em)) {
+                    return false;
+                }
+            }
 		}
 		metadataManager.createEntity(context, em);
 		return true;

@@ -36,11 +36,11 @@ public abstract class DmoBase extends Dmo implements PreInjectBean, PostInjectBe
 	private final Readonly _readonly = new Readonly(this);
 	
     protected @Inject @M OrmFactory  ormFactory;
-    protected @Inject @M OrmContext  ormContext;
     protected @Inject @M DataFactory dataFactory;
-	
-	protected @NotEmpty String name;
-	
+
+    protected String     name;
+    protected OrmContext ormContext;
+
 	protected DmoBase(){
 		
 	}

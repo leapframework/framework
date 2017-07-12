@@ -22,8 +22,10 @@ import app.DynaOrm;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceManager;
 import leap.core.junit.AppTestBase;
+import leap.lang.New;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
+import leap.orm.mapping.EntityMapping;
 import org.junit.Test;
 
 import javax.sql.DataSource;
@@ -40,9 +42,8 @@ public class DynaOrmTest extends AppTestBase {
 
     @Override
     protected void setUp() throws Exception {
-        dynaOrm.createTestContext();
-        //dao = Dao.get("test");
-        //md  = dao.getOrmContext().getMetadata();
+        dao = dynaOrm.createTestContext().getDao();
+        md  = dao.getOrmContext().getMetadata();
     }
 
     @Override
@@ -60,6 +61,8 @@ public class DynaOrmTest extends AppTestBase {
 
     @Test
     public void testDynaCreatedEntityMapping() {
+        EntityMapping em = md.getEntityMapping("Entity1");
 
+        assertEquals(1,dao.insert(em, New.hashMap("field1", "v1")));
     }
 }

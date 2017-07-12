@@ -110,4 +110,9 @@
     <bean name="json"
           type="leap.orm.serialize.FieldSerializer"
           class="leap.orm.serialize.JsonFieldSerializer" primary="true"/>
+
+    <!-- dyna -->
+    <bean type="leap.orm.dyna.OrmDynaFactory"
+          class="leap.orm.dyna.DefaultOrmDynaFactory" primary="true"/>
+
 </beans>

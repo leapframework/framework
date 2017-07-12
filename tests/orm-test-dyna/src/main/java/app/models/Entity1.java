@@ -14,22 +14,33 @@
  *  limitations under the License.
  */
 
-package leap.orm.dyna;
+package app.models;
 
-import leap.orm.OrmContext;
-import leap.orm.dao.Dao;
-import leap.orm.dmo.Dmo;
+import leap.orm.annotation.Column;
+import leap.orm.annotation.Id;
 
-public interface OrmDynaContext extends OrmContext {
+public class Entity1 {
 
-    /**
-     * Returns the {@link Dao}.
-     */
-    Dao getDao();
+    @Id
+    protected String id;
 
-    /**
-     * Returns the {@link Dmo}.
-     */
-    Dmo getDmo();
+    @Column
+    protected String field1;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getField1() {
+        return field1;
+    }
+
+    public void setField1(String field1) {
+        this.field1 = field1;
+    }
 
 }

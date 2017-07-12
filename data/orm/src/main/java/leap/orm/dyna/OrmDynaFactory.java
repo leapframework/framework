@@ -25,4 +25,12 @@ public interface OrmDynaFactory {
      */
     OrmDynaContext createDynaContext(DataSource ds);
 
+    /**
+     * Destroy the context, clearing all resources.
+     *
+     * <p/>
+     * Notice: The {@link DataSource} will not be destroyed.
+     */
+    void destroyDynaContext(OrmDynaContext context);
+
 }

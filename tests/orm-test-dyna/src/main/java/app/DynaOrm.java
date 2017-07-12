@@ -16,36 +16,49 @@
 
 package app;
 
+import app.models.Entity1;
 import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
 import leap.core.ds.DataSourceConfig;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Try;
+import leap.orm.dmo.Dmo;
+import leap.orm.dyna.OrmDynaContext;
+import leap.orm.dyna.OrmDynaFactory;
 
 import javax.sql.DataSource;
 
-@Bean
+@Bean(lazyInit = false)
 public class DynaOrm {
 
     public static final String NAME = "test";
 
     private @Inject DataSourceManager dsm;
+    private @Inject OrmDynaFactory    dyf;
 
-    private DataSource testDataSource;
+    private DataSource     testDataSource;
+    private OrmDynaContext testOrmContext;
 
-    public void createTestContext() {
+    public DynaOrm() {
+
+    }
+
+    public OrmDynaContext createTestContext() {
         //create data source.
         createTestDataSource();
 
-        //create orm metadata.
+        //create orm context.
+        createTestOrmContext();
+
+        return testOrmContext;
     }
 
     public void destroyTestContext() {
         //destroy data source.
-        destroyTestDataSource();
+        dsm.destroyDataSource(testDataSource);
 
-        //clear orm metadata.
-
+        //destroy orm context
+        dyf.destroyDynaContext(testOrmContext);
     }
 
     protected void createTestDataSource() {
@@ -60,7 +73,17 @@ public class DynaOrm {
         });
     }
 
-    protected void destroyTestDataSource() {
-        dsm.destroyDataSource(testDataSource);
+    protected void createTestOrmContext() {
+        //create orm context
+        testOrmContext = dyf.createDynaContext(testDataSource);
+
+        //create entities.
+        createEntities();
+    }
+
+    protected void createEntities() {
+        Dmo dmo = testOrmContext.getDmo();
+
+        dmo.cmdCreateEntity(Entity1.class).setTableName("table1").setCreateTable(true).execute();
     }
 }

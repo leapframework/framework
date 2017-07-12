@@ -17,14 +17,13 @@
 package leap.orm.dyna;
 
 import leap.core.AppContext;
-import leap.core.annotation.Inject;
 import leap.db.Db;
 import leap.orm.OrmConfig;
 import leap.orm.OrmMetadata;
 import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
+import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
-import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.OrmMetadataManager;
 import leap.orm.naming.NamingStrategy;
@@ -42,20 +41,20 @@ public class DefaultOrmDynaContext implements OrmDynaContext {
     protected final Db          db;
     protected final OrmMetadata metadata;
 
-    protected @Inject AppContext         appContext;
-    protected @Inject OrmConfig          config;
-    protected @Inject OrmMetadataManager omm;
-    protected @Inject MappingStrategy    mappingStrategy;
-    protected @Inject NamingStrategy     namingStrategy;
-    protected @Inject ParameterStrategy  parameterStrategy;
-    protected @Inject CommandFactory     commandFactory;
-    protected @Inject SqlFactory         sqlFactory;
-    protected @Inject QueryFactory       queryFactory;
-    protected @Inject EntityReader       entityReader;
-    protected @Inject RowReader          rowReader;
-    protected @Inject EntityEventHandler eventHandler;
-
-    protected Dao dao;
+    protected AppContext         appContext;
+    protected OrmConfig          config;
+    protected Dao                dao;
+    protected Dmo                dmo;
+    protected OrmMetadataManager metadataManager;
+    protected MappingStrategy    mappingStrategy;
+    protected NamingStrategy     namingStrategy;
+    protected ParameterStrategy  parameterStrategy;
+    protected CommandFactory     commandFactory;
+    protected SqlFactory         sqlFactory;
+    protected QueryFactory       queryFactory;
+    protected EntityReader       entityReader;
+    protected RowReader          rowReader;
+    protected EntityEventHandler eventHandler;
 
     public DefaultOrmDynaContext(String name, Db db, OrmMetadata md) {
         this.name     = name;
@@ -94,6 +93,16 @@ public class DefaultOrmDynaContext implements OrmDynaContext {
     }
 
     @Override
+    public Dao getDao() {
+        return dao;
+    }
+
+    @Override
+    public Dmo getDmo() {
+        return dmo;
+    }
+
+    @Override
     public MappingStrategy getMappingStrategy() {
         return mappingStrategy;
     }
@@ -105,7 +114,7 @@ public class DefaultOrmDynaContext implements OrmDynaContext {
 
     @Override
     public OrmMetadataManager getMetadataManager() {
-        return omm;
+        return metadataManager;
     }
 
     @Override
@@ -143,22 +152,60 @@ public class DefaultOrmDynaContext implements OrmDynaContext {
         return eventHandler;
     }
 
-    @Override
-    public Dao getDao() {
-        return dao;
+    public void setAppContext(AppContext appContext) {
+        this.appContext = appContext;
     }
+
+    public void setConfig(OrmConfig config) {
+        this.config = config;
+    }
+
 
     public void setDao(Dao dao) {
         this.dao = dao;
     }
 
-    @Override
-    public void addEntity(EntityMapping em) {
-        omm.createEntity(this, em);
+    public void setDmo(Dmo dmo) {
+        this.dmo = dmo;
     }
 
-    @Override
-    public void destroy() {
+    public void setMetadataManager(OrmMetadataManager metadataManager) {
+        this.metadataManager = metadataManager;
+    }
 
+    public void setMappingStrategy(MappingStrategy mappingStrategy) {
+        this.mappingStrategy = mappingStrategy;
+    }
+
+    public void setNamingStrategy(NamingStrategy namingStrategy) {
+        this.namingStrategy = namingStrategy;
+    }
+
+    public void setParameterStrategy(ParameterStrategy parameterStrategy) {
+        this.parameterStrategy = parameterStrategy;
+    }
+
+    public void setCommandFactory(CommandFactory commandFactory) {
+        this.commandFactory = commandFactory;
+    }
+
+    public void setSqlFactory(SqlFactory sqlFactory) {
+        this.sqlFactory = sqlFactory;
+    }
+
+    public void setQueryFactory(QueryFactory queryFactory) {
+        this.queryFactory = queryFactory;
+    }
+
+    public void setEntityReader(EntityReader entityReader) {
+        this.entityReader = entityReader;
+    }
+
+    public void setRowReader(RowReader rowReader) {
+        this.rowReader = rowReader;
+    }
+
+    public void setEventHandler(EntityEventHandler eventHandler) {
+        this.eventHandler = eventHandler;
     }
 }

@@ -15,8 +15,6 @@
  */
 package leap.orm;
 
-import leap.core.annotation.Inject;
-import leap.core.annotation.M;
 import leap.core.ioc.AbstractReadonlyBean;
 import leap.lang.Args;
 import leap.lang.Strings;
@@ -53,13 +51,21 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
     protected final Map<String,EntityMapping>   shardingEntityMappings = new ConcurrentHashMap<>();
 
-    protected @Inject @M Domains     domains;
-    protected @Inject @M SqlRegistry sqlRegistry;
+    protected Domains     domains;
+    protected SqlRegistry sqlRegistry;
 
 	@Override
 	public Domains domains() {
 		return domains;
 	}
+
+    public void setDomains(Domains domains) {
+        this.domains = domains;
+    }
+
+    public void setSqlRegistry(SqlRegistry sqlRegistry) {
+        this.sqlRegistry = sqlRegistry;
+    }
 
     @Override
     public int getEntityMappingSize() {
