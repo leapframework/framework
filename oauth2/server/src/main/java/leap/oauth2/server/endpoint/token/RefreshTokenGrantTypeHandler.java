@@ -104,8 +104,11 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 				return;
 			}
 		}
-		
-		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, um.getUserDetails(user));
+		UserDetails ud = null;
+		if(null != user){
+			ud = um.getUserDetails(user);
+		}
+		AuthzAuthentication oauthAuthc = new SimpleAuthzAuthentication(params, client, ud);
 		
 		//Generates a new token.
 		callback.accept(tokenManager.createAccessToken(oauthAuthc, token));

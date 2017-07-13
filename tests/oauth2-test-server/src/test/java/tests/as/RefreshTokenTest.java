@@ -17,17 +17,27 @@
  */
 package tests.as;
 
+import app.Global;
 import org.junit.Test;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
+
+import static app.Global.TEST_CLIENT_ID;
+import static app.Global.TEST_CLIENT_SECRET;
 
 public class RefreshTokenTest extends OAuth2TestBase {
     
     @Test
     public void testInvalidClientCredentials() {
-        TokenResponse token = obtainAccessTokenByRefreshToken("bad refresh token");
+        // user and client token
+    	TokenResponse token = obtainAccessTokenByRefreshToken("bad refresh token");
         assertTrue(token.isError());
         assertNotEmpty(token.error);
+        
+        // client only token
+		token = obtainAccessTokenByClient(TEST_CLIENT_ID,TEST_CLIENT_SECRET);
+		token = obtainAccessTokenByRefreshToken(token.refreshToken,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
+		assertNotEmpty(token.accessToken);
     }
     
 	@Test
