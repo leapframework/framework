@@ -192,6 +192,11 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
     @Override
+    public boolean removeDataSource(String name) {
+        return null != allDataSources.remove(name);
+    }
+
+    @Override
     public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){

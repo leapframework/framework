@@ -93,6 +93,11 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
      * Registers a named {@link DataSource}.
      */
     void registerDataSource(String name, DataSource ds) throws ObjectExistsException;
+
+    /**
+     * Removes the data source.
+     */
+    boolean removeDataSource(String name);
 	
 	/**
 	 * Creates a managed {@link DataSource} as a named {@link DataSource} in this manager.
