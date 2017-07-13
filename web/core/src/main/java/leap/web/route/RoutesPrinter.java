@@ -19,6 +19,8 @@ import java.io.PrintWriter;
 
 public interface RoutesPrinter {
 
+    String print(Routes routes);
+
 	void print(Routes routes, PrintWriter writer);
 	
 }

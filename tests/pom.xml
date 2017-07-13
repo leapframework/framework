@@ -32,6 +32,7 @@
         <module>core-test-profile3</module>
 
         <module>orm-test</module>
+        <module>orm-test-dyna</module>
         <module>orm-test-resources</module>
 
         <module>webunit-test1</module>
@@ -43,6 +44,8 @@
         <module>web-test-webapp2</module>
 
         <module>webapi-test</module>
+        <module>webapi-test-dyna</module>
+
         <module>oauth2-test-server</module>
         <module>oauth2-test-webapp</module>
     </modules>

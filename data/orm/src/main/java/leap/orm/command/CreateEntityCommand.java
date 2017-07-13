@@ -21,6 +21,9 @@ public interface CreateEntityCommand extends DmoCommand {
 
 	/**
 	 * Set createTable to <code>true</code> will create db table when execute, Defaults to <code>false</code>
+     *
+     * <p/>
+     * The operation will be ignore if the table already exists.
 	 */
 	CreateEntityCommand setCreateTable(boolean createTable);
 	

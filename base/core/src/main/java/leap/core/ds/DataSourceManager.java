@@ -46,7 +46,7 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 * Returns the default datasource bean name.
 	 * @throws ObjectNotFoundException
 	 */
-	String getDefaultDatasourceBeanName() throws ObjectNotFoundException;
+	String getDefaultDataSourceBeanName() throws ObjectNotFoundException;
 
 	/**
 	 * Returns the default datasource.
@@ -88,6 +88,16 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 	 */
 	DataSource createDefaultDataSource(DataSourceConfig props) 
 			throws ObjectExistsException,UnsupportedOperationException,NestedClassNotFoundException,SQLException;
+
+    /**
+     * Registers a named {@link DataSource}.
+     */
+    void registerDataSource(String name, DataSource ds) throws ObjectExistsException;
+
+    /**
+     * Removes the data source.
+     */
+    boolean removeDataSource(String name);
 	
 	/**
 	 * Creates a managed {@link DataSource} as a named {@link DataSource} in this manager.
@@ -100,7 +110,7 @@ public interface DataSourceManager extends Listenable<DataSourceListener> {
 			throws ObjectExistsException,UnsupportedOperationException,NestedClassNotFoundException,SQLException;
 	
 	/**
-	 * Creates a non managed {@link DataSource} of the given properties.
+	 * Creates a unmanaged {@link DataSource} of the given properties.
 	 * 
 	 * @throws UnsupportedOperationException if this manager does not supports the given properties.
 	 * @throws NestedClassNotFoundException if the 'driverClassName' is invalid.

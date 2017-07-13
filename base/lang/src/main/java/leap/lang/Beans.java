@@ -128,7 +128,7 @@ public class Beans {
             	for(BeanProperty toBp : toBeanType.getProperties()){
             		if(toBp.isWritable()){
             			BeanProperty fromBp = fromBeanType.tryGetProperty(toBp.getName());
-            			if(null != fromBp){
+            			if(null != fromBp && fromBp.isReadable()){
             				toBp.setValue(to, fromBp.getValue(from));
             			}
             		}

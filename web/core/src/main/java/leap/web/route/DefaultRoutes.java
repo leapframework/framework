@@ -32,7 +32,7 @@ import java.util.function.Supplier;
 public class DefaultRoutes implements Routes {
 	
 	protected @Inject PathTemplateFactory pathTemplateFactory;
-    protected @Inject ActionManager		actionManager;
+    protected @Inject ActionManager		  actionManager;
 
     protected Route[]    array = new Route[]{};
     protected Set<Route> set   = new TreeSet<Route>(Route.COMPARATOR);

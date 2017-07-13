@@ -25,7 +25,7 @@ import leap.orm.naming.NamingStrategy;
 public interface MetadataContext {
 
     String getName();
-	
+
 	Db getDb();
 	
 	OrmConfig getConfig();
@@ -33,9 +33,9 @@ public interface MetadataContext {
 	AppContext getAppContext();
 	
 	OrmMetadata getMetadata();
-	
+
 	MappingStrategy getMappingStrategy();
-	
+
 	NamingStrategy getNamingStrategy();
 
 	OrmMetadataManager getMetadataManager();

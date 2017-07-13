@@ -30,6 +30,10 @@ public class PublicKeyEndpoint implements Endpoint, Handler {
 
     @Override
     public void startEndpoint(App app, Routes routes) throws Throwable {
+        if(!config.isEnabled()) {
+            return;
+        }
+
         routes.create()
               .allowAny()
               .get(config.getPublicKeyEndpointPath(), this::handle)

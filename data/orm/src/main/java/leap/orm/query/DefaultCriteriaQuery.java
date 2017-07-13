@@ -445,19 +445,6 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 	
 	@Override
-    public CriteriaQuery<T> where(Condition<T> condition) {
-		Args.notNull(condition,"condition");
-		
-		Params params = new ParamsMap();
-		where(context.getConditionParser().parse(condition, params));
-		if(!params.isEmpty()){
-			params(params);
-		}
-		
-		return this;
-    }
-
-	@Override
     public CriteriaQuery<T> where(String expression) {
 		Args.notEmpty(expression = Strings.trim(expression),"where expression");
 		where = expression;

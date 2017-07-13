@@ -1434,6 +1434,10 @@ public class BeanContainer implements BeanFactory {
 		if(bean instanceof BeanNameAware){
 			((BeanNameAware) bean).setBeanName(bd.getName());
 		}
+
+        if(bean instanceof BeanPrimaryAware) {
+            ((BeanPrimaryAware) bean).setBeanPrimary(bd.isPrimary());
+        }
 	}
 	
 	protected void doBeanValidation(BeanDefinitionBase bd,Object bean){

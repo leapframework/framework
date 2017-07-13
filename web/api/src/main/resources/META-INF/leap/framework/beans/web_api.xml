@@ -60,4 +60,6 @@
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperationProcessor"/>
 
+    <!-- dyna -->
+    <bean type="leap.web.api.dyna.DynaApiFactory" class="leap.web.api.dyna.DefaultDynaApiFactory" primary="true"/>
 </beans>
