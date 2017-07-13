@@ -142,7 +142,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
 	@Override
-	public String getDefaultDatasourceBeanName() throws ObjectNotFoundException {
+	public String getDefaultDataSourceBeanName() throws ObjectNotFoundException {
 		return defaultDataSourceBeanName;
 	}
 
@@ -177,8 +177,21 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     public Map<String, DataSource> getAllDataSources() {
 	    return allDataSourcesImmutableView;
     }
-	
-	@Override
+
+    @Override
+    public void registerDataSource(String name, DataSource ds) throws ObjectExistsException {
+        synchronized (this) {
+            if(allDataSources.containsKey(name)) {
+                throw new ObjectExistsException("DataSource '" + name + "' already exists!");
+            }
+
+            allDataSources.put(name, ds);
+
+            notifyDataSourceCreated(name, ds, exportMBean);
+        }
+    }
+
+    @Override
     public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){
