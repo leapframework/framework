@@ -19,15 +19,7 @@ package leap.oauth2.webapp;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
-import leap.core.el.ExpressionLanguage;
-import leap.htpl.AbstractHtplContext;
-import leap.htpl.DefaultHtplContext;
-import leap.htpl.HtplEngine;
-import leap.htpl.HtplExpressionManager;
-import leap.lang.Out;
-import leap.lang.Result;
 import leap.lang.Strings;
-import leap.lang.expression.Expression;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
@@ -59,9 +51,6 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
 
     protected @Inject UserDetailsLookup userDetailsLookup;
 
-    protected @Inject HtplExpressionManager expressionManager;
-    protected @Inject HtplEngine engine;
-    
 	@Override
 	public OAuth2Config config() {
 		return this;
@@ -165,32 +154,47 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
         if(!needParse(url)){
             return url;
         }
-        StringBuilder builder = new StringBuilder();
-        expressionManager.parseCompositeExpression(engine, url, new HtplExpressionManager.ParseHandler() {
-            @Override
-            public void textParsed(String text) {
-                builder.append(text);
-            }
-
-            @Override
-            public void exprParsed(Expression expr) {
-                DefaultHtplContext ctx = new DefaultHtplContext(engine);
-                ctx.setContextPath(serverInfo.getServerUrl());
-                Object s = expr.getValue(ctx);
-                if(null != s){
-                    builder.append(s.toString());
-                }
-            }
-        });
-        if(builder.length() > 0){
-            String u = builder.toString();
-            if(needParse(u)){
-                return serverInfo.getServerUrl()+Paths.prefixWithSlash(u);
-            }
-            return u;
+        String resolvedUrl = resolveUrl(url, serverInfo);
+        if(needParse(resolvedUrl)){
+            return serverInfo.getServerUrl()+Paths.prefixWithSlash(resolvedUrl);
         }
-        return url;
+        return resolvedUrl;
         
+    }
+    
+    protected String resolveUrl(String expression, ServerInfo serverInfo){
+        int i = 0;
+        StringBuilder source = new StringBuilder(expression);
+        StringBuilder builder = new StringBuilder();
+        while (source.length()>0){
+            char c = source.charAt(i);
+            source.deleteCharAt(i);
+            if(c == '@'){
+                if(source.charAt(i) == '{'){
+                    source.deleteCharAt(i);
+                    int index = source.indexOf("}");
+                    if(-1 == index){
+                        throw new OAuth2Exception("error server url expression:"+expression);
+                    }
+                    String exp = source.substring(0,index);
+                    source.delete(0,index+1);
+                    builder.append(getExpressionValue(exp,serverInfo));
+                }
+            }else {
+                builder.append(c);
+            }
+        }
+        return builder.toString();
+    }
+    
+    protected String getExpressionValue(String expression, ServerInfo serverInfo){
+        if(Strings.startsWith(expression,"~")){
+            return serverInfo.getServerUrl()+Paths.prefixWithSlash(expression.substring(1));
+        }
+        if(Strings.startsWith(expression,"^")){
+            return Paths.prefixWithSlash(expression.substring(1));
+        }
+        return Paths.prefixWithSlash(expression.substring(1));
     }
     
     @Override

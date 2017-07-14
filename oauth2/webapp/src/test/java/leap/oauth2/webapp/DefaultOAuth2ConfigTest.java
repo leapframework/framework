@@ -42,14 +42,14 @@ public class DefaultOAuth2ConfigTest extends WebTestBase {
         DefaultOAuth2Config config = (DefaultOAuth2Config)oc;
         config.setServerUrl("/");
         config.setAuthorizeUrl("@{~/oauth2/authorize}");
-        
+        config.setLogoutUrl("@{/}indirect/oauth2/authorize");
         config.onServerInfoResolved(app,serverInfo);
         
         assertEquals("https://127.0.0.1:8080/oauth2/authorize",config.getAuthorizeUrl());
         assertEquals("https://127.0.0.1:8080/oauth2/token",config.getTokenUrl());
         assertEquals("https://127.0.0.1:8080/oauth2/tokeninfo",config.getTokenInfoUrl());
         assertEquals("https://127.0.0.1:8080/oauth2/publickey",config.getPublicKeyUrl());
-        assertEquals("https://127.0.0.1:8080/oauth2/logout",config.getLogoutUrl());
+        assertEquals("https://127.0.0.1:8080/indirect/oauth2/authorize",config.getLogoutUrl());
     }
         
 }
