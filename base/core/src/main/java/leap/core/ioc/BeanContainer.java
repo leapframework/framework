@@ -266,8 +266,6 @@ public class BeanContainer implements BeanFactory {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-
-
 		this.initNonLazyBeans();
 
         this.containerInited = true;

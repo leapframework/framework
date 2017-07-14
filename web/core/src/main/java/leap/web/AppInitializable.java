@@ -17,6 +17,8 @@ package leap.web;
 
 public interface AppInitializable {
 
-    void postAppInit(App app) throws Throwable;
+    default void postAppInit(App app) throws Throwable {
+
+    }
     
 }
