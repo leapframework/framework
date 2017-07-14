@@ -43,7 +43,7 @@ public class OpenIDLoginTest extends OAuth2TestBase {
         
         assertEquals(Global.TEST_CLIENT_ID, claims.get("aud"));
         assertEquals(USER_ADMIN, claims.get("name"));
-        assertEquals(USER_ADMIN, claims.get("login_name"));
+        assertEquals(USER_ADMIN, claims.get("username"));
     }
     
     @Test
