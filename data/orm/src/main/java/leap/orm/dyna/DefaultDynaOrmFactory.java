@@ -21,8 +21,10 @@ import leap.core.BeanFactory;
 import leap.core.annotation.Inject;
 import leap.db.Db;
 import leap.db.DbFactory;
+import leap.lang.Strings;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmConfig;
+import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.OrmRegistry;
 import leap.orm.command.CommandFactory;
@@ -39,6 +41,7 @@ import leap.orm.query.QueryFactory;
 import leap.orm.reader.EntityReader;
 import leap.orm.reader.RowReader;
 import leap.orm.sql.SqlFactory;
+import leap.orm.sql.SqlMetadata;
 
 import javax.sql.DataSource;
 
@@ -46,8 +49,8 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
     protected @Inject BeanFactory        bf;
     protected @Inject AppContext         appContext;
-    protected @Inject OrmRegistry        registry;
     protected @Inject OrmConfig          config;
+    protected @Inject OrmRegistry        registry;
     protected @Inject OrmMetadataManager omm;
     protected @Inject MappingStrategy    mappingStrategy;
     protected @Inject NamingStrategy     namingStrategy;
@@ -60,9 +63,14 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
     protected @Inject EntityEventHandler eventHandler;
 
     @Override
+    public DynaOrmContext createDynaContext(DataSource ds) {
+        return createDynaContext(UNNAMED, ds);
+    }
+
+    @Override
     public DynaOrmContext createDynaContext(String name, DataSource ds) {
-        if(null != registry.findContext(name)) {
-            throw new ObjectExistsException("Orm context '" + name + "' already exists!");
+        if(Strings.isEmpty(name)) {
+            name = UNNAMED;
         }
 
         final Db          db   = DbFactory.createInstance(ds);
@@ -89,6 +97,21 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
         Dmo dmo = bf.inject(new DefaultDmo(context));
         context.setDmo(dmo);
 
+        return context;
+    }
+
+    @Override
+    public DynaOrmContext createDynaContext(String name, DataSource ds, boolean register) throws ObjectExistsException {
+        if(!register) {
+            return createDynaContext(name, ds);
+        }
+
+        if(registry.findContext(name) != null) {
+            throw new ObjectExistsException("The context '" + name + "' already exists in registry!");
+        }
+
+        DynaOrmContext context = createDynaContext(name, ds);
+
         registry.registerContext(context);
 
         return context;
@@ -96,7 +119,10 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
     @Override
     public void destroyDynaContext(DynaOrmContext context) {
-        registry.removeContext(context.getName());
+        OrmContext registered = registry.findContext(context.getName());
+        if(registered == context) {
+            registry.removeContext(context.getName());
+        }
     }
 
 }

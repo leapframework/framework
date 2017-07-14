@@ -89,7 +89,7 @@ public class HomeController {
 
     protected void createOrmContext() {
         //create orm context
-        ormContext = dyf.createDynaContext("test", dataSource);
+        ormContext = dyf.createDynaContext("test", dataSource, true);
 
         //create entities.
         createEntities();
