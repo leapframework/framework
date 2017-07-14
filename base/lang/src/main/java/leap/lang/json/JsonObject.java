@@ -269,6 +269,13 @@ public class JsonObject implements JsonValue {
     	return null == d ? defaultValue : d;
     }
 
+    /**
+     * Decodes this json object to a bean.
+     */
+    public <T> T decode(Class<T> type) {
+       return Converts.convert(map, type);
+    }
+
 	@Override
     public String toString() {
 		return map.toString();
