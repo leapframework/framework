@@ -75,7 +75,7 @@ public class DynaOrm {
 
     protected void createTestOrmContext() {
         //create orm context
-        testOrmContext = dyf.createDynaContext(NAME,testDataSource);
+        testOrmContext = dyf.createDynaContext(NAME,testDataSource, true);
 
         //create entities.
         createEntities();

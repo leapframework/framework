@@ -16,10 +16,45 @@
 
 package leap.lang;
 
+import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
+
 public class Threads {
 
     public static void sleep(long ms) {
         Try.throwUnchecked(() -> Thread.sleep(ms));
+    }
+
+    public static <T> T waitAndGet(Supplier<T> func) throws TimeoutException {
+        return waitAndGet(func, 1000L);
+    }
+
+    public static <T> T waitAndGet(Supplier<T> func, long maxWait) throws TimeoutException {
+        long timeout = maxWait;
+        final long start = System.currentTimeMillis();
+
+        do{
+            T item = func.get();
+            if(null != item) {
+                return item;
+            }
+
+            //decrease the timeout
+            timeout = maxWait - (System.currentTimeMillis() - start);
+            if(timeout <= 0L) {
+                //time out.
+                break;
+            }
+
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+
+            }
+
+        }while(timeout > 0);
+
+        throw new TimeoutException("timeout");
     }
 
     protected Threads() {

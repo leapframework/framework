@@ -27,15 +27,6 @@ public class DefaultDynaApi implements DynaApi {
     }
 
     @Override
-    public String getName() {
-        return config.getName();
-    }
-
-    @Override
-    public String getBasePath() {
-        return config.getBasePath();
-    }
-
     public ApiConfig getConfig() {
         return config;
     }

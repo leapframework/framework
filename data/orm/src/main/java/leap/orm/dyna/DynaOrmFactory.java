@@ -22,12 +22,27 @@ import javax.sql.DataSource;
 
 public interface DynaOrmFactory {
 
+    String UNNAMED = "unnamed";
+
     /**
-     * Creates a new {@link DynaOrmContext}.
+     * Creates a new unnamed {@link DynaOrmContext}.
      *
-     * @throws ObjectExistsException if the name already exists.
+     * <p/>
+     * The name of created {@link DynaOrmContext} is {@link #UNNAMED}.
      */
-    DynaOrmContext createDynaContext(String name, DataSource ds) throws ObjectExistsException;
+    DynaOrmContext createDynaContext(DataSource ds);
+
+    /**
+     * Creates a new named {@link DynaOrmContext}.
+     */
+    DynaOrmContext createDynaContext(String name, DataSource ds);
+
+    /**
+     * Creates a new named {@link DynaOrmContext} and register it to {@link leap.orm.OrmRegistry}.
+     *
+     * @throws ObjectExistsException if the name already exists in the {@link leap.orm.OrmRegistry}.
+     */
+    DynaOrmContext createDynaContext(String name, DataSource ds, boolean register) throws ObjectExistsException;
 
     /**
      * Destroy the context, clearing all resources.

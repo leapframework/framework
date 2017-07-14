@@ -37,10 +37,10 @@ import javax.sql.DataSource;
 
 public class DefaultOrmDynaContext implements DynaOrmContext {
 
-    protected final String      name;
     protected final Db          db;
     protected final OrmMetadata metadata;
 
+    protected String             name;
     protected AppContext         appContext;
     protected OrmConfig          config;
     protected Dao                dao;
