@@ -24,7 +24,10 @@ import leap.oauth2.server.OAuth2AuthzServerConfig;
 import leap.oauth2.server.authc.AuthzAuthentication;
 import leap.oauth2.server.authc.SimpleAuthzAuthentication;
 import leap.oauth2.server.client.AuthzClient;
+import leap.oauth2.server.client.AuthzClientAuthenticationContext;
+import leap.oauth2.server.client.AuthzClientCredentials;
 import leap.oauth2.server.client.AuthzClientManager;
+import leap.oauth2.server.client.DefaultAuthzClientAuthenticationContext;
 import leap.oauth2.server.token.AuthzAccessToken;
 import leap.oauth2.server.token.AuthzRefreshToken;
 import leap.oauth2.server.token.AuthzTokenManager;
@@ -42,6 +45,23 @@ import static leap.oauth2.server.Oauth2MessageKey.*;
 
 /**
  * grant_type=refresh_token
+ * 
+ * The authorization server MUST:
+ * <ul>
+ *     <li>
+ *         require client authentication for confidential clients or for any client that was issued client 
+ *         credentials (or with other authentication requirements)
+ *     </li>
+ *     <li>
+ *         authenticate the client if client authentication is included and ensure that the refresh token was
+ *         issued to the authenticated client.
+ *     </li>
+ *     <li>
+ *         validate the refresh token
+ *     </li>
+ * </ul>
+ * 
+ * @see <a href="https://tools.ietf.org/html/rfc6749#page-47">OAuth2 page 47</a>
  */
 public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler implements GrantTypeHandler {
 	
@@ -68,7 +88,6 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 					getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid refresh token"),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
 			return;
 		}
-		
 		//Check expired?
 		if(token.isExpired()) {
 			tokenManager.removeRefreshToken(token);
@@ -96,8 +115,19 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 		//Authenticate client.
 		AuthzClient client = null;
 		if(!Strings.isEmpty(token.getClientId())) {
-			client = clientManager.loadClientById(token.getClientId());
-			if(null == client || !client.isEnabled()) {
+			// basic authenticate client
+			client = authcClient(request,response,params);
+			if(null == client){
+				return;
+			}
+			String clientId =client.getId();
+			if(!Strings.equals(token.getClientId(),client.getId())){
+				handleError(request,response,params,
+						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"this refresh token is not for client "+clientId),ERROR_INVALID_GRANT_INVALID_REFRESH_TOKEN,refreshToken));
+				return;
+			}
+			
+			if(!client.isEnabled()) {
 				tokenManager.removeRefreshToken(token);
 				handleError(request,response,params,
 						getOauth2Error(key -> OAuth2Errors.invalidGrantError(request,key,"invalid client"),INVALID_REQUEST_INVALID_CLIENT,token.getClientId()));
@@ -114,4 +144,22 @@ public class RefreshTokenGrantTypeHandler extends AbstractGrantTypeHandler imple
 		callback.accept(tokenManager.createAccessToken(oauthAuthc, token));
 	}
 
+	protected AuthzClient authcClient(Request request, Response response, OAuth2Params params){
+		AuthzClientCredentials credentials = extractClientCredentials(request,response,params);
+		if(null == credentials){
+			return null;
+		}
+		AuthzClient client;
+		try {
+			client = validateClientSecret(request,response,credentials);
+			if(null == client){
+				return null;
+			}
+		} catch (Throwable throwable) {
+			OAuth2Errors.serverError(request,response,null, throwable.getMessage());
+			return null;
+		}
+		return client;
+	}
+	
 }

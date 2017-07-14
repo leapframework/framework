@@ -18,6 +18,8 @@
 package tests.as;
 
 import app.Global;
+import leap.lang.http.Headers;
+import leap.lang.net.Urls;
 import org.junit.Test;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
@@ -38,6 +40,13 @@ public class RefreshTokenTest extends OAuth2TestBase {
 		token = obtainAccessTokenByClient(TEST_CLIENT_ID,TEST_CLIENT_SECRET);
 		token = obtainAccessTokenByRefreshToken(token.refreshToken,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
 		assertNotEmpty(token.accessToken);
+		
+		// refresh token not issue to client
+		token = obtainAccessTokenByClient(TEST_CLIENT_ID,TEST_CLIENT_SECRET);
+		String tokenUri = serverContextPath + TOKEN_ENDPOINT +
+				"?grant_type=refresh_token&refresh_token=" + Urls.encode(token.refreshToken);
+		usePost(tokenUri).addHeader(Headers.AUTHORIZATION,encodeToBasicAuthcHeader("app1","app1_secret"))
+				.send().assert401();
     }
     
 	@Test
