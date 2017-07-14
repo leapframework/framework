@@ -18,7 +18,9 @@ package leap.oauth2.webapp.token.jwt;
 
 import leap.core.AppConfigException;
 import leap.core.annotation.Inject;
+import leap.core.security.token.TokenExpiredException;
 import leap.core.security.token.TokenVerifyException;
+import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.RsaVerifier;
 import leap.lang.Strings;
@@ -84,31 +86,20 @@ public class JwtTokenVerifier implements TokenVerifier {
 
         SimpleTokenInfo tokenInfo = new SimpleTokenInfo();
 
-        String userId   = (String)jwtDetail.remove("user_id");
-        String username = Objects.toString(jwtDetail.remove("username"));
-
+        String userId   = (String)jwtDetail.remove(JWT.CLAIM_SUBJECT);
         tokenInfo.setUserId(userId);
         tokenInfo.setScope((String)jwtDetail.remove("scope"));
-        tokenInfo.setClientId((String)jwtDetail.remove("client_id"));
+        tokenInfo.setClientId((String)jwtDetail.remove(JWT.CLAIM_AUDIENCE));
 
         //todo: userinfo
 
-        //TODO How to ensure is expired?
         tokenInfo.setCreated(System.currentTimeMillis());
-        try {
-            Object expiresIn = jwtDetail.get("expires_in");
-            if(expiresIn == null){
-                //todo:
-                throw new IllegalStateException("'expires_in' not found in jwt token");
-            }else{
-                int second = expiresIn instanceof Integer?(Integer)expiresIn:Integer.parseInt(expiresIn.toString());
-                tokenInfo.setExpiresIn(second * 1000);
-            }
-        } catch (NumberFormatException e) {
-            //todo :
-            throw new IllegalStateException("Invalid expires_in : " + e.getMessage(), e);
+        Object exp = jwtDetail.get(JWT.CLAIM_EXPIRATION_TIME);
+        if (null != exp && exp instanceof Number) {
+            long expirationTimeSecond = ((Number) exp).longValue();
+            long nowTimeInSecond = System.currentTimeMillis()/1000L;
+            tokenInfo.setExpiresIn((int)(expirationTimeSecond-nowTimeInSecond));
         }
-
         return tokenInfo;
     }
 

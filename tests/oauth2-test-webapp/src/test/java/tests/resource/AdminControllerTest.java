@@ -19,13 +19,12 @@ package tests.resource;
 
 import leap.core.security.SEC;
 import leap.lang.Assert;
-import tested.models.User;
 import org.junit.Test;
+import tested.models.User;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
 
 public class AdminControllerTest extends OAuth2TestBase {
-
     @Test
     public void testClientOnlyAccessToken() {
         TokenResponse token = obtainAccessTokenByClient("client1", "client1_secret");
