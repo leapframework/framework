@@ -39,7 +39,7 @@ public abstract class OpenIdTestBase extends OAuth2TestBase {
         info.clientId  = (String)claims.remove("aud");
         info.userId    = (String)claims.remove("sub");
         info.userName  = (String)claims.remove("name");
-        info.loginName = (String)claims.remove("login_name");
+        info.loginName = (String)claims.remove("username");
         
         return info;
     }
