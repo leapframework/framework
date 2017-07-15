@@ -168,13 +168,23 @@ public class DefaultRoutes implements Routes {
 			}
 		}
 
-		if(matchedRoutes.isEmpty()) return null;
+		if(matchedRoutes.isEmpty()) {
+            return null;
+        }
 
-		if(matchedRoutes.size() == 1) return matchedRoutes.get(0);
+        Route route = null;
 
-		Route target = rematch(matchedRoutes);
+		if(matchedRoutes.size() == 1) {
+            route = matchedRoutes.get(0);
+        }else{
+            route = rematch(matchedRoutes);
+        }
 
-		return target;
+        if(route instanceof SubRoutes) {
+            route = ((SubRoutes) route).match(method, path, inParameters, outVariables);
+        }
+
+		return route;
     }
 
 	private Route rematch(List<Route> matchedRoutes) {
@@ -189,17 +199,6 @@ public class DefaultRoutes implements Routes {
 			}
 			return re;
 		}).get();
-	}
-
-	@Override
-	public Route[] getRoutesByController(Object controller) {
-		List<Route> routes = new LinkedList<>();
-		for(Route route : this){
-			if(route.getController() == controller){
-				routes.add(route);
-			}
-		}
-		return routes.toArray(new Route[]{});
 	}
 
 	protected boolean matchRequiredParameters(Map<String, String> requiredParameters, Map<String, Object> inParameters) {
