@@ -68,10 +68,10 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         Set<EntityMapping> ormModels = computeOrmModels(c, om);
         Set<RestdModel> restdModels = createRestdModels(api, c, oc, ormModels);
 
-        SimpleRestdContext context = new SimpleRestdContext();
-        context.setConfig(c);
+        SimpleRestdContext context = new SimpleRestdContext(api.config(), c);
         context.setDao(dao);
         context.setModels(Collections.unmodifiableSet(restdModels));
+        context.setRoutes(null == api.config().getDynamicRoutes() ? app.routes() : api.config().getDynamicRoutes());
 
         api.setExtension(RestdContext.class, context);
 
@@ -100,23 +100,23 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     protected void processRestdApi(ApiConfigurator api, RestdContext context) {
 
         for(RestdProcessor p : processors) {
-            p.preProcessApi(app, api, context);
+            p.preProcessApi(api, context);
         }
 
         for(RestdModel model : context.getModels()) {
             for(RestdProcessor p : processors) {
-                p.preProcessModel(app, api, context, model);
+                p.preProcessModel(api, context, model);
             }
         }
 
         for(RestdModel model : context.getModels()) {
             for(RestdProcessor p : processors) {
-                p.postProcessModel(app, api, context, model);
+                p.postProcessModel(api, context, model);
             }
         }
 
         for(RestdProcessor p : processors) {
-            p.postProcessApi(app, api, context);
+            p.postProcessApi(api, context);
         }
 
     }

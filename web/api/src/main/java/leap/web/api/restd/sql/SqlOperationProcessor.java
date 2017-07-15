@@ -44,26 +44,26 @@ import java.util.Map;
 public class SqlOperationProcessor extends CrudOperation implements RestdProcessor {
 
     @Override
-    public void preProcessApi(App app, ApiConfigurator api, RestdContext context) {
+    public void preProcessApi(ApiConfigurator api, RestdContext context) {
         context.getConfig().getSqlOperations().values().forEach((op) -> {
             String path = fullPath(api, "/" + Strings.lowerUnderscore(op.getName()));
-            processSqlOperation(app, api, context, op, null, path);
+            processSqlOperation(api, context, op, null, path);
         });
     }
 
     @Override
-    public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
         final RestdConfig.Model mc = context.getConfig().getModel(model.getName());
 
         if(null != mc) {
             mc.getSqlOperations().values().forEach(op -> {
                 String path = fullModelPath(api, model, "/" + Strings.lowerUnderscore(op.getName()));
-                processSqlOperation(app, api, context, op, model, path);
+                processSqlOperation(api, context, op, model, path);
             });
         }
     }
 
-    protected void processSqlOperation(App app, ApiConfigurator api, RestdContext ctx, RestdConfig.SqlOperation op, RestdModel model, String path) {
+    protected void processSqlOperation(ApiConfigurator api, RestdContext ctx, RestdConfig.SqlOperation op, RestdModel model, String path) {
         OrmMetadata om = ctx.getDao().getOrmContext().getMetadata();
 
         SqlCommand sc = om.tryGetSqlCommand(op.getSqlKey());
@@ -92,7 +92,7 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
             verb = "DELETE";
         }
 
-        if (isOperationExists(app, verb, path)) {
+        if (isOperationExists(ctx, verb, path)) {
             throw new ApiConfigException("Sql operation '" + op.getName() + "' with path '" + path + "' already exists!");
         }
 
@@ -121,7 +121,7 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
         route.setAction(action.build());
 
         configure(ctx, model, route);
-        api.addRoute(rm.loadRoute(app.routes(), route));
+        api.addRoute(rm.loadRoute(ctx.getRoutes(), route));
     }
 
     protected void addQueryResponse(RestdContext ctx, SqlCommand sc, FuncActionBuilder action) {

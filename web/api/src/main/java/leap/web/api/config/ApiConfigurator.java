@@ -26,6 +26,7 @@ import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.route.Route;
+import leap.web.route.Routes;
 
 
 public interface ApiConfigurator extends Extensible {
@@ -198,6 +199,11 @@ public interface ApiConfigurator extends Extensible {
      * Sets the {@link RestdConfig}.
      */
     ApiConfigurator setRestdConfig(RestdConfig c);
+
+    /**
+     * Sets the {@link Routes} for storing dynamic created routes.
+     */
+    ApiConfigurator setDynamicRoutes(Routes routes);
 
     /**
      * Enables restd.

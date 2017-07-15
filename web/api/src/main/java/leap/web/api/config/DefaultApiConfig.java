@@ -22,6 +22,7 @@ import leap.web.api.config.model.*;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
 import leap.web.route.Route;
+import leap.web.route.Routes;
 
 import java.util.*;
 
@@ -73,6 +74,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
     protected RestdConfig     restdConfig;
+    protected Routes          dynamicRoutes;
+
 	
 	public DefaultApiConfig(String name, String basePath, Object source) {
 		Args.notEmpty(name, "name");
@@ -439,6 +442,16 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator setRestdConfig(RestdConfig c) {
         this.restdConfig = c;
+        return this;
+    }
+
+    @Override
+    public Routes getDynamicRoutes() {
+        return dynamicRoutes;
+    }
+
+    public ApiConfigurator setDynamicRoutes(Routes dynamicRoutes) {
+        this.dynamicRoutes = dynamicRoutes;
         return this;
     }
 

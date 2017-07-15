@@ -42,8 +42,8 @@ public abstract class RestdOperationBase {
     protected @Inject ValidationManager validationManager;
     protected @Inject ApiFailureHandler failureHandler;
 
-    protected boolean isOperationExists(App app, String verb, String path) {
-        for(Route route : app.routes()) {
+    protected boolean isOperationExists(RestdContext context, String verb, String path) {
+        for(Route route : context.getRoutes()) {
             if(verb.equalsIgnoreCase(route.getMethod()) &&
                     route.getPathTemplate().getTemplate().equals(path)) {
                 return true;

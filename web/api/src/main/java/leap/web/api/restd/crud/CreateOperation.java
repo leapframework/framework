@@ -40,14 +40,14 @@ import java.util.Map;
 public class CreateOperation extends CrudOperation implements RestdProcessor {
 
     @Override
-    public void preProcessModel(App app, ApiConfigurator api, RestdContext context, RestdModel model) {
+    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowCreateModel(model.getName())) {
             return;
         }
 
         String verb = "POST";
         String path = fullModelPath(api, model);
-        if(isOperationExists(app, verb, path)) {
+        if(isOperationExists(context, verb, path)) {
             return;
         }
 
@@ -64,7 +64,7 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         route.setAction(action.build());
 
         configure(context, model, route);
-        api.addRoute(rm.loadRoute(app.routes(), route));
+        api.addRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
     protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
