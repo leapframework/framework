@@ -42,8 +42,17 @@ public class DefaultBeanValidator implements BeanValidator {
     };
 
 	protected @Inject @M ValidationManager validationManager;
-	
-	@Override
+
+    @Override
+    public void validate(Object bean) throws ValidationException {
+        Validation validation = validationManager.createValidation();
+
+        if(!validate(bean, validationManager.createValidation(), 1)) {
+            throw new ValidationException(validation.errors());
+        }
+    }
+
+    @Override
 	public boolean validate(Object bean, Validation validation) {
 		return validate(bean, validation, 0);
 	}
@@ -53,17 +62,17 @@ public class DefaultBeanValidator implements BeanValidator {
 		if(null != bean){
 			BeanType bt = BeanType.of(bean.getClass());
 
-			ValidatedProperty[] validateProperties = 
+			ValidatedProperty[] validateProperties =
 					(ValidatedProperty[])bt.getAttribute(BEAN_VALIDATION_INFO_KEY);
-			
+
 			if(null == validateProperties){
 				validateProperties = resolveValidateProperties(bt);
 				bt.setAttribute(BEAN_VALIDATION_INFO_KEY, validateProperties);
 			}
-			
+
 			return validate(bean, validation, maxErrors, bt, validateProperties);
-		}	  
-		
+		}
+
 		return true;
     }
 
