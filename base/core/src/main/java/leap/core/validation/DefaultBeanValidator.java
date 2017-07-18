@@ -19,18 +19,34 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.validators.RequiredValidator;
 import leap.lang.Strings;
+import leap.lang.TypeInfo;
+import leap.lang.Types;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 public class DefaultBeanValidator implements BeanValidator {
 	
 	private static final String BEAN_VALIDATION_INFO_KEY = DefaultBeanValidator.class.getName() + "_VALIDATE";
 
     protected static final Validator BEAN_VALIDATOR = new AbstractValidator<Object>() {
+        @Override
+        protected boolean doValidate(Object value) {
+            return false;
+        }
+
+        @Override
+        public String getErrorCode() {
+            return null;
+        }
+    };
+
+    protected static final Validator MAP_VALIDATOR = new AbstractValidator<Object>() {
         @Override
         protected boolean doValidate(Object value) {
             return false;
@@ -61,6 +77,14 @@ public class DefaultBeanValidator implements BeanValidator {
     @Override
     public boolean validate(String name, Object bean, Validation validation, int maxErrors) {
         if(null != bean){
+            if(bean instanceof Map) {
+                return validateMap(name, (Map)bean, validation, maxErrors);
+            }
+
+            if(bean instanceof Iterable) {
+                return validateCollection(name, (Iterable)bean, validation, maxErrors);
+            }
+
             BeanType bt = BeanType.of(bean.getClass());
 
             ValidatedProperty[] validateProperties =
@@ -72,6 +96,63 @@ public class DefaultBeanValidator implements BeanValidator {
             }
 
             return validate(name, bean, validation, maxErrors, bt, validateProperties);
+        }
+
+        return true;
+    }
+
+    protected boolean validateMap(String name, Map map, Validation validation, int maxErrors) {
+        TypeInfo typeInfo = null;
+
+        for(Object item : map.entrySet()) {
+            Map.Entry entry = (Map.Entry)item;
+
+            Object value = entry.getValue();
+            if(null == value) {
+                continue;
+            }
+
+            if(null == typeInfo) {
+                typeInfo = Types.getTypeInfo(value.getClass());
+            }
+
+            if(typeInfo.isComplexType() || typeInfo.isCollectionType()) {
+                String fullName = Strings.nullToEmpty(name) + "['" + entry.getKey().toString() + "']";
+                if(!validate(fullName, value, validation, maxErrors) ){
+                    return false;
+                }
+            } else {
+                return true;
+            }
+        }
+
+        return true;
+    }
+
+    protected boolean validateCollection(String name, Iterable iterable, Validation validation, int maxErrors) {
+        int i=0;
+
+        TypeInfo typeInfo = null;
+        for(Object value : iterable) {
+
+            if(value == null) {
+                continue;
+            }
+
+            if(typeInfo == null) {
+                typeInfo = Types.getTypeInfo(value.getClass());
+            }
+
+            if(typeInfo.isComplexType() || typeInfo.isCollectionType()) {
+                String fullName = Strings.nullToEmpty(name) + "[" + String.valueOf(i) + "]";
+                if(!validate(fullName, value, validation, maxErrors) ){
+                    return false;
+                }
+            } else {
+                return true;
+            }
+
+            i++;
         }
 
         return true;
@@ -156,7 +237,7 @@ public class DefaultBeanValidator implements BeanValidator {
 				}
 			}
 
-            if(bp.isComplexType()) {
+            if(bp.isComplexType() || bp.isCollectionType()) {
                 if(null != valid) {
                     if(valid.required()) {
                         validators.add(RequiredValidator.INSTANCE);
