@@ -162,7 +162,7 @@ public class DefaultValidationManager implements ValidationManager,AppContextAwa
 	
 	@Override
     public Validation createValidation() {
-	    return new DefaultValidation(this, new SimpleErrors(RequestContext.current().getLocale()));
+	    return new DefaultValidation(this, new SimpleErrors(RequestContext.locale()));
     }
 
 	@Override

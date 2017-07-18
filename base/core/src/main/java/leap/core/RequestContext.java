@@ -18,6 +18,7 @@ package leap.core;
 import java.util.Locale;
 
 import leap.core.i18n.MessageSource;
+import leap.lang.Locales;
 import leap.lang.accessor.AttributeAccessor;
 import leap.lang.exception.ObjectNotFoundException;
 
@@ -54,12 +55,17 @@ public abstract class RequestContext implements AttributeAccessor {
 		return current;
 	}
 	
-	/**
-	 * Returns current request's locale.
-	 */
-	public static Locale locale(){
-		return current().getLocale();
-	}
+    /**
+     * Returns current request's locale or use {@link Locales#DEFAULT_LOCALE} if no current locale.
+     */
+    public static Locale locale() {
+        RequestContext rc = tryGetCurrent();
+        if(null != rc && null != rc.getLocale()) {
+            return rc.getLocale();
+        }else{
+            return Locales.DEFAULT_LOCALE;
+        }
+    }
 	
 	protected static void setStandalone(RequestContext standalone){
 		RequestContext.standalone = standalone;
