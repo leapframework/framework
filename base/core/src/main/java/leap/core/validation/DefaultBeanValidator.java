@@ -18,6 +18,7 @@ package leap.core.validation;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.core.validation.validators.RequiredValidator;
+import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 
@@ -44,39 +45,39 @@ public class DefaultBeanValidator implements BeanValidator {
 	protected @Inject @M ValidationManager validationManager;
 
     @Override
-    public void validate(Object bean) throws ValidationException {
+    public void validate(String name, Object bean) throws ValidationException {
         Validation validation = validationManager.createValidation();
 
-        if(!validate(bean, validationManager.createValidation(), 1)) {
+        if(!validate(name, bean, validation, 1)) {
             throw new ValidationException(validation.errors());
         }
     }
 
     @Override
-	public boolean validate(Object bean, Validation validation) {
-		return validate(bean, validation, 0);
+	public boolean validate(String name, Object bean, Validation validation) {
+		return validate(name, bean, validation, 0);
 	}
 	
-	@Override
-    public boolean validate(Object bean, Validation validation, int maxErrors) {
-		if(null != bean){
-			BeanType bt = BeanType.of(bean.getClass());
+    @Override
+    public boolean validate(String name, Object bean, Validation validation, int maxErrors) {
+        if(null != bean){
+            BeanType bt = BeanType.of(bean.getClass());
 
-			ValidatedProperty[] validateProperties =
-					(ValidatedProperty[])bt.getAttribute(BEAN_VALIDATION_INFO_KEY);
+            ValidatedProperty[] validateProperties =
+                    (ValidatedProperty[])bt.getAttribute(BEAN_VALIDATION_INFO_KEY);
 
-			if(null == validateProperties){
-				validateProperties = resolveValidateProperties(bt);
-				bt.setAttribute(BEAN_VALIDATION_INFO_KEY, validateProperties);
-			}
+            if(null == validateProperties){
+                validateProperties = resolveValidateProperties(bt);
+                bt.setAttribute(BEAN_VALIDATION_INFO_KEY, validateProperties);
+            }
 
-			return validate(bean, validation, maxErrors, bt, validateProperties);
-		}
+            return validate(name, bean, validation, maxErrors, bt, validateProperties);
+        }
 
-		return true;
+        return true;
     }
 
-	protected boolean validate(Object bean,Validation validation, int maxErrors, BeanType bt,ValidatedProperty[] vps) {
+	protected boolean validate(String name, Object bean, Validation validation, int maxErrors, BeanType bt, ValidatedProperty[] vps) {
 		//Validate properties
 		
 		boolean pass = true;
@@ -84,7 +85,7 @@ public class DefaultBeanValidator implements BeanValidator {
 		for(int i=0;i<vps.length;i++){
 			ValidatedProperty vp = vps[i];
 			
-			if(!validateProperty(bean, validation, maxErrors, vp)){
+			if(!validateProperty(name, bean, validation, maxErrors, vp)){
 				pass = false;
 				
 				if(validation.maxErrorsReached(maxErrors)){
@@ -100,13 +101,14 @@ public class DefaultBeanValidator implements BeanValidator {
 		return pass;
 	}
 	
-	protected boolean validateProperty(Object bean,Validation validation,int maxErrors, ValidatedProperty vp){
+	protected boolean validateProperty(String name, Object bean, Validation validation, int maxErrors, ValidatedProperty vp){
 		BeanProperty p = vp.property;
 		Object v = p.getValue(bean);
 		
 		boolean pass = true;
-
         boolean validateBean = false;
+
+        String fullPropertyName = (Strings.isEmpty(name) ? "" : name + ".") + p.getName();
 
 		//Validated by validators
 		for(int i=0;i<vp.validators.length;i++){
@@ -116,7 +118,8 @@ public class DefaultBeanValidator implements BeanValidator {
                 validateBean = true;
                 continue;
             }else{
-                if(!validation.stateValidate(p.getName(), v, validator)){
+
+                if(!validation.stateValidate(fullPropertyName, v, validator)){
                     pass = false;
 
                     if(validation.maxErrorsReached(maxErrors)){
@@ -127,7 +130,7 @@ public class DefaultBeanValidator implements BeanValidator {
 		}
 
         if(validateBean && pass && null != v) {
-            return validate(v, validation);
+            return validate(fullPropertyName, v, validation, maxErrors);
         }
 
 		return pass;
