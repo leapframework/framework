@@ -17,8 +17,46 @@ package leap.core.validation;
 
 public interface BeanValidator {
 
-	boolean validate(Object bean, Validation validation);
-	
-	boolean validate(Object bean, Validation validation, int maxErrors);
+    /**
+     * Validates the bean nested.
+     *
+     * @throws ValidationException if validate failed.
+     */
+    default void validate(Object bean) throws ValidationException {
+        validate(null, bean);
+    }
+
+    /**
+     * Validates the bean nested.
+     *
+     * @param name the name of bean.
+     *
+     * @throws ValidationException if validate failed.
+     */
+    void validate(String name, Object bean) throws ValidationException;
+
+    /**
+     * Validates the bean nested. Returns <code>false</code> if failed.
+     */
+	default boolean validate(Object bean, Validation validation) {
+        return validate(null, bean, validation);
+    }
+
+    /**
+     * Validates the bean nested. Returns <code>false</code> if failed.
+     */
+    boolean validate(String name, Object bean, Validation validation);
+
+    /**
+     * Validates the bean nested. Returns <code>false</code> if failed.
+     */
+	default boolean validate(Object bean, Validation validation, int maxErrors) {
+        return validate(null, bean, validation, maxErrors);
+    }
+
+    /**
+     * Validates the bean nested. Returns <code>false</code> if failed.
+     */
+    boolean validate(String name, Object bean, Validation validation, int maxErrors);
 	
 }

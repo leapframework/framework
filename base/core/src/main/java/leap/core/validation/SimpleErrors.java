@@ -30,12 +30,12 @@ public class SimpleErrors extends AbstractErrors implements Errors {
 	
 	public SimpleErrors(){
 		super();
-		this.list = new ArrayList<NamedError>();
+		this.list = new ArrayList<>();
 	}
 
 	public SimpleErrors(Locale locale) {
 	    super(locale);
-	    this.list = new ArrayList<NamedError>();
+	    this.list = new ArrayList<>();
     }
 	
 	@Override
@@ -56,7 +56,15 @@ public class SimpleErrors extends AbstractErrors implements Errors {
 	@Override
     public String getMessage() {
 		NamedError e = firstOrNull();
-	    return null == e ? null : e.getMessage();
+        if(null == e) {
+            return "";
+        }else{
+            if(Strings.isEmpty(e.getName())) {
+                return e.getMessage();
+            }else{
+                return "'" + e.getName() + "' " + e.getMessage();
+            }
+        }
     }
 
 	@Override

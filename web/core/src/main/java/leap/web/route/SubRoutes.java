@@ -22,6 +22,7 @@ import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
 
+import java.util.Collections;
 import java.util.Map;
 
 public interface SubRoutes extends Route {
@@ -93,7 +94,7 @@ public interface SubRoutes extends Route {
 
     @Override
     default Map<String, String> getRequiredParameters() {
-        return null;
+        return Collections.emptyMap();
     }
 
     @Override
