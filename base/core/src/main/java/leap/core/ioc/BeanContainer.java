@@ -266,8 +266,6 @@ public class BeanContainer implements BeanFactory {
             ((AppConfigBase) config).setPropertyProvider(tryCreateBean(PropertyProvider.class));
         }
 
-		this.initNonLazyBeans();
-
         this.containerInited = true;
 
 		return this;
@@ -292,6 +290,7 @@ public class BeanContainer implements BeanFactory {
     	if(appInited){
     		throw new IllegalStateException("postInitialize already called");
     	}
+		this.initNonLazyBeans();
     	this.appInited = true;
     }
     
