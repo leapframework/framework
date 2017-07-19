@@ -55,6 +55,20 @@ public class SwaggerJsonTest extends WebTestBase {
     }
 
     @Test
+    public void testCompatibleFormat() throws Exception {
+
+        try(Reader reader = Resources.getResource("classpath:/swagger/compatible.json").getInputStreamReader()) {
+            ApiMetadata m = specReader.read(reader).build();
+
+            StringBuilder out = new StringBuilder();
+            specWriter.write(m, out);
+            String json = out.toString();
+
+            assertNotContains(json, "vendorExtensions");
+        }
+    }
+
+    @Test
     public void testXSecuritySwaggerJson(){
         String swagger = get("/api/swagger.json").getContent();
         Map<String, Object> map = JSON.decodeMap(swagger);
