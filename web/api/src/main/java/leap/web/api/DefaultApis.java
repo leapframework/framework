@@ -203,6 +203,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     protected void doAdd(String name, ApiConfigurator api) {
+        api.setDynamicRoutes(app.routes());
 
         String key = name.toLowerCase();
         if(configurators.containsKey(key)) {

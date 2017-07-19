@@ -87,7 +87,7 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 	}
 	
 	protected String getActionDescription(Route route){
-		return route.getAction().toString();
+		return route instanceof SubRoutes ? "(SubRoutes)" : route.getAction().toString();
 	}
 	
 	protected void printHeader(PrintWriter writer,PrintFormat methodFormat,PrintFormat pathFormat,PrintFormat actionFormat){

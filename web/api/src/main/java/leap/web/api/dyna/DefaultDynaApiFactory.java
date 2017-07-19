@@ -43,12 +43,13 @@ public class DefaultDynaApiFactory implements DynaApiFactory {
 
     @Override
     public boolean destroyDynaApi(DynaApi api) {
-        ApiConfig config = ((DefaultDynaApi)api).getConfig();
+        ApiConfig config = api.getConfig();
 
         if(log.isDebugEnabled()) {
             log.debug("Routes before destroying api '{}': \n\n{}\n", api.getName(), routesPrinter.print(app.routes()));
         }
 
+        //todo: removes the routes correctly.
         for(Route route : config.getRoutes()) {
             app.routes().remove(route);
         }
