@@ -44,6 +44,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
     public static final String AUTHZ_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_AUTHZ_ENDPOINT_PATH;
     public static final String TOKEN_ENDPOINT     = OAuth2AuthzServerConfigurator.DEFAULT_TOKEN_ENDPOINT_PATH;
     public static final String TOKENINFO_ENDPOINT = OAuth2AuthzServerConfigurator.DEFAULT_TOKENINFO_ENDPOINT_PATH;
+    public static final String SESSION_REFRESH_ENDPOINT = OAuth2AuthzServerConfigurator.DEFAULT_SESSION_REFRESH_ENDPOINT_PATH;
     public static final String LOGOUT_ENDPOINT    = OAuth2AuthzServerConfigurator.DEFAULT_LOGOUT_ENDPOINT_PATH;
 
     public static final String PUBLIC_KEY         =

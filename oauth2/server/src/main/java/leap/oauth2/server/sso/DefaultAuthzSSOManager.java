@@ -27,6 +27,7 @@ import leap.core.annotation.Inject;
 import leap.core.ioc.PostCreateBean;
 import leap.core.security.Authentication;
 import leap.core.security.UserPrincipal;
+import leap.core.security.token.jwt.JWT;
 import leap.core.security.token.jwt.JwtVerifier;
 import leap.core.security.token.jwt.MacSigner;
 import leap.lang.Arrays2;
@@ -145,7 +146,7 @@ public class DefaultAuthzSSOManager implements AuthzSSOManager,PostCreateBean {
         String token = authc.getAuthentication().getToken();
         Map<String, Object> claims = verifier.verify(token);
         
-        session.setId((String) claims.get(JwtTokenAuthenticator.JWT_ID));
+        session.setId((String) claims.get(JWT.CLAIM_JWT_ID));
         session.setUserId(user.getIdAsString());
         session.setUsername(user.getLoginName());
         session.setToken(authc.getAuthentication().getToken());

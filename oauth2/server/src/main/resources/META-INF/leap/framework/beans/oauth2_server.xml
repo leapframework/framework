@@ -151,7 +151,11 @@
 
     <!-- sso -->
     <bean type="leap.oauth2.server.sso.AuthzSSOManager" class="leap.oauth2.server.sso.DefaultAuthzSSOManager" primary="true"/>
-
+    
+    <!-- session refresh endpoint -->
+    <bean name="sessionRefreshEndpoint" type="leap.web.Endpoint"
+          class="leap.oauth2.server.endpoint.SessionRefreshEndpoint"/>
+    
     <!-- userinfo endpoint: -->
     <bean name="userInfoEndpoint" type="leap.web.Endpoint"
           class="leap.oauth2.server.endpoint.UserInfoEndpoint"/>

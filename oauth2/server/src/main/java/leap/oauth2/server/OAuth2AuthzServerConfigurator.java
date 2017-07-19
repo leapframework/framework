@@ -25,12 +25,13 @@ import java.security.PublicKey;
  */
 public interface OAuth2AuthzServerConfigurator {
 
-    String DEFAULT_AUTHZ_ENDPOINT_PATH      = "/oauth2/authorize";
-    String DEFAULT_TOKEN_ENDPOINT_PATH      = "/oauth2/token";
-    String DEFAULT_TOKENINFO_ENDPOINT_PATH  = "/oauth2/tokeninfo";
-    String DEFAULT_USERINFO_ENDPOINT_PATH   = "/oauth2/userinfo";
-    String DEFAULT_LOGOUT_ENDPOINT_PATH     = "/oauth2/logout";
-    String DEFAULT_PUBLICKEY_ENDPOINT_PATH  = "/oauth2/publickey";
+    String DEFAULT_AUTHZ_ENDPOINT_PATH            = "/oauth2/authorize";
+    String DEFAULT_TOKEN_ENDPOINT_PATH            = "/oauth2/token";
+    String DEFAULT_TOKENINFO_ENDPOINT_PATH        = "/oauth2/tokeninfo";
+    String DEFAULT_SESSION_REFRESH_ENDPOINT_PATH  = "/oauth2/session_refresh";
+    String DEFAULT_USERINFO_ENDPOINT_PATH         = "/oauth2/userinfo";
+    String DEFAULT_LOGOUT_ENDPOINT_PATH           = "/oauth2/logout";
+    String DEFAULT_PUBLICKEY_ENDPOINT_PATH        = "/oauth2/publickey";
 
     String DEFAULT_ERROR_VIEW  = "/oauth2/error";
     String DEFAULT_LOGIN_VIEW  = "/oauth2/login";

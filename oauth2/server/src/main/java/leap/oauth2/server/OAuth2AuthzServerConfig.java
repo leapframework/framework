@@ -120,6 +120,11 @@ public interface OAuth2AuthzServerConfig {
      */
 	boolean isAuthorizationCodeEnabled();
 
+	/**
+	 * todo: doc
+	 */
+	boolean isSessionRefreshEnabled();
+	
     /**
      * Returns <code>true</code> if implicit flow enabled.
      *
@@ -152,6 +157,11 @@ public interface OAuth2AuthzServerConfig {
      */
 	String getTokenInfoEndpointPath();
 
+	/**
+	 * todo: doc
+	 */
+	String getSessionRefreshEndpointPath();
+	
     /**
      * Returns the path of logout endopint.
      *

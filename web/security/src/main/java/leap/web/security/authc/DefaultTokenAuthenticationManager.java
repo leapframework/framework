@@ -131,12 +131,11 @@ public class DefaultTokenAuthenticationManager extends CookieBasedAuthentication
         if(authc instanceof TokenAuthentication) {
             return;
         }
-
-		String token = tokenAuthenticator.generateAuthenticationToken(request, response, authc);
-
-		authc.setToken(token);
-
-		setCookie(request, response, token);
+		if(null == authc.getToken()){
+			String token = tokenAuthenticator.generateAuthenticationToken(request, response, authc);
+			authc.setToken(token);
+		}
+		setCookie(request, response, authc.getToken());
 	}
 
 	@Override

@@ -68,6 +68,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected boolean    passwordCredentialsEnabled      = true;
     protected boolean    loginTokenEnabled               = true;
     protected boolean    userInfoEnabled                 = true;
+    protected boolean    sessionRefreshEnabled           = true;
     protected boolean    authorizationCodeEnabled        = true;
     protected boolean    implicitGrantEnabled            = true;
     protected boolean    clientCredentialsEnabled        = true;
@@ -76,6 +77,7 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
     protected String     tokenEndpointPath               = DEFAULT_TOKEN_ENDPOINT_PATH;
     protected String     authzEndpointPath               = DEFAULT_AUTHZ_ENDPOINT_PATH;
     protected String     tokenInfoEndpointPath           = DEFAULT_TOKENINFO_ENDPOINT_PATH;
+    protected String     sessionRefreshEndpointPath      = DEFAULT_SESSION_REFRESH_ENDPOINT_PATH;
     protected String     userInfoEndpointPath            = DEFAULT_USERINFO_ENDPOINT_PATH;
     protected String     logoutEndpointPath              = DEFAULT_LOGOUT_ENDPOINT_PATH;
     protected String     publicKeyEndpointPath           = DEFAULT_PUBLICKEY_ENDPOINT_PATH;
@@ -290,6 +292,20 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         return jdbcDataSourceName;
     }
 
+    @Override
+    public boolean isSessionRefreshEnabled() {
+        return sessionRefreshEnabled;
+    }
+
+    @Override
+    public String getSessionRefreshEndpointPath() {
+        return sessionRefreshEndpointPath;
+    }
+    @ConfigProperty
+    public void setSessionRefreshEnabled(boolean sessionRefreshEnabled) {
+        this.sessionRefreshEnabled = sessionRefreshEnabled;
+    }
+    
     @ConfigProperty
 	public OAuth2AuthzServerConfigurator setEnabled(boolean enabled) {
 		this.enabled = enabled;
@@ -366,7 +382,10 @@ public class DefaultOAuth2AuthzServerConfig implements OAuth2AuthzServerConfig, 
         this.tokenInfoEndpointPath = path;
         return this;
     }
-
+    @ConfigProperty
+    public void setSessionRefreshEndpointPath(String sessionRefreshEndpointPath) {
+        this.sessionRefreshEndpointPath = sessionRefreshEndpointPath;
+    }
     @ConfigProperty
     public OAuth2AuthzServerConfig setUserInfoEndpointPath(String path) {
         this.userInfoEndpointPath = path;
