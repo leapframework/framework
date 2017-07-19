@@ -20,7 +20,6 @@ package leap.web.api.spec.swagger;
 
 import leap.lang.Arrays2;
 import leap.lang.Collections2;
-import leap.lang.Enums;
 import leap.lang.Strings;
 import leap.lang.http.HTTP;
 import leap.lang.io.IO;
@@ -37,13 +36,12 @@ import leap.web.api.spec.UnsupportedSpecException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static leap.web.api.spec.swagger.SwaggerConstants.*;
 
 public class SwaggerSpecReader implements ApiSpecReader {
 
-    private final List<String> HTTP_METHODS_LOWER_CASE = Arrays.asList(Enums.getValues(HTTP.Method.class)).stream().map(s->s.toLowerCase()).collect(Collectors.toList());
+    private final List<String> HTTP_METHODS_LOWER_CASE = Arrays.asList("get", "put", "post", "delete", "options", "head", "patch");
 
     @Override
     public ApiMetadataBuilder read(Reader reader) throws IOException {
