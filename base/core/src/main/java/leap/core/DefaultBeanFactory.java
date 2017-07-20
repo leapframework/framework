@@ -437,6 +437,7 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 
 	@Override
     public void postInit(AppContext context) throws Exception {
+    	beanContainer.postInit(context);
 	    if(initialized){
 	    	throw new IllegalStateException("BeanFactory already initialized");
 	    }
