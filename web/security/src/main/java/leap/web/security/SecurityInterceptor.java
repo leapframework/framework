@@ -42,13 +42,13 @@ public interface SecurityInterceptor extends Interceptor{
 	/**
 	 * @since 0.6.4b
 	 */
-	default State preAuthenticationCredentials(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> out) throws Throwable{
+	default State preAuthenticateCredentials(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> out) throws Throwable{
 		return State.CONTINUE;
 	}
 	/**
 	 * @since 0.6.4b
 	 */
-	default State postAuthenticationCredentials(CredentialsAuthenticationContext context, Credentials credentials, Authentication authentication) throws Throwable{
+	default State postAuthenticateCredentials(CredentialsAuthenticationContext context, Credentials credentials, Authentication authentication) throws Throwable{
 		return State.CONTINUE;
 	}
 	

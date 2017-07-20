@@ -68,7 +68,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     protected State beforeAuthenticate(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> user){
         for(SecurityInterceptor interceptor : securityConfig.getInterceptors()){
             try {
-                State state = interceptor.preAuthenticationCredentials(context,credentials,user);
+                State state = interceptor.preAuthenticateCredentials(context,credentials,user);
                 if(State.isIntercepted(state)){
                     return state;
                 }
@@ -96,7 +96,7 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     protected Authentication afterAuthenticate(CredentialsAuthenticationContext context, Credentials credentials, Authentication authentication){
         for(SecurityInterceptor interceptor : securityConfig.getInterceptors()){
             try {
-                State state = interceptor.postAuthenticationCredentials(context,credentials,authentication);
+                State state = interceptor.postAuthenticateCredentials(context,credentials,authentication);
                 if(State.isIntercepted(state)){
                     return authentication;
                 }
