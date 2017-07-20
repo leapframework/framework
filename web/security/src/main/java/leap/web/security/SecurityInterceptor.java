@@ -16,11 +16,15 @@
 package leap.web.security;
 
 import leap.core.security.Authentication;
+import leap.core.security.Credentials;
+import leap.core.security.UserPrincipal;
+import leap.lang.Out;
 import leap.lang.intercepting.Interceptor;
 import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.security.authc.AuthenticationContext;
+import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 import leap.web.security.authz.AuthorizationContext;
 import leap.web.security.login.LoginContext;
 import leap.web.security.logout.LogoutContext;
@@ -35,6 +39,19 @@ public interface SecurityInterceptor extends Interceptor{
 		return State.CONTINUE;
 	}
 
+	/**
+	 * @since 0.6.4b
+	 */
+	default State preAuthenticationCredentials(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> out) throws Throwable{
+		return State.CONTINUE;
+	}
+	/**
+	 * @since 0.6.4b
+	 */
+	default State postAuthenticationCredentials(CredentialsAuthenticationContext context, Credentials credentials, Authentication authentication) throws Throwable{
+		return State.CONTINUE;
+	}
+	
     default State onAuthenticationDenied(Request request, Response response, SecurityContextHolder context) throws Throwable {
         return State.CONTINUE;
     }

@@ -31,6 +31,7 @@ import leap.web.Request;
 import leap.web.RequestIntercepted;
 import leap.web.Response;
 import leap.web.security.SecurityConfig;
+import leap.web.security.SecurityInterceptor;
 import leap.web.security.SecuritySessionManager;
 import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
 import leap.web.security.authc.credentials.CredentialsAuthenticator;
@@ -50,19 +51,62 @@ public class DefaultAuthenticationManager implements AuthenticationManager {
     public Authentication authenticate(CredentialsAuthenticationContext context, Credentials credentials) {
 		Out<UserPrincipal> user = new Out<>();
 		
-		for(CredentialsAuthenticator a : credentialsAuthenticators) {
-			if(a.authenticate(context, credentials, user)) {
-				break;
-			}
-		}
-		
-		if(null != user.getValue()) {
-			return new SimpleAuthentication(user.getValue(), credentials);
-		}
-		
-	    return null;
+        State s = beforeAuthenticate(context,credentials,user);
+        if(State.isIntercepted(s)){
+            if(null != user.getValue()) {
+                return new SimpleAuthentication(user.getValue(), credentials);
+            }else {
+                return null;
+            }
+        }
+
+        Authentication authentication = authentication(context,credentials,user);
+        
+	    return afterAuthenticate(context,credentials,authentication);
+    }
+    
+    protected State beforeAuthenticate(CredentialsAuthenticationContext context, Credentials credentials, Out<UserPrincipal> user){
+        for(SecurityInterceptor interceptor : securityConfig.getInterceptors()){
+            try {
+                State state = interceptor.preAuthenticationCredentials(context,credentials,user);
+                if(State.isIntercepted(state)){
+                    return state;
+                }
+            } catch (Throwable throwable) {
+                throw new AuthenticationException(throwable);
+            }
+        }
+        return State.CONTINUE;
     }
 
+    protected Authentication authentication(CredentialsAuthenticationContext context, Credentials credentials,Out<UserPrincipal> user){
+        for(CredentialsAuthenticator a : credentialsAuthenticators) {
+            if(a.authenticate(context, credentials, user)) {
+                break;
+            }
+        }
+
+        Authentication authentication = null;
+        if(null != user.getValue()) {
+            authentication = new SimpleAuthentication(user.getValue(), credentials);
+        }
+        return authentication;
+    }
+    
+    protected Authentication afterAuthenticate(CredentialsAuthenticationContext context, Credentials credentials, Authentication authentication){
+        for(SecurityInterceptor interceptor : securityConfig.getInterceptors()){
+            try {
+                State state = interceptor.postAuthenticationCredentials(context,credentials,authentication);
+                if(State.isIntercepted(state)){
+                    return authentication;
+                }
+            } catch (Throwable throwable) {
+                throw new AuthenticationException(throwable);
+            }
+        }
+        return authentication;
+    }
+    
 	@Override
     public Authentication resolveAuthentication(Request request, Response response, AuthenticationContext context) throws Throwable {
         Authentication authc = null;
