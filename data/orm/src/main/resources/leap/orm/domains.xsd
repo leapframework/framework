@@ -82,6 +82,8 @@
 	<xsd:element name="field-domain">
 		<xsd:complexType>
 			<xsd:attribute name="entity-domain" type="xsd:string"/>
+            <xsd:attribute name="entity-pattern" type="xsd:string" use="optional"/>
+            <xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
 			<xsd:attribute name="name" type="xsd:string" use="required" />
 			<xsd:attribute name="type" type="JdbcType" use="optional" />
 			<xsd:attribute name="nullable" type="xsd:boolean" use="optional" />
@@ -93,7 +95,6 @@
 			<xsd:attribute name="update" type="xsd:boolean"/>
 			<xsd:attribute name="insert-value" type="xsd:string"/>
 			<xsd:attribute name="update-value" type="xsd:string"/>
-			<xsd:attribute name="auto-mapping" type="xsd:boolean" default="false" use="optional"/>
 			<xsd:attribute name="alias" type="xsd:string" use="optional"/>
             <xsd:attribute name="sort-order" type="xsd:float" use="optional"/>
 			<xsd:attribute name="override" type="xsd:boolean">

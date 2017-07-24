@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class XmlDomainSource implements DomainSource {
 	
@@ -61,6 +62,7 @@ public class XmlDomainSource implements DomainSource {
 	private static final String UPDATE_VALUE_ATTRIBUTE        = "update-value";
 	private static final String DEFAULT_VALUE_ATTRIBUTE       = "default-value";
 	private static final String AUTO_MAPPING_ATTRIBUTE        = "auto-mapping";
+    private static final String ENTITY_PATTERN                = "entity-pattern";
     private static final String SORT_ORDER                    = "sort-order";
 
     protected @Inject AppConfig config;
@@ -234,6 +236,7 @@ public class XmlDomainSource implements DomainSource {
 		String  insertValue  = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
 		boolean	autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING_ATTRIBUTE,false);
+        String entityPattern = reader.getAttribute(ENTITY_PATTERN);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
 		
@@ -292,6 +295,7 @@ public class XmlDomainSource implements DomainSource {
 										.setInsertValue(insertValueExpression)
 										.setUpdateValue(updateValueExpression)
 										.setAutoMapping(autoMapping)
+                                        .setEntityPattern(Strings.isEmpty(entityPattern) ? null : Pattern.compile(entityPattern))
                                         .setSortOrder(sortOrder)
 										.build();
 		

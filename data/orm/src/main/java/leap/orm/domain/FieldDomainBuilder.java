@@ -19,6 +19,8 @@ import leap.lang.Buildable;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 
+import java.util.regex.Pattern;
+
 public class FieldDomainBuilder implements Buildable<FieldDomain> {
 	
 	protected Object       source;
@@ -35,9 +37,11 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 	protected Boolean	   update;
 	protected Expression   insertValue;
 	protected Expression   updateValue;
-	protected boolean	   autoMapping;
 	protected Float        sortOrder;
 	protected boolean      unnamed;
+
+    protected boolean	   autoMapping;
+    protected Pattern      entityPattern;
 	
 	public FieldDomainBuilder(){
 		
@@ -200,10 +204,19 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
         return this;
     }
 
+    public Pattern getEntityPattern() {
+        return entityPattern;
+    }
+
+    public FieldDomainBuilder setEntityPattern(Pattern entityPattern) {
+        this.entityPattern = entityPattern;
+        return this;
+    }
+
     @Override
 	public FieldDomain build() {
 		return new FieldDomain(source, entityDomain, name, defaultColumnName, type, length, precision, scale, 
 				 				  nullable, defaultValue,insert,update,
-				 				  insertValue,updateValue,autoMapping, sortOrder);
+				 				  insertValue,updateValue,autoMapping, entityPattern, sortOrder);
 	}
 }

@@ -22,6 +22,8 @@ import leap.lang.annotation.Nullable;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 
+import java.util.regex.Pattern;
+
 public class FieldDomain implements Sourced,Named {
 	
 	private final Object       source;
@@ -39,12 +41,13 @@ public class FieldDomain implements Sourced,Named {
 	private final Expression   insertValue;
 	private final Expression   updateValue;
 	private final boolean	   autoMapping;
+    private final Pattern      entityPattern;
 	private final Float        sortOrder;
 	
 	public FieldDomain(Object source, EntityDomain entityDomain, 
 						 String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
 						 Boolean nullable, String defaultValue,Boolean insert,Boolean update,
-						 Expression insertValue,Expression updateValue, boolean autoMapping, Float sortOrder) {
+						 Expression insertValue,Expression updateValue, boolean autoMapping, Pattern entityPattern, Float sortOrder) {
 		Args.notEmpty(name,"name");
 		this.source = source;
 		this.entityDomain = entityDomain;
@@ -61,6 +64,7 @@ public class FieldDomain implements Sourced,Named {
 	    this.insertValue = insertValue;
 	    this.updateValue = updateValue;
 	    this.autoMapping = autoMapping;
+        this.entityPattern = entityPattern;
 	    this.sortOrder   = sortOrder;
     }
 	
@@ -141,8 +145,24 @@ public class FieldDomain implements Sourced,Named {
 	public boolean isAutoMapping() {
 		return autoMapping;
 	}
-	
-	public Float getSortOrder() {
+
+    public Pattern getEntityPattern() {
+        return entityPattern;
+    }
+
+    public boolean isAutoMapping(String entityName) {
+        if(!autoMapping) {
+            return false;
+        }
+
+        if(null != entityPattern) {
+            return entityPattern.matcher(entityName).matches();
+        }
+
+        return true;
+    }
+
+    public Float getSortOrder() {
         return sortOrder;
     }
 
