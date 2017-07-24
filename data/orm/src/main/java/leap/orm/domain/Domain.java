@@ -15,19 +15,16 @@
  */
 package leap.orm.domain;
 
-import leap.lang.Args;
-import leap.lang.Named;
-import leap.lang.Sourced;
+import leap.lang.*;
 import leap.lang.annotation.Nullable;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 
 import java.util.regex.Pattern;
 
-public class FieldDomain implements Sourced,Named {
+public class Domain implements Sourced,Named {
 	
 	private final Object       source;
-	private final EntityDomain entityDomain;
 	private final String       name;
 	private final String       defaultColumnName;
 	private final JdbcType     type;
@@ -40,17 +37,14 @@ public class FieldDomain implements Sourced,Named {
 	private final Boolean	   update;
 	private final Expression   insertValue;
 	private final Expression   updateValue;
-	private final boolean	   autoMapping;
-    private final Pattern      entityPattern;
 	private final Float        sortOrder;
+    private final boolean      autoMapping;
 	
-	public FieldDomain(Object source, EntityDomain entityDomain, 
-						 String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
-						 Boolean nullable, String defaultValue,Boolean insert,Boolean update,
-						 Expression insertValue,Expression updateValue, boolean autoMapping, Pattern entityPattern, Float sortOrder) {
+	public Domain(Object source, String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
+                  Boolean nullable, String defaultValue, Boolean insert, Boolean update,
+                  Expression insertValue, Expression updateValue, Float sortOrder, boolean autoMapping) {
 		Args.notEmpty(name,"name");
 		this.source = source;
-		this.entityDomain = entityDomain;
 	    this.name = name;
 	    this.defaultColumnName = defaultColumnName;
 	    this.type = type;
@@ -63,28 +57,13 @@ public class FieldDomain implements Sourced,Named {
 	    this.update = update;
 	    this.insertValue = insertValue;
 	    this.updateValue = updateValue;
-	    this.autoMapping = autoMapping;
-        this.entityPattern = entityPattern;
 	    this.sortOrder   = sortOrder;
+        this.autoMapping = autoMapping;
     }
 	
 	@Override
 	public Object getSource() {
 		return source;
-	}
-	
-	@Nullable
-	public EntityDomain getEntityDomain() {
-		return entityDomain;
-	}
-	
-	@Nullable
-	public String getEntityName(){
-		return null == entityDomain ? null : entityDomain.getName();
-	}
-	
-	public String getQualifiedName(){
-		return null == entityDomain ? name : (entityDomain.getName() + "." + name);
 	}
 
 	public String getName() {
@@ -142,32 +121,16 @@ public class FieldDomain implements Sourced,Named {
 		return updateValue;
 	}
 	
-	public boolean isAutoMapping() {
-		return autoMapping;
-	}
-
-    public Pattern getEntityPattern() {
-        return entityPattern;
-    }
-
-    public boolean isAutoMapping(String entityName) {
-        if(!autoMapping) {
-            return false;
-        }
-
-        if(null != entityPattern) {
-            return entityPattern.matcher(entityName).matches();
-        }
-
-        return true;
-    }
-
     public Float getSortOrder() {
         return sortOrder;
     }
 
+    public boolean isAutoMapping() {
+        return autoMapping;
+    }
+
     @Override
     public String toString() {
-		return "Field Domain : " + getQualifiedName();
+		return "Domain : " + name;
     }
 }

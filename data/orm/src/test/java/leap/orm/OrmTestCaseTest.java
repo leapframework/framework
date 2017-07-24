@@ -57,11 +57,11 @@ public class OrmTestCaseTest extends OrmTestCase {
 	
 	@Test
 	public void testDomainConfig(){
-		assertNotNull(domains.getFieldDomain("Code"));
-		assertNotNull(domains.getFieldDomain("code"));
-		assertNotNull(domains.getFieldDomain("Name"));
-		assertNotNull(domains.getFieldDomain("test"));
-		assertNotNull(domains.tryGetFieldDomainByAlias("string1"));
+		assertNotNull(domains.getDomain("Code"));
+		assertNotNull(domains.getDomain("code"));
+		assertNotNull(domains.getDomain("Name"));
+		assertNotNull(domains.getDomain("test"));
+		assertNotNull(domains.getDomain("string1"));
 	}
 	
 	@Test

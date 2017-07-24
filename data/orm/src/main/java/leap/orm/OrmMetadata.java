@@ -18,7 +18,7 @@ package leap.orm;
 import leap.lang.exception.ObjectExistsException;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.domain.Domains;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.SequenceMapping;
 import leap.orm.sql.SqlCommand;
@@ -29,7 +29,7 @@ import java.util.List;
 public interface OrmMetadata {
 	
 	/**
-	 * Returns the {@link Domains} contains all the {@link FieldDomain} in this metadata. 
+	 * Returns the {@link Domains} contains all the {@link Domain} in this metadata.
 	 */
 	Domains domains();
 	

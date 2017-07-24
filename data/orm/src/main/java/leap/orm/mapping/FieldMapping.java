@@ -24,7 +24,7 @@ import leap.lang.annotation.Nullable;
 import leap.lang.beans.BeanProperty;
 import leap.lang.expression.Expression;
 import leap.lang.meta.MType;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.serialize.FieldSerializer;
 import leap.orm.validation.FieldValidator;
 
@@ -50,7 +50,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
     protected final Expression       filterValue;
-	protected final FieldDomain      domain;
+	protected final Domain           domain;
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
@@ -76,7 +76,7 @@ public class FieldMapping extends ExtensibleBase {
                         Expression filterValue,
                         boolean optimisticLock,
                         String newOptimisticLockFieldName,
-                        FieldDomain domain,
+                        Domain domain,
                         List<FieldValidator> validators,
                         ReservedMetaFieldName reservedMetaFieldName,
                         boolean sharding, FieldSerializer serializer) {
@@ -222,7 +222,7 @@ public class FieldMapping extends ExtensibleBase {
 	}
 
 	@Nullable
-	public FieldDomain getDomain() {
+	public Domain getDomain() {
 		return domain;
 	}
 

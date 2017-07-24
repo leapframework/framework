@@ -19,12 +19,13 @@ import leap.lang.Buildable;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Pattern;
 
-public class FieldDomainBuilder implements Buildable<FieldDomain> {
+public class DomainBuilder implements Buildable<Domain> {
 	
 	protected Object       source;
-	protected EntityDomain entityDomain;
 	protected String       name;
 	protected String       defaultColumnName;
 	protected JdbcType     type;
@@ -39,15 +40,15 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 	protected Expression   updateValue;
 	protected Float        sortOrder;
 	protected boolean      unnamed;
-
     protected boolean	   autoMapping;
-    protected Pattern      entityPattern;
+    protected boolean      override;
+    protected List<String> aliases = new ArrayList<>();
 	
-	public FieldDomainBuilder(){
+	public DomainBuilder(){
 		
 	}
 	
-	public FieldDomainBuilder(Object source){
+	public DomainBuilder(Object source){
 		this.source = source;
 	}
 	
@@ -55,25 +56,16 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return source;
 	}
 
-	public FieldDomainBuilder setSource(Object source) {
+	public DomainBuilder setSource(Object source) {
 		this.source = source;
 		return this;
 	}
 	
-	public EntityDomain getEntityDomain() {
-		return entityDomain;
-	}
-
-	public FieldDomainBuilder setEntityDomain(EntityDomain entityDomain) {
-		this.entityDomain = entityDomain;
-		return this;
-	}
-
 	public String getName() {
 		return name;
 	}
 
-	public FieldDomainBuilder setName(String name) {
+	public DomainBuilder setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -82,7 +74,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
         return defaultColumnName;
     }
 
-    public FieldDomainBuilder setDefaultColumnName(String defaultColumnName) {
+    public DomainBuilder setDefaultColumnName(String defaultColumnName) {
         this.defaultColumnName = defaultColumnName;
         return this;
     }
@@ -91,7 +83,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return type;
 	}
 
-	public FieldDomainBuilder setType(JdbcType type) {
+	public DomainBuilder setType(JdbcType type) {
 		this.type = type;
 		return this;
 	}
@@ -100,7 +92,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return length;
 	}
 
-	public FieldDomainBuilder setLength(Integer length) {
+	public DomainBuilder setLength(Integer length) {
 		this.length = length;
 		return this;
 	}
@@ -109,7 +101,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return precision;
 	}
 
-	public FieldDomainBuilder setPrecision(Integer precision) {
+	public DomainBuilder setPrecision(Integer precision) {
 		this.precision = precision;
 		return this;
 	}
@@ -118,7 +110,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return scale;
 	}
 
-	public FieldDomainBuilder setScale(Integer scale) {
+	public DomainBuilder setScale(Integer scale) {
 		this.scale = scale;
 		return this;
 	}
@@ -127,7 +119,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return nullable;
 	}
 
-	public FieldDomainBuilder setNullable(Boolean nullabe) {
+	public DomainBuilder setNullable(Boolean nullabe) {
 		this.nullable = nullabe;
 		return this;
 	}
@@ -136,7 +128,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return defaultValue;
 	}
 
-	public FieldDomainBuilder setDefaultValue(String defaultValue) {
+	public DomainBuilder setDefaultValue(String defaultValue) {
 		this.defaultValue = defaultValue;
 		return this;
 	}
@@ -145,7 +137,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return insert;
 	}
 
-	public FieldDomainBuilder setInsert(Boolean insert) {
+	public DomainBuilder setInsert(Boolean insert) {
 		this.insert = insert;
 		return this;
 	}
@@ -154,7 +146,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return update;
 	}
 
-	public FieldDomainBuilder setUpdate(Boolean update) {
+	public DomainBuilder setUpdate(Boolean update) {
 		this.update = update;
 		return this;
 	}
@@ -163,7 +155,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return insertValue;
 	}
 
-	public FieldDomainBuilder setInsertValue(Expression insertValue) {
+	public DomainBuilder setInsertValue(Expression insertValue) {
 		this.insertValue = insertValue;
 		return this;
 	}
@@ -172,7 +164,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return updateValue;
 	}
 
-	public FieldDomainBuilder setUpdateValue(Expression updateValue) {
+	public DomainBuilder setUpdateValue(Expression updateValue) {
 		this.updateValue = updateValue;
 		return this;
 	}
@@ -181,7 +173,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
 		return autoMapping;
 	}
 
-	public FieldDomainBuilder setAutoMapping(boolean autoMapping) {
+	public DomainBuilder setAutoMapping(boolean autoMapping) {
 		this.autoMapping = autoMapping;
 		return this;
 	}
@@ -190,7 +182,7 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
         return sortOrder;
     }
 
-    public FieldDomainBuilder setSortOrder(Float sortOrder) {
+    public DomainBuilder setSortOrder(Float sortOrder) {
         this.sortOrder = sortOrder;
         return this;
     }
@@ -199,24 +191,35 @@ public class FieldDomainBuilder implements Buildable<FieldDomain> {
         return unnamed;
     }
 
-    public FieldDomainBuilder setUnnamed(boolean unnamed) {
+    public DomainBuilder setUnnamed(boolean unnamed) {
         this.unnamed = unnamed;
         return this;
     }
 
-    public Pattern getEntityPattern() {
-        return entityPattern;
+    public List<String> getAliases() {
+        return aliases;
     }
 
-    public FieldDomainBuilder setEntityPattern(Pattern entityPattern) {
-        this.entityPattern = entityPattern;
+    public DomainBuilder addAliases(List<String> aliases) {
+        if(null != aliases) {
+            this.aliases.addAll(aliases);
+        }
+        return this;
+    }
+
+    public boolean isOverride() {
+        return override;
+    }
+
+    public DomainBuilder setOverride(boolean override) {
+        this.override = override;
         return this;
     }
 
     @Override
-	public FieldDomain build() {
-		return new FieldDomain(source, entityDomain, name, defaultColumnName, type, length, precision, scale, 
+	public Domain build() {
+		return new Domain(source, name, defaultColumnName, type, length, precision, scale,
 				 				  nullable, defaultValue,insert,update,
-				 				  insertValue,updateValue,autoMapping, entityPattern, sortOrder);
+				 				  insertValue,updateValue,sortOrder,autoMapping);
 	}
 }

@@ -19,7 +19,7 @@ import leap.db.model.DbColumn;
 import leap.db.model.DbTable;
 import leap.lang.beans.BeanProperty;
 import leap.orm.OrmContext;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
@@ -129,9 +129,9 @@ public interface MappingStrategy {
 
 
 	/**
-	 * Configures the attributes of the given {@link FieldMappingBuilder} by the given {@link FieldDomain}.
+	 * Configures the attributes of the given {@link FieldMappingBuilder} by the given {@link Domain}.
 	 */
-	void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder fmb,FieldDomain domain);
+	void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder fmb,Domain domain);
 
 
 }

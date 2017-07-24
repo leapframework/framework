@@ -35,40 +35,37 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 public class XmlDomainSource implements DomainSource {
-	
-	private static final String DOMAINS_ELEMENT               = "domains";
-	private static final String IMPORT_ELEMENT                = "import";
-	private static final String ENTITY_DOMAIN_ELEMENT         = "entity-domain";
-	private static final String ENTITY_DOMAIN_ALIAS_ELEMENT   = "entity-domain-alias";
-	private static final String ALIAS_ELEMENT                 = "alias";
-	private static final String FIELD_DOMAIN_ELEMENT          = "field-domain";
-	private static final String FIELD_DOMAIN_ALIAS_ELEMENT    = "field-domain-alias";
-	private static final String ALIAS_ATTRIBUTE               = "alias";
-	private static final String DOMAIN_ATTRIBUTE              = "domain";
-	private static final String ENTITY_DOMAIN_ATTRIBUTE       = "entity-domain";
-	private static final String RESOURCE_ATTRIBUTE            = "resource";
-	private static final String OVERRIDE_ATTRIBUTE            = "override";
-	private static final String NAME_ATTRIBUTE                = "name";
-	private static final String TYPE_ATTRIBUTE                = "type";
-	private static final String NULLABLE_ATTRIBUTE            = "nullable";
-	private static final String CHECK_EXISTENCE_ATTRIBUTE     = "check-existence";
-	private static final String DEFAULT_OVERRIDE_ATTRIBUTE    = "default-override";
-	private static final String LENGTH_ATTRIBUTE              = "length";
-	private static final String PRECISION_ATTRIBUTE           = "precision";
-	private static final String SCALE_ATTRIBUTE               = "scale";
-	private static final String INSERT_ATTRIBUTE              = "insert";
-	private static final String UPDATE_ATTRIBUTE              = "update";
-	private static final String INSERT_VALUE_ATTRIBUTE        = "insert-value";
-	private static final String UPDATE_VALUE_ATTRIBUTE        = "update-value";
-	private static final String DEFAULT_VALUE_ATTRIBUTE       = "default-value";
-	private static final String AUTO_MAPPING_ATTRIBUTE        = "auto-mapping";
-    private static final String ENTITY_PATTERN                = "entity-pattern";
-    private static final String SORT_ORDER                    = "sort-order";
+
+    private static final String DOMAINS          = "domains";
+    private static final String IMPORT           = "import";
+    private static final String RESOURCE         = "resource";
+    private static final String CHECK_EXISTENCE  = "check-existence";
+    private static final String DEFAULT_OVERRIDE = "default-override";
+    private static final String OVERRIDE         = "override";
+    private static final String DOMAIN           = "domain";
+    private static final String ALIAS            = "alias";
+    private static final String FIELD            = "field";
+    private static final String FIELD_MAPPINGS   = "field-mappings";
+    private static final String AUTO_MAPPING     = "auto-mapping";
+    private static final String ENTITY_NAMES     = "entity-names";
+    private static final String ENTITY_PATTERN   = "entity-pattern";
+    private static final String NAME             = "name";
+    private static final String TYPE             = "type";
+    private static final String NULLABLE         = "nullable";
+    private static final String LENGTH           = "length";
+    private static final String PRECISION        = "precision";
+    private static final String SCALE            = "scale";
+    private static final String INSERT           = "insert";
+    private static final String UPDATE           = "update";
+    private static final String INSERT_VALUE     = "insert-value";
+    private static final String UPDATE_VALUE     = "update-value";
+    private static final String DEFAULT_VALUE    = "default-value";
+    private static final String SORT_ORDER       = "sort-order";
 
     protected @Inject AppConfig config;
 	
 	@Override
-    public void loadDomains(DomainConfigContext context) {
+    public void loadDomains(Domains context) {
 		loadDomains(new LoadContext(context), AppResources.get(config).search("domains"));
     }
 	
@@ -89,7 +86,7 @@ public class XmlDomainSource implements DomainSource {
 					context.resources.add(resourceUrl);
 					
 					reader = XML.createReader(resource);
-					reader.setPlaceholderResolver(context.config.getPlaceholderResolver());
+					reader.setPlaceholderResolver(config.getPlaceholderResolver());
 
                     context.setDefaultOverride(ar.isDefaultOverride());
 					loadDomains(context,resource,reader);
@@ -109,19 +106,19 @@ public class XmlDomainSource implements DomainSource {
 		boolean foundValidRootElement = false;
 		
 		while(reader.next()){
-			if(reader.isStartElement(DOMAINS_ELEMENT)){
+			if(reader.isStartElement(DOMAINS)){
 				foundValidRootElement = true;
 				
-				Boolean defaultOverrideAttribute = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE);
+				Boolean defaultOverrideAttribute = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE);
 				if(null != defaultOverrideAttribute){
 					context.setDefaultOverride(defaultOverrideAttribute);
 				}
 				
 				while(reader.next()){
-					if(reader.isStartElement(IMPORT_ELEMENT)){
-						boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE_ATTRIBUTE, true);
-						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
-						String importResourceName = reader.resolveRequiredAttribute(RESOURCE_ATTRIBUTE);
+					if(reader.isStartElement(IMPORT)){
+						boolean checkExistence    = reader.resolveBooleanAttribute(CHECK_EXISTENCE, true);
+						boolean override          = reader.resolveBooleanAttribute(DEFAULT_OVERRIDE, context.isDefaultOverride());
+						String importResourceName = reader.resolveRequiredAttribute(RESOURCE);
 						
 						Resource importResource = Resources.getResource(resource,importResourceName);
 						
@@ -130,32 +127,22 @@ public class XmlDomainSource implements DomainSource {
 								throw new DomainConfigException("the import resource '" + importResourceName + "' not exists");	
 							}
 						}else{
-                            LoadContext importContext = new LoadContext(context.configContext);
+                            LoadContext importContext = new LoadContext(context.domains);
 							loadDomains(importContext, new SimpleAppResource(importResource, override));
-							reader.nextToEndElement(IMPORT_ELEMENT);
+							reader.nextToEndElement(IMPORT);
 						}
 						continue;
 					}
 					
-					if(reader.isStartElement(ENTITY_DOMAIN_ELEMENT)){
-						readEntity(context, resource, reader);
+					if(reader.isStartElement(DOMAIN)){
+						readDomain(context, reader);
 						continue;
 					}
-					
-					if(reader.isStartElement(ENTITY_DOMAIN_ALIAS_ELEMENT)){
-						readEntityAlias(context, resource, reader);
-						continue;
-					}
-					
-					if(reader.isStartElement(FIELD_DOMAIN_ELEMENT)){
-						readDomain(context, resource, reader, null);
-						continue;
-					}
-					
-					if(reader.isStartElement(FIELD_DOMAIN_ALIAS_ELEMENT)){
-						readDomainAlias(context, resource, reader);
-						continue;
-					}
+
+                    if(reader.isStartElement(FIELD_MAPPINGS)) {
+                        readFieldMappings(context, reader);
+                        continue;
+                    }
 					
 				}
 				break;
@@ -167,85 +154,74 @@ public class XmlDomainSource implements DomainSource {
 		}
 	}
 	
-	protected void readEntity(LoadContext context,Resource resource,XmlReader reader){
-		String name = reader.resolveRequiredAttribute(NAME_ATTRIBUTE);
-		
-		EntityDomain exists = context.configContext.tryGetEntityDomain(name);
-		if(exists != null){
-			throw new DomainConfigException("Entity domain '" + name + "' aleady exists in '" + exists.getSource() + "', check the xml : " + reader.getCurrentLocation());
-		}
-		
-		EntityDomain entity = new EntityDomain(reader.getSource(), name); 
-		
-		context.configContext.addEntityDomain(entity);
-		
-		String alias = reader.resolveAttribute(ALIAS_ATTRIBUTE);
-		if(!Strings.isEmpty(alias)){
-			for(String word : parseWords(alias)){
-				context.configContext.addEntityDomainAlias(word, entity);
-			}
-		}
-		
-		while(reader.next()){
-			if(reader.isEndElement(ENTITY_DOMAIN_ELEMENT)){
-				break;
-			}
-			
-			if(reader.isStartElement(FIELD_DOMAIN_ELEMENT)){
-				readDomain(context, resource, reader, entity);
-				continue;
-			}
-			
-			if(reader.isStartElement(ALIAS_ELEMENT)){
-				for(String word : parseWords(reader.getElementTextAndEnd())){
-					context.configContext.addEntityDomainAlias(word, entity);
-				}
-				continue;
-			}
-		}
-	}
+    protected void readDomain(LoadContext context, XmlReader reader) {
+        DomainBuilder builder = readField(context, reader);
+
+        Domain domain = builder.build();
+
+        //Add it.
+        context.domains.addDomain(domain, builder.isOverride());
+
+        //Aliases
+        for(String alias : builder.getAliases()) {
+            context.domains.addDomainAlias(domain.getName(), alias);
+        }
+
+    }
+
+    protected void readFieldMappings(LoadContext context, XmlReader reader) {
+        List<String> entityNames = parseWords(reader.getAttribute(ENTITY_NAMES));
+        String p = reader.getAttribute(ENTITY_PATTERN);
+
+        Pattern entityPattern = Strings.isEmpty(p) ? null : Pattern.compile(p, Pattern.CASE_INSENSITIVE);
+
+        reader.loopInsideElement(() -> {
+
+            if(reader.isStartElement(FIELD)) {
+                DomainBuilder builder = readField(context, reader);
+
+                Domain domain = builder.build();
+
+                if(!entityNames.isEmpty()) {
+                    entityNames.forEach((entityName) ->  {
+                        context.domains.addFieldMapping(entityName, domain);
+
+                        builder.getAliases().forEach(alias -> {
+                            context.domains.addFieldMappingAlias(entityName, domain.getName(), alias);
+                        });
+                    });
+                }else if(null != entityPattern) {
+                    context.domains.addFieldMapping(entityPattern, domain);
+
+                    builder.getAliases().forEach(alias -> {
+                        context.domains.addFieldMappingAlias(entityPattern, domain.getName(), alias);
+                    });
+                }else{
+                    context.domains.addFieldMapping(domain);
+                    builder.getAliases().forEach(alias -> {
+                        context.domains.addFieldMappingAlias(domain.getName(), alias);
+                    });
+                }
+            }
+
+        });
+    }
 	
-	protected void readEntityAlias(LoadContext context,Resource resource,XmlReader reader){
-		String       entityName = reader.resolveRequiredAttribute(DOMAIN_ATTRIBUTE);
-		EntityDomain entity     = context.configContext.tryGetEntityDomain(entityName);
-		
-		if(null == entity){
-			throw new DomainConfigException("Entity domain '" + entityName + "' not found, check the location : " + reader.getCurrentLocation());
-		}
-		
-		for(String word : parseWords(reader.resolveAttribute(ALIAS_ATTRIBUTE))){
-			context.configContext.addEntityDomainAlias(word, entity);
-		}
-		
-		for(String word : parseWords(reader.getElementTextAndEnd())){
-			context.configContext.addEntityDomainAlias(word, entity);
-		}
-	}
-	
-	protected void readDomain(LoadContext context,Resource resource,XmlReader reader, EntityDomain entityDomain){
-		String  entityName   = reader.resolveAttribute(ENTITY_DOMAIN_ATTRIBUTE);
-		String  name         = reader.resolveAttribute(NAME_ATTRIBUTE);
-		String  typeName     = reader.resolveAttribute(TYPE_ATTRIBUTE);
-		Boolean nullable     = reader.resolveBooleanAttribute(NULLABLE_ATTRIBUTE);
-		Integer length       = reader.resolveIntegerAttribute(LENGTH_ATTRIBUTE);
-		Integer precision    = reader.resolveIntegerAttribute(PRECISION_ATTRIBUTE);
-		Integer scale        = reader.resolveIntegerAttribute(SCALE_ATTRIBUTE);
-		String  defaultValue = reader.resolveAttribute(DEFAULT_VALUE_ATTRIBUTE);
-		Boolean insert       = reader.resolveBooleanAttribute(INSERT_ATTRIBUTE);
-		Boolean update       = reader.resolveBooleanAttribute(UPDATE_ATTRIBUTE);
-		String  insertValue  = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
-		String  updateValue  = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
-		boolean	autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING_ATTRIBUTE,false);
-        String entityPattern = reader.getAttribute(ENTITY_PATTERN);
+	protected DomainBuilder readField(LoadContext context, XmlReader reader){
+		String  name         = reader.resolveAttribute(NAME);
+		String  typeName     = reader.resolveAttribute(TYPE);
+		Boolean nullable     = reader.resolveBooleanAttribute(NULLABLE);
+		Integer length       = reader.resolveIntegerAttribute(LENGTH);
+		Integer precision    = reader.resolveIntegerAttribute(PRECISION);
+		Integer scale        = reader.resolveIntegerAttribute(SCALE);
+		String  defaultValue = reader.resolveAttribute(DEFAULT_VALUE);
+		Boolean insert       = reader.resolveBooleanAttribute(INSERT);
+		Boolean update       = reader.resolveBooleanAttribute(UPDATE);
+		String  insertValue  = reader.getAttribute(INSERT_VALUE);
+		String  updateValue  = reader.getAttribute(UPDATE_VALUE);
+        boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
-		boolean override     = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, context.isDefaultOverride());
-		
-		if(!Strings.isEmpty(entityName)){
-			entityDomain = context.configContext.tryGetEntityDomain(entityName);
-			if(null == entityDomain){
-				throw new DomainConfigException("Entity domain '" + entityName + "' not found, check the xml : " + reader.getCurrentLocation());
-			}
-		}
+		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
 		
 		//check name
 		if(Strings.isEmpty(name)){
@@ -260,16 +236,6 @@ public class XmlDomainSource implements DomainSource {
 			}
 		}
 		
-		//check is domain exists
-		if(!override){
-			String qname = context.configContext.qualifyName(null == entityDomain ? null : entityDomain.getName(), name);
-			FieldDomain fieldDomain = context.configContext.tryGetFieldDomain(qname);
-			if(null != fieldDomain){
-				throw new DomainConfigException(Strings.format(
-						"Found duplicated field domain '" + name + "' in xmls : " + fieldDomain.getSource(), reader.getCurrentLocation()));
-			}
-		}
-		
 		Expression insertValueExpression = null;
 		Expression updateValueExpression = null;
 		
@@ -281,8 +247,7 @@ public class XmlDomainSource implements DomainSource {
 			updateValueExpression = EL.tryCreateValueExpression(updateValue);
 		}
 		
-		FieldDomain domain = new FieldDomainBuilder(reader.getSource())
-										.setEntityDomain(entityDomain)
+		return new DomainBuilder(reader.getSource())
 										.setName(name)
 										.setType(type)
 										.setNullable(nullable)
@@ -294,48 +259,15 @@ public class XmlDomainSource implements DomainSource {
 										.setUpdate(update)
 										.setInsertValue(insertValueExpression)
 										.setUpdateValue(updateValueExpression)
-										.setAutoMapping(autoMapping)
-                                        .setEntityPattern(Strings.isEmpty(entityPattern) ? null : Pattern.compile(entityPattern))
                                         .setSortOrder(sortOrder)
-										.build();
-		
-		context.configContext.addFieldDomain(domain, override);
-		
-		String alias = reader.resolveAttribute(ALIAS_ATTRIBUTE);
-		if(!Strings.isEmpty(alias)){
-			readWords(context, domain, Strings.trim(alias));
-		}
-		
-		while(reader.next()){
-			
-			if(reader.isEndElement(FIELD_DOMAIN_ELEMENT)){
-				break;
-			}
-			
-			if(reader.isStartElement(ALIAS_ATTRIBUTE)){
-				readWords(context, domain, Strings.trim(reader.getElementTextAndEnd()));
-				continue;
-			}
-		}
+                                        .addAliases(readAlias(reader))
+                                        .setAutoMapping(autoMapping)
+                                        .setOverride(override);
 	}
 	
-	protected void readDomainAlias(LoadContext context,Resource resource,XmlReader reader){
-		String domainName = reader.resolveRequiredAttribute(DOMAIN_ATTRIBUTE);
-		FieldDomain domain     = context.configContext.tryGetFieldDomain(domainName);
-		
-		if(null == domain){
-			throw new DomainConfigException("Domain '" + domainName + "' not found, check the location : " + reader.getCurrentLocation());
-		}
-		
-		readWords(context, domain, reader.resolveAttribute(ALIAS_ATTRIBUTE));
-		readWords(context, domain, reader.resolveElementTextAndEnd());
-	}
-	
-	protected void readWords(LoadContext context,FieldDomain domain,String words){
-		for(String word : parseWords(words)){
-			context.configContext.addFieldDomainAlias(word, domain);
-		}
-	}
+    protected List<String> readAlias(XmlReader reader) {
+        return parseWords(reader.getAttribute(ALIAS));
+    }
 	
 	protected List<String> parseWords(String words){
 		List<String> list = new ArrayList<String>();
@@ -351,16 +283,14 @@ public class XmlDomainSource implements DomainSource {
 	}
 	
 	private final class LoadContext {
-		private final Set<String>         resources = new HashSet<>();
-		private final DomainConfigContext configContext;
-		private final AppConfig			  config;
-        private final boolean             originalDefaultOverride;
+        private final Set<String> resources = new HashSet<>();
+        private final Domains domains;
+        private final boolean originalDefaultOverride;
 
         private boolean defaultOverride;
-		
-		private LoadContext(DomainConfigContext context){
-			this.configContext = context;
-			this.config		   = context.getAppConfig();
+
+		private LoadContext(Domains domains){
+			this.domains = domains;
             this.originalDefaultOverride = false;
             this.defaultOverride = false;
 		}

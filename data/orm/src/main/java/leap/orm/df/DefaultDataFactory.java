@@ -26,7 +26,7 @@ import leap.lang.Strings;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.dmo.Dmo;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 
@@ -83,9 +83,9 @@ public class DefaultDataFactory implements DataFactory,DataGeneratorContext {
 		DataGenerator generator = generatorCache.get(cacheKey);
 		
 		if(null == generator){
-			FieldDomain domain = fm.getDomain();
+			Domain domain = fm.getDomain();
 			if(null != domain){
-				generator = beanFactory.tryGetBean(DataGenerator.class,domain.getQualifiedName());
+				generator = beanFactory.tryGetBean(DataGenerator.class, domain.getName());
 				
 				if(null == generator){
 					DomainData data = domainDatas.tryGetDomainData(domain);

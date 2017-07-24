@@ -48,8 +48,7 @@ import leap.orm.annotation.*;
 import leap.orm.config.OrmModelPkgConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
-import leap.orm.domain.EntityDomain;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
@@ -452,7 +451,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		fmb.setFieldName(context.getNamingStrategy().columnToFieldName(column.getName()));
 		fmb.setJavaType(JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType());
 		
-		FieldDomain domain = context.getMetadata().domains().tryGetFieldDomain(emb.getEntityName(), fmb.getFieldName());
+		Domain domain = context.getMetadata().domains().autoMapping(emb.getEntityName(), fmb.getFieldName());
 		
 		if(null != domain){
 			configFieldMappingByDomain(emb, fmb, domain);
@@ -468,7 +467,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     public FieldMappingBuilder createFieldMappingByTemplate(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder template) {
         FieldMappingBuilder fmb = new FieldMappingBuilder(template);
 
-        FieldDomain domain = context.getMetadata().domains().tryGetFieldDomain(emb.getEntityName(), fmb.getFieldName());
+        Domain domain = context.getMetadata().domains().autoMapping(emb.getEntityName(), fmb.getFieldName());
         if(null != domain){
             configFieldMappingByDomain(emb, fmb, domain);
         }
@@ -481,7 +480,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
     @Override
 	public FieldMappingBuilder createFieldMappingByDomain(MetadataContext context,EntityMappingBuilder emb,String domainName){
-		FieldDomain domain = context.getMetadata().domains().getFieldDomain(domainName);
+		Domain domain = context.getMetadata().domains().getDomain(domainName);
 		
 		FieldMappingBuilder fmb = new FieldMappingBuilder();
 		fmb.setFieldName(domain.getName());
@@ -611,7 +610,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     */
 
     @Override
-    public void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder f, FieldDomain d) {
+    public void configFieldMappingByDomain(EntityMappingBuilder emb, FieldMappingBuilder f, Domain d) {
 		DbColumnBuilder c = f.getColumn();
 		
 		f.setDomain(d);
@@ -718,15 +717,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			emb.setEntityName(sourceClass.getSimpleName());
 		}
 		emb.setEntityName(context.getNamingStrategy().entityName(emb.getEntityName()));
-		
-		EntityDomain domain = emb.getDomain();
-		if(null == domain){
-			domain = context.getMetadata().domains().tryGetEntityDomainByNameOrAlias(emb.getEntityName());
-			if(null != domain){
-				emb.setDomain(domain);
-			}
-		}
-		
+
 		if(Strings.isEmpty(emb.getTableName())){
 			emb.setTableName(context.getNamingStrategy().entityToTableName(emb.getEntityName()));
 		}else{
@@ -788,20 +779,13 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         }
 
         if(null == fmb.getDomain()){
-            String       entityName   = emb.getEntityName();
-            String       fieldName    = fmb.getFieldName();
-            EntityDomain entityDomain = emb.getDomain();
-            FieldDomain  fieldDomain  = null;
-
-            if(null != entityDomain){
-                fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityDomain,fieldName);
-            }else{
-                fieldDomain = context.getMetadata().domains().tryGetFieldDomain(entityName,fieldName);
-            }
-			NonDomain nonDomain = Classes.getAnnotation(fmb.getAnnotations(),NonDomain.class);
-			if(null != fieldDomain && fieldDomain.isAutoMapping() && nonDomain == null) {
-                log.trace("Found domain '{}' matched the field '{}' of entity '{}'",fieldDomain.getName(),fieldName,entityName);
-                configFieldMappingByDomain(emb, fmb, fieldDomain);
+			leap.orm.annotation.Domain a = Classes.getAnnotation(fmb.getAnnotations(), leap.orm.annotation.Domain.class);
+			if(null == a || a.autoMapping()) {
+                Domain domain = context.getMetadata().domains().autoMapping(emb.getEntityName(), fmb.getFieldName());
+                if(null != domain) {
+                    log.trace("Found domain '{}' matched the field '{}' of entity '{}'", domain.getName(), emb.getEntityName(), fmb.getFieldName());
+                    configFieldMappingByDomain(emb, fmb, domain);
+                }
             }
         }
 

@@ -39,8 +39,7 @@ import leap.orm.config.OrmModelClassConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
 import leap.orm.domain.Domains;
-import leap.orm.domain.EntityDomain;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.event.*;
 import leap.orm.event.reflect.ReflectCreateEntityListener;
 import leap.orm.event.reflect.ReflectDeleteEntityListener;
@@ -71,7 +70,6 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
-			mappingEntityByDomain(context, emb, sourceClass.getAnnotation(Domain.class));
             mappingListenerByAnnotations(context, emb, sourceClass.getDeclaredAnnotationsByType(Entity.Listener.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
@@ -94,7 +92,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Unique.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
             mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,GeneratedValue.class));
-			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations,Domain.class));
+			mappingFieldColumnByDomain(context, emb, fmb, Classes.getAnnotation(annotations, leap.orm.annotation.Domain.class));
 			mappingFieldColumnByMetaName(context, emb, fmb, Classes.getAnnotation(annotations,MetaName.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotEmpty.class));
 			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,NotNull.class));
@@ -273,23 +271,6 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         }
     }
 	
-	protected void mappingEntityByDomain(MetadataContext context, EntityMappingBuilder emb, Domain annotation){
-		Domains domains = context.getMetadata().domains();
-		if(null != annotation){
-			emb.setDomain(domains.getEntityDomain(annotation.value()));
-		}else{
-			Annotation domainAnnotation = Classes.getAnnotationByMetaType(emb.getSourceClass().getAnnotations(),Domain.class);
-			if(null != domainAnnotation){
-				Domain metaDomain = domainAnnotation.annotationType().getAnnotation(Domain.class);
-				if(!Strings.isEmpty(metaDomain.value())){
-					emb.setDomain(domains.getEntityDomain(metaDomain.value()));
-				}else{
-					emb.setDomain(domains.getEntityDomain(domainAnnotation.annotationType().getSimpleName()));
-				}
-			}
-		}
-	}
-	
 	protected boolean mappingFieldColumnByAnnotation(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder f,Column a) {
         if (null != a) {
             DbColumnBuilder c = f.getColumn();
@@ -438,7 +419,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
         return true;
     }
 
-	protected boolean mappingFieldColumnByDomain(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb,Domain a){
+	protected boolean mappingFieldColumnByDomain(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb, leap.orm.annotation.Domain a){
 		String domainName = null;
 		
 		Annotation domainAnnotation = null;
@@ -447,9 +428,9 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		if(null != a){
 			domainName = a.value();
 		}else{
-			domainAnnotation = Classes.getAnnotationByMetaType(fmb.getBeanProperty().getAnnotations(),Domain.class);
+			domainAnnotation = Classes.getAnnotationByMetaType(fmb.getBeanProperty().getAnnotations(), leap.orm.annotation.Domain.class);
 			if(null != domainAnnotation){
-				Domain metaDomain = domainAnnotation.annotationType().getAnnotation(Domain.class);
+				leap.orm.annotation.Domain metaDomain = domainAnnotation.annotationType().getAnnotation(leap.orm.annotation.Domain.class);
 				if(!Strings.isEmpty(metaDomain.value())){
 					domainName = metaDomain.value();
 				}else{
@@ -467,18 +448,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 		Domains domains = context.getMetadata().domains();
 		
 		if(!Strings.isEmpty(domainName)) {
-			FieldDomain domain = null;
-			
-			EntityDomain entityDomain = domains.tryGetEntityDomain(emb.getEntityName());
-			
-			if(null != entityDomain){
-				domain = domains.tryGetFieldDomain(domains.qualifyName(entityDomain.getName(), domainName));
-			}
-			
-			if(null == domain){
-				domain = domains.tryGetFieldDomain(domainName);
-			}
-			
+			Domain domain = domains.tryGetDomain(domainName);
 			if(null == domain){
 				throw new MappingConfigException("The domain '" + domainName + "' not found, please check the annotation in field '" + 
 												 fmb.getBeanProperty().getName() + "' of class '" + emb.getEntityClass().getName() + "'");
@@ -488,7 +458,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			
 			return true;
 		}else if(null != domainAnnotation) {
-		    FieldDomain domain = domains.getOrCreateFieldDomain(domainAnnotation.annotationType(), adomain);
+		    Domain domain = domains.getOrCreateDomain(domainAnnotation.annotationType(), adomain);
 		    context.getMappingStrategy().configFieldMappingByDomain(emb, fmb, domain);
 		    return true;
 		}

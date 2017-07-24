@@ -23,7 +23,6 @@ import leap.lang.beans.BeanType;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
-import leap.orm.domain.EntityDomain;
 import leap.orm.event.EntityListeners;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -53,7 +52,6 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityExecutionInterceptor updateInterceptor;
     protected final EntityExecutionInterceptor deleteInterceptor;
     protected final EntityExecutionInterceptor findInterceptor;
-    protected final EntityDomain               domain;
     protected final Class<? extends Model>     modelClass;
     protected final EntityValidator[]          validators;
     protected final RelationMapping[]          relationMappings;
@@ -81,7 +79,7 @@ public class EntityMapping extends ExtensibleBase {
                          Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
-                         EntityDomain domain, Class<? extends Model> modelClass,
+                         Class<? extends Model> modelClass,
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
@@ -108,7 +106,6 @@ public class EntityMapping extends ExtensibleBase {
 	    this.updateInterceptor = updateInterceptor;
 	    this.deleteInterceptor = deleteInterceptor;
 	    this.findInterceptor   = findIncerceptor;
-	    this.domain			   = domain;
 	    this.modelClass        = modelClass;
 	    this.validators        = null == validators ? new EntityValidator[]{} : validators.toArray(new EntityValidator[validators.size()]);
 	    this.relationMappings  = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
@@ -194,13 +191,6 @@ public class EntityMapping extends ExtensibleBase {
      */
 	public BeanType getBeanType() {
 		return beanType;
-	}
-
-    /**
-     * Optional. Returns the {@link EntityDomain} of entity.
-     */
-	public EntityDomain getDomain() {
-		return domain;
 	}
 
     /**

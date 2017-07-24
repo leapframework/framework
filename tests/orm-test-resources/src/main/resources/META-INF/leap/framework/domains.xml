@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <domains xmlns="http://www.leapframework.org/schema/domains" default-override="true">
 
-	<!-- simple field-domain domains -->
-	<field-domain name="code"   type="varchar" length="38"  auto-mapping="true"/>
-	<field-domain name="name"   type="varchar" length="150" auto-mapping="true"/>
-	<field-domain name="title"  type="varchar" length="300" auto-mapping="true"/>
-	<field-domain name="email"  type="varchar" length="50"  auto-mapping="true" alias="emailAddress"/>
-	
-	<!-- entity domain : person -->
-	<entity-domain name="Person" alias="User, People, Employee">
-		<field-domain name="name"      type="varchar" length="100" auto-mapping="true"/>
-		<field-domain name="firstName" type="varchar" length="50"  auto-mapping="true"/>
-		<field-domain name="lastName"  type="varchar" length="50"  auto-mapping="true"/>
-		<field-domain name="address"   type="varchar" length="500" auto-mapping="true"/>
-		<field-domain name="city"      type="varchar" length="100" auto-mapping="true"/>
-		<field-domain name="telephone" type="varchar" length="20"  auto-mapping="true"/>
-	</entity-domain>
+	<!-- simple auto mapping domains -->
+	<domain name="code"   type="varchar" length="38"  auto-mapping="true"/>
+	<domain name="name"   type="varchar" length="150" auto-mapping="true"/>
+	<domain name="title"  type="varchar" length="300" auto-mapping="true"/>
+	<domain name="email"  type="varchar" length="50"  auto-mapping="true" alias="emailAddress"/>
+
+	<!-- field auto mapping : person -->
+	<field-mappings entity-names="Person, User, People, Employee">
+		<field name="name"      type="varchar" length="100"/>
+		<field name="firstName" type="varchar" length="50"/>
+		<field name="lastName"  type="varchar" length="50"/>
+		<field name="address"   type="varchar" length="500"/>
+		<field name="city"      type="varchar" length="100"/>
+		<field name="telephone" type="varchar" length="20"/>
+	</field-mappings>
+
 </domains>

@@ -24,7 +24,7 @@ import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcTypes;
 import leap.lang.meta.MType;
 import leap.orm.annotation.Column;
-import leap.orm.domain.FieldDomain;
+import leap.orm.domain.Domain;
 import leap.orm.generator.IdGenerator;
 import leap.orm.generator.ValueGenerator;
 import leap.orm.serialize.FieldSerializer;
@@ -62,7 +62,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Expression            filterValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
-    protected FieldDomain           domain;
+    protected Domain                domain;
     protected Annotation[]          annotations;
     protected List<FieldValidator>  validators;
     protected Float                 sortOrder;
@@ -571,11 +571,11 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public FieldDomain getDomain() {
+	public Domain getDomain() {
 		return domain;
 	}
 
-	public FieldMappingBuilder setDomain(FieldDomain domain) {
+	public FieldMappingBuilder setDomain(Domain domain) {
 		this.domain = domain;
 		return this;
 	}

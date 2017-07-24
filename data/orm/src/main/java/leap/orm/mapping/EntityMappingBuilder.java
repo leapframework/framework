@@ -19,7 +19,6 @@ import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
 import leap.lang.*;
-import leap.orm.domain.EntityDomain;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -47,7 +46,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected EntityExecutionInterceptor   updateInterceptor;
 	protected EntityExecutionInterceptor   deleteInterceptor;
 	protected EntityExecutionInterceptor   findInterceptor;
-	protected EntityDomain				   domain;
 	protected Class<? extends Model>       modelClass;
 	protected DbTable					   physicalTable;
 	protected List<EntityValidator>        validators;
@@ -300,15 +298,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	public EntityDomain getDomain() {
-		return domain;
-	}
-
-	public EntityMappingBuilder setDomain(EntityDomain domain) {
-		this.domain = domain;
-		return this;
-	}
-	
 	public boolean isModel(){
 		return null != modelClass; 
 	}
@@ -412,7 +401,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
-	    						 domain,modelClass,validators,
+	    						 modelClass,validators,
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,

@@ -19,7 +19,7 @@ import leap.orm.annotation.ADomain;
 
 public interface DomainCreator {
 
-    FieldDomainBuilder tryCreateFieldDomainByAnnotation(DomainConfigContext context, Class<?> annotationType);
+    DomainBuilder tryCreateFieldDomainByAnnotation(Domains context, Class<?> annotationType);
     
-    FieldDomainBuilder createFieldDomainByAnnotation(DomainConfigContext context, Class<?> annotationType, ADomain domain);
+    DomainBuilder createFieldDomainByAnnotation(Domains context, Class<?> annotationType, ADomain domain);
 }
