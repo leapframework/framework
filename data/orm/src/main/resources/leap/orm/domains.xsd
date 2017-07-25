@@ -100,6 +100,7 @@
 	<xsd:element name="field">
 		<xsd:complexType>
             <xsd:attributeGroup ref="fieldAttributes"/>
+            <xsd:attribute name="domain" type="xsd:string"/>
 		</xsd:complexType>
 	</xsd:element>
 

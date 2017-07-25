@@ -181,6 +181,12 @@ public class XmlDomainSource implements DomainSource {
             if(reader.isStartElement(FIELD)) {
                 DomainBuilder builder = readField(context, reader);
 
+                String templateName = reader.getAttribute(DOMAIN);
+                if(!Strings.isEmpty(templateName)) {
+                    Domain templateDomain = context.domains.getDomain(templateName);
+                    builder.tryUpdateFrom(templateDomain);
+                }
+
                 Domain domain = builder.build();
 
                 if(!entityNames.isEmpty()) {

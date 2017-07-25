@@ -16,6 +16,7 @@
 package leap.orm.domain;
 
 import leap.lang.Buildable;
+import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
 
@@ -47,10 +48,59 @@ public class DomainBuilder implements Buildable<Domain> {
 	public DomainBuilder(){
 		
 	}
-	
+
 	public DomainBuilder(Object source){
 		this.source = source;
 	}
+
+    public DomainBuilder tryUpdateFrom(Domain domain) {
+        if(Strings.isEmpty(this.defaultColumnName)) {
+            this.defaultColumnName = domain.getDefaultColumnName();
+        }
+
+        if(null == this.type) {
+            this.type = domain.getType();
+        }
+
+        if(null == this.length) {
+            this.length = domain.getLength();
+        }
+
+        if(null == this.precision) {
+            this.precision = domain.getPrecision();
+            this.scale = domain.getScale();
+        }
+
+        if(null == this.nullable) {
+            this.nullable = domain.getNullable();
+        }
+
+        if(Strings.isEmpty(this.defaultValue)) {
+            this.defaultValue = domain.getDefaultValue();
+        }
+
+        if(null == this.insert) {
+            this.insert = domain.getInsert();
+        }
+
+        if(null == this.insertValue) {
+            this.insertValue = domain.getInsertValue();
+        }
+
+        if(null == this.update) {
+            this.update = domain.getUpdate();
+        }
+
+        if(null == this.updateValue) {
+            this.updateValue = domain.getUpdateValue();
+        }
+
+        if(null == this.sortOrder) {
+            this.sortOrder = domain.getSortOrder();
+        }
+
+        return this;
+    }
 	
 	public Object getSource() {
 		return source;
