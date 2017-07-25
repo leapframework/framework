@@ -27,7 +27,7 @@ import leap.orm.annotation.meta.MetaName;
 
 @Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RUNTIME)
-@Domain("updatedAt")
+@Domain("orm.updatedAt")
 @MetaName(reserved=ReservedMetaFieldName.TITLE)
 public @interface UpdatedAt {
 

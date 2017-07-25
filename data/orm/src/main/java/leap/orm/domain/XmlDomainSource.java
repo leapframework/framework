@@ -61,6 +61,7 @@ public class XmlDomainSource implements DomainSource {
     private static final String UPDATE_VALUE     = "update-value";
     private static final String DEFAULT_VALUE    = "default-value";
     private static final String SORT_ORDER       = "sort-order";
+    private static final String COLUMN           = "column";
 
     protected @Inject AppConfig config;
 	
@@ -209,6 +210,7 @@ public class XmlDomainSource implements DomainSource {
 	
 	protected DomainBuilder readField(LoadContext context, XmlReader reader){
 		String  name         = reader.resolveAttribute(NAME);
+        String  columnName   = reader.resolveAttribute(COLUMN);
 		String  typeName     = reader.resolveAttribute(TYPE);
 		Boolean nullable     = reader.resolveBooleanAttribute(NULLABLE);
 		Integer length       = reader.resolveIntegerAttribute(LENGTH);
@@ -249,6 +251,7 @@ public class XmlDomainSource implements DomainSource {
 		
 		return new DomainBuilder(reader.getSource())
 										.setName(name)
+                                        .setDefaultColumnName(columnName)
 										.setType(type)
 										.setNullable(nullable)
 										.setLength(length)

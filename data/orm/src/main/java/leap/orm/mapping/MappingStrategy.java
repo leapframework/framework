@@ -106,7 +106,7 @@ public interface MappingStrategy {
 	/**
 	 * 
 	 */
-	FieldMappingBuilder createFieldMappingByDomain(MetadataContext context,EntityMappingBuilder emb,String domainName);
+	FieldMappingBuilder createFieldMappingByDomain(MetadataContext context,EntityMappingBuilder emb, String fieldName, String domainName);
 	
 	/**
 	 * 

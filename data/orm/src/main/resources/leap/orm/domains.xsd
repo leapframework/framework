@@ -67,7 +67,8 @@
     </xsd:element>
 
     <xsd:attributeGroup name="fieldAttributes">
-        <xsd:attribute name="name" type="xsd:string" use="required" />
+        <xsd:attribute name="name"   type="xsd:string" use="required" />
+        <xsd:attribute name="column" type="xsd:string" use="optional" />
         <xsd:attribute name="alias" type="xsd:string" use="optional"/>
         <xsd:attribute name="type" type="JdbcType" use="optional" />
         <xsd:attribute name="nullable" type="xsd:boolean" use="optional" />

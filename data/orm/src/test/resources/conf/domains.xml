@@ -3,4 +3,16 @@
 
     <domain name="test" type="varchar" length="100" alias="string1" auto-mapping="true"/>
 
+    <domain name="publishedAt" type="timestamp"/>
+
+    <domain name="createdAt" type="timestamp"
+            nullable="false" insert="true" update="false"
+            insert-value="${env.timestamp}" auto-mapping="true"
+            sort-order="1001"/>
+
+    <domain name="updatedAt" type="timestamp" nullable="false"
+            insert="true" update="true"
+            insert-value="${env.timestamp}" update-value="${env.timestamp}" auto-mapping="true"
+            sort-order="1002"/>
+
 </domains>
