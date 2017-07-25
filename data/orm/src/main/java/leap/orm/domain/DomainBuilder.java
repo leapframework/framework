@@ -36,9 +36,11 @@ public class DomainBuilder implements Buildable<Domain> {
 	protected Boolean      nullable;
 	protected String       defaultValue;
 	protected Boolean	   insert;
+    protected Expression   insertValue;
 	protected Boolean	   update;
-	protected Expression   insertValue;
 	protected Expression   updateValue;
+    protected Boolean      filter;
+    protected Expression   filterValue;
 	protected Float        sortOrder;
 	protected boolean      unnamed;
     protected boolean	   autoMapping;
@@ -97,6 +99,14 @@ public class DomainBuilder implements Buildable<Domain> {
 
         if(null == this.sortOrder) {
             this.sortOrder = domain.getSortOrder();
+        }
+
+        if(null == this.filter) {
+            this.filter = domain.getFilter();
+        }
+
+        if(null == this.filterValue) {
+            this.filterValue = domain.getFilterValue();
         }
 
         return this;
@@ -218,8 +228,26 @@ public class DomainBuilder implements Buildable<Domain> {
 		this.updateValue = updateValue;
 		return this;
 	}
-	
-	public boolean isAutoMapping() {
+
+    public Boolean getFilter() {
+        return filter;
+    }
+
+    public DomainBuilder setFilter(Boolean filter) {
+        this.filter = filter;
+        return this;
+    }
+
+    public Expression getFilterValue() {
+        return filterValue;
+    }
+
+    public DomainBuilder setFilterValue(Expression filterValue) {
+        this.filterValue = filterValue;
+        return this;
+    }
+
+    public boolean isAutoMapping() {
 		return autoMapping;
 	}
 
@@ -269,7 +297,7 @@ public class DomainBuilder implements Buildable<Domain> {
     @Override
 	public Domain build() {
 		return new Domain(source, name, defaultColumnName, type, length, precision, scale,
-				 				  nullable, defaultValue,insert,update,
-				 				  insertValue,updateValue,sortOrder,autoMapping);
+				 				  nullable, defaultValue,insert,insertValue, update,
+				 				  updateValue, filter, filterValue, sortOrder,autoMapping);
 	}
 }

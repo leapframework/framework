@@ -56,9 +56,11 @@ public class XmlDomainSource implements DomainSource {
     private static final String PRECISION        = "precision";
     private static final String SCALE            = "scale";
     private static final String INSERT           = "insert";
-    private static final String UPDATE           = "update";
     private static final String INSERT_VALUE     = "insert-value";
+    private static final String UPDATE           = "update";
     private static final String UPDATE_VALUE     = "update-value";
+    private static final String FILTER           = "filter";
+    private static final String FILTER_VALUE     = "filter-value";
     private static final String DEFAULT_VALUE    = "default-value";
     private static final String SORT_ORDER       = "sort-order";
     private static final String COLUMN           = "column";
@@ -224,9 +226,11 @@ public class XmlDomainSource implements DomainSource {
 		Integer scale        = reader.resolveIntegerAttribute(SCALE);
 		String  defaultValue = reader.resolveAttribute(DEFAULT_VALUE);
 		Boolean insert       = reader.resolveBooleanAttribute(INSERT);
+        String  insertValue  = reader.getAttribute(INSERT_VALUE);
 		Boolean update       = reader.resolveBooleanAttribute(UPDATE);
-		String  insertValue  = reader.getAttribute(INSERT_VALUE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE);
+        Boolean filter       = reader.resolveBooleanAttribute(FILTER);
+        String  filterValue  = reader.getAttribute(FILTER_VALUE);
         boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
@@ -246,6 +250,7 @@ public class XmlDomainSource implements DomainSource {
 		
 		Expression insertValueExpression = null;
 		Expression updateValueExpression = null;
+        Expression filterValueExpression = null;
 		
 		if(!Strings.isEmpty(insertValue)){
 			insertValueExpression = EL.tryCreateValueExpression(insertValue);	
@@ -254,7 +259,11 @@ public class XmlDomainSource implements DomainSource {
 		if(!Strings.isEmpty(updateValue)){
 			updateValueExpression = EL.tryCreateValueExpression(updateValue);
 		}
-		
+
+        if(!Strings.isEmpty(filterValue)){
+            filterValueExpression = EL.tryCreateValueExpression(filterValue);
+        }
+
 		return new DomainBuilder(reader.getSource())
 										.setName(name)
                                         .setDefaultColumnName(columnName)
@@ -268,6 +277,8 @@ public class XmlDomainSource implements DomainSource {
 										.setUpdate(update)
 										.setInsertValue(insertValueExpression)
 										.setUpdateValue(updateValueExpression)
+                                        .setFilter(filter)
+                                        .setFilterValue(filterValueExpression)
                                         .setSortOrder(sortOrder)
                                         .addAliases(readAlias(reader))
                                         .setAutoMapping(autoMapping)

@@ -55,10 +55,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                defaultValue;
     protected Expression            defaultValueExpression;
     protected Boolean               insert;
-    protected Boolean               update;
-    protected Boolean               filter;
     protected Expression            insertValue;
+    protected Boolean               update;
     protected Expression            updateValue;
+    protected Boolean               filter;
     protected Expression            filterValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
@@ -404,6 +404,13 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
+    public FieldMappingBuilder trySetFilterValue(Expression v) {
+        if(null == this.filterValue) {
+            this.filterValue = v;
+        }
+        return this;
+    }
+
 	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
@@ -533,16 +540,12 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return null != filter && filter;
     }
 
-    public Boolean getWhere(){
-        return filter;
-    }
-
     public FieldMappingBuilder setFilter(Boolean b) {
         this.filter = b;
         return this;
     }
 
-    public FieldMappingBuilder trySetWhere(Boolean b){
+    public FieldMappingBuilder trySetFilter(Boolean b){
         if(null == this.filter){
             this.filter = b;
         }
