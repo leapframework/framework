@@ -17,6 +17,8 @@ package leap.lang.reflect;
 
 import leap.lang.Factory;
 
+import java.lang.reflect.Modifier;
+
 public abstract class ReflectFactoryBase implements ReflectFactory {
 	
 	protected static ReflectStrategy strategy = Factory.newInstance(ReflectStrategy.class,DefaultReflectionStrategy.class);
@@ -41,6 +43,10 @@ public abstract class ReflectFactoryBase implements ReflectFactory {
 	        if(clazz.isSynthetic()){
 	        	return false;
 	        }
+
+            if(Modifier.isFinal(clazz.getModifiers())) {
+                return false;
+            }
 
             //todo :
 	        String className = clazz.getName();
