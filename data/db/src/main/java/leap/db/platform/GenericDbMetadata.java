@@ -276,6 +276,7 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
 
 	protected void refreshSchemasAsync(){
 		cachedSchemas.clear();
+
         if(null != asyncSchemaReaderThread){
             try {
             	int times = 0;
@@ -294,21 +295,25 @@ public class GenericDbMetadata implements DbMetadata,DbAware {
             		}
                 }
             } catch (Throwable e) {
-            	;
+
+            } finally {
+                asyncSchemaReaderThread = null;
             }
         }
+
 		if(null == asyncSchemaReaderThread){
 			synchronized (asyncSchemaReaderMonitor){
 				if(null == asyncSchemaReaderThread){
 					asyncSchemaReaderThread = new Thread(() -> {
 						try {
-							Thread.sleep(100);
+                            Thread.sleep(100); //wait for ddl changes ok, todo: improves it
 							getSchema();
 						} catch (Throwable e) {
 							log.info("Error reading schema : {}",e.getMessage(),e);
 						} finally{
 							synchronized (asyncSchemaReaderMonitor) {
 								asyncSchemaReaderMonitor.notifyAll();
+                                asyncSchemaReaderThread = null;
 								log.debug("Notify schema reader finished");
 							}
 						}
