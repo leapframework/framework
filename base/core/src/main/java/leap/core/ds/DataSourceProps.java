@@ -24,7 +24,8 @@ import leap.lang.jdbc.TransactionIsolation;
 import java.util.*;
 import java.util.Map.Entry;
 
-public class DataSourceConfig {
+public class DataSourceProps {
+
 	//DataSource class name
 	public static final String DATASOURCE_CLASS_NAME         = "dataSourceClassName";
 	
@@ -106,7 +107,7 @@ public class DataSourceConfig {
 	private boolean _default;
 	
 	@SuppressWarnings("unchecked")
-    public DataSourceConfig(String dataSourceType, boolean isDefault,  Map<String,String> properties) {
+    public DataSourceProps(String dataSourceType, boolean isDefault, Map<String,String> properties) {
 		Args.notEmpty(properties,"properties");
 		
 		this.dataSourceType				 = dataSourceType;
@@ -441,8 +442,8 @@ public class DataSourceConfig {
             return this;
         }
 
-		public DataSourceConfig build() {
-			return new DataSourceConfig(dataSourceType,_default, properties);
+		public DataSourceProps build() {
+			return new DataSourceProps(dataSourceType,_default, properties);
 		}
 	}
 }

@@ -20,7 +20,7 @@ import javax.sql.DataSource;
 public class UnPooledDataSourceFactory extends AbstractDataSourceFactory implements DataSourceFactory {
 
 	@Override
-	public DataSource tryCreateDataSource(DataSourceConfig conf) {
+	public DataSource tryCreateDataSource(DataSourceProps conf) {
 		ensureGetDriverClass(conf);
 		
 		UnPooledDataSource ds = new UnPooledDataSource();

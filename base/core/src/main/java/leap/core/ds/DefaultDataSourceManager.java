@@ -197,7 +197,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
     @Override
-    public DataSource createDefaultDataSource(DataSourceConfig conf) throws ObjectExistsException,SQLException {
+    public DataSource createDefaultDataSource(DataSourceProps conf) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(null != defaultDataSource){
 				throw new ObjectExistsException("Default dataSource already exists");
@@ -215,7 +215,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
     }
 
 	@Override
-    public DataSource createDataSource(String name, DataSourceConfig props) throws ObjectExistsException,SQLException {
+    public DataSource createDataSource(String name, DataSourceProps props) throws ObjectExistsException,SQLException {
 		synchronized (this) {
 			if(allDataSources.containsKey(name)){
 				throw new ObjectExistsException("DataSource '" + name + "' already exists");
@@ -239,7 +239,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
         }
     }
 	
-	public DataSource createDataSource(DataSourceConfig conf) throws UnsupportedOperationException, SQLException {
+	public DataSource createDataSource(DataSourceProps conf) throws UnsupportedOperationException, SQLException {
 		DataSource ds = tryCreateDataSource(conf);
 		if(null == ds){
 			throw new UnsupportedOperationException("The given datasource properties does not supported");
@@ -247,7 +247,7 @@ public class DefaultDataSourceManager implements DataSourceManager,PostCreateBea
 		return ds;
 	}
 	
-	public DataSource tryCreateDataSource(DataSourceConfig conf) throws SQLException {
+	public DataSource tryCreateDataSource(DataSourceProps conf) throws SQLException {
 		DataSource ds = null;
 		for(DataSourceFactory f : dataSourceFactories){
 			if((ds = f.tryCreateDataSource(conf)) != null){

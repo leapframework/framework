@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 
 import leap.core.BeanFactory;
 import leap.core.ds.AbstractDataSourceFactory;
-import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceProps;
 import leap.core.ioc.LoadableBean;
 import leap.lang.Classes;
 import leap.lang.exception.NestedClassNotFoundException;
@@ -39,7 +39,7 @@ public class TomcatDataSourceFactory extends AbstractDataSourceFactory implement
     }
 
 	@Override
-	public DataSource tryCreateDataSource(DataSourceConfig props) throws NestedClassNotFoundException {
+	public DataSource tryCreateDataSource(DataSourceProps props) throws NestedClassNotFoundException {
 		StopWatch sw = StopWatch.startNew();
 		
 		ensureGetDriverClass(props);

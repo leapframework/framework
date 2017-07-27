@@ -19,7 +19,7 @@ package app;
 import app.models.Entity1;
 import leap.core.annotation.Bean;
 import leap.core.annotation.Inject;
-import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceProps;
 import leap.core.ds.DataSourceManager;
 import leap.lang.Try;
 import leap.orm.dmo.Dmo;
@@ -62,7 +62,7 @@ public class DynaOrm {
     }
 
     protected void createTestDataSource() {
-        DataSourceConfig.Builder dsc = new DataSourceConfig.Builder();
+        DataSourceProps.Builder dsc = new DataSourceProps.Builder();
         dsc.setDefault(true);
         dsc.setDriverClassName("org.h2.Driver");
         dsc.setJdbcUrl("jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE");

@@ -16,7 +16,7 @@
 package leap.core;
 
 import leap.core.config.*;
-import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceProps;
 import leap.core.ioc.ConfigBean;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
@@ -217,12 +217,12 @@ public class DefaultAppConfigSource implements AppConfigSource {
         final Set<String>                resolvingProperties = new HashSet<>();
         final DefaultPlaceholderResolver resolver;
 
-        protected final Map<String, AppProperty>                     properties         = new ConcurrentHashMap<>();
-        protected final Map<String, List<String>>                    arrayProperties    = new ConcurrentHashMap<>();
-        protected final Set<Resource>                                resources          = new HashSet<>();
-        protected final List<SysPermissionDef>                       permissions        = new ArrayList<>();
-        protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions   = new HashMap<>();
-        protected final Map<String, DataSourceConfig.Builder>        dataSourceConfigs  = new HashMap<>();
+        protected final Map<String, AppProperty>                     properties        = new ConcurrentHashMap<>();
+        protected final Map<String, List<String>>                    arrayProperties   = new ConcurrentHashMap<>();
+        protected final Set<Resource>                                resources         = new HashSet<>();
+        protected final List<SysPermissionDef>                       permissions       = new ArrayList<>();
+        protected final Map<Class<?>, Map<String, SysPermissionDef>> typedPermissions  = new HashMap<>();
+        protected final Map<String, DataSourceProps.Builder>         dataSourceConfigs = new HashMap<>();
         protected final Set<AppPropertyLoaderConfig> propertyLoaders;
 
         Loader(Object externalContext, Map<String,AppProperty> props, String profile) {

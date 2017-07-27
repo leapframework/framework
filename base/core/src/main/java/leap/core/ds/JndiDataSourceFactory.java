@@ -26,7 +26,7 @@ import leap.lang.jndi.JndiLocator;
 public class JndiDataSourceFactory extends AbstractDataSourceFactory {
 	
 	@Override
-    public DataSource tryCreateDataSource(DataSourceConfig conf) throws NestedClassNotFoundException {
+    public DataSource tryCreateDataSource(DataSourceProps conf) throws NestedClassNotFoundException {
 		String jndiName = conf.getDataSourceJndiName();
 		
 		if(Strings.isEmpty(jndiName)) {

@@ -20,7 +20,7 @@ import java.util.Map.Entry;
 import javax.sql.DataSource;
 
 import leap.core.ds.AbstractDataSourceFactory;
-import leap.core.ds.DataSourceConfig;
+import leap.core.ds.DataSourceProps;
 import leap.lang.beans.BeanType;
 import leap.lang.exception.NestedClassNotFoundException;
 import leap.lang.logging.Log;
@@ -31,7 +31,7 @@ public class PooledDataSourceFactory extends AbstractDataSourceFactory {
 	private static final Log log = LogFactory.get(PooledDataSourceFactory.class);
 
 	@Override
-	public DataSource tryCreateDataSource(DataSourceConfig conf) throws NestedClassNotFoundException {
+	public DataSource tryCreateDataSource(DataSourceProps conf) throws NestedClassNotFoundException {
 		if(!(conf.hasDataSourceClassName() || conf.hasDataSourceJndiName() || conf.hasDriverClassName())) {
 			return null;
 		}
