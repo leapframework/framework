@@ -122,12 +122,16 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
     }
 
     protected OrmContext lookupOrmContext(RestdConfig c) {
-        String dataSourceName =
-                Strings.firstNotEmpty(c.getDataSourceName(), DataSourceManager.DEFAULT_DATASOURCE_NAME);
+        OrmContext oc = c.getOrmContext();
 
-        OrmContext oc = ormRegistry.findContext(dataSourceName);
-        if (null == oc) {
-            throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
+        if(null == oc) {
+            String dataSourceName =
+                    Strings.firstNotEmpty(c.getDataSourceName(), DataSourceManager.DEFAULT_DATASOURCE_NAME);
+
+            oc = ormRegistry.findContext(dataSourceName);
+            if (null == oc) {
+                throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
+            }
         }
 
         return oc;

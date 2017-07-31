@@ -17,7 +17,7 @@
 package leap.web.api.config.model;
 
 import leap.lang.exception.ObjectExistsException;
-import leap.web.route.Routes;
+import leap.orm.OrmContext;
 
 import java.util.*;
 
@@ -26,8 +26,9 @@ import java.util.*;
  */
 public class RestdConfig {
 
-    protected String  dataSourceName;
-    protected boolean readonly;
+    protected String     dataSourceName;
+    protected OrmContext ormContext;
+    protected boolean    readonly;
 
     protected Set<String>               includedModels = new LinkedHashSet<>();
     protected Set<String>               excludedModels = new LinkedHashSet<>();
@@ -41,6 +42,14 @@ public class RestdConfig {
 
     public void setDataSourceName(String dataSourceName) {
         this.dataSourceName = dataSourceName;
+    }
+
+    public OrmContext getOrmContext() {
+        return ormContext;
+    }
+
+    public void setOrmContext(OrmContext ormContext) {
+        this.ormContext = ormContext;
     }
 
     public boolean isReadonly() {
