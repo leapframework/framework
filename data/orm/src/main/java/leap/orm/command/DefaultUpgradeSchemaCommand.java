@@ -220,7 +220,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 			log.info("Found 0 changes, no need to upgrade schemas on db '{}'",db.getDescription());
 			return true;
 		}else{
-			log.info("Applying {} sql(s) for schema upgration on db '{}'", execution.numberOfStatements() ,db.getDescription());
+			log.info("Applying {} sql(s) for schema upgrade on db '{}'", execution.numberOfStatements() ,db.getDescription());
 		    return execution.execute();
 		}
     }

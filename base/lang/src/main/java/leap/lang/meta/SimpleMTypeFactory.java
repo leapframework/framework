@@ -36,6 +36,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
     private MTypeContext context;
 
     public SimpleMTypeFactory() {
+        this(MTypeContext.DEFAULT);
     }
 
     public SimpleMTypeFactory(MTypeContext context) {
