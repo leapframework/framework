@@ -811,6 +811,13 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
             c.trySetScale(st.getDefaultScale());
         }
 
+        if(null == fmb.getNullable()) {
+            if(fmb.getJavaType().isPrimitive()) {
+                fmb.setNullable(false);
+                fmb.getColumn().setNullable(false);
+            }
+        }
+
         //Auto set optimistic lock
         if(fmb.getFieldName().equalsIgnoreCase(context.getConfig().getOptimisticLockFieldName()) &&
                 isOptimisticLockFieldType(fmb.getColumn().getTypeCode())){
