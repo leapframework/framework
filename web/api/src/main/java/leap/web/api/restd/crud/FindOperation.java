@@ -45,7 +45,7 @@ public class FindOperation extends CrudOperation implements RestdProcessor {
         }
 
         String verb = "GET";
-        String path = fullModelPath(api, model) + "/{id}";
+        String path = fullModelPath(api, model) + getIdPath(model);
         if(isOperationExists(context, verb, path)) {
             return;
         }

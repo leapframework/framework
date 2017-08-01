@@ -21,6 +21,7 @@ import leap.lang.Strings;
 import leap.lang.meta.MCollectionType;
 import leap.lang.meta.MComplexTypeRef;
 import leap.lang.meta.MSimpleTypes;
+import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.web.App;
 import leap.web.action.Argument;
@@ -150,6 +151,29 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         a.setExtension(newIdParameter(model));
 
         return a;
+    }
+
+    protected String getIdPath(RestdModel model) {
+        EntityMapping em = model.getEntityMapping();
+
+        if(em.getKeyFieldNames().length == 1) {
+            return "/{" + em.getKeyFieldNames()[0] + "}";
+        }else{
+            StringBuilder p = new StringBuilder();
+            p.append('/');
+
+            for(int i=0;i<em.getKeyFieldNames().length;i++) {
+                String name = em.getKeyFieldNames()[i];
+
+                if(i > 0) {
+                    p.append(',');
+                }
+
+                p.append('{').append(name).append('}');
+            }
+
+            return p.toString();
+        }
     }
 
     private MApiParameterBuilder newIdParameter(RestdModel model) {

@@ -46,7 +46,7 @@ public class UpdateOperation extends CrudOperation implements RestdProcessor {
         }
 
         String verb = "PATCH";
-        String path = fullModelPath(api, model) + "/{id}";
+        String path = fullModelPath(api, model) + getIdPath(model);
         if(isOperationExists(context, verb, path)) {
             return;
         }
