@@ -80,23 +80,16 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		
 		StopWatch sw = StopWatch.startNew();
 		
-		//pre loading entity mappings
+		//loading entity mappings
 		for(Mapper loader : mappers){
 			loader.loadMappings(loadingContext);
 		}
-		
-		//post loading entity mappings
-		for(Mapper loader : mappers){
-			loader.postMappings(loadingContext);
-		}
 
-        //complete loading entity mappings
-        for(Mapper loader : mappers){
-            loader.completeMappings(loadingContext);
-        }
-		
+        //processing entity mappings.
+        processMappings(loadingContext);
+
+        //create mappings.
 		loadingContext.buildMappings();
-		
 		log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
 		
 		sw.restart();
@@ -124,7 +117,20 @@ public class DefaultMetadataManager implements OrmMetadataManager {
             command.prepare(context);
         }
     }
-    
+
+    @Override
+    public void processMappings(MappingConfigContext context) {
+        //post loading entity mappings
+        for(Mapper loader : mappers){
+            loader.postMappings(context);
+        }
+
+        //complete loading entity mappings
+        for(Mapper loader : mappers){
+            loader.completeMappings(context);
+        }
+    }
+
     protected void tryCreateDefaultSqlCommands(MetadataContext context, EntityMapping em) {
         tryCreateInsertCommand(context, em);
         tryCreateUpdateCommand(context, em);

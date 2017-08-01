@@ -18,6 +18,7 @@ package leap.orm.metadata;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.MappingConfigContext;
 
 public interface OrmMetadataManager {
 
@@ -35,5 +36,9 @@ public interface OrmMetadataManager {
      * Loads default metadata for the given orm context.
      */
 	void loadMetadata(OrmContext context) throws MetadataException;
-	
+
+    /**
+     * Processing the mappings.
+     */
+    void processMappings(MappingConfigContext context);
 }
