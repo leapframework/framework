@@ -15,16 +15,29 @@
  */
 package leap.db.model;
 
-public enum DbCascadeAction {
+import leap.lang.Valued;
 
-	NONE,
+public enum DbCascadeAction implements Valued<String> {
 
-	CASCADE,
+	NONE("none"),
+
+	CASCADE("cascade"),
 	
-	SET_NULL,
+	SET_NULL("set_null"),
 	
-	SET_DEFAULT,
+	SET_DEFAULT("set_default"),
 	
-	RESTRICT;
-	
+	RESTRICT("restrict");
+
+    private final String value;
+
+    DbCascadeAction(String value) {
+        this.value = value;
+    }
+
+    @Override
+    public String getValue() {
+        return value;
+    }
+
 }
