@@ -69,11 +69,15 @@ class FieldDomainMappings {
     }
 
     public void addField(Domain domain) {
-
+        fields.put(domain.getName().toLowerCase(), domain);
     }
 
     public void addAlias(String field, String alias) {
-
+        Domain domain = getField(field);
+        if(null == domain) {
+            throw new DomainConfigException("The field '" + field + "' not found in {entityName=" + entityName + ", entityPattern=" + entityPattern + "}");
+        }
+        aliases.put(alias.toLowerCase(), domain);
     }
 
     public Domain mapping(String entityName, String fieldName) {
