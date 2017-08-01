@@ -32,7 +32,8 @@ public class RelationMapping {
     protected final boolean             virtual;
     protected final JoinFieldMapping[]  joinFields;
 
-	public RelationMapping(String name, RelationType type, String inverseRelationName, String targetEntityName, String joinEntityName,
+	public RelationMapping(String name, RelationType type,
+                           String inverseRelationName, String targetEntityName, String joinEntityName,
 						   boolean optional, CascadeDeleteAction onCascadeDelete,
                            boolean virtual, List<JoinFieldMapping> joinFields) {
 		Args.notEmpty(name,"name");
@@ -91,17 +92,20 @@ public class RelationMapping {
         return RelationType.ONE_TO_MANY.equals(type);
     }
 
+    /**
+     * Required. The inverse relation name in the target entity.
+     */
     public String getInverseRelationName() {
         return inverseRelationName;
     }
 
     /**
-     * Required. Returns the target entity's namne.
+     * Required. Returns the target entity's name.
      */
 	public String getTargetEntityName() {
 		return targetEntityName;
 	}
-	
+
     /**
      * Returns true if the relation is optional. Valid on in *-to-one relation.
      */

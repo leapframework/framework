@@ -443,17 +443,20 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return new DbSchemaObjectName(getTableCatalog(),getTableSchema(),getTableNameWithPrefix());
 	}
 	
-	protected DbTable buildTable(List<FieldMapping> fieldMappings,List<RelationMapping> relations){
+	protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations){
 		DbTableBuilder table = getTable();
 
 		if(!Strings.isEmpty(tablePrefix)){
 			table.setName(getTableNameWithPrefix());
 		}
-	
-		for(FieldMapping fm : fieldMappings){
+
+        //columns
+		for(FieldMapping fm : fields){
 			table.addColumn(fm.getColumn());
 		}
-		
+
+        //todo: indexes
+
 		return table.build();
 	}
 }

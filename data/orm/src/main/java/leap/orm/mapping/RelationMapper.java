@@ -423,8 +423,12 @@ public class RelationMapper implements Mapper {
 											 RelationMappingBuilder rmb) {
 		
 		DbForeignKeyBuilder fk = new DbForeignKeyBuilder();
-		
-		fk.setName(context.getNamingStrategy().getForeignKeyName(emb.getEntityName(), targetEmb.getEntityName(), rmb.getName()));
+
+        if(!Strings.isEmpty(rmb.getForeignKeyName())) {
+            fk.setName(rmb.getForeignKeyName());
+        }else{
+            fk.setName(context.getNamingStrategy().getForeignKeyName(emb.getEntityName(), targetEmb.getEntityName(), rmb.getName()));
+        }
 		fk.setForeignTable(targetEmb.getTableSchemaObjectName());
 		
 		for(JoinFieldMappingBuilder jfmb : rmb.getJoinFields()) {

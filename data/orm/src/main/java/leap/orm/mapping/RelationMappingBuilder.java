@@ -38,6 +38,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 	protected Class<?>						joinEntityType;
 	protected String						joinEntityName;
 	protected String						joinTableName;
+    protected String                        foreignKeyName;
 	protected List<JoinFieldMappingBuilder> joinFields = new ArrayList<>();
 
     public RelationMappingBuilder() {
@@ -153,6 +154,14 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 		this.joinTableName = joinTableName;
 	}
 
+    public String getForeignKeyName() {
+        return foreignKeyName;
+    }
+
+    public void setForeignKeyName(String foreignKeyName) {
+        this.foreignKeyName = foreignKeyName;
+    }
+
     public void setJoinEntity(EntityMappingBuilder emb) {
         this.joinEntityName = emb.getEntityName();
         this.joinEntityType = emb.getEntityClass();
@@ -172,6 +181,7 @@ public class RelationMappingBuilder implements Buildable<RelationMapping> {
 		List<JoinFieldMapping> joinFields = Builders.buildList(this.joinFields);
 		
 	    return new RelationMapping(name, type, inverseRelationName, targetEntityName,
-                                   joinEntityName, isOptional(), onCascadeDelete, virtual, joinFields);
+                                   joinEntityName,
+                                   isOptional(), onCascadeDelete, virtual, joinFields);
     }
 }
