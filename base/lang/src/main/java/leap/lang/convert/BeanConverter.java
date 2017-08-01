@@ -77,6 +77,10 @@ public class BeanConverter extends AbstractConverter<Object>{
 
         doConvert(map, bean, bt, context);
 
+        if(bean instanceof PostConvertible) {
+            ((PostConvertible) bean).postConvert();
+        }
+
 		return bean;
 	}
 
