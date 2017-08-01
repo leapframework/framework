@@ -26,6 +26,13 @@ public class Comparators {
         }
 	};
 
+    public static final Comparator<Named> NAMED_COMPARATOR = new Comparator<Named>() {
+        @Override
+        public int compare(Named o1, Named o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
+
 	protected Comparators() {
 		
 	}

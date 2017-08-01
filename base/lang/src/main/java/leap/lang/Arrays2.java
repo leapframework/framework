@@ -818,6 +818,11 @@ public class Arrays2 {
 		
 		return filtered;
 	}
+
+    public static <T extends Named> T[] sort(T[] a) {
+        Arrays.sort(a, Comparators.NAMED_COMPARATOR);
+        return a;
+    }
 	
 	protected Arrays2() {
 

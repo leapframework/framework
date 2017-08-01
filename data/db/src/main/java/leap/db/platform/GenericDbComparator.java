@@ -16,6 +16,7 @@
 package leap.db.platform;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -55,11 +56,7 @@ import leap.db.model.DbPrimaryKey;
 import leap.db.model.DbSchema;
 import leap.db.model.DbSequence;
 import leap.db.model.DbTable;
-import leap.lang.Args;
-import leap.lang.Arrays2;
-import leap.lang.Assert;
-import leap.lang.New;
-import leap.lang.Strings;
+import leap.lang.*;
 import leap.lang.logging.Log;
 
 public class GenericDbComparator implements DbComparator,DbAware {
@@ -112,9 +109,9 @@ public class GenericDbComparator implements DbComparator,DbAware {
 		log.debug("Comparing source schema '{}' to target schema '{}'",source,target);
 		
 		GenericSchemaChanges changes = db.createSchemaChanges();
-		
-		compareTables(changes, source.getTables(), target.getTables());
-		compareSequences(changes, source.getSequences(), target.getSequences());
+
+		compareTables(changes, Arrays2.sort(source.getTables()), Arrays2.sort(target.getTables()));
+		compareSequences(changes, Arrays2.sort(source.getSequences()), Arrays2.sort(target.getSequences()));
 		
 	    return changes;
     }
