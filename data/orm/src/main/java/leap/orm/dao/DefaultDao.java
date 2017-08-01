@@ -534,7 +534,14 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(em,"entity mapping");
 	    return queryFactory().createCriteriaQuery(this, em, resultClass);
     }
-	
+
+    @Override
+    public <T> CriteriaQuery<T> createCriteriaQuery(Class<?> entityClass, Class<T> resultClass) {
+        Args.notNull(entityClass, "entity class");
+        Args.notNull(resultClass, "result class");
+        return queryFactory().createCriteriaQuery(this, em(entityClass), resultClass);
+    }
+
     @Override
     public Query<Record> createNamedQuery(String queryName) {
 		Args.notEmpty(queryName,"query name");

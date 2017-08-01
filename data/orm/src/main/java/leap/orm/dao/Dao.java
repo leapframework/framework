@@ -608,9 +608,14 @@ public abstract class Dao implements JdbcExecutor {
 	/**
 	 * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
 	 */
-	public abstract <T> CriteriaQuery<T> createCriteriaQuery(EntityMapping em, Class<T> resultClass); 
-	
-	/**
+	public abstract <T> CriteriaQuery<T> createCriteriaQuery(EntityMapping em, Class<T> resultClass);
+
+    /**
+     * Creates a new {@link CriteriaQuery} for querying the records of the given entity.
+     */
+    public abstract <T> CriteriaQuery<T> createCriteriaQuery(Class<?> entityClass, Class<T> resultClass);
+
+    /**
 	 * Creates a new {@link Query} object for querying data later.
 	 * 
 	 * <p>
