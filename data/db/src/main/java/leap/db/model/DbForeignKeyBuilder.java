@@ -115,6 +115,7 @@ public class DbForeignKeyBuilder implements Buildable<DbForeignKey>,JsonParsable
 		if(null != foreignTable){
 			DbSchemaObjectNameBuilder nb = new DbSchemaObjectNameBuilder();
 			nb.parseJson(foreignTable);
+            this.foreignTable = nb.build();
 		}
 		
 		JsonArray columns = o.getArray("columns");

@@ -270,7 +270,6 @@ public class DbTable extends DbSchemaObjectName implements JsonStringable {
 		writer.propertyJsonable("columns",columns);
 
 		if(foreignKeys.length > 0){
-			writer.separator();
 			writer.propertyJsonable("foreignKeys",foreignKeys);
 		}
 		

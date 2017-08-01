@@ -57,7 +57,7 @@ public class DbSchemaObjectName extends DbSchemaObject implements JsonStringable
 
 	protected void writeName(JsonWriter writer) {
 		writer.propertyOptional("catalog", catalog)
-		      .propertyOptional("scheam", schema)
+		      .propertyOptional("schema", schema)
 		      .property("name", name);
 	}
 }
