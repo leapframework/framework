@@ -30,6 +30,7 @@ import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
+import leap.lang.exception.ObjectExistsException;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
@@ -546,11 +547,11 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			rmb.setOptional(a.optional().getValue());
             rmb.setOnCascadeDelete(a.onCascadeDelete());
 			rmb.setTargetEntityType(targetEntityType);
-			
+
 			//join fields
 			createManyToOneJoinFields(emb, rmb, a.fields());
-			
-			emb.addRelationMapping(rmb);
+
+            emb.addRelationMapping(rmb);
 		}
 	}
 	

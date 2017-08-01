@@ -127,12 +127,12 @@ public class RelationMapper implements Mapper {
                         findManyToManyRelation(entity2, entity1.getEntityName(), emb.getEntityName());
 
                 if(null == manyToMany1) {
-                    manyToMany1 = createManyToManyRelation(entity1, entity2, emb);
+                    manyToMany1 = createManyToManyRelation(entity1, entity2, emb, 1);
                     entity1.addRelationMapping(manyToMany1);
                 }
 
                 if(null == manyToMany2) {
-                    manyToMany2 = createManyToManyRelation(entity2, entity1, emb);
+                    manyToMany2 = createManyToManyRelation(entity2, entity1, emb, 2);
                     entity2.addRelationMapping(manyToMany2);
                 }
 
@@ -180,10 +180,8 @@ public class RelationMapper implements Mapper {
 		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
 
 		//resolve relation's name
-		if(Strings.isEmpty(rmb.getName())){
-			rmb.setName(targetEmb.getEntityName());
-		}
-		
+        autoSetRelationName(emb, targetEmb, rmb);
+
 		//resolve referenced fields
 		List<FieldMappingBuilder> referencedFields = targetEmb.getKeyFieldMappings();
 		if(referencedFields.isEmpty()){
@@ -222,16 +220,28 @@ public class RelationMapper implements Mapper {
 		//create foreign key
 		createManyToOneForeignKey(context, emb, targetEmb, rmb);
 	}
+
+    protected void autoSetRelationName(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb) {
+        if(Strings.isEmpty(rmb.getName())) {
+            int i = 0;
+            for (; ; ) {
+                String name = i > 0 ? target.getEntityName() + "_" + i : target.getEntityName();
+                if (null == entity.getRelationMapping(name)) {
+                    rmb.setName(name);
+                    break;
+                }
+                i++;
+            }
+        }
+    }
 	
 	protected void processManyToManyMapping(MappingConfigContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) {
 		//check target entity exists
 		EntityMappingBuilder targetEmb = verifyTargetEntity(context, emb, rmb);
 		
 		//resolve relation's name
-		if(Strings.isEmpty(rmb.getName())){
-			rmb.setName(targetEmb.getEntityName());
-		}
-		
+        autoSetRelationName(emb, targetEmb, rmb);
+
 		EntityMappingBuilder joinEmb = verifyJoinEntity(context, emb, targetEmb, rmb);
 		if(null == joinEmb){
 			//create join entity
@@ -466,13 +476,18 @@ public class RelationMapper implements Mapper {
 		context.addEntityMapping(joinEmb);
 	}
 
-    protected RelationMappingBuilder createManyToManyRelation(EntityMappingBuilder emb, EntityMappingBuilder target, EntityMappingBuilder join) {
+    protected RelationMappingBuilder createManyToManyRelation(EntityMappingBuilder emb, EntityMappingBuilder target, EntityMappingBuilder join, int i) {
         RelationMappingBuilder r = new RelationMappingBuilder();
 
         r.setName(emb.getEntityName() + "_" + join.getEntityName() + "_" + target.getEntityName());
         r.setType(RelationType.MANY_TO_MANY);
         r.setTargetEntity(target);
         r.setJoinEntity(join);
+
+        //The same entities
+        if(emb.getEntityName().equals(target.getEntityName())) {
+            r.setName(r.getName() + "_" + String.valueOf(i));
+        }
 
         return r;
     }

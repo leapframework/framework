@@ -19,6 +19,7 @@ import leap.db.model.DbSchemaObjectName;
 import leap.db.model.DbTable;
 import leap.db.model.DbTableBuilder;
 import leap.lang.*;
+import leap.lang.exception.ObjectExistsException;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -336,21 +337,46 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		getValidators().add(validator);
 		return this;
 	}
+
+    public RelationMappingBuilder getRelationMapping(String name) {
+        for(RelationMappingBuilder rm : relationMappings) {
+            if(rm.getName().equalsIgnoreCase(name)) {
+                return rm;
+            }
+        }
+        return null;
+    }
 	
 	public List<RelationMappingBuilder> getRelationMappings() {
 		return relationMappings;
 	}
 
 	public EntityMappingBuilder addRelationMapping(RelationMappingBuilder relationMapping){
-		getRelationMappings().add(relationMapping);
+        //check exists
+        if(!Strings.isEmpty(relationMapping.getName()) && null != getRelationMapping(relationMapping.getName())) {
+            throw new ObjectExistsException("The relation '"+ relationMapping.getName() + "' already exists in entity '" + entity() + "'");
+        }
+		relationMappings.add(relationMapping);
 		return this;
 	}
+
+    public RelationPropertyBuilder getRelationProperty(String name) {
+        for(RelationPropertyBuilder rp : relationProperties) {
+            if(rp.getName().equalsIgnoreCase(name)) {
+                return rp;
+            }
+        }
+        return null;
+    }
 
     public List<RelationPropertyBuilder> getRelationProperties() {
         return relationProperties;
     }
 
     public EntityMappingBuilder addRelationProperty(RelationPropertyBuilder p) {
+        if(null != getRelationProperty(p.getName())) {
+            throw new ObjectExistsException("The relation property '" + p.getName() + "' already exists in entity '" + entity() + "'");
+        }
         relationProperties.add(p);
         return this;
     }
@@ -384,6 +410,10 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
     public EntityListenersBuilder listeners() {
         return listeners();
+    }
+
+    private String entity() {
+        return Strings.isEmpty(entityName) ? entityClass.getSimpleName() : entityName;
     }
 
     @Override
