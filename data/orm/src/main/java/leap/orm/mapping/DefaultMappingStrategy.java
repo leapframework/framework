@@ -542,6 +542,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     									      JoinFieldMappingBuilder jfmb, 
     									      FieldMappingBuilder lfmb) {
 
+        if(lfmb.isHasPhysicalColumn()) {
+            return;
+        }
+
 		FieldMappingBuilder rfmb = targetEmb.findFieldMappingByName(jfmb.getReferencedFieldName());
 
 		if(!lfmb.getColumn().isPrimaryKey() && null != rmb.getOptional()) {

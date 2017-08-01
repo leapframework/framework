@@ -17,6 +17,7 @@ package leap.orm.mapping;
 
 import leap.core.el.EL;
 import leap.core.metamodel.ReservedMetaFieldName;
+import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
@@ -70,6 +71,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected boolean               sharding;
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
+    protected boolean               hasPhysicalColumn;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -646,6 +648,14 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 
     public void setSerializer(FieldSerializer serializer) {
         this.serializer = serializer;
+    }
+
+    public boolean isHasPhysicalColumn() {
+        return hasPhysicalColumn;
+    }
+
+    public void setHasPhysicalColumn(boolean hasPhysicalColumn) {
+        this.hasPhysicalColumn = hasPhysicalColumn;
     }
 
     @Override
