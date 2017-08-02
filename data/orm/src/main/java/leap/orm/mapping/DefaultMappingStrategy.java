@@ -306,7 +306,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	    				.setDataType(MSimpleTypes.INTEGER)
 	    				.setColumn(new DbColumnBuilder());
 	    
-	    postMappingFieldConventional(context, emb, id);
+	    beforePostMappingField(context, emb, id);
 	    
 	    id.getColumn().setPrimaryKey(true);
 	    id.setIdGenerator(defaultIdGenerator);
@@ -323,9 +323,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 		EntityMappingBuilder emb = new EntityMappingBuilder().setEntityClass(cls);
 		
-		preMapping(context, emb);
 		preMappingEntity(context, emb);
-		postMappingEntity(context, emb);
 
 		//mapping entity's properties
 		BeanType beanType = BeanType.of(cls);
@@ -333,8 +331,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		log.debug("Creating entity mapping for type : " + cls.getName());
 		
 		mappingBeanProperties(context,emb,beanType);
-		
-		postMapping(context, emb);
+
+        postMappingEntity(context, emb);
+		finalMappingEntity(context, emb);
 		
 		//fields must be defined
 		if(emb.getFieldMappings().isEmpty()){
@@ -357,10 +356,8 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		
 		EntityMappingBuilder emb = new EntityMappingBuilder().setModelClass(modelClass);
 
-		preMapping(context, emb);
 		preMappingEntity(context, emb);
-		postMappingEntity(context, emb);
-		
+
 		BeanType beanType = BeanType.of(modelClass);
 		log.debug("Creating entity mapping for model : " + modelClass.getName());
 		
@@ -388,8 +385,9 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         }
 		
 		mappingBeanProperties(context,emb,beanType);
-		
-		postMapping(context, emb);
+
+        postMappingEntity(context, emb);
+		finalMappingEntity(context, emb);
 		
 		return emb;
     }
@@ -412,7 +410,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         }
 
         //post mappings
-        postMapping(context, emb);
+        finalMappingEntity(context, emb);
 
         return emb;
     }
@@ -648,31 +646,24 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         c.trySetDefaultValue(d.getDefaultValue());
     }
 
-	protected void preMapping(MetadataContext context,EntityMappingBuilder emb){
-		for(MappingProcessor p : processors){
-			p.preMapping(context, emb);
-		}
-	}
-	
 	protected void preMappingEntity(MetadataContext context,EntityMappingBuilder emb){
-		preMappingEntityConventional(context, emb);
+		beforePreMappingEntity(context, emb);
 		
 		for(MappingProcessor p : processors){
 			p.preMappingEntity(context, emb);
 		}
+
+        afterPreMappingEntity(context, emb);
 	}
 	
 	protected void postMappingEntity(MetadataContext context,EntityMappingBuilder emb){
-		postMappingEntityConventional(context, emb);
-
 		for(MappingProcessor p : processors){
 			p.postMappingEntity(context, emb);
 		}
-
 	}
 	
 	protected void preMappingField(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb){
-		preMappingFieldConventional(context, emb, fmb);
+		beforePreMappingField(context, emb, fmb);
 		
 		for(MappingProcessor p : processors){
 			p.preMappingField(context, emb, fmb);
@@ -680,7 +671,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 	
 	protected void postMappingField(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb){
-		postMappingFieldConventional(context, emb, fmb);
+		beforePostMappingField(context, emb, fmb);
 		
 		for(MappingProcessor p : processors){
 			p.postMappingField(context, emb, fmb);
@@ -699,24 +690,24 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 	}
 	
-	protected void postMapping(MetadataContext context,EntityMappingBuilder emb) {
-		postMappingConventional(context, emb);
+	protected void finalMappingEntity(MetadataContext context, EntityMappingBuilder emb) {
+		beforeFinalMappingEntity(context, emb);
 
 		for(MappingProcessor p : processors){
-			p.postMapping(context, emb);
+			p.finalMappingEntity(context, emb);
 		}
 		
-		postMappingFinally(context, emb);
+		afterFinalMappingEntity(context, emb);
 	}
 	
-	protected void preMappingEntityConventional(MetadataContext context,EntityMappingBuilder emb){
+	protected void beforePreMappingEntity(MetadataContext context, EntityMappingBuilder emb){
 		Class<?> sourceClass = emb.getSourceClass();
 		if(null != sourceClass){
 			emb.setAbstract(Modifier.isAbstract(emb.getSourceClass().getModifiers()));	
 		}
 	}
 	
-	protected void postMappingEntityConventional(MetadataContext context,EntityMappingBuilder emb){
+	protected void afterPreMappingEntity(MetadataContext context, EntityMappingBuilder emb){
 		Class<?> sourceClass = emb.getSourceClass();
 		
 		if(Strings.isEmpty(emb.getEntityName())){
@@ -731,11 +722,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		}
 	}
 	
-	protected void preMappingFieldConventional(MetadataContext context, EntityMappingBuilder emb,FieldMappingBuilder fmb){
+	protected void beforePreMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 
 	}
 	
-	protected void postMappingFieldConventional(MetadataContext context, EntityMappingBuilder emb,FieldMappingBuilder fmb){
+	protected void beforePostMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
         if(Strings.isEmpty(fmb.getFieldName())){
             fmb.setFieldName(fmb.getBeanProperty().getName());
         }
@@ -839,7 +830,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		return Types.INTEGER == typeCode || Types.BIGINT == typeCode;
 	}
 	
-	protected void postMappingConventional(MetadataContext context, EntityMappingBuilder emb){
+	protected void beforeFinalMappingEntity(MetadataContext context, EntityMappingBuilder emb){
         if(context.getConfig().isQueryFilterEnabled() && null == emb.getQueryFilterEnabled()) {
             emb.setQueryFilterEnabled(true);
         }
@@ -870,7 +861,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		*/
 	}
 	
-	protected void postMappingFinally(MetadataContext context, EntityMappingBuilder emb){
+	protected void afterFinalMappingEntity(MetadataContext context, EntityMappingBuilder emb){
 		//Auto set id generator
 		List<FieldMappingBuilder> idFieldMappings = emb.getIdFieldMappings();
 		if(idFieldMappings.size() == 1){

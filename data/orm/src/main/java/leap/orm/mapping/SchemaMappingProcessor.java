@@ -44,7 +44,7 @@ public class SchemaMappingProcessor extends MappingProcessorAdapter {
     }
 	
 	@Override
-    public void postMapping(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+    public void finalMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
 		DbTable table = emb.getPhysicalTable();
 		
 		if(null != table){

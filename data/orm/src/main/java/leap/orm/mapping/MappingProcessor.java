@@ -20,11 +20,7 @@ import leap.orm.metadata.MetadataException;
 
 public interface MappingProcessor {
 	
-	void preMapping(MetadataContext context,EntityMappingBuilder emb) throws MetadataException;
-	
 	void preMappingEntity(MetadataContext context,EntityMappingBuilder emb) throws MetadataException;
-	
-	void postMappingEntity(MetadataContext context,EntityMappingBuilder emb) throws MetadataException;
 	
 	void preMappingField(MetadataContext context,EntityMappingBuilder emb,FieldMappingBuilder fmb) throws MetadataException;
 	
@@ -34,6 +30,8 @@ public interface MappingProcessor {
 	
 	void postMappingRelation(MetadataContext context,EntityMappingBuilder emb,RelationMappingBuilder rmb) throws MetadataException;
 
-	void postMapping(MetadataContext context,EntityMappingBuilder emb) throws MetadataException;
+    void postMappingEntity(MetadataContext context,EntityMappingBuilder emb) throws MetadataException;
+
+	void finalMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException;
 
 }

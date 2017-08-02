@@ -21,11 +21,6 @@ import leap.orm.metadata.MetadataException;
 public abstract class MappingProcessorAdapter implements MappingProcessor {
 
 	@Override
-    public void preMapping(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
-	    
-    }
-
-	@Override
     public void preMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
 
 	}
@@ -56,7 +51,7 @@ public abstract class MappingProcessorAdapter implements MappingProcessor {
     }
 
 	@Override
-    public void postMapping(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
+    public void finalMappingEntity(MetadataContext context, EntityMappingBuilder emb) throws MetadataException {
 	    
     }
 }
