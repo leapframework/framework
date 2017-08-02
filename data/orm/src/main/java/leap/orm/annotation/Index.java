@@ -19,20 +19,15 @@ package leap.orm.annotation;
 
 import java.lang.annotation.*;
 
-@Target({ElementType.FIELD,ElementType.METHOD, ElementType.TYPE})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Repeatable(Indexes.class)
 public @interface Index {
 
     /**
-     * The name of index, same as {@link #name()}.
-     */
-    String value() default "";
-
-    /**
      * The name of index.
      */
-    String name() default "";
+    String name();
 
     /**
      * unique index.
@@ -40,8 +35,8 @@ public @interface Index {
     boolean unique() default false;
 
     /**
-     * The index columns.
+     * The index fields.
      */
-    String[] columns() default {};
+    String[] fields();
 
 }

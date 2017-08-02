@@ -25,12 +25,10 @@ import leap.core.validation.annotations.NotNull;
 import leap.core.validation.annotations.Required;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbIndexBuilder;
-import leap.db.model.DbTableBuilder;
 import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
 import leap.lang.beans.BeanProperty;
-import leap.lang.exception.ObjectExistsException;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectMethod;
 import leap.orm.annotation.*;
@@ -359,6 +357,8 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
     protected boolean mappingFieldColumnIndex(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder f, Index a){
         if(null != a) {
+            //todo: supports @Index at field?
+            /*
             DbTableBuilder table = emb.getTable();
 
             String localName = Strings.firstNotEmpty(a.name(), a.value());
@@ -385,32 +385,30 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 
             ix.addColumnName(f.getColumnName());
             return true;
+            */
         }
         return false;
     }
 
     protected boolean mappingTableIndex(MetadataContext context, EntityMappingBuilder emb, Index a){
-        String localName = Strings.firstNotEmpty(a.name(), a.value());
-        if(Strings.isEmpty(localName)) {
+        String indexName = a.name();
+        if(Strings.isEmpty(indexName)) {
             throw new MappingConfigException("The name must not be empty in @Index, check : " + emb.getEntityClass());
         }
 
-        String[] columns = a.columns();
-        if(columns.length == 0) {
-            throw new MappingConfigException("The columns must not be empty in @Index, check : " + emb.getEntityClass());
+        String[] fields = a.fields();
+        if(fields.length == 0) {
+            throw new MappingConfigException("The fields must not be empty in @Index, check : " + emb.getEntityClass());
         }
 
         DbIndexBuilder index = new DbIndexBuilder();
-        index.setName(context.getNamingStrategy().getIndexName(emb.getEntityName(), localName));
+        index.setName(indexName);
         index.setUnique(a.unique());
 
-        for(String columnName : columns) {
-            FieldMappingBuilder fmb = emb.findFieldMappingByColumn(columnName);
+        for(String fieldName : fields) {
+            FieldMappingBuilder fmb = emb.findFieldMappingByName(fieldName);
             if(null == fmb) {
-               fmb = emb.findFieldMappingByName(columnName);
-            }
-            if(null == fmb) {
-                throw new MappingConfigException("No field or column named '" + columnName +
+                throw new MappingConfigException("No field named '" + fieldName +
                                                  "' in entity '" + emb.getEntityName() + "', check the @Index");
             }
             index.addColumnName(fmb.getColumnName());
