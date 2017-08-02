@@ -82,6 +82,7 @@
         <xsd:attribute name="update-value" type="xsd:string"/>
         <xsd:attribute name="filter" type="xsd:boolean"/>
         <xsd:attribute name="filter-value" type="xsd:string"/>
+        <xsd:attribute name="id-generator" type="xsd:string"/>
         <xsd:attribute name="sort-order" type="xsd:float" use="optional"/>
         <xsd:attribute name="override" type="xsd:boolean">
             <xsd:annotation>

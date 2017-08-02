@@ -19,6 +19,7 @@ import leap.lang.*;
 import leap.lang.annotation.Nullable;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
+import leap.orm.generator.IdGenerator;
 
 import java.util.regex.Pattern;
 
@@ -41,10 +42,11 @@ public class Domain implements Sourced,Named {
     private final Expression   filterValue;
 	private final Float        sortOrder;
     private final boolean      autoMapping;
+    private final IdGenerator  idGenerator;
 
 	public Domain(Object source, String name, String defaultColumnName, JdbcType type, Integer length, Integer precision, Integer scale,
                   Boolean nullable, String defaultValue, Boolean insert, Expression insertValue, Boolean update,
-                   Expression updateValue, Boolean filter, Expression filterValue, Float sortOrder, boolean autoMapping) {
+                   Expression updateValue, Boolean filter, Expression filterValue, Float sortOrder, boolean autoMapping, IdGenerator idGenerator) {
 		Args.notEmpty(name,"name");
 		this.source = source;
 	    this.name = name;
@@ -63,6 +65,7 @@ public class Domain implements Sourced,Named {
         this.filterValue = filterValue;
 	    this.sortOrder   = sortOrder;
         this.autoMapping = autoMapping;
+        this.idGenerator = idGenerator;
     }
 	
 	@Override
@@ -132,6 +135,10 @@ public class Domain implements Sourced,Named {
 
     public boolean isAutoMapping() {
         return autoMapping;
+    }
+
+    public IdGenerator getIdGenerator() {
+        return idGenerator;
     }
 
     @Override

@@ -26,6 +26,7 @@ import leap.lang.Arrays2;
 import leap.lang.Exceptions;
 import leap.lang.Strings;
 import leap.lang.exception.NestedSQLException;
+import leap.lang.exception.ObjectExistsException;
 import leap.lang.jdbc.ConnectionCallback;
 import leap.lang.jdbc.ConnectionCallbackWithResult;
 import leap.lang.jdbc.JDBC;
@@ -486,11 +487,19 @@ public class GenericDb extends DbBase {
 		}
 		
 		StringBuilder sb = new StringBuilder();
-		
-		for(Object[] args : batchArgs){
-			sb.append(getDisplayString(args, types)).append("\n        ");
-		}
-		
+
+        for(int i=0;i<batchArgs.length;i++) {
+            Object[] args = batchArgs[i];
+
+            if(i == 10) {
+                sb.append("[... " + (batchArgs.length - i) + " more]");
+                break;
+            }else{
+                sb.append(getDisplayString(args, types)).append("\n        ");
+            }
+
+        }
+
 		return sb.toString();
 	}
 }

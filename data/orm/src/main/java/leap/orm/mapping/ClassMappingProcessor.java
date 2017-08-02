@@ -103,7 +103,6 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     public void postMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) throws MetadataException {
 		Annotation[] annotations = fmb.getAnnotations();
 		if(null != annotations && annotations.length > 0){
-			mappingFieldColumnByAnnotation(context, emb, fmb, Classes.getAnnotation(annotations,Id.class));
             mappingFieldColumnIndex(context, emb, fmb, Classes.getAnnotation(annotations,Index.class));
 		}
     }

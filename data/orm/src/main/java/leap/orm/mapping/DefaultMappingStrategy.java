@@ -49,6 +49,7 @@ import leap.orm.config.OrmModelPkgConfig;
 import leap.orm.config.OrmModelsConfig;
 import leap.orm.config.OrmModelsConfigs;
 import leap.orm.domain.Domain;
+import leap.orm.generator.AutoIdGenerator;
 import leap.orm.generator.IdGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
@@ -296,24 +297,24 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	    return beanProperty.isAnnotationPresent(NonColumn.class);
     }
 
-	/**
-	 * Creates default primary key field for the given entity.
-	 */
-    protected FieldMappingBuilder createAutoIdentityMapping(MetadataContext context, EntityMappingBuilder emb) {
-	    FieldMappingBuilder id =
-	    		new FieldMappingBuilder()
-	    				.setFieldName("id")
-	    				.setDataType(MSimpleTypes.INTEGER)
-	    				.setColumn(new DbColumnBuilder());
-	    
-	    beforePostMappingField(context, emb, id);
-	    
-	    id.getColumn().setPrimaryKey(true);
-	    id.setIdGenerator(defaultIdGenerator);
-	    defaultIdGenerator.mapping(context, emb, id);
-	    
-	    return id;
-    }
+//	/**
+//	 * Creates default primary key field for the given entity.
+//	 */
+//    protected FieldMappingBuilder createAutoIdentityMapping(MetadataContext context, EntityMappingBuilder emb) {
+//	    FieldMappingBuilder id =
+//	    		new FieldMappingBuilder()
+//	    				.setFieldName("id")
+//	    				.setDataType(MSimpleTypes.INTEGER)
+//	    				.setColumn(new DbColumnBuilder());
+//
+//	    beforePostMappingField(context, emb, id);
+//
+//	    id.getColumn().setPrimaryKey(true);
+//	    id.setIdGenerator(defaultIdGenerator);
+//	    defaultIdGenerator.mapping(context, emb, id);
+//
+//	    return id;
+//    }
 
 	@Override
     public EntityMappingBuilder createEntityClassMapping(MetadataContext context, Class<?> cls) {
@@ -638,6 +639,14 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         f.trySetFilter(d.getFilter());
         f.trySetFilterValue(d.getFilterValue());
 		f.trySetSortOrder(d.getSortOrder());
+
+        if(f.isId() && null != d.getIdGenerator()) {
+            if (f.getIdGenerator() instanceof AutoIdGenerator) {
+                f.setIdGenerator(d.getIdGenerator());
+            }else{
+                f.trySetIdGenerator(d.getIdGenerator());
+            }
+        }
 
         c.trySetScale(d.getScale());
         c.trySetNullable(d.getNullable());

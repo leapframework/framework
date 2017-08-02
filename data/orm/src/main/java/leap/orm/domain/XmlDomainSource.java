@@ -27,6 +27,7 @@ import leap.lang.resource.Resource;
 import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
+import leap.orm.generator.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -64,9 +65,11 @@ public class XmlDomainSource implements DomainSource {
     private static final String DEFAULT_VALUE    = "default-value";
     private static final String SORT_ORDER       = "sort-order";
     private static final String COLUMN           = "column";
+    private static final String ID_GENERATOR     = "id-generator";
 
-    protected @Inject AppConfig config;
-	
+    protected @Inject AppConfig   config;
+    protected @Inject BeanFactory beanFactory;
+
 	@Override
     public void loadDomains(Domains context) {
 		loadDomains(new LoadContext(context), AppResources.get(config).search("domains"));
@@ -231,10 +234,11 @@ public class XmlDomainSource implements DomainSource {
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE);
         Boolean filter       = reader.resolveBooleanAttribute(FILTER);
         String  filterValue  = reader.getAttribute(FILTER_VALUE);
+        String  idGenerator  = reader.getAttribute(ID_GENERATOR);
         boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
-		
+
 		//check name
 		if(Strings.isEmpty(name)){
 			throw new DomainConfigException("The 'name' and 'type' attribute must be defined in domain, check the xml : " + reader.getCurrentLocation());
@@ -264,6 +268,14 @@ public class XmlDomainSource implements DomainSource {
             filterValueExpression = EL.tryCreateValueExpression(filterValue);
         }
 
+        IdGenerator idGeneratorBean = null;
+        if(!Strings.isEmpty(idGenerator)) {
+            idGeneratorBean = beanFactory.tryGetBean(IdGenerator.class, idGenerator);
+            if(null == idGeneratorBean) {
+                throw new DomainConfigException("Id generator '" + idGenerator + "' not found, check the xml : " + reader.getCurrentLocation());
+            }
+        }
+
 		return new DomainBuilder(reader.getSource())
 										.setName(name)
                                         .setDefaultColumnName(columnName)
@@ -282,6 +294,7 @@ public class XmlDomainSource implements DomainSource {
                                         .setSortOrder(sortOrder)
                                         .addAliases(readAlias(reader))
                                         .setAutoMapping(autoMapping)
+                                        .setIdGenerator(idGeneratorBean)
                                         .setOverride(override);
 	}
 	

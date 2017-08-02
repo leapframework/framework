@@ -19,6 +19,7 @@ import leap.lang.Buildable;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.lang.jdbc.JdbcType;
+import leap.orm.generator.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ public class DomainBuilder implements Buildable<Domain> {
 	protected Expression   updateValue;
     protected Boolean      filter;
     protected Expression   filterValue;
+    protected IdGenerator  idGenerator;
 	protected Float        sortOrder;
 	protected boolean      unnamed;
     protected boolean	   autoMapping;
@@ -107,6 +109,10 @@ public class DomainBuilder implements Buildable<Domain> {
 
         if(null == this.filterValue) {
             this.filterValue = domain.getFilterValue();
+        }
+
+        if(null == this.idGenerator) {
+            this.idGenerator = domain.getIdGenerator();
         }
 
         return this;
@@ -285,6 +291,15 @@ public class DomainBuilder implements Buildable<Domain> {
         return this;
     }
 
+    public IdGenerator getIdGenerator() {
+        return idGenerator;
+    }
+
+    public DomainBuilder setIdGenerator(IdGenerator idGenerator) {
+        this.idGenerator = idGenerator;
+        return this;
+    }
+
     public boolean isOverride() {
         return override;
     }
@@ -298,6 +313,6 @@ public class DomainBuilder implements Buildable<Domain> {
 	public Domain build() {
 		return new Domain(source, name, defaultColumnName, type, length, precision, scale,
 				 				  nullable, defaultValue,insert,insertValue, update,
-				 				  updateValue, filter, filterValue, sortOrder,autoMapping);
+				 				  updateValue, filter, filterValue, sortOrder,autoMapping, idGenerator);
 	}
 }
