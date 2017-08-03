@@ -40,6 +40,11 @@ public interface UpdateCommand {
 	UpdateCommand set(String name,Object value);
 
     /**
+     * Sets all the fields for update.
+     */
+    UpdateCommand setAll(Map<String,Object> fields);
+
+    /**
      * Executes update and returns the affected rows.
      */
 	int execute();

@@ -3,7 +3,7 @@
 
     <properties prefix="h2">
         <property name="driverClassName" value="org.h2.Driver"/>
-        <property name="jdbcUrl"         value="jdbc:h2:./target/leap;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'"/>
+        <property name="jdbcUrl"         value="jdbc:h2:mem:leap;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'"/>
     </properties>
 
     <property name="tested.TestConfigLoader1.enabled" value="true"/>

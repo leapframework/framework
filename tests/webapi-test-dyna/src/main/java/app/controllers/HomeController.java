@@ -79,7 +79,7 @@ public class HomeController {
         DataSourceProps.Builder dsc = new DataSourceProps.Builder();
         dsc.setDefault(true);
         dsc.setDriverClassName("org.h2.Driver");
-        dsc.setJdbcUrl("jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE");
+        dsc.setJdbcUrl("jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE");
         dsc.setUsername("sa");
 
         Try.throwUnchecked(() -> {

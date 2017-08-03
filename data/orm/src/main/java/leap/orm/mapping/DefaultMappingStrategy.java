@@ -432,7 +432,10 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			}
 			
 			if( isExplicitField(context,bp) || isConventionalField(context,bp)){
-				FieldMappingBuilder fmb = new FieldMappingBuilder().setBeanProperty(bp);
+				FieldMappingBuilder fmb = new FieldMappingBuilder();
+
+                fmb.setBeanProperty(bp);
+                fmb.setJavaType(bp.getType());
 				
 				preMappingField(context, emb, fmb);
 				postMappingField(context, emb, fmb);
@@ -736,31 +739,45 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	}
 	
 	protected void beforePostMappingField(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
-        if(Strings.isEmpty(fmb.getFieldName())){
-            fmb.setFieldName(fmb.getBeanProperty().getName());
+        //auto mapping by bean property.
+        BeanProperty bp = fmb.getBeanProperty();
+        if(null != bp && Strings.isEmpty(fmb.getFieldName())) {
+            fmb.setFieldName(context.getNamingStrategy().fieldName(bp.getName()));
         }
-        fmb.setFieldName(context.getNamingStrategy().fieldName(fmb.getFieldName()));
 
+        //auto mapping domain.
+        if(null == fmb.getDomain()){
+            leap.orm.annotation.Domain a = Classes.getAnnotation(fmb.getAnnotations(), leap.orm.annotation.Domain.class);
+            if(null == a || a.autoMapping()) {
+                Domain domain = context.getMetadata().domains().autoMapping(emb.getEntityName(), fmb.getFieldName());
+                if(null != domain) {
+                    log.trace("Found domain '{}' matched the field '{}' of entity '{}'", domain.getName(), emb.getEntityName(), fmb.getFieldName());
+                    configFieldMappingByDomain(emb, fmb, domain);
+                }
+            }
+        }
+
+        //auto set length by id generator.
         if(null != fmb.getIdGenerator()) {
             fmb.getColumn().trySetLength(fmb.getIdGenerator().getDefaultColumnLength());
         }
 
-        if(null == fmb.getDataType()){
+        if(null == fmb.getDataType()) {
             Class<?> javaType = fmb.getJavaType();
-            if(null != javaType) {
+            if (null != javaType) {
                 TypeInfo ti = leap.lang.Types.getTypeInfo(javaType);
 
-                if(ti.isSimpleType()) {
+                if (ti.isSimpleType()) {
                     MSimpleType dataType = MSimpleTypes.forClass(javaType);
-                    if(null == dataType){
+                    if (null == dataType) {
                         throw new MetadataException("Unsupported java type '" + javaType +
                                 "' in field '" + fmb.getBeanProperty().getName() + "', class '" + emb.getEntityClass().getName() + "'");
                     }
                     fmb.setDataType(dataType);
-                }else{
+                } else {
                     //Found a serialize field.
                     String format = fmb.getSerializeFormat();
-                    if(Strings.isEmpty(format)) {
+                    if (Strings.isEmpty(format)) {
                         format = context.getConfig().getDefaultSerializer();
                     }
 
@@ -774,23 +791,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
                     FieldSerializer serializer =
                             context.getAppContext().getBeanFactory().tryGetBean(FieldSerializer.class, format);
 
-                    if(null == serializer) {
+                    if (null == serializer) {
                         throw new AppConfigException("Bean '" + format + "' of type '" +
-                                                     FieldSerializer.class.getName() + "' must be exists!");
+                                FieldSerializer.class.getName() + "' must be exists!");
                     }
 
                     fmb.setSerializer(serializer);
-                }
-            }
-        }
-
-        if(null == fmb.getDomain()){
-			leap.orm.annotation.Domain a = Classes.getAnnotation(fmb.getAnnotations(), leap.orm.annotation.Domain.class);
-			if(null == a || a.autoMapping()) {
-                Domain domain = context.getMetadata().domains().autoMapping(emb.getEntityName(), fmb.getFieldName());
-                if(null != domain) {
-                    log.trace("Found domain '{}' matched the field '{}' of entity '{}'", domain.getName(), emb.getEntityName(), fmb.getFieldName());
-                    configFieldMappingByDomain(emb, fmb, domain);
                 }
             }
         }

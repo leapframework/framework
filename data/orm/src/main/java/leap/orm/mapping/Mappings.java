@@ -20,11 +20,32 @@ import java.util.Map;
 
 import leap.lang.Objects2;
 import leap.lang.Strings;
+import leap.lang.beans.BeanType;
 
 /**
  * Util class
  */
 public class Mappings {
+
+    public static Object getId(EntityMapping em, Object bean) {
+        BeanType bt = BeanType.of(bean.getClass());
+
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            return bt.tryGetProperty(bean, keyNames[0]);
+        }
+
+        if(keyNames.length == 0){
+            return null;
+        }
+
+        Map<String, Object> id = new LinkedHashMap<String, Object>();
+        for(int i=0;i<keyNames.length;i++){
+            id.put(keyNames[i], bt.tryGetProperty(bean, keyNames[i]));
+        }
+
+        return id;
+    }
 	
 	public static Object getId(EntityMapping em , Map<String, Object> attributes){
 		String[] keyNames = em.getKeyFieldNames();

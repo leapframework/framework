@@ -3,7 +3,7 @@
 
     <properties prefix="jdbc">
         <property name="driverClassName">org.h2.Driver</property>
-        <property name="url">jdbc:h2:./target/test;DB_CLOSE_ON_EXIT=FALSE</property>
+        <property name="url">jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE</property>
         <property name="username">sa</property>
     </properties>
 

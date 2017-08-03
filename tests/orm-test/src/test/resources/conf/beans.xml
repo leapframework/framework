@@ -35,7 +35,7 @@
     
 	<bean name="ds1" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="${h2.driverClassName}" />
-        <property name="jdbcUrl"         value="jdbc:h2:./target/leap1;DB_CLOSE_ON_EXIT=FALSE" />
+        <property name="jdbcUrl"         value="jdbc:h2:mem:leap1;DB_CLOSE_ON_EXIT=FALSE" />
         <property name="username"        value="${h2.username}" />
         <property name="password"        value="${h2.password}" />
         <property name="maxActive" 		 value="10"/> 

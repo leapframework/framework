@@ -113,8 +113,8 @@ public class BeanType {
 		return getProperty(name,false);
 	}
 	
-	public BeanProperty getProperty(String name,boolean ignorecase) throws ObjectNotFoundException{
-		BeanProperty p = ignorecase ? lowerCaseNamePropertyMap.get(name.toLowerCase()) : originalNamePropertyMap.get(name);
+	public BeanProperty getProperty(String name,boolean ignoreCase) throws ObjectNotFoundException{
+		BeanProperty p = ignoreCase ? lowerCaseNamePropertyMap.get(name.toLowerCase()) : originalNamePropertyMap.get(name);
 		if(null == p){
 			throw new ObjectNotFoundException("property '" + name + "' not found in class '" + beanClass.getName() + "'");
 		}
@@ -128,13 +128,29 @@ public class BeanType {
 	public BeanProperty tryGetProperty(String name,boolean ignorecase){
 		return ignorecase ? lowerCaseNamePropertyMap.get(name.toLowerCase()) : originalNamePropertyMap.get(name);
 	}
+
+    public Object tryGetProperty(Object bean, String property) {
+        BeanProperty bp = tryGetProperty(property);
+        if(null == bp) {
+            return null;
+        }
+        return bp.getValue(bean);
+    }
+
+    public Object tryGetProperty(Object bean, String property, boolean ignoreCase) {
+        BeanProperty bp = tryGetProperty(property, ignoreCase);
+        if(null == bp) {
+            return null;
+        }
+        return bp.getValue(bean);
+    }
 	
 	public void setProperty(Object bean,String property, Object value) throws ObjectNotFoundException {
 		getProperty(property).setValue(bean, value);
 	}
 	
-	public void setProperty(Object bean,String property, Object value, boolean ignorecase) throws ObjectNotFoundException{
-		getProperty(property, ignorecase).setValue(bean, value);
+	public void setProperty(Object bean,String property, Object value, boolean ignoreCase) throws ObjectNotFoundException{
+		getProperty(property, ignoreCase).setValue(bean, value);
 	}
 	
 	public boolean trySet(Object bean,String property,Object value){
