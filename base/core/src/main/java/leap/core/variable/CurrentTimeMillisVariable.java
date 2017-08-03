@@ -13,7 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/**
- *
- */
 package leap.core.variable;
+
+public class CurrentTimeMillisVariable implements Variable {
+
+	@Override
+	public Object getValue() {
+		return System.currentTimeMillis();
+	}
+
+}

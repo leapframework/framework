@@ -18,10 +18,11 @@
     <bean type="leap.core.variable.VariableEnvironment" class="leap.core.variable.DefaultVariableEnvironment" primary="true"/>
 
     <!--variable-->
-    <bean name="now" type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
-    <bean name="timestamp" type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
-    <bean name="uuid" type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
-    <bean name="user" type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
+    <bean name="now"               type="leap.core.variable.Variable" class="leap.core.variable.NowVariable"/>
+    <bean name="timestamp"         type="leap.core.variable.Variable" class="leap.core.variable.TimestampVariable"/>
+    <bean name="currentTimeMillis" type="leap.core.variable.Variable" class="leap.core.variable.CurrentTimeMillisVariable"/>
+    <bean name="uuid"              type="leap.core.variable.Variable" class="leap.core.variable.UUIDVariable"/>
+    <bean name="user"              type="leap.core.variable.Variable" class="leap.core.variable.UserVariable"/>
 
     <bean type="leap.core.cache.CacheManager" class="leap.core.cache.DefaultCacheManager" primary="true">
         <register-bean-factory target-type="leap.core.cache.Cache"/>

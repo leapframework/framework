@@ -30,6 +30,8 @@ public class ElTest extends AppTestBase {
 		Expression e = EL.createExpression("${env.now}");
 		Object now = e.getValue();
 		assertTrue(now instanceof Date);
+
+        assertTrue(EL.createExpression("${env.currentTimeMillis}").getValue() instanceof Long);
 	}
 	
 	@Test
