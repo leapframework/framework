@@ -282,13 +282,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 	
-	public FieldMappingBuilder trySetBeanProperty(BeanProperty beanProperty) {
-		if(null == this.beanProperty){
-			this.beanProperty = beanProperty;
-		}
-		return this;
-	}
-	
 	public Annotation[] getAnnotations(){
 		return null != annotations ? annotations : (null == beanProperty ? Classes.EMPTY_ANNOTATION_ARRAY : beanProperty.getAnnotations());
 	}
