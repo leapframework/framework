@@ -16,6 +16,9 @@
 package leap.lang;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -112,6 +115,20 @@ public class Collections2 {
         }
 
         return found;
+    }
+
+    public static <T> Map<String, T> toMap(Collection<T> c, Function<T, String> key) {
+        if(null == c) {
+            return New.linkedHashMap();
+        }
+
+        Map<String,T> map = new LinkedHashMap<>(c.size());
+
+        for(T item : c) {
+            map.put(key.apply(item), item);
+        }
+
+        return map;
     }
 
 	protected Collections2(){
