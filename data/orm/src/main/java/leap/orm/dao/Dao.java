@@ -273,6 +273,11 @@ public abstract class Dao implements JdbcExecutor {
 	public abstract int update(Object entity) throws MappingNotFoundException;
 	
 	//----------------------------delete--------------------------------
+
+    /**
+     * Deletes the entity record immediately.
+     */
+    public abstract int delete(Object entity);
 	
 	/**
 	 * Deletes an entity by the given id immediately.

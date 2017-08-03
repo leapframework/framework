@@ -35,6 +35,7 @@ import leap.orm.command.InsertCommand;
 import leap.orm.command.UpdateCommand;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.MappingNotFoundException;
+import leap.orm.mapping.Mappings;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.EntityQuery;
 import leap.orm.query.Query;
@@ -180,7 +181,14 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	
 	//--------------------- delete ------------------------------------
 
-	@Override
+    @Override
+    public int delete(Object entity) {
+        Args.notNull(entity, "entity");
+        EntityMapping em = em(entity.getClass());
+        return delete(em, Mappings.getId(em, entity));
+    }
+
+    @Override
     public int delete(Class<?> entityClass, Object id) {
 		Args.notNull(entityClass,"entityClass");
 		Args.notNull(id,"id");
