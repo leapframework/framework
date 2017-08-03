@@ -181,7 +181,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
                     builder.append(getExpressionValue(exp,serverInfo));
                 }
             }else {
-                builder.append(c);
+                if(c != '/' || builder.charAt(builder.length()-1)!='/'){
+                    builder.append(c);
+                }
             }
         }
         return builder.toString();
