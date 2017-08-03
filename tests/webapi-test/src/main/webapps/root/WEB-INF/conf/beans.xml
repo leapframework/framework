@@ -3,7 +3,7 @@
 
     <bean name="restd" type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource">
         <property name="driverClassName" value="org.h2.Driver" />
-        <property name="jdbcUrl"         value="jdbc:h2:./target/restd;DB_CLOSE_ON_EXIT=FALSE" />
+        <property name="jdbcUrl"         value="jdbc:h2:mem:restd;DB_CLOSE_ON_EXIT=FALSE" />
         <property name="username"        value="sa" />
         <property name="password"        value="" />
     </bean>
