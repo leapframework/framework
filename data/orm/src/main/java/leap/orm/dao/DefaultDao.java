@@ -269,6 +269,12 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 
     @Override
+    public <T> T find(Class<?> entityClass, Class<T> resultClass, Object id) {
+        Args.notNull(entityClass, "entity class");
+        return find(em(entityClass), resultClass, id);
+    }
+
+    @Override
     public <T> T find(String entityName, Class<T> resultClass, Object id) throws EmptyRecordsException, TooManyRecordsException {
 		Args.notNull(entityName,"entity name");
 		Args.notNull(resultClass,"result class");
@@ -284,12 +290,6 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		Args.notNull(id,"id");
 		
 		return commandFactory().newFindCommand(this, em, id, resultClass, true).execute();
-    }
-
-    @Override
-    public <T> T find(Class<?> entityClass, Class<T> resultClass, Object id) {
-        Args.notNull(entityClass, "entity class");
-        return find(entityClass, resultClass, id);
     }
 
     @Override
