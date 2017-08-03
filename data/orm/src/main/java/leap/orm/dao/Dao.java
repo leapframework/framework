@@ -271,8 +271,71 @@ public abstract class Dao implements JdbcExecutor {
 	 * @return The affected row(s).
 	 */
 	public abstract int update(Object entity) throws MappingNotFoundException;
-	
-	//----------------------------delete--------------------------------
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Class<?> entityClass, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(String entityName, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(EntityMapping em, Object entity) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Object entity, Map<String,Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(Class<?> entityClass, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(String entityName, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    /**
+     * Updates the properties of the given entity into the underlying db.
+     *
+     * @throws MappingNotFoundException if the given entity not exists.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int update(EntityMapping em, Object id, Map<String, Object> fields) throws MappingNotFoundException;
+
+    //----------------------------delete--------------------------------
 
     /**
      * Deletes the entity record immediately.

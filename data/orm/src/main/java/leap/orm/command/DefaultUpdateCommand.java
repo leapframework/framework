@@ -88,8 +88,16 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
 		entity.set(name, value);
 	    return this;
     }
-	
-	@Override
+
+    @Override
+    public UpdateCommand setAll(Map<String, Object> fields) {
+        if(null != fields) {
+            fields.forEach(this::set);
+        }
+        return this;
+    }
+
+    @Override
     public int execute() {
 		prepare();
 

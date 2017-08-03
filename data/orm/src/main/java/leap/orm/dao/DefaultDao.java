@@ -161,7 +161,42 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 	    return commandFactory().newUpdateCommand(this, em).from(entity).execute();
     }
 
-	@Override
+    @Override
+    public int update(Class<?> entityClass, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(entityClass).from(entity).execute();
+    }
+
+    @Override
+    public int update(String entityName, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(entityName).from(entity).execute();
+    }
+
+    @Override
+    public int update(EntityMapping em, Object entity) throws MappingNotFoundException {
+        return cmdUpdate(em).from(entity).execute();
+    }
+
+    @Override
+    public int update(Object entity, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(entity.getClass()).withId(entity).setAll(fields).execute();
+    }
+
+    @Override
+    public int update(Class<?> entityClass, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(entityClass).withId(id).setAll(fields).execute();
+    }
+
+    @Override
+    public int update(String entityName, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(entityName).withId(id).setAll(fields).execute();
+    }
+
+    @Override
+    public int update(EntityMapping em, Object id, Map<String, Object> fields) throws MappingNotFoundException {
+        return cmdUpdate(em).withId(id).setAll(fields).execute();
+    }
+
+    @Override
     public UpdateCommand cmdUpdate(Class<?> entityClass) throws MappingNotFoundException {
 		Args.notNull(entityClass,"entity class");
 		return commandFactory().newUpdateCommand(this, em(entityClass));
