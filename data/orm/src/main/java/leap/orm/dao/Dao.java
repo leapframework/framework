@@ -383,6 +383,13 @@ public abstract class Dao implements JdbcExecutor {
      * Returns the record for the id.
      */
     public abstract Record find(EntityMapping em, Object id);
+
+    /**
+     * Returns the record for the id.
+     *
+     * @throws RecordNotFoundException if the record not exists.
+     */
+    public abstract <T> T find(Class<?> entityClass,Class<T> resultClass,Object id);
 	
     /**
      * Returns the record for the id.
@@ -421,7 +428,15 @@ public abstract class Dao implements JdbcExecutor {
      * Returns <code>null</code> if record not exists.
      */
     public abstract Record findOrNull(EntityMapping em,Object id);
-	
+
+    /**
+     * Returns the record for the id.
+     *
+     * <p>
+     * Returns <code>null</code> if record not exists.
+     */
+    public abstract <T> T findOrNull(Class<?> entityClass,Class<T> resultClass,Object id);
+
     /**
      * Returns the record for the id.
      *

@@ -285,7 +285,13 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		
 		return commandFactory().newFindCommand(this, em, id, resultClass, true).execute();
     }
-	
+
+    @Override
+    public <T> T find(Class<?> entityClass, Class<T> resultClass, Object id) {
+        Args.notNull(entityClass, "entity class");
+        return find(entityClass, resultClass, id);
+    }
+
     @Override
     public <T> T findOrNull(Class<T> entityClass, Object id) {
         Args.notNull(entityClass,"entity class");
@@ -305,6 +311,12 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     @Override
     public Record findOrNull(EntityMapping em, Object id) {
         return commandFactory().newFindCommand(this, em, id, Record.class, false).execute();
+    }
+
+    @Override
+    public <T> T findOrNull(Class<?> entityClass, Class<T> resultClass, Object id) {
+        Args.notNull(entityClass, "entity class");
+        return find(em(entityClass), resultClass, id);
     }
 
     @Override
