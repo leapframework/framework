@@ -168,7 +168,7 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                         lastNotified = entity;
                     }
                 }catch(Throwable e) {
-                    log.error("Error notify changes to listener '{}', {}", listener, e.getMessage(), e);
+                    log.error("Error notify listener '{}': {}", listener.getClass(), e.getMessage(), e);
                 }
 
                 if(null != lastNotified) {
