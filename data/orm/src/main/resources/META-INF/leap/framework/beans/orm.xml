@@ -117,4 +117,8 @@
     <bean type="leap.orm.dyna.DynaOrmFactory"
           class="leap.orm.dyna.DefaultDynaOrmFactory" primary="true"/>
 
+    <!-- changes -->
+    <bean type="leap.orm.change.ChangeManager"
+          class="leap.orm.change.DefaultChangeManager" primary="true"/>
+
 </beans>
