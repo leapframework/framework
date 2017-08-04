@@ -25,33 +25,20 @@ import java.util.Map;
 public interface MTypeContext extends AttributeGetter,AttributeSetter {
 
     MTypeContext DEFAULT = new MTypeContext() {
-
-        private final Map<String, Object>   attrs = new HashMap<>();
-        private final Map<Class<?>, String> creatingComplexTypes = new HashMap<>();
-
-        @Override
         public Object getAttribute(String name) {
-            return attrs.get(name);
+            return null;
         }
-
-        @Override
         public void setAttribute(String name, Object value) {
-            attrs.remove(name, value);
         }
-
-        @Override
         public void onComplexTypeCreating(Class<?> type, String name) {
-            creatingComplexTypes.put(type, name);
         }
-
-        @Override
         public void onComplexTypeCreated(Class<?> type, MComplexType ct) {
-            creatingComplexTypes.remove(type);
         }
-
-        @Override
         public String getCreatingComplexType(Class type) {
-            return creatingComplexTypes.get(type);
+            return null;
+        }
+        public boolean isComplexTypeCreatingOrCreated(Class type) {
+            return false;
         }
     };
 
@@ -84,4 +71,8 @@ public interface MTypeContext extends AttributeGetter,AttributeSetter {
      */
     String getCreatingComplexType(Class type);
 
+    /**
+     * Returns true if the type is creating or has been created.
+     */
+    boolean isComplexTypeCreatingOrCreated(Class type);
 }

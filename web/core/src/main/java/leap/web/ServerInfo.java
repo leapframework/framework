@@ -69,7 +69,13 @@ public class ServerInfo {
     }
 
     public String getServerUrl(){
-        String server = scheme+"://"+host+":"+port+contextPath;
+        String server = scheme+"://"+host;
+        if(port < 0){
+            server += contextPath;
+        }else {
+            server += ":"+port+contextPath;
+        }
+        
         return Paths.suffixWithoutSlash(server);
     }
 }
