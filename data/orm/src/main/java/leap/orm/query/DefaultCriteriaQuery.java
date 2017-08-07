@@ -951,7 +951,11 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                         sql.append(",");
                     }
                     
-                    sql.append(alias).append(".").append(column);
+                    if(column.contains(".")){
+                        sql.append(column);
+                    }else {
+                        sql.append(alias).append(".").append(column);
+                    }
                     
                     index++;
                 }
