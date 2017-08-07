@@ -41,12 +41,16 @@ import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.mvc.ApiInitializable;
 import leap.web.api.permission.ResourcePermissions;
+import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
 
-import java.util.*;
-import java.util.Map.Entry;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	
@@ -55,37 +59,50 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 	protected @Inject MTypeManager           typeManager;
     protected @Inject App                    app;
 
-    protected Map<String, ApiConfigurator> configurators   = new ConcurrentHashMap<>();
-    protected Map<String, ApiConfig>       configurations  = new ConcurrentHashMap<>();
-    protected Map<String, ApiMetadata>     metadatas       = new ConcurrentHashMap<>();
-    protected Map<String, MApiResponse>    commonResponses = new LinkedHashMap<>();
+    protected Map<String, MApiResponse> commonResponses = new LinkedHashMap<>();
+    protected Map<String, Api>          apis            = new ConcurrentHashMap<>();
 
     private ApiConfigs      configs;
     private OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
     private Set<String>     created = new CopyOnWriteArraySet<>();
 
-    public ApiConfigurator tryGetConfigurator(String name) {
-        return configurators.get(name.toLowerCase());
-    }
-
-    public Set<ApiConfigurator> getConfigurators() {
-	    return new LinkedHashSet<>(configurators.values());
-    }
-	
-    public Set<ApiConfig> getConfigurations() {
-	    return new LinkedHashSet<>(configurations.values());
-    }
-
     @Override
-    public ApiMetadata tryGetMetadata(String name) {
-        return metadatas.get(name.toLowerCase());
-    }
-
-    @Override
-    public ApiConfigurator newConfigurator(String name, String basePath) {
-        ApiConfigurator api = new DefaultApiConfig(name,basePath,DefaultApis.class);
-        doInit(api);
+    public Api get(String name) throws ObjectNotFoundException {
+        Api api = tryGet(name);
+        if(null == api) {
+            throw new ObjectNotFoundException("Api '" + name + "' not exists!");
+        }
         return api;
+    }
+
+    @Override
+    public Api tryGet(String name) {
+        return apis.get(name.toLowerCase());
+    }
+
+    @Override
+    public boolean remove(Api api) {
+        AtomicBoolean removed = new AtomicBoolean();
+
+        apis.forEach((k,v) -> {
+            if(v == api) {
+                apis.remove(k);
+                removed.set(true);
+                return;
+            }
+        });
+
+        return removed.get();
+    }
+
+    @Override
+    public boolean remove(String name) {
+        String key = name.toLowerCase();
+        if(null == apis.remove(key)) {
+            return false;
+        }
+        created.remove(key);
+        return true;
     }
 
     @Override
@@ -93,39 +110,23 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 		Args.notEmpty(name,     "name");
 		Args.notEmpty(basePath, "basePath");
         
-		ApiConfigurator api = new DefaultApiConfig(name,basePath,DefaultApis.class);
-        doAdd(name, api);
-		return api;
+		DefaultApiConfig c = new DefaultApiConfig(name,basePath,DefaultApis.class);
+        doAdd(c);
+		return c;
     }
 
     @Override
-    public boolean remove(String name) {
-        String key = name.toLowerCase();
-        if(null == configurators.remove(key)) {
-            return false;
-        }
-
-        created.remove(key);
-        metadatas.remove(key);
-        configurations.remove(key);
-        return true;
+    public void add(Api api) throws ObjectExistsException {
+        checkDuplicate(api.getConfig());
+        apis.put(api.getName().toLowerCase(), api);
     }
 
     @Override
-    public void create(ApiConfigurator c) {
-        doCreate(app, c);
+    public Api newDynamic(String name, String basePath) {
+        DefaultApiConfig c = new DefaultApiConfig(name,basePath,DefaultApis.class);
+        return doNewApi(c, true);
     }
 
-    public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
-		Args.notEmpty(name, "name");
-		
-		ApiConfigurator c = configurators.get(name.toLowerCase());
-		if(null == c) {
-			throw new ObjectNotFoundException("The api '" + name + "' not found");
-		}
-	    return c;
-    }
-	
 	@Override
     public boolean isDefaultOAuthEnabled() {
         return oauthConfig.isEnabled();
@@ -202,39 +203,42 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
             }
         });
 
-        configs.getApis().forEach(this::doAdd);
+        //auto register configured api(s).
+        configs.getApis().values().forEach(this::doAdd);
     }
 
-    protected void doAdd(String name, ApiConfigurator api) {
-        api.setDynamicRoutes(app.routes());
-
-        String key = name.toLowerCase();
-        if(configurators.containsKey(key)) {
-            throw new ObjectExistsException("The api '" + name + "' already exists");
+    protected void checkDuplicate(ApiConfig c) {
+        String key = c.getName().toLowerCase();
+        if(apis.containsKey(key)) {
+            throw new ObjectExistsException("The api '" + c.getName() + "' already exists");
         }
-        configurators.values().forEach(c -> {
-            if(Strings.equalsIgnoreCase(c.config().getBasePath(),api.config().getBasePath())){
-                throw new ApiConfigException("Found duplicated api config with base path: " + api.config().getBasePath()
-                 + " in " + c.config().getSource() + " and " + api.config().getSource());
+
+        apis.values().forEach(api -> {
+            if(Strings.equalsIgnoreCase(api.getBasePath(),c.getBasePackage())){
+                throw new ApiConfigException("Found duplicated api config with base path: " + c.getBasePath()
+                        + " in " + api.getConfig().getSource() + " and " + c.getSource());
             }
         });
-
-        doInit(api);
-        
-        configurators.put(key, api);
-        configurations.put(key, api.config());
     }
 
-    protected void doInit(ApiConfigurator api) {
-        api.setDynamicRoutes(app.routes());
+    protected void doAdd(ApiConfigurator c) {
+        checkDuplicate(c.config());
+
+        Api api = doNewApi(c, false);
+
+        apis.put(api.getName().toLowerCase(),api);
+    }
+
+    protected Api doNewApi(ApiConfigurator configurator, boolean dynamic) {
+        configurator.setContainerRoutes(app.routes());
 
         if(null != configs) {
-            ApiConfig c = api.config();
+            ApiConfig c = configurator.config();
 
             if(c.getOAuthConfig() == null){
-                api.setOAuthConfig(oauthConfig);
+                configurator.setOAuthConfig(oauthConfig);
             }else{
-                api.setOAuthConfig(new OAuthConfigImpl().updateFrom(oauthConfig));
+                configurator.setOAuthConfig(new OAuthConfigImpl().updateFrom(oauthConfig));
             }
 
             configs.getCommonModels().forEach(model -> {
@@ -247,7 +251,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
                     return;
                 }
 
-                api.addModel(model);
+                configurator.addModel(model);
             });
 
             configs.getCommonParams().forEach(param -> {
@@ -256,31 +260,29 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
                     return;
                 }
 
-                api.addParam(param);
+                configurator.addParam(param);
             });
         }
+
+        return new DefaultApi(this::doCreate, configurator, dynamic);
     }
 
     @Override
     public void postAppInit(App app) throws Throwable {
-
-		for(Entry<String, ApiConfigurator> entry : configurators.entrySet()) {
-			doCreate(app, entry.getValue());
-		}
-
+        //auto create apis.
+        apis.values().forEach(api -> {
+            if(!api.isCreated()) {
+                api.create();
+            }
+        });
 	}
-	
-    protected void doCreate(App app, ApiConfigurator c) {
-        String key = c.config().getName().toLowerCase();
 
-        boolean registered = configurators.containsKey(key);
-        if(registered && created.contains(key)) {
-            throw new IllegalStateException("The api '" + c.config().getName() + "' already created!");
-        }
+    protected void doCreate(Api api) {
+        ApiConfigurator c = api.getConfigurator();
 
         doConfiguration(app, c);
 
-        if(registered) {
+        if(!api.isDynamic()) {
             resolveAppRoutes(app, c);
         }
 
@@ -301,18 +303,11 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         postConfigApi(app, c.config());
 
         //create metadata
-        ApiMetadata m = createMetadata(c);
-        if(registered) {
-            metadatas.put(key, m);
-        }
+        ApiMetadata metadata = createMetadata(api);
+        api.setMetadata(metadata);
 
-        //post load
-        postLoadApi(app, c.config(), m);
-
-        if(registered) {
-            created.add(key);
-        }
-
+        //inject api beans.
+        injectApiBeans(app, api.getConfig(), metadata);
     }
 
     protected void doConfiguration(App app, ApiConfigurator c) {
@@ -394,18 +389,20 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     }
 
     protected void postConfigApi(App app, ApiConfig c) {
-        for(Route route : c.getRoutes()) {
+        c.getApiRoutes().forEach(ar -> {
+            Route route = ar.getRoute();
             if(c.isDefaultAnonymous() && null == route.getAllowAnonymous()) {
                 route.setAllowAnonymous(true);
             }
-        }
+        });
     }
 
-    protected void postLoadApi(App app, ApiConfig c, ApiMetadata m) {
-
+    protected void injectApiBeans(App app, ApiConfig c, ApiMetadata m) {
         Set<Object> controllers = new HashSet<>();
 
-        for(Route route : c.getRoutes()) {
+        for(ApiRoute ar : c.getApiRoutes()) {
+            Route route = ar.getRoute();
+
             //Inject ApiConfig & ApiMetadata.
             Object controller = route.getAction().getController();
             if(null != controller && !controllers.contains(controller)) {
@@ -434,7 +431,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         controllers.clear();
     }
 
-	protected ApiMetadata createMetadata(ApiConfigurator c) {
-		return metadataFactory.createMetadata(c.config());
+	protected ApiMetadata createMetadata(Api api) {
+		return metadataFactory.createMetadata(api);
 	}
 }

@@ -16,16 +16,15 @@
 package leap.web.api.config;
 
 public interface ApiConfigProcessor {
-	
-	default void preProcess(ApiConfigurator c) {
 
+	default void preProcess(ApiConfigurator c) {
 
 	}
 
     default void postProcess(ApiConfigurator c) {
 
     }
-	
+
 	default void completeProcess(ApiConfig c) {
 		
 	}

@@ -18,8 +18,8 @@ package app.controllers;
 
 import app.models.Entity1;
 import leap.core.annotation.Inject;
-import leap.core.ds.DataSourceProps;
 import leap.core.ds.DataSourceManager;
+import leap.core.ds.DataSourceProps;
 import leap.lang.Try;
 import leap.orm.dmo.Dmo;
 import leap.orm.dyna.DynaOrmContext;
@@ -27,7 +27,6 @@ import leap.orm.dyna.DynaOrmFactory;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.dyna.DynaApi;
-import leap.web.api.dyna.DynaApiCreator;
 import leap.web.api.dyna.DynaApiFactory;
 
 import javax.sql.DataSource;
@@ -65,14 +64,14 @@ public class HomeController {
     }
 
     protected void doCreateApi() {
-        DynaApiCreator  creator = daf.createDynaApi("test", "/test");
-        ApiConfigurator cfg     = creator.configurator();
+        api = daf.newDynaApi("test", "/test");
+        ApiConfigurator cfg = api.getConfigurator();
 
         RestdConfig rc = new RestdConfig();
         rc.setDataSourceName("test");
         cfg.setRestdConfig(rc);
 
-        api = creator.create();
+        api.create();
     }
 
     protected void createDataSource() {

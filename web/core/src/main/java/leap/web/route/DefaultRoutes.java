@@ -53,22 +53,7 @@ public class DefaultRoutes implements Routes {
 	
 	@Override
     public RouteConfigurator create() {
-		return new DefaultRouteConfigurator((c) -> {
-			RouteBuilder rb = createRoute(c.getMethod(), c.getPath(), c.getHandler());
-			
-			rb.setSupportsMultipart(c.isSupportsMultipart());
-			rb.setCorsEnabled(c.getCorsEnabled());
-			rb.setCsrfEnabled(c.getCsrfEnabled());
-			rb.setHttpsOnly(c.getHttpsOnly());
-            rb.setAllowAnonymous(c.getAllowAnonymous());
-            rb.setAllowClientOnly(c.getAllowClientOnly());
-
-			Route r = rb.build();
-			
-			add(r);
-			
-			return r;
-		});
+		return new DefaultRouteConfigurator(this);
     }
 
 	@Override
@@ -176,8 +161,8 @@ public class DefaultRoutes implements Routes {
             route = rematch(matchedRoutes);
         }
 
-        if(route instanceof NestedRoutes) {
-            route = ((NestedRoutes) route).match(method, path, inParameters, outVariables);
+        if(route instanceof NestedRoute) {
+            route = ((NestedRoute) route).match(method, path, inParameters, outVariables);
         }
 
 		return route;

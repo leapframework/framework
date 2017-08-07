@@ -18,6 +18,7 @@ package leap.web.api.spec.swagger;
 import leap.core.annotation.Inject;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.api.Api;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigProcessor;
@@ -44,22 +45,22 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
     public void completeProcess(ApiMetadataContext context, ApiMetadata m) {
         ApiConfig config = context.getConfig();
 
-        Routes routes = config.getDynamicRoutes();
+        Routes routes = config.getContainerRoutes();
 
         Route route = routes.create().get(getJsonSpecPath(config), (req, resp) ->
-                            handleJsonSpecRequest(config, m, req, resp, config.getName())).enableCors()
+                            handleJsonSpecRequest(context.getApi(), req, resp)).enableCors()
                             .allowAnonymous()
-                            .apply();
+                            .build();
 
-        route.setExtension(ApiConfig.class, config);
+        context.getApi().getConfigurator().addDynamicRoute(route, false);
     }
 
-    void handleJsonSpecRequest(ApiConfig c, ApiMetadata m, Request req, Response resp, String name) throws Throwable {
+    void handleJsonSpecRequest(Api api, Request req, Response resp) throws Throwable {
 		SwaggerJsonWriter w = new SwaggerJsonWriter();
-		w.setPropertyNamingStyle(c.getPropertyNamingStyle());
+		w.setPropertyNamingStyle(api.getConfig().getPropertyNamingStyle());
 		
 		resp.setContentType(w.getContentType());
-		w.write(new ApiSpecContextImpl(req), m, resp.getWriter());
+		w.write(new ApiSpecContextImpl(req), api.getMetadata(), resp.getWriter());
 	}
 	
 	protected String getJsonSpecPath(ApiConfig c) {

@@ -15,27 +15,32 @@
  */
 package leap.web.api.config;
 
-import java.util.Map;
-import java.util.Set;
-
 import leap.lang.Described;
 import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
 import leap.lang.naming.NamingStyle;
-import leap.web.api.config.model.*;
+import leap.web.App;
+import leap.web.api.config.model.ModelConfig;
+import leap.web.api.config.model.OAuthConfig;
+import leap.web.api.config.model.ParamConfig;
+import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
-import leap.web.api.meta.model.MApiModelBuilder;
-import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.meta.model.MApiPermission;
+import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.permission.ResourcePermissionsSet;
+import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
 import leap.web.route.Routes;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the configuration of a web api.
  */
 public interface ApiConfig extends Named,Titled,Described,Extensible {
+
 	/**
 	 * Returns config source.
 	 */
@@ -180,11 +185,6 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     int getDefaultPageSize();
 
 	/**
-	 * Returns all the routes in this api.
-	 */
-	Set<Route> getRoutes();
-
-	/**
 	 * Returns the base package of this api.
 	 */
 	String getBasePackage();
@@ -193,6 +193,19 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns the if all the api operations are anonymous access by default.
      */
     boolean isDefaultAnonymous();
+
+    /**
+     * Returns the {@link Routes} for added the api route(s) to it.
+     *
+     * <p/>
+     * Default is {@link App#routes()}.
+     */
+    Routes getContainerRoutes();
+
+    /**
+     * Returns all the routes in this api.
+     */
+    Set<ApiRoute> getApiRoutes();
 
     /**
      * Returns all the resource types of route.
@@ -236,8 +249,5 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      */
     RestdConfig getRestdConfig();
 
-    /**
-     * Returns the {@link Routes} for dynamic created route(s) of api.
-     */
-    Routes getDynamicRoutes();
+
 }

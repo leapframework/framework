@@ -24,7 +24,10 @@ import leap.web.view.View;
 import java.util.Collections;
 import java.util.Map;
 
-public interface NestedRoutes extends Route {
+/**
+ * A {@link Route} contains nested routes.
+ */
+public interface NestedRoute extends Route {
 
     Action NOP_ACTION = new HandlerAction((req, resp) -> {});
 

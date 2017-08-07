@@ -16,25 +16,13 @@
 
 package leap.web.api.dyna;
 
-import leap.lang.Named;
-import leap.web.api.config.ApiConfig;
+import leap.web.api.Api;
 
-public interface DynaApi extends Named {
+public interface DynaApi extends Api {
 
     @Override
-    default String getName() {
-        return getConfig().getName();
+    default boolean isDynamic() {
+        return true;
     }
 
-    /**
-     * Returns the base path of api.
-     */
-    default String getBasePath() {
-        return getConfig().getBasePath();
-    }
-
-    /**
-     * Returns the api config.
-     */
-    ApiConfig getConfig();
 }

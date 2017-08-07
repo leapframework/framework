@@ -22,7 +22,6 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.json.JsonSettings;
 import leap.lang.path.Paths;
-import leap.web.App;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
 import leap.web.annotation.NonParam;
@@ -31,6 +30,7 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.mvc.ApiFailureHandler;
+import leap.web.api.route.ApiRoute;
 import leap.web.route.Route;
 import leap.web.route.RouteBuilder;
 import leap.web.route.RouteManager;
@@ -43,12 +43,15 @@ public abstract class RestdOperationBase {
     protected @Inject ApiFailureHandler failureHandler;
 
     protected boolean isOperationExists(RestdContext context, String verb, String path) {
-        for(Route route : context.getRoutes()) {
+        for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
+            Route route = ar.getRoute();
+
             if(verb.equalsIgnoreCase(route.getMethod()) &&
                     route.getPathTemplate().getTemplate().equals(path)) {
                 return true;
             }
         }
+
         return false;
     }
 

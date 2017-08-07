@@ -71,7 +71,6 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
         SimpleRestdContext context = new SimpleRestdContext(api.config(), c);
         context.setDao(dao);
         context.setModels(Collections.unmodifiableSet(restdModels));
-        context.setRoutes(null == api.config().getDynamicRoutes() ? app.routes() : api.config().getDynamicRoutes());
 
         api.setExtension(RestdContext.class, context);
 

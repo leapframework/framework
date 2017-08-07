@@ -66,10 +66,6 @@ public class SimpleRestdContext implements RestdContext {
 
     @Override
     public Routes getRoutes() {
-        return routes;
-    }
-
-    public void setRoutes(Routes routes) {
-        this.routes = routes;
+        return ac.getContainerRoutes();
     }
 }
