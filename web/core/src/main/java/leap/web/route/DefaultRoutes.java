@@ -126,6 +126,11 @@ public class DefaultRoutes implements Routes {
     }
 
     @Override
+    public boolean exists(Route route) {
+        return list.contains(route);
+    }
+
+    @Override
     public boolean remove(Route route) {
         return list.remove(route);
     }

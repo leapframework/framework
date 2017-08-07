@@ -177,6 +177,11 @@ public interface Routes extends Iterable<Route>,Emptiable {
     }
 
     /**
+     * Returns true if the given {@link Route} exists.
+     */
+    boolean exists(Route route);
+
+    /**
      * Removes the {@link Route}.
      */
     boolean remove(Route route);
