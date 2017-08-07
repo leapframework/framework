@@ -20,19 +20,19 @@ import leap.web.api.config.ApiConfigurator;
 
 public interface RestdProcessor {
 
-    default void preProcessApi(ApiConfigurator api, RestdContext context) {
+    default void preProcessApi(ApiConfigurator c, RestdContext context) {
 
     }
 
-    default void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
+    default void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
 
     }
 
-    default void postProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
+    default void postProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
 
     }
 
-    default void postProcessApi(ApiConfigurator api, RestdContext context) {
+    default void postProcessApi(ApiConfigurator c, RestdContext context) {
 
     }
 

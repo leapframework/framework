@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import leap.lang.path.Paths;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.mvc.ApiErrorHandler;
@@ -35,8 +36,8 @@ public class SecurityConfigProcessor implements ApiConfigProcessor {
     protected @Inject SecurityConfigurator sc;
 
     @Override
-    public void preProcess(ApiConfigurator c) {
-        final String prefix = Paths.suffixWithSlash(c.config().getBasePath());
+    public void preProcess(Api api) {
+        final String prefix = Paths.suffixWithSlash(api.getBasePath());
 
         //security failure handler.
         final ApiSecurityFailureHandler failureHandler = new ApiSecurityFailureHandler();

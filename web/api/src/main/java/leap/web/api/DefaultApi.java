@@ -66,6 +66,14 @@ public class DefaultApi implements Api {
     }
 
     @Override
+    public void markCreated() throws IllegalStateException {
+        if(created) {
+            throw new IllegalStateException("Can't mark created, already created yet!");
+        }
+        this.created = true;
+    }
+
+    @Override
     public boolean isDynamic() {
         return dynamic;
     }
@@ -76,12 +84,16 @@ public class DefaultApi implements Api {
             throw new IllegalStateException("Cannot create api again, it already created yet!");
         }
         this.creator.accept(this);
-        this.created = true;
     }
 
     protected void mustCreated() {
         if(!created) {
             throw new IllegalStateException("Api '" + config.getName() + "' not created!");
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Api[" + getName() + "," + getBasePath() + "]";
     }
 }

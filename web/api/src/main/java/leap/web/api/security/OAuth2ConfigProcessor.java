@@ -18,6 +18,7 @@ package leap.web.api.security;
 
 import leap.core.annotation.Inject;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfigProcessor;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.OAuthConfigImpl;
@@ -28,7 +29,7 @@ public class OAuth2ConfigProcessor implements ApiConfigProcessor {
     protected @Inject OAuth2Config rsc;
 
     @Override
-    public void preProcess(ApiConfigurator c) {
+    public void preProcess(Api api) {
         if(rsc.isEnabled()) {
             OAuthConfigImpl ac = new OAuthConfigImpl();
 
@@ -37,7 +38,7 @@ public class OAuth2ConfigProcessor implements ApiConfigProcessor {
             ac.setAuthorizationUrl(rsc.getAuthorizeUrl());
             ac.setFlow(SwaggerConstants.IMPLICIT);
 
-            c.setOAuthConfig(ac);
+            api.getConfigurator().setOAuthConfig(ac);
         }
     }
 

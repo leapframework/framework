@@ -44,6 +44,11 @@ public interface Api extends Named {
     boolean isCreated();
 
     /**
+     * Marks the api has been created.
+     */
+    void markCreated() throws IllegalStateException;
+
+    /**
      * Returns <code>true</code> if this api is dynamic (not configured)
      */
     boolean isDynamic();

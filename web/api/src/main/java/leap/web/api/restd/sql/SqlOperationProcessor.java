@@ -24,7 +24,6 @@ import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlMetadata;
-import leap.web.App;
 import leap.web.action.ActionParams;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
@@ -52,13 +51,13 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
     }
 
     @Override
-    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
+    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
         final RestdConfig.Model mc = context.getConfig().getModel(model.getName());
 
         if(null != mc) {
             mc.getSqlOperations().values().forEach(op -> {
-                String path = fullModelPath(api, model, "/" + Strings.lowerUnderscore(op.getName()));
-                processSqlOperation(api, context, op, model, path);
+                String path = fullModelPath(c, model, "/" + Strings.lowerUnderscore(op.getName()));
+                processSqlOperation(c, context, op, model, path);
             });
         }
     }
@@ -121,7 +120,7 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
         route.setAction(action.build());
 
         configure(ctx, model, route);
-        api.addRoute(rm.loadRoute(ctx.getRoutes(), route));
+        api.addDynamicRoute(rm.loadRoute(ctx.getRoutes(), route));
     }
 
     protected void addQueryResponse(RestdContext ctx, SqlCommand sc, FuncActionBuilder action) {

@@ -22,6 +22,7 @@ import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.web.api.Api;
 import leap.web.api.annotation.ResourceWrapper;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
@@ -55,11 +56,11 @@ public abstract class ModelController<T> extends ApiController implements ApiIni
         return (Class<T>) Types.getActualTypeArgument(this.getClass().getGenericSuperclass());
     }
 
-    public void postApiInitialized(ApiConfig c, ApiMetadata m) {
-        this.ac  = c;
-        this.amd = m;
-        this.am  = m.getModel(modelClass);
-        this.mec = new SimpleModelExecutorContext(ac, amd, am, dao, em);
+    public void postApiInitialized(Api api) {
+        this.ac  = api.getConfig();
+        this.amd = api.getMetadata();
+        this.am  = api.getMetadata().getModel(modelClass);
+        this.mec = new SimpleModelExecutorContext(api, am, dao, em);
     }
 
     /**

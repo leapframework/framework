@@ -66,6 +66,11 @@ public class DefaultDynaApi implements DynaApi {
     }
 
     @Override
+    public void markCreated() throws IllegalStateException {
+        api.markCreated();
+    }
+
+    @Override
     public void create() throws IllegalStateException {
         api.create();
     }

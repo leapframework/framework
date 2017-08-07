@@ -288,15 +288,15 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
         //configure by processors.
         for(ApiConfigProcessor p : configProcessors) {
-            p.preProcess(c);
+            p.preProcess(api);
         }
 
         for(ApiConfigProcessor p : configProcessors) {
-            p.postProcess(c);
+            p.postProcess(api);
         }
 
         for(ApiConfigProcessor p : configProcessors) {
-            p.completeProcess(c.config());
+            p.completeProcess(api);
         }
 
         //post config
@@ -305,9 +305,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         //create metadata
         ApiMetadata metadata = createMetadata(api);
         api.setMetadata(metadata);
+        api.markCreated();
 
         //inject api beans.
-        injectApiBeans(app, api.getConfig(), metadata);
+        injectApiBeans(app, api);
     }
 
     protected void doConfiguration(App app, ApiConfigurator c) {
@@ -397,10 +398,10 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         });
     }
 
-    protected void injectApiBeans(App app, ApiConfig c, ApiMetadata m) {
+    protected void injectApiBeans(App app, Api api) {
         Set<Object> controllers = new HashSet<>();
 
-        for(ApiRoute ar : c.getApiRoutes()) {
+        for(ApiRoute ar : api.getConfig().getApiRoutes()) {
             Route route = ar.getRoute();
 
             //Inject ApiConfig & ApiMetadata.
@@ -412,17 +413,17 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
                 for(ReflectField rf : rc.getFields()) {
                     if(rf.getType().equals(ApiConfig.class)) {
-                        rf.setValue(controller, c);
+                        rf.setValue(controller, api.getConfig());
                         break;
                     }
 
                     if(rf.getType().equals(ApiMetadata.class)) {
-                        rf.setValue(controller, m);
+                        rf.setValue(controller, api.getMetadata());
                     }
                 }
 
                 if(controller instanceof ApiInitializable) {
-                    ((ApiInitializable) controller).postApiInitialized(c, m);
+                    ((ApiInitializable) controller).postApiInitialized(api);
                 }
 
             }
