@@ -21,11 +21,18 @@ public interface DynaApiFactory {
     /**
      * Creates a new {@link DynaApiCreator} for creating a new api.
      */
-    DynaApiCreator createDynaApi(String name, String basePath);
+    default DynaApiCreator createDynaApi(String name, String basePath) {
+        return createDynaApi(name, basePath, true);
+    }
+
+    /**
+     * Creates a new {@link DynaApiCreator} for creating a new api.
+     */
+    DynaApiCreator createDynaApi(String name, String basePath, boolean register);
 
     /**
      * Destroy the dyna api.
      */
-    boolean destroyDynaApi(DynaApi api);
+    void destroyDynaApi(DynaApi api);
 
 }

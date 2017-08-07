@@ -29,27 +29,9 @@ import java.util.Set;
 public interface Apis {
 
     /**
-     * Returns an immutable {@link Set} contains all the {@link ApiConfigurator}.
+     * Creates a new {@link ApiConfigurator}, do not register it.
      */
-    Set<ApiConfigurator> getConfigurators();
-
-    /**
-     * Returns an immutable {@link Set} contains all the api configurations.
-     */
-    Set<ApiConfig> getConfigurations();
-
-    /**
-     * Returns the configurator of the api.
-     *
-     * @param name the name of the api.
-     * @throws ObjectNotFoundException if no api configuration exists for the given name.
-     */
-    ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException;
-
-    /**
-     * Returns the {@link ApiConfigurator} of the api or null if not exists.
-     */
-    ApiConfigurator tryGetConfigurator(String name);
+    ApiConfigurator newConfigurator(String name, String basePath);
 
     /**
      * Returns the {@link ApiMetadata} of the api or null if not exists.
@@ -57,7 +39,7 @@ public interface Apis {
     ApiMetadata tryGetMetadata(String name);
 
     /**
-     * Creates an api configuration and returns the configurator.
+     * Creates a new api configurator and register it.
      *
      * @param name     the name of api.
      * @param basePath the base path of api, must starts with a slash '/'.

@@ -20,7 +20,6 @@ import leap.core.web.path.JerseyUriTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
-import leap.lang.collection.ArrayIterator;
 import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
 import leap.web.action.*;
@@ -177,8 +176,8 @@ public class DefaultRoutes implements Routes {
             route = rematch(matchedRoutes);
         }
 
-        if(route instanceof SubRoutes) {
-            route = ((SubRoutes) route).match(method, path, inParameters, outVariables);
+        if(route instanceof NestedRoutes) {
+            route = ((NestedRoutes) route).match(method, path, inParameters, outVariables);
         }
 
 		return route;

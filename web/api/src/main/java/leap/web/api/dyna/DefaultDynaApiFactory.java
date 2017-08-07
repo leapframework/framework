@@ -24,6 +24,7 @@ import leap.web.api.Apis;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.route.Route;
+import leap.web.route.Routes;
 import leap.web.route.RoutesPrinter;
 
 public class DefaultDynaApiFactory implements DynaApiFactory {
@@ -35,14 +36,14 @@ public class DefaultDynaApiFactory implements DynaApiFactory {
     protected @Inject RoutesPrinter routesPrinter;
 
     @Override
-    public DynaApiCreator createDynaApi(String name, String basePath) {
-        ApiConfigurator configurator = apis.add(name, basePath);
+    public DynaApiCreator createDynaApi(String name, String basePath, boolean register) {
+        ApiConfigurator configurator = register ? apis.add(name, basePath) : apis.newConfigurator(name, basePath);
 
         return new DefaultDynaApiCreator(apis, configurator);
     }
 
     @Override
-    public boolean destroyDynaApi(DynaApi api) {
+    public void destroyDynaApi(DynaApi api) {
         ApiConfig config = api.getConfig();
 
         if(log.isDebugEnabled()) {
@@ -51,14 +52,20 @@ public class DefaultDynaApiFactory implements DynaApiFactory {
 
         //todo: removes the routes correctly.
         for(Route route : config.getRoutes()) {
-            app.routes().remove(route);
+            config.getDynamicRoutes().remove(route);
+        }
+
+        for(Route route : config.getDynamicRoutes()) {
+            if(config == route.getExtension(ApiConfig.class)) {
+                config.getDynamicRoutes().remove(route);
+            }
         }
 
         if(log.isDebugEnabled()) {
             log.debug("Routes after destroying api '{}': \n\n{}\n", api.getName(), routesPrinter.print(app.routes()));
         }
 
-        return apis.remove(api.getName());
+        apis.remove(api.getName());
     }
 
 }

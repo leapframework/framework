@@ -64,17 +64,14 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     private OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
     private Set<String>     created = new CopyOnWriteArraySet<>();
 
-    @Override
     public ApiConfigurator tryGetConfigurator(String name) {
         return configurators.get(name.toLowerCase());
     }
 
-    @Override
     public Set<ApiConfigurator> getConfigurators() {
 	    return new LinkedHashSet<>(configurators.values());
     }
 	
-	@Override
     public Set<ApiConfig> getConfigurations() {
 	    return new LinkedHashSet<>(configurations.values());
     }
@@ -82,6 +79,13 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
     @Override
     public ApiMetadata tryGetMetadata(String name) {
         return metadatas.get(name.toLowerCase());
+    }
+
+    @Override
+    public ApiConfigurator newConfigurator(String name, String basePath) {
+        ApiConfigurator api = new DefaultApiConfig(name,basePath,DefaultApis.class);
+        doInit(api);
+        return api;
     }
 
     @Override
@@ -112,7 +116,6 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         doCreate(app, c);
     }
 
-    @Override
     public ApiConfigurator getConfigurator(String name) throws ObjectNotFoundException {
 		Args.notEmpty(name, "name");
 		
@@ -215,7 +218,16 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
                  + " in " + c.config().getSource() + " and " + api.config().getSource());
             }
         });
+
+        doInit(api);
         
+        configurators.put(key, api);
+        configurations.put(key, api.config());
+    }
+
+    protected void doInit(ApiConfigurator api) {
+        api.setDynamicRoutes(app.routes());
+
         if(null != configs) {
             ApiConfig c = api.config();
 
@@ -246,11 +258,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
                 api.addParam(param);
             });
-
         }
-        
-        configurators.put(key, api);
-        configurations.put(key, api.config());
     }
 
     @Override
@@ -262,21 +270,19 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
 	}
 	
-	protected void doConfiguration(App app, ApiConfigurator c) {
-        //common
-        doCommonConfiguration(app, c);
-
-		//resolve routes of api.
-		resolveRoutes(app, c);
-	}
-
     protected void doCreate(App app, ApiConfigurator c) {
         String key = c.config().getName().toLowerCase();
-        if(created.contains(key)) {
+
+        boolean registered = configurators.containsKey(key);
+        if(registered && created.contains(key)) {
             throw new IllegalStateException("The api '" + c.config().getName() + "' already created!");
         }
 
         doConfiguration(app, c);
+
+        if(registered) {
+            resolveAppRoutes(app, c);
+        }
 
         //configure by processors.
         for(ApiConfigProcessor p : configProcessors) {
@@ -296,15 +302,20 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
         //create metadata
         ApiMetadata m = createMetadata(c);
-        metadatas.put(key, m);
+        if(registered) {
+            metadatas.put(key, m);
+        }
 
         //post load
         postLoadApi(app, c.config(), m);
 
-        created.add(key);
+        if(registered) {
+            created.add(key);
+        }
+
     }
 
-    protected void doCommonConfiguration(App app, ApiConfigurator c) {
+    protected void doConfiguration(App app, ApiConfigurator c) {
         //todo : oauth
 
         //todo : cors
@@ -312,7 +323,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         commonResponses.forEach(c::putCommonResponse);
     }
 	
-    protected void resolveRoutes(App app, ApiConfigurator c) {
+    protected void resolveAppRoutes(App app, ApiConfigurator c) {
 		String basePath	= c.config().getBasePath();
 		for(Route route : app.routes()) {
 			String pathTemplate = route.getPathTemplate().getTemplate();
