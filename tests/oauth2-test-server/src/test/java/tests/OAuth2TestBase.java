@@ -191,7 +191,7 @@ public abstract class OAuth2TestBase extends WebTestBaseContextual implements OA
                 .addFormParam("password",Urls.encode(password))
                 .addFormParam("username",Urls.encode(username))
                 .addHeader("Authorization", "Basic " + Base64.encode(clientId+":"+clientSecret));
-        
+        System.out.println(serverContextPath + TOKEN_ENDPOINT);
         return resp(request.send(), new TokenResponse());
     }
     

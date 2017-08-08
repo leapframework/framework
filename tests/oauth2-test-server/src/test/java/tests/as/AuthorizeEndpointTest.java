@@ -27,6 +27,7 @@ public class AuthorizeEndpointTest extends OAuth2TestBase {
 
     @Test
     public void testRequestAuthzWithAt(){
+        logout();
         TokenResponse at = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,"app2","app2_secret");
         useGet("/server"+AUTHZ_ENDPOINT).addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
                 .addQueryParam("response_type","code")
