@@ -17,6 +17,7 @@
 package leap.web.api.restd;
 
 import leap.orm.dao.Dao;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.route.Routes;
@@ -24,6 +25,11 @@ import leap.web.route.Routes;
 import java.util.Set;
 
 public interface RestdContext {
+
+    /**
+     * Returns the api.
+     */
+    Api getApi();
 
     /**
      * Returns the config of restd api.

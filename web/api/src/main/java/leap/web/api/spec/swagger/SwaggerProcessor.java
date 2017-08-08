@@ -16,20 +16,18 @@
 package leap.web.api.spec.swagger;
 
 import leap.core.annotation.Inject;
-import leap.lang.http.HTTP;
-import leap.web.App;
 import leap.web.Request;
 import leap.web.Response;
+import leap.web.api.Api;
 import leap.web.api.Apis;
 import leap.web.api.config.ApiConfig;
-import leap.web.api.config.ApiConfigException;
 import leap.web.api.config.ApiConfigProcessor;
-import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
 import leap.web.api.meta.ApiMetadataProcessor;
 import leap.web.api.spec.ApiSpecContext;
+import leap.web.route.Route;
 import leap.web.route.Routes;
 
 public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor {
@@ -39,32 +37,30 @@ public class SwaggerProcessor implements ApiConfigProcessor,ApiMetadataProcessor
 	protected @Inject Apis apis;
 
 	@Override
-	public void preProcess(ApiConfigurator c) {
-        Routes routes = c.config().getDynamicRoutes();
-
-		routes.create().get(getJsonSpecPath(c.config()), (req, resp) ->
-                handleJsonSpecRequest(c.config(), req, resp, c.config().getName())).enableCors()
-		  .allowAnonymous()
-		  .apply();
-	}
-	
-	@Override
     public void preProcess(ApiMetadataContext context, ApiMetadataBuilder m) {
 		m.getPaths().remove("/" + SWAGGER_JSON_FILE);
     }
 
-	void handleJsonSpecRequest(ApiConfig c, Request req, Response resp, String name) throws Throwable {
-		ApiMetadata m = apis.tryGetMetadata(name);
-        if(null == m) {
-            resp.setStatus(HTTP.SC_NOT_FOUND);
-            return;
-        }
-		
+    @Override
+    public void completeProcess(ApiMetadataContext context, ApiMetadata m) {
+        ApiConfig config = context.getConfig();
+
+        Routes routes = config.getContainerRoutes();
+
+        Route route = routes.create().get(getJsonSpecPath(config), (req, resp) ->
+                            handleJsonSpecRequest(context.getApi(), req, resp)).enableCors()
+                            .allowAnonymous()
+                            .build();
+
+        context.getApi().getConfigurator().addDynamicRoute(route, false);
+    }
+
+    void handleJsonSpecRequest(Api api, Request req, Response resp) throws Throwable {
 		SwaggerJsonWriter w = new SwaggerJsonWriter();
-		w.setPropertyNamingStyle(c.getPropertyNamingStyle());
+		w.setPropertyNamingStyle(api.getConfig().getPropertyNamingStyle());
 		
 		resp.setContentType(w.getContentType());
-		w.write(new ApiSpecContextImpl(req), m, resp.getWriter());
+		w.write(new ApiSpecContextImpl(req), api.getMetadata(), resp.getWriter());
 	}
 	
 	protected String getJsonSpecPath(ApiConfig c) {

@@ -15,6 +15,7 @@
  */
 package leap.web.api.meta;
 
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.route.Route;
@@ -27,7 +28,7 @@ public interface ApiMetadataFactory {
 	/**
 	 * Creates the api metadata for the given {@link ApiConfig}.
 	 */
-	ApiMetadata createMetadata(ApiConfig c);
+	ApiMetadata createMetadata(Api api);
 
     /**
      * Creates a new {@link MApiOperationBuilder} for the given {@link Route}.

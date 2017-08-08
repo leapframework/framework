@@ -22,15 +22,14 @@ import leap.web.action.Action;
 import leap.web.action.HandlerAction;
 import leap.web.action.RunnableAction;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 class DefaultRouteConfigurator implements RouteConfigurator {
-	
-	private final Function<DefaultRouteConfigurator, Route> callback;
-	private boolean                                         apply;
-	
-	protected Method  method;
+
+    private final DefaultRoutes routes;
+    private       boolean       applied;
+
+    protected Method  method;
 	protected String  path;
 	protected Action  handler;
 	protected boolean supportsMultipart;
@@ -40,8 +39,8 @@ class DefaultRouteConfigurator implements RouteConfigurator {
 	protected Boolean allowAnonymous;
 	protected Boolean allowClientOnly;
 	
-	public DefaultRouteConfigurator(Function<DefaultRouteConfigurator, Route> callback) {
-		this.callback = callback;
+	public DefaultRouteConfigurator(DefaultRoutes routes) {
+        this.routes = routes;
 	}
 	
 	public Method getMethod() {
@@ -134,13 +133,30 @@ class DefaultRouteConfigurator implements RouteConfigurator {
     }
 
     @Override
+    public RouteBuilder builder() {
+        RouteBuilder rb = routes.createRoute(this.getMethod(), this.getPath(), this.getHandler());
+
+        rb.setSupportsMultipart(this.isSupportsMultipart());
+        rb.setCorsEnabled(this.getCorsEnabled());
+        rb.setCsrfEnabled(this.getCsrfEnabled());
+        rb.setHttpsOnly(this.getHttpsOnly());
+        rb.setAllowAnonymous(this.getAllowAnonymous());
+        rb.setAllowClientOnly(this.getAllowClientOnly());
+
+        return rb;
+    }
+
+    @Override
 	public Route apply() {
-		Assert.isFalse(apply,   "The route already added");
+		Assert.isFalse(applied, "The route already added");
 		Assert.notEmpty(path,   "'path' cannot be empty");
 		Assert.notNull(handler, "'handler' cannot be null");
 		
-		apply = true;
-		return callback.apply(this);
+		applied = true;
+
+        Route route = builder().build();
+        routes.add(route);
+		return route;
 	}
 
 }

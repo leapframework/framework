@@ -18,6 +18,7 @@ package leap.web.api.config;
 import leap.lang.Extensible;
 import leap.lang.http.MimeTypes;
 import leap.lang.naming.NamingStyle;
+import leap.web.api.Api;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
@@ -173,12 +174,30 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator tryAddPermission(MApiPermission p);
 
     /**
-     * Adds a route in this api.
+     * Adds an operation route in this api.
      * <p>
      * <p/>
      * The permissions defined in the route will be added automatically.
      */
     ApiConfigurator addRoute(Route route);
+
+    /**
+     * Adds a dynamic route in this api.
+     * <p>
+     * <p/>
+     * The permissions defined in the route will be added automatically.
+     */
+    default ApiConfigurator addDynamicRoute(Route route) {
+        return addDynamicRoute(route, true);
+    }
+
+    /**
+     * Adds a dynamic route in this api.
+     *
+     * <p/>
+     * The permissions defined in the route will be added automatically.
+     */
+    ApiConfigurator addDynamicRoute(Route route, boolean isOperation);
 
     /**
      * Sets base package of this api
@@ -201,9 +220,9 @@ public interface ApiConfigurator extends Extensible {
     ApiConfigurator setRestdConfig(RestdConfig c);
 
     /**
-     * Sets the {@link Routes} for storing dynamic created routes.
+     * Sets the {@link Routes} for added api routes..
      */
-    ApiConfigurator setDynamicRoutes(Routes routes);
+    ApiConfigurator setContainerRoutes(Routes routes);
 
     /**
      * Enables restd.

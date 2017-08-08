@@ -20,7 +20,6 @@ import leap.core.web.path.JerseyUriTemplate;
 import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
-import leap.lang.collection.ArrayIterator;
 import leap.lang.http.HTTP.Method;
 import leap.web.Handler;
 import leap.web.action.*;
@@ -54,22 +53,7 @@ public class DefaultRoutes implements Routes {
 	
 	@Override
     public RouteConfigurator create() {
-		return new DefaultRouteConfigurator((c) -> {
-			RouteBuilder rb = createRoute(c.getMethod(), c.getPath(), c.getHandler());
-			
-			rb.setSupportsMultipart(c.isSupportsMultipart());
-			rb.setCorsEnabled(c.getCorsEnabled());
-			rb.setCsrfEnabled(c.getCsrfEnabled());
-			rb.setHttpsOnly(c.getHttpsOnly());
-            rb.setAllowAnonymous(c.getAllowAnonymous());
-            rb.setAllowClientOnly(c.getAllowClientOnly());
-
-			Route r = rb.build();
-			
-			add(r);
-			
-			return r;
-		});
+		return new DefaultRouteConfigurator(this);
     }
 
 	@Override
@@ -126,6 +110,11 @@ public class DefaultRoutes implements Routes {
     }
 
     @Override
+    public boolean exists(Route route) {
+        return list.contains(route);
+    }
+
+    @Override
     public boolean remove(Route route) {
         return list.remove(route);
     }
@@ -172,8 +161,8 @@ public class DefaultRoutes implements Routes {
             route = rematch(matchedRoutes);
         }
 
-        if(route instanceof SubRoutes) {
-            route = ((SubRoutes) route).match(method, path, inParameters, outVariables);
+        if(route instanceof NestedRoute) {
+            route = ((NestedRoute) route).match(method, path, inParameters, outVariables);
         }
 
 		return route;

@@ -18,9 +18,9 @@ package leap.web.api.restd.crud;
 
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
-import leap.web.App;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
@@ -40,13 +40,13 @@ import java.util.Map;
 public class CreateOperation extends CrudOperation implements RestdProcessor {
 
     @Override
-    public void preProcessModel(ApiConfigurator api, RestdContext context, RestdModel model) {
+    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
         if(!context.getConfig().allowCreateModel(model.getName())) {
             return;
         }
 
         String verb = "POST";
-        String path = fullModelPath(api, model);
+        String path = fullModelPath(c, model);
         if(isOperationExists(context, verb, path)) {
             return;
         }
@@ -56,7 +56,7 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("create", model.getName()));
-        action.setFunction((params) -> execute(api.config(), dao, model, params));
+        action.setFunction((params) -> execute(context.getApi(), dao, model, params));
         addModelArgument(action, model);
         addModelResponse(action, model).setStatus(201);
 
@@ -64,16 +64,16 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         route.setAction(action.build());
 
         configure(context, model, route);
-        api.addRoute(rm.loadRoute(context.getRoutes(), route));
+        c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(ApiConfig ac, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = apis.tryGetMetadata(ac.getName());
+    protected Object execute(Api api, Dao dao, RestdModel model, ActionParams params) {
+        ApiMetadata amd = api.getMetadata();
         MApiModel   am  = amd.getModel(model.getName());
 
         Map<String,Object> record = params.get(0);
 
-        ModelExecutorContext context = new SimpleModelExecutorContext(ac, amd, am, dao, model.getEntityMapping());
+        ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
         ModelCreateExecutor executor = mef.newCreateExecutor(context);
 
         CreateOneResult result = executor.createOne(record);

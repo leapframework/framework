@@ -34,12 +34,14 @@ import leap.web.App;
 import leap.web.action.Action;
 import leap.web.action.Argument;
 import leap.web.action.Argument.Location;
+import leap.web.api.Api;
 import leap.web.api.annotation.ApiModel;
 import leap.web.api.annotation.Response;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.meta.model.*;
+import leap.web.api.route.ApiRoute;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.multipart.MultipartFile;
 import leap.web.route.Route;
@@ -62,16 +64,16 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     protected @Inject ApiMetadataStrategy    strategy;
 
 	@Override
-    public ApiMetadata createMetadata(ApiConfig c) {
+    public ApiMetadata createMetadata(Api api) {
 		ApiMetadataBuilder md = new ApiMetadataBuilder();
 		
-		ApiMetadataContext context = createContext(c, md);
+		ApiMetadataContext context = createContext(api, md);
 
         prepareMetadata(context, md);
 		
 		setBaseInfo(context, md);
 
-        createResponses(context, c, md);
+        createResponses(context, md);
 
         createPermissions(context, md);
 		
@@ -88,7 +90,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
         final ApiConfig c = context.getConfig();
 
-        c.getRoutes().forEach(route -> {
+        c.getApiRoutes().forEach(ar -> {
+
+            Route route = ar.getRoute();
 
             if(!c.isCorsDisabled() && !route.isCorsDisabled()) {
                 route.setCorsEnabled(true);
@@ -121,8 +125,8 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         return op;
     }
 
-    protected ApiMetadataContext createContext(ApiConfig c, ApiMetadataBuilder md) {
-		final MTypeContainer tf = createMTypeFactory(c, md);
+    protected ApiMetadataContext createContext(Api api, ApiMetadataBuilder md) {
+		final MTypeContainer tf = createMTypeFactory(api.getConfig(), md);
 		
 		return new ApiMetadataContext() {
 
@@ -132,10 +136,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
 
             @Override
-			public ApiConfig getConfig() {
-				return c;
-			}
-
+            public Api getApi() {
+                return api;
+            }
         };
 	}
 	
@@ -173,7 +176,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 		md.addConsumes(c.getConsumes());
 	}
 
-    protected void createResponses(ApiMetadataContext context, ApiConfig c, ApiMetadataBuilder m) {
+    protected void createResponses(ApiMetadataContext context, ApiMetadataBuilder m) {
+        ApiConfig c = context.getConfig();
+
         c.getCommonResponses().forEach((name, r) -> {
             MType type = r.getType();
             if(type.isComplexType()) {
@@ -321,8 +326,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 	
 	protected void createPaths(ApiMetadataContext context, ApiMetadataBuilder md) {
-		for(Route route : context.getConfig().getRoutes()) {
-			createApiPath(context, md, route);	
+		for(ApiRoute ar : context.getConfig().getApiRoutes()) {
+            if(!ar.isOperation()) {
+                continue;
+            }
+			createApiPath(context, md, ar.getRoute());
 		}
 	}
 

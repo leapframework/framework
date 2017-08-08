@@ -21,6 +21,8 @@ import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
 import leap.web.api.meta.model.*;
 import leap.web.api.permission.ResourcePermissionsSet;
+import leap.web.api.route.ApiRoute;
+import leap.web.api.route.SimpleApiRoute;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
@@ -49,8 +51,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Set<String> 	 removalModelNamePrefixes    = new HashSet<String>();
     protected Set<String> 	 removalModelNamePrefixesImv = Collections.unmodifiableSet(removalModelNamePrefixes);
 
-    protected Set<Route>  	 routes                      = new HashSet<>();
-    protected Set<Route>  	 routesImv                   = Collections.unmodifiableSet(routes);
+    protected Set<ApiRoute> routes    = new HashSet<>();
+    protected Set<ApiRoute> routesImv = Collections.unmodifiableSet(routes);
 
     protected Map<String, MApiPermission> permissions    = new LinkedHashMap<>();
     protected Map<String, MApiPermission> permissionsImv = Collections.unmodifiableMap(permissions);
@@ -73,10 +75,9 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected ResourcePermissionsSet resourcePermissionsSet = new ResourcePermissionsSet();
 
     protected OAuthConfigImpl oauthConfig = new OAuthConfigImpl();
-    protected RestdConfig     restdConfig;
-    protected Routes          dynamicRoutes;
+    protected RestdConfig restdConfig;
+    protected Routes      containerRoutes;
 
-	
 	public DefaultApiConfig(String name, String basePath, Object source) {
 		Args.notEmpty(name, "name");
 		Args.notEmpty(basePath, "basePath");
@@ -156,8 +157,19 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 		return !corsEnabled;
 	}
 
+    @Override
+    public Routes getContainerRoutes() {
+        return this.containerRoutes;
+    }
+
+    @Override
+    public ApiConfigurator setContainerRoutes(Routes routes) {
+        this.containerRoutes = routes;
+        return this;
+    }
+
 	@Override
-    public Set<Route> getRoutes() {
+    public Set<ApiRoute> getApiRoutes() {
 	    return routesImv;
     }
 
@@ -378,8 +390,15 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     @Override
     public ApiConfigurator addRoute(Route route) {
-		routes.add(route);
+        return addRoute(route, false, true);
+    }
 
+    @Override
+    public ApiConfigurator addDynamicRoute(Route route, boolean isOperation) {
+        return addRoute(route, true, isOperation);
+    }
+
+    public ApiConfigurator addRoute(Route route, boolean dynamic, boolean operation) {
         if(null != route.getPermissions()) {
             for(String p : route.getPermissions()) {
                 if(!permissions.containsKey(p)) {
@@ -388,7 +407,13 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
             }
         }
 
-	    return this;
+        routes.add(new SimpleApiRoute(route, dynamic, operation));
+
+        if(!containerRoutes.exists(route)) {
+            containerRoutes.add(route);
+        }
+
+        return this;
     }
 
     @Override
@@ -442,16 +467,6 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator setRestdConfig(RestdConfig c) {
         this.restdConfig = c;
-        return this;
-    }
-
-    @Override
-    public Routes getDynamicRoutes() {
-        return dynamicRoutes;
-    }
-
-    public ApiConfigurator setDynamicRoutes(Routes dynamicRoutes) {
-        this.dynamicRoutes = dynamicRoutes;
         return this;
     }
 

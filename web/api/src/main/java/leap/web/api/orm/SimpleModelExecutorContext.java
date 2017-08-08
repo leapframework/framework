@@ -18,25 +18,26 @@ package leap.web.api.orm;
 
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 
 public class SimpleModelExecutorContext implements ModelExecutorContext {
 
-    protected ApiConfig     apiConfig;
-    protected ApiMetadata   apiMetadata;
+    protected ApiConfig     ac;
+    protected ApiMetadata   amd;
     protected MApiModel     apiModel;
     protected Dao           dao;
     protected EntityMapping entityMapping;
 
-    public SimpleModelExecutorContext() {
-
+    public SimpleModelExecutorContext(Api api, MApiModel am, Dao dao, EntityMapping em) {
+        this(api.getConfig(), api.getMetadata(), am, dao, em);
     }
 
     public SimpleModelExecutorContext(ApiConfig ac, ApiMetadata amd, MApiModel am, Dao dao, EntityMapping em) {
-        this.apiConfig = ac;
-        this.apiMetadata = amd;
+        this.ac = ac;
+        this.amd = amd;
         this.apiModel = am;
         this.dao = dao;
         this.entityMapping = em;
@@ -44,29 +45,17 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
 
     @Override
     public ApiConfig getApiConfig() {
-        return apiConfig;
-    }
-
-    public void setApiConfig(ApiConfig apiConfig) {
-        this.apiConfig = apiConfig;
+        return ac;
     }
 
     @Override
     public ApiMetadata getApiMetadata() {
-        return apiMetadata;
-    }
-
-    public void setApiMetadata(ApiMetadata apiMetadata) {
-        this.apiMetadata = apiMetadata;
+        return amd;
     }
 
     @Override
     public MApiModel getApiModel() {
         return apiModel;
-    }
-
-    public void setApiModel(MApiModel apiModel) {
-        this.apiModel = apiModel;
     }
 
     @Override
@@ -83,7 +72,4 @@ public class SimpleModelExecutorContext implements ModelExecutorContext {
         return entityMapping;
     }
 
-    public void setEntityMapping(EntityMapping entityMapping) {
-        this.entityMapping = entityMapping;
-    }
 }

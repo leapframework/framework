@@ -19,13 +19,20 @@ package leap.web.api.dyna;
 public interface DynaApiFactory {
 
     /**
-     * Creates a new {@link DynaApiCreator} for creating a new api.
+     * Returns a new {@link DynaApi} for creating a new api.
      */
-    DynaApiCreator createDynaApi(String name, String basePath);
+    default DynaApi newDynaApi(String name, String basePath) {
+        return newDynaApi(name, basePath, true);
+    }
+
+    /**
+     * Returns a new for creating a new api.
+     */
+    DynaApi newDynaApi(String name, String basePath, boolean register);
 
     /**
      * Destroy the dyna api.
      */
-    boolean destroyDynaApi(DynaApi api);
+    void destroyDynaApi(DynaApi api);
 
 }

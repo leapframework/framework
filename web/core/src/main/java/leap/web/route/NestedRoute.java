@@ -16,8 +16,7 @@
 
 package leap.web.route;
 
-import leap.web.action.Action;
-import leap.web.action.FailureHandler;
+import leap.web.action.*;
 import leap.web.format.RequestFormat;
 import leap.web.format.ResponseFormat;
 import leap.web.view.View;
@@ -25,7 +24,12 @@ import leap.web.view.View;
 import java.util.Collections;
 import java.util.Map;
 
-public interface SubRoutes extends Route {
+/**
+ * A {@link Route} contains nested routes.
+ */
+public interface NestedRoute extends Route {
+
+    Action NOP_ACTION = new HandlerAction((req, resp) -> {});
 
     /**
      * Returns a matched {@link Route} or <code>null</code> if no route matched.
@@ -194,11 +198,12 @@ public interface SubRoutes extends Route {
 
     @Override
     default Action getAction() {
-        return null;
+        return NOP_ACTION;
     }
 
     @Override
     default Object getController() {
         return null;
     }
+
 }
