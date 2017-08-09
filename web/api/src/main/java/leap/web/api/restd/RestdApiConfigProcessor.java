@@ -131,7 +131,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
             oc = ormRegistry.findContext(dataSourceName);
             if (null == oc) {
-                throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
+                throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registered!");
             }
         }
 

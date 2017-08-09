@@ -372,6 +372,10 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
             api = new DefaultApiConfig(name, basePath,reader.getSource());
             api.setBasePackage(basePackage);
             extensions.addApi(api);
+        }else{
+            if(!Strings.isEmpty(basePath)) {
+                ((DefaultApiConfig)api).setBasePath(basePath);
+            }
         }
 
         if (null != defaultAnonymous) {
@@ -387,12 +391,15 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         }
 
         if (null != api.getRestdConfig()) {
-            api.getRestdConfig().setDataSourceName(reader.resolveAttribute(RESTD_DATA_SOURCE));
+            String dataSourceName = reader.resolveAttribute(RESTD_DATA_SOURCE);
+            if(!Strings.isEmpty(dataSourceName)) {
+                api.getRestdConfig().setDataSourceName(dataSourceName);
+            }
         }
 
         readApi(context, reader, api);
 
-        addWebModule(context, api);
+        addOrUpdateWebModule(context, api);
     }
 
     protected void readApi(AppConfigContext context, XmlReader reader, ApiConfigurator api) {
@@ -513,18 +520,21 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         }
     }
 
-    protected void addWebModule(AppConfigContext context, ApiConfigurator api) {
-        ApiConfig apiConf = api.config();
-        String basePackage = apiConf.getBasePackage();
+    protected void addOrUpdateWebModule(AppConfigContext context, ApiConfigurator api) {
+        ApiConfig ac = api.config();
+        String basePackage = ac.getBasePackage();
         if (Strings.isNotEmpty(basePackage)) {
             context.getAdditionalPackages().add(basePackage);
 
+            String moduleName = ac.getName() + "_api";
+
             DefaultModuleConfig module = new DefaultModuleConfig();
-            module.setName(apiConf.getName());
-            module.setBasePath(apiConf.getBasePath());
-            module.setBasePackage(apiConf.getBasePackage());
+            module.setName(moduleName);
+            module.setBasePath(ac.getBasePath());
+            module.setBasePackage(ac.getBasePackage());
             ModuleConfigExtension extension = context.getOrCreateExtension(ModuleConfigExtension.class);
-            extension.addModule(module);
+
+            extension.setModule(module);
         }
 
     }
