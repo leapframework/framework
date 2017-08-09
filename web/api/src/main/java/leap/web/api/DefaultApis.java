@@ -214,7 +214,7 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
         }
 
         apis.values().forEach(api -> {
-            if(Strings.equalsIgnoreCase(api.getBasePath(),c.getBasePackage())){
+            if(Strings.equalsIgnoreCase(api.getBasePath(),c.getBasePath())){
                 throw new ApiConfigException("Found duplicated api config with base path: " + c.getBasePath()
                         + " in " + api.getConfig().getSource() + " and " + c.getSource());
             }

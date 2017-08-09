@@ -415,6 +415,9 @@ public class DefaultAppConfigSource implements AppConfigSource {
                 Map<String,Resource> urlResourceMap = new HashMap<>();
 
                 loadBasePackageResources(urlResourceMap,config.basePackage);
+                for(String basePackage : config.getAdditionalPackages()) {
+                    loadBasePackageResources(urlResourceMap, basePackage);
+                }
                 loadResources(urlResourceMap);
                 
                 config.resources = new SimpleResourceSet(urlResourceMap.values().toArray(new Resource[]{}));
