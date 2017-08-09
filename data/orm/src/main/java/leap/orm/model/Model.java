@@ -1037,7 +1037,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 
 	protected void doSet(String field,Object value){
     	BeanProperty bp = beanType().tryGetProperty(field, true);
-    	if(null != bp){
+    	if(null != bp && bp.isWritable()){
     		bp.setValue(this, value);
     	}else{
     		fields.put(field, value);
