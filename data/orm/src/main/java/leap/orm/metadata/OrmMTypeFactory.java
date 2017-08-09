@@ -123,7 +123,12 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
             RelationMapping rm = em.getRelationMapping(rp.getRelationName());
 
             EntityMapping targetEntity = c.getMetadata().getEntityMapping(rp.getTargetEntityName());
-            getMType(targetEntity.getEntityClass(), context, c, targetEntity);
+
+            if(null != targetEntity.getEntityClass() &&
+                    !context.isComplexTypeCreatingOrCreated(targetEntity.getEntityClass())) {
+                //force the create the complex type of target entity firstly.
+                getMType(targetEntity.getEntityClass(), context, c, targetEntity);
+            }
 
             MPropertyBuilder p = new MPropertyBuilder();
             p.setName(rp.getName());

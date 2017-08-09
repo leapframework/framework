@@ -20,6 +20,7 @@ import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
 import leap.lang.Strings;
+import leap.lang.net.Urls;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
@@ -27,6 +28,8 @@ import leap.web.AppInitializable;
 import leap.web.AppListener;
 import leap.web.ServerInfo;
 import leap.web.security.SecurityConfigurator;
+
+import java.net.URI;
 
 @Configurable(prefix="oauth2")
 public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable, AppListener {
@@ -154,47 +157,13 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
         if(!needParse(url)){
             return url;
         }
-        String resolvedUrl = resolveUrl(url, serverInfo);
+        URI uri = URI.create(Strings.replace(serverInfo.getServerUrl(), " ", "%20"));
+        String resolvedUrl = Urls.resolveUrlExpr(url, uri);
         if(needParse(resolvedUrl)){
             return serverInfo.getServerUrl()+Paths.prefixWithSlash(resolvedUrl);
         }
         return resolvedUrl;
         
-    }
-    
-    protected String resolveUrl(String expression, ServerInfo serverInfo){
-        int i = 0;
-        StringBuilder source = new StringBuilder(expression);
-        StringBuilder builder = new StringBuilder();
-        while (source.length()>0){
-            char c = source.charAt(i);
-            source.deleteCharAt(i);
-            if(c == '@'){
-                if(source.charAt(i) == '{'){
-                    source.deleteCharAt(i);
-                    int index = source.indexOf("}");
-                    if(-1 == index){
-                        throw new OAuth2Exception("error server url expression:"+expression);
-                    }
-                    String exp = source.substring(0,index);
-                    source.delete(0,index+1);
-                    builder.append(getExpressionValue(exp,serverInfo));
-                }
-            }else {
-                builder.append(c);
-            }
-        }
-        return builder.toString();
-    }
-    
-    protected String getExpressionValue(String expression, ServerInfo serverInfo){
-        if(Strings.startsWith(expression,"~")){
-            return serverInfo.getServerUrl()+Paths.prefixWithSlash(expression.substring(1));
-        }
-        if(Strings.startsWith(expression,"^")){
-            return Paths.prefixWithSlash(expression.substring(1));
-        }
-        return Paths.prefixWithSlash(expression.substring(1));
     }
     
     @Override

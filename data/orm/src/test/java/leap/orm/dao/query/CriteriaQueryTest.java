@@ -239,5 +239,33 @@ public class CriteriaQueryTest extends OrmTestCase {
             Api.deleteAll();
         }
     }
+	@Test
+    public void testJoinSelect(){
+		Api api = new Api();
+		api.setName("Hello");
+		api.setTitle("Hello");
+		api.create();
 
+		ApiPath path = new ApiPath();
+		path.setFullPath("/");
+		path.setApiId(api.getId());
+		path.create();
+		
+		try {
+			List<ApiPath> paths =
+					dao.createCriteriaQuery(ApiPath.class).join(Api.class, "a")
+							.where("a.id = ?", api.getId())
+							.select("a.name")
+							.list();
+			
+			
+		}finally {
+			ApiPath.deleteAll();
+			Api.deleteAll();
+		}
+		
+		
+		
+	}
+    
 }

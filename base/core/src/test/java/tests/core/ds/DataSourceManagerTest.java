@@ -46,6 +46,7 @@ public class DataSourceManagerTest extends AppTestBase {
 				DataSourceConfig.createBuilder()
 								    .setDriverClassName("org.h2.Driver")
 								    .setUrl("jdbc:h2:mem:test")
+                                    .setUsername("sa")
 								    .build();
 		
 		DataSource ds;

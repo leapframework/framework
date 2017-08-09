@@ -30,6 +30,7 @@ import leap.lang.Charsets;
 import leap.lang.Exceptions;
 import leap.lang.New;
 import leap.lang.Strings;
+import leap.lang.path.Paths;
 
 //some codes copy from spring framework, under Apache License 2.0
 public class Urls {
@@ -285,7 +286,64 @@ public class Urls {
 		}
 		return map;
 	}
-	
+
+	/**
+	 * uri = http://127.0.0.1/ctx
+	 * 
+	 * expression will be:
+	 * <ul>
+	 *     <li><code>@{~/}path1</code> 	-> <code>http://127.0.0.1/ctx/path1</code></li>
+	 *     <li><code>@{~}path1</code> 	-> <code>http://127.0.0.1/ctxpath1</code></li>
+	 *     <li><code>@{/}path1</code> 	-> <code>/ctx/path1</code></li>
+	 *     <li><code>@{^/}path1</code> 	-> <code>/path1</code></li>
+	 *     <li><code>@{^}path1</code> 	-> <code>path1</code></li>
+	 * </ul>
+	 * 
+	 * @param expression
+	 * @param uri
+	 * @return
+	 */
+	public static String resolveUrlExpr(String expression, URI uri){
+		int i = 0;
+		StringBuilder source = new StringBuilder(expression);
+		StringBuilder builder = new StringBuilder();
+		while (source.length()>0){
+			char c = source.charAt(i);
+			source.deleteCharAt(i);
+			if(c == '@'){
+				if(source.charAt(i) == '{'){
+					source.deleteCharAt(i);
+					int index = source.indexOf("}");
+					if(-1 == index){
+						throw new IllegalArgumentException("error server url expression:"+expression);
+					}
+					String exp = source.substring(0,index);
+					source.delete(0,index+1);
+					builder.append(getExpressionValue(exp,uri));
+				}
+			}else {
+				if(c != '/' || builder.length() == 0){
+					builder.append(c);
+				}else if(builder.charAt(builder.length()-1)!='/'){
+					builder.append(c);
+				}
+			}
+		}
+		return builder.toString();
+	}
+
+	protected static String getExpressionValue(String expression, URI uri){
+		if(Strings.startsWith(expression,"/")){
+			return Paths.suffixWithoutSlash(uri.getPath()) + expression;
+		}
+		if(Strings.startsWith(expression,"~")){
+			return Paths.suffixWithoutSlash(uri.toString()) + expression.substring(1);
+		}
+		if(Strings.startsWith(expression,"^")){
+			return expression.substring(1);
+		}
+		return expression;
+	}
 	
 	protected Urls(){
 		
