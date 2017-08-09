@@ -411,12 +411,7 @@ public abstract class GenericDbDialect extends GenericDbDialectBase implements D
         script.append("CREATE ");
         
         if(index.isUnique()){
-        	//TODO : null column in index
-//        	Boolean columnsNullable = index.getColumnsNullable();
-//        	
-//        	if(null == columnsNullable || columnsNullable.equals(false) || supportsUniqueIndexMultiNullValues()){
-//        		script.append("UNIQUE ");	
-//        	}
+            script.append("UNIQUE ");
         }
         
         script.append("INDEX ").append(index.getName())

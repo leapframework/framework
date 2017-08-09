@@ -15,21 +15,11 @@
  */
 package leap.orm.command;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
 import leap.db.DbCommand;
 import leap.db.DbCommands;
 import leap.db.DbExecution;
-import leap.db.change.ColumnDefinitionChange;
-import leap.db.change.SchemaChange;
-import leap.db.change.SchemaChanges;
-import leap.db.command.DropColumn;
-import leap.db.command.DropForeignKey;
-import leap.db.command.DropIndex;
-import leap.db.command.DropPrimaryKey;
-import leap.db.command.DropTable;
+import leap.db.change.*;
+import leap.db.command.*;
 import leap.db.model.DbSchema;
 import leap.db.model.DbTable;
 import leap.lang.Error;
@@ -37,6 +27,10 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements UpgradeSchemaCommand,Predicate<DbCommand> {
 	
@@ -190,25 +184,35 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 
 	@Override
     protected boolean doExecute() {
-	    
-	    
-		Predicate<SchemaChange> changePredicate = change -> {
-            if(change instanceof ColumnDefinitionChange){
-                if(!isAlterColumnEnabled()){
-                    
-                    ColumnDefinitionChange cdc = (ColumnDefinitionChange)change;
-                    
+
+        Predicate<SchemaChange> changePredicate = change -> {
+            if (change instanceof ColumnDefinitionChange) {
+                if (!isAlterColumnEnabled()) {
+
+                    ColumnDefinitionChange cdc = (ColumnDefinitionChange) change;
+
                     log.info("Ignore the definition change of column '{}.{}'",
-                            cdc.getTable().getName(),cdc.getOldColumn().getName());
-                    
+                            cdc.getTable().getName(), cdc.getOldColumn().getName());
+
                     return false;
                 }
                 return true;
             }
+
+            if(change instanceof IndexDefinitionChange) {
+                //todo: handle index definition change
+                return false;
+            }
+
+            if(change instanceof ForeignKeyDefinitionChange) {
+                //todo: handle foreign key definition change.
+                return false;
+            }
+
             return true;
-};
-		
-		execution = db.createExecution();
+        };
+
+        execution = db.createExecution();
 		List<SchemaChanges> allChanges = compareChanges();
 		
 		for(SchemaChanges changes : allChanges){
