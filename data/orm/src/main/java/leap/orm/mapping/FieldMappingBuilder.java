@@ -17,7 +17,6 @@ package leap.orm.mapping;
 
 import leap.core.el.EL;
 import leap.core.metamodel.ReservedMetaFieldName;
-import leap.db.model.DbColumn;
 import leap.db.model.DbColumnBuilder;
 import leap.lang.*;
 import leap.lang.beans.BeanProperty;
@@ -59,8 +58,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Expression            insertValue;
     protected Boolean               update;
     protected Expression            updateValue;
-    protected Boolean               filter;
-    protected Expression            filterValue;
+    protected Boolean               filtered;
+    protected Expression            filteredValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
     protected Domain                domain;
@@ -101,10 +100,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.defaultValueExpression = template.defaultValueExpression;
         this.insert = template.insert;
         this.update = template.update;
-        this.filter = template.filter;
+        this.filtered = template.filtered;
         this.insertValue = template.insertValue;
         this.updateValue = template.updateValue;
-        this.filterValue = template.filterValue;
+        this.filteredValue = template.filteredValue;
         this.optimisticLock = template.optimisticLock;
         this.newOptimisticLockFieldName = template.newOptimisticLockFieldName;
         this.domain = template.domain;
@@ -160,8 +159,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.update = fm.update;
         }
 
-        if(null != fm.filter) {
-            this.filter = fm.filter;
+        if(null != fm.filtered) {
+            this.filtered = fm.filtered;
         }
 
         if(null != fm.insertValue) {
@@ -172,8 +171,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.updateValue = fm.updateValue;
         }
 
-        if(null != fm.filterValue) {
-            this.filterValue = fm.filterValue;
+        if(null != fm.filteredValue) {
+            this.filteredValue = fm.filteredValue;
         }
 
         if(null != fm.domain) {
@@ -390,18 +389,18 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public Expression getFilterValue() {
-        return filterValue;
+    public Expression getFilteredValue() {
+        return filteredValue;
     }
 
-    public FieldMappingBuilder setFilterValue(Expression v) {
-        this.filterValue = v;
+    public FieldMappingBuilder setFilteredValue(Expression v) {
+        this.filteredValue = v;
         return this;
     }
 
     public FieldMappingBuilder trySetFilterValue(Expression v) {
-        if(null == this.filterValue) {
-            this.filterValue = v;
+        if(null == this.filteredValue) {
+            this.filteredValue = v;
         }
         return this;
     }
@@ -531,18 +530,18 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean getFilter() {
-        return null != filter && filter;
+    public boolean getFiltered() {
+        return null != filtered && filtered;
     }
 
-    public FieldMappingBuilder setFilter(Boolean b) {
-        this.filter = b;
+    public FieldMappingBuilder setFiltered(Boolean b) {
+        this.filtered = b;
         return this;
     }
 
     public FieldMappingBuilder trySetFilter(Boolean b){
-        if(null == this.filter){
-            this.filter = b;
+        if(null == this.filtered){
+            this.filtered = b;
         }
         return this;
     }
@@ -669,8 +668,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			update = column.isPrimaryKey() ? false : true;
 		}
 
-        if(null == filter) {
-            filter = false;
+        if(null == filtered) {
+            filtered = false;
         }
 		
 		if(null == defaultValueExpression){
@@ -687,9 +686,9 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filter,
+                                insert, update, filtered,
                                 defaultValueExpression,
-                                insertValue, updateValue, filterValue,
+                                insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,

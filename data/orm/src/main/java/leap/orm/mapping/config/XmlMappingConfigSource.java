@@ -63,10 +63,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String DEFAULT_VALUE_ATTRIBUTE    = "default-value";
     private static final String INSERT_ATTRIBUTE           = "insert";
     private static final String UPDATE_ATTRIBUTE           = "update";
-    private static final String FILTER                     = "filter";
+    private static final String FILTERED                   = "filtered";
     private static final String INSERT_VALUE_ATTRIBUTE     = "insert-value";
     private static final String UPDATE_VALUE_ATTRIBUTE     = "update-value";
-    private static final String FILTER_VALUE               = "filter-value";
+    private static final String FILTERED_VALUE             = "filtered-value";
     private static final String OVERRIDE_ATTRIBUTE         = "override";
 
     protected @Inject AppConfig appConfig;
@@ -235,10 +235,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         String  defaultValue   = reader.resolveAttribute(DEFAULT_VALUE_ATTRIBUTE);
         Boolean insert         = reader.resolveBooleanAttribute(INSERT_ATTRIBUTE);
         Boolean update         = reader.resolveBooleanAttribute(UPDATE_ATTRIBUTE);
-        Boolean filter         = reader.resolveBooleanAttribute(FILTER);
+        Boolean filter         = reader.resolveBooleanAttribute(FILTERED);
         String  insertValue    = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
         String  updateValue    = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
-        String  filterValue    = reader.getAttribute(FILTER_VALUE);
+        String  filterValue    = reader.getAttribute(FILTERED_VALUE);
         boolean override       = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 
         //field-name
@@ -284,10 +284,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setDefaultValue(defaultValue);
         field.setInsert(insert);
         field.setUpdate(update);
-        field.setFilter(filter);
+        field.setFiltered(filter);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);
-        field.setFilterValue(filterValueExpression);
+        field.setFilteredValue(filterValueExpression);
 
         return field;
     }

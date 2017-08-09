@@ -192,7 +192,7 @@ class SqlFilterColumnProcessor {
 
     private void addFilterNodes(List<AstNode> nodes, FieldMapping fm, String alias) {
         nodes.add(new Text(alias + "." + fm.getColumnName() + " = "));
-        nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getFilterValue().toString(), fm.getFilterValue()));
+        nodes.add(new ExprParamPlaceholder(Sql.Scope.WHERE, fm.getFilteredValue().toString(), fm.getFilteredValue()));
         nodes.add(new Text(" "));
     }
 

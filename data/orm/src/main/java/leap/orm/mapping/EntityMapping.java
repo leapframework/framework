@@ -506,8 +506,8 @@ public class EntityMapping extends ExtensibleBase {
         List<FieldMapping> list = New.arrayList();
 
         for(FieldMapping fm : this.fieldMappings){
-            if(fm.isFilter()){
-                Assert.isTrue(null != fm.getFilterValue(),
+            if(fm.isFiltered()){
+                Assert.isTrue(null != fm.getFilteredValue(),
                              "There filter value expression must not be null of filter field '" + fm.getFieldName() + "'");
                 list.add(fm);
             }
