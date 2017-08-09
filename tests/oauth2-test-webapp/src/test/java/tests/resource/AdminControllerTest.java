@@ -24,6 +24,8 @@ import tested.models.User;
 import tests.OAuth2TestBase;
 import tests.TokenResponse;
 
+import java.util.UUID;
+
 public class AdminControllerTest extends OAuth2TestBase {
     @Test
     public void testClientOnlyAccessToken() {
@@ -67,5 +69,9 @@ public class AdminControllerTest extends OAuth2TestBase {
         user.delete();
         assertEquals("success",withAccessToken(useGet("/admin/allow_anonymous"), token.accessToken).send().getContent());
     }
-
+    @Test
+    public void testInvalidAccessToken(){
+        withAccessToken(useGet("/book"), UUID.randomUUID().toString()).send().assert401();
+    }
+    
 }

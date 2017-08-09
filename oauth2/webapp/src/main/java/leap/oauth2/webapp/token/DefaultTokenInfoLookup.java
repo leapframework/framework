@@ -31,9 +31,11 @@ import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.oauth2.webapp.OAuth2InternalServerException;
 import leap.oauth2.webapp.OAuth2Config;
+import leap.oauth2.webapp.OAuth2ResponseException;
 import leap.oauth2.webapp.token.at.SimpleAccessToken;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class DefaultTokenInfoLookup implements TokenInfoLookup {
 
@@ -58,7 +60,7 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
         }
 
         HttpResponse response = request.send();
-
+        
         if(ContentTypes.APPLICATION_JSON_TYPE.isCompatible(response.getContentType())){
             String content = response.getString();
 
@@ -74,7 +76,11 @@ public class DefaultTokenInfoLookup implements TokenInfoLookup {
                 if(Strings.isEmpty(error)) {
                     return createTokenInfo(map);
                 }else{
-                    throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
+                    if(!response.is2xx()){
+                        throw new OAuth2ResponseException(response.getStatus(),error, Objects.toString(map.get("error_description")));
+                    }else {
+                        throw new OAuth2InternalServerException("Auth server response error '" + error + "' : " + map.get("error_description"));
+                    }
                 }
             }
         }else{
