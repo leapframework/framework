@@ -35,23 +35,23 @@ public enum LogLevel implements Valued<Integer>{
     }
 	
 	public boolean isTraceEnabled(){
-		return value < Debug.value;
+		return value <= Trace.value;
 	}
 	
 	public boolean isDebugEnabled(){
-		return value > Trace.value;
+		return value <= Debug.value;
 	}
 	
 	public boolean isInfoEnabled(){
-		return value > Debug.value;
+		return value <= Info.value;
 	}
 	
 	public boolean isWarnEnabled(){
-		return value > Info.value;
+		return value <= Warn.value;
 	}
 	
 	public boolean isErrorEnabled(){
-		return value > Warn.value;
+		return value <= Error.value;
 	}
 	
 	public static LogLevel byName(String name){
