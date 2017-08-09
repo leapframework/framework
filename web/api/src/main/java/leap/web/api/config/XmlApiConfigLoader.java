@@ -517,6 +517,8 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         ApiConfig apiConf = api.config();
         String basePackage = apiConf.getBasePackage();
         if (Strings.isNotEmpty(basePackage)) {
+            context.getAdditionalPackages().add(basePackage);
+
             DefaultModuleConfig module = new DefaultModuleConfig();
             module.setName(apiConf.getName());
             module.setBasePath(apiConf.getBasePath());
