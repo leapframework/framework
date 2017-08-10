@@ -87,11 +87,11 @@ public class Header implements Serializable {
 		}
 		
 		public static Map<String, String> createParametersMap(Map<String, String> m) {
-			Map<String, String> map = new SimpleCaseInsensitiveMap<String>(new LinkedHashMap<String, String>(),CaseType.LOWER);
+			Map<String, String> map = new SimpleCaseInsensitiveMap<String>(new LinkedHashMap<>(),CaseType.LOWER);
 			if(null != m){
 				map.putAll(m);
 			}
-			return Collections.unmodifiableMap(map);
+			return map;
 		}
 	}
 }
