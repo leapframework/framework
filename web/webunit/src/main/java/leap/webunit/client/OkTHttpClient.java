@@ -29,6 +29,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class OkTHttpClient extends THttpClientBase {
 
@@ -103,6 +104,7 @@ public class OkTHttpClient extends THttpClientBase {
         cb.cookieJar(cookieJar);
         cb.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
         cb.hostnameVerifier((s, sslSession) -> true);
+        cb.readTimeout(30, TimeUnit.MINUTES); //for debugging
 
         return cb.build();
     }
