@@ -18,6 +18,7 @@ package leap.web.api.config.model;
 
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmContext;
+import leap.web.api.restd.RestdOperationDef;
 
 import java.util.*;
 
@@ -30,11 +31,11 @@ public class RestdConfig {
     protected OrmContext ormContext;
     protected boolean    readonly;
 
-    protected Set<String>               includedModels = new LinkedHashSet<>();
-    protected Set<String>               excludedModels = new LinkedHashSet<>();
-    protected Set<String>               readonlyModels = new HashSet<>();
-    protected Map<String, Model>        models         = new HashMap<>();
-    protected Map<String, SqlOperation> sqlOperations  = new LinkedHashMap<>();
+    protected Set<String>            includedModels = new LinkedHashSet<>();
+    protected Set<String>            excludedModels = new LinkedHashSet<>();
+    protected Set<String>            readonlyModels = new HashSet<>();
+    protected Map<String, Model>     models         = new LinkedHashMap<>();
+    protected Map<String, Operation> operations     = new LinkedHashMap<>();
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -104,20 +105,20 @@ public class RestdConfig {
         models.put(key, model);
     }
 
-    public Map<String, SqlOperation> getSqlOperations() {
-        return sqlOperations;
+    public Map<String, Operation> getOperations() {
+        return operations;
     }
 
-    public SqlOperation getSqlOperation(String name) {
-        return sqlOperations.get(name.toLowerCase());
+    public Operation getOperation(String name) {
+        return operations.get(name.toLowerCase());
     }
 
-    public void addSqlOperation(SqlOperation op) {
+    public void addOperation(Operation op) {
         String key = op.getName().toLowerCase();
-        if(sqlOperations.containsKey(key)) {
-            throw new ObjectExistsException("The sql operation '" + op.getName() + "' already exists!");
+        if(operations.containsKey(key)) {
+            throw new ObjectExistsException("The configuration of operation '" + op.getName() + "' already exists!");
         }
-        sqlOperations.put(key, op);
+        operations.put(key, op);
     }
 
     public boolean isModelAnonymous(String name) {
@@ -188,7 +189,7 @@ public class RestdConfig {
         protected Boolean findOperationEnabled;
         protected Boolean queryOperationEnabled;
 
-        protected Map<String, SqlOperation> sqlOperations = new LinkedHashMap<>();
+        protected Map<String, Operation> operations = new LinkedHashMap<>();
 
         public Model(String name) {
             this.name = name;
@@ -246,34 +247,32 @@ public class RestdConfig {
             this.queryOperationEnabled = queryOperationEnabled;
         }
 
-        public Map<String, SqlOperation> getSqlOperations() {
-            return sqlOperations;
+        public Map<String, Operation> getOperations() {
+            return operations;
         }
 
-        public SqlOperation getSqlOperation(String name) {
-            return sqlOperations.get(name.toLowerCase());
+        public Operation getOperation(String name) {
+            return operations.get(name.toLowerCase());
         }
 
-        public void addSqlOperation(SqlOperation op) {
+        public void addOperation(Operation op) {
             String key = op.getName().toLowerCase();
-            if(sqlOperations.containsKey(key)) {
-                throw new ObjectExistsException("The sql operation '" + op.getName() + "' of model '" + name + "' already exists!");
+            if(operations.containsKey(key)) {
+                throw new ObjectExistsException("The operation '" + op.getName() + "' of model '" + name + "' already exists!");
             }
-            sqlOperations.put(key, op);
+            operations.put(key, op);
         }
     }
 
-    /**
-     * The configuration of a restd sql operation.
-     */
-    public static class SqlOperation {
+    public static class Operation implements RestdOperationDef {
+        private String name;
+        private String type;
+        private String path;
+        private String script;
 
-        protected String name;
-        protected String sqlKey;
+        private Map<String, Object> arguments = new LinkedHashMap<>();
 
-        /**
-         * The name of operation.
-         */
+        @Override
         public String getName() {
             return name;
         }
@@ -282,15 +281,46 @@ public class RestdConfig {
             this.name = name;
         }
 
-        /**
-         * The key of sql command.
-         */
-        public String getSqlKey() {
-            return sqlKey;
+        @Override
+        public String getType() {
+            return type;
         }
 
-        public void setSqlKey(String sqlKey) {
-            this.sqlKey = sqlKey;
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        @Override
+        public String getPath() {
+            return path;
+        }
+
+        public void setPath(String path) {
+            this.path = path;
+        }
+
+        @Override
+        public String getScript() {
+            return script;
+        }
+
+        public void setScript(String script) {
+            this.script = script;
+        }
+
+        @Override
+        public Map<String, Object> getArguments() {
+            return arguments;
+        }
+
+        public void putArgument(String name, Object value) {
+            arguments.put(name, value);
+        }
+
+        @Override
+        public <T> T getArgument(String name) {
+            return (T)arguments.get(name);
         }
     }
+
 }

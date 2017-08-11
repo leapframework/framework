@@ -32,52 +32,52 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.restd.RestdContext;
-import leap.web.api.restd.RestdModel;
-import leap.web.api.restd.RestdProcessor;
+import leap.web.api.restd.*;
 import leap.web.api.restd.crud.CrudOperation;
 import leap.web.route.RouteBuilder;
 
 import java.util.Map;
 
-public class SqlOperationProcessor extends CrudOperation implements RestdProcessor {
+public class SqlOperationProvider extends CrudOperation implements RestdOperationProvider {
+
+    public static final String TYPE = "sql";
+    public static final String ARG_SQL_KEY = "sqlKey";
 
     @Override
-    public void preProcessApi(ApiConfigurator api, RestdContext context) {
-        context.getConfig().getSqlOperations().values().forEach((op) -> {
-            String path = fullPath(api, "/" + Strings.lowerUnderscore(op.getName()));
-            processSqlOperation(api, context, op, null, path);
-        });
+    public void createApiOperation(RestdContext context, RestdOperationDef op) {
+        String path = fullPath(context.getApi().getConfigurator(), "/" + Strings.lowerUnderscore(op.getName()));
+
+        String key = op.getArgument(ARG_SQL_KEY);
+        SqlOperation sop = new SqlOperation(op.getName(), key, op.getScript());
+
+        processSqlOperation(context.getApi().getConfigurator(), context, sop, null, path);
     }
 
     @Override
-    public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
-        final RestdConfig.Model mc = context.getConfig().getModel(model.getName());
+    public void createModelOperation(RestdContext context, RestdModel model, RestdOperationDef op) {
+        String path = fullModelPath(context.getApi().getConfigurator(), model, "/" + Strings.lowerUnderscore(op.getName()));
 
-        if(null != mc) {
-            mc.getSqlOperations().values().forEach(op -> {
-                String path = fullModelPath(c, model, "/" + Strings.lowerUnderscore(op.getName()));
-                processSqlOperation(c, context, op, model, path);
-            });
-        }
+        String key = op.getArgument(ARG_SQL_KEY);
+        SqlOperation sop = new SqlOperation(op.getName(), key, op.getScript());
+
+        processSqlOperation(context.getApi().getConfigurator(), context, sop, model, path);
     }
 
-    protected void processSqlOperation(ApiConfigurator api, RestdContext ctx, RestdConfig.SqlOperation op, RestdModel model, String path) {
+    protected void processSqlOperation(ApiConfigurator api, RestdContext ctx, SqlOperation op, RestdModel model, String path) {
         OrmMetadata om = ctx.getDao().getOrmContext().getMetadata();
 
-        SqlCommand sc = om.tryGetSqlCommand(op.getSqlKey());
-
+        SqlCommand sc = om.tryGetSqlCommand(op.getKey());
         if (null == sc) {
-            throw new ApiConfigException("Sql key '" + op.getSqlKey() + "' not found");
+            throw new ApiConfigException("Sql key '" + op.getKey() + "' not found");
         }
 
         if (!sc.hasMetadata()) {
-            throw new ApiConfigException("Sql '" + op.getSqlKey() + "' has no metadata!");
+            throw new ApiConfigException("Sql '" + op.getKey() + "' has no metadata!");
         }
 
         SqlMetadata sm = sc.getMetadata();
         if (sm.isUnknown()) {
-            throw new ApiConfigException("Sql '" + op.getSqlKey() + "' is unknown!");
+            throw new ApiConfigException("Sql '" + op.getKey() + "' is unknown!");
         }
 
         String verb;
@@ -167,6 +167,30 @@ public class SqlOperationProcessor extends CrudOperation implements RestdProcess
             return ApiResponse.of(dao.executeUpdate(command, map));
         }
 
+    }
+
+    protected static final class SqlOperation {
+        private final String name;
+        private final String key;
+        private final String script;
+
+        public SqlOperation(String name, String key, String script) {
+            this.name = name;
+            this.key = key;
+            this.script = script;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getScript() {
+            return script;
+        }
     }
 
 }

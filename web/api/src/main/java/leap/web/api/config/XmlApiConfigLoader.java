@@ -36,6 +36,7 @@ import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponseBuilder;
 import leap.web.api.permission.ResourcePermission;
 import leap.web.api.permission.ResourcePermissions;
+import leap.web.api.restd.sql.SqlOperationProvider;
 import leap.web.api.spec.swagger.SwaggerConstants;
 import leap.web.config.DefaultModuleConfig;
 import leap.web.config.ModuleConfigExtension;
@@ -711,7 +712,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
             //sql-operation
             if (reader.isStartElement(SQL_OPERATION)) {
-                rc.addSqlOperation(readSqlOperation(rc, reader));
+                rc.addOperation(readSqlOperation(rc, reader));
                 return;
             }
         });
@@ -786,16 +787,17 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         reader.loopInsideElement(() -> {
 
             if(reader.isStartElement(SQL_OPERATION)) {
-                m.addSqlOperation(readSqlOperation(config, reader));
+                m.addOperation(readSqlOperation(config, reader));
             }
         });
     }
 
-    private RestdConfig.SqlOperation readSqlOperation(RestdConfig config, XmlReader reader) {
-        RestdConfig.SqlOperation op = new RestdConfig.SqlOperation();
+    private RestdConfig.Operation readSqlOperation(RestdConfig config, XmlReader reader) {
+        RestdConfig.Operation op = new RestdConfig.Operation();
 
         op.setName(reader.getRequiredAttribute(NAME));
-        op.setSqlKey(reader.getRequiredAttribute(SQL_KEY));
+        op.setType(SqlOperationProvider.TYPE);
+        op.putArgument(SqlOperationProvider.ARG_SQL_KEY, reader.getRequiredAttribute(SQL_KEY));
 
         return op;
     }
