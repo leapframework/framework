@@ -129,6 +129,8 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                 throw new IllegalStateException("Empty Listeners");
             }
 
+            init();
+
             scheduled = scheduler.scheduleAtFixedRate(this, period, timeUnit);
             started = true;
         }
@@ -141,20 +143,29 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
             }
         }
 
+        protected void init() {
+            log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
+
+            Object maxValue = dao.createCriteriaQuery(em)
+                                .select(fm.getFieldName())
+                                .limit(1)
+                                .orderBy(fm.getFieldName() + " desc")
+                                .scalarValueOrNull();
+
+            log.info("Max value : {}", maxValue);
+
+            if(null != maxValue) {
+                this.maxValue = maxValue;
+            }
+
+            changesQuery = dao.createCriteriaQuery(em, resultClass)
+                    .where(fm.getFieldName() + " > :maxValue")
+                    .limit(limit)
+                    .orderBy(fm.getFieldName() + " asc");
+        }
+
         @Override
         public void run() {
-            if(!inited) {
-                init();
-                inited = true;
-            }
-
-            if(null == changesQuery) {
-                changesQuery = dao.createCriteriaQuery(em, resultClass)
-                                  .where(fm.getFieldName() + " > :maxValue")
-                                  .limit(limit)
-                                  .orderBy(fm.getFieldName() + " asc");
-            }
-
             List changes = changesQuery.param("maxValue", maxValue).list();
             if(!changes.isEmpty()) {
 
@@ -186,20 +197,5 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                 throw new IllegalStateException("Observer already started");
             }
         }
-
-        protected void init() {
-            log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
-
-            Object maxValue = dao.createCriteriaQuery(em)
-                    .select(fm.getFieldName())
-                    .limit(1).orderBy(fm.getFieldName() + " desc").firstOrNull();
-
-            log.info("Max value : {}", maxValue);
-
-            if(null != maxValue) {
-                this.maxValue = maxValue;
-            }
-        }
-
     }
 }

@@ -55,6 +55,20 @@ public interface THttpResponse {
     boolean isFailure();
 
     /**
+     * Returns true if the HTTP status is 404.
+     */
+    default boolean isNotFound() {
+        return getStatus() == 404;
+    }
+
+    /**
+     * Returns true if the HTTP status is 400.
+     */
+    default boolean isBadRequest() {
+        return getStatus() == 400;
+    }
+
+    /**
      * Returns the header value of {@link Headers#LOCATION}.
      *
      * <p/>
