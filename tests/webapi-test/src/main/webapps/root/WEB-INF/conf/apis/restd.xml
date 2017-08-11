@@ -7,6 +7,9 @@
             <model name="Model1" delete="false">
                 <sql-operation name="testQuery"  sql-key="testModel1SqlQuery"/>
                 <sql-operation name="testUpdate" sql-key="testModel1SqlUpdate"/>
+                <sql-operation name="testQuery1">
+                    select * from model1 where name = :name
+                </sql-operation>
             </model>
         </restd>
 

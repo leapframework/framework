@@ -797,7 +797,22 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
         op.setName(reader.getRequiredAttribute(NAME));
         op.setType(SqlOperationProvider.TYPE);
-        op.putArgument(SqlOperationProvider.ARG_SQL_KEY, reader.getRequiredAttribute(SQL_KEY));
+
+        String sqlKey    = reader.getAttribute(SQL_KEY);
+        String sqlScript = reader.getElementTextAndEnd();
+
+        if(Strings.isAllEmpty(sqlKey, sqlScript)) {
+            throw new ApiConfigException("One of the key or script must not be empty of sql operation '" +
+                    op.getName() + "', at " + reader.getCurrentLocation());
+        }
+
+        if(!Strings.isEmpty(sqlKey)) {
+            op.putArgument(SqlOperationProvider.ARG_SQL_KEY, sqlKey);
+        }
+
+        if(!Strings.isEmpty(sqlScript)) {
+            op.setScript(sqlScript);
+        }
 
         return op;
     }
