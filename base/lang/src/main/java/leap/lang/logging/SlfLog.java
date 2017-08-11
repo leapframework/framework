@@ -26,15 +26,15 @@ final class SlfLog implements Log {
     }
 	
 	public boolean isTraceEnabled() {
-		return logger.isTraceEnabled();
+		return logger.isTraceEnabled() && LogContext.level().isTraceEnabled();
     }
 	
 	public boolean isDebugEnabled() {
-		return logger.isDebugEnabled();
+		return logger.isDebugEnabled() && LogContext.level().isDebugEnabled();
     }
 	
 	public boolean isInfoEnabled() {
-		return logger.isInfoEnabled();
+		return logger.isInfoEnabled() && LogContext.level().isInfoEnabled();
     }
 
 	public boolean isWarnEnabled() {

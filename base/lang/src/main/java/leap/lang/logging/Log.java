@@ -17,53 +17,53 @@ package leap.lang.logging;
 
 public interface Log {
 
-	public boolean isTraceEnabled();
+	boolean isTraceEnabled();
 	
-	public boolean isDebugEnabled();
+	boolean isDebugEnabled();
 	
-	public boolean isInfoEnabled();
+	boolean isInfoEnabled();
 	
-	public boolean isWarnEnabled();
+	boolean isWarnEnabled();
 	
-	public boolean isErrorEnabled();
+	boolean isErrorEnabled();
 	
-	public void trace(String msg);
+	void trace(String msg);
 	
-	public void trace(Throwable throwable);
+	void trace(Throwable throwable);
 	
-	public void trace(String msg,Throwable throwable);
+	void trace(String msg,Throwable throwable);
 	
-	public void trace(String msg,Object... args);
+	void trace(String msg,Object... args);
 	
-	public void debug(String msg);
+	void debug(String msg);
 	
-	public void debug(Throwable throwable);
+	void debug(Throwable throwable);
 	
-	public void debug(String msg,Throwable throwable);
+	void debug(String msg,Throwable throwable);
 	
-	public void debug(String msg,Object... args);
+	void debug(String msg,Object... args);
 	
-	public void info(String msg);
+	void info(String msg);
 	
-	public void info(Throwable throwable);
+	void info(Throwable throwable);
 	
-	public void info(String msg,Throwable throwable);
+	void info(String msg,Throwable throwable);
 	
-	public void info(String msg,Object... args);
+	void info(String msg,Object... args);
 	
-	public void warn(String msg);
+	void warn(String msg);
 	
-	public void warn(Throwable throwable);
+	void warn(Throwable throwable);
 	
-	public void warn(String msg,Throwable throwable);
+	void warn(String msg,Throwable throwable);
 	
-	public void warn(String msg,Object... args);
+	void warn(String msg,Object... args);
 	
-	public void error(String msg);
+	void error(String msg);
 	
-	public void error(Throwable throwable);
+	void error(Throwable throwable);
 	
-	public void error(String msg,Throwable throwable);
+	void error(String msg,Throwable throwable);
 	
-	public void error(String msg,Object... args);
+	void error(String msg,Object... args);
 }

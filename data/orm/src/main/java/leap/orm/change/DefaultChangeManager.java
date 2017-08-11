@@ -22,7 +22,9 @@ import leap.core.schedule.SchedulerManager;
 import leap.lang.Disposable;
 import leap.lang.Try;
 import leap.lang.logging.Log;
+import leap.lang.logging.LogContext;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogLevel;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -166,8 +168,8 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
 
         @Override
         public void run() {
-            List changes = changesQuery.param("maxValue", maxValue).list();
-            if(!changes.isEmpty()) {
+            List changes = LogContext.execWithResult(LogLevel.INFO, () -> changesQuery.param("maxValue", maxValue).list());
+            if (!changes.isEmpty()) {
 
                 log.debug("Found {} changes", changes.size());
 
@@ -178,13 +180,13 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                         listener.onEntityChanged(dao, entity);
                         lastNotified = entity;
                     }
-                }catch(Throwable e) {
+                } catch (Throwable e) {
                     log.error("Error notify listener '{}': {}", listener.getClass(), e.getMessage(), e);
                 }
 
-                if(null != lastNotified) {
+                if (null != lastNotified) {
                     Object newMaxValue = EntityWrapper.wrap(em, lastNotified).get(fm.getFieldName());
-                    if(null != newMaxValue) {
+                    if (null != newMaxValue) {
                         log.debug("Set maxValue from {} to {}", maxValue, newMaxValue);
                         this.maxValue = newMaxValue;
                     }
