@@ -313,6 +313,12 @@ public class RestdConfig {
             return arguments;
         }
 
+        public void putArguments(Map<String, Object> m) {
+            if(null != m) {
+                this.arguments.putAll(m);
+            }
+        }
+
         public void putArgument(String name, Object value) {
             arguments.put(name, value);
         }
