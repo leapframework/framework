@@ -78,7 +78,7 @@ public class OkTHttpClient extends THttpClientBase {
     @Override
     public THttpClient addHostName(String hostName) {
         try {
-            dns.add(hostName, InetAddress.getLocalHost());
+            dns.add(hostName, InetAddress.getByName("127.0.0.1"));
         } catch (UnknownHostException e) {
             throw new IllegalStateException("Cannot add host name '" + hostName + "', " + e.getMessage(), e);
         }

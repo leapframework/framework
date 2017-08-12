@@ -16,6 +16,7 @@
 package leap.web.api.meta.model;
 
 import leap.lang.Builders;
+import leap.lang.Strings;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
 
@@ -34,8 +35,12 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
     }
 
     public MApiModelBuilder(MComplexType type) {
+        this(type, null);
+    }
+
+    public MApiModelBuilder(MComplexType type, String name) {
         this.type = type;
-        this.name = type.getName();
+        this.name = Strings.isEmpty(name) ? type.getName() : name;
         this.title = type.getTitle();
         this.summary = type.getSummary();
         this.description = type.getDescription();
