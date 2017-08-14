@@ -28,6 +28,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 import leap.orm.generator.IdGenerator;
+import leap.orm.generator.ValueGenerator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,6 +67,7 @@ public class XmlDomainSource implements DomainSource {
     private static final String SORT_ORDER       = "sort-order";
     private static final String COLUMN           = "column";
     private static final String ID_GENERATOR     = "id-generator";
+    private static final String GENERATOR        = "generator";
 
     protected @Inject AppConfig   config;
     protected @Inject BeanFactory beanFactory;
@@ -235,6 +237,7 @@ public class XmlDomainSource implements DomainSource {
         Boolean filter       = reader.resolveBooleanAttribute(FILTERED);
         String  filterValue  = reader.getAttribute(FILTERED_VALUE);
         String  idGenerator  = reader.getAttribute(ID_GENERATOR);
+        String  generator    = reader.getAttribute(GENERATOR);
         boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
@@ -255,6 +258,15 @@ public class XmlDomainSource implements DomainSource {
 		Expression insertValueExpression = null;
 		Expression updateValueExpression = null;
         Expression filterValueExpression = null;
+
+        if(!Strings.isEmpty(generator)) {
+            ValueGenerator generatorBean = beanFactory.tryGetBean(ValueGenerator.class, generator);
+            if(null == generatorBean) {
+                throw new DomainConfigException("Value generator '" + generator + "' not found, check the xml : " + reader.getCurrentLocation());
+            }
+            insertValueExpression = generatorBean;
+            updateValueExpression = generatorBean;
+        }
 		
 		if(!Strings.isEmpty(insertValue)){
 			insertValueExpression = EL.tryCreateValueExpression(insertValue);	
