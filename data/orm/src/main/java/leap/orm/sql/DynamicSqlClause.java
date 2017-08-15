@@ -183,9 +183,49 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
     public BatchSqlStatement createBatchStatement(SqlContext context, Object[] params) {
         DynamicSql.ExecutionSqls sqls = sql.resolveExecutionSqls(Params.empty());
 
-		PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
-		
-		return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
+        if(Strings.isNotBlank(context.getPrimaryEntityMapping().getDynamicTableName())) {
+
+        	Map<String, List<Object>> sqlParamMap = new HashMap<>();
+
+			PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
+
+			for (Object param : params) {
+				DefaultSqlStatementBuilder statementBuilder = new DefaultSqlStatementBuilder(context, sql.raw(), sql.raw().isSelect());
+
+				Params p = createParameters(context, param);
+
+				sqls.sql.buildStatement(context, statementBuilder, p);
+
+				DefaultSqlStatement statement = statementBuilder.build();
+
+				String finalSql = statement.getSqlString();
+
+				if(sqlParamMap.containsKey(finalSql)) {
+					sqlParamMap.get(finalSql).add(param);
+				} else {
+					List<Object> list = new ArrayList<>();
+					list.add(param);
+					sqlParamMap.put(finalSql, list);
+				}
+			}
+
+			Map<String, Object[][]> sqlParams = new HashMap<>();
+
+
+			sqlParamMap.forEach((sqlString, sqlParam) -> {
+
+				Object[][] param = resolveBatchArgs(context, stmt, sqlParam.toArray());
+
+				sqlParams.put(sqlString, param);
+			});
+
+			return new DefaultBatchSqlStatement(context, sqls.sql, sqlParams);
+		} else {
+
+			PreparedBatchSqlStatement stmt = prepareBatchSqlStatement(context, sqls,params);
+
+			return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
+		}
     }
 	
 	private void createSqlForCount(DynamicSql.ExecutionSqls sqls) {

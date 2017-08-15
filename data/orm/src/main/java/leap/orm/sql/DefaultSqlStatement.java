@@ -25,9 +25,6 @@ import leap.lang.exception.NestedSQLException;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlExecutionContext {
 	
 	protected final SqlContext context;
@@ -106,5 +103,9 @@ public class DefaultSqlStatement implements SqlStatement,BatchSqlStatement,SqlEx
         }else{
             return reader;
         }
+    }
+
+    public String getSqlString() {
+	    return this.sqlString;
     }
 }

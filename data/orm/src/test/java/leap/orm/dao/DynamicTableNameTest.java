@@ -23,6 +23,7 @@ import leap.orm.OrmTestCase;
 import leap.orm.tested.model.sharding.CustomerOrder;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -68,6 +69,45 @@ public class DynamicTableNameTest extends OrmTestCase {
         params.put("id", order.getId());
         params.put("createdAt", Dates.parse("2017-01-01"));
         CustomerOrder.deleteAll("id = :id", params);
+    }
+
+    @Test
+    public void testBatchUpdate() {
+        boolean exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name1")
+                .param("createdAt", Dates.parse("2017-09-09")).exists();
+        assertFalse(exist);
+
+        exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name2")
+                .param("createdAt", Dates.parse("2007-09-09")).exists();
+        assertFalse(exist);
+
+        exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name3")
+                .param("createdAt", Dates.parse("2017-09-09")).exists();
+        assertFalse(exist);
+
+        List<CustomerOrder> list = new ArrayList<>();
+        list.add(new CustomerOrder("name1", Dates.parse("2017-10-7")));
+        list.add(new CustomerOrder("name2", Dates.parse("2007-10-7")));
+        list.add(new CustomerOrder("name3", Dates.parse("2017-10-7")));
+        dao.batchInsert(list);
+
+        exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name1")
+                .param("createdAt", Dates.parse("2017-09-09")).exists();
+        assertTrue(exist);
+
+        exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name2")
+                .param("createdAt", Dates.parse("2007-09-09")).exists();
+        assertTrue(exist);
+
+        exist = dao.createSqlQuery("select * from CustomerOrder where name = :name").param("name", "name3")
+                .param("createdAt", Dates.parse("2017-09-09")).exists();
+        assertTrue(exist);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("createdAt", Dates.parse("2017-01-01"));
+        CustomerOrder.deleteAll("1 = 1", params);
+        params.put("createdAt", Dates.parse("2007-01-01"));
+        CustomerOrder.deleteAll("1 = 1", params);
     }
 
 }

@@ -36,6 +36,14 @@ public class CustomerOrder extends Model {
     @Column
     private Date createdAt;
 
+    public CustomerOrder() {
+    }
+
+    public CustomerOrder(String name, Date createdAt) {
+        this.name = name;
+        this.createdAt = createdAt;
+    }
+
     public String getId() {
         return id;
     }
