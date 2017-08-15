@@ -168,7 +168,7 @@ public class DefaultRowReader implements RowReader {
 
 	private String getKey(ResultColumn cm, String key) {
 		if(Strings.isBlank(cm.columnLabel) || Strings.equals(cm.columnLabel, cm.columnName)) {
-			key = Strings.lowerCamel(cm.columnName, '_');
+			key = Strings.lowerCamel(key, '_');
 		}
 		return key;
 	}
