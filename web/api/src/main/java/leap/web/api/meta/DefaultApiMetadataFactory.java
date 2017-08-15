@@ -185,7 +185,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 MComplexType ct = type.asComplexType();
 
                 if(!m.containsModel(ct.getName())) {
-                    m.addModel(createModel(context, m, ct));
+                    tryAddModel(context, m, ct);
                 }
 
                 type = ct.createTypeRef();
@@ -352,36 +352,50 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         });
 
         context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
-            m.addModel(createModel(context, m, ct));
+            tryAddModel(context, m, ct);
         });
 
     }
 
-    protected MApiModelBuilder createModel(ApiMetadataContext context, ApiMetadataBuilder m, MComplexType ct) {
-        ApiConfig config = context.getConfig();
-
-        MApiModelBuilder model = new MApiModelBuilder(ct);
-
-        //configure the model name.
-        if(null != model.getJavaType()) {
-            ApiModel a = model.getJavaType().getAnnotation(ApiModel.class);
-            if(null != a) {
-                //name
-                String name = Strings.firstNotEmpty(a.name(),a.value());
-                if(!Strings.isEmpty(name)) {
-                    model.setName(name);
-                }
-            }
-
-            ModelConfig mc = config.getModel(model.getJavaType());
-            if(null != mc && !Strings.isEmpty(mc.getName())) {
-                model.setName(mc.getName());
-            }
+    @Override
+    public MApiModelBuilder tryAddModel(ApiMetadataContext context, ApiMetadataBuilder md, MComplexType ct) {
+        String name = modelName(context, ct);
+        MApiModelBuilder model = md.tryGetModel(name);
+        if(null != model) {
+            return null;
         }
 
+        model = new MApiModelBuilder(ct, name);
+        model.getProperties().values().forEach(p -> {
+            if(p.getType().isComplexType()) {
+                MComplexType complexType = (MComplexType)p.getType();
+                if(null == md.tryGetModel(complexType.getName())) {
+                    tryAddModel(context, md, ct);
+                }
+            }
+        });
+
+        md.addModel(model);
         return model;
     }
 
+    protected String modelName(ApiMetadataContext context, MComplexType ct) {
+        if(null != ct.getJavaType()) {
+            ApiModel a = ct.getJavaType().getAnnotation(ApiModel.class);
+            if(null != a) {
+                String name = Strings.firstNotEmpty(a.name(),a.value());
+                if(!Strings.isEmpty(name)) {
+                    return name;
+                }
+            }
+
+            ModelConfig mc = context.getConfig().getModel(ct.getJavaType());
+            if(null != mc && !Strings.isEmpty(mc.getName())) {
+               return mc.getName();
+            }
+        }
+        return ct.getName();
+    }
 
 	protected void createApiPath(ApiMetadataContext context, ApiMetadataBuilder md, Route route) {
 		PathTemplate pt = route.getPathTemplate();

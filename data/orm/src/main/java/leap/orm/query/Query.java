@@ -208,7 +208,7 @@ public interface Query<T> {
 	List<T> list();
 	
 	/**
-	 * Returns the scalar value in this query result.
+	 * Returns the {@link Scalar} value in this query result.
 	 * 
 	 * @throws EmptyRecordsException if no records.
 	 * @throws TooManyRecordsException if two or more records returned.
@@ -216,11 +216,31 @@ public interface Query<T> {
 	Scalar scalar() throws EmptyRecordsException, TooManyRecordsException;
 	
 	/**
-	 * Returns the scalar value in this query result or <code>null</code> if no records returned.
+	 * Returns the {@link Scalar} value in this query result or <code>null</code> if no records returned.
 	 * 
 	 * @throws TooManyRecordsException if two or more records returned.
 	 */
 	Scalar scalarOrNull() throws TooManyRecordsException;
+
+    /**
+     * Returns the scalar value or <code>null</code> if n o records returned.
+     *
+     * @throws TooManyRecordsException if two or more records returned.
+     */
+    default <T> T scalarValueOrNull() throws TooManyRecordsException {
+        Scalar scalar = scalarOrNull();
+        return null == scalar ? null : (T)scalar.get();
+    }
+
+    /**
+     * Returns the scalar value or <code>null</code> if n o records returned.
+     *
+     * @throws TooManyRecordsException if two or more records returned.
+     */
+    default <T> T scalarValueOrNull(Class<T> type) throws TooManyRecordsException {
+        Scalar scalar = scalarOrNull();
+        return null == scalar ? null : scalar.get(type);
+    }
 	
 	/**
 	 * Returns all the scalar values of the first column in this query result.

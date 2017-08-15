@@ -1372,18 +1372,16 @@ public class BeanContainer implements BeanFactory {
 					}else{
 						injectedBean = getBeans(beanType).toArray((Object[])Array.newInstance(type.getComponentType(), 0));
 					}
-				/*	
-				}else if(Map.class.equals(bp.getType())){
+				}else if(Map.class.equals(type)){
 					if(!Strings.isEmpty(beanName)){
-						throw new BeanCreationException("Autowired Map property does not support the 'name' annotation field in bean " + bd);
+						throw new BeanCreationException("Auto Injected Map property does not support the 'name' annotation field in bean " + bd);
 					}
 					
 					if(null == beanType || Object.class.equals(beanType)){
-						beanType = Types.getActualType(Types.getTypeArguments(bp.getGenericType())[0]);
+						beanType = Types.getActualType(Types.getTypeArguments(genericType)[1]);
 					}
 					
 					injectedBean = factory.getNamedBeans(beanType);
-				*/
 				}else{
 					if(null == beanType || Object.class.equals(beanType)){
 						beanType = type;

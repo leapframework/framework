@@ -81,7 +81,7 @@
     <!-- query -->
     <bean type="leap.orm.query.QueryFactory" class="leap.orm.query.DefaultQueryFactory" primary="true"/>
 	
-    <!-- id generators -->
+    <!-- generators -->
     <bean name="auto" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.AutoIdGenerator" primary="true"/>
     <bean name="none" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.NoneIdGenerator"/>
     <bean name="uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.UUIDGenerator">
@@ -90,8 +90,9 @@
     <bean name="short_uuid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortUUIDGenerator">
         <additional-type-def type="leap.orm.generator.ValueGenerator" name="short_uuid"/>
     </bean>
-    <bean name="shortid" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortIDGenerator">
-        <additional-type-def type="leap.orm.generator.ValueGenerator" name="shortid"/>
+    <bean name="short_id" type="leap.orm.generator.IdGenerator" class="leap.orm.generator.ShortIDGenerator">
+        <additional-type-def type="leap.orm.generator.ValueGenerator" name="short_id"/>
+        <additional-type-def type="leap.orm.generator.IdGenerator"    name="shortid"/> <!-- for compatibility -->
     </bean>
     
     <!-- data factory beans -->

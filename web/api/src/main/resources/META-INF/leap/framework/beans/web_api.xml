@@ -58,7 +58,11 @@
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.DeleteOperation"/>
-    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.sql.SqlOperationProcessor"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.RestdOperationProcessor"/>
+
+    <bean name="sql"
+          type="leap.web.api.restd.RestdOperationProvider"
+          class="leap.web.api.restd.sql.SqlOperationProvider"/>
 
     <!-- dyna -->
     <bean type="leap.web.api.dyna.DynaApiFactory" class="leap.web.api.dyna.DefaultDynaApiFactory" primary="true"/>
