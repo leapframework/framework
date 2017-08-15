@@ -114,7 +114,7 @@ public class DefaultSqlFactory implements SqlFactory {
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
         
-        sql.append("insert into ").append(dialect.qualifySchemaObjectName(table)).append("(");
+        sql.append("insert into ").append(em.getEntityName()).append("(");
         
         int index = 0;
         
@@ -145,8 +145,8 @@ public class DefaultSqlFactory implements SqlFactory {
 		
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
-        
-        sql.append("insert into ").append(dialect.qualifySchemaObjectName(table)).append("(");
+
+        sql.append("insert into ").append(em.getEntityName()).append("(");
         
         int index = 0;
 
@@ -198,7 +198,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(dialect.qualifySchemaObjectName(table)).append(" set ");
+		sql.append("update ").append(em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
@@ -256,7 +256,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(dialect.qualifySchemaObjectName(table)).append(" set ");
+		sql.append("update ").append(em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
@@ -335,7 +335,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("delete from ").append(dialect.qualifySchemaObjectName(table)).append(" where ");
+		sql.append("delete from ").append(em.getEntityName()).append(" where ");
 		
 		int index = 0;
 		
@@ -365,7 +365,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("delete from ").append(dialect.qualifySchemaObjectName(table));
+		sql.append("delete from ").append(em.getEntityName());
 		
 		return sql.toString();
 	}
@@ -376,7 +376,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("select 1 from ").append(dialect.qualifySchemaObjectName(table)).append(" where ");
+		sql.append("select 1 from ").append(em.getEntityName()).append(" where ");
 		
 		int index = 0;
 		for(FieldMapping key : em.getKeyFieldMappings()){
@@ -397,7 +397,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("select count(*) from ").append(dialect.qualifySchemaObjectName(table));
+		sql.append("select count(*) from ").append(em.getEntityName());
 		
 		return sql.toString();
 	}
@@ -411,7 +411,7 @@ public class DefaultSqlFactory implements SqlFactory {
         sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table))
+            .append(em.getEntityName())
 			.append(" t ")
 			.append(" where ");
 		
@@ -441,7 +441,7 @@ public class DefaultSqlFactory implements SqlFactory {
         sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table))
+            .append(em.getEntityName())
 			.append(" t ").append(" where ");
 		
 		int index = 0;
@@ -466,7 +466,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		sql.append("select ")
             .append(createSelectColumns(context, em, null))
             .append(" from ")
-            .append(dialect.qualifySchemaObjectName(table))
+            .append(em.getEntityName())
 			.append(" t ");
 		
 		return sql.toString();
