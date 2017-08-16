@@ -15,8 +15,10 @@
  */
 package leap.web.api.meta;
 
+import leap.lang.meta.MComplexType;
 import leap.web.api.Api;
 import leap.web.api.config.ApiConfig;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.route.Route;
 
@@ -29,6 +31,14 @@ public interface ApiMetadataFactory {
 	 * Creates the api metadata for the given {@link ApiConfig}.
 	 */
 	ApiMetadata createMetadata(Api api);
+
+    /**
+     * Creates a new {@link MApiModelBuilder} for the {@link MComplexType} and adds it to the {@link ApiMetadataBuilder}.
+     *
+     * <p/>
+     * Returns null if the model exists.
+     */
+    MApiModelBuilder tryAddModel(ApiMetadataContext context, ApiMetadataBuilder md, MComplexType ct);
 
     /**
      * Creates a new {@link MApiOperationBuilder} for the given {@link Route}.

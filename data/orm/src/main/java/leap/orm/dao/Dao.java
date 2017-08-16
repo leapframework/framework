@@ -247,6 +247,18 @@ public abstract class Dao implements JdbcExecutor {
 	public abstract int insert(Object entity) throws MappingNotFoundException;
 
     /**
+     * Inserts a new entity into the underlying database immediately.
+     *
+     * <p>
+     * The given entity object must be a pojo or a {@link Entity} object.
+     *
+     * @throws MappingNotFoundException if cannot resolve a {@link EntityMapping} from the given entity class.
+     *
+     * @return The affected row(s).
+     */
+    public abstract int insert(Class<?> entityClass, Object entity) throws MappingNotFoundException;
+
+    /**
      * Inserts a new entity.
      */
     public int insert(EntityMapping em, Object entity) {

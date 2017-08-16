@@ -819,6 +819,16 @@ public class Arrays2 {
 		return filtered;
 	}
 
+    public static <T extends Named> Map<String, T> toMap(T[] a) {
+        Map map = new LinkedHashMap();
+        if(null != a) {
+            for(T item : a) {
+                map.put(item.getName(), item);
+            }
+        }
+        return map;
+    }
+
     public static <T extends Named> T[] sort(T[] a) {
         Arrays.sort(a, Comparators.NAMED_COMPARATOR);
         return a;

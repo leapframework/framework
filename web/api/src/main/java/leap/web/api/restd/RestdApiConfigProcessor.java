@@ -36,8 +36,8 @@ import leap.web.api.config.ApiConfigurator;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadataBuilder;
 import leap.web.api.meta.ApiMetadataContext;
+import leap.web.api.meta.ApiMetadataFactory;
 import leap.web.api.meta.ApiMetadataProcessor;
-import leap.web.api.meta.model.MApiModelBuilder;
 
 import java.util.*;
 
@@ -46,11 +46,12 @@ import java.util.*;
  */
 public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataProcessor {
 
-    protected @Inject App              app;
-    protected @Inject RestdStrategy    strategy;
-    protected @Inject RestdProcessor[] processors;
-    protected @Inject OrmMTypeFactory  omf;
-    protected @Inject OrmRegistry      ormRegistry;
+    protected @Inject App                app;
+    protected @Inject RestdStrategy      strategy;
+    protected @Inject RestdProcessor[]   processors;
+    protected @Inject OrmMTypeFactory    omf;
+    protected @Inject OrmRegistry        ormRegistry;
+    protected @Inject ApiMetadataFactory amf;
 
     @Override
     public void preProcess(Api api) {
@@ -90,10 +91,12 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             MComplexType mtype = omf.getMType(mtc, oc, rm.getEntityMapping());
 
             if(null == m.tryGetModel(rm.getEntityMapping().getEntityClass())) {
-                MApiModelBuilder model = new MApiModelBuilder(mtype);
-
-                m.addModel(model);
+                amf.tryAddModel(context, m, mtype);
             }
+        }
+
+        for(MComplexType ct : mtc.getComplexTypes().values()) {
+            amf.tryAddModel(context, m, ct);
         }
     }
 
@@ -131,7 +134,7 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
 
             oc = ormRegistry.findContext(dataSourceName);
             if (null == oc) {
-                throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registeree!");
+                throw new ApiConfigException("Can't create restd api , orm context '" + dataSourceName + "' has not been registered!");
             }
         }
 

@@ -59,85 +59,33 @@ import org.apache.http.impl.conn.SystemDefaultDnsResolver;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.apache.http.protocol.HttpContext;
 
-public class THttpClientImpl implements THttpClient {
+class ApacheTHttpClient extends THttpClientBase {
 
-    private static final Log log = LogFactory.get(THttpClientImpl.class);
+    private static final Log log = LogFactory.get(ApacheTHttpClient.class);
 
-    private static SSLContext sslContext;
-    
-    static {
-        TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager(){  
-            public X509Certificate[] getAcceptedIssuers(){return null;}  
-            public void checkClientTrusted(X509Certificate[] certs, String authType){}  
-            public void checkServerTrusted(X509Certificate[] certs, String authType){}  
-        }}; 
-        
-        HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String arg0, SSLSession arg1) {
-                return true;
-            }
-        }); 
-        try {
-            sslContext = SSLContext.getInstance("TLS");  
-            sslContext.init(null, trustAllCerts, new SecureRandom());  
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
-        } 
-    }
-	
-	public static final String LOCAL_HTTP_BASE_URL_PREFIX  = "http://localhost";
-	public static final String LOCAL_HTTPS_BASE_URL_PREFIX = "https://localhost";
-	
-	private final String     	  baseUrl;
 	private final DnsResolverImpl dnsResolver;
 	private final CookieStoreImpl cookieStore;
 	private final HttpClient 	  httpClient;
-    private final Set<String>     contextPaths = new HashSet<>();
-	
-	private boolean autoRedirect   = false;
-	private Charset defaultCharset = Charsets.UTF_8;
-	
-	public THttpClientImpl(int port){
+
+	public ApacheTHttpClient(int port){
 		this(port, false);
 	}
 	
-    public THttpClientImpl(int port, boolean https) {
+    public ApacheTHttpClient(int port, boolean https) {
         this((https ? LOCAL_HTTPS_BASE_URL_PREFIX : LOCAL_HTTP_BASE_URL_PREFIX) + ":" + port);
     }
 	
-	public THttpClientImpl(String baseUrl){
-		this.baseUrl     = baseUrl;
+	public ApacheTHttpClient(String baseUrl){
+        super(baseUrl);
+
 		this.dnsResolver = new DnsResolverImpl();
 		this.cookieStore = new CookieStoreImpl();
 		this.httpClient  = createDefaultHttpClient();
 	}
 	
-	@Override
-    public Charset getDefaultCharset() {
-        return defaultCharset;
-    }
-
-    @Override
-    public void setDefaultCharset(Charset charset) {
-        Args.notNull(charset, "charset");
-        this.defaultCharset = charset;
-    }
-
     public HttpClient getHttpClient(){
 		return httpClient;
 	}
-
-    @Override
-    public Set<String> getContextPaths() {
-        return contextPaths;
-    }
-
-    @Override
-    public THttpClient addContextPaths(String... contextPaths) {
-        Collections2.addAll(this.contextPaths, contextPaths);
-        return this;
-    }
 
     @Override
     public Cookie getCookie(String name) {
@@ -174,17 +122,12 @@ public class THttpClientImpl implements THttpClient {
     }
 
 	@Override
-    public String getBaseUrl(){
-		return baseUrl;
-	}
-	
-	@Override
     public THttpRequest request(String uri) {
-        return new THttpRequestImpl(this, uri);
+        return new ApacheTHttpRequest(this, uri);
     }
 
     public THttpRequest request(Method method,String uri){
-		return new THttpRequestImpl(this,uri).setMethod(method);
+		return new ApacheTHttpRequest(this,uri).setMethod(method);
 	}
 	
 	protected HttpClient createDefaultHttpClient() {

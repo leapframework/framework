@@ -121,6 +121,13 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     }
 
     @Override
+    public int insert(Class<?> entityClass, Object entity) throws MappingNotFoundException {
+        Args.notNull(entityClass, "entity class");
+        Args.notNull(entity, "entity");
+        return insert(em(entityClass), entity, null);
+    }
+
+    @Override
     public int insert(EntityMapping em, Object entity, Object id) {
         InsertCommand insert =
                 commandFactory().newInsertCommand(this, em).from(entity);
@@ -359,7 +366,7 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
     @Override
     public <T> T findOrNull(Class<?> entityClass, Class<T> resultClass, Object id) {
         Args.notNull(entityClass, "entity class");
-        return find(em(entityClass), resultClass, id);
+        return findOrNull(em(entityClass), resultClass, id);
     }
 
     @Override

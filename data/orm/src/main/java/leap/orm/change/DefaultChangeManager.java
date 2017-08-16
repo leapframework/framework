@@ -22,7 +22,9 @@ import leap.core.schedule.SchedulerManager;
 import leap.lang.Disposable;
 import leap.lang.Try;
 import leap.lang.logging.Log;
+import leap.lang.logging.LogContext;
 import leap.lang.logging.LogFactory;
+import leap.lang.logging.LogLevel;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -129,6 +131,8 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                 throw new IllegalStateException("Empty Listeners");
             }
 
+            init();
+
             scheduled = scheduler.scheduleAtFixedRate(this, period, timeUnit);
             started = true;
         }
@@ -141,22 +145,31 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
             }
         }
 
+        protected void init() {
+            log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
+
+            Object maxValue = dao.createCriteriaQuery(em)
+                                .select(fm.getFieldName())
+                                .limit(1)
+                                .orderBy(fm.getFieldName() + " desc")
+                                .scalarValueOrNull();
+
+            log.info("Max value : {}", maxValue);
+
+            if(null != maxValue) {
+                this.maxValue = maxValue;
+            }
+
+            changesQuery = dao.createCriteriaQuery(em, resultClass)
+                    .where(fm.getFieldName() + " > :maxValue")
+                    .limit(limit)
+                    .orderBy(fm.getFieldName() + " asc");
+        }
+
         @Override
         public void run() {
-            if(!inited) {
-                init();
-                inited = true;
-            }
-
-            if(null == changesQuery) {
-                changesQuery = dao.createCriteriaQuery(em, resultClass)
-                                  .where(fm.getFieldName() + " > :maxValue")
-                                  .limit(limit)
-                                  .orderBy(fm.getFieldName() + " asc");
-            }
-
-            List changes = changesQuery.param("maxValue", maxValue).list();
-            if(!changes.isEmpty()) {
+            List changes = LogContext.execWithResult(LogLevel.INFO, () -> changesQuery.param("maxValue", maxValue).list());
+            if (!changes.isEmpty()) {
 
                 log.debug("Found {} changes", changes.size());
 
@@ -167,13 +180,13 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                         listener.onEntityChanged(dao, entity);
                         lastNotified = entity;
                     }
-                }catch(Throwable e) {
+                } catch (Throwable e) {
                     log.error("Error notify listener '{}': {}", listener.getClass(), e.getMessage(), e);
                 }
 
-                if(null != lastNotified) {
+                if (null != lastNotified) {
                     Object newMaxValue = EntityWrapper.wrap(em, lastNotified).get(fm.getFieldName());
-                    if(null != newMaxValue) {
+                    if (null != newMaxValue) {
                         log.debug("Set maxValue from {} to {}", maxValue, newMaxValue);
                         this.maxValue = newMaxValue;
                     }
@@ -186,20 +199,5 @@ public class DefaultChangeManager implements ChangeManager, PostCreateBean, Disp
                 throw new IllegalStateException("Observer already started");
             }
         }
-
-        protected void init() {
-            log.info("Finding the max value of field '{}' at entity '{}'...", fm.getFieldName(), em.getEntityName());
-
-            Object maxValue = dao.createCriteriaQuery(em)
-                    .select(fm.getFieldName())
-                    .limit(1).orderBy(fm.getFieldName() + " desc").firstOrNull();
-
-            log.info("Max value : {}", maxValue);
-
-            if(null != maxValue) {
-                this.maxValue = maxValue;
-            }
-        }
-
     }
 }

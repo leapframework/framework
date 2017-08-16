@@ -42,66 +42,29 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-class THttpRequestImpl implements THttpRequest {
+class ApacheTHttpRequest extends THttpRequestBase<ApacheTHttpClient> {
 	
-	private static final Log log = LogFactory.get(THttpRequestImpl.class);
+	private static final Log log = LogFactory.get(ApacheTHttpRequest.class);
 	
-    private final THttpClient         tclient;
-    private final HttpClient          client;
-    private final String              uri;
+    private final HttpClient          httpClient;
     private final HeaderGroup         headers     = new HeaderGroup();
-    private final QueryStringBuilder  queryString = new QueryStringBuilder();
     private final List<NameValuePair> formParams  = new ArrayList<NameValuePair>();
 
-    private Method                    method;
-    private Charset                   charset;
-    private byte[]                    body;
-    private HttpRequestBase           request;
-    private THttpMultipartImpl        multipart;
-    private HttpEntity                entity;
+    private HttpRequestBase      request;
+    private ApacheTHttpMultipart multipart;
+    private HttpEntity           entity;
 	
-	public THttpRequestImpl(THttpClientImpl client, String uri) {
-	    this.tclient = client;
-		this.client  = client.getHttpClient();
-		this.uri     = uri;
-		
-		this.method  = null;
-		this.charset = tclient.getDefaultCharset();
+	public ApacheTHttpRequest(ApacheTHttpClient client, String uri) {
+        super(client, uri);
+		this.httpClient = client.getHttpClient();
 	}
 	
 	@Override
     public THttpMultipart multipart() {
 	    if(null == multipart) {
-	        multipart = new THttpMultipartImpl(this);
+	        multipart = new ApacheTHttpMultipart(this);
 	    }
         return multipart;
-    }
-
-    @Override
-    public Charset getCharset() {
-        return charset;
-    }
-
-    @Override
-    public THttpRequest setCharset(Charset charset) {
-        Args.notNull(charset, "charset");
-        this.charset = charset;
-        return this;
-    }
-
-    @Override
-    public Method getMethod() {
-        if(null == method) {
-            return Method.GET;
-        }
-        return method;
-    }
-
-    @Override
-    public THttpRequest setMethod(Method method) {
-        Args.notNull(method,"method");
-        this.method = method;
-        return this;
     }
 
     @Override
@@ -117,26 +80,14 @@ class THttpRequestImpl implements THttpRequest {
 		headers.addHeader(new BasicHeader(name, value));
 	    return this;
     }
-	
-	@Override
-    public THttpRequest addQueryParam(String name, String value) {
-	    Args.notEmpty(name, "name");
-	    queryString.add(name, value);
-        return this;
-    }
+
 
     @Override
     public THttpRequest addFormParam(String name, String value) {
-	    formParams.add(new BasicNameValuePair(name, value));
-	    return this;
-    }
-
-    @Override
-    public THttpRequest setBody(byte[] content) {
-        this.body = content;
+        formParams.add(new BasicNameValuePair(name, value));
         return this;
     }
-	
+
 	@Override
     public THttpResponse send(){
 	    String url = buildRequestUrl();
@@ -145,7 +96,7 @@ class THttpRequestImpl implements THttpRequest {
 		    
 			log.debug("Sending '{}' request to '{}'...", method, url);
 			
-			THttpResponseImpl response = new THttpResponseImpl(this, request, client.execute(request) );
+			ApacheTHttpResponse response = new ApacheTHttpResponse(this, request, httpClient.execute(request) );
 
             if(log.isDebugEnabled()) {
                 log.debug("Response result : [status={}, content-type='{}', content-length={}]",
@@ -168,40 +119,6 @@ class THttpRequestImpl implements THttpRequest {
         }
 	}
 	
-    protected String buildRequestUrl(){
-        String url = null;
-        
-        if(Strings.isEmpty(uri)){
-            url = tclient.getBaseUrl();
-        }else if(uri.indexOf("://") > 0) {
-            url = uri;
-        }else if(Strings.startsWith(uri, "/")){
-            url = tclient.getBaseUrl() + uri;
-        }else{
-            url = tclient.getBaseUrl() + "/" + uri;
-        }
-        
-        if(!queryString.isEmpty()) {
-            url = Urls.appendQueryString(url, queryString.build());
-        }
-
-        URI uri = URI.create(url);
-        String path = uri.getPath();
-        if(!"".equals(path)) {
-            for(String contextPath : tclient.getContextPaths()) {
-                if(path.equals(contextPath)) {
-                    url = uri.getScheme() + ":" + uri.getSchemeSpecificPart() + "/";
-                    if(null != uri.getQuery()) {
-                        url = url + "?" + uri.getRawQuery();
-                    }
-                    break;
-                }
-            }
-        }
-
-        return url;
-    }
-    
     protected void initRequest() {
         if(!formParams.isEmpty()) {
             entity = new UrlEncodedFormEntity(formParams,charset);

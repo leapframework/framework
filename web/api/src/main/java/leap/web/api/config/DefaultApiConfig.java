@@ -29,10 +29,10 @@ import leap.web.route.Routes;
 import java.util.*;
 
 public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiConfigurator {
-	protected Object       source;
+	protected final Object source;
 	protected final String name;
-	protected final String basePath;
 
+	protected String         basePath;
     protected String         basePackage;
     protected String         title;
     protected String         summary;
@@ -85,7 +85,7 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 		this.source   = source;
 		this.name     = name;
 		this.title    = name;
-		this.basePath = Paths.suffixWithoutSlash(basePath);
+        this.setBasePath(basePath);
 	}
 
     @Override
@@ -102,6 +102,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 	public String getBasePath() {
 		return basePath;
 	}
+
+    public void setBasePath(String basePath) {
+        Args.notEmpty(basePath, "basePath");
+        Args.assertTrue(basePath.startsWith("/"), "The base path must be leading with a slash '/'");
+        this.basePath = Paths.suffixWithoutSlash(basePath);
+    }
 
 	@Override
 	public String getName() {
@@ -433,11 +439,6 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "[api=" + name + "]";
-    }
-
-    @Override
     public String getBasePackage() {
         return basePackage;
     }
@@ -476,5 +477,10 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
             restdConfig = new RestdConfig();
         }
         return this;
+    }
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "[api=" + name + "]";
     }
 }

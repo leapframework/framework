@@ -18,12 +18,14 @@ package leap.lang.logging;
 import leap.lang.Valued;
 
 public enum LogLevel implements Valued<Integer>{
-	Trace(-4),
-	Debug(-3),
-	Info(-2),
-	Warn(-1),
-	Error(0);
-	
+
+    ALL(-999),
+	TRACE(-4),
+	DEBUG(-3),
+	INFO(-2),
+	WARN(-1),
+	ERROR(0);
+
 	private final int value;
 	
 	LogLevel(int value) {
@@ -35,44 +37,44 @@ public enum LogLevel implements Valued<Integer>{
     }
 	
 	public boolean isTraceEnabled(){
-		return value <= Trace.value;
+		return value <= TRACE.value;
 	}
 	
 	public boolean isDebugEnabled(){
-		return value <= Debug.value;
+		return value <= DEBUG.value;
 	}
 	
 	public boolean isInfoEnabled(){
-		return value <= Info.value;
+		return value <= INFO.value;
 	}
 	
 	public boolean isWarnEnabled(){
-		return value <= Warn.value;
+		return value <= WARN.value;
 	}
 	
 	public boolean isErrorEnabled(){
-		return value <= Error.value;
+		return value <= ERROR.value;
 	}
 	
 	public static LogLevel byName(String name){
 		if("trace".equalsIgnoreCase(name)){
-			return Trace;
+			return TRACE;
 		}
 		
 		if("debug".equalsIgnoreCase(name)){
-			return Debug;
+			return DEBUG;
 		}
 		
 		if("info".equalsIgnoreCase(name)){
-			return Info;
+			return INFO;
 		}
 		
 		if("warn".equalsIgnoreCase(name)){
-			return Warn;
+			return WARN;
 		}
 		
 		if("error".equalsIgnoreCase(name)){
-			return Error;
+			return ERROR;
 		}
 		
 		throw new IllegalArgumentException("invalid log level name '" + name + "'");

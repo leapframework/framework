@@ -32,8 +32,8 @@ public class SimpleScalar implements Scalar {
 	}
 
 	@Override
-	public Object get() {
-		return v;
+	public <T> T get() {
+		return (T)v;
 	}
 
 	@Override

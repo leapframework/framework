@@ -32,10 +32,14 @@ public class ModuleConfigExtension {
         return modules.get(name);
     }
 
-    public void addModule(ModuleConfig module) {
+    public void addModule(ModuleConfig module) throws ObjectExistsException {
         if(modules.containsKey(module.getName())) {
             throw new ObjectExistsException("The web module '" + module.getName() + "' already exists!");
         }
+        modules.put(module.getName(), module);
+    }
+
+    public void setModule(ModuleConfig module) {
         modules.put(module.getName(), module);
     }
 

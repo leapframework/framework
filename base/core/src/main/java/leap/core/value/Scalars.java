@@ -62,7 +62,7 @@ public interface Scalars extends Emptiable {
 	/**
 	 * Returns all the scalar values as an immutable {@link List}.
 	 */
-	List<Object> list();
+	<T> List<T> list();
 	
 	/**
 	 * Returns all the scalar values as an immutable {@link List}.

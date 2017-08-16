@@ -28,6 +28,7 @@ import leap.lang.resource.Resources;
 import leap.lang.xml.XML;
 import leap.lang.xml.XmlReader;
 import leap.orm.generator.IdGenerator;
+import leap.orm.generator.ValueGenerator;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -60,12 +61,13 @@ public class XmlDomainSource implements DomainSource {
     private static final String INSERT_VALUE     = "insert-value";
     private static final String UPDATE           = "update";
     private static final String UPDATE_VALUE     = "update-value";
-    private static final String FILTER           = "filter";
-    private static final String FILTER_VALUE     = "filter-value";
+    private static final String FILTERED         = "filtered";
+    private static final String FILTERED_VALUE   = "filtered-value";
     private static final String DEFAULT_VALUE    = "default-value";
     private static final String SORT_ORDER       = "sort-order";
     private static final String COLUMN           = "column";
     private static final String ID_GENERATOR     = "id-generator";
+    private static final String GENERATOR        = "generator";
 
     protected @Inject AppConfig   config;
     protected @Inject BeanFactory beanFactory;
@@ -232,9 +234,10 @@ public class XmlDomainSource implements DomainSource {
         String  insertValue  = reader.getAttribute(INSERT_VALUE);
 		Boolean update       = reader.resolveBooleanAttribute(UPDATE);
 		String  updateValue  = reader.getAttribute(UPDATE_VALUE);
-        Boolean filter       = reader.resolveBooleanAttribute(FILTER);
-        String  filterValue  = reader.getAttribute(FILTER_VALUE);
+        Boolean filter       = reader.resolveBooleanAttribute(FILTERED);
+        String  filterValue  = reader.getAttribute(FILTERED_VALUE);
         String  idGenerator  = reader.getAttribute(ID_GENERATOR);
+        String  generator    = reader.getAttribute(GENERATOR);
         boolean autoMapping  = reader.getBooleanAttribute(AUTO_MAPPING, false);
         Float sortOrder      = reader.getFloatAttribute(SORT_ORDER);
 		boolean override     = reader.resolveBooleanAttribute(OVERRIDE, context.isDefaultOverride());
@@ -255,6 +258,15 @@ public class XmlDomainSource implements DomainSource {
 		Expression insertValueExpression = null;
 		Expression updateValueExpression = null;
         Expression filterValueExpression = null;
+
+        if(!Strings.isEmpty(generator)) {
+            ValueGenerator generatorBean = beanFactory.tryGetBean(ValueGenerator.class, generator);
+            if(null == generatorBean) {
+                throw new DomainConfigException("Value generator '" + generator + "' not found, check the xml : " + reader.getCurrentLocation());
+            }
+            insertValueExpression = generatorBean;
+            updateValueExpression = generatorBean;
+        }
 		
 		if(!Strings.isEmpty(insertValue)){
 			insertValueExpression = EL.tryCreateValueExpression(insertValue);	

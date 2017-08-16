@@ -33,10 +33,7 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
 import leap.web.exception.BadRequestException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DefaultModelCreateExecutor extends ModelExecutorBase implements ModelCreateExecutor {
 
@@ -63,13 +60,20 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
 
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
+        Set<String> removingKeys = new HashSet<>();
         for(String name : properties.keySet()) {
             MApiProperty p = am.tryGetProperty(name);
+
             if(null == p) {
                 throw new BadRequestException("Property '" + name + "' not exists!");
             }
+
             if(p.isNotCreatableExplicitly()) {
-                throw new BadRequestException("Property '" + name + "' is not creatable!");
+                if(null == properties.get(name)) {
+                    removingKeys.add(name);
+                }else{
+                    throw new BadRequestException("Property '" + name + "' is not creatable!");
+                }
             }
 
             if(null != p.getMetaProperty() && p.getMetaProperty().isReference()) {
@@ -90,6 +94,9 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                 }
             }
         }
+
+        //Removes the not creatable properties.
+        removingKeys.forEach(properties::remove);
 
         Errors errors = dao.validate(em, properties);
         if(!errors.isEmpty()) {

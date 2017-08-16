@@ -35,7 +35,7 @@ public interface Scalar {
 	/**
 	 * Returns the scalar value as {@link Object}.
 	 */
-	Object get();
+	<T> T get();
 	
 	/**
 	 * Returns the scalar value as the given type.

@@ -193,7 +193,7 @@ public class Converts {
         }
         
         if(targetType.isEnum()){
-        	return (T)Enums.valueOf((Class<? extends Enum>)targetType,value);
+        	return (T)Enums.valueOrNameOf((Class<? extends Enum>)targetType,value);
         }
         
         try {

@@ -45,11 +45,11 @@ public class FieldMapping extends ExtensibleBase {
 	protected final Integer          scale;
 	protected final boolean          insert;
 	protected final boolean          update;
-    protected final boolean          filter;
+    protected final boolean          filtered;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
-    protected final Expression       filterValue;
+    protected final Expression       filteredValue;
 	protected final Domain           domain;
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
@@ -69,11 +69,11 @@ public class FieldMapping extends ExtensibleBase {
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
                         boolean insert, boolean update,
-                        boolean filter,
+                        boolean filtered,
                         Expression defaultValue,
                         Expression insertValue,
                         Expression updateValue,
-                        Expression filterValue,
+                        Expression filteredValue,
                         boolean optimisticLock,
                         String newOptimisticLockFieldName,
                         Domain domain,
@@ -98,11 +98,11 @@ public class FieldMapping extends ExtensibleBase {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
-        this.filter         = filter;
+        this.filtered = filtered;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
-        this.filterValue    = filterValue;
+        this.filteredValue = filteredValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
@@ -169,8 +169,8 @@ public class FieldMapping extends ExtensibleBase {
 		return updateValue;
 	}
 
-    public Expression getFilterValue() {
-        return filterValue;
+    public Expression getFilteredValue() {
+        return filteredValue;
     }
 
     public boolean isAutoGenerateValue(){
@@ -189,8 +189,8 @@ public class FieldMapping extends ExtensibleBase {
 		return update;
 	}
 
-    public boolean isFilter() {
-        return filter;
+    public boolean isFiltered() {
+        return filtered;
     }
 
     public boolean isPrimaryKey() {

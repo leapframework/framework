@@ -69,9 +69,11 @@ public abstract class AbstractCookieBean {
 		if(Strings.isEmpty(domain)) {
 			return null;
 		}
+
+        String domainWithDot = domain.startsWith(".") ? domain : "." + domain;
 		
 		String host = "." + request.getServletRequest().getServerName();
-		if(Strings.endsWith(host, domain)) {
+		if(Strings.endsWith(host, domainWithDot)) {
 			return domain;
 		}
 		
@@ -96,7 +98,7 @@ public abstract class AbstractCookieBean {
 		
 		String domain = getCookieDomain(request);
 		if(null != domain) {
-			cookie.setDomain(getCookieDomain(request));	
+			cookie.setDomain(domain);
 		}
 		
 		response.addCookie(cookie);

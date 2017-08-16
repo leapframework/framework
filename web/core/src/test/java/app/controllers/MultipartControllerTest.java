@@ -15,11 +15,10 @@
  */
 package app.controllers;
 
+import leap.lang.http.ContentTypes;
 import leap.web.WebTestCase;
 import leap.webunit.client.THttpMultipart;
 import leap.webunit.client.THttpResponse;
-
-import org.apache.http.entity.ContentType;
 import org.junit.Test;
 
 public class MultipartControllerTest extends WebTestCase {
@@ -29,7 +28,7 @@ public class MultipartControllerTest extends WebTestCase {
 		THttpMultipart form = client().request("/multipart/upload0").multipart();
 		
         form.addBytes("bin", new byte[]{1})
-    	.addText("comment", "A binary file of some kind", ContentType.TEXT_PLAIN.getMimeType());
+    	.addText("comment", "A binary file of some kind", ContentTypes.TEXT_PLAIN);
     
         THttpResponse response = form.send();
 

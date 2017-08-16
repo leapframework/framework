@@ -83,13 +83,16 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
 
     @Override
     public SqlMetadata getMetadata() {
+        if(null == clauses) {
+            throw new IllegalStateException("The command must be prepared before getting the metadata");
+        }
         return clauses.length == 1 ? clauses[0].getMetadata() : null;
     }
 
     @Override
-    public void prepare(MetadataContext context) {
+    public SqlCommand prepare(MetadataContext context) {
         if(prepared) {
-            return;
+            return this;
         }
 
         try {
@@ -99,6 +102,7 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
         }
 
         prepared = true;
+        return this;
     }
 
     protected void mustPrepare(SqlContext context) {

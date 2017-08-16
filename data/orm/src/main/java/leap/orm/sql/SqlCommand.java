@@ -43,7 +43,7 @@ public interface SqlCommand extends Sourced {
     /**
      * Called after all sql commands was loaded, for preparing execution, such as parsing the sql content.
      */
-    void prepare(MetadataContext context);
+    SqlCommand prepare(MetadataContext context);
 
     /**
      * Returns the name of db platform or <code>null</code> if this command supports all db platforms.
