@@ -437,13 +437,18 @@ public class DefaultSecurityConfig implements SecurityConfig, SecurityConfigurat
     @Override
     public void postConfigure(BeanFactory factory, AppConfig config) throws Throwable {
         this.factory = factory;
-        
-        if (Strings.isEmpty(rememberMeSecret)) {
-            rememberMeSecret = config.ensureGetSecret();
-        }
 
         if (Strings.isEmpty(tokenSecret)) {
             tokenSecret = config.ensureGetSecret();
         }
+        
+        if (Strings.isEmpty(rememberMeSecret)) {
+            rememberMeSecret = tokenSecret;
+        }
+
+        if (Strings.isEmpty(rememberMeSecret)) {
+            rememberMeSecret = config.ensureGetSecret();
+        }
+
     }
 }
