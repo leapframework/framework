@@ -32,7 +32,8 @@ public class HomeControllerTest extends SecurityTestCase {
 	
 	@Test
 	public void testLoginView() {
-		get("/").assertContentContains("return_url");
+		String content = get("/").assert401().getContent();
+		assertContains(content,"return_url");		
 	}
 	
 	@Test

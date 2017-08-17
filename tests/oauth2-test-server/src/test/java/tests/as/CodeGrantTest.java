@@ -40,7 +40,7 @@ public class CodeGrantTest extends OAuth2TestBase {
 	    String uri = AUTHZ_ENDPOINT + "?client_id=test&redirect_uri=" + Global.TEST_CLIENT_REDIRECT_URI_ENCODED + "&response_type=code";
 
 	    logout();
-	    get(uri).assertOk().assertContentContains("Login with your Account");
+	    get(uri).assert401().assertContentContains("Login with your Account");
 	    
 	    login();
 	    String redirectUrl = get(uri).assertRedirect().getRedirectUrl();

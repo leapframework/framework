@@ -88,8 +88,9 @@ public class DefaultSecurityHandler implements SecurityHandler {
                 return;
             }
         }
-
+        
         loginManager.promoteLogin(request, response, context.getLoginContext());
+        response.setStatus(HTTP.SC_UNAUTHORIZED);
     }
 
     @Override
