@@ -33,12 +33,12 @@ public class AuthorizeEndpointTest extends OAuth2TestBase {
                 .addQueryParam("response_type","code")
                 .addQueryParam("redirect_uri","http://localhost:8080/clientapp2/auth_redirect")
                 .addQueryParam("client_id","app2")
-                .send().assertOk().getContent()
+                .send().assert401().getContent()
                 .contains("/login");
         
         usePost("/server/login").addHeader(OAuth2Constants.TOKEN_HEADER,"Bearer " + at.accessToken)
                 .addFormParam("return_url","http://localhost:8080/clientapp2/auth_redirect")
-                .send().assertOk().getContent()
+                .send().assert401().getContent()
                 .contains("/login");
     }
     

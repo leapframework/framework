@@ -26,6 +26,7 @@ import leap.web.Response;
 import leap.web.security.DefaultSecurityContextHolder;
 import leap.web.security.SecurityConfig;
 import leap.web.security.SecurityInterceptor;
+import leap.web.security.SecuritySessionManager;
 import leap.web.security.authc.AuthenticationManager;
 import leap.web.security.authc.SimpleAuthentication;
 import leap.web.security.path.SecuredPath;
@@ -41,6 +42,7 @@ public class DefaultLoginManager implements LoginManager {
     protected @Inject LoginViewHandler      viewHandler;
     protected @Inject AuthenticationManager authcManager;
     protected @Inject PermissionManager     permissionManager;
+    protected @Inject SecuritySessionManager sessionManager;
     
     @Override
     public boolean promoteLogin(Request request, Response response, LoginContext context) throws Throwable {
@@ -65,6 +67,12 @@ public class DefaultLoginManager implements LoginManager {
     public boolean handleLoginRequest(Request request, Response response, LoginContext context) throws Throwable {
         if(!isLoginRequest(request, response, context)) {
             return false;
+        }
+
+        Authentication authentication = sessionManager.getAuthentication(request);
+        if(null != authentication && authentication.isAuthenticated()){
+            handleLoginSuccessView(request,response,context);
+            return true;
         }
         
         request.setAcceptValidationError(true);
