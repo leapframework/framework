@@ -90,7 +90,9 @@ public class DefaultSecurityHandler implements SecurityHandler {
         }
         
         loginManager.promoteLogin(request, response, context.getLoginContext());
-        response.setStatus(HTTP.SC_UNAUTHORIZED);
+        if(response.getStatus() < HTTP.SC_MULTIPLE_CHOICES && response.getStatus() >= HTTP.SC_OK){
+            response.setStatus(HTTP.SC_UNAUTHORIZED);
+        }
     }
 
     @Override

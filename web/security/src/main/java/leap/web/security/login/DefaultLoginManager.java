@@ -18,6 +18,7 @@ package leap.web.security.login;
 import leap.core.annotation.Inject;
 import leap.core.security.Authentication;
 import leap.lang.Out;
+import leap.lang.http.HTTP;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -68,17 +69,18 @@ public class DefaultLoginManager implements LoginManager {
         if(!isLoginRequest(request, response, context)) {
             return false;
         }
-
-        Authentication authentication = sessionManager.getAuthentication(request);
-        if(null != authentication && authentication.isAuthenticated()){
-            handleLoginSuccessView(request,response,context);
-            return true;
-        }
         
         request.setAcceptValidationError(true);
         
         if(isGotoLoginView(request, response, context)) {
-            handleLoginView(request, response, context);
+            Authentication authentication = sessionManager.getAuthentication(request);
+            if(null != authentication && authentication.isAuthenticated()){
+                // user has login, go to login success view
+                handleLoginSuccessView(request,response,context);
+            }else {
+                // go to login view
+                handleLoginView(request, response, context);
+            }
         }else {
             handleLoginAuthentication(request, response, context);
         }
