@@ -587,7 +587,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		String sql = builder.buildSelectSql();
 		SqlStatement statement = createQueryStatement(qc,sql);
 		
-		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), em, targetType, targetType);
+		ResultSetReader<List<T>> reader = ResultSetReaders.forListEntity(dao.getOrmContext(), qc,em, targetType, targetType);
 		
 		return new DefaultQueryResult<T>(sql,statement.executeQuery(reader));
     }

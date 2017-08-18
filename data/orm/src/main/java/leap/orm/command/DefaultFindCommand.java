@@ -56,7 +56,7 @@ public class DefaultFindCommand<T> extends AbstractEntityDaoCommand implements F
 
 	@Override
     public T execute() throws TooManyRecordsException {
-		ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context, em, resultClass);
+		ResultSetReader<T> reader = ResultSetReaders.forSingleEntity(context,this, em, resultClass);
 		
 	    T result = sqlCommand.executeQuery(this, idParameters, reader);
 	    

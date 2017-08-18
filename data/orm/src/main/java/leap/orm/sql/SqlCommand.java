@@ -60,6 +60,11 @@ public interface SqlCommand extends Sourced {
      */
     String getSql();
 
+	/**
+	 * Return the sql clause
+	 */
+	SqlClause getSqlClause();
+    
     /**
      * Returns <code>true</code> if has {@link SqlMetadata}.
      */

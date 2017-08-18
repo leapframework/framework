@@ -18,6 +18,13 @@ package leap.orm.mapping;
 import leap.lang.Strings;
 import leap.orm.OrmContext;
 import leap.orm.OrmMetadata;
+import leap.orm.query.EntityQuery;
+import leap.orm.sql.DynamicSql;
+import leap.orm.sql.DynamicSqlClause;
+import leap.orm.sql.Sql;
+import leap.orm.sql.SqlClause;
+import leap.orm.sql.SqlContext;
+import leap.orm.sql.ast.SqlSelect;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -31,11 +38,11 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 	protected int columnCount;
 	protected ResultColumnMapping[] columnMappings;
 
-	public DefaultResultSetMapping(OrmContext context,ResultSet rs,EntityMapping primaryEntityMapping) throws SQLException {
+	public DefaultResultSetMapping(OrmContext context, SqlContext sqlContext, ResultSet rs, EntityMapping primaryEntityMapping) throws SQLException {
 		this.metadata             = context.getMetadata();
 		this.primaryEntityMapping = primaryEntityMapping;
 		
-		this.mapping(rs);
+		this.mapping(rs,sqlContext);
 	}
 	
 	@Override
@@ -53,18 +60,32 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 	    return columnMappings[index];
     }
 
-	protected void mapping(ResultSet rs) throws SQLException {
+	protected void mapping(ResultSet rs, SqlContext ctx) throws SQLException {
 		ResultSetMetaData md = rs.getMetaData();
 		
 		this.columnCount    = md.getColumnCount();
 		this.columnMappings = new ResultColumnMapping[this.columnCount];
-		
+		SqlSelect selectCmd = null;
+		if(ctx instanceof EntityQuery) {
+			SqlClause clause = ((EntityQuery) ctx).getSqlClause();
+			if (clause instanceof DynamicSqlClause) {
+				Sql sql = ((DynamicSqlClause) clause).getSql().parsed();
+				if (null != sql && sql.isSelect() && sql.nodes()[0] instanceof SqlSelect) {
+					selectCmd = (SqlSelect) sql.nodes()[0];
+				}
+			}
+		}
 		for(int i=1;i<=this.columnCount;i++){
 			ResultColumnMapping cm = new ResultColumnMapping();
 			
 			cm.setColumnName(md.getColumnName(i));
 			cm.setColumnLabel(md.getColumnLabel(i));
 			cm.setColumnType(md.getColumnType(i));
+
+			if(null != selectCmd && selectCmd.isSelectItemAlias(cm.getColumnLabel())){
+				cm.setAliasName(selectCmd.getSelectItemAlias(cm.getColumnLabel()));
+				cm.setAlias(true);
+			}
 			
 			FieldMapping fm = primaryEntityMapping.tryGetFieldMappingByColumn(cm.getColumnLabel());
 
