@@ -131,7 +131,12 @@ public class DefaultSqlCommand implements SqlCommand, SqlLanguage.Options {
         return content;
     }
 
-	public SqlClause getClause() throws IllegalStateException {
+    @Override
+    public SqlClause getSqlClause() {
+        return getClause();
+    }
+
+    public SqlClause getClause() throws IllegalStateException {
 		if(clauses.length > 1) {
             throw new IllegalStateException("Command '" + source + "' contains many clauses");
         }

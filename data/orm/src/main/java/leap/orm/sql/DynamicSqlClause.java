@@ -15,6 +15,7 @@
  */
 package leap.orm.sql;
 
+import com.sun.org.apache.regexp.internal.RE;
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;
@@ -227,6 +228,14 @@ public class DynamicSqlClause extends AbstractSqlClause implements SqlClause,Sql
 			return stmt.createBatchSqlStatement(context, resolveBatchArgs(context, stmt, params));
 		}
     }
+	
+    public DynamicSql getSql(){
+    	return sql;
+	}
+    
+	public DynamicSqlLanguage getLang(){
+		return lang;
+	}
 	
 	private void createSqlForCount(DynamicSql.ExecutionSqls sqls) {
 		if(null == sqls.sqlForCount) {

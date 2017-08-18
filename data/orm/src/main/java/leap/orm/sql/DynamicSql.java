@@ -44,6 +44,14 @@ public class DynamicSql {
         return sql;
     }
 
+    public Sql parsed(){
+        if(null == sqls){
+            return null;
+        }else {
+            return sqls.sql;
+        }
+    }
+    
     public ExecutionSqls resolveExecutionSqls(Params params) {
         if(null != sqls) {
             return sqls;
