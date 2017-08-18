@@ -54,6 +54,9 @@ public class DefaultLoginViewHandler implements LoginViewHandler,AppListener {
     @Override
     public void handleLoginFailure(Request request, Response response, LoginContext context) throws Throwable {
         goLoginUrl(request, response, context);
+        if(response.getStatus() < HTTP.SC_MULTIPLE_CHOICES && response.getStatus() >= HTTP.SC_OK){
+            response.setStatus(HTTP.SC_UNAUTHORIZED);
+        }
     }
 	
 	protected void goLoginUrl(LoginContext context,Request request,Response response,String loginUrl,String returnUrl) throws Throwable {
