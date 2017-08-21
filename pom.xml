@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.leapframework</groupId>
 	<artifactId>leap-parent</artifactId>
-	<version>0.6.5b-SNAPSHOT</version>
+	<version>0.6.5b</version>
 	<packaging>pom</packaging>
 
     <name>leapframework</name>
