@@ -44,6 +44,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                metaFieldName;
     protected Class<?>              javaType;
     protected BeanProperty          beanProperty;
+    protected boolean               secondary;
     protected DbColumnBuilder       column;
     protected boolean               columnNameDeclared;
     protected String                sequenceName;
@@ -88,6 +89,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.metaFieldName = template.metaFieldName;
         this.javaType = template.getJavaType();
         this.beanProperty = template.beanProperty;
+        this.secondary = template.secondary;
         this.column = new DbColumnBuilder(template.column);
         this.columnNameDeclared = template.columnNameDeclared;
         this.sequenceName = template.sequenceName;
@@ -290,7 +292,16 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-	public DbColumnBuilder getColumn() {
+    public boolean isSecondary() {
+        return secondary;
+    }
+
+    public FieldMappingBuilder setSecondary(boolean secondary) {
+        this.secondary = secondary;
+        return this;
+    }
+
+    public DbColumnBuilder getColumn() {
 		return column;
 	}
 
@@ -684,7 +695,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						dataType,
 	    						metaFieldName,
 	    						javaType,
-	    						beanProperty, column.build(), sequenceName,
+	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
                                 insert, update, filtered,
                                 defaultValueExpression,

@@ -37,6 +37,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final String           metaFieldName;
 	protected final Class<?>         javaType;
 	protected final BeanProperty     beanProperty;
+    protected final boolean          secondary;
 	protected final DbColumn         column;
 	protected final String           sequenceName;
 	protected final boolean          nullable;
@@ -64,6 +65,7 @@ public class FieldMapping extends ExtensibleBase {
                         String metaFieldName,
                         Class<?> javaType,
                         BeanProperty beanProperty,
+                        boolean secondary,
                         DbColumn column,
                         String sequenceName,
                         boolean nullable,
@@ -90,6 +92,7 @@ public class FieldMapping extends ExtensibleBase {
 		this.metaFieldName  = metaFieldName;
 		this.javaType       = javaType;
 	    this.beanProperty   = beanProperty;
+        this.secondary      = secondary;
 	    this.column         = column;
 	    this.sequenceName   = sequenceName;
 	    this.nullable		= nullable;
@@ -98,7 +101,7 @@ public class FieldMapping extends ExtensibleBase {
 	    this.scale		    = scale;
 	    this.insert         = insert;
 	    this.update         = update;
-        this.filtered = filtered;
+        this.filtered       = filtered;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
@@ -147,8 +150,15 @@ public class FieldMapping extends ExtensibleBase {
 	public BeanProperty getBeanProperty() {
 		return beanProperty;
 	}
-	
-	public String getColumnName(){
+
+    /**
+     * Returns <code>true</code> if the field's column is at secondary table.
+     */
+    public boolean isSecondary() {
+        return secondary;
+    }
+
+    public String getColumnName(){
 		return column.getName();
 	}
 	

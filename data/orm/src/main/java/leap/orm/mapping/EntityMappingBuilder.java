@@ -36,6 +36,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected Class<?>      	    	   entityClass;
 	protected boolean					   _abstract;
 	protected DbTableBuilder			   table;
+    protected DbTableBuilder               secondaryTable;
 	protected String					   tablePrefix;
 	protected String					   dynamicTableName;
 	protected boolean					   tableNameDeclared;
@@ -106,7 +107,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		return this;
 	}
 
-	public String getTableCatalog() {
+    public DbTableBuilder getSecondaryTable() {
+        return secondaryTable;
+    }
+
+    public void setSecondaryTable(DbTableBuilder secondaryTable) {
+        this.secondaryTable = secondaryTable;
+    }
+
+    public String getTableCatalog() {
 		return getTable().getCatalog();
 	}
 
@@ -425,11 +434,12 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
 		
-		List<FieldMapping>    fields    = Builders.buildList(fieldMappings);
-		List<RelationMapping> relations = Builders.buildList(relationMappings);
-		DbTable			      table     = buildTable(fields,relations);
+		List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
+		List<RelationMapping> relations      = Builders.buildList(relationMappings);
+		DbTable			      table          = buildTable(fields,relations);
+        DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,fields,
+	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,secondaryTable, fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 modelClass,validators,
                                  relations,
@@ -459,4 +469,9 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
 		return table.build();
 	}
+
+    protected DbTable buildSecondaryTable(List<FieldMapping> fields, List<RelationMapping> relations){
+        //todo: build secondary table
+        return null;
+    }
 }

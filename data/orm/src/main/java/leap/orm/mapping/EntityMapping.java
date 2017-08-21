@@ -39,6 +39,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final Class<?>                   entityClass;
     protected final BeanType                   beanType;
     protected final DbTable                    table;
+    protected final DbTable                    secondaryTable;
     protected final FieldMapping[]             fieldMappings;
     protected final FieldMapping[]             filterFieldMappings;
     protected final FieldMapping[]             keyFieldMappings;
@@ -76,7 +77,7 @@ public class EntityMapping extends ExtensibleBase {
 
 
 	public EntityMapping(String entityName, String dynamicTableName,
-                         Class<?> entityClass, DbTable table, List<FieldMapping> fieldMappings,
+                         Class<?> entityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
                          Class<? extends Model> modelClass,
@@ -102,6 +103,7 @@ public class EntityMapping extends ExtensibleBase {
 	    this.entityClass       = entityClass;
 	    this.beanType          = null == entityClass ? null : BeanType.of(entityClass);
 	    this.table             = table;
+        this.secondaryTable    = secondaryTable;
 	    this.insertInterceptor = insertInterceptor;
 	    this.updateInterceptor = updateInterceptor;
 	    this.deleteInterceptor = deleteInterceptor;
@@ -185,6 +187,20 @@ public class EntityMapping extends ExtensibleBase {
 	public DbTable getTable() {
 		return table;
 	}
+
+    /**
+     * Returns the secondary table or null/
+     */
+    public DbTable getSecondaryTable() {
+        return secondaryTable;
+    }
+
+    /**
+     * Returns true if the secondary table is exists.
+     */
+    public boolean hasSecondaryTable() {
+        return null != secondaryTable;
+    }
 
     /**
      * Optional. Returns {@link BeanType} of the mapping java class of entity.
