@@ -40,10 +40,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	    return createCommand(context,null, null, sql);
     }
 
-    public SqlCommand createSqlCommand(MetadataContext context,String source, String sql) {
-	    return createCommand(context,null,source,sql);
-    }
-
 	@Override
     public SqlCommand createInsertCommand(MetadataContext context,EntityMapping em) {
 		String sql = getInsertSql(context, em);
@@ -368,9 +364,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 	
 	protected String getCountSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select count(*) from ").append(em.getEntityName());
@@ -381,12 +374,12 @@ public class DefaultSqlFactory implements SqlFactory {
 	protected String getFindSql(MetadataContext context,EntityMapping em){
 		StringBuilder sql = new StringBuilder();
 
-        sql.append("select ")
-            .append(createSelectColumns(context, em, null))
-            .append(" from ")
-            .append(em.getEntityName())
-			.append(" t ")
-			.append(" where ");
+        sql.append("select ");
+            sql.append(createSelectColumns(context, em, null))
+                .append(" from ")
+                .append(em.getEntityName())
+                .append(" t ");
+        sql.append(" where ");
 
         appendPrimaryKey(context, em, sql);
 
@@ -394,6 +387,10 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 
     protected void appendPrimaryKey(MetadataContext context, EntityMapping em, StringBuilder sql) {
+        appendPrimaryKey(context, em, sql, null);
+    }
+
+    protected void appendPrimaryKey(MetadataContext context, EntityMapping em, StringBuilder sql, String alias) {
         DbDialect dialect = context.getDb().getDialect();
 
         int index = 0;
@@ -402,6 +399,9 @@ public class DefaultSqlFactory implements SqlFactory {
                 sql.append(" and ");
             }
 
+            if(null != alias) {
+                sql.append(alias).append('.');
+            }
             sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
             index++;
         }
@@ -448,19 +448,18 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 
     @Override
-    public String createSelectColumns(MetadataContext context, EntityMapping em, String tableAlias) {
+    public String createSelectColumns(MetadataContext context, EntityMapping em, String alias) {
         StringBuilder s = new StringBuilder();
 
         int index = 0;
 
         for(FieldMapping fm : em.getFieldMappings()){
-
             if(index > 0) {
                 s.append(',');
             }
 
-            if(!Strings.isEmpty(tableAlias)) {
-                s.append(tableAlias).append('.');
+            if(!Strings.isEmpty(alias)) {
+                s.append(alias).append('.');
             }
 
             s.append(fm.getColumnName());

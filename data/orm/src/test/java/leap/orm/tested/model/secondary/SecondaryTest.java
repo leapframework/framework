@@ -71,14 +71,14 @@ public class SecondaryTest extends OrmTestCase {
         assertEquals(new Integer(0), db.queryForInteger("select count(*) from secondary_table1"));
     }
 
-//    @Test
-//    public void testFindOne() {
-//        String id = insert().getId();
-//
-//        SecondaryEntity1 entity = SecondaryEntity1.find(id);
-//        assertEquals("c1", entity.getCol1());
-//        assertEquals("c2", entity.getCol2());
-//    }
+    @Test
+    public void testFindOne() {
+        String id = insert().getId();
+
+        SecondaryEntity1 entity = SecondaryEntity1.find(id);
+        assertEquals("c1", entity.getCol1());
+        assertEquals("c2", entity.getCol2());
+    }
 
     private SecondaryEntity1 insert() {
         SecondaryEntity1 entity = new SecondaryEntity1();
