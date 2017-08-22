@@ -41,11 +41,6 @@ public interface SqlCommand extends Sourced {
 	String COUNT_COMMAND           = "count";
 
     /**
-     * Called after all sql commands was loaded, for preparing execution, such as parsing the sql content.
-     */
-    SqlCommand prepare(MetadataContext context);
-
-    /**
      * Returns the name of db platform or <code>null</code> if this command supports all db platforms.
      */
     String getDbType();
@@ -60,11 +55,11 @@ public interface SqlCommand extends Sourced {
      */
     String getSql();
 
-	/**
-	 * Return the sql clause
-	 */
-	SqlClause getSqlClause();
-    
+    /**
+     * Return the sql clause
+     */
+    SqlClause getSqlClause();
+
     /**
      * Returns <code>true</code> if has {@link SqlMetadata}.
      */
@@ -75,9 +70,15 @@ public interface SqlCommand extends Sourced {
     /**
      * Returns <code>null</code> if no metadata.
      */
+
     default SqlMetadata getMetadata() {
         return null;
     }
+
+    /**
+     * Called after all sql commands was loaded, for preparing execution, such as parsing the sql content.
+     */
+    SqlCommand prepare(MetadataContext context);
 
 	/**
 	 * Executes update and returns the affected rows.

@@ -104,7 +104,7 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	protected SqlCommand createCommand(MetadataContext context,@Nullable EntityMapping em,String source,String sql){
 		Args.notEmpty(sql,"sql");
-		return new DefaultSqlCommand(source, source, null, defaultSqlLanguage, sql,null);
+		return new DefaultSqlCommand(new SqlInfo.Builder(source, source, null, defaultSqlLanguage, sql,null).build());
 	}
 	
 	protected String getInsertSql(MetadataContext context,EntityMapping em){
