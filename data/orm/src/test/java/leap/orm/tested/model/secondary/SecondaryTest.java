@@ -17,6 +17,7 @@
 package leap.orm.tested.model.secondary;
 
 import leap.junit.contexual.ContextualIgnore;
+import leap.lang.New;
 import leap.orm.OrmTestCase;
 import org.junit.Test;
 
@@ -29,6 +30,23 @@ public class SecondaryTest extends OrmTestCase {
 
         assertEquals(new Integer(1), db.queryForInteger("select count(*) from primary_table1 where id_ = ?", new Object[]{id}));
         assertEquals(new Integer(1), db.queryForInteger("select count(*) from secondary_table1 where id_ = ?", new Object[]{id}));
+    }
+
+    @Test
+    public void testUpdate() {
+        String id = insert().getId();
+
+        assertTrue(SecondaryEntity1.update(id, New.hashMap("col1", "c1_1")));
+        assertEquals("c1_1", db.queryForString("select col1_ from primary_table1 where id_ = ?", new Object[]{id}));
+        assertEquals("c2",   db.queryForString("select col2_ from secondary_table1 where id_ = ?", new Object[]{id}));
+
+        assertTrue(SecondaryEntity1.update(id, New.hashMap("col2", "c2_1")));
+        assertEquals("c1_1", db.queryForString("select col1_ from primary_table1 where id_ = ?", new Object[]{id}));
+        assertEquals("c2_1", db.queryForString("select col2_ from secondary_table1 where id_ = ?", new Object[]{id}));
+
+        assertTrue(SecondaryEntity1.update(id, New.hashMap("col1", "c1_2", "col2", "c2_2")));
+        assertEquals("c1_2", db.queryForString("select col1_ from primary_table1 where id_ = ?", new Object[]{id}));
+        assertEquals("c2_2", db.queryForString("select col2_ from secondary_table1 where id_ = ?", new Object[]{id}));
     }
 
     @Test

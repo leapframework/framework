@@ -20,15 +20,10 @@ import java.util.Map;
 
 import leap.core.exception.InvalidOptimisticLockException;
 import leap.core.exception.OptimisticLockException;
-import leap.core.jdbc.PreparedStatementHandler;
-import leap.db.Db;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.convert.Converts;
 import leap.lang.expression.Expression;
-import leap.lang.logging.Log;
-import leap.lang.logging.LogFactory;
-import leap.lang.params.Params;
 import leap.orm.dao.Dao;
 import leap.orm.event.EntityEventWithWrapperImpl;
 import leap.orm.event.EntityEventHandler;
@@ -44,21 +39,15 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     protected final SqlFactory         sf;
     protected final EntityEventHandler eventHandler;
 
-	protected SqlCommand    command;
     protected EntityWrapper entity;
     protected Object        id;
 	protected Object        oldOptimisticLockValue;
 	protected Object        newOptimisticLockValue;
 
 	public DefaultUpdateCommand( Dao dao, EntityMapping em) {
-		this(dao,em,null);
-	}
-	
-	public DefaultUpdateCommand(Dao dao, EntityMapping em, SqlCommand command) {
 	    super(dao,em);
 	    this.sf           = dao.getOrmContext().getSqlFactory();
         this.eventHandler = context.getEntityEventHandler();
-	    this.command      = command;
     }
 	
     @Override
@@ -116,7 +105,7 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
         //pre without transaction.
         eventHandler.preUpdateEntityNoTrans(context, em, e);
 
-        if(eventHandler.isUpdateEventTransactional(context, em)) {
+        if(em.hasSecondaryTable() || eventHandler.isUpdateEventTransactional(context, em)) {
             result = dao.doTransaction((status) -> {
                 e.setTransactionStatus(status);
 
@@ -144,26 +133,36 @@ public class DefaultUpdateCommand extends AbstractEntityDaoCommand implements Up
     }
 
     protected int doExecuteUpdate() {
-
-        //Create command.
-        if(null == command) {
-            String[] fields = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
-            command = sf.createUpdateCommand(context, em, fields);
-        }
+        String[]   fields           = entity.getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        SqlCommand primaryCommand   = sf.createUpdateCommand(context, em, fields);
+        SqlCommand secondaryCommand = em.hasSecondaryTable() ? sf.createUpdateCommand(context, em, fields, true) : null;
 
         //Creates map for saving.
-        Map<String,Object> fields = entity.toMap();
+        Map<String,Object> map = entity.toMap();
 
         //Prepared id and serialization.
-        prepareIdAndSerialization(id, fields);
+        prepareIdAndSerialization(id, map);
 
-        int result = command.executeUpdate(this, fields);
-        if(em.hasOptimisticLock()){
+        Integer result = 0;
+
+        if(null != primaryCommand) {
+            result = primaryCommand.executeUpdate(this, map);
+        }
+
+        if(null != secondaryCommand) {
+           if(null == result) {
+               result = secondaryCommand.executeUpdate(this, map);
+           }else if(result > 0){
+               secondaryCommand.executeUpdate(this, map);
+           }
+        }
+
+        if(null != result && em.hasOptimisticLock()){
             if(result < 1){
-                String id  = Mappings.getIdToString(em, fields);
+                String id  = Mappings.getIdToString(em, map);
                 throw new OptimisticLockException("Failed to update entity '" + em.getEntityName() +
                         "', id=[" + id + "], version=[" + oldOptimisticLockValue +
-                        "], may be an optimistic locking conflict occured");
+                        "], may be an optimistic locking conflict occurred");
             }else{
                 setGeneratedValue(em.getOptimisticLockField(), newOptimisticLockValue);
             }

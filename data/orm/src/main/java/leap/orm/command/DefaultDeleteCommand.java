@@ -48,7 +48,7 @@ public class DefaultDeleteCommand extends AbstractEntityDaoCommand implements De
             //pre without transaction.
             eventHandler.preDeleteEntityNoTrans(context, em, e);
 
-            if(eventHandler.isDeleteEventTransactional(context, em)) {
+            if(em.hasSecondaryTable() || eventHandler.isDeleteEventTransactional(context, em)) {
                 result = dao.doTransaction((status) -> {
                     e.setTransactionStatus(status);
 

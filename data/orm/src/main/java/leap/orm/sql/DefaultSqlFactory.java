@@ -40,7 +40,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	    return createCommand(context,null, null, sql);
     }
 
-	@Override
     public SqlCommand createSqlCommand(MetadataContext context,String source, String sql) {
 	    return createCommand(context,null,source,sql);
     }
@@ -56,15 +55,18 @@ public class DefaultSqlFactory implements SqlFactory {
 	    return createCommand(context,em,null,getInsertSql(context, em, fields, secondary));
     }
 
-	@Override
     public SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em) {
 		String sql = getUpdateSql(context, em);
 	    return null == sql ? null : createCommand(context,em,null,sql);
     }
 	
 	@Override
-    public SqlCommand createUpdateCommand(MetadataContext context, EntityMapping em, String[] fields) {
-	    return createCommand(context,em,null,getUpdateSql(context, em, fields));
+    public SqlCommand createUpdateCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
+        String sql = getUpdateSql(context, em, fields, secondary);
+        if(null == sql) {
+            return null;
+        }
+	    return createCommand(context, em, null, sql);
     }
 
 	@Override
@@ -267,13 +269,14 @@ public class DefaultSqlFactory implements SqlFactory {
 		return sql.toString();
 	}
 	
-	protected String getUpdateSql(MetadataContext context,EntityMapping em,String[] fields){
+	protected String getUpdateSql(MetadataContext context,EntityMapping em,String[] fields, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(em.getEntityName()).append(" set ");
+		sql.append("update ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
@@ -282,6 +285,14 @@ public class DefaultSqlFactory implements SqlFactory {
 			if(fm.isPrimaryKey() || !fm.isUpdate()){
 				continue;
 			}
+
+            if (!secondary && fm.isSecondary()) {
+                continue;
+            }
+
+            if (secondary && !fm.isSecondary()) {
+                continue;
+            }
 			
         	boolean contains = false;
         	for(String field : fields){
@@ -301,6 +312,10 @@ public class DefaultSqlFactory implements SqlFactory {
 				index++;
 			}
 		}
+
+        if(index == 0) {
+            return null;
+        }
 		
 		sql.append(" where ");
 		index = 0;

@@ -131,7 +131,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         //pre without transaction.
         eventHandler.preCreateEntityNoTrans(context, em, e);
 
-        if(eventHandler.isCreateEventTransactional(context, em)) {
+        if(em.hasSecondaryTable() || eventHandler.isCreateEventTransactional(context, em)) {
             result = dao.doTransaction((status) -> {
                 e.setTransactionStatus(status);
 
@@ -179,7 +179,6 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         int result = primaryCommand.executeUpdate(this, map, handler);
 
         if(null != secondaryCommand) {
-            //todo: transactional ?
             secondaryCommand.executeUpdate(this, withGeneratedId(map));
         }
 

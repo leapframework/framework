@@ -19,43 +19,94 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.metadata.MetadataContext;
 
 public interface SqlFactory {
-	
-	SqlCommand createSqlCommand(MetadataContext context, String sql);
-	
-	SqlCommand createSqlCommand(MetadataContext context,String source,String sql);
 
+    /**
+     * Creates a normal {@link SqlCommand} by the given sql.
+     */
+	SqlCommand createSqlCommand(MetadataContext context, String sql);
+
+    /**
+     * Creates an insert {@link SqlCommand} with all the fields in primary table of the given entity.
+     */
 	SqlCommand createInsertCommand(MetadataContext context,EntityMapping em);
-	
+
+    /**
+     * Creates an insert {@link SqlCommand} with the fields in primary table of the given entity.
+     */
 	default SqlCommand createInsertCommand(MetadataContext context,EntityMapping em,String[] fields) {
         return createInsertCommand(context, em, fields, false);
     }
 
+    /**
+     * Creates an insert {@link SqlCommand} with the fields in primary or secondary table of the given entity.
+     */
     SqlCommand createInsertCommand(MetadataContext context,EntityMapping em,String[] fields, boolean secondary);
-	
+
+    /**
+     * Creates an update {@link SqlCommand} with all the fields in primary table of the given entity.
+     */
 	SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em);
-	
-	SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em,String[] fields);
-	
+
+    /**
+     * Creates an update {@link SqlCommand} with the fields in primary table of the given entity.
+     *
+     * <p/>
+     * Returns <code>null</code> if no updated fields.
+     */
+	default SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em,String[] fields) {
+        return createUpdateCommand(context, em, fields, false);
+    }
+
+    /**
+     * Creates an update {@link SqlCommand} with the fields in primary or secondary table of the given entity.
+     *
+     * <p/>
+     * Returns <code>null</code> if no updated fields.
+     */
+    SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em,String[] fields, boolean secondary);
+
+    /**
+     * Creates a delete {@link SqlCommand} with the id in primary table of the given entity.
+     */
 	default SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em) {
         return createDeleteCommand(context, em, false);
     }
 
+    /**
+     * Creates a delete {@link SqlCommand} with th eid in primary or secondary table of the given entity.
+     */
     SqlCommand createDeleteCommand(MetadataContext context, EntityMapping em, boolean secondary);
-	
+
+    /**
+     * Creates a delete {@link SqlCommand} for all records in primary table of the given entity.
+     */
 	default SqlCommand createDeleteAllCommand(MetadataContext context,EntityMapping em) {
         return createDeleteAllCommand(context, em, false);
     }
 
+    /**
+     * Creates a delete {@link SqlCommand} for all records in primary or secondary table of the given entity.
+     */
     SqlCommand createDeleteAllCommand(MetadataContext context,EntityMapping em, boolean secondary);
-	
+
+    /**
+     * Creates an exists {@link SqlCommand} with id in primary table of the given entity.
+     */
 	SqlCommand createExistsCommand(MetadataContext context,EntityMapping em);
-	
-	SqlCommand createCountCommand(MetadataContext context,EntityMapping em);
-	
-	SqlCommand createFindCommand(MetadataContext context,EntityMapping em);
-	
+
+    /**
+     * Creates an exists {@link SqlCommand} for all records in primary table of the given entity.
+     */
+    SqlCommand createCountCommand(MetadataContext context,EntityMapping em);
+
+    /**
+     * Creates a select {@link SqlCommand} with id in primary table of the given entity.
+     */
+    SqlCommand createFindCommand(MetadataContext context,EntityMapping em);
+
 	SqlCommand createFindListCommand(MetadataContext context,EntityMapping em);
-	
+
+
 	SqlCommand createFindAllCommand(MetadataContext context,EntityMapping em);
 
     /**
