@@ -36,7 +36,11 @@ public interface SqlFactory {
 	
 	SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em,String[] fields);
 	
-	SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em);
+	default SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em) {
+        return createDeleteCommand(context, em, false);
+    }
+
+    SqlCommand createDeleteCommand(MetadataContext context, EntityMapping em, boolean secondary);
 	
 	default SqlCommand createDeleteAllCommand(MetadataContext context,EntityMapping em) {
         return createDeleteAllCommand(context, em, false);

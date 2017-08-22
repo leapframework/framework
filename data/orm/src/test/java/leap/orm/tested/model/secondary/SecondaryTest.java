@@ -32,6 +32,15 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
+    public void testDelete() {
+        String id = insert().getId();
+
+        SecondaryEntity1.delete(id);
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from primary_table1 where id_ = ?", new Object[]{id}));
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from secondary_table1 where id_ = ?", new Object[]{id}));
+    }
+
+    @Test
     public void testDeleteAll() {
         SecondaryEntity1.deleteAll();
         insert();

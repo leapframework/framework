@@ -68,8 +68,8 @@ public class DefaultSqlFactory implements SqlFactory {
     }
 
 	@Override
-    public SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em) {
-	    return createCommand(context,em,null,getDeleteSql(context,em));
+    public SqlCommand createDeleteCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+	    return createCommand(context,em,null,getDeleteSql(context,em, secondary));
     }
 	
 	@Override
@@ -346,13 +346,14 @@ public class DefaultSqlFactory implements SqlFactory {
 		sql.append("#");
 	}
 	
-	protected String getDeleteSql(MetadataContext context,EntityMapping em){
+	protected String getDeleteSql(MetadataContext context,EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("delete from ").append(em.getEntityName()).append(" where ");
+		sql.append("delete from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" where ");
 		
 		int index = 0;
 		
