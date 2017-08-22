@@ -86,6 +86,24 @@ public class SecondaryTest extends OrmTestCase {
         assertEquals("c2", entity.getCol2());
     }
 
+    @Test
+    public void testSimpleCriteriaQuery() {
+        SecondaryEntity1.deleteAll();
+        SecondaryEntity1 entity = insert();
+
+        SecondaryEntity1 loaded = SecondaryEntity1.<SecondaryEntity1>where("col2 = ?", entity.getCol2()).alias("t1").first();
+        assertEquals(entity.getCol1(), loaded.getCol1());
+        assertEquals(entity.getCol2(), loaded.getCol2());
+
+        loaded = SecondaryEntity1.<SecondaryEntity1>where("col1 = ?", entity.getCol1()).alias("t2").first();
+        assertEquals(entity.getCol1(), loaded.getCol1());
+        assertEquals(entity.getCol2(), loaded.getCol2());
+
+        loaded = SecondaryEntity1.<SecondaryEntity1>where("col1 = ? and col2 = ?", entity.getCol1(), entity.getCol2()).first();
+        assertEquals(entity.getCol1(), loaded.getCol1());
+        assertEquals(entity.getCol2(), loaded.getCol2());
+    }
+
     private SecondaryEntity1 insert() {
         SecondaryEntity1 entity = new SecondaryEntity1();
         entity.setCol1("c1");
