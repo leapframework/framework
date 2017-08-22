@@ -181,6 +181,19 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
     }
 
     @Override
+    public EntityMapping tryGetEntityMappingBySecondaryTableName(String tableName) {
+        for(EntityMapping em : shardingEntityMappings.values()) {
+
+            if(em.hasSecondaryTable() && em.getSecondaryTable().getName().equalsIgnoreCase(tableName)) {
+                return em;
+            }
+
+        }
+
+        return null;
+    }
+
+    @Override
     public EntityMapping tryGetEntityMappingByShardingTableName(String tableName) {
         for(EntityMapping em : shardingEntityMappings.values()) {
 

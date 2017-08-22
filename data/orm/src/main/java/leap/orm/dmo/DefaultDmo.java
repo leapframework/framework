@@ -130,11 +130,15 @@ public class DefaultDmo extends DmoBase {
 		for(int i=0;i<entityMappings.size();i++){
 			EntityMapping em    = entityMappings.get(i);
 			DbTable       table = em.getTable();
+            DbTable       secondaryTable = em.getSecondaryTable();
 			
 			String schemaName = table.getSchema();
 			
 			if(Strings.isEmpty(schemaName)){
 				defaultSchema.addTable(table);
+                if(null != secondaryTable) {
+                    defaultSchema.addTable(secondaryTable);
+                }
 			}else{
 				if(null == extraSchemas){
 					extraSchemas = new HashMap<>();
@@ -147,6 +151,10 @@ public class DefaultDmo extends DmoBase {
 				}
 				
 				schema.addTable(table);
+
+                if(null != secondaryTable) {
+                    schema.addTable(secondaryTable);
+                }
 			}
 		}
 		

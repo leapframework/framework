@@ -241,13 +241,16 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
                 allChanges.add(db.getComparator().compareSchema(source, target));
             }
         }else{
-            DbTable[] tables = new DbTable[entityMappings.length];
-            for(int i=0;i<tables.length;i++) {
-                tables[i] = entityMappings[i].getTable();
+            List<DbTable> tables = new ArrayList<>();
+            for(EntityMapping em : entityMappings) {
+                tables.add(em.getTable());
+                if(em.hasSecondaryTable()) {
+                    tables.add(em.getSecondaryTable());
+                }
             }
-            log.info("Comparing {} tables in db '{}'", tables.length, db.getDescription());
+            log.info("Comparing {} tables in db '{}'", tables.size(), db.getDescription());
             DbSchema target = db.getMetadata().getSchema();
-            allChanges.add(db.getComparator().compareTables(tables, target));
+            allChanges.add(db.getComparator().compareTables(tables.toArray(new DbTable[0]), target));
         }
 
         return allChanges;

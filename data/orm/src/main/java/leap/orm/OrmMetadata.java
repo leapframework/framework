@@ -140,6 +140,11 @@ public interface OrmMetadata {
 	EntityMapping tryGetEntityMappingByTableName(String tableName);
 
     /**
+     * Returns the {@link EntityMapping} for given secondary table name (ignore case).
+     */
+    EntityMapping tryGetEntityMappingBySecondaryTableName(String tableName);
+
+    /**
      * Returns the {@link EntityMapping} for given sharding table name (ignore case).
      */
     EntityMapping tryGetEntityMappingByShardingTableName(String tableName);

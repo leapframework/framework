@@ -196,6 +196,13 @@ public class EntityMapping extends ExtensibleBase {
     }
 
     /**
+     * Returns the secondary table name or null
+     */
+    public String getSecondaryTableName() {
+        return null == secondaryTable ? null : secondaryTable.getName();
+    }
+
+    /**
      * Returns true if the secondary table is exists.
      */
     public boolean hasSecondaryTable() {
