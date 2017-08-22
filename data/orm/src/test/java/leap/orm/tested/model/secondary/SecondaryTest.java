@@ -72,10 +72,16 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
-    public void testFindOne() {
+    public void testFind() {
+        SecondaryEntity1.deleteAll();
+
         String id = insert().getId();
 
         SecondaryEntity1 entity = SecondaryEntity1.find(id);
+        assertEquals("c1", entity.getCol1());
+        assertEquals("c2", entity.getCol2());
+
+        entity = SecondaryEntity1.<SecondaryEntity1>findAll().get(0);
         assertEquals("c1", entity.getCol1());
         assertEquals("c2", entity.getCol2());
     }
