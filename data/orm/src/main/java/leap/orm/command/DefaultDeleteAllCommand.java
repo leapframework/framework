@@ -21,17 +21,19 @@ import leap.orm.sql.SqlCommand;
 
 public class DefaultDeleteAllCommand extends AbstractEntityDaoCommand implements DeleteAllCommand {
 	
-	protected final SqlCommand sqlCommand;
+	protected final SqlCommand primaryCommand;
 	
 	public DefaultDeleteAllCommand(Dao dao,EntityMapping em) {
 	    super(dao,em);
-	    this.sqlCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_ALL_COMMAND_NAME);
+	    this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_ALL_COMMAND_NAME);
     }
 
 	@Override
 	public int execute() {
-	    //Confirm.checkConfirmed("deleteAll", "The deleteAll command will clear all the datas in table.");
-		return sqlCommand.executeUpdate(this,null);
+        if(em.hasSecondaryTable()) {
+            context.getSqlFactory().createDeleteAllCommand(context, em, true).executeUpdate(this, null);
+        }
+		return primaryCommand.executeUpdate(this,null);
 	}
 
 }

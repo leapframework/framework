@@ -179,6 +179,7 @@ public class DefaultInsertCommand extends AbstractEntityDaoCommand implements In
         int result = primaryCommand.executeUpdate(this, map, handler);
 
         if(null != secondaryCommand) {
+            //todo: transactional ?
             secondaryCommand.executeUpdate(this, withGeneratedId(map));
         }
 

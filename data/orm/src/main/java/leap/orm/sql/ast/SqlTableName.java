@@ -33,6 +33,7 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 	private String 		  alias;
     private boolean       join;
 	private EntityMapping entityMapping;
+    private boolean       secondary;
 	
 	public SqlTableName() {
 		
@@ -59,13 +60,22 @@ public class SqlTableName extends SqlObjectNameBase implements SqlTableSource {
 		return entityMapping;
 	}
 
-	public void setEntityMapping(EntityMapping entityMapping) {
-		this.entityMapping = entityMapping;
+	public void setEntityMapping(EntityMapping em) {
+		this.entityMapping = em;
+        if(null != em && em.hasSecondaryTable()) {
+            if(em.getSecondaryTableName().equalsIgnoreCase(this.lastName)) {
+                this.secondary = true;
+            }
+        }
 	}
 
     public boolean isEntity(){
 		return null != entityMapping;
 	}
+
+    public boolean isSecondary() {
+        return secondary;
+    }
 
     @Override
     protected void buildStatement_(SqlContext context, Sql sql, SqlStatementBuilder stm, Params params) throws IOException {

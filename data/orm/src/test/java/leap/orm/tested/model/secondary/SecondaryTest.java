@@ -16,17 +16,41 @@
 
 package leap.orm.tested.model.secondary;
 
+import leap.junit.contexual.ContextualIgnore;
 import leap.orm.OrmTestCase;
 import org.junit.Test;
 
+@ContextualIgnore
 public class SecondaryTest extends OrmTestCase {
 
     @Test
     public void testInsert() {
+        String id = insert().getId();
+
+        assertEquals(new Integer(1), db.queryForInteger("select count(*) from primary_table1 where id_ = ?", new Object[]{id}));
+        assertEquals(new Integer(1), db.queryForInteger("select count(*) from secondary_table1 where id_ = ?", new Object[]{id}));
+    }
+
+    @Test
+    public void testDeleteAll() {
+        SecondaryEntity1.deleteAll();
+        insert();
+        insert();
+        assertEquals(new Integer(2), db.queryForInteger("select count(*) from primary_table1"));
+        assertEquals(new Integer(2), db.queryForInteger("select count(*) from secondary_table1"));
+
+        SecondaryEntity1.deleteAll();
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from primary_table1"));
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from secondary_table1"));
+    }
+
+    private SecondaryEntity1 insert() {
         SecondaryEntity1 entity = new SecondaryEntity1();
         entity.setCol1("c1");
         entity.setCol2("c2");
         entity.create();
+
+        return entity;
     }
 
 }
