@@ -100,7 +100,7 @@ public interface SqlFactory {
     SqlCommand createCountCommand(MetadataContext context,EntityMapping em);
 
     /**
-     * Creates a select {@link SqlCommand} with id in primary table of the given entity.
+     * Creates a select one {@link SqlCommand} in primary table and secondary table (if exists) of the given entity.
      */
     SqlCommand createFindCommand(MetadataContext context,EntityMapping em);
 

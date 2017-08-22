@@ -213,8 +213,7 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	protected String getUpdateSql(MetadataContext context,EntityMapping em){
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("update ").append(em.getEntityName()).append(" set ");
@@ -240,16 +239,10 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 		
 		sql.append(" where ");
-		index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
+        index = 0;
 		FieldMapping lp = em.getOptimisticLockField();
 		if(null != lp){
 			if(index > 0){
@@ -258,14 +251,6 @@ public class DefaultSqlFactory implements SqlFactory {
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
 		}
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
 		return sql.toString();
 	}
 	
@@ -318,32 +303,19 @@ public class DefaultSqlFactory implements SqlFactory {
         }
 		
 		sql.append(" where ");
-		index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
+        index = 0;
 		FieldMapping lp = em.getOptimisticLockField();
 		if(null != lp){
 			if(index > 0){
 				sql.append(" and");
 			}
 			sql.append(" ").append(dialect.quoteIdentifier(lp.getColumnName())).append("=#").append(lp.getFieldName()).append("#");
+            index++;
 		}
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
 		return sql.toString();
 	}
 	
@@ -369,26 +341,9 @@ public class DefaultSqlFactory implements SqlFactory {
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("delete from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" where ");
-		
-		int index = 0;
-		
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
 
-        if(em.isSharding()) {
-            FieldMapping fm = em.getShardingField();
-            if(index > 0){
-                sql.append(" and");
-            }
-            sql.append(" ").append(dialect.quoteIdentifier(fm.getColumnName())).append("=#").append(fm.getFieldName()).append("#");
-        }
-		
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
 	
@@ -403,23 +358,12 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 	
 	protected String getExistsSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select 1 from ").append(em.getEntityName()).append(" where ");
-		
-		int index = 0;
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
 	
@@ -435,9 +379,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	}
 	
 	protected String getFindSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 
         sql.append("select ")
@@ -446,19 +387,25 @@ public class DefaultSqlFactory implements SqlFactory {
             .append(em.getEntityName())
 			.append(" t ")
 			.append(" where ");
-		
-		int index = 0;
-		for(FieldMapping key : em.getKeyFieldMappings()){
-			if(index > 0){
-				sql.append(" and ");
-			}
-			
-			sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
-			index++;
-		}
-		
+
+        appendPrimaryKey(context, em, sql);
+
 		return sql.toString();
 	}
+
+    protected void appendPrimaryKey(MetadataContext context, EntityMapping em, StringBuilder sql) {
+        DbDialect dialect = context.getDb().getDialect();
+
+        int index = 0;
+        for(FieldMapping key : em.getKeyFieldMappings()){
+            if(index > 0){
+                sql.append(" and ");
+            }
+
+            sql.append(dialect.quoteIdentifier(key.getColumnName())).append("=#").append(key.getFieldName()).append("#");
+            index++;
+        }
+    }
 	
 	protected String getFindListSql(MetadataContext context,EntityMapping em){
 		if(em.isCompositeKey()) {
@@ -466,8 +413,7 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 		
 		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
 		StringBuilder sql = new StringBuilder();
 
         sql.append("select ")
@@ -490,9 +436,6 @@ public class DefaultSqlFactory implements SqlFactory {
 	}	
 	
 	protected String getFindAllSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
 		StringBuilder sql = new StringBuilder();
 		
 		sql.append("select ")
