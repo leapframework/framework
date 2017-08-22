@@ -26,7 +26,11 @@ public interface SqlFactory {
 
 	SqlCommand createInsertCommand(MetadataContext context,EntityMapping em);
 	
-	SqlCommand createInsertCommand(MetadataContext context,EntityMapping em,String[] fields);
+	default SqlCommand createInsertCommand(MetadataContext context,EntityMapping em,String[] fields) {
+        return createInsertCommand(context, em, fields, false);
+    }
+
+    SqlCommand createInsertCommand(MetadataContext context,EntityMapping em,String[] fields, boolean secondary);
 	
 	SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em);
 	

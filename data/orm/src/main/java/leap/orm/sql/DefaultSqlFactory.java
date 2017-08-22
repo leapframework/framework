@@ -52,8 +52,8 @@ public class DefaultSqlFactory implements SqlFactory {
     }
 	
 	@Override
-    public SqlCommand createInsertCommand(MetadataContext context, EntityMapping em, String[] fields) {
-	    return createCommand(context,em,null,getInsertSql(context, em, fields));
+    public SqlCommand createInsertCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
+	    return createCommand(context,em,null,getInsertSql(context, em, fields, secondary));
     }
 
 	@Override
@@ -138,15 +138,22 @@ public class DefaultSqlFactory implements SqlFactory {
         
 		return sql.toString();
 	}
-	
-	protected String getInsertSql(MetadataContext context,EntityMapping em,String[] fields){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+
+    protected void checkSecondary(EntityMapping em, boolean secondary) {
+        if(secondary && !em.hasSecondaryTable()) {
+            throw new IllegalStateException("Entity '" + em + "' has no secondary table");
+        }
+    }
+
+	protected String getInsertSql(MetadataContext context,EntityMapping em,String[] fields, boolean secondary){
+        checkSecondary(em, secondary);
+
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
 
-        sql.append("insert into ").append(em.getEntityName()).append("(");
+        String tableName = secondary ? em.getSecondaryTableName() : em.getEntityName();
+
+        sql.append("insert into ").append(tableName).append("(");
         
         int index = 0;
 
@@ -154,6 +161,16 @@ public class DefaultSqlFactory implements SqlFactory {
         	if(!fm.isInsert()){
         		continue;
         	}
+
+            if(!fm.isPrimaryKey()) {
+                if (!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if (secondary && !fm.isSecondary()) {
+                    continue;
+                }
+            }
         	
         	boolean contains = false;
         	for(String field : fields){

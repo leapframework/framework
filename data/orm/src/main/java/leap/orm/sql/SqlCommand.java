@@ -88,7 +88,9 @@ public interface SqlCommand extends Sourced {
 	 * 
 	 * @see PreparedStatement#executeUpdate()
 	 */
-	int executeUpdate(SqlContext context,@Nullable Object params) throws IllegalStateException, NestedSQLException;
+	default int executeUpdate(SqlContext context,@Nullable Object params) throws IllegalStateException, NestedSQLException {
+        return executeUpdate(context, params, null);
+    }
 	
 	/**
 	 * Executes update and returns the affected rows.
@@ -120,7 +122,9 @@ public interface SqlCommand extends Sourced {
 	 * 
 	 * @see PreparedStatement#executeBatch()
 	 */
-	int[] executeBatchUpdate(SqlContext context,Object[] batchParams) throws IllegalStateException, NestedSQLException;
+	default int[] executeBatchUpdate(SqlContext context,Object[] batchParams) throws IllegalStateException, NestedSQLException {
+        return executeBatchUpdate(context, batchParams, null);
+    }
 	
 	/**
 	 * Executes batch update and returns the affected rows.

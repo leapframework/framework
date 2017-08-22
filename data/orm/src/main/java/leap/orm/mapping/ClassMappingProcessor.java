@@ -25,6 +25,7 @@ import leap.core.validation.annotations.NotNull;
 import leap.core.validation.annotations.Required;
 import leap.db.model.DbColumnBuilder;
 import leap.db.model.DbIndexBuilder;
+import leap.db.model.DbTableBuilder;
 import leap.lang.Classes;
 import leap.lang.Ordered;
 import leap.lang.Strings;
@@ -127,6 +128,10 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			emb.setTableSchema(a.schema());
 			emb.setTableName(a.table());
 			emb.setTableNameDeclared(true);
+
+            if(!Strings.isEmpty(a.secondaryTable())) {
+                emb.setSecondaryTable(new DbTableBuilder(a.secondaryTable()));
+            }
 
             mappingListenerByAnnotations(context, emb, a.listeners());
 		}
@@ -338,6 +343,10 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
             //sort order
             if (a.order() != Ordered.MINIMUM_SORT_ORDER) {
                 f.setSortOrder(a.order());
+            }
+
+            if(a.secondary()) {
+                f.setSecondary(true);
             }
 
             return true;

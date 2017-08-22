@@ -462,7 +462,9 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
         //columns
 		for(FieldMapping fm : fields){
-			table.addColumn(fm.getColumn());
+            if(!fm.isSecondary()) {
+                table.addColumn(fm.getColumn());
+            }
 		}
 
         //todo: indexes
@@ -471,7 +473,17 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	}
 
     protected DbTable buildSecondaryTable(List<FieldMapping> fields, List<RelationMapping> relations){
-        //todo: build secondary table
-        return null;
+        if(null == secondaryTable) {
+            return null;
+        }
+
+        //columns
+        for(FieldMapping fm : fields) {
+            if(fm.isPrimaryKey() || fm.isSecondary()) {
+                secondaryTable.addColumn(fm.getColumn());
+            }
+        }
+
+        return secondaryTable.build();
     }
 }

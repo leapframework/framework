@@ -63,16 +63,17 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
         this.queryFilterEnabled = queryFilterEnabled;
     }
 
- 	@Override
-    public int executeUpdate(SqlContext context, Object params) throws NestedSQLException {
-        log.info("Executing sql update: '{}'", desc());
-		return doExecuteUpdate(context, params, null);
-    }
-	
-	@Override
+    @Override
     public int executeUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) throws IllegalStateException, NestedSQLException {
+        mustPrepare(context);
+
         log.info("Executing sql update: '{}'", desc());
-	    return doExecuteUpdate(context, params, psHandler);
+
+        if(clauses.length == 1){
+            return clauses[0].createUpdateStatement(context, params).executeUpdate(psHandler);
+        }else{
+            throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
+        }
     }
 
 	@Override
@@ -101,33 +102,15 @@ public class DefaultSqlCommand extends AbstractSqlCommand {
     }
 	
 	@Override
-    public int[] executeBatchUpdate(SqlContext context, Object[] batchParams) throws IllegalStateException, NestedSQLException {
-	    return doExecuteBatchUpdate(context, batchParams, null);
-    }
-	
-	@Override
     public int[] executeBatchUpdate(SqlContext context, 
     								Object[] batchParams, 
-    								BatchPreparedStatementHandler<Db> preparedStatementHandler) throws IllegalStateException, NestedSQLException {
-	    return doExecuteBatchUpdate(context, batchParams, preparedStatementHandler);
-    }
+    								BatchPreparedStatementHandler<Db> handler) throws IllegalStateException, NestedSQLException {
 
-	protected int doExecuteUpdate(SqlContext context, Object params, PreparedStatementHandler<Db> psHandler) {
-        mustPrepare(context);
-
-		if(clauses.length == 1){
-			return clauses[0].createUpdateStatement(context, params).executeUpdate(psHandler);
-		}else{
-			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
-		}
-	}
-	
-	protected int[] doExecuteBatchUpdate(SqlContext context, Object[] batchParams, BatchPreparedStatementHandler<Db> psHandler) {
         log.info("Executing sql batch update: '{}'", desc());
         mustPrepare(context);
 
 		if(clauses.length == 1){
-			return clauses[0].createBatchStatement(context, batchParams).executeBatchUpdate(psHandler);
+			return clauses[0].createBatchStatement(context, batchParams).executeBatchUpdate(handler);
 		}else{
 			throw new IllegalStateException("Two or more sql statements in a sql command not supported now");
 		}

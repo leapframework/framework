@@ -99,6 +99,11 @@ public @interface Column {
 	float order() default Ordered.MINIMUM_SORT_ORDER;
 
     /**
+     * Is secondary column?
+     */
+    boolean secondary() default false;
+
+    /**
      * Sets the serialize format.
      */
     String serialize() default "";

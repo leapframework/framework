@@ -149,6 +149,13 @@ public class DefaultMetadataManager implements OrmMetadataManager {
                 log.info("Will auto create table '{}' of entity '{}", em.getTableName(), em.getEntityName());
                 schema.addTable(em.getTable());
             }
+
+            if(em.hasSecondaryTable()) {
+                if(!context.getDb().checkTableExists(em.getSecondaryTable())) {
+                    log.info("Will auto create secondary table '{}' of entity '{}", em.getSecondaryTableName(), em.getEntityName());
+                    schema.addTable(em.getSecondaryTable());
+                }
+            }
         }
     }
 	

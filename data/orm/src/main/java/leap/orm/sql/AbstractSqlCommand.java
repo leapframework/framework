@@ -59,6 +59,16 @@ public abstract class AbstractSqlCommand implements SqlCommand,SqlLanguage.Optio
     }
 
     @Override
+    public Boolean getFilterColumnEnabled() {
+        return null;
+    }
+
+    @Override
+    public Boolean getQueryFilterEnabled() {
+        return null;
+    }
+
+    @Override
     public SqlClause getSqlClause() {
         return getClause();
     }

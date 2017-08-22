@@ -67,6 +67,11 @@ public @interface Entity {
 	String table() default "";
 
     /**
+     * (Optional) The secondary table name of the entity.
+     */
+    String secondaryTable() default "";
+
+    /**
      * The entity listeners.
      */
     Listener[] listeners() default {};
