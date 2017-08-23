@@ -79,6 +79,25 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
+    public void testUpdateByQuery() {
+        SecondaryEntity1.deleteAll();
+
+        SecondaryEntity1 entity1 = new SecondaryEntity1("1").create();
+        SecondaryEntity1 entity2 = new SecondaryEntity1("2").create();
+
+        assertEquals(1, SecondaryEntity1.where("col1 = ?", entity1.getCol1()).update(New.hashMap("col1", "a")));
+        assertEquals("a", SecondaryEntity1.<SecondaryEntity1>find(entity1.getId()).getCol1());
+
+        assertEquals(2, SecondaryEntity1.query().update(New.hashMap("col1","c")));
+        assertEquals("c",SecondaryEntity1.<SecondaryEntity1>find(entity1.getId()).getCol1());
+        assertEquals("c",SecondaryEntity1.<SecondaryEntity1>find(entity2.getId()).getCol1());
+
+        assertEquals(2, SecondaryEntity1.query().update(New.hashMap("col2","cc")));
+        assertEquals("cc",SecondaryEntity1.<SecondaryEntity1>find(entity1.getId()).getCol2());
+        assertEquals("cc",SecondaryEntity1.<SecondaryEntity1>find(entity2.getId()).getCol2());
+    }
+
+    @Test
     public void testDelete() {
         String id = insert().getId();
 

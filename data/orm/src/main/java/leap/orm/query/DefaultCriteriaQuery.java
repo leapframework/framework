@@ -585,9 +585,38 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		Args.notEmpty(fields,"update fields");
 
         if(em.hasSecondaryTable()) {
-            throw new IllegalStateException("todo");
+            Map<String, Object> params = paramsMap();
+
+            String secondarySql = builder.buildSecondaryUpdateSql(fields, params, true);
+            String primarySql   = builder.buildSecondaryUpdateSql(fields, params, false);
+
+            if(null == secondarySql && null == primarySql) {
+                throw new IllegalStateException("No update fields");
+            }
+
+            if(null == secondarySql) {
+                return createUpdateStatement(this,primarySql).executeUpdate();
+            }
+
+            if(null == primarySql) {
+                return createUpdateStatement(this,secondarySql).executeUpdate();
+            }
+
+            //The updates may change the result of where condition, so can't update both primary & secondary table.
+            throw new IllegalStateException("The updated fields can not contains both primary & secondary fields in an update query");
+//            return dao.doTransaction((s) -> {
+//                int result = createUpdateStatement(this, primarySql).executeUpdate();
+//
+//                createUpdateStatement(this,secondarySql).executeUpdate();
+//
+//                return result;
+//            });
         }else{
-            return createUpdateStatement(this,builder.buildUpdateSql(fields, paramsMap())).executeUpdate();
+            String sql = builder.buildUpdateSql(fields, paramsMap());
+            if(null == sql) {
+                throw new IllegalStateException("No update fields");
+            }
+            return createUpdateStatement(this,sql).executeUpdate();
         }
     }
 
@@ -859,6 +888,21 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             return sql.toString();
         }
 
+        public String buildSecondaryUpdateSql(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
+            //update primary_table | secondary_table set ... where id in ( select id from (
+            //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
+            //) t where ...
+            sql = new StringBuilder();
+
+            if(!updateSetColumns(fields, params, secondary)){
+                return null;
+            }else{
+                idInWhere();
+            }
+
+            return sql.toString();
+        }
+
         protected SqlBuilder idInWhere() {
             String idColumn = em.idColumnName();
 
@@ -901,8 +945,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		public String buildUpdateSql(Map<String, Object> fields, Map<String,Object> params) {
 			sql = new StringBuilder();
 			
-			updateSetColumns(fields, params).where();
-			
+			if(updateSetColumns(fields, params, false)){
+                where();
+            }else{
+                return null;
+            }
+
 			return sql.toString();
 		}
 		
@@ -931,20 +979,31 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 			return this;
 		}
 		
-		protected SqlBuilder updateSetColumns(Map<String, Object> columns, Map<String,Object> params) {
+		protected boolean updateSetColumns(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
             DbDialect dialect = context.getDb().getDialect();
 
+            sql.append("update ");
+
             if(dialect.useTableAliasAfterUpdate()) {
-                sql.append("update ").append(em.getEntityName()).append(" set ");
+                //update alias set ... from table alias
+                sql.append(alias);
             }else{
-                sql.append("update ").append(em.getEntityName()).append(" ").append(alias).append(" set ");
+                sql.append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
             }
 
+            sql.append(" set ");
+
             int index = 0;
-            for(Entry<String, Object> entry : columns.entrySet()){
-            	String column = entry.getKey();
-            	Object value  = entry.getValue();
-            	String param  = "new_" + column;
+            for(Entry<String, Object> entry : fields.entrySet()){
+            	String field = entry.getKey();
+            	Object value = entry.getValue();
+
+                FieldMapping fm = em.getFieldMapping(field);
+                if(!fm.matchSecondary(secondary)) {
+                    continue;
+                }
+
+            	String param = "new_" + field;
             	
                 if(index > 0){
                     sql.append(",");
@@ -954,14 +1013,22 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                     sql.append(alias).append('.');
                 }
 
-                sql.append(column).append("=").append(':').append(param);
+                sql.append(fm.getColumnName()).append("=").append(':').append(param);
                 
                 params.put(param, value);
                 
                 index++;
             }
 
-			return this;
+            if(index==0) {
+                return false;
+            }
+
+            if(dialect.useTableAliasAfterUpdate()) {
+                sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
+            }
+
+			return true;
 		}
 		
 		protected SqlBuilder columns() {

@@ -158,6 +158,10 @@ public class FieldMapping extends ExtensibleBase {
         return secondary;
     }
 
+    public boolean matchSecondary(boolean secondary) {
+        return this.secondary == secondary;
+    }
+
     public String getColumnName(){
 		return column.getName();
 	}
