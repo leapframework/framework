@@ -47,21 +47,26 @@ public class DefaultSqlFactory implements SqlFactory {
 	
 	@Override
     public SqlCommand createInsertCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
-	    return createCommand(context,em,null,getInsertSql(context, em, fields, secondary));
+        if(null == fields || fields.length == 0) {
+            return createInsertCommand(context, em, secondary);
+        }else{
+            return createCommand(context,em,null,getInsertSql(context, em, fields, secondary));
+        }
     }
 
-    public SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em) {
-		String sql = getUpdateSql(context, em);
+    public SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+		String sql = getUpdateSql(context, em, secondary);
 	    return null == sql ? null : createCommand(context,em,null,sql);
     }
 	
 	@Override
     public SqlCommand createUpdateCommand(MetadataContext context, EntityMapping em, String[] fields, boolean secondary) {
-        String sql = getUpdateSql(context, em, fields, secondary);
-        if(null == sql) {
-            return null;
+        if(null == fields || fields.length == 0) {
+            return createUpdateCommand(context, em, secondary);
         }
-	    return createCommand(context, em, null, sql);
+
+        String sql = getUpdateSql(context, em, fields, secondary);
+	    return null == sql ? null : createCommand(context, em, null, sql);
     }
 
 	@Override
@@ -213,18 +218,28 @@ public class DefaultSqlFactory implements SqlFactory {
 		}
 	}
 	
-	protected String getUpdateSql(MetadataContext context,EntityMapping em){
+	protected String getUpdateSql(MetadataContext context,EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
 		DbDialect dialect = context.getDb().getDialect();
 
 		StringBuilder sql = new StringBuilder();
 		
-		sql.append("update ").append(em.getEntityName()).append(" set ");
+		sql.append("update ").append(secondary ? em.getSecondaryTableName() :  em.getEntityName()).append(" set ");
 		
 		int index = 0;
 		
 		for(FieldMapping fm : em.getFieldMappings()){
 			if(fm.isUpdate() && !fm.isPrimaryKey()){
-				
+
+                if (!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if (secondary && !fm.isSecondary()) {
+                    continue;
+                }
+
 				if(index > 0){
 					sql.append(",");
 				}

@@ -15,6 +15,7 @@
  */
 package leap.orm.command;
 
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.expression.Expression;
 import leap.orm.dao.Dao;
@@ -28,12 +29,10 @@ import java.util.List;
 
 public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implements BatchInsertCommand {
 
-    protected final SqlCommand          primaryCommand;
     protected final List<EntityWrapper> entities = new ArrayList<>();
 
 	public DefaultBatchInsertCommand(Dao dao,EntityMapping em, Object[] records) {
 	    super(dao,em);
-	    this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.INSERT_COMMAND_NAME);
 
         for(Object record : records) {
             entities.add(EntityWrapper.wrap(em, record));
@@ -42,21 +41,36 @@ public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implemen
 
 	@Override
 	public int[] execute() {
+        if(entities.isEmpty()) {
+            return new int[0];
+        }
+
         prepare();
 
+        String[] fields = entities.get(0).getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        if(fields.length == 0) {
+            throw new IllegalStateException("No insert fields");
+        }
+
+        final SqlCommand primaryCommand   = context.getSqlFactory().createInsertCommand(context, em, fields);
         final SqlCommand secondaryCommand =
-                em.hasSecondaryTable() ? context.getSqlFactory().createInsertCommand(context, em, true) : null;
+                em.hasSecondaryTable() ? context.getSqlFactory().createInsertCommand(context, em, fields, true) : null;
 
         Object[] records = entities.toArray(new Object[entities.size()]);
 
-        if(null != secondaryCommand) {
-            return dao.doTransaction((s) -> {
-                secondaryCommand.executeBatchUpdate(this, records);
-                return primaryCommand.executeBatchUpdate(this, records);
-            });
-        }else {
+        if(null == secondaryCommand) {
             return primaryCommand.executeBatchUpdate(this, records);
         }
+
+        if(null == primaryCommand) {
+            return secondaryCommand.executeBatchUpdate(this, records);
+        }
+
+        return dao.doTransaction((s) -> {
+            int[] result = primaryCommand.executeBatchUpdate(this, records);
+            secondaryCommand.executeBatchUpdate(this, records);
+            return result;
+        });
 	}
 
     protected void prepare(){

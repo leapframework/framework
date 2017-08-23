@@ -52,7 +52,14 @@ public interface SqlFactory {
     /**
      * Creates an update {@link SqlCommand} with all the fields in primary table of the given entity.
      */
-	SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em);
+	default SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em) {
+        return createUpdateCommand(context, em, false);
+    }
+
+    /**
+     * Creates an update {@link SqlCommand} with all the fields in primary or secondary table of the given entity.
+     */
+    SqlCommand createUpdateCommand(MetadataContext context,EntityMapping em, boolean secondary);
 
     /**
      * Creates an update {@link SqlCommand} with the fields in primary table of the given entity.

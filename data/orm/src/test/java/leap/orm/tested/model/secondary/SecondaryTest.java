@@ -21,6 +21,8 @@ import leap.lang.New;
 import leap.orm.OrmTestCase;
 import org.junit.Test;
 
+import java.util.List;
+
 @ContextualIgnore
 public class SecondaryTest extends OrmTestCase {
 
@@ -33,7 +35,7 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
-    public void testBatchInsert() {
+    public void testBatch() {
         SecondaryEntity1.deleteAll();
 
         SecondaryEntity1 entity1 = new SecondaryEntity1("1");
@@ -45,6 +47,14 @@ public class SecondaryTest extends OrmTestCase {
         SecondaryEntity1 loaded1 = SecondaryEntity1.find(entity1.getId());
         assertEquals(entity1.getCol1(), loaded1.getCol1());
         assertEquals(entity1.getCol2(), loaded1.getCol2());
+
+        entity1.setCol1("a");
+        entity2.setCol2("b");
+        SecondaryEntity1.updateAll(new Object[]{entity1, entity2});
+
+        List<SecondaryEntity1> all = SecondaryEntity1.<SecondaryEntity1>query().orderBy("col1 asc").list();
+        assertEquals(entity1.getCol1(), all.get(0).getCol1());
+        assertEquals(entity2.getCol2(), all.get(1).getCol2());
     }
 
     @Test

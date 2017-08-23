@@ -15,26 +15,83 @@
  */
 package leap.orm.command;
 
+import leap.lang.Arrays2;
+import leap.lang.expression.Expression;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.value.EntityWrapper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultBatchUpdateCommand extends AbstractEntityDaoCommand implements BatchUpdateCommand {
 
-    protected final EntityMapping em;
-    protected final Object[]      records;
-    protected final SqlCommand    updateCommand;
+    protected final List<EntityWrapper> entities = new ArrayList<>();
 
     public DefaultBatchUpdateCommand(Dao dao, EntityMapping em, Object[] records) {
         super(dao, em);
 
-        this.em            = em;
-        this.records       = records;
-        this.updateCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.UPDATE_COMMAND_NAME);
+        for (Object record : records) {
+            entities.add(EntityWrapper.wrap(em, record));
+        }
     }
 
     @Override
     public int[] execute() {
-        return updateCommand.executeBatchUpdate(this, records);
+        if(entities.isEmpty()) {
+            return new int[0];
+        }
+
+        prepare();
+
+        String[] fields = entities.get(0).getFieldNames().toArray(Arrays2.EMPTY_STRING_ARRAY);
+        if(fields.length == 0) {
+            throw new IllegalStateException("No update fields");
+        }
+
+        final SqlCommand primaryCommand =
+                context.getSqlFactory().createUpdateCommand(context, em, fields);
+
+        final SqlCommand secondaryCommand =
+                em.hasSecondaryTable() ? context.getSqlFactory().createUpdateCommand(context, em, fields, true) : null;
+
+        if(null == secondaryCommand && null == primaryCommand) {
+            return new int[0];
+        }
+
+        Object[] records = entities.toArray(new EntityWrapper[entities.size()]);
+
+        if(null == secondaryCommand) {
+            return primaryCommand.executeBatchUpdate(this, records);
+        }
+
+        if(null == primaryCommand) {
+            return secondaryCommand.executeBatchUpdate(this, records);
+        }
+
+        return dao.doTransaction((s) -> {
+            int[] result = primaryCommand.executeBatchUpdate(this, records);
+            secondaryCommand.executeBatchUpdate(this, records);
+            return result;
+        });
+    }
+
+    protected void prepare() {
+        for (EntityWrapper entity : entities) {
+            for (FieldMapping fm : em.getFieldMappings()) {
+                Object value = entity.get(fm.getFieldName());
+                if (null == value) {
+                    Expression expression = fm.getUpdateValue();
+                    if (null != expression) {
+                        value = expression.getValue(entity);
+                    }
+                }
+                if (null != value) {
+                    entity.set(fm.getFieldName(), value);
+                }
+            }
+        }
     }
 }
