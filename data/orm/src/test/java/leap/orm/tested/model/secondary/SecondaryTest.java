@@ -16,14 +16,12 @@
 
 package leap.orm.tested.model.secondary;
 
-import leap.junit.contexual.ContextualIgnore;
 import leap.lang.New;
 import leap.orm.OrmTestCase;
 import org.junit.Test;
 
 import java.util.List;
 
-@ContextualIgnore
 public class SecondaryTest extends OrmTestCase {
 
     @Test

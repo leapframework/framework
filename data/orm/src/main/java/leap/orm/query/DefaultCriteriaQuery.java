@@ -35,6 +35,9 @@ import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
 import leap.orm.sql.SqlFactory;
 import leap.orm.sql.SqlStatement;
+import leap.orm.sql.ast.SqlObjectName;
+import leap.orm.sql.ast.SqlWhereExpr;
+import leap.orm.sql.parser.SqlParser;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -878,29 +881,111 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 
         public String buildSecondaryDeleteSql(boolean secondary) {
-            //delete from primary_table | secondary_table where id in ( select id from (
-            //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
-            //) t where ...
+            if(!joins.isEmpty()) {
+                throw new IllegalStateException("Delete by query with secondary table does not not support joins");
+            }
+
             sql = new StringBuilder();
 
-            delete().from(secondary).idInWhere();
+            checkAndResolveSecondaryWhere(true);
+
+            if(db().isMySql()) {
+                buildMySqlSecondaryDeleteSql(secondary);
+            }else {
+                //delete from primary_table | secondary_table where id in ( select id from (
+                //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
+                //) t where ...
+                delete().from(secondary).idInWhere();
+            }
 
             return sql.toString();
         }
 
+        private void checkAndResolveSecondaryWhere(boolean check) {
+            if(!Strings.isEmpty(where)) {
+                SqlWhereExpr expr = SqlParser.parseWhereExpr(where);
+
+                expr.traverse((node) -> {
+
+                    if(node instanceof SqlObjectName) {
+                        String lastName = ((SqlObjectName) node).getLastName();
+
+                        FieldMapping fm = em.tryGetFieldMapping(lastName);
+
+                        if(null != fm) {
+                            if(check && fm.isSecondary()) {
+                                throw new IllegalStateException("Can't use secondary field '" + lastName + "' at where expression");
+                            }
+
+                            ((SqlObjectName) node).setLastName(fm.getColumnName());
+                        }
+                    }
+
+                    return true;
+                });
+
+                where = expr.toString();
+            }
+        }
+
+        private void buildMySqlSecondaryDeleteSql(boolean secondary) {
+            sql.append("delete t1 from ");
+
+            if(secondary) {
+                sql.append(em.getSecondaryTableName()).append(" t1 join ").append(em.getTableName()).append(" t2");
+            }else{
+                sql.append(em.getTableName()).append(" t1 left join ").append(em.getSecondaryTableName()).append(" t2");
+            }
+
+            sql.append(" on t1.").append(em.idColumnName()).append("=t2.").append(em.idColumnName());
+
+            where();
+        }
+
         public String buildSecondaryUpdateSql(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
-            //update primary_table | secondary_table set ... where id in ( select id from (
-            //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
-            //) t where ...
+            if(!joins.isEmpty()) {
+                throw new IllegalStateException("Update by query with secondary table does not not support joins");
+            }
+
             sql = new StringBuilder();
 
-            if(!updateSetColumns(fields, params, secondary)){
-                return null;
+            checkAndResolveSecondaryWhere(false);
+
+            if(db().isMySql()) {
+                if(!buildMySqlSecondaryUpdateSql(fields, params, secondary)){
+                    return null;
+                }
             }else{
-                idInWhere();
+                //update primary_table | secondary_table set ... where id in ( select id from (
+                //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
+                //) t where ...
+                if(!updateSetColumns(fields, params, secondary)){
+                    return null;
+                }else{
+                    idInWhere();
+                }
             }
 
             return sql.toString();
+        }
+
+        private boolean buildMySqlSecondaryUpdateSql(Map<String, Object> fields, Map<String,Object> params, boolean secondary) {
+            sql.append("update ");
+
+            if(secondary) {
+                sql.append(em.getSecondaryTableName()).append(" t1 join ").append(em.getTableName()).append(" t2");
+            }else{
+                sql.append(em.getTableName()).append(" t1 left join ").append(em.getSecondaryTableName()).append(" t2");
+            }
+
+            sql.append(" on t1.").append(em.idColumnName()).append("=t2.").append(em.idColumnName());
+
+            if(!setColumns(fields, params, false, secondary)) {
+                return false;
+            }
+
+            where();
+            return true;
         }
 
         protected SqlBuilder idInWhere() {
@@ -920,7 +1005,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 .append(em.getSecondaryTableName()).append(" t2 on t1.").append(idColumn).append(" = ").append("t2.").append(idColumn)
                 .append(") ").append(alias);
 
-            join().where();
+            where();
 
             sql.append(")");
             return this;
@@ -991,36 +1076,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
                 sql.append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append(" ").append(alias);
             }
 
-            sql.append(" set ");
-
-            int index = 0;
-            for(Entry<String, Object> entry : fields.entrySet()){
-            	String field = entry.getKey();
-            	Object value = entry.getValue();
-
-                FieldMapping fm = em.getFieldMapping(field);
-                if(!fm.matchSecondary(secondary)) {
-                    continue;
-                }
-
-            	String param = "new_" + field;
-            	
-                if(index > 0){
-                    sql.append(",");
-                }
-
-                if(!dialect.useTableAliasAfterUpdate()) {
-                    sql.append(alias).append('.');
-                }
-
-                sql.append(fm.getColumnName()).append("=").append(':').append(param);
-                
-                params.put(param, value);
-                
-                index++;
-            }
-
-            if(index==0) {
+            if(!setColumns(fields, params, true, secondary)) {
                 return false;
             }
 
@@ -1030,6 +1086,41 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 
 			return true;
 		}
+
+        private boolean setColumns(Map<String, Object> fields, Map<String,Object> params, boolean useAlias, boolean secondary) {
+            DbDialect dialect = context.getDb().getDialect();
+
+            sql.append(" set ");
+
+            int index = 0;
+            for(Entry<String, Object> entry : fields.entrySet()){
+                String field = entry.getKey();
+                Object value = entry.getValue();
+
+                FieldMapping fm = em.getFieldMapping(field);
+                if(!fm.matchSecondary(secondary)) {
+                    continue;
+                }
+
+                String param = "new_" + field;
+
+                if(index > 0){
+                    sql.append(",");
+                }
+
+                if(useAlias && !dialect.useTableAliasAfterUpdate()) {
+                    sql.append(alias).append('.');
+                }
+
+                sql.append(fm.getColumnName()).append("=").append(':').append(param);
+
+                params.put(param, value);
+
+                index++;
+            }
+
+            return index > 0;
+        }
 		
 		protected SqlBuilder columns() {
 			sql.append(' ');
