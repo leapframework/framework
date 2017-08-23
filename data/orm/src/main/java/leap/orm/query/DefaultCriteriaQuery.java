@@ -27,11 +27,9 @@ import leap.lang.beans.DynaBean;
 import leap.lang.params.ArrayParams;
 import leap.lang.params.MapArrayParams;
 import leap.lang.params.Params;
-import leap.lang.params.ParamsMap;
 import leap.lang.value.Limit;
 import leap.orm.OrmContext;
 import leap.orm.dao.Dao;
-import leap.orm.linq.Condition;
 import leap.orm.mapping.*;
 import leap.orm.reader.ResultSetReaders;
 import leap.orm.sql.SqlClause;
@@ -61,7 +59,7 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	public DefaultCriteriaQuery(Dao dao, EntityMapping em, Class<T> targetType) {
 	    super(dao, targetType, em);
 	    Args.notNull(em,"entity mapping");
-	    this.builder = new SqlBuilder(em.getEntityName());
+	    this.builder = new SqlBuilder();
     }
 	
 	@Override
@@ -569,17 +567,28 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 	
 	@Override
     public int delete() {
-		String sql = builder.buildDeleteSql();
-		SqlStatement statement = createUpdateStatement(this,sql);
-	    return statement.executeUpdate();
+        if(em.hasSecondaryTable()) {
+            String secondarySql = builder.buildSecondaryDeleteSql(true);
+            String primarySql   = builder.buildSecondaryDeleteSql(false);
+
+            return dao.doTransaction((s) -> {
+                createUpdateStatement(this, secondarySql).executeUpdate();
+                return createUpdateStatement(this, primarySql).executeUpdate();
+            });
+        }else{
+            return createUpdateStatement(this,builder.buildDeleteSql()).executeUpdate();
+        }
     }
 
 	@Override
     public int update(Map<String, Object> fields) {
 		Args.notEmpty(fields,"update fields");
-		String sql = builder.buildUpdateSql(fields, paramsMap());
-		SqlStatement statement = createUpdateStatement(this,sql);
-	    return statement.executeUpdate();
+
+        if(em.hasSecondaryTable()) {
+            throw new IllegalStateException("todo");
+        }else{
+            return createUpdateStatement(this,builder.buildUpdateSql(fields, paramsMap())).executeUpdate();
+        }
     }
 
 	@Override
@@ -823,14 +832,12 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
     }
 
 	protected class SqlBuilder {
-		protected String   table;
 		protected String   alias = "t";
 		protected String[] selects;
 
 		private StringBuilder sql;
 		
-		protected SqlBuilder(String table){
-			this.table = table;
+		protected SqlBuilder(){
 		}
 		
 		public String buildDeleteSql() {
@@ -840,6 +847,40 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 			
 			return sql.toString();
 		}
+
+        public String buildSecondaryDeleteSql(boolean secondary) {
+            //delete from primary_table | secondary_table where id in ( select id from (
+            //  select t1.*,t2.col1,t2.col2,... from primary_table t1 left join secondary_table t2 on t1.id = t2.id
+            //) t where ...
+            sql = new StringBuilder();
+
+            delete().from(secondary).idInWhere();
+
+            return sql.toString();
+        }
+
+        protected SqlBuilder idInWhere() {
+            String idColumn = em.idColumnName();
+
+            sql.append(" where ").append(idColumn).append(" in (select ").append(idColumn).append(" from ");
+
+            sql.append("(select t1.*");
+
+            for(FieldMapping fm : em.getFieldMappings()) {
+                if(fm.isSecondary()) {
+                    sql.append(",t2.").append(fm.getColumnName());
+                }
+            }
+
+            sql.append(" from ").append(em.getTableName()).append(" t1 left join ")
+                .append(em.getSecondaryTableName()).append(" t2 on t1.").append(idColumn).append(" = ").append("t2.").append(idColumn)
+                .append(") ").append(alias);
+
+            join().where();
+
+            sql.append(")");
+            return this;
+        }
 		
 		public String buildSelectSql() {
 			sql = new StringBuilder();
@@ -894,9 +935,9 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
             DbDialect dialect = context.getDb().getDialect();
 
             if(dialect.useTableAliasAfterUpdate()) {
-                sql.append("update ").append(table).append(" set ");
+                sql.append("update ").append(em.getEntityName()).append(" set ");
             }else{
-                sql.append("update ").append(table).append(" ").append(alias).append(" set ");
+                sql.append("update ").append(em.getEntityName()).append(" ").append(alias).append(" set ");
             }
 
             int index = 0;
@@ -965,9 +1006,14 @@ public class DefaultCriteriaQuery<T> extends AbstractQuery<T> implements Criteri
 		}
 		
 		protected SqlBuilder from() {
-	        sql.append(" from ").append(table).append(" ").append(alias);
+	        sql.append(" from ").append(em.getEntityName()).append(" ").append(alias);
 	        return this;
 		}
+
+        protected SqlBuilder from(boolean secondary) {
+            sql.append(" from ").append(secondary ? em.getSecondaryTableName() : em.getTableName()).append(" ").append(alias);
+            return this;
+        }
 
         protected SqlBuilder join() {
             for(JoinBuilder join : joins) {

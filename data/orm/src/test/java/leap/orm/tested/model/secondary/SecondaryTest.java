@@ -88,6 +88,21 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
+    public void testDeleteByQuery() {
+        SecondaryEntity1.deleteAll();
+
+        SecondaryEntity1 entity1 = new SecondaryEntity1("1").create();
+        SecondaryEntity1 entity2 = new SecondaryEntity1("2").create();
+
+        assertEquals(1, SecondaryEntity1.where(" col1 = ?", entity1.getCol1()).delete());
+        assertNull(SecondaryEntity1.findOrNull(entity1.getId()));
+        assertNotNull(SecondaryEntity1.findOrNull(entity2.getId()));
+
+        assertEquals(1, SecondaryEntity1.query().delete());
+        assertEquals(0, SecondaryEntity1.count());
+    }
+
+    @Test
     public void testDeleteAll() {
         SecondaryEntity1.deleteAll();
         insert();

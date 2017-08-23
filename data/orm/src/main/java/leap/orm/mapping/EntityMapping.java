@@ -144,6 +144,10 @@ public class EntityMapping extends ExtensibleBase {
         if(filterFieldMappings.length > 1) {
             throw new IllegalStateException("Two or more filter columns in an entity is not supported yet!");
         }
+
+        if(null != secondaryTable && keyFieldNames.length != 1) {
+            throw new IllegalStateException("Entity with secondary table must has one key field only");
+        }
     }
 
     /**
@@ -314,6 +318,26 @@ public class EntityMapping extends ExtensibleBase {
 	public FieldMapping[] getKeyFieldMappings() {
 		return keyFieldMappings;
 	}
+
+    /**
+     * Returns the field name if only one key field
+     */
+    public String idFieldName() throws IllegalStateException {
+        if(keyFieldNames.length == 1) {
+            return keyFieldNames[0];
+        }
+        throw new IllegalStateException("not the one key field only");
+    }
+
+    /**
+     * Returns the column name if only one key column
+     */
+    public String idColumnName() throws IllegalStateException {
+        if(keyColumnNames.length == 1) {
+            return keyColumnNames[0];
+        }
+        throw new IllegalStateException("not the one key column only");
+    }
 
     /**
      * Returns all the names of primary key fields of entity.
