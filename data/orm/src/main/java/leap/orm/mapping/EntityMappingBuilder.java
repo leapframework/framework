@@ -15,9 +15,7 @@
  */
 package leap.orm.mapping;
 
-import leap.db.model.DbSchemaObjectName;
-import leap.db.model.DbTable;
-import leap.db.model.DbTableBuilder;
+import leap.db.model.*;
 import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.event.EntityListenersBuilder;
@@ -477,12 +475,22 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
             return null;
         }
 
+        //foreign key
+        DbForeignKeyBuilder fk = new DbForeignKeyBuilder();
+        fk.setName("fk_" + Strings.lowerUnderscore(table.getName()) + "_secondary");
+        fk.setForeignTable(table.getTableName());
+
         //columns
         for(FieldMapping fm : fields) {
+            if(fm.isPrimaryKey()) {
+                fk.addColumn(new DbForeignKeyColumn(fm.getColumnName(), fm.getColumnName()));
+            }
             if(fm.isPrimaryKey() || fm.isSecondary()) {
                 secondaryTable.addColumn(fm.getColumn());
             }
         }
+
+        secondaryTable.addForeignKey(fk);
 
         return secondaryTable.build();
     }

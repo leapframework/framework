@@ -22,6 +22,7 @@ import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
 import leap.lang.Enumerable;
 import leap.lang.Enumerables;
+import leap.lang.New;
 import leap.orm.command.UpdateCommand;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -119,23 +120,23 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
                             String joinIdFieldName1 = manyToOne1.getJoinFields()[0].getLocalFieldName();
 
-                            boolean localFirst = true;
-                            if(!joinEntity.getKeyFieldMappings()[0].getFieldName().equals(joinIdFieldName1)){
-                                localFirst = false;
+                            String localName;
+                            String targetName;
+
+                            if(joinEntity.getKeyFieldMappings()[0].getFieldName().equals(manyToOne1.getJoinFields()[0].getLocalFieldName())){
+                                localName  = joinEntity.getKeyFieldNames()[0];
+                                targetName = joinEntity.getKeyFieldNames()[1];
+                            }else{
+                                localName  = joinEntity.getKeyFieldNames()[1];
+                                targetName = joinEntity.getKeyFieldNames()[0];
                             }
 
                             Object localId = id;
 
-                            List<Object[]> batchId = new ArrayList<>();
+                            List<Map<String,Object>> batchId = new ArrayList<>();
 
                             for(Object targetId : entry.getValue()) {
-
-                                if(localFirst) {
-                                    batchId.add(new Object[]{localId, targetId});
-                                }else{
-                                    batchId.add(new Object[]{targetId, localId});
-                                }
-
+                                batchId.add(New.hashMap(localName, localId, targetName, targetId));
                             }
 
                             //delete

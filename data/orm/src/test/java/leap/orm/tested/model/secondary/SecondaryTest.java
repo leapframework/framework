@@ -55,6 +55,10 @@ public class SecondaryTest extends OrmTestCase {
         List<SecondaryEntity1> all = SecondaryEntity1.<SecondaryEntity1>query().orderBy("col1 asc").list();
         assertEquals(entity1.getCol1(), all.get(0).getCol1());
         assertEquals(entity2.getCol2(), all.get(1).getCol2());
+
+        SecondaryEntity1.deleteAll(new Object[]{entity1.getId(), entity2.getId()});
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from primary_table1"));
+        assertEquals(new Integer(0), db.queryForInteger("select count(*) from secondary_table1"));
     }
 
     @Test

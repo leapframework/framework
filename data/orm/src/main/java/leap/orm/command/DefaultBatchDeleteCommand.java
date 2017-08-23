@@ -21,15 +21,13 @@ import leap.orm.mapping.EntityMapping;
 import leap.orm.sql.SqlCommand;
 
 public class DefaultBatchDeleteCommand extends AbstractEntityDaoCommand implements BatchDeleteCommand {
-	
-	protected final Object[]	  idObjectArray;
-	protected final SqlCommand    sqlCommand;
-	protected final Params[]  idParameters;
-	
-	public DefaultBatchDeleteCommand(Dao dao,EntityMapping em,Object[] ids) {
+
+    protected final Object[]   idObjectArray;
+    protected final Params[]   idParameters;
+
+    public DefaultBatchDeleteCommand(Dao dao,EntityMapping em,Object[] ids) {
 	    super(dao,em);
-	    this.idObjectArray = ids;//getObjectArray(ids);
-	    this.sqlCommand    = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
+	    this.idObjectArray = ids;
 	    this.idParameters  = new Params[idObjectArray.length];
 	    
 	    for(int i=0;i<idObjectArray.length;i++){
@@ -39,19 +37,18 @@ public class DefaultBatchDeleteCommand extends AbstractEntityDaoCommand implemen
 
 	@Override
 	public int[] execute() {
-		return sqlCommand.executeBatchUpdate(this, idParameters);
-	}
-	
-	/*
-	protected Object[] getObjectArray(Object[] ids) {
-		if(ids.length == 1) {
-			Object o1 = ids[0];
-			if(o1.getClass().isArray()){
-				return Objects2.toObjectArray(o1);
-			}
-		}
-		return ids;
-	}
-	*/
+        final SqlCommand primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.DELETE_COMMAND_NAME);
+        final SqlCommand secondaryCommand =
+                em.hasSecondaryTable() ? context.getSqlFactory().createDeleteCommand(context, em, true) : null;
 
+        if(null == secondaryCommand) {
+            return primaryCommand.executeBatchUpdate(this, idParameters);
+        }
+
+        return dao.doTransaction((s) -> {
+            secondaryCommand.executeBatchUpdate(this, idParameters);
+            return primaryCommand.executeBatchUpdate(this, idParameters);
+        });
+
+	}
 }
