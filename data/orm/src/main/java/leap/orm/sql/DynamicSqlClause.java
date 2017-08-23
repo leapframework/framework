@@ -15,7 +15,6 @@
  */
 package leap.orm.sql;
 
-import com.sun.org.apache.regexp.internal.RE;
 import leap.core.params.ParamsFactory;
 import leap.db.Db;
 import leap.db.DbLimitQuery;

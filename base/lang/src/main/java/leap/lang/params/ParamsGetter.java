@@ -15,8 +15,8 @@
  */
 package leap.lang.params;
 
-public interface ParamsWrappable {
+public interface ParamsGetter {
 	
-	Params params();
+	Params getParams();
 
 }

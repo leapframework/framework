@@ -15,30 +15,75 @@
  */
 package leap.orm.command;
 
-import java.util.List;
-
+import leap.lang.Strings;
+import leap.lang.expression.Expression;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
+import leap.orm.mapping.FieldMapping;
 import leap.orm.sql.SqlCommand;
+import leap.orm.value.EntityWrapper;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DefaultBatchInsertCommand extends AbstractEntityDaoCommand implements BatchInsertCommand {
-	
-	protected final Object[]	  records;
-	protected final SqlCommand    sqlCommand;
-	
-	public DefaultBatchInsertCommand(Dao dao,EntityMapping em,List<?> records) {
-		this(dao,em,records.toArray());
-	}
-	
-	public DefaultBatchInsertCommand(Dao dao,EntityMapping em,Object[] records) {
+
+    protected final SqlCommand          primaryCommand;
+    protected final List<EntityWrapper> entities = new ArrayList<>();
+
+	public DefaultBatchInsertCommand(Dao dao,EntityMapping em, Object[] records) {
 	    super(dao,em);
-	    this.records    = records;
-	    this.sqlCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.INSERT_COMMAND_NAME);
+	    this.primaryCommand = metadata.getSqlCommand(em.getEntityName(), SqlCommand.INSERT_COMMAND_NAME);
+
+        for(Object record : records) {
+            entities.add(EntityWrapper.wrap(em, record));
+        }
     }
 
 	@Override
 	public int[] execute() {
-		return sqlCommand.executeBatchUpdate(this, records);
+        prepare();
+
+        final SqlCommand secondaryCommand =
+                em.hasSecondaryTable() ? context.getSqlFactory().createInsertCommand(context, em, true) : null;
+
+        Object[] records = entities.toArray(new Object[entities.size()]);
+
+        if(null != secondaryCommand) {
+            return dao.doTransaction((s) -> {
+                secondaryCommand.executeBatchUpdate(this, records);
+                return primaryCommand.executeBatchUpdate(this, records);
+            });
+        }else {
+            return primaryCommand.executeBatchUpdate(this, records);
+        }
 	}
 
+    protected void prepare(){
+        for(EntityWrapper entity : entities) {
+            for(FieldMapping fm : em.getFieldMappings()){
+                Object value = entity.get(fm.getFieldName());
+
+                if(null == value) {
+                    if (!Strings.isEmpty(fm.getSequenceName())) {
+                        value = db.getDialect().getNextSequenceValueSqlString(fm.getSequenceName());
+                    } else {
+                        Expression expression = fm.getInsertValue();
+                        if (null != expression) {
+                            value = expression.getValue(entity);
+                        } else {
+                            expression = fm.getDefaultValue();
+                            if (null != expression) {
+                                value = expression.getValue(entity);
+                            }
+                        }
+                    }
+                    if(null != value) {
+                        entity.set(fm.getFieldName(), value);
+                    }
+                }
+            }
+        }
+
+    }
 }

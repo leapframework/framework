@@ -24,14 +24,16 @@ import leap.lang.Beans;
 import leap.lang.beans.BeanProperty;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.DynaBean;
+import leap.lang.params.MapParams;
 import leap.lang.params.Params;
+import leap.lang.params.ParamsGetter;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.model.Model;
 
 /**
  * Wraps an entity object (may be a {@link Map}, an {@link Entity} or a bean).
  */
-public abstract class EntityWrapper implements EntityBase {
+public abstract class EntityWrapper implements EntityBase, ParamsGetter {
 	
 	/**
 	 * Wraps the given entity object to a {@link EntityWrapper} object.
@@ -118,6 +120,11 @@ public abstract class EntityWrapper implements EntityBase {
 		return em;
 	}
 
+    @Override
+    public Params getParams() {
+        return new MapParams(toMap());
+    }
+
     public abstract Map<String,Object> toMap();
 
 	@SuppressWarnings("rawtypes")
@@ -202,6 +209,11 @@ public abstract class EntityWrapper implements EntityBase {
         @Override
         public Map<String, Object> toMap() {
             return params.map();
+        }
+
+        @Override
+        public Params getParams() {
+            return params;
         }
     }
 

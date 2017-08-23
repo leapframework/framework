@@ -33,6 +33,21 @@ public class SecondaryTest extends OrmTestCase {
     }
 
     @Test
+    public void testBatchInsert() {
+        SecondaryEntity1.deleteAll();
+
+        SecondaryEntity1 entity1 = new SecondaryEntity1("1");
+        SecondaryEntity1 entity2 = new SecondaryEntity1("2");
+
+        SecondaryEntity1.createAll(new SecondaryEntity1[]{entity1, entity2});
+
+        assertEquals(2, SecondaryEntity1.count());
+        SecondaryEntity1 loaded1 = SecondaryEntity1.find(entity1.getId());
+        assertEquals(entity1.getCol1(), loaded1.getCol1());
+        assertEquals(entity1.getCol2(), loaded1.getCol2());
+    }
+
+    @Test
     public void testUpdate() {
         String id = insert().getId();
 

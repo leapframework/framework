@@ -19,7 +19,6 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.db.DbDialect;
 import leap.db.model.DbColumn;
-import leap.db.model.DbTable;
 import leap.lang.Args;
 import leap.lang.Strings;
 import leap.lang.annotation.Nullable;
@@ -41,8 +40,8 @@ public class DefaultSqlFactory implements SqlFactory {
     }
 
 	@Override
-    public SqlCommand createInsertCommand(MetadataContext context,EntityMapping em) {
-		String sql = getInsertSql(context, em);
+    public SqlCommand createInsertCommand(MetadataContext context,EntityMapping em, boolean secondary) {
+		String sql = getInsertSql(context, em, secondary);
 	    return null == sql ? null : createCommand(context,em,null,sql);
     }
 	
@@ -105,19 +104,26 @@ public class DefaultSqlFactory implements SqlFactory {
 		return new DefaultSqlCommand(new SqlInfo.Builder(source, source, null, defaultSqlLanguage, sql,null).build());
 	}
 	
-	protected String getInsertSql(MetadataContext context,EntityMapping em){
-		DbDialect dialect = context.getDb().getDialect();
-		DbTable   table   = em.getTable();
-		
+	protected String getInsertSql(MetadataContext context, EntityMapping em, boolean secondary){
+        checkSecondary(em, secondary);
+
         StringBuilder sql    = new StringBuilder();
         StringBuilder values = new StringBuilder();
         
-        sql.append("insert into ").append(em.getEntityName()).append("(");
+        sql.append("insert into ").append(secondary ? em.getSecondaryTableName() : em.getEntityName()).append("(");
         
         int index = 0;
-        
         for(FieldMapping fm : em.getFieldMappings()){
         	if(fm.isInsert()){
+
+                if(!secondary && fm.isSecondary()) {
+                    continue;
+                }
+
+                if(secondary && !(fm.isPrimaryKey() || fm.isSecondary())) {
+                    continue;
+                }
+
             	if(index > 0){
             		sql.append(",");
             		values.append(",");

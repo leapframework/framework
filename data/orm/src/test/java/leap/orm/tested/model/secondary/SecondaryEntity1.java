@@ -24,6 +24,15 @@ import leap.orm.model.Model;
 @Entity(table = "primary_table1", secondaryTable = "secondary_table1")
 public class SecondaryEntity1 extends Model {
 
+    public SecondaryEntity1() {
+
+    }
+
+    public SecondaryEntity1(String index) {
+        this.col1 = "c1_" + index;
+        this.col2 = "c2_" + index;
+    }
+
     @Id
     protected String id;
 

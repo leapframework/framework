@@ -28,7 +28,14 @@ public interface SqlFactory {
     /**
      * Creates an insert {@link SqlCommand} with all the fields in primary table of the given entity.
      */
-	SqlCommand createInsertCommand(MetadataContext context,EntityMapping em);
+	default SqlCommand createInsertCommand(MetadataContext context,EntityMapping em) {
+        return createInsertCommand(context, em, false);
+    }
+
+    /**
+     * Creates an insert {@link SqlCommand} with all the fields in primary or secondary table of the given entity.
+     */
+    SqlCommand createInsertCommand(MetadataContext context,EntityMapping em, boolean secondary);
 
     /**
      * Creates an insert {@link SqlCommand} with the fields in primary table of the given entity.

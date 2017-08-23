@@ -43,7 +43,7 @@ public class UUIDGenerator extends AbstractExpression implements IdGenerator, Va
 
     @Override
     public void mapping(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb) {
-		fmb.setValueGenerator(this);
+		fmb.setInsertValue(this);
     }
 	
 	@Override
