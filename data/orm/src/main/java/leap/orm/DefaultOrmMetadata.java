@@ -49,7 +49,6 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 	protected final Map<String,EntityMapping>   tableToEntityMappings  = new ConcurrentHashMap<>();
 	protected final Map<String,SqlCommand>      keyToSqlCommands       = new ConcurrentHashMap<>();
 	protected final Map<String,SequenceMapping> nameToSequenceMappings = new ConcurrentHashMap<>();
-    protected final Map<String,EntityMapping>   shardingEntityMappings = new ConcurrentHashMap<>();
 
     protected Domains     domains;
     protected SqlRegistry sqlRegistry;
@@ -182,22 +181,9 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 
     @Override
     public EntityMapping tryGetEntityMappingBySecondaryTableName(String tableName) {
-        for(EntityMapping em : shardingEntityMappings.values()) {
+        for(EntityMapping em : nameToEntityMappings.values()) {
 
             if(em.hasSecondaryTable() && em.getSecondaryTable().getName().equalsIgnoreCase(tableName)) {
-                return em;
-            }
-
-        }
-
-        return null;
-    }
-
-    @Override
-    public EntityMapping tryGetEntityMappingByShardingTableName(String tableName) {
-        for(EntityMapping em : shardingEntityMappings.values()) {
-
-            if(em.isShardingTable(tableName)) {
                 return em;
             }
 
@@ -241,17 +227,17 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			if(null != em.getEntityClass()){
 				classToEntityMappings.put(em.getEntityClass(),em);	
 			}
-			
+
+            if(null != em.getExtendedEntityClass()) {
+                classToEntityMappings.put(em.getExtendedEntityClass(), em);
+            }
+
 			if(null != em.getModelClass()){
 				modelToEntityMappings.put(em.getModelClass(), em);
 			}
 			
 			nameToEntityMappings.put(em.getEntityName().toLowerCase(), em);
 			tableToEntityMappings.put(em.getTableName().toLowerCase(), em);
-
-            if(em.isSharding()) {
-                shardingEntityMappings.put(em.getEntityName().toLowerCase(), em);
-            }
         }
     }
 	
@@ -268,11 +254,14 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			}
 			
 			nameToEntityMappings.remove(entityNameKey);
-            shardingEntityMappings.remove(entityNameKey);
-			
+
 			if(null != entityClass){
 				classToEntityMappings.remove(entityClass);
 			}
+
+            if(null != em.getExtendedEntityClass()) {
+                classToEntityMappings.remove(em.getExtendedEntityClass());
+            }
 			
 			if(null != em.getModelClass()){
 				modelToEntityMappings.remove(em.getModelClass());

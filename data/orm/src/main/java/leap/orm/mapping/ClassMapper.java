@@ -38,7 +38,7 @@ public class ClassMapper implements Mapper {
                     return;
                 }
 
-                context.addEntityMapping(mappingStrategy.createEntityClassMapping(context, cls));
+                context.addEntityMapping(mappingStrategy.createEntityMappingByClass(context, cls));
             }
 		});
 		

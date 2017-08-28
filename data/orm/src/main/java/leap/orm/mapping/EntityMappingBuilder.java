@@ -21,7 +21,6 @@ import leap.lang.exception.ObjectExistsException;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
-import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
 
 import java.util.ArrayList;
@@ -32,6 +31,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	 
 	protected String					   entityName;
 	protected Class<?>      	    	   entityClass;
+    protected Class<?>                     extendedEntityClass;
 	protected boolean					   _abstract;
 	protected DbTableBuilder			   table;
     protected DbTableBuilder               secondaryTable;
@@ -51,9 +51,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected List<EntityValidator>        validators;
 	protected List<RelationMappingBuilder> relationMappings = new ArrayList<>();
     protected List<RelationPropertyBuilder>relationProperties = new ArrayList<>();
-    protected boolean                      sharding;
-    protected boolean                      autoCreateShardingTable;
-    protected ShardingAlgorithm            shardingAlgorithm;
     protected EntityListenersBuilder       listeners = new EntityListenersBuilder();
 
 	public Class<?> getSourceClass(){
@@ -74,6 +71,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		
 		return this;
 	}
+
+    public EntityMappingBuilder setExtendedEntityClass(Class<?> cls) {
+        this.extendedEntityClass = cls;
+        return this;
+    }
 
 	public String getEntityName() {
 		return entityName;
@@ -388,33 +390,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return this;
     }
 
-    public boolean isSharding() {
-        return sharding;
-    }
-
-    public EntityMappingBuilder setSharding(boolean sharding) {
-        this.sharding = sharding;
-        return this;
-    }
-
-    public boolean isAutoCreateShardingTable() {
-        return autoCreateShardingTable;
-    }
-
-    public EntityMappingBuilder setAutoCreateShardingTable(boolean autoCreateShardingTable) {
-        this.autoCreateShardingTable = autoCreateShardingTable;
-        return this;
-    }
-
-    public ShardingAlgorithm getShardingAlgorithm() {
-        return shardingAlgorithm;
-    }
-
-    public EntityMappingBuilder setShardingAlgorithm(ShardingAlgorithm shardingAlgorithm) {
-        this.shardingAlgorithm = shardingAlgorithm;
-        return this;
-    }
-
     public EntityListenersBuilder listeners() {
         return listeners();
     }
@@ -437,13 +412,13 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		DbTable			      table          = buildTable(fields,relations);
         DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,secondaryTable, fields,
+	    return new EntityMapping(entityName,dynamicTableName,entityClass,extendedEntityClass,
+                                 table,secondaryTable, fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 modelClass,validators,
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
-                                 sharding, autoCreateShardingTable, shardingAlgorithm,
                                  listeners.build());
     }
 	

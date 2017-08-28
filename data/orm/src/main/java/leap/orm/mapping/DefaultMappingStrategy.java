@@ -54,11 +54,9 @@ import leap.orm.generator.IdGenerator;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.Model;
-import leap.orm.model.ModelField;
 import leap.orm.serialize.FieldSerializer;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.sql.Types;
 import java.util.List;
@@ -73,7 +71,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
     protected @Inject @M IdGenerator        defaultIdGenerator;
 	
 	protected OrmModelsConfigs modelsConfigs;
-	protected String defaultDatasourceName;
+	protected String           defaultDataSourceName;
 	
 	public void setDefaultIdGenerator(IdGenerator defaultIdGenerator) {
 		this.defaultIdGenerator = defaultIdGenerator;
@@ -86,11 +84,11 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
 	@Override
 	protected void doInit(BeanFactory beanFactory) throws Exception {
-		defaultDatasourceName = beanFactory.tryGetBean(DataSourceManager.class).getDefaultDataSourceBeanName();
+		defaultDataSourceName = beanFactory.tryGetBean(DataSourceManager.class).getDefaultDataSourceBeanName();
 		if(this.modelsConfigs != null){
 			this.modelsConfigs.getModelsConfigMap().forEach((k,v)->{
 				if(Strings.isEmpty(v.getDataSource())){
-					v.setDataSource(defaultDatasourceName);
+					v.setDataSource(defaultDataSourceName);
 				}
 			});
 		}
@@ -160,14 +158,14 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 				if(annotated){
 					return isContextModelAnnotated(context,cls);
 				}else {
-					return Strings.equals(ds,defaultDatasourceName);
+					return Strings.equals(ds, defaultDataSourceName);
 				}
 			}
 		}else {
 			if(annotated){
 				return isContextModelAnnotated(context,cls);
 			}else {
-				return Strings.equals(ds,defaultDatasourceName);
+				return Strings.equals(ds, defaultDataSourceName);
 			}
 		}
 	}
@@ -198,7 +196,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 			if(inOther){
 				return false;
 			}
-			return Strings.equals(ds,defaultDatasourceName);
+			return Strings.equals(ds, defaultDataSourceName);
 		}else {
 			if(annotated){
 				if(isContextModelAnnotated(context,cls)){
@@ -207,7 +205,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 					return false;
 				}
 			}else {
-				return Strings.equals(ds,defaultDatasourceName);
+				return Strings.equals(ds, defaultDataSourceName);
 			}
 		}
 	}
@@ -317,7 +315,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 //    }
 
 	@Override
-    public EntityMappingBuilder createEntityClassMapping(MetadataContext context, Class<?> cls) {
+    public EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> cls) {
 		Args.notNull(cls,"class");
 		Args.assertFalse(isExplicitNonEntity(context,cls),
 						  "The class '" + cls.getName() + "' was declared as not an entity type explicitly");
@@ -349,48 +347,6 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		*/
 		
 	    return emb;
-    }
-	
-	@Override
-    public EntityMappingBuilder createModelMapping(MetadataContext context, Class<? extends Model> modelClass) throws MetadataException {
-		Args.notNull(modelClass,"model class");
-		
-		EntityMappingBuilder emb = new EntityMappingBuilder().setModelClass(modelClass);
-
-		preMappingEntity(context, emb);
-
-		BeanType beanType = BeanType.of(modelClass);
-		log.debug("Creating entity mapping for model : " + modelClass.getName());
-		
-		Field[] fields = modelClass.getFields();
-		try {
-	        for(Field field : fields){
-	        	if(field.getType().equals(ModelField.class)){
-	        		ModelField attr = (ModelField)field.get(null);
-	        		
-	        		if(null == beanType.tryGetProperty(attr.getName())){
-		        		FieldMappingBuilder fmb = new FieldMappingBuilder();
-		        		fmb.setFieldName(attr.getName());
-		        		fmb.setJavaType(attr.getType());
-		        		fmb.setAnnotations(field.getAnnotations());
-		        		
-						preMappingField(context, emb, fmb);
-						postMappingField(context, emb, fmb);
-		        		
-		        		emb.addFieldMapping(fmb);
-	        		}
-	        	}
-	        }
-        } catch (Exception e) {
-        	throw new MetadataException("Error loading attributes in model class '" + modelClass.getName() + "'",e);
-        }
-		
-		mappingBeanProperties(context,emb,beanType);
-
-        postMappingEntity(context, emb);
-		finalMappingEntity(context, emb);
-		
-		return emb;
     }
 
     @Override

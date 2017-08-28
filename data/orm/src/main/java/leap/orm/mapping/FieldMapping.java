@@ -55,7 +55,6 @@ public class FieldMapping extends ExtensibleBase {
 	protected final boolean          optimisticLock;
 	protected final String           newOptimisticLockFieldName;
 	protected final FieldValidator[] validators;
-    protected final boolean          sharding;
     protected final FieldSerializer  serializer;
 
 	protected final ReservedMetaFieldName reservedMetaFieldName;
@@ -81,7 +80,7 @@ public class FieldMapping extends ExtensibleBase {
                         Domain domain,
                         List<FieldValidator> validators,
                         ReservedMetaFieldName reservedMetaFieldName,
-                        boolean sharding, FieldSerializer serializer) {
+                        FieldSerializer serializer) {
 		
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
@@ -110,7 +109,6 @@ public class FieldMapping extends ExtensibleBase {
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
-        this.sharding       = sharding;
         this.serializer     = serializer;
 	    
 	    if(optimisticLock){
@@ -246,10 +244,6 @@ public class FieldMapping extends ExtensibleBase {
 
     public FieldSerializer getSerializer() {
         return serializer;
-    }
-
-    public boolean isSharding() {
-        return sharding;
     }
 
     @Override

@@ -49,8 +49,6 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
 	
 	@Override
     public void postInitialize(OrmContext context) throws Exception {
-		ModelFields.postInitialize();
-		
 		Dao dao = appContext.getBeanFactory().getBean(Dao.class,context.getName());
 		Dmo dmo = appContext.getBeanFactory().getBean(Dmo.class,context.getName());
 		
@@ -154,7 +152,7 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
 		}
 		
 		if(null == emb){
-			emb = context.getMappingStrategy().createModelMapping(context, cls);
+			emb = context.getMappingStrategy().createEntityMappingByClass(context, cls);
 			context.addEntityMapping(emb);
 		}
 		emb.setModelClass(cls);
