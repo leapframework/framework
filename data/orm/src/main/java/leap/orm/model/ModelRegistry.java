@@ -85,11 +85,14 @@ public class ModelRegistry {
 	
 	public static void addModelContext(ModelContext modelContext){
 		modelContexts.put(modelContext.getModelClass().getName(), modelContext);
+        if(null != modelContext.getExtendModelClass()) {
+            modelContexts.put(modelContext.getExtendModelClass().getName(), modelContext);
+        }
 	}
 	
 	public static final class ModelInfo {
 		
-		private final Map<String, FieldInfo> fields = new SimpleCaseInsensitiveMap<ModelRegistry.FieldInfo>();
+		private final Map<String, FieldInfo> fields = new SimpleCaseInsensitiveMap<>();
 		
 		ModelInfo() {
         }
@@ -147,6 +150,13 @@ public class ModelRegistry {
 		public Class<? extends Model> getModelClass() {
 			return entityMapping.getModelClass();
 		}
+
+        public Class<? extends Model> getExtendModelClass() {
+            if(null != entityMapping.getExtendedEntityClass() && Model.class.isAssignableFrom(entityMapping.getExtendedEntityClass())) {
+                return (Class<Model>)entityMapping.getExtendedEntityClass();
+            }
+            return null;
+        }
 
 		public BeanType getBeanType(){
 			return beanType;

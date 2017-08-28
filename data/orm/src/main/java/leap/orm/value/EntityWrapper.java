@@ -15,6 +15,7 @@
  */
 package leap.orm.value;
 
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -304,6 +305,7 @@ public abstract class EntityWrapper implements EntityBase, ParamsGetter {
 		protected final BeanType beanType;
 
         private Set<String> fieldNames;
+        private Map         map;
 		
 		protected BeanWrapper(EntityMapping mapping, Object bean) {
 	        super(mapping, bean);
@@ -342,13 +344,22 @@ public abstract class EntityWrapper implements EntityBase, ParamsGetter {
         @Override
         @SuppressWarnings("unchecked")
         public <T extends EntityBase> T set(String field, Object value) {
-        	beanType.setProperty(raw, field, value, true);
+        	if(!beanType.trySetProperty(raw, field, value, true)){
+                if(null == map) {
+                    map = new HashMap();
+                }
+                map.put(field, value);
+            }
 	        return (T)this;
         }
 
         @Override
         public Map<String, Object> toMap() {
-            return Beans.toMap(raw);
+            Map<String,Object> props = Beans.toMap(raw);
+            if(null != map) {
+                props.putAll(map);
+            }
+            return props;
         }
     }
 }

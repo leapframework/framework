@@ -153,19 +153,12 @@ public class BeanType {
 		getProperty(property, ignoreCase).setValue(bean, value);
 	}
 	
-	public boolean trySet(Object bean,String property,Object value){
-		BeanProperty prop = tryGetProperty(property);
-		
-		if(null != prop){
-			prop.setValue(bean, value);
-			return true;
-		}
-		
-		return false;
+	public boolean trySetProperty(Object bean, String property, Object value){
+        return trySetProperty(bean, property, value, false);
 	}
 	
-	public boolean trySetIgnoreCase(Object bean,String property,Object value){
-		BeanProperty prop = tryGetProperty(property,true);
+	public boolean trySetProperty(Object bean, String property, Object value, boolean ignoreCase){
+		BeanProperty prop = tryGetProperty(property,ignoreCase);
 		
 		if(null != prop){
 			prop.setValue(bean, value);
