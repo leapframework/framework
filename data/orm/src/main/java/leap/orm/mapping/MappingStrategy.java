@@ -83,11 +83,6 @@ public interface MappingStrategy {
 	 */
 	EntityMappingBuilder createEntityClassMapping(MetadataContext context, Class<?> entityType) throws MetadataException;
 	
-	/**
-	 * 
-	 */
-	EntityMappingBuilder createModelMapping(MetadataContext context, Class<? extends Model> modelClass) throws MetadataException;
-
     /**
      * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>table</code> to an entity.
      */

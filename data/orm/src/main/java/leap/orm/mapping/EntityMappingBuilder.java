@@ -31,6 +31,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	 
 	protected String					   entityName;
 	protected Class<?>      	    	   entityClass;
+    protected Class<?>                     extendedEntityClass;
 	protected boolean					   _abstract;
 	protected DbTableBuilder			   table;
     protected DbTableBuilder               secondaryTable;
@@ -70,6 +71,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		
 		return this;
 	}
+
+    public EntityMappingBuilder setExtendedEntityClass(Class<?> cls) {
+        this.extendedEntityClass = cls;
+        return this;
+    }
 
 	public String getEntityName() {
 		return entityName;
@@ -406,7 +412,8 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		DbTable			      table          = buildTable(fields,relations);
         DbTable               secondaryTable = buildSecondaryTable(fields, relations);
 
-	    return new EntityMapping(entityName,dynamicTableName,entityClass,table,secondaryTable, fields,
+	    return new EntityMapping(entityName,dynamicTableName,entityClass,extendedEntityClass,
+                                 table,secondaryTable, fields,
 	    						 insertInterceptor,updateInterceptor,deleteInterceptor,findInterceptor,
 	    						 modelClass,validators,
                                  relations,

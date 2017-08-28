@@ -227,7 +227,11 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			if(null != em.getEntityClass()){
 				classToEntityMappings.put(em.getEntityClass(),em);	
 			}
-			
+
+            if(null != em.getExtendedEntityClass()) {
+                classToEntityMappings.put(em.getExtendedEntityClass(), em);
+            }
+
 			if(null != em.getModelClass()){
 				modelToEntityMappings.put(em.getModelClass(), em);
 			}
@@ -254,6 +258,10 @@ public class DefaultOrmMetadata extends AbstractReadonlyBean implements OrmMetad
 			if(null != entityClass){
 				classToEntityMappings.remove(entityClass);
 			}
+
+            if(null != em.getExtendedEntityClass()) {
+                classToEntityMappings.remove(em.getExtendedEntityClass());
+            }
 			
 			if(null != em.getModelClass()){
 				modelToEntityMappings.remove(em.getModelClass());

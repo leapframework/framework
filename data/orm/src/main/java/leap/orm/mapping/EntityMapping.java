@@ -36,6 +36,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final String                     entityName;
     protected final String                     dynamicTableName;
     protected final Class<?>                   entityClass;
+    protected final Class<?>                   extendedEntityClass;
     protected final BeanType                   beanType;
     protected final DbTable                    table;
     protected final DbTable                    secondaryTable;
@@ -71,7 +72,7 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String,RelationMapping> referenceToRelations;
 
 	public EntityMapping(String entityName, String dynamicTableName,
-                         Class<?> entityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
+                         Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
                          EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
                          Class<? extends Model> modelClass,
@@ -90,6 +91,7 @@ public class EntityMapping extends ExtensibleBase {
 		this.entityName		   = entityName;
         this.dynamicTableName  = dynamicTableName;
 	    this.entityClass       = entityClass;
+        this.extendedEntityClass = extendedEntityClass;
 	    this.beanType          = null == entityClass ? null : BeanType.of(entityClass);
 	    this.table             = table;
         this.secondaryTable    = secondaryTable;
@@ -162,6 +164,13 @@ public class EntityMapping extends ExtensibleBase {
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
+
+    /**
+     * Optional.
+     */
+    public Class<?> getExtendedEntityClass() {
+        return extendedEntityClass;
+    }
 
     /**
      * Optional. Returns the mapping {@link Model} class of entity.
