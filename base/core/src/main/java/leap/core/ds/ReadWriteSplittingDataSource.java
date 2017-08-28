@@ -1,7 +1,7 @@
 package leap.core.ds;
 
 import leap.core.exception.DataAccessException;
-import leap.core.jdbc.SqlExcutionContext;
+import leap.core.jdbc.SqlExecutionContext;
 import leap.core.jdbc.SqlExcutionType;
 
 import javax.sql.DataSource;
@@ -17,11 +17,11 @@ public class ReadWriteSplittingDataSource implements DataSource {
 
     private AtomicInteger counter = new AtomicInteger();
 
-    private DataSource master;
+    private DataSource writeDataSource;
 
     private DataSource defaultDataSource;
 
-    private List<DataSource> slaves;
+    private List<DataSource> readDataSources;
 
     @Override
     public Connection getConnection() throws SQLException {
@@ -36,19 +36,19 @@ public class ReadWriteSplittingDataSource implements DataSource {
     protected DataSource determineTargetDataSource() {
         DataSource returnDataSource;
 
-        if(SqlExcutionContext.getType().equals(SqlExcutionType.Write)){
+        if(SqlExecutionContext.getType().equals(SqlExcutionType.Write)){
 
-            returnDataSource = master;
+            returnDataSource = writeDataSource;
 
-        } else if(SqlExcutionContext.getType().equals(SqlExcutionType.Read)){
+        } else if(SqlExecutionContext.getType().equals(SqlExcutionType.Read)){
 
             int index = determindIndex();
-            returnDataSource = slaves.get(index);
+            returnDataSource = readDataSources.get(index);
 
         }else{
 
             if(null == defaultDataSource) {
-                throw new DataAccessException("default data source must not be null while sql excution type is unknown");
+                throw new DataAccessException("default data source must not be null while sql execution type is unknown");
             }
 
             returnDataSource = defaultDataSource;
@@ -59,7 +59,7 @@ public class ReadWriteSplittingDataSource implements DataSource {
 
     private int determindIndex() {
 
-        if(slaves.size() < 2) return 0;
+        if(readDataSources.size() < 2) return 0;
 
         int count = counter.incrementAndGet();
 
@@ -67,25 +67,25 @@ public class ReadWriteSplittingDataSource implements DataSource {
             counter.set(0);
         }
 
-        int index = count % slaves.size();
+        int index = count % readDataSources.size();
 
         return index;
     }
 
-    public DataSource getMaster() {
-        return master;
+    public DataSource getWriteDataSource() {
+        return writeDataSource;
     }
 
-    public void setMaster(DataSource master) {
-        this.master = master;
+    public void setWriteDataSource(DataSource writeDataSource) {
+        this.writeDataSource = writeDataSource;
     }
 
-    public List<DataSource> getSlaves() {
-        return slaves;
+    public List<DataSource> getReadDataSources() {
+        return readDataSources;
     }
 
-    public void setSlaves(List<DataSource> slaves) {
-        this.slaves = slaves;
+    public void setReadDataSources(List<DataSource> readDataSources) {
+        this.readDataSources = readDataSources;
     }
 
     public DataSource getDefaultDataSource() {

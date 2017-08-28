@@ -172,7 +172,7 @@ public class GenericDb extends DbBase {
                 }
             }
 		} finally {
-			SqlExcutionContext.clean();
+			SqlExecutionContext.clean();
 		}
 	}
 
@@ -194,7 +194,7 @@ public class GenericDb extends DbBase {
                 }
             }
 		} finally {
-			SqlExcutionContext.clean();
+			SqlExecutionContext.clean();
 		}
 	}
 	
@@ -205,14 +205,14 @@ public class GenericDb extends DbBase {
 
 	@Override
     public int executeUpdate(final String sql, final Object[] args) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
         int re = executeWithResult((conn) -> executeUpdate(conn, sql, args));
         return re;
     }
 	
 	@Override
     public int executeUpdate(String sql, Object[] args, int[] types) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
         int re = executeWithResult((conn) -> executeUpdate(conn, sql, args, types));
         return  re;
     }
@@ -220,7 +220,7 @@ public class GenericDb extends DbBase {
     @Override
     @SuppressWarnings("unchecked")
     public int executeUpdate(String sql, Object[] args, int[] types, PreparedStatementHandler<?> handler) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
         int re = executeWithResult((conn) -> executeUpdate(conn, sql, args, types,(PreparedStatementHandler<Db>)handler));
         return re;
     }
@@ -260,7 +260,7 @@ public class GenericDb extends DbBase {
 			return Arrays2.EMPTY_INT_ARRAY;
 		}
 
-		SqlExcutionContext.setup(SqlExcutionType.Write, Strings.join(sqls, ";"));
+		SqlExecutionContext.setup(SqlExcutionType.Write, Strings.join(sqls, ";"));
 
         return executeWithResult((conn) -> {
             Statement stmt = conn.createStatement();
@@ -279,14 +279,14 @@ public class GenericDb extends DbBase {
 
 	@Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
         int[] re = executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, null, null));
         return re;
     }
 
 	@Override
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
 		int[] re = executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, types, null));
 		return re;
     }
@@ -294,14 +294,14 @@ public class GenericDb extends DbBase {
     @Override
     @SuppressWarnings("unchecked")
     public int[] executeBatchUpdate(String sql, Object[][] batchArgs, int[] types, BatchPreparedStatementHandler<?> handler) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Write, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Write, sql);
 		int[] re = executeWithResult((conn) -> doExecuteBatchUpdate(conn, sql, batchArgs, types, (BatchPreparedStatementHandler<Db>)handler));
 		return re;
     }
 
 	@Override
     public <T> T executeQuery(String sql, ResultSetReader<T> reader) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Read, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Read, sql);
 		T t = executeWithResult((conn) -> executeQuery(conn, sql, Arrays2.EMPTY_OBJECT_ARRAY, reader));
 		return t;
 
@@ -309,14 +309,14 @@ public class GenericDb extends DbBase {
 
 	@Override
     public <T> T executeQuery(String sql, Object[] args, ResultSetReader<T> reader) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Read, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Read, sql);
         T t = executeWithResult((conn) -> executeQuery(conn, sql, args, Arrays2.EMPTY_INT_ARRAY, reader));
         return t;
     }
 
 	@Override
     public <T> T executeQuery(String sql, Object[] args, int[] types, ResultSetReader<T> reader) throws NestedSQLException {
-		SqlExcutionContext.setup(SqlExcutionType.Read, sql);
+		SqlExecutionContext.setup(SqlExcutionType.Read, sql);
         T t = executeWithResult((conn) -> executeQuery(conn, sql, args, types, reader));
         return t;
     }

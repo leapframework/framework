@@ -1,6 +1,6 @@
 package leap.core.jdbc;
 
-public class SqlExcutionContext {
+public class SqlExecutionContext {
 
     private static ThreadLocal<String> sql = new ThreadLocal<>();
 
