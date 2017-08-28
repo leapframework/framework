@@ -315,7 +315,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 //    }
 
 	@Override
-    public EntityMappingBuilder createEntityClassMapping(MetadataContext context, Class<?> cls) {
+    public EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> cls) {
 		Args.notNull(cls,"class");
 		Args.assertFalse(isExplicitNonEntity(context,cls),
 						  "The class '" + cls.getName() + "' was declared as not an entity type explicitly");

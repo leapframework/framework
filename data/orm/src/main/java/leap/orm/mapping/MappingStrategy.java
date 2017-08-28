@@ -81,7 +81,7 @@ public interface MappingStrategy {
 	/**
 	 * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>class</code> to an entity type and the underlying db table.
 	 */
-	EntityMappingBuilder createEntityClassMapping(MetadataContext context, Class<?> entityType) throws MetadataException;
+	EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> entityType) throws MetadataException;
 	
     /**
      * Returns a new {@link EntityMappingBuilder} holds all the mapping info mapped from a <code>table</code> to an entity.

@@ -152,7 +152,7 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
 		}
 		
 		if(null == emb){
-			emb = context.getMappingStrategy().createEntityClassMapping(context, cls);
+			emb = context.getMappingStrategy().createEntityMappingByClass(context, cls);
 			context.addEntityMapping(emb);
 		}
 		emb.setModelClass(cls);
