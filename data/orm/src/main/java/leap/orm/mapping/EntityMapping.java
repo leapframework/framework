@@ -26,7 +26,6 @@ import leap.lang.logging.LogFactory;
 import leap.orm.event.EntityListeners;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
-import leap.orm.sharding.ShardingAlgorithm;
 import leap.orm.validation.EntityValidator;
 
 import java.util.*;
@@ -58,9 +57,6 @@ public class EntityMapping extends ExtensibleBase {
     protected final RelationMapping[]          relationMappings;
     protected final RelationProperty[]         relationProperties;
     protected final boolean                    autoCreateTable;
-    protected final boolean                    sharding;
-    protected final boolean                    autoCreateShardingTable;
-    protected final ShardingAlgorithm          shardingAlgorithm;
     protected final boolean                    selfReferencing;
     protected final RelationMapping[]          selfReferencingRelations;
     protected final EntityListeners            listeners;
@@ -73,8 +69,6 @@ public class EntityMapping extends ExtensibleBase {
     private final Map<String,RelationMapping> primaryKeyRelations;
     private final Map<String,RelationMapping> targetEntityRelations;
     private final Map<String,RelationMapping> referenceToRelations;
-    private final FieldMapping                shardingField;
-
 
 	public EntityMapping(String entityName, String dynamicTableName,
                          Class<?> entityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
@@ -86,7 +80,6 @@ public class EntityMapping extends ExtensibleBase {
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
                          boolean queryFilterEnabled,
-                         boolean sharding, boolean autoCreateShardingTable, ShardingAlgorithm shardingAlgorithm,
                          EntityListeners listeners) {
 		
 		Args.notEmpty(entityName,"entity name");
@@ -94,10 +87,6 @@ public class EntityMapping extends ExtensibleBase {
 		Args.notEmpty(fieldMappings,"field mappings");
         Args.notNull(listeners);
 
-        if(sharding) {
-            Args.notNull(shardingAlgorithm, "The sharding algorithm must not be null in sharding entity");
-        }
-		
 		this.entityName		   = entityName;
         this.dynamicTableName  = dynamicTableName;
 	    this.entityClass       = entityClass;
@@ -131,10 +120,6 @@ public class EntityMapping extends ExtensibleBase {
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
         this.queryFilterEnabled     = queryFilterEnabled;
-        this.sharding               = sharding;
-        this.autoCreateShardingTable= autoCreateShardingTable;
-        this.shardingField          = Iterables.firstOrNull(fieldMappings, (f) -> f.isSharding());
-        this.shardingAlgorithm      = shardingAlgorithm;
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -362,41 +347,6 @@ public class EntityMapping extends ExtensibleBase {
 
     public boolean isQueryFilterEnabled() {
         return queryFilterEnabled;
-    }
-
-    /**
-     * Returns true if the entity is a sharding entity.
-     */
-    public boolean isSharding() {
-        return sharding;
-    }
-
-    /**
-     * Returns true if create the sharding table if not exists.
-     */
-    public boolean isAutoCreateShardingTable() {
-        return autoCreateShardingTable;
-    }
-
-    /**
-     * Returns the sharding field or null.
-     */
-    public FieldMapping getShardingField() {
-        return shardingField;
-    }
-
-    /**
-     * Returns the {@link ShardingAlgorithm} or null.
-     */
-    public ShardingAlgorithm getShardingAlgorithm() {
-        return shardingAlgorithm;
-    }
-
-    /**
-     * Returns true if the given table name is the sharding table of the entity.
-     */
-    public boolean isShardingTable(String tableName) {
-        return sharding ? shardingAlgorithm.isShardingTable(this, tableName) : false;
     }
 
     /**

@@ -43,7 +43,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String MODELS_ELEMENT             = "models";
     private static final String IMPORT_ELEMENT             = "import";
     private static final String GLOBAL_FIELD_ELEMENT       = "global-field";
-    private static final String SHARDING_ELEMENT           = "sharding";
     private static final String INCLUDED_ENTITIES_ELEMENT  = "included-entities";
     private static final String EXCLUDED_ENTITIES_ELEMENT  = "excluded-entities";
     private static final String DEFAULT_OVERRIDE_ATTRIBUTE = "default-override";
@@ -51,7 +50,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String MAPPING_STRATEGY_ATTRIBUTE = "mapping-strategy";
     private static final String RESOURCE_ATTRIBUTE         = "resource";
     private static final String ENTITY_ATTRIBUTE           = "entity";
-    private static final String SHARDING_FIELD_ATTRIBUTE   = "sharding-field";
     private static final String AUTO_CREATE_TABLE          = "auto-create-table";
     private static final String NAME_ATTRIBUTE             = "name";
     private static final String COLUMN_ATTRIBUTE           = "column";
@@ -72,18 +70,12 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     protected @Inject AppConfig appConfig;
 
     private final Set<GlobalFieldMappingConfig> globalFields = new LinkedHashSet<>();
-    private final Set<ShardingConfig>           shardings    = new LinkedHashSet<>();
 
     private boolean loaded = false;
 
     @Override
     public Set<GlobalFieldMappingConfig> getGlobalFields() {
         return globalFields;
-    }
-
-    @Override
-    public Set<ShardingConfig> getShardings() {
-        return shardings;
     }
 
     @Override
@@ -171,11 +163,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
                         continue;
                     }
 
-                    if(reader.isStartElement(SHARDING_ELEMENT)) {
-                        loadSharding(context, resource, reader);
-                        continue;
-                    }
-
                     if(reader.isStartElement()) {
                         throw new MappingConfigException("Unsupported element '" + reader.getElementLocalName() + "' in file : " + resource.getClasspath());
                     }
@@ -210,15 +197,6 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         }
 
         globalFields.add(gf);
-    }
-
-    private void loadSharding(LoadContext context, Resource resource, XmlReader reader) {
-
-        String entity           = reader.resolveRequiredAttribute(ENTITY_ATTRIBUTE);
-        String shardingField    = reader.resolveRequiredAttribute(SHARDING_FIELD_ATTRIBUTE);
-        boolean autoCreateTable = reader.resolveBooleanAttribute(AUTO_CREATE_TABLE, false);
-
-        shardings.add(new ShardingConfig(entity, shardingField, autoCreateTable));
     }
 
     protected FieldMappingBuilder readFieldMapping(XmlReader reader, boolean defaultOverride) {

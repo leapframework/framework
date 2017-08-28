@@ -96,9 +96,4 @@ public class DefaultResultSetMapping implements ResultSetMapping {
 			columnMappings[i-1] = cm;
 		}
 	}
-
-    protected boolean isEntityTable(EntityMapping em, String tableName) {
-        return Strings.isEmpty(tableName) || em.getTableName().equalsIgnoreCase(tableName) ||
-                (em.isSharding() && em.isShardingTable(tableName));
-    }
 }

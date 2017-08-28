@@ -68,7 +68,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected List<FieldValidator>  validators;
     protected Float                 sortOrder;
     protected ReservedMetaFieldName reservedMetaFieldName;
-    protected boolean               sharding;
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
     protected boolean               hasPhysicalColumn;
@@ -628,15 +627,6 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 		return this;
 	}
 
-    public boolean isSharding() {
-        return sharding;
-    }
-
-    public FieldMappingBuilder setSharding(boolean sharding) {
-        this.sharding = sharding;
-        return this;
-    }
-
     public String getSerializeFormat() {
         return serializeFormat;
     }
@@ -703,7 +693,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                sharding, serializer);
+                                serializer);
     }
 
 	@Override

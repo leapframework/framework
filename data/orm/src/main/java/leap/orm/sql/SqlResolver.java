@@ -231,9 +231,6 @@ public class SqlResolver {
                     if(null == em) {
                         em = metadata.tryGetEntityMappingByTableName(lastName);
                     }
-                    if(null == em) {
-                        em = metadata.tryGetEntityMappingByShardingTableName(lastName);
-                    }
 				}
 				if(null != em){
 					if(tableName.getSecondaryOrFirstName() == null ||

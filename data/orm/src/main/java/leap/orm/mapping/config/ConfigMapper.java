@@ -17,17 +17,15 @@
 package leap.orm.mapping.config;
 
 import leap.core.annotation.Inject;
-import leap.orm.mapping.*;
+import leap.orm.mapping.Mapper;
+import leap.orm.mapping.MappingConfigContext;
 import leap.orm.metadata.MetadataException;
-import leap.orm.sharding.ShardingFactory;
 
 public class ConfigMapper implements Mapper {
 
     protected @Inject MappingConfigSource source;
-    protected @Inject ShardingFactory     shardingFactory;
 
     private final GlobalFieldMapper globalFieldMapper = new GlobalFieldMapper();
-    private final ShardingMapper    shardingMapper    = new ShardingMapper();
 
     @Override
     public void postMappings(MappingConfigContext context) throws MetadataException {
@@ -39,10 +37,7 @@ public class ConfigMapper implements Mapper {
     }
 
     protected void processLoadedMappingConfigs(MappingConfigContext context, MappingConfig config) {
-
         globalFieldMapper.processGlobalFields(context, config);
-
-        shardingMapper.processShardings(shardingFactory, context, config);
     }
 
 }
