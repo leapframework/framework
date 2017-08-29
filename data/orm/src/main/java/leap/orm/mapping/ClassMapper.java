@@ -20,6 +20,7 @@ import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.resource.ResourceSet;
 import leap.orm.annotation.Entity;
+import leap.orm.annotation.ExtendedEntity;
 import leap.orm.metadata.MetadataException;
 
 import java.util.HashSet;
@@ -50,9 +51,8 @@ public class ClassMapper implements Mapper {
 
                 EntityMappingBuilder emb = mappingStrategy.createEntityMappingByClass(context, cls);
 
-                //todo: hard code extended entity mapping.
-                Entity a = cls.getAnnotation(Entity.class);
-                if(null != a && a.extended()) {
+                ExtendedEntity a = cls.getAnnotation(ExtendedEntity.class);
+                if(null != a) {
                     mapped.add(processExtendedEntityMapping(context, emb, a));
                 }else{
                     context.addEntityMapping(emb);
@@ -65,9 +65,9 @@ public class ClassMapper implements Mapper {
 		
     }
 
-    protected Class<?> processExtendedEntityMapping(final MappingConfigContext context, EntityMappingBuilder ext, Entity a) {
+    protected Class<?> processExtendedEntityMapping(final MappingConfigContext context, EntityMappingBuilder ext, ExtendedEntity a) {
         Class<?> extClass  = ext.getEntityClass();
-        Class<?> baseClass = Void.class.equals(a.extendsOf()) ? extClass.getSuperclass() : a.extendsOf();
+        Class<?> baseClass = Void.class.equals(a.of()) ? extClass.getSuperclass() : a.of();
 
         EntityMappingBuilder base = context.tryGetEntityMapping(baseClass);
         if(null == base) {

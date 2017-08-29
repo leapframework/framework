@@ -13,22 +13,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
+package leap.orm.annotation;
 
-package leap.orm.tested.model.extend;
+import java.lang.annotation.*;
 
-import leap.orm.annotation.ExtendedEntity;
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+@AEntity
+public @interface ExtendedEntity {
 
-@ExtendedEntity
-public class ExtendModelEx extends ExtendModelBase {
-
-    protected String col2;
-
-    public String getCol2() {
-        return col2;
-    }
-
-    public void setCol2(String col2) {
-        this.col2 = col2;
-    }
+    Class<?> of() default Void.class;
 
 }
