@@ -22,6 +22,7 @@ import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
+import leap.orm.OrmContextInitializable;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
@@ -33,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 @Internal
-public class ModelRegistry {
+public class ModelRegistry implements OrmContextInitializable {
 	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
 	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
 	
@@ -69,14 +70,40 @@ public class ModelRegistry {
 		return modelContexts.get(className);
 	}
 	
-	public static void addModelContext(ModelContext modelContext){
+	private static void addModelContext(ModelContext modelContext){
 		modelContexts.put(modelContext.getModelClass().getName(), modelContext);
         if(null != modelContext.getExtendModelClass()) {
             modelContexts.put(modelContext.getExtendModelClass().getName(), modelContext);
         }
 	}
-	
-	public static final class ModelContext {
+
+    @Override
+    public void postInitialize(OrmContext context) throws Exception {
+        Dao dao = context.getDao();
+        Dmo dmo = context.getDmo();
+
+        for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+            Class<? extends Model> cls = em.getModelClass();
+
+            if(null != cls){
+                ModelContext modelContext = ModelRegistry.tryGetModelContext(cls.getName());
+
+                //TODO : Duplicate orm context in same model
+
+                if(null == modelContext){
+                    registerModel(context, em, dao, dmo);
+                }
+            }
+        }
+    }
+
+    protected void registerModel(OrmContext context, EntityMapping em, Dao dao, Dmo dmo){
+        ModelContext modelContext = new ModelContext(context, em, dao, dmo);
+
+        ModelRegistry.addModelContext(modelContext);
+    }
+
+    public static final class ModelContext {
 		private final OrmContext    		   ormContext;
 		private final EntityMapping 		   entityMapping;
 		private final Dao					   dao;
