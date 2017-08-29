@@ -103,9 +103,6 @@
     <!-- validation -->
     <bean type="leap.orm.validation.EntityValidator" class="leap.orm.validation.DefaultEntityValidator" primary="true"/>
     
-    <!-- linq -->
-    <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
-
     <!-- serialize -->
     <bean name="json"
           type="leap.orm.serialize.FieldSerializer"

@@ -33,7 +33,6 @@ import leap.orm.dao.DefaultDao;
 import leap.orm.dmo.DefaultDmo;
 import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
-import leap.orm.linq.ConditionParser;
 import leap.orm.mapping.MappingStrategy;
 import leap.orm.metadata.MetadataContext;
 import leap.orm.metadata.OrmMetadataManager;
@@ -63,7 +62,6 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
     protected @Inject @M QueryFactory       queryFactory;
     protected @Inject @M EntityReader       entityReader;
     protected @Inject @M RowReader          rowReader;
-    protected @Inject @M ConditionParser    conditionParser;
     protected @Inject @M OrmConfig          config;
     protected @Inject @M EntityEventHandler entityEventHandler;
 
@@ -169,10 +167,6 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
 	@Override
 	public QueryFactory getQueryFactory() {
 		return queryFactory;
-	}
-
-	public ConditionParser getConditionParser() {
-		return conditionParser;
 	}
 
 	@Override

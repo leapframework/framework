@@ -23,7 +23,6 @@ import leap.lang.params.ArrayParams;
 import leap.lang.params.Params;
 import leap.lang.value.Limit;
 import leap.lang.value.Page;
-import leap.orm.linq.Condition;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
 import leap.orm.mapping.RelationMapping;
