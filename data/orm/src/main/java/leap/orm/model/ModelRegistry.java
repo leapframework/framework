@@ -35,32 +35,18 @@ import java.util.Map;
 @Internal
 public class ModelRegistry {
 	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
-	private static final Map<String, ModelInfo>        modelInfos	   = new HashMap<>();
 	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
 	
 	public static OrmContext getThreadLocalContext(){
 		return localOrmContext.get();
 	}
 
-	public static void setThreadLocalCotnext(OrmContext context){
+	public static void setThreadLocalContext(OrmContext context){
 		localOrmContext.set(context);
 	}
 	
 	public static void removeThreadLocalContext(){
 		localOrmContext.remove();
-	}
-	
-	public static ModelInfo removeModelInfo(String className){
-		return modelInfos.remove(className);
-	}
-	
-	static ModelInfo getOrCreateModelInfo(String className){
-		ModelInfo mi = modelInfos.get(className);
-		if(null == mi){
-			mi = new ModelInfo();
-			modelInfos.put(className, mi);
-		}
-		return mi;
 	}
 	
 	public static ModelContext getModelContext(String className){
@@ -88,47 +74,6 @@ public class ModelRegistry {
         if(null != modelContext.getExtendModelClass()) {
             modelContexts.put(modelContext.getExtendModelClass().getName(), modelContext);
         }
-	}
-	
-	public static final class ModelInfo {
-		
-		private final Map<String, FieldInfo> fields = new SimpleCaseInsensitiveMap<>();
-		
-		ModelInfo() {
-        }
-		
-		public Map<String, FieldInfo> fields(){
-			return fields;
-		}
-		
-		public FieldInfo getField(String field){
-			return fields.get(field);
-		}
-		
-		public FieldInfo getOrCreateField(String field){
-			FieldInfo fi = fields.get(field);
-			if(null == fi){
-				fi = new FieldInfo();
-				fields.put(field, fi);
-			}
-			return fi;
-		}
-	}
-	
-	public static final class FieldInfo {
-		private final List<FieldValidator> validators = new ArrayList<FieldValidator>();
-		
-		FieldInfo() {
-        }
-
-		public List<FieldValidator> validators() {
-			return validators;
-		}
-		
-		public FieldInfo addValidator(FieldValidator validator){
-			validators.add(validator);
-			return this;
-		}
 	}
 	
 	public static final class ModelContext {

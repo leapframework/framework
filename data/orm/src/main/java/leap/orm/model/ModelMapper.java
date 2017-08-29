@@ -15,30 +15,19 @@
  */
 package leap.orm.model;
 
-import java.lang.reflect.Modifier;
-
 import leap.core.AppContext;
 import leap.core.AppContextAware;
-import leap.lang.Strings;
-import leap.lang.reflect.ReflectMethod;
 import leap.orm.OrmContext;
 import leap.orm.OrmContextInitializable;
-import leap.orm.annotation.Entity;
-import leap.orm.annotation.EntityClass;
-import leap.orm.annotation.Finder;
-import leap.orm.annotation.NonEntity;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
-import leap.orm.mapping.EntityMappingBuilder;
 import leap.orm.mapping.Mapper;
 import leap.orm.mapping.MappingConfigContext;
 import leap.orm.metadata.MetadataException;
 import leap.orm.model.ModelRegistry.ModelContext;
 
 public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializable {
-	
-	private static final String MODEL_NAME_SUFFIX = "Model";
 	
 	protected AppContext appContext;
 	
@@ -49,8 +38,8 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
 	
 	@Override
     public void postInitialize(OrmContext context) throws Exception {
-		Dao dao = appContext.getBeanFactory().getBean(Dao.class,context.getName());
-		Dmo dmo = appContext.getBeanFactory().getBean(Dmo.class,context.getName());
+		Dao dao = context.getDao();
+		Dmo dmo = context.getDmo();
 		
 		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
 			Class<? extends Model> cls = em.getModelClass();
@@ -75,116 +64,6 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
 
 	@Override
 	public void loadMappings(final MappingConfigContext context) throws MetadataException {
-		//ResourceSet resources = appContext.getConfig().getResources();
-		
-		//final OrmModelsConfigs mcs = appContext.getConfig().getExtension(OrmModelsConfigs.class);
-		//final String		   ds  = context.getOrmContext().getName();
-		//OrmModelsConfig  models  = null == mcs ? null : mcs.getModelsConfig(ctxName);
-		/*
-		resources.processClasses((cls) -> {
-			if(isModelClass(cls)){
-				
-				if(cls.getSimpleName().equals("Ds1Model")) {
-					System.out.println(ds);
-				}
-				
-				for(Entry<String, OrmModelsConfig> entry : mcs.getModelsConfigMap().entrySet()) {
-					String name = entry.getKey();
-					OrmModelsConfig models = entry.getValue();
-					
-					if(name.equalsIgnoreCase(ds)) {
-						if(!models.isModel(cls)) {
-							return;
-						}else{
-							break;
-						}
-					}else{
-						if(models.isModel(cls)) {
-							return;
-						}
-					}
-				}
-				
-				loadModelClass(context,(Class<Model>) cls);
-			}
-		});
-		*/
-		
-	}
-	
-	protected boolean isModelClass(Class<?> cls){
-		return !cls.isAnnotationPresent(NonEntity.class) &&
-			   !Modifier.isAbstract(cls.getModifiers()) && Model.class.isAssignableFrom(cls);
-	}
-	
-	protected void loadModelClass(MappingConfigContext context,Class<? extends Model> cls) {
-		//resovle entity mapping.
-		String entityName = null;
-		EntityMappingBuilder emb = null;
-		
-		Entity a = cls.getAnnotation(Entity.class);
-		if(null != a){
-			entityName = a.name();
-			if(Strings.isEmpty(entityName)){
-				entityName = a.value();
-			}
-		}
 
-		if(Strings.isEmpty(entityName)){
-			entityName = resolvePossibleEntityName(context, cls);	
-		}
-		
-		emb = resolveEntityMapping(context, entityName);
-		
-		if(null == emb){
-			Class<?> entityClass = resolveEntityClass(context, cls);
-			
-			if(null != entityClass){
-				emb = context.getEntityMapping(entityClass);
-			}
-		}
-		
-		if(null == emb){
-			emb = context.getMappingStrategy().createEntityMappingByClass(context, cls);
-			context.addEntityMapping(emb);
-		}
-		emb.setModelClass(cls);
-	}
-	
-	protected String resolvePossibleEntityName(MappingConfigContext context, Class<? extends Model> cls){
-		String entityName = cls.getSimpleName();
-			
-		if(entityName.endsWith(MODEL_NAME_SUFFIX)){
-			return entityName.substring(0,entityName.length() - MODEL_NAME_SUFFIX.length());
-		}
-		
-		return entityName;
-	}
-	
-	protected Class<?> resolveEntityClass(MappingConfigContext context, Class<? extends Model> cls){
-		EntityClass a = cls.getAnnotation(EntityClass.class);
-
-		if(null != a){
-			return a.value();
-		}
-		
-		return null;
-	}
-	
-	protected EntityMappingBuilder resolveEntityMapping(MappingConfigContext context, String modelName){
-		modelName = modelName.toLowerCase();
-		
-		for(EntityMappingBuilder emb : context.getEntityMappings()){
-			String entityName = emb.getEntityName().toLowerCase();
-			
-			if(modelName.equals(entityName) || 
-			   (context.getNamingStrategy().isPluralOf(modelName, entityName)) || 
-			   (context.getNamingStrategy().isPluralOf(entityName, modelName))){
-				
-				return emb;
-			}
-		}
-		
-		return null;
 	}
 }
