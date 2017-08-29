@@ -40,6 +40,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	protected boolean					   tableNameDeclared;
 	protected boolean					   idDeclared;
     protected boolean                      autoCreateTable;
+    protected boolean                      autoGenerateColumns;
     protected Boolean                      queryFilterEnabled;
 	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
@@ -56,6 +57,10 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	public Class<?> getSourceClass(){
 		return null != entityClass ? entityClass : modelClass;
 	}
+
+    public boolean isModelClass() {
+        return null != getSourceClass() && Model.class.isAssignableFrom(getSourceClass());
+    }
 	
 	public Class<?> getEntityClass() {
 		return entityClass;
@@ -191,6 +196,15 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return this;
     }
 
+    public boolean isAutoGenerateColumns() {
+        return autoGenerateColumns;
+    }
+
+    public EntityMappingBuilder setAutoGenerateColumns(boolean autoGenerateColumns) {
+        this.autoGenerateColumns = autoGenerateColumns;
+        return this;
+    }
+
     public Boolean getQueryFilterEnabled() {
         return queryFilterEnabled;
     }
@@ -306,10 +320,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	public EntityMappingBuilder setFindInterceptor(EntityExecutionInterceptor findHandler) {
 		this.findInterceptor = findHandler;
 		return this;
-	}
-
-	public boolean isModel(){
-		return null != modelClass; 
 	}
 
 	public Class<? extends Model> getModelClass() {

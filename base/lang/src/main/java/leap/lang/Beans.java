@@ -387,19 +387,13 @@ public class Beans {
     }
     
     public static void setProperty(BeanType beanType,Object bean,String property,Object value, boolean ignoreCase){
-    	if(ignoreCase){
-    		if(beanType.trySetIgnoreCase(bean, property, value)){
-    			return;
-    		}
-    	}else{
-    		if(beanType.trySet(bean, property, value)){
-    			return;
-    		}
-    	}
-    	
-    	if(bean instanceof DynaBean){
-    		((DynaBean) bean).setProperty(property, value);
-    	}
+        if(bean instanceof DynaBean){
+            beanType.trySetProperty(bean, property, value, ignoreCase);
+
+            ((DynaBean) bean).setProperty(property, value);
+        }else{
+            beanType.setProperty(bean, property, value, ignoreCase);
+        }
     }
     
 	protected static void setNestedProperty(BeanType beanType,Object bean,BeanProperty bp,String nestedPropertyName,Object value){

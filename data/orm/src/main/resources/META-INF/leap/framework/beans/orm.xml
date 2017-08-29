@@ -5,7 +5,9 @@
     <bean type="leap.core.AppContextInitializable" class="leap.orm.OrmInit"/>
 
     <bean type="leap.orm.OrmRegistry" class="leap.orm.DefaultOrmRegistry" primary="true"/>
-    
+
+    <bean type="leap.orm.OrmContextInitializable" class="leap.orm.model.ModelRegistry"/>
+
     <!-- config -->
     <bean type="leap.orm.OrmConfig" class="leap.orm.DefaultOrmConfig" primary="true"/>
     
@@ -30,9 +32,6 @@
 
     <!-- cannot change the order of following beans for type : MappingLoader -->
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.ClassMapper"/>
-    <bean type="leap.orm.mapping.Mapper" class="leap.orm.model.ModelMapper">
-    	<additional-type-def type="leap.orm.OrmContextInitializable"/>
-    </bean>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.SchemaMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.RelationMapper"/>
     <bean type="leap.orm.mapping.Mapper" class="leap.orm.mapping.config.ConfigMapper"/>
@@ -103,9 +102,6 @@
     <!-- validation -->
     <bean type="leap.orm.validation.EntityValidator" class="leap.orm.validation.DefaultEntityValidator" primary="true"/>
     
-    <!-- linq -->
-    <bean type="leap.orm.linq.ConditionParser" class="leap.orm.linq.jaque.JaqueConditionParser" primary="true"/>
-
     <!-- serialize -->
     <bean name="json"
           type="leap.orm.serialize.FieldSerializer"

@@ -289,7 +289,19 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 	        }
         }
 
-		@Override
+        @Override
+        public void removeEntityMapping(String name) {
+            EntityMappingBuilder emb = nameToEntityMappings.remove(name.toLowerCase());
+            if(null == emb) {
+                return;
+            }
+
+            if(null != emb.getEntityClass()) {
+                classToEntityMappings.remove(emb.getEntityClass());
+            }
+        }
+
+        @Override
         public EntityMappingBuilder getEntityMapping(String entityName) throws MappingNotFoundException {
 			EntityMappingBuilder emb = tryGetEntityMapping(entityName);
 			

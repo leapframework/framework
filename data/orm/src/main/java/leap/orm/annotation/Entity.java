@@ -67,11 +67,6 @@ public @interface Entity {
 	String table() default "";
 
     /**
-     * Is a extended entity?
-     */
-    boolean extended() default false;
-
-    /**
      * (Optional) The secondary table name of the entity.
      */
     String secondaryTable() default "";

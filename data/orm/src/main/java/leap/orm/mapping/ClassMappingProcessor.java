@@ -70,6 +70,7 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Entity.class));
 			mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(Table.class));
             mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoCreateTable.class));
+            mappingEntityByAnnotation(context, emb, sourceClass.getAnnotation(AutoGenerateColumns.class));
             mappingListenerByAnnotations(context, emb, sourceClass.getDeclaredAnnotationsByType(Entity.Listener.class));
 			mappingManyToOneByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToOne.class));
 			mappingManyToManyByClassAnnotation(context, emb, sourceClass.getDeclaredAnnotationsByType(ManyToMany.class));
@@ -271,6 +272,12 @@ public class ClassMappingProcessor extends MappingProcessorAdapter implements Ma
     protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, AutoCreateTable a){
         if(null != a){
             emb.setAutoCreateTable(a.value());
+        }
+    }
+
+    protected void mappingEntityByAnnotation(MetadataContext context, EntityMappingBuilder emb, AutoGenerateColumns a){
+        if(null != a){
+            emb.setAutoGenerateColumns(a.value());
         }
     }
 	

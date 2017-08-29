@@ -52,6 +52,7 @@ import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
+import leap.orm.mapping.Mappings;
 import leap.orm.model.ModelRegistry.ModelContext;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.CriteriaWhere;
@@ -87,7 +88,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     /**
      * Returns the next generated id.
      *
-     * @throws IllegalStateException if not id generator.
+     * @throws IllegalStateException if no id generator.
      */
     @Instrument
     public static Object nextId() throws IllegalStateException{
@@ -494,12 +495,12 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
 	public static Db db(){
 		return context().getOrmContext().getDb();
 	}
-	
+
 	@Instrument
 	protected static ModelContext context(){
 		return ModelRegistry.getModelContext(getClassName());
 	}
-	
+
 	@Instrument
 	protected static String className(){
 		return getClassName();
@@ -983,20 +984,7 @@ public abstract class Model implements Getter,ValidatableBean,JsonStringable {
     }
     
 	protected Object doGetId(){
-		String[] keyNames = em.getKeyFieldNames();
-		if(keyNames.length == 1){
-			return get(keyNames[0]);
-		}
-		
-		if(keyNames.length == 0){
-			return null;
-		}
-		
-		Map<String, Object> id = new LinkedHashMap<String, Object>();
-		for(int i=0;i<keyNames.length;i++){
-			id.put(keyNames[i], get(keyNames[i]));
-		}
-		return id;
+        return Mappings.getId(em, this);
     }
 	
 	@SuppressWarnings("rawtypes")

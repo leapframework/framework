@@ -19,7 +19,12 @@ import leap.core.AppConfig;
 import leap.core.annotation.Inject;
 import leap.core.annotation.M;
 import leap.lang.resource.ResourceSet;
+import leap.orm.annotation.Entity;
+import leap.orm.annotation.ExtendedEntity;
 import leap.orm.metadata.MetadataException;
+
+import java.util.HashSet;
+import java.util.Set;
 
 public class ClassMapper implements Mapper {
 	
@@ -29,6 +34,8 @@ public class ClassMapper implements Mapper {
 	@Override
     public void loadMappings(final MappingConfigContext context) throws MetadataException {
 		ResourceSet resources = config.getResources();
+
+        final Set<Class<?>> mapped = new HashSet<>();
 		
 		resources.processClasses((cls) -> {
 
@@ -38,10 +45,48 @@ public class ClassMapper implements Mapper {
                     return;
                 }
 
-                context.addEntityMapping(mappingStrategy.createEntityMappingByClass(context, cls));
+                if(mapped.contains(cls)) {
+                    return;
+                }
+
+                EntityMappingBuilder emb = mappingStrategy.createEntityMappingByClass(context, cls);
+
+                ExtendedEntity a = cls.getAnnotation(ExtendedEntity.class);
+                if(null != a) {
+                    mapped.add(processExtendedEntityMapping(context, emb, a));
+                }else{
+                    context.addEntityMapping(emb);
+                    mapped.add(cls);
+                }
             }
 		});
+
+        mapped.clear();
 		
+    }
+
+    protected Class<?> processExtendedEntityMapping(final MappingConfigContext context, EntityMappingBuilder ext, ExtendedEntity a) {
+        Class<?> extClass  = ext.getEntityClass();
+        Class<?> baseClass = Void.class.equals(a.of()) ? extClass.getSuperclass() : a.of();
+
+        EntityMappingBuilder base = context.tryGetEntityMapping(baseClass);
+        if(null == base) {
+            base = mappingStrategy.createEntityMappingByClass(context, baseClass);
+        }
+        base.setExtendedEntityClass(extClass);
+
+        //merge
+        for(FieldMappingBuilder fmb : ext.getFieldMappings()) {
+            if(null == base.findFieldMappingByName(fmb.getFieldName())) {
+                base.addFieldMapping(fmb);
+            }
+        }
+
+        //update or add entity mapping.
+        context.removeEntityMapping(base.getEntityName());
+        context.addEntityMapping(base);
+
+        return baseClass;
     }
 	
 }

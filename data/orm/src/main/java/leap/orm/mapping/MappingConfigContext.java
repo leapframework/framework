@@ -117,4 +117,8 @@ public interface MappingConfigContext extends MetadataContext {
      */
     void addEntityMapping(EntityMappingBuilder emb) throws MappingExistsException;
 
+    /**
+     * Removes a entity mapping.
+     */
+    void removeEntityMapping(String name);
 }

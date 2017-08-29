@@ -22,6 +22,7 @@ import leap.lang.collection.SimpleCaseInsensitiveMap;
 import leap.lang.exception.ObjectNotFoundException;
 import leap.orm.Orm;
 import leap.orm.OrmContext;
+import leap.orm.OrmContextInitializable;
 import leap.orm.dao.Dao;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
@@ -33,34 +34,20 @@ import java.util.List;
 import java.util.Map;
 
 @Internal
-public class ModelRegistry {
+public class ModelRegistry implements OrmContextInitializable {
 	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
-	private static final Map<String, ModelInfo>        modelInfos	   = new HashMap<>();
 	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
 	
 	public static OrmContext getThreadLocalContext(){
 		return localOrmContext.get();
 	}
 
-	public static void setThreadLocalCotnext(OrmContext context){
+	public static void setThreadLocalContext(OrmContext context){
 		localOrmContext.set(context);
 	}
 	
 	public static void removeThreadLocalContext(){
 		localOrmContext.remove();
-	}
-	
-	public static ModelInfo removeModelInfo(String className){
-		return modelInfos.remove(className);
-	}
-	
-	static ModelInfo getOrCreateModelInfo(String className){
-		ModelInfo mi = modelInfos.get(className);
-		if(null == mi){
-			mi = new ModelInfo();
-			modelInfos.put(className, mi);
-		}
-		return mi;
 	}
 	
 	public static ModelContext getModelContext(String className){
@@ -83,59 +70,46 @@ public class ModelRegistry {
 		return modelContexts.get(className);
 	}
 	
-	public static void addModelContext(ModelContext modelContext){
+	private static void addModelContext(ModelContext modelContext){
 		modelContexts.put(modelContext.getModelClass().getName(), modelContext);
-	}
-	
-	public static final class ModelInfo {
-		
-		private final Map<String, FieldInfo> fields = new SimpleCaseInsensitiveMap<ModelRegistry.FieldInfo>();
-		
-		ModelInfo() {
+        if(null != modelContext.getExtendModelClass()) {
+            modelContexts.put(modelContext.getExtendModelClass().getName(), modelContext);
         }
-		
-		public Map<String, FieldInfo> fields(){
-			return fields;
-		}
-		
-		public FieldInfo getField(String field){
-			return fields.get(field);
-		}
-		
-		public FieldInfo getOrCreateField(String field){
-			FieldInfo fi = fields.get(field);
-			if(null == fi){
-				fi = new FieldInfo();
-				fields.put(field, fi);
-			}
-			return fi;
-		}
 	}
-	
-	public static final class FieldInfo {
-		private final List<FieldValidator> validators = new ArrayList<FieldValidator>();
-		
-		FieldInfo() {
-        }
 
-		public List<FieldValidator> validators() {
-			return validators;
-		}
-		
-		public FieldInfo addValidator(FieldValidator validator){
-			validators.add(validator);
-			return this;
-		}
-	}
-	
-	public static final class ModelContext {
+    @Override
+    public void postInitialize(OrmContext context) throws Exception {
+        Dao dao = context.getDao();
+        Dmo dmo = context.getDmo();
+
+        for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+            Class<? extends Model> cls = em.getModelClass();
+
+            if(null != cls){
+                ModelContext modelContext = ModelRegistry.tryGetModelContext(cls.getName());
+
+                //TODO : Duplicate orm context in same model
+
+                if(null == modelContext){
+                    registerModel(context, em, dao, dmo);
+                }
+            }
+        }
+    }
+
+    protected void registerModel(OrmContext context, EntityMapping em, Dao dao, Dmo dmo){
+        ModelContext modelContext = new ModelContext(context, em, dao, dmo);
+
+        ModelRegistry.addModelContext(modelContext);
+    }
+
+    public static final class ModelContext {
 		private final OrmContext    		   ormContext;
 		private final EntityMapping 		   entityMapping;
 		private final Dao					   dao;
 		private final Dmo					   dmo;
 		private final BeanType      		   beanType;
-		private final Map<String, ModelFinder> finders = new HashMap<String, ModelFinder>();
-		
+
 		public ModelContext(OrmContext ormContext,EntityMapping em,Dao dao,Dmo dmo){
 			this.ormContext    = ormContext;
 			this.entityMapping = em;
@@ -147,6 +121,13 @@ public class ModelRegistry {
 		public Class<? extends Model> getModelClass() {
 			return entityMapping.getModelClass();
 		}
+
+        public Class<? extends Model> getExtendModelClass() {
+            if(null != entityMapping.getExtendedEntityClass() && Model.class.isAssignableFrom(entityMapping.getExtendedEntityClass())) {
+                return (Class<Model>)entityMapping.getExtendedEntityClass();
+            }
+            return null;
+        }
 
 		public BeanType getBeanType(){
 			return beanType;
@@ -190,18 +171,6 @@ public class ModelRegistry {
 			}
 			
 			return dmo;
-		}
-		
-		public ModelFinder getFinder(String name) throws ObjectNotFoundException {
-			ModelFinder finder = finders.get(name);
-			if(null == finder){
-				throw new ObjectNotFoundException("Finder '" + name + "' not exists in Model '" + entityMapping.getModelClass().getName() + "'");
-			}
-			return finder;
-		}
-		
-		protected void addFinder(String name,ModelFinder finder){
-			finders.put(name, finder);
 		}
 	}
 	

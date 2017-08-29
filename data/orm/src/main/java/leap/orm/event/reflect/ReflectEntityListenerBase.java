@@ -116,7 +116,7 @@ public abstract class ReflectEntityListenerBase<E extends EntityEvent> {
         if(!typeMatches) {
             bean = bt.newInstance();
             for (String name : entity.getFieldNames()) {
-                bt.trySet(bean, name, entity.get(name));
+                bt.trySetProperty(bean, name, entity.get(name));
             }
         }else {
             bean = e.getEntity().raw();
