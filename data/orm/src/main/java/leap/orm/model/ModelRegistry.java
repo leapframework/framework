@@ -137,8 +137,7 @@ public class ModelRegistry {
 		private final Dao					   dao;
 		private final Dmo					   dmo;
 		private final BeanType      		   beanType;
-		private final Map<String, ModelFinder> finders = new HashMap<String, ModelFinder>();
-		
+
 		public ModelContext(OrmContext ormContext,EntityMapping em,Dao dao,Dmo dmo){
 			this.ormContext    = ormContext;
 			this.entityMapping = em;
@@ -200,18 +199,6 @@ public class ModelRegistry {
 			}
 			
 			return dmo;
-		}
-		
-		public ModelFinder getFinder(String name) throws ObjectNotFoundException {
-			ModelFinder finder = finders.get(name);
-			if(null == finder){
-				throw new ObjectNotFoundException("Finder '" + name + "' not exists in Model '" + entityMapping.getModelClass().getName() + "'");
-			}
-			return finder;
-		}
-		
-		protected void addFinder(String name,ModelFinder finder){
-			finders.put(name, finder);
 		}
 	}
 	

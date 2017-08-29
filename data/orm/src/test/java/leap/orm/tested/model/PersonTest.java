@@ -75,13 +75,6 @@ public class PersonTest extends OrmTestCase {
 	}
 	
 	@Test
-	public void testDynamicFinder(){
-		Person.findByName("h");
-		assertNotNull(Person.findAllByNameLike("%xx%"));
-		assertNotNull(Person.findAllByNameOrNameLike("11","%11%"));
-	}
-	
-	@Test
 	public void testCrud(){
 		deleteAll(Person.class);
 		

@@ -68,15 +68,8 @@ public class ModelMapper implements Mapper,AppContextAware,OrmContextInitializab
     }
 	
 	protected void registerModel(OrmContext context, EntityMapping em, Dao dao, Dmo dmo){
-		
 		ModelContext modelContext = new ModelContext(context, em, dao, dmo);
 
-		for(ReflectMethod method : modelContext.getBeanType().getReflectClass().getMethods()){
-			if(method.isAnnotationPresent(Finder.class)){
-				modelContext.addFinder(method.getName(), new ModelFinder(modelContext, method));
-			}
-		}
-		
 		ModelRegistry.addModelContext(modelContext);
 	}
 
