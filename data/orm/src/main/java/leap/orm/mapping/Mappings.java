@@ -20,6 +20,7 @@ import java.util.Map;
 
 import leap.lang.Objects2;
 import leap.lang.Strings;
+import leap.lang.accessor.Getter;
 import leap.lang.beans.BeanType;
 
 /**
@@ -48,21 +49,25 @@ public class Mappings {
     }
 	
 	public static Object getId(EntityMapping em , Map<String, Object> attributes){
-		String[] keyNames = em.getKeyFieldNames();
-		if(keyNames.length == 1){
-			return attributes.get(keyNames[0]);
-		}
-		
-		if(keyNames.length == 0){
-			return null;
-		}
-		
-		Map<String, Object> id = new LinkedHashMap<String, Object>();
-		for(int i=0;i<keyNames.length;i++){
-			id.put(keyNames[i], attributes.get(keyNames[i]));
-		}
-		return id;
+        return getId(em, attributes::get);
 	}
+
+    public static Object getId(EntityMapping em, Getter getter) {
+        String[] keyNames = em.getKeyFieldNames();
+        if(keyNames.length == 1){
+            return getter.get(keyNames[0]);
+        }
+
+        if(keyNames.length == 0){
+            return null;
+        }
+
+        Map<String, Object> id = new LinkedHashMap<String, Object>();
+        for(int i=0;i<keyNames.length;i++){
+            id.put(keyNames[i], getter.get(keyNames[i]));
+        }
+        return id;
+    }
 	
 	public static String getIdToString(EntityMapping em , Map<String, Object> attributes){
 		String[] keyNames = em.getKeyFieldNames();
