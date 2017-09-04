@@ -159,6 +159,10 @@ public class DefaultRoutes implements Routes {
             route = matchedRoutes.get(0);
         }else{
             route = rematch(matchedRoutes);
+
+            // get the right path template variables.
+			outVariables.clear();
+			route.getPathTemplate().match(path, outVariables);
         }
 
         if(route instanceof NestedRoute) {
