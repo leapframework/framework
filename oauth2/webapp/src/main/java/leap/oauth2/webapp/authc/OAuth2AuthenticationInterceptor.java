@@ -18,6 +18,7 @@ package leap.oauth2.webapp.authc;
 
 import leap.core.annotation.Inject;
 import leap.core.security.token.TokenVerifyException;
+import leap.core.web.RequestIgnore;
 import leap.lang.intercepting.State;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
@@ -49,7 +50,13 @@ public class OAuth2AuthenticationInterceptor implements SecurityInterceptor {
 		if (!config.isEnabled()) {
             return State.CONTINUE;
         }
-
+    
+        for(RequestIgnore ignore : config.getIgnores()){
+		    if(ignore.matches(request)){
+                return State.CONTINUE;
+            }
+        }
+        
         //Extract access token from request.
         Token token = tokenExtractor.extractTokenFromRequest(request);
         if(null == token) {

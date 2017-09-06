@@ -15,6 +15,8 @@
  */
 package leap.oauth2.webapp;
 
+import leap.core.web.RequestIgnore;
+
 /**
  * The configuration of oauth2 web app.
  *
@@ -106,4 +108,9 @@ public interface OAuth2Config {
      */
     String getLogoutView();
 
+    /**
+     * Returns the request of ignore access token resolved. 
+     */
+    RequestIgnore[] getIgnores();
+    
 }

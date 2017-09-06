@@ -19,8 +19,10 @@ package leap.oauth2.webapp;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
 import leap.core.annotation.Inject;
+import leap.core.web.RequestIgnore;
 import leap.lang.Strings;
 import leap.lang.net.Urls;
+import leap.lang.path.AntPathPattern;
 import leap.lang.path.Paths;
 import leap.oauth2.webapp.user.UserDetailsLookup;
 import leap.web.App;
@@ -30,6 +32,8 @@ import leap.web.ServerInfo;
 import leap.web.security.SecurityConfigurator;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 @Configurable(prefix="oauth2")
 public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, AppInitializable, AppListener {
@@ -51,6 +55,9 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     protected String  redirectUri;
     protected String  errorView;
     protected String  logoutView;
+
+    private List<RequestIgnore> ignoresList = new ArrayList<>();
+    private RequestIgnore[] ignoresArray = new RequestIgnore[] {};
 
     protected @Inject UserDetailsLookup userDetailsLookup;
 
@@ -241,7 +248,20 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
 		return clientId;
 	}
 
-	@Override
+    @Override
+    public OAuth2Configurator ignorePath(String path) {
+        AntPathPattern pattern = new AntPathPattern(path);
+        ignoresList.add((req) -> pattern.matches(req.getPath()));
+        ignoresArray = ignoresList.toArray(new RequestIgnore[ignoresList.size()]);
+        return this;
+    }
+
+    @Override
+    public RequestIgnore[] getIgnores() {
+        return ignoresArray;
+    }
+
+    @Override
     @ConfigProperty
 	public OAuth2Configurator setClientId(String clientId) {
 		this.clientId = clientId;

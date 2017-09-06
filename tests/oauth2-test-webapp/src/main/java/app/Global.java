@@ -15,11 +15,21 @@
  */
 package app;
 
+import leap.core.annotation.Inject;
+import leap.oauth2.webapp.OAuth2Configurator;
 import leap.web.App;
+import leap.web.config.WebConfigurator;
 
 /**
  * App with full oauth2 features.
  */
 public class Global extends App {
+    
+    protected @Inject OAuth2Configurator oc;
 
+    @Override
+    protected void configure(WebConfigurator c) {
+        oc.ignorePath("/ignore_access_token_resolved");
+        super.configure(c);
+    }
 }
