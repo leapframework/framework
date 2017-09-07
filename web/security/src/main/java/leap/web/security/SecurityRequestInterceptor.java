@@ -40,11 +40,12 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 
 	private static final Log log = LogFactory.get(SecurityRequestInterceptor.class);
 
-    protected @Inject @M SecurityConfig    config;
-    protected @Inject @M PermissionManager perm;
-    protected @Inject @M SecuredPathSource pathSource;
-    protected @Inject @M SecurityHandler   handler;
-    protected @Inject @M CsrfHandler       csrf;
+    protected @Inject @M SecurityConfig         config;
+    protected @Inject @M SecurityConfigurator   configurator;
+    protected @Inject @M PermissionManager      perm;
+    protected @Inject @M SecuredPathSource      pathSource;
+    protected @Inject @M SecurityHandler        handler;
+    protected @Inject @M CsrfHandler            csrf;
 
     protected SecuredPathBuilder spb(Route route) {
         SecuredPathBuilder spb = route.getExtension(SecuredPathBuilder.class);
@@ -59,6 +60,13 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     public void postAppStart(App app) throws Throwable {
 
 	    for(Route route : app.routes()) {
+	        if(null != route.getAction()){
+                Ignore ignore = route.getAction().searchAnnotation(Ignore.class);
+                if(null != ignore && ignore.value()){
+                    configurator.ignore(route.getPathTemplate().getTemplate());
+                }
+            }
+	        
             if(null != route.getAllowAnonymous()) {
                 spb(route).setAllowAnonymous(route.getAllowAnonymous());
             }

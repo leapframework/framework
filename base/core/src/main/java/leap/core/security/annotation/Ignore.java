@@ -16,22 +16,23 @@
  *  
  */
 
-package tests.resource;
+package leap.core.security.annotation;
 
-import org.junit.Test;
-import tests.OAuth2TestBase;
-import tests.TokenResponse;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * @author kael.
  */
-public class HomeControllerTest extends OAuth2TestBase {
-    @Test
-    public void testIgnoreAccessTokenResolved(){
-        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
-        useGet("/ignore_access_token_resolved").addHeader("Authorization","Bearer " + token.accessToken)
-                .send().assertOk();
-        useGet("/no_ignore_access_token_resolved").addHeader("Authorization","Bearer " + token.accessToken)
-                .send().assertOk();
-    }
+@Target({ElementType.TYPE,ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface Ignore {
+    /**
+     * Sets to ignore this path of security (true) or use security interceptor
+     */
+    boolean value() default true;
 }

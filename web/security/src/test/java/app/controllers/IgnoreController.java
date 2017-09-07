@@ -16,22 +16,25 @@
  *  
  */
 
-package tests.resource;
+package app.controllers;
 
-import org.junit.Test;
-import tests.OAuth2TestBase;
-import tests.TokenResponse;
+import leap.core.security.annotation.Ignore;
+import leap.lang.http.HTTP;
+import leap.web.Request;
+import leap.web.Response;
 
 /**
  * @author kael.
  */
-public class HomeControllerTest extends OAuth2TestBase {
-    @Test
-    public void testIgnoreAccessTokenResolved(){
-        TokenResponse token = obtainAccessTokenByPassword(USER_XIAOMING, PASS_XIAOMING,TEST_CLIENT_ID,TEST_CLIENT_SECRET);
-        useGet("/ignore_access_token_resolved").addHeader("Authorization","Bearer " + token.accessToken)
-                .send().assertOk();
-        useGet("/no_ignore_access_token_resolved").addHeader("Authorization","Bearer " + token.accessToken)
-                .send().assertOk();
+@Ignore
+public class IgnoreController {
+    
+    public void ignore(Request request, Response response){
+        if(null == request.getUser()){
+            response.setStatus(HTTP.SC_OK);
+        }else {
+            response.setStatus(HTTP.SC_FORBIDDEN);
+        }
     }
+    
 }
