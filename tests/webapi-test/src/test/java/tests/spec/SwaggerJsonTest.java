@@ -102,7 +102,26 @@ public class SwaggerJsonTest extends WebTestBase {
         }
         assertTrue(assertFlow);
     }
-    
+
+    @Test
+    public void testProfile() throws IOException {
+        String swagger = get("/api/swagger.json").getContent();
+        assertContains(swagger, "/profile/common_api");
+        assertContains(swagger, "/profile/mobile_api");
+        assertContains(swagger, "/profile/web_api");
+
+        swagger = get("/api/swagger.json?profile=mobile").getContent();
+        assertContains(swagger, "/profile/common_api");
+        assertContains(swagger, "/profile/mobile_api");
+        assertContains(swagger, "\"/profile/web_api\":{}");
+
+        swagger = get("/api/swagger.json?profile=web").getContent();
+        assertContains(swagger, "/profile/common_api");
+        assertContains(swagger, "\"/profile/mobile_api\":{}");
+        assertContains(swagger, "/profile/web_api");
+
+    }
+
     protected Map<String, Object> getAsMap(Map<String, Object> map, String key){
         return (Map<String, Object>)map.get(key);
     }
