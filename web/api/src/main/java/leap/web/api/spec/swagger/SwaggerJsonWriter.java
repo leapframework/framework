@@ -15,12 +15,14 @@
  */
 package leap.web.api.spec.swagger;
 
+import leap.core.doc.annotation.Doc;
 import leap.lang.Args;
 import leap.lang.Arrays2;
 import leap.lang.New;
 import leap.lang.Strings;
 import leap.lang.json.JsonWriter;
 import leap.lang.meta.*;
+import leap.web.Request;
 import leap.web.api.config.ApiConfigException;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.*;
@@ -28,6 +30,7 @@ import leap.web.api.meta.model.MApiParameter.Location;
 import leap.web.api.spec.ApiSpecContext;
 import leap.web.api.spec.JsonSpecWriter;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -135,20 +138,43 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 		
 		w.endObject();
 	}
-	
+
 	protected void writePath(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p) {
 		w.startObject();
 
 		for(MApiOperation o : p.getOperations()) {
-			w.property(o.getMethod().name().toLowerCase(), () -> {
+
+            if (checkProfile(o)) continue;
+
+            w.property(o.getMethod().name().toLowerCase(), () -> {
 				writeOperation(context, m, w, p, o);
 			});
 		}
 		
 		w.endObject();
 	}
-	
-	protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
+
+    private boolean checkProfile(MApiOperation o) {
+        Doc doc = o.getRoute().getAction().getMethod().getAnnotation(Doc.class);
+        if(null != doc && Arrays2.isNotEmpty(doc.profile())) {
+            Request request = Request.tryGetCurrent();
+
+            if (null != request) {
+                String requestProfile = request.getParameter("profile");
+
+                if (Strings.isNotBlank(requestProfile)) {
+                    String[] methodProfiles = doc.profile();
+
+                    if(!Arrays2.containsAny(methodProfiles, requestProfile)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
 		w.startObject();
 
         if(null != o.getCorsEnabled()) {

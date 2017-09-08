@@ -38,4 +38,10 @@ public @interface Doc {
      */
     String desc() default "";
 
+    /**
+     * The profile.
+     *
+     * request profile example: http://xxxx/swagger.json?profile=profileA
+     */
+    String[] profile() default "";
 }
