@@ -72,9 +72,13 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
     protected void processModel(ApiMetadataContext context, MApiModelBuilder m) {
         ModelConfig mc = null;
 
-        if(null != m.getJavaType()) {
-            mc = context.getConfig().getModel(m.getJavaType());
-        }else{
+        for(Class<?> javaType : m.getJavaTypes()) {
+            mc = context.getConfig().getModel(javaType);
+            if(null != mc) {
+                break;
+            }
+        }
+        if(null == mc) {
             mc = context.getConfig().getModel(m.getName());
         }
 

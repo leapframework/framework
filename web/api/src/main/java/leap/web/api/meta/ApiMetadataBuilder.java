@@ -263,8 +263,10 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         }
 
         for(MApiModelBuilder m : models.values()){
-            if(type.equals(m.getJavaType())) {
-                return m;
+            for(Class<?> javaType : m.getJavaTypes()) {
+                if(type.equals(javaType)) {
+                    return m;
+                }
             }
         }
 
@@ -277,8 +279,10 @@ public class ApiMetadataBuilder extends MApiNamedWithDescBuilder<ApiMetadata> {
         }
 
         for(MApiModelBuilder m : models.values()){
-            if(className.equals(m.getJavaType().getName())) {
-                return m;
+            for(Class<?> javaType : m.getJavaTypes()) {
+                if(javaType.getName().equals(className)) {
+                    return m;
+                }
             }
         }
 

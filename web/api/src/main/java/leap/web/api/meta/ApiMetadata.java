@@ -197,8 +197,10 @@ public class ApiMetadata extends MApiNamedWithDesc {
 
     public MApiModel getModel(Class<?> type) {
         for(MApiModel m : models.values()) {
-            if(type.equals(m.getJavaType())) {
-                return m;
+            for(Class<?> javaType : m.getJavaTypes()) {
+                if(type.equals(javaType)) {
+                    return m;
+                }
             }
         }
         throw new ObjectNotFoundException("No api model of type '" + type + "'");

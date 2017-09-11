@@ -22,15 +22,15 @@ import java.util.Map;
 public class MApiModel extends MApiNamedWithDesc {
 
     protected final String         baseName;
-    protected final Class<?>       javaType;
+    protected final Class<?>[]     javaTypes;
     protected final MApiProperty[] properties;
 
     public MApiModel(String baseName, String name, String title, String summary, String description,
-                     Class<?> javaType, MApiProperty[] properties, Map<String, Object> attrs) {
+                     Class<?>[] javaTypes, MApiProperty[] properties, Map<String, Object> attrs) {
         super(name, title, summary, description, attrs);
 
         this.baseName = baseName;
-        this.javaType = javaType;
+        this.javaTypes = javaTypes;
         this.properties = properties;
     }
 
@@ -48,8 +48,8 @@ public class MApiModel extends MApiNamedWithDesc {
     /**
      * Optional.
      */
-    public Class<?> getJavaType() {
-        return javaType;
+    public Class<?>[] getJavaTypes() {
+        return javaTypes;
     }
 
     public MApiProperty[] getProperties() {

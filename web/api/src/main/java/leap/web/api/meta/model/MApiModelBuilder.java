@@ -15,19 +15,23 @@
  */
 package leap.web.api.meta.model;
 
+import leap.lang.Arrays2;
 import leap.lang.Builders;
 import leap.lang.Strings;
 import leap.lang.meta.MComplexType;
 import leap.lang.meta.MProperty;
 
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
     protected String       baseName;
     protected MComplexType type;
-    protected Class<?>     javaType;
+
+    protected Set<Class<?>>                    javaTypes  = new LinkedHashSet<>();
     protected Map<String, MApiPropertyBuilder> properties = new LinkedHashMap<>();
 
     public MApiModelBuilder() {
@@ -44,7 +48,10 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.title = type.getTitle();
         this.summary = type.getSummary();
         this.description = type.getDescription();
-        this.javaType = type.getJavaType();
+
+        if(null != type.getJavaType()) {
+            this.javaTypes.add(type.getJavaType());
+        }
 
         for (MProperty mp : type.getProperties()) {
             addProperty(new MApiPropertyBuilder(mp));
@@ -62,12 +69,12 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
         this.baseName = baseName;
     }
 
-    public Class<?> getJavaType() {
-        return javaType;
+    public Set<Class<?>> getJavaTypes() {
+        return javaTypes;
     }
 
-    public void setJavaType(Class<?> javaType) {
-        this.javaType = javaType;
+    public void addJavaType(Class<?> c) {
+        javaTypes.add(c);
     }
 
     public Map<String, MApiPropertyBuilder> getProperties() {
@@ -84,7 +91,7 @@ public class MApiModelBuilder extends MApiNamedWithDescBuilder<MApiModel> {
 
     @Override
     public MApiModel build() {
-        return new MApiModel(baseName, name, title, summary, description, javaType,
+        return new MApiModel(baseName, name, title, summary, description, javaTypes.toArray(Arrays2.EMPTY_CLASS_ARRAY),
                 Builders.buildArray(properties.values(), new MApiProperty[properties.size()]), attrs);
     }
 

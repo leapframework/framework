@@ -91,10 +91,9 @@ public class AnnotationDocProcessor implements ApiMetadataProcessor {
     }
 
     protected void processModel(ApiMetadataContext context, MApiModelBuilder model) {
-        Class<?> c = model.getJavaType();
-        if(null != c) {
+        for(Class<?> c : model.getJavaTypes()) {
             Doc doc = c.getAnnotation(Doc.class);
-            if(null != doc) {
+            if (null != doc) {
                 resolveDoc(context, model, doc);
             }
         }

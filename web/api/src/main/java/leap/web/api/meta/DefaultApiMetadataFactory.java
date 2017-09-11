@@ -297,30 +297,31 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
     }
 
     protected void postProcessModelInheritance(ApiMetadataContext context, ApiMetadataBuilder m, String name, MApiModelBuilder model) {
-        if(null != model.getJavaType()) {
+        if(null != model.getJavaTypes()) {
+            for(Class<?> javaType : model.getJavaTypes()) {
+                //already processed.
+                if (null != model.getBaseName()) {
+                    return;
+                }
 
-            //already processed.
-            if(null != model.getBaseName()) {
-                return;
-            }
+                Class<?> c = javaType.getSuperclass();
+                if (Object.class.equals(c) || model.getJavaTypes().contains(c)) {
+                    return;
+                }
 
-            Class<?> c = model.getJavaType().getSuperclass();
-            if(null == c) {
-                return;
-            }
+                MApiModelBuilder parent = m.tryGetModel(c);
+                if (null != parent) {
+                    //the parent's inheritance must be processed firstly.
+                    postProcessModelInheritance(context, m, name, parent);
 
-            MApiModelBuilder parent = m.tryGetModel(c);
-            if(null != parent) {
-                //the parent's inheritance must be processed firstly.
-                postProcessModelInheritance(context, m, name, parent);
+                    //process child.
+                    model.setBaseName(parent.getName());
 
-                //process child.
-                model.setBaseName(parent.getName());
-
-                //removes the properties inherited from base model.
-                parent.getProperties().keySet().forEach((p) -> {
-                    model.removeProperty(p);
-                });
+                    //removes the properties inherited from base model.
+                    parent.getProperties().keySet().forEach((p) -> {
+                        model.removeProperty(p);
+                    });
+                }
             }
         }
     }
@@ -362,6 +363,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
         String name = modelName(context, ct);
         MApiModelBuilder model = md.tryGetModel(name);
         if(null != model) {
+            if(null != ct.getJavaType() && !model.getJavaTypes().contains(ct.getJavaType())) {
+                model.addJavaType(ct.getJavaType());
+            }
             return null;
         }
 
