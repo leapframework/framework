@@ -165,7 +165,7 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 			}
 		}else if(command instanceof DropIndex){
 			apply = isDropTableObjectsEnabled() || isDropIndexEnabled();
-			
+
 			if(!apply){
 				log.info("Dropping index '{}' of table '{}' is disabled",
 						((DropIndex)command).getIndexName(),((DropIndex)command).getTableName());
@@ -197,6 +197,11 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
                     return false;
                 }
                 return true;
+            }
+
+            if(change instanceof TablePropertyChange) {
+                //todo: handle table property change.
+                return false;
             }
 
             if(change instanceof IndexDefinitionChange) {
