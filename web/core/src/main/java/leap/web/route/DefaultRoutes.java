@@ -144,7 +144,14 @@ public class DefaultRoutes implements Routes {
 				}
 				
 				if(route.getPathTemplate().match(path, outVariables)){
-					matchedRoutes.add(route);
+
+					if(route instanceof NestedRoute) {
+						route = ((NestedRoute) route).match(method, path, inParameters, outVariables);
+					}
+
+					if(null != route) {
+						matchedRoutes.add(route);
+					}
 				}
 			}
 		}
@@ -158,15 +165,12 @@ public class DefaultRoutes implements Routes {
 		if(matchedRoutes.size() == 1) {
             route = matchedRoutes.get(0);
         }else{
+
             route = rematch(matchedRoutes);
 
             // get the right path template variables.
 			outVariables.clear();
 			route.getPathTemplate().match(path, outVariables);
-        }
-
-        if(route instanceof NestedRoute) {
-            route = ((NestedRoute) route).match(method, path, inParameters, outVariables);
         }
 
 		return route;
