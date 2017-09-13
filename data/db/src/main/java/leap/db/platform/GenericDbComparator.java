@@ -329,12 +329,12 @@ public class GenericDbComparator implements DbComparator,DbAware {
 			
 			//check for type changed
 			if(!Strings.equals(sourceTypeAndSize[0],targetTypeAndSize[0])){
-				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.TYPE, targetTypeAndSize[0], sourceTypeAndSize[0]));
+				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.TYPE, targetTypeAndSize[0], sourceTypeAndSize[0]).setTable(sourceTable));
 			}
 			
 			//check for size changed
 			if(!Strings.equals(sourceTypeAndSize[1],targetTypeAndSize[1])){
-				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.SIZE, targetTypeAndSize[1], sourceTypeAndSize[1]));
+				changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.SIZE, targetTypeAndSize[1], sourceTypeAndSize[1]).setTable(sourceTable));
 			}
 		}
 	}
@@ -355,7 +355,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.getDefaultValue(),
 					  sourceColumn.getDefaultValue());
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.DEFAULT, targetColumn.getDefaultValue(), sourceColumn.getDefaultValue()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.DEFAULT, targetColumn.getDefaultValue(), sourceColumn.getDefaultValue()).setTable(sourceTable));
 		}
 	}
 	
@@ -368,7 +368,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.isNullable() ? "null" : "not null",
 					  sourceColumn.isNullable() ? "null" : "not null");
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.NULLABLE, targetColumn.isNullable(), sourceColumn.isNullable()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.NULLABLE, targetColumn.isNullable(), sourceColumn.isNullable()).setTable(sourceTable));
 		}
 	}
 	
@@ -381,7 +381,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.getComment(),
 					  sourceColumn.getComment());
 			
-			changes.add(new ColumnPropertyChange(targetColumn,ColumnPropertyChange.COMMENT, targetColumn.getComment(), sourceColumn.getComment()));
+			changes.add(new ColumnPropertyChange(targetColumn,ColumnPropertyChange.COMMENT, targetColumn.getComment(), sourceColumn.getComment()).setTable(sourceTable));
 		}
 	}
 	
@@ -394,7 +394,7 @@ public class GenericDbComparator implements DbComparator,DbAware {
 					  targetColumn.isUnique() ? "unique" : "",
 					  sourceColumn.isUnique() ? "unique" : "");
 			
-			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.UNIQUE, targetColumn.isUnique(), sourceColumn.isUnique()));
+			changes.add(new ColumnPropertyChange(targetColumn, ColumnPropertyChange.UNIQUE, targetColumn.isUnique(), sourceColumn.isUnique()).setTable(sourceTable));
 		}
 	}
 	
