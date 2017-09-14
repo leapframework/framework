@@ -16,6 +16,7 @@
 package leap.orm.command;
 
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.List;
 
@@ -130,4 +131,10 @@ public interface UpgradeSchemaCommand extends DmoCommand {
      * Prints the upgrade scripts.
      */
     void printUpgradeScripts(PrintWriter out);
+
+    /**
+     * Prints the upgrade scripts.
+     */
+    void printUpgradeScripts(PrintStream out);
+
 }

@@ -29,6 +29,7 @@ import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -186,6 +187,15 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 
     @Override
     public void printUpgradeScripts(PrintWriter out) {
+        out.println();
+        for(String s : getUpgradeScripts()) {
+            out.println(s);
+            out.println();
+        }
+    }
+
+    @Override
+    public void printUpgradeScripts(PrintStream out) {
         out.println();
         for(String s : getUpgradeScripts()) {
             out.println(s);
