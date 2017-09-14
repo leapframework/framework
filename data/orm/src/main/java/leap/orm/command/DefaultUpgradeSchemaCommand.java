@@ -22,12 +22,14 @@ import leap.db.change.*;
 import leap.db.command.*;
 import leap.db.model.DbSchema;
 import leap.db.model.DbTable;
+import leap.lang.Collections2;
 import leap.lang.Error;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
 import leap.orm.dmo.Dmo;
 import leap.orm.mapping.EntityMapping;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -182,9 +184,17 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
 	    return execution.errors();
     }
 
-	@Override
-    protected boolean doExecute() {
+    @Override
+    public void printUpgradeScripts(PrintWriter out) {
+        out.println();
+        for(String s : getUpgradeScripts()) {
+            out.println(s);
+            out.println();
+        }
+    }
 
+    @Override
+    public List<String> getUpgradeScripts() {
         Predicate<SchemaChange> changePredicate = change -> {
             if (change instanceof ColumnDefinitionChange) {
                 if (!isAlterColumnEnabled()) {
@@ -217,14 +227,21 @@ public class DefaultUpgradeSchemaCommand extends AbstractDmoCommand implements U
             return true;
         };
 
+        List<SchemaChanges> allChanges = compareChanges();
+
+        List<String> scripts = new ArrayList<>();
+        for(SchemaChanges changes : allChanges){
+            DbCommands changeCommands = changes.filter(changePredicate).getChangeCommands();
+            Collections2.addAll(scripts, changeCommands.filter(this).getExecutionScripts());
+        }
+        return scripts;
+    }
+
+    @Override
+    protected boolean doExecute() {
         execution = db.createExecution();
-		List<SchemaChanges> allChanges = compareChanges();
-		
-		for(SchemaChanges changes : allChanges){
-			DbCommands changeCommands = changes.filter(changePredicate).getChangeCommands();
-			execution.addAll(changeCommands.filter(this).getExecutionScripts());
-		}
-		
+        execution.addAll(getUpgradeScripts());
+
 		if(execution.numberOfStatements() == 0){
 			log.info("Found 0 changes, no need to upgrade schemas on db '{}'",db.getDescription());
 			return true;
