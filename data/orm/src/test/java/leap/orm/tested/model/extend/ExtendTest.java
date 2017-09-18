@@ -49,4 +49,16 @@ public class ExtendTest extends OrmTestCase {
         m2.delete();
     }
 
+    @Test
+    public void testExtendEntityDao() {
+        ExtendEntityEx m1 = new ExtendEntityEx();
+        m1.setCol1("c1");
+        m1.setCol2("c2");
+        dao.insert(m1);
+
+        ExtendEntityBase b = dao.find(ExtendEntityBase.class, m1.getId());
+        assertEquals(m1.getCol1(), b.getCol1());
+
+        dao.delete(m1);
+    }
 }

@@ -184,6 +184,9 @@ public class DefaultEntityReader implements EntityReader {
 			
 			if(null != fm && beanClass.equals(cm.getEntityMapping().getEntityClass())){
 				bp = fm.getBeanProperty();
+                if(!bp.getBeanType().getBeanClass().equals(beanClass)) {
+                    bp = null;
+                }
 			}else{
 				if(null != fm){
 					bp = beanType.tryGetProperty(fm.getFieldName());
