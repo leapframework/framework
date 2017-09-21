@@ -38,6 +38,16 @@ public interface OrmMetadataManager {
 	void loadMetadata(OrmContext context) throws MetadataException;
 
     /**
+     * Loads the metadata at the base package.
+     */
+    void loadPackage(OrmContext context, String basePackage) throws MetadataException;
+
+    /**
+     * Loads the metadata of the classes.
+     */
+    void loadClasses(OrmContext context, Class<?>... classes) throws MetadataException;
+
+    /**
      * Processing the mappings.
      */
     void processMappings(MappingConfigContext context);

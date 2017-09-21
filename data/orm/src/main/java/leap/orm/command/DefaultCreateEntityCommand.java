@@ -45,13 +45,13 @@ public class DefaultCreateEntityCommand extends AbstractDmoCommand implements Cr
 		this.entityClass = entityClass;
 		
 		if(null != metadata.tryGetEntityMapping(entityClass)){
-			throw new MappingExistsException("The entity mapping for class '" + entityClass.getName() + "' aleady exists");
+			throw new MappingExistsException("The entity mapping for class '" + entityClass.getName() + "' already exists");
 		}
 
 		emb = dmo.getOrmContext().getMappingStrategy().createEntityMappingByClass(context,entityClass);
 
 		if(null != metadata.tryGetEntityMapping(emb.getEntityName())){
-			throw new MappingExistsException("Entity named '" + emb.getEntityName() + "' aleady exists, check the class '" + entityClass.getName() + "'");
+			throw new MappingExistsException("Entity named '" + emb.getEntityName() + "' already exists, check the class '" + entityClass.getName() + "'");
 		}
 	}
 

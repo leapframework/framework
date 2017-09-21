@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.leapframework.org/schema/beans">
 
+    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="db1" >
+        <property name="driverClassName" value="org.h2.Driver" />
+        <property name="jdbcUrl"         value="jdbc:h2:mem:db1;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'" />
+    </bean>
+
+    <bean type="javax.sql.DataSource" class="leap.db.cp.PooledDataSource" name="db2">
+        <property name="driverClassName" value="org.h2.Driver" />
+        <property name="jdbcUrl"         value="jdbc:h2:mem:db2;DB_CLOSE_ON_EXIT=FALSE;INIT=RUNSCRIPT FROM './init_h2.sql'" />
+    </bean>
 
 </beans>

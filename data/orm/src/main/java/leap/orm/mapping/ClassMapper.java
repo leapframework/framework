@@ -38,31 +38,44 @@ public class ClassMapper implements Mapper {
         final Set<Class<?>> mapped = new HashSet<>();
 		
 		resources.processClasses((cls) -> {
-
- 			if(mappingStrategy.isExplicitEntity(context,cls)){
-
-                if(!mappingStrategy.isContextModel(context.getOrmContext(), cls)) {
-                    return;
-                }
-
-                if(mapped.contains(cls)) {
-                    return;
-                }
-
-                EntityMappingBuilder emb = mappingStrategy.createEntityMappingByClass(context, cls);
-
-                ExtendedEntity a = cls.getAnnotation(ExtendedEntity.class);
-                if(null != a) {
-                    mapped.add(processExtendedEntityMapping(context, emb, a));
-                }else{
-                    context.addEntityMapping(emb);
-                    mapped.add(cls);
-                }
-            }
+            loadMapping(context, mapped, cls, true);
 		});
 
         mapped.clear();
 		
+    }
+
+    public void loadMappings(final MappingConfigContext context, Class... classes) {
+        final Set<Class<?>> mapped = new HashSet<>();
+
+        for(Class<?> cls : classes) {
+            loadMapping(context, mapped, cls, false);
+        }
+
+        mapped.clear();
+    }
+
+    protected void loadMapping(final MappingConfigContext context, final Set<Class<?>> mapped, Class<?> cls, boolean checkContext) {
+        if(mappingStrategy.isExplicitEntity(context,cls)){
+
+            if(checkContext && !mappingStrategy.isContextModel(context.getOrmContext(), cls)) {
+                return;
+            }
+
+            if(mapped.contains(cls)) {
+                return;
+            }
+
+            EntityMappingBuilder emb = mappingStrategy.createEntityMappingByClass(context, cls);
+
+            ExtendedEntity a = cls.getAnnotation(ExtendedEntity.class);
+            if(null != a) {
+                mapped.add(processExtendedEntityMapping(context, emb, a));
+            }else{
+                context.addEntityMapping(emb);
+                mapped.add(cls);
+            }
+        }
     }
 
     protected Class<?> processExtendedEntityMapping(final MappingConfigContext context, EntityMappingBuilder ext, ExtendedEntity a) {

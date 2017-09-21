@@ -24,6 +24,7 @@ import leap.db.model.DbSchemaBuilder;
 import leap.lang.Args;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.resource.Resources;
 import leap.lang.time.StopWatch;
 import leap.orm.DefaultOrmMetadata;
 import leap.orm.OrmConfig;
@@ -107,6 +108,62 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 		    tryCreateDefaultSqlCommands(loadingContext, em);
             tryCreateTable(loadingContext, em, schema);
 		}
+
+        if(!schema.getTables().isEmpty()) {
+            context.getDb().cmdCreateSchema(schema.build()).execute();
+        }
+
+        //preparing sql commands.
+        for(SqlCommand command : context.getMetadata().getSqlCommandSnapshotList()) {
+            command.prepare(context);
+        }
+    }
+
+    @Override
+    public void loadPackage(OrmContext context, String basePackage) throws MetadataException {
+        Class[] classes = Resources.scanPackage(basePackage).searchClasses();
+        loadClasses(context, classes);
+    }
+
+    @Override
+    public void loadClasses(OrmContext context, Class<?>... classes) throws MetadataException {
+        log.debug("Loading metadata for orm context '{}'...", context.getName());
+
+        LoadingContext loadingContext = new LoadingContext(context);
+
+        StopWatch sw = StopWatch.startNew();
+
+        beanFactory.inject(new ClassMapper()).loadMappings(loadingContext, classes);
+
+        //loading entity mappings
+        for(Mapper loader : mappers){
+            loader.loadMappings(loadingContext);
+        }
+
+        //processing entity mappings.
+        processMappings(loadingContext);
+
+        //create mappings.
+        loadingContext.buildMappings();
+        log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
+
+        sw.restart();
+
+        /* todo : app resources not found.
+        //init sql commands
+        for(SqlSource ss : sqlSources){
+            ss.loadSqlCommands(loadingContext);
+        }
+        */
+
+        log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
+
+        //create default sql commands for all entities.
+        DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
+        for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+            tryCreateDefaultSqlCommands(loadingContext, em);
+            tryCreateTable(loadingContext, em, schema);
+        }
 
         if(!schema.getTables().isEmpty()) {
             context.getDb().cmdCreateSchema(schema.build()).execute();
