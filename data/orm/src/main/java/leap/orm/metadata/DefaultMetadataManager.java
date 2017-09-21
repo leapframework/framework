@@ -40,6 +40,7 @@ import leap.orm.sql.SqlSource;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class DefaultMetadataManager implements OrmMetadataManager {
 	
@@ -75,48 +76,7 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
     @Override
     public void loadMetadata(final OrmContext context) throws MetadataException {
-        log.debug("Loading metadata for orm context '{}'...", context.getName());
-
-		LoadingContext loadingContext = new LoadingContext(context);
-		
-		StopWatch sw = StopWatch.startNew();
-		
-		//loading entity mappings
-		for(Mapper loader : mappers){
-			loader.loadMappings(loadingContext);
-		}
-
-        //processing entity mappings.
-        processMappings(loadingContext);
-
-        //create mappings.
-		loadingContext.buildMappings();
-		log.debug("Load {} entities used {}ms",context.getMetadata().getEntityMappingSize(),sw.getElapsedMilliseconds());
-		
-		sw.restart();
-		
-		//init sql commands
-		for(SqlSource ss : sqlSources){
-			ss.loadSqlCommands(loadingContext);
-		}
-
-		log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
-
-		//create default sql commands for all entities.
-        DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
-		for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
-		    tryCreateDefaultSqlCommands(loadingContext, em);
-            tryCreateTable(loadingContext, em, schema);
-		}
-
-        if(!schema.getTables().isEmpty()) {
-            context.getDb().cmdCreateSchema(schema.build()).execute();
-        }
-
-        //preparing sql commands.
-        for(SqlCommand command : context.getMetadata().getSqlCommandSnapshotList()) {
-            command.prepare(context);
-        }
+        doLoad(context, null);
     }
 
     @Override
@@ -127,13 +87,21 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
     @Override
     public void loadClasses(OrmContext context, Class<?>... classes) throws MetadataException {
+        doLoad(context, (lc) -> {
+            beanFactory.inject(new ClassMapper()).loadMappings(lc, classes);
+        });
+    }
+
+    protected void doLoad(OrmContext context, Consumer<LoadingContext> preMapping) throws MetadataException {
         log.debug("Loading metadata for orm context '{}'...", context.getName());
 
         LoadingContext loadingContext = new LoadingContext(context);
 
         StopWatch sw = StopWatch.startNew();
 
-        beanFactory.inject(new ClassMapper()).loadMappings(loadingContext, classes);
+        if(null != preMapping) {
+            preMapping.accept(loadingContext);
+        }
 
         //loading entity mappings
         for(Mapper loader : mappers){
@@ -149,12 +117,10 @@ public class DefaultMetadataManager implements OrmMetadataManager {
 
         sw.restart();
 
-        /* todo : app resources not found.
         //init sql commands
         for(SqlSource ss : sqlSources){
             ss.loadSqlCommands(loadingContext);
         }
-        */
 
         log.debug("Load {} sqls used {}ms",context.getMetadata().getSqlCommandSize(),sw.getElapsedMilliseconds());
 

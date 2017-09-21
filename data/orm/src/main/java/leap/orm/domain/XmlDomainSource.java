@@ -74,7 +74,11 @@ public class XmlDomainSource implements DomainSource {
 
 	@Override
     public void loadDomains(Domains context) {
-		loadDomains(new LoadContext(context), AppResources.get(config).search("domains"));
+        AppResources resources = AppResources.tryGet(config);
+        if(null == resources) {
+            return;
+        }
+		loadDomains(new LoadContext(context), resources.search("domains"));
     }
 	
 	protected void loadDomains(LoadContext context, AppResource... resources){

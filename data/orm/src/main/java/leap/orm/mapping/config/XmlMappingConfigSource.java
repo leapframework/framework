@@ -81,9 +81,11 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     @Override
     public MappingConfig load(OrmContext context) {
         if(!loaded) {
-            AppResources resources = AppResources.get(appConfig);
-            load(context, resources.search("models"));
-            loaded = true;
+            AppResources resources = AppResources.tryGet(appConfig);
+            if(null != resources) {
+                load(context, resources.search("models"));
+                loaded = true;
+            }
         }
         return this;
     }

@@ -66,6 +66,10 @@ public class AppResources {
         return inst;
     }
 
+    public static AppResources tryGet(AppConfig config) {
+        return instances.get(config);
+    }
+
     public static Resource[] convertTo(AppResource[] resources) {
         Resource[] rs = new Resource[resources.length];
         for(int i=0;i<rs.length;i++) {
