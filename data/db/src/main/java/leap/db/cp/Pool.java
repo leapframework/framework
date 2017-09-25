@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -44,6 +45,7 @@ class Pool {
 	private final PoolConfig                  config;
 	private final DataSource                  dataSource;
 	private final PoolUtils                   utils;
+    private final String                      initSQL;
 	private final long                        maxWait;
 	private final int                         defaultTransactionIsolationLevel;
 	private final SyncPool                    syncPool;
@@ -62,6 +64,7 @@ class Pool {
 		this.utils 		= new PoolUtils(this);
 		this.syncPool   = new SyncPool();
 		this.maxWait    = config.getMaxWait();
+        this.initSQL    = Strings.trimToNull(props.getInitSQL());
 		
 		if(config.hasDefaultTransactionIsolation()) {
 			this.defaultTransactionIsolationLevel = config.getDefaultTransactionIsolation().getValue();
@@ -199,30 +202,39 @@ class Pool {
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection wrappd = conn.wrapped();
-		if(null == wrappd) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 
             //todo : test the connection by validation query?.
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, wrappd, 1);
+		setupConnectionStateOnBorrow(conn, wrapped, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		Connection wrapped = factory.getConnection();
-		conn.setWrapped(wrapped);
+
+        conn.setWrapped(wrapped);
 		conn.setNewCreatedConnection(true);
+
+        if(null != initSQL) {
+            log.info("Execute initSQL '{}' on new connection", initSQL);
+            try(Statement stmt = wrapped.createStatement()){
+                stmt.execute(initSQL);
+            }
+        }
+
 		return wrapped;
 	}
 	

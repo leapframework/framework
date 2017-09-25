@@ -18,9 +18,12 @@
 package tests.cp;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
 
+import leap.db.cp.PoolProperties;
+import leap.db.cp.PooledDataSource;
 import tests.cp.mock.MockConnection;
 import tests.cp.mock.MockStatement;
 
@@ -172,4 +175,30 @@ public class BorrowTest extends PoolTestBase {
             assertContains(e.getMessage(), "Set AutoCommit Error");
         }
     }
+
+    @Test
+    public void testInitSQL() throws SQLException {
+        PoolProperties pp = new PoolProperties();
+        pp.setJdbcUrl("jdbc:h2:mem:test");
+        pp.setInitSQL("create table if not exists t1 (id int identity primary key, c1 varchar(100) null); insert into t1(c1) values('a');");
+
+        final String countSQL = "select count(*) from t1";
+
+        try(PooledDataSource ds = new PooledDataSource(pp)){
+            try(Connection conn1 = ds.getConnection()) {
+                assertEquals(1, count(conn1, countSQL));
+                try(Connection conn2 = ds.getConnection()) {
+                    assertEquals(2, count(conn2, countSQL));
+                }
+            }
+        }
+    }
+
+    private static int count(Connection conn, String sql) throws SQLException {
+        try(ResultSet rs = conn.prepareStatement("select count(*) from t1").executeQuery()){
+            rs.next();
+            return rs.getInt(1);
+        }
+    }
+
 }

@@ -57,6 +57,7 @@ public class PoolProperties {
 	protected boolean testOnBorrow;
 	protected String  validationQuery;
 	protected int	  validationTimeout = DEFAULT_VALIDATION_TIMEOUT;
+    protected String  initSQL;
 	
 	protected boolean 			   defaultAutoCommit = true;
 	protected TransactionIsolation defaultTransactionIsolation = null;
@@ -181,7 +182,15 @@ public class PoolProperties {
 		this.validationTimeout = validationTimeout;
 	}
 
-	public boolean isDefaultAutoCommit() {
+    public String getInitSQL() {
+        return initSQL;
+    }
+
+    public void setInitSQL(String initSQL) {
+        this.initSQL = initSQL;
+    }
+
+    public boolean isDefaultAutoCommit() {
 		return defaultAutoCommit;
 	}
 
