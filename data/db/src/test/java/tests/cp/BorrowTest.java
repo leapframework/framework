@@ -24,6 +24,8 @@ import java.sql.SQLTimeoutException;
 
 import leap.db.cp.PoolProperties;
 import leap.db.cp.PooledDataSource;
+import leap.lang.Randoms;
+import leap.lang.Threads;
 import tests.cp.mock.MockConnection;
 import tests.cp.mock.MockStatement;
 
@@ -173,6 +175,22 @@ public class BorrowTest extends PoolTestBase {
             fail("should throw SQLException");
         }catch (SQLException e) {
             assertContains(e.getMessage(), "Set AutoCommit Error");
+        }
+    }
+
+    @Test
+    public void testBorrowReal() throws SQLException {
+        PoolProperties pp = new PoolProperties();
+        pp.setJdbcUrl("jdbc:h2:mem:test");
+        pp.setIdleTimeoutMs(10);
+        pp.setMinIdle(2);
+
+        try(PooledDataSource ds = new PooledDataSource(pp)) {
+            for(int i=0;i<10;i++) {
+                try(Connection conn = ds.getConnection()) {
+                    Threads.sleep(Randoms.nextInt(10,20));
+                }
+            }
         }
     }
 

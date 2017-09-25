@@ -364,7 +364,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 					try {
 						log.warn("A potential statement leak detected, force to close it, sql ({}), stack trace -> \n{}",
 								stmt.getLastExecutingSql(),
-								new StackTraceStringBuilder(null, stmt.getStackTraceOnOpen()).toString());
+								new StackTraceStringBuilder(null, stmt.getStackTraceOnOpen()).toString(Pool.FRAMEWORK_PACKAGE));
 	                    closeStatementOnly(stmt);
                     } catch (SQLException e) {
 
