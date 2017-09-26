@@ -28,7 +28,7 @@ public enum ColumnType {
 	TINYINT,
 	SMALLING,
 	INTEGER,
-	BITINT,
+    BIGINT,
 	DECIMAL,
 	DATE,
 	TIME,
@@ -39,7 +39,7 @@ public enum ColumnType {
 	CLOB,
 	BINARY,
 	VARBINARY,
-	BLOG;
+    BLOB;
 	
 	private final String typeName;
 	
