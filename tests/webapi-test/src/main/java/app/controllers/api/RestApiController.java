@@ -81,7 +81,7 @@ public class RestApiController extends ModelController<RestApi> {
     @AllowAnonymous
     @GET("/published")
     public ApiResponse<List<RestApi>> getPublishedApis(QueryOptions options){
-        return queryList(options, New.hashMap("published", true));
+        return queryList(options, New.hashMap("published", new boolean[]{true,false}));
     }
 
     @GET("/{id}")

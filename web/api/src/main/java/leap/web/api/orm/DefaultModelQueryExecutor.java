@@ -19,6 +19,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
 import leap.orm.mapping.*;
@@ -306,7 +307,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
                     where.append(" and ");
                 }
                 i++;
-                where.append(query.alias()).append('.').append(entry.getKey()).append(" = ?");
+                if(null != entry.getValue()&&entry.getValue().getClass().isArray()){
+                    where.append(query.alias()).append('.').append(entry.getKey()).append(" in ?");
+                }else {
+                    where.append(query.alias()).append('.').append(entry.getKey()).append(" = ?");
+                }
                 args.add(entry.getValue());
             }
         }

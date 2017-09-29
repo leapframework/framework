@@ -46,4 +46,24 @@ public class StackTraceStringBuilder {
 		return s.toString();
 	}
 
+    public String toString(String ignorePackage) {
+        StringBuilder s = new StringBuilder();
+
+        if(null != message) {
+            s.append(message).append('\n');
+        }
+
+        for(StackTraceElement ste : stes) {
+            String line = ste.toString();
+            if(null != ignorePackage) {
+                if(line.startsWith(ignorePackage)) {
+                    continue;
+                }
+            }
+            s.append("at ").append(line).append('\n');
+        }
+
+        return s.toString();
+    }
+
 }

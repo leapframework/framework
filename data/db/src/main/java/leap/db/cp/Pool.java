@@ -16,6 +16,7 @@
 package leap.db.cp;
 
 import leap.lang.Args;
+import leap.lang.Classes;
 import leap.lang.Strings;
 import leap.lang.jdbc.JDBC;
 import leap.lang.logging.Log;
@@ -26,6 +27,7 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLTimeoutException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -37,13 +39,16 @@ import static leap.db.cp.PooledConnection.*;
 
 class Pool {
 	private static final Log log = LogFactory.get(Pool.class);
-	
-	private static final AtomicInteger poolCounter = new AtomicInteger();
+
+    static final String FRAMEWORK_PACKAGE = Classes.getPackageName(PooledConnection.class) + ".";
+
+    private static final AtomicInteger poolCounter = new AtomicInteger();
 	
 	private final PoolFactory                 factory;
 	private final PoolConfig                  config;
 	private final DataSource                  dataSource;
 	private final PoolUtils                   utils;
+    private final String                      initSQL;
 	private final long                        maxWait;
 	private final int                         defaultTransactionIsolationLevel;
 	private final SyncPool                    syncPool;
@@ -62,6 +67,7 @@ class Pool {
 		this.utils 		= new PoolUtils(this);
 		this.syncPool   = new SyncPool();
 		this.maxWait    = config.getMaxWait();
+        this.initSQL    = Strings.trimToNull(props.getInitSQL());
 		
 		if(config.hasDefaultTransactionIsolation()) {
 			this.defaultTransactionIsolationLevel = config.getDefaultTransactionIsolation().getValue();
@@ -152,7 +158,23 @@ class Pool {
 		}
 
 		//Timeout
-		log.warn("[{}] Borrowing connection timeout",getName());
+        log.error("[{}] Borrowing connection timeout. [{}]", getName(), getStateInfo());
+
+        if(log.isInfoEnabled()) {
+            int maxPrint = 5;
+            int count = 0;
+            for (PooledConnection conn : syncPool.connections()) {
+                count++;
+                if (count == maxPrint) {
+                    break;
+                }
+                if (conn.isActive()) {
+                    log.info("connection busy duration {}ms\n{}",
+                            conn.getBusyDurationMs(),
+                            new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
+                }
+            }
+        }
 		throw new SQLTimeoutException("Timeout after " + (System.currentTimeMillis() - start) + "ms of borrowing a connection");
 	}
 	
@@ -199,30 +221,39 @@ class Pool {
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection wrappd = conn.wrapped();
-		if(null == wrappd) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 
             //todo : test the connection by validation query?.
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, wrappd, 1);
+		setupConnectionStateOnBorrow(conn, wrapped, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
 	
 	protected Connection createNewConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		Connection wrapped = factory.getConnection();
-		conn.setWrapped(wrapped);
+
+        conn.setWrapped(wrapped);
 		conn.setNewCreatedConnection(true);
+
+        if(null != initSQL) {
+            log.info("Execute initSQL '{}' on new connection", initSQL);
+            try(Statement stmt = wrapped.createStatement()){
+                stmt.execute(initSQL);
+            }
+        }
+
 		return wrapped;
 	}
 	
@@ -549,7 +580,7 @@ class Pool {
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
 					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
 							  conn.getBusyDurationMs(), 
-							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString());
+							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
 
                     syncPool.abandonConnection(conn);
 					continue;
