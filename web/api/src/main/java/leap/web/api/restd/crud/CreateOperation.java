@@ -16,6 +16,8 @@
 
 package leap.web.api.restd.crud;
 
+import leap.core.annotation.Inject;
+import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
@@ -38,6 +40,9 @@ import java.util.Map;
  * Create a new record operation.
  */
 public class CreateOperation extends CrudOperation implements RestdProcessor {
+
+    @Inject
+    private RestdValidator[] validators;
 
     @Override
     public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
@@ -75,6 +80,14 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
         ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
         ModelCreateExecutor executor = mef.newCreateExecutor(context);
+
+        if(Arrays2.isNotEmpty(validators)) {
+            for (RestdValidator validator : validators) {
+                if(validator.validate(model.getName(), record) == false) {
+                    return ApiResponse.badRequest("restd validation failed");
+                }
+            }
+        }
 
         CreateOneResult result = executor.createOne(record);
 
