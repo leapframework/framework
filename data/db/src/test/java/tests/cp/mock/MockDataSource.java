@@ -17,6 +17,8 @@
  */
 package tests.cp.mock;
 
+import leap.lang.Threads;
+
 import javax.sql.DataSource;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -39,10 +41,13 @@ public class MockDataSource implements DataSource {
 	private String  defaultCatalog				= null;
 
     private boolean openConnectionError;
+    private int     maxOpenConnectionError;
+    private AtomicInteger openConnectionErrorCount;
     private boolean setAutoCommitError;
     private AtomicInteger setAutoCommitErrorCount = new AtomicInteger(-1);
     private boolean validateConnectionError;
     private boolean returnSQLWarnings;
+    private int     openConnectionWaitMs;
 
     public int getNrOfOpenedConnections() {
 		return nrOfOpenedConnections.get();
@@ -104,16 +109,29 @@ public class MockDataSource implements DataSource {
 		this.supportsJdbc4Validation = supportsJdbc4Validation;
 	}
 
-	@Override
+    public int getOpenConnectionWaitMs() {
+        return openConnectionWaitMs;
+    }
+
+    public void setOpenConnectionWaitMs(int openConnectionWaitMs) {
+        this.openConnectionWaitMs = openConnectionWaitMs;
+    }
+
+    @Override
 	public Connection getConnection() throws SQLException {
 		return getConnection(null, null);
 	}
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
+        if(openConnectionWaitMs > 0) {
+            Threads.sleep(openConnectionWaitMs);
+        }
 
         if(openConnectionError) {
-            throw new SQLException("Open Connection Error!");
+            if(maxOpenConnectionError <= 0 || openConnectionErrorCount.incrementAndGet() <= maxOpenConnectionError) {
+                throw new SQLException("Open Connection Error!");
+            }
         }
 
 		MockConnection connection = new MockConnection(this, username, password);
@@ -169,7 +187,13 @@ public class MockDataSource implements DataSource {
     }
 
     public void setOpenConnectionError(boolean openConnectionError) {
+        setOpenConnectionError(openConnectionError, 0);
+    }
+
+    public void setOpenConnectionError(boolean openConnectionError, int max) {
         this.openConnectionError = openConnectionError;
+        this.maxOpenConnectionError = max;
+        this.openConnectionErrorCount = new AtomicInteger(0);
     }
 
     public boolean isSetAutoCommitError() {

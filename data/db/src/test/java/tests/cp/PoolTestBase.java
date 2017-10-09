@@ -52,6 +52,7 @@ public abstract class PoolTestBase extends AppTestBase {
 		}
 		ms = new MockDataSource();
 		ds = new PooledDataSource(ms);
+        ds.setMaxWait(5000);
         ds.setHealthCheckIntervalMs(100);
 	}
 	

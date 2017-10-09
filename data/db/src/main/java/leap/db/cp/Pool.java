@@ -137,19 +137,30 @@ class Pool {
 		log.trace("[{}] Borrowing connection...", getName());
 		
 		final long start = System.currentTimeMillis();
-		
+
+        SQLException se = null;
+        PooledConnection conn = null;
 		try{
-			PooledConnection conn = syncPool.borrowConnection(maxWait);
+			conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
-				
 				setupConnectionOnBorrow(conn);
-				
 				return conn;
 			}
 		}catch(InterruptedException e) {
-			throw new SQLException("Interrupted while connection borrowing");
-		}
+			se = new SQLException("Interrupted while connection borrowing");
+		}catch(SQLException e) {
+            log.warn("Setup connection error: {}", e.getMessage(), e);
+            se = e;
+        }
+
+        if(null != se) {
+            if(null != conn) {
+                log.info("Borrowing connection failed, return it to pool");
+                returnConnectionFailed(conn);
+            }
+            throw se;
+        }
 
 		//Timeout
 		log.warn("[{}] Borrowing connection timeout",getName());
@@ -194,27 +205,36 @@ class Pool {
 			}
 		}
 	}
+
+    protected void returnConnectionFailed(PooledConnection conn) throws SQLException {
+        try {
+            conn.closeReal();
+        } finally {
+            syncPool.returnConnection(conn);
+            log.trace("A connection was returned to pool");
+        }
+    }
 	
 	@SuppressWarnings("resource")
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {
 		conn.setupBeforeOnBorrow();
 		
-		Connection wrappd = conn.wrapped();
-		if(null == wrappd) {
+		Connection wrapped = conn.wrapped();
+		if(null == wrapped) {
 			//Connection not created yet ( or was abandoned ).
 			log.trace("Real Connection not created yet, Create it");
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 
             //todo : test the connection by validation query?.
 		}else if(config.isTestOnBorrow() && !conn.isValid()) {
 			log.info("Real Connection is invalid, Abandon it and Create a new one");
 			conn.abandonReal();
-			wrappd = createNewConnectionOnBorrow(conn);
+			wrapped = createNewConnectionOnBorrow(conn);
 		}else{
 			conn.setNewCreatedConnection(false);
 		}
 		
-		setupConnectionStateOnBorrow(conn, wrappd, 1);
+		setupConnectionStateOnBorrow(conn, wrapped, 1);
 		
 		conn.setupAfterOnBorrow();
 	}
