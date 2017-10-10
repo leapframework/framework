@@ -27,22 +27,22 @@ public class PoolProperties {
 	public static final int DEFAULT_MAX_ACTIVE              = 50;
 	public static final int DEFAULT_MAX_IDLE				= 10;
 	public static final int DEFAULT_MIN_IDLE				= 0;
-	public static final int DEFAULT_VALIDATION_TIMEOUT      = 5;   //5 seconds
-	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 1;   //1 seconds
-	public static final int DEFAULT_IDLE_TIMEOUT 	        = 180; //3 minutes
+	public static final int DEFAULT_VALIDATION_TIMEOUT      = 5;    //5 seconds
+	public static final int DEFAULT_HEALTH_CHECK_INTERVAL   = 10;    //1 seconds
+	public static final int DEFAULT_IDLE_TIMEOUT 	        = 1800; //30 minutes
 	public static final int DEFAULT_STATEMENT_TIMEOUT       = -1;
-	public static final int DEFAULT_CONNECTION_LEAK_TIMEOUT = -1;
+	public static final int DEFAULT_CONNECTION_LEAK_TIMEOUT = 60 * 5 * 1000; //5 minutes.
 	
 	public static final int MAX_MAX_WAIT		      = 10 * 60 * 1000; //10 minutes 
 	public static final int MIN_MAX_WAIT		      = 0;
 	public static final int MAX_MAX_ACTIVE            = 10000;
 	public static final int MIN_MAX_ACTIVE            = 1;
-	public static final int MAX_HEALTH_CHECK_INTERVAL = 10; 	 //10 seconds
-	public static final int MIN_HEALTH_CHECK_INTERVAL = 1;  	 //1  second
-	public static final int MIN_VALIDATION_TIMEOUT    = 1;  	 //1  second
-	public static final int MAX_VALIDATION_TIMEOUT    = 60; 	 //60 seconds
-	public static final int MAX_IDLE_TIMEOUT          = 10 * 60; //10 minutes
-	public static final int MIN_STATEMENT_TIMEOUT     = 1; 		 //1  second
+	public static final int MAX_HEALTH_CHECK_INTERVAL = 10; 	      //10 seconds
+	public static final int MIN_HEALTH_CHECK_INTERVAL = 1;  	      //1  second
+	public static final int MIN_VALIDATION_TIMEOUT    = 1;  	      //1  second
+	public static final int MAX_VALIDATION_TIMEOUT    = 60; 	      //60 seconds
+	public static final int MAX_IDLE_TIMEOUT          = 24 * 60 * 60; //24 hours
+	public static final int MIN_STATEMENT_TIMEOUT     = 1; 		      //1  second
 	
 	protected String  dataSourceClassName;
 	

@@ -48,26 +48,20 @@ public class PoolTest extends PoolTestBase {
 
     @Test
     public void testMinIdle() throws SQLException {
-        ds.setMinIdle(5);
-        ds.setConnectionLeakTimeoutMs(100);
+        ds.setMinIdle(1);
+        ds.setIdleTimeoutMs(100);
+        ds.setHealthCheckIntervalMs(1000);
 
         ds.open();
-        assertEquals(5, ms.getNrOfOpeningConnections());
+        assertEquals(1, ms.getNrOfOpeningConnections());
+        assertEquals(0, ms.getNrOfClosedConnections());
 
-        //abandon all the leak connections.
-        List<MockConnection> conns = new ArrayList<>();
-        for(int i=0;i<5;i++) {
-            conns.add(ds.getConnection().unwrap(MockConnection.class));
-        }
+        Threads.sleep(1500L);
+        assertEquals(1, ms.getNrOfOpeningConnections());
+        assertEquals(1, ms.getNrOfClosedConnections());
 
-        Threads.sleep(500);
-        assertEquals(5, ms.getNrOfOpeningConnections());
-        for(MockConnection c : conns) {
-            assertTrue(c.isClosed());
-        }
-        for(int i=0;i<5;i++) {
+        for(int i=0;i<1;i++) {
             try(Connection conn = ds.getConnection()) {
-                assertFalse(conns.contains(conn.unwrap(MockConnection.class)));
                 assertFalse(conn.unwrap(MockConnection.class).isClosed());
             }
         }

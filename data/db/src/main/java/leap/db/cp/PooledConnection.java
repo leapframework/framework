@@ -26,10 +26,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class PooledConnection extends ConnectionProxy implements Connection {
 	private static final Log log = LogFactory.get(PooledConnection.class);
 
-    static final int STATE_IDLE = 0;
-	static final int STATE_BUSY = 1;
+    static final int STATE_IDLE    = 0;
+	static final int STATE_BUSY    = 1;
 	static final int STATE_CLEANUP = 2;
-    static final int STATE_ABANDON = 3;
+    static final int STATE_LEAK    = 3;
 	
 	private static final int TRANSACTION_STATE_INIT     = 0;
 	private static final int TRANSACTION_STATE_COMMIT   = 1;
@@ -45,6 +45,7 @@ public class PooledConnection extends ConnectionProxy implements Connection {
     private int       transactionState = TRANSACTION_STATE_INIT;
     private long      lastBusyTime;
     private long      lastIdleTime;
+    private long      lastLeakTime;
 
     private String realCatalog;
 	private int	   realTransactionIsolation;
@@ -91,17 +92,22 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 	}
 	
 	boolean isLeakTimeout() {
-		if(state.get() != STATE_BUSY ) {
-			return false;
-		}
+        if(poolConfig.getConnectionLeakTimeoutMs() <= 0) {
+            return false;
+        }
 
-		if(poolConfig.getConnectionLeakTimeoutMs() > 0 && lastBusyTime > 0) {
-			if(getBusyDurationMs() >= poolConfig.getConnectionLeakTimeoutMs()) {
-				return true;
-			}
-		}
-		
-		return false;
+        int s = state.get();
+
+        long duration;
+        if(s == STATE_BUSY) {
+            duration = System.currentTimeMillis() - lastBusyTime;
+        }else if(s == STATE_LEAK) {
+            duration = System.currentTimeMillis() - lastLeakTime;
+        }else {
+            return false;
+        }
+
+        return duration >= poolConfig.getConnectionLeakTimeoutMs();
 	}
 	
 	boolean isIdleTimeout() {
@@ -192,11 +198,11 @@ public class PooledConnection extends ConnectionProxy implements Connection {
 		return state.compareAndSet(expectState, updateState);
 	}
 
-    /**
-     * Sets the state to {@link #STATE_ABANDON}.
-     */
-    void markAbandon() {
-        state.set(STATE_ABANDON);
+    void markLeak() {
+        if(state.get() != STATE_LEAK) {
+            state.compareAndSet(STATE_BUSY, STATE_LEAK);
+        }
+        this.lastLeakTime = System.currentTimeMillis();
     }
 
 	void abandonReal() {

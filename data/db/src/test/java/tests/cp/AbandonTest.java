@@ -52,16 +52,4 @@ public class AbandonTest extends PoolTestBase {
         assertEquals(0, ms.getNrOfOpeningConnections());
     }
 
-    @Test
-    public void testAbandonConnectionLeak() throws SQLException {
-        ds.setConnectionLeakTimeoutMs(100);
-
-        //don't close it.
-        Connection conn = ds.getConnection();
-
-        assertEquals(1, ms.getNrOfOpeningConnections());
-        Threads.sleep(1000);
-        assertEquals(0, ms.getNrOfOpeningConnections());
-    }
-
 }

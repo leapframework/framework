@@ -17,17 +17,14 @@
  */
 package tests.cp;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import leap.core.junit.AppTestBase;
-import leap.db.cp.*;
+import leap.db.cp.PooledConnection;
+import leap.db.cp.PooledDataSource;
 import tests.cp.mock.MockConnection;
 import tests.cp.mock.MockDataSource;
-import tests.cp.mock.MockStatement;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 
 public abstract class PoolTestBase extends AppTestBase {
 	

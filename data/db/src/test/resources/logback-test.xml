@@ -9,7 +9,7 @@
   
 	<logger name="leap"         level="DEBUG"/>
 	<logger name="leap.db"      level="TRACE"/>
-    <logger name="leap.db.cp"   level="DEBUG"/>
+    <logger name="leap.db.cp"   level="TRACE"/>
     <logger name="leap.core.ds" level="TRACE"/>
 
 	<root level="WARN">

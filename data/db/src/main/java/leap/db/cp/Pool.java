@@ -79,10 +79,10 @@ class Pool {
 
         if(config.isHealthCheck()) {
 			this.scheduledExecutor = new ScheduledThreadPoolExecutor(1, 
-																	 new SimpleThreadFactory(getName() + " - Health Worker", true),
+																	 new SimpleThreadFactory(getName() + "_health", true),
 																	 new ThreadPoolExecutor.DiscardPolicy());
 
-			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(), 
+			this.scheduledExecutor.scheduleAtFixedRate(new HealthWorker(),
 													   config.getHealthCheckIntervalMs(),
 													   config.getHealthCheckIntervalMs(), TimeUnit.MILLISECONDS);
 		}else{
@@ -96,7 +96,7 @@ class Pool {
 	
 	public String getName() {
 		if(null == name) {
-			name = "CP-" + poolCounter.getAndIncrement();
+			name = "CP" + poolCounter.getAndIncrement();
 		}
 		return name;
 	}
@@ -505,15 +505,6 @@ class Pool {
 			return null;
 		}
 
-        /**
-         * Removes the connection from list and release all the underlying resources.
-         */
-        public void abandonConnection(PooledConnection conn) {
-            conn.markAbandon();
-            list.remove(conn);
-            conn.closeReal();
-        }
-		
 		/**
 		 * Returns the connection to pool.
 		 */
@@ -588,6 +579,8 @@ class Pool {
 
 		@Override
         public void run() {
+
+            log.trace("Health check");
 			
 			for(final PooledConnection conn : syncPool.connections()) {
 				
@@ -601,16 +594,14 @@ class Pool {
 				
 				//cleanup leak timeout connection.
 				if(conn.isLeakTimeout() && conn.compareStateAndSet(STATE_BUSY, STATE_CLEANUP)) {
-					log.error("A potential connection leak detected (busy duration {}ms\n{})", 
+					log.error("A potential connection leak detected (busy {}ms)\n{}",
 							  conn.getBusyDurationMs(), 
 							  new StackTraceStringBuilder(conn.getStackTraceOnOpen()).toString(FRAMEWORK_PACKAGE));
-
-                    syncPool.abandonConnection(conn);
+                    conn.markLeak();
 					continue;
 				}
 
                 //todo : test the underlying connection is valid?
-				
 			}
 			
 			//check max idle and decrease the idle connections.
