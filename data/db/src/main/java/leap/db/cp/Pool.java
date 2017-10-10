@@ -143,23 +143,38 @@ class Pool {
 		log.trace("[{}] Borrowing connection...", getName());
 		
 		final long start = System.currentTimeMillis();
-		
+
+        SQLException se = null;
+        PooledConnection conn = null;
 		try{
-			PooledConnection conn = syncPool.borrowConnection(maxWait);
+			conn = syncPool.borrowConnection(maxWait);
 			if(null != conn) {
 				log.trace("[{}] A connection was borrowed from pool, setup and return.", getName());
-				
 				setupConnectionOnBorrow(conn);
-				
 				return conn;
 			}
 		}catch(InterruptedException e) {
-			throw new SQLException("Interrupted while connection borrowing");
-		}
+			se = new SQLException("Interrupted while connection borrowing");
+		}catch(SQLException e) {
+            log.warn("Setup connection error: {}", e.getMessage(), e);
+            se = e;
+        }
+
+        if(null != se) {
+            if(null != conn) {
+                log.info("Borrowing connection failed, return it to pool");
+                returnConnectionFailed(conn);
+            }
+            throw se;
+        }
 
 		//Timeout
         log.error("[{}] Borrowing connection timeout. [{}]", getName(), getStateInfo());
+        printConnections();
+		throw new SQLTimeoutException("Timeout after " + (System.currentTimeMillis() - start) + "ms of borrowing a connection");
+	}
 
+    protected void printConnections() {
         if(log.isInfoEnabled()) {
             int maxPrint = 5;
             int count = 0;
@@ -175,8 +190,7 @@ class Pool {
                 }
             }
         }
-		throw new SQLTimeoutException("Timeout after " + (System.currentTimeMillis() - start) + "ms of borrowing a connection");
-	}
+    }
 	
 	public boolean isClose() {
 		return closed;
@@ -216,6 +230,15 @@ class Pool {
 			}
 		}
 	}
+
+    protected void returnConnectionFailed(PooledConnection conn) throws SQLException {
+        try {
+            conn.closeReal();
+        } finally {
+            syncPool.returnConnection(conn);
+            log.trace("A connection was returned to pool");
+        }
+    }
 	
 	@SuppressWarnings("resource")
     protected void setupConnectionOnBorrow(PooledConnection conn) throws SQLException {

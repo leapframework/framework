@@ -113,12 +113,12 @@ public class DefaultOAuth2Config implements OAuth2Config, OAuth2Configurator, Ap
     public OAuth2Configurator setServerUrl(String serverUrl) {//don't change the parameter name (used by config property)
         serverUrl = Paths.suffixWithoutSlash(serverUrl);
 
-        this.authorizeUrl = serverUrl + "/oauth2/authorize";
-        this.tokenUrl     = serverUrl + "/oauth2/token";
-        this.tokenInfoUrl = serverUrl + "/oauth2/tokeninfo";
-        this.userInfoUrl  = serverUrl + "/oauth2/userinfo";
-        this.publicKeyUrl = serverUrl + "/oauth2/publickey";
-        this.logoutUrl    = serverUrl + "/oauth2/logout";
+        if(null == this.authorizeUrl)    this.authorizeUrl = serverUrl + "/oauth2/authorize";
+        if(null == this.tokenUrl)        this.tokenUrl     = serverUrl + "/oauth2/token";
+        if(null == this.tokenInfoUrl)    this.tokenInfoUrl = serverUrl + "/oauth2/tokeninfo";
+        if(null == this.userInfoUrl)     this.userInfoUrl  = serverUrl + "/oauth2/userinfo";
+        if(null == this.publicKeyUrl)    this.publicKeyUrl = serverUrl + "/oauth2/publickey";
+        if(null == this.logoutUrl)       this.logoutUrl    = serverUrl + "/oauth2/logout";
 
         return this;
     }

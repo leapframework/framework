@@ -22,6 +22,8 @@ import app.models.api.RestApi;
 import leap.webunit.WebTestBase;
 import org.junit.Test;
 
+import java.util.UUID;
+
 /**
  * @author kael.
  */
@@ -30,12 +32,12 @@ public class RestApiControllerTest extends WebTestBase {
     public void testGetPublished(){
         RestApi api1 = new RestApi();
         api1.setPublished(true);
-        api1.setName("api1");
+        api1.setName(UUID.randomUUID().toString());
         api1.create();
         
         RestApi api2 = new RestApi();
         api2.setPublished(true);
-        api2.setName("api2");
+        api2.setName(UUID.randomUUID().toString());
         api2.create();
         int length = useGet("/api/restapi/published").send().getJson().asArray().length;
         assertEquals(length, RestApi.count());
