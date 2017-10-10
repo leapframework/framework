@@ -155,23 +155,35 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 
     private boolean checkProfile(MApiOperation o) {
-        Doc doc = o.getRoute().getAction().getMethod().getAnnotation(Doc.class);
-        if(null != doc && Arrays2.isNotEmpty(doc.profile())) {
+        String[] profiles = tryGetProfiles(o);
+        if (null != profiles) {
             Request request = Request.tryGetCurrent();
 
             if (null != request) {
                 String requestProfile = request.getParameter("profile");
 
                 if (Strings.isNotBlank(requestProfile)) {
-                    String[] methodProfiles = doc.profile();
 
-                    if(!Arrays2.containsAny(methodProfiles, requestProfile)) {
+                    if(!Arrays2.containsAny(profiles, requestProfile)) {
                         return true;
                     }
                 }
             }
         }
         return false;
+    }
+
+    private String[] tryGetProfiles(MApiOperation o) {
+        if(null == o || null == o.getRoute()
+                || null == o.getRoute().getAction()
+                || null == o.getRoute().getAction().getMethod()
+                || null == o.getRoute().getAction().getMethod().getAnnotation(Doc.class)) {
+            return null;
+        }
+
+        String[] profiles = o.getRoute().getAction().getMethod().getAnnotation(Doc.class).profile();
+
+        return Arrays2.isNotEmpty(profiles) ? profiles : null;
     }
 
     protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
