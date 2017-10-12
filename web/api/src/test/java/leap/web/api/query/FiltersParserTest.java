@@ -30,4 +30,42 @@ public class FiltersParserTest extends TestBase {
         assertEquals("b", name.literal());
     }
 
+    @Test
+    public void testSingleQuoteChar() {
+        Filters filters = FiltersParser.parse("a.name eq 'not exists'");
+        assertEquals("not exists", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like %''%");
+        assertEquals("%'%", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like '%''%'");
+        assertEquals("%'%", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like %''");
+        assertEquals("%'", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like '%'''");
+        assertEquals("%'", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like %''_''%");
+        assertEquals("%'_'%", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like '%''_''%'");
+        assertEquals("%'_'%", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like %''''%");
+        assertEquals("%''%", filters.nodes()[2].literal());
+
+        filters = FiltersParser.parse("a like '%''''%'");
+        assertEquals("%''%", filters.nodes()[2].literal());
+    }
+
+    @Test
+    public void testSingleQuoteCharError() {
+        try{
+            FiltersParser.parse("a like %'%");
+        }catch (Exception e) {
+            assertContains(e.getMessage(), "Invalid character \"'\"");
+        }
+    }
 }
