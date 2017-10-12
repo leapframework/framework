@@ -159,12 +159,26 @@ public class FiltersParser extends ParserBase {
         for(;;) {
             nextChar();
 
-            if(quoted) {
-                if(ch == '\'') {
+            //handles ' character
+            if(ch == '\'') {
+                //escaped ''
+                if(charAt(pos+1) == '\'') {
+                    nextChar();
+                    continue;
+                }
+
+                //end string value
+                if(quoted){
                     end = pos;
                     nextChar();
                     break;
                 }
+
+                //invalid ' character
+                error("Invalid character \"'\", should use \"''\" instead");
+            }
+
+            if(quoted) {
                 if(eof()) {
                     error("Unclosed string value");
                 }
@@ -174,7 +188,7 @@ public class FiltersParser extends ParserBase {
             }
         }
 
-        String value = substring(start, end);
+        String value = Strings.replace(substring(start, end), "''", "'");
         if(!Strings.equals(Token.NULL.name(),value.toUpperCase())){
             Token last = nodes.get(nodes.size()-1).token;
             if(last == Token.NOT || last == Token.IS){
