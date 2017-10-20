@@ -832,7 +832,7 @@ public class JsonWriterImpl implements JsonWriter {
 			startObject();
 			for(Object item : map.entrySet()) {
 				Entry  entry = (Entry)item;
-				String key = ns(entry.getKey().toString());
+				String key = ns(Objects.toString(entry.getKey()));
 				Object val = entry.getValue();
 				if(isIgnoreNull() && val == null){
 					continue;
