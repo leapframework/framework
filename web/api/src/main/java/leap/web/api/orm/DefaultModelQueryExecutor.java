@@ -255,6 +255,12 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         	List<Record> fieldToValList=null;
         	if(rm.isManyToMany()){
         		fkVal=referred.remove(referredFieldName);
+        		if(fkVal==null){
+        			fkVal=referred.remove(referredFieldName.toUpperCase());
+        		}
+        		if(fkVal==null){
+        			fkVal=referred.remove(referredFieldName.toLowerCase());
+        		}
         	}else{
         		fkVal=referred.get(referredFieldName);
         	}
