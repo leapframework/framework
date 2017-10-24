@@ -29,6 +29,8 @@ import leap.lang.New;
 import leap.lang.Strings;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.query.CriteriaQuery;
+import leap.web.Request;
+import leap.web.Response;
 import leap.web.annotation.Path;
 import leap.web.annotation.http.DELETE;
 import leap.web.annotation.http.GET;

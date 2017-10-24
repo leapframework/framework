@@ -32,6 +32,7 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
     protected NamingStyle defaultNamingStyle              = NamingStyles.RAW;
     protected String      defaultDateFormat               = null;
     protected boolean     jsonpEnabled                    = true;
+	protected boolean     jsonpResponseHeaders            = true;
     protected String      jsonpParameter                  = DEFAULT_JSONP_PARAMETER;
 
     public DefaultJsonConfig() {
@@ -98,6 +99,17 @@ public class DefaultJsonConfig implements JsonConfig,JsonConfigurator {
 		this.jsonpEnabled = enabled;
 	    return this;
     }
+
+	@Override
+	public JsonConfigurator setJsonpResponseHeaders(boolean enabled) {
+    	this.setJsonpResponseHeaders(enabled);
+		return this;
+	}
+
+	@Override
+	public boolean isJsonpResponseHeaders() {
+		return jsonpResponseHeaders;
+	}
 
 	@ConfigProperty
     public JsonConfigurator setJsonpParameter(String jsonpParameter) {

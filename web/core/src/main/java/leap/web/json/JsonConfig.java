@@ -28,6 +28,8 @@ public interface JsonConfig {
 	boolean isDefaultSerializationIgnoreEmpty();
 
 	boolean isJsonpEnabled();
+	
+	boolean isJsonpResponseHeaders();
 
     /**
      * Required.

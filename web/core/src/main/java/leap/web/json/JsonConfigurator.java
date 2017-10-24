@@ -40,6 +40,8 @@ public interface JsonConfigurator {
     JsonConfigurator setDefaultDateFormat(String f);
 	
 	JsonConfigurator setJsonpEnabled(boolean enabled);
+
+	JsonConfigurator setJsonpResponseHeaders(boolean enabled);
 	
 	JsonConfigurator setJsonpParameter(String jsonpParameter);
 

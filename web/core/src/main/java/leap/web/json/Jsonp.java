@@ -15,15 +15,19 @@
  */
 package leap.web.json;
 
-import java.io.IOException;
-import java.io.Writer;
-import java.util.function.Consumer;
-
 import leap.lang.Strings;
 import leap.lang.js.JS;
+import leap.lang.json.JSON;
+import leap.lang.json.JsonWriter;
 import leap.web.Request;
 import leap.web.Response;
 import leap.web.exception.BadRequestException;
+
+import java.io.IOException;
+import java.io.Writer;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class Jsonp {
 
@@ -43,6 +47,22 @@ public class Jsonp {
 				writer.write(callback);
 				writer.write('(');
 				func.accept(writer);
+				if(jc.isJsonpResponseHeaders()){
+					JsonWriter jw = JSON.createWriter(writer);
+					writer.write(',');
+					jw.startObject();
+					response.getHeaderNames().forEach(s -> {
+						Collection<String> h = response.getHeaders(s);
+						if(!h.isEmpty()){
+							if(h.size() == 1){
+								jw.property(s,h.iterator().next());
+							}else {
+								jw.array(h.iterator());
+							}
+						}
+					});
+					jw.endObject();
+				}
 				writer.write(')');
 				return;
 			}
@@ -50,5 +70,7 @@ public class Jsonp {
 		
 		func.accept(writer);
 	}
+	
+	
 	
 }
