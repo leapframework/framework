@@ -15,6 +15,7 @@
  */
 package leap.web.json;
 
+import leap.lang.Iterators;
 import leap.lang.Strings;
 import leap.lang.js.JS;
 import leap.lang.json.JSON;
@@ -26,6 +27,7 @@ import leap.web.exception.BadRequestException;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -52,12 +54,22 @@ public class Jsonp {
 					writer.write(',');
 					jw.startObject();
 					response.getHeaderNames().forEach(s -> {
-						Collection<String> h = response.getHeaders(s);
-						if(!h.isEmpty()){
-							if(h.size() == 1){
-								jw.property(s,h.iterator().next());
+						Iterator<String> iterator = jc.getJsonpAllowResponseHeaders().iterator();
+						boolean allow = Iterators.any(iterator,allowHeader -> {
+							if("*".equals(allowHeader)){
+								return true;
 							}else {
-								jw.array(h.iterator());
+								return Strings.equals(s,allowHeader);
+							}
+						});
+						if(allow){
+							Collection<String> h = response.getHeaders(s);
+							if(!h.isEmpty()){
+								if(h.size() == 1){
+									jw.property(s,h.iterator().next());
+								}else {
+									jw.array(h.iterator());
+								}
 							}
 						}
 					});
@@ -70,7 +82,5 @@ public class Jsonp {
 		
 		func.accept(writer);
 	}
-	
-	
 	
 }

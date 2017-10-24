@@ -32,7 +32,9 @@ public class JsonpCallbackTest extends WebTestBase {
         api1.setPublished(true);
         api1.setName(UUID.randomUUID().toString());
         api1.create();
-        THttpResponse response = useGet("/api/restapi").addQueryParam("callback","func").send();
+        THttpResponse response = useGet("/api/restapi")
+                .addQueryParam("callback","func")
+                .addQueryParam("total","true").send();
         String content = response.getContent();
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName( "JavaScript" );
@@ -44,6 +46,8 @@ public class JsonpCallbackTest extends WebTestBase {
         Object obj = engine.eval(func+content);
         Map<String, Object> headers = JSON.decodeMap(obj.toString());
         assertNotEmpty(headers);
+        assertEquals(headers.size(),1);
+        assertTrue(headers.containsKey("X-Total-Count"));
         headers.forEach((s, o) -> assertEquals(response.getHeader(s),o));
     }
 }
