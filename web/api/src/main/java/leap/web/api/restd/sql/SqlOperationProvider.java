@@ -45,7 +45,12 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
 
     @Override
     public void createApiOperation(RestdContext context, RestdOperationDef od) {
-        String path = fullPath(context.getApi().getConfigurator(), "/" + Strings.lowerUnderscore(od.getName()));
+        String opPath = od.getPath();
+        if(Strings.isEmpty(opPath)) {
+            opPath = "/" + Strings.lowerUnderscore(od.getName());
+        }
+
+        String path = fullPath(context.getApi().getConfigurator(), opPath);
 
         String key = od.getArgument(ARG_SQL_KEY);
         SqlOperationDef sod = new SqlOperationDef(od.getName(), path, key, od.getScript());
