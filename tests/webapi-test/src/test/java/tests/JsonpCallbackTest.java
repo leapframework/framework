@@ -38,13 +38,14 @@ public class JsonpCallbackTest extends WebTestBase {
         String content = response.getContent();
         ScriptEngineManager manager = new ScriptEngineManager();
         ScriptEngine engine = manager.getEngineByName( "JavaScript" );
-        String func = "function func(a,b){" +
+        String func = "function func(a){" +
                 "var JSON = Java.type('leap.lang.json.JSON');" +
-                "var result = JSON.encode(b);" +
+                "var result = JSON.encode(a);" +
                 "return result" +
                 "};";
         Object obj = engine.eval(func+content);
-        Map<String, Object> headers = JSON.decodeMap(obj.toString());
+        Map<String, Object> json = JSON.decodeMap(obj.toString());
+        Map<String, Object> headers = (Map<String, Object>) json.get("headers");
         assertNotEmpty(headers);
         assertEquals(headers.size(),1);
         assertTrue(headers.containsKey("X-Total-Count"));

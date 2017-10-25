@@ -46,12 +46,11 @@ public class Jsonp {
 				if(!JS.isValidJavascriptFunction(callback)){
 					throw new BadRequestException("Invalid jsonp callback : " + callback);
 				}
+				JsonWriter jw = JSON.createWriter(writer);
 				writer.write(callback);
 				writer.write('(');
-				func.accept(writer);
-				if(jc.isJsonpResponseHeaders()){
-					JsonWriter jw = JSON.createWriter(writer);
-					writer.write(',');
+				jw.startObject();
+				jw.property("headers",() -> {
 					jw.startObject();
 					response.getHeaderNames().forEach(s -> {
 						Iterator<String> iterator = jc.getJsonpAllowResponseHeaders().iterator();
@@ -74,7 +73,9 @@ public class Jsonp {
 						}
 					});
 					jw.endObject();
-				}
+				});
+				jw.property("data",() -> func.accept(writer));
+				jw.endObject();
 				writer.write(')');
 				return;
 			}
