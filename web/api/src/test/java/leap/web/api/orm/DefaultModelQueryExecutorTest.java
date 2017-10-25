@@ -44,6 +44,8 @@ public class DefaultModelQueryExecutorTest extends ModelExecutorTestBase {
     }
 
     protected void initData() {
+        BookTag.deleteAll();
+    	Tag.deleteAll();
         Book.deleteAll();
         Author.deleteAll();
 
