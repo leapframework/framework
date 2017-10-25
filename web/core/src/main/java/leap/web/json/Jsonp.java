@@ -17,6 +17,7 @@ package leap.web.json;
 
 import leap.lang.Iterators;
 import leap.lang.Strings;
+import leap.lang.http.ContentTypes;
 import leap.lang.js.JS;
 import leap.lang.json.JSON;
 import leap.lang.json.JsonWriter;
@@ -33,19 +34,18 @@ import java.util.function.Consumer;
 
 public class Jsonp {
 
-	protected Jsonp() {
-		
-	}
+	protected Jsonp() {}
 
 	public static void write(Request request, Response response, JsonConfig jc, Consumer<Writer> func) throws IOException {
 		Writer writer = response.getWriter();
-		
+
 		if(jc.isJsonpEnabled()){
 			String callback = request.getParameter(jc.getJsonpParameter());
 			if(!Strings.isEmpty(callback)){
 				if(!JS.isValidJavascriptFunction(callback)){
 					throw new BadRequestException("Invalid jsonp callback : " + callback);
 				}
+				response.setContentType(ContentTypes.APPLICATION_JAVASCRIPT);
 				writer.write(callback);
 				writer.write('(');
 				func.accept(writer);
@@ -79,7 +79,7 @@ public class Jsonp {
 				return;
 			}
 		}
-		
+
 		func.accept(writer);
 	}
 	

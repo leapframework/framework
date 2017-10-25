@@ -14,6 +14,8 @@
 package tests;
 
 import app.models.api.RestApi;
+import leap.lang.http.ContentTypes;
+import leap.lang.http.Headers;
 import leap.lang.json.JSON;
 import leap.webunit.WebTestBase;
 import leap.webunit.client.THttpResponse;
@@ -49,5 +51,12 @@ public class JsonpCallbackTest extends WebTestBase {
         assertEquals(headers.size(),1);
         assertTrue(headers.containsKey("X-Total-Count"));
         headers.forEach((s, o) -> assertEquals(response.getHeader(s),o));
+        String contentType = response.getHeader(Headers.CONTENT_TYPE);
+        assertEquals(ContentTypes.APPLICATION_JAVASCRIPT+"; charset="+response.getCharset(),contentType);
+
+        THttpResponse response1 = useGet("/api/restapi")
+                .addQueryParam("total","true").send();
+        String contentType1 = response1.getHeader(Headers.CONTENT_TYPE);
+        assertEquals(ContentTypes.APPLICATION_JSON+"; charset="+response.getCharset(),contentType1);
     }
 }
