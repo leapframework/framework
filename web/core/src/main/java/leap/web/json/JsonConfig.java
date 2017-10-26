@@ -18,6 +18,8 @@ package leap.web.json;
 import leap.lang.naming.NamingStyle;
 
 import java.text.DateFormat;
+import java.util.Collection;
+import java.util.List;
 
 public interface JsonConfig {
 
@@ -28,7 +30,15 @@ public interface JsonConfig {
 	boolean isDefaultSerializationIgnoreEmpty();
 
 	boolean isJsonpEnabled();
+	
+	boolean isJsonpResponseHeaders();
 
+	/**
+	 * 
+	 * Returns the headers name that allow response in jsonp callback
+	 */
+	Collection<String> getJsonpAllowResponseHeaders();
+	
     /**
      * Required.
      *
