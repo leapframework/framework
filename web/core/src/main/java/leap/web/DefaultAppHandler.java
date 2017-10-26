@@ -431,8 +431,9 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
 
                 ac.setRoute(route);
                 ac.setPathParameters(pathVariables);
-
-                //handle cors request.
+                
+                // handle cors request.
+                // support multipart cors
                 if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
                     if (webConfig.getCorsHandler().preHandle(request, response).isIntercepted()) {
                         log.debug("Request was intercepted by cors handler");
