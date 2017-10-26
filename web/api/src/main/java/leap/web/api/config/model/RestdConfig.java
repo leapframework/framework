@@ -18,6 +18,7 @@ package leap.web.api.config.model;
 
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmContext;
+import leap.web.api.meta.model.MApiOperationBuilder;
 import leap.web.api.restd.RestdOperationDef;
 
 import java.util.*;
@@ -269,6 +270,7 @@ public class RestdConfig {
         private String type;
         private String path;
         private String script;
+        private MApiOperationBuilder metaOperation;
 
         private Map<String, Object> arguments = new LinkedHashMap<>();
 
@@ -306,6 +308,15 @@ public class RestdConfig {
 
         public void setScript(String script) {
             this.script = script;
+        }
+
+        @Override
+        public MApiOperationBuilder getMetaOperation() {
+            return metaOperation;
+        }
+
+        public void setMetaOperation(MApiOperationBuilder metaOperation) {
+            this.metaOperation = metaOperation;
         }
 
         @Override
