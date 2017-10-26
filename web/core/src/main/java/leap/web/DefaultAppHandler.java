@@ -432,18 +432,18 @@ public class DefaultAppHandler extends AppHandlerBase implements AppHandler {
                 ac.setRoute(route);
                 ac.setPathParameters(pathVariables);
 
-                if (route.supportsMultipart() && request.isMultipart()) {
-                    log.debug("Found multipart request and action");
-                    MultipartContext.setMultipartAction(request.getServletRequest(), ac);
-                    return ROUTE_STATE_END;
-                }
-
                 //handle cors request.
                 if (route.isCorsEnabled() || (webConfig.isCorsEnabled() && !route.isCorsDisabled())) {
                     if (webConfig.getCorsHandler().preHandle(request, response).isIntercepted()) {
                         log.debug("Request was intercepted by cors handler");
                         return ROUTE_STATE_HANLDED;
                     }
+                }
+                
+                if (route.supportsMultipart() && request.isMultipart()) {
+                    log.debug("Found multipart request and action");
+                    MultipartContext.setMultipartAction(request.getServletRequest(), ac);
+                    return ROUTE_STATE_END;
                 }
 
                 if (State.isIntercepted(interceptors.handleRoute(request, response, ac.getRoute(), ac))) {
