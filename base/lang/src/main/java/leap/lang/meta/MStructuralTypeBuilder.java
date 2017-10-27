@@ -23,31 +23,31 @@ import leap.lang.Iterables;
 import leap.lang.Predicates;
 import leap.lang.exception.ObjectNotFoundException;
 
-public abstract class MStructualTypeBuilder<T extends MStructuralType> extends MNamedWithDescBuilder<T> {
+public abstract class MStructuralTypeBuilder<T extends MStructuralType> extends MNamedWithDescBuilder<T> {
 
-	protected List<MProperty> properties = new ArrayList<MProperty>();
+	protected List<MPropertyBuilder> properties = new ArrayList<MPropertyBuilder>();
 
-	public List<MProperty> getProperties() {
+	public List<MPropertyBuilder> getProperties() {
 		return properties;
 	}
 
-	public void setProperties(List<MProperty> properties) {
+	public void setProperties(List<MPropertyBuilder> properties) {
 		this.properties = properties;
 	}
 	
-	public MProperty getProperty(String name) throws ObjectNotFoundException {
-		MProperty p = findProperty(name);
+	public MPropertyBuilder getProperty(String name) throws ObjectNotFoundException {
+		MPropertyBuilder p = findProperty(name);
 		if(null == p){
 			throw new ObjectNotFoundException("Property '" + name + "' not found");
 		}
 		return p;
 	}
 	
-	public MProperty findProperty(String name) {
+	public MPropertyBuilder findProperty(String name) {
 		return Iterables.firstOrNull(properties, Predicates.nameEquals(name));
 	}
 	
-	public void addProperty(MProperty  p) {
+	public void addProperty(MPropertyBuilder  p) {
 		Args.notNull(p,"property");
 		properties.add(p);
 	}

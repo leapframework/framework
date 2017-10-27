@@ -16,9 +16,10 @@
 package leap.lang.meta;
 
 import leap.lang.Buildable;
+import leap.lang.Named;
 import leap.lang.Strings;
 
-public abstract class MNamedBuilder<T extends MObject> implements Buildable<T>{
+public abstract class MNamedBuilder<T extends MObject> implements Buildable<T>, Named {
 
 	protected String name;
 	protected String title;
