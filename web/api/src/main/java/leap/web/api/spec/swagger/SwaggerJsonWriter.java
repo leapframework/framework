@@ -607,6 +607,9 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 	
 	protected void writeRefType(WriteContext context, ApiMetadata m, JsonWriter w, MTypeRef tr) {
+        if(!m.getModels().containsKey(tr.getRefTypeName())) {
+            throw new IllegalStateException("The referenced type '" + tr.getRefTypeName() + "' not exists!");
+        }
 		w.property(REF, ref(tr.getRefTypeName()));
 	}
 
@@ -652,7 +655,12 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             writeDictionaryType(context, m, w, type.asDictionaryType());
             return;
         }
-		
+
+        if(type.isComplexType()) {
+            writeRefType(context, m, w, ((MComplexType)type).createTypeRef());
+            return;
+        }
+        
 		throw new IllegalStateException("Unsupported type kind '" + type.getTypeKind() + "'");
 	}
 	
