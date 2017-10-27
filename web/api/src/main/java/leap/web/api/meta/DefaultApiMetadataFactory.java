@@ -103,8 +103,13 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 
     @Override
     public MApiOperationBuilder createOperation(ApiMetadataContext context, ApiMetadataBuilder m, Route route) {
-        MApiOperationBuilder op = new MApiOperationBuilder(route);
+        MApiOperationBuilder op = route.getAction().getExtension(MApiOperationBuilder.class);
+        if(null != op){
+            op.setRoute(route);
+            return op;
+        }
 
+        op = new MApiOperationBuilder(route);
         op.setName(route.getAction().getName());
         op.setCorsEnabled(route.isCorsEnabled());
 
@@ -356,6 +361,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             tryAddModel(context, m, ct);
         });
 
+        config.getComplexTypes().forEach(ct -> {
+            tryAddModel(context, m, ct);
+        });
     }
 
     @Override

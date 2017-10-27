@@ -73,6 +73,10 @@ public class MApiOperationBuilder extends MApiNamedWithDescBuilder<MApiOperation
         return route;
     }
 
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
     public HTTP.Method getMethod() {
 		return method;
 	}

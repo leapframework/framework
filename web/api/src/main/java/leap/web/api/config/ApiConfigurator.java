@@ -17,6 +17,7 @@ package leap.web.api.config;
 
 import leap.lang.Extensible;
 import leap.lang.http.MimeTypes;
+import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
 import leap.web.api.Api;
 import leap.web.api.config.model.ModelConfig;
@@ -83,6 +84,11 @@ public interface ApiConfigurator extends Extensible {
      * Adds a model config.
      */
     ApiConfigurator addModel(ModelConfig model);
+
+    /**
+     * Adds a complex type.
+     */
+    ApiConfigurator addComplexType(MComplexType ct);
 
     /**
      * Adds a parameter config.

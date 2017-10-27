@@ -116,7 +116,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 configureProperty(bp, p);
             }
 
-			ct.addProperty(p.build());
+			ct.addProperty(p);
 		}
 
         for(RelationProperty rp : em.getRelationProperties()) {
@@ -158,7 +158,7 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 }
             }
 
-            ct.addProperty(p.build());
+            ct.addProperty(p);
         }
 
         MComplexType ret = ct.build();
