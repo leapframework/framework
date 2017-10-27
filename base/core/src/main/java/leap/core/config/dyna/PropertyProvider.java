@@ -16,6 +16,10 @@
 
 package leap.core.config.dyna;
 
+import leap.core.config.dyna.exception.UnsupportedBindDynaPropertyException;
+import leap.core.config.dyna.exception.UnsupportedDynaPropertyException;
+import leap.core.config.dyna.exception.UnsupportedRawPropertyException;
+
 /**
  * Used by {@link leap.core.AppConfig} for dynamic {@link Property} configuration.
  */
@@ -23,23 +27,29 @@ public interface PropertyProvider {
 
     /**
      * Returns the raw property value or null if not exists.
+     * 
+     * @throws if this raw property are unsupported by this provider
      */
-    String getRawProperty(String name);
+    String getRawProperty(String name) throws UnsupportedRawPropertyException;
 
     /**
      * Returns the {@link Property} for the given type.
+     *
+     * @throws if this dyna property are unsupported by this provider
      */
-    <T> Property<T> getDynaProperty(String name, Class<T> type);
+    <T> Property<T> getDynaProperty(String name, Class<T> type) throws UnsupportedDynaPropertyException;
 
     /**
      * Binding the property.
+     * @throws if this dyna property are unsupported bind by this provider
      */
-    <T> void bindDynaProperty(String name, Class<T> type, Property<T> p);
+    <T> void bindDynaProperty(String name, Class<T> type, Property<T> p) throws UnsupportedBindDynaPropertyException;
 
     /**
      * Returns the {@link StringProperty}.
+     * @throws if this dyna property are unsupported by this provider
      */
-    default StringProperty getDynaProperty(String name) {
+    default StringProperty getDynaProperty(String name) throws UnsupportedDynaPropertyException {
         return new WrappedStringProperty(getDynaProperty(name, String.class));
     }
 
@@ -48,8 +58,10 @@ public interface PropertyProvider {
      *
      * <p/>
      * The returned {@link Property} object cannot be null.
+     * 
+     * @throws if this dyna property are unsupported by this provider
      */
-    default IntegerProperty getDynaIntegerProperty(String name) {
+    default IntegerProperty getDynaIntegerProperty(String name) throws UnsupportedDynaPropertyException {
         return new WrappedIntegerProperty(getDynaProperty(name, Integer.class));
     }
 
@@ -58,8 +70,9 @@ public interface PropertyProvider {
      *
      * <p/>
      * The returned {@link Property} object cannot be null.
+     * @throws if this dyna property are unsupported by this provider
      */
-    default LongProperty getDynaLongProperty(String name) {
+    default LongProperty getDynaLongProperty(String name) throws UnsupportedDynaPropertyException {
         return new WrappedLongProperty(getDynaProperty(name, Long.class));
     }
 
@@ -68,8 +81,9 @@ public interface PropertyProvider {
      *
      * <p/>
      * The returned {@link Property} object cannot be null.
+     * @throws if this dyna property are unsupported by this provider
      */
-    default BooleanProperty getDynaBooleanProperty(String name) {
+    default BooleanProperty getDynaBooleanProperty(String name) throws UnsupportedDynaPropertyException {
         return new WrappedBooleanProperty(getDynaProperty(name, Boolean.class));
     }
 
@@ -78,8 +92,9 @@ public interface PropertyProvider {
      *
      * <p/>
      * The returned {@link Property} object cannot be null.
+     * @throws if this dyna property are unsupported by this provider
      */
-    default DoubleProperty getDynaDoubleProperty(String name) {
+    default DoubleProperty getDynaDoubleProperty(String name) throws UnsupportedDynaPropertyException {
         return new WrappedDoubleProperty(getDynaProperty(name, Double.class));
     }
 

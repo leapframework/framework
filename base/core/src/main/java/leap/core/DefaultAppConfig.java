@@ -16,11 +16,16 @@
 package leap.core;
 
 import leap.core.config.dyna.*;
+import leap.core.config.dyna.exception.UnsupportedBindDynaPropertyException;
+import leap.core.config.dyna.exception.UnsupportedDynaPropertyException;
+import leap.core.config.dyna.exception.UnsupportedRawPropertyException;
 import leap.core.sys.SysPermissionDef;
 import leap.lang.*;
 import leap.lang.convert.Converts;
 import leap.lang.io.IO;
 import leap.lang.json.JSON;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.lang.resource.FileResource;
 import leap.lang.resource.ResourceSet;
 import leap.lang.resource.Resources;
@@ -41,7 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * A default implementation of {@link AppConfig}
  */
 public class DefaultAppConfig extends AppConfigBase implements AppConfig {
-	
+	private static final Log log = LogFactory.get(DefaultAppConfig.class);
 	//all init properties
 	protected static Set<String> INIT_PROPERTIES = new HashSet<>();
 	static {
@@ -230,8 +235,14 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
 
 	@Override
     public String getProperty(String name) {
-        String v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
-        return null == v ? properties.get(name) : v;
+        String v;
+        try {
+            v = null == propertyProvider ? null : propertyProvider.getRawProperty(name);
+            return null == v ? properties.get(name) : v;
+        } catch (UnsupportedRawPropertyException e) {
+            log.error(e);
+        }
+        return properties.get(name);
     }
 	
 	@Override
@@ -262,7 +273,12 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public StringProperty getDynaProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaProperty(name);
+            try {
+                StringProperty p = propertyProvider.getDynaProperty(name);
+                return p;
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
         return new SimpleStringProperty(properties.get(name));
     }
@@ -270,9 +286,13 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public <T> Property<T> getDynaProperty(String name, Class<T> type) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaProperty(name, type);
+            try {
+                Property<T> p = propertyProvider.getDynaProperty(name, type);
+                return p;
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
-
         String v = properties.get(name);
         if(null == v || v.isEmpty()) {
             return new NullProperty<>();
@@ -289,7 +309,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public IntegerProperty getDynaIntegerProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaIntegerProperty(name);
+            try {
+                return propertyProvider.getDynaIntegerProperty(name);
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
         return new SimpleIntegerProperty(Converts.convert(properties.get(name), Integer.class));
     }
@@ -297,7 +321,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public LongProperty getDynaLongProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaLongProperty(name);
+            try {
+                return propertyProvider.getDynaLongProperty(name);
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
         return new SimpleLongProperty(Converts.convert(properties.get(name), Long.class));
     }
@@ -305,7 +333,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public BooleanProperty getDynaBooleanProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaBooleanProperty(name);
+            try {
+                return propertyProvider.getDynaBooleanProperty(name);
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
         return new SimpleBooleanProperty(Converts.convert(properties.get(name), Boolean.class));
     }
@@ -313,7 +345,11 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
     @Override
     public DoubleProperty getDynaDoubleProperty(String name) {
         if(null != propertyProvider) {
-            return propertyProvider.getDynaDoubleProperty(name);
+            try {
+                return propertyProvider.getDynaDoubleProperty(name);
+            } catch (UnsupportedDynaPropertyException e) {
+                log.error(e);
+            }
         }
         return new SimpleDoubleProperty(Converts.convert(properties.get(name), Double.class));
     }
@@ -323,13 +359,16 @@ public class DefaultAppConfig extends AppConfigBase implements AppConfig {
         if(null == p) {
             return;
         }
-
         if(null != propertyProvider) {
-            propertyProvider.bindDynaProperty(name, type, p);
+            try {
+                propertyProvider.bindDynaProperty(name, type, p);
+            } catch (UnsupportedBindDynaPropertyException e) {
+                log.error(e);
+                p.convert(getProperty(name));
+            }
         }else if(properties.containsKey(name)){
             p.convert(getProperty(name));
         }
-
     }
 
     @Override
