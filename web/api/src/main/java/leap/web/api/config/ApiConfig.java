@@ -19,6 +19,7 @@ import leap.lang.Described;
 import leap.lang.Extensible;
 import leap.lang.Named;
 import leap.lang.Titled;
+import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
 import leap.web.App;
 import leap.web.api.config.model.ModelConfig;
@@ -110,6 +111,11 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
      * Returns an immutable {@link Set} contains all the configurations of models.
      */
     Set<ModelConfig> getModels();
+
+    /**
+     * Returns the extra complex types.
+     */
+    Set<MComplexType> getComplexTypes();
 
     /**
      * Returns the model config matches the name or null if not exists.

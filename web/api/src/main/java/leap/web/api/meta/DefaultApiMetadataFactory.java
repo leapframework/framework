@@ -361,6 +361,9 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             tryAddModel(context, m, ct);
         });
 
+        config.getComplexTypes().forEach(ct -> {
+            tryAddModel(context, m, ct);
+        });
     }
 
     @Override
