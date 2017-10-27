@@ -159,23 +159,35 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
             return false;
         }
 
-        Doc doc = o.getRoute().getAction().getAnnotation(Doc.class);
-        if(null != doc && Arrays2.isNotEmpty(doc.profile())) {
+        String[] profiles = tryGetProfiles(o);
+        if(null != profiles) {
             Request request = Request.tryGetCurrent();
 
             if (null != request) {
                 String requestProfile = request.getParameter("profile");
 
                 if (Strings.isNotBlank(requestProfile)) {
-                    String[] methodProfiles = doc.profile();
 
-                    if(!Arrays2.containsAny(methodProfiles, requestProfile)) {
+                    if(!Arrays2.containsAny(profiles, requestProfile)) {
                         return true;
                     }
                 }
             }
         }
         return false;
+    }
+
+    private String[] tryGetProfiles(MApiOperation o) {
+        if(null == o || null == o.getRoute()
+                || null == o.getRoute().getAction()
+                || null == o.getRoute().getAction().getMethod()
+                || null == o.getRoute().getAction().getMethod().getAnnotation(Doc.class)) {
+            return null;
+        }
+
+        String[] profiles = o.getRoute().getAction().getMethod().getAnnotation(Doc.class).profile();
+
+        return Arrays2.isNotEmpty(profiles) ? profiles : null;
     }
 
     protected void writeOperation(WriteContext context, ApiMetadata m, JsonWriter w, MApiPath p, MApiOperation o) {
@@ -595,9 +607,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 	}
 	
 	protected void writeRefType(WriteContext context, ApiMetadata m, JsonWriter w, MTypeRef tr) {
-        if(!m.getModels().containsKey(tr.getRefTypeName())) {
-            throw new IllegalStateException("The referenced type '" + tr.getRefTypeName() + "' not exists!");
-        }
 		w.property(REF, ref(tr.getRefTypeName()));
 	}
 
@@ -641,11 +650,6 @@ public class SwaggerJsonWriter extends JsonSpecWriter {
 
         if(type.isDictionaryType()) {
             writeDictionaryType(context, m, w, type.asDictionaryType());
-            return;
-        }
-
-        if(type.isComplexType()) {
-            writeRefType(context, m, w, ((MComplexType)type).createTypeRef());
             return;
         }
 		
