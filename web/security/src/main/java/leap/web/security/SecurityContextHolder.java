@@ -38,11 +38,6 @@ public interface SecurityContextHolder extends AuthenticationContext, Authorizat
 	}
 
     /**
-     * Optional. Returns the path mapping to the request.
-     */
-    SecuredPath getSecuredPath();
-
-    /**
      * Required.
      */
     LoginContext getLoginContext();

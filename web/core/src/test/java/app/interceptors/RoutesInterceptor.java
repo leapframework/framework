@@ -24,6 +24,7 @@ import leap.web.Request;
 import leap.web.RequestInterceptor;
 import leap.web.Response;
 import leap.web.SimpleRouter;
+import leap.web.action.ActionContext;
 import leap.web.annotation.Path;
 import leap.web.annotation.Restful;
 import leap.web.annotation.http.GET;
@@ -49,7 +50,7 @@ public class RoutesInterceptor implements RequestInterceptor, PostCreateBean {
     }
 
     @Override
-    public State preHandleRequest(Request request, Response response) throws Throwable {
+    public void onPrepareRequest(Request request, Response response) {
         if(request.getPath().startsWith(PATH_PREFIX)) {
 
             String path = request.getPath().substring(PATH_PREFIX.length()-1);
@@ -67,9 +68,7 @@ public class RoutesInterceptor implements RequestInterceptor, PostCreateBean {
                 request.setExternalRouter(new SimpleRouter(routes, path));
             }
         }
-        return State.CONTINUE;
     }
-
     private class SimpleController {
 
         public String action1(String p) {
