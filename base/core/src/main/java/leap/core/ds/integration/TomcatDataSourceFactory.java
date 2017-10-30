@@ -51,6 +51,8 @@ public class TomcatDataSourceFactory extends AbstractDataSourceFactory implement
 		pp.setUsername(props.getUsername());
 		pp.setPassword(props.getPassword());
 		pp.setDefaultAutoCommit(props.getDefaultAutoCommit());
+		pp.setTestWhileIdle(true);
+		pp.setTestOnBorrow(true);
 		
 		if(null != props.getDefaultTransactionIsolation()){
 			pp.setDefaultTransactionIsolation(props.getDefaultTransactionIsolation().getValue());
