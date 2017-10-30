@@ -191,11 +191,6 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
         return checkAuthorization(request, response, context);
     }
 
-    @Override
-    public void completeHandleRequest(Request request, Response response, RequestExecution execution) throws Throwable {
-		DefaultSecurityContextHolder.remove(request);
-	}
-
 	/**
 	 * Returns <code>true</code> if the request already handled.
 	 */

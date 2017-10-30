@@ -16,6 +16,7 @@
 package leap.web.api.config;
 
 import leap.lang.*;
+import leap.lang.meta.MComplexType;
 import leap.lang.naming.NamingStyle;
 import leap.lang.path.Paths;
 import leap.web.api.config.model.*;
@@ -62,6 +63,8 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
 
     protected Set<ModelConfig> models    = new LinkedHashSet<>();
     protected Set<ModelConfig> modelsImv = Collections.unmodifiableSet(models);
+
+    protected Set<MComplexType> complexTypes = new LinkedHashSet<>();
 
     protected Set<ParamConfig> params    = new LinkedHashSet<>();
     protected Set<ParamConfig> paramsImv = Collections.unmodifiableSet(params);
@@ -220,6 +223,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     @Override
     public ApiConfigurator addModel(ModelConfig model) {
         ApiConfigs.addModel(models, model);
+        return this;
+    }
+
+    @Override
+    public Set<MComplexType> getComplexTypes() {
+        return complexTypes;
+    }
+
+    @Override
+    public ApiConfigurator addComplexType(MComplexType ct) {
+        complexTypes.add(ct);
         return this;
     }
 

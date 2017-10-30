@@ -131,7 +131,7 @@ public class Resources {
 	 * 
 	 * @see ResourceScanner#scan(String)
 	 * 
-	 * @throws NestedIOException if an {@link IOException} throwed by underlying scanner.
+	 * @throws NestedIOException if an {@link IOException} thrown by underlying scanner.
 	 */
 	public static ResourceSet scan(String locationPattern) throws NestedIOException {
 		try {

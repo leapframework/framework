@@ -16,6 +16,7 @@
 package leap.web.api.restd;
 
 import leap.lang.Named;
+import leap.web.api.meta.model.MApiOperationBuilder;
 
 import java.util.Map;
 
@@ -35,6 +36,11 @@ public interface RestdOperationDef extends Named {
      * Optional. Returns the script if necessary.
      */
     String getScript();
+
+    /**
+     * Optional. Returns the meta operation.
+     */
+    MApiOperationBuilder getMetaOperation();
 
     /**
      * Optional. Returns the arguments for creating operation if necessary.

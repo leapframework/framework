@@ -19,6 +19,7 @@ import leap.core.validation.annotations.NotNull;
 import leap.lang.naming.NamingStyle;
 
 import java.text.DateFormat;
+import java.util.Collection;
 
 public interface JsonConfigurator {
 	
@@ -40,6 +41,10 @@ public interface JsonConfigurator {
     JsonConfigurator setDefaultDateFormat(String f);
 	
 	JsonConfigurator setJsonpEnabled(boolean enabled);
+
+	JsonConfigurator setJsonpResponseHeaders(boolean enabled);
+
+	JsonConfigurator setJsonpAllowResponseHeaders(Collection<String> headerNames);
 	
 	JsonConfigurator setJsonpParameter(String jsonpParameter);
 

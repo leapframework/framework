@@ -193,7 +193,7 @@ public class SimpleMTypeFactory extends AbstractMTypeFactory implements MTypeFac
 
             configureProperty(bp, mp);
 
-			ct.addProperty(mp.build());
+			ct.addProperty(mp);
 		}
 
         MComplexType ret = ct.build();
