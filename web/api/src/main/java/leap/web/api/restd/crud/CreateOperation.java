@@ -83,9 +83,7 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
 
         if(Arrays2.isNotEmpty(validators)) {
             for (RestdValidator validator : validators) {
-                if(validator.validate(model.getName(), record) == false) {
-                    return ApiResponse.badRequest("restd validation failed");
-                }
+                validator.validate(model.getName(), record);
             }
         }
 

@@ -20,5 +20,5 @@ import java.util.Map;
 
 public interface RestdValidator {
 
-    boolean validate(String entityName, Map<String, Object> record);
+    void validate(String entityName, Map<String, Object> record);
 }
