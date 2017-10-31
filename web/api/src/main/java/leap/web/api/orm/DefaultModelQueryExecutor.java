@@ -28,6 +28,7 @@ import leap.orm.query.PageResult;
 import leap.web.Params;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.meta.model.MApiProperty;
+import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.query.*;
@@ -184,6 +185,22 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         return new QueryListResult(list, count);
     }
 
+    @Override
+    public QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback) {
+
+        CriteriaQuery<Record> query = dao.createCriteriaQuery(em);
+
+        applyFilters(query, null, options.getFilters(), null, null);
+
+        if(callback != null){
+            callback.accept(query);
+        }
+
+        long count = query.count();
+
+        return new QueryListResult(null, count);
+    }
+
     protected void expand(Expand expand, List<Record> records) {
     	if(records==null || records.size()==0){
     		return;
@@ -291,7 +308,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
     }
 
     /**
-     * @see DefaultModelQueryExecutor.expand(Expand expand, Record... records)
+     * @see DefaultModelQueryExecutor#expand(Expand expand, Record... records)
      * @param record
      * @param id
      * @param expand

@@ -176,6 +176,15 @@ public class RestdConfig {
         return true;
     }
 
+    public boolean allowCountModel(String name) {
+        Model model = getModel(name);
+        if(null != model && null != model.getCountOperationEnabled()) {
+            return model.getCountOperationEnabled();
+        }
+
+        return true;
+    }
+
     /**
      * The configuration of restd model.
      */
@@ -189,6 +198,7 @@ public class RestdConfig {
         protected Boolean deleteOperationEnabled;
         protected Boolean findOperationEnabled;
         protected Boolean queryOperationEnabled;
+        protected Boolean countOperationEnabled;
 
         protected Map<String, Operation> operations = new LinkedHashMap<>();
 
@@ -246,6 +256,14 @@ public class RestdConfig {
 
         public void setQueryOperationEnabled(Boolean queryOperationEnabled) {
             this.queryOperationEnabled = queryOperationEnabled;
+        }
+
+        public Boolean getCountOperationEnabled() {
+            return countOperationEnabled;
+        }
+
+        public void setCountOperationEnabled(Boolean countOperationEnabled) {
+            this.countOperationEnabled = countOperationEnabled;
         }
 
         public Map<String, Operation> getOperations() {

@@ -90,6 +90,18 @@ public abstract class CrudOperation extends RestdOperationBase implements RestdP
         return r;
     }
 
+    protected MApiResponseBuilder addModelCountResponse(FuncActionBuilder action, RestdModel model) {
+        action.setReturnType(Long.class);
+
+        MApiResponseBuilder r = new MApiResponseBuilder();
+
+        r.setStatus(200);
+        r.setType(MSimpleTypes.BIGINT);
+        r.setDescription("Success");
+
+        return r;
+    }
+
     protected MApiResponseBuilder newModelResponse(RestdModel model) {
         MApiResponseBuilder r = new MApiResponseBuilder();
 

@@ -54,6 +54,7 @@
     </bean>
 
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.QueryOperation"/>
+    <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CountOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.FindOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.CreateOperation"/>
     <bean type="leap.web.api.restd.RestdProcessor" class="leap.web.api.restd.crud.UpdateOperation"/>
