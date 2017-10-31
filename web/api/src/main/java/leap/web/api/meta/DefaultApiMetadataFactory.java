@@ -341,7 +341,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
-
         ApiConfig config = context.getConfig();
 
         config.getResourceTypes().values().forEach((t) -> {
@@ -357,11 +356,11 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
         });
 
-        context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
+        config.getComplexTypes().forEach(ct -> {
             tryAddModel(context, m, ct);
         });
 
-        config.getComplexTypes().forEach(ct -> {
+        context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
             tryAddModel(context, m, ct);
         });
     }
