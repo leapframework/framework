@@ -27,6 +27,8 @@ import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
 import leap.web.api.meta.ApiMetadata;
+import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiModelBuilder;
 import leap.web.api.meta.model.MApiPermission;
 import leap.web.api.meta.model.MApiResponse;
 import leap.web.api.permission.ResourcePermissionsSet;
@@ -110,7 +112,12 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns an immutable {@link Set} contains all the configurations of models.
      */
-    Set<ModelConfig> getModels();
+    Set<ModelConfig> getModelConfigs();
+
+    /**
+     * Returns the extra models.
+     */
+    Set<MApiModelBuilder> getModels();
 
     /**
      * Returns the extra complex types.
@@ -120,19 +127,19 @@ public interface ApiConfig extends Named,Titled,Described,Extensible {
     /**
      * Returns the model config matches the name or null if not exists.
      */
-    ModelConfig getModel(String name);
+    ModelConfig getModelConfig(String name);
 
     /**
      * Returns the model config matches the class or null if not exists.
      */
-    default ModelConfig getModel(Class<?> type) {
-        return getModelByClassName(null == type ? null : type.getName());
+    default ModelConfig getModelConfig(Class<?> type) {
+        return getModelConfigByClassName(null == type ? null : type.getName());
     }
 
     /**
      * Returns the model config matches the class name or null if not exists.
      */
-    ModelConfig getModelByClassName(String className);
+    ModelConfig getModelConfigByClassName(String className);
 
     /**
      * Returns an immutable {@link Set} contains all the configurations of parameters.

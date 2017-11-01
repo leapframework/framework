@@ -73,13 +73,13 @@ public class ConfigDocProcessor implements ApiMetadataProcessor {
         ModelConfig mc = null;
 
         for(Class<?> javaType : m.getJavaTypes()) {
-            mc = context.getConfig().getModel(javaType);
+            mc = context.getConfig().getModelConfig(javaType);
             if(null != mc) {
                 break;
             }
         }
         if(null == mc) {
-            mc = context.getConfig().getModel(m.getName());
+            mc = context.getConfig().getModelConfig(m.getName());
         }
 
         //configure the model properties.
