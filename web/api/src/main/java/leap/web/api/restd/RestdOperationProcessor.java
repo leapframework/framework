@@ -29,7 +29,7 @@ public class RestdOperationProcessor extends CrudOperation implements RestdProce
 
     @Override
     public void preProcessApi(ApiConfigurator c, RestdContext context) {
-        context.getConfig().getOperations().values().forEach(o -> {
+        context.getConfig().getOperations().forEach(o -> {
             provider(o).createApiOperation(context, o);
         });
     }

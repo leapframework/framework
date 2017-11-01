@@ -33,11 +33,11 @@ public class RestdConfig {
     protected OrmContext ormContext;
     protected boolean    readonly;
 
-    protected Set<String>            includedModels = new LinkedHashSet<>();
-    protected Set<String>            excludedModels = new LinkedHashSet<>();
-    protected Set<String>            readonlyModels = new HashSet<>();
-    protected Map<String, Model>     models         = new LinkedHashMap<>();
-    protected Map<String, Operation> operations     = new LinkedHashMap<>();
+    protected Set<String>        includedModels = new LinkedHashSet<>();
+    protected Set<String>        excludedModels = new LinkedHashSet<>();
+    protected Set<String>        readonlyModels = new HashSet<>();
+    protected List<Operation>    operations     = new ArrayList<>();
+    protected Map<String, Model> models         = new LinkedHashMap<>();
 
     public String getDataSourceName() {
         return dataSourceName;
@@ -107,21 +107,12 @@ public class RestdConfig {
         models.put(key, model);
     }
 
-    public Map<String, Operation> getOperations() {
+    public List<Operation> getOperations() {
         return operations;
     }
 
-    public Operation getOperation(String name) {
-        return operations.get(name.toLowerCase());
-    }
-
     public void addOperation(Operation op) {
-        //todo: path ?
-        String key = Strings.isEmpty(op.getPath()) ? op.getName().toLowerCase() : op.getPath();
-        if(operations.containsKey(key)) {
-            throw new ObjectExistsException("The configuration of operation '" + op.getName() + "' already exists!");
-        }
-        operations.put(key, op);
+        operations.add(op);
     }
 
     public boolean isModelAnonymous(String name) {
