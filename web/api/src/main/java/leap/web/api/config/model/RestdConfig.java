@@ -16,6 +16,7 @@
 
 package leap.web.api.config.model;
 
+import leap.lang.Strings;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmContext;
 import leap.web.api.meta.model.MApiOperationBuilder;
@@ -115,7 +116,8 @@ public class RestdConfig {
     }
 
     public void addOperation(Operation op) {
-        String key = op.getName().toLowerCase();
+        //todo: path ?
+        String key = Strings.isEmpty(op.getPath()) ? op.getName().toLowerCase() : op.getPath();
         if(operations.containsKey(key)) {
             throw new ObjectExistsException("The configuration of operation '" + op.getName() + "' already exists!");
         }
