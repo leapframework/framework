@@ -61,10 +61,11 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     protected Map<String, MApiResponse> commonResponses    = new LinkedHashMap<>();
     protected Map<String, MApiResponse> commonResponsesImv = Collections.unmodifiableMap(commonResponses);
 
-    protected Set<ModelConfig> models    = new LinkedHashSet<>();
-    protected Set<ModelConfig> modelsImv = Collections.unmodifiableSet(models);
+    protected Set<ModelConfig> modelConfigs    = new LinkedHashSet<>();
+    protected Set<ModelConfig> modelConfigsImv = Collections.unmodifiableSet(modelConfigs);
 
-    protected Set<MComplexType> complexTypes = new LinkedHashSet<>();
+    protected Set<MApiModelBuilder> models       = new LinkedHashSet<>();
+    protected Set<MComplexType>     complexTypes = new LinkedHashSet<>();
 
     protected Set<ParamConfig> params    = new LinkedHashSet<>();
     protected Set<ParamConfig> paramsImv = Collections.unmodifiableSet(params);
@@ -188,17 +189,17 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public Set<ModelConfig> getModels() {
-        return modelsImv;
+    public Set<ModelConfig> getModelConfigs() {
+        return modelConfigsImv;
     }
 
     @Override
-    public ModelConfig getModelByClassName(String className) {
+    public ModelConfig getModelConfigByClassName(String className) {
         if(Strings.isEmpty(className)) {
             return null;
         }
 
-        for(ModelConfig model : models) {
+        for(ModelConfig model : modelConfigs) {
             if(className.equals(model.getClassName())) {
                 return model;
             }
@@ -207,12 +208,12 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public ModelConfig getModel(String name) {
+    public ModelConfig getModelConfig(String name) {
         if(Strings.isEmpty(name)) {
             return null;
         }
 
-        for(ModelConfig model : models) {
+        for(ModelConfig model : modelConfigs) {
             if(name.equalsIgnoreCase(model.getName())) {
                 return model;
             }
@@ -221,8 +222,19 @@ public class DefaultApiConfig extends ExtensibleBase implements ApiConfig, ApiCo
     }
 
     @Override
-    public ApiConfigurator addModel(ModelConfig model) {
-        ApiConfigs.addModel(models, model);
+    public ApiConfigurator addModelConfig(ModelConfig mc) {
+        ApiConfigs.addModel(modelConfigs, mc);
+        return this;
+    }
+
+    @Override
+    public Set<MApiModelBuilder> getModels() {
+        return models;
+    }
+
+    @Override
+    public ApiConfigurator addModel(MApiModelBuilder model) {
+        models.add(model);
         return this;
     }
 

@@ -17,6 +17,7 @@ package leap.core.ioc;
 
 import leap.core.*;
 import leap.core.annotation.*;
+import leap.core.config.AppConfigInitializer;
 import leap.core.config.dyna.PropertyProvider;
 import leap.core.validation.annotations.NotEmpty;
 import leap.core.validation.annotations.NotNull;
@@ -237,7 +238,12 @@ public class BeanContainer implements BeanFactory {
 		this.checkAfterLoading();
 		this.initAfterLoading();
 		initializing = false;
-		
+
+        AppConfigurator configurator = new DefaultAppConfigurator((DefaultAppConfig)config);
+        for(AppConfigInitializer ci : getBeans(AppConfigInitializer.class)) {
+            ci.init(appContext, configurator);
+        }
+
 		this.resolveAfterLoading();
 
         if(null != processors){

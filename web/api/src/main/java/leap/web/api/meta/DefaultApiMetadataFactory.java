@@ -341,7 +341,6 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
 	}
 
     protected void createModels(ApiMetadataContext context, ApiMetadataBuilder m) {
-
         ApiConfig config = context.getConfig();
 
         config.getResourceTypes().values().forEach((t) -> {
@@ -351,17 +350,21 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
             }
         });
 
-        config.getModels().forEach((c)-> {
+        config.getModelConfigs().forEach((c)-> {
             if(!Strings.isEmpty(c.getClassName()) && null == m.tryGetModelByClassName(c.getClassName())) {
                 context.getMTypeContainer().getMType(Classes.forName(c.getClassName()));
             }
         });
 
-        context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
-            tryAddModel(context, m, ct);
+        config.getModels().forEach(model -> {
+            m.addModel(model);
         });
 
         config.getComplexTypes().forEach(ct -> {
+            tryAddModel(context, m, ct);
+        });
+
+        context.getMTypeContainer().getComplexTypes().forEach((type, ct) -> {
             tryAddModel(context, m, ct);
         });
     }
@@ -401,7 +404,7 @@ public class DefaultApiMetadataFactory implements ApiMetadataFactory {
                 }
             }
 
-            ModelConfig mc = context.getConfig().getModel(ct.getJavaType());
+            ModelConfig mc = context.getConfig().getModelConfig(ct.getJavaType());
             if(null != mc && !Strings.isEmpty(mc.getName())) {
                return mc.getName();
             }

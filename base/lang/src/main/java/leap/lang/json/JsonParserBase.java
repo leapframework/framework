@@ -241,6 +241,10 @@ abstract class JsonParserBase {
 			case '\t':
 				read();
 				continue;
+            case '/':
+                skipComment();
+                read();
+                continue;
 			case ']':
 				if (needData && !acceptUselessComma)
 					throw new JsonParserException(pos, ERROR_UNEXPECTED_CHAR, (char) c);
@@ -355,6 +359,10 @@ abstract class JsonParserBase {
 			case '-':
 				xo = readNumber(stop);
 				return xo;
+            case '/':
+                skipComment();
+                read();
+                continue;
 			default:
 				readNQString(stop);
 				if (!acceptNonQuote)
@@ -363,6 +371,46 @@ abstract class JsonParserBase {
 			}
 		}
 	}
+
+    protected void skipComment() throws IOException {
+        read();
+        if(c == '/'){
+            skipOneLineComment();
+            return;
+        }
+        if(c == '*') {
+            skipMultiLineComment();
+            return;
+        }
+        throw new JsonParserException(pos, new IllegalStateException("Invalid comment"));
+    }
+
+    protected void skipOneLineComment() throws IOException {
+        for(;;) {
+            read();
+
+            if(c == EOI || c == '\r' || c == '\n') {
+                break;
+            }
+        }
+    }
+
+    protected void skipMultiLineComment() throws IOException {
+        for(;;) {
+            read();
+
+            if(c == EOI) {
+                break;
+            }
+
+            if(c == '*') {
+                read();
+                if(c == '/') {
+                    break;
+                }
+            }
+        }
+    }
 
 	abstract protected void readNoEnd() throws JsonParserException, IOException;
 
@@ -386,6 +434,9 @@ abstract class JsonParserBase {
 			case '\t':
 			case '\n':
 				continue;
+            case '/':
+                skipComment();
+                continue;
 			case ':':
 			case ']':
 			case '[':
@@ -430,6 +481,10 @@ abstract class JsonParserBase {
 				//
 				//
 				//
+                if(c == '/') {
+                    skipComment();
+                }
+
 				if (c == '}') {
 					read(); /* unstack */
 					return obj;

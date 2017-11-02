@@ -530,7 +530,11 @@ public class SwaggerSpecReader implements ApiSpecReader {
         return mp.build();
     }
 
-    protected MSimpleType readSimpleType(String type, String format) {
+    public MSimpleType readSimpleType(String type) {
+        return readSimpleType(type, "");
+    }
+
+    public MSimpleType readSimpleType(String type, String format) {
         switch (type) {
 
             case "integer" :
@@ -544,6 +548,27 @@ public class SwaggerSpecReader implements ApiSpecReader {
                 }
 
                 throw new InvalidSpecException("Invalid format '" + format + "' of type '" + type + "'");
+
+            case "long":
+                return MSimpleTypes.BIGINT;
+
+            case "double":
+                return MSimpleTypes.DOUBLE;
+
+            case "float" :
+                return MSimpleTypes.SINGLE;
+
+            case "byte" :
+                return MSimpleTypes.BYTE;
+
+            case "binary":
+                return MSimpleTypes.BINARY;
+
+            case "date" :
+                return MSimpleTypes.DATE;
+
+            case "dateTime" :
+                return MSimpleTypes.DATETIME;
 
             case "number" :
 

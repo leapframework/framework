@@ -477,7 +477,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
                 }
 
                 if (reader.isStartElement(MODELS)) {
-                    readModels(context, reader, api::addModel);
+                    readModels(context, reader, api::addModelConfig);
                     continue;
                 }
 

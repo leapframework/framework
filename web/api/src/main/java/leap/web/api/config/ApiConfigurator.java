@@ -24,9 +24,7 @@ import leap.web.api.config.model.ModelConfig;
 import leap.web.api.config.model.OAuthConfig;
 import leap.web.api.config.model.ParamConfig;
 import leap.web.api.config.model.RestdConfig;
-import leap.web.api.meta.model.MApiPermission;
-import leap.web.api.meta.model.MApiResponse;
-import leap.web.api.meta.model.MApiResponseBuilder;
+import leap.web.api.meta.model.*;
 import leap.web.route.Route;
 import leap.web.route.Routes;
 
@@ -83,7 +81,12 @@ public interface ApiConfigurator extends Extensible {
     /**
      * Adds a model config.
      */
-    ApiConfigurator addModel(ModelConfig model);
+    ApiConfigurator addModelConfig(ModelConfig mc);
+
+    /**
+     * Adds a model
+     */
+    ApiConfigurator addModel(MApiModelBuilder model);
 
     /**
      * Adds a complex type.
