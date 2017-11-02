@@ -62,7 +62,9 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
         Map<RelationProperty, Object[]> relationProperties = new LinkedHashMap<>();
 
         Set<String> removingKeys = new HashSet<>();
-        for(String name : properties.keySet()) {
+
+        for (Map.Entry<String, Object> entry : properties.entrySet()) {
+            String name = entry.getKey();
             MApiProperty p = am.tryGetProperty(name);
 
             if(null == p) {
@@ -94,6 +96,8 @@ public class DefaultModelCreateExecutor extends ModelExecutorBase implements Mod
                     relationProperties.put(rp, e.toArray());
                 }
             }
+
+            tryHandleDateValue(entry, p);
         }
 
         //Removes the not creatable properties.

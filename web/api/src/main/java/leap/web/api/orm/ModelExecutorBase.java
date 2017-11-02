@@ -18,12 +18,20 @@
 
 package leap.web.api.orm;
 
+import leap.lang.Strings;
+import leap.lang.convert.Converts;
+import leap.lang.jdbc.JdbcTypeKind;
+import leap.lang.meta.MSimpleType;
 import leap.orm.OrmMetadata;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
 import leap.web.api.config.ApiConfig;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
+import leap.web.api.meta.model.MApiProperty;
+
+import java.util.Date;
+import java.util.Map;
 
 public abstract class ModelExecutorBase {
 
@@ -45,4 +53,15 @@ public abstract class ModelExecutorBase {
         this.md  = dao.getOrmContext().getMetadata();
     }
 
+    protected void tryHandleDateValue(Map.Entry<String, Object> entry, MApiProperty p) {
+        Object value = entry.getValue();
+        if(null != value && value instanceof String) {
+            String string = (String) value;
+            if(Strings.isNotBlank(string)
+                    && ((MSimpleType) p.getType()).getJdbcType().getKind().equals(JdbcTypeKind.Temporal)) {
+                Date date = Converts.convert(string, Date.class);
+                entry.setValue(date);
+            }
+        }
+    }
 }
