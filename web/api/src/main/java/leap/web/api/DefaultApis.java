@@ -243,15 +243,15 @@ public class DefaultApis implements Apis, AppInitializable,PostCreateBean {
 
             configs.getCommonModels().forEach(model -> {
 
-                if(null != c.getModelByClassName(model.getClassName())) {
+                if(null != c.getModelConfigByClassName(model.getClassName())) {
                     return;
                 }
 
-                if(null != c.getModel(model.getName())) {
+                if(null != c.getModelConfig(model.getName())) {
                     return;
                 }
 
-                configurator.addModel(model);
+                configurator.addModelConfig(model);
             });
 
             configs.getCommonParams().forEach(param -> {

@@ -108,6 +108,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
     protected static final String DELETE               = "delete";
     protected static final String FIND                 = "find";
     protected static final String QUERY                = "query";
+    protected static final String COUNT                = "count";
     protected static final String OVERRIDE             = "override";
     protected static final String SQL_OPERATION        = "sql-operation";
     protected static final String SQL_KEY              = "sql-key";
@@ -476,7 +477,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
                 }
 
                 if (reader.isStartElement(MODELS)) {
-                    readModels(context, reader, api::addModel);
+                    readModels(context, reader, api::addModelConfig);
                     continue;
                 }
 
@@ -729,6 +730,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         Boolean delete = reader.getBooleanAttribute(DELETE);
         Boolean find = reader.getBooleanAttribute(FIND);
         Boolean query = reader.getBooleanAttribute(QUERY);
+        Boolean count = reader.getBooleanAttribute(COUNT);
 
         Model model = config.getModel(name);
         if (null == model) {
@@ -745,6 +747,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         if (config.isReadonlyModel(name)) {
             model.setFindOperationEnabled(true);
             model.setQueryOperationEnabled(true);
+            model.setCountOperationEnabled(true);
 
             model.setCreateOperationEnabled(false);
             model.setUpdateOperationEnabled(false);
@@ -754,6 +757,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
         if (null != read) {
             model.setFindOperationEnabled(read);
             model.setQueryOperationEnabled(read);
+            model.setCountOperationEnabled(read);
         }
 
         if (null != write) {
@@ -780,6 +784,10 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
         if (null != query) {
             model.setQueryOperationEnabled(query);
+        }
+
+        if (null != count) {
+            model.setCountOperationEnabled(count);
         }
 
         final RestdConfig.Model m = model;

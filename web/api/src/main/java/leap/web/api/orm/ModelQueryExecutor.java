@@ -17,6 +17,7 @@
 package leap.web.api.orm;
 
 import leap.orm.query.CriteriaQuery;
+import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 
@@ -49,4 +50,5 @@ public interface ModelQueryExecutor {
 
     QueryListResult queryList(QueryOptions options, Map<String, Object> filters, Consumer<CriteriaQuery> callback);
 
+    QueryListResult count(CountOptions options, Consumer<CriteriaQuery> callback);
 }

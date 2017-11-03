@@ -14,11 +14,14 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
+package leap.core;
 
-import java.util.Map;
+public interface AppConfigurator {
 
-public interface RestdValidator {
+    AppConfig config();
 
-    void validate(String entityName, Map<String, Object> record);
+    void setDebug(boolean debug);
+
+    void setProperty(String name, String value);
+
 }

@@ -50,6 +50,15 @@ abstract class JsonParserMemory extends JsonParserBase {
 		// Integer digit
 		if (c != '.' && c != 'E' && c != 'e') {
 			skipSpace();
+
+            if(c == '/') {
+                int end = pos;
+                skipComment();
+                read();
+                extractString(start, end);
+                return parseNumber(xs.trim());
+            }
+
 			if (c >= 0 && c < MAX_STOP && !stop[c] && c != EOI) {
 				// convert string
 				skipNQString(stop);
@@ -61,14 +70,26 @@ abstract class JsonParserMemory extends JsonParserBase {
 			extractStringTrim(start, pos);
 			return parseNumber(xs);
 		}
+
 		// floating point
 		if (c == '.') {
 			//
 			read();
 			skipDigits();
 		}
+
 		if (c != 'E' && c != 'e') {
 			skipSpace();
+
+            if(c == '/') {
+                int end = pos;
+                skipComment();
+                read();
+                extractString(start, end);
+                xs = xs.trim();
+                return extractFloat();
+            }
+
 			if (c >= 0 && c < MAX_STOP && !stop[c] && c != EOI) {
 				// convert string
 				skipNQString(stop);
@@ -82,11 +103,22 @@ abstract class JsonParserMemory extends JsonParserBase {
 		}
 		sb.append('E');
 		read();
+
 		if (c == '+' || c == '-' || c >= '0' && c <= '9') {
 			sb.append(c);
 			read(); // skip first char
 			skipDigits();
 			skipSpace();
+
+            if(c == '/') {
+                int end = pos;
+                skipComment();
+                read();
+                extractString(start, end);
+                xs = xs.trim();
+                return extractFloat();
+            }
+
 			if (c >= 0 && c < MAX_STOP && !stop[c] && c != EOI) {
 				// convert string
 				skipNQString(stop);
@@ -98,7 +130,7 @@ abstract class JsonParserMemory extends JsonParserBase {
 			extractStringTrim(start, pos);
 			return extractFloat();
 		} else {
-			skipNQString(stop);
+            skipNQString(stop);
 			extractStringTrim(start, pos);
 			if (!acceptNonQuote)
 				throw new JsonParserException(pos, ERROR_UNEXPECTED_TOKEN, xs);

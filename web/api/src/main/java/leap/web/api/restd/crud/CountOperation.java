@@ -16,42 +16,39 @@
 
 package leap.web.api.restd.crud;
 
-import leap.core.annotation.Inject;
-import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.orm.dao.Dao;
 import leap.web.action.ActionParams;
 import leap.web.action.FuncActionBuilder;
 import leap.web.api.Api;
-import leap.web.api.config.ApiConfig;
 import leap.web.api.config.ApiConfigurator;
 import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
-import leap.web.api.orm.*;
+import leap.web.api.mvc.params.CountOptions;
+import leap.web.api.mvc.params.QueryOptions;
+import leap.web.api.orm.ModelExecutorContext;
+import leap.web.api.orm.ModelQueryExecutor;
+import leap.web.api.orm.QueryListResult;
+import leap.web.api.orm.SimpleModelExecutorContext;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
 
-import java.util.Map;
-
 /**
- * Create a new record operation.
+ * Count records operation.
  */
-public class CreateOperation extends CrudOperation implements RestdProcessor {
-
-    @Inject
-    private RestdValidator[] validators;
+public class CountOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowCreateModel(model.getName())) {
+        if(!context.getConfig().allowQueryModel(model.getName())) {
             return;
         }
 
-        String verb = "POST";
-        String path = fullModelPath(c, model);
+        String verb = "GET";
+        String path = fullModelPath(c, model) + "/count";
         if(isOperationExists(context, verb, path)) {
             return;
         }
@@ -60,10 +57,11 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         FuncActionBuilder action = new FuncActionBuilder();
         RouteBuilder      route  = rm.createRoute(verb, path);
 
-        action.setName(Strings.lowerCamel("create", model.getName()));
+        action.setName(Strings.lowerCamel("count", model.getName()));
         action.setFunction((params) -> execute(context.getApi(), dao, model, params));
-        addModelArgument(action, model);
-        addModelResponse(action, model).setStatus(201);
+
+        addArgument(action, CountOptions.class, "options");
+        addModelCountResponse(action, model);
 
         configure(context, model, action);
         route.setAction(action.build());
@@ -76,20 +74,14 @@ public class CreateOperation extends CrudOperation implements RestdProcessor {
         ApiMetadata amd = api.getMetadata();
         MApiModel   am  = amd.getModel(model.getName());
 
-        Map<String,Object> record = params.get(0);
+        ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+        ModelQueryExecutor   executor = mef.newQueryExecutor(context);
 
-        ModelExecutorContext context = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-        ModelCreateExecutor executor = mef.newCreateExecutor(context);
+        CountOptions options = params.get(0);
 
-        if(Arrays2.isNotEmpty(validators)) {
-            for (RestdValidator validator : validators) {
-                validator.validate(model.getName(), record);
-            }
-        }
+        QueryListResult result = executor.count(options, null);
 
-        CreateOneResult result = executor.createOne(record);
-
-        return ApiResponse.created(dao.find(model.getEntityMapping(), result.id));
+        return ApiResponse.of(result.count);
     }
 
 }

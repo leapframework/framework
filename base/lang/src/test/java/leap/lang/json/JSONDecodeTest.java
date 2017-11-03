@@ -175,8 +175,6 @@ public class JSONDecodeTest extends ConcurrentTestCase {
         assertEquals(beanList.get(0).name, beanList1.get(0).name);
     }
     
-    
-    
     @Test
     public void testDecodeUpperCaseProperties(){
     	Bean1 bean0 = new Bean1();
@@ -188,6 +186,7 @@ public class JSONDecodeTest extends ConcurrentTestCase {
     	Bean1 bean1 = JSON.decode(json,Bean1.class);
     	assertEquals("xxx",bean1.name);
     }
+
     @Test
     public void testJsonWriterWithJsonSetting(){
         JsonWriter writer = JSON.createWriter(new JsonSettings(true,true,
@@ -201,6 +200,50 @@ public class JSONDecodeTest extends ConcurrentTestCase {
         assertFalse(map.containsKey("boolFalse"));
         assertTrue(map.containsKey("str"));
         assertTrue(map.containsKey("boolTrue"));
+    }
+
+    @Test
+    public void testJsonSingleLineComment() {
+        //single
+        assertEquals("1", JSON.encode(JSON.decode("//comment\n1")));
+        assertEquals("1", JSON.encode(JSON.decode("1\n//comment")));
+        assertEquals("1", JSON.encode(JSON.decode("1 //comment")));
+        assertEquals("1", JSON.encode(JSON.decode("1//comment")));
+
+        assertEquals("1.0", JSON.encode(JSON.decode("//comment\n1.0")));
+        assertEquals("1.0", JSON.encode(JSON.decode("1.0\n//comment")));
+
+        assertEquals("\"s\"", JSON.encode(JSON.decode("//comment\n\"s\"")));
+        assertEquals("\"s\"", JSON.encode(JSON.decode("\"s\"\n//comment")));
+
+        //object
+        assertEquals("{\"k\":\"v\"}", JSON.encode(JSON.decode("{//comment\n\"k\":\"v\"}")));
+        assertEquals("{\"k\":\"v\"}", JSON.encode(JSON.decode("{\"k\":\"v\"//comment\n}")));
+        assertEquals("{\"k\":1}", JSON.encode(JSON.decode("{\"k\":1//comment\n}")));
+        assertEquals("{\"k\":1.0}", JSON.encode(JSON.decode("{\"k\":1.0//comment\n}")));
+
+        //array
+        assertEquals("[1,2]", JSON.encode(JSON.decode("[//comment\n1,2]")));
+        assertEquals("[1,2]", JSON.encode(JSON.decode("[1,2//comment\n]")));
+    }
+
+    @Test
+    public void testJsonMultiLineComment() {
+        //single number
+        assertEquals("1", JSON.encode(JSON.decode("/*comment\n*/1")));
+        assertEquals("1", JSON.encode(JSON.decode("1\n/*comment\n*/")));
+        assertEquals("1", JSON.encode(JSON.decode("1 /*comment*/")));
+        assertEquals("1", JSON.encode(JSON.decode("1/*comment*/")));
+
+        //object
+        assertEquals("{\"k\":\"v\"}", JSON.encode(JSON.decode("{/*comment*/\"k\":\"v\"}")));
+        assertEquals("{\"k\":\"v\"}", JSON.encode(JSON.decode("{\"k\":\"v\"/*comment*/}")));
+        assertEquals("{\"k\":1}", JSON.encode(JSON.decode("{\"k\":1/*comment*/}")));
+        assertEquals("{\"k\":1.0}", JSON.encode(JSON.decode("{\"k\":1.0/*comment*/}")));
+
+        //array
+        assertEquals("[1,2]", JSON.encode(JSON.decode("[/*comment\n*/1,2]")));
+        assertEquals("[1,2]", JSON.encode(JSON.decode("[1,2/*comment\n*/]")));
     }
     
     private static  class JsonWriterBean{

@@ -14,11 +14,29 @@
  *  limitations under the License.
  */
 
-package leap.web.api.restd.crud;
+package leap.core;
 
-import java.util.Map;
+public class DefaultAppConfigurator implements AppConfigurator {
 
-public interface RestdValidator {
+    private final DefaultAppConfig config;
 
-    void validate(String entityName, Map<String, Object> record);
+    public DefaultAppConfigurator(DefaultAppConfig config) {
+        this.config = config;
+    }
+
+    @Override
+    public AppConfig config() {
+        return config;
+    }
+
+    @Override
+    public void setDebug(boolean debug) {
+        config.debug = debug;
+    }
+
+    @Override
+    public void setProperty(String name, String value) {
+        config.properties.put(name, value);
+    }
+
 }

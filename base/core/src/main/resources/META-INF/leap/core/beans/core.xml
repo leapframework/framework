@@ -36,7 +36,7 @@
 
     <!--jdbc-->
     <beans if-class-present="org.apache.tomcat.jdbc.pool.DataSource">
-        <bean name="tomcat-jdbc" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.integration.TomcatDataSourceFactory"/>
+        <bean name="tomcat" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.integration.TomcatDataSourceFactory"/>
     </beans>
     <bean name="jndi" type="leap.core.ds.DataSourceFactory" class="leap.core.ds.JndiDataSourceFactory"/>
 

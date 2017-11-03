@@ -20,9 +20,12 @@ package leap.web.api.orm;
 
 import leap.core.validation.Errors;
 import leap.core.validation.ValidationException;
-import leap.lang.Enumerable;
-import leap.lang.Enumerables;
-import leap.lang.New;
+import leap.lang.*;
+import leap.lang.convert.Converts;
+import leap.lang.jdbc.JdbcTypeKind;
+import leap.lang.meta.MSimpleType;
+import leap.lang.meta.MTypes;
+import leap.lang.time.DateFormats;
 import leap.orm.command.UpdateCommand;
 import leap.orm.dao.Dao;
 import leap.orm.mapping.EntityMapping;
@@ -33,10 +36,7 @@ import leap.web.api.meta.model.MApiProperty;
 import leap.web.api.mvc.params.Partial;
 import leap.web.exception.BadRequestException;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultModelUpdateExecutor extends ModelExecutorBase implements ModelUpdateExecutor {
@@ -88,6 +88,8 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
                 }
                 continue;
             }
+
+            tryHandleDateValue(entry, p);
         }
 
         Errors errors = dao.validate(em, properties, properties.keySet());
@@ -153,4 +155,5 @@ public class DefaultModelUpdateExecutor extends ModelExecutorBase implements Mod
 
         return new UpdateOneResult(result.get());
     }
+
 }
