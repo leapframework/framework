@@ -69,12 +69,20 @@ public class DefaultDynaOrmFactory implements DynaOrmFactory {
 
     @Override
     public DynaOrmContext createDynaContext(String name, DataSource ds) {
+        return createDynaContext(name, DbFactory.createInstance(ds));
+    }
+
+    @Override
+    public DynaOrmContext createDynaContext(Db db) {
+        return createDynaContext(null, db);
+    }
+
+    public DynaOrmContext createDynaContext(String name, Db db) {
         if(Strings.isEmpty(name)) {
             name = UNNAMED;
         }
 
-        final Db          db   = DbFactory.createInstance(ds);
-        final OrmMetadata md   = omm.createMetadata();
+        final OrmMetadata md = omm.createMetadata();
 
         DefaultOrmDynaContext context = new DefaultOrmDynaContext(name, db, md);
 
