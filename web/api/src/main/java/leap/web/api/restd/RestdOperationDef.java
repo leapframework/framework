@@ -38,6 +38,11 @@ public interface RestdOperationDef extends Named {
     String getScript();
 
     /**
+     * Optional. Returns the path of script.
+     */
+    String getScriptPath();
+
+    /**
      * Optional. Returns the meta operation.
      */
     MApiOperationBuilder getMetaOperation();

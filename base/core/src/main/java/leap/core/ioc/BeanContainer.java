@@ -384,7 +384,21 @@ public class BeanContainer implements BeanFactory {
 		}
 		return (T)doGetBean(bd);
     }
-	
+
+    @Override
+    public <T> T getBean(String namespace, String name) throws BeanException {
+        T bean = tryGetBean(namespace, name);
+        if(null == bean){
+            throw new NoSuchBeanException("No such bean with namespace '" + namespace + "' and name '" + name + "'");
+        }
+        return bean;
+    }
+
+    @Override
+    public <T> T tryGetBean(String namespace, String name) throws BeanException {
+        return tryGetBean(bds.id(namespace, name));
+    }
+
     @SuppressWarnings("unchecked")
     public <T> T tryCreateBean(String id) throws BeanException {
     	Args.notEmpty(id,"bean id");
@@ -2089,6 +2103,10 @@ public class BeanContainer implements BeanFactory {
             return bd;
         }
 
+        protected String id(String ns, String name) {
+            return "ns::" + ns + "::" + name;
+        }
+
         protected BeanDefinitionBase add(BeanDefinitionBase bd) throws BeanDefinitionException {
             if(null != appContext && !appContext.isServletEnvironment()){
                 boolean  ignore;
@@ -2115,6 +2133,18 @@ public class BeanContainer implements BeanFactory {
                     throw new BeanDefinitionException("Found duplicated bean id '" + id + "' in resource : " +
                             bd.getSource() + ", " +
                             existsBeanDefinition.getSource());
+                }
+                identifiedBeanDefinitions.put(id, bd);
+            }
+
+            if(!Strings.isEmpty(bd.getNamespace()) && !Strings.isEmpty(bd.getName())) {
+                id = id(bd.getNamespace(), bd.getName());
+                BeanDefinitionBase existsBeanDefinition = identifiedBeanDefinitions.get(id);
+                if(null != existsBeanDefinition){
+                    throw new BeanDefinitionException("Found duplicated bean namespace '" + bd.getNamespace() +
+                                                     "' and name '" + bd.getName() + "' in resource : " +
+                                                     bd.getSource() + ", " +
+                                                     existsBeanDefinition.getSource());
                 }
                 identifiedBeanDefinitions.put(id, bd);
             }

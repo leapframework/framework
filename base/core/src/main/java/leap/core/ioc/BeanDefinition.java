@@ -10,6 +10,11 @@ public interface BeanDefinition extends TypeDefinition, Sourced,Ordered {
 	float DEFAULT_SORT_ORDER = 100.0f;
 
     /**
+     * Optional. Returns the namespace. namespace + name is unique
+     */
+    String getNamespace();
+
+    /**
      * Optional. Returns the bean id.
      */
 	String getId();

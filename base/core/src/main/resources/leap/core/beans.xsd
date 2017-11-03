@@ -92,6 +92,7 @@
 	</xsd:group>
 
 	<xsd:attributeGroup name="beanAttributes">
+        <xsd:attribute name="namespace" type="xsd:string"  use="optional"/>
         <xsd:attribute name="qualifier" type="xsd:string"/>
         <xsd:attribute name="name" type="xsd:string"/>
 	    <xsd:attribute name="type" type="xsd:string"/>
@@ -174,11 +175,11 @@
             ]]></xsd:documentation>
         </xsd:annotation>
         <xsd:complexType>
-            <xsd:attribute name="id"      type="xsd:string"  use="optional"/>
-            <xsd:attribute name="name"    type="xsd:string"  use="optional"/>
-            <xsd:attribute name="type"    type="xsd:string"  use="optional"/>
-            <xsd:attribute name="class"   type="xsd:string"  use="optional"/>
-            <xsd:attribute name="primary" type="xsd:boolean" use="optional"/>
+            <xsd:attribute name="id"        type="xsd:string"  use="optional"/>
+            <xsd:attribute name="name"      type="xsd:string"  use="optional"/>
+            <xsd:attribute name="type"      type="xsd:string"  use="optional"/>
+            <xsd:attribute name="class"     type="xsd:string"  use="optional"/>
+            <xsd:attribute name="primary"   type="xsd:boolean" use="optional"/>
             <xsd:attributeGroup ref="ifAttributesWithPrefix"/>
         </xsd:complexType>
     </xsd:element>

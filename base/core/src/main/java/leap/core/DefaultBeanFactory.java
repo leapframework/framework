@@ -214,8 +214,30 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    
 	    return bean;
     }
-    
-	@Override
+
+    @Override
+    public <T> T getBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            return beanContainer.getBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
+    public <T> T tryGetBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            bean = beanContainer.tryGetBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException, BeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		

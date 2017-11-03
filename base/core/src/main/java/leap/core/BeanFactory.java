@@ -139,7 +139,25 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * @throws BeanException if the bean could not be obtained.
 	 */
 	<T> T tryGetBean(String id) throws BeanException;
-	
+
+    /**
+     * Returns the bean's instance identified by the given namespace and name (case sensitive).
+     *
+     * @throws NoSuchBeanException if the given id not exists.
+     * @throws BeanException if the bean could not be obtained.
+     */
+    <T> T getBean(String namespace, String name) throws BeanException;
+
+    /**
+     * Returns the bean's instance identified by the given namespace and name (case sensitive).
+     *
+     * <p>
+     * Returns <code>null<code> if the given id not exists.
+     *
+     * @throws BeanException if the bean could not be obtained.
+     */
+    <T> T tryGetBean(String namespace, String name) throws BeanException;
+
 	/**
 	 * Returns the primary bean's instance for the given type.
 	 * 
