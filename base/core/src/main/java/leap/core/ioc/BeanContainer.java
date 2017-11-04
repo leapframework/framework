@@ -24,7 +24,10 @@ import leap.core.validation.annotations.NotNull;
 import leap.core.web.ServletContextAware;
 import leap.lang.*;
 import leap.lang.Comparators;
+import leap.lang.annotation.Destroy;
+import leap.lang.annotation.Init;
 import leap.lang.annotation.Internal;
+import leap.lang.annotation.Nullable;
 import leap.lang.beans.*;
 import leap.lang.convert.Converts;
 import leap.lang.logging.Log;
@@ -686,19 +689,7 @@ public class BeanContainer implements BeanFactory {
 
     @Override
     public boolean destroyBean(Object bean) {
-        boolean called = false;
-
-        if(bean instanceof Closeable) {
-            Try.catchAll(() -> ((Closeable) bean).close());
-            called = true;
-        }
-
-        if(bean instanceof Disposable) {
-            Try.catchAll(() -> ((Disposable) bean).dispose());
-            called = true;
-        }
-
-        return called;
+        return doDestroyBean(null, bean);
     }
 
     /**
@@ -760,31 +751,58 @@ public class BeanContainer implements BeanFactory {
 			destroyBeans();
 		}		
 	}
-	
+
+    protected boolean doDestroyBean(@Nullable  BeanDefinitionBase bd, Object bean) {
+        if(null != bd) {
+            Method destroyMethod = bd.getDestroyMethod();
+            if(null != destroyMethod) {
+                try {
+                    Reflection.invokeMethod(destroyMethod, bean);
+                } catch (Throwable e) {
+                    log.warn("Error destroy bean '{}' : {}", null == bd ? bean : bd, e.getMessage(), e);
+                }
+                return true;
+            }
+        }
+
+        if(bean instanceof Disposable){
+            try {
+                ((Disposable)bean).dispose();
+            } catch (Throwable e) {
+                log.warn("Error dispose bean '{}' : {}", null == bd ? bean : bd, e.getMessage(), e);
+            }
+            return true;
+        }
+
+        if(bean instanceof Closeable){
+            try {
+                ((Closeable)bean).close();
+            } catch (Throwable e) {
+                log.warn("Error close bean '{}' : {}", null == bd ? bean : bd, e.getMessage(), e);
+            }
+            return true;
+        }
+
+        ReflectClass rc = ReflectClass.of(bean.getClass());
+        for(ReflectMethod m : rc.getMethods()) {
+            if(m.getParameters().length == 0 && m.isAnnotationPresent(Destroy.class)) {
+                try {
+                    m.invoke(bean, Arrays2.EMPTY_OBJECT_ARRAY);
+                } catch (Throwable e) {
+                    log.warn("Error destroy bean '{}' : {}", null == bd ? bean : bd, e.getMessage(), e);
+                }
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 	protected void destroyBeans() {
 		for(BeanDefinitionBase bd : bds.allBeanDefinitions){
 			Object instance = bd.getSingletonInstance();
 			if(null != instance){
-				Method destroyMethod = bd.getDestroyMethod();
-				if(null != destroyMethod){
-					try {
-	                    Reflection.invokeMethod(destroyMethod,instance);
-                    } catch (Exception e) {
-                    	log.warn("Error destroying bean '" + bd + "' : " + e.getMessage(),e);
-                    }
-				}else if(instance instanceof Disposable){
-					try {
-	                    ((Disposable)instance).dispose();
-                    } catch (Throwable e) {
-                    	log.warn("Error disposing bean '" + bd + "' : " + e.getMessage(),e);
-                    }
-				}else if(instance instanceof Closeable){
-					try {
-	                    ((Closeable)instance).close();
-                    } catch (Exception e) {
-                    	log.warn("Error closing bean '" + bd + "' : " + e.getMessage(),e);
-                    }
-				}
+                doDestroyBean(bd, instance);
 			}
 		}
 	}
@@ -1139,6 +1157,14 @@ public class BeanContainer implements BeanFactory {
 
             if(null != bd.getInitMethod()){
                 Reflection.invokeMethod(bd.getInitMethod(), bean);
+            }else{
+                ReflectClass rc = ReflectClass.of(bean.getClass());
+                for(ReflectMethod m : rc.getMethods()) {
+                    if(m.getParameters().length == 0 && m.isAnnotationPresent(Init.class)) {
+                        m.invoke(bean, Arrays2.EMPTY_OBJECT_ARRAY);
+                        break;
+                    }
+                }
             }
 
             //null if post processors not resolved, see #resolveAfterLoading
