@@ -42,24 +42,56 @@ public class ApiResponse<T> implements ResponseEntity {
         return of(HTTP.Status.CREATED, entity);
     }
 
+    public static ApiResponse accepted() {
+        return ACCEPTED;
+    }
+
+    public static ApiResponse noContent() {
+        return NO_CONTENT;
+    }
+
     public static ApiResponse badRequest(String message) {
         return err(HTTP.Status.BAD_REQUEST, message);
+    }
+
+    public static ApiResponse badRequest(String errorCode, String message) {
+        return err(HTTP.Status.BAD_REQUEST, errorCode, message);
     }
 
     public static ApiResponse notFound(String message) {
         return err(HTTP.Status.NOT_FOUND, message);
     }
 
+    public static ApiResponse notFound(String errorCode, String message) {
+        return err(HTTP.Status.NOT_FOUND, errorCode, message);
+    }
+
+    public static ApiResponse err(String message) {
+        return err(HTTP.Status.INTERNAL_SERVER_ERROR, message);
+    }
+
     public static ApiResponse err(HTTP.Status status, String message) {
         return of(status, new ApiError(status.name(), message));
+    }
+
+    public static ApiResponse err(int status, String message) {
+        return err(HTTP.Status.valueOf(status), message);
     }
 
     public static ApiResponse err(HTTP.Status status,String errorCode, String message){
         return of(status,new ApiError(errorCode,message));
     }
 
+    public static ApiResponse err(int status,String errorCode, String message){
+        return err(HTTP.Status.valueOf(status), errorCode, message);
+    }
+
     public static ApiResponse of(HTTP.Status status, Object entity) {
         return new ApiResponse(status, entity);
+    }
+
+    public static ApiResponse of(int status, Object entity) {
+        return new ApiResponse(HTTP.Status.valueOf(status), entity);
     }
 
     public static ApiResponse of(Object entity) {
@@ -98,6 +130,14 @@ public class ApiResponse<T> implements ResponseEntity {
      * Sets the header.
      */
     public ApiResponse<T> setHeader(String name, String value) {
+        headers.set(name, value);
+        return this;
+    }
+
+    /**
+     * Sets the header (same as {@link #setHeader(String, String)}.
+     */
+    public ApiResponse<T> withHeader(String name, String value) {
         headers.set(name, value);
         return this;
     }

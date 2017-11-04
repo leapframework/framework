@@ -412,6 +412,16 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
+    public <T> T tryCreateBean(String id) {
+        return beanContainer.tryCreateBean(id);
+    }
+
+    @Override
+    public <T> T tryCreateBean(String namespace, String name) {
+        return beanContainer.tryCreateBean(namespace, name);
+    }
+
+    @Override
     public boolean isSingleton(String beanId) throws NoSuchBeanException {
 		Boolean singleton = null;
 		
@@ -467,7 +477,12 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    this.initialized = true;
     }
 
-	public void close(){
+    @Override
+    public boolean destroyBean(Object bean) {
+        return beanContainer.destroyBean(bean);
+    }
+
+    public void close(){
 		try{
 			if(null != beanContainer){
 				beanContainer.close();

@@ -255,7 +255,17 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
      * Returns <code>true</code> if init success, <code>false</code> if already inited.
      */
 	boolean tryInitBean(BeanDefinition bd);
-	
+
+    /**
+     * todo:
+     */
+    <T> T tryCreateBean(String id);
+
+    /**
+     * todo:
+     */
+    <T> T tryCreateBean(String namespace, String name);
+
 	/**
 	 * Updates the primary bean of the given type as the given instance. 
 	 */
@@ -290,4 +300,9 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * @throws NoSuchBeanException if such bean not exist
 	 */
 	boolean isSingleton(Class<?> type,String name) throws NoSuchBeanException;
+
+    /**
+     * todo:
+     */
+    boolean destroyBean(Object bean);
 }

@@ -399,16 +399,6 @@ public class BeanContainer implements BeanFactory {
         return tryGetBean(bds.id(namespace, name));
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T tryCreateBean(String id) throws BeanException {
-    	Args.notEmpty(id,"bean id");
-		BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
-		if(null == bd){
-			return null;
-		}
-	    return (T)doCreateBean(bd);
-    }
-
 	@Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException,BeanException {
     	T bean = (T) tryGetBean(type);
@@ -506,21 +496,6 @@ public class BeanContainer implements BeanFactory {
         return (T)doGetBean(bd);
     }
 	
-    public <T> T tryCreateBean(Class<T> type) throws BeanException {
-		Args.notNull(type,"bean type");
-		BeanDefinitionBase bd = findPrimaryBeanDefinition(type);
-		
-		if(null != bd){
-			return (T)doCreateBean(bd);
-		}
-		
-		FactoryBean factoryBean = bds.typedFactoryBeans.get(type);
-		if(null != factoryBean){
-			return (T)factoryBean.getBean(beanFactory, type);
-		}
-		return null;
-    }
-
 	@Override
     public <T> T getBean(Class<? super T> type, String name) throws NoSuchBeanException, BeanException {
 		T bean = (T) tryGetBean(type, name);
@@ -557,6 +532,36 @@ public class BeanContainer implements BeanFactory {
 		}
 		
 		return null;
+    }
+
+    public <T> T tryCreateBean(Class<T> type) throws BeanException {
+        Args.notNull(type,"bean type");
+        BeanDefinitionBase bd = findPrimaryBeanDefinition(type);
+
+        if(null != bd){
+            return (T)doCreateBean(bd);
+        }
+
+        FactoryBean factoryBean = bds.typedFactoryBeans.get(type);
+        if(null != factoryBean){
+            return (T)factoryBean.getBean(beanFactory, type);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T tryCreateBean(String id) throws BeanException {
+        Args.notEmpty(id,"bean id");
+        BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
+        if(null == bd){
+            return null;
+        }
+        return (T)doCreateBean(bd);
+    }
+
+    @Override
+    public <T> T tryCreateBean(String namespace, String name) {
+        return tryCreateBean(bds.id(namespace, name));
     }
 
     public void setPrimaryBean(Class<?> type, Object bean) {
@@ -679,7 +684,24 @@ public class BeanContainer implements BeanFactory {
 	    return bd.isSingleton();
     }
 
-	/**
+    @Override
+    public boolean destroyBean(Object bean) {
+        boolean called = false;
+
+        if(bean instanceof Closeable) {
+            Try.catchAll(() -> ((Closeable) bean).close());
+            called = true;
+        }
+
+        if(bean instanceof Disposable) {
+            Try.catchAll(() -> ((Disposable) bean).dispose());
+            called = true;
+        }
+
+        return called;
+    }
+
+    /**
 	 * Register a shutdown hook with the JVM runtime, closing this context
 	 * on JVM shutdown unless it has already been closed at that time.
 	 * <p>This method can be called multiple times. Only one shutdown hook
