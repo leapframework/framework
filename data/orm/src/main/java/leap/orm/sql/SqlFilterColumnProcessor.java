@@ -18,6 +18,7 @@ package leap.orm.sql;
 
 import leap.lang.Collections2;
 import leap.lang.Strings;
+import leap.lang.expression.Expression;
 import leap.orm.OrmConfig;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.FieldMapping;
@@ -121,8 +122,10 @@ class SqlFilterColumnProcessor {
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getFilterColumnEnabled() || c.getFilterColumnEnabled();
 
-                if(null != config.getFilterIf()) {
-                    nodes.add(new ConditionalNode(func, config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
+                Expression ifExpr = null != fm.getFilterIf() ? fm.getFilterIf() : config.getFilterIf();
+
+                if(null != ifExpr) {
+                    nodes.add(new ConditionalNode(func, ifExpr, filterNodes.toArray(new AstNode[0])));
                 }else{
                     nodes.add(new ConditionalNode(func, filterNodes.toArray(new AstNode[0])));
                 }

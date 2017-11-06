@@ -60,6 +60,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Boolean               update;
     protected Expression            updateValue;
     protected Boolean               filtered;
+    protected Expression            filterIf;
     protected Expression            filteredValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
@@ -174,6 +175,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 
         if(null != fm.filteredValue) {
             this.filteredValue = fm.filteredValue;
+        }
+
+        if(null != fm.filterIf) {
+            this.filterIf = fm.filterIf;
         }
 
         if(null != fm.domain) {
@@ -415,7 +420,23 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
+    public Expression getFilterIf() {
+        return filterIf;
+    }
+
+    public FieldMappingBuilder setFilterIf(Expression filterIf) {
+        this.filterIf = filterIf;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetFilterIf(Expression filterIf) {
+        if(null == this.filterIf) {
+            this.filterIf = filterIf;
+        }
+        return this;
+    }
+
+    public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
 	
@@ -549,7 +570,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-    public FieldMappingBuilder trySetFilter(Boolean b){
+    public FieldMappingBuilder trySetFiltered(Boolean b){
         if(null == this.filtered){
             this.filtered = b;
         }
@@ -687,7 +708,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filtered,
+                                insert, update, filtered,filterIf,
                                 defaultValueExpression,
                                 insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,
