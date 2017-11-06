@@ -596,7 +596,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 		f.trySetUpdate(d.getUpdate());
 		f.trySetUpdateValue(d.getUpdateValue());
         f.trySetFiltered(d.getFilter());
-        f.trySetFilterValue(d.getFilterValue());
+        f.trySetFilteredValue(d.getFilterValue());
 		f.trySetSortOrder(d.getSortOrder());
 
         if(f.isId() && null != d.getIdGenerator()) {

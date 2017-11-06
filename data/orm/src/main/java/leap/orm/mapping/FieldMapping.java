@@ -47,7 +47,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final boolean          insert;
 	protected final boolean          update;
     protected final boolean          filtered;
-    protected final Expression       filterIf;
+    protected final Expression       filteredIf;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
@@ -71,7 +71,7 @@ public class FieldMapping extends ExtensibleBase {
                         boolean nullable,
                         Integer maxLength, Integer precision, Integer scale,
                         boolean insert, boolean update,
-                        boolean filtered,Expression filterIf,
+                        boolean filtered,Expression filteredIf,
                         Expression defaultValue,
                         Expression insertValue,
                         Expression updateValue,
@@ -102,7 +102,7 @@ public class FieldMapping extends ExtensibleBase {
 	    this.insert         = insert;
 	    this.update         = update;
         this.filtered       = filtered;
-        this.filterIf       = filterIf;
+        this.filteredIf = filteredIf;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
@@ -207,8 +207,8 @@ public class FieldMapping extends ExtensibleBase {
         return filtered;
     }
 
-    public Expression getFilterIf() {
-        return filterIf;
+    public Expression getFilteredIf() {
+        return filteredIf;
     }
 
     public boolean isPrimaryKey() {

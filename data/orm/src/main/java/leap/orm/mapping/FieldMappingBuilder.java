@@ -60,7 +60,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Boolean               update;
     protected Expression            updateValue;
     protected Boolean               filtered;
-    protected Expression            filterIf;
+    protected Expression            filteredIf;
     protected Expression            filteredValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
@@ -177,8 +177,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
             this.filteredValue = fm.filteredValue;
         }
 
-        if(null != fm.filterIf) {
-            this.filterIf = fm.filterIf;
+        if(null != fm.filteredIf) {
+            this.filteredIf = fm.filteredIf;
         }
 
         if(null != fm.domain) {
@@ -413,25 +413,25 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-    public FieldMappingBuilder trySetFilterValue(Expression v) {
+    public FieldMappingBuilder trySetFilteredValue(Expression v) {
         if(null == this.filteredValue) {
             this.filteredValue = v;
         }
         return this;
     }
 
-    public Expression getFilterIf() {
-        return filterIf;
+    public Expression getFilteredIf() {
+        return filteredIf;
     }
 
-    public FieldMappingBuilder setFilterIf(Expression filterIf) {
-        this.filterIf = filterIf;
+    public FieldMappingBuilder setFilteredIf(Expression filteredIf) {
+        this.filteredIf = filteredIf;
         return this;
     }
 
-    public FieldMappingBuilder trySetFilterIf(Expression filterIf) {
-        if(null == this.filterIf) {
-            this.filterIf = filterIf;
+    public FieldMappingBuilder trySetFilteredIf(Expression expr) {
+        if(null == this.filteredIf) {
+            this.filteredIf = expr;
         }
         return this;
     }
@@ -708,7 +708,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						javaType,
 	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filtered,filterIf,
+                                insert, update, filtered, filteredIf,
                                 defaultValueExpression,
                                 insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,

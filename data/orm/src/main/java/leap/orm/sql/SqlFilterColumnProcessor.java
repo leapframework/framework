@@ -122,7 +122,7 @@ class SqlFilterColumnProcessor {
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getFilterColumnEnabled() || c.getFilterColumnEnabled();
 
-                Expression ifExpr = null != fm.getFilterIf() ? fm.getFilterIf() : config.getFilterIf();
+                Expression ifExpr = null != fm.getFilteredIf() ? fm.getFilteredIf() : config.getFilteredIf();
 
                 if(null != ifExpr) {
                     nodes.add(new ConditionalNode(func, ifExpr, filterNodes.toArray(new AstNode[0])));
@@ -178,8 +178,8 @@ class SqlFilterColumnProcessor {
 
                 Function<SqlContext, Boolean> func = (c) -> null == c.getFilterColumnEnabled() || c.getFilterColumnEnabled();
 
-                if(null != config.getFilterIf()) {
-                    nodes.add(new ConditionalNode(func, config.getFilterIf(), filterNodes.toArray(new AstNode[0])));
+                if(null != config.getFilteredIf()) {
+                    nodes.add(new ConditionalNode(func, config.getFilteredIf(), filterNodes.toArray(new AstNode[0])));
                 }else{
                     nodes.add(new ConditionalNode(func, filterNodes.toArray(new AstNode[0])));
                 }

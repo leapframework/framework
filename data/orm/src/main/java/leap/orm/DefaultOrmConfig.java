@@ -20,7 +20,6 @@ import leap.core.BeanFactory;
 import leap.core.BeanFactoryAware;
 import leap.core.annotation.ConfigProperty;
 import leap.core.annotation.Configurable;
-import leap.core.annotation.Inject;
 import leap.core.el.EL;
 import leap.core.el.ExpressionLanguage;
 import leap.core.ioc.PostConfigureBean;
@@ -216,7 +215,7 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
     protected class DefaultFilterColumnConfig implements FilterColumnConfig {
 
         protected boolean    enabled = true;
-        protected Expression filterIf;
+        protected Expression filteredIf;
 
         @Override
         public boolean isEnabled() {
@@ -229,18 +228,18 @@ public class DefaultOrmConfig implements OrmConfig,PostConfigureBean,BeanFactory
         }
 
         @Override
-        public Expression getFilterIf() {
-            return filterIf;
+        public Expression getFilteredIf() {
+            return filteredIf;
         }
 
         @ConfigProperty
-        public void setFilterIf(Expression filterIf) {
-            this.filterIf = filterIf;
+        public void setFilteredIf(Expression filteredIf) {
+            this.filteredIf = filteredIf;
         }
 
-        public void setFilterIfByString(String expr) {
+        public void setFilteredIfByString(String expr) {
             expr = EL.removePrefixAndSuffix(expr);
-            this.filterIf = beanFactory.getBean(ExpressionLanguage.class).createExpression(expr);
+            this.filteredIf = beanFactory.getBean(ExpressionLanguage.class).createExpression(expr);
         }
     }
 

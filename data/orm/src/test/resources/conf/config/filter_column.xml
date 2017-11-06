@@ -2,7 +2,7 @@
 <config xmlns="http://www.leapframework.org/schema/config">
 
     <properties prefix="orm.filter_column">
-        <property name="filter_if" value="${env.globalFieldWhereIf}"/>
+        <property name="filtered_if" value="${env.globalFieldWhereIf}"/>
     </properties>
 
-</config>   
+</config>
