@@ -159,10 +159,13 @@ public class DefaultActionManager implements ActionManager {
                 if (s >= 200 && s <= 300) {
                     log.debug("Caught a ResponseException(status=2xx) while executing action, just throw it!");
                     throw e;
+                } else {
+                  log.info("Fail execute action {} : {}", context.getAction(), e.getMessage());
                 }
+            } else {
+                log.error("Error execute action {} : {}", context.getAction(), e.getMessage(), e);
             }
 
-            log.error("Failed to execute action {}, {}", context.getAction(), e.getMessage(), e);
 			execution.setState(Execution.ExecutionState.FAILURE);
 			execution.setException(e);
 
@@ -188,7 +191,7 @@ public class DefaultActionManager implements ActionManager {
                                     ActionExecution execution,
                                     ExecutionAttributes eas) throws Throwable {
         if(State.isIntercepted(eas.interceptors.onActionFailure(context, validation, execution))) {
-            log.info("Action error handled by interceptors");
+            log.debug("Action error handled by interceptors");
             return true;
         }
 
@@ -196,7 +199,7 @@ public class DefaultActionManager implements ActionManager {
         if(failureHandlers.length > 0) {
             for(FailureHandler h : failureHandlers) {
                 if(h.handleFailure(context, execution, context.getResult())) {
-                    log.info("Action handled by failure handler");
+                    log.debug("Action handled by failure handler");
                     return true;
                 }
             }
