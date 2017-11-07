@@ -54,14 +54,18 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityExecutionInterceptor deleteInterceptor;
     protected final EntityExecutionInterceptor findInterceptor;
     protected final Class<? extends Model>     modelClass;
-    protected final EntityValidator[]          validators;
-    protected final RelationMapping[]          relationMappings;
-    protected final RelationProperty[]         relationProperties;
-    protected final boolean                    autoCreateTable;
-    protected final boolean                    selfReferencing;
-    protected final RelationMapping[]          selfReferencingRelations;
-    protected final EntityListeners            listeners;
-    protected final boolean                    queryFilterEnabled;
+
+    protected final EntityValidator[]  validators;
+    protected final RelationMapping[]  relationMappings;
+    protected final RelationProperty[] relationProperties;
+    protected final boolean            autoCreateTable;
+    protected final boolean            selfReferencing;
+    protected final RelationMapping[]  selfReferencingRelations;
+    protected final EntityListeners    listeners;
+    protected final boolean            queryFilterEnabled;
+    protected final boolean            remote;
+    protected final String             remoteType;
+    protected final String             remoteDataSource;
 
     private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
@@ -74,13 +78,13 @@ public class EntityMapping extends ExtensibleBase {
 	public EntityMapping(String entityName, String dynamicTableName,
                          Class<?> entityClass, Class<?> extendedEntityClass, DbTable table, DbTable secondaryTable, List<FieldMapping> fieldMappings,
                          EntityExecutionInterceptor insertInterceptor, EntityExecutionInterceptor updateInterceptor,
-                         EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findIncerceptor,
+                         EntityExecutionInterceptor deleteInterceptor, EntityExecutionInterceptor findInterceptor,
                          Class<? extends Model> modelClass,
                          List<EntityValidator> validators,
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
-                         boolean queryFilterEnabled,
+                         boolean queryFilterEnabled, boolean remote, String remoteType, String remoteDataSource,
                          EntityListeners listeners) {
 		
 		Args.notEmpty(entityName,"entity name");
@@ -98,7 +102,7 @@ public class EntityMapping extends ExtensibleBase {
 	    this.insertInterceptor = insertInterceptor;
 	    this.updateInterceptor = updateInterceptor;
 	    this.deleteInterceptor = deleteInterceptor;
-	    this.findInterceptor   = findIncerceptor;
+	    this.findInterceptor   = findInterceptor;
 	    this.modelClass        = modelClass;
 	    this.validators        = null == validators ? new EntityValidator[]{} : validators.toArray(new EntityValidator[validators.size()]);
 	    this.relationMappings  = null == relationMappings ? new RelationMapping[]{} : relationMappings.toArray(new RelationMapping[relationMappings.size()]);
@@ -122,6 +126,9 @@ public class EntityMapping extends ExtensibleBase {
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
         this.queryFilterEnabled     = queryFilterEnabled;
+        this.remote = remote;
+        this.remoteType = remoteType;
+        this.remoteDataSource = remoteDataSource;
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -356,6 +363,27 @@ public class EntityMapping extends ExtensibleBase {
 
     public boolean isQueryFilterEnabled() {
         return queryFilterEnabled;
+    }
+
+    /**
+     * Returns true if this entity is an reference entity.
+     */
+    public boolean isRemote() {
+        return remote;
+    }
+
+    /**
+     * Returns the remote type.
+     */
+    public String getRemoteType() {
+        return remoteType;
+    }
+
+    /**
+     * Returns the remote data source.
+     */
+    public String getRemoteDataSource() {
+        return remoteDataSource;
     }
 
     /**

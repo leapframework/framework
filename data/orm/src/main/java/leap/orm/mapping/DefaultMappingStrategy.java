@@ -237,7 +237,12 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 	    return javaType.isAnnotationPresent(NonEntity.class);
     }
 
-	@Override
+    @Override
+    public boolean isRemoteEntity(MetadataContext context, Class<?> javaType) {
+        return javaType.isAnnotationPresent(Remote.class);
+    }
+
+    @Override
     public boolean isExplicitField(MetadataContext context,BeanProperty beanProperty) {
 	    return beanProperty.isAnnotationPresent(leap.orm.annotation.Column.class);
     }
@@ -314,7 +319,42 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 //	    return id;
 //    }
 
-	@Override
+
+    @Override
+    public EntityMappingBuilder createRemoteEntityMappingByClass(MetadataContext context, Class<?> entityType) {
+        if(!isRemoteEntity(context, entityType)) {
+            throw new IllegalArgumentException("The class '" + entityType + "' is not a reference entity");
+        }
+
+        EntityMappingBuilder emb = new EntityMappingBuilder();
+
+        Remote a = entityType.getAnnotation(Remote.class);
+        emb.setEntityName(Strings.firstNotEmpty(a.name(), entityType.getSimpleName()));
+        emb.setRemoteDataSource(a.dataSource());
+        emb.setRemoteType(Strings.firstNotEmpty(a.type(), a.value()));
+        emb.setRemote(true);
+        emb.setEntityClass(entityType);
+        emb.setTableName(emb.getEntityName());
+
+        //todo: correct the id fields
+        FieldMappingBuilder fmb = new FieldMappingBuilder();
+        fmb.setFieldName("id");
+        fmb.setJavaType(String.class);
+
+        DbColumnBuilder c = new DbColumnBuilder();
+        c.setName("id");
+        c.setTypeName("varchar");
+        c.setLength(38);
+        c.setPrimaryKey(true);
+
+        fmb.setColumn(c);
+
+        emb.addFieldMapping(fmb);
+
+        return emb;
+    }
+
+    @Override
     public EntityMappingBuilder createEntityMappingByClass(MetadataContext context, Class<?> cls) {
 		Args.notNull(cls,"class");
 		Args.assertFalse(isExplicitNonEntity(context,cls),

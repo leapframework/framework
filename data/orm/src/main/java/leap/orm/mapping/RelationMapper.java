@@ -217,7 +217,9 @@ public class RelationMapper implements Mapper {
 		}
 
 		//create foreign key
-		createManyToOneForeignKey(context, emb, targetEmb, rmb);
+        if(!rmb.isLogical()) {
+            createManyToOneForeignKey(context, emb, targetEmb, rmb);
+        }
 	}
 
     protected void autoSetRelationName(EntityMappingBuilder entity, EntityMappingBuilder target, RelationMappingBuilder rmb) {
@@ -257,11 +259,18 @@ public class RelationMapper implements Mapper {
 		
 		if(null != rmb.getTargetEntityType()){
 			targetEmb = context.tryGetEntityMapping(rmb.getTargetEntityType());
-			
+
 			if(null == targetEmb){
-				throw new MetadataException("No entity mapping to targetEntityType '" + rmb.getTargetEntityType() + "' defines at entity '" + emb.getEntityName() + "'");
+                if(context.getMappingStrategy().isRemoteEntity(context, rmb.getTargetEntityType())) {
+                    targetEmb = context.getMappingStrategy().createRemoteEntityMappingByClass(context, rmb.getTargetEntityType());
+                    context.addEntityMapping(targetEmb);
+                    rmb.setRemote(true);
+                    rmb.setLogical(true);
+                }else {
+                    throw new MetadataException("No entity mapping to targetEntityType '" + rmb.getTargetEntityType() + "' defines at entity '" + emb.getEntityName() + "'");
+                }
 			}
-			
+
 			rmb.setTargetEntityName(targetEmb.getEntityName());
 
 		}else if(!Strings.isEmpty(rmb.getTargetEntityName())){

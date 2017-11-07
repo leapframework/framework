@@ -28,21 +28,25 @@ import java.util.Collections;
 import java.util.List;
 
 public class EntityMappingBuilder implements Buildable<EntityMapping> {
-	 
-	protected String					   entityName;
-	protected Class<?>      	    	   entityClass;
-    protected Class<?>                     extendedEntityClass;
-	protected boolean					   _abstract;
-	protected DbTableBuilder			   table;
-    protected DbTableBuilder               secondaryTable;
-	protected String					   tablePrefix;
-	protected String					   dynamicTableName;
-	protected boolean					   tableNameDeclared;
-	protected boolean					   idDeclared;
-    protected boolean                      autoCreateTable;
-    protected boolean                      autoGenerateColumns;
-    protected Boolean                      queryFilterEnabled;
-	protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
+
+    protected String         entityName;
+    protected Class<?>       entityClass;
+    protected Class<?>       extendedEntityClass;
+    protected boolean        _abstract;
+    protected DbTableBuilder table;
+    protected DbTableBuilder secondaryTable;
+    protected String         tablePrefix;
+    protected String         dynamicTableName;
+    protected boolean        tableNameDeclared;
+    protected boolean        idDeclared;
+    protected boolean        autoCreateTable;
+    protected boolean        autoGenerateColumns;
+    protected Boolean        queryFilterEnabled;
+    protected boolean        remote;
+    protected String         remoteType;
+    protected String         remoteDataSource;
+
+    protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
 	protected EntityExecutionInterceptor   updateInterceptor;
 	protected EntityExecutionInterceptor   deleteInterceptor;
@@ -211,6 +215,30 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
     public void setQueryFilterEnabled(Boolean queryFilterEnabled) {
         this.queryFilterEnabled = queryFilterEnabled;
+    }
+
+    public boolean isRemote() {
+        return remote;
+    }
+
+    public void setRemote(boolean remote) {
+        this.remote = remote;
+    }
+
+    public String getRemoteType() {
+        return remoteType;
+    }
+
+    public void setRemoteType(String remoteType) {
+        this.remoteType = remoteType;
+    }
+
+    public String getRemoteDataSource() {
+        return remoteDataSource;
+    }
+
+    public void setRemoteDataSource(String remoteDataSource) {
+        this.remoteDataSource = remoteDataSource;
     }
 
     public List<FieldMappingBuilder> getFieldMappings() {
@@ -429,6 +457,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
+                remote, remoteType, remoteDataSource,
                                  listeners.build());
     }
 	
