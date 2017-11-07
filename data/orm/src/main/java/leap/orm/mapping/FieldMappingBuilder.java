@@ -72,6 +72,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
     protected boolean               hasPhysicalColumn;
+    protected boolean				filterable;
+    protected boolean				sortable;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -672,7 +674,25 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.hasPhysicalColumn = hasPhysicalColumn;
     }
 
-    @Override
+	public boolean isFilterable() {
+		return filterable;
+	}
+
+	public FieldMappingBuilder setFilterable(boolean filterable) {
+		this.filterable = filterable;
+		return this;
+	}
+
+	public boolean isSortable() {
+		return sortable;
+	}
+
+	public FieldMappingBuilder setSortable(boolean sortable) {
+		this.sortable = sortable;
+		return this;
+	}
+
+	@Override
     public FieldMapping build() {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
@@ -714,7 +734,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                serializer);
+                                serializer, filterable, sortable);
     }
 
 	@Override
