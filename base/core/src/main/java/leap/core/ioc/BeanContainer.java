@@ -1311,23 +1311,43 @@ public class BeanContainer implements BeanFactory {
         }
 	}
 
+    private final class MockBean {}
+    private final MockBean mockBean = new MockBean();
+    private final BeanDefinitionBase mockBeanDefinition = this.createBeanDefinition(MockBean.class);
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType) {
+        SimpleReflectValued v = new SimpleReflectValued(type, genericType);
+        return resolveInjectValue(mockBeanDefinition, mockBean, BeanType.of(MockBean.class), v, true);
+    }
+
     protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v) {
+        return resolveInjectValue(bd, bean, bt, v, false);
+    }
+
+    protected Object resolveInjectValue(BeanDefinitionBase bd, Object bean, BeanType bt, ReflectValued v, boolean force) {
 
         if(null != injectors && injectors.length > 0) {
+            Annotation found = null;
             for(Annotation a : v.getAnnotations()) {
                 if(a.annotationType().isAnnotationPresent(AInject.class)){
-                    Out out = new Out();
-                    for(BeanInjector injector : injectors) {
-                        if(injector.resolveInjectValue(bd, bean, v, a, out)) {
-                            return out.get();
-                        }
+                    found = a;
+                    break;
+                }
+            }
+
+            if(null != found || force) {
+                Out out = new Out();
+                for (BeanInjector injector : injectors) {
+                    if (injector.resolveInjectValue(bd, bean, v, found, out)) {
+                        return out.get();
                     }
                 }
             }
         }
 
         Inject inject = v.getAnnotation(Inject.class);
-        if(null == inject) {
+        if(!force && null == inject) {
             return null;
         }
 
@@ -1358,9 +1378,9 @@ public class BeanContainer implements BeanFactory {
 		}
 
         Inject inject = Classes.getAnnotation(annotations, Inject.class);
-        if(null == inject){
-            return null;
-        }
+//        if(null == inject){
+//            return null;
+//        }
 		
 		Object injectedBean = null;
 		
@@ -1372,7 +1392,7 @@ public class BeanContainer implements BeanFactory {
 				Class  beanType = null == inject ? null : inject.type();
 				String beanName = null == inject ? null : inject.name();
 				
-				if(Lazy.class.equals(type)){
+				if(null != genericType && Lazy.class.equals(type)){
 					boolean nullable = Classes.isAnnotatioinPresent(annotations, NotNull.class) || 
 					                   Classes.isAnnotatioinPresent(annotations, M.class);
 					
@@ -1397,7 +1417,7 @@ public class BeanContainer implements BeanFactory {
 						                            null == inject ? false : inject.primary(),
 						                            nullable, required);
 					}
-				}else if(List.class.equals(type) || BeanList.class.equals(type)){
+				}else if(null != genericType && (List.class.equals(type) || BeanList.class.equals(type))){
 					if(!Strings.isEmpty(beanName)){
 						throw new BeanCreationException("The injected List property does not support the 'name' annotation field in bean " + bd);
 					}
@@ -1440,7 +1460,7 @@ public class BeanContainer implements BeanFactory {
 					}else{
 						injectedBean = getBeans(beanType).toArray((Object[])Array.newInstance(type.getComponentType(), 0));
 					}
-				}else if(Map.class.equals(type)){
+				}else if(null != genericType && Map.class.equals(type)){
 					if(!Strings.isEmpty(beanName)){
 						throw new BeanCreationException("Auto Injected Map property does not support the 'name' annotation field in bean " + bd);
 					}
@@ -1467,7 +1487,7 @@ public class BeanContainer implements BeanFactory {
 			}
 		}
 
-        if(injectedBean == null && inject.create() && Classes.isConcreteClass(type)) {
+        if(injectedBean == null && null != inject && inject.create() && Classes.isConcreteClass(type)) {
             injectedBean = createBean(type);
         }
 		

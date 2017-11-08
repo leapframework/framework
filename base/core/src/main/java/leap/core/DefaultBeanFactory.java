@@ -24,7 +24,9 @@ import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.ReflectValued;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -480,6 +482,11 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     @Override
     public boolean destroyBean(Object bean) {
         return beanContainer.destroyBean(bean);
+    }
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType) {
+        return beanContainer.resolveInjectValue(type, genericType);
     }
 
     public void close(){

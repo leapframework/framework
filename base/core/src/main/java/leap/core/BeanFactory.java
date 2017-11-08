@@ -21,7 +21,9 @@ import leap.core.validation.annotations.NotNull;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanFactoryBase;
 import leap.lang.beans.NoSuchBeanException;
+import leap.lang.reflect.ReflectValued;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -305,4 +307,10 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
      * todo:
      */
     boolean destroyBean(Object bean);
+
+    /**
+     * todo:
+     */
+    Object resolveInjectValue(Class<?> type, Type genericType);
+
 }
