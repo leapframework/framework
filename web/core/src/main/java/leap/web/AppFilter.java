@@ -51,6 +51,10 @@ public class AppFilter implements Filter {
 	protected AppContext	  appContext;
 	protected AssetHandler	  assetHandler;
 	protected RequestIgnore[] ignores;
+
+    public App app() {
+        return app;
+    }
 	
 	@Override
     public void init(FilterConfig config) throws ServletException {

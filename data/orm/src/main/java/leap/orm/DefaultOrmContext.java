@@ -30,6 +30,7 @@ import leap.lang.Readonly;
 import leap.orm.command.CommandFactory;
 import leap.orm.dao.Dao;
 import leap.orm.dao.DefaultDao;
+import leap.orm.dao.WrappedDao;
 import leap.orm.dmo.DefaultDmo;
 import leap.orm.dmo.Dmo;
 import leap.orm.event.EntityEventHandler;
@@ -231,7 +232,7 @@ public class DefaultOrmContext implements OrmContext,BeanPrimaryAware,PostCreate
     	}
 
         if(null == dao) {
-            dao = beanFactory.inject(new DefaultDao(this));
+            dao = new WrappedDao(beanFactory.inject(new DefaultDao(this)));
             beanFactory.addBean(Dao.class, dao, name, primary);
         }
 
