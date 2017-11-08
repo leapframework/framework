@@ -45,12 +45,19 @@ public class DefaultActionStrategy implements ActionStrategy {
     public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
     public static final String[] RESOURCE_PACKAGES   = new String[]{"resources", "resource"};
 
-    protected @Inject App         app;
-    protected @Inject BeanFactory factory;
-    protected @Inject WebConfig   config;
+    protected @Inject App                     app;
+    protected @Inject BeanFactory             factory;
+    protected @Inject WebConfig               config;
+    protected @Inject ActionStrategySupport[] supports;
 
 	@Override
     public boolean isControllerClass(Class<?> cls) {
+        for(ActionStrategySupport support : supports) {
+            if(support.isExplicitNonController(cls)) {
+                return false;
+            }
+        }
+
 		if(cls.isAnnotationPresent(NonController.class)){
 			return false;
 		}
