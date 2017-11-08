@@ -90,6 +90,14 @@ public class OrmMTypeFactory extends AbstractMTypeFactory implements MTypeFactor
                 configureProperty(bp, p);
             }
 
+            if(null == p.getFilterable()) {
+                p.setFilterable(fm.isFilterable());
+            }
+
+            if(null == p.getSortable()) {
+                p.setSortable(fm.isSortable());
+            }
+
             if(null == p.getCreatable()) {
 
                 if(fm.isPrimaryKey() && fm.isAutoGenerateValue()) {
