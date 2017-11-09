@@ -19,7 +19,7 @@ package leap.lang.resource;
 /**
  * Strategy interface for loading resources (e.. class path or file system resources). An
  * {@link org.springframework.context.ApplicationContext} is required to provide this functionality, plus extended
- * {@link org.ResourceScanner.core.io.support.ResourcePatternResolver} support.
+ * {@link org.springframework.core.io.support.ResourcePatternResolver} support.
  * 
  * <p>
  * {@link DefaultResourceLoader} is a standalone implementation that is usable outside an ApplicationContext, also used
@@ -31,7 +31,7 @@ package leap.lang.resource;
  * 
  * @author Juergen Hoeller
  */
-interface ResourceLoader {
+public interface ResourceLoader {
 
 	/**
 	 * Return a Resource handle for the specified resource. The handle should always be a reusable resource descriptor,

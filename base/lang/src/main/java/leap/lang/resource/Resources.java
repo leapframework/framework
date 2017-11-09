@@ -54,6 +54,12 @@ public class Resources {
 		Resources.loader  = new DefaultResourceLoader(classLoader);
 		Resources.scanner = new DefaultResourceScanner(loader);
 	}
+
+    public static void setResourceLoader(ResourceLoader loader) {
+        Args.notNull(loader);
+        Resources.loader  = loader;
+        Resources.scanner = new DefaultResourceScanner(loader);
+    }
 	
 	public static String getContent(String resource){
 		Resource r = getResource(resource);
