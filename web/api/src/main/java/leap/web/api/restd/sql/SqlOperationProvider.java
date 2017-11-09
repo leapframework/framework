@@ -132,9 +132,6 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
         }
 
         String path = op.getPath();
-        if (isOperationExists(ctx, verb, path)) {
-            throw new ApiConfigException("Sql operation '" + op.getName() + "' with path '" + path + "' already exists!");
-        }
 
         Dao dao = ctx.getDao();
         FuncActionBuilder action = new FuncActionBuilder();
@@ -185,6 +182,16 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
         route.setAction(action.build());
 
         configure(ctx, model, route);
+
+        if (!od.isExplicitPrior() && isOperationExists(ctx, verb, path)) {
+            if(!od.isExplicitNotPrior()) {
+                throw new ApiConfigException("Sql operation '" + op.getName() + "' with path '" + path + "' already exists!");
+            }else{
+                //todo: log
+                route.setEnabled(false);
+            }
+        }
+
         ctx.getApi().getConfigurator().addDynamicRoute(rm.loadRoute(ctx.getRoutes(), route));
     }
 

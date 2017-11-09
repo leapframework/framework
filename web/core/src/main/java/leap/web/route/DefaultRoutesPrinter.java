@@ -36,7 +36,7 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 	}
 
     @Override
-    public String print(Routes routes) {
+    public String print(Iterable<Route> routes) {
         StringWriter printedRoutes = new StringWriter();
         PrintWriter writer = new PrintWriter(printedRoutes);
         print(routes, writer);
@@ -44,7 +44,7 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
     }
 
     @Override
-    public void print(Routes routes, PrintWriter writer) {
+    public void print(Iterable<Route> routes, PrintWriter writer) {
 		int maxMethodLength = 6; //length of header 'METHOD' 
 		int maxPathLength   = 4; //length of header 'PATH'
 		int maxActionLength = 6; //length of header 'ACTION'

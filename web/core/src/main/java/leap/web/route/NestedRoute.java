@@ -36,6 +36,13 @@ public interface NestedRoute extends Route {
      */
     Route match(String method, String path, Map<String,Object> inParameters, Map<String,String> outVariables);
 
+    /**
+     * todo: doc
+     */
+    default boolean isCheckAmbiguity() {
+        return true;
+    }
+
     @Override
     default FailureHandler[] getFailureHandlers() {
         return new FailureHandler[0];

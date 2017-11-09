@@ -53,6 +53,13 @@ public interface Route extends RouteBase, Sourced, Extensible {
                 return result == 0 ? 1 : result;
             };
 
+    /**
+     * Returns true if this route is enabled.
+     */
+    default boolean isEnabled() {
+        return true;
+    }
+
 	/**
 	 * Returns a object indicates the source location defined this route.
 	 */
