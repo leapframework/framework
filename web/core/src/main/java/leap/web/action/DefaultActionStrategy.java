@@ -132,15 +132,10 @@ public class DefaultActionStrategy implements ActionStrategy {
     @Override
     @SuppressWarnings("unchecked")
     public Object getControllerInstance(Class<?> cls) {
-		Object controller = factory.tryGetBean((Class<Object>)cls);
-		if(null != controller){
-			return controller;
-		}
-
         try {
-        	return factory.createBean(cls);
+        	return factory.getOrAddBean(cls);
         } catch (Exception e) {
-        	throw new AppConfigException("Error creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
+        	throw new AppConfigException("Error get or creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
         }
     }
 

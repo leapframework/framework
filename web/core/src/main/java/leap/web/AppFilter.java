@@ -17,6 +17,7 @@ package leap.web;
 
 import leap.core.AppContext;
 import leap.core.AppException;
+import leap.core.BeanFactory;
 import leap.core.RequestContext;
 import leap.core.web.RequestBase;
 import leap.core.web.RequestIgnore;
@@ -58,6 +59,10 @@ public class AppFilter implements Filter {
 
     public AppContext context() {
         return null == bootstrap ? null : bootstrap.getAppContext();
+    }
+
+    public BeanFactory factory() {
+        return null == bootstrap ? null : bootstrap.getBeanFactory();
     }
 	
 	@Override

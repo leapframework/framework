@@ -338,16 +338,21 @@ public class BeanContainer implements BeanFactory {
 	}
 
 	protected <T> BeanDefinitionBase createBeanDefinition(Class<T> type){
-		BeanDefinitionBase bd = new BeanDefinitionBase(XmlBeanDefinitionLoader.RUNTIME_SOURCE);
-
-		bd.setType(type);
-		bd.setBeanClass(type);
-        bd.setBeanClassType(BeanType.of(type));
-		bd.setSingleton(true);
-		bd.setPrimary(true);
-
-		return bd;
+        return createBeanDefinition(type, null);
 	}
+
+    protected <T> BeanDefinitionBase createBeanDefinition(Class<T> type, String name){
+        BeanDefinitionBase bd = new BeanDefinitionBase(XmlBeanDefinitionLoader.RUNTIME_SOURCE);
+
+        bd.setType(type);
+        bd.setName(name);
+        bd.setBeanClass(type);
+        bd.setBeanClassType(BeanType.of(type));
+        bd.setSingleton(true);
+        bd.setPrimary(Strings.isEmpty(name) ? true : false);
+
+        return bd;
+    }
 
 	@Override
     public <T> void addBean(String id, boolean lazyInit, Class<? extends T> beanClass, Object... constructorArgs) throws BeanException {
@@ -426,11 +431,12 @@ public class BeanContainer implements BeanFactory {
 
     @Override
     public <T> T getOrAddBean(Class<T> type) throws BeanException {
-        T bean = tryCreateBean(type);
+        T bean = tryGetBean(type);
 
         if(null == bean) {
-            bean = createBean(type);
-            addBean(type, bean, true);
+            //add bean definition and try again.
+            addBeanDefinition(createBeanDefinition(type));
+            bean = tryGetBean(type);
         }
 
         return bean;
@@ -438,11 +444,12 @@ public class BeanContainer implements BeanFactory {
 
     @Override
     public <T> T getOrAddBean(Class<T> type, String name) throws BeanException {
-        T bean = tryCreateBean(type, name);
+        T bean = tryGetBean(type, name);
 
         if(null == bean){
-            bean = (T) createBean(type);
-            addBean(type, bean, name, false);
+            //add bean definition and try again.
+            addBeanDefinition(createBeanDefinition(type, name));
+            bean = tryGetBean(type, name);
         }
 
         return bean;
