@@ -69,6 +69,7 @@ public class BeanContainer implements BeanFactory {
     protected List<BeanDefinitionBase>                       processorBeans      = new ArrayList<>();
     protected List<BeanDefinitionBase>                       initializableBeans  = new ArrayList<>();
     protected List<BeanDefinitionBase>                       injectorBeans       = new ArrayList<>();
+    protected List<BeanDefinitionBase>                       supportBeans       = new ArrayList<>();
 
     private Map<String, List<?>>                  typedBeansMap  = new ConcurrentHashMap<>();
     private Map<Class<?>, Map<String, ?>>         namedBeansMap  = new ConcurrentHashMap<>();
@@ -80,6 +81,7 @@ public class BeanContainer implements BeanFactory {
     private   BeanFactory                beanFactory;
     private   BeanConfigurator           beanConfigurator;
     protected BeanFactoryInitializable[] initializables;
+    protected BeanFactorySupport[]       supports = new BeanFactorySupport[0];
     protected BeanProcessor[]            processors;
     protected BeanInjector[]             injectors;
     private   boolean                    initializing;
@@ -381,10 +383,19 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> T tryGetBean(String id) throws BeanException {
 		Args.notEmpty(id,"bean id");
+
 		BeanDefinitionBase bd = findBeanOrAliasDefinition(id);
 		if(null == bd){
 			return null;
 		}
+
+        for(BeanFactorySupport support : supports) {
+            T bean = (T)support.tryGetBean(id);
+            if(null != bean) {
+                return bean;
+            }
+        }
+
 		return (T)doGetBean(bd);
     }
 
@@ -461,7 +472,7 @@ public class BeanContainer implements BeanFactory {
 	@Override
     public <T> T tryGetBean(Class<? super T> type) throws BeanException {
 		Args.notNull(type,"bean type");
-		
+
 		T bean = (T)primaryBeans.get(type);
 		if(null != bean){
 			return bean;
@@ -474,9 +485,20 @@ public class BeanContainer implements BeanFactory {
 		
 		FactoryBean factoryBean = bds.typedFactoryBeans.get(type);
 		if(null != factoryBean){
-			return (T)factoryBean.getBean(beanFactory, type);
+			bean = (T)factoryBean.getBean(beanFactory, type);
+            if(null != bean) {
+                return bean;
+            }
 		}
-		return null;
+
+        for(BeanFactorySupport support : supports) {
+            bean = (T)support.tryGetBean(type);
+            if(null != bean) {
+                return bean;
+            }
+        }
+
+        return null;
     }
 	
     public <T> T tryGetBeanExplicitly(Class<? super T> type) throws BeanException {
@@ -514,12 +536,18 @@ public class BeanContainer implements BeanFactory {
     public <T> T tryGetBean(Class<? super T> type, String name) throws BeanException {
 		Args.notNull(type,"bean type");
 		Args.notNull(name,"bean name");
-		
+
 		BeanDefinitionBase bd = findBeanOrAliasDefinition(type, name);
-		
 		if(null != bd){
 			return (T)doGetBean(bd);
 		}
+
+        for(BeanFactorySupport support : supports) {
+            T bean = (T)support.tryGetBean(type, name);
+            if(null != bean) {
+                return bean;
+            }
+        }
 		
 		return null;
     }
@@ -930,6 +958,13 @@ public class BeanContainer implements BeanFactory {
     }
 
     protected void resolveAfterLoading() {
+        //bean support
+        List<BeanFactorySupport> supportsList = new ArrayList<>();
+        for(BeanDefinitionBase bd : supportBeans) {
+            supportsList.add((BeanFactorySupport)doGetBean(bd));
+        }
+        this.supports = supportsList.toArray(new BeanFactorySupport[0]);
+
         //bean injector.
         List<BeanInjector> injectorList = new ArrayList<>();
         for(BeanDefinitionBase bd : injectorBeans) {
@@ -2264,6 +2299,10 @@ public class BeanContainer implements BeanFactory {
 			if(beanType.equals(BeanInjector.class)) {
 				injectorBeans.add(bd);
 			}
+
+            if(beanType.equals(BeanFactorySupport.class)) {
+                supportBeans.add(bd);
+            }
 
 			if(beanType.equals(BeanFactoryInitializable.class)) {
 				initializableBeans.add(bd);

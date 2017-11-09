@@ -52,8 +52,12 @@ public class AppFilter implements Filter {
 	protected AssetHandler	  assetHandler;
 	protected RequestIgnore[] ignores;
 
-    public App app() {
-        return app;
+    public AppBootstrap bootstrap() {
+        return bootstrap;
+    }
+
+    public AppContext context() {
+        return null == bootstrap ? null : bootstrap.getAppContext();
     }
 	
 	@Override
