@@ -722,6 +722,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			this.metaFieldName = reservedMetaFieldName.getFieldName();
 		}
 
+		if(null != column && column.isPrimaryKey()) {
+			filterable = true;
+		}
+
 	    return new FieldMapping(fieldName,
 	    						dataType,
 	    						metaFieldName,
