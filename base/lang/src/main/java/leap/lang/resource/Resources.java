@@ -201,6 +201,11 @@ public class Resources {
 	public static ResourceSet scan(Resource rootDirResource,String subPattern) throws NestedIOException{
 		Args.notNull(rootDirResource,"rootDirResource");
 		Args.notEmpty(subPattern, "subPattern");
+
+        if(!rootDirResource.exists()) {
+            return SimpleResourceSet.EMPTY;
+        }
+
 		try {
 	        return new SimpleResourceSet(scanner.scan(rootDirResource,subPattern));
         } catch (IOException e) {
