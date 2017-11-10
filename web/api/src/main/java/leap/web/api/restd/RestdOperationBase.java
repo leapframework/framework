@@ -37,10 +37,11 @@ import leap.web.route.RouteManager;
 
 public abstract class RestdOperationBase {
 
-    protected @Inject RouteManager      rm;
-    protected @Inject Apis              apis;
-    protected @Inject ValidationManager validationManager;
-    protected @Inject ApiFailureHandler failureHandler;
+    protected @Inject RouteManager            rm;
+    protected @Inject Apis                    apis;
+    protected @Inject ValidationManager       validationManager;
+    protected @Inject ApiFailureHandler       failureHandler;
+    protected @Inject RestdOperationSupport[] supports;
 
     protected boolean isOperationExists(RestdContext context, String verb, String path) {
         for(ApiRoute ar : context.getApiConfig().getApiRoutes()) {
@@ -48,6 +49,12 @@ public abstract class RestdOperationBase {
 
             if(verb.equalsIgnoreCase(route.getMethod()) &&
                     route.getPathTemplate().getTemplate().equals(path)) {
+                return true;
+            }
+        }
+
+        for(RestdOperationSupport support : supports) {
+            if(support.isOperationExists(context, verb, path)) {
                 return true;
             }
         }

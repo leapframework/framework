@@ -29,7 +29,7 @@ import java.util.Collections;
 import java.util.Map;
 
 class DefaultRoute extends ExtensibleBase implements Sourced, Route {
-	
+
 	protected final Object		 		source;
 	protected final String 		 		method;
 	protected final PathTemplate 		pathTemplate;
@@ -43,6 +43,7 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	protected final FailureHandler[]	failureHandlers;
 	protected final Map<String, String> requiredParameters;
 
+    protected boolean  enabled;
     protected Integer  successStatus;
     protected Boolean  corsEnabled;
     protected Boolean  csrfEnabled;
@@ -77,7 +78,8 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 		Args.notEmpty(method,"http method");
 		Args.notNull(pathTemplate,"path template");
 		Args.notNull(action,"action");
-		
+
+        this.enabled             = true;
 		this.source              = source;
 		this.method              = method;
 	    this.pathTemplate        = pathTemplate;
@@ -98,7 +100,16 @@ class DefaultRoute extends ExtensibleBase implements Sourced, Route {
 	    this.requiredParameters  = null == requiredParameters ? Collections.emptyMap() : Collections.unmodifiableMap(requiredParameters);
     }
 
-	/**
+    @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    /**
 	 * Returns a object indicates the source location defined this route.
 	 */
     @Override

@@ -16,7 +16,6 @@
 
 package leap.web.api.config.model;
 
-import leap.lang.Strings;
 import leap.lang.exception.ObjectExistsException;
 import leap.orm.OrmContext;
 import leap.web.api.meta.model.MApiOperationBuilder;
@@ -277,10 +276,12 @@ public class RestdConfig {
     }
 
     public static class Operation implements RestdOperationDef {
-        private String name;
-        private String type;
-        private String path;
-        private String script;
+        private String               name;
+        private String               type;
+        private String               path;
+        private String               script;
+        private String               scriptPath;
+        private Boolean              prior;
         private MApiOperationBuilder metaOperation;
 
         private Map<String, Object> arguments = new LinkedHashMap<>();
@@ -319,6 +320,24 @@ public class RestdConfig {
 
         public void setScript(String script) {
             this.script = script;
+        }
+
+        @Override
+        public Boolean getPrior() {
+            return prior;
+        }
+
+        public void setPrior(Boolean prior) {
+            this.prior = prior;
+        }
+
+        @Override
+        public String getScriptPath() {
+            return scriptPath;
+        }
+
+        public void setScriptPath(String scriptPath) {
+            this.scriptPath = scriptPath;
         }
 
         @Override

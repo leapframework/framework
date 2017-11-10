@@ -21,6 +21,8 @@ import leap.core.web.path.PathTemplateFactory;
 import leap.lang.Args;
 import leap.lang.New;
 import leap.lang.http.HTTP.Method;
+import leap.lang.logging.Log;
+import leap.lang.logging.LogFactory;
 import leap.web.Handler;
 import leap.web.action.*;
 
@@ -30,9 +32,12 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
 
 public class DefaultRoutes implements Routes {
+
+    private static final Log log = LogFactory.get(DefaultRoute.class);
 	
 	protected @Inject PathTemplateFactory pathTemplateFactory;
     protected @Inject ActionManager		  actionManager;
+    protected @Inject RoutesPrinter       routesPrinter;
 
     protected final List<Route> list = new CopyOnWriteArrayList<>();
 	
@@ -137,6 +142,10 @@ public class DefaultRoutes implements Routes {
     public Route match(String method, String path, Map<String,Object> inParameters,  Map<String, String> outVariables) {
 		List<Route> matchedRoutes = new ArrayList<>();
 		for(Route route : list){
+            if(!route.isEnabled()) {
+                continue;
+            }
+
 			if(null == method || route.getMethod().equals("*") || route.getMethod().equals(method)){
 				
 				if(!matchRequiredParameters(route.getRequiredParameters(), inParameters)){
@@ -146,7 +155,11 @@ public class DefaultRoutes implements Routes {
 				if(route.getPathTemplate().match(path, outVariables)){
 
 					if(route instanceof NestedRoute) {
-						route = ((NestedRoute) route).match(method, path, inParameters, outVariables);
+                        NestedRoute nestedRoute = (NestedRoute)route;
+						route = nestedRoute.match(method, path, inParameters, outVariables);
+                        if(null != route && !nestedRoute.isCheckAmbiguity()) {
+                            return route;
+                        }
 					}
 
 					if(null != route) {
@@ -183,8 +196,11 @@ public class DefaultRoutes implements Routes {
 			JerseyUriTemplate t2 = new JerseyUriTemplate(r2.getPathTemplate().getTemplate());
 			int re = JerseyUriTemplate.COMPARATOR.compare(t1, t2);
 			if(0 == re){
-				throw new IllegalStateException("Ambiguous handler methods mapped for path " +
-						"'" + r1.getPathTemplate() + "' and '" + r2.getPathTemplate() + "'");
+                log.error("Found multi matched routes -> \n{}", routesPrinter.print(matchedRoutes));
+				throw new IllegalStateException("Ambiguous handler methods mapped for path " + "'"
+                                                + r1.getPathTemplate()
+                                                + "' and '"
+                                                + r2.getPathTemplate() + "'");
 			}
 			return re;
 		}).get();

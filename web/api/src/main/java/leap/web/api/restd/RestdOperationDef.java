@@ -16,6 +16,7 @@
 package leap.web.api.restd;
 
 import leap.lang.Named;
+import leap.lang.enums.Bool;
 import leap.web.api.meta.model.MApiOperationBuilder;
 
 import java.util.Map;
@@ -38,6 +39,16 @@ public interface RestdOperationDef extends Named {
     String getScript();
 
     /**
+     * Optional. Returns the path of script.
+     */
+    String getScriptPath();
+
+    /**
+     * todo: doc
+     */
+    Boolean getPrior();
+
+    /**
      * Optional. Returns the meta operation.
      */
     MApiOperationBuilder getMetaOperation();
@@ -51,4 +62,18 @@ public interface RestdOperationDef extends Named {
      * Returns the argument or null.
      */
     <T> T getArgument(String name);
+
+    /**
+     * todo: doc
+     */
+    default boolean isExplicitPrior() {
+        return Boolean.TRUE.equals(getPrior());
+    }
+
+    /**
+     * todo: doc
+     */
+    default boolean isExplicitNotPrior() {
+        return Boolean.FALSE.equals(getPrior());
+    }
 }

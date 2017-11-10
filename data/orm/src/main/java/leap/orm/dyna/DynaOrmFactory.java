@@ -16,6 +16,7 @@
 
 package leap.orm.dyna;
 
+import leap.db.Db;
 import leap.lang.exception.ObjectExistsException;
 
 import javax.sql.DataSource;
@@ -36,6 +37,19 @@ public interface DynaOrmFactory {
      * Creates a new named {@link DynaOrmContext}.
      */
     DynaOrmContext createDynaContext(String name, DataSource ds);
+
+    /**
+     * Creates a new unnamed {@link DynaOrmContext}.
+     *
+     * <p/>
+     * The name of created {@link DynaOrmContext} is {@link #UNNAMED}.
+     */
+    DynaOrmContext createDynaContext(Db db);
+
+    /**
+     * Creates a new named {@link DynaOrmContext}.
+     */
+    DynaOrmContext createDynaContext(String name, Db db);
 
     /**
      * Creates a new named {@link DynaOrmContext} and register it to {@link leap.orm.OrmRegistry}.

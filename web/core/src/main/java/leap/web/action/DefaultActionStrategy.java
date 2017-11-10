@@ -45,12 +45,19 @@ public class DefaultActionStrategy implements ActionStrategy {
     public static final String[] CONTROLLER_PACKAGES = new String[]{"controllers", "controller"};
     public static final String[] RESOURCE_PACKAGES   = new String[]{"resources", "resource"};
 
-    protected @Inject App         app;
-    protected @Inject BeanFactory factory;
-    protected @Inject WebConfig   config;
+    protected @Inject App                     app;
+    protected @Inject BeanFactory             factory;
+    protected @Inject WebConfig               config;
+    protected @Inject ActionStrategySupport[] supports;
 
 	@Override
     public boolean isControllerClass(Class<?> cls) {
+        for(ActionStrategySupport support : supports) {
+            if(support.isExplicitNonController(cls)) {
+                return false;
+            }
+        }
+
 		if(cls.isAnnotationPresent(NonController.class)){
 			return false;
 		}
@@ -125,15 +132,10 @@ public class DefaultActionStrategy implements ActionStrategy {
     @Override
     @SuppressWarnings("unchecked")
     public Object getControllerInstance(Class<?> cls) {
-		Object controller = factory.tryGetBean((Class<Object>)cls);
-		if(null != controller){
-			return controller;
-		}
-
         try {
-        	return factory.createBean(cls);
+        	return factory.getOrAddBean(cls);
         } catch (Exception e) {
-        	throw new AppConfigException("Error creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
+        	throw new AppConfigException("Error get or creating instance of controller '" + cls.getName() + "' : " + e.getMessage(), e);
         }
     }
 

@@ -60,6 +60,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected Boolean               update;
     protected Expression            updateValue;
     protected Boolean               filtered;
+    protected Expression            filteredIf;
     protected Expression            filteredValue;
     protected boolean               optimisticLock;
     protected String                newOptimisticLockFieldName;
@@ -71,6 +72,8 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
     protected String                serializeFormat;
     protected FieldSerializer       serializer;
     protected boolean               hasPhysicalColumn;
+    protected boolean				filterable;
+    protected boolean				sortable;
 
     public FieldMappingBuilder(){
 		this.column = new DbColumnBuilder();
@@ -174,6 +177,10 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 
         if(null != fm.filteredValue) {
             this.filteredValue = fm.filteredValue;
+        }
+
+        if(null != fm.filteredIf) {
+            this.filteredIf = fm.filteredIf;
         }
 
         if(null != fm.domain) {
@@ -408,14 +415,30 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-    public FieldMappingBuilder trySetFilterValue(Expression v) {
+    public FieldMappingBuilder trySetFilteredValue(Expression v) {
         if(null == this.filteredValue) {
             this.filteredValue = v;
         }
         return this;
     }
 
-	public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
+    public Expression getFilteredIf() {
+        return filteredIf;
+    }
+
+    public FieldMappingBuilder setFilteredIf(Expression filteredIf) {
+        this.filteredIf = filteredIf;
+        return this;
+    }
+
+    public FieldMappingBuilder trySetFilteredIf(Expression expr) {
+        if(null == this.filteredIf) {
+            this.filteredIf = expr;
+        }
+        return this;
+    }
+
+    public FieldMappingBuilder setValueGenerator(ValueGenerator valueGenerator){
 		return setInsertValue(valueGenerator).setUpdateValue(valueGenerator);
 	}
 	
@@ -549,7 +572,7 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         return this;
     }
 
-    public FieldMappingBuilder trySetFilter(Boolean b){
+    public FieldMappingBuilder trySetFiltered(Boolean b){
         if(null == this.filtered){
             this.filtered = b;
         }
@@ -651,7 +674,25 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
         this.hasPhysicalColumn = hasPhysicalColumn;
     }
 
-    @Override
+	public boolean isFilterable() {
+		return filterable;
+	}
+
+	public FieldMappingBuilder setFilterable(boolean filterable) {
+		this.filterable = filterable;
+		return this;
+	}
+
+	public boolean isSortable() {
+		return sortable;
+	}
+
+	public FieldMappingBuilder setSortable(boolean sortable) {
+		this.sortable = sortable;
+		return this;
+	}
+
+	@Override
     public FieldMapping build() {
 		if(null == javaType){
 			javaType = null != beanProperty ? beanProperty.getType() : JdbcTypes.forTypeCode(column.getTypeCode()).getDefaultReadType();
@@ -681,19 +722,23 @@ public class FieldMappingBuilder implements Buildable<FieldMapping>,Ordered {
 			this.metaFieldName = reservedMetaFieldName.getFieldName();
 		}
 
+		if(null != column && column.isPrimaryKey()) {
+			filterable = true;
+		}
+
 	    return new FieldMapping(fieldName,
 	    						dataType,
 	    						metaFieldName,
 	    						javaType,
 	    						beanProperty, secondary, column.build(), sequenceName,
 	    						nullable,maxLength,precision,scale,
-                                insert, update, filtered,
+                                insert, update, filtered, filteredIf,
                                 defaultValueExpression,
                                 insertValue, updateValue, filteredValue,
 	    						optimisticLock,newOptimisticLockFieldName,
 	    						domain,validators,
 	    						reservedMetaFieldName,
-                                serializer);
+                                serializer, filterable, sortable);
     }
 
 	@Override

@@ -24,7 +24,9 @@ import leap.lang.beans.BeanException;
 import leap.lang.beans.NoSuchBeanException;
 import leap.lang.logging.Log;
 import leap.lang.logging.LogFactory;
+import leap.lang.reflect.ReflectValued;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -214,8 +216,30 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    
 	    return bean;
     }
-    
-	@Override
+
+    @Override
+    public <T> T getBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            return beanContainer.getBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
+    public <T> T tryGetBean(String namespace, String name) throws BeanException {
+        T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(namespace, name) : null);
+
+        if(null == bean){
+            bean = beanContainer.tryGetBean(namespace, name);
+        }
+
+        return bean;
+    }
+
+    @Override
     public <T> T getBean(Class<? super T> type) throws NoSuchBeanException, BeanException {
 		T bean = (T)(null != externalFactory ? externalFactory.tryGetBean(type) : null);
 		
@@ -390,6 +414,16 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
     }
 
     @Override
+    public <T> T tryCreateBean(String id) {
+        return beanContainer.tryCreateBean(id);
+    }
+
+    @Override
+    public <T> T tryCreateBean(String namespace, String name) {
+        return beanContainer.tryCreateBean(namespace, name);
+    }
+
+    @Override
     public boolean isSingleton(String beanId) throws NoSuchBeanException {
 		Boolean singleton = null;
 		
@@ -445,7 +479,17 @@ public class DefaultBeanFactory extends BeanFactoryInternal implements BeanFacto
 	    this.initialized = true;
     }
 
-	public void close(){
+    @Override
+    public boolean destroyBean(Object bean) {
+        return beanContainer.destroyBean(bean);
+    }
+
+    @Override
+    public Object resolveInjectValue(Class<?> type, Type genericType) {
+        return beanContainer.resolveInjectValue(type, genericType);
+    }
+
+    public void close(){
 		try{
 			if(null != beanContainer){
 				beanContainer.close();

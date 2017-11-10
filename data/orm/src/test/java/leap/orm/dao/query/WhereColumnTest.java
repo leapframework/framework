@@ -63,7 +63,9 @@ public class WhereColumnTest extends OrmTestCase {
     }
     @Test
     public void testDeleteWhere(){
-        executeWithoutGlobalField(aBoolean -> ECodeModel.deleteAll());
+        executeWithoutGlobalField(aBoolean -> {
+            ECodeModel.deleteAll();
+        });
         ECodeModel o1 = new ECodeModel("1").set("id",1).create();
         ECodeModel o2 = new ECodeModel("2").set("id",2).create();
         assertEquals(2,ECodeModel.count());

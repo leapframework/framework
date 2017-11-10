@@ -66,6 +66,7 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
     private static final String UPDATE_VALUE_ATTRIBUTE     = "update-value";
     private static final String FILTERED_VALUE             = "filtered-value";
     private static final String OVERRIDE_ATTRIBUTE         = "override";
+    private static final String FILTERED_IF                = "filtered-if";
 
     protected @Inject AppConfig appConfig;
 
@@ -218,7 +219,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         Boolean filter         = reader.resolveBooleanAttribute(FILTERED);
         String  insertValue    = reader.getAttribute(INSERT_VALUE_ATTRIBUTE);
         String  updateValue    = reader.getAttribute(UPDATE_VALUE_ATTRIBUTE);
-        String  filterValue    = reader.getAttribute(FILTERED_VALUE);
+        String filteredValue   = reader.getAttribute(FILTERED_VALUE);
+        String  filteredIf     = reader.getAttribute(FILTERED_IF);
         boolean override       = reader.resolveBooleanAttribute(OVERRIDE_ATTRIBUTE, defaultOverride);
 
         //field-name
@@ -240,9 +242,10 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             column.setTypeCode(type.getCode());
         }
 
-        Expression insertValueExpression = null;
-        Expression updateValueExpression = null;
-        Expression filterValueExpression = null;
+        Expression insertValueExpression   = null;
+        Expression updateValueExpression   = null;
+        Expression filteredValueExpression = null;
+        Expression filteredIfExpression    = null;
 
         if(!Strings.isEmpty(insertValue)){
             insertValueExpression = EL.tryCreateValueExpression(insertValue);
@@ -252,8 +255,12 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
             updateValueExpression = EL.tryCreateValueExpression(updateValue);
         }
 
-        if(!Strings.isEmpty(filterValue)){
-            filterValueExpression = EL.tryCreateValueExpression(filterValue);
+        if(!Strings.isEmpty(filteredValue)){
+            filteredValueExpression = EL.tryCreateValueExpression(filteredValue);
+        }
+
+        if(!Strings.isEmpty(filteredIf)) {
+            filteredIfExpression = EL.tryCreateValueExpression(filteredIf);
         }
 
         field.setJavaType(type.getDefaultReadType());
@@ -267,7 +274,8 @@ public class XmlMappingConfigSource implements MappingConfigSource,MappingConfig
         field.setFiltered(filter);
         field.setInsertValue(insertValueExpression);
         field.setUpdateValue(updateValueExpression);
-        field.setFilteredValue(filterValueExpression);
+        field.setFilteredValue(filteredValueExpression);
+        field.setFilteredIf(filteredIfExpression);
 
         return field;
     }

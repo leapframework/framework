@@ -47,6 +47,7 @@ public class FieldMapping extends ExtensibleBase {
 	protected final boolean          insert;
 	protected final boolean          update;
     protected final boolean          filtered;
+    protected final Expression       filteredIf;
 	protected final Expression       defaultValue;
 	protected final Expression       insertValue;
 	protected final Expression       updateValue;
@@ -57,31 +58,36 @@ public class FieldMapping extends ExtensibleBase {
 	protected final FieldValidator[] validators;
     protected final FieldSerializer  serializer;
 
+    protected final boolean 		 filterable;
+    protected final boolean 		 sortable;
+
 	protected final ReservedMetaFieldName reservedMetaFieldName;
 	
 	public FieldMapping(String fieldName,
-                        MType dataType,
-                        String metaFieldName,
-                        Class<?> javaType,
-                        BeanProperty beanProperty,
-                        boolean secondary,
-                        DbColumn column,
-                        String sequenceName,
-                        boolean nullable,
-                        Integer maxLength, Integer precision, Integer scale,
-                        boolean insert, boolean update,
-                        boolean filtered,
-                        Expression defaultValue,
-                        Expression insertValue,
-                        Expression updateValue,
-                        Expression filteredValue,
-                        boolean optimisticLock,
-                        String newOptimisticLockFieldName,
-                        Domain domain,
-                        List<FieldValidator> validators,
-                        ReservedMetaFieldName reservedMetaFieldName,
-                        FieldSerializer serializer) {
-		
+						MType dataType,
+						String metaFieldName,
+						Class<?> javaType,
+						BeanProperty beanProperty,
+						boolean secondary,
+						DbColumn column,
+						String sequenceName,
+						boolean nullable,
+						Integer maxLength, Integer precision, Integer scale,
+						boolean insert, boolean update,
+						boolean filtered, Expression filteredIf,
+						Expression defaultValue,
+						Expression insertValue,
+						Expression updateValue,
+						Expression filteredValue,
+						boolean optimisticLock,
+						String newOptimisticLockFieldName,
+						Domain domain,
+						List<FieldValidator> validators,
+						ReservedMetaFieldName reservedMetaFieldName,
+						FieldSerializer serializer,
+						boolean filterable,
+						boolean sortable) {
+
 		Args.notEmpty(fieldName,"field name");
 		Args.notNull(javaType,"java type");
 		Args.notNull(column,"column");
@@ -101,15 +107,18 @@ public class FieldMapping extends ExtensibleBase {
 	    this.insert         = insert;
 	    this.update         = update;
         this.filtered       = filtered;
+        this.filteredIf = filteredIf;
 	    this.defaultValue   = defaultValue;
 	    this.insertValue    = insertValue;
 	    this.updateValue    = updateValue;
-        this.filteredValue = filteredValue;
+        this.filteredValue  = filteredValue;
 	    this.optimisticLock = optimisticLock;
 	    this.newOptimisticLockFieldName = newOptimisticLockFieldName;
 	    this.domain         = domain;
 	    this.validators     = null == validators ? new FieldValidator[]{} : validators.toArray(new FieldValidator[validators.size()]);
         this.serializer     = serializer;
+		this.filterable 	= filterable;
+		this.sortable = sortable;
 	    
 	    if(optimisticLock){
 	    	Args.notEmpty(newOptimisticLockFieldName);
@@ -205,6 +214,10 @@ public class FieldMapping extends ExtensibleBase {
         return filtered;
     }
 
+    public Expression getFilteredIf() {
+        return filteredIf;
+    }
+
     public boolean isPrimaryKey() {
 		return column.isPrimaryKey();
 	}
@@ -246,7 +259,15 @@ public class FieldMapping extends ExtensibleBase {
         return serializer;
     }
 
-    @Override
+	public boolean isFilterable() {
+		return filterable;
+	}
+
+	public boolean isSortable() {
+		return sortable;
+	}
+
+	@Override
     public String toString() {
 	    return "FieldMapping[name=" + getFieldName() + ",column=" + getColumnName() + ",dataType=" + dataType + "]";
     }

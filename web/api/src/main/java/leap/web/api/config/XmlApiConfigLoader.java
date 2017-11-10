@@ -820,6 +820,7 @@ public class XmlApiConfigLoader implements AppConfigProcessor, AppConfigListener
 
         if(!Strings.isEmpty(sqlScript)) {
             op.setScript(sqlScript);
+            op.setScriptPath(sqlKey);
         }
 
         return op;

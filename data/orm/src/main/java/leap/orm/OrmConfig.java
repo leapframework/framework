@@ -186,7 +186,7 @@ public interface OrmConfig {
         /**
          * Optional.
          */
-        Expression getFilterIf();
+        Expression getFilteredIf();
 
     }
 }

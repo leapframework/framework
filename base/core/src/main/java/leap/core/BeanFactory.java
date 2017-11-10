@@ -21,7 +21,9 @@ import leap.core.validation.annotations.NotNull;
 import leap.lang.beans.BeanException;
 import leap.lang.beans.BeanFactoryBase;
 import leap.lang.beans.NoSuchBeanException;
+import leap.lang.reflect.ReflectValued;
 
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
@@ -139,7 +141,25 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * @throws BeanException if the bean could not be obtained.
 	 */
 	<T> T tryGetBean(String id) throws BeanException;
-	
+
+    /**
+     * Returns the bean's instance identified by the given namespace and name (case sensitive).
+     *
+     * @throws NoSuchBeanException if the given id not exists.
+     * @throws BeanException if the bean could not be obtained.
+     */
+    <T> T getBean(String namespace, String name) throws BeanException;
+
+    /**
+     * Returns the bean's instance identified by the given namespace and name (case sensitive).
+     *
+     * <p>
+     * Returns <code>null<code> if the given id not exists.
+     *
+     * @throws BeanException if the bean could not be obtained.
+     */
+    <T> T tryGetBean(String namespace, String name) throws BeanException;
+
 	/**
 	 * Returns the primary bean's instance for the given type.
 	 * 
@@ -237,7 +257,17 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
      * Returns <code>true</code> if init success, <code>false</code> if already inited.
      */
 	boolean tryInitBean(BeanDefinition bd);
-	
+
+    /**
+     * todo:
+     */
+    <T> T tryCreateBean(String id);
+
+    /**
+     * todo:
+     */
+    <T> T tryCreateBean(String namespace, String name);
+
 	/**
 	 * Updates the primary bean of the given type as the given instance. 
 	 */
@@ -272,4 +302,15 @@ public interface BeanFactory extends BeanFactoryBase, AppContextInitializable {
 	 * @throws NoSuchBeanException if such bean not exist
 	 */
 	boolean isSingleton(Class<?> type,String name) throws NoSuchBeanException;
+
+    /**
+     * todo:
+     */
+    boolean destroyBean(Object bean);
+
+    /**
+     * todo:
+     */
+    Object resolveInjectValue(Class<?> type, Type genericType);
+
 }
