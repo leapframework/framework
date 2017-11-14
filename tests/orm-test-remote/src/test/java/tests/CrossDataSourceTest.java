@@ -39,8 +39,7 @@ public class CrossDataSourceTest extends AppTestBase{
 
         EntityMapping target = oc1.getMetadata().getEntityMapping(rm.getTargetEntityName());
         assertEquals(true, target.isRemote());
-        assertEmpty(target.getRemoteType());
-        assertEmpty(target.getRemoteDataSource());
+        assertNotEmpty(target.getRemoteDataSource());
     }
 
 }

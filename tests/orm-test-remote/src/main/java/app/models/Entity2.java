@@ -29,6 +29,12 @@ public class Entity2 {
     @Column
     protected String field1;
 
+    @ManyToOne(target = Entity3.class)
+	private String entity3Id;
+
+    @Relational
+    private Entity3 reEntity;
+
 
     public String getId() {
         return id;
@@ -45,5 +51,13 @@ public class Entity2 {
     public void setField1(String field1) {
         this.field1 = field1;
     }
+
+	public String getEntity3Id() {
+		return entity3Id;
+	}
+
+	public void setEntity3Id(String entity3Id) {
+		this.entity3Id = entity3Id;
+	}
 
 }

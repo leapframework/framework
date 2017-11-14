@@ -22,6 +22,7 @@ import leap.core.value.Record;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
+import leap.orm.enums.RemoteType;
 import leap.orm.mapping.*;
 import leap.orm.query.CriteriaQuery;
 import leap.orm.query.PageResult;
@@ -215,8 +216,25 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(null == rp) {
             throw new BadRequestException("Property '" + name + "' cannot be expanded");
         }
-        RelationMapping rm = em.getRelationMapping(rp.getRelationName());
-        CriteriaQuery<Record> expandQuery =dao.createCriteriaQuery(rp.getTargetEntityName());
+        EntityMapping targetEm=dao.getOrmContext().getMetadata().tryGetEntityMapping(rp.getTargetEntityName());
+        if(targetEm==null){
+        	throw new BadRequestException("can't find relation entity:"+rp.getTargetEntityName());
+        }
+        if(RemoteType.rest.equals(targetEm.getRemoteType())){
+        	expandByRest(expand, records, rp);
+        }else{
+        	expandByDb(expand, records, rp);
+        }
+
+    }
+
+    private void expandByRest(Expand expand, List<Record> records, RelationProperty rp){
+
+    }
+
+	private void expandByDb(Expand expand, List<Record> records, RelationProperty rp) {
+		RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+		CriteriaQuery<Record> expandQuery =dao.createCriteriaQuery(rp.getTargetEntityName());
 
         //根据不同类型的关系，计算引用的源字段、被引用字段
         String localFieldName="",referredFieldName="";
@@ -264,10 +282,11 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
 	       		 applySelect(expandQuery, expand.getSelect(),referredFieldName);
 	       	 }
         }
+        List<Record> resultList= expandQuery.list();
 
         //根据引用字段值，对所有查询出来的被引用数据，进行分组
         Map<Object,List<Record>> referredRecords=new HashMap<>();
-        for (Record referred : expandQuery.list()) {
+        for (Record referred :resultList ) {
         	Object fkVal=null;
         	List<Record> fieldToValList=null;
         	if(rm.isManyToMany()){
@@ -305,7 +324,7 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
             	}
             }
 		}
-    }
+	}
 
     /**
      * @see DefaultModelQueryExecutor#expand(Expand expand, Record... records)
