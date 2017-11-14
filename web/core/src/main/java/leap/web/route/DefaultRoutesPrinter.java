@@ -26,6 +26,7 @@ import leap.lang.text.PrintFormat;
 public class DefaultRoutesPrinter implements RoutesPrinter {
 	
 	protected boolean reverseDisplayOrder = true;
+    protected boolean printView           = true;
 	
 	public boolean isReverseDisplayOrder() {
 		return reverseDisplayOrder;
@@ -34,6 +35,14 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 	public void setReverseDisplayOrder(boolean reverseDisplayOrder) {
 		this.reverseDisplayOrder = reverseDisplayOrder;
 	}
+
+    public boolean isPrintView() {
+        return printView;
+    }
+
+    public void setPrintView(boolean printView) {
+        this.printView = printView;
+    }
 
     @Override
     public String print(Iterable<Route> routes) {
@@ -96,15 +105,21 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 		rule.append(methodFormat.format("METHOD")).append("  ");
 		rule.append(pathFormat.format("PATH")).append("   ");
 		rule.append(actionFormat.format("ACTION")).append("   ");
-		rule.append("DEFAULT VIEW");
+
+        if(printView) {
+            rule.append("DEFAULT VIEW");
+        }
 		
 		writer.println(rule.toString());
 		
 		StringBuilder line = new StringBuilder();
 		line.append(Strings.repeat('-', methodFormat.maxChars())).append("  ")
 		    .append(Strings.repeat('-', pathFormat.maxChars())).append("   ")
-		    .append(Strings.repeat('-', actionFormat.maxChars())).append("   ")
-		    .append(Strings.repeat('-', 30));
+		    .append(Strings.repeat('-', actionFormat.maxChars())).append("   ");
+
+        if(printView) {
+            line.append(Strings.repeat('-', 30));
+        }
 		
 		writer.println(line.toString());
 	}
@@ -115,12 +130,14 @@ public class DefaultRoutesPrinter implements RoutesPrinter {
 		rule.append(methodFormat.format(route.getMethod())).append("  ");
 		rule.append(pathFormat.format(getPathDescription(route))).append("   ");
 		rule.append(actionFormat.format(getActionDescription(route))).append("   ");
-		
-		if(null != route.getDefaultViewName()){
-			rule.append(route.getDefaultViewName());
-		}else{
-			rule.append("(none)");
-		}
+
+        if(printView) {
+            if (null != route.getDefaultViewName()) {
+                rule.append(route.getDefaultViewName());
+            } else {
+                rule.append("(none)");
+            }
+        }
 		
 		writer.println(rule.toString());
 	}

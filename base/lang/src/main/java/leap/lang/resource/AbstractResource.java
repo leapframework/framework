@@ -242,7 +242,7 @@ public abstract class AbstractResource implements Resource {
 	
 	@Override
     public String getFilepath() {
-		return getFile().getAbsolutePath();
+        return isFile()  ? getFile().getAbsolutePath() : getURLString();
     }
 
 	@Override
