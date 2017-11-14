@@ -1408,7 +1408,7 @@ class XmlBeanDefinitionLoader {
 
         IfAttr isServletEnvironment = readIfAttr(e, IF_SERVLET_ENVIRONMENT);
         if(null != isServletEnvironment) {
-            if(!isServletEnvironment.test(Boolean.valueOf(isServletEnvironment.value))) {
+            if(!isServletEnvironment.test(container.getAppContext().isServletEnvironment())) {
                 return false;
             }
         }
