@@ -869,102 +869,116 @@ public class JsonWriterImpl implements JsonWriter {
 		return bean(bean, null);
     }
 
+    @Override
+    public JsonWriter properties(Object bean, boolean declaredOnly) {
+        return properties(bean, declaredOnly, null);
+    }
+
+    protected JsonWriter properties(Object bean, boolean declaredOnly, JsonType type) {
+        try {
+            BeanType beanType = BeanType.of(bean.getClass());
+
+            //process type metadata.
+            if(null == type && !bean.getClass().isInterface()) {
+                type = bean.getClass().getSuperclass().getAnnotation(JsonType.class);
+            }
+
+            if(null != type) {
+                String metaPropertyName = Strings.firstNotEmpty(type.property(),
+                        type.meta().getDefaultPropertyName());
+
+                //todo : cache
+                if(type.meta() == JsonType.MetaType.CLASS_NAME) {
+                    property(metaPropertyName, bean.getClass().getName());
+                }else {
+                    boolean typed = false;
+                    for(JsonType.SubType subType : type.types()) {
+                        if(subType.type().equals(bean.getClass())) {
+                            typed = true;
+
+                            if(!beanType.hasProperty(metaPropertyName)) {
+                                property(metaPropertyName, subType.name());
+                            }
+
+                            break;
+                        }
+                    }
+                    if(!typed) {
+                        throw new JsonException("No type name has been defined for class '" + bean.getClass() + "' in super class");
+                    }
+                }
+            }
+
+            for(BeanProperty prop : beanType.getProperties()){
+                if(prop.isTransient()){
+                    continue;
+                }
+
+                if(!prop.isReadable() || !prop.isField()){
+                    continue;
+                }
+
+                if(declaredOnly && !prop.getField().getDeclaringClass().equals(bean.getClass())) {
+                    continue;
+                }
+
+                JsonField jsonField = prop.getAnnotation(JsonField.class);
+
+                if(null != jsonField || !prop.isAnnotationPresent(JsonIgnore.class)){
+                    String propName = prop.getName();
+
+                    JsonName named = prop.getAnnotation(JsonName.class);
+
+                    if(null != named){
+                        propName = named.value();
+                    }
+
+                    Object propValue;
+
+                    if(jsonField != null && jsonField.useGetter() == false){
+                        propValue = prop.getReflectField().getValue(bean,false);
+                    }else{
+                        propValue = prop.getValue(bean);
+                    }
+
+                    if(null == propValue && isIgnoreNull()){
+                        continue;
+                    }
+
+                    if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
+                        continue;
+                    }
+                    if(prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
+                        propValue = "";
+                    }
+                    keyUseNamingStyle(propName);
+
+                    if(!writeDateValue(prop, propValue)) {
+
+                        //todo : performance
+                        value(propValue, (v) -> {
+                            bean(v,prop.getType().getAnnotation(JsonType.class));
+                        });
+                    }
+                }
+            }
+        } catch (JsonException e){
+            throw e;
+        } catch (Exception e) {
+            throw new JsonException("Error writing json value : " + bean.getClass().getName(), e);
+        }
+
+        return this;
+    }
+
     protected JsonWriter bean(Object bean, JsonType type) {
         if(null == bean) {
             return null_();
         }else{
             startObject();
-
-            try {
-                BeanType beanType = BeanType.of(bean.getClass());
-
-                //process type metadata.
-                if(null == type && !bean.getClass().isInterface()) {
-                    type = bean.getClass().getSuperclass().getAnnotation(JsonType.class);
-                }
-
-                if(null != type) {
-                    String metaPropertyName = Strings.firstNotEmpty(type.property(),
-                                                                    type.meta().getDefaultPropertyName());
-
-                    //todo : cache
-                    if(type.meta() == JsonType.MetaType.CLASS_NAME) {
-                        property(metaPropertyName, bean.getClass().getName());
-                    }else {
-                        boolean typed = false;
-                        for(JsonType.SubType subType : type.types()) {
-                            if(subType.type().equals(bean.getClass())) {
-                                typed = true;
-
-                                if(!beanType.hasProperty(metaPropertyName)) {
-                                    property(metaPropertyName, subType.name());
-                                }
-
-                                break;
-                            }
-                        }
-                        if(!typed) {
-                            throw new JsonException("No type name has been defined for class '" + bean.getClass() + "' in super class");
-                        }
-                    }
-                }
-
-                for(BeanProperty prop : beanType.getProperties()){
-                    if(prop.isTransient()){
-                        continue;
-                    }
-
-                    if(!prop.isReadable() || !prop.isField()){
-                        continue;
-                    }
-
-                    JsonField jsonField = prop.getAnnotation(JsonField.class);
-
-                    if(null != jsonField || !prop.isAnnotationPresent(JsonIgnore.class)){
-                        String propName = prop.getName();
-
-                        JsonName named = prop.getAnnotation(JsonName.class);
-
-                        if(null != named){
-                            propName = named.value();
-                        }
-
-                        Object propValue;
-
-                        if(jsonField != null && jsonField.useGetter() == false){
-                            propValue = prop.getReflectField().getValue(bean,false);
-                        }else{
-                            propValue = prop.getValue(bean);
-                        }
-
-                        if(null == propValue && isIgnoreNull()){
-                            continue;
-                        }
-
-                        if(isIgnoreEmptyString() && Strings.isNullOrBlank(propValue)){
-                            continue;
-                        }
-                        if(prop.getField().getType().equals(String.class) && settings.isNullToEmptyString() && null == propValue) {
-                        	propValue = "";
-						}
-                        keyUseNamingStyle(propName);
-
-                        if(!writeDateValue(prop, propValue)) {
-
-                            //todo : performance
-                            value(propValue, (v) -> {
-                                bean(v,prop.getType().getAnnotation(JsonType.class));
-                            });
-                        }
-                    }
-                }
-            } catch (JsonException e){
-                throw e;
-            } catch (Exception e) {
-                throw new JsonException("Error writing json value : " + bean.getClass().getName(), e);
-            }
-
-            return endObject();
+            properties(bean, false, type);
+            endObject();
+            return this;
         }
     }
 

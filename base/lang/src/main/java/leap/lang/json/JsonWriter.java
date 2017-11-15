@@ -615,6 +615,13 @@ public interface JsonWriter {
         return null == a || a.size() == 0 ? this : property(key, a);
     }
 
+    /**
+     * Writes the properties of bean
+     *
+     * @param declaredOnly true will write the bean's declared properties only (excludes the inherited).
+     */
+    JsonWriter properties(Object bean, boolean declaredOnly);
+
 	/**
 	 * Writes an array property.
 	 */
