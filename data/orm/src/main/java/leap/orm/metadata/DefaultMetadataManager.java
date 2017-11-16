@@ -127,6 +127,9 @@ public class DefaultMetadataManager implements OrmMetadataManager {
         //create default sql commands for all entities.
         DbSchemaBuilder schema = new DbSchemaBuilder(context.getName());
         for(EntityMapping em : context.getMetadata().getEntityMappingSnapshotList()){
+        	if(em.isRemote()){
+        		continue;
+        	}
             tryCreateDefaultSqlCommands(loadingContext, em);
             tryCreateTable(loadingContext, em, schema);
         }

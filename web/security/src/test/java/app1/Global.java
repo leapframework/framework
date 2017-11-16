@@ -20,6 +20,7 @@ import leap.web.App;
 import leap.web.Request;
 import leap.web.RequestInterceptor;
 import leap.web.Response;
+import leap.web.action.ActionContext;
 
 public class Global extends App {
 
@@ -28,7 +29,7 @@ public class Global extends App {
 		interceptors().add(new RequestInterceptor(){
 
 			@Override
-            public State preHandleRequest(Request request, Response response) throws Throwable {
+            public State preHandleRequest(Request request, Response response, ActionContext ac) throws Throwable {
 	            return State.CONTINUE;
             }
 			

@@ -254,6 +254,10 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 			this.user = user;
         }
 
+		@Override
+		public SecuredPath getSecuredPath() {
+			return securedPath;
+		}
 	}
 	
 	protected final class DefaultLogoutContext extends AbstractContext implements LogoutContext {
@@ -286,7 +290,10 @@ public class DefaultSecurityContextHolder extends SecurityContext implements Sec
 		public void setReturnUrl(String returnUrl) {
 			this.returnUrl = returnUrl;
 		}
-
+		@Override
+		public SecuredPath getSecuredPath() {
+			return securedPath;
+		}
 	}
 
 	@Override

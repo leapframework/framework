@@ -19,6 +19,7 @@ import leap.core.security.Authentication;
 import leap.core.security.SecurityContext;
 import leap.web.security.SecurityConfig;
 import leap.web.security.authc.credentials.CredentialsAuthenticationContext;
+import leap.web.security.path.SecuredPath;
 
 public interface AuthenticationContext extends CredentialsAuthenticationContext {
 
@@ -51,5 +52,9 @@ public interface AuthenticationContext extends CredentialsAuthenticationContext 
 	 * Sets the authentication token.
      */
 	void setAuthenticationToken(String token);
-	
+
+	/**
+	 * Optional. Returns the path mapping to the request.
+	 */
+	SecuredPath getSecuredPath();
 }

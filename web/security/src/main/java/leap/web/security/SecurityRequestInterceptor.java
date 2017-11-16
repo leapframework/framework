@@ -102,7 +102,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
     }
 	
 	@Override
-    public State preHandleRequest(Request request, Response response) throws Throwable {
+    public State preHandleRequest(Request request, Response response, ActionContext ac) throws Throwable {
 		//Web security do not enabled.
 		if(!config.isEnabled()){
 			log.debug("Web security not enabled, ignore the interceptor");
@@ -123,7 +123,7 @@ public class SecurityRequestInterceptor implements RequestInterceptor,AppListene
 		
 		DefaultSecurityContextHolder context =
                 new DefaultSecurityContextHolder(config, perm, request);
-
+        context.setSecuredPath(resolveSecuredPath(request,response,context,ac.getRoute()));
 		return preHandleRequest(request, response, context);
     }
 

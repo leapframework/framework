@@ -37,7 +37,7 @@ import java.util.Map;
 public class ModelRegistry implements OrmContextInitializable {
 	private static final ThreadLocal<OrmContext>       localOrmContext = new ThreadLocal<>();
 	private static final Map<String, ModelContext>     modelContexts   = new HashMap<>();
-	
+
 	public static OrmContext getThreadLocalContext(){
 		return localOrmContext.get();
 	}
@@ -45,14 +45,14 @@ public class ModelRegistry implements OrmContextInitializable {
 	public static void setThreadLocalContext(OrmContext context){
 		localOrmContext.set(context);
 	}
-	
+
 	public static void removeThreadLocalContext(){
 		localOrmContext.remove();
 	}
-	
+
 	public static ModelContext getModelContext(String className){
 		ModelContext mc = modelContexts.get(className);
-		
+
 		if(null == mc){
 
             if(!Orm.hasContexts()) {
@@ -62,14 +62,14 @@ public class ModelRegistry implements OrmContextInitializable {
             }
 
 		}
-		
+
 		return mc;
 	}
-	
+
 	public static ModelContext tryGetModelContext(String className){
 		return modelContexts.get(className);
 	}
-	
+
 	private static void addModelContext(ModelContext modelContext){
 		modelContexts.put(modelContext.getModelClass().getName(), modelContext);
         if(null != modelContext.getExtendModelClass()) {
@@ -87,11 +87,9 @@ public class ModelRegistry implements OrmContextInitializable {
 
             if(null != cls){
                 ModelContext modelContext = ModelRegistry.tryGetModelContext(cls.getName());
-
-                //TODO : Duplicate orm context in same model
-
-                if(null == modelContext){
-                    registerModel(context, em, dao, dmo);
+                if(null == modelContext
+                		|| (modelContext!=null && modelContext.getEntityMapping().isRemote())){
+                	registerModel(context, em, dao, dmo);
                 }
             }
         }
@@ -132,7 +130,7 @@ public class ModelRegistry implements OrmContextInitializable {
 		public BeanType getBeanType(){
 			return beanType;
 		}
-		
+
 		public OrmContext getOrmContext() {
 			OrmContext tlOrmContext = getThreadLocalContext();
 			if(null != tlOrmContext){
@@ -155,26 +153,26 @@ public class ModelRegistry implements OrmContextInitializable {
 
 		public Dao getDao() {
 			OrmContext tlOrmContext = getThreadLocalContext();
-			
+
 			if(null != tlOrmContext){
 				return tlOrmContext.getAppContext().getBeanFactory().getBean(Dao.class,tlOrmContext.getName());
 			}
-			
+
 			return dao;
 		}
 
 		public Dmo getDmo() {
 			OrmContext tlOrmContext = getThreadLocalContext();
-			
+
 			if(null != tlOrmContext){
 				return tlOrmContext.getAppContext().getBeanFactory().getBean(Dmo.class,tlOrmContext.getName());
 			}
-			
+
 			return dmo;
 		}
 	}
-	
+
 	private ModelRegistry(){
-		
+
 	}
 }

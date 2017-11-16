@@ -16,20 +16,42 @@
 
 package app.models;
 
+import leap.lang.enums.Bool;
+import leap.lang.meta.annotation.Filterable;
 import leap.orm.annotation.*;
+import leap.orm.model.Model;
 
 @Entity
 @DataSource("db1")
-public class Entity1 {
+public class Entity1 extends Model {
 
     @Id
     protected String id;
 
     @Column
+    @Filterable
+    private String name;
+
+    @Column
+    @Filterable
+    private String title;
+
+    @Column
     protected String field1;
 
-    @ManyToOne(target = Entity2.class)
+    @ManyToOne(target = Entity2.class,optional=Bool.TRUE)
     protected String entity2Id;
+
+    @ManyToOne(target = RemoteEntity.class,optional=Bool.TRUE)
+	private String remoteEntity1;
+
+    @Relational
+    @NonColumn
+    private RemoteEntity remoteEntity;
+
+    @Relational
+    @NonColumn
+    private Entity2 entity2;
 
     public String getId() {
         return id;
@@ -54,4 +76,44 @@ public class Entity1 {
     public void setEntity2Id(String entity2Id) {
         this.entity2Id = entity2Id;
     }
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getRemoteEntity1() {
+		return remoteEntity1;
+	}
+
+	public void setRemoteEntity1(String remoteEntity1) {
+		this.remoteEntity1 = remoteEntity1;
+	}
+
+	public Entity2 getEntity2() {
+		return entity2;
+	}
+
+	public void setEntity2(Entity2 entity2) {
+		this.entity2 = entity2;
+	}
+
+	public RemoteEntity getRemoteEntity() {
+		return remoteEntity;
+	}
+
+	public void setRemoteEntity(RemoteEntity remoteEntity) {
+		this.remoteEntity = remoteEntity;
+	}
 }

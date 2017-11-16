@@ -21,11 +21,12 @@ import leap.lang.intercepting.State;
 import leap.web.Request;
 import leap.web.RequestInterceptor;
 import leap.web.Response;
+import leap.web.action.ActionContext;
 
 public class LocaleChangeInterceptor implements RequestInterceptor {
 
 	@Override
-    public State preHandleRequest(Request request, Response response) throws Exception {
+    public State preHandleRequest(Request request, Response response, ActionContext ac) throws Exception {
 		String locale = request.getParameter("locale");
 		
 		if(!Strings.isEmpty(locale)){

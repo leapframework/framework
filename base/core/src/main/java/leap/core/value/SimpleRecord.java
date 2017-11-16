@@ -18,6 +18,9 @@ package leap.core.value;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import leap.lang.json.JsonParsable;
+import leap.lang.json.JsonValue;
+
 public class SimpleRecord extends LinkedHashMap<String, Object> implements Record {
 
 	private static final long serialVersionUID = 3235920422827878171L;
@@ -41,5 +44,4 @@ public class SimpleRecord extends LinkedHashMap<String, Object> implements Recor
 	public SimpleRecord(int initialCapacity, float loadFactor, boolean accessOrder) {
 		super(initialCapacity, loadFactor, accessOrder);
 	}
-
 }
