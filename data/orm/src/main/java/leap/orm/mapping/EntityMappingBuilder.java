@@ -18,6 +18,7 @@ package leap.orm.mapping;
 import leap.db.model.*;
 import leap.lang.*;
 import leap.lang.exception.ObjectExistsException;
+import leap.orm.enums.RemoteType;
 import leap.orm.event.EntityListenersBuilder;
 import leap.orm.interceptor.EntityExecutionInterceptor;
 import leap.orm.model.Model;
@@ -43,8 +44,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     protected boolean        autoGenerateColumns;
     protected Boolean        queryFilterEnabled;
     protected boolean        remote;
-    protected String         remoteType;
-    protected String         remoteDataSource;
+    private RemoteSettings    remoteSettings;
 
     protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
@@ -65,7 +65,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     public boolean isModelClass() {
         return null != getSourceClass() && Model.class.isAssignableFrom(getSourceClass());
     }
-	
+
 	public Class<?> getEntityClass() {
 		return entityClass;
 	}
@@ -73,11 +73,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	@SuppressWarnings("unchecked")
     public EntityMappingBuilder setEntityClass(Class<?> entityClass) {
 		this.entityClass = entityClass;
-		
+
 		if(null != entityClass && Model.class.isAssignableFrom(entityClass)){
 			setModelClass((Class<? extends Model>)entityClass);
 		}
-		
+
 		return this;
 	}
 
@@ -94,16 +94,16 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		this.entityName = entityName;
 		return this;
 	}
-	
+
 	public boolean isAbstract(){
 		return _abstract;
 	}
-	
+
 	public EntityMappingBuilder setAbstract(boolean isAbstract){
 		this._abstract = isAbstract;
 		return this;
 	}
-	
+
 	public DbTableBuilder getTable() {
 		if(null == table){
 			table = new DbTableBuilder();
@@ -141,7 +141,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		getTable().setSchema(tableSchema);
 		return this;
 	}
-	
+
 	public String getTablePrefix() {
 		return tablePrefix;
 	}
@@ -163,7 +163,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 	public String getTableName() {
 		return getTable().getName();
 	}
-	
+
 	public String getTableNameWithPrefix() {
 		return Strings.concat(tablePrefix,getTableName());
 	}
@@ -172,7 +172,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		getTable().setName(tableName);
 		return this;
 	}
-	
+
 	public boolean isTableNameDeclared() {
 		return tableNameDeclared;
 	}
@@ -181,7 +181,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		this.tableNameDeclared = tableNameDeclared;
 		return this;
 	}
-	
+
 	public boolean isIdDeclared() {
 		return idDeclared;
 	}
@@ -225,26 +225,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         this.remote = remote;
     }
 
-    public String getRemoteType() {
-        return remoteType;
-    }
-
-    public void setRemoteType(String remoteType) {
-        this.remoteType = remoteType;
-    }
-
-    public String getRemoteDataSource() {
-        return remoteDataSource;
-    }
-
-    public void setRemoteDataSource(String remoteDataSource) {
-        this.remoteDataSource = remoteDataSource;
-    }
 
     public List<FieldMappingBuilder> getFieldMappings() {
 		return fieldMappings;
 	}
-	
+
 	public List<FieldMappingBuilder> getKeyFieldMappings() {
 		List<FieldMappingBuilder> keys = new ArrayList<FieldMappingBuilder>();
 		for(FieldMappingBuilder fmb : getFieldMappings()){
@@ -254,7 +239,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		}
 		return keys;
 	}
-	
+
 	public FieldMappingBuilder findFieldMappingByName(String name){
 		for(FieldMappingBuilder fmb : getFieldMappings()){
 			if(Strings.equalsIgnoreCase(name, fmb.getFieldName())){
@@ -263,7 +248,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		}
 		return null;
 	}
-	
+
 	public FieldMappingBuilder findFieldMappingByColumn(String column){
 		for(FieldMappingBuilder fmb : getFieldMappings()){
 			if(Strings.equalsIgnoreCase(column, fmb.getColumn().getName())){
@@ -272,7 +257,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		}
 		return null;
 	}
-	
+
 	public FieldMappingBuilder findFieldMappingByMetaName(String name){
 		for(FieldMappingBuilder fmb : getFieldMappings()){
 			if(Strings.equalsIgnoreCase(name, fmb.getMetaFieldName())){
@@ -284,17 +269,17 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		}
 		return null;
 	}
-	
+
 	public EntityMappingBuilder addFieldMapping(FieldMappingBuilder fm){
 		fieldMappings.add(fm);
 		return this;
 	}
-	
+
 	public EntityMappingBuilder addPrimaryKey(FieldMappingBuilder fm){
 		fieldMappings.add(0,fm);
 		return this;
 	}
-	
+
 	public boolean hasPrimaryKey(){
 		for(FieldMappingBuilder fm : this.fieldMappings){
 			if(fm.isId()){
@@ -303,7 +288,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		}
 		return false;
 	}
-	
+
 	public List<FieldMappingBuilder> getIdFieldMappings(){
 		List<FieldMappingBuilder> list = New.arrayList();
 		for(FieldMappingBuilder fm : this.fieldMappings){
@@ -358,7 +343,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		this.modelClass = modelClass;
 		return this;
 	}
-	
+
 	public DbTable getPhysicalTable() {
 		return physicalTable;
 	}
@@ -367,7 +352,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		this.physicalTable = physicalTable;
 		return this;
 	}
-	
+
 	public List<EntityValidator> getValidators() {
 		if(null == validators){
 			validators = new ArrayList<EntityValidator>();
@@ -379,7 +364,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 		this.validators = validators;
 		return this;
 	}
-	
+
 	public EntityMappingBuilder addValidator(EntityValidator validator){
 		getValidators().add(validator);
 		return this;
@@ -393,7 +378,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         }
         return null;
     }
-	
+
 	public List<RelationMappingBuilder> getRelationMappings() {
 		return relationMappings;
 	}
@@ -444,7 +429,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     @Override
     public EntityMapping build() {
 		Collections.sort(fieldMappings, Comparators.ORDERED_COMPARATOR);
-		
+
 		List<FieldMapping>    fields         = Builders.buildList(fieldMappings);
 		List<RelationMapping> relations      = Builders.buildList(relationMappings);
 		DbTable			      table          = buildTable(fields,relations);
@@ -457,14 +442,14 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
-                remote, remoteType, remoteDataSource,
+                                 remote, remoteSettings,
                                  listeners.build());
     }
-	
+
 	public DbSchemaObjectName getTableSchemaObjectName() {
 		return new DbSchemaObjectName(getTableCatalog(),getTableSchema(),getTableNameWithPrefix());
 	}
-	
+
 	protected DbTable buildTable(List<FieldMapping> fields, List<RelationMapping> relations){
 		DbTableBuilder table = getTable();
 
@@ -508,4 +493,12 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
 
         return secondaryTable.build();
     }
+
+	public RemoteSettings getRemoteSettings() {
+		return remoteSettings;
+	}
+
+	public void setRemoteSettings(RemoteSettings remoteSettings) {
+		this.remoteSettings = remoteSettings;
+	}
 }

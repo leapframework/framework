@@ -179,6 +179,10 @@ public class RestdApiConfigProcessor implements ApiConfigProcessor, ApiMetadataP
             Set<EntityMapping> excludes = new HashSet<>();
 
             includes.forEach(em -> {
+            	if(em.isRemote()){
+            		excludes.add(em);
+            		return;
+            	}
                 c.getExcludedModels().forEach(pattern -> {
                     if (matchesModel(pattern, em.getEntityName())) {
                         excludes.add(em);
