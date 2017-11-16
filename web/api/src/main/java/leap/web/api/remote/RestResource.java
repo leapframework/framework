@@ -9,6 +9,8 @@ import leap.web.api.mvc.params.QueryOptionsBase;
 
 public interface RestResource {
 
+	RestOrmContext getOrmContext();
+
 	void setEndpoint(String endpoint);
 
 	String getEndpoint();
@@ -24,14 +26,14 @@ public interface RestResource {
      */
     <T> T find(Class<T> entityClass,Object id, QueryOptionsBase options);
 
-    <T> QueryListResult<T> queryList(Class<T> entityClass,QueryOptions options, Map<String, Object> filters);
+    <T> RestQueryListResult<T> queryList(Class<T> entityClass,QueryOptions options, Map<String, Object> filters);
 
     int count(CountOptions options);
 
     /**
      * Query the records of model.
      */
-     default <T> QueryListResult<T> queryList(Class<T> entityClass,QueryOptions options) {
+     default <T> RestQueryListResult<T> queryList(Class<T> entityClass,QueryOptions options) {
         return queryList(entityClass,options, null);
     }
 }

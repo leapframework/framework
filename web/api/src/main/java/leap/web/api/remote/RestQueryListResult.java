@@ -20,12 +20,12 @@ package leap.web.api.remote;
 
 import java.util.List;
 
-public final class QueryListResult<T> {
+public final class RestQueryListResult<T> {
 
     private final List<T> list;
     private final long         count;
 
-    public QueryListResult(List<T> list, long count) {
+    public RestQueryListResult(List<T> list, long count) {
         this.list = list;
         this.count = count;
     }

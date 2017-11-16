@@ -242,7 +242,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
 
     @Override
     public boolean isRemoteEntity(MetadataContext context, Class<?> javaType) {
-        return javaType.isAnnotationPresent(Remote.class);
+        return javaType.isAnnotationPresent(RestEntity.class);
     }
 
     @Override
@@ -333,7 +333,7 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         String datasourceName="";
         RemoteType rType=RemoteType.db;
         DataSource dsAn = entityType.getAnnotation(DataSource.class);
-        Remote reAn = entityType.getAnnotation(Remote.class);
+        RestEntity reAn = entityType.getAnnotation(RestEntity.class);
 
         //计算datasource优先级
         if(dsAn!=null){
@@ -360,14 +360,18 @@ public class DefaultMappingStrategy extends AbstractReadonlyBean implements Mapp
         	rType=RemoteType.rest;
         }
 
+        RemoteSettings remoteSettings=new RemoteSettings();
         emb.setRemote(true);
+        emb.setRemoteSettings(remoteSettings);
         emb.setEntityClass(entityType);
-        emb.setRemoteDataSource(datasourceName);
-        emb.setRemoteType(rType);
+        remoteSettings.setDataSource(datasourceName);
+        remoteSettings.setRemoteType(rType);
         if(reAn!=null){
-        	emb.setEntityName(Strings.firstNotEmpty(reAn.name(), entityType.getSimpleName()));
+        	emb.setEntityName(Strings.firstNotEmpty(reAn.value(), entityType.getSimpleName()));
+        	remoteSettings.setPathPrefix(Strings.firstNotEmpty(reAn.path(),Strings.lowerUnderscore(emb.getEntityName())));
         }else{
         	emb.setEntityName(entityType.getSimpleName());
+        	remoteSettings.setPathPrefix(Strings.lowerUnderscore(emb.getEntityName()));
         }
         emb.setTableName(emb.getEntityName());
 

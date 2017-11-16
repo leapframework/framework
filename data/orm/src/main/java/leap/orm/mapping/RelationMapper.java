@@ -217,7 +217,7 @@ public class RelationMapper implements Mapper {
 		}
 
 		//create foreign key
-        if(!rmb.isLogical()) {
+        if(!rmb.isLogical() && !targetEmb.isRemote()) {
             createManyToOneForeignKey(context, emb, targetEmb, rmb);
         }
 	}

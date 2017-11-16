@@ -25,6 +25,8 @@ public class DefaultRestResource extends AbstractRestResource {
 
 	private String endpoint;
 
+	private RestOrmContext ormContext;
+
 	@Override
 	public <T> T insert(Class<T> entityClass, Object obj) {
 		String op="";
@@ -78,7 +80,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> QueryListResult<T> queryList(Class<T> entityClass, final QueryOptions options, Map<String, Object> filters) {
+	public <T> RestQueryListResult<T> queryList(Class<T> entityClass, final QueryOptions options, Map<String, Object> filters) {
 		String op="";
 
 		HttpRequest request=httpClient.request(buildOperationPath(op))
@@ -87,7 +89,7 @@ public class DefaultRestResource extends AbstractRestResource {
 
 		buildQueryOption(request,options);
 
-		final Out<QueryListResult<T>> out=new Out<>();
+		final Out<RestQueryListResult<T>> out=new Out<>();
 		final Type targetType=new TypeReference<List<T>>(entityClass){}.getType();
 
 		send(request,getAccessToken(),(response)->{
@@ -103,7 +105,7 @@ public class DefaultRestResource extends AbstractRestResource {
 	        	if(options.isTotal() && Strings.isNotBlank(countStr)){
 	        		count=Integer.parseInt(countStr);
 	        	}
-	        	out.accept(new QueryListResult<T>(list, count));
+	        	out.accept(new RestQueryListResult<T>(list, count));
 	        	return;
 	        }
 	        throw new RuntimeException("REMOTE_SERVICE_INVOKE_FAILED");
@@ -139,4 +141,13 @@ public class DefaultRestResource extends AbstractRestResource {
 	public String getEndpoint() {
 		return endpoint;
 	}
+
+	public RestOrmContext getOrmContext() {
+		return ormContext;
+	}
+
+	public void setOrmContext(RestOrmContext ormContext) {
+		this.ormContext = ormContext;
+	}
+
 }

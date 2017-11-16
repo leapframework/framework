@@ -16,7 +16,7 @@ import leap.lang.Assert;
 import leap.lang.New;
 import leap.lang.http.HTTP;
 import leap.web.api.mvc.params.QueryOptions;
-import leap.web.api.remote.QueryListResult;
+import leap.web.api.remote.RestQueryListResult;
 import leap.web.api.remote.RestResource;
 import leap.web.api.remote.RestResourceBuilder;
 import leap.webunit.WebTestBase;
@@ -69,7 +69,7 @@ public class RestResourceTest extends WebTestBase {
 		queryOptions.setPageIndex(1);
 		queryOptions.setTotal(true);
 
-		QueryListResult<RestApi> list=resource.queryList(RestApi.class, queryOptions);
+		RestQueryListResult<RestApi> list=resource.queryList(RestApi.class, queryOptions);
 		assertNotEmpty(list.getList());
 	}
 

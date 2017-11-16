@@ -21,30 +21,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import leap.orm.enums.RemoteType;
+import leap.lang.Strings;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Remote {
+@AEntity
+public @interface RestEntity {
     /**
-     * The type of reference.
+     * Name of the entity,
      */
     String value() default "";
 
     /**
-     * Same as {@link #value()}
+     * Path relative to api's endpoint
+     * default value is entity's name lowerUnderscore({@link Strings.lowerUnderscore})
      */
-    RemoteType type() default RemoteType.db;
+    String path() default "";
 
     /**
-     * The target entity name.
-     */
-    String name() default  "";
-
-    /**
-     * The target source name,
-     * 	when type is db,it's datasource name
-     * 	when type is rest,it's api name
+     * The target api's name
      */
     String dataSource() default "";
 

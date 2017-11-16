@@ -19,6 +19,7 @@
 package leap.web.api.orm;
 
 import leap.core.value.Record;
+import leap.core.value.SimpleRecord;
 import leap.lang.Arrays2;
 import leap.lang.Strings;
 import leap.lang.convert.Converts;
@@ -33,6 +34,9 @@ import leap.web.api.mvc.params.CountOptions;
 import leap.web.api.mvc.params.QueryOptions;
 import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.query.*;
+import leap.web.api.remote.RestQueryListResult;
+import leap.web.api.remote.RestResource;
+import leap.web.api.remote.RestResourceBuilder;
 import leap.web.exception.BadRequestException;
 
 import java.lang.reflect.Array;
@@ -220,15 +224,102 @@ public class DefaultModelQueryExecutor extends ModelExecutorBase implements Mode
         if(targetEm==null){
         	throw new BadRequestException("can't find relation entity:"+rp.getTargetEntityName());
         }
-        if(RemoteType.rest.equals(targetEm.getRemoteType())){
+        if(targetEm.isRemote() && RemoteType.rest.equals(targetEm.getRemoteSettings().getRemoteType())){
         	expandByRest(expand, records, rp);
         }else{
         	expandByDb(expand, records, rp);
         }
-
     }
 
     private void expandByRest(Expand expand, List<Record> records, RelationProperty rp){
+    	RelationMapping rm = em.getRelationMapping(rp.getRelationName());
+		QueryOptions queryOptions=new QueryOptions();
+		queryOptions.setLimit(200);
+		EntityMapping targetEm=this.md.getEntityMapping(rm.getTargetEntityName());
+		RestResource resource=RestResourceBuilder.newBuilder()
+				.setEntityMapping(targetEm)
+				.build();
+
+        //根据不同类型的关系，计算引用的源字段、被引用字段
+        String localFieldName="",referredFieldName="";
+        if(rm.isOneToMany()){
+        	RelationMapping inverseRm= this.md.getEntityMapping(rm.getJoinEntityName()).getRelationMapping(rm.getInverseRelationName());
+        	localFieldName=inverseRm.getJoinFields()[0].getReferencedFieldName();
+        	referredFieldName=inverseRm.getJoinFields()[0].getLocalFieldName();
+        }else if(rm.isManyToMany()){
+        	throw new RuntimeException("Unsupport remote entity expand when relation type is many-to-many");
+        }else{
+            localFieldName= rm.getJoinFields()[0].getLocalFieldName();
+            referredFieldName=rm.getJoinFields()[0].getReferencedFieldName();
+        }
+
+        //获取所有被引用记录的id
+        Set<Object> fks=new HashSet<>();
+        for (Record record : records) {
+    		Object fk = record.get(localFieldName);
+    		if(fk==null ||fks.contains(fk)){
+    			continue;
+    		}
+    		fks.add(fk);
+		}
+
+        StringBuilder filters=new StringBuilder();
+        filters.append("'");
+        for (Object fk : fks) {
+        	filters.append(fk.toString());
+        	filters.append(",");
+		}
+        queryOptions.setFilters(Strings.format("{0} in {1}", referredFieldName,Strings.trimEnd(filters.toString(), ',')+"'"));
+        //构造expand时，要返回引用记录的字段
+        if(Strings.isNotEmpty(expand.getSelect())) {
+        	 if(expand.getSelect().contains(referredFieldName)){
+        		 queryOptions.setSelect(expand.getSelect());
+	       	 }else{
+	       		queryOptions.setSelect(expand.getSelect()+","+referredFieldName);
+	       	 }
+        }
+        RestQueryListResult<Map> resultList= resource.queryList(Map.class, queryOptions);
+
+        //根据引用字段值，对所有查询出来的被引用数据，进行分组
+        Map<Object,List<Record>> referredRecords=new HashMap<>();
+        for (Map<String,Object> referred :resultList.getList() ) {
+        	Object fkVal=null;
+        	List<Record> fieldToValList=null;
+        	if(rm.isManyToMany()){
+        		fkVal=referred.remove(referredFieldName);
+        		if(fkVal==null){
+        			fkVal=referred.remove(referredFieldName.toUpperCase());
+        		}
+        		if(fkVal==null){
+        			fkVal=referred.remove(referredFieldName.toLowerCase());
+        		}
+        	}else{
+        		fkVal=referred.get(referredFieldName);
+        	}
+
+			if(referredRecords.containsKey(fkVal)){
+				fieldToValList=referredRecords.get(fkVal);
+			}else{
+				fieldToValList=new ArrayList<>();
+				referredRecords.put(fkVal, fieldToValList);
+			}
+			fieldToValList.add(new SimpleRecord(referred));
+		}
+
+        //填充expand指定的属性
+        for (Record record : records) {
+        	Object fk = record.get(localFieldName);
+        	List<Record> fieldToRecords=referredRecords.get(fk);
+        	if(rp.isMany()) {
+                record.put(rp.getName(),fieldToRecords);
+            }else{
+            	if(fieldToRecords!=null && fieldToRecords.size()>0){
+            		record.put(rp.getName(),fieldToRecords.get(0));
+            	}else{
+            		record.put(rp.getName(), null);
+            	}
+            }
+		}
 
     }
 

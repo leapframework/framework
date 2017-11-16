@@ -16,15 +16,16 @@
 
 package tests;
 
+import org.junit.Test;
+
 import app.models.Entity1;
 import leap.core.annotation.Inject;
-import leap.core.junit.AppTestBase;
 import leap.orm.OrmContext;
 import leap.orm.mapping.EntityMapping;
 import leap.orm.mapping.RelationMapping;
-import org.junit.Test;
+import leap.webunit.WebTestBase;
 
-public class CrossDataSourceTest extends AppTestBase{
+public class CrossDataSourceTest extends WebTestBase{
 
     private @Inject(name = "db1") OrmContext oc1;
     private @Inject(name = "db2") OrmContext oc2;
@@ -39,7 +40,7 @@ public class CrossDataSourceTest extends AppTestBase{
 
         EntityMapping target = oc1.getMetadata().getEntityMapping(rm.getTargetEntityName());
         assertEquals(true, target.isRemote());
-        assertNotEmpty(target.getRemoteDataSource());
+        assertNotEmpty(target.getRemoteSettings().getDataSource());
     }
 
 }

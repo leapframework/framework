@@ -65,8 +65,7 @@ public class EntityMapping extends ExtensibleBase {
     protected final EntityListeners    listeners;
     protected final boolean            queryFilterEnabled;
     protected final boolean            remote;
-    protected final RemoteType             remoteType;
-    protected final String             remoteDataSource;
+    private final RemoteSettings      remoteSettings;
 
     private final Map<String,FieldMapping>    columnNameToFields;
 	private final Map<String,FieldMapping>    fieldNameToFields;
@@ -85,7 +84,7 @@ public class EntityMapping extends ExtensibleBase {
                          List<RelationMapping> relationMappings,
                          RelationProperty[] relationProperties,
                          boolean autoCreateTable,
-                         boolean queryFilterEnabled, boolean remote, RemoteType remoteType, String remoteDataSource,
+                         boolean queryFilterEnabled, boolean remote, RemoteSettings remoteSettings,
                          EntityListeners listeners) {
 
 		Args.notEmpty(entityName,"entity name");
@@ -127,9 +126,8 @@ public class EntityMapping extends ExtensibleBase {
 	    this.optimisticLockField    = findOptimisticLockField();
         this.autoCreateTable        = autoCreateTable;
         this.queryFilterEnabled     = queryFilterEnabled;
-        this.remote = remote;
-        this.remoteType = remoteType;
-        this.remoteDataSource = remoteDataSource;
+        this.remote 				= remote;
+        this.remoteSettings			=remoteSettings;
 
         this.selfReferencingRelations = evalSelfReferencingRelations();
         this.selfReferencing = selfReferencingRelations.length > 0;
@@ -300,7 +298,7 @@ public class EntityMapping extends ExtensibleBase {
      */
     public RelationProperty tryGetRelationProperty(String name) {
         for(RelationProperty p : relationProperties) {
-            if(p.getName().equals(name)) {
+            if(Strings.equals(p.getName(),name)) {
                 return p;
             }
         }
@@ -371,20 +369,6 @@ public class EntityMapping extends ExtensibleBase {
      */
     public boolean isRemote() {
         return remote;
-    }
-
-    /**
-     * Returns the remote type.
-     */
-    public RemoteType getRemoteType() {
-        return remoteType;
-    }
-
-    /**
-     * Returns the remote data source.
-     */
-    public String getRemoteDataSource() {
-        return remoteDataSource;
     }
 
     /**
@@ -720,4 +704,8 @@ public class EntityMapping extends ExtensibleBase {
     public String toString() {
 	    return "Entity[name=" + getEntityName() + ",table=" + getTableName() + ",class=" + (entityClass == null ? "null" : entityClass.getName()) + "]";
     }
+
+	public RemoteSettings getRemoteSettings() {
+		return remoteSettings;
+	}
 }

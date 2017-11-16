@@ -44,8 +44,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
     protected boolean        autoGenerateColumns;
     protected Boolean        queryFilterEnabled;
     protected boolean        remote;
-    private RemoteType         remoteType;
-    protected String         remoteDataSource;
+    private RemoteSettings    remoteSettings;
 
     protected List<FieldMappingBuilder>    fieldMappings = new ArrayList<>();
 	protected EntityExecutionInterceptor   insertInterceptor;
@@ -226,15 +225,6 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         this.remote = remote;
     }
 
-
-
-    public String getRemoteDataSource() {
-        return remoteDataSource;
-    }
-
-    public void setRemoteDataSource(String remoteDataSource) {
-        this.remoteDataSource = remoteDataSource;
-    }
 
     public List<FieldMappingBuilder> getFieldMappings() {
 		return fieldMappings;
@@ -452,7 +442,7 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
                                  relations,
                                  Builders.buildArray(relationProperties, new RelationProperty[0]),
                                  autoCreateTable,queryFilterEnabled == null ? false : queryFilterEnabled,
-                remote, getRemoteType(), remoteDataSource,
+                                 remote, remoteSettings,
                                  listeners.build());
     }
 
@@ -504,11 +494,11 @@ public class EntityMappingBuilder implements Buildable<EntityMapping> {
         return secondaryTable.build();
     }
 
-	public RemoteType getRemoteType() {
-		return remoteType;
+	public RemoteSettings getRemoteSettings() {
+		return remoteSettings;
 	}
 
-	public void setRemoteType(RemoteType remoteType) {
-		this.remoteType = remoteType;
+	public void setRemoteSettings(RemoteSettings remoteSettings) {
+		this.remoteSettings = remoteSettings;
 	}
 }

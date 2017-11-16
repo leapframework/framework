@@ -1088,10 +1088,10 @@ public class DefaultDao extends DaoBase implements PreInjectBean {
 		if(!originalEm.isRemote()){
 			return func.apply(context);
 		}
-		if(RemoteType.rest.equals(originalEm.getRemoteType())){
+		if(RemoteType.rest.equals(originalEm.getRemoteSettings().getRemoteType())){
 			throw new RuntimeException("remote rest entity isn't supported.");
 		}
-		String remoteDs=originalEm.getRemoteDataSource();
+		String remoteDs=originalEm.getRemoteSettings().getDataSource();
 		OrmContext targetOrmContext= Orm.context(remoteDs);
 		if(targetOrmContext==null){
 			throw new RuntimeException("remote orm context can't be found.");
