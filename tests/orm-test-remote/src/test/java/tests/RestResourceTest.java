@@ -30,7 +30,7 @@ public class RestResourceTest extends WebTestBase {
 		queryOptions.setSelect("id,name,title,entity2Id,remoteEntity1");
 		queryOptions.setPageSize(10);
 		queryOptions.setPageIndex(1);
-		queryOptions.setExpand("remoteEntity(id,title)");
+		queryOptions.setExpand("remoteEntity(id,title),entity2(id,title)");
 		queryOptions.setTotal(false);
 
 		RestQueryListResult<Entity1> list=resource.queryList(Entity1.class, queryOptions);
@@ -38,6 +38,7 @@ public class RestResourceTest extends WebTestBase {
 
 		Entity1 e1=list.getList().get(0);
 		assertEquals(c1.getRemoteEntity1(), e1.getRemoteEntity().getId());
+		assertEquals(c1.getEntity2Id(), e1.getEntity2().getId());
 	}
 
 
