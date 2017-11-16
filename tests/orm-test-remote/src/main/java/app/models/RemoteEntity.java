@@ -10,7 +10,7 @@ import leap.orm.annotation.RestEntity;
  * @author 梁生
  *
  */
-@RestEntity(path = "entity4", dataSource = "restapi1")
+@RestEntity(relativePath = "entity4", dataSource = "restapi1")
 public class RemoteEntity {
 
 	@Id

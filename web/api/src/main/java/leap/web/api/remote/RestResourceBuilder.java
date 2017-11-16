@@ -40,8 +40,12 @@ public class RestResourceBuilder {
 			RestDataSource ds=manager.tryGetDataSource(entityMapping.getRemoteSettings().getDataSource());
 			RestOrmContext context=new RestOrmContext(ds,entityMapping);
 			res.setOrmContext(context);
+			String basePath=entityMapping.getRemoteSettings().getEndpoint();
 			if(ds!=null && Strings.isNotEmpty(ds.getEndpoint())){
-				String url=Paths.suffixWithSlash(ds.getEndpoint())+entityMapping.getRemoteSettings().getPathPrefix();
+				basePath=ds.getEndpoint();
+			}
+			if(Strings.isNotEmpty(basePath)){
+				String url=Paths.suffixWithSlash(basePath)+entityMapping.getRemoteSettings().getRelativePath();
 				res.setEndpoint(url);
 			}
 		}

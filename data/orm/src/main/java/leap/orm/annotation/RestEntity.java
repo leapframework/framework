@@ -36,7 +36,15 @@ public @interface RestEntity {
      * Path relative to api's endpoint
      * default value is entity's name lowerUnderscore({@link Strings.lowerUnderscore})
      */
-    String path() default "";
+    String relativePath() default "";
+
+    /**
+     * The endpoint of the remote datasource, ie:http://xxx.domain.com/api/ <br/>
+     * when the dataSource can't be found and the endpoint of the dataSource not empty,
+     * fullUrl will be override by RestDataSource.getEndpoint()
+     * @return
+     */
+    String endPoint() default "";
 
     /**
      * The target api's name
