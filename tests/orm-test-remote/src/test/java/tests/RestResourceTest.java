@@ -35,6 +35,9 @@ public class RestResourceTest extends WebTestBase {
 
 		RestQueryListResult<Entity1> list=resource.queryList(Entity1.class, queryOptions);
 		assertNotEmpty(list.getList());
+
+		Entity1 e1=list.getList().get(0);
+		assertEquals(c1.getRemoteEntity1(), e1.getRemoteEntity().getId());
 	}
 
 
