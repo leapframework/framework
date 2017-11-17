@@ -246,6 +246,7 @@ public class BeanContainer implements BeanFactory {
 		initializing = false;
 
         AppConfigurator configurator = new DefaultAppConfigurator((DefaultAppConfig)config);
+        addBean(AppConfigurator.class, configurator, true);
         for(AppConfigInitializer ci : getBeans(AppConfigInitializer.class)) {
             ci.init(appContext, configurator);
         }
