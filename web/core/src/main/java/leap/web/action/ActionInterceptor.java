@@ -23,7 +23,7 @@ public interface ActionInterceptor extends Interceptor {
 	/**
 	 * Called before resolve parameters
 	 */
-	default State preResolveActionParameters(ActionContext context, Validation validation){
+	default State preResolveActionParameters(ActionContext context, Validation validation) throws Throwable {
 		return State.CONTINUE;
 	}
 	
