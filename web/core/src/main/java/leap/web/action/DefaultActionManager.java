@@ -99,10 +99,20 @@ public class DefaultActionManager implements ActionManager {
     public Object executeAction(ActionContext context, Validation validation) throws Throwable {
 		ExecutionAttributes eas = (ExecutionAttributes)context.getRoute().getExecutionAttributes();
 		DefaultActionExecution execution = new DefaultActionExecution(validation);
-		
+		context.setActionExecution(execution);
 		try {
             //resolve request format
             RequestFormat requestFormat = resolveRequestFormat(context, eas);
+
+            //pre-resolve argument interceptors
+            if (State.isIntercepted(eas.interceptors.preResolveActionParameters(context, validation))) {
+                execution.setState(Execution.ExecutionState.INTERCEPTED);
+                return null;
+            }
+            
+            //resolve argument values
+            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
+            execution.setArgs(args);
 
             //pre-execute action interceptors
             if (State.isIntercepted(eas.interceptors.preExecuteAction(context, validation))) {
@@ -110,9 +120,6 @@ public class DefaultActionManager implements ActionManager {
                 return null;
             }
 
-            //resolve argument values
-            Object[] args = resolveArgumentValues(context, validation, requestFormat, eas);
-            execution.setArgs(args);
 
             //expose arguments as view data
             exposeArgumentsAsViewData(context.getResult().getViewData(), context, eas, execution);

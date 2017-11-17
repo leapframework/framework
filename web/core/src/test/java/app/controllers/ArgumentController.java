@@ -37,7 +37,7 @@ import java.util.Map;
 public class ArgumentController extends ControllerBase implements ActionInterceptor {
 
     @Override
-    public State preExecuteAction(ActionContext context, Validation validation) throws Throwable {
+    public State preResolveActionParameters(ActionContext context, Validation validation) throws Throwable {
         context.getRequest().setAttribute("simpleRequestAttribute", "Simple Request Attribute");
         context.getRequest().setAttribute(SimpleModel.class.getName(), new SimpleModel("Complex Request Attribute"));
         return State.CONTINUE;

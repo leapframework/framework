@@ -36,6 +36,7 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
 	protected String			  path;
 	protected Route				  route;
 	protected Action	          action;
+	protected ActionExecution     execution;
 	protected Map<String, String> pathParameters;
 	protected RequestFormat		  requestFormat;
 	protected ResponseFormat	  responseFormat;
@@ -91,7 +92,17 @@ public class DefaultActionContext extends MapAttributeAccessor implements Action
     public Action getAction() {
 	    return null == route ? null : route.getAction();
     }
-	
+
+	@Override
+	public ActionExecution getActionExecution() {
+		return execution;
+	}
+
+	@Override
+	public void setActionExecution(ActionExecution execution) {
+		this.execution = execution;
+	}
+
 	@Override
     public Map<String, String> getPathParameters() {
 		return pathParameters;

@@ -29,11 +29,32 @@ class ActionInterceptors implements ActionInterceptor {
     private final WebInterceptors interceptors;
 	private final Action          action;
 
-	public ActionInterceptors(WebInterceptors interceptors, Action action) {
+    public ActionInterceptors(WebInterceptors interceptors, Action action) {
         this.interceptors = interceptors;
 		this.action = action;
 	}
 
+    @Override
+    public State preResolveActionParameters(ActionContext context, Validation validation) throws Throwable {
+        State state = null;
+
+        for(ActionInterceptor interceptor : interceptors.getActionInterceptors()) {
+            if(!State.isContinue(state = interceptor.preResolveActionParameters(context, validation))){
+                context.getResponse().markHandled();
+                return state;
+            }
+        }
+
+        ActionInterceptor[] actionInterceptors = action.getInterceptors();
+        for(int i = 0; i< actionInterceptors.length; i++){
+            if(!State.isContinue(state = actionInterceptors[i].preResolveActionParameters(context, validation))){
+                context.getResponse().markHandled();
+                return state;
+            }
+        }
+        return state;
+    }
+    
 	public State preExecuteAction(ActionContext context, Validation validation) throws Throwable {
 		State state = null;
 
