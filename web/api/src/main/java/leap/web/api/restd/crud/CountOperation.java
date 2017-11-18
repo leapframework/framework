@@ -43,7 +43,7 @@ public class CountOperation extends CrudOperation implements RestdProcessor {
 
     @Override
     public void preProcessModel(ApiConfigurator c, RestdContext context, RestdModel model) {
-        if(!context.getConfig().allowQueryModel(model.getName())) {
+        if(!context.getConfig().allowCountModel(model.getName())) {
             return;
         }
 
