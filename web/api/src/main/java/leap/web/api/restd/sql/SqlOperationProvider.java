@@ -29,6 +29,7 @@ import leap.orm.dao.Dao;
 import leap.orm.query.Query;
 import leap.orm.sql.SqlCommand;
 import leap.orm.sql.SqlMetadata;
+import leap.web.ResponseEntity;
 import leap.web.action.ActionParams;
 import leap.web.action.ArgumentBuilder;
 import leap.web.action.FuncActionBuilder;
@@ -42,7 +43,9 @@ import leap.web.api.restd.*;
 import leap.web.api.restd.crud.CrudOperation;
 import leap.web.route.RouteBuilder;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.function.Function;
 
 public class SqlOperationProvider extends CrudOperation implements RestdOperationProvider {
 
@@ -174,7 +177,7 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
         }
 
         final MType returnType = mo.getResponses().get(0).getType();
-        action.setFunction((params) -> execute(dao, sc, params, returnType));
+        action.setFunction(new SqlFunction(od.getScriptPath(), op.key, dao, sc, returnType));
 
         if(null != model) {
             configure(ctx, model, action);
@@ -224,36 +227,65 @@ public class SqlOperationProvider extends CrudOperation implements RestdOperatio
         mo.addResponse(r);
     }
 
-    protected Object execute(Dao dao, SqlCommand command, ActionParams params, MType returnType) {
-        Map<String,Object> map = params.toMap();
+    private class SqlFunction implements Function<ActionParams, Object> {
 
-        Object result;
+        private final String     path;
+        private final String     key;
+        private final Dao        dao;
+        private final SqlCommand command;
+        private final MType      returnType;
 
-        if(command.getMetadata().isSelect()) {
-            //todo: page query, total count
+        public SqlFunction(String path, String key, Dao dao, SqlCommand command, MType returnType) {
+            this.path = path;
+            this.key  = key;
+            this.dao = dao;
+            this.command = command;
+            this.returnType = returnType;
+        }
 
-            Query query = dao.createQuery(command).params(map);
+        @Override
+        public Object apply(ActionParams params) {
+            Map<String,Object> map = params.toMap();
 
-            if(null != returnType) {
-                if(returnType.isSimpleType()) {
-                    result = Converts.convert(query.scalarValueOrNull(), returnType.asSimpleType().getJavaType());
-                }else if(returnType.isCollectionType() && returnType.asCollectionType().getElementType().isSimpleType()) {
-                    result = query.scalars().list(returnType.asCollectionType().getElementType().asSimpleType().getJavaType());
+            Object result;
+
+            if(command.getMetadata().isSelect()) {
+                //todo: page query, total count
+
+                Query query = dao.createQuery(command).params(map);
+
+                if(null != returnType) {
+                    if(returnType.isSimpleType()) {
+                        result = Converts.convert(query.scalarValueOrNull(), returnType.asSimpleType().getJavaType());
+                    }else if(returnType.isCollectionType() && returnType.asCollectionType().getElementType().isSimpleType()) {
+                        result = query.scalars().list(returnType.asCollectionType().getElementType().asSimpleType().getJavaType());
+                    }else {
+                        result = query.list();
+                    }
                 }else {
                     result = query.list();
                 }
-            }else {
-                result = query.list();
+            }else{
+                //todo: the return type must be simple type
+                result = dao.executeUpdate(command, map);
+                if(null != returnType) {
+                    result = Converts.convert(result, returnType.asSimpleType().getJavaType());
+                }
             }
-        }else{
-            //todo: the return type must be simple type
-            result = dao.executeUpdate(command, map);
-            if(null != returnType) {
-                result = Converts.convert(result, returnType.asSimpleType().getJavaType());
-            }
+
+            return ApiResponse.of(result);
         }
 
-        return ApiResponse.of(result);
+        @Override
+        public String toString() {
+            if(!Strings.isEmpty(path)) {
+                return path;
+            }
+            if(!Strings.isEmpty(key)) {
+                return "@"  + key;
+            }
+            return super.toString();
+        }
     }
 
     protected static final class SqlOperationDef {
