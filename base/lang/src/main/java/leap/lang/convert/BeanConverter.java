@@ -30,6 +30,7 @@ import leap.lang.beans.BeanProperty;
 import leap.lang.reflect.ReflectClass;
 import leap.lang.reflect.ReflectConstructor;
 import leap.lang.reflect.ReflectParameter;
+import leap.lang.reflect.Reflection;
 import leap.lang.serialize.Serialize;
 import leap.lang.serialize.Serializer;
 import leap.lang.serialize.Serializes;
@@ -45,6 +46,13 @@ public class BeanConverter extends AbstractConverter<Object>{
 
         if(value instanceof Map){
             out.set(convertFromMap(targetType, genericType, (Map)value, context));
+            return true;
+        }
+
+        if(value instanceof CharSequence && StringParsable.class.isAssignableFrom(targetType)) {
+            Object bean = Reflection.newInstance(targetType);
+            ((StringParsable)bean).parseString(value.toString());
+            out.set(bean);
             return true;
         }
 
