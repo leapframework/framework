@@ -27,11 +27,14 @@ import leap.web.api.meta.ApiMetadata;
 import leap.web.api.meta.model.MApiModel;
 import leap.web.api.mvc.ApiResponse;
 import leap.web.api.mvc.params.QueryOptions;
+import leap.web.api.mvc.params.QueryOptionsBase;
 import leap.web.api.orm.*;
 import leap.web.api.restd.RestdContext;
 import leap.web.api.restd.RestdModel;
 import leap.web.api.restd.RestdProcessor;
 import leap.web.route.RouteBuilder;
+
+import java.util.function.Function;
 
 /**
  * Query records operation.
@@ -55,7 +58,7 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         RouteBuilder      route  = rm.createRoute(verb, path);
 
         action.setName(Strings.lowerCamel("query", model.getName()));
-        action.setFunction((params) -> execute(context.getApi(), dao, model, params));
+        action.setFunction(new QueryFunction(context.getApi(), dao, model));
 
         addArgument(action, QueryOptions.class, "options");
         addModelQueryResponse(action, model);
@@ -67,21 +70,39 @@ public class QueryOperation extends CrudOperation implements RestdProcessor {
         c.addDynamicRoute(rm.loadRoute(context.getRoutes(), route));
     }
 
-    protected Object execute(Api api, Dao dao, RestdModel model, ActionParams params) {
-        ApiMetadata amd = api.getMetadata();
-        MApiModel   am  = amd.getModel(model.getName());
+    private final class QueryFunction implements Function<ActionParams, Object> {
+        private final Api        api;
+        private final Dao        dao;
+        private final RestdModel model;
 
-        ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
-        ModelQueryExecutor   executor = mef.newQueryExecutor(context);
+        public QueryFunction(Api api, Dao dao, RestdModel model) {
+            this.api = api;
+            this.dao = dao;
+            this.model = model;
+        }
 
-        QueryOptions options = params.get(0);
+        @Override
+        public Object apply(ActionParams params) {
+            ApiMetadata amd = api.getMetadata();
+            MApiModel   am  = amd.getModel(model.getName());
 
-        QueryListResult result = executor.queryList(options);
+            ModelExecutorContext context  = new SimpleModelExecutorContext(api, am, dao, model.getEntityMapping());
+            ModelQueryExecutor   executor = mef.newQueryExecutor(context);
 
-        if (result.count == -1) {
-            return ApiResponse.of(result.list);
-        } else {
-            return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
+            QueryOptions options = params.get(0);
+
+            QueryListResult result = executor.queryList(options);
+
+            if (result.count == -1) {
+                return ApiResponse.of(result.list);
+            } else {
+                return ApiResponse.of(result.list).setHeader("X-Total-Count", String.valueOf(result.count));
+            }
+        }
+
+        @Override
+        public String toString() {
+            return "Function:" + "Query " + model.getName() + "";
         }
     }
 
