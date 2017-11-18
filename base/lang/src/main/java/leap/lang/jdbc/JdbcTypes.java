@@ -78,22 +78,22 @@ public class JdbcTypes {
 		//http://docs.oracle.com/javase/1.5.0/docs/guide/jdbc/getstart/mapping.html
 		//note : jdbc's float mapping to java's double 
 		
-        register(java.sql.Types.BIGINT,        BIGINT_TYPE_NAME,        JdbcTypeKind.Numeric,   long.class, false, false);
+        register(java.sql.Types.BIGINT,        BIGINT_TYPE_NAME,        JdbcTypeKind.Numeric,   long.class, false, false, "long");
         register(java.sql.Types.BIT,           BIT_TYPE_NAME,           JdbcTypeKind.Numeric,   boolean.class,short.class, false, false);
-        register(java.sql.Types.BOOLEAN,       BOOLEAN_TYPE_NAME,       JdbcTypeKind.Numeric,   boolean.class, false, false);
+        register(java.sql.Types.BOOLEAN,       BOOLEAN_TYPE_NAME,       JdbcTypeKind.Numeric,   boolean.class, false, false, "bool");
         register(java.sql.Types.DECIMAL,       DECIMAL_TYPE_NAME,       JdbcTypeKind.Numeric,   BigDecimal.class, false, true);
         register(java.sql.Types.DOUBLE,        DOUBLE_TYPE_NAME,        JdbcTypeKind.Numeric,   double.class,Double.class, false, false);
         register(java.sql.Types.FLOAT,         FLOAT_TYPE_NAME,         JdbcTypeKind.Numeric,   double.class,Double.class, false, false); 
-        register(java.sql.Types.INTEGER,       INTEGER_TYPE_NAME,       JdbcTypeKind.Numeric,   int.class,Integer.class, false, false);
-        register(java.sql.Types.NUMERIC,       NUMERIC_TYPE_NAME,       JdbcTypeKind.Numeric,   BigDecimal.class, false, true);
+        register(java.sql.Types.INTEGER,       INTEGER_TYPE_NAME,       JdbcTypeKind.Numeric,   int.class,Integer.class, false, false, "int");
+        register(java.sql.Types.NUMERIC,       NUMERIC_TYPE_NAME,       JdbcTypeKind.Numeric,   BigDecimal.class, false, true, "number");
         register(java.sql.Types.REAL,          REAL_TYPE_NAME,          JdbcTypeKind.Numeric,   float.class,Float.class, false, false);
-        register(java.sql.Types.SMALLINT,      SMALLINT_TYPE_NAME,      JdbcTypeKind.Numeric,   short.class,Short.class, false, false);  
+        register(java.sql.Types.SMALLINT,      SMALLINT_TYPE_NAME,      JdbcTypeKind.Numeric,   short.class,Short.class, false, false, "short");
         register(java.sql.Types.TINYINT,       TINYINT_TYPE_NAME,       JdbcTypeKind.Numeric,   short.class,Short.class, false, false);
         
         register(java.sql.Types.CHAR,          CHAR_TYPE_NAME,          JdbcTypeKind.Text,      String.class, true, false);
         register(java.sql.Types.CLOB,          CLOB_TYPE_NAME,          JdbcTypeKind.Text,      String.class,Clob.class, false, false);
-        register(java.sql.Types.LONGVARCHAR,   LONGVARCHAR_TYPE_NAME,   JdbcTypeKind.Text,      String.class, true, false);
-        register(java.sql.Types.VARCHAR,       VARCHAR_TYPE_NAME,       JdbcTypeKind.Text,      String.class, true, false);
+        register(java.sql.Types.LONGVARCHAR,   LONGVARCHAR_TYPE_NAME,   JdbcTypeKind.Text,      String.class, true, false, "text");
+        register(java.sql.Types.VARCHAR,       VARCHAR_TYPE_NAME,       JdbcTypeKind.Text,      String.class, true, false, "string");
         register(java.sql.Types.NCHAR,		   NCHAR_TYPE_NAME,		    JdbcTypeKind.Text,	    String.class, true, false);
         register(java.sql.Types.NVARCHAR,	   NVARCHAR_TYPE_NAME,	    JdbcTypeKind.Text,	    String.class, true, false);
         register(java.sql.Types.LONGNVARCHAR,  LONGNVARCHAR_TYPE_NAME,  JdbcTypeKind.Text,	    String.class, true, false);
@@ -104,7 +104,7 @@ public class JdbcTypes {
         register(java.sql.Types.TIME,          TIME_TYPE_NAME,          JdbcTypeKind.Temporal,  Time.class, false, false);
         register(java.sql.Types.TIMESTAMP,     TIMESTAMP_TYPE_NAME,     JdbcTypeKind.Temporal,  Timestamp.class, false, false);
         
-        register(java.sql.Types.BINARY,        BINARY_TYPE_NAME,        JdbcTypeKind.Binary,    byte[].class, true, false);
+        register(java.sql.Types.BINARY,        BINARY_TYPE_NAME,        JdbcTypeKind.Binary,    byte[].class, true, false, "bytes");
         register(java.sql.Types.BLOB,          BLOB_TYPE_NAME,          JdbcTypeKind.Binary,    byte[].class,Blob.class, false, false);
         register(java.sql.Types.LONGVARBINARY, LONGVARBINARY_TYPE_NAME, JdbcTypeKind.Binary,    byte[].class, true, false);
         register(java.sql.Types.VARBINARY,     VARBINARY_TYPE_NAME,     JdbcTypeKind.Binary,    byte[].class, true, false);  
@@ -121,16 +121,43 @@ public class JdbcTypes {
 	
 	private static void register(int typeCode,String typeName,JdbcTypeKind kind,Class<?> defaultJavaType, 
 							     boolean supportsLength, boolean supportsPrecisionAndScale){
-		register(typeCode, typeName, kind, defaultJavaType, defaultJavaType, supportsLength, supportsPrecisionAndScale);
+		register(typeCode, typeName, kind, defaultJavaType, defaultJavaType, supportsLength, supportsPrecisionAndScale, null);
 	}
+
+    private static void register(int typeCode,String typeName,JdbcTypeKind kind,Class<?> defaultJavaType,
+                                 boolean supportsLength, boolean supportsPrecisionAndScale, String... aliases){
+        register(typeCode, typeName, kind, defaultJavaType, defaultJavaType, supportsLength, supportsPrecisionAndScale, aliases);
+    }
 	
 	private static void register(int typeCode,String typeName,JdbcTypeKind kind,Class<?> defaultReadType,Class<?> defaultSaveType,
 							     boolean supportsLength,boolean supportsPrecisionAndScale){
-		JdbcType type = new JdbcType(typeCode, typeName, kind , defaultReadType, defaultSaveType,supportsLength,supportsPrecisionAndScale);
-		
-		typeCodeToJdbcTypeMappings.put(typeCode, type);
-		typeNameToJdbcTypeMappings.put(typeName, type);
+        register(typeCode, typeName, kind, defaultReadType, defaultSaveType, supportsLength, supportsPrecisionAndScale, null);
 	}
+
+    private static void register(int typeCode,String typeName,JdbcTypeKind kind,Class<?> defaultReadType,Class<?> defaultSaveType,
+                                 boolean supportsLength,boolean supportsPrecisionAndScale, String... aliases){
+        JdbcType type = new JdbcType(typeCode, typeName, kind , defaultReadType, defaultSaveType,supportsLength,supportsPrecisionAndScale);
+
+        if(typeCodeToJdbcTypeMappings.containsKey(typeCode)) {
+            throw new IllegalStateException("Type code '" + typeCode + "' already registered!");
+        }
+
+        if(typeNameToJdbcTypeMappings.containsKey(typeName)) {
+            throw new IllegalStateException("Type name '" + typeName + "' already registered!");
+        }
+
+        typeCodeToJdbcTypeMappings.put(typeCode, type);
+        typeNameToJdbcTypeMappings.put(typeName, type);
+
+        if(null != aliases) {
+            for(String alias : aliases) {
+                if(typeNameToJdbcTypeMappings.containsKey(alias)) {
+                    throw new IllegalStateException("Type name '" + alias + "' already registered!");
+                }
+                typeNameToJdbcTypeMappings.put(alias, type);
+            }
+        }
+    }
 	
 	public static Iterable<JdbcType> all(){
 		return typeCodeToJdbcTypeMappings.values();
