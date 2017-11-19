@@ -77,10 +77,9 @@ public class AutoIdGenerator implements IdGenerator {
 		}
     }
 	
-	protected void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
+	public void mappingAutoIncrement(MetadataContext context, EntityMappingBuilder emb, FieldMappingBuilder fmb){
 		fmb.getColumn().setAutoIncrement(true);
-		fmb.setInsert(false);  //remove auto increment from insert columns
-		
+
 		emb.setInsertInterceptor(context1 -> {
             if(!context1.isReturnGeneratedId()){
                 return null;
@@ -90,7 +89,7 @@ public class AutoIdGenerator implements IdGenerator {
         });
 	}
 	
-	protected void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
+	public void mappingSequence(MetadataContext context, EntityMappingBuilder emb,final FieldMappingBuilder fmb){
 		SequenceMappingBuilder seq = new SequenceMappingBuilder();
 		
 		setSequenceProperties(context, emb, fmb, seq);
