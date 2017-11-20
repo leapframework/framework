@@ -27,10 +27,7 @@ import leap.lang.Out;
 import leap.lang.annotation.Name;
 import leap.lang.beans.BeanType;
 import leap.lang.beans.BeanProperty;
-import leap.lang.reflect.ReflectClass;
-import leap.lang.reflect.ReflectConstructor;
-import leap.lang.reflect.ReflectParameter;
-import leap.lang.reflect.Reflection;
+import leap.lang.reflect.*;
 import leap.lang.serialize.Serialize;
 import leap.lang.serialize.Serializer;
 import leap.lang.serialize.Serializes;
@@ -127,6 +124,15 @@ public class BeanConverter extends AbstractConverter<Object>{
                         break;
                     }
                 }
+            }
+        }
+
+        //supports special '$' value.
+        Object v = map.get("$");
+        if(null != v) {
+            ReflectMethod m = bt.getReflectClass().getMethod("$");
+            if(null != m && m.getParameters().length == 1) {
+                m.invoke(bean, Converts.convert(v, m.getParameters()[0].getType(), m.getParameters()[0].getGenericType(), context));
             }
         }
     }
